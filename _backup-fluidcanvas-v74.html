@@ -1,0 +1,3115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Article Editor | M.NationWorld</title>
+
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%; margin: 0; overflow: hidden;
+    }
+    body {
+      background: radial-gradient(ellipse at 30% 20%, rgba(70,72,212,0.04) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 80%, rgba(129,39,207,0.03) 0%, transparent 60%),
+                  var(--color-background);
+      display: flex; flex-direction: column;
+    }
+
+    /* ── Sticky Header ── */
+    .editor-header {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      border-bottom: 1px solid var(--divider-line);
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position: sticky; top: 0; z-index: 10;
+      flex-shrink: 0;
+    }
+
+    /* ── Flex body: asset panel + editor ── */
+    .canvas-body { flex: 1; display: flex; min-height: 0; position: relative; }
+
+    /* ── Left Asset Panel ── */
+    .asset-panel {
+      width: 260px; flex-shrink: 0;
+      border-right: 1px solid var(--divider-line);
+      padding: var(--space-sm);
+      display: flex; flex-direction: column; gap: 4px;
+      overflow-y: auto;
+      transition: width 0.25s, padding 0.25s, border 0.25s;
+    }
+    .asset-panel.collapsed {
+      width: 0; padding: 0; border-right: none;
+      overflow: hidden;
+    }
+    /* Toggle button pinned to the panel's right edge */
+    .asset-panel-toggle {
+      position: absolute; left: 266px; top: 8px;
+      z-index: 10;
+      width: 22px; height: 44px;
+      border: 1px solid var(--divider-line-strong);
+      border-left: none; border-radius: 0 6px 6px 0;
+      background: var(--color-surface-container);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--color-outline);
+      transition: left 0.25s;
+    }
+    .asset-panel.collapsed + .asset-panel-toggle { left: 6px; border-left: 1px solid var(--divider-line-strong); border-radius: 6px; }
+
+    /* ── Scrollable Content Area ── */
+    .editor-body {
+      flex: 1; overflow: auto;
+      padding: var(--space-lg) var(--space-md);
+    }
+
+    /* ── Title Input (Notion-style: large, borderless) ── */
+    .title-input {
+      border: none; background: transparent;
+      font-size: var(--fs-headline-lg); font-weight: 800;
+      font-family: var(--font-family); color: var(--color-on-surface);
+      padding: 8px 0; outline: none; width: 100%;
+      margin-bottom: var(--space-sm);
+    }
+    .title-input::placeholder {
+      color: var(--color-outline); opacity: 0.35; font-weight: 400;
+    }
+
+    /* ── Grid Canvas ── */
+    .grid-controls {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 0 10px 0; flex-shrink: 0;
+    }
+    .grid-controls .col-btn {
+      padding: 2px 10px; border-radius: var(--radius-sm); border: 1px solid var(--divider-line);
+      background: transparent; cursor: pointer; font-size: 12px; font-family: var(--font-family);
+      color: var(--color-outline); transition: all 0.12s;
+    }
+    .grid-controls .col-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+    .grid-controls .col-btn:hover:not(.active) { border-color: var(--color-primary); color: var(--color-primary); }
+
+    .grid-canvas {
+      --grid-cols: 36; --cell-size: 24px;
+      display: grid;
+      grid-template-columns: repeat(var(--grid-cols), var(--cell-size));
+      grid-auto-rows: var(--cell-size);
+      gap: 2px;
+      min-height: 500px;
+      position: relative;
+      border-radius: var(--radius-md);
+      background-color: var(--color-surface-container-lowest);
+      background-image:
+        linear-gradient(to right, var(--divider-line) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--divider-line) 1px, transparent 1px);
+      background-size: calc(var(--cell-size) + 2px) calc(var(--cell-size) + 2px);
+      background-position: 0 0;
+      opacity: 0.35;
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+    .grid-canvas:hover { opacity: 0.55; }
+
+    /* ── Paragraph Blocks — text-box style, stacked in reading order ──
+       Each paragraph is an independently positioned contenteditable block.
+       The layout engine (layoutText) stacks them vertically; a card covering
+       ≥80% of a paragraph's area makes that paragraph TRANSLATE as a whole
+       (side first if it fits, else the nearer vertical gap). */
+    .para {
+      position: absolute;
+      z-index: 0;
+      display: block;
+      font-size: 14px; line-height: 1.6;
+      font-family: var(--font-family);
+      color: var(--color-on-surface);
+      background: transparent; border: none;
+      outline: none; cursor: text;
+      white-space: pre-wrap; word-break: break-word;
+      padding: 2px 4px;
+      box-sizing: border-box;
+      caret-color: var(--color-primary);
+      min-height: 22px;
+    }
+    /* Invisible float reserving a card's box inside a paragraph's text flow.
+       Positioned with margins + shape-outside (explicit border-box reference)
+       at the card's pixel box (paragraph-local), so text wraps around the
+       card on BOTH sides — Word "square" wrapping.
+       NOTE: without "border-box" the shape would default to the margin box
+       (paragraph edge → card), forcing text onto a single side. */
+    .text-spacer {
+      pointer-events: none;
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+    /* Invisible padding newlines that push a card's wrap anchor down to the
+       card's band when the card's band sits below the paragraph's text end
+       (like the blank lines you'd press Enter for in Word). Stripped out on
+       save. */
+    .text-pad {
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* ── Grid Card (assets overlay) ── */
+    .grid-card {
+      --card-radius: 8px;
+      --card-border-style: solid;
+      --card-border-color: var(--divider-line-strong);
+      --card-border-width: 2px;
+      --card-bg-color: var(--card-bg);
+      position: absolute;
+      overflow: hidden;
+      border-radius: var(--card-radius);
+      border: var(--card-border-width) var(--card-border-style) var(--card-border-color);
+      background: var(--card-bg-color);
+      cursor: grab; user-select: none;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.15s, border-color 0.15s;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 1;
+    }
+    .grid-card:hover { box-shadow: var(--shadow-md); border-color: var(--color-primary); }
+    .grid-card.selected {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-fixed-dim);
+    }
+    .grid-card.dragging { cursor: grabbing; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
+    .grid-card.cell-highlight::after {
+      content: ''; position: absolute; inset: 0;
+      background: var(--color-primary-fixed); opacity: 0.6; pointer-events: none; z-index: 1;
+    }
+
+    /* ── Grid Card Content ── */
+    .grid-card .card-icon {
+      font-size: 32px; color: var(--color-primary); opacity: 0.7;
+      flex-shrink: 0; pointer-events: none;
+    }
+    .grid-card .card-label {
+      font-size: 11px; font-weight: 500;
+      border: 1px solid transparent; background: transparent;
+      color: var(--color-on-surface);
+      outline: none; font-family: var(--font-family);
+      text-align: center; min-width: 30px; max-width: 90%;
+      border-radius: var(--radius-xs); padding: 2px 6px;
+      transition: border-color 0.15s, background 0.15s;
+      cursor: text; pointer-events: none;
+    }
+    .grid-card.editing-label .card-label { pointer-events: auto; }
+    .grid-card .card-stripes,
+    .grid-card .card-img-bg { pointer-events: none; }
+    .grid-card .card-label:focus {
+      border-color: var(--color-primary);
+      background: var(--card-bg);
+    }
+    .grid-card .card-text-content {
+      width: 100%; height: 100%;
+      border: none; background: transparent;
+      font-size: 13px; font-family: var(--font-family);
+      color: var(--color-on-surface); line-height: 1.5;
+      overflow-y: auto; outline: none;
+      padding: 8px; cursor: text; user-select: text;
+    }
+    .grid-card .card-text-content:empty::before {
+      content: 'Type…'; color: var(--color-outline); opacity: 0.3;
+    }
+    .grid-card .card-stripes {
+      width: 100%; height: 100%; display: flex; flex-direction: column;
+      border-radius: inherit; overflow: hidden; position: absolute; inset: 0; z-index: 0;
+    }
+    .grid-card .card-img-bg {
+      position: absolute; inset: 0; z-index: 0;
+      width: 100%; height: 100%; object-fit: cover; border-radius: inherit;
+    }
+    .grid-card.has-bg-img .card-label,
+    .grid-card.has-stripes .card-label {
+      position: relative; z-index: 1;
+      background: rgba(0,0,0,0.35); color: #fff; border-radius: var(--radius-xs);
+      border-color: transparent;
+    }
+    .grid-card.has-bg-img .card-icon,
+    .grid-card.has-stripes .card-icon {
+      position: relative; z-index: 1; color: #fff; opacity: 0.9;
+    }
+
+    /* ── Context Menu ── */
+    .context-menu {
+      position: fixed; z-index: 200;
+      background: var(--modal-bg, var(--card-bg));
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--divider-line-strong);
+      box-shadow: var(--shadow-lg);
+      min-width: 220px; padding: 4px 0;
+      display: none;
+    }
+    .context-menu.active { display: block; }
+    .context-menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 16px; cursor: pointer;
+      font-size: 13px; font-family: var(--font-family);
+      border: none; background: transparent; width: 100%;
+      text-align: left; color: var(--color-on-surface);
+      transition: background 0.1s;
+    }
+    .context-menu-item:hover { background: var(--color-surface-container-low); }
+    .context-menu-item .material-symbols-outlined {
+      font-size: 18px; color: var(--color-outline); flex-shrink: 0;
+    }
+    .context-menu-item.danger { color: var(--color-error); }
+    .context-menu-item.danger .material-symbols-outlined { color: var(--color-error); }
+    .context-menu-divider {
+      border-top: 1px solid var(--divider-line); margin: 4px 0;
+    }
+
+    /* ── Radius Popover ── */
+    .radius-popover {
+      position: fixed; z-index: 201;
+      background: var(--card-bg); border-radius: var(--radius-md);
+      border: 1px solid var(--divider-line-strong);
+      box-shadow: var(--shadow-lg); padding: 12px 16px; min-width: 240px;
+      display: none;
+    }
+    .radius-popover.active { display: block; }
+
+    /* ── Flag Source Modal ── */
+    .flag-source-options {
+      display: flex; gap: var(--space-md); margin-top: var(--space-md);
+    }
+    .flag-source-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      gap: var(--space-sm); padding: var(--space-lg) var(--space-md);
+      border-radius: var(--radius-lg); border: 2px dashed var(--divider-line-strong);
+      background: var(--color-surface-container-low);
+      cursor: pointer; text-align: center; transition: all 0.15s;
+      font-family: var(--font-family); color: var(--color-on-surface);
+    }
+    .flag-source-btn:hover {
+      border-color: var(--color-primary);
+      background: var(--color-primary-fixed);
+    }
+    .flag-source-btn .material-symbols-outlined {
+      font-size: 40px; color: var(--color-primary);
+    }
+    .flag-source-btn .source-title {
+      font-weight: 600; font-size: var(--fs-body-md);
+    }
+    .flag-source-btn .source-desc {
+      font-size: var(--fs-label-sm); color: var(--color-outline);
+    }
+
+    /* ── Flag Browser Modal ── */
+    .flag-browser-tabs {
+      display: flex; gap: 0; margin-bottom: var(--space-md);
+      border-bottom: 2px solid var(--divider-line);
+    }
+    .flag-browser-tab {
+      padding: 8px 20px; border: none; background: transparent;
+      font-size: var(--fs-label-md); font-weight: 600; font-family: var(--font-family);
+      color: var(--color-outline); cursor: pointer; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; transition: all 0.15s;
+    }
+    .flag-browser-tab.active {
+      color: var(--color-primary);
+      border-bottom-color: var(--color-primary);
+    }
+    .flag-search-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: var(--radius-full);
+      border: 1px solid var(--divider-line-strong);
+      background: var(--input-bg); margin-bottom: var(--space-md);
+    }
+    .flag-search-bar input {
+      flex: 1; border: none; background: transparent; outline: none;
+      font-size: var(--fs-label-md); font-family: var(--font-family);
+      color: var(--color-on-surface);
+    }
+    .flag-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: var(--space-sm); max-height: 320px; overflow-y: auto;
+    }
+    .flag-card-item {
+      border-radius: var(--radius-md); overflow: hidden;
+      border: 2px solid var(--divider-line); cursor: pointer;
+      transition: all 0.15s; background: var(--color-surface-container-low);
+    }
+    .flag-card-item:hover {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 2px var(--color-primary-fixed-dim);
+    }
+    .flag-card-item.selected {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-fixed);
+    }
+    .flag-card-item .flag-thumb {
+      width: 100%; height: 80px; object-fit: cover; display: block;
+      background: var(--color-surface-container);
+    }
+    .flag-card-item .flag-thumb-placeholder {
+      width: 100%; height: 80px; display: flex; align-items: center;
+      justify-content: center; font-size: 32px;
+      background: var(--color-surface-container);
+    }
+    .flag-card-item .flag-name {
+      padding: 6px 8px; font-size: 11px; font-weight: 500;
+      color: var(--color-on-surface); text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* ── Asset card drag state ── */
+    .asset-panel .card.dragging {
+      opacity: 0.4;
+    }
+    .asset-panel .card[draggable="true"] {
+      cursor: grab;
+    }
+    .asset-panel .card[draggable="true"]:active {
+      cursor: grabbing;
+    }
+
+    /* ── Status Bar ── */
+    .editor-statusbar {
+      display: flex; align-items: center; gap: var(--space-md);
+      padding: 4px var(--space-md);
+      border-top: 1px solid var(--divider-line);
+      background: var(--color-surface-container-lowest);
+      font-size: var(--fs-label-sm); color: var(--color-outline);
+      flex-shrink: 0;
+    }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--color-inverse-surface); color: var(--color-inverse-on-surface);
+      padding: 10px 24px; border-radius: var(--radius-full);
+      font-size: var(--fs-label-md); font-weight: 500; z-index: 999;
+      box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(-8px); }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .editor-body { padding: var(--space-md) var(--space-sm); }
+      .title-input { font-size: var(--fs-headline-md); }
+    }
+
+    /* ── Selection Toolbar (appears when text is selected) ── */
+    .sel-toolbar {
+      position: fixed; z-index: 250;
+      display: none; align-items: center; gap: 4px;
+      padding: 4px 8px; border-radius: 8px;
+      background: var(--color-surface-container-high);
+      border: 1px solid var(--divider-line-strong);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      transform: translate(-50%, -120%);
+      white-space: nowrap;
+      pointer-events: auto;
+    }
+    .sel-toolbar.visible { display: flex; }
+    .sel-toolbar button {
+      display: flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border: none; border-radius: 6px;
+      background: var(--color-primary); color: #fff;
+      font-size: 13px; cursor: pointer;
+      font-family: var(--font-family);
+    }
+    .sel-toolbar button:hover { opacity: 0.85; }
+
+    /* ── Viewport Preset Buttons ── */
+    .vp-presets { display: flex; gap: 2px; align-items: center; margin-right: 12px; }
+    .vp-presets .vp-btn {
+      padding: 4px 10px; border: 1px solid var(--divider-line-strong);
+      background: transparent; color: var(--color-outline);
+      font-size: 12px; font-family: var(--font-family);
+      cursor: pointer; border-radius: 4px;
+      white-space: nowrap; transition: all 0.12s;
+    }
+    .vp-presets .vp-btn:first-child { border-radius: 6px 0 0 6px; }
+    .vp-presets .vp-btn:last-child { border-radius: 0 6px 6px 0; }
+    .vp-presets .vp-btn:not(:first-child) { border-left: none; }
+    .vp-presets .vp-btn.active {
+      background: var(--color-primary); color: #fff;
+      border-color: var(--color-primary);
+    }
+    .vp-presets .vp-btn:hover:not(.active) {
+      background: var(--color-primary-fixed); color: var(--color-primary);
+    }
+    .vp-presets .vp-label {
+      font-size: 11px; color: var(--color-outline);
+      margin-right: 6px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="editor-header">
+  <a href="dashboard.html" class="btn btn-ghost btn-icon btn-sm" title="Back to Dashboard">
+    <span class="material-symbols-outlined">arrow_back</span>
+  </a>
+  <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:22px">article</span>
+  <span style="font-weight:700;font-size:var(--fs-body-md)">Article Editor</span>
+  <span class="badge badge-secondary" id="headerStatus">Draft</span>
+  <span style="flex:1"></span>
+  <span class="label-sm" style="color:var(--color-outline)" id="lastSavedLabel"></span>
+  <button class="btn btn-outline btn-sm" onclick="openModal('historyModal')">
+    <span class="material-symbols-outlined">history</span> History
+  </button>
+  <button class="btn btn-outline btn-sm" onclick="openModal('tagsModal')">
+    <span class="material-symbols-outlined">sell</span> Tags
+  </button>
+  <button class="btn btn-outline btn-sm" onclick="saveDraft()">
+    <span class="material-symbols-outlined">save</span> Save Draft
+  </button>
+  <button class="btn btn-primary btn-sm" onclick="publishArticle()">
+    <span class="material-symbols-outlined">publish</span> Publish
+  </button>
+</div>
+
+<!-- ═══ MAIN BODY: asset panel + editor ═══ -->
+<div class="canvas-body">
+
+  <!-- Left Asset Panel -->
+  <button class="asset-panel-toggle" onclick="toggleAssetPanel()" title="Toggle asset panel">◂</button>
+  <div class="asset-panel custom-scrollbar">
+    <div class="search-capsule" style="width:100%;margin-bottom:var(--space-sm)">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" placeholder="Filter assets..." oninput="filterAssets(this.value)">
+    </div>
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em">Identity</div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="flag" data-label="National Flag"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">flag</span><span class="label-md">National Flag</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="shield" data-label="Emblem"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">shield</span><span class="label-md">Emblem</span></div></div>
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">Geography</div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="map" data-label="Territorial Map"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">map</span><span class="label-md">Territorial Map</span></div></div>
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">Politics & Economy</div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="account_balance" data-label="Governance"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">account_balance</span><span class="label-md">Governance</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="payments" data-label="Economic Ledger"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">payments</span><span class="label-md">Economic Ledger</span></div></div>
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">Content</div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="menu_book" data-label="Constitution"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">menu_book</span><span class="label-md">Constitution</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="history_edu" data-label="Timeline"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">history_edu</span><span class="label-md">Timeline</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="image" data-label="Gallery"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">image</span><span class="label-md">Gallery</span></div></div>
+  </div>
+
+  <!-- ═══ EDITOR BODY (grid canvas) ═══ -->
+  <div class="editor-body custom-scrollbar">
+    <input type="text" class="title-input" id="titleInput" placeholder="Article Title" oninput="onContentChange()">
+    <div class="grid-controls">
+      <span class="label-sm" style="color:var(--color-outline)">Cols:</span>
+      <button class="col-btn" onclick="setGridColumns(24)">24</button>
+      <button class="col-btn active" onclick="setGridColumns(36)">36</button>
+      <button class="col-btn" onclick="setGridColumns(48)">48</button>
+      <button class="col-btn" onclick="setGridColumns(60)">60</button>
+      <span class="label-sm" style="color:var(--color-outline);margin-left:4px">Cell:</span>
+      <button class="col-btn" onclick="setCellSize(16)">16px</button>
+      <button class="col-btn active" onclick="setCellSize(24)">24px</button>
+      <button class="col-btn" onclick="setCellSize(32)">32px</button>
+      <button class="col-btn" onclick="setCellSize(40)">40px</button>
+      <button class="col-btn" onclick="setCellSize(60)">60px</button>
+      <span style="flex:1"></span>
+      <span class="vp-label">Viewport:</span>
+      <div class="vp-presets" id="vpPresets">
+        <button class="vp-btn active" data-preset="169" onclick="switchPreset('169')">16:9</button>
+        <button class="vp-btn" data-preset="half" onclick="switchPreset('half')">½ 16:9</button>
+        <button class="vp-btn" data-preset="tablet" onclick="switchPreset('tablet')">Tablet</button>
+        <button class="vp-btn" data-preset="mobile" onclick="switchPreset('mobile')">Mobile</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="showTemplateLibrary()">
+        <span class="material-symbols-outlined">dashboard_customize</span> Templates
+      </button>
+    </div>
+    <div class="grid-canvas" id="gridCanvas" style="--grid-cols:36;--cell-size:24px"></div>
+  </div>
+
+</div><!-- end canvas-body -->
+
+<!-- ═══ SELECTION TOOLBAR ═══ -->
+<div class="sel-toolbar" id="selToolbar">
+  <button onclick="createCardFromSelection()">
+    <span class="material-symbols-outlined" style="font-size:16px">add</span>
+    Create Card
+  </button>
+</div>
+
+<!-- ═══ STATUS BAR ═══ -->
+<div class="editor-statusbar">
+  <span id="wordCount">0 words</span>
+  <span style="opacity:0.4">|</span>
+  <span id="charCount">0 characters</span>
+  <span style="flex:1"></span>
+  <span id="saveStatus">Ready</span>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══ MODALS ═══ -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeAllModals()"></div>
+
+<!-- History Modal -->
+<div class="modal-container" id="historyModal">
+  <div class="modal-card" id="historyCard">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md">Version History</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px" id="historyList">
+      <div class="card" style="padding:var(--space-sm)"><span style="font-weight:600">v3</span> <span class="label-sm" style="color:var(--color-outline)">Today — Added territorial data &amp; revised Article II</span></div>
+      <div class="card" style="padding:var(--space-sm)"><span style="font-weight:600">v2</span> <span class="label-sm" style="color:var(--color-outline)">Yesterday — Expanded founding narrative</span></div>
+      <div class="card" style="padding:var(--space-sm)"><span style="font-weight:600">v1</span> <span class="label-sm" style="color:var(--color-outline)">Mar 15, 2024 — Initial draft</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tags Modal -->
+<div class="modal-container" id="tagsModal">
+  <div class="modal-card" id="tagsCard">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md">Manage Tags</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:var(--space-sm)">
+      <input type="text" class="input-glass" placeholder="Add tag..." id="tagModalInput" onkeydown="if(event.key==='Enter'){addTagFromModal();event.preventDefault()}" style="flex:1">
+      <button class="btn btn-primary btn-sm" onclick="addTagFromModal()">Add</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap" id="tagModalList">
+      <span class="badge badge-primary">Sovereignty</span><span class="badge badge-secondary">Lore</span><span class="badge badge-success">Manifesto</span>
+      <span class="badge badge-warning">Economy</span><span class="badge badge-primary">Governance</span><span class="badge badge-secondary">Culture</span>
+    </div>
+    <button class="btn btn-primary btn-sm" style="margin-top:var(--space-md);width:100%" onclick="closeAllModals()">Apply Tags</button>
+  </div>
+</div>
+
+<!-- Flag Source Modal -->
+<div class="modal-container" id="flagSourceModal">
+  <div class="modal-card" id="flagSourceCard" style="max-width:520px">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md">Select Flag Source</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-sm)">Choose how you'd like to add a flag to this article.</p>
+    <div class="flag-source-options">
+      <button class="flag-source-btn" id="uploadFileBtn" onclick="document.getElementById('flagFileInput').click()">
+        <span class="material-symbols-outlined">upload_file</span>
+        <span class="source-title">Upload from file</span>
+        <span class="source-desc">Upload an image from your device</span>
+      </button>
+      <input type="file" id="flagFileInput" accept="image/*" style="display:none" onchange="handleFlagFileUpload(this)">
+      <button class="flag-source-btn" onclick="closeAllModals();openFlagBrowser()">
+        <span class="material-symbols-outlined">travel_explore</span>
+        <span class="source-title">Search within the platform</span>
+        <span class="source-desc">Browse flags uploaded by the community</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Flag Browser Modal -->
+<div class="modal-container" id="flagBrowserModal">
+  <div class="modal-card" id="flagBrowserCard" style="max-width:640px">
+    <div class="flex-between" style="margin-bottom:0">
+      <h3 class="headline-md">Browse Flags</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <!-- Tabs -->
+    <div class="flag-browser-tabs">
+      <button class="flag-browser-tab active" data-tab="search" onclick="switchFlagTab('search')">Search</button>
+      <button class="flag-browser-tab" data-tab="myflag" onclick="switchFlagTab('myflag')">My flag</button>
+    </div>
+    <!-- Search Bar -->
+    <div class="flag-search-bar">
+      <span class="material-symbols-outlined" style="color:var(--color-outline);font-size:18px">search</span>
+      <input type="text" placeholder="Search flags…" id="flagSearchInput" oninput="filterFlags()">
+    </div>
+    <!-- Flag Grid -->
+    <div class="flag-grid custom-scrollbar" id="flagGrid"></div>
+    <div class="flex-between" style="margin-top:var(--space-md)">
+      <span class="label-sm" style="color:var(--color-outline)" id="flagSelectCount">0 selected</span>
+      <button class="btn btn-primary btn-sm" onclick="confirmFlagSelection()">
+        <span class="material-symbols-outlined">check</span> Confirm Selection
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/transitions.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  // ══════════════════════════════════════════════════════════════════
+  //  FluidCanvas Editor v7 — paragraph blocks + dodge translation
+  //
+  //  Model:
+  //   • Text is a stack of natural PARAGRAPHS (text-box blocks), each a
+  //     contenteditable block laid out in reading order by the layout
+  //     engine. Enter splits a paragraph; Backspace/Delete merge.
+  //   • Cards float above the text at free pixel positions (Canva-style);
+  //     the grid is purely visual — the engine NEVER moves cards.
+  //   • Per paragraph × card, overlap ratio = shared area / paragraph
+  //     area. Below 80% the covered text wraps around the card via an
+  //     invisible float spacer (margins + shape-outside border-box at the
+  //     card's pixel box, paragraph-local), anchored by binary search over
+  //     character offsets — deterministic, no hit-testing.
+  //   • At ≥80% the paragraph TRANSLATES as a whole (no reflow) to the
+  //     nearest free position: beside the card (left/right) if the
+  //     paragraph fits, otherwise above/below — whichever gap is nearer.
+  //     Following paragraphs cascade below the final box. Move the card
+  //     away (or delete it) and the paragraph returns to its natural
+  //     stacked position on the next layout pass.
+  //   • Draft v6: paragraphs[] of HTML; legacy v1–v5 text is migrated by
+  //     splitting on newlines / block boundaries.
+  // ══════════════════════════════════════════════════════════════════
+
+  // ── DOM refs ──
+  var titleInput = document.getElementById('titleInput');
+  var gridCanvas = document.getElementById('gridCanvas');
+  var wordCountEl = document.getElementById('wordCount');
+  var charCountEl = document.getElementById('charCount');
+  var saveStatusEl = document.getElementById('saveStatus');
+  var lastSavedLabel = document.getElementById('lastSavedLabel');
+  var headerStatus = document.getElementById('headerStatus');
+  var tagModalList = document.getElementById('tagModalList');
+  var tagModalInput = document.getElementById('tagModalInput');
+  // Lazy refs — the context menu / popovers come later in the DOM than this
+  // script, so resolve them at call time instead of load time.
+  function getContextMenu() { return document.getElementById('contextMenu'); }
+  function getRadiusPopover() { return document.getElementById('radiusPopover'); }
+
+  var lastSavedContent = '';
+  var autoSaveTimer = null;
+  var selectedCard = null;
+  var cardIdCounter = 0;
+  var suppressWrapSync = false;   // true while loadDraft restores cards
+  var composing = false;          // true during IME composition (中文输入)
+  var wrapSyncErrorLogged = false; // logged once if syncParaWraps throws
+
+  // Composition events bubble from any contenteditable. Document-level
+  // listeners keep `composing` correct even if the paragraph that started
+  // the composition is replaced or removed mid-composition — per-paragraph
+  // listeners would be lost with the element and freeze layout forever.
+  document.addEventListener('compositionstart', function () { composing = true; });
+  document.addEventListener('compositionend', function () {
+    composing = false;
+    try { layoutText(); } catch (err) { console.error('[FluidCanvas] layout:', err); }
+  });
+
+  // ── Layout constants ──
+  var PARA_PAD_X = 4;   // .para horizontal padding
+  var PARA_PAD_Y = 2;   // .para vertical padding
+  var OVERLAP_TRIGGER = 0.8;  // card covers ≥80% of a paragraph's area → dodge
+  var DODGE_GAP = 8;          // clearance between a translated paragraph and the card
+
+  // ── Grid Helpers ──
+  function getAllCards() {
+    return Array.from(gridCanvas.querySelectorAll('.grid-card'));
+  }
+
+  function getNextCardId() {
+    return 'c' + (++cardIdCounter);
+  }
+
+  function getCellSize() {
+    return parseInt(getComputedStyle(gridCanvas).getPropertyValue('--cell-size').trim()) || 100;
+  }
+
+  function getGridCols() {
+    return currentCols || parseInt(getComputedStyle(gridCanvas).getPropertyValue('--grid-cols').trim()) || 24;
+  }
+
+  function getCardFingerprint() {
+    var parts = [titleInput.value];
+    getAllParagraphs().forEach(function (p) {
+      parts.push(p.innerHTML);
+      parts.push(p.style.left || '0', p.style.top || '0');
+    });
+    getAllCards().forEach(function (c) {
+      parts.push(c.dataset.cardType);
+      parts.push(c.dataset.cardId);
+      var label = c.querySelector('.card-label');
+      if (label) parts.push(label.value);
+      parts.push(c.style.borderRadius, c.style.background, c.style.borderStyle);
+      parts.push(c.dataset.rotate || '0');
+    });
+    return parts.join('|||');
+  }
+
+  function updateWordCount() {
+    var total = '';
+    getAllParagraphs().forEach(function (p) {
+      // Skip .text-pad newlines — they are invisible wrap padding, not text
+      var walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+      var cur;
+      while ((cur = walker.nextNode())) {
+        if (cur.parentElement && cur.parentElement.classList.contains('text-pad')) continue;
+        total += cur.nodeValue;
+      }
+    });
+    total = total.trim();
+    wordCountEl.textContent = (total ? total.split(/\s+/).length : 0) + ' words';
+    charCountEl.textContent = total.length + ' characters';
+  }
+
+  function getOccupiedCells() {
+    return getOccupiedCellsWithRotation();
+  }
+
+  function findFreeCell(spanW, spanH) {
+    var cols = getGridCols();
+    var occupied = getOccupiedCells();
+    for (var r = 1; r < 50; r++) {
+      for (var c = 1; c <= cols - spanW + 1; c++) {
+        var free = true;
+        for (var dr = 0; dr < spanH && free; dr++) {
+          for (var dc = 0; dc < spanW && free; dc++) {
+            if (occupied[(c + dc) + ',' + (r + dr)]) free = false;
+          }
+        }
+        if (free) return { col: c, row: r };
+      }
+    }
+    return { col: 1, row: 1 };
+  }
+
+  function snapToGrid(clientX, clientY) {
+    var rect = gridCanvas.getBoundingClientRect();
+    var cs = getCellSize();
+    var gap = 2;
+    var x = clientX - rect.left;
+    var y = clientY - rect.top;
+    var col = Math.max(1, Math.floor(x / (cs + gap)) + 1);
+    var row = Math.max(1, Math.floor(y / (cs + gap)) + 1);
+    var cols = getGridCols();
+    if (col > cols) col = cols;
+    return { col: col, row: row };
+  }
+
+  function getOccupiedCellsWithRotation() {
+    var map = {};
+    getAllCards().forEach(function (c) {
+      var col = parseFloat(c.dataset.col) || 1;
+      var row = parseFloat(c.dataset.row) || 1;
+      var spanW = parseFloat(c.dataset.colSpan) || 4;
+      var spanH = parseFloat(c.dataset.rowSpan) || 3;
+      var rotate = parseFloat(c.dataset.rotate) || 0;
+      var margin = 0;
+      if (rotate !== 0) {
+        var rad = Math.abs(rotate) * Math.PI / 180;
+        var w = spanW * getCellSize();
+        var h = spanH * getCellSize();
+        var bboxW = Math.abs(w * Math.cos(rad)) + Math.abs(h * Math.sin(rad));
+        var bboxH = Math.abs(w * Math.sin(rad)) + Math.abs(h * Math.cos(rad));
+        margin = Math.ceil(Math.max(bboxW - w, bboxH - h) / getCellSize() / 2);
+      }
+      var cs = Math.floor(col) - margin;
+      var rs = Math.floor(row) - margin;
+      var ce = Math.ceil(col + spanW) + margin;
+      var re = Math.ceil(row + spanH) + margin;
+      for (var rr = rs; rr < re; rr++) {
+        for (var cc = cs; cc < ce; cc++) {
+          if (cc >= 1 && rr >= 1) map[cc + ',' + rr] = true;
+        }
+      }
+    });
+    return map;
+  }
+
+  // ── Card positioning ──
+  // Cards are free-floating (Canva-style): position is stored in pixels and
+  // the grid never constrains them. Cell coords are kept as derived display
+  // data (and for legacy drafts). positionCard() is used when a card is
+  // created from the grid (asset drop / selection), moveCardPx() for free
+  // pixel movement.
+  function positionCard(card, col, row, spanW, spanH) {
+    var cs = getCellSize();
+    var gap = 2;
+    card.dataset.col = col;
+    card.dataset.row = row;
+    card.dataset.colSpan = spanW;
+    card.dataset.rowSpan = spanH;
+    moveCardPx(card, (col - 1) * (cs + gap), (row - 1) * (cs + gap));
+    card.style.width = (spanW * cs + (spanW - 1) * gap) + 'px';
+    card.style.height = (spanH * cs + (spanH - 1) * gap) + 'px';
+    layoutText();
+  }
+
+  function moveCardPx(card, x, y) {
+    card.dataset.x = x;
+    card.dataset.y = y;
+    card.style.left = x + 'px';
+    card.style.top = y + 'px';
+    // Derived cells — display / legacy draft compat only
+    var cs = getCellSize();
+    var gap = 2;
+    card.dataset.col = Math.max(1, Math.round(x / (cs + gap)) + 1);
+    card.dataset.row = Math.max(1, Math.round(y / (cs + gap)) + 1);
+  }
+
+  function positionCardSilent(card, col, row, spanW, spanH) {
+    var cs = getCellSize();
+    var gap = 2;
+    card.dataset.col = col;
+    card.dataset.row = row;
+    card.dataset.colSpan = spanW;
+    card.dataset.rowSpan = spanH;
+    var x = (col - 1) * (cs + gap);
+    var y = (row - 1) * (cs + gap);
+    card.style.left = x + 'px';
+    card.style.top = y + 'px';
+    card.style.width = (spanW * cs + (spanW - 1) * gap) + 'px';
+    card.style.height = (spanH * cs + (spanH - 1) * gap) + 'px';
+    // Keep pixel position data in sync — drafts save x/y, not col/row
+    card.dataset.x = x;
+    card.dataset.y = y;
+  }
+
+  function repositionAllCards() {
+    getAllCards().forEach(function (card) {
+      if (card.dataset.x != null) {
+        moveCardPx(card, parseFloat(card.dataset.x), parseFloat(card.dataset.y));
+      } else {
+        positionCard(card,
+          parseInt(card.dataset.col) || 1,
+          parseInt(card.dataset.row) || 1,
+          parseInt(card.dataset.colSpan) || 4,
+          parseInt(card.dataset.rowSpan) || 3
+        );
+      }
+    });
+  }
+
+  // ── Paragraph System ──
+  var totalRows = 100;
+
+  function getAllParagraphs() {
+    return Array.from(gridCanvas.querySelectorAll('.para'));
+  }
+
+  function createParagraph(html, refPara) {
+    var p = document.createElement('div');
+    p.className = 'para';
+    p.contentEditable = 'true';
+    if (html != null) p.innerHTML = sanitizeDraftHtml(html);
+    wireParagraph(p);
+    if (refPara && refPara.nextSibling) gridCanvas.insertBefore(p, refPara.nextSibling);
+    else gridCanvas.appendChild(p);
+    return p;
+  }
+
+  function wireParagraph(p) {
+    p.addEventListener('input', function () {
+      onContentChange();
+      try { layoutText(); } catch (err) { console.error('[FluidCanvas] layout:', err); }
+    });
+    p.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveDraft(); }
+      // Paragraph editing: Enter splits, Backspace/Delete merge. Never
+      // interfere during IME composition (Chinese input).
+      else if (!composing && e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        splitParagraphAtCaret(p);
+      } else if (!composing && e.key === 'Backspace' && caretAtParaStart(p)) {
+        e.preventDefault();
+        mergeParagraphBack(p);
+      } else if (!composing && e.key === 'Delete' && caretAtParaEnd(p)) {
+        e.preventDefault();
+        mergeParagraphForward(p);
+      }
+    });
+    p.addEventListener('click', function () { deselectAll(); hideContextMenu(); });
+    p.addEventListener('dragover', function (e) { e.preventDefault(); });
+    p.addEventListener('drop', function (e) { e.preventDefault(); });
+  }
+
+  function closestPara(node) {
+    var el = node && node.nodeType === 1 ? node : (node && node.parentElement);
+    while (el && el !== gridCanvas) {
+      if (el.classList && el.classList.contains('para')) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  // ── Per-paragraph character-index utilities (v6 machinery, scoped to a
+  // paragraph root; spacers/pads contribute no characters) ──
+  function paraTextCharLength(p) {
+    var n = 0;
+    var walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+    var cur;
+    while ((cur = walker.nextNode())) n += cur.nodeValue.length;
+    return n;
+  }
+
+  function paraLocateCharIndex(p, target) {
+    var walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+    var cur;
+    var idx = 0;
+    while ((cur = walker.nextNode())) {
+      if (target <= idx + cur.nodeValue.length) {
+        return { node: cur, offset: Math.max(0, target - idx) };
+      }
+      idx += cur.nodeValue.length;
+    }
+    return { node: p, offset: p.childNodes.length };
+  }
+
+  function paraCharIndexAt(p, node, offset) {
+    var idx = 0;
+    var walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+    var cur;
+    while ((cur = walker.nextNode())) {
+      if (cur === node) return idx + offset;
+      idx += cur.nodeValue.length;
+    }
+    return idx;
+  }
+
+  function paraCharOffsetRange(p, k) {
+    var pos = paraLocateCharIndex(p, k);
+    var range = document.createRange();
+    range.setStart(pos.node, pos.offset);
+    range.collapse(true);
+    return range;
+  }
+
+  // ── Paragraph editing: split / merge ──
+  function splitParagraphAtCaret(p) {
+    var sel = window.getSelection();
+    if (!sel.rangeCount || !sel.isCollapsed) return;
+    var r = sel.getRangeAt(0);
+    if (!p.contains(r.startContainer)) return;
+    var k = paraCharIndexAt(p, r.startContainer, r.startOffset);
+    var total = paraTextCharLength(p);
+    var first = '', second = '';
+    if (k <= 0) { second = p.innerHTML; first = ''; }
+    else if (k >= total) { first = p.innerHTML; second = ''; }
+    else {
+      var split = splitParaHtmlAt(p, k);
+      first = split.first;
+      second = split.second;
+    }
+    p.innerHTML = first;
+    var np = createParagraph(second, p);
+    onContentChange();
+    // Enter at the very start: the content moves down into the new paragraph
+    // and the caret stays in the (now empty) original one, Word-style.
+    focusParaAt(k <= 0 ? p : np, 0);
+    try { layoutText(); } catch (err) { console.error('[FluidCanvas] layout:', err); }
+  }
+
+  function splitParaHtmlAt(p, k) {
+    var pos = paraLocateCharIndex(p, k);
+    var r1 = document.createRange();
+    r1.setStart(p, 0);
+    r1.setEnd(pos.node, pos.offset);
+    var firstFrag = r1.cloneContents();
+    var r2 = document.createRange();
+    r2.setStart(pos.node, pos.offset);
+    var end = document.createRange();
+    end.selectNodeContents(p);
+    end.collapse(false);
+    r2.setEnd(end.endContainer, end.endOffset);
+    var secondFrag = r2.cloneContents();
+    var d1 = document.createElement('div');
+    d1.appendChild(firstFrag);
+    var d2 = document.createElement('div');
+    d2.appendChild(secondFrag);
+    return { first: d1.innerHTML, second: d2.innerHTML };
+  }
+
+  function mergeParagraphBack(p) {
+    var paras = getAllParagraphs();
+    var idx = paras.indexOf(p);
+    if (idx <= 0) return;
+    var prev = paras[idx - 1];
+    var joinAt = paraTextCharLength(prev);
+    prev.innerHTML = prev.innerHTML + p.innerHTML;
+    p.remove();
+    onContentChange();
+    focusParaAt(prev, joinAt);
+    try { layoutText(); } catch (err) { console.error('[FluidCanvas] layout:', err); }
+  }
+
+  function mergeParagraphForward(p) {
+    var paras = getAllParagraphs();
+    var idx = paras.indexOf(p);
+    if (idx < 0 || idx >= paras.length - 1) return;
+    var next = paras[idx + 1];
+    var joinAt = paraTextCharLength(p);
+    p.innerHTML = p.innerHTML + next.innerHTML;
+    next.remove();
+    onContentChange();
+    focusParaAt(p, joinAt);
+    try { layoutText(); } catch (err) { console.error('[FluidCanvas] layout:', err); }
+  }
+
+  function caretAtParaStart(p) {
+    var sel = window.getSelection();
+    if (!sel.rangeCount || !sel.isCollapsed) return false;
+    var r = sel.getRangeAt(0);
+    if (!p.contains(r.startContainer)) return false;
+    return paraCharIndexAt(p, r.startContainer, r.startOffset) === 0;
+  }
+
+  function caretAtParaEnd(p) {
+    var sel = window.getSelection();
+    if (!sel.rangeCount || !sel.isCollapsed) return false;
+    var r = sel.getRangeAt(0);
+    if (!p.contains(r.startContainer)) return false;
+    return paraCharIndexAt(p, r.startContainer, r.startOffset) >= paraTextCharLength(p);
+  }
+
+  function focusParaAt(p, k) {
+    var pos = paraLocateCharIndex(p, k);
+    var range = document.createRange();
+    range.setStart(pos.node, pos.offset);
+    range.collapse(true);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    p.focus();
+  }
+
+  // ── Save/restore the caret around spacer re-anchoring, by character index
+  // within the caret's paragraph, so the position survives text-node splits
+  // caused by spacer insertion (v6 pattern, scoped per paragraph) ──
+  function saveTextSelection() {
+    var sel = window.getSelection();
+    if (!sel.rangeCount) return null;
+    var r = sel.getRangeAt(0);
+    var p = closestPara(r.startContainer);
+    if (!p) return null;
+    if (p !== closestPara(r.endContainer)) return null; // cross-paragraph selection — leave alone
+    return {
+      para: p,
+      start: paraCharIndexAt(p, r.startContainer, r.startOffset),
+      end: paraCharIndexAt(p, r.endContainer, r.endOffset)
+    };
+  }
+
+  function restoreTextSelection(s) {
+    if (!s || !s.para || !gridCanvas.contains(s.para)) return;
+    var a = paraLocateCharIndex(s.para, s.start);
+    var b = paraLocateCharIndex(s.para, s.end);
+    var range = document.createRange();
+    range.setStart(a.node, a.offset);
+    range.setEnd(b.node, b.offset);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  // ── Card coverage ──
+  // Pixel bounding box each card covers (rotation-aware), clamped to canvas.
+  // Returns one entry per card, in getAllCards() order (zero-size cards are
+  // still represented as null so indexes stay aligned).
+  function getCardCoverage() {
+    var cs = getCellSize();
+    var gap = 2;
+    var cols = getGridCols();
+    var canvasW = cols * cs + (cols - 1) * gap;
+    var out = [];
+    getAllCards().forEach(function (c) {
+      var x = parseFloat(c.style.left) || 0;
+      var y = parseFloat(c.style.top) || 0;
+      var w = c.offsetWidth || parseFloat(c.style.width) || 0;
+      var h = c.offsetHeight || parseFloat(c.style.height) || 0;
+      if (!w || !h) { out.push(null); return; }
+      var rotate = parseFloat(c.dataset.rotate) || 0;
+      var bboxW = w, bboxH = h;
+      if (rotate !== 0) {
+        var rad = Math.abs(rotate) * Math.PI / 180;
+        bboxW = Math.abs(w * Math.cos(rad)) + Math.abs(h * Math.sin(rad));
+        bboxH = Math.abs(w * Math.sin(rad)) + Math.abs(h * Math.cos(rad));
+      }
+      var cx = x + w / 2, cy = y + h / 2;
+      out.push({
+        x1: Math.max(0, cx - bboxW / 2),
+        x2: Math.min(canvasW, cx + bboxW / 2),
+        y1: Math.max(0, cy - bboxH / 2),
+        y2: Math.min(totalRows * (cs + gap), cy + bboxH / 2)
+      });
+    });
+    return out;
+  }
+
+  // ── Overlap helpers (axis-aligned boxes, canvas coordinates) ──
+  function overlapArea(box, cov) {
+    var ox = Math.min(box.x + box.w, cov.x2) - Math.max(box.x, cov.x1);
+    var oy = Math.min(box.y + box.h, cov.y2) - Math.max(box.y, cov.y1);
+    return (ox > 0 && oy > 0) ? ox * oy : 0;
+  }
+
+  // ── Dodge translation ──
+  // Candidate free positions for a paragraph that a card heavily covers.
+  // A "gap" must be genuinely free: no intersection with ANY other card and
+  // no intersection with any paragraph already placed this pass — otherwise
+  // two translated paragraphs could land on top of each other.
+  //   • sides first (pure horizontal translation, y unchanged) — a side is
+  //     usable only when the paragraph fits beside the card. Full-width
+  //     paragraphs almost never fit, so vertical moves are the practical
+  //     norm (spec: sides only when there is room);
+  //   • otherwise vertical — the nearer of above/below;
+  //   • if no candidate is free, return null → the paragraph stays at its
+  //     natural spot and the wrap spacers keep the text clear of the card.
+  function findDodgePosition(box, cov, covs, triggerIdx, contentLeft, contentRight, finalRects) {
+    function free(candBox) {
+      var k, r;
+      for (k = 0; k < covs.length; k++) {
+        if (k === triggerIdx) continue;
+        if (overlapArea(candBox, covs[k]) > 1) return false;
+      }
+      for (r = 0; r < finalRects.length; r++) {
+        if (overlapArea(candBox, finalRects[r]) > 1) return false;
+      }
+      return true;
+    }
+    var rightX = cov.x2 + DODGE_GAP;
+    var leftX = cov.x1 - DODGE_GAP - box.w;
+    var sideCands = [];
+    if (rightX + box.w <= contentRight) sideCands.push({ x: rightX, y: box.y, side: 'right' });
+    if (leftX >= contentLeft) sideCands.push({ x: leftX, y: box.y, side: 'left' });
+    var freeSides = sideCands.filter(function (c) {
+      return free({ x: c.x, y: c.y, w: box.w, h: box.h });
+    });
+    if (freeSides.length) {
+      freeSides.sort(function (a, b) {
+        return Math.abs(a.x - box.x) - Math.abs(b.x - box.x); // nearer side wins
+      });
+      return freeSides[0];
+    }
+    var aboveY = cov.y1 - DODGE_GAP - box.h;
+    var belowY = cov.y2 + DODGE_GAP;
+    var aboveOk = aboveY >= PARA_PAD_Y &&
+      free({ x: box.x, y: aboveY, w: box.w, h: box.h });
+    var belowOk = free({ x: box.x, y: belowY, w: box.w, h: box.h });
+    if (aboveOk && belowOk) {
+      // Nearest vertical gap = least displacement from the natural spot
+      return (belowY - box.y >= box.y - aboveY)
+        ? { x: box.x, y: aboveY, side: 'above' }
+        : { x: box.x, y: belowY, side: 'below' };
+    }
+    if (aboveOk) return { x: box.x, y: aboveY, side: 'above' };
+    if (belowOk) return { x: box.x, y: belowY, side: 'below' };
+    return null;
+  }
+
+  // ── Layout engine ──
+  // Position pass: stack paragraphs in reading order; a paragraph whose
+  // natural stacked box is ≥80% covered by a card dodges (findDodgePosition).
+  // Wrap pass: sync the invisible float spacers inside each paragraph so
+  // covered text wraps around cards (Word square wrap). Alternate the two
+  // passes until stable — spacer reflow changes paragraph heights, which can
+  // shift the stack and knock other spacers out of alignment. Bounded
+  // iterations keep it deterministic and oscillation-free.
+  function layoutText() {
+    if (suppressWrapSync || composing) return;
+    var paras = getAllParagraphs();
+    if (!paras.length) return;
+    var guard = 0;
+    var moved, reanchored;
+    do {
+      moved = positionPass();
+      var saved = saveTextSelection();
+      try {
+        reanchored = syncParaWraps();
+      } catch (err) {
+        // One bad card/paragraph pair must never kill the whole layout —
+        // swallow, keep paragraphs positioned (positionPass already ran),
+        // report once so the self-check log still tells the truth.
+        if (!wrapSyncErrorLogged) { wrapSyncErrorLogged = true; console.error('[FluidCanvas] wrap sync failed:', err); }
+        reanchored = false;
+      }
+      restoreTextSelection(saved);
+      guard++;
+    } while ((moved || reanchored) && guard < 6);
+    growCanvasIfNeeded();
+    refreshCardZOrder();
+  }
+
+  function positionPass() {
+    var cs = getCellSize();
+    var gap = 2;
+    var cols = getGridCols();
+    var canvasW = cols * cs + (cols - 1) * gap;
+    var contentW = canvasW - PARA_PAD_X * 2;
+    var contentLeft = PARA_PAD_X;
+    var contentRight = contentLeft + contentW;
+    var cards = getAllCards();
+    var covs = getCardCoverage();
+    var paras = getAllParagraphs();
+    var moved = false;
+    var y = PARA_PAD_Y;
+    var finalRects = []; // final boxes of every paragraph placed so far this pass
+    paras.forEach(function (p) {
+      p.style.width = contentW + 'px';
+      var h = p.offsetHeight;
+      var box = { x: contentLeft, y: y, w: contentW, h: h };
+      var target = box;
+      for (var i = 0; i < cards.length; i++) {
+        var cov = covs[i];
+        if (!cov) continue;
+        if (overlapArea(box, cov) >= OVERLAP_TRIGGER * box.w * box.h) {
+          // First triggering card decides. The candidate must be free of all
+          // cards and of every paragraph placed so far; if no gap is free,
+          // the paragraph stays natural and the wrap spacers keep the text
+          // clear of the card.
+          target = findDodgePosition(box, cov, covs, i, contentLeft, contentRight, finalRects) || box;
+          break;
+        }
+      }
+      var curX = parseFloat(p.style.left) || contentLeft;
+      var curY = parseFloat(p.style.top) || y;
+      if (Math.abs(curX - target.x) > 0.5 || Math.abs(curY - target.y) > 0.5) moved = true;
+      // Always write — a fresh paragraph has no inline left/top yet, and
+      // syncParaWraps reads these to compute paragraph-local coordinates.
+      p.style.left = target.x + 'px';
+      p.style.top = target.y + 'px';
+      y = target.y + h;
+      finalRects.push({ x: target.x, y: target.y, w: box.w, h: h });
+    });
+    return moved;
+  }
+
+  function growCanvasIfNeeded() {
+    var cs = getCellSize();
+    var gap = 2;
+    var rowStep = cs + gap;
+    var paras = getAllParagraphs();
+    var bottom = 0;
+    if (paras.length) {
+      var last = paras[paras.length - 1];
+      bottom = (parseFloat(last.style.top) || 0) + last.offsetHeight;
+    }
+    if (bottom + 8 > totalRows * rowStep) {
+      totalRows += 10;
+      gridCanvas.style.height = (totalRows * rowStep) + 'px';
+    }
+  }
+
+  // ── Wrap sync (per paragraph × card) ──
+  // Keeps one invisible float spacer per card inside each paragraph the card
+  // intersects (below the 80% dodge threshold):
+  //   • cards are NEVER moved here — only the spacers are adjusted;
+  //   • drift-check: a spacer still covering the card's intersect band is
+  //     kept untouched, so plain typing never re-anchors anything;
+  //   • drifted / orphaned spacers are removed and re-anchored by binary
+  //     search over the paragraph's character offsets (deterministic).
+  function syncParaWraps() {
+    var cards = getAllCards();
+    var covs = getCardCoverage();
+    var paras = getAllParagraphs();
+    var canvasRect = gridCanvas.getBoundingClientRect();
+
+    // Orphaned spacers/pads whose card was deleted
+    var ids = {};
+    cards.forEach(function (c) { ids[c.dataset.cardId] = true; });
+    paras.forEach(function (p) {
+      p.querySelectorAll('.text-spacer, .text-pad').forEach(function (el) {
+        if (!ids[el.dataset.cardId]) el.remove();
+      });
+    });
+
+    var dirty = false;
+    var attempted = {};
+    paras.forEach(function (p, pi) {
+      var pTop = parseFloat(p.style.top) || 0;
+      var pLeft = parseFloat(p.style.left) || PARA_PAD_X;
+      var pW = p.offsetWidth;
+      var pH = p.offsetHeight;
+      cards.forEach(function (card, ci) {
+        var cov = covs[ci];
+        if (!cov) return;
+        var cardId = card.dataset.cardId;
+        // Vertical band intersection (paragraph may sit above/below the card)
+        var bandY1 = Math.max(cov.y1, pTop);
+        var bandY2 = Math.min(cov.y2, pTop + pH);
+        var xOverlap = Math.min(cov.x2, pLeft + pW) - Math.max(cov.x1, pLeft);
+        if (bandY2 - bandY1 < 2 || xOverlap < 2) {
+          // No meaningful intersection — drop any stale spacer for this card
+          var stale = p.querySelector('.text-spacer[data-card-id="' + cardId + '"]');
+          if (stale) {
+            stale.remove();
+            var stalePad = p.querySelector('.text-pad[data-card-id="' + cardId + '"]');
+            if (stalePad) stalePad.remove();
+            dirty = true;
+          }
+          return;
+        }
+        var key = pi + ':' + ci;
+        if (attempted[key]) return;
+        // Float side: whichever side of the card leaves more room
+        var isLeft = (cov.x1 - pLeft) >= (pLeft + pW - cov.x2);
+        if (paraSpacerAligned(p, cardId, cov, isLeft, bandY1, bandY2, canvasRect)) return;
+        attempted[key] = true;
+        var sp = p.querySelector('.text-spacer[data-card-id="' + cardId + '"]');
+        if (sp) sp.remove();
+        var pad = p.querySelector('.text-pad[data-card-id="' + cardId + '"]');
+        if (pad) pad.remove();
+        anchorParaSpacer(p, cardId, cov, isLeft, bandY1, bandY2, pLeft, pTop);
+        dirty = true;
+      });
+    });
+    return dirty;
+  }
+
+  // Does this paragraph's spacer for this card still cover the intersect
+  // band? Same float side, horizontal edge at the card's x1, band still
+  // overlapping the card's vertical range. Loose check so typing near a card
+  // doesn't re-anchor on every keystroke.
+  function paraSpacerAligned(p, cardId, cov, isLeft, bandY1, bandY2, canvasRect) {
+    var sp = p.querySelector('.text-spacer[data-card-id="' + cardId + '"]');
+    if (!sp) return false;
+    var sr = sp.getBoundingClientRect();
+    var sameSide = (sp.style.float !== 'right') === isLeft;
+    var top = sr.top - canvasRect.top;
+    var h = sr.height || parseFloat(sp.style.height) || 0;
+    var coversY = top < bandY2 - 2 && top + h > bandY1 + 2;
+    var coversX = Math.abs((sr.left - canvasRect.left) - cov.x1) < 2;
+    return sameSide && coversY && coversX;
+  }
+
+  // Insert the spacer for one card at the right spot in this paragraph's
+  // text. The insertion offset is found by binary search: the spacer's
+  // rendered top is non-decreasing in the character offset, so we find the
+  // largest offset whose spacer still lands at or above the card's band.
+  function anchorParaSpacer(p, cardId, cov, floatLeft, bandY1, bandY2, pLeft, pTop) {
+    var lineH = parseFloat(getComputedStyle(p).lineHeight) || 22.4;
+    var pW = p.offsetWidth;
+    var pContentW = pW - PARA_PAD_X * 2;
+    // Card box in paragraph-local coordinates, clamped to the paragraph
+    var localX1 = cov.x1 - pLeft;
+    var localX2 = cov.x2 - pLeft;
+    var w = Math.max(4, Math.min(Math.min(localX2, pW - PARA_PAD_X) - Math.max(localX1, PARA_PAD_X), pContentW));
+    w = Math.max(4, Math.min(w, pContentW - 4));
+    // Margins position the float's element box exactly at the card's local
+    // bbox; shape-outside with an explicit border-box reference makes the
+    // wrap shape equal that box, so text wraps on BOTH sides (over the
+    // margin area). The default margin-box reference would span paragraph
+    // edge → card and force text onto a single side — border-box required.
+    var margin = floatLeft
+      ? 'margin-left:' + Math.max(0, Math.min(localX1 - PARA_PAD_X, pContentW - w)) + 'px;'
+      : 'margin-right:' + Math.max(0, Math.min(pW - PARA_PAD_X - localX2, pContentW - w)) + 'px;';
+    var css = 'float:' + (floatLeft ? 'left' : 'right') + ';' + margin +
+      'width:' + w + 'px;height:' + Math.max(4, Math.round(bandY2 - bandY1)) + 'px;shape-outside:inset(0) border-box;';
+
+    // Binary search: largest offset whose spacer top is <= the band top
+    var total = paraTextCharLength(p);
+    var lo = 0, hi = total;
+    while (lo < hi) {
+      var mid = (lo + hi + 1) >> 1;
+      if (measureParaSpacerTop(p, mid, css) <= bandY1) lo = mid; else hi = mid - 1;
+    }
+    var top = measureParaSpacerTop(p, lo, css);
+    var range = paraCharOffsetRange(p, lo);
+
+    // Band below the end of the paragraph's text? Pad with invisible
+    // newlines so the spacer lands in the band instead of yanking text.
+    var n = (lo === total && bandY1 - top > 2)
+      ? Math.max(0, Math.round((bandY1 - top) / lineH))
+      : 0;
+    if (n > 0) {
+      var padEl = document.createElement('span');
+      padEl.className = 'text-pad';
+      padEl.setAttribute('contenteditable', 'false');
+      padEl.dataset.cardId = cardId;
+      padEl.textContent = new Array(n + 1).join('\n');
+      range.insertNode(padEl);
+      range.setStartAfter(padEl);
+      range.collapse(true);
+    }
+
+    var spacer = document.createElement('span');
+    spacer.className = 'text-spacer';
+    spacer.setAttribute('contenteditable', 'false');
+    spacer.dataset.cardId = cardId;
+    spacer.dataset.bboxW = Math.round(cov.x2 - cov.x1);
+    spacer.dataset.bboxH = Math.round(bandY2 - bandY1);
+    spacer.style.cssText = css;
+    range.insertNode(spacer);
+  }
+
+  // Insert a probe spacer at char offset k, read its rendered top, remove it.
+  // Returns the top in CANVAS coordinates — bandY1 is canvas-relative, so the
+  // viewport-absolute getBoundingClientRect().top must be offset by the
+  // canvas position (comparing raw viewport tops made the search always land
+  // at char 0 and pinned every spacer to the canvas top — v6 lesson).
+  function measureParaSpacerTop(p, k, css) {
+    var range = paraCharOffsetRange(p, k);
+    var sp = document.createElement('span');
+    sp.className = 'text-spacer';
+    sp.setAttribute('contenteditable', 'false');
+    sp.style.cssText = css;
+    range.insertNode(sp);
+    var top = sp.getBoundingClientRect().top - gridCanvas.getBoundingClientRect().top;
+    sp.remove();
+    return top;
+  }
+
+  function refreshCardZOrder() {
+    getAllCards().forEach(function (card) {
+      card.style.zIndex = selectedCard === card ? 10 : 2;
+    });
+  }
+
+  function setGridColumns(n) {
+    currentCols = n;
+    gridCanvas.style.setProperty('--grid-cols', n);
+    document.querySelectorAll('.grid-controls .col-btn').forEach(function (b) {
+      b.classList.toggle('active', b.textContent === String(n) && b.onclick && b.onclick.toString().indexOf('setGridColumns') !== -1);
+    });
+    repositionAllCards();
+    layoutText();
+    onContentChange();
+  }
+  window.setGridColumns = setGridColumns;
+
+  function setCellSize(px) {
+    gridCanvas.style.setProperty('--cell-size', px + 'px');
+    document.querySelectorAll('.grid-controls .col-btn').forEach(function (b) {
+      if (b.textContent.indexOf('px') !== -1) {
+        b.classList.toggle('active', parseInt(b.textContent) === px);
+      }
+    });
+    currentCols = computeCols();
+    gridCanvas.style.setProperty('--grid-cols', currentCols);
+    repositionAllCards();
+    layoutText();
+    onContentChange();
+  }
+  window.setCellSize = setCellSize;
+
+  // Strip <img> elements whose src would resolve against the page URL
+  // (empty/relative) or hit the file:// security block — restoring them
+  // only produces console errors.
+  function sanitizeDraftHtml(html) {
+    if (!html) return '';
+    var div = document.createElement('div');
+    div.innerHTML = html;
+    div.querySelectorAll('img').forEach(function (img) {
+      var src = (img.getAttribute('src') || '').trim();
+      if (!src || !/^(data:|blob:|https?:)/i.test(src)) img.remove();
+    });
+    return div.innerHTML;
+  }
+
+  // Split a legacy v5 text-layer HTML blob into paragraphs: block elements
+  // (div/p) are paragraph boundaries, text nodes split on newline runs, and
+  // <br> counts as a boundary. Empty paragraphs between content are kept
+  // (blank lines); leading/trailing empties are dropped.
+  //   flush(force) — force=true keeps interior blank lines (from "\n\n" /
+  //   "<br><br>"), force=false only flushes actual content, so adjacent
+  //   block elements don't produce a spurious empty paragraph between them.
+  function splitHtmlToParagraphs(html) {
+    var div = document.createElement('div');
+    div.innerHTML = sanitizeDraftHtml(html);
+    var out = [];
+    var cur = document.createElement('div');
+    var curHas = false;
+    function flush(force) {
+      if (curHas || (force && out.length > 0)) {
+        out.push(cur.innerHTML);
+        cur = document.createElement('div');
+        curHas = false;
+      }
+    }
+    Array.prototype.slice.call(div.childNodes).forEach(function (node) {
+      if (node.nodeType === 3) {
+        var parts = node.nodeValue.split(/\n+/);
+        parts.forEach(function (part, i) {
+          if (i > 0) flush(true);
+          if (part !== '') { cur.appendChild(document.createTextNode(part)); curHas = true; }
+        });
+      } else if (node.nodeType === 1) {
+        var tag = node.tagName.toLowerCase();
+        if (tag === 'div' || tag === 'p' || tag === 'br') {
+          flush(tag === 'br');
+          if (tag !== 'br') {
+            cur.appendChild(node);
+            curHas = true;
+            flush(false);
+          }
+        } else {
+          cur.appendChild(node);
+          curHas = true;
+        }
+      }
+    });
+    flush(false);
+    while (out.length > 1 && out[out.length - 1] === '') out.pop();
+    if (!out.length) out.push('');
+    return out;
+  }
+
+  // ── Load Draft ──
+  function loadDraft() {
+    try {
+      var raw = localStorage.getItem('slati_fluidcanvas_draft');
+      if (raw) {
+        var draft = JSON.parse(raw);
+        if (draft.title) titleInput.value = draft.title;
+        if (draft.tags) renderModalTags(draft.tags);
+        if (draft.presets) {
+          presetData = draft.presets;
+          initPresetData(); // ensure all preset keys exist
+        }
+        var activePreset = draft.activePreset || '169';
+        applyPreset(activePreset);
+        suppressWrapSync = true; // one bulk layout after everything is restored
+        // Clear any placeholder paragraphs before restoring
+        getAllParagraphs().forEach(function (p) { p.remove(); });
+
+        // Restore cards — create them at saved positions for the active preset
+        var activeCards = presetData[activePreset] ? presetData[activePreset].cards : {};
+        if (draft.cards && Array.isArray(draft.cards)) {
+          draft.cards.forEach(function (cData) {
+            // Use preset-saved position if available, otherwise fall back to draft position
+            var pos = activeCards[cData.id] || cData;
+            var card;
+            if (cData.type === 'flag') {
+              card = createFlagCard(cData.label || 'Flag', pos.col, pos.row, pos.colSpan || 8, pos.rowSpan || 6);
+              if (cData.stripesHtml) setCardStripes(card, sanitizeDraftHtml(cData.stripesHtml), cData.flagName || cData.label);
+              else if (cData.imgSrc) setCardImage(card, cData.imgSrc, cData.imgAlt || cData.label);
+            } else if (cData.type === 'text') {
+              card = document.createElement('div');
+              card.className = 'grid-card';
+              card.dataset.cardType = 'text';
+              card.dataset.label = cData.label || '';
+              card.contentEditable = 'true';
+              card.style.background = cData.background || 'var(--color-surface-container)';
+              card.style.border = '1px solid var(--divider-line-strong)';
+              card.style.borderRadius = '8px';
+              card.style.padding = '8px';
+              card.style.overflow = 'auto';
+              card.style.fontSize = '13px';
+              card.style.lineHeight = '1.5';
+              card.style.color = 'var(--color-on-surface)';
+              card.innerHTML = sanitizeDraftHtml(cData.content || cData.label || '');
+              card.addEventListener('input', function () { onContentChange(); });
+              card.addEventListener('click', function (e) { selectCard(card); });
+              card.addEventListener('contextmenu', function (e) { e.preventDefault(); selectCard(card); showContextMenu(e.clientX, e.clientY); });
+              addCardDrag(card);
+              gridCanvas.appendChild(card);
+              positionCard(card, pos.col, pos.row, pos.colSpan || 4, pos.rowSpan || 3);
+            } else {
+              card = createAssetCard(cData.type, cData.label, pos.col, pos.row, pos.colSpan || 4, pos.rowSpan || 3);
+            }
+            if (card && cData.id) {
+              card.dataset.cardId = cData.id;
+              var num = parseInt(cData.id.replace('c', ''));
+              if (!isNaN(num) && num > cardIdCounter) cardIdCounter = num;
+            }
+            if (card) {
+              applyCardStyleFromDraft(card, cData);
+              if (cData.rotate) { card.dataset.rotate = cData.rotate; card.style.transform = 'rotate(' + cData.rotate + 'deg)'; }
+              // v3+ drafts store free pixel positions — restore exactly
+              if (cData.x != null && cData.y != null) moveCardPx(card, parseFloat(cData.x), parseFloat(cData.y));
+            }
+          });
+        }
+
+        // Restore paragraphs: v6+ stores paragraphs[] directly; legacy
+        // drafts (v1–v5) stored a single text blob — split into paragraphs.
+        var paraHtmls;
+        if (draft.paragraphs && Array.isArray(draft.paragraphs)) {
+          paraHtmls = draft.paragraphs.map(function (pr) {
+            return (pr && pr.html != null) ? pr.html : String(pr || '');
+          });
+        } else if (draft.text != null) {
+          paraHtmls = splitHtmlToParagraphs(draft.text);
+        } else if (draft.textSegments) {
+          var rowStep = getCellSize() + 2;
+          var chunks = [];
+          Object.keys(draft.textSegments).forEach(function (rowStartKey) {
+            var colsData = draft.textSegments[rowStartKey];
+            Object.keys(colsData).forEach(function (key) {
+              var row = parseInt(rowStartKey) || 1;
+              var x1 = 0;
+              if (key.indexOf(':') !== -1) {
+                // v3: "rowStart-rowEnd:x1px-x2px" · v2: "rowStart-rowEnd:colStart-colEnd"
+                var parts = key.split(':');
+                row = parseInt(parts[0].split('-')[0]) || 1;
+                var colVal = parseFloat(parts[1].split('-')[0]) || 0;
+                x1 = (draft.v || 2) >= 3 ? colVal : (colVal - 1) * rowStep;
+              } else {
+                // v1: "colStart-colEnd" (cells)
+                x1 = ((parseInt(key.split('-')[0]) || 1) - 1) * rowStep;
+              }
+              chunks.push({ row: row, x1: x1, html: colsData[key] });
+            });
+          });
+          chunks.sort(function (a, b) { return (a.row - b.row) || (a.x1 - b.x1); });
+          paraHtmls = splitHtmlToParagraphs(chunks.map(function (c) { return c.html; }).join(''));
+        } else {
+          paraHtmls = [''];
+        }
+        paraHtmls.forEach(function (html) { createParagraph(html); });
+
+        suppressWrapSync = false;
+        layoutText();
+        if (draft.lastSaved) {
+          var ago = Math.floor((Date.now() - draft.lastSaved) / 60000);
+          var text = ago < 1 ? 'Saved just now' : 'Saved ' + ago + ' min ago';
+          saveStatusEl.textContent = text;
+          lastSavedLabel.textContent = text;
+        }
+        growCanvasIfNeeded();
+        lastSavedContent = getCardFingerprint();
+        updateWordCount();
+      }
+    } catch (e) {
+      console.error('[FluidCanvas] loadDraft:', e);
+      // Never leave the bulk-restore flag set — a throw mid-restore would
+      // otherwise freeze layoutText() forever (no wrap, no dodge).
+      suppressWrapSync = false;
+    }
+  }
+
+  function applyCardStyleFromDraft(card, cData) {
+    if (cData.borderRadius) card.style.borderRadius = cData.borderRadius + 'px';
+    if (cData.background) card.style.background = cData.background;
+    if (cData.borderStyle) card.style.borderStyle = cData.borderStyle;
+    if (cData.borderColor) card.style.borderColor = cData.borderColor;
+    if (cData.borderWidth) card.style.borderWidth = cData.borderWidth + 'px';
+  }
+
+  // ── Content Change ──
+  function onContentChange() {
+    updateWordCount();
+    var fp = getCardFingerprint();
+    if (fp !== lastSavedContent && lastSavedContent !== '') {
+      headerStatus.textContent = 'Unsaved';
+      headerStatus.className = 'badge badge-warning';
+    }
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(autoSave, 3000);
+  }
+  window.onContentChange = onContentChange;
+
+  // ── Save Draft ──
+  function saveDraft() {
+    var tags = [];
+    tagModalList.querySelectorAll('.badge').forEach(function (b) { tags.push(b.textContent.trim()); });
+
+    // Save paragraph HTML minus the wrap spacers and pads (regenerated on load)
+    var paragraphs = [];
+    getAllParagraphs().forEach(function (p) {
+      var clone = p.cloneNode(true);
+      clone.querySelectorAll('.text-spacer').forEach(function (s) { s.remove(); });
+      clone.querySelectorAll('.text-pad').forEach(function (pd) { pd.remove(); });
+      paragraphs.push({ html: clone.innerHTML });
+    });
+
+    // Save cards (with rotation)
+    var cards = [];
+    getAllCards().forEach(function (c) {
+      var entry = {
+        id: c.dataset.cardId,
+        type: c.dataset.cardType || 'flag',
+        col: parseFloat(c.dataset.col) || 1,
+        row: parseFloat(c.dataset.row) || 1,
+        x: c.dataset.x != null ? parseFloat(c.dataset.x) : null,
+        y: c.dataset.y != null ? parseFloat(c.dataset.y) : null,
+        colSpan: parseFloat(c.dataset.colSpan) || 4,
+        rowSpan: parseFloat(c.dataset.rowSpan) || 3,
+        rotate: parseFloat(c.dataset.rotate) || 0,
+        borderRadius: parseInt(c.style.borderRadius) || 8,
+        background: c.style.background || '',
+        borderStyle: c.style.borderStyle || 'solid',
+        borderColor: c.style.borderColor || '',
+        borderWidth: parseInt(c.style.borderWidth) || 2
+      };
+      var lbl = c.querySelector('.card-label');
+      entry.label = lbl ? lbl.value : (c.dataset.label || '');
+      if (entry.type === 'flag') {
+        var stripes = c.querySelector('.card-stripes');
+        var img = c.querySelector('.card-img-bg');
+        if (stripes) { entry.stripesHtml = stripes.innerHTML; entry.flagName = entry.label; }
+        else if (img) { entry.imgSrc = img.src; entry.imgAlt = entry.label; }
+      }
+      if (entry.type === 'text') {
+        entry.content = c.innerHTML;
+      }
+      cards.push(entry);
+    });
+
+    // Save current card positions to active preset before persisting
+    saveCurrentPresetCards();
+    var draft = {
+      v: 6, // v6: paragraph blocks + ≥80% dodge translation
+      title: titleInput.value,
+      tags: tags,
+      paragraphs: paragraphs,
+      cards: cards,
+      activePreset: currentPreset,
+      presets: presetData,
+      lastSaved: Date.now()
+    };
+    try {
+      localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(draft));
+      lastSavedContent = getCardFingerprint();
+      saveStatusEl.textContent = 'Saved just now';
+      lastSavedLabel.textContent = 'Saved just now';
+      headerStatus.textContent = 'Draft';
+      headerStatus.className = 'badge badge-secondary';
+      showToast('Draft saved');
+    } catch (e) { showToast('Failed to save'); }
+  }
+  window.saveDraft = saveDraft;
+
+  function autoSave() {
+    if (getCardFingerprint() !== lastSavedContent) saveDraft();
+  }
+
+  // ── Publish ──
+  function publishArticle() {
+    saveDraft();
+    headerStatus.textContent = 'Published';
+    headerStatus.className = 'badge badge-success';
+    showToast('Article published successfully!');
+  }
+  window.publishArticle = publishArticle;
+
+  // ── Tags Modal ──
+  function addTagFromModal() {
+    var val = tagModalInput.value.trim();
+    if (!val) return;
+    var existing = [];
+    tagModalList.querySelectorAll('.badge').forEach(function (b) { existing.push(b.textContent.trim()); });
+    if (existing.indexOf(val) !== -1) { tagModalInput.value = ''; return; }
+    var span = document.createElement('span');
+    span.className = 'badge badge-primary';
+    span.textContent = val;
+    tagModalList.appendChild(span);
+    tagModalInput.value = '';
+  }
+  window.addTagFromModal = addTagFromModal;
+
+  function renderModalTags(tagArr) {
+    var colors = ['badge-primary', 'badge-secondary', 'badge-success', 'badge-warning'];
+    tagModalList.innerHTML = tagArr.map(function (t, i) {
+      return '<span class="badge ' + colors[i % colors.length] + '">' + t.replace(/[<>&"]/g, '') + '</span>';
+    }).join('');
+  }
+
+  // ── Modals ──
+  function openModal(id) {
+    document.getElementById('modalBackdrop').classList.add('active');
+    document.getElementById(id).querySelector('.modal-card').classList.add('active');
+  }
+  window.openModal = openModal;
+
+  function closeAllModals() {
+    document.getElementById('modalBackdrop').classList.remove('active');
+    document.querySelectorAll('.modal-card.active').forEach(function (c) { c.classList.remove('active'); });
+  }
+  window.closeAllModals = closeAllModals;
+
+  // ── Toast ──
+  var toastTimer;
+  function showToast(msg) {
+    var toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2500);
+  }
+
+  // ── Auto-size label input to fit text ──
+  var labelSizer = document.createElement('span');
+  labelSizer.style.cssText = 'position:absolute;visibility:hidden;font-size:11px;font-weight:500;font-family:var(--font-family);white-space:nowrap;pointer-events:none;top:-9999px;left:-9999px';
+  document.body.appendChild(labelSizer);
+
+  function autoSizeLabel(input) {
+    labelSizer.textContent = input.value || input.placeholder || '';
+    var w = labelSizer.getBoundingClientRect().width;
+    input.style.width = Math.max(40, Math.ceil(w) + 18) + 'px';
+  }
+  window.autoSizeLabel = autoSizeLabel;
+
+  // ── Card drag (shared Canvas-style solid drag, pixel precise) ──
+  function addCardDrag(card) {
+    var dragState = null;
+
+    card.addEventListener('mousedown', function (e) {
+      if (card.classList.contains('editing-label')) return;
+      if (e.button !== 0) return;
+
+      try { selectCard(card); } catch (err) {}
+      try { hideContextMenu(); } catch (err) {}
+
+      dragState = {
+        card: card,
+        startX: e.clientX,
+        startY: e.clientY,
+        origX: parseFloat(card.style.left) || 0,
+        origY: parseFloat(card.style.top) || 0,
+        dragging: false,
+        moved: false
+      };
+    });
+
+    if (!addCardDrag._docBound) {
+      addCardDrag._docBound = true;
+
+      document.addEventListener('mousemove', function (e) {
+        var st = addCardDrag._activeDrag;
+        if (!st) return;
+        try {
+          var dx = e.clientX - st.startX;
+          var dy = e.clientY - st.startY;
+          if (!st.dragging && Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+
+          if (!st.dragging) {
+            st.dragging = true;
+            st.card.classList.add('dragging');
+            st.card.style.zIndex = 50;
+            e.preventDefault();
+          }
+
+          st.moved = true;
+          // Canva-style free move — pixel precise, no grid snapping.
+          var nx = st.origX + dx;
+          var ny = st.origY + dy;
+          st.card.style.left = nx + 'px';
+          st.card.style.top = ny + 'px';
+          // Preview must match the coverage the engine actually sees:
+          // the card's rotation-aware pixel bbox → every cell it intersects.
+          highlightCardCoverage(st.card);
+          // Live reflow: text wraps around (or dodges) the card WHILE it
+          // moves, not just on mouseup. Same deterministic pure-function
+          // layout — repeated calls can't oscillate. layoutText() has its
+          // own composing guard, so IME input is never touched mid-drag.
+          if (nx !== st.lastLx || ny !== st.lastLy) {
+            st.lastLx = nx; st.lastLy = ny;
+            try { layoutText(); } catch (err) { console.error('[FluidCanvas] layout:', err); }
+          }
+        } catch (err) { console.error('onMove:', err); }
+      });
+
+      document.addEventListener('mouseup', function (e) {
+        var st = addCardDrag._activeDrag;
+        if (!st) return;
+        addCardDrag._activeDrag = null;
+        try {
+          st.card.classList.remove('dragging');
+          st.card.style.zIndex = '';
+          hideCellHighlights();
+          if (st.moved) {
+            moveCardPx(st.card, parseFloat(st.card.style.left) || 0, parseFloat(st.card.style.top) || 0);
+            try { layoutText(); } catch (err) { console.error('[FluidCanvas] layout:', err); }
+            onContentChange();
+          }
+          // Suppress click-triggered modals after a drag
+          st.card.dataset.justDragged = '1';
+          setTimeout(function () { delete st.card.dataset.justDragged; }, 300);
+        } catch (err) { console.error('onUp:', err); }
+      });
+    }
+
+    // Track which card is being dragged right now
+    card.addEventListener('mousedown', function activate() {
+      addCardDrag._activeDrag = dragState;
+    });
+  }
+
+  function createGridCard(type, col, row, spanW, spanH) {
+    var card = document.createElement('div');
+    card.className = 'grid-card';
+    card.dataset.cardType = type;
+    card.dataset.cardId = getNextCardId();
+    // positionCard runs after the card is in the DOM (layoutText needs to
+    // see it), so just set up interaction handlers here.
+
+    addCardDrag(card);
+
+    // Click → select; double-click → edit label
+    card.addEventListener('click', function (e) {
+      if (card.classList.contains('editing-label')) return;
+      selectCard(card);
+    });
+    card.addEventListener('dblclick', function (e) {
+      card.classList.add('editing-label');
+      var lbl = card.querySelector('.card-label');
+      if (lbl) { setTimeout(function () { lbl.focus(); lbl.select(); }, 50); }
+      var onBlur = function () { card.classList.remove('editing-label'); };
+      if (lbl) {
+        lbl.addEventListener('blur', onBlur, { once: true });
+        lbl.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter') { ev.preventDefault(); lbl.blur(); }
+        });
+      }
+    });
+
+    // Right-click context menu
+    card.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      selectCard(card);
+      showContextMenu(e.clientX, e.clientY);
+    });
+
+    gridCanvas.appendChild(card);
+    positionCard(card, col, row, spanW || 8, spanH || 6);
+    return card;
+  }
+
+  function createAssetCard(asset, label, col, row, spanW, spanH) {
+    var card = createGridCard(asset, col, row, spanW, spanH);
+    card.dataset.label = label;
+    var icon = asset === 'emblem' ? 'shield' : asset;
+    var iconEl = document.createElement('span');
+    iconEl.className = 'material-symbols-outlined card-icon';
+    iconEl.textContent = icon;
+    var labelEl = document.createElement('input');
+    labelEl.className = 'card-label';
+    labelEl.value = label;
+    labelEl.onclick = function (e) { e.stopPropagation(); };
+    labelEl.oninput = function () { autoSizeLabel(this); onContentChange(); };
+    card.appendChild(iconEl);
+    card.appendChild(labelEl);
+    autoSizeLabel(labelEl);
+    return card;
+  }
+
+  function createFlagCard(label, col, row, spanW, spanH) {
+    var card = createGridCard('flag', col, row, spanW, spanH);
+    card.dataset.label = label || 'Flag';
+    var iconEl = document.createElement('span');
+    iconEl.className = 'material-symbols-outlined card-icon';
+    iconEl.textContent = 'flag';
+    var labelEl = document.createElement('input');
+    labelEl.className = 'card-label';
+    labelEl.value = label || 'Flag';
+    labelEl.onclick = function (e) { e.stopPropagation(); };
+    labelEl.oninput = function () { autoSizeLabel(this); onContentChange(); };
+    card.appendChild(iconEl);
+    card.appendChild(labelEl);
+    autoSizeLabel(labelEl);
+    // Click to open flag source (skip if just dragged)
+    card.addEventListener('click', function (e) {
+      if (card.dataset.justDragged) return;
+      if (e.target.closest('.card-label')) return;
+      if (card.querySelector('.card-stripes') || card.querySelector('.card-img-bg')) return;
+      setCurrentFlagCard(card);
+      openFlagSourceModal();
+    });
+    return card;
+  }
+
+  // ── Flag stripe/image setters (for grid cards) ──
+  function setCardStripes(card, stripesHtml, flagName) {
+    card.classList.add('has-stripes');
+    card.dataset.label = flagName;
+    var labelEl = card.querySelector('.card-label');
+    if (labelEl) { labelEl.value = flagName; autoSizeLabel(labelEl); }
+    var stripesDiv = document.createElement('div');
+    stripesDiv.className = 'card-stripes';
+    stripesDiv.innerHTML = stripesHtml;
+    var oldStripe = card.querySelector('.card-stripes');
+    var oldImg = card.querySelector('.card-img-bg');
+    if (oldStripe) oldStripe.remove();
+    if (oldImg) oldImg.remove();
+    card.insertBefore(stripesDiv, card.firstChild);
+    var icon = card.querySelector('.card-icon');
+    if (icon) icon.style.display = 'none';
+  }
+
+  function setCardImage(card, imgSrc, alt) {
+    // Guard: empty / relative / file:// srcs resolve against the page itself
+    // and trip Chrome's file:// security block ("Unsafe attempt to load
+    // URL ... from frame with URL ..."). Only data:/blob:/http(s) allowed.
+    if (typeof imgSrc !== 'string' || !/^(data:|blob:|https?:)/i.test(imgSrc.trim())) {
+      console.warn('[FluidCanvas] skipped unsupported image src:', imgSrc);
+      return;
+    }
+    card.classList.add('has-bg-img');
+    card.dataset.label = alt;
+    var labelEl = card.querySelector('.card-label');
+    if (labelEl) { labelEl.value = alt; autoSizeLabel(labelEl); }
+    var imgEl = document.createElement('img');
+    imgEl.className = 'card-img-bg';
+    imgEl.src = imgSrc;
+    imgEl.alt = alt;
+    var oldStripe = card.querySelector('.card-stripes');
+    var oldImg = card.querySelector('.card-img-bg');
+    if (oldStripe) oldStripe.remove();
+    if (oldImg) oldImg.remove();
+    card.insertBefore(imgEl, card.firstChild);
+    var icon = card.querySelector('.card-icon');
+    if (icon) icon.style.display = 'none';
+  }
+
+  // ── Card Selection ──
+  function selectCard(card) {
+    getAllCards().forEach(function (c) { c.classList.remove('selected'); });
+    card.classList.add('selected');
+    selectedCard = card;
+  }
+  window.selectCard = selectCard;
+
+  function deselectAll() {
+    getAllCards().forEach(function (c) { c.classList.remove('selected'); });
+    selectedCard = null;
+  }
+
+  // ── Context Menu ──
+  function showContextMenu(x, y) {
+    hideContextMenu();
+    var contextMenu = getContextMenu();
+    if (!contextMenu) return;
+    var menuW = 220;
+    var menuH = 240;
+    if (x + menuW > window.innerWidth) x = window.innerWidth - menuW - 10;
+    if (y + menuH > window.innerHeight) y = window.innerHeight - menuH - 10;
+    contextMenu.style.left = x + 'px';
+    contextMenu.style.top = y + 'px';
+    contextMenu.classList.add('active');
+  }
+
+  function hideContextMenu() {
+    var contextMenu = getContextMenu();
+    if (contextMenu) contextMenu.classList.remove('active');
+    var radiusPopover = getRadiusPopover();
+    if (radiusPopover) radiusPopover.classList.remove('active');
+    var rp = document.getElementById('rotatePopover');
+    if (rp) rp.classList.remove('active');
+  }
+  window.hideContextMenu = hideContextMenu;
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.context-menu') && !e.target.closest('.radius-popover')) {
+      hideContextMenu();
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { hideContextMenu(); deselectAll(); }
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveDraft(); }
+  });
+
+  // ── Border Radius ──
+  function openBorderRadiusPopover() {
+    if (!selectedCard) return;
+    hideContextMenu();
+    var radiusPopover = getRadiusPopover();
+    if (!radiusPopover) return;
+    var cur = parseInt(selectedCard.style.borderRadius) || 8;
+    document.getElementById('radiusSlider').value = cur;
+    document.getElementById('radiusValue').textContent = cur + 'px';
+    var cardRect = selectedCard.getBoundingClientRect();
+    var x = cardRect.right + 10, y = cardRect.top;
+    if (x + 260 > window.innerWidth) x = cardRect.left - 270;
+    radiusPopover.style.left = x + 'px';
+    radiusPopover.style.top = y + 'px';
+    radiusPopover.classList.add('active');
+  }
+  window.openBorderRadiusPopover = openBorderRadiusPopover;
+
+  function updateCardBorderRadius(val) {
+    if (!selectedCard) return;
+    selectedCard.style.borderRadius = val + 'px';
+    document.getElementById('radiusSlider').value = val;
+    document.getElementById('radiusValue').textContent = val + 'px';
+    onContentChange();
+  }
+  window.updateCardBorderRadius = updateCardBorderRadius;
+
+  // ── Card Background Modal ──
+  function openCardBackgroundModal() {
+    if (!selectedCard) return;
+    hideContextMenu();
+    var rect = selectedCard.getBoundingClientRect();
+    document.getElementById('bgCardDims').textContent = 'Card size: ' + Math.round(rect.width) + 'px × ' + Math.round(rect.height) + 'px';
+    var presets = ['#ffffff', '#f7f9fb', '#e1e0ff', '#c0c1ff', '#1e1c32', '#fef3c7', '#dcfce7', '#fce7f3'];
+    var html = '';
+    presets.forEach(function (c) {
+      html += '<div style="width:36px;height:36px;border-radius:50%;background:' + c + ';cursor:pointer;border:2px solid var(--divider-line-strong)" onclick="applyCardBackgroundColor(\'' + c + '\')" title="' + c + '"></div>';
+    });
+    document.getElementById('colorPresets').innerHTML = html;
+    openModal('bgModal');
+  }
+  window.openCardBackgroundModal = openCardBackgroundModal;
+
+  function applyCardBackgroundColor(color) {
+    if (!selectedCard) return;
+    var img = selectedCard.querySelector('.card-img-bg');
+    var stripes = selectedCard.querySelector('.card-stripes');
+    if (img) img.remove();
+    if (stripes) stripes.remove();
+    selectedCard.classList.remove('has-bg-img', 'has-stripes');
+    selectedCard.style.background = color;
+    var icon = selectedCard.querySelector('.card-icon');
+    if (icon) icon.style.display = '';
+    document.getElementById('bgColorPicker').value = color;
+    onContentChange();
+  }
+  window.applyCardBackgroundColor = applyCardBackgroundColor;
+
+  function handleBgFileUpload(input) {
+    var file = input.files && input.files[0];
+    if (!file || !selectedCard) return;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      setCardImage(selectedCard, e.target.result, file.name.replace(/\.[^.]+$/, ''));
+      onContentChange();
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+  window.handleBgFileUpload = handleBgFileUpload;
+
+  function searchBgImage() {
+    var url = prompt('Enter image URL:');
+    if (url && selectedCard) {
+      setCardImage(selectedCard, url, 'bg');
+      onContentChange();
+    }
+  }
+  window.searchBgImage = searchBgImage;
+
+  function clearCardBackground() {
+    if (!selectedCard) return;
+    var img = selectedCard.querySelector('.card-img-bg');
+    var stripes = selectedCard.querySelector('.card-stripes');
+    if (img) img.remove();
+    if (stripes) stripes.remove();
+    selectedCard.classList.remove('has-bg-img', 'has-stripes');
+    selectedCard.style.background = '';
+    var icon = selectedCard.querySelector('.card-icon');
+    if (icon) icon.style.display = '';
+    onContentChange();
+  }
+  window.clearCardBackground = clearCardBackground;
+
+  // ── Border Style Modal ──
+  function openBorderStyleModal() {
+    if (!selectedCard) return;
+    hideContextMenu();
+    var styles = [
+      { name: 'Solid', value: 'solid' },
+      { name: 'Dashed', value: 'dashed' },
+      { name: 'Dotted', value: 'dotted' },
+      { name: 'Double', value: 'double' },
+      { name: 'Groove', value: 'groove' },
+      { name: 'Ridge', value: 'ridge' },
+      { name: 'None', value: 'none' }
+    ];
+    var curStyle = selectedCard.style.borderStyle || 'solid';
+    var curWidth = parseInt(selectedCard.style.borderWidth) || 2;
+    var html = '';
+    styles.forEach(function (s) {
+      html += '<button class="card" style="padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid var(--divider-line);background:var(--card-bg);font-family:var(--font-family);font-size:13px;margin-bottom:4px;' + (s.value === curStyle ? 'border-color:var(--color-primary);box-shadow:0 0 0 2px var(--color-primary-fixed-dim)' : '') + '" onclick="applyCardBorderStyle(\'' + s.value + '\')">' +
+        '<div style="width:60px;height:0;border-top:3px ' + s.value + ' var(--color-on-surface)"></div>' +
+        '<span>' + s.name + '</span></button>';
+    });
+    document.getElementById('borderStyleOptions').innerHTML = html;
+    document.getElementById('borderWidthSlider').value = curWidth;
+    document.getElementById('borderWidthVal').textContent = curWidth + 'px';
+    openModal('borderStyleModal');
+  }
+  window.openBorderStyleModal = openBorderStyleModal;
+
+  function applyCardBorderStyle(style) {
+    if (!selectedCard) return;
+    selectedCard.style.borderStyle = style;
+    openBorderStyleModal(); // refresh
+    onContentChange();
+  }
+  window.applyCardBorderStyle = applyCardBorderStyle;
+
+  function updateCardBorderWidth(val) {
+    if (!selectedCard) return;
+    selectedCard.style.borderWidth = val + 'px';
+    document.getElementById('borderWidthVal').textContent = val + 'px';
+    onContentChange();
+  }
+  window.updateCardBorderWidth = updateCardBorderWidth;
+
+  function updateCardBorderColor(color) {
+    if (!selectedCard) return;
+    selectedCard.style.borderColor = color;
+    onContentChange();
+  }
+  window.updateCardBorderColor = updateCardBorderColor;
+
+  // ── Rotate Card ──
+  function rotateCard(deg) {
+    if (!selectedCard) return;
+    selectedCard.dataset.rotate = deg;
+    selectedCard.style.transform = 'rotate(' + deg + 'deg)';
+    document.getElementById('rotateValue').textContent = deg + '°';
+    layoutText();
+    onContentChange();
+  }
+  window.rotateCard = rotateCard;
+
+  function openRotateCardPopover() {
+    if (!selectedCard) return;
+    hideContextMenu();
+    var cur = parseFloat(selectedCard.dataset.rotate) || 0;
+    document.getElementById('rotateSlider').value = cur;
+    document.getElementById('rotateValue').textContent = cur + '°';
+    var cardRect = selectedCard.getBoundingClientRect();
+    var x = cardRect.right + 10, y = cardRect.top;
+    if (x + 260 > window.innerWidth) x = cardRect.left - 270;
+    document.getElementById('rotatePopover').style.left = x + 'px';
+    document.getElementById('rotatePopover').style.top = y + 'px';
+    document.getElementById('rotatePopover').classList.add('active');
+  }
+  window.openRotateCardPopover = openRotateCardPopover;
+
+  // ── Save as Template ──
+  function saveCardAsTemplate() {
+    if (!selectedCard) return;
+    hideContextMenu();
+    var name = prompt('Template name:', selectedCard.dataset.label || 'Card Style');
+    if (!name) return;
+    var tpl = {
+      id: 'tpl_' + Date.now(),
+      name: name,
+      borderRadius: selectedCard.style.borderRadius || '8px',
+      background: selectedCard.style.background || '',
+      borderStyle: selectedCard.style.borderStyle || 'solid',
+      borderColor: selectedCard.style.borderColor || '',
+      borderWidth: selectedCard.style.borderWidth || '2px',
+      rotate: selectedCard.dataset.rotate || '0',
+      savedAt: Date.now()
+    };
+    try {
+      var templates = JSON.parse(localStorage.getItem('slati_fluidcanvas_templates') || '[]');
+      templates.push(tpl);
+      localStorage.setItem('slati_fluidcanvas_templates', JSON.stringify(templates));
+      showToast('Template saved: ' + name);
+    } catch (e) { showToast('Failed to save template'); }
+  }
+  window.saveCardAsTemplate = saveCardAsTemplate;
+
+  function showTemplateLibrary() {
+    try {
+      var templates = JSON.parse(localStorage.getItem('slati_fluidcanvas_templates') || '[]');
+      var grid = document.getElementById('templateGrid');
+      var msg = document.getElementById('noTemplatesMsg');
+      if (templates.length === 0) {
+        grid.innerHTML = '';
+        msg.style.display = '';
+      } else {
+        msg.style.display = 'none';
+        grid.innerHTML = templates.map(function (t) {
+          return '<div class="flag-card-item" onclick="applyTemplate(\'' + t.id + '\')" style="cursor:pointer">' +
+            '<div style="width:100%;height:80px;border-radius:' + t.borderRadius + ';background:' + (t.background || 'var(--card-bg)') + ';border:' + t.borderWidth + ' ' + t.borderStyle + ' ' + (t.borderColor || 'var(--divider-line-strong)') + ';display:flex;align-items:center;justify-content:center;transform:rotate(' + (t.rotate || 0) + 'deg)">' +
+              '<span style="font-size:11px;color:var(--color-on-surface)">' + t.name + '</span>' +
+            '</div>' +
+            '<div class="flag-name" style="display:flex;justify-content:space-between">' +
+              '<span>' + t.name + '</span>' +
+              '<span style="color:var(--color-error);cursor:pointer" onclick="event.stopPropagation();deleteTemplate(\'' + t.id + '\')">✕</span>' +
+            '</div></div>';
+        }).join('');
+      }
+      openModal('templateModal');
+    } catch (e) { /* ignore */ }
+  }
+  window.showTemplateLibrary = showTemplateLibrary;
+
+  function applyTemplate(id) {
+    if (!selectedCard) return;
+    try {
+      var templates = JSON.parse(localStorage.getItem('slati_fluidcanvas_templates') || '[]');
+      var t = templates.find(function (tp) { return tp.id === id; });
+      if (!t) return;
+      selectedCard.style.borderRadius = t.borderRadius;
+      selectedCard.style.background = t.background;
+      selectedCard.style.borderStyle = t.borderStyle;
+      selectedCard.style.borderColor = t.borderColor;
+      selectedCard.style.borderWidth = t.borderWidth;
+      if (t.rotate) {
+        selectedCard.dataset.rotate = t.rotate;
+        selectedCard.style.transform = 'rotate(' + t.rotate + 'deg)';
+      }
+      closeAllModals();
+      showToast('Template applied: ' + t.name);
+      layoutText();
+      onContentChange();
+    } catch (e) { /* ignore */ }
+  }
+  window.applyTemplate = applyTemplate;
+
+  function deleteTemplate(id) {
+    try {
+      var templates = JSON.parse(localStorage.getItem('slati_fluidcanvas_templates') || '[]');
+      templates = templates.filter(function (t) { return t.id !== id; });
+      localStorage.setItem('slati_fluidcanvas_templates', JSON.stringify(templates));
+      showTemplateLibrary();
+    } catch (e) { /* ignore */ }
+  }
+  window.deleteTemplate = deleteTemplate;
+
+  // ── Delete Card ──
+  function deleteSelectedCard() {
+    if (!selectedCard) return;
+    hideContextMenu();
+    selectedCard.remove();
+    selectedCard = null;
+    layoutText(); // text flows back into the freed space
+    onContentChange();
+  }
+  window.deleteSelectedCard = deleteSelectedCard;
+
+  // ── Drag & Drop: Asset Panel → Grid Canvas ──
+  // Card sizes by asset type — flags are the big ones (8×6, the same
+  // default the draft restore uses), everything else keeps 4×3.
+  function assetSpan(asset) {
+    return asset === 'flag' ? { w: 8, h: 6 } : { w: 4, h: 3 };
+  }
+
+  document.querySelectorAll('.asset-panel .card[draggable]').forEach(function (card) {
+    card.addEventListener('dragstart', function (e) {
+      e.dataTransfer.setData('text/plain', JSON.stringify({
+        asset: card.dataset.asset,
+        label: card.dataset.label
+      }));
+      e.dataTransfer.effectAllowed = 'copy';
+      card.classList.add('dragging');
+      // Preview span matches the card this asset will create
+      dragHighlightSpan = assetSpan(card.dataset.asset);
+    });
+    card.addEventListener('dragend', function () { card.classList.remove('dragging'); });
+  });
+
+  var lastDragPos = null;
+  var dragHighlightSpan = { w: 4, h: 3 }; // set per-asset on dragstart
+
+  gridCanvas.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = e.dataTransfer.effectAllowed === 'move' ? 'move' : 'copy';
+    gridCanvas.classList.add('drag-over');
+    lastDragPos = snapToGrid(e.clientX, e.clientY);
+    // Preview at the centered landing rect — the same cc/cr the drop handler
+    // computes, so the lit cells are exactly where the card will appear.
+    var hlCol = Math.max(1, lastDragPos.col - Math.floor(dragHighlightSpan.w / 2));
+    var hlRow = Math.max(1, lastDragPos.row - Math.floor(dragHighlightSpan.h / 2));
+    highlightCellRange(hlCol, hlRow, dragHighlightSpan.w, dragHighlightSpan.h);
+  });
+
+  gridCanvas.addEventListener('dragleave', function (e) {
+    if (!gridCanvas.contains(e.relatedTarget)) {
+      gridCanvas.classList.remove('drag-over');
+      hideCellHighlights();
+      lastDragPos = null;
+    }
+  });
+
+  gridCanvas.addEventListener('drop', function (e) {
+    e.preventDefault();
+    gridCanvas.classList.remove('drag-over');
+    hideCellHighlights();
+    var pos = lastDragPos;
+    lastDragPos = null;
+    dragHighlightSpan = { w: 4, h: 3 };
+    try {
+      var raw = e.dataTransfer.getData('text/plain');
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      if (data && data.label && !data.isReposition) {
+        var span = assetSpan(data.asset);
+        var spanW = span.w, spanH = span.h;
+        pos = pos || findFreeCell(spanW, spanH);
+        // Center: offset by half the card size so cursor is in the middle
+        var cc = Math.max(1, pos.col - Math.floor(spanW / 2));
+        var cr = Math.max(1, pos.row - Math.floor(spanH / 2));
+        if (data.asset === 'flag') {
+          createFlagCard(data.label, cc, cr, spanW, spanH);
+        } else {
+          createAssetCard(data.asset, data.label, cc, cr, spanW, spanH);
+        }
+        onContentChange();
+      }
+    } catch (err) { /* ignore */ }
+  });
+
+  // Cell highlight overlay — draws individual cells for clear grid feedback.
+  // Two entry points:
+  //   • highlightCellRange(col,row,w,h) — a grid-aligned w×h block, used for
+  //     the asset drop preview (new cards are unrotated and land grid-aligned).
+  //   • highlightCardCoverage(card) — every cell the card's rotation-aware
+  //     pixel bounding box intersects. Uses the same bbox math and canvas
+  //     clamping as getCardCoverage, so the lit cells are exactly the coverage
+  //     the text-dodge engine sees. Used while dragging a card around.
+  // Redraws only when the covered cell set changes (mousemove fires per pixel).
+  var highlightOverlays = [];
+  var highlightRangeKey = '';
+
+  function drawHighlightRange(c1, c2, r1, r2) {
+    var key = c1 + ',' + c2 + ',' + r1 + ',' + r2;
+    if (key === highlightRangeKey) return;
+    hideCellHighlights();
+    highlightRangeKey = key;
+    var cs = getCellSize();
+    var gap = 2;
+    var frag = document.createDocumentFragment();
+    for (var r = r1; r <= r2; r++) {
+      for (var c = c1; c <= c2; c++) {
+        var cell = document.createElement('div');
+        cell.className = 'cell-hl';
+        cell.style.cssText =
+          'position:absolute;pointer-events:none;z-index:0;' +
+          'left:' + ((c - 1) * (cs + gap)) + 'px;' +
+          'top:' + ((r - 1) * (cs + gap)) + 'px;' +
+          'width:' + cs + 'px;height:' + cs + 'px;' +
+          'background:var(--color-primary-fixed);' +
+          'outline:2px solid var(--color-primary);outline-offset:-1px;' +
+          'border-radius:2px;';
+        frag.appendChild(cell);
+        highlightOverlays.push(cell);
+      }
+    }
+    gridCanvas.appendChild(frag);
+  }
+
+  function highlightCellRange(col, row, spanW, spanH) {
+    drawHighlightRange(col, col + spanW - 1, row, row + spanH - 1);
+  }
+
+  function highlightCardCoverage(card) {
+    var cs = getCellSize();
+    var gap = 2;
+    var step = cs + gap;
+    var cols = getGridCols();
+    var x = parseFloat(card.style.left) || 0;
+    var y = parseFloat(card.style.top) || 0;
+    var w = card.offsetWidth || parseFloat(card.style.width) || 0;
+    var h = card.offsetHeight || parseFloat(card.style.height) || 0;
+    if (!w || !h) { hideCellHighlights(); highlightRangeKey = ''; return; }
+    var rotate = parseFloat(card.dataset.rotate) || 0;
+    var bboxW = w, bboxH = h;
+    if (rotate !== 0) {
+      var rad = Math.abs(rotate) * Math.PI / 180;
+      bboxW = Math.abs(w * Math.cos(rad)) + Math.abs(h * Math.sin(rad));
+      bboxH = Math.abs(w * Math.sin(rad)) + Math.abs(h * Math.cos(rad));
+    }
+    var cx = x + w / 2, cy = y + h / 2;
+    // Same canvas clamping as getCardCoverage.
+    var canvasW = cols * cs + (cols - 1) * gap;
+    var x1 = Math.max(0, cx - bboxW / 2);
+    var x2 = Math.min(canvasW, cx + bboxW / 2);
+    var y1 = Math.max(0, cy - bboxH / 2);
+    var y2 = Math.min(totalRows * step, cy + bboxH / 2);
+    // Cells intersecting the bbox. The −1 on the far edge keeps a bbox that
+    // ends exactly on a grid line inside the previous cell instead of
+    // lighting an extra one (a zero-width touch is not coverage — the
+    // engine's overlapArea treats it the same way).
+    var c1 = Math.max(1, Math.floor(x1 / step) + 1);
+    var c2 = Math.min(cols, Math.floor((x2 - 1) / step) + 1);
+    var r1 = Math.max(1, Math.floor(y1 / step) + 1);
+    var r2 = Math.floor((y2 - 1) / step) + 1;
+    if (c2 < c1 || r2 < r1) { hideCellHighlights(); highlightRangeKey = ''; return; }
+    drawHighlightRange(c1, c2, r1, r2);
+  }
+
+  function hideCellHighlights() {
+    highlightOverlays.forEach(function (el) { el.remove(); });
+    highlightOverlays = [];
+    highlightRangeKey = '';
+  }
+
+  // ── Current flag card (for flag selection flow) ──
+  var currentFlagCard = null;
+  function setCurrentFlagCard(card) {
+    currentFlagCard = card;
+  }
+  window.setCurrentFlagCard = setCurrentFlagCard;
+
+  // ── Flag Source Modal ──
+  function openFlagSourceModal() {
+    openModal('flagSourceModal');
+  }
+  window.openFlagSourceModal = openFlagSourceModal;
+
+  function handleFlagFileUpload(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      closeAllModals();
+      if (!currentFlagCard) return;
+      setCardImage(currentFlagCard, e.target.result, file.name.replace(/\.[^.]+$/, ''));
+      onContentChange();
+      showToast('Flag uploaded: ' + file.name);
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+  window.handleFlagFileUpload = handleFlagFileUpload;
+
+  // ── Flag Browser ──
+  var SEED_FLAGS = [
+    { id: 'f1', name: 'Tricolor Standard', colors: ['#4648d4','#ffffff','#ea580c'], used: 342 },
+    { id: 'f2', name: 'Celestial Banner',    colors: ['#1e1c32','#f5c542','#1e1c32'], used: 287 },
+    { id: 'f3', name: 'Verdant Star',        colors: ['#16a34a','#ffffff','#16a34a'], used: 256 },
+    { id: 'f4', name: 'Crimson Horizon',     colors: ['#ba1a1a','#f59e0b','#ba1a1a'], used: 231 },
+    { id: 'f5', name: 'Azure Cross',         colors: ['#3b82f6','#ffffff','#3b82f6'], used: 198 },
+    { id: 'f6', name: 'Golden Field',        colors: ['#eab308','#1e1c32','#eab308'], used: 175 },
+    { id: 'f7', name: 'Obsidian Crest',      colors: ['#191c1e','#8127cf','#191c1e'], used: 154 },
+    { id: 'f8', name: 'Emerald Waves',       colors: ['#064e3b','#22c55e','#064e3b'], used: 132 },
+    { id: 'f9', name: 'Sunfire Standard',    colors: ['#ea580c','#fef3c7','#ea580c'], used: 118 },
+    { id: 'f10', name: 'Frostpeak Pennant',  colors: ['#e0e7ff','#6366f1','#e0e7ff'], used: 97 },
+    { id: 'f11', name: 'Coastal Saltire',    colors: ['#06b6d4','#ffffff','#0284c7'], used: 85 },
+    { id: 'f12', name: 'Iron Mantle',        colors: ['#44403c','#f97316','#44403c'], used: 73 }
+  ];
+
+  var MY_FLAGS = [
+    { id: 'mf1', name: 'Etheria Standard',   colors: ['#4648d4','#f7f9fb','#4648d4'], used: 12 },
+    { id: 'mf2', name: 'Slati Crest',        colors: ['#191c1e','#c0c1ff','#191c1e'], used: 8 },
+    { id: 'mf3', name: 'River Province',     colors: ['#064e3b','#22c55e','#ffffff'], used: 5 }
+  ];
+
+  var selectedFlagId = null;
+  var currentFlagTab = 'search';
+
+  function renderFlagStripes(colors) {
+    var stripeH = 100 / colors.length;
+    return colors.map(function (c, i) {
+      return '<div style="height:' + stripeH + '%;background:' + c + '"></div>';
+    }).join('');
+  }
+
+  function applyFlagToCard(card, name, colors) {
+    var stripesHtml = renderFlagStripes(colors);
+    setCardStripes(card, stripesHtml, name);
+  }
+
+  function renderFlagGrid(flags) {
+    var grid = document.getElementById('flagGrid');
+    grid.innerHTML = flags.map(function (f) {
+      var isSel = selectedFlagId === f.id;
+      return '<div class="flag-card-item' + (isSel ? ' selected' : '') + '" data-flag-id="' + f.id + '" onclick="selectFlag(\'' + f.id + '\')" ondblclick="selectFlag(\'' + f.id + '\');confirmFlagSelection()">' +
+        '<div class="flag-thumb-stripes" style="width:100%;height:80px;display:flex;flex-direction:column">' + renderFlagStripes(f.colors) + '</div>' +
+        '<div class="flag-name">' + f.name + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function openFlagBrowser() {
+    selectedFlagId = null;
+    currentFlagTab = 'search';
+    document.querySelectorAll('.flag-browser-tab').forEach(function (t, i) {
+      t.classList.toggle('active', i === 0);
+    });
+    document.getElementById('flagSearchInput').value = '';
+    document.getElementById('flagSelectCount').textContent = '0 selected';
+    renderFlagGrid(SEED_FLAGS);
+    openModal('flagBrowserModal');
+  }
+  window.openFlagBrowser = openFlagBrowser;
+
+  function switchFlagTab(tab) {
+    currentFlagTab = tab;
+    document.querySelectorAll('.flag-browser-tab').forEach(function (t) {
+      t.classList.toggle('active', t.dataset.tab === tab);
+    });
+    selectedFlagId = null;
+    document.getElementById('flagSelectCount').textContent = '0 selected';
+    document.getElementById('flagSearchInput').value = '';
+    renderFlagGrid(tab === 'myflag' ? MY_FLAGS : SEED_FLAGS);
+  }
+  window.switchFlagTab = switchFlagTab;
+
+  function selectFlag(id) {
+    selectedFlagId = id;
+    var flags = currentFlagTab === 'myflag' ? MY_FLAGS : SEED_FLAGS;
+    var flag = flags.find(function (f) { return f.id === id; });
+    document.getElementById('flagSelectCount').textContent = flag ? 'Selected: ' + flag.name : '0 selected';
+    document.querySelectorAll('.flag-card-item').forEach(function (c) {
+      c.classList.toggle('selected', c.dataset.flagId === id);
+    });
+  }
+  window.selectFlag = selectFlag;
+
+  function filterFlags() {
+    var q = document.getElementById('flagSearchInput').value.toLowerCase();
+    var flags = currentFlagTab === 'myflag' ? MY_FLAGS : SEED_FLAGS;
+    var filtered = flags.filter(function (f) { return f.name.toLowerCase().includes(q); });
+    renderFlagGrid(filtered);
+  }
+  window.filterFlags = filterFlags;
+
+  function confirmFlagSelection() {
+    if (!selectedFlagId || !currentFlagCard) return;
+    var flags = currentFlagTab === 'myflag' ? MY_FLAGS : SEED_FLAGS;
+    var flag = flags.find(function (f) { return f.id === selectedFlagId; });
+    if (!flag) return;
+    applyFlagToCard(currentFlagCard, flag.name, flag.colors);
+    closeAllModals();
+    onContentChange();
+    showToast('Flag set: ' + flag.name);
+  }
+  window.confirmFlagSelection = confirmFlagSelection;
+
+  // ── Asset Panel Search ──
+  function filterAssets(val) {
+    var q = val.toLowerCase();
+    document.querySelectorAll('.asset-panel .card').forEach(function (c) {
+      c.style.display = c.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+  window.filterAssets = filterAssets;
+
+  // ── Selection → Card ──
+  var selToolbar = document.getElementById('selToolbar');
+
+  function showSelToolbar(x, y) {
+    selToolbar.style.left = x + 'px';
+    selToolbar.style.top = y + 'px';
+    selToolbar.classList.add('visible');
+  }
+
+  function hideSelToolbar() {
+    selToolbar.classList.remove('visible');
+  }
+
+  // Listen for text selection on the entire editor body
+  document.querySelector('.editor-body').addEventListener('mouseup', function (e) {
+    setTimeout(function () {
+      var sel = window.getSelection();
+      if (!sel.rangeCount || sel.isCollapsed) { hideSelToolbar(); return; }
+      var range = sel.getRangeAt(0);
+      var p = closestPara(range.startContainer);
+      if (!p || p !== closestPara(range.endContainer)) {
+        hideSelToolbar();
+        return;
+      }
+      var rect = range.getBoundingClientRect();
+      showSelToolbar(rect.left + rect.width / 2, rect.top);
+    }, 10);
+  });
+
+  document.addEventListener('mousedown', function (e) {
+    if (!e.target.closest('.sel-toolbar')) hideSelToolbar();
+  });
+
+  function createCardFromSelection() {
+    var sel = window.getSelection();
+    if (!sel.rangeCount || sel.isCollapsed) return;
+    var range = sel.getRangeAt(0);
+    var p = closestPara(range.startContainer);
+    if (!p || p !== closestPara(range.endContainer)) return;
+
+    var content = range.cloneContents();
+    var text = range.toString().trim();
+    if (!text) { hideSelToolbar(); return; }
+
+    // Determine grid position from the selection's bounding rect
+    var rect = range.getBoundingClientRect();
+    var canvasRect = gridCanvas.getBoundingClientRect();
+    var cs = getCellSize();
+    var gap = 2;
+    var relX = rect.left - canvasRect.left + gridCanvas.parentElement.scrollLeft;
+    var relY = rect.top - canvasRect.top + gridCanvas.parentElement.scrollTop;
+    var col = Math.max(1, Math.floor(relX / (cs + gap)) + 1);
+    var row = Math.max(1, Math.floor(relY / (cs + gap)) + 1);
+    var cols = getGridCols();
+    if (col > cols) col = cols;
+
+    var spanW = Math.min(cols - col + 1, Math.max(3, Math.ceil(text.length / 8)));
+    var spanH = Math.max(2, Math.ceil(text.length / (spanW * 5)));
+
+    // Delete the selected content from the paragraph
+    range.deleteContents();
+    p.normalize();
+
+    var tmp = document.createElement('div');
+    tmp.appendChild(content);
+
+    var card = document.createElement('div');
+    card.className = 'grid-card';
+    card.dataset.cardType = 'text';
+    card.dataset.cardId = getNextCardId();
+    card.dataset.label = text.slice(0, 40);
+    card.style.background = 'var(--color-surface-container)';
+    card.style.border = '1px solid var(--divider-line-strong)';
+    card.style.borderRadius = '8px';
+    card.style.padding = '8px';
+    card.style.overflow = 'auto';
+    card.style.fontSize = '13px';
+    card.style.lineHeight = '1.5';
+    card.style.color = 'var(--color-on-surface)';
+    card.innerHTML = tmp.innerHTML || text;
+    card.contentEditable = 'true';
+    card.addEventListener('input', function () { onContentChange(); });
+    card.addEventListener('click', function (e) { if (!e.target.closest('.card-label')) selectCard(card); });
+    card.addEventListener('contextmenu', function (e) { e.preventDefault(); selectCard(card); showContextMenu(e.clientX, e.clientY); });
+    addCardDrag(card);
+    gridCanvas.appendChild(card);
+    positionCard(card, col, row, spanW, spanH);
+
+    hideSelToolbar();
+    layoutText();
+    onContentChange();
+    showToast('Card created from selection');
+  }
+  window.createCardFromSelection = createCardFromSelection;
+
+  // ── Asset Panel Toggle ──
+  function toggleAssetPanel() {
+    var panel = document.querySelector('.asset-panel');
+    var btn = document.querySelector('.asset-panel-toggle');
+    panel.classList.toggle('collapsed');
+    btn.innerHTML = panel.classList.contains('collapsed') ? '▸' : '◂';
+    setTimeout(refitColumns, 300); // wait for CSS transition then refit
+  }
+  window.toggleAssetPanel = toggleAssetPanel;
+
+  // ── Viewport Preset System ──
+  var PRESETS = {
+    '169':    { cellSize: 20, label: '16:9' },
+    'half':   { cellSize: 24, label: '½ 16:9' },
+    'tablet': { cellSize: 20, label: 'Tablet' },
+    'mobile': { cellSize: 18, label: 'Mobile' }
+  };
+  var currentPreset = '169';
+  var currentCols = 40; // computed dynamically
+  // Stores per-preset card positions: { '169': { cards: { 'c1': {col,row,colSpan,rowSpan}, ... } }, ... }
+  var presetData = {};
+
+  function initPresetData() {
+    Object.keys(PRESETS).forEach(function (key) {
+      if (!presetData[key]) presetData[key] = { cards: {} };
+    });
+  }
+
+  // Calculate how many columns fit in the available width
+  function computeCols() {
+    var body = gridCanvas.parentElement; // .editor-body
+    var avail = body.clientWidth - 20; // padding buffer
+    var cs = getCellSize();
+    var gap = 2;
+    return Math.max(12, Math.floor((avail + gap) / (cs + gap)));
+  }
+
+  function applyPreset(name) {
+    if (!PRESETS[name]) return;
+    currentPreset = name;
+    var p = PRESETS[name];
+    gridCanvas.style.setProperty('--cell-size', p.cellSize + 'px');
+    currentCols = computeCols();
+    gridCanvas.style.setProperty('--grid-cols', currentCols);
+    document.querySelectorAll('.vp-presets .vp-btn').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.preset === name);
+    });
+    document.querySelectorAll('.grid-controls .col-btn').forEach(function (b) {
+      if (b.textContent.indexOf('px') !== -1) {
+        b.classList.toggle('active', parseInt(b.textContent) === p.cellSize);
+      }
+    });
+  }
+
+  // Save card positions for current preset
+  function saveCurrentPresetCards() {
+    if (!presetData[currentPreset]) presetData[currentPreset] = { cards: {} };
+    presetData[currentPreset].cards = {};
+    getAllCards().forEach(function (c) {
+      presetData[currentPreset].cards[c.dataset.cardId] = {
+        col: parseFloat(c.dataset.col) || 1,
+        row: parseFloat(c.dataset.row) || 1,
+        colSpan: parseFloat(c.dataset.colSpan) || 4,
+        rowSpan: parseFloat(c.dataset.rowSpan) || 3
+      };
+    });
+  }
+
+  // Apply saved card positions for the current preset
+  function applyPresetCardPositions() {
+    var data = presetData[currentPreset];
+    if (!data || !data.cards) return;
+    getAllCards().forEach(function (c) {
+      var saved = data.cards[c.dataset.cardId];
+      if (saved) {
+        positionCardSilent(c, saved.col, saved.row, saved.colSpan, saved.rowSpan);
+      } else {
+        var free = findFreeCell(
+          parseFloat(c.dataset.colSpan) || 4,
+          parseFloat(c.dataset.rowSpan) || 3
+        );
+        positionCardSilent(c, free.col, free.row,
+          parseFloat(c.dataset.colSpan) || 4,
+          parseFloat(c.dataset.rowSpan) || 3
+        );
+      }
+    });
+    layoutText();
+  }
+
+  function switchPreset(name) {
+    if (!PRESETS[name] || name === currentPreset) return;
+    saveCurrentPresetCards();
+    applyPreset(name);
+    applyPresetCardPositions();
+    onContentChange();
+  }
+  window.switchPreset = switchPreset;
+
+  // Refit columns on window resize or asset panel toggle
+  function refitColumns() {
+    if (!currentPreset) return;
+    var newCols = computeCols();
+    if (newCols !== currentCols) {
+      currentCols = newCols;
+      gridCanvas.style.setProperty('--grid-cols', currentCols);
+      getAllCards().forEach(function (c) {
+        var col = parseFloat(c.dataset.col) || 1;
+        var span = parseFloat(c.dataset.colSpan) || 4;
+        if (col + span - 1 > currentCols) {
+          c.dataset.col = Math.max(1, currentCols - span + 1);
+        }
+        positionCardSilent(c,
+          parseFloat(c.dataset.col) || 1,
+          parseFloat(c.dataset.row) || 1,
+          parseFloat(c.dataset.colSpan) || 4,
+          parseFloat(c.dataset.rowSpan) || 3
+        );
+      });
+      layoutText();
+    }
+  }
+
+  // ── Init ──
+  initPresetData();
+  applyPreset('169');
+  createParagraph('');
+  loadDraft();
+  layoutText();
+  updateWordCount();
+  if (!titleInput.value) {
+    saveStatusEl.textContent = 'Ready';
+  }
+
+  // Refit on window resize
+  var resizeTimer;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(refitColumns, 250);
+  });
+
+  // ── Click on empty canvas ──
+  // Clicking below the last paragraph creates (or focuses) a new empty
+  // paragraph, Notion-style; clicking anywhere else on the empty canvas
+  // just deselects.
+  gridCanvas.addEventListener('mousedown', function (e) {
+    if (e.target !== gridCanvas) return;
+    hideContextMenu();
+    var paras = getAllParagraphs();
+    var last = paras.length ? paras[paras.length - 1] : null;
+    var y = e.clientY - gridCanvas.getBoundingClientRect().top;
+    var below = !last || y > (parseFloat(last.style.top) || 0) + last.offsetHeight + 4;
+    if (below) {
+      if (last && paraTextCharLength(last) === 0) {
+        focusParaAt(last, 0);
+      } else {
+        var np = createParagraph('');
+        deselectAll();
+        try { layoutText(); } catch (err) { console.error('[FluidCanvas] layout:', err); }
+        focusParaAt(np, 0);
+      }
+    } else {
+      deselectAll();
+    }
+  });
+
+  // ── Scroll to expand rows ──
+  gridCanvas.parentElement.addEventListener('scroll', function () {
+    var scrollEl = gridCanvas.parentElement;
+    var cs = getCellSize();
+    var gap = 2;
+    if (scrollEl.scrollTop + scrollEl.clientHeight > scrollEl.scrollHeight - 200) {
+      totalRows += 20;
+      gridCanvas.style.height = (totalRows * (cs + gap)) + 'px';
+    }
+  });
+
+  // Expose
+  window.saveDraft = saveDraft;
+  window.createFlagCard = createFlagCard;
+  window.createAssetCard = createAssetCard;
+  window.rotateCard = rotateCard;
+
+  // Self-check log — paste this into the chat if something looks wrong:
+  // it shows paragraph/card counts, and warns if any paragraph still sits
+  // heavily (≥80%) under a card after layout — the dodge should have moved
+  // it away.
+  var cardCount = getAllCards().length;
+  var paraCount = getAllParagraphs().length;
+  var spacerCount = 0;
+  getAllParagraphs().forEach(function (p) {
+    spacerCount += p.querySelectorAll('.text-spacer').length;
+  });
+  console.log('[FluidCanvas] ready (v7.4) — paragraphs: ' + paraCount + ', cards: ' + cardCount +
+    ', wrap spacers: ' + spacerCount);
+  var covs = getCardCoverage();
+  var cardsNow = getAllCards();
+  var bad = 0;
+  var missing = 0;
+  getAllParagraphs().forEach(function (p) {
+    var box = {
+      x: parseFloat(p.style.left) || PARA_PAD_X,
+      y: parseFloat(p.style.top) || PARA_PAD_Y,
+      w: p.offsetWidth,
+      h: p.offsetHeight
+    };
+    covs.forEach(function (cov, ci) {
+      if (!cov) return;
+      if (overlapArea(box, cov) >= OVERLAP_TRIGGER * box.w * box.h) bad++;
+      // Text/card intersection without a wrap spacer = wrap anchoring failed
+      var bandY1 = Math.max(cov.y1, box.y);
+      var bandY2 = Math.min(cov.y2, box.y + box.h);
+      var xOverlap = Math.min(cov.x2, box.x + box.w) - Math.max(cov.x1, box.x);
+      if (bandY2 - bandY1 >= 2 && xOverlap >= 2) {
+        var card = cardsNow[ci];
+        if (card && !p.querySelector('.text-spacer[data-card-id="' + card.dataset.cardId + '"]')) missing++;
+      }
+    });
+  });
+  if (bad) console.warn('[FluidCanvas] ⚠ ' + bad + ' paragraph(s) still heavily covered by a card');
+  if (missing) console.warn('[FluidCanvas] ⚠ ' + missing + ' card/text intersection(s) without a wrap spacer');
+  if (wrapSyncErrorLogged) console.warn('[FluidCanvas] ⚠ wrap sync errors were swallowed (see error above)');
+
+  // Tiny build badge (bottom-right) — confirms the loaded file is the latest
+  // build when reporting issues. Remove once stabilized.
+  (function () {
+    var b = document.createElement('div');
+    b.textContent = 'FC v7.4';
+    b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
+      'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
+      'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
+    document.body.appendChild(b);
+  })();
+})();
+</script>
+
+<!-- ═══ RIGHT-CLICK CONTEXT MENU ═══ -->
+<div class="context-menu" id="contextMenu">
+  <button class="context-menu-item" onclick="openBorderRadiusPopover()">
+    <span class="material-symbols-outlined">rounded_corner</span> Adjust border radius
+  </button>
+  <button class="context-menu-item" onclick="openCardBackgroundModal()">
+    <span class="material-symbols-outlined">palette</span> Custom card background
+  </button>
+  <button class="context-menu-item" onclick="openBorderStyleModal()">
+    <span class="material-symbols-outlined">border_style</span> Select border edge style
+  </button>
+  <button class="context-menu-item" onclick="openRotateCardPopover()">
+    <span class="material-symbols-outlined">rotate_right</span> Rotate card
+  </button>
+  <div class="context-menu-divider"></div>
+  <button class="context-menu-item" onclick="saveCardAsTemplate()">
+    <span class="material-symbols-outlined">bookmark</span> Save as template
+  </button>
+  <div class="context-menu-divider"></div>
+  <button class="context-menu-item danger" onclick="deleteSelectedCard()">
+    <span class="material-symbols-outlined">delete</span> Delete
+  </button>
+</div>
+
+<!-- ═══ RADIUS POPOVER ═══ -->
+<div class="radius-popover" id="radiusPopover">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label-sm" style="color:var(--color-outline)">Corner radius: <strong id="radiusValue">8px</strong></span>
+    <input type="range" id="radiusSlider" min="0" max="90" value="8" step="1" oninput="updateCardBorderRadius(this.value)" style="width:100%;accent-color:var(--color-primary)">
+    <div style="display:flex;gap:4px">
+      <button class="btn btn-ghost btn-sm" onclick="updateCardBorderRadius(0)" style="flex:1">0°</button>
+      <button class="btn btn-ghost btn-sm" onclick="updateCardBorderRadius(8)" style="flex:1">8px</button>
+      <button class="btn btn-ghost btn-sm" onclick="updateCardBorderRadius(16)" style="flex:1">16px</button>
+      <button class="btn btn-ghost btn-sm" onclick="updateCardBorderRadius(40)" style="flex:1">40px</button>
+      <button class="btn btn-ghost btn-sm" onclick="updateCardBorderRadius(90)" style="flex:1">90°</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ROTATE POPOVER ═══ -->
+<div class="radius-popover" id="rotatePopover">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <span class="label-sm" style="color:var(--color-outline)">Rotation: <strong id="rotateValue">0°</strong></span>
+    <input type="range" id="rotateSlider" min="-180" max="180" value="0" step="1" oninput="rotateCard(this.value)" style="width:100%;accent-color:var(--color-primary)">
+    <div style="display:flex;gap:4px">
+      <button class="btn btn-ghost btn-sm" onclick="rotateCard(-90)" style="flex:1">-90°</button>
+      <button class="btn btn-ghost btn-sm" onclick="rotateCard(-45)" style="flex:1">-45°</button>
+      <button class="btn btn-ghost btn-sm" onclick="rotateCard(0)" style="flex:1">0°</button>
+      <button class="btn btn-ghost btn-sm" onclick="rotateCard(45)" style="flex:1">45°</button>
+      <button class="btn btn-ghost btn-sm" onclick="rotateCard(90)" style="flex:1">90°</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CARD BACKGROUND MODAL ═══ -->
+<div class="modal-container" id="bgModal">
+  <div class="modal-card" style="max-width:480px">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md">Custom Card Background</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-sm)" id="bgCardDims">Card size: 200px × 200px</p>
+    <div style="margin-bottom:var(--space-md)">
+      <span class="label-md">Preset colors</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px" id="colorPresets"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--space-md)">
+      <span class="label-md">Color wheel:</span>
+      <input type="color" id="bgColorPicker" onchange="applyCardBackgroundColor(this.value)" style="width:40px;height:40px;border:none;cursor:pointer;border-radius:50%;padding:0">
+    </div>
+    <div class="flag-source-options">
+      <button class="flag-source-btn" onclick="document.getElementById('bgFileInput').click()">
+        <span class="material-symbols-outlined">upload_file</span>
+        <span class="source-title">Upload from file</span>
+        <span class="source-desc">Use an image as background</span>
+      </button>
+      <input type="file" id="bgFileInput" accept="image/*" style="display:none" onchange="handleBgFileUpload(this)">
+      <button class="flag-source-btn" onclick="searchBgImage()">
+        <span class="material-symbols-outlined">search</span>
+        <span class="source-title">Search on web</span>
+        <span class="source-desc">Find images online</span>
+      </button>
+    </div>
+    <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-md)">
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="clearCardBackground()">Clear background</button>
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="closeAllModals()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BORDER STYLE MODAL ═══ -->
+<div class="modal-container" id="borderStyleModal">
+  <div class="modal-card" style="max-width:420px">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md">Border Edge Style</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px" id="borderStyleOptions"></div>
+    <div style="margin-top:var(--space-md);display:flex;align-items:center;gap:12px">
+      <span class="label-md">Width:</span>
+      <input type="range" id="borderWidthSlider" min="0" max="8" value="2" oninput="updateCardBorderWidth(this.value)" style="flex:1;accent-color:var(--color-primary)">
+      <span id="borderWidthVal" class="label-md">2px</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+      <span class="label-md">Color:</span>
+      <input type="color" id="borderColorPicker" value="#c8c8d0" onchange="updateCardBorderColor(this.value)" style="width:32px;height:32px;border:none;cursor:pointer;border-radius:50%;padding:0">
+    </div>
+    <button class="btn btn-primary btn-sm" style="margin-top:var(--space-md);width:100%" onclick="closeAllModals()">Done</button>
+  </div>
+</div>
+
+<!-- ═══ TEMPLATE LIBRARY MODAL ═══ -->
+<div class="modal-container" id="templateModal">
+  <div class="modal-card" style="max-width:560px">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md">Card Templates</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="flag-grid custom-scrollbar" id="templateGrid" style="max-height:320px"></div>
+    <p class="label-sm" style="color:var(--color-outline);text-align:center;margin-top:var(--space-sm)" id="noTemplatesMsg">No saved templates yet. Right-click a card → Save as template.</p>
+  </div>
+</div>
+
+</body>
+</html>

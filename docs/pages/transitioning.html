@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transitioning... — M.NationWorld</title>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background:
+        radial-gradient(ellipse at 50% 30%, rgba(70,72,212,0.15) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 70%, rgba(129,39,207,0.1) 0%, transparent 60%),
+        linear-gradient(180deg, #06060f 0%, #0a0a1a 50%, #06060f 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.8s ease;
+    }
+    .countdown-card {
+      text-align: center;
+      padding: var(--space-xl);
+      max-width: 500px;
+      width: 90%;
+    }
+    .countdown-number {
+      font-size: 120px;
+      font-weight: 800;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      transition: transform 0.15s ease;
+    }
+    .countdown-number.pulse { transform: scale(1.1); }
+    .ring-bg {
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--space-md);
+      position: relative;
+    }
+    .ring-bg .icon-circle {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: rgba(70,72,212,0.1);
+      border: 1px solid rgba(70,72,212,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="countdown-card liquid-glass" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06)">
+  <div class="ring-bg" id="ringContainer">
+    <div class="icon-circle" id="iconContainer">
+      <span class="material-symbols-outlined animate-spin" id="iconEl" style="font-size:28px;color:var(--color-primary)">sync</span>
+    </div>
+  </div>
+
+  <div class="countdown-number" id="countdownNumber">5</div>
+
+  <h2 class="headline-md" id="statusTitle" style="margin-bottom:4px">Establishing Connection</h2>
+  <p class="body-md" id="statusText" style="color:rgba(255,255,255,0.5)">
+    Initializing sovereign workspace...
+  </p>
+
+  <div style="margin-top:var(--space-md)">
+    <span style="font-size:var(--fs-label-sm);color:rgba(255,255,255,0.3)">M.NationWorld Console v2.4.1</span>
+  </div>
+</div>
+
+<script>
+  var count = 5;
+  var numberEl = document.getElementById('countdownNumber');
+  var titleEl = document.getElementById('statusTitle');
+  var textEl = document.getElementById('statusText');
+  var iconEl = document.getElementById('iconEl');
+
+  var messages = [
+    { title: 'Establishing Connection', text: 'Initializing sovereign workspace...' },
+    { title: 'Loading Modules', text: 'Preparing micronation tools...' },
+    { title: 'Syncing Registry', text: 'Connecting to global ledger...' },
+    { title: 'Calibrating Console', text: 'Optimizing dashboard layout...' },
+    { title: 'Almost Ready', text: 'Finalizing workspace permissions...' },
+  ];
+
+  var timer = setInterval(function () {
+    count--;
+    numberEl.textContent = count > 0 ? count : '';
+
+    // Pulse animation
+    numberEl.classList.add('pulse');
+    setTimeout(function () { numberEl.classList.remove('pulse'); }, 150);
+
+    if (count <= 0) {
+      clearInterval(timer);
+      // Show verified
+      numberEl.textContent = '';
+      iconEl.textContent = 'verified';
+      iconEl.classList.remove('animate-spin');
+      iconEl.style.color = '#22c55e';
+      iconEl.classList.add('animate-scale-in');
+      titleEl.textContent = 'Welcome, Sovereign';
+      titleEl.style.color = '#22c55e';
+      textEl.textContent = 'Your console is ready.';
+
+      // Redirect after brief pause
+      setTimeout(function () {
+        document.body.style.opacity = '0';
+        setTimeout(function () {
+          window.location.href = 'dashboard.html';
+        }, 800);
+      }, 1200);
+    } else {
+      var msg = messages[5 - count - 1] || messages[4];
+      titleEl.textContent = msg.title;
+      textEl.textContent = msg.text;
+    }
+  }, 1000);
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

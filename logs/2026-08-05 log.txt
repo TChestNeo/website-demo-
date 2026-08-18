@@ -1,0 +1,158 @@
+SlatiWorld Project — Development Log
+Date: 2026-08-05
+
+============================================================
+SUMMARY
+============================================================
+
+Continued frontend development with focus on:
+- Collapsible sidebar system
+- FluidCanvas personal/team account selector
+- Messages page Discord-style server/Groups redesign
+- Independent server page (server.html) with text/voice/forum channels
+- Premium subscription page with localized pricing
+- Cyberfall animated background (WebGL shader)
+- Black hole visualization (Gargantua style GLSL shader)
+
+============================================================
+COLLAPSIBLE SIDEBAR
+============================================================
+
+Updated docs/assets/js/sidebar.js:
+- Collapse button with left_panel_close/left_panel_open icons
+- Expanded: 260px sidebar with full text
+- Collapsed: 64-72px icon-only strip
+- Auto-collapse at 1024px window width (responsive)
+- Floating overlay mode on small screens (doesn't push content)
+- localStorage persistence across pages
+- Smooth CSS transitions (width, opacity, padding)
+- Brand module: logo + collapse button on same row
+- User module: banner top + avatar/info bottom layout
+- Active nav item glow animation
+
+============================================================
+FLUIDCANVAS IMPROVEMENTS
+============================================================
+
+- Personal/Team account selector bar at top
+- Team section: iOS-style vertical scroll with snap-dots
+- No teams: "Create Team" CTA at 1/4 width
+- Click to expand/collapse between 3/4 and 1/4
+- Content switches based on selected account
+- Horizontal slide animation for personal↔team
+- Vertical slide animation for team↔team (by list order)
+- Analytics page (fluidcanvas-analytics.html) with period selector
+- Studio dashboard + editor split (fluidcanvas.html + fluidcanvas-editor.html)
+
+============================================================
+MESSAGES PAGE (Discord-style redesign)
+============================================================
+
+- Private/Groups tabs with slide+fade animation
+- Server tab renamed, shows "Coming Soon" placeholder
+- Groups → Server with construction page until beta
+
+Created server.html — independent server page:
+- Discord-style 3-column layout (server icons | channel sidebar | chat)
+- URL routing via ?id= parameter
+- Text channels: message history + send messages (localStorage)
+- Voice channels: Web Audio API integration
+  - Microphone access via getUserMedia
+  - Real-time volume meter (AnalyserNode)
+  - Mute/unmute mic toggle
+  - Deafen toggle
+  - Mic test button (hear yourself with 30% gain)
+  - Call timer (MM:SS)
+  - Red disconnect button
+- Forum channels: thread list + create posts with tags
+  - Right-sliding thread detail panel
+  - Reply with file attachments (image preview, video player)
+  - Image lightbox (click to view full size)
+- Server dropdown menu (Invite, Settings, Notifications, Leave)
+- Invite modal with "Link Copied" popup
+- Channel search/filter
+- 8 server templates (Government, Diplomacy, Worldbuilding, Military, Trade, RP, Culture, Blank)
+- Create server modal with template selection + channel preview
+- Servers persisted in localStorage
+
+============================================================
+PREMIUM SUBSCRIPTION PAGE
+============================================================
+
+Created premium.html — standalone full-width pricing page:
+- Three subscription tiers: Basic / Premium / Premium Ultra
+- Two bundle packages: Premium Package / Premium Ultra Package
+- Complete feature matrix (10 rows × 3 columns)
+- Add-ons section: Verification, Boost, 4× Team Member Slots
+- Localized pricing for 12+ regions:
+  - Taiwan (NT$), Macau (MOP$), Hong Kong (HK$)
+  - Indonesia (Rp), Malaysia (RM)
+  - Americas (USD), Europe (EUR)
+  - Vietnam (₫), Thailand (฿), Myanmar (K)
+- Timezone-based auto-detection (Intl.DateTimeFormat)
+- 3-2-1 countdown overlay on subscribe button click
+- Staggered page entrance animations (reveal-up with delays)
+- Premium subscription cards embedded in:
+  - Dashboard sidebar
+  - Community Hub sidebar
+  - MicroNationary Overview sidebar
+  - MicroNationary Explore sidebar
+
+Background: Cyberfall — WebGL + DOM + SVG
+- WebGL fragment shader: deep void, purple aurora, neon particles, scanlines, diagonal beams
+- Floating DOM elements: glass cubes, paper fragments, geometric lines
+- SVG overlay: glowing line fragments, semi-transparent cubes
+- Dark frosted glass cards (rgba(30,28,50,0.7) + backdrop-blur)
+
+============================================================
+BLACK HOLE VISUALIZATION (blackhole-demo.html)
+============================================================
+
+Pure WebGL fragment shader:
+- Event Horizon (Schwarzschild radius Rs)
+- Ray-marching with 3D camera rotation matrices
+- Accretion disk with 5-layer FBM noise (filamentary texture)
+- Kepler rotation (ω ∝ r^(-1.5))
+- Gravitational lensing:
+  - Photon ring (ultra-thin, ultra-bright)
+  - Einstein rings (2 layers)
+  - Top and bottom arcs (far-side disk bent around BH)
+- Color temperature gradient (white-hot → gold → amber → dark red)
+- Doppler shift (approaching side brighter/bluer)
+- Planet with rim lighting (scale reference)
+- Two-layer starfield
+- Mouse orbit interaction
+
+============================================================
+CYBERFALL ABSTRACT BACKGROUND (cyberfall-demo.html)
+============================================================
+
+- WebGL shader: void + aurora + neon particles
+- DOM: floating glass cubes, paper fragments, geometric lines
+- SVG: glowing fragments, glass rectangles
+- Initially included crystal piano + falling girl (removed per user request)
+- Later embedded into premium.html as page background
+
+============================================================
+FILE CHANGES
+============================================================
+
+Modified:
+- docs/assets/css/ethereal.css — sidebar collapse/float/responsive CSS
+- docs/assets/js/sidebar.js — full rewrite with collapse logic
+- docs/assets/js/storage.js — added team data, active account tracking
+- docs/pages/dashboard.html — premium card + localized price
+- docs/pages/community-hub.html — premium sidebar card
+- docs/pages/overview.html — premium sidebar card
+- docs/pages/explore.html — premium sidebar card
+- docs/pages/fluidcanvas.html — account selector + analytics menu
+- docs/pages/messages.html — Server tab, Coming Soon, create modal
+
+Created:
+- docs/pages/server.html — independent server page (text/voice/forum)
+- docs/pages/fluidcanvas-editor.html — standalone FluidCanvas editor
+- docs/pages/fluidcanvas-analytics.html — analytics dashboard
+- docs/pages/premium.html — full subscription pricing page
+- docs/pages/blackhole-demo.html — Gargantua black hole shader
+- docs/pages/cyberfall-demo.html — abstract cyberpunk background
+- docs/assets/SlatiWorld_Project_Overview.txt — pricing document (converted from PDF)

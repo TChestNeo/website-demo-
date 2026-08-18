@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Following | M.NationWorld</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <!-- Header -->
+    <header class="flex-between" style="margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-sm)">
+      <div>
+        <h1 class="headline-lg" style="margin-bottom:2px">Following</h1>
+        <p class="label-md" style="color:var(--color-outline)">Stay connected with nations, topics, and citizens you care about</p>
+      </div>
+      <div class="search-capsule">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" placeholder="Search followed...">
+      </div>
+    </header>
+
+    <!-- Main subnav -->
+    <div class="subnav" data-slider id="mainTabs" style="margin-bottom:var(--space-md)">
+      <button class="subnav-pill active" data-tab="feed">Feed</button>
+      <button class="subnav-pill" data-tab="following">Following</button>
+      <button class="subnav-pill" data-tab="discover">Discover</button>
+    </div>
+
+    <!-- Two-column grid -->
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:var(--space-md)">
+      <!-- LEFT COLUMN -->
+      <div>
+        <!-- Feed Tab -->
+        <div id="feedPanel" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
+
+        <!-- Following Tab -->
+        <div id="followingPanel" style="display:none">
+          <div class="subnav" data-slider id="followingFilter" style="margin-bottom:var(--space-md)">
+            <button class="subnav-pill active" data-filter="all">All</button>
+            <button class="subnav-pill" data-filter="nations">Nations</button>
+            <button class="subnav-pill" data-filter="topics">Topics</button>
+            <button class="subnav-pill" data-filter="users">Users</button>
+          </div>
+          <div id="followingList" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
+          <div id="followingEmpty" style="display:none;text-align:center;padding:var(--space-xl) 0">
+            <span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline);opacity:0.4">favorite_border</span>
+            <p style="color:var(--color-outline);margin-top:var(--space-sm)">Nothing here yet.<br>Discover new content to follow!</p>
+          </div>
+        </div>
+
+        <!-- Discover Tab -->
+        <div id="discoverPanel" style="display:none">
+          <!-- Nations -->
+          <h2 class="headline-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
+            <span class="material-symbols-outlined" style="color:var(--color-primary)">public</span> Nations to Follow
+          </h2>
+          <div id="discoverNations" style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-sm);margin-bottom:var(--space-lg)"></div>
+
+          <!-- Topics -->
+          <h2 class="headline-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
+            <span class="material-symbols-outlined" style="color:var(--color-primary)">forum</span> Topics to Follow
+          </h2>
+          <div id="discoverTopics" style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-sm);margin-bottom:var(--space-lg)"></div>
+
+          <!-- Users -->
+          <h2 class="headline-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
+            <span class="material-symbols-outlined" style="color:var(--color-primary)">person</span> Citizens to Follow
+          </h2>
+          <div id="discoverUsers" style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-sm)"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+        <!-- Premium Card -->
+        <div class="tilt-container" style="border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:white;padding:var(--space-md);position:relative">
+          <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,0.03);border-radius:50%;pointer-events:none"></div>
+          <div style="position:relative;z-index:1">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+              <span class="material-symbols-outlined" style="font-size:20px;color:#eab308">verified</span>
+              <span style="font-weight:700;font-size:13px">M.NationWorld Premium</span>
+            </div>
+            <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4">Advanced analytics, custom themes, priority support.</p>
+            <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;font-size:12px" onclick="window.location.href='premium.html'">
+              <span class="material-symbols-outlined" style="font-size:14px">rocket_launch</span>
+              Subscribe — <span data-slati-price>$4.99</span>/mo
+            </button>
+            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'">View all plans →</button>
+          </div>
+        </div>
+
+        <!-- Stats (Following tab) / Recommendations (Feed tab) -->
+        <div id="rightSidebarSlot"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script src="../assets/js/pricing.js"></script>
+<script src="../assets/js/subnav.js"></script>
+<script>
+(function() {
+  'use strict';
+
+  // ═══════════════════════════════════════════
+  // Data
+  // ═══════════════════════════════════════════
+
+  // -- Seed feed items (from followed entities) --
+  var feedItems = [
+    { type:'nation', id:'NAT-demo-1', icon:'public', badge:'Nation', badgeClass:'badge-primary', name:'Republic of Etheria', desc:'Published a new territorial charter outlining maritime boundaries and resource zones.', time:'2 hours ago' },
+    { type:'topic', id:'TOP-demo-4', icon:'forum', badge:'Topic', badgeClass:'badge-secondary', name:'Governance Design Lab', desc:'New discussion thread: "Liquid Democracy — A Practical Framework for Digital Nations." 89 replies.', time:'3 hours ago' },
+    { type:'user', id:'Marcus Vane', icon:'person', badge:'User', badgeClass:'badge-warning', name:'Marcus Vane', desc:'Published a new sovereign log: "The Architecture of Floating Cities — Phase 2 Blueprints."', time:'5 hours ago' },
+    { type:'nation', id:'NAT-demo-2', icon:'shield', badge:'Nation', badgeClass:'badge-primary', name:'Kingdom of Aethelgard', desc:'Royal decree announced: Renewable Energy Initiative mandating 80% green energy by 2030.', time:'6 hours ago' },
+    { type:'user', id:'Lena Hartmann', icon:'person', badge:'User', badgeClass:'badge-warning', name:'Lena Hartmann', desc:'Contributed a new article to Neo-Venice Archive: "Aquatic Urban Planning — Lessons from the Adriatic."', time:'8 hours ago' },
+    { type:'topic', id:'TOP-demo-1', icon:'forum', badge:'Topic', badgeClass:'badge-secondary', name:'Digital Sovereignty Protocols', desc:'Updated standards for blockchain-based identity verification in micronation governance.', time:'12 hours ago' },
+    { type:'nation', id:'NAT-demo-3', icon:'water', badge:'Nation', badgeClass:'badge-primary', name:'Neo-Venice Collective', desc:'Completed Phase 3 of floating district construction — 2,400 new residential units.', time:'1 day ago' },
+    { type:'user', id:'Kai Zhang', icon:'person', badge:'User', badgeClass:'badge-warning', name:'Kai Zhang', desc:'Posted a detailed economic analysis: "Micro-GDP Growth Projections for Pacific Island Nations."', time:'1 day ago' },
+  ];
+
+  // -- Discover recommendations --
+  var discoverNations = [
+    { id:'nat-disc-1', name:'Solarian Federation', abbr:'SF', color:'#f59e0b', desc:'A space-focused micronation with orbital habitat research programs.', followers: 4230 },
+    { id:'nat-disc-2', name:'Deepwater Accord', abbr:'DA', color:'#3b82f6', desc:'Sub-aquatic colony pioneering deep-sea sustainable living.', followers: 3180 },
+    { id:'nat-disc-3', name:'Skyward Dominion', abbr:'SD', color:'#6366f1', desc:'High-altitude aerostat cities with advanced atmospheric engineering.', followers: 5620 },
+    { id:'nat-disc-4', name:'Greenbelt Confederation', abbr:'GC', color:'#22c55e', desc:'Eco-nation spanning forest territories with zero-carbon infrastructure.', followers: 2890 },
+  ];
+  var discoverTopics = [
+    { id:'top-disc-1', name:'Micronation Economics', icon:'account_balance', members: 920, desc:'Currency design, trade agreements, and micro-GDP modeling.' },
+    { id:'top-disc-2', name:'Flag & Heraldry Guild', icon:'flag', members: 1150, desc:'Vexillology, coat-of-arms design, and national symbolism.' },
+    { id:'top-disc-3', name:'AI-Assisted Governance', icon:'smart_toy', members: 2340, desc:'Exploring LLMs and automation in legislative processes.' },
+    { id:'top-disc-4', name:'Treaty Drafting Lab', icon:'gavel', members: 680, desc:'Collaborative drafting and peer review of bilateral treaties.' },
+  ];
+  var discoverUsers = [
+    { id:'user-disc-1', name:'Dr. Amina Okonkwo', avatar:'AO', role:'Political Theorist', color:'#4648d4' },
+    { id:'user-disc-2', name:'Yuki Tanaka', avatar:'YT', role:'Cartographer', color:'#16a34a' },
+    { id:'user-disc-3', name:'Omar Hassan', avatar:'OH', role:'Economic Advisor', color:'#ea580c' },
+    { id:'user-disc-4', name:'Sofia Reyes', avatar:'SR', role:'Cultural Historian', color:'#8127cf' },
+  ];
+
+  // -- User/nation/topic name lookup (maps discover IDs → display names) --
+  var nameLookup = { users: {}, nations: {}, topics: {} };
+  discoverNations.forEach(function(n) { nameLookup.nations[n.id] = { name:n.name, abbr:n.abbr, color:n.color, sub: n.followers.toLocaleString() + ' followers' }; });
+  discoverTopics.forEach(function(t) { nameLookup.topics[t.id] = { name:t.name, icon:t.icon, color:'#16a34a', sub: t.members.toLocaleString() + ' members' }; });
+  discoverUsers.forEach(function(u) { nameLookup.users[u.id] = { name:u.name, avatar:u.avatar, color:u.color, sub: u.role }; });
+  // Seed users
+  nameLookup.users['Marcus Vane'] = { name:'Marcus Vane', avatar:'MV', color:'#4648d4', sub:'Sovereign Log Author' };
+  nameLookup.users['Lena Hartmann'] = { name:'Lena Hartmann', avatar:'LH', color:'#16a34a', sub:'Aquatic Urbanist' };
+  nameLookup.users['Kai Zhang'] = { name:'Kai Zhang', avatar:'KZ', color:'#ea580c', sub:'Economic Analyst' };
+
+  // -- State --
+  var currentTab = 'feed';
+  var currentFilter = 'all';
+
+  // Following data from storage
+  var myFollowing = SlatiDB.getFollowing();
+
+  function saveMyFollowing() {
+    SlatiDB.saveFollowing(myFollowing);
+  }
+
+  // ═══════════════════════════════════════════
+  // Helpers
+  // ═══════════════════════════════════════════
+
+  function isFollowing(type, id) {
+    return myFollowing[type] && myFollowing[type].indexOf(id) !== -1;
+  }
+
+  function toggleFollow(type, id) {
+    if (!myFollowing[type]) myFollowing[type] = [];
+    var idx = myFollowing[type].indexOf(id);
+    if (idx >= 0) {
+      myFollowing[type].splice(idx, 1);
+      saveMyFollowing();
+      return false; // unfollowed
+    } else {
+      myFollowing[type].push(id);
+      saveMyFollowing();
+      return true; // followed
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // 1. Feed Tab
+  // ═══════════════════════════════════════════
+  function renderFeed() {
+    var panel = document.getElementById('feedPanel');
+    if (!feedItems.length) {
+      panel.innerHTML = '<div style="text-align:center;padding:var(--space-xl) 0">' +
+        '<span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline);opacity:0.4">inbox</span>' +
+        '<p style="color:var(--color-outline);margin-top:var(--space-sm)">No recent activity from followed entities.<br>Follow nations, topics, or users to see updates here.</p></div>';
+      return;
+    }
+    panel.innerHTML = feedItems.map(function(item) {
+      return '<div class="card card-hover tilt-container">' +
+        '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:8px">' +
+          '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + item.icon + '</span>' +
+          '<span class="badge ' + item.badgeClass + '">' + item.badge + '</span>' +
+          '<span style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + item.name + '</span>' +
+          '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + item.time + '</span>' +
+        '</div>' +
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + item.desc + '</p>' +
+      '</div>';
+    }).join('');
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('#feedPanel .tilt-container'));
+  }
+
+  // ═══════════════════════════════════════════
+  // 2. Following Tab
+  // ═══════════════════════════════════════════
+  function renderFollowingList() {
+    var list = document.getElementById('followingList');
+    var empty = document.getElementById('followingEmpty');
+
+    // Collect all followed items
+    var items = [];
+
+    // Nations
+    if (currentFilter === 'all' || currentFilter === 'nations') {
+      var nations = SlatiDB.getNations();
+      myFollowing.nations.forEach(function(nid) {
+        // Try discover lookup first, then seed nations
+        var nl = nameLookup.nations[nid];
+        if (nl) {
+          items.push({ type:'nations', id:nid, title:nl.name, sub:nl.sub, abbr:nl.abbr, color:nl.color, isDiscover:true });
+        } else {
+          var n = nations.filter(function(x) { return x.id === nid; })[0];
+          if (n) items.push({ type:'nations', id:nid, title:n.name, sub:n.classification, abbr:n.moniker.charAt(0).toUpperCase(), color:'#4648d4', isDiscover:false });
+        }
+      });
+    }
+
+    // Topics
+    if (currentFilter === 'all' || currentFilter === 'topics') {
+      var topics = SlatiDB.getTopics();
+      myFollowing.topics.forEach(function(tid) {
+        var tl = nameLookup.topics[tid];
+        if (tl) {
+          items.push({ type:'topics', id:tid, title:tl.name, sub:tl.sub, icon:tl.icon, color:tl.color, isDiscover:true });
+        } else {
+          var t = topics.filter(function(x) { return x.id === tid; })[0];
+          if (t) items.push({ type:'topics', id:tid, title:t.name, sub:t.memberCount.toLocaleString() + ' members', icon:'forum', color:'#16a34a', isDiscover:false });
+        }
+      });
+    }
+
+    // Users
+    if (currentFilter === 'all' || currentFilter === 'users') {
+      myFollowing.users.forEach(function(uid) {
+        var ul = nameLookup.users[uid];
+        if (ul) {
+          items.push({ type:'users', id:uid, title:ul.name, sub:ul.sub, avatar:ul.avatar, color:ul.color, isDiscover:true });
+        } else {
+          items.push({ type:'users', id:uid, title:uid, sub:'Citizen', avatar:uid.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase(), color:'#ea580c', isDiscover:false });
+        }
+      });
+    }
+
+    if (!items.length) {
+      list.style.display = 'none';
+      empty.style.display = '';
+      return;
+    }
+    list.style.display = '';
+    empty.style.display = 'none';
+
+    list.innerHTML = items.map(function(item) {
+      // Avatar
+      var avatarHtml;
+      if (item.type === 'users') {
+        var initials = item.avatar || item.title.split(' ').map(function(w) { return w[0]; }).join('').substring(0,2).toUpperCase();
+        avatarHtml = '<div class="avatar" style="width:36px;height:36px;font-size:13px;background:linear-gradient(135deg,' + (item.color||'#ea580c') + ',' + (item.color||'#ea580c') + 'dd);flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;color:white;font-weight:700">' + initials + '</div>';
+      } else if (item.type === 'nations') {
+        avatarHtml = '<div style="width:48px;height:32px;background:' + (item.color||'#4648d4') + ';border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center">' +
+          '<span style="font-weight:700;font-size:11px;color:rgba(255,255,255,0.9);letter-spacing:0.05em">' + (item.abbr||'') + '</span></div>';
+      } else {
+        avatarHtml = '<div style="width:36px;height:36px;border-radius:10px;background:rgba(22,163,74,0.1);flex-shrink:0;display:flex;align-items:center;justify-content:center">' +
+          '<span class="material-symbols-outlined" style="font-size:20px;color:' + (item.color||'#16a34a') + '">' + (item.icon||'forum') + '</span></div>';
+      }
+
+      return '<div class="card card-hover" style="display:flex;align-items:center;gap:12px;padding:var(--space-sm) var(--space-md)">' +
+        avatarHtml +
+        '<div style="flex:1;min-width:0">' +
+          '<div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + item.title + '</div>' +
+          '<div class="label-sm" style="color:var(--color-outline)">' + item.sub + '</div>' +
+        '</div>' +
+        '<button class="btn btn-outline btn-sm unfollow-btn" data-type="' + item.type + '" data-id="' + item.id + '" style="flex-shrink:0;font-size:11px">Following</button>' +
+      '</div>';
+    }).join('');
+
+    // Bind unfollow buttons
+    list.querySelectorAll('.unfollow-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var type = btn.dataset.type;
+        var id = btn.dataset.id;
+        toggleFollow(type, id);
+        renderFollowingList();
+        renderSidebar();
+        renderDiscoverGrids();
+      });
+    });
+  }
+
+  // ═══════════════════════════════════════════
+  // 3. Discover Tab
+  // ═══════════════════════════════════════════
+  function renderDiscoverGrids() {
+    // Nations
+    document.getElementById('discoverNations').innerHTML = discoverNations.map(function(n) {
+      var following = isFollowing('nations', n.id);
+      return '<div class="card tilt-container" style="padding:var(--space-md);text-align:center">' +
+        '<div style="width:100%;height:56px;background:' + n.color + ';border-radius:6px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">' +
+          '<span style="font-weight:800;font-size:18px;color:rgba(255,255,255,0.9);letter-spacing:0.08em">' + n.abbr + '</span>' +
+        '</div>' +
+        '<div style="font-weight:600;font-size:var(--fs-label-md);margin-bottom:2px;color:var(--color-on-surface)">' + n.name + '</div>' +
+        '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px;line-height:1.3">' + n.desc + '</p>' +
+        '<div class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + n.followers.toLocaleString() + ' followers</div>' +
+        '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="nations" data-id="' + n.id + '">' +
+          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span> Following' : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span> Follow') +
+        '</button>' +
+      '</div>';
+    }).join('');
+
+    // Topics
+    document.getElementById('discoverTopics').innerHTML = discoverTopics.map(function(t) {
+      var following = isFollowing('topics', t.id);
+      return '<div class="card tilt-container" style="padding:var(--space-md)">' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+          '<span class="material-symbols-outlined" style="font-size:24px;color:var(--color-primary)">' + t.icon + '</span>' +
+          '<div><div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + t.name + '</div>' +
+          '<div class="label-sm" style="color:var(--color-outline)">' + t.members.toLocaleString() + ' members</div></div>' +
+        '</div>' +
+        '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px">' + t.desc + '</p>' +
+        '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="topics" data-id="' + t.id + '">' +
+          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span> Following' : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span> Follow') +
+        '</button>' +
+      '</div>';
+    }).join('');
+
+    // Users
+    document.getElementById('discoverUsers').innerHTML = discoverUsers.map(function(u) {
+      var following = isFollowing('users', u.id);
+      return '<div class="card tilt-container" style="padding:var(--space-md);text-align:center">' +
+        '<div class="avatar" style="width:44px;height:44px;font-size:15px;background:linear-gradient(135deg,' + u.color + ',' + u.color + 'dd);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:white;font-weight:700">' + u.avatar + '</div>' +
+        '<div style="font-weight:600;font-size:var(--fs-label-md);margin-bottom:2px;color:var(--color-on-surface)">' + u.name + '</div>' +
+        '<div class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + u.role + '</div>' +
+        '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="users" data-id="' + u.id + '">' +
+          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span> Following' : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span> Follow') +
+        '</button>' +
+      '</div>';
+    }).join('');
+
+    // Bind follow buttons
+    document.querySelectorAll('#discoverPanel .follow-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var type = btn.dataset.type;
+        var id = btn.dataset.id;
+        var nowFollowing = toggleFollow(type, id);
+        // Update button style
+        if (nowFollowing) {
+          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span> Following';
+          btn.style.background = 'rgba(22,163,74,0.08)';
+          btn.style.color = '#16a34a';
+          btn.style.borderColor = 'rgba(22,163,74,0.3)';
+        } else {
+          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span> Follow';
+          btn.style.background = '';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }
+        renderSidebar();
+      });
+    });
+
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('#discoverPanel .tilt-container'));
+  }
+
+  // ═══════════════════════════════════════════
+  // 4. Right Sidebar
+  // ═══════════════════════════════════════════
+  function renderSidebar() {
+    var slot = document.getElementById('rightSidebarSlot');
+
+    if (currentTab === 'following') {
+      // Stats
+      slot.innerHTML = '<div class="card">' +
+        '<h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">' +
+          '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)">monitoring</span> Following Stats' +
+        '</h3>' +
+        '<div style="display:flex;flex-direction:column;gap:8px">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
+            '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#4648d4">public</span> Nations</span>' +
+            '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#4648d4">' + myFollowing.nations.length + '</span>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
+            '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#16a34a">forum</span> Topics</span>' +
+            '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#16a34a">' + myFollowing.topics.length + '</span>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">' +
+            '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#ea580c">person</span> Users</span>' +
+            '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#ea580c">' + myFollowing.users.length + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    } else {
+      // Recommendations (Feed tab)
+      var recItems = [
+        { icon:'public', name:'Solarian Federation', sub:'4,230 followers', color:'#4648d4' },
+        { icon:'forum', name:'AI-Assisted Governance', sub:'2,340 members', color:'#16a34a' },
+        { icon:'person', name:'Dr. Amina Okonkwo', sub:'Political Theorist', color:'#ea580c' },
+      ];
+      slot.innerHTML = '<div class="card">' +
+        '<h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">' +
+          '<span class="material-symbols-outlined" style="font-size:18px;color:#eab308">auto_awesome</span> Who to Follow' +
+        '</h3>' +
+        recItems.map(function(r) {
+          return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
+            '<span class="material-symbols-outlined" style="font-size:20px;color:' + r.color + ';flex-shrink:0">' + r.icon + '</span>' +
+            '<div style="flex:1;min-width:0">' +
+              '<div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + r.name + '</div>' +
+              '<div class="label-sm" style="color:var(--color-outline)">' + r.sub + '</div>' +
+            '</div>' +
+            '<button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px;color:var(--color-primary)">+ Follow</button>' +
+          '</div>';
+        }).join('') +
+        '<a href="#" class="label-sm" id="gotoDiscover" style="display:block;text-align:center;margin-top:var(--space-sm);color:var(--color-primary);text-decoration:none">View more in Discover →</a>' +
+      '</div>';
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // Tab Switching
+  // ═══════════════════════════════════════════
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('feedPanel').style.display = tab === 'feed' ? '' : 'none';
+    document.getElementById('followingPanel').style.display = tab === 'following' ? '' : 'none';
+    document.getElementById('discoverPanel').style.display = tab === 'discover' ? '' : 'none';
+
+    if (tab === 'feed') renderFeed();
+    if (tab === 'following') renderFollowingList();
+    if (tab === 'discover') renderDiscoverGrids();
+    renderSidebar();
+  }
+
+  document.getElementById('mainTabs').addEventListener('click', function(e) {
+    var btn = e.target.closest('.subnav-pill');
+    if (!btn || btn.dataset.tab === currentTab) return;
+    switchTab(btn.dataset.tab);
+  });
+
+  // Following filter
+  document.getElementById('followingFilter').addEventListener('click', function(e) {
+    var btn = e.target.closest('.subnav-pill');
+    if (!btn || btn.dataset.filter === currentFilter) return;
+    currentFilter = btn.dataset.filter;
+    renderFollowingList();
+  });
+
+  // "View more in Discover" link
+  document.getElementById('rightSidebarSlot').addEventListener('click', function(e) {
+    if (e.target.id === 'gotoDiscover') {
+      e.preventDefault();
+      switchTab('discover');
+      // Update subnav pill
+      document.querySelectorAll('#mainTabs .subnav-pill').forEach(function(p) { p.classList.remove('active'); });
+      var discPill = document.querySelector('#mainTabs [data-tab="discover"]');
+      if (discPill) discPill.classList.add('active');
+    }
+  });
+
+  // ═══════════════════════════════════════════
+  // Initial Render
+  // ═══════════════════════════════════════════
+  switchTab('feed');
+
+})();
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

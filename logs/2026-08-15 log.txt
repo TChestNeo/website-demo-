@@ -1,0 +1,128 @@
+============================================================
+  SlatiWorld Development Log — 2026-08-15
+============================================================
+
+1. Bug fix — Flag source modal unreachable
+   - User report: clicking a National Flag card never opened the
+     flag-source modal.
+   - Root cause: the drag mouseup stamped dataset.justDragged='1'
+     unconditionally, and the flag-card click listener bails on that
+     marker. A plain click always fires within the 300ms window after
+     its own mouseup, so the modal was unreachable. (Confirmed via
+     headless probe: 3 fails; the bug predates v8 — identical stamp in
+     the v7.4 backup.)
+   - Fix: the stamp + 300ms clear now live inside `if (st.moved)` —
+     only real drags suppress the click. Verified 5/5.
+   - Note: virtual time does NOT advance during synchronous scripts,
+     which caused a false negative in the probe's "bare click" control.
+
+2. FluidCanvas v9.1 — Bitmap Auto-Fit + Aspect Lock
+   - User request: cards auto-fit the size of an image set on them;
+     after fitting they can no longer be stretched arbitrarily.
+   - Design (confirmed): all cards with bitmap images (flag + gallery
+     + any non-content card with a background image); fit = natural
+     pixel size, downscaled proportionally only if bigger than the
+     page (minus 16px margins); after fit the card CANNOT stretch in a
+     single direction (edge handles hidden) but CAN scale
+     proportionally via the 4 corner handles (opposite corner fixed).
+   - Markers: dataset.aspectLock/aspectRatio/fitW/fitH;
+     isAspectLocked() excludes content/text cards; stripe flags have
+     no intrinsic size and never lock.
+   - fitCardToImage: measures naturalWidth/Height on image load;
+     scale = min(1, (page.w-32)/nw, (page.h-32)/nh); writes exact px;
+     colSpan/rowSpan become display hints only.
+   - setCardImage: onload attached BEFORE src (data:/cached images can
+     fire immediately) with triple guard — card still connected, img
+     still the card's current one, and not already locked (draft
+     restore sets saved px synchronously, so re-measuring is skipped).
+   - Locked resize: corner drag → one scale factor from the corner-ray
+     projection f = 1 + (dirX·w·lx + dirY·h·ly)/((w²+h²)/2); floor
+     max(cs/w, cs/h) keeps both dims >= 1 cell; newH = round(newW /
+     stored ratio) — zero cumulative drift; setCardSize bypassed
+     (it would re-quantize the fitted pixels to grid spans); the v9
+     opposite-corner center-shift math is reused unchanged.
+   - Unlock snaps back to grid: setCardStripes / applyCardBackgroundColor
+     / clearCardBackground call clearAspectLock(card, true) which
+     immediately re-quantizes to the span hints — otherwise the
+     in-session pixel size would disagree with what a reload restores
+     (spans only). setCardImage skips the snap (refit is imminent).
+   - Silent resetters guarded: positionCardSilent keeps fitW/fitH px
+     for locked cards → applyPresetCardPositions / refitColumns /
+     preset switches preserve fitted sizes.
+   - Escape mid-resize now COMMITS like mouseup (was: discard) —
+     otherwise dataset.x/y went stale while the visual size changed
+     and the next reload misplaced the card (pre-existing bug made
+     load-bearing by the locked path).
+   - Persistence (draft v stays 9 — all fields additive): saveDraft
+     adds aspectLock/aspectRatio/fitW/fitH; non-flag cards now also
+     persist their background image imgSrc (previously flag-only, so
+     gallery cards lost their image on reload); loadDraft restores
+     the exact fitted px synchronously; saveCurrentPresetCards keeps
+     the lock fields; getCardFingerprint includes the markers so
+     fit/locked-resize/unlock trips autosave.
+   - Badge + self-check: FC v9.1 / ready (v9.1).
+
+3. Verification — headless Chrome 3-pass battery: 42/42 PASS
+   - New runner pattern: persistent --user-data-dir + 3 separate
+     chrome invocations, pass relay via localStorage (sessionStorage
+     does not survive across processes); results accumulated in
+     localStorage and printed once in pass 3's <pre id="testlog">.
+   - Deterministic images: canvas.toDataURL PNG data URIs report
+     naturalWidth/Height exactly (SVG intrinsic sizing is unreliable).
+   - Covered: natural fit (320x200), page downscale (2400x1500 →
+     page-limited), lock markers, corner-only handles, proportional
+     se resize (400x250, nw corner fixed, hints 18x11), min floor
+     (32x20, ratio kept), Escape commit + cancel, stripe flags
+     unlocked, content cards excluded (height:auto intact), silent-
+     setter guard (10x10 spans request → px kept), preset switch
+     preservation, rotated 45° locked resize (300x225, sw corner
+     canvas-fixed to 0.0px), removal unlock + grid snap (934x584 →
+     944x592 spans 43x27), fingerprint/autosave trip, delete-during-
+     load race, rapid-replacement race, draft fields, and pass-3
+     round-trip (exact px/rotation/position restore, idempotent save).
+   - One real bug found BY the battery: unlock kept fitted px in
+     session but reload snapped to spans → the "unlock snaps to grid"
+     rule above.
+
+4. Testing notes (environment facts learned this day)
+   - Page width is dynamic: at 1280x900 the page is 44 cols
+     (page.w = 966), not 21 cols/460 — always derive expectations
+     from window.pageSize() instead of hardcoding.
+   - beginResize acts on whatever card is selected — tests must
+     selectCard explicitly before every beginResize call.
+   - Test-order pollution: artificial spans written by one test leak
+     into the draft and change round-trip expectations — restore real
+     hint spans after such probes.
+
+5. Known Issues / Pending
+   - Real-browser verification pending (headless cannot simulate IME):
+     Chinese IME typing inside content cards; corner-resize feel on
+     locked cards (incl. rotated); fit correctness with real photo
+     uploads (JPEG orientation etc.).
+   - Locked cards on a smaller preset can exceed the page (fitted px
+     is set-time-only) — boundary centers them; user can corner-resize
+     to refit. Accepted behavior.
+
+============================================================
+  Files Modified
+============================================================
+  docs/pages/fluidcanvas-editor.html
+
+============================================================
+  Key Code Locations
+============================================================
+  getCardFingerprint (+lock markers)   — line 756
+  positionCardSilent (locked → fit px) — line 904
+  isAspectLocked / clearAspectLock     — line 939 / 944
+  fitCardToImage (auto-fit math)       — line 958
+  loadDraft (img + lock px restore)    — line 1100 (1163-1182)
+  saveDraft (v:9 + lock fields + non-flag imgSrc) — line 1288
+  setCardImage onload (triple guard)   — line 1678
+  refreshResizeHandles (corner-only)   — line 1738
+  beginResize (locked capture)         — line 1777
+  onResizeMove (locked branch)         — line 1814
+  applyCardBackgroundColor / clearCardBackground (unlock+snap) — line 2167 / 2205
+  Escape handler (commit on cancel)    — line 2055
+  saveCurrentPresetCards (+lock)       — line 2754
+  v9.1 test hooks                      — line 2866
+  badge FC v9.1                        — line 2897

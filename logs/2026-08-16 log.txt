@@ -1,0 +1,1119 @@
+============================================================
+  SlatiWorld Development Log — 2026-08-16
+============================================================
+
+1. FluidCanvas v9.2 — Danger Zone (boundary inside the align-guide group)
+   - User request: bring the boundary (v8 page limit) into the alignment
+     guide group, Canva-style "danger area": when a dragged/resized card
+     touches the page boundary, boundary reference lines appear.
+   - Design (confirmed): contact-triggered only (lines appear the moment
+     the card is clamped against the 16px margin, no early warning);
+     red danger lines (theme --color-error #ba1a1a, opacity 0.8 — clearly
+     distinct from the blue primary align lines); when ANY edge touches,
+     ALL FOUR boundary lines light up (user's choice, not touched-edge-only).
+   - Belongs to the align group: gated on the align toggle (align OFF →
+     no danger lines); boundary OFF → no danger zone at all. Nothing is
+     persisted — guides are ephemeral, draft v stays 9.
+   - boundaryTouched(card) (pure): boundaryOn gate; cardLineSet (the
+     rotation-aware bbox) reaches/overlaps any margin line within 0.5px
+     tolerance. Uses ≤/≥ (not ≈) so bboxes that the clamp centers across
+     the margins (oversized cards) also count.
+   - Rendering: 4 pooled divs reusing the existing .align-guide-v/h
+     classes plus a .danger modifier (one CSS line overrides the color):
+     V at x=16 / page.w−16, H at y=16 / page.h−16. updateDangerGuides(show)
+     is boolean-key-cached like the align guide key.
+   - Display-only, no new snapping: the boundary clamp already finalizes
+     the position at the end of both pipelines, so the danger lines just
+     visualize the clamp → no oscillation risk, deterministic.
+   - Hooks: drag mousemove after clampCardToPage; resize mousemove after
+     clamp (same display-only convention as resize align guides).
+     hideAlignGuides() also hides the danger lines and resets the key —
+     the single choke point covers drag mouseup, resize mouseup, Escape,
+     and toggleAlign-off with zero new cleanup sites.
+   - Badge + self-check: FC v9.2 / ready (v9.2).
+
+2. Verification — headless Chrome 3-pass battery: 42/42 PASS
+   - Same proven harness as v9.1: persistent --user-data-dir + 3 separate
+     chrome invocations, localStorage relay (sessionStorage does not
+     survive across processes), results printed in pass 3's <pre id="testlog">.
+   - Covered: right-boundary clamp → all 4 red lines at 16/950/16/page.h−16
+     with computed color rgb(186,26,26); hidden after mouseup; inside-page
+     drag → none; bottom contact → all 4 (any edge → all four, per user);
+     align toggle OFF → none (blue ones too) while the clamp still applies;
+     boundary OFF → card actually leaves the page, none shown, re-enable
+     pulls it back in; resize into the boundary → shown, hidden on mouseup;
+     Escape mid-resize → committed + hidden; rotated card → rotation-aware
+     bbox clamps to exactly page.w−16 and shows; oversized card (60×60
+     spans, centered at creation) → contact on drag; coexist — blue align
+     line at D's right line (196) + 4 red danger lines simultaneously, both
+     hidden after mouseup; clean spot → neither shown; badge FC v9.2;
+     pass-3 round trip (4 cards, exact px position, rotation 45, spans,
+     no danger elements at rest).
+   - All three first-run failures were test-arithmetic errors (col→x is
+     (col−1)×22, not col×22) — production behavior was correct as written.
+
+3. Testing notes (environment facts learned this day)
+   - Page height at 1280x900 is 2200 (not ~946 as previously assumed) —
+     all vertical expectations derived from window.pageSize() held up.
+   - Direct element dispatch (card.dispatchEvent mousedown → document
+     mousemove/mouseup) bypasses hit-testing entirely: oversized cards
+     covering the whole canvas do not steal synthetic drags.
+
+4. Known Issues / Pending
+   - Real-browser verification pending (headless cannot simulate IME or
+     real pointer feel): danger-line feel while dragging into the boundary;
+     red/blue coexistence visually; Chinese IME typing inside content
+     cards (unchanged from v9.1 list).
+   - Locked (aspect-fitted) cards dragging into the boundary reuse the
+     same clamp + danger path — verified only indirectly via the shared
+     pipeline; worth one manual check on device.
+
+============================================================
+  Files Modified
+============================================================
+  docs/pages/fluidcanvas-editor.html
+
+============================================================
+  Key Code Locations
+============================================================
+  danger CSS (.danger color override)      — line 188
+  drag mousemove danger hook               — line 1507
+  resize mousemove danger hook             — line 1878
+  hideAlignGuides → updateDangerGuides(false) — line 2007
+  boundaryTouched (pure contact test)      — line 2022
+  ensureDangerGuides (4 pooled divs)       — line 2033
+  updateDangerGuides (key-cached show)     — line 2050
+  test hooks boundaryTouched/updateDangerGuides — line 2069-2070
+  console ready (v9.2)                     — line 2955
+  badge FC v9.2                            — line 2965
+
+5. FluidCanvas v9.3 — Rotation for ALL cards (rotate grip + fixed right-click entry)
+   - User request: "add rotation to all cards, including cards added later".
+     Confirmed design (AskUserQuestion): Canva-style rotate grip above the
+     selected card as the primary entry + fix the right-click slider popover
+     (kept for exact angles).
+   - Root cause: rotation existed end-to-end (rotateCard, context-menu item,
+     slider popover, save/load all already carried the rotate field), but the
+     right-click entry called getRotatePopover() which was never defined →
+     ReferenceError → entry unreachable. Same bug class as the v9.1 flag
+     modal (feature exists, entry dead). Fixed with one line next to
+     getRadiusPopover.
+   - Rotate grip: 16px circle (--color-primary-fixed, grab/grabbing cursor)
+     + 2px stem connecting to the card bbox top; pooled elements appended to
+     gridCanvas (same coordinate system as the resize handles).
+     refreshRotateGrip(): cx=x+w/2, cy=y+h/2, rotation-aware half-height
+     hh=(|w·sinθ|+|h·cosθ|)/2, grip center at (cx, cy−hh−28); top clamp
+     gripY = max(8, cy−hh−28) and the stem hides when the grip bottom falls
+     below the bbox top (grip never sticks out of the canvas on cards pinned
+     to the top boundary). Single mount point INSIDE refreshResizeHandles →
+     every existing refresh path (select/deselect/drag/resize/rotate/delete/
+     move) covered with zero new call sites and no card-type branches, so
+     "all cards including future ones" holds automatically.
+   - Drag pipeline: beginRotate converts canvas coords to client coords and
+     records a0 + startRot; onRotateMove computes rot = startRot + (atan2−a0)
+     with a while-loop folding the delta into ±180 (no seam tumble),
+     Shift = 15° snap (Canva standard), writes dataset.rotate + transform,
+     then clampCardToPage (rotation changes the bbox → card stays in page)
+     and updateDangerGuides (v9.2 integration: rotating into the boundary
+     lights the 4 red lines), highlightCardCoverage + refreshResizeHandles.
+     mouseup and Escape share commitRotate: normalize to (−180,180],
+     moveCardPx (clamp + dataset.x/y), onContentChange. Escape COMMITS
+     (same single rule as resize). No justDragged flag (grip is not a card
+     child, click never bubbles to the card).
+   - Badge + self-check: FC v9.3 / ready (v9.3). Draft v stays 9 (rotate
+     was already persisted).
+
+6. Verification — headless Chrome 3-pass battery: 64/64 PASS
+   - R1 popover fix (was ReferenceError before); R2 grip/stem geometry with
+     top clamp (grip 101,0, stem 16/6 on A at y=22) + unclamped case on F
+     (145,30; stem 46/20); R3 drag-rotate 45 exact; R4 Shift snap
+     (45+37→82→75); R5 seam normalization (rotateCard 170 → drag +20 → live
+     190 → commit −170); R5b cross-seam reverse (−200° from −170 → −9);
+     R6 rotate into right boundary → clamped to 755.5 + 4 danger lines,
+     hidden on mouseup; R7 Escape mid-rotate commits; R8 all four card types
+     (flag/content/text/locked-asset) grip + rotate; locked card keeps
+     320×200 fit, 4 corner handles and fitW/fitH through rotation;
+     R9 regressions (drag clamp + danger, align snap + blue guide, rotated
+     and unrotated resize with commit timing); R10 badge + 7-card round trip
+     with exact px position, rotate values, aspectLock and text restore.
+   - All 3 remaining failures were TEST-HARNESS artifacts, not production
+     bugs: Chrome coerces MouseEvent clientX/clientY to WebIDL long
+     (truncation to integers) — synthetic doubles arrive truncated, shifting
+     atan2 results by ~1°. Real mice only produce integer pixels, so
+     production behavior on device is unaffected. The battery now dispatches
+     and asserts from the same truncated integer coords.
+   - Also learned: the rotation clamp legitimately MOVES the card — A at
+     (22,22) rotated 45° sticks out above the 16px margin, and
+     clampCardToPage pushes it to (36.48, 58.48). Position expectations must
+     derive from the clamped position, not the pre-rotation one.
+
+7. Known Issues / Pending
+   - Real-machine verification pending (headless cannot simulate IME or real
+     pointer feel): grip drag feel + Shift snap cadence; right-click slider
+     popover; grip hidden on top-pinned cards; rotate-into-boundary danger
+     lines; Escape commit feel; locked-card rotation stability.
+   - Chinese IME typing inside content cards (unchanged long-term item).
+
+8. FluidCanvas v9.4 — Boundary removed: cards may exceed the page (v9.2/v9.3 follow-up)
+   - User request: "remove the danger zone (boundary) — just make it like
+     alignment, cards can exceed." Confirmed design (AskUserQuestion):
+     boundary lines become BLUE REFERENCE GUIDES — when a card touches or
+     crosses the page edge, the 4 boundary lines light up in the same blue
+     as the align guides (Canva page-edge style), pure visual reference,
+     never blocking; the boundary toggle is REMOVED and the reference
+     lines' display follows the align toggle (align OFF → lines off too).
+   - Deleted: clampCardToPage(), toggleBoundary(), the boundaryOn variable,
+     and the toolbar 「边界」 button. All 7 clamp call sites removed —
+     drag/resize/rotate mousemove, moveCardPx, positionCardSilent,
+     rotateCard, applyTemplate. Cards can now rest anywhere, including
+     fully outside the page, via every gesture and programmatic path.
+   - Persistence: saveDraft no longer writes boundaryOn; loadDraft ignores
+     the field in older drafts (pre-v9.4 drafts load unchanged, no crash).
+     Draft v stays 9 — nothing new persisted.
+   - Danger zone → boundary reference: the 4 pooled divs now reuse the
+     .align-guide-v/h classes plus a non-styling .boundary-guide marker
+     class (testability). boundaryTouched(card) is the same pure,
+     rotation-aware ≤/≥ directional test minus the boundaryOn gate —
+     fully-beyond bboxes still count as touching. updateBoundaryGuides(show)
+     is boolean-key-cached like the align guides; call sites gate on
+     alignOn only; hideAlignGuides() calls updateBoundaryGuides(false) so
+     mouseup/Escape/toggle-off all clean up through the single choke point.
+   - Badge + self-check: FC v9.4 / ready (v9.4) — boundary state dropped
+     from the console line.
+
+9. Verification — headless Chrome 3-pass battery: 32/32 PASS (first run)
+   - B1 boundary toggle gone from toolbar and window (align/snap toggles
+     remain); B2 drag +2500px → mid-drag all 4 reference lines lit, card
+     rests far beyond page.w with no clamp, lines hidden after mouseup;
+     B3 lines are the align-guide blue (computed background equals
+     var(--color-primary) probe, differs from --color-error; the two
+     variables are defined by the app shell, not this file — asserted by
+     equality, not a hardcoded value) at 16 / page.w−16 / 16 / page.h−16;
+     B4 in-page drag shows nothing; B5 fully-beyond card still lights the
+     lines (directional test); B6 align OFF → crossing shows nothing while
+     the card still exceeds; B7 resize +900/+300 across the edge → 49×20
+     spans committed unclamped, lines shown mid-resize, hidden after;
+     B8 rotate to 60° while the bbox crosses → rotation free (no clamp),
+     card position untouched, lines shown mid-rotate; B9 silent position
+     to col 60 → stays beyond, rotation preserved; B10 slider rotateCard
+     no longer re-clamps; B11 align-snap regression (G snaps to I's left
+     line at 154, blue guide shown then hidden, no boundary lines);
+     B12 rotate grip regression; B13 settings carry only snapOn/alignOn
+     (no boundaryOn) + legacy injection of boundaryOn:false; B14 badge;
+     B15 round trip — the injected legacy draft loads 3 cards with exact
+     beyond-page px position and rotation, no boundary guides at rest.
+   - All position assertions are in-page/out-of-page inequalities rather
+     than hardcoded snap values (robust to the responsive cell size; step
+     = cs+2 = 22 at 1280x900 confirmed by the B7 trace).
+   - Runner lesson: the battery source itself mentions <pre id="testlog">
+     in a comment, so the regex parsed 233 phantom "checks" from the dump
+     before lastIndexOf fixed it — count only the real pre element.
+
+10. Known Issues / Pending
+   - Real-machine verification pending (headless cannot simulate IME or
+     real pointer feel): drag beyond the page edge feels free (no snap-back
+     at the border); the 4 blue boundary lines light while a card crosses
+     and go out on release; align toggle OFF turns the boundary lines off
+     too; resize/rotate keep the same reference behavior; cards saved
+     outside the page restore outside after refresh; pre-v9.4 drafts
+     (boundaryOn in settings) still load.
+   - Chinese IME typing inside content cards (unchanged long-term item).
+
+11. FluidCanvas v9.5 — Caption Position (名称位置) + 竖排 (vertical writing)
+   - User request: flag-card names sit in the middle of the image; add a
+     right-click option to choose the name position — 9 inside the image
+     (center/left/right/top/bottom/4 corners), 4 outside (above/below/
+     left/right) — plus a vertical-writing toggle for vertical text.
+     Confirmed design (AskUserQuestion): scope = flag cards + asset cards
+     (both carry the .card-label input; content/text cards hide the menu
+     item); vertical = traditional vertical-rl with UPRIGHT characters
+     (writing-mode: vertical-rl; text-orientation: upright), not a 90° spin.
+   - Pure CSS attribute selectors drive rendering: card dataset.captionPos
+     (absent = centered flex default, zero migration) + captionVertical==='1'
+     are the single source of truth; applyCaptionLayout(card) only re-derives
+     the label's inline size. Outside positions flip the card to
+     overflow:visible — safe because .card-img-bg (inset:0 +
+     border-radius:inherit) and .card-stripes (inset:0 + overflow:hidden)
+     both self-clip, so only the label can escape.
+   - New CSS rules sit AFTER the .has-bg-img/.has-stripes pill block (equal
+     specificity 0,3,0 — the absolute position wins by source order).
+   - Vertical sizing: autoSizeLabel's vertical branch measures the sizer
+     span in vertical writing mode and sets input.style.height (min 40px,
+     cap 90% of card height), clearing width; the horizontal branch clears
+     height and restores the original width formula — switching back and
+     forth is clean in both directions.
+   - Persistence (draft v stays 9, additive fields): getCardFingerprint now
+     hashes both datasets (without this autoSave would never persist
+     caption-only changes); saveDraft writes captionPos/captionVertical;
+     applyCardStyleFromDraft restores both + re-layouts; loadDraft (after
+     the final x/y restore) and fitCardToImage (after the image-driven
+     resize) re-cap the vertical label height to the final card size.
+   - UI: context menu item 名称位置 (id captionPosMenuItem) gated on the
+     card having a .card-label; picker = 5×5 grid of 13 position buttons
+     (grid-area placed) + 竖排 toggle, fixed-positioned next to the card
+     with viewport clamping and a right-edge flip; hideContextMenu closes
+     the picker so Escape/outside-click cleanup routes through the single
+     choke point.
+   - Badge + self-check: FC v9.5 / ready (v9.5).
+
+12. Verification — headless Chrome 3-pass battery: 37/37 PASS
+   - C1 menu gating (flag/asset show the item, content hides it);
+     C2 picker opens with 13 buttons + toggle, center highlighted, fully
+     in viewport; C3 right-edge flip; C4 center click closes + restores
+     the flex default; C5/C6 Escape and outside click close it;
+     C7/C8 all 8 inside positions (dataset + computed absolute + hidden
+     overflow, label bbox center = card rect + 6px inset + half label ±4px);
+     C9 the 4 outside positions (overflow visible, label fully outside on
+     the right side, axis-centered); C20 the stripes pill (rgba(0,0,0,0.35)
+     + white) still applies outside; C21 fresh cards default to the
+     pre-v9.5 flex layout; C22 'center' deletes the dataset; C23 vertical
+     toggle (vertical-rl + upright, taller than wide, width cleared);
+     C24 vertical height grows with text (旗 → 联合国教科文组织, +30px);
+     C25 toggle-off restores horizontal; C26 combined above+vertical;
+     C27 rotated card — top-left label center = card center + R(30°)·(local
+     offset) ±5px; C28 label tracks a pure move exactly; C29 label tracks
+     a 90° rotation; C30 drag regression — grid snap then align snap (A's
+     bottom line lands on C's top line, winning per axis), caption state
+     survives; C31 resize regression (49×20 committed, top-left caption
+     survives); C32 rotate grip regression; C33 fingerprint trips on
+     caption changes and restores exactly; C34 saved fields (A carries
+     both, B only the position, C neither, draft v 9); C35 badge; C36-C37
+     round trip — 4 cards (incl. an injected legacy card without caption
+     fields) restore exact px positions, rotation, caption + vertical, and
+     the legacy card falls back to the centered default; C38-C40 badge +
+     no popovers/menu at rest.
+   - All 5 first-run failures were TEST-HARNESS modeling errors, not
+     production bugs: (1) rotateCard's signature is rotateCard(deg) — the
+     battery passed the card element as the angle, so the transform was
+     invalid CSS and the card never rotated; (2) the label's 0.15s
+     background transition is sampled at its t≈0 frame under virtual time
+     (transparent) — the check now forces transition:none and re-triggers
+     the class; (3) the align snap legitimately wins over the grid snap
+     (A's bottom line 196 vs C's top line 198, 2px < 6px threshold → y=68)
+     — the assertion now reads the semantic invariant A.bottom ≈ C.top
+     instead of a hardcoded 66; (4) asset cards place the icon ABOVE the
+     label in a column flex, so a fresh label was never at the card's
+     vertical center — the default-state check asserts inside + horizontal
+     centering + not absolute instead.
+
+13. Known Issues / Pending
+   - Real-machine verification pending (headless cannot simulate IME or
+     real pointer feel): right-click 名称位置 menu item on flag/asset cards
+     (hidden on content/text); the 13-position picker feel + right-edge
+     flip; outside captions fully visible beyond the card; 竖排 toggle —
+     upright characters, label grows vertically with longer text, toggles
+     back; vertical + outside + rotation combinations; caption state
+     survives drag/resize/rotate; save/refresh round trip incl. legacy
+     drafts loading with centered names.
+   - Chinese IME typing in the name input and inside content cards
+     (unchanged long-term item).
+
+════════════════════════════════════════════════════════════════
+14. FluidCanvas v10.0 — Caption Background (名称背景) + picker stays open
+════════════════════════════════════════════════════════════════
+   Request: (1) clicking a caption position must NOT auto-close the
+   picker; (2) add a 名称背景 option with two sub-options — 选择名称背景
+   (palette + opacity + shadow range/opacity/size sliders) and
+   自定义名称背景 (user-uploaded image); (3) subscriber-only 背景边缘
+   edge styles (破旧的纸 / 藏宝图 / 科技). Confirmed via questions:
+   background panel = 「位置 | 背景」 tabs inside the existing picker;
+   subscription = localStorage flag slati_subscription ∈ {premium, ultra}
+   with a lock hint (no subscription system exists in the app — UI-only
+   gate, the renderer never checks it so drafts stay deterministic);
+   custom image = stretch fill (background-size 100% 100%).
+   - State: 7 additive dataset fields per card — captionBgColor (hex) XOR
+     captionBgImg (dataURL), captionBgOpacity 0-100 (color mode only),
+     captionShadowBlur 0-30 / captionShadowSpread -10..20 /
+     captionShadowOpacity 0-100, captionEdge ∈ paper|treasure|tech.
+     Absent = the existing pill default (untouched).
+   - applyCaptionBg(card) is the single renderer: inline longhands only
+     (no background shorthand, no width/height/position/z-index); image
+     mode forces backgroundColor:transparent (else the pill rgba shows
+     through transparent PNGs); layers = edge tint → image → none;
+     box-shadow comma-layers [user shadow,] [edge glow]; luminance-based
+     text color in color mode (<0.6 → white else #1a1a2e). The label is
+     an <input> (no pseudo-elements) so edge themes are inline borders/
+     gradients/shadows via an EDGE_STYLES table, borders always 1px
+     (the vertical autoSizeLabel height slack is sized for 2px).
+   - .card-label:focus moved to outline (inline styles would kill the
+     border/background focus feedback otherwise).
+   - Picker: 300px fixed width, flip threshold x+312 → left-322, y clamp
+     budget 430, bg panel max-height 358 with internal scroll; always
+     lands on the 位置 tab when opened; refreshCaptionPopoverState
+     fully hydrates everything (position highlight, vertical toggle,
+     swatch ring, wheel, 4 sliders, remove button, edge buttons rebuilt
+     with lock state, upgrade link) — position/vertical clicks call it
+     instead of hideContextMenu, so the picker stays open.
+   - Persistence: draft v stays 9 (additive); fingerprint pushes the
+     image as a length+tail digest (not the MB dataURL); >1.5MB upload
+     guard; saveDraft catch gains a QuotaExceededError branch (dedicated
+     toast + lastSavedContent sync to stop the 3s retry storm).
+   - Subscriber gate: isSubscriberUser() reads slati_subscription;
+     locked buttons show a lock + 订阅 chip, clicking toasts
+     「背景边缘为订阅用户专属功能」; non-subscribers see a
+     「订阅后解锁背景边缘 →」 premium.html link.
+   - Version: console ready (v10.0), badge FC v10.0, header doc bullet,
+     13 new window exports (+ window.autoSave added for the battery).
+
+15. v10.0 Verification — 72/72 headless green (3 passes), zero prod bugs
+   - Pass 1 seeds (A flag+stripes, B asset, C content, D plain asset,
+     draft v 9); Pass 2 interactive: picker stays open through position/
+     vertical/center clicks with highlight transfer; tab switching; red
+     bg + luminance white text; preset swatch + wheel sync; opacity 50;
+     white bg → dark text; image mode (url bg + transparent + 100% 100%
+     + disabled opacity slider + remove button); oversize-upload toast
+     guard; opacity setter blocked in image mode; shadow 8/3/40 composed
+     and zeroed; edge buttons 3 locked without subscription + blocked
+     click toast; premium unlock (0 locked, link hidden); paper edge
+     (dashed border, irregular radius, ink text); shadow + glow both
+     compose; edge tint + color layering; 无 restores solid border +
+     contrast text; full control hydration on reopen; reset clears all 7
+     fields and restores the pill; content card cannot open the picker;
+     Escape still closes; right-edge flip; y clamp; card-background
+     change does not flip caption text; QuotaExceeded → dedicated toast +
+     autoSave does not retry; fingerprint image digest changes once and
+     stays stable; tech edge tints over an image; draft carries exactly
+     the right fields per card, v 9. Pass 3 round-trip: all fields
+     restore exactly (colors, shadow, edge border/class, image url +
+     stretch), legacy-shape card stays default, badge FC v10.0, no stray
+     popover.
+   - All 10 first-run failures were battery modeling, zero production
+     bugs: Chrome collapses alpha=1 to rgb() serialization; custom colors
+     are not in the 8-swatch preset list (wheel syncs, no swatch ring);
+     getAllCards/autoSave were not exported (DOM query fallback + 1-line
+     production export); the 无 edge button correctly shows active when
+     no edge is set; applyCaptionBg's canonical default writes
+     backgroundImage/boxShadow 'none' not ''; opacity 50 persists across
+     color changes (alpha 0.5 expected).
+
+16. Known Issues / Pending (v10.0)
+   - Real-machine verification: Ctrl+F5 badge FC v10.0; picker stays
+     open while trying positions; bg tab palette/wheel/opacity/shadow
+     sliders feel; upload (FileReader path cannot be exercised headless
+     — only the size guard is tested) + stretch fill + remove;
+     subscription unlock via localStorage.setItem('slati_subscription',
+     'premium') → edge themes (纸/藏宝图/科技) + 无 restore; save/reload
+     round trip; legacy drafts load with default names.
+   - Chinese IME typing (unchanged long-term item).
+   - Out of scope (documented): templates do not capture caption
+     background fields; caption shadows clip at the card edge (overflow
+     hidden) except outside positions — accepted design behavior.
+
+17. FluidCanvas v10.1 — Card Background (卡片背景) + Outer Plate (外背景) + test-phase subscription unlock
+
+   User request (verbatim): the MAIN card should get the same
+   background feature set as the caption background, PLUS a new 外背景
+   (an outer plate extending outside the card bounds), and since this
+   is a testing phase, subscription-gated items should be unlocked.
+   Confirmed via questions: outer plate = color + theme + extent slider
+   (4-40 px, NO outer image upload); entry = new right-click menu item
+   「卡片背景」 opening an independent picker with 「背景 | 外背景」
+   tabs; unlock = global test switch (SUBSCRIPTION_TEST_MODE = true
+   hardcoded; flipping it false re-gates everything).
+
+   Design (single file docs/pages/fluidcanvas-editor.html):
+   - 10 incremental dataset fields (draft v stays 9): inner 6
+     cardBgColor/cardBgOpacity/cardShadowBlur/Spread/Opacity/cardEdge,
+     outer 4 outerBgColor/outerBgOpacity/outerBgExtent (4-40, default
+     12)/outerEdge.
+   - Card shadow renders into inline CSS var --card-shadow (NEVER
+     inline box-shadow, which would kill the selected ring); the ring
+     is an appended layer on the base rule — both compose. An empty var
+     must removeProperty (an empty var would eat the default shadow).
+   - Outer plate = .grid-card::before at z-index:-1 inside the card's
+     own stacking context (position+z-index:1, transform on rotate):
+     painted above the canvas background and below ALL cards, never
+     covering anything; follows rotation. Requires a per-card
+     overflow:visible flip (.has-outer-bg), same pattern as v9.5
+     caption-outside. Plate radius = computed card radius + extent,
+     recomputed from updateCardBorderRadius.
+   - Edge themes are real classes on cards (.card-edge-* carry
+     border+radius; tint via inline backgroundImage under .card-img-bg;
+     glow layers into --card-shadow). setCardEdge and draft restore
+     clear inline border longhands (saveDraft always re-writes them and
+     would defeat the classes). Outer edges layer via
+     --outer-border/tint/glow vars coexisting with the color.
+   - Legacy-draft protection: the renderer only WRITES
+     style.background when cardBgColor exists (write-only); the
+     stripes/image exclusivity blocks are dataset-guarded so legacy
+     inline colors survive; applyCardStyleFromDraft runs the new
+     renderers only when at least one new field is present.
+   - Content/text cards isolated: no .card-label → plain inline write,
+     no dataset (coexists with bgAlpha). Old modal
+     applyCardBackgroundColor/clearCardBackground delegate to the new
+     single writer/reset.
+   - Subscript test unlock: isSubscriberUser returns true in test
+     mode; renderers never check subscription (static assert);
+     window.setSubscriptionTestMode(v) test hook (the main script is an
+     IIFE — a value copy on window could not flip the closure var).
+   - Label contrast: dark card color → white label text, light →
+     #1a1a2e, only when the caption system is not in charge.
+   - Popover #cardBgPopover (300 px) reuses the v10.0 caption generic
+     CSS classes; setters keep the picker open (refresh only); context
+     menu height 240 → 260.
+
+18. v10.1 Verification — 209/209 headless green (3 passes), zero prod bugs
+
+   Pass 1 (31 checks): badge FC v10.1 + console ready (v10.1); test
+   switch OFF → isSubscriberUser false, all three edge button sets
+   locked with 订阅 chip + upgrade links, gated setters refuse with
+   toast and no dataset; unlock rebuilds (0 locked); draft v === 9.
+   Pass 2 (143 checks): full feature matrix — deep color + white
+   label, wheel + swatch sync, opacity, shadow sliders verbatim into
+   --card-shadow, selection ring composes (multi-layer computed
+   boxShadow), edge tech class + tint + glow + cleared longhands, edge
+   removal, color↔image↔stripes exclusivity in both directions,
+   resetCardBg full clear, legacy inline background survives shadow and
+   stripes setters, old-modal delegation (single writer), content card
+   isolation + bgAlpha regression, outer plate (vars, ::before
+   computed, overflow flip, extent, radius hook, plate click selects,
+   rotation keeps the plate, edge layering, reset), Escape/outside
+   click close behavior, tab switch, swatch hydration, slider disabled
+   states, 1.5 MB upload guard toast + success path + remove,
+   .dragging shadow replacement, v10.0 caption regressions, C1
+   spot-checks, fingerprint trips, deterministic final state.
+   Pass 3 (33 checks): reload round-trip (10 fields exact, classes,
+   vars, plate, edge-owned radius, no phantom ring, B default, content
+   bgAlpha + text), draft JSON exact, legacy hand-crafted draft (v:7
+   shape) restores verbatim without renderer interference.
+   Static: renderer sources contain no isSubscriberUser call.
+
+   All 4 rounds of failures (28 → 7 → 2 → 0) were battery modeling,
+   zero production bugs:
+   - IIFE closure: window.SUBSCRIPTION_TEST_MODE value copy cannot flip
+     the closure var — added window.setSubscriptionTestMode hook.
+   - Chrome inline-style serialization (probed empirically on a
+     throwaway debug page before writing asserts): inline colors read
+     back as rgb() form; alpha=1 collapses; writing
+     backgroundImage:'none' makes the background shorthand read back
+     'none rgba(10, 20, 30, 0.5)' (color survives — legacy protection
+     confirmed, asserts use contains-color); computed boxShadow layer
+     order is Chrome-serialized (loose regexes); transform must be read
+     inline, not the computed matrix.
+   - Only one card can be selected at a time (selectCard deselects the
+     rest) — control comparisons must Escape-deselect both first.
+   - .card-label has transition: background 0.15s — a synchronous
+     computed read hits the transition start (transparent);
+     noTransitions() must disable label transitions too.
+   - Escape deselects — re-select after Escape/outside-click tests.
+
+19. Known Issues / Pending (v10.1)
+   - Real-machine verification (see delivery report checklist):
+     Ctrl+F5 badge FC v10.1; right-click 卡片背景 on flag/asset cards
+     (absent on content/text); inner background palette/wheel/opacity +
+     shadow sliders + ring coexistence; image upload (FileReader path
+     cannot run headless — only the size guard is tested) + remove;
+     outer plate color/opacity/extent live feel + plate follows
+     rotation + plate click selects; edge themes in all three panels;
+     save/reload round trip; legacy drafts load intact.
+   - Chinese IME typing (unchanged long-term item).
+   - Documented design costs: choosing an edge theme resets custom
+     border/radius from the old modals (inline longhands must be
+     cleared or the class styles never show); templates do not capture
+     the new fields; outer plate has no image upload (by user choice).
+   - Subscription items are unlocked for everyone during the testing
+     phase (SUBSCRIPTION_TEST_MODE = true); re-gating = flip one
+     constant to false — the locked-UI path is battery-verified.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FC v10.2 — 边缘主题质感升级（撕边羊皮纸/藏宝图 + 赛博 HUD）
+2026-08-16  无头电池 151 PASS / 0 FAIL（静态 24 + Pass A 16 + Pass B 77 + Pass C 25 + R 检查）生产代码零 bug
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+需求：羊皮纸/藏宝图（clip-path 不规则撕边 + 深褐烧边内阴影 +
+氧化斑驳渐变 + 泛黄底 + drop-shadow 悬浮投影）与科技 HUD
+（斜切角 + 四角 L 型青色发光包角 + 霓虹 + 微弱网格），纯
+CSS/内联 SVG，另交付可提取为组件的独立演示页。
+
+架构（filter → clip → mask 顺序的修正）：
+- 卡片永不剪（保持矩形承载 drop-shadow 阴影栈、命中区不变）；
+  撕边/切角轮廓在 ::before 剪层（clip-path + 底色 + 配方层，
+  经 --card-clip/--card-layers/--card-overlay/--card-tint-base
+  四变量由 applyCardBg 写入）；::after 覆盖层（烧边/HUD 包角/
+  扫描线）同剪 z:2；图片/条纹子层经变量继承套同一 clip。
+- 外板共存自动解决：主题化 ::before 与外板规则同特异性
+  (0,2,1) 靠源顺序逐属性覆盖，外板 dataset/草稿原样保留，
+  移除主题即恢复；setCardEdge 提示 toast。
+- 选中环 = 四方向零模糊 drop-shadow trace + 主色光晕。
+- 标签：clipSoft 浅齿多边形 + labelLayers 进 backgroundImage。
+- 草稿 v 保持 9、零新持久化字段（dataset 驱动重建）；
+  saveCardAsTemplate 主题卡改读 --card-tint-base。
+
+电池发现并修复的 2 个真实生产 bug（均为 CSS 规范陷阱）：
+1. drop-shadow(0 0 0 2px …) 四长度写法：drop-shadow() 无 spread
+   参数（与 box-shadow 不同）→ Chromium 将含它的整条 filter
+   声明计算为 'none'（探针 CSS.supports=false 实证）→ 选中态
+   光晕全塌。修复 = 四方向零模糊 trace。
+2. ::after 用 background-image: var(--card-overlay) 长整句：
+   tech 包角层带 position/size/repeat 语法（5% 0 / 2px 20px
+   no-repeat）只对 background: 简写合法 → 整层失效。修复 =
+   改用 background: var(--card-overlay, none)。演示页同病两处
+   一并修复。
+
+交付：
+- docs/pages/fluidcanvas-editor.html（唯一生产文件，FC v10.2）
+- docs/pages/edge-themes-demo.html（新演示页：.card-parchment
+  + --dark 修饰符 + .card-tech + --soft 修饰符，自定义属性旋钮，
+  5 种尺寸，原理注释，编辑器映射表）
+
+真机复测清单：
+- 右键 卡片背景 → 边缘：三个按钮切换即时生效；撕边真实感
+  （手作 67 点齿 ≤1.9%）；纸/藏宝图同轮廓异配色
+- 科技：四角 L 型包角精确骑在 5% 切线上（含柔光副本），
+  网格 + 扫描线可见；拖动卡片阴影为剪影（随形状，非矩形）
+- 选中主题卡：2px 描边精确跟随撕边/切角 + 主色光晕
+  （旧矩形环已替换）
+- 主题 + 外板共存：toast「边缘主题暂时覆盖外缘底板…」；
+  移除主题后外板颜色/范围原样恢复
+- 主题 + 颜色：剪层底色取所选颜色+透明度（--card-tint-base）
+- 标签边缘主题：浅齿软多边形，文字不被齿切到；竖排不受影响
+- 图片/条纹卡：全出血子层同剪，图片边缘被烧边压暗、中心干净
+- 保存为模板：主题卡捕获 tint-base 色值；草稿保存/重载
+  全态还原（v:9，无新字段）；旧草稿原样加载
+- 演示页：三族类 + 五种尺寸（含 120×28 药丸）；选中态环
+  跟随剪影；缩放窗口验证 % 几何响应式
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+v10.2 反馈核查（外部评审意见逐条验证）+ 两处硬化
+2026-08-16
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+外部评审提出的问题逐条对着唯一生产文件核实（拆为 7 项）：
+
+1.「代码末尾截断、缺 })() 闭合与 </script>」——不成立。
+   IIFE 完整闭合于 L4402 })(); + L4403 </script>，页面三遍无头
+   电池 151/0（截断的页面不可能零报错跑出任何 PASS）。
+2.「window.publishArticle = publish 变量名写错」——不成立。
+   L1733 绑定的是 window.publishArticle = publishArticle（同名）。
+3.「IIFE 隔离致 HTML 事件失效」——不成立。58 个内联事件函数名
+   与 window 挂载清单逐一比对全部命中（saveDraft/publishArticle/
+   openModal/closeAllModals 等全部显式挂 window）。
+4.「缺失 openModal/closeAllModals/showTemplateLibrary/showToast/
+   createFlagCard/createContentCard/addCardDrag」——不成立。
+   七函数全部存在（L1758/1764/3784/1772/1969/1999/1811）。
+5.「currentCols/currentPreset 未声明」——不成立。L4175-4176 有
+   var 声明，提升覆盖 IIFE 全作用域，严格模式无 ReferenceError
+   （电池零 Uncaught 佐证）。
+6.「.asset-panel-toggle left:266px 魔法数」——成立（维护性）。
+   修复：.canvas-body 上定义 --asset-panel-w:260px 单一旋钮，
+   面板 width 与开关 left:calc(var + 6px) 绑定，改一个值两处联动。
+7.「图片无 onerror」——成立（健壮性）。setCardImage 存在 URL
+   输入路径（L2801），错误 URL/离线/损坏 data URI 会留下破层。
+   修复：imgEl.onerror 移除坏层 + 去掉 has-bg-img（身份守卫防止
+   被替换图的迟到 error 误删新图）。
+
+验证：针对性冒烟 5/5 PASS（徽章、开关 left 266px/面板 260px
+计算值不变、坏图层移除、正常图路径回归），无 Uncaught，临时
+文件已清理。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+卡片默认背景 100% 不透明（用户要求）
+2026-08-17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+问题：画布卡片一直呈半透明——根源在共享主题 ethereal.css
+L110 --card-bg: rgba(255,255,255,0.55)（浅色主题玻璃质感），
+.grid-card 默认 --card-bg-color 引用它。
+
+修复：编辑器内局部覆盖（不动共享样式表，其它页面保留玻璃
+效果）——.grid-card 的 --card-bg-color 改为不透明的
+var(--color-surface-container)（与 content-card 一致：浅色
+#eceef0 / 深色 #202038）。选色路径的透明度滑杆默认值本就是
+100，不受影响；主题卡 ::before 的无色回退同样变不透明。
+
+验证：无头冒烟 5/5 PASS（默认卡不透明、内容卡一致、主题剪层
+回退不透明、选色 100 不透明、卡片本体不透明），零 Uncaught。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+画布整体透明度移除（用户：鼠标移开卡片变淡）
+2026-08-17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+问题（真机反馈）：鼠标移开卡片变淡像半透明。根源：.grid-canvas
+整体 opacity 0.35 / hover 0.55——opacity 作用于整个子树，卡片
+本身不透明但被父容器压淡；移开鼠标画布从 0.55 落回 0.35 产生
+「变淡」观感。之前把 --card-bg-color 改不透明只解决了卡片自己
+的底色，容器级透明度仍在。
+
+修复：移除 .grid-canvas 的 opacity 与 .grid-canvas:hover 规则
+（transition 列表同步去掉 opacity）。网格线仍然极淡——共享主题
+--divider-line 本身只有 8% alpha，无需任何补偿。画布底色、网格、
+卡片、内容卡全部 100% 实心。
+
+验证：无头冒烟 5/5 PASS（画布 opacity 1、卡片 opacity 1、卡片
+底色实心、网格线仍在、内容卡实心），零 Uncaught。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FC v10.3 — 工具栏 Cols/Cell/Viewport 整合为单按钮 + 弹层
+2026-08-17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+需求（用户原话）：「现在是把顶部的Cols，和Viewport 整合一下」；
+确认方案：「就是变成一个按钮 然后点击后才弹出展示他们的内容」。
+
+改动（唯一生产文件 docs/pages/fluidcanvas-editor.html）：
+1. 工具栏：Cols（4 键）/ Cell（5 键）/ Viewport（4 预设）三组 →
+   单个「Viewport · 16:9 ▾」按钮（id=viewportBtn），点击弹出
+   viewportPopover 展示三组内容，按钮旁实时显示当前预设名。
+2. 弹层挂载在 .grid-controls 内部（position:fixed 不占布局）——
+   高亮循环选择器 .grid-controls .col-btn / .vp-presets .vp-btn
+   全部零改动；class 带 radius-popover 直接复用现有关闭机制
+   （外部点击 / Escape / hideContextMenu / 其它弹层打开时自动关）。
+3. toggleViewportPopover()：开关式，先 hideContextMenu() 关其它
+   弹层，定位按钮正下方、右缘内收、高度不足翻到按钮上方。
+   document 点击处理器把 #viewportBtn 排除在外——onclick 打开
+   弹层后 document 处理器紧随其后会把它立刻关掉，不加排除弹层
+   永远开不起来。
+4. applyPreset 末尾同步 viewportBtnState 标签（当前预设名）。
+5. 顺手修复既有 bug：setGridColumns / setCellSize / applyPreset
+   的高亮循环遍历全部 .grid-controls .col-btn（含吸附/对齐），
+   非匹配按钮被 toggle('active', false) 误清——改列数/格子会把
+   吸附/对齐的开关高亮抹掉（实际开关状态未变，视觉错乱）。
+   加 onclick 守卫，只点亮属于各自组的按钮。
+6. 版本 → FC v10.3（草稿 v 保持 9，零新持久化字段）。
+
+验证：语法检查 node --check 通过；无头冒烟 28/28 PASS（徽章、
+按钮与弹层结构、初始隐藏、开关切换、预设切换标签/格子/高亮、
+列数与格子设置生效、弹层内点击不关闭、外部点击 / hideContextMenu
+/ Escape 三路关闭、吸附/对齐状态保持、恢复默认、零 console.error），
+临时文件已清理。
+
+真机复测清单：
+1. 点「Viewport · 16:9 ▾」→ 弹层出现在按钮下方
+2. 弹层内切 ½ 16:9 / Tablet / Mobile → 按钮标签同步、卡片重排；
+   再切回 16:9 → 卡片位置恢复（每预设独立记忆，逻辑未动）
+3. 弹层内改 Cols / Cell → 网格即时变化、弹层不关（可连续调）
+4. 点弹层外 / 按 Esc / 打开其它弹层 → 弹层关闭
+5. 先开吸附，再改列数 → 吸附高亮保持（不再被抹掉）
+6. 右键卡片菜单与 Viewport 弹层互斥
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+卡片背景面板：删除自带预设色块（用户将自行提供预设背景）
+2026-08-17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+需求（用户原话）：「你把卡片背景改成 把原有自带的删除之后我再放
+一些预设的背景」。AskUserQuestion 确认范围：只删「背景」tab 的
+8 个预设色块（CAPTION_BG_PRESETS），色盘/透明度/阴影/上传图片/
+3 个边缘主题全部保留；外背景 tab 的色块与边缘不动。
+
+改动（docs/pages/fluidcanvas-editor.html）：
+1. HTML：cardBgPanel 顶部「选择卡片背景」标签 + #cardColorPresets
+   色块容器删除（色盘行直接成为面板第一行）；留注释说明 v10.3
+   删除原因，将来放用户预设背景时在此处加容器、由
+   refreshCardBgPopoverState 填充。
+2. JS：refreshCardBgPopoverState 删除 ensureSwatches('cardColorPresets'
+   , setCardBgColor) 调用与对应 active 高亮循环；ensureSwatches 助手
+   保留（外背景 tab 色块 + 名称标签色块 #captionColorPresets 继续用）。
+   CAPTION_BG_PRESETS 常量保留（名称标签面板仍在使用）。
+3. 无新版本号（同属 v10.3 当日工作）；草稿格式零变化。
+
+验证：node --check 通过；静态 6 项 + 无头冒烟 13/13 PASS（色块
+DOM 移除、面板打开、色盘/透明度滑杆/边缘主题按钮仍在、外背景
+tab 8 色块保留、色盘设色与透明度功能回归、边缘主题上/下、恢复
+默认、零 console.error），临时文件已清理。
+
+真机复测清单：
+1. 右键卡片 → 卡片背景 → 「背景」tab 顶部不再有 8 个色块
+2. 色盘/透明度/阴影/上传图片/边缘主题/恢复默认全部可用
+3. 切到「外背景」tab → 色块仍在（本次未删）
+4. 名称标签面板（右键名称 → 背景相关）色块仍在
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+卡片图片层与背景层拆分（v10.4）+ 卡图边缘淡化
+2026-08-17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+需求（用户原话）：「为什么我选择增加背景他是替换掉国旗卡片原本的
+图片？为什么不是直接覆盖整个背景最底部的卡片？能不能给含图片的
+卡片内的图片（注意不是背景卡片）增加边缘淡化模糊边缘的效果」
+
+根因：背景上传调用的 setCardImage 与国旗卡片共用一个 .card-img-bg
+图层 —— 上传背景 = 替换国旗；且 removeCardBgImage / resetCardBg
+会把 .card-img-bg 当背景删掉（国旗连带被删）。
+
+改动（docs/pages/fluidcanvas-editor.html，版本 → FC v10.4）：
+1. 图层拆分：新增 .card-bg-img = 真正的背景图层（<img>，
+   position:absolute; inset:0; z-index:0; object-fit:cover;
+   border-radius:inherit，插入 card.firstChild —— 与 .card-img-bg /
+   .card-stripes 同 z-index、靠源顺序垫底，位于卡片底色与外板
+   ::before (z -1) 之上）；.card-img-bg 专属于卡片自身图片（国旗）。
+2. 新函数 setCardBgImage(card, imgSrc)（window 暴露）：src 校验、
+   onload 不自动 fitCardToImage、onerror 身份校验后移除、加
+   has-card-bg-img 类、写 dataset.cardBgImg；不改卡名（背景不是
+   内容，与 setCardImage 的 alt 命名区分）。背景与 cardBgColor
+   不互斥（图片盖颜色、移除图片颜色还原；v10.1 的颜色互斥只保留
+   在 setCardImage）。
+3. handleCardBgUpload 改走 setCardBgImage（旧 setCardImage 调用
+   删除）。removeCardBgImage / resetCardBg 重写为只触碰背景层
+   （.card-bg-img + 类 + cardBgImg/cardBgColor/cardBgOpacity/阴影/
+   cardEdge），国旗 .card-img-bg / 条纹 / 宽高锁 / 图标全部保留。
+4. 图片边缘淡化：仅 .card-img-bg 加 radial-gradient 遮罩
+   (-webkit-mask-image/mask-image: ellipse 100% 100% at 50% 50%,
+   #000 80%, transparent 96%) —— 遮罩随元素缩放、与 clip-path
+   叠加生效、四角渐隐更深；.card-bg-img 不加（用户明确「不是
+   背景卡片」）。真模糊需复制一层 blur 图层，留作将来增强。
+5. 浮层与主题联动：has-card-bg-img 与 has-bg-img/has-stripes 同款
+   药丸（标签/图标 z-index:1 反色）；.card-bg-img 加入 pointer-
+   events:none 组与 v10.2 三个边缘主题的子层 clip 组（撕边/切角
+   轮廓同步）。
+6. 持久化：saveDraft 追加 entry.cardBgImg（草稿 v 保持 9，
+   v10.4 仅加增性字段）；loadDraft 在 imgSrc 块旁恢复背景层；
+   getCardFingerprint 加 'bgimg: 长度: 尾24字符' 摘要（autoSave
+   依赖指纹变化，必须覆盖新状态）。
+
+验证：node --check 通过；静态 11 项 + 无头冒烟 16/16 PASS：
+国旗不被背景替换（T05 核心）、背景层为 firstChild 垫底（T06）、
+遮罩只作用于卡图（T07，背景层 maskImage=none）、标签浮层、
+草稿同时存 bgImg+imgSrc、移除背景/恢复默认国旗保留、清空重载
+round-trip 背景层+国旗双恢复、零 console.error。临时文件已清理。
+
+真机复测清单：
+1. 国旗卡右键 → 卡片背景 → 上传图片 → 国旗仍在原位、图片铺满
+   整卡最底层（不放大会自动贴尺寸）
+2. 含图片卡片（国旗）四边有柔和淡化渐隐；背景卡片的图片边缘
+   清晰无淡化（符合要求）
+3. 右键卡片 → 卡片背景 → 移除背景 → 背景消失、国旗保留
+4. 右键卡片 → 卡片背景 → 恢复默认 → 背景/颜色/阴影全清、国旗
+   与条纹保留
+5. 刷新页面 → 国旗 + 背景图片都在（双图层持久化）
+6. 边缘主题（破旧的纸/藏宝图/科技）+ 背景图片共存 → 背景随
+   撕边轮廓一起裁剪
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+修复：右键卡片时卡片跟着鼠标移动（v10.4 同日补丁）
+2026-08-17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+需求（用户原话）：「为什么我右键卡片会跟着动啊」
+
+根因：addCardDrag 里第二个 mousedown 监听器（Track which card
+is being dragged right now）把共享拖拽状态 _activeDrag 武装为
+闭包内的 dragState，但没有像第一个监听器那样检查 e.button !== 0。
+右键按下时 dragState 仍是上一次左键单击留下的旧对象（起点/
+原始坐标为旧值）——只要右键按住期间鼠标有任何移动（哪怕 1px，
+因为 3px 阈值是从旧起点起算的），就进入拖拽：卡片跳到光标附近
+跟随移动，松开右键时 mouseup 把这次跳跃当真实拖拽提交
+（moveCardPx），卡片永久移位。反证验证：临时摘掉守卫跑电池，
+卡片从 (44,44) 跳到 (198,176)，T03 FAIL——与用户描述完全一致。
+
+修复（docs/pages/fluidcanvas-editor.html，addCardDrag 监听器 2）：
+加 if (e.button !== 0) return; 守卫（与监听器 1 相同），右键不再
+武装拖拽状态。左键拖拽/单击/右键菜单全部不受影响。
+
+验证：node --check 通过；静态 3 项 + 无头冒烟 6/6 PASS：先左键
+单击制造残留状态 → 右键按住并移动 → 卡片位置不变（T03 核心）、
+右键菜单正常打开、左键拖拽回归（T05 卡片确实移动 dx=44）、零
+console.error；反证运行确认电池能抓住原 bug。临时文件已清理。
+
+真机复测清单：
+1. 左键单击一张卡片选中
+2. 右键该卡片（按住轻微移动）→ 卡片纹丝不动，菜单正常弹出
+3. 右键按住移动到菜单项再松开 → 卡片不动
+4. 左键按住拖拽 → 卡片正常跟随移动
+5. 新卡片直接右键（未先左键）→ 同样不动
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+藏宝图波浪地图边缘（v10.5）— 用户提供的 Gemini 方案落地
+2026-08-17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+需求（用户原话）：「用以上Gemini 给的方案制作 藏宝图 背景边缘」——
+Gemini 方案 = clipPathUnits="objectBoundingBox" 的 SVG 剪切路径，
+坐标全部 0~1 百分比 → 任意尺寸/宽高比容器边缘自动适配不拉伸。
+
+改动（docs/pages/fluidcanvas-editor.html，版本 → FC v10.5）：
+1. <body> 后插入隐藏 SVG defs：#map-wave-clip（clipPathUnits=
+   objectBoundingBox，波浪路径 M 0.03,0.05 … Z）。width/height=0
+   + position:absolute + pointer-events:none 零渲染占用；不能用
+   display:none（部分浏览器无法解析被隐藏 SVG 的引用）。
+2. EDGE_STYLES.treasure.clip = 'url(#map-wave-clip)'（原与 paper
+   共享 TORN_CLIP 67 点撕边多边形）；clipSoft 保持 TORN_CLIP_SOFT
+   （名称标签小元素仍用浅齿，波浪在标签上会吃掉内边距）。
+3. 架构零改动：波浪 clip 经 --card-clip 变量自动流向 ::before
+   剪层、::after 覆盖层、.card-img-bg/.card-stripes/.card-bg-img
+   全出血子层；drop-shadow 悬浮投影/选中剪影描边环自动改描波浪
+   轮廓；Gemini 方案里的 overflow:hidden 不需要（v10.2 架构决定
+   卡片本身不剪、标签允许在轮廓外，各层自己带剪）。
+4. 草稿 v 保持 9，零新持久化字段（dataset.cardEdge 仍是
+   'treasure'，clip 是常量引用）；旧草稿重载自动得到波浪轮廓。
+5. 演示页 docs/pages/edge-themes-demo.html 同步：同款 SVG defs +
+   .card-parchment--dark 加 --pch-clip: url(#map-wave-clip)（覆盖
+   旋钮数 5 → 6）；说明文字与映射表更新为 v10.5。
+
+验证：vm.Script 语法检查通过；静态 7 项 + 无头冒烟 18/18 PASS：
+SVG defs 在 DOM、::before/::after 剪层与国旗图/背景图子层全部
+url("#map-wave-clip")、v10.4 遮罩仍在、悬浮投影 intact、标签
+仍软撕边 polygon、纸/科技主题不受影响、移除主题全清、草稿
+cardEdge=treasure 无新字段、清空重载主题类+波浪 clip 双恢复、
+零 console.error。临时文件已清理。
+
+真机复测清单：
+1. 右键卡片 → 卡片背景 → 边缘 → 藏宝图 → 四边是平滑波浪（不再是
+   锯齿撕边），悬浮阴影与选中描边环都沿波浪轮廓
+2. 拖大/缩小卡片、改宽高比 → 波浪不变形、不拉伸（objectBoundingBox）
+3. 藏宝图 + 国旗图片/背景图片 → 图片边缘随波浪裁剪、遮罩淡化仍在
+4. 切破旧的纸/科技 → 原轮廓不变；切回藏宝图 → 波浪回来
+5. 移除主题/恢复默认 → 完全还原；刷新页面 → 藏宝图波浪保持
+6. 打开 edge-themes-demo.html → --dark 藏宝图样张也是波浪轮廓
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+破旧的纸褶皱折角边缘（v10.6）— 用户提供的第二个 Gemini 方案
+2026-08-17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+需求（用户原话）：「这个是褶皱的纸背景边缘」——针对图的边缘轮廓
+（右上角斜切折角 + 左下角圆弧卷角 + 四边微不规则撕边）的 SVG
+剪切路径（clipPathUnits="objectBoundingBox"，0~1 百分比自适应）。
+
+改动（docs/pages/fluidcanvas-editor.html，版本 → FC v10.6）：
+1. 同一隐藏 SVG 的 <defs> 内新增 #paper-edge-clip（与 v10.5 的
+   #map-wave-clip 并列，各自带注释标注主题归属）。
+2. EDGE_STYLES.paper.clip = 'url(#paper-edge-clip)'（原为与
+   treasure 共享的 TORN_CLIP 67 点撕边多边形）；clipSoft 保持
+   TORN_CLIP_SOFT（标签仍浅齿）。
+3. TORN_CLIP 常量删除（paper/treasure 都不再引用，只剩 SOFT
+   给两主题的 clipSoft 用）——死代码清理，架构注释同步更新。
+4. 架构零改动：褶皱轮廓经 --card-clip 变量流向 ::before 剪层/
+   ::after 覆盖层/图片与背景子层；投影与选中描边环自动改描
+   折角轮廓；右上折角缺口与左下卷角随卡片尺寸比例缩放。
+5. 草稿 v 保持 9，零新持久化字段（dataset.cardEdge 仍是
+   'paper'）；旧草稿重载自动升级为褶皱轮廓。
+6. 演示页同步：#paper-edge-clip defs + 基础 .card-parchment 的
+   --pch-clip → url(#paper-edge-clip)（--dark 藏宝图仍波浪，
+   --soft 标签仍浅齿）；标题/说明/映射表更新为 v10.6。
+
+验证：vm.Script 语法检查通过；静态 8 项 + 无头冒烟 18/18 PASS：
+SVG defs 在 DOM、::before/::after 剪层与国旗图/背景图子层全部
+url("#paper-edge-clip")、v10.4 遮罩仍在、悬浮投影 intact、标签
+仍软撕边、藏宝图波浪与科技切角回归正常、移除主题全清、草稿
+cardEdge=paper 无新字段、清空重载主题类+褶皱 clip 双恢复、零
+console.error。临时文件已清理。
+
+真机复测清单：
+1. 右键卡片 → 卡片背景 → 边缘 → 破旧的纸 → 右上角斜切折角缺口
+   + 左下角圆弧卷角 + 四边微撕边，阴影沿轮廓
+2. 拖大/缩小卡片、改宽高比 → 折角/卷角比例缩放不变形
+3. 破旧的纸 + 国旗/背景图片 → 图片随褶皱轮廓裁剪、淡化仍在
+4. 切藏宝图 → 波浪轮廓；切科技 → 切角；切回破旧的纸 → 褶皱回来
+5. 移除主题/恢复默认 → 还原；刷新页面 → 褶皱保持
+6. edge-themes-demo.html 基础样张（米黄纸面）也是褶皱折角轮廓
+
+科技 1~6 六款 HUD 科技边框边缘（v10.7）— 用户提供的第三个 Gemini 方案
+2026-08-17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+需求（用户原话）：「这 6 款科幻/赛博朋克 HUD 科技边框可以通过 SVG
+clipPath（自适应切角）+ CSS 渐变一比一还原……这六个边缘名称分别是
+科技1~6」——六款切角剪影（#hud-frame-1..6，objectBoundingBox 多边形）。
+
+改动（docs/pages/fluidcanvas-editor.html，版本 → FC v10.7）：
+1. 隐藏 SVG defs 新增 #hud-frame-1..6（polygon 逐点照用户方案；
+   hud-frame-4 四角对称斜切与原科技切角最接近）。
+2. EDGE_STYLES 科技主题拆为 tech1~6 六款：共享配方常量
+   （TECH_CLIP_SOFT/CARD_LAYERS/LABEL_LAYERS/TINT/BORDER/RADIUS/
+   GLOW/COLOR）+ techFrame(n) 组装；原 5% 写死包角几何改为
+   HUD_CORNERS 四角切点表 + hudOverlay() 生成（8 核心亮条 + 8
+   柔光副本 + 4px 扫描线），包角自动骑各剪影切线。
+3. tech 别名 = techFrame(4)：外缘底板（不剪）与名称标签
+   （clipSoft/labelLayers 六款全同）继续用单一 'tech'，零改动。
+4. CSS 单类策略：六款共用 card-edge-tech 类（剪影差异走
+   --card-clip 变量），applyCardBg 把 tech* 归一成 'tech' 类名；
+   四组主题 CSS 规则零改动。
+5. 旧草稿迁移：applyCardBg 一行把 cardEdge='tech' 改写为
+   'tech4'，autosave 持久化升级值。
+6. 边缘按钮：卡片 9 键（无/破旧的纸/藏宝图/科技1~6，面板
+   max-height 358px 可滚动）；外板保持 4 键。
+7. 草稿 v 保持 9，零新持久化字段（dataset.cardEdge =
+   'tech1'..'tech6'）。
+8. 演示页同步：6 defs + 默认 --tech-clip → url(#hud-frame-4) +
+   包角几何改 CSS 变量（--tl-a 等切深 + calc）+ --f1..--f6 修饰符
+   + 六款剪影速览行 + 映射说明 v10.7。
+
+验证：vm.Script 语法检查通过；静态 13 项 + 无头运行时 29/29 PASS：
+六 defs 精确多边形、旧 tech 草稿载入自动迁移 tech4、单类
+card-edge-tech（无 tech1/tech4 类）、::before/::after/国旗图子层
+同剪、卡片 clip none 不变量、六剪影循环 clip+类+包角几何、
+setCardEdge('tech') 旧值归一、弹窗 9 键/外板 4 键/高亮、外板与
+标签别名、纸/藏宝图/none 回归、选中环、存档 round-trip 无新字段、
+指纹变化、重载持久化、content 卡守卫、零 console.error。临时文件
+已清理。（电池两处建模修正：版本徽章是 div 非 .badge；内联样式
+序列化逗号后补空格。）
+
+真机复测清单：
+1. 右键卡片 → 卡片背景 → 边缘 → 科技1~6 各点一遍 → 六款切角
+   剪影各不相同，霓虹包角精确骑在各自切线上（左上缺角+右下大斜切
+   / 阶梯缺角 / 双向大斜切 / 四角对称 / 单边大切角 / 战术卡槽+中缝）
+2. 拖大/缩小卡片 → 切角与包角按比例缩放贴合
+3. 科技剪影 + 国旗/背景图片 → 图片随剪影裁剪
+4. 选中卡片 → 霓虹光晕 + 2px 剪影描边环
+5. 旧存档（v10.2 存的科技卡）重载 → 自动变科技4 轮廓
+6. 外缘底板/名称标签的「科技」选项 → 仍是原浅切角风格，无异常
+7. edge-themes-demo.html 六款剪影速览行逐款核对
+
+外背景并入边缘主题（v10.8）— 选主题自动带 16px 外板，独立标签页移除
+2026-08-17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+需求（用户原话）：「那个外背景不要独立出来，是在选择边缘的时候就
+自动原有一个16px边距的外边缘」——外板不再是独立功能；用户确认
+「整个标签页移除」：卡片背景弹窗只剩「卡片背景」一个标签，颜色
+预设/取色器/不透明度/外扩滑杆/外板按钮/重置按钮全部删除，外板
+完全由边缘主题拥有。
+
+架构（Gemini hud-box 双层外观）：
+1. 主题卡 ::before 改画「外板」：inset: calc(-1 * var(--outer-extent,
+   16px)) + 板底色/渐变/边框/光晕；clipPathUnits="objectBoundingBox"
+   对 ::before 自身更大的盒解析 → 板剪影 = 卡片剪影等比放大一圈，
+   即 16px 外框。特异性 (0,3,1) 压过外板规则与主题 ::before 规则
+   （均 0,2,1）。卡片的 drop-shadow filter 描 ::before → 阴影跟随外框。
+2. 卡片剪影移到 .card-tint 子层：applyCardBg 按需 create/remove
+   （insertBefore firstChild，幂等复用）；z-index:-1 画在 ::before
+   之上（同 z 树序在后）、图片/条纹 (z 0) 之下；带 --card-clip 同剪。
+   dataset 判断（outerEdge || outerBgColor），与 applyOuterBg 调用
+   顺序无关。
+3. setCardEdge(主题) → dataset.outerEdge（tech* 归一 'tech'）+
+   dataset.outerBgExtent = 16 → applyOuterBg → applyCardBg；
+   setCardEdge('none') 清 outerEdge/outerBgExtent/outerBgColor/
+   outerBgOpacity 后重渲；resetCardBg 同样全清。applyOuterBg 默认
+   extent 16（原 12）。
+4. 旧草稿兼容：纯 outerBgColor 无主题的卡仍走原外板规则（圆角板，
+   默认 16px）；有主题时旧 outerBgColor 保留在板底色下层。
+5. 移除：switchCardBgTab/setOuterBgColor/updateOuterBgOpacity/
+   updateOuterExtent/setOuterEdge/resetOuterBg 全部删除（含 window
+   导出）、OUTER_EDGE_BUTTONS、弹窗「外背景」标签页与整块面板
+   （.caption-tabs CSS 保留——名称标签弹窗仍用）。覆盖提示 toast 删除。
+6. 草稿 v 保持 9，零新持久化字段（outerEdge/outerBgExtent 是既有
+   v10.1 字段；saveDraft 存 outerBgExtent 数字）。
+7. 演示页同步：.card-tech--plated 修饰符（--plate:14px，板渐变/
+   边框/光晕 + ::before 改画板）说明编辑器用真实 .card-tint 子层
+   实现六款剪影；图注与映射表更新 v10.8。
+
+验证：vm.Script 语法通过；静态 13 项 + 无头运行时 30 项 43/43
+PASS：外板标签/面板/setter 全移除、初始干净态、tech4/纸/藏宝图/
+tech5 自动 16px 外板（inset -16px + 主题板底/边框/光晕 + 板剪影
++ ::after 覆盖层仍在）、.card-tint 属性与幂等、主题+内色走
+tint-base、名称标签边缘不受影响、拖拽抬升阴影、旧外板色在主题下
+保留、存档 round-trip（outerBgExtent 数字 16、无 card-tint/clipPath
+泄漏）、重载重渲（loadDraft 不清板 → 电池模拟新页面先清卡）、
+纯色旧草稿 16px 圆角板、resetCardBg 全清、订阅门、content 卡守卫、
+指纹变化、50 次重应用 <3s、零 console.error。临时文件已清理。
+（电池三处建模修正：Chrome 把 alpha=1 序列化为 rgb()；saveDraft
+存 outerBgExtent 为数字；loadDraft 不清画布需先清卡再调。）
+
+真机复测清单：
+1. 右键卡片 → 卡片背景 → 只剩一个「卡片背景」标签，无外背景区
+2. 边缘 → 科技1~6 各点一遍 → 卡片剪影外自动出现 16px 同剪影外板
+   （放大一圈），板带主题边框/光晕；卡片阴影随外板轮廓
+3. 破旧的纸/藏宝图 → 同样自动带 16px 撕边外板
+4. 拖大/缩小卡片 → 外板随剪影等比缩放，始终 16px 边距
+5. 边缘 → 无 → 外板随主题一并消失；卡片恢复普通外观
+6. 旧存档重载：纯外背景色旧卡 → 16px 圆角外板照旧；主题卡 → 自动
+   外板（无需手工重设）
+7. 名称标签（标题边缘）仍只有卡片内标签样式，无外板
+8. 内容卡 → 边缘按钮不可用，无外板
+9. 保存→重开页面 → 外板与主题完整恢复
+10. edge-themes-demo.html 新增「科技4 + 外板」样张 → 板边框/光晕/
+    阴影跟随外板
+
+背景图片适配外背景（v10.9）— 图片外扩铺满外板
+2026-08-17
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+需求（用户原话）：「为什么背景图片是和卡片内的主要图片的大小放在
+一起的？能不能让图片适配外背景卡片大小」——背景图原来只铺卡片内部
+（.card-bg-img inset:0，与国旗图同边界），用户要它铺满整个外背景。
+
+改动（docs/pages/fluidcanvas-editor.html，版本 → FC v10.9，纯 CSS）：
+1. 新规则 `.grid-card.has-outer-bg.has-card-bg-img .card-bg-img`：
+   inset = -extent，width/height = calc(100% + 2 × extent) ——
+   有外板 + 有背景图时图片层外扩到外板边界。主题卡继承的 --card-clip
+   （objectBoundingBox）对更大的盒解析 = 外板剪影 → 图片铺满整个
+   外背景；纯色旧外板无 --card-clip，border-radius = --outer-radius
+   精确贴合圆角板。
+2. 关键陷阱：<img> 是被替换元素，width/height 写 auto 会回落固有
+   尺寸（40×24），过度约束也不接管（实测只左移不扩宽）——必须
+   显式 calc；left/top/width/height 全非 auto 时 right/bottom 被
+   忽略，盒恰好落在外板边界。
+3. 图片 z 0 在外板 ::before (z -1) 之上 → 图片成为外背景本体
+   （板底色/边框/光晕让位）；主题剪影、drop-shadow、::after 覆盖层
+   不受影响。国旗层 .card-img-bg 不扩（保持内铺 + 边缘淡化）。
+   移除主题/背景图任一方即回落到内铺（纯状态驱动，零 JS 改动）。
+4. 草稿 v 保持 9，零新持久化字段。
+5. 演示页同步：`.card-tech--plated > img` 同款 calc 规则 + 新增
+   「科技4 + 外板 + 背景图」样张。
+
+验证：vm.Script 语法通过；静态 7 项 + 无头运行时 16 项 23/23
+PASS：无外板内铺不变、主题自动外板后图片四边精确 -16px 外扩、
+国旗层不扩 + 边缘淡化回归、移除主题回落、纯色旧外板外扩 +
+圆角贴合 --outer-radius、图层幂等、removeCardBgImage 回落、
+重加恢复（状态驱动）、存档 round-trip（v9 零新字段）、重载重渲、
+纸主题同样外扩、content 卡守卫、性能、零 console.error。临时
+文件已清理。（电池建模：卡片有边框（基础 2px/主题 1px），绝对
+定位包含块是 padding 盒——几何断言全部用 clientWidth + border
+偏移；首跑 9 FAIL 实为宽度 calc 生产修正 + padding 盒建模。）
+
+真机复测清单：
+1. Ctrl+F5 强刷确认徽章 FC v10.9
+2. 国旗卡 → 卡片背景 → 上传背景图 → 无边缘主题时图片铺满卡片
+   内部（不变）
+3. 边缘 → 任意主题 → 背景图立即外扩铺满 16px 外板（剪影外圈
+   也是图片），板边框/光晕让位给图片
+4. 边缘 → 无 → 背景图回落到卡片内部
+5. 移除背景图 → 主题外板恢复原样（板边框/光晕重现）
+6. 纯外背景色旧存档 + 背景图 → 图片外扩且四角贴合圆角外板
+7. 保存 → 重开页面 → 外扩完整恢复
+8. edge-themes-demo.html「科技4 + 外板 + 背景图」样张核对
+
+────────────────────────────────────────────
+v10.10 — 外板边距（外板与卡片之间的间距滑块）
+────────────────────────────────────────────
+需求：现在添加一个功能是可以调整外背景的和卡片图片之间的边距，
+添加一个输入框可以向左/右拉来增加/减少。
+
+改动：
+1. 新数据集字段 outerBgGap（0-40px，默认 0）+ CSS 变量
+   --outer-gap，纯状态驱动，几何全在 CSS calc：
+   - 外板（legacy 规则 + v10.8 主题共存规则）inset →
+     calc(-1 * (extent + gap)) —— 板整体再外推 gap
+   - .card-tint 剪影层 inset 0 → calc(-1 * gap)：主题卡的
+     剪影填满间距带（衬边观感），gap=0 与原行为一致；有背景图
+     时图片层（z 0）永远盖住 tint，无衬边露出
+   - v10.9 图片规则外扩量 → max(extent, gap)：gap=0 完全等于
+     v10.9（盖满外板）；0<gap<extent 时外板从图下探出 gap 宽
+     环带；gap≥extent 时整板完整可见、图片恰好贴住板内沿——
+     环带随 gap 连续浮现，无跳变
+   - --outer-radius = 卡片圆角 + extent + gap（legacy 圆角板
+     贴合）
+2. applyOuterBg 读 dataset.outerBgGap 写/删 --outer-gap；
+   新增 updateOuterGap(v)（0-40 钳制、无外板/内容卡守卫、
+   window 暴露）
+3. 「卡片背景」弹窗新增「外板边距」滑块（#outerGapSlider +
+   输出值），refreshCardBgPopoverState 同步数值并在无外板时
+   禁用
+4. 清理路径：setCardEdge('none') / resetCardBg 删除
+   outerBgGap；草稿往返（hasNewCardBg 条件、逐字段恢复、
+   saveDraft 存数字、指纹加字段）；草稿注释 v10.10 adds
+   additive outerBgGap
+5. 版本 → FC v10.10（徽章 + console ready）
+6. edge-themes-demo.html 同步 --plate-gap 支持 + 两个边距
+   样张（无图环带 / 背景图环带探出）
+
+验证：静态 15/15；运行时 36/36（A/B）+ 11/11（C 重载）。
+生产代码零 bug（唯一首跑 FAIL 为电池静态检查建模：
+'FC v10.10' 徽章在源中只出现 1 次而非 2 次）。
+
+真机复测清单：
+1. Ctrl+F5 强刷确认徽章 FC v10.10
+2. 国旗卡 → 边缘 → 任意主题 → 卡片背景弹窗出现「外板边距」
+   滑块（0-40px，默认 0）
+3. 拉滑块：外板向外移动、卡片与外板之间出现间距；拉到 40 后
+   回拉，数值连续无跳变
+4. 卡片背景 → 上传背景图 → 拉滑块：外板环带从图片下逐渐探出，
+   0 时图片盖满外板（v10.9 不变）
+5. 边缘 → 无 → 滑块置灰禁用、边距清除
+6. 恢复默认 → 边距清零
+7. 保存 → 重开页面 → 边距完整恢复（板位置/图片外扩一致）
+8. 旧存档（无 outerBgGap 字段）→ 外板仍为 16px，零回归
+9. edge-themes-demo.html 两个 v10.10 样张核对（无图环带 /
+   背景图环带）

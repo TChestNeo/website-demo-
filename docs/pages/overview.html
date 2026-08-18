@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MicroNationary Overview | M.NationWorld</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <!-- Sub nav -->
+    <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md)">
+      <div class="subnav" data-slider>
+        <a href="overview.html" class="subnav-pill active">Overview</a>
+        <a href="explore.html" class="subnav-pill">Explore</a>
+        <a href="guidelines.html" class="subnav-pill">Guidelines</a>
+      </div>
+    </div>
+
+    <!-- Welcome banner -->
+    <div class="card tilt-container" style="padding:var(--space-lg);margin-bottom:var(--space-md);background:linear-gradient(135deg,rgba(70,72,212,0.05),rgba(129,39,207,0.03)),var(--card-bg)">
+      <div class="flex-between" style="flex-wrap:wrap;gap:var(--space-md)">
+        <div>
+          <span class="badge badge-primary" style="margin-bottom:8px">Knowledge Base</span>
+          <h1 class="headline-lg">MicroNationary Overview</h1>
+          <p class="body-md" style="color:var(--color-on-surface-variant)">Your gateway to the global registry of sovereign entities, lore archives, and community knowledge.</p>
+        </div>
+        <div style="display:flex;gap:var(--space-sm)">
+          <a href="registry-step-1.html" class="btn btn-primary">Create Article</a>
+          <a href="explore.html" class="btn btn-outline">View Archive</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-sm);margin-bottom:var(--space-md)" id="statsRow"></div>
+
+    <!-- Featured + Recent columns -->
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:var(--space-md)">
+      <!-- Featured nation -->
+      <div class="card tilt-container" style="padding:var(--space-lg)">
+        <span class="badge badge-warning" style="margin-bottom:8px">⭐ Featured Micronation</span>
+        <div id="featuredNation"></div>
+      </div>
+
+      <!-- Premium Card -->
+      <div class="tilt-container" style="border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:white;padding:var(--space-md);position:relative;margin-bottom:var(--space-md)">
+        <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,0.03);border-radius:50%;pointer-events:none"></div>
+        <div style="position:relative;z-index:1">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#eab308">verified</span>
+            <span style="font-weight:700;font-size:13px">M.NationWorld Premium</span>
+          </div>
+          <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4">Advanced analytics, custom themes, priority support.</p>
+          <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;font-size:12px" onclick="window.location.href='premium.html'">
+            <span class="material-symbols-outlined" style="font-size:14px">rocket_launch</span>
+            Subscribe — <span data-slati-price>$4.99</span>/mo
+          </button>
+          <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'">View all plans →</button>
+        </div>
+      </div>
+      <!-- Recent contributions -->
+      <div class="card" style="padding:var(--space-md)">
+        <h3 class="label-md" style="margin-bottom:var(--space-sm)">Recent Contributions</h3>
+        <div id="recentContribs" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script src="../assets/js/pricing.js"></script>
+<script src="../assets/js/subnav.js"></script>
+<script>
+  var nations = SlatiDB.getNations();
+  var topics = SlatiDB.getTopics();
+
+  // Stats
+  document.getElementById('statsRow').innerHTML =
+    '<div class="card" style="text-align:center">' +
+      '<div class="headline-md" style="color:var(--color-primary);display:flex;align-items:center;justify-content:center;gap:4px">' + nations.length.toLocaleString() + ' <span class="label-sm" style="color:#22c55e">+12%</span></div>' +
+      '<div class="label-sm" style="color:var(--color-outline)">Created Pages</div>' +
+    '</div>' +
+    '<div class="card" style="text-align:center">' +
+      '<div class="headline-md" style="color:var(--color-secondary);display:flex;align-items:center;justify-content:center;gap:4px">1,402 <span class="label-sm" style="color:#22c55e">+5%</span></div>' +
+      '<div class="label-sm" style="color:var(--color-outline)">Featured Topics</div>' +
+    '</div>' +
+    '<div class="card" style="text-align:center">' +
+      '<div class="headline-md" style="color:#16a34a">' + Math.max(nations.length, 892).toLocaleString() + '</div>' +
+      '<div class="label-sm" style="color:var(--color-outline)">Fictional Countries</div>' +
+    '</div>' +
+    '<div class="card" style="text-align:center">' +
+      '<div class="headline-md" style="color:#eab308">312</div>' +
+      '<div class="label-sm" style="color:var(--color-outline)">Civilization Regions</div>' +
+    '</div>';
+
+  // Featured nation (first seed nation or user's first)
+  var featured = nations[0];
+  if (featured) {
+    var code = featured.name.split(/\s+/).map(function(w) { return w.charAt(0).toUpperCase(); }).slice(0, 2).join('');
+    document.getElementById('featuredNation').innerHTML =
+      '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:12px">' +
+        '<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex-shrink:0">' + code + '</div>' +
+        '<div>' +
+          '<h3 class="headline-md" style="margin-bottom:0">' + featured.name + '</h3>' +
+          '<span class="label-sm" style="color:var(--color-outline)">' + (featured.classification || 'Sovereign Nation') + ' · Since ' + new Date(featured.createdAt).getFullYear() + '</span>' +
+        '</div>' +
+        '<span class="material-symbols-outlined" style="margin-left:auto;font-size:20px;color:#22c55e">verified</span>' +
+      '</div>' +
+      '<p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:12px">' + (featured.lore || 'A sovereign entity in the M.NationWorld registry.') + '</p>' +
+      '<div class="flex-center gap-sm" style="font-size:var(--fs-label-sm);color:var(--color-outline)">' +
+        '<span>🏛️ ' + (featured.capital || 'N/A') + '</span>' +
+        '<span>👥 ' + (featured.demographics && featured.demographics.population ? featured.demographics.population : 'N/A') + '</span>' +
+        '<span>💰 GDP ' + (featured.demographics && featured.demographics.gdp ? '$' + parseInt(featured.demographics.gdp).toLocaleString() : 'N/A') + '</span>' +
+      '</div>';
+  }
+
+  // Recent contributions
+  var contribs = [
+    { user: 'Alex Rivera', action: 'created article', target: 'Etheria Founding Charter', time: '2 hours ago' },
+    { user: 'Marcus Vane', action: 'updated lore for', target: 'Aethelgard', time: '5 hours ago' },
+    { user: 'Studio Prime', action: 'published', target: 'Digital Embassy Blueprint', time: '8 hours ago' },
+    { user: 'Neo-Venice Archive', action: 'revised', target: 'Aqua Centro History', time: '1 day ago' },
+  ];
+  document.getElementById('recentContribs').innerHTML = contribs.map(function(c) {
+    return '<div style="padding:4px 0">' +
+      '<span style="font-weight:600;font-size:var(--fs-label-md)">' + c.user + '</span> ' +
+      '<span class="label-sm" style="color:var(--color-on-surface-variant)">' + c.action + '</span> ' +
+      '<span style="font-weight:500;font-size:var(--fs-label-md);color:var(--color-primary)">' + c.target + '</span>' +
+      '<div class="label-sm" style="color:var(--color-outline)">' + c.time + '</div>' +
+    '</div>';
+  }).join('');
+
+  if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

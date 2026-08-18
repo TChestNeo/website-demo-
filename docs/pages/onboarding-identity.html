@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Identity Setup — M.NationWorld Onboarding</title>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    .onboarding-bg {
+      background: radial-gradient(ellipse at 20% 40%, rgba(70,72,212,0.05) 0%, transparent 55%),
+                  radial-gradient(ellipse at 80% 70%, rgba(129,39,207,0.04) 0%, transparent 55%),
+                  var(--color-background);
+    }
+    .input-icon { position: relative; }
+    .input-icon .material-symbols-outlined {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      font-size: 20px; color: var(--color-outline); pointer-events: none;
+    }
+    .input-icon input { padding-left: 44px; }
+  </style>
+</head>
+<body class="onboarding-bg">
+
+<div class="auth-layout">
+  <div class="auth-card tilt-container" style="min-height:580px">
+
+    <!-- Left branding -->
+    <div class="auth-left">
+      <div style="position:relative;z-index:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-lg)">
+          <img src="../assets/image/M.NationWorld logo.png" alt="M.NationWorld" style="height:28px;width:auto">
+          <span style="font-weight:700;font-size:18px">M.NationWorld</span>
+        </div>
+        <h2 style="font-size:28px;font-weight:700;margin-bottom:8px">Welcome to<br>M.NationWorld</h2>
+        <p style="opacity:0.85;margin-bottom:var(--space-xl)">The global platform for micronation building.</p>
+
+        <!-- Step indicator -->
+        <div class="card" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:white;padding:var(--space-md)">
+          <div class="progress-steps" style="flex-direction:column;align-items:flex-start;gap:12px">
+            <div class="progress-step completed">
+              <span class="dot" style="background:#22c55e"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>
+              <span>Create account</span>
+            </div>
+            <div class="progress-connector" style="width:2px;height:16px;margin:0 0 0 11px"></div>
+            <div class="progress-step active">
+              <span class="dot">2</span>
+              <span style="font-weight:700">Identity Setup</span>
+            </div>
+            <div class="progress-connector" style="width:2px;height:16px;margin:0 0 0 11px"></div>
+            <div class="progress-step pending" style="opacity:0.5">
+              <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">3</span>
+              <span style="color:rgba(255,255,255,0.6)">Complete</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right form -->
+    <div class="auth-right">
+      <h2 class="headline-md" style="margin-bottom:4px">Set up your identity</h2>
+      <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+        Tell us a bit about yourself, Sovereign.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">Display Name</label>
+        <div class="input-icon">
+          <span class="material-symbols-outlined">person</span>
+          <input type="text" class="input-glass" id="displayName" placeholder="Your name in the M.NationWorld">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Primary Language</label>
+        <div style="position:relative" id="langDropdown">
+          <div class="input-glass flex-between" onclick="toggleLangDropdown()" style="cursor:pointer" id="langSelector">
+            <span style="display:flex;align-items:center;gap:10px">
+              <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline)">translate</span>
+              <span id="selectedLang" style="color:var(--color-outline)">Select language</span>
+            </span>
+            <span class="material-symbols-outlined" id="langArrow" style="font-size:20px;color:var(--color-outline);transition:transform 0.2s">expand_more</span>
+          </div>
+          <div class="dropdown-menu" id="langMenu">
+            <div class="dropdown-option" onclick="selectLang('English')">English</div>
+            <div class="dropdown-option" onclick="selectLang('中文 (Chinese)')">中文 (Chinese)</div>
+            <div class="dropdown-option" onclick="selectLang('Français (French)')">Français (French)</div>
+            <div class="dropdown-option" onclick="selectLang('Русский (Russian)')">Русский (Russian)</div>
+            <div class="dropdown-option" onclick="selectLang('Español (Spanish)')">Español (Spanish)</div>
+            <div class="dropdown-option" onclick="selectLang('العربية (Arabic)')">العربية (Arabic)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Country of Origin</label>
+        <div style="position:relative" id="countryDropdown">
+          <div class="input-glass flex-between" onclick="toggleDropdown()" style="cursor:pointer" id="countrySelector">
+            <span id="selectedCountry" style="color:var(--color-outline)">Select country</span>
+            <span class="material-symbols-outlined" id="dropdownArrow" style="font-size:20px;color:var(--color-outline);transition:transform 0.2s">expand_more</span>
+          </div>
+          <div class="dropdown-menu custom-scrollbar" id="countryMenu">
+            <div style="padding:8px;position:sticky;top:0;background:inherit;z-index:1">
+              <input type="text" class="input-glass" placeholder="Search countries..." oninput="filterCountries(this.value)" style="font-size:13px;padding:8px 12px">
+            </div>
+            <div id="countryList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Date of Birth</label>
+        <input type="date" class="input-glass" id="dob">
+      </div>
+
+      <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleNext()">
+        Next Step
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
+      <p id="formError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script>
+  // Load existing user data
+  var user = SlatiDB.getUser() || {};
+  document.getElementById('displayName').value = user.displayName || '';
+
+  // Language dropdown
+  var selectedLang = user.language || '';
+  var langOpen = false;
+
+  function toggleLangDropdown() {
+    langOpen = !langOpen;
+    document.getElementById('langMenu').classList.toggle('open', langOpen);
+    document.getElementById('langArrow').style.transform = langOpen ? 'rotate(180deg)' : '';
+  }
+
+  function selectLang(lang) {
+    selectedLang = lang;
+    document.getElementById('selectedLang').textContent = lang;
+    document.getElementById('selectedLang').style.color = '';
+    langOpen = false;
+    document.getElementById('langMenu').classList.remove('open');
+    document.getElementById('langArrow').style.transform = '';
+  }
+
+  // Init language selection
+  if (selectedLang) {
+    document.getElementById('selectedLang').textContent = selectedLang;
+    document.getElementById('selectedLang').style.color = '';
+  }
+
+  // Country list
+  var countries = [
+    'Afghanistan','Albania','Algeria','Andorra','Angola','Antigua and Barbuda','Argentina','Armenia','Australia','Austria','Azerbaijan',
+    'Bahamas','Bahrain','Bangladesh','Barbados','Belarus','Belgium','Belize','Benin','Bhutan','Bolivia','Bosnia and Herzegovina','Botswana','Brazil','Brunei','Bulgaria','Burkina Faso','Burundi',
+    'Cabo Verde','Cambodia','Cameroon','Canada','Central African Republic','Chad','Chile','China','Colombia','Comoros','Costa Rica','Croatia','Cuba','Cyprus','Czechia',
+    'Democratic Republic of the Congo','Denmark','Djibouti','Dominica','Dominican Republic',
+    'Ecuador','Egypt','El Salvador','Equatorial Guinea','Eritrea','Estonia','Eswatini','Ethiopia',
+    'Fiji','Finland','France',
+    'Gabon','Gambia','Georgia','Germany','Ghana','Greece','Grenada','Guatemala','Guinea','Guinea-Bissau','Guyana',
+    'Haiti','Holy See (Vatican City)','Honduras','Hong Kong','Hungary',
+    'Iceland','India','Indonesia','Iran','Iraq','Ireland','Israel','Italy','Ivory Coast',
+    'Jamaica','Japan','Jordan',
+    'Kazakhstan','Kenya','Kiribati','Kuwait','Kyrgyzstan',
+    'Laos','Latvia','Lebanon','Lesotho','Liberia','Libya','Liechtenstein','Lithuania','Luxembourg',
+    'Macau','Madagascar','Malawi','Malaysia','Maldives','Mali','Malta','Marshall Islands','Mauritania','Mauritius','Mexico','Micronesia','Moldova','Monaco','Mongolia','Montenegro','Morocco','Mozambique','Myanmar',
+    'Namibia','Nauru','Nepal','Netherlands','New Zealand','Nicaragua','Niger','Nigeria','North Korea','North Macedonia','Norway',
+    'Oman',
+    'Pakistan','Palau','Palestine','Panama','Papua New Guinea','Paraguay','Peru','Philippines','Poland','Portugal',
+    'Qatar',
+    'Romania','Russia','Rwanda',
+    'Saint Kitts and Nevis','Saint Lucia','Saint Vincent and the Grenadines','Samoa','San Marino','Sao Tome and Principe','Saudi Arabia','Senegal','Serbia','Seychelles','Sierra Leone','Singapore','Slovakia','Slovenia','Solomon Islands','Somalia','South Africa','South Korea','South Sudan','Spain','Sri Lanka','Sudan','Suriname','Sweden','Switzerland','Syria',
+    'Taiwan','Tajikistan','Tanzania','Thailand','Timor-Leste','Togo','Tonga','Trinidad and Tobago','Tunisia','Turkey','Turkmenistan','Tuvalu',
+    'Uganda','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Uzbekistan',
+    'Vanuatu','Venezuela','Vietnam',
+    'Yemen',
+    'Zambia','Zimbabwe'
+  ].sort();
+
+  var selectedCountry = user.country || '';
+  var dropdownOpen = false;
+  var countryList = document.getElementById('countryList');
+  var selectedCountryEl = document.getElementById('selectedCountry');
+
+  function renderCountryList(filter) {
+    var filtered = filter ? countries.filter(function(c) {
+      return c.toLowerCase().includes(filter.toLowerCase());
+    }) : countries;
+    countryList.innerHTML = filtered.map(function(c) {
+      var cls = 'dropdown-option' + (c === selectedCountry ? ' selected' : '');
+      return '<div class="' + cls + '" onclick="selectCountry(\'' + c + '\')">' + c + '</div>';
+    }).join('');
+  }
+
+  function toggleDropdown() {
+    dropdownOpen = !dropdownOpen;
+    document.getElementById('countryMenu').classList.toggle('open', dropdownOpen);
+    document.getElementById('dropdownArrow').style.transform = dropdownOpen ? 'rotate(180deg)' : '';
+    if (dropdownOpen) renderCountryList();
+  }
+
+  function selectCountry(c) {
+    selectedCountry = c;
+    selectedCountryEl.textContent = c;
+    selectedCountryEl.style.color = '';
+    dropdownOpen = false;
+    document.getElementById('countryMenu').classList.remove('open');
+    document.getElementById('dropdownArrow').style.transform = '';
+  }
+
+  function filterCountries(val) {
+    renderCountryList(val);
+  }
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', function(e) {
+    if (dropdownOpen && !document.getElementById('countryDropdown').contains(e.target)) {
+      dropdownOpen = false;
+      document.getElementById('countryMenu').classList.remove('open');
+      document.getElementById('dropdownArrow').style.transform = '';
+    }
+    if (langOpen && !document.getElementById('langDropdown').contains(e.target)) {
+      langOpen = false;
+      document.getElementById('langMenu').classList.remove('open');
+      document.getElementById('langArrow').style.transform = '';
+    }
+  });
+
+  // Init country selection
+  if (selectedCountry) {
+    selectedCountryEl.textContent = selectedCountry;
+    selectedCountryEl.style.color = '';
+  }
+  renderCountryList();
+
+  function handleNext() {
+    var name = document.getElementById('displayName').value.trim();
+    if (!name) { showError('Please enter your display name'); return; }
+    if (!selectedLang) { showError('Please select your primary language'); return; }
+    if (!selectedCountry) { showError('Please select your country'); return; }
+
+    SlatiDB.saveUser({
+      displayName: name,
+      email: user.email || '',
+      language: selectedLang,
+      country: selectedCountry,
+      dob: document.getElementById('dob').value,
+      citizenId: user.citizenId || ('CIT-' + Math.floor(Math.random() * 10000)),
+      avatarUrl: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=4648d4&color=fff&size=80',
+      createdAt: user.createdAt || new Date().toISOString()
+    });
+    SlatiDB.setOnboardingStep(2);
+    window.location.href = 'onboarding-complete.html';
+  }
+
+  function showError(msg) {
+    var el = document.getElementById('formError');
+    el.textContent = msg;
+    el.style.display = '';
+    setTimeout(function () { el.style.display = 'none'; }, 3000);
+  }
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

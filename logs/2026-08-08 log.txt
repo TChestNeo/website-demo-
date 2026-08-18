@@ -1,0 +1,64 @@
+============================================================
+  SlatiWorld Development Log — 2026-08-08
+============================================================
+
+1. Subnav Slider — Border Ring Fix
+   - Changed .subnav from outline: 1px to box-shadow: inset 0 0 0 1px
+     to eliminate sub-pixel rendering drift at 32px border-radius
+   - Adjusted highlight/background card vertical position: top: 4px → 4.2px
+
+2. Messages Page — Dark Theme Adaptation
+   - Received message bubbles: hardcoded background:white →
+     background:var(--card-bg); border:var(--divider-line)
+   - Right-click context menu: all background:white → var(--card-bg)
+   - All modal dialogs (Action, Forward, Chat Info, Members):
+     background:white → var(--card-bg)
+   - Upload popup: background:white → var(--card-bg)
+   - Modal action buttons: background:white → var(--card-bg)
+   - Chat input bar attachment buttons: background:white → var(--card-bg)
+   - Hover effects: rgba(0,0,0,0.04) → var(--divider-line)
+   - File preview cards: rgba(0,0,0,0.04) → var(--divider-line)
+   - Pinned message bubbles: background:white → var(--card-bg)
+
+3. Global Button Color Inheritance Fix
+   - Added button { color: inherit; } to ethereal.css
+     Fixes browser-default button text color not adapting to dark theme
+     in context menus, popups, and modal buttons site-wide
+
+4. Cross-Page Dark Theme Fixes
+   - activity.html: tooltip background:white;color:#1e1c32 →
+     var(--card-bg); var(--color-on-surface)
+   - dashboard.html: same tooltip fix
+   - create-topic-step-3.html: preview card background:white removed
+   - fluidcanvas-articles.html: select background:white → var(--card-bg)
+
+5. Following Page Fixes
+   - Follow buttons: added btn-outline class for proper border/text theming
+   - Theming states: unfollowed (btn-outline adaptive), followed
+     (green #16a34a)
+
+6. Subnav Slider — Hidden Container Fix
+   - followingFilter subnav inside display:none panel had zero-dimension
+     clones on init
+   - Added IntersectionObserver to subnav.js: auto re-syncs clone widths
+     and slider position when subnav becomes visible
+
+7. Sidebar Brand Module
+   - Logo + name wrapped in <a href="dashboard.html"> for click-to-home
+   - Logo enlarged: 28px → 34px
+   - Version label "v0.1.6.5" added below name (vertical flex column)
+   - Format: MAJOR.MINOR.UPDATE.CHANGE.BUGFIX
+   - Version styling: 10px, var(--color-outline), opacity 0.45
+
+============================================================
+  Files Modified
+============================================================
+  docs/assets/css/ethereal.css
+  docs/assets/js/subnav.js
+  docs/assets/js/sidebar.js
+  docs/pages/messages.html
+  docs/pages/activity.html
+  docs/pages/dashboard.html
+  docs/pages/create-topic-step-3.html
+  docs/pages/fluidcanvas-articles.html
+  docs/pages/following.html

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M.NationWorld | Home Dashboard</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+    <header class="flex-between" style="margin-bottom:var(--space-md)">
+      <div class="search-capsule">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" placeholder="Search nations, topics...">
+        <span style="width:1px;height:20px;background:var(--divider-line);flex-shrink:0;border-radius:1px"></span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);cursor:pointer">notifications</span>
+      </div>
+    </header>
+
+    <div class="card tilt-container animate-fade-in-up" style="padding:var(--space-lg);margin-bottom:var(--space-md);background:linear-gradient(135deg,rgba(70,72,212,0.06),rgba(129,39,207,0.04)),var(--card-bg)">
+      <div class="flex-between" style="flex-wrap:wrap;gap:var(--space-md)">
+        <div>
+          <span class="badge badge-primary" style="margin-bottom:8px">Knowledge Base</span>
+          <h1 class="headline-lg" style="margin-bottom:4px" id="welcomeBanner">Welcome back, Sovereign</h1>
+          <p class="body-md" style="color:var(--color-on-surface-variant)">Your micronation console is fully operational.</p>
+        </div>
+        <div style="display:flex;gap:var(--space-sm)">
+          <a href="registry-step-1.html" class="btn btn-primary">Create Nation</a>
+          <a href="explore.html" class="btn btn-outline">View Archive</a>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:var(--space-md)">
+      <div>
+        <h2 class="headline-md" style="margin-bottom:var(--space-sm)">Recent Activity</h2>
+        <div id="activityFeed" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
+
+        <h2 class="headline-md" style="margin:var(--space-lg) 0 var(--space-sm)">Announcements</h2>
+        <div id="dashAnnouncements" style="display:flex;flex-direction:column;gap:2px"></div>
+        <a href="messages.html?tab=announcements" style="display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-label-sm);color:var(--color-primary);margin-top:var(--space-sm);text-decoration:none">
+          View all announcements
+          <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
+        </a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+        <!-- Premium Subscription Card -->
+        <div class="tilt-container" style="border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:white;padding:var(--space-md);position:relative">
+          <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,0.03);border-radius:50%;pointer-events:none"></div>
+          <div style="position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;background:rgba(255,255,255,0.02);border-radius:50%;pointer-events:none"></div>
+          <div style="position:relative;z-index:1">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
+              <span class="material-symbols-outlined" style="font-size:22px;color:#eab308">verified</span>
+              <span style="font-weight:700;font-size:var(--fs-label-md)">M.NationWorld Premium</span>
+            </div>
+            <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px;line-height:1.5">Unlock advanced analytics, custom nation themes, priority support, and exclusive worldbuilding tools.</p>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
+                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Advanced Analytics
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
+                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Custom Nation Themes
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
+                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Priority Support
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700" onclick="window.location.href='premium.html'">
+              <span class="material-symbols-outlined" style="font-size:16px">rocket_launch</span>
+              Subscribe — <span data-slati-price>$4.99</span>/mo
+            </button>
+            <p style="text-align:center;font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px">Coming Q4 2026 · Cancel anytime</p>
+            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.6);font-size:11px;margin-top:4px" onclick="window.location.href='premium.html'">
+              View all plans
+              <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">Quick Workbench</h3>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <a href="registry-step-1.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">add_circle</span> New Nation Registration</a>
+            <a href="create-topic-step-1.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">edit_note</span> Create Topic</a>
+            <a href="messages.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">chat</span> Open Messages</a>
+            <a href="fluidcanvas.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">draw</span> FluidCanvas</a>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">Network Metrics</h3>
+          <div id="metricsCards"></div>
+        </div>
+        <div class="card">
+          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">My Nations</h3>
+          <div id="myNations"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/pricing.js"></script>
+<script src="../assets/js/transitions.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script>
+  var user = SlatiDB.getUser();
+  if (user && user.displayName) {
+    document.getElementById('welcomeBanner').textContent = 'Welcome back, ' + user.displayName;
+  }
+  var nations = SlatiDB.getNations();
+
+  var activityItems = [
+    { icon: 'language', badge: 'Nation', badgeClass: 'badge-primary', title: 'Republic of Etheria', desc: 'Updated territorial claims and governance charter.', time: '2 hours ago' },
+    { icon: 'groups', badge: 'Topic', badgeClass: 'badge-secondary', title: 'Governance Design Lab', desc: 'New discussion: Direct democracy in micronations.', time: '4 hours ago' },
+    { icon: 'edit_note', badge: 'Wiki', badgeClass: 'badge-success', title: 'Neo-Venice Archive', desc: 'Lore revision: Founding of Aqua Centro.', time: '6 hours ago' },
+    { icon: 'person', badge: 'Citizen', badgeClass: 'badge-warning', title: 'Marcus Vane', desc: 'Published a sovereign log on floating district plans.', time: '8 hours ago' },
+  ];
+
+  document.getElementById('activityFeed').innerHTML = activityItems.map(function(item) {
+    return '<div class="card card-hover tilt-container">' +
+      '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
+        '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:24px">' + item.icon + '</span>' +
+        '<span class="badge ' + item.badgeClass + '">' + item.badge + '</span>' +
+        '<span style="flex:1;font-weight:600;color:var(--color-on-surface)">' + item.title + '</span>' +
+        '<span class="label-sm" style="color:var(--color-outline)">' + item.time + '</span>' +
+      '</div>' +
+      '<p style="margin-top:8px;color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + item.desc + '</p>' +
+    '</div>';
+  }).join('');
+
+  // ── Dashboard Announcements ──
+  var dashAnnouncements = [
+    { id:'a1', cat:'official', icon:'campaign', title:'M.NationWorld Beta Launch — Welcome All Nations', date:'2026-08-05', summary:'The platform officially enters public beta. All registered nations now have full access.' },
+    { id:'a2', cat:'official', icon:'event', title:'Governance Summit 2026 — Registration Open', date:'2026-08-03', summary:'Theme: "Digital Sovereignty in the Modern Age." Early registration now open.' },
+    { id:'a3', cat:'community', icon:'map', title:'Cartography Guild — Monthly Map Contest', date:'2026-08-02', summary:'Theme: "Uncharted Territories." Prizes include Premium subscriptions.' },
+    { id:'a4', cat:'system', icon:'draw', title:'FluidCanvas Studio Now Live', date:'2026-08-01', summary:'Collaborative content studio available to all users.' },
+    { id:'a5', cat:'community', icon:'emoji_flags', title:'Nation Spotlight: Republic of Etheria', date:'2026-07-30', summary:'Floating city-state with direct democracy & AI-assisted administration.' },
+    { id:'a6', cat:'system', icon:'update', title:'Platform Update v1.2 — Sidebar & Navigation', date:'2026-07-28', summary:'Collapsible sidebar, smoother transitions, responsive improvements.' },
+    { id:'a7', cat:'community', icon:'volunteer_activism', title:'Call for Moderators — Join the Community Team', date:'2026-07-25', summary:'Help maintain a welcoming environment. Apply today.' },
+    { id:'a8', cat:'official', icon:'rocket_launch', title:'Premium Ultra Early Adopter Pricing Extended', date:'2026-07-20', summary:'Lock in reduced pricing through August.' },
+    { id:'a9', cat:'system', icon:'security', title:'Security Audit Complete — Platform Certification', date:'2026-07-15', summary:'Independent audit confirms platform meets all security standards.' },
+    { id:'a10', cat:'official', icon:'gavel', title:'Sovereign Council Charter Ratified', date:'2026-07-10', summary:'Founding document establishing the council\'s governance framework.' },
+  ];
+
+  var dashCatStyle = {
+    official: { bg: 'rgba(70,72,212,0.1)', color: '#4648d4' },
+    community: { bg: 'rgba(22,163,74,0.1)', color: '#16a34a' },
+    system: { bg: 'rgba(234,88,12,0.1)', color: '#ea580c' },
+  };
+
+  document.getElementById('dashAnnouncements').innerHTML = dashAnnouncements.map(function(a) {
+    var cs = dashCatStyle[a.cat] || dashCatStyle.system;
+    return '<a href="messages.html" class="card card-hover" style="display:flex;align-items:center;gap:10px;padding:8px 12px;text-decoration:none;cursor:pointer">' +
+      '<span class="material-symbols-outlined" style="font-size:18px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +
+      '<span class="label-sm" style="background:' + cs.bg + ';color:' + cs.color + ';padding:1px 7px;border-radius:var(--radius-full);font-weight:600;font-size:9px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.03em">' + a.cat + '</span>' +
+      '<span style="flex:1;font-weight:500;font-size:var(--fs-label-sm);color:var(--color-on-surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.title + '</span>' +
+      '<span class="label-sm" style="color:var(--color-outline);flex-shrink:0;font-size:10px">' + a.date + '</span>' +
+    '</a>';
+  }).join('');
+
+  // ── Network Metrics ──
+  var onlineNow = 12847;
+  var dailyPeak = 15420;
+  var featuredArticles = 347;
+  var totalArticles = 12840;
+  var activeNations = Math.max(nations.length, 892);
+  var totalUsers = 128400;
+
+  // Generate exponential-growth bar chart (20-day daily online peak)
+  var barDays = 20;
+  var barPoints = [];
+  for (var d = 0; d < barDays; d++) {
+    var t = d / (barDays - 1);
+    var base = 8000 + 7000 * Math.pow(t, 1.6);
+    var noise = (Math.sin(d * 1.7) * 300 + Math.sin(d * 3.1) * 180 + Math.sin(d * 7.3) * 80) * (1 - t * 0.3);
+    barPoints.push(Math.round(base + noise));
+  }
+  var barMax = Math.max.apply(null, barPoints);
+  var barMin = Math.min.apply(null, barPoints);
+  var barRange = barMax - barMin || 1;
+  var barW = 260, barH = 56, barPad = 2;
+  var barCount = barPoints.length;
+  var barGap = 2;
+  var barWidth = (barW - barPad * 2 - barGap * (barCount - 1)) / barCount;
+  var todayIdx = barCount - 1;
+
+  // Day labels: "Jul 18" through "Aug 6" going backward from today
+  var todayDate = new Date();
+  var dayLabels = [];
+  for (var dl = 0; dl < barCount; dl++) {
+    var dd = new Date(todayDate);
+    dd.setDate(dd.getDate() - (barCount - 1 - dl));
+    dayLabels.push(dd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+  }
+
+  var barRects = barPoints.map(function(v, i) {
+    var h = Math.max(2, ((v - barMin) / barRange) * (barH - barPad * 2 - 2));
+    var x = barPad + i * (barWidth + barGap);
+    var y = barPad + (barH - barPad * 2 - h);
+    var isToday = i === todayIdx;
+    var fill = isToday ? '#4648d4' : 'rgba(70,72,212,0.45)';
+    var rx = Math.min(barWidth / 2, 2);
+    return '<rect class="metric-bar" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barWidth.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="' + rx + '" fill="' + fill + '" data-day="' + dayLabels[i] + '" data-val="' + v.toLocaleString() + '" data-idx="' + i + '"/>';
+  }).join('');
+
+  document.getElementById('metricsCards').innerHTML =
+    // ── Online Now hero section ──
+    '<div style="text-align:center;padding:var(--space-sm) 0 var(--space-md);border-bottom:1px solid rgba(118,117,134,0.08);margin-bottom:var(--space-md)">' +
+      '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px">' +
+        '<span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;box-shadow:0 0 6px rgba(34,197,94,0.5)"></span>' +
+        '<span style="font-size:11px;color:var(--color-outline);font-weight:500;text-transform:uppercase;letter-spacing:0.05em">Online Now</span>' +
+      '</div>' +
+      '<div style="font-size:36px;font-weight:800;color:var(--color-on-surface);line-height:1.1;letter-spacing:-0.02em;margin-bottom:2px">' + onlineNow.toLocaleString() + '</div>' +
+      '<p class="label-sm" style="color:var(--color-outline);margin-bottom:8px">Daily peak <strong style="color:var(--color-on-surface)">' + dailyPeak.toLocaleString() + '</strong> · 20-day trend</p>' +
+      // Bar chart
+      '<svg viewBox="0 0 ' + barW + ' ' + barH + '" style="width:100%;height:56px;display:block;overflow:visible">' +
+        barRects +
+      '</svg>' +
+    '</div>' +
+    // ── 2×2 stat grid ──
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm)">' +
+      '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
+        '<span class="material-symbols-outlined" style="font-size:20px;color:#eab308">star</span>' +
+        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + featuredArticles.toLocaleString() + '</div>' +
+        '<div class="label-sm" style="color:var(--color-outline)">Featured Articles</div>' +
+      '</div>' +
+      '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
+        '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">article</span>' +
+        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + totalArticles.toLocaleString() + '</div>' +
+        '<div class="label-sm" style="color:var(--color-outline)">Total Articles</div>' +
+      '</div>' +
+      '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
+        '<span class="material-symbols-outlined" style="font-size:20px;color:#22c55e">public</span>' +
+        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + activeNations.toLocaleString() + '</div>' +
+        '<div class="label-sm" style="color:var(--color-outline)">Active Nations</div>' +
+      '</div>' +
+      '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
+        '<span class="material-symbols-outlined" style="font-size:20px;color:#ea580c">group</span>' +
+        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + totalUsers.toLocaleString() + '</div>' +
+        '<div class="label-sm" style="color:var(--color-outline)">Total Users</div>' +
+      '</div>' +
+    '</div>';
+
+  // ── Bar chart tooltip ──
+  var tooltip = document.createElement('div');
+  tooltip.id = 'metricTooltip';
+  tooltip.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;background:var(--card-bg);color:var(--color-on-surface);padding:8px 14px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.1),0 1px 3px rgba(0,0,0,0.06);font-size:13px;font-weight:600;white-space:nowrap;opacity:0;transform:translate(-50%,-120%);transition:opacity 0.12s ease;line-height:1.4';
+  tooltip.innerHTML = '<span id="metricTooltipDay"></span><br><span style="font-weight:400;color:#767586;font-size:11px" id="metricTooltipVal"></span>';
+  document.body.appendChild(tooltip);
+
+  var metricBars = document.querySelectorAll('.metric-bar');
+  var tooltipDay = document.getElementById('metricTooltipDay');
+  var tooltipVal = document.getElementById('metricTooltipVal');
+
+  metricBars.forEach(function(bar) {
+    bar.addEventListener('mouseenter', function() {
+      tooltipDay.textContent = bar.dataset.day;
+      tooltipVal.textContent = bar.dataset.val + ' online';
+      var rect = bar.getBoundingClientRect();
+      tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+      tooltip.style.top = (rect.top - 8) + 'px';
+      tooltip.style.opacity = '1';
+      bar.style.opacity = '0.7';
+    });
+    bar.addEventListener('mouseleave', function() {
+      tooltip.style.opacity = '0';
+      bar.style.opacity = '1';
+    });
+  });
+
+  var myNationsHtml;
+  if (nations.length === 0) {
+    myNationsHtml = '<p style="color:var(--color-outline);font-size:var(--fs-label-md);text-align:center;padding:var(--space-sm)">No nations yet.<br><a href="registry-step-1.html">Create your first nation →</a></p>';
+  } else {
+    myNationsHtml = nations.slice(0, 3).map(function(n) {
+      return '<div style="padding:8px 0;display:flex;align-items:center;gap:8px">' +
+        '<div style="width:32px;height:32px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + n.name.charAt(0) + '</div>' +
+        '<div style="min-width:0"><div style="font-weight:600;font-size:var(--fs-label-md)">' + n.name + '</div><div class="label-sm" style="color:var(--color-outline)">' + n.classification + '</div></div>' +
+      '</div>';
+    }).join('');
+  }
+  document.getElementById('myNations').innerHTML = myNationsHtml;
+  if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+</script>
+</body>
+</html>

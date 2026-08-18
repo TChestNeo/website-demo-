@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>National Registry — Step 03 | M.NationWorld</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    body { background: radial-gradient(ellipse at 50% 30%, rgba(70,72,212,0.04) 0%, transparent 60%), var(--color-background); }
+    .registry-card { max-width: 800px; margin: 0 auto; }
+    .sector-input {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: 8px 0;
+    }
+    .sector-input input[type="number"] {
+      width: 70px; text-align: center;
+      padding: 6px; border-radius: var(--radius-sm);
+      border: 1px solid var(--color-outline-variant);
+      font-family: var(--font-family); font-size: var(--fs-label-md);
+    }
+    .sector-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .chart-wrap { max-width: 280px; margin: 0 auto; }
+    .stepper-btn {
+      width: 28px; height: 28px; border-radius: var(--radius-full);
+      border: 1px solid var(--color-outline-variant);
+      background: white; cursor: pointer; font-size: 16px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stepper-btn:hover { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <div style="max-width:800px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:var(--space-lg)">
+        <h1 class="headline-lg" style="margin-bottom:4px">National Incorporation Registry</h1>
+        <p class="body-md" style="color:var(--color-on-surface-variant)">Step 03 — Macro Metrics</p>
+
+        <div class="progress-steps" style="justify-content:center;margin-top:var(--space-md)">
+          <div class="progress-step completed">
+            <span class="dot" style="background:#22c55e"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span>Identity</span>
+          </div>
+          <div class="progress-connector done"></div>
+          <div class="progress-step completed">
+            <span class="dot" style="background:#22c55e"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span>Geopolitics</span>
+          </div>
+          <div class="progress-connector done"></div>
+          <div class="progress-step active">
+            <span class="dot">3</span><span>Macro Metrics</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card tilt-container registry-card" style="padding:var(--space-lg)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);align-items:start">
+
+          <!-- Left: sector inputs -->
+          <div>
+            <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">Economic Sector Distribution (%)</h3>
+
+            <div id="sectorInputs"></div>
+
+            <p style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:var(--space-sm);display:flex;align-items:center;gap:4px">
+              <span class="material-symbols-outlined" style="font-size:16px">info</span>
+              Totals auto-normalize to 100% on submission.
+            </p>
+          </div>
+
+          <!-- Right: doughnut chart -->
+          <div>
+            <div class="chart-wrap">
+              <canvas id="sectorChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Demographic fields -->
+        <div style="margin-top:var(--space-lg);display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
+          <div class="form-group">
+            <label class="form-label">Population</label>
+            <input type="text" class="input-glass" id="population" placeholder="e.g. 12,400,000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Active Military</label>
+            <input type="text" class="input-glass" id="military" placeholder="e.g. 85,000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Territory (km²)</label>
+            <input type="text" class="input-glass" id="territory" placeholder="e.g. 427,000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">GDP (USD)</label>
+            <input type="text" class="input-glass" id="gdp" placeholder="e.g. 892,000,000,000">
+          </div>
+        </div>
+
+        <div class="flex-between" style="margin-top:var(--space-lg)">
+          <a href="registry-step-2.html" class="btn btn-ghost">
+            <span class="material-symbols-outlined">arrow_back</span> Previous
+          </a>
+          <button class="btn btn-primary btn-lg" onclick="handleSubmit()">
+            Ratify Incorporation
+            <span class="material-symbols-outlined">check</span>
+          </button>
+        </div>
+        <p id="formError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script>
+  var sectorColors = ['#9ca3af', '#eab308', '#4648d4', '#8127cf', '#1f2937', '#dc2626'];
+  var sectorNames = ['Industrial', 'Agricultural', 'Technological', 'Tourism', 'Resource Export', 'Financial'];
+  var sectorValues = [20, 15, 30, 10, 10, 15];
+
+  // Build sector inputs
+  var inputsHTML = '';
+  sectorNames.forEach(function(name, i) {
+    inputsHTML +=
+      '<div class="sector-input">' +
+        '<span class="sector-dot" style="background:' + sectorColors[i] + '"></span>' +
+        '<span style="flex:1;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + name + '</span>' +
+        '<button class="stepper-btn" onclick="stepSector(' + i + ',-5)">−</button>' +
+        '<input type="number" id="sector' + i + '" value="' + sectorValues[i] + '" min="0" max="100" onchange="onSectorChange(' + i + ')">' +
+        '<button class="stepper-btn" onclick="stepSector(' + i + ',5)">+</button>' +
+        '<span style="width:24px;text-align:right;font-size:var(--fs-label-sm);color:var(--color-on-surface-variant)">%</span>' +
+      '</div>';
+  });
+  document.getElementById('sectorInputs').innerHTML = inputsHTML;
+
+  // Restore draft
+  var draft = SlatiDB.getNationDraft();
+  if (draft && draft.steps[3]) {
+    if (draft.steps[3].sectors) {
+      draft.steps[3].sectors.forEach(function(v, i) { if (i < sectorValues.length) sectorValues[i] = v; });
+      sectorValues.forEach(function(v, i) { document.getElementById('sector' + i).value = v; });
+    }
+    if (draft.steps[3].demographics) {
+      document.getElementById('population').value = draft.steps[3].demographics.population || '';
+      document.getElementById('military').value = draft.steps[3].demographics.military || '';
+      document.getElementById('territory').value = draft.steps[3].demographics.territory || '';
+      document.getElementById('gdp').value = draft.steps[3].demographics.gdp || '';
+    }
+  }
+
+  // Chart.js
+  var ctx = document.getElementById('sectorChart').getContext('2d');
+  var chart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: sectorNames,
+      datasets: [{
+        data: sectorValues,
+        backgroundColor: sectorColors,
+        borderColor: 'white',
+        borderWidth: 3,
+        hoverBorderWidth: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '65%',
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+
+  function updateChart() {
+    chart.data.datasets[0].data = sectorValues;
+    chart.update();
+  }
+
+  function onSectorChange(i) {
+    var val = parseInt(document.getElementById('sector' + i).value) || 0;
+    sectorValues[i] = Math.max(0, Math.min(100, val));
+    updateChart();
+  }
+
+  function stepSector(i, delta) {
+    sectorValues[i] = Math.max(0, Math.min(100, sectorValues[i] + delta));
+    document.getElementById('sector' + i).value = sectorValues[i];
+    updateChart();
+  }
+
+  function handleSubmit() {
+    var pop = document.getElementById('population').value.trim();
+    var mil = document.getElementById('military').value.trim();
+    if (!pop) { showError('Please enter a population figure'); return; }
+
+    SlatiDB.saveNationDraft(3, {
+      sectors: sectorValues,
+      demographics: {
+        population: pop,
+        military: mil,
+        territory: document.getElementById('territory').value.trim(),
+        gdp: document.getElementById('gdp').value.trim()
+      }
+    });
+
+    window.location.href = 'sovereignty-ratified.html';
+  }
+
+  function showError(msg) {
+    var el = document.getElementById('formError');
+    el.textContent = msg; el.style.display = '';
+    setTimeout(function () { el.style.display = 'none'; }, 3000);
+  }
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

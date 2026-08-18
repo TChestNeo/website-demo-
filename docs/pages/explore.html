@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explore — MicroNationary | M.NationWorld</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <!-- Sub nav -->
+    <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md);flex-wrap:wrap">
+      <div class="subnav" data-slider>
+        <a href="overview.html" class="subnav-pill">Overview</a>
+        <a href="explore.html" class="subnav-pill active">Explore</a>
+        <a href="guidelines.html" class="subnav-pill">Guidelines</a>
+      </div>
+      <div class="search-capsule" style="margin-left:auto">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" placeholder="Search nations, events..." oninput="filterNations(this.value)">
+      </div>
+    </div>
+
+    <!-- Main content: 2 columns -->
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:var(--space-md)">
+
+      <!-- Left: Nation/Event article cards -->
+      <div>
+        <h2 class="headline-md" style="margin-bottom:var(--space-sm)">All Nations & Entities</h2>
+        <div style="display:flex;flex-direction:column;gap:var(--space-sm)" id="nationCards"></div>
+      </div>
+
+      <!-- Right: Trending sidebar -->
+      <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+        <!-- Premium Card -->
+        <div class="tilt-container" style="border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:white;padding:var(--space-md);position:relative">
+          <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,0.03);border-radius:50%;pointer-events:none"></div>
+          <div style="position:relative;z-index:1">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+              <span class="material-symbols-outlined" style="font-size:20px;color:#eab308">verified</span>
+              <span style="font-weight:700;font-size:13px">M.NationWorld Premium</span>
+            </div>
+            <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4">Advanced analytics, custom themes, priority support.</p>
+            <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;font-size:12px" onclick="window.location.href='premium.html'">
+              <span class="material-symbols-outlined" style="font-size:14px">rocket_launch</span>
+              Subscribe — <span data-slati-price>$4.99</span>/mo
+            </button>
+            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'">View all plans →</button>
+          </div>
+        </div>
+        <!-- Hot Topics -->
+        <div class="card">
+          <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#ea580c">local_fire_department</span>
+            Trending Topics
+          </h3>
+          <div id="trendingTopics" style="display:flex;flex-direction:column;gap:4px"></div>
+        </div>
+
+        <!-- Popular Nations -->
+        <div class="card">
+          <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#eab308">star</span>
+            Popular Nations
+          </h3>
+          <div id="popularNations" style="display:flex;flex-direction:column;gap:4px"></div>
+        </div>
+
+        <!-- Top Growing -->
+        <div class="card">
+          <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#22c55e">trending_up</span>
+            Top Growing
+          </h3>
+          <div id="topGrowing" style="display:flex;flex-direction:column;gap:4px"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script src="../assets/js/pricing.js"></script>
+<script src="../assets/js/subnav.js"></script>
+<script>
+  var allNations = SlatiDB.getNations();
+  var topics = SlatiDB.getTopics();
+  var filteredNations = allNations.slice();
+
+  function renderNationCards(nations) {
+    if (nations.length === 0) {
+      document.getElementById('nationCards').innerHTML =
+        '<div class="card" style="text-align:center;padding:var(--space-xl)">' +
+          '<p style="color:var(--color-outline)">No nations match your search.</p>' +
+          '<a href="registry-step-1.html" class="btn btn-primary" style="margin-top:var(--space-sm)">Register the first nation →</a>' +
+        '</div>';
+      return;
+    }
+
+    var html = nations.map(function(n) {
+      var code = n.name.split(/\s+/).map(function(w) { return w.charAt(0).toUpperCase(); }).slice(0, 2).join('');
+      var maxSector = '';
+      if (n.sectors) {
+        var entry = Object.entries(n.sectors).sort(function(a, b) { return b[1] - a[1]; })[0];
+        if (entry) maxSector = '<span class="badge badge-primary">' + entry[0] + ': ' + entry[1] + '%</span>';
+      }
+      var dateStr = n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+
+      return '<div class="card card-hover tilt-container">' +
+        '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:12px">' +
+          '<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0">' + code + '</div>' +
+          '<div style="min-width:0;flex:1">' +
+            '<div style="font-weight:700;font-size:var(--fs-body-md);color:var(--color-on-surface)">' + n.name + '</div>' +
+            '<div class="label-sm" style="color:var(--color-outline)">' + n.classification + '</div>' +
+          '</div>' +
+          '<span class="material-symbols-outlined" style="font-size:18px;color:#22c55e">verified</span>' +
+        '</div>' +
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:10px;line-height:1.5">' + (n.lore || 'A sovereign entity in the M.NationWorld registry.') + '</p>' +
+        '<div class="flex-between" style="flex-wrap:wrap;gap:6px">' +
+          '<div style="display:flex;gap:4px;flex-wrap:wrap">' +
+            '<span class="badge badge-secondary">' + n.classification + '</span>' +
+            maxSector +
+          '</div>' +
+          '<span class="label-sm" style="color:var(--color-outline)">' + dateStr + '</span>' +
+        '</div>' +
+        '<div class="flex-center gap-sm" style="margin-top:10px;font-size:var(--fs-label-sm);color:var(--color-outline);flex-wrap:wrap">' +
+          '<span>🏛️ ' + (n.capital || 'N/A') + '</span>' +
+          '<span>👥 ' + (n.demographics && n.demographics.population ? n.demographics.population : 'N/A') + '</span>' +
+          '<span>📐 ' + (n.demographics && n.demographics.territory ? n.demographics.territory + ' km²' : 'N/A') + '</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('nationCards').innerHTML = html;
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+  }
+
+  function filterNations(query) {
+    if (!query) { filteredNations = allNations.slice(); }
+    else {
+      var q = query.toLowerCase();
+      filteredNations = allNations.filter(function(n) {
+        return n.name.toLowerCase().includes(q) ||
+               (n.moniker && n.moniker.toLowerCase().includes(q)) ||
+               (n.capital && n.capital.toLowerCase().includes(q)) ||
+               (n.classification && n.classification.toLowerCase().includes(q)) ||
+               (n.lore && n.lore.toLowerCase().includes(q));
+      });
+    }
+    renderNationCards(filteredNations);
+  }
+
+  // Trending Topics
+  document.getElementById('trendingTopics').innerHTML = topics.map(function(t, i) {
+    var badges = ['#1', '#2', '#3', '#4'];
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
+      '<span style="font-weight:800;font-size:var(--fs-label-sm);color:' + (i === 0 ? '#ea580c' : 'var(--color-outline)') + ';width:20px">' + badges[i] + '</span>' +
+      '<span style="flex:1;font-size:var(--fs-label-md);font-weight:500">#' + t.name.replace(/\s+/g, '_') + '</span>' +
+      '<span class="label-sm" style="color:var(--color-outline)">' + t.memberCount.toLocaleString() + '</span>' +
+    '</div>';
+  }).join('');
+
+  // Popular Nations
+  document.getElementById('popularNations').innerHTML = allNations.slice(0, 4).map(function(n) {
+    var code = n.name.split(/\s+/).map(function(w) { return w.charAt(0).toUpperCase(); }).slice(0, 2).join('');
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
+      '<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;flex-shrink:0">' + code + '</div>' +
+      '<span style="flex:1;font-size:var(--fs-label-md);font-weight:500">' + n.name + '</span>' +
+      '<span class="label-sm" style="color:var(--color-outline)">' + (n.demographics && n.demographics.population ? n.demographics.population : '') + '</span>' +
+    '</div>';
+  }).join('');
+
+  // Top Growing
+  var growthItems = [
+    { name: 'Digital Sovereignty Protocols', pct: '+24%', color: '#22c55e' },
+    { name: 'Cartography Guild', pct: '+18%', color: '#22c55e' },
+    { name: 'Neural Architects', pct: '+15%', color: '#22c55e' },
+    { name: 'Governance Design Lab', pct: '+12%', color: '#22c55e' },
+  ];
+  document.getElementById('topGrowing').innerHTML = growthItems.map(function(g) {
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
+      '<span style="flex:1;font-size:var(--fs-label-md);font-weight:500">' + g.name + '</span>' +
+      '<span class="label-sm" style="color:' + g.color + ';font-weight:600">' + g.pct + '</span>' +
+    '</div>';
+  }).join('');
+
+  renderNationCards(allNations);
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FluidCanvas | M.NationWorld</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: radial-gradient(ellipse at 30% 20%, rgba(70,72,212,0.04) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 80%, rgba(129,39,207,0.03) 0%, transparent 60%),
+                  var(--color-background);
+    }
+    .studio-header {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-lg);
+      border-bottom: 1px solid var(--divider-line);
+      background: var(--card-bg);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .metric-card { text-align: center; padding: var(--space-md); }
+    .metric-value { font-size: 28px; font-weight: 700; line-height: 1.2; }
+    .metric-label { font-size: var(--fs-label-sm); color: var(--color-outline); margin-top: 2px; }
+    .metric-change { font-size: var(--fs-label-sm); font-weight: 600; margin-top: 4px; }
+    .content-row { display: flex; align-items: center; gap: var(--space-sm); padding: 12px 0; border-bottom: 1px solid var(--divider-line); }
+    .content-row:last-child { border-bottom: none; }
+    .mini-stat { text-align: center; min-width: 64px; }
+
+    /* Account selector */
+    .account-bar { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); height: 68px; }
+    .account-personal {
+      background: var(--card-bg-hover); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: var(--card-border); border-radius: var(--radius-lg);
+      padding: var(--space-sm) var(--space-md);
+      display: flex; align-items: center; gap: var(--space-sm);
+      cursor: pointer; transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+      box-shadow: var(--shadow-sm); min-width: 0; overflow: hidden;
+      height: 68px;
+    }
+    .account-personal:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .account-personal {
+      position: relative;
+      border: var(--card-border);
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
+                  flex 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
+                  box-shadow 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .account-personal.active {
+      border-color: var(--color-primary);
+    }
+    .account-team-wrap {
+      background: var(--card-bg-hover); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: var(--card-border); border-radius: var(--radius-lg);
+      display: flex; flex-direction: row;
+      cursor: pointer; min-width: 0; position: relative;
+      height: 68px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
+                  flex 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
+                  box-shadow 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+    .account-team-wrap.active {
+      border-color: var(--color-primary);
+    }
+    .account-team-wrap.has-teams { cursor: default; }
+    .team-scroll {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      scroll-behavior: smooth; scroll-snap-type: y mandatory;
+      display: flex; flex-direction: column;
+      height: 100%;
+    }
+    .team-scroll::-webkit-scrollbar { display: none; }
+    .team-card-item {
+      scroll-snap-align: start; flex-shrink: 0;
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: 10px var(--space-md); cursor: pointer; transition: background 0.15s;
+      min-height: 100%;
+    }
+    .team-card-item.selected { }
+    .no-teams-cta {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px; padding: var(--space-sm); color: var(--color-outline);
+    }
+    .snap-dots-vertical {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; padding: 0 8px; flex-shrink: 0;
+    }
+    .snap-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--color-outline-variant); transition: all 0.3s; }
+    .snap-dot.active-dot { background: var(--color-primary); height: 14px; border-radius: 3px; }
+
+    /* ── View containers ── */
+    .upload-view, .content-lib-view { display: none; }
+    .upload-view.active, .content-lib-view.active { display: block; }
+    .upload-zone {
+      border: 2px dashed var(--color-outline-variant);
+      border-radius: var(--radius-lg);
+      padding: 48px var(--space-md);
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+      background: rgba(118,117,134,0.03);
+    }
+    .upload-zone:hover { border-color: rgba(70,72,212,0.35); background: rgba(70,72,212,0.03); }
+    .upload-zone.drag-over { border-color: #4648d4; background: rgba(70,72,212,0.06); box-shadow: 0 0 0 4px rgba(70,72,212,0.08); }
+    .upload-zone-icon { font-size: 48px; color: var(--color-outline); margin-bottom: 12px; display: block; transition: color 0.2s ease; }
+    .upload-zone.drag-over .upload-zone-icon { color: #4648d4; }
+    .upload-zone-text { font-size: var(--fs-label-md); font-weight: 600; color: var(--color-on-surface); margin-bottom: 4px; }
+    .upload-zone-hint { font-size: 12px; color: var(--color-outline); }
+    .file-info-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px var(--space-md);
+      background: rgba(70,72,212,0.04); border: 1px solid rgba(70,72,212,0.12);
+      border-radius: var(--radius-md); margin-top: var(--space-md);
+      animation: fadeInDown 0.25s ease;
+    }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .file-info-icon { font-size: 28px; color: #4648d4; flex-shrink: 0; }
+    .file-info-details { flex: 1; min-width: 0; }
+    .file-info-name { font-weight: 600; font-size: var(--fs-label-md); color: var(--color-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-info-size { font-size: 11px; color: var(--color-outline); }
+    .file-info-remove { flex-shrink: 0; width: 32px; height: 32px; border: none; background: rgba(118,117,134,0.08); border-radius: var(--radius-full); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s ease; }
+    .file-info-remove:hover { background: rgba(220,38,38,0.12); color: #dc2626; }
+    .target-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); }
+    @media (max-width: 640px) { .target-grid { grid-template-columns: repeat(2, 1fr); } }
+    .target-card {
+      padding: var(--space-md); text-align: center;
+      border: 2px solid rgba(118,117,134,0.12); border-radius: var(--radius-lg);
+      cursor: pointer; background: transparent;
+      transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .target-card:hover { border-color: rgba(70,72,212,0.25); background: rgba(70,72,212,0.03); }
+    .target-card.selected { border-color: #4648d4; background: rgba(70,72,212,0.06); box-shadow: 0 0 0 3px rgba(70,72,212,0.08); }
+    .target-card .target-icon { font-size: 28px; margin-bottom: 6px; display: block; color: var(--color-outline); transition: color 0.15s ease; }
+    .target-card.selected .target-icon { color: #4648d4; }
+    .target-card .target-title { font-weight: 700; font-size: var(--fs-label-md); color: var(--color-on-surface); margin-bottom: 2px; }
+    .target-card .target-desc { font-size: 11px; color: var(--color-outline); line-height: 1.4; }
+    .publish-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px; border: none; border-radius: var(--radius-md);
+      font-size: var(--fs-label-md); font-weight: 700; cursor: pointer;
+      transition: background 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+      background: linear-gradient(135deg, #4648d4, #5b5de0); color: #fff;
+    }
+    .publish-btn:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(70,72,212,0.3); }
+    .publish-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: #1e1c32; color: #fff; padding: 12px 24px; border-radius: var(--radius-full);
+      font-weight: 600; font-size: var(--fs-label-md); box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      z-index: 9999; display: flex; align-items: center; gap: 8px; pointer-events: none;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .recent-list { display: flex; flex-direction: column; }
+    .recent-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid rgba(118,117,134,0.08);
+    }
+    .recent-item:last-child { border-bottom: none; }
+    .recent-file-icon { font-size: 22px; color: var(--color-outline); flex-shrink: 0; }
+    .recent-file-name { flex: 1; min-width: 0; font-weight: 500; font-size: 13px; color: var(--color-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .recent-target-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: var(--radius-full); background: rgba(70,72,212,0.08); color: #4648d4; white-space: nowrap; flex-shrink: 0; }
+    .recent-time { font-size: 11px; color: var(--color-outline); white-space: nowrap; flex-shrink: 0; }
+    .recent-status { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: var(--radius-full); background: rgba(22,163,74,0.08); color: #16a34a; white-space: nowrap; flex-shrink: 0; }
+    .recent-item.fade-in { animation: fadeInDown 0.3s ease; }
+
+    /* ── Content Library View ── */
+    .content-lib-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); margin-bottom: var(--space-md); flex-wrap: wrap; }
+    .content-lib-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-sm); margin-bottom: var(--space-md); }
+    .content-lib-card { display: flex; align-items: center; gap: 12px; padding: 14px var(--space-md); border-bottom: 1px solid rgba(118,117,134,0.07); transition: background 0.15s ease; cursor: pointer; }
+    .content-lib-card:hover { background: rgba(70,72,212,0.03); }
+    .content-lib-card:last-child { border-bottom: none; }
+    .cl-type-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px; }
+    .cl-info { flex: 1; min-width: 0; }
+    .cl-title { font-weight: 600; font-size: var(--fs-label-md); color: var(--color-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cl-meta { font-size: 11px; color: var(--color-outline); display: flex; gap: 12px; margin-top: 2px; }
+    .cl-badge { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: var(--radius-full); white-space: nowrap; flex-shrink: 0; }
+    .cl-badge.article { background: rgba(70,72,212,0.08); color: #4648d4; }
+    .cl-badge.sovereign { background: rgba(234,88,12,0.08); color: #ea580c; }
+    .cl-badge.community { background: rgba(22,163,74,0.08); color: #16a34a; }
+    .cl-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .cl-action-btn { width: 32px; height: 32px; border: none; background: transparent; border-radius: var(--radius-full); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--color-outline); transition: all 0.15s ease; }
+    .cl-action-btn:hover { background: rgba(70,72,212,0.08); color: #4648d4; }
+    .cl-action-btn.danger:hover { background: rgba(220,38,38,0.08); color: #dc2626; }
+    .cl-empty { text-align: center; padding: 48px var(--space-md); color: var(--color-outline); }
+    .cl-empty-icon { font-size: 48px; margin-bottom: 12px; display: block; opacity: 0.5; }
+  </style>
+</head>
+<body>
+
+<div class="studio-header">
+  <a href="dashboard.html" class="btn btn-ghost btn-icon btn-sm"><span class="material-symbols-outlined">arrow_back</span></a>
+  <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:24px">draw</span>
+  <span style="font-weight:700;font-size:var(--fs-body-md)">FluidCanvas</span>
+  <span class="badge badge-success" style="margin-left:4px">Studio</span>
+  <span style="flex:1"></span>
+  <a href="fluidcanvas-editor.html" class="btn btn-primary"><span class="material-symbols-outlined">edit</span> Open Editor</a>
+</div>
+
+<div style="padding:var(--space-lg)">
+  <div style="display:flex;gap:var(--space-md);align-items:flex-start">
+
+  <!-- Left: 3D menu card -->
+  <div class="tilt-container" style="width:220px;flex-shrink:0;position:sticky;top:80px;
+    background:linear-gradient(145deg, var(--card-bg-hover) 0%, var(--card-bg) 100%);
+    backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+    border:var(--card-border);border-radius:var(--radius-lg);
+    box-shadow:0 20px 50px -12px rgba(0,0,0,0.12),0 4px 16px -4px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.8);
+    padding:var(--space-md);
+    transform:perspective(800px) rotateY(-2deg);
+    transition:transform 0.4s cubic-bezier(0.25,0.1,0.25,1),box-shadow 0.4s ease;
+  " onmouseenter="this.style.transform='perspective(800px) rotateY(0deg)';this.style.boxShadow='0 28px 60px -14px rgba(0,0,0,0.18),0 6px 20px -4px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.9)'"
+     onmouseleave="this.style.transform='perspective(800px) rotateY(-2deg)';this.style.boxShadow='0 20px 50px -12px rgba(0,0,0,0.12),0 4px 16px -4px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.8)'">
+    <a href="fluidcanvas.html" style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-md);text-decoration:none">
+      <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:24px">draw</span>
+      <span style="font-weight:700;font-size:var(--fs-body-md);color:var(--color-on-surface)">FluidCanvas</span>
+    </a>
+    <div class="divider"></div>
+    <nav style="display:flex;flex-direction:column;gap:2px">
+      <a href="fluidcanvas.html" class="nav-item active" style="border-radius:var(--radius-md)" data-view="dashboard"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+      <a href="fluidcanvas-analytics.html" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">analytics</span> Analytics</a>
+      <a href="fluidcanvas.html#content" class="nav-item" style="border-radius:var(--radius-md)" data-view="content"><span class="material-symbols-outlined">article</span> Content</a>
+      <a href="fluidcanvas.html" class="nav-item" style="border-radius:var(--radius-md)" data-view="upload"><span class="material-symbols-outlined">cloud_upload</span> Upload</a>
+      <a href="fluidcanvas-articles.html" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">edit_note</span> Articles</a>
+    </nav>
+    <div class="divider"></div>
+    <nav style="display:flex;flex-direction:column;gap:2px">
+      <a href="#" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">settings</span> Settings</a>
+      <a href="dashboard.html" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">arrow_back</span> Back to Console</a>
+    </nav>
+  </div>
+
+  <!-- Right: Main content -->
+  <div style="flex:1;min-width:0">
+
+  <!-- ═══ Dashboard View ═══ -->
+  <div id="dashboardView">
+
+  <!-- === Account Selector Bar === -->
+  <div class="account-bar" id="accountBar">
+    <div class="account-personal active" id="personalAccount" onclick="selectAccount('personal')" style="flex:3">
+      <img id="personalAvatar" src="" alt="" class="avatar" style="width:36px;height:36px;flex-shrink:0">
+      <div style="min-width:0;flex:1">
+        <div style="font-weight:700;font-size:var(--fs-label-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="personalName">Personal</div>
+        <div class="label-sm" style="color:var(--color-outline)" id="personalId">CIT-0000</div>
+      </div>
+      <span class="status-dot status-dot-green" style="flex-shrink:0"></span>
+    </div>
+    <div style="display:flex;flex-direction:row;align-items:stretch;gap:8px;flex:1" id="teamGroup" onclick="handleTeamGroupClick()">
+      <div class="account-team-wrap" id="teamAccount" style="flex:1">
+        <div id="teamContent"></div>
+      </div>
+      <div class="snap-dots-vertical" id="snapDots" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- === Channel overview (dynamic) === -->
+  <div class="card tilt-container" style="padding:var(--space-lg);margin-bottom:var(--space-md);background:linear-gradient(135deg,rgba(70,72,212,0.04),rgba(129,39,207,0.02)),var(--card-bg)" id="channelOverview"></div>
+
+  <!-- === Stats row (dynamic) === -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-sm);margin-bottom:var(--space-lg)" id="quickStats"></div>
+
+  <!-- === Content tabs + lists === -->
+  <div class="subnav" style="margin-bottom:var(--space-md)" id="contentTabs">
+    <button class="subnav-pill active" data-tab="articles">Articles</button>
+    <button class="subnav-pill" data-tab="media">Media</button>
+  </div>
+  <div style="overflow:hidden;position:relative">
+    <div id="slideTrack" style="display:flex;transition:transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)"></div>
+  </div>
+
+  </div><!-- end dashboardView -->
+
+  <!-- ═══ Content Library View ═══ -->
+  <div class="content-lib-view" id="contentView">
+    <div class="content-lib-header">
+      <div>
+        <h2 class="headline-md" style="margin-bottom:2px">Content Library</h2>
+        <p class="label-sm" style="color:var(--color-outline)">Manage all your published content</p>
+      </div>
+      <a href="fluidcanvas-editor.html" class="btn btn-primary">
+        <span class="material-symbols-outlined">add</span> New Article
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="content-lib-stats" id="clStats"></div>
+
+    <!-- Filters -->
+    <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-md);flex-wrap:wrap">
+      <div class="subnav" data-slider id="clFilterPills">
+        <button class="subnav-pill active" data-filter="all">All</button>
+        <button class="subnav-pill" data-filter="article">Articles</button>
+        <button class="subnav-pill" data-filter="sovereign">Sovereign Logs</button>
+        <button class="subnav-pill" data-filter="community">Community Posts</button>
+      </div>
+      <div class="subnav" data-slider id="clSubFilter" style="opacity:0.4;pointer-events:none">
+        <button class="subnav-pill active" data-subfilter="all">All</button>
+        <button class="subnav-pill" data-subfilter="post">Post</button>
+        <button class="subnav-pill" data-subfilter="images">Images</button>
+        <button class="subnav-pill" data-subfilter="video">Video</button>
+      </div>
+      <div class="search-capsule" style="margin-left:auto">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" placeholder="Search content..." id="clSearch">
+      </div>
+    </div>
+
+    <!-- Content List -->
+    <div class="card" id="clList" style="padding:0;overflow:hidden"></div>
+  </div><!-- end contentView -->
+
+  <!-- ═══ Upload View ═══ -->
+  <div class="upload-view" id="uploadView">
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="uploadZone" style="margin-bottom:var(--space-md)">
+      <span class="material-symbols-outlined upload-zone-icon">cloud_upload</span>
+      <div class="upload-zone-text">Drop files here or click to browse</div>
+      <p class="upload-zone-hint">Supports images, documents, archives, and more</p>
+    </div>
+
+    <!-- File Info Bar -->
+    <div class="file-info-bar" id="fileInfoBar" style="display:none">
+      <span class="material-symbols-outlined file-info-icon" id="fileInfoIcon">description</span>
+      <div class="file-info-details">
+        <div class="file-info-name" id="fileInfoName"></div>
+        <div class="file-info-size" id="fileInfoSize"></div>
+      </div>
+      <button class="file-info-remove" id="fileRemoveBtn" title="Remove file">
+        <span class="material-symbols-outlined" style="font-size:16px">close</span>
+      </button>
+    </div>
+
+    <!-- Publish Target -->
+    <div class="card" style="margin-top:var(--space-md)">
+      <h3 class="label-md" style="margin-bottom:var(--space-sm)">Select Publish Target</h3>
+      <div class="target-grid" id="targetGrid"></div>
+    </div>
+
+    <!-- Publish Button -->
+    <button class="publish-btn" id="publishBtn" disabled style="margin-top:var(--space-md)">
+      <span class="material-symbols-outlined" style="font-size:20px">publish</span>
+      Publish Now
+    </button>
+
+    <!-- Recent Uploads -->
+    <div class="card" style="margin-top:var(--space-md)">
+      <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
+        <span class="material-symbols-outlined" style="font-size:18px">history</span>
+        Recent Uploads
+      </h3>
+      <div class="recent-list" id="recentList"></div>
+    </div>
+  </div><!-- end uploadView -->
+
+  </div><!-- end right column -->
+  </div><!-- end two-column -->
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/subnav.js"></script>
+<script src="../assets/js/transitions.js"></script>
+<script>
+  // --- Data ---
+  var user = SlatiDB.getUser() || { displayName: 'Alex Rivera', citizenId: 'CIT-8842', avatarUrl: 'https://ui-avatars.com/api/?name=Alex+Rivera&background=4648d4&color=fff&size=80' };
+  var teams = SlatiDB.getTeams();
+  var activeAccount = SlatiDB.getActiveAccount();
+  var hasTeams = teams.length > 0;
+  var activeTeam = (activeAccount !== 'personal') ? teams.find(function(t) { return t.id === activeAccount; }) : null;
+
+  // --- Account selector ---
+  document.getElementById('personalAvatar').src = user.avatarUrl || 'https://ui-avatars.com/api/?name=S&background=4648d4&color=fff&size=80';
+  document.getElementById('personalName').textContent = user.displayName || 'Sovereign';
+  document.getElementById('personalId').textContent = user.citizenId || 'CIT-0000';
+
+  function renderTeamSection() {
+    var teamWrap = document.getElementById('teamAccount');
+    var teamContent = document.getElementById('teamContent');
+
+    if (!hasTeams) {
+      teamWrap.classList.remove('has-teams');
+      document.getElementById('snapDots').style.display = 'none';
+      teamContent.innerHTML =
+        '<div class="no-teams-cta">' +
+          '<span class="material-symbols-outlined" style="font-size:28px">group_add</span>' +
+          '<span class="label-sm">Create Team</span>' +
+        '</div>';
+    } else {
+      teamWrap.classList.add('has-teams');
+      teamWrap.onclick = null;
+      var selectedId = (activeAccount !== 'personal') ? activeAccount : teams[0].id;
+
+      var cardsHTML = teams.map(function(t) {
+        var sel = t.id === selectedId ? ' selected' : '';
+        return '<div class="team-card-item' + sel + '" data-team-id="' + t.id + '" onclick="event.stopPropagation();selectAccount(\'' + t.id + '\')">' +
+          '<div style="width:32px;height:32px;border-radius:50%;background:' + t.color + ';color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">' + t.avatar + '</div>' +
+          '<div style="min-width:0;flex:1"><div style="font-weight:600;font-size:var(--fs-label-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + t.name + '</div><div class="label-sm" style="color:var(--color-outline)">' + t.role + ' · ' + t.members + ' members</div></div>' +
+          '<span class="check-icon" style="margin-left:auto;flex-shrink:0">' + (t.id === selectedId ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">check_circle</span>' : '') + '</span>' +
+        '</div>';
+      }).join('');
+
+      teamContent.innerHTML = '<div class="team-scroll" id="teamScroll" onscroll="updateSnapDots()">' + cardsHTML + '</div>';
+
+      var dotsHTML = teams.map(function(t) {
+        return '<span class="snap-dot' + (t.id === selectedId ? ' active-dot' : '') + '" data-dot-id="' + t.id + '"></span>';
+      }).join('');
+      var dotsEl = document.getElementById('snapDots');
+      dotsEl.innerHTML = dotsHTML;
+      dotsEl.style.display = 'flex';
+
+      setTimeout(function() {
+        var scrollEl = document.getElementById('teamScroll');
+        var sel = scrollEl.querySelector('.team-card-item.selected');
+        if (sel) scrollEl.scrollTop = sel.offsetTop - scrollEl.offsetTop;
+        setupWheelHandler();
+      }, 100);
+    }
+    updateAccountSizes();
+  }
+
+  // --- Custom wheel: scroll exactly one card per tick ---
+  function setupWheelHandler() {
+    var scrollEl = document.getElementById('teamScroll');
+    if (!scrollEl) return;
+    var ticking = false;
+    scrollEl.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      if (ticking) return;
+      ticking = true;
+      var cardHeight = scrollEl.offsetHeight;
+      var dir = e.deltaY > 0 ? 1 : -1;
+      var currentSnap = Math.round(scrollEl.scrollTop / cardHeight);
+      var target = currentSnap + dir;
+      target = Math.max(0, Math.min(target, teams.length - 1));
+      scrollEl.scrollTo({ top: target * cardHeight, behavior: 'smooth' });
+      setTimeout(function() { ticking = false; }, 400);
+    }, { passive: false });
+  }
+
+  function updateSnapDots() {
+    var scrollEl = document.getElementById('teamScroll');
+    if (!scrollEl) return;
+    var cards = scrollEl.querySelectorAll('.team-card-item');
+    var mid = scrollEl.scrollTop + scrollEl.offsetHeight / 2;
+    var closest = null, closestDist = Infinity;
+    cards.forEach(function(c) {
+      var d = Math.abs((c.offsetTop + c.offsetHeight / 2) - mid);
+      if (d < closestDist) { closestDist = d; closest = c; }
+    });
+    if (closest) {
+      var id = closest.dataset.teamId;
+      document.querySelectorAll('#snapDots .snap-dot').forEach(function(d) { d.classList.toggle('active-dot', d.dataset.dotId === id); });
+    }
+  }
+
+  function handleTeamGroupClick() {
+    if (!hasTeams) toggleTeamSize();
+  }
+
+  function toggleTeamSize() {
+    var personalEl = document.getElementById('personalAccount');
+    var teamGroup = document.getElementById('teamGroup');
+    var teamWrap = document.getElementById('teamAccount');
+    var curFlex = parseInt(teamGroup.style.flex) || parseInt(teamWrap.style.flex) || 1;
+    if (curFlex <= 1) { teamGroup.style.flex = '3'; teamWrap.style.flex = '1'; personalEl.style.flex = '1'; }
+    else { teamGroup.style.flex = '1'; teamWrap.style.flex = '1'; personalEl.style.flex = '3'; }
+  }
+
+  function updateAccountSizes() {
+    var personalEl = document.getElementById('personalAccount');
+    var teamGroup = document.getElementById('teamGroup');
+    var teamWrap = document.getElementById('teamAccount');
+    if (activeAccount === 'personal') { personalEl.style.flex = '3'; teamGroup.style.flex = '1'; teamWrap.style.flex = '1'; }
+    else { personalEl.style.flex = '1'; teamGroup.style.flex = '3'; teamWrap.style.flex = '1'; }
+    personalEl.classList.toggle('active', activeAccount === 'personal');
+    teamWrap.classList.toggle('active', activeAccount !== 'personal');
+  }
+
+  var prevAccount = 'personal';
+
+  function selectAccount(id) {
+    if (id === activeAccount) return;
+    prevAccount = activeAccount;
+
+    if (id !== 'personal') {
+      activeTeam = teams.find(function(t) { return t.id === id; });
+    } else { activeTeam = null; }
+    activeAccount = id;
+    SlatiDB.setActiveAccount(id);
+    updateAccountSizes();
+
+    // Update checkmarks inline without rebuilding scroll
+    document.querySelectorAll('.team-card-item').forEach(function(card) {
+      var tid = card.dataset.teamId;
+      var checkEl = card.querySelector('.check-icon');
+      if (tid === id) {
+        card.classList.add('selected');
+        if (checkEl) checkEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">check_circle</span>';
+      } else {
+        card.classList.remove('selected');
+        if (checkEl) checkEl.innerHTML = '';
+      }
+    });
+
+    // Update snap dots
+    document.querySelectorAll('#snapDots .snap-dot').forEach(function(d) {
+      d.classList.toggle('active-dot', d.dataset.dotId === id);
+    });
+
+    // Direction: personal↔team = horizontal, team↔team = vertical by order
+    var isPersonalSwitch = (prevAccount === 'personal' || id === 'personal');
+    var exitVal, enterVal, axis;
+
+    if (isPersonalSwitch) {
+      // Horizontal: personal→team = left, team→personal = right
+      var toTeam = (prevAccount === 'personal');
+      exitVal = toTeam ? '-30px' : '30px';
+      enterVal = toTeam ? '30px' : '-30px';
+      axis = 'X';
+    } else {
+      // Vertical by team order: down the list → up, up the list → down
+      var prevIdx = teams.findIndex(function(t) { return t.id === prevAccount; });
+      var newIdx = teams.findIndex(function(t) { return t.id === id; });
+      exitVal = newIdx > prevIdx ? '-24px' : '24px';
+      enterVal = newIdx > prevIdx ? '24px' : '-24px';
+      axis = 'Y';
+    }
+
+    var contentCards = document.querySelectorAll('#channelOverview, #quickStats, #contentTabs, #slideTrack');
+
+    contentCards.forEach(function(el, i) {
+      el.style.transition = 'opacity 0.2s ease, transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      el.style.transitionDelay = (i * 0.03) + 's';
+      el.style.opacity = '0';
+      el.style.transform = 'translate' + axis + '(' + exitVal + ')';
+    });
+
+    setTimeout(function() {
+      renderContent();
+      var newCards = document.querySelectorAll('#channelOverview, #quickStats, #contentTabs, #slideTrack');
+      newCards.forEach(function(el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translate' + axis + '(' + enterVal + ')';
+        el.style.transition = 'none';
+      });
+      requestAnimationFrame(function() {
+        newCards.forEach(function(el, i) {
+          el.style.transition = 'opacity 0.3s ease, transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)';
+          el.style.transitionDelay = (i * 0.04) + 's';
+          el.style.opacity = '1';
+          el.style.transform = 'translateX(0) translateY(0)';
+        });
+      });
+    }, 250);
+  }
+
+  // --- Content renderers ---
+  function makeChannelCard(label, avatar, subtitle, stats, btnHtml) {
+    return '<div class="flex-center gap-md" style="flex-wrap:wrap">' +
+      '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;flex-shrink:0">' + avatar + '</div>' +
+      '<div style="flex:1;min-width:200px"><h1 class="headline-lg" style="margin-bottom:2px">' + label + '</h1><p class="body-md" style="color:var(--color-on-surface-variant)">' + subtitle + '</p>' +
+        '<div style="display:flex;gap:16px;margin-top:8px;font-size:var(--fs-label-md);color:var(--color-on-surface-variant)">' + stats + '</div></div>' + btnHtml + '</div>';
+  }
+
+  function renderContent() {
+    var isPersonal = activeAccount === 'personal';
+
+    // Channel overview
+    var label, avatar, subtitle, stats, btnHtml;
+    if (isPersonal) {
+      label = user.displayName || 'Sovereign';
+      avatar = (user.displayName || 'S').charAt(0);
+      subtitle = '@' + (user.displayName || 'Sovereign').replace(/\s+/g, '') + ' · Personal Studio · 6 articles · 12 media';
+      stats = '<span><strong style="color:var(--color-on-surface)">2.4K</strong> Followers</span><span><strong style="color:var(--color-on-surface)">48.2K</strong> Total Views</span><span><strong style="color:var(--color-on-surface)">1.8K</strong> Interactions</span>';
+      btnHtml = '<a href="fluidcanvas-editor.html" class="btn btn-outline btn-lg"><span class="material-symbols-outlined">add</span> New Article</a>';
+    } else if (activeTeam) {
+      label = activeTeam.name;
+      avatar = activeTeam.avatar;
+      subtitle = '@' + activeTeam.name.replace(/\s+/g, '') + ' · ' + activeTeam.role + ' · ' + activeTeam.members + ' members';
+      stats = '<span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 320) + '</strong> Followers</span><span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 6200) + '</strong> Total Views</span><span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 240) + '</strong> Interactions</span>';
+      btnHtml = '<a href="fluidcanvas-editor.html" class="btn btn-outline btn-lg"><span class="material-symbols-outlined">add</span> Team Article</a>';
+    } else {
+      label = 'FluidCanvas Studio'; avatar = 'FC'; subtitle = 'No team selected';
+      stats = ''; btnHtml = '';
+    }
+    document.getElementById('channelOverview').innerHTML = makeChannelCard(label, avatar, subtitle, stats, btnHtml);
+
+    // Stats row
+    document.getElementById('quickStats').innerHTML =
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + (isPersonal ? '48.2K' : (activeTeam ? (activeTeam.members * 6.2).toFixed(1) + 'K' : '0')) + '</div><div class="metric-label">Total Views</div><div class="metric-change" style="color:#22c55e">↑ ' + (isPersonal ? '12.4' : (activeTeam ? '8.7' : '0')) + '%</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + (isPersonal ? '3,842' : (activeTeam ? activeTeam.members * 510 : '0')) + '</div><div class="metric-label">Bookmarks</div><div class="metric-change" style="color:#22c55e">↑ ' + (isPersonal ? '8.1' : '5.2') + '%</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + (isPersonal ? '1,256' : (activeTeam ? activeTeam.members * 170 : '0')) + '</div><div class="metric-label">Shares</div><div class="metric-change" style="color:#22c55e">↑ 21.7%</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + (isPersonal ? '892' : (activeTeam ? activeTeam.members * 120 : '0')) + '</div><div class="metric-label">New Followers</div><div class="metric-change" style="color:#dc2626">↓ 3.2%</div></div>';
+
+    // Content lists
+    renderContentTables();
+  }
+
+  function renderContentTables() {
+    var isPersonal = activeAccount === 'personal';
+    var aLabel = isPersonal ? 'Your' : (activeTeam ? activeTeam.name : 'Team');
+    var track = document.getElementById('slideTrack');
+
+    var articleRows = [
+      { name: 'The Founding Charter of Etheria', views: '12,420', bookmarks: '1,204', shares: '486', trend: '🥇 Top', trendClass: 'badge-warning' },
+      { name: 'Aether Prime: A Smart Sovereign City', views: '15,630', bookmarks: '2,108', shares: '742', trend: 'Rising', trendClass: 'badge-success' },
+      { name: 'Digital Rights & Citizenship Act', views: '8,920', bookmarks: '853', shares: '312', trend: 'Stable', trendClass: 'badge-primary' },
+      { name: 'Economic Policy Whitepaper', views: '4,280', bookmarks: '645', shares: '198', trend: 'Stable', trendClass: 'badge-primary' },
+    ];
+    var mediaRows = [
+      { name: 'Aether Prime — Drone Tour 4K', type: '🎬', views: '45.1K', likes: '8,920', bookmarks: '4,105', shares: '2,830' },
+      { name: 'Etheria — Official Flag Reveal', type: '🖼️', views: '22.8K', likes: '3,421', bookmarks: '1,892', shares: '1,204' },
+      { name: 'Governance Summit — Highlights', type: '🎬', views: '18.4K', likes: '4,210', bookmarks: '2,340', shares: '982' },
+      { name: 'National Anthem — Recording', type: '🎵', views: '9,620', likes: '5,340', bookmarks: '3,210', shares: '1,540' },
+    ];
+
+    function makeArticlePanel(rows) {
+      var hdr = '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.03em"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:140px">Article</span><span class="mini-stat">Views</span><span class="mini-stat">Bookmarks</span><span class="mini-stat">Shares</span><span class="mini-stat" style="width:80px">Trend</span></div>';
+      var body = rows.map(function(r, i) {
+        var rankColors = ['var(--color-primary)', 'var(--color-outline)', '#ea580c', 'var(--color-outline)'];
+        return '<div class="content-row"><span style="width:36px;text-align:center;font-weight:800;font-size:var(--fs-body-md);color:' + rankColors[i] + '">' + (i + 1) + '</span><span style="flex:1;min-width:140px;font-weight:600">' + r.name + '</span><span class="mini-stat"><span style="font-weight:600">' + r.views + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 40 + 5)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.bookmarks + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 30 + 3)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.shares + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 50 + 5)) + '%</span></span><span class="mini-stat" style="width:80px"><span class="badge ' + r.trendClass + '">' + r.trend + '</span></span></div>';
+      }).join('');
+      return '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">Top Articles — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">Last 28 days</span></div>' + hdr + body + '</div>';
+    }
+
+    function makeMediaPanel(rows) {
+      var hdr = '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.03em"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:160px">Media</span><span style="width:44px;text-align:center">Type</span><span class="mini-stat">Views</span><span class="mini-stat">Likes</span><span class="mini-stat">Bookmarks</span><span class="mini-stat">Shares</span></div>';
+      var body = rows.map(function(r, i) {
+        var rankColors = ['var(--color-primary)', 'var(--color-outline)', '#ea580c', 'var(--color-outline)'];
+        return '<div class="content-row"><span style="width:36px;text-align:center;font-weight:800;font-size:var(--fs-body-md);color:' + rankColors[i] + '">' + (i + 1) + '</span><span style="flex:1;min-width:160px;font-weight:600">' + r.name + '</span><span style="width:44px;text-align:center">' + r.type + '</span><span class="mini-stat"><span style="font-weight:600">' + r.views + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 60 + 5)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.likes + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 50 + 5)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.bookmarks + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 35 + 3)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.shares + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 70 + 5)) + '%</span></span></div>';
+      }).join('');
+      return '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">Top Media — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">Last 28 days</span></div>' + hdr + body + '</div>';
+    }
+
+    track.innerHTML = makeArticlePanel(articleRows) + makeMediaPanel(mediaRows);
+
+    // Reset opacity + slide state
+    var panels = track.querySelectorAll('.card');
+    panels.forEach(function(p, i) { p.style.opacity = i === 0 ? '1' : '0.3'; p.style.transition = 'opacity 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)'; });
+    track.style.transform = 'translateX(0)';
+
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+  }
+
+  // --- Tab switching ---
+  var currentPanel = 0;
+  document.getElementById('contentTabs').addEventListener('click', function(e) {
+    if (!e.target.classList.contains('subnav-pill')) return;
+    this.querySelectorAll('.subnav-pill').forEach(function(b) { b.classList.remove('active'); });
+    e.target.classList.add('active');
+    var targetPanel = e.target.dataset.tab === 'articles' ? 0 : 1;
+    if (targetPanel === currentPanel) return;
+    var track = document.getElementById('slideTrack');
+    var panels = track.querySelectorAll('.card');
+    panels[currentPanel].style.opacity = '0.3';
+    panels[targetPanel].style.opacity = '1';
+    currentPanel = targetPanel;
+    track.style.transform = 'translateX(' + (-targetPanel * 100) + '%)';
+  });
+
+  // --- Left nav view switching ---
+  var currentView = 'dashboard';
+  document.querySelectorAll('.tilt-container .nav-item[data-view]').forEach(function(item) {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      var view = this.dataset.view;
+      if (view === currentView) return;
+      // Update active state
+      document.querySelectorAll('.tilt-container .nav-item[data-view]').forEach(function(n) { n.classList.remove('active'); });
+      this.classList.add('active');
+      // Switch view
+      switchView(view);
+    });
+  });
+
+  // Prevent overlapping switches
+  var _switchLock = false;
+
+  function switchView(view, instant) {
+    if (_switchLock) return;
+    var dashboard = document.getElementById('dashboardView');
+    var upload = document.getElementById('uploadView');
+    var content = document.getElementById('contentView');
+    var oldViewName = currentView;
+    if (oldViewName === view) return;
+
+    var oldEl = oldViewName === 'dashboard' ? dashboard : (oldViewName === 'upload' ? upload : content);
+    var newEl = view === 'dashboard' ? dashboard : (view === 'upload' ? upload : content);
+
+    function resetInline(el) {
+      if (el.style.opacity === '0') el.style.opacity = '';
+      if (el.style.transform && (el.style.transform.indexOf('translateY(0') !== -1 || el.style.transform.indexOf('translateY(6') !== -1)) el.style.transform = '';
+    }
+
+    function initNewView() {
+      if (view === 'upload') {
+        try { if (!window._uploadInitialized) { initUpload(); window._uploadInitialized = true; } } catch(e) {}
+      } else if (view === 'content') {
+        try { if (!window._contentLibInitialized) { initContentLib(); window._contentLibInitialized = true; } else { renderCLStats(); renderCLList(); } } catch(e) {}
+      }
+    }
+
+    function finish() {
+      oldEl.style.display = 'none';
+      oldEl.classList.remove('active');
+      oldEl.style.transition = '';
+      oldEl.style.opacity = '';
+      oldEl.style.transform = '';
+      currentView = view;
+      _switchLock = false;
+    }
+
+    if (instant) {
+      oldEl.style.display = 'none';
+      oldEl.classList.remove('active');
+      newEl.style.display = 'block';
+      newEl.style.transition = 'none';
+      newEl.style.opacity = '1';
+      newEl.style.transform = 'translateY(0)';
+      resetInline(newEl);
+      var ikids = newEl.querySelectorAll('[style]');
+      for (var ik = 0; ik < ikids.length; ik++) resetInline(ikids[ik]);
+      newEl.classList.add('active');
+      initNewView();
+      currentView = view;
+      return;
+    }
+
+    _switchLock = true;
+
+    // ── Overlapping crossfade ──
+    // Show new view BEHIND old view immediately at opacity:0
+    newEl.style.display = 'block';
+    newEl.style.opacity = '0';
+    newEl.style.transform = 'translateY(8px)';
+    newEl.style.transition = 'none';
+    resetInline(newEl);
+    var kids = newEl.querySelectorAll('[style]');
+    for (var k = 0; k < kids.length; k++) resetInline(kids[k]);
+    newEl.offsetHeight; // force reflow
+
+    // Fade out old view
+    oldEl.style.transition = 'opacity 0.15s ease';
+    oldEl.style.opacity = '0';
+
+    // Fade in new view simultaneously (starts behind old, revealed as old fades)
+    newEl.style.transition = 'opacity 0.2s ease, transform 0.25s ease';
+    newEl.style.opacity = '1';
+    newEl.style.transform = 'translateY(0)';
+    newEl.classList.add('active');
+    initNewView();
+
+    // After old fully hidden, clean up
+    setTimeout(finish, 200);
+  }
+
+  // Check URL hash for initial view
+  if (window.location.hash === '#upload') {
+    setTimeout(function() {
+      document.querySelector('.tilt-container .nav-item[data-view="dashboard"], .tilt-container .nav-item:not([data-view])').classList.remove('active');
+      var nav = document.querySelector('.tilt-container .nav-item[data-view="upload"]');
+      if (nav) nav.classList.add('active');
+      switchView('upload', true);
+    }, 100);
+  } else if (window.location.hash === '#content') {
+    setTimeout(function() {
+      document.querySelector('.tilt-container .nav-item[data-view="dashboard"], .tilt-container .nav-item:not([data-view])').classList.remove('active');
+      var nav = document.querySelector('.tilt-container .nav-item[data-view="content"]');
+      if (nav) nav.classList.add('active');
+      switchView('content', true);
+    }, 100);
+  }
+
+  // ═══════════════════════════════════════════
+  // Upload Module
+  // ═══════════════════════════════════════════
+  var PUBLISH_TARGETS = [
+    { id: 'article',   icon: 'article',        title: 'Article',        desc: 'Public-facing content visible to all citizens' },
+    { id: 'sovereign', icon: 'edit_note',      title: 'Sovereign Log',  desc: 'Internal nation records and official documentation' },
+    { id: 'community', icon: 'forum',          title: 'Community Post', desc: 'Appears in the Community Hub feed' }
+  ];
+
+  var FILE_ICONS = {
+    '.png':'image','.jpg':'image','.jpeg':'image','.gif':'image','.svg':'image','.webp':'image',
+    '.pdf':'picture_as_pdf','.doc':'description','.docx':'description','.txt':'description','.md':'description',
+    '.zip':'folder_zip','.rar':'folder_zip','.7z':'folder_zip','.mp4':'movie','.mp3':'headphones','.mov':'movie'
+  };
+
+  var SIMULATED_FILES = [
+    'micronation_constitution_v3.pdf','national_flag_design_final.png','trade_agreement_draft.docx',
+    'sovereign_decree_0042.txt','community_announcement_template.md','territory_map_2026.jpg',
+    'diplomatic_correspondence.zip','wiki_knowledge_base_export.json'
+  ];
+
+  var recentUploads = [
+    { file:'Etheria_Annual_Report_2025.pdf',        target:'article',   targetLabel:'Article',        time:'2 hours ago', status:'Published' },
+    { file:'Aethelgard_Treaty_Protocol_v2.docx',    target:'article',   targetLabel:'Article',        time:'5 hours ago', status:'Published' },
+    { file:'National_Crest_Final.svg',              target:'community', targetLabel:'Community Post',  time:'1 day ago',   status:'Published' },
+    { file:'Neo_Venice_Infrastructure_Plan.pdf',     target:'wiki',      targetLabel:'Wiki Entry',     time:'2 days ago',  status:'Published' },
+    { file:'Governance_Policy_Update_2026.txt',      target:'sovereign', targetLabel:'Sovereign Log',  time:'3 days ago',  status:'Published' },
+  ];
+
+  var currentFile = null;
+  var currentTarget = null;
+
+  function getExtension(filename) {
+    var dot = filename.lastIndexOf('.');
+    return dot >= 0 ? filename.substring(dot).toLowerCase() : '';
+  }
+  function getFileIcon(filename) { return FILE_ICONS[getExtension(filename)] || 'insert_drive_file'; }
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  function simulateFilePick() {
+    var name = SIMULATED_FILES[Math.floor(Math.random() * SIMULATED_FILES.length)];
+    setFile({ name: name, size: Math.floor(Math.random() * 8000000) + 24000 });
+  }
+
+  function setFile(file) {
+    currentFile = file;
+    var bar = document.getElementById('fileInfoBar');
+    bar.style.display = 'flex';
+    bar.style.animation = 'none'; bar.offsetHeight; bar.style.animation = 'fadeInDown 0.25s ease';
+    document.getElementById('fileInfoIcon').textContent = getFileIcon(file.name);
+    document.getElementById('fileInfoName').textContent = file.name;
+    document.getElementById('fileInfoSize').textContent = formatSize(file.size);
+    updatePublishButton();
+  }
+
+  function removeFile() {
+    currentFile = null;
+    document.getElementById('fileInfoBar').style.display = 'none';
+    updatePublishButton();
+  }
+
+  function renderTargets() {
+    document.getElementById('targetGrid').innerHTML = PUBLISH_TARGETS.map(function(t) {
+      return '<div class="target-card" data-target="' + t.id + '">' +
+        '<span class="material-symbols-outlined target-icon">' + t.icon + '</span>' +
+        '<div class="target-title">' + t.title + '</div>' +
+        '<div class="target-desc">' + t.desc + '</div></div>';
+    }).join('');
+  }
+
+  function selectTarget(id) {
+    currentTarget = id;
+    document.querySelectorAll('#uploadView .target-card').forEach(function(c) {
+      c.classList.toggle('selected', c.dataset.target === id);
+    });
+    updatePublishButton();
+  }
+
+  function updatePublishButton() {
+    var btn = document.getElementById('publishBtn');
+    if (btn) btn.disabled = !(currentFile && currentTarget);
+  }
+
+  var toastTimer = null;
+  function showToast(msg, icon) {
+    var el = document.getElementById('toast');
+    el.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px">' + (icon || 'check_circle') + '</span>' + msg;
+    el.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2800);
+  }
+
+  function renderRecentUploads() {
+    var list = document.getElementById('recentList');
+    if (!list) return;
+    list.innerHTML = recentUploads.map(function(item) {
+      var icon = getFileIcon(item.file);
+      return '<div class="recent-item">' +
+        '<span class="material-symbols-outlined recent-file-icon">' + icon + '</span>' +
+        '<span class="recent-file-name" title="' + item.file + '">' + item.file + '</span>' +
+        '<span class="recent-target-badge">' + item.targetLabel + '</span>' +
+        '<span class="recent-time">' + item.time + '</span>' +
+        '<span class="recent-status">' + item.status + '</span></div>';
+    }).join('');
+  }
+
+  function addToRecent(file, targetId) {
+    var info = PUBLISH_TARGETS.find(function(t) { return t.id === targetId; });
+    recentUploads.unshift({
+      file: file.name, target: targetId, targetLabel: info ? info.title : targetId,
+      time: 'Just now', status: 'Published'
+    });
+    if (recentUploads.length > 15) recentUploads.pop();
+    renderRecentUploads();
+  }
+
+  function publish() {
+    if (!currentFile || !currentTarget) return;
+    var info = PUBLISH_TARGETS.find(function(t) { return t.id === currentTarget; });
+    addToRecent(currentFile, currentTarget);
+    showToast('Published to ' + (info ? info.title : currentTarget) + '!', 'check_circle');
+    removeFile();
+    currentTarget = null;
+    document.querySelectorAll('#uploadView .target-card').forEach(function(c) { c.classList.remove('selected'); });
+    updatePublishButton();
+  }
+
+  function initUpload() {
+    renderTargets();
+    renderRecentUploads();
+
+    document.getElementById('uploadZone').addEventListener('click', simulateFilePick);
+    var zone = document.getElementById('uploadZone');
+    zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', function(e) { e.preventDefault(); zone.classList.remove('drag-over'); });
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault(); zone.classList.remove('drag-over');
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        var f = e.dataTransfer.files[0];
+        setFile({ name: f.name, size: f.size });
+      } else { simulateFilePick(); }
+    });
+
+    document.getElementById('fileRemoveBtn').addEventListener('click', removeFile);
+
+    document.getElementById('targetGrid').addEventListener('click', function(e) {
+      var card = e.target.closest('.target-card');
+      if (!card) return;
+      selectTarget(card.dataset.target);
+    });
+
+    document.getElementById('publishBtn').addEventListener('click', publish);
+
+    document.getElementById('uploadView').addEventListener('click', function(e) {
+      if (e.target.closest('.target-card')) return;
+    });
+  }
+
+  // ═══════════════════════════════════════════
+  // Content Library Module
+  // ═══════════════════════════════════════════
+  var contentLibrary = [
+    { id:'CL-001', title:'The Founding Charter of Etheria',         type:'article',   author:'Alex Rivera',             date:'2026-08-05', views:12420, bookmarks:1204, status:'Published' },
+    { id:'CL-002', title:'Aether Prime: A Smart Sovereign City',    type:'article',   author:'Alex Rivera',             date:'2026-08-02', views:15630, bookmarks:2108, status:'Published' },
+    { id:'CL-003', title:'Digital Rights & Citizenship Act',        type:'article',   author:'Alex Rivera',             date:'2026-07-28', views:8920,  bookmarks:853,  status:'Published' },
+    { id:'CL-004', title:'Economic Policy Whitepaper v2',           type:'article',   author:'Alex Rivera',             date:'2026-07-20', views:4280,  bookmarks:645,  status:'Draft' },
+    { id:'CL-005', title:'Etheria Annual Report 2025',              type:'article',   author:'Alex Rivera',             date:'2026-08-07', views:3200,  bookmarks:410,  status:'Published' },
+    { id:'CL-006', title:'Aethelgard Treaty Protocol v2',           type:'article',   author:'Etheria Editorial Board',  date:'2026-08-07', views:1800,  bookmarks:230,  status:'Published' },
+    { id:'CL-007', title:'Sovereign Decree No. 0042 — Trade Routes',type:'sovereign', author:'Alex Rivera',             date:'2026-08-06', views:890,   bookmarks:120,  status:'Published' },
+    { id:'CL-008', title:'Governance Policy Update 2026',           type:'sovereign', author:'Alex Rivera',             date:'2026-08-04', views:1560,  bookmarks:340,  status:'Published' },
+    { id:'CL-009', title:'Cabinet Meeting Minutes — August',        type:'sovereign', author:'Alex Rivera',             date:'2026-08-03', views:430,   bookmarks:56,   status:'Draft' },
+    { id:'CL-010', title:'National Crest Vector Assets',            type:'community', subtype:'images', author:'Alex Rivera',             date:'2026-08-06', views:2100,  bookmarks:560,  status:'Published' },
+    { id:'CL-011', title:'Citizenship Application Guide',           type:'community', subtype:'post',   author:'Cartography Guild',       date:'2026-08-01', views:3400,  bookmarks:890,  status:'Published' },
+    { id:'CL-012', title:'Community Event: Founding Day Festival',  type:'community', subtype:'post',   author:'Alex Rivera',             date:'2026-07-30', views:5600,  bookmarks:1200, status:'Published' },
+    { id:'CL-013', title:'Aether Prime — Drone Tour 4K',            type:'community', subtype:'video',  author:'Alex Rivera',             date:'2026-08-04', views:45100, bookmarks:4105, status:'Published' },
+    { id:'CL-014', title:'Etheria — Official Flag Reveal',          type:'community', subtype:'images', author:'Alex Rivera',             date:'2026-08-03', views:22800, bookmarks:1892, status:'Published' },
+    { id:'CL-015', title:'Governance Summit — Highlights Reel',     type:'community', subtype:'video',  author:'Cartography Guild',       date:'2026-07-28', views:18400, bookmarks:2340, status:'Published' },
+    { id:'CL-016', title:'National Anthem — Studio Recording',      type:'community', subtype:'video',  author:'Alex Rivera',             date:'2026-07-25', views:9620,  bookmarks:3210, status:'Published' },
+    { id:'CL-017', title:'Territory Map — High Resolution',         type:'community', subtype:'images', author:'Cartography Guild',       date:'2026-07-20', views:8700,  bookmarks:1540, status:'Published' },
+    { id:'CL-018', title:'Weekly Community Digest #42',             type:'community', subtype:'post',   author:'Alex Rivera',             date:'2026-08-07', views:1200,  bookmarks:180,  status:'Published' },
+  ];
+
+  var TYPE_META = {
+    article:   { icon:'article',   color:'#4648d4', bg:'rgba(70,72,212,0.08)',   label:'Article' },
+    sovereign: { icon:'edit_note', color:'#ea580c', bg:'rgba(234,88,12,0.08)',   label:'Sovereign Log' },
+    community: { icon:'forum',     color:'#16a34a', bg:'rgba(22,163,74,0.08)',   label:'Community Post' },
+  };
+
+  var SUBTYPE_META = {
+    post:   { icon:'forum',     label:'Post' },
+    images: { icon:'image',     label:'Images' },
+    video:  { icon:'smart_display', label:'Video' },
+  };
+
+  var clFilter = 'all';
+  var clSubFilter = 'all';
+  var clSearchTerm = '';
+
+  function renderCLStats() {
+    var total = contentLibrary.length;
+    var articles = contentLibrary.filter(function(c){ return c.type==='article'; }).length;
+    var sovereigns = contentLibrary.filter(function(c){ return c.type==='sovereign'; }).length;
+    var communities = contentLibrary.filter(function(c){ return c.type==='community'; }).length;
+    var posts = contentLibrary.filter(function(c){ return c.subtype==='post'; }).length;
+    var images = contentLibrary.filter(function(c){ return c.subtype==='images'; }).length;
+    var videos = contentLibrary.filter(function(c){ return c.subtype==='video'; }).length;
+    document.getElementById('clStats').innerHTML =
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + total + '</div><div class="metric-label">Total Items</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#4648d4">' + articles + '</div><div class="metric-label">Articles</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + sovereigns + '</div><div class="metric-label">Sovereign Logs</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + communities + '</div><div class="metric-label">Community Posts</div></div>';
+  }
+
+  function renderCLList() {
+    var list = document.getElementById('clList');
+    // Filter
+    var items = contentLibrary;
+    if (clFilter !== 'all') {
+      items = items.filter(function(c){ return c.type === clFilter; });
+    }
+    // Sub-filter for community posts
+    if (clFilter === 'community' && clSubFilter !== 'all') {
+      items = items.filter(function(c){ return c.subtype === clSubFilter; });
+    }
+    if (clSearchTerm) {
+      var term = clSearchTerm.toLowerCase();
+      items = items.filter(function(c){ return c.title.toLowerCase().indexOf(term) !== -1 || c.author.toLowerCase().indexOf(term) !== -1; });
+    }
+
+    if (items.length === 0) {
+      list.innerHTML = '<div class="cl-empty"><span class="material-symbols-outlined cl-empty-icon">inventory_2</span><p style="font-weight:600;margin-bottom:4px">No content found</p><p style="font-size:12px">Try adjusting your filters or create new content</p></div>';
+      return;
+    }
+
+    list.innerHTML = items.map(function(c) {
+      var meta = TYPE_META[c.type] || TYPE_META.article;
+      var statusClass = c.status === 'Draft' ? 'style="background:rgba(234,179,8,0.1);color:#b45309"' : 'style="background:rgba(22,163,74,0.08);color:#16a34a"';
+      var subtypeHTML = '';
+      if (c.type === 'community' && c.subtype) {
+        var sub = SUBTYPE_META[c.subtype];
+        if (sub) subtypeHTML = '<span class="cl-badge" style="background:' + meta.bg + ';color:' + meta.color + ';margin-right:4px"><span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle">' + sub.icon + '</span> ' + sub.label + '</span>';
+      }
+      return '<div class="content-lib-card">' +
+        '<div class="cl-type-icon" style="background:' + meta.bg + ';color:' + meta.color + '">' +
+          '<span class="material-symbols-outlined" style="font-size:20px">' + meta.icon + '</span>' +
+        '</div>' +
+        '<div class="cl-info">' +
+          '<div class="cl-title">' + c.title + '</div>' +
+          '<div class="cl-meta">' +
+            '<span>' + c.author + '</span>' +
+            '<span>' + c.date + '</span>' +
+            '<span>' + c.views.toLocaleString() + ' views</span>' +
+            '<span>' + c.bookmarks.toLocaleString() + ' bookmarks</span>' +
+          '</div>' +
+        '</div>' +
+        subtypeHTML +
+        '<span class="cl-badge ' + c.type + '">' + meta.label + '</span>' +
+        '<span class="cl-badge" ' + statusClass + '>' + c.status + '</span>' +
+        '<div class="cl-actions">' +
+          '<button class="cl-action-btn" title="Edit"><span class="material-symbols-outlined" style="font-size:16px">edit</span></button>' +
+          '<button class="cl-action-btn" title="View"><span class="material-symbols-outlined" style="font-size:16px">visibility</span></button>' +
+          '<button class="cl-action-btn danger" title="Delete"><span class="material-symbols-outlined" style="font-size:16px">delete</span></button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function initContentLib() {
+    renderCLStats();
+    renderCLList();
+
+    // Primary filter pills
+    document.getElementById('clFilterPills').addEventListener('click', function(e) {
+      var btn = e.target.closest('.subnav-pill');
+      if (!btn) return;
+      clFilter = btn.dataset.filter;
+      clSubFilter = 'all';
+      // Show/hide secondary subnav for community posts
+      var subFilter = document.getElementById('clSubFilter');
+      if (clFilter === 'community') {
+        subFilter.style.opacity = '1';
+        subFilter.style.pointerEvents = 'auto';
+        subFilter.querySelectorAll('.subnav-pill').forEach(function(p) { p.classList.remove('active'); });
+        subFilter.querySelector('[data-subfilter="all"]').classList.add('active');
+        // Trigger slider recalculation after layout
+        setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 50);
+      } else {
+        subFilter.style.opacity = '0.4';
+        subFilter.style.pointerEvents = 'none';
+      }
+      renderCLList();
+    });
+
+    // Secondary sub-filter (community subtypes)
+    document.getElementById('clSubFilter').addEventListener('click', function(e) {
+      var btn = e.target.closest('.subnav-pill');
+      if (!btn) return;
+      clSubFilter = btn.dataset.subfilter;
+      renderCLList();
+    });
+
+    // Search
+    var searchTimer;
+    document.getElementById('clSearch').addEventListener('input', function() {
+      clearTimeout(searchTimer);
+      var self = this;
+      searchTimer = setTimeout(function() {
+        clSearchTerm = self.value.trim();
+        renderCLList();
+      }, 250);
+    });
+  }
+
+  // --- Hook publish to also add to content library ---
+  var _origPublish = publish;
+  publish = function() {
+    if (!currentFile || !currentTarget) return;
+    var info = PUBLISH_TARGETS.find(function(t) { return t.id === currentTarget; });
+    // Also add to content library
+    contentLibrary.unshift({
+      id: 'CL-' + Date.now(),
+      title: currentFile.name.replace(/\.[^.]+$/, '').replace(/_/g, ' ').replace(/\b\w/g, function(l){ return l.toUpperCase(); }),
+      type: currentTarget,
+      author: (activeAccount === 'personal' ? (user.displayName || 'Alex Rivera') : (activeTeam ? activeTeam.name : 'Unknown')),
+      date: new Date().toISOString().split('T')[0],
+      views: 0, bookmarks: 0,
+      status: 'Published'
+    });
+    if (currentView === 'content') { renderCLStats(); renderCLList(); }
+    _origPublish();
+  };
+
+  // --- Init ---
+  renderTeamSection();
+  renderContent();
+</script>
+</body>
+</html>

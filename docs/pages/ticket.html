@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="meta.title">人工工单 | M.NationWorld</title>
+
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    .ticket-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--color-on-surface); }
+    .ticket-field {
+      width: 100%; padding: 10px 14px; border-radius: var(--radius-md);
+      border: 1px solid var(--color-outline-variant);
+      background: var(--card-bg); color: var(--color-on-surface);
+      font-size: 14px; font-family: inherit; box-sizing: border-box;
+    }
+    .ticket-field:focus { outline: none; border-color: var(--color-primary); }
+    .ticket-field::placeholder { color: var(--color-outline); }
+    textarea.ticket-field { resize: vertical; min-height: 140px; }
+
+    .ticket-fact {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: var(--space-md); border: 1px solid var(--color-outline-variant);
+      border-radius: var(--radius-md); background: var(--card-bg);
+      font-size: 13px; line-height: 1.6; color: var(--color-on-surface-variant);
+    }
+    .ticket-fact .material-symbols-outlined { font-size: 20px; color: var(--color-primary); flex-shrink: 0; margin-top: 1px; }
+
+    .step-num {
+      width: 32px; height: 32px; border-radius: var(--radius-full);
+      display: inline-flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--color-primary), #8131cf);
+      color: #fff; font-weight: 700; font-size: 14px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <!-- Hero -->
+    <div style="margin-bottom:var(--space-lg)">
+      <h1 class="display-lg" style="margin-bottom:8px" data-i18n="hero.title">人工工单</h1>
+      <p class="body-lg" style="color:var(--color-on-surface-variant);max-width:700px" data-i18n="hero.sub">
+        需要特别权限、或 AI 客服无法处理的事项（支付与账单、创作者结算、账号与处罚申诉、隐私请求等），请在此提交人工工单。
+      </p>
+    </div>
+
+    <!-- 快速事实 -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--space-sm);margin-bottom:var(--space-lg)">
+      <div class="ticket-fact">
+        <span class="material-symbols-outlined">schedule</span>
+        <div data-i18n="fact.1">首个人工回复目标：3 天内</div>
+      </div>
+      <div class="ticket-fact">
+        <span class="material-symbols-outlined">badge</span>
+        <div data-i18n="fact.2">工单由人工受理，不经过 AI 客服</div>
+      </div>
+      <div class="ticket-fact">
+        <span class="material-symbols-outlined">shield_lock</span>
+        <div data-i18n="fact.3">客服不会索要密码、验证码或支付信息</div>
+      </div>
+    </div>
+
+    <!-- 工单表单 -->
+    <div class="card" style="padding:var(--space-lg);max-width:760px">
+      <h2 class="headline-md" style="margin-bottom:var(--space-md)" data-i18n="form.title">提交工单</h2>
+
+      <form id="ticketForm" novalidate>
+        <div style="margin-bottom:var(--space-md)">
+          <label class="ticket-label" for="tCat" data-i18n="form.label.category">工单类型</label>
+          <select id="tCat" class="ticket-field">
+            <option value="bug" data-i18n="form.category.bug">问题反馈</option>
+            <option value="account" data-i18n="form.category.account">账户问题</option>
+            <option value="payment" data-i18n="form.category.payment">支付与账单</option>
+            <option value="payout" data-i18n="form.category.payout">创作者结算</option>
+            <option value="suggestion" data-i18n="form.category.suggestion">意见与建议</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:var(--space-md)">
+          <label class="ticket-label" for="tType" data-i18n="form.label.type">问题类型</label>
+          <select id="tType" class="ticket-field">
+            <option data-i18n="form.type.account">账号申诉</option>
+            <option data-i18n="form.type.penalty">处罚申诉</option>
+            <option data-i18n="form.type.privacy">隐私请求</option>
+            <option data-i18n="form.type.account.login">登录与验证问题</option>
+            <option data-i18n="form.type.account.hijack">账号被盗</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:var(--space-md)">
+          <label class="ticket-label" for="tContact" data-i18n="form.label.contact">电子邮件</label>
+          <input type="email" id="tContact" class="ticket-field" data-i18n-placeholder="form.placeholder.contact" placeholder="例如 name@example.com">
+        </div>
+
+        <div style="margin-bottom:var(--space-md)">
+          <label class="ticket-label" for="tTitle" data-i18n="form.label.subject">标题</label>
+          <input type="text" id="tTitle" class="ticket-field" data-i18n-placeholder="form.placeholder.subject" placeholder="一句话说明问题">
+        </div>
+
+        <div style="margin-bottom:var(--space-md)">
+          <label class="ticket-label" for="tDesc" data-i18n="form.label.desc">详细描述</label>
+          <textarea id="tDesc" class="ticket-field" data-i18n-placeholder="form.placeholder.desc" placeholder="请描述：发生了什么、发生时间、相关订单号或内容链接、您期望的处理结果"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <span class="material-symbols-outlined" style="font-size:18px">content_copy</span> <span data-i18n="form.btn.submit">生成并复制工单内容</span>
+        </button>
+        <p class="body-md" style="margin-top:var(--space-sm);font-size:0.85em;color:var(--color-outline)" data-i18n="form.hint">
+          点击后将生成格式化工单内容并复制，请粘贴到官方 Discord 伺服器的工单频道提交。
+        </p>
+      </form>
+    </div>
+
+    <!-- 提交成功指引（默认隐藏） -->
+    <div id="ticketDone" class="card" style="padding:var(--space-lg);max-width:760px;margin-top:var(--space-md);display:none;border:1px solid var(--color-primary)">
+      <h3 class="headline-md" style="margin-bottom:var(--space-sm)">
+        <span class="material-symbols-outlined" style="font-size:22px;color:var(--color-primary);vertical-align:-4px">check_circle</span>
+        <span data-i18n="done.title">工单内容已生成</span>
+      </h3>
+      <p class="body-md" data-i18n="done.intro">
+        内容已复制到剪贴板（若未自动复制，请点击下方文本框全选后手动复制），然后按以下步骤提交：
+      </p>
+
+      <textarea id="ticketPreview" class="ticket-field" readonly style="margin:var(--space-sm) 0 var(--space-md)"></textarea>
+
+      <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;margin-bottom:var(--space-sm)">
+        <div class="step-num" style="margin-bottom:0">1</div>
+        <div style="font-weight:600;color:var(--color-on-surface);padding-top:4px" data-i18n="done.step1">前往官方 Discord 伺服器</div>
+      </div>
+      <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;margin-bottom:var(--space-sm)">
+        <div class="step-num" style="margin-bottom:0">2</div>
+        <div style="font-weight:600;color:var(--color-on-surface);padding-top:4px" data-i18n="done.step2">在工单频道粘贴并发送</div>
+      </div>
+      <div style="display:flex;gap:var(--space-md);flex-wrap:wrap;margin-bottom:var(--space-md)">
+        <div class="step-num" style="margin-bottom:0">3</div>
+        <div style="font-weight:600;color:var(--color-on-surface);padding-top:4px" data-i18n="done.step3">管理员按队列处理（紧急事项优先），首个人工回复目标 3 天内</div>
+      </div>
+
+      <a href="https://discord.gg/beST9TtMqq" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">
+        <span class="material-symbols-outlined" style="font-size:18px">open_in_new</span> <span data-i18n="done.join">加入伺服器</span>
+      </a>
+      <p class="body-md" style="margin-top:var(--space-sm);font-size:0.85em;color:var(--color-outline)" data-i18n="done.note">
+        站内工单系统尚未直连，Discord 粘贴为当前提交渠道；系统上线后，此处提交将自动进入排队。
+      </p>
+    </div>
+
+    <!-- 工单已提交（后端模式，默认隐藏；后端上线后启用） -->
+    <div id="ticketDoneApi" class="card" style="padding:var(--space-lg);max-width:760px;margin-top:var(--space-md);display:none;border:1px solid var(--color-primary)">
+      <h3 class="headline-md" style="margin-bottom:var(--space-sm)">
+        <span class="material-symbols-outlined" style="font-size:22px;color:var(--color-primary);vertical-align:-4px">check_circle</span>
+        <span data-i18n="doneapi.title">工单已提交</span>
+      </h3>
+      <p class="body-md">
+        <span data-i18n="doneapi.body">工单已进入排队处理，编号：</span><span id="tktId" style="font-weight:700;color:var(--color-primary)">—</span><span data-i18n="doneapi.bodyPos">，当前排在第</span> <span id="tktPos" style="font-weight:700;color:var(--color-primary)">—</span> <span data-i18n="doneapi.bodyPosSuffix">位</span>
+      </p>
+      <p class="body-md" style="margin-top:var(--space-sm);font-size:0.85em;color:var(--color-outline)" data-i18n="doneapi.note">
+        首个人工回复目标为 3 天内；处理进展将通过您留下的电子邮件告知。
+      </p>
+    </div>
+
+    <!-- 防诈骗提示 -->
+    <p class="body-md" style="margin-top:var(--space-lg);max-width:760px" data-i18n="fraud">
+      ⚠️ 防诈骗提示：平台客服在正常情况下不会主动私信联系你；特殊情况下（如账号安全核查、订单异常处理）运营团队会以官方名义主动联系，并会先出示官方验证码（12 小时内有效）自证身份——你可以前往帮助中心「验证官方人员身份」输入验证码核实，验证结果会显示验证码的创建时间，以及该工作人员的化名、职位与负责事项。官方人员无论何种情况都不会向你索要密码、短信验证码或支付信息；任何不出示验证码、验证码无效、或索要上述信息的“官方私信”均为冒充，请勿回应，并前往官方 Discord 社区核实或举报。
+    </p>
+
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script src="../assets/js/transitions.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/ticket.zh.js"></script>
+<script>
+  MN_I18N.apply();
+</script>
+<script src="../assets/js/ticket-submit.js"></script>
+<script>
+  // 工单提交配置（后端上线后的唯一改动点）
+  //   mode: 'discord' —— 当前：生成文本 → 复制 → Discord 工单频道粘贴
+  //   mode: 'api'     —— 后端上线后：POST {apiBase}/tickets，失败自动回退 Discord 模式
+  // apiBase 填接口根地址，如 'https://api.mnation.world'；接口约定见 ticket-submit.js 头部注释
+  window.MN_TICKET_CONFIG = { mode: 'discord', apiBase: '' };
+</script>
+<script>
+  (function () {
+    var form = document.getElementById('ticketForm');
+    if (!form) return;
+
+    function showPanel(panel) {
+      panel.style.display = 'block';
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Discord 粘贴模式（当前默认）
+    function showDiscordFlow(text) {
+      document.getElementById('ticketPreview').value = text;
+      showPanel(document.getElementById('ticketDone'));
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      } else {
+        document.getElementById('ticketPreview').select();
+      }
+    }
+
+    // 后端模式（上线后）：展示工单编号与排队位置
+    function showApiFlow(result) {
+      document.getElementById('tktId').textContent = result.ticketId || '—';
+      document.getElementById('tktPos').textContent = (result.position != null ? result.position : '—');
+      showPanel(document.getElementById('ticketDoneApi'));
+    }
+
+    // ── 问题类型选项：随上方工单类型切换 ──
+    // code 为传给后端/文本的语言无关代码；label 为界面显示文本
+    var PROBLEM_TYPES = {
+      bug: [
+        { code: 'display',      label: '页面显示异常',   key: 'form.type.bug.display' },
+        { code: 'feature',      label: '功能异常',       key: 'form.type.bug.feature' },
+        { code: 'editor',       label: '编辑器问题',     key: 'form.type.bug.editor' },
+        { code: 'translation',  label: '翻译错误',       key: 'form.type.bug.translation' },
+        { code: 'payment-bug',  label: '支付与订阅异常', key: 'form.type.bug.payment' },
+        { code: 'other-bug',    label: '其他 bug',      key: 'form.type.bug.other' }
+      ],
+      account: [
+        { code: 'account', label: '账号申诉',       key: 'form.type.account' },
+        { code: 'penalty', label: '处罚申诉',       key: 'form.type.penalty' },
+        { code: 'privacy', label: '隐私请求',       key: 'form.type.privacy' },
+        { code: 'login',   label: '登录与验证问题', key: 'form.type.account.login' },
+        { code: 'hijack',  label: '账号被盗',       key: 'form.type.account.hijack' }
+      ],
+      payment: [
+        { code: 'pay-failed', label: '支付失败',       key: 'form.type.payment.failed' },
+        { code: 'duplicate',  label: '重复扣费',       key: 'form.type.payment.duplicate' },
+        { code: 'refund',     label: '退款问题',       key: 'form.type.refund' },
+        { code: 'billing',    label: '账单争议',       key: 'form.type.billing' },
+        { code: 'subscribe',  label: '订阅管理与取消', key: 'form.type.payment.subscription' }
+      ],
+      payout: [
+        { code: 'query',      label: '结算查询',   key: 'form.type.payout.query' },
+        { code: 'withdrawal', label: '提现问题',   key: 'form.type.payout.withdrawal' },
+        { code: 'chargeback', label: '拒付回扣异议', key: 'form.type.payout.chargeback' },
+        { code: 'share',      label: '分成异议',   key: 'form.type.payout.share' }
+      ],
+      suggestion: [
+        { code: 'feature', label: '功能建议', key: 'form.type.suggestion.feature' },
+        { code: 'ux',      label: '体验反馈', key: 'form.type.suggestion.ux' },
+        { code: 'other',   label: '其他建议', key: 'form.type.suggestion.other' }
+      ]
+    };
+
+    var tCat = document.getElementById('tCat');
+    var tType = document.getElementById('tType');
+
+    function rebuildProblemTypes() {
+      var list = PROBLEM_TYPES[tCat.value] || PROBLEM_TYPES.account;
+      tType.innerHTML = '';
+      list.forEach(function (o) {
+        var opt = document.createElement('option');
+        opt.value = o.code;
+        opt.textContent = o.label;
+        opt.setAttribute('data-i18n', o.key); // 语言切换时由 MN_I18N.apply() 重新渲染
+        tType.appendChild(opt);
+      });
+      if (window.MN_I18N) MN_I18N.apply();
+    }
+
+    tCat.addEventListener('change', rebuildProblemTypes);
+    rebuildProblemTypes(); // 初始填充（默认选中第一项“问题反馈”）
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var catCode = tCat.value;
+      var catLabel = tCat.options[tCat.selectedIndex].textContent;
+      var typeCode = tType.value;
+      var typeLabel = tType.options[tType.selectedIndex].textContent;
+      var contact = document.getElementById('tContact').value.trim();
+      var title = document.getElementById('tTitle').value.trim();
+      var desc = document.getElementById('tDesc').value.trim();
+      if (!contact || !title || !desc) {
+        alert(MN_I18N.t('form.alert.incomplete'));
+        return;
+      }
+      if (!/^\S+@\S+\.\S+$/.test(contact)) {
+        alert(MN_I18N.t('form.alert.email'));
+        return;
+      }
+      var text = MN_I18N.t('form.field.category') + catLabel + '\n' +
+                 MN_I18N.t('form.field.type') + typeLabel + '\n' +
+                 MN_I18N.t('form.field.contact') + contact + '\n' +
+                 MN_I18N.t('form.field.subject') + title + '\n' +
+                 MN_I18N.t('form.field.desc') + '\n' + desc;
+      MN_Ticket.submit({
+        category: catCode,
+        type: typeCode,
+        contact: contact,
+        subject: title,
+        description: desc,
+        locale: MN_I18N.getLang(),
+        submittedAt: new Date().toISOString(),
+        text: text
+      }).then(function (result) {
+        if (result.ok) {
+          showApiFlow(result);
+        } else {
+          showDiscordFlow(result.text);
+        }
+      });
+    });
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+============================================================
+  SlatiWorld Development Log — 2026-08-10
+============================================================
+
+1. rebuildTextSegments — Pass 2 Priority Simplified
+   - Stripped from 5 priority levels to 3: left side > full-width > right side
+   - Removed sameRows check, isBelow tiebreaker, adjacent-inline complexity
+   - Adjacent fallback extracted to separate short loop (last resort only)
+   - Overlap area only breaks ties within same priority level
+
+2. rebuildTextSegments — Incremental Rebuild (Architectural Change)
+   - BEFORE: destroy ALL segments → rebuild all rows → match text to new
+     positions. Unblocked text was destroyed and displaced unnecessarily.
+   - AFTER: only destroy segments that actually overlap with occupied cells
+     (or are orphaned side segments from cards that moved away).
+     Unblocked segments stay in the DOM completely untouched.
+   - Only rebuild "dirty rows": rows with cards, rows from removed segments,
+     and new rows added by infinite scroll.
+   - Added forceFull parameter for full-rebuild scenarios:
+       true  → setGridColumns, setCellSize, loadDraft, applyTemplate,
+               applyPresetCardPositions, refitColumns (window resize)
+       false → card drag/rotate, positionCard, undo, infinite scroll
+   - Added _lastBuiltRows tracking to auto-detect new rows from infinite
+     scroll and create segments for them.
+   - Second pass: any "kept" segment on a dirty row is removed and rebuilt.
+     Fixes lateral card movement where old side-segment bounds go stale
+     and overlap with new wider segments.
+
+3. Flag Card Default Size Changed
+   - createGridCard fallback: 4×3 → 8×6 cells
+   - loadDraft flag restore default: colSpan||4 → colSpan||8,
+     rowSpan||3 → rowSpan||6
+
+4. Known Issues / Pending
+   - Text still follows card when card moves vertically (rows change),
+     because merged contenteditable segments can't be split per-row.
+     This is an inherent limitation — text moves as a unit.
+   - The "card covers entire text area → text jumps to adjacent row"
+     scenario is correct behavior (text must go somewhere).
+
+============================================================
+  Files Modified
+============================================================
+  docs/pages/fluidcanvas-editor.html
+
+============================================================
+  Key Code Locations
+============================================================
+  rebuildTextSegments(forceFull)     — line 762
+  Incremental keep/remove logic      — line 790-846
+  Second pass (stale kept segments)  — line 832-848
+  Pass 2 priority (left>FW>right)    — line 952-970
+  Flag card default 8×6              — line 1452 (createGridCard)
+                                     — line 1107 (loadDraft restore)
+  _lastBuiltRows tracking            — line 760, 834, 980

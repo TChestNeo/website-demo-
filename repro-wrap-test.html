@@ -1,0 +1,399 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>wrap repro</title>
+<style>
+  :root {
+    --font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    --divider-line: #ddd;
+    --divider-line-strong: #bbb;
+    --color-surface-container-lowest: #fff;
+    --color-on-surface: #111;
+    --card-bg: #eef;
+    --radius-md: 12px;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .grid-canvas {
+    --grid-cols: 36; --cell-size: 24px;
+    display: grid;
+    grid-template-columns: repeat(var(--grid-cols), var(--cell-size));
+    grid-auto-rows: var(--cell-size);
+    gap: 2px;
+    min-height: 500px;
+    position: relative;
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface-container-lowest);
+    background-image:
+      linear-gradient(to right, var(--divider-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--divider-line) 1px, transparent 1px);
+    background-size: calc(var(--cell-size) + 2px) calc(var(--cell-size) + 2px);
+  }
+  .text-layer {
+    position: absolute; top: 0; left: 0;
+    z-index: 1;
+    font-size: 14px; line-height: 1.6;
+    font-family: var(--font-family);
+    color: var(--color-on-surface);
+    background: transparent; border: none;
+    outline: none; cursor: text;
+    overflow: visible;
+    white-space: pre-wrap; word-break: break-word;
+    padding: 2px 4px;
+    box-sizing: border-box;
+  }
+  .text-spacer {
+    pointer-events: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+  .text-pad {
+    pointer-events: none;
+    user-select: none;
+  }
+  .grid-card {
+    position: absolute;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 2px solid var(--divider-line-strong);
+    background: var(--card-bg);
+    cursor: grab; user-select: none;
+    box-shadow: var(--shadow-sm);
+  }
+</style>
+</head>
+<body>
+<div id="gridCanvas" class="grid-canvas"></div>
+<pre id="report"></pre>
+<script>
+// ═══ engine copied verbatim from fluidcanvas-editor.html (current state) ═══
+var totalRows = 100;
+var textLayer = null;
+var LAYER_PAD_X = 4, LAYER_PAD_Y = 2;
+var suppressWrapSync = false, composing = false, selectedCard = null;
+var gridCanvas = document.getElementById('gridCanvas');
+
+function ensureTextLayer() {
+  if (!textLayer || !document.body.contains(textLayer)) {
+    textLayer = document.createElement('div');
+    textLayer.className = 'text-layer';
+    textLayer.contentEditable = 'true';
+    gridCanvas.appendChild(textLayer);
+  }
+  return textLayer;
+}
+function getCellSize() { return 24; }
+function getGridCols() { return 36; }
+function getAllCards() { return Array.prototype.slice.call(gridCanvas.querySelectorAll('.grid-card')); }
+function refreshCardZOrder() {}
+function growCanvasIfNeeded() {}
+
+function getCardCoverage() {
+  var cs = getCellSize();
+  var gap = 2;
+  var cols = getGridCols();
+  var canvasW = cols * cs + (cols - 1) * gap;
+  var out = [];
+  getAllCards().forEach(function (c) {
+    var x = parseFloat(c.style.left) || 0;
+    var y = parseFloat(c.style.top) || 0;
+    var w = c.offsetWidth || parseFloat(c.style.width) || 0;
+    var h = c.offsetHeight || parseFloat(c.style.height) || 0;
+    if (!w || !h) { out.push(null); return; }
+    var rotate = parseFloat(c.dataset.rotate) || 0;
+    var bboxW = w, bboxH = h;
+    if (rotate !== 0) {
+      var rad = Math.abs(rotate) * Math.PI / 180;
+      bboxW = Math.abs(w * Math.cos(rad)) + Math.abs(h * Math.sin(rad));
+      bboxH = Math.abs(w * Math.sin(rad)) + Math.abs(h * Math.cos(rad));
+    }
+    var cx = x + w / 2, cy = y + h / 2;
+    out.push({
+      x1: Math.max(0, cx - bboxW / 2),
+      x2: Math.min(canvasW, cx + bboxW / 2),
+      y1: Math.max(0, cy - bboxH / 2),
+      y2: Math.min(totalRows * (cs + gap), cy + bboxH / 2)
+    });
+  });
+  return out;
+}
+
+function computeFloatSide(cards, coverage) {
+  var cs = getCellSize();
+  var gap = 2;
+  var cols = getGridCols();
+  var canvasW = cols * cs + (cols - 1) * gap;
+  var contentW = canvasW - LAYER_PAD_X * 2;
+  var order = [];
+  cards.forEach(function (card, i) {
+    if (coverage[i]) order.push({ card: card, cov: coverage[i] });
+  });
+  order.sort(function (a, b) { return a.cov.y1 - b.cov.y1; });
+  var bands = [];
+  order.forEach(function (o) {
+    var last = bands[bands.length - 1];
+    if (last && o.cov.y1 < last.maxY2) {
+      last.items.push(o);
+      if (o.cov.y2 > last.maxY2) last.maxY2 = o.cov.y2;
+    } else {
+      bands.push({ items: [o], maxY2: o.cov.y2 });
+    }
+  });
+  var out = {};
+  bands.forEach(function (band) {
+    var byX = band.items.slice().sort(function (a, b) { return a.cov.x1 - b.cov.x1; });
+    byX.forEach(function (o, k) {
+      var left;
+      if (k === 0) left = true;
+      else if (k === byX.length - 1) left = false;
+      else left = (o.cov.x1 + o.cov.x2) / 2 <= contentW / 2;
+      out[o.card.dataset.cardId] = left;
+    });
+  });
+  return out;
+}
+
+function syncCardWrap() {
+  if (suppressWrapSync || composing) return;
+  ensureTextLayer();
+  var lineH = parseFloat(getComputedStyle(textLayer).lineHeight) || 22.4;
+  var cards = getAllCards();
+  var coverage = getCardCoverage();
+  var sides = computeFloatSide(cards, coverage);
+  var ids = {};
+  cards.forEach(function (c) { ids[c.dataset.cardId] = true; });
+  var orphans = [];
+  textLayer.querySelectorAll('.text-spacer, .text-pad').forEach(function (el) {
+    if (!ids[el.dataset.cardId]) orphans.push(el);
+  });
+  if (!orphans.length && cards.every(function (card, i) {
+    return spacerAligned(card, coverage[i], sides[card.dataset.cardId]);
+  })) {
+    refreshCardZOrder();
+    return;
+  }
+  orphans.forEach(function (el) { el.remove(); });
+  var attempted = {};
+  var dirty;
+  do {
+    dirty = false;
+    coverage = getCardCoverage();
+    sides = computeFloatSide(cards, coverage);
+    cards.forEach(function (card, i) {
+      var cov = coverage[i];
+      if (!cov) return;
+      if (attempted[card.dataset.cardId]) return;
+      if (spacerAligned(card, cov, sides[card.dataset.cardId])) return;
+      attempted[card.dataset.cardId] = true;
+      var sp = textLayer.querySelector('.text-spacer[data-card-id="' + card.dataset.cardId + '"]');
+      if (sp) sp.remove();
+      var pad = textLayer.querySelector('.text-pad[data-card-id="' + card.dataset.cardId + '"]');
+      if (pad) pad.remove();
+      anchorCardSpacer(card, cov, sides[card.dataset.cardId], lineH);
+      dirty = true;
+    });
+  } while (dirty);
+  refreshCardZOrder();
+}
+
+function spacerAligned(card, cov, isLeft) {
+  if (!cov) return true;
+  var sp = textLayer.querySelector('.text-spacer[data-card-id="' + card.dataset.cardId + '"]');
+  if (!sp) return false;
+  var canvasRect = gridCanvas.getBoundingClientRect();
+  var sr = sp.getBoundingClientRect();
+  var sameSide = (sp.style.float !== 'right') === isLeft;
+  var top = sr.top - canvasRect.top;
+  var h = sr.height || parseFloat(sp.style.height) || 0;
+  var coversY = top < cov.y2 - 2 && top + h > cov.y1 + 2;
+  var coversX = Math.abs((sr.left - canvasRect.left) - cov.x1) < 2;
+  return sameSide && coversY && coversX;
+}
+
+function anchorCardSpacer(card, cov, floatLeft, lineH) {
+  var cs = getCellSize();
+  var gap = 2;
+  var cols = getGridCols();
+  var canvasW = cols * cs + (cols - 1) * gap;
+  var contentW = canvasW - LAYER_PAD_X * 2;
+  var bboxW = cov.x2 - cov.x1;
+  var bboxH = cov.y2 - cov.y1;
+  var w = Math.max(4, Math.min(bboxW, contentW - 4));
+  var margin = floatLeft
+    ? 'margin-left:' + Math.max(0, Math.min(cov.x1 - LAYER_PAD_X, contentW - w)) + 'px;'
+    : 'margin-right:' + Math.max(0, Math.min(contentW - (cov.x2 - LAYER_PAD_X), contentW - w)) + 'px;';
+  var css = 'float:' + (floatLeft ? 'left' : 'right') + ';' + margin +
+    'width:' + w + 'px;height:' + Math.max(4, Math.round(bboxH)) + 'px;shape-outside:inset(0) border-box;';
+  var total = textCharLength();
+  var lo = 0, hi = total;
+  while (lo < hi) {
+    var mid = (lo + hi + 1) >> 1;
+    if (measureSpacerTop(mid, css) <= cov.y1) lo = mid; else hi = mid - 1;
+  }
+  var top = measureSpacerTop(lo, css);
+  var range = charOffsetRange(lo);
+  var n = (lo === total && cov.y1 - top > 2)
+    ? Math.max(0, Math.round((cov.y1 - top) / lineH))
+    : 0;
+  if (n > 0) {
+    var padEl = document.createElement('span');
+    padEl.className = 'text-pad';
+    padEl.setAttribute('contenteditable', 'false');
+    padEl.dataset.cardId = card.dataset.cardId;
+    padEl.textContent = new Array(n + 1).join('\n');
+    range.insertNode(padEl);
+    range.setStartAfter(padEl);
+    range.collapse(true);
+  }
+  var spacer = document.createElement('span');
+  spacer.className = 'text-spacer';
+  spacer.setAttribute('contenteditable', 'false');
+  spacer.dataset.cardId = card.dataset.cardId;
+  spacer.dataset.bboxW = Math.round(bboxW);
+  spacer.dataset.bboxH = Math.round(bboxH);
+  spacer.style.cssText = css;
+  range.insertNode(spacer);
+}
+
+function measureSpacerTop(k, css) {
+  var range = charOffsetRange(k);
+  var sp = document.createElement('span');
+  sp.className = 'text-spacer';
+  sp.setAttribute('contenteditable', 'false');
+  sp.style.cssText = css;
+  range.insertNode(sp);
+  var top = sp.getBoundingClientRect().top - gridCanvas.getBoundingClientRect().top;
+  sp.remove();
+  return top;
+}
+
+function textCharLength() {
+  var n = 0;
+  var walker = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT);
+  var cur;
+  while ((cur = walker.nextNode())) n += cur.nodeValue.length;
+  return n;
+}
+
+function charOffsetRange(k) {
+  var pos = locateCharIndex(k);
+  var range = document.createRange();
+  range.setStart(pos.node, pos.offset);
+  range.collapse(true);
+  return range;
+}
+
+function locateCharIndex(target) {
+  var walker = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT);
+  var cur;
+  var idx = 0;
+  while ((cur = walker.nextNode())) {
+    if (target <= idx + cur.nodeValue.length) {
+      return { node: cur, offset: Math.max(0, target - idx) };
+    }
+    idx += cur.nodeValue.length;
+  }
+  return { node: textLayer, offset: textLayer.childNodes.length };
+}
+
+// ═══ test harness ═══
+var report = document.getElementById('report');
+
+function addCard(id, x, y, w, h) {
+  var c = document.createElement('div');
+  c.className = 'grid-card';
+  c.dataset.cardId = id;
+  c.style.left = x + 'px'; c.style.top = y + 'px';
+  c.style.width = w + 'px'; c.style.height = h + 'px';
+  gridCanvas.appendChild(c);
+  return c;
+}
+function moveCard(c, x, y) { c.style.left = x + 'px'; c.style.top = y + 'px'; }
+
+function dump(label) {
+  var lines = ['===== ' + label + ' ====='];
+  var cr = gridCanvas.getBoundingClientRect();
+  var cards = getAllCards();
+  var cov = getCardCoverage();
+  cards.forEach(function (c, i) {
+    var b = cov[i];
+    var sp = textLayer.querySelector('.text-spacer[data-card-id="' + c.dataset.cardId + '"]');
+    var sr = sp ? sp.getBoundingClientRect() : null;
+    lines.push('card ' + c.dataset.cardId +
+      ' bbox=(' + b.x1.toFixed(1) + ',' + b.y1.toFixed(1) + ')-(' + b.x2.toFixed(1) + ',' + b.y2.toFixed(1) + ')' +
+      (sp ? (' spacer=(' + (sr.left - cr.left).toFixed(1) + ',' + (sr.top - cr.top).toFixed(1) + ')-(' + (sr.right - cr.left).toFixed(1) + ',' + (sr.bottom - cr.top).toFixed(1) + ') float=' + sp.style.float) : ' spacer=NONE'));
+  });
+  var walker = document.createTreeWalker(textLayer, NodeFilter.SHOW_TEXT);
+  var cur, seen = {};
+  var linesOut = [];
+  while ((cur = walker.nextNode())) {
+    var rr = document.createRange();
+    rr.selectNodeContents(cur);
+    var rects = rr.getClientRects();
+    for (var i = 0; i < rects.length; i++) {
+      var rt = rects[i];
+      var key = rt.top.toFixed(1) + '|' + rt.left.toFixed(1);
+      if (!seen[key]) {
+        seen[key] = true;
+        linesOut.push('line y=' + (rt.top - cr.top).toFixed(1) + ' x=' + (rt.left - cr.left).toFixed(1) + ' w=' + rt.width.toFixed(1) + ' h=' + rt.height.toFixed(1));
+      }
+    }
+  }
+  linesOut.sort(function (a, b) {
+    return parseFloat(a.match(/y=([\d.]+)/)[1]) - parseFloat(b.match(/y=([\d.]+)/)[1]);
+  });
+  lines.push('-- text line boxes (' + linesOut.length + ') --');
+  lines = lines.concat(linesOut);
+  report.textContent += lines.join('\n') + '\n';
+}
+
+// ═══ scenarios ═══
+var TEXT = '第一段文字。这段文字用来测试卡片绕排效果。' +
+  'The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog again. ' +
+  '更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字更多文字。' +
+  '第二段测试文本。这里继续书写内容，用来检验卡片放下后文字如何换行躲避。这里继续书写内容，用来检验卡片放下后文字如何换行躲避。这里继续书写内容，用来检验卡片放下后文字如何换行躲避。' +
+  '最后一段。结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字结尾文字。';
+
+ensureTextLayer();
+textLayer.textContent = TEXT;
+
+// S1: single card mid-text
+var c1 = addCard('A', 200, 60, 170, 130);
+syncCardWrap();
+dump('S1 single card A at (200,60) 170x130');
+
+// S2: second card on the same line, side by side, no x-overlap
+var c2 = addCard('B', 450, 60, 170, 130);
+syncCardWrap();
+dump('S2 cards A(200) + B(450) same line, no overlap');
+
+// S3: B dragged left so bboxes overlap horizontally
+moveCard(c2, 300, 60);
+syncCardWrap();
+dump('S3 B dragged to (300,60) — x-overlap with A');
+
+// S4: A dragged past B (side flip)
+moveCard(c1, 460, 60);
+syncCardWrap();
+dump('S4 A dragged past B to (460,60)');
+
+// S5: A moved back, cards far apart again
+moveCard(c1, 100, 60);
+syncCardWrap();
+dump('S5 A dragged back to (100,60)');
+
+// S6: card below the text end
+moveCard(c1, 150, 400);
+syncCardWrap();
+dump('S6 A dragged below text end to (150,400)');
+
+// S7: typing above the card (text grows, flow shifts)
+moveCard(c1, 150, 60);
+syncCardWrap();
+textLayer.textContent = '新增的一段文字。新增的一段文字。新增的一段文字。新增的一段文字。新增的一段文字。新增的一段文字。新增的一段文字。新增的一段文字。新增的一段文字。新增的一段文字。新增的一段文字。新增的一段文字。新增的一段文字。新增的一段文字。' + TEXT;
+syncCardWrap();
+dump('S7 text grew above the cards, then sync');
+</script>
+</body>
+</html>

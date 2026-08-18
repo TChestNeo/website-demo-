@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edge Themes Demo — 破旧羊皮纸 &amp; 赛博 HUD 卡片组件</title>
+  <style>
+    /* ============================================================
+       页面骨架（与组件无关）
+       ============================================================ */
+    body {
+      margin: 0;
+      background: #101018;
+      color: #d8d6e2;
+      font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      line-height: 1.7;
+    }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 48px 32px 96px; }
+    h1 { color: #f2efe6; margin: 0 0 8px; font-size: 26px; }
+    h2 {
+      color: #f2efe6; font-size: 18px; margin: 56px 0 16px;
+      padding-left: 12px; border-left: 3px solid #d4a24a;
+    }
+    .sub { color: #8f8ca0; margin: 0 0 32px; font-size: 14px; }
+    .principle {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 14px 18px; font-size: 13.5px; color: #b9b6c8;
+      margin: 0 0 28px;
+    }
+    .principle b { color: #e8c37a; }
+    .principle code, table code {
+      background: rgba(255,255,255,0.08); border-radius: 4px;
+      padding: 1px 6px; font-size: 12.5px; color: #9fd8e8;
+    }
+    .gallery {
+      display: flex; flex-wrap: wrap; gap: 44px 56px; align-items: flex-start;
+      padding: 24px 8px; /* 给 drop-shadow 留出渲染空间，别用 overflow:hidden */
+    }
+    .specimen { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+    .specimen .note { font-size: 12.5px; color: #8f8ca0; }
+    .specimen .note b { color: #c9c4da; font-weight: 600; }
+    .pill-row { display: flex; gap: 32px; align-items: center; flex-wrap: wrap; padding: 24px 8px; }
+    table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin-top: 12px; }
+    th, td { border: 1px solid rgba(255,255,255,0.12); padding: 10px 14px; text-align: left; vertical-align: top; }
+    th { background: rgba(255,255,255,0.05); color: #e8c37a; font-weight: 600; }
+    td:first-child { white-space: nowrap; color: #9fd8e8; }
+    .foot { margin-top: 64px; font-size: 12.5px; color: #7d7a8e; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+
+    /* ============================================================
+       ═══ 组件一：.card-parchment — 破旧藏宝图 / 羊皮纸卡片 ═══
+
+       四条承重原理（缺一不可）：
+       ① filter 先于 clip-path 执行（合成顺序 filter → clip → mask）。
+          drop-shadow 与 clip-path 放在同一元素上时，阴影先被画出来、
+          再被整块剪掉——撕边轮廓外面什么都看不见。所以：
+          宿主元素【不剪、只承载 filter】；::before【剪 + 画纸】。
+          filter 的 drop-shadow 会以 ::before 剪裁后的 alpha 轮廓为
+          输入，描出真正的撕边剪影。
+       ② box-shadow 永远画在元素矩形盒上，无法跟随不规则轮廓
+          （矩形环/矩形阴影在撕边外会露馅）→ 本组件阴影一律走
+          filter: drop-shadow。
+       ③ clip-path 全部使用 % 坐标点 → 同一轮廓在任何宽高比下
+          自适应，无需为尺寸写多套。
+       ④ 噪点 = 内联 SVG data-URI（feTurbulence 分形噪声 +
+          feColorMatrix 调成棕色半透明），零外部图片；140px 内禀
+          尺寸自动平铺，stitchTiles='stitch' 消除瓦片接缝。
+       ============================================================ */
+    .card-parchment {
+      /* ── 配色旋钮：换色/做深色版 = 覆盖这些属性（见 --dark 修饰符）── */
+      --pch-base: #fdf6df;                        /* 纸面亮端（底色） */
+      --pch-base2: #e7d2a9;                       /* 纸面暗端（135° 渐变） */
+      --pch-stain: rgba(146, 104, 60, 0.35);      /* 氧化斑驳色（alpha 即浓度） */
+      --pch-rim: rgba(28, 16, 7, 0.55);           /* 烧边深褐 */
+      --pch-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.50 0 0 0 0 0.34 0 0 0 0 0.19 0 0 0 0.28 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+      --pch-shadow: 0.38;                         /* 投影浓度 */
+      --pch-text: #4e342e;                        /* 内容文字色 */
+      --pch-ring: rgba(255, 236, 190, 0.95);      /* 选中剪影环色 */
+      --pch-clip: url(#paper-edge-clip); /* v10.6: 褶皱折角纸（右上斜切折角 + 左下圆弧卷角 + 四边微撕边，objectBoundingBox 自适应） */
+
+      position: relative;              /* 伪元素定位上下文 */
+      /* 宿主自己不画任何东西：背景透明（矩形色块会漏出多边形）、
+         无边框（矩形周长无法跟随撕边）、box-shadow:none（原理②）。
+         filter 会创建层叠上下文 → ::before 的负 z-index 不会漏到宿主外。 */
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      color: var(--pch-text);
+      /* 悬浮投影：一远一近两道 drop-shadow 描剪影，比单道更自然。
+         filter 不在任何 transition 列表里 → 状态切换瞬时完成。 */
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, var(--pch-shadow)))
+              drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
+    }
+    /* ::before = 剪层：唯一的轮廓拥有者。clip + 底色 + 斑驳 + 噪点，
+       画在 z -1（内容之下、宿主背景之上）。border-radius:0 是防御——
+       主题场景下它可能继承容器圆角（编辑器外板共存场景）。 */
+    .card-parchment::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      clip-path: var(--pch-clip);
+      background-color: var(--pch-base);
+      background-image:
+        linear-gradient(135deg, var(--pch-base), var(--pch-base2)),
+        radial-gradient(circle at 16% 24%, var(--pch-stain) 0 7%, transparent 7.5%),
+        radial-gradient(circle at 82% 18%, var(--pch-stain) 0 5%, transparent 5.5%),
+        radial-gradient(circle at 68% 78%, var(--pch-stain) 0 9%, transparent 9.5%),
+        radial-gradient(circle at 24% 70%, var(--pch-stain) 0 6%, transparent 6.5%),
+        var(--pch-noise);
+      pointer-events: none;
+    }
+    /* ::after = 覆盖层：烧边暗角。与剪层同剪（伪元素互不剪裁），
+       z 2 压在图与文字之上——所以图片边缘被压暗、中心保持干净；
+       pointer-events:none 保证内容仍可交互。 */
+    .card-parchment::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      clip-path: var(--pch-clip);
+      background-image:
+        radial-gradient(ellipse 92% 92% at 50% 50%, transparent 60%, var(--pch-rim) 99%),
+        radial-gradient(ellipse 130% 110% at 50% 38%, transparent 64%, var(--pch-rim) 100%);
+      pointer-events: none;
+    }
+    /* 全出血子元素（<img> 等）必须自己套同一剪：伪元素的 clip 管不到兄弟。
+       提取到 Vue/React 时，凡是要铺满的媒体子元素都带上这一条。 */
+    .card-parchment > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      clip-path: var(--pch-clip);
+    }
+    .card-parchment .card-body {
+      position: relative;              /* 抬到定位层，压过 z -1 的剪层 */
+      z-index: 1;                      /* 低于 z 2 的烧边（烧边该在图上） */
+      padding: 16px 18px;
+    }
+    /* 选中态：2px 剪影描边环。矩形 box-shadow 环无法跟随撕边，四个
+       零模糊方向 trace 却能精确描出轮廓——drop-shadow() 没有 spread
+       参数（4 长度写法会令整条 filter 失效塌缩为 none），±2px 四方向
+       各画一层零模糊投影 = 沿剪影描 2px 边。顺带一个主色光晕。 */
+    .card-parchment.is-selected {
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, var(--pch-shadow)))
+              drop-shadow(2px 0 0 var(--pch-ring))
+              drop-shadow(-2px 0 0 var(--pch-ring))
+              drop-shadow(0 2px 0 var(--pch-ring))
+              drop-shadow(0 -2px 0 var(--pch-ring))
+              drop-shadow(0 0 8px rgba(139, 92, 246, 0.55));
+    }
+    /* ── 深色做旧版（对应编辑器的「藏宝图」）：
+       只覆盖旋钮，一行结构代码都不用复制 —— Vue/React 里就是一个
+       修饰符 class / 一个 theme prop。 ── */
+    .card-parchment--dark {
+      /* v10.5：藏宝图换波浪地图边缘（objectBoundingBox SVG 剪切，
+         任意尺寸自适应）——剪层/覆盖层/子元素经 --pch-clip 全自动跟随，
+         无需任何结构改动。 */
+      --pch-clip: url(#map-wave-clip);
+      --pch-base: #815c31;
+      --pch-base2: #3a2614;
+      --pch-stain: rgba(46, 28, 13, 0.45);
+      --pch-rim: rgba(15, 8, 3, 0.70);
+      --pch-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.24 0 0 0 0 0.13 0 0 0 0 0.07 0 0 0 0.38 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+      --pch-shadow: 0.45;
+      --pch-text: #ffe0b2;
+      --pch-ring: rgba(255, 224, 178, 0.9);
+    }
+    /* 标签级浅齿变体（对应编辑器 caption 的 clipSoft）：小元素用
+       浅齿多边形，内边距可完全覆盖齿痕；卡片级轮廓已改 SVG 剪影
+       （v10.5 波浪 / v10.6 褶皱折角）。 */
+    .card-parchment--soft {
+      --pch-clip: polygon(0.9% 2.8%, 4.2% 1.1%, 9.8% 1.9%, 16.4% 0.7%, 23.8% 1.6%, 31.5% 0.9%, 39.4% 1.8%, 47.9% 0.6%, 56.2% 1.4%, 64.8% 0.8%, 73.1% 1.7%, 81.6% 0.7%, 90.3% 1.3%, 96.8% 0.9%, 99.4% 3.1%, 98.6% 10.4%, 99.3% 22.1%, 98.4% 34.8%, 99.2% 47.6%, 98.5% 60.3%, 99.4% 72.9%, 98.7% 84.4%, 99.1% 93.2%, 96.9% 97.4%, 88.7% 98.9%, 76.4% 99.2%, 63.1% 98.6%, 49.8% 99.3%, 36.6% 98.4%, 23.2% 99.1%, 9.6% 98.7%, 2.7% 97.9%);
+    }
+
+    /* ============================================================
+       ═══ 组件二：.card-tech — 未来科技 / HUD 赛博卡片 ═══
+
+       与 parchment 同一骨架（宿主 filter / ::before 剪层 / ::after
+       覆盖层 / 子层同剪），轮廓换成斜切角八边形。切角 + 四角 L 型
+       发光包角全部是 % 几何 → 任意尺寸下包角都精确骑在切线上。
+       注意：需求原文的霓虹 box-shadow: 0 0 15px 在此升级为 filter
+       drop-shadow 光晕——矩形 box-shadow 会在切角处漏出直角光斑，
+       drop-shadow 才能贴着八边形轮廓发光。
+       ============================================================ */
+    .card-tech {
+      --tech-bg: rgba(10, 22, 40, 0.92);          /* 底色（暗色底托霓虹） */
+      --tech-bg2: rgba(24, 15, 48, 0.92);         /* 渐变暗端 */
+      --tech-grid: rgba(34, 211, 238, 0.06);      /* 网格线浓度 */
+      --tech-cyan: rgba(34, 211, 238, 0.40);      /* 霓虹光晕 */
+      --tech-bracket: #7ee7ff;                    /* 包角亮条 */
+      --tech-bloom: rgba(34, 211, 238, 0.30);     /* 包角柔光 */
+      --tech-scan: rgba(163, 243, 252, 0.045);    /* 扫描线 */
+      --tech-violet: rgba(139, 92, 246, 0.14);    /* 对角紫色氛围光 */
+      --tech-text: #a5f3fc;
+      --tech-ring: rgba(163, 243, 252, 0.9);
+      --tech-clip: url(#hud-frame-4); /* v10.7: 默认 = 科技4 四角对称斜切（objectBoundingBox 自适应） */
+      /* 四角切深（与剪影多边形逐点对应，驱动下方包角位置）：
+         每角 [水平边切深, 垂直边切深]，从该角起算。默认 18% = hud-frame-4；
+         换一款剪影 = 换 --tech-clip + 覆盖这 8 个值（见 --f1..--f6 修饰符）。 */
+      --tl-a: 18%; --tl-b: 18%; --tr-a: 18%; --tr-b: 18%;
+      --br-a: 18%; --br-b: 18%; --bl-a: 18%; --bl-b: 18%;
+
+      position: relative;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      color: var(--tech-text);
+      filter: drop-shadow(0 0 6px var(--tech-cyan))
+              drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
+    }
+    /* 剪层：深色底 + 22px 网格（repeating-linear-gradient 两条正交
+       1px 线，比背景图片省一张资源）+ 两个对角氛围光。 */
+    .card-tech::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      clip-path: var(--tech-clip);
+      background-color: var(--tech-bg);
+      background-image:
+        linear-gradient(135deg, var(--tech-bg), var(--tech-bg2)),
+        repeating-linear-gradient(0deg, var(--tech-grid) 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(90deg, var(--tech-grid) 0 1px, transparent 1px 22px),
+        radial-gradient(ellipse 120% 90% at 18% 0%, var(--tech-cyan), transparent 60%),
+        radial-gradient(ellipse 120% 90% at 82% 100%, var(--tech-violet), transparent 60%);
+      pointer-events: none;
+    }
+    /* 覆盖层：8 条核心包角亮条（2px，位置由四角切深变量驱动，任意剪影
+       下都精确骑在切线上）+ 8 条柔光副本（6px、外移 2px、alpha 0.30，
+       模拟霓虹 bloom；超出剪影的部分被 clip-path 裁掉，留下贴边的内辉）
+       + 4px 扫描线。background-position/size 简写：linear-gradient(色,色)
+       x y / 宽 高 no-repeat —— 纯色渐变画一个实心小条，比 border 灵活
+       （能悬空在切角上）。calc(100% - var(--x)) = 从右/下起算的切深。
+       注意必须用 background: 简写声明——position/size/repeat 语法
+       写进 background-image 长整句会整层失效。v10.7：切深变量化，
+       与编辑器 hudOverlay() 的生成几何一一对应。 */
+    .card-tech::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      clip-path: var(--tech-clip);
+      background:
+        linear-gradient(var(--tech-bracket), var(--tech-bracket)) var(--tl-a) 0 / 2px 20px no-repeat,
+        linear-gradient(var(--tech-bracket), var(--tech-bracket)) 0 var(--tl-b) / 20px 2px no-repeat,
+        linear-gradient(var(--tech-bracket), var(--tech-bracket)) calc(100% - var(--tr-a)) 0 / 2px 20px no-repeat,
+        linear-gradient(var(--tech-bracket), var(--tech-bracket)) 100% var(--tr-b) / 20px 2px no-repeat,
+        linear-gradient(var(--tech-bracket), var(--tech-bracket)) calc(100% - var(--br-a)) 100% / 2px 20px no-repeat,
+        linear-gradient(var(--tech-bracket), var(--tech-bracket)) 100% calc(100% - var(--br-b)) / 20px 2px no-repeat,
+        linear-gradient(var(--tech-bracket), var(--tech-bracket)) var(--bl-a) 100% / 2px 20px no-repeat,
+        linear-gradient(var(--tech-bracket), var(--tech-bracket)) 0 calc(100% - var(--bl-b)) / 20px 2px no-repeat,
+        linear-gradient(var(--tech-bloom), var(--tech-bloom)) calc(var(--tl-a) - 2px) -2px / 6px 24px no-repeat,
+        linear-gradient(var(--tech-bloom), var(--tech-bloom)) -2px calc(var(--tl-b) - 2px) / 24px 6px no-repeat,
+        linear-gradient(var(--tech-bloom), var(--tech-bloom)) calc(100% - var(--tr-a) + 2px) -2px / 6px 24px no-repeat,
+        linear-gradient(var(--tech-bloom), var(--tech-bloom)) calc(100% + 2px) calc(var(--tr-b) - 2px) / 24px 6px no-repeat,
+        linear-gradient(var(--tech-bloom), var(--tech-bloom)) calc(100% - var(--br-a) + 2px) calc(100% + 2px) / 6px 24px no-repeat,
+        linear-gradient(var(--tech-bloom), var(--tech-bloom)) calc(100% + 2px) calc(100% - var(--br-b) + 2px) / 24px 6px no-repeat,
+        linear-gradient(var(--tech-bloom), var(--tech-bloom)) calc(var(--bl-a) - 2px) calc(100% + 2px) / 6px 24px no-repeat,
+        linear-gradient(var(--tech-bloom), var(--tech-bloom)) -2px calc(100% - var(--bl-b) + 2px) / 24px 6px no-repeat,
+        repeating-linear-gradient(0deg, var(--tech-scan) 0 1px, transparent 1px 4px);
+      pointer-events: none;
+    }
+    .card-tech > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      clip-path: var(--tech-clip);
+    }
+    .card-tech .card-body {
+      position: relative;
+      z-index: 1;
+      padding: 16px 18px;
+    }
+    /* 选中态：近距霓虹 + 剪影描边环（四方向零模糊 trace，见 parchment
+       选中态注释——drop-shadow 无 spread，4 长度写法会整条失效） */
+    .card-tech.is-selected {
+      filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.85))
+              drop-shadow(0 0 14px var(--tech-cyan))
+              drop-shadow(2px 0 0 var(--tech-ring))
+              drop-shadow(-2px 0 0 var(--tech-ring))
+              drop-shadow(0 2px 0 var(--tech-ring))
+              drop-shadow(0 -2px 0 var(--tech-ring))
+              drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
+    }
+    .card-tech--soft {
+      --tech-clip: polygon(3% 0, 97% 0, 100% 3%, 100% 97%, 97% 100%, 3% 100%, 0 97%, 0 3%);
+      --tl-a: 3%; --tl-b: 3%; --tr-a: 3%; --tr-b: 3%;
+      --br-a: 3%; --br-b: 3%; --bl-a: 3%; --bl-b: 3%;
+    }
+    /* v10.7 — 科技1~6 六款剪影：换 --tech-clip + 四角切深（与编辑器
+       #hud-frame-1..6 多边形逐点对应），包角自动贴合，其余配方不动。 */
+    .card-tech--f1 { --tech-clip: url(#hud-frame-1); --tl-a: 12%; --tl-b: 18%; --tr-a: 5%; --tr-b: 8%; --br-a: 18%; --br-b: 28%; --bl-a: 15%; --bl-b: 15%; }
+    .card-tech--f2 { --tech-clip: url(#hud-frame-2); --tl-a: 20%; --tl-b: 25%; --tr-a: 5%; --tr-b: 8%; --br-a: 8%; --br-b: 15%; --bl-a: 20%; --bl-b: 8%; }
+    .card-tech--f3 { --tech-clip: url(#hud-frame-3); --tl-a: 22%; --tl-b: 22%; --tr-a: 8%; --tr-b: 12%; --br-a: 22%; --br-b: 30%; --bl-a: 8%; --bl-b: 12%; }
+    .card-tech--f4 { --tech-clip: url(#hud-frame-4); }
+    .card-tech--f5 { --tech-clip: url(#hud-frame-5); --tl-a: 8%; --tl-b: 8%; --tr-a: 5%; --tr-b: 8%; --br-a: 22%; --br-b: 25%; --bl-a: 5%; --bl-b: 8%; }
+    .card-tech--f6 { --tech-clip: url(#hud-frame-6); --tl-a: 12%; --tr-a: 12%; --br-a: 12%; --bl-a: 12%; }
+    /* v10.8 — 自动外板（编辑器新行为：选边缘主题自动带 16px 外缘底板，
+       不再有独立的外背景配置）。演示页用 ::before 直接改画外板：
+       inset -var(--plate)，同一剪影对更大的板盒解析 = 剪影等比放大一圈
+       （Gemini hud-box 双层剪影的样式）；内层底/网格/氛围光 = 在板 tint
+       之上叠一层定位到内盒（position/size 语法）的实心层，包角 ::after
+       保持骑内层剪影不变。滤镜阴影自动描外板（板盒也是滤镜输入）。
+       注意：内层底是矩形近似 —— 只对浅切角成立（内盒角点仍在剪影内，
+       本演示用基础款科技4）；编辑器用真实子层 .card-tint 复刻剪影，
+       六款全精确。 */
+    .card-tech--plated {
+      --plate: 14px; /* 编辑器默认 16px，演示卡小一号 */
+      --plate-gap: 0px; /* v10.10 — 外板边距（编辑器「外板边距」滑块 0-40px） */
+      /* v10.13 — 背景图外扩量：图片始终盖满板盒 = plate + gap（编辑器
+         同语义：盒大小含 gap，可见部分由环带 clip 决定，见下方
+         .img-band 规则）；gap=0 即 v10.9 盖满外板。v10.11/v10.12 曾让
+         gap>0 时图片回卡片边界 → 国旗卡上被盖死。 */
+      --plate-img: calc(var(--plate) + var(--plate-gap));
+      --plate-tint: linear-gradient(135deg, rgba(34,211,238,0.16), rgba(139,92,246,0.18));
+      --plate-border: rgba(34, 211, 238, 0.85);
+      filter: drop-shadow(0 0 10px var(--tech-cyan))
+              drop-shadow(0 12px 26px rgba(0, 0, 0, 0.40));
+    }
+    .card-tech--plated::before {
+      /* v10.10: 板再外推 gap。v10.12: 内层实心层改铺到 [−gap, 100%+gap]
+         （position = plate，size = 100% + 2×gap）——板盒是实心的，内层
+         只盖卡片本体的话可见环内沿永远贴死卡边、gap 不可见。内层铺到
+         卡+gap 之后，可见环带 = [−(plate+gap), −gap]（厚 plate、距卡
+         gap）；间距带 [−gap, 0] 由 .plate-hole 子层挖成页面底色（下方
+         规则，编辑器 .card-outer-hole 的同构版）。 */
+      inset: calc(-1 * (var(--plate) + var(--plate-gap)));
+      border: 1px solid var(--plate-border); /* 板边框：跟随板盒四边，切角处被剪影裁掉 */
+      background-color: transparent;
+      background-image:
+        var(--plate-tint),
+        linear-gradient(135deg, var(--tech-bg), var(--tech-bg2)) calc(var(--plate)) calc(var(--plate)) / calc(100% + 2 * var(--plate-gap)) calc(100% + 2 * var(--plate-gap)) no-repeat,
+        repeating-linear-gradient(0deg, var(--tech-grid) 0 1px, transparent 1px 22px) calc(var(--plate)) calc(var(--plate)) / calc(100% + 2 * var(--plate-gap)) calc(100% + 2 * var(--plate-gap)),
+        repeating-linear-gradient(90deg, var(--tech-grid) 0 1px, transparent 1px 22px) calc(var(--plate)) calc(var(--plate)) / calc(100% + 2 * var(--plate-gap)) calc(100% + 2 * var(--plate-gap)),
+        radial-gradient(ellipse 120% 90% at 18% 0%, var(--tech-cyan), transparent 60%) calc(var(--plate)) calc(var(--plate)) / calc(100% + 2 * var(--plate-gap)) calc(100% + 2 * var(--plate-gap)) no-repeat,
+        radial-gradient(ellipse 120% 90% at 82% 100%, var(--tech-violet), transparent 60%) calc(var(--plate)) calc(var(--plate)) / calc(100% + 2 * var(--plate-gap)) calc(100% + 2 * var(--plate-gap)) no-repeat;
+    }
+    /* v10.9 — 背景图适配外板：图片子层外扩到板盒，同一剪影对更大的盒
+       解析 = 外板剪影 → 图片铺满整个外背景（图片 z 0 在板 ::before
+       z -1 之上，成为外背景本体）。编辑器对应规则
+       .has-outer-bg.has-card-bg-img .card-bg-img。宽高必须显式 calc：
+       <img> 是被替换元素，width:auto 回落固有尺寸不接管约束。
+       v10.11/v10.12（中间态）— 曾让 gap>0 时图片回卡片边界
+       （--plate-img:0px）：国旗卡上被国旗图盖死、图片直接消失
+       （用户反馈「增加边距的时候背景图片就不见了」）。
+       v10.13 — 图片始终盖满板盒：gap 样张设
+       --plate-img:calc(var(--plate) + var(--plate-gap))，可见部分由
+       .img-band 修饰类的环带 clip 决定（下方规则）——图片作为外背景
+       环带在距卡 gap 处可见，边距随 --plate-gap 1:1。 */
+    .card-tech--plated > img {
+      inset: calc(-1 * var(--plate-img));
+      width: calc(100% + 2 * var(--plate-img));
+      height: calc(100% + 2 * var(--plate-img));
+    }
+    /* v10.13 — 图片环带 clip（编辑器 --outer-img-clip 的同构版）：
+       evenodd polygon 环带（外矩形 = 图片盒、内矩形 inset plate =
+       [−gap, 卡+gap]，与 .plate-hole 的外盒完全重合）→ 只保留环带
+       [−(plate+gap), −gap]（厚 plate、距卡 gap）；中间（间距带 +
+       卡区域）被裁掉，露出下方挖空层与卡片本体。切角保持方角：挖空
+       层圆角外的角片在无图样张里就是板色（演示页板被剪影裁剪、圆角
+       为 0，角片为空），图片在角片处透明 → 板色透出，两种样张一致。
+       为何不用 2 层 mask（整块 XOR、mask-composite exclude）：Chrome
+       对非 add composite 值语法接受但不渲染（像素实证）——evenodd
+       polygon 单层、无 composite、渲染正确。clip-path 是几何裁剪、
+       不影响命中；与剪影 clip-path 各自独立裁剪。 */
+    .card-tech--plated.img-band > img {
+      clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0,
+        var(--plate) var(--plate), calc(100% - var(--plate)) var(--plate),
+        calc(100% - var(--plate)) calc(100% - var(--plate)),
+        var(--plate) calc(100% - var(--plate)), var(--plate) var(--plate));
+    }
+    /* v10.12 — 间距带挖空层（编辑器 .card-outer-hole 的演示同构版）：
+       盖住板的中间 [−gap, 100%+gap] 并画成页面底色 → 可见环带
+       [−(plate+gap), −gap] 厚 plate、距卡 gap，间距带读作空白。
+       树序在 ::before（生成内容先于真实子元素）之后、图片 (z 0) 与
+       内容 (z 1) 之下。gap 样张手写该子层；gap=0 时无需存在
+       （板即外背景，v10.9 样张）。
+       v10.13 — 本层加 evenodd clip 只画间距带（环带内矩形 inset
+       gap = 卡片区域 [0, 100%]）：v10.12 无 clip 时会把内层实心层
+       的卡片区域一起盖掉 → 无图样张卡片中空（用户反馈「还有个 bug
+       不会描述」的演示页对应面）。编辑器版挖空层在 z -1（tint/图片
+       之下）无需 clip；演示版 z auto 在 ::before 之上、卡内容之下，
+       必须裁出卡区域。为何不用 2 层 mask：Chrome 非 add composite
+       不渲染（见 .img-band 注释）。切角保持方角：演示板被剪影裁剪、
+       圆角为 0，角片为空，方角切除即精确对齐。 */
+    .card-tech--plated .plate-hole {
+      position: absolute;
+      inset: calc(-1 * var(--plate-gap));
+      background: #101018; /* 页面底色（编辑器用画布底色 var） */
+      pointer-events: none;
+      clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0,
+        var(--plate-gap) var(--plate-gap), calc(100% - var(--plate-gap)) var(--plate-gap),
+        calc(100% - var(--plate-gap)) calc(100% - var(--plate-gap)),
+        var(--plate-gap) calc(100% - var(--plate-gap)), var(--plate-gap) var(--plate-gap));
+    }
+  </style>
+</head>
+<body>
+
+<!-- v10.5/v10.6/v10.7 — 边缘剪影（对应编辑器 EDGE_STYLES 的 clip 字段）：
+     objectBoundingBox 剪切路径，坐标全部 0~1 百分比 → 任意尺寸/宽高比
+     自动适配。经 --pch-clip / --tech-clip CSS 变量引用，宿主不剪。
+     科技1~6 六款 HUD 剪影 = #hud-frame-1..6（v10.7）。v10.8 无新 defs：
+     自动外板复用同一剪影（对更大的板盒解析 = 等比放大一圈）。 -->
+<svg width="0" height="0" style="position:absolute;pointer-events:none;" aria-hidden="true">
+  <defs>
+    <!-- 藏宝图（v10.5）：四边平滑波浪 -->
+    <clipPath id="map-wave-clip" clipPathUnits="objectBoundingBox">
+      <path d="
+        M 0.03,0.05
+        C 0.18,0.01 0.35,0.08 0.52,0.03
+        C 0.68,0.00 0.82,0.07 0.97,0.04
+        C 1.01,0.22 0.95,0.48 0.98,0.72
+        C 0.95,0.85 1.00,0.94 0.96,0.96
+        C 0.78,1.00 0.62,0.94 0.48,0.97
+        C 0.32,1.01 0.18,0.94 0.03,0.96
+        C -0.01,0.72 0.05,0.45 0.02,0.22
+        Z" />
+    </clipPath>
+    <!-- 破旧的纸（v10.6）：褶皱折角纸 —— 右上斜切折角 + 左下圆弧卷角
+         + 四边微不规则撕边 -->
+    <clipPath id="paper-edge-clip" clipPathUnits="objectBoundingBox">
+      <path d="
+        M 0.015,0.012
+        C 0.18,0.008 0.38,0.016 0.58,0.010
+        C 0.72,0.006 0.82,0.012 0.86,0.008
+        C 0.91,0.025 0.95,0.045 0.995,0.082
+        C 0.988,0.25 0.995,0.45 0.988,0.65
+        C 0.982,0.78 0.992,0.88 0.965,0.955
+        C 0.850,0.968 0.700,0.958 0.550,0.970
+        C 0.400,0.982 0.260,0.965 0.160,0.970
+        C 0.090,0.945 0.030,0.900 0.005,0.835
+        C 0.012,0.680 0.006,0.480 0.012,0.280
+        C 0.005,0.150 0.012,0.050 0.015,0.012
+        Z" />
+    </clipPath>
+    <!-- 科技1~6（v10.7）：6 款赛博 HUD 切角剪影。hud-frame-4 四角对称
+         斜切与 v10.2 原科技切角最接近 → .card-tech 的默认剪影。 -->
+    <clipPath id="hud-frame-1" clipPathUnits="objectBoundingBox">
+      <polygon points="0.12 0, 0.95 0, 1 0.08, 1 0.72, 0.82 1, 0.15 1, 0 0.85, 0 0.18" />
+    </clipPath>
+    <clipPath id="hud-frame-2" clipPathUnits="objectBoundingBox">
+      <polygon points="0.20 0, 0.95 0, 1 0.08, 1 0.85, 0.92 1, 0.20 1, 0.14 0.92, 0 0.92, 0 0.25" />
+    </clipPath>
+    <clipPath id="hud-frame-3" clipPathUnits="objectBoundingBox">
+      <polygon points="0.22 0, 0.92 0, 1 0.12, 1 0.70, 0.78 1, 0.08 1, 0 0.88, 0 0.22" />
+    </clipPath>
+    <clipPath id="hud-frame-4" clipPathUnits="objectBoundingBox">
+      <polygon points="0.18 0, 0.82 0, 1 0.18, 1 0.82, 0.82 1, 0.18 1, 0 0.82, 0 0.18" />
+    </clipPath>
+    <clipPath id="hud-frame-5" clipPathUnits="objectBoundingBox">
+      <polygon points="0.08 0, 0.95 0, 1 0.08, 1 0.75, 0.78 1, 0.05 1, 0 0.92, 0 0.08" />
+    </clipPath>
+    <clipPath id="hud-frame-6" clipPathUnits="objectBoundingBox">
+      <polygon points="0.12 0, 0.38 0, 0.40 0.05, 0.60 0.05, 0.62 0, 0.88 0, 1 0.18, 1 0.82, 0.88 1, 0.62 1, 0.60 0.95, 0.40 0.95, 0.38 1, 0.12 1, 0 0.82, 0 0.18" />
+    </clipPath>
+  </defs>
+</svg>
+<div class="wrap">
+
+  <h1>Edge Themes Demo</h1>
+  <p class="sub">两个独立卡片 CSS 组件类 · 纯 CSS + 内联矢量 SVG · 零外部图片 · 可直接提取进 Vue / React</p>
+
+  <div class="principle">
+    <b>架构总原则：</b>合成顺序是 <code>filter → clip-path → mask</code>——
+    <code>filter: drop-shadow</code> 与 <code>clip-path</code> 不能放在同一元素上
+    （阴影先画、随后整块被剪掉）。所以每个组件都分三层：<b>宿主元素</b>承载
+    <code>filter</code> 阴影栈（不剪）；<b><code>::before</code> 剪层</b>承载
+    <code>clip-path</code> 轮廓 + 底色 + 配方层；<b><code>::after</code> 覆盖层</b>
+    承载烧边/包角/扫描线（同剪、z 2、pointer-events:none）。全出血子元素（如
+    <code>&gt; img</code>）需要自己套同一剪——伪元素的 clip 管不到兄弟元素。
+  </div>
+
+  <h2>① .card-parchment — 破旧的纸 / 藏宝图（褶皱折角 / 波浪边缘）</h2>
+  <p class="sub" style="margin-bottom:8px">v10.6 基础轮廓 = 褶皱折角纸（右上斜切折角 + 左下圆弧卷角 + 四边微撕边）；<code>--dark</code>（藏宝图）= 波浪地图边缘（v10.5）。两者都是 <code>clipPathUnits="objectBoundingBox"</code> 的 SVG 剪切路径，按 0~1 百分比随容器任意宽高比自适应。米黄纸面 + 氧化斑驳 + 噪点 + 烧边暗角 + 悬浮投影配方不变。</p>
+
+  <div class="gallery">
+    <div class="specimen">
+      <div class="card-parchment" style="width:280px;height:180px">
+        <div class="card-body">
+          <strong style="font-size:15px">探险日志 · 第 7 页</strong>
+          <p style="margin:8px 0 0;font-size:13px">沿东岸的礁石线航行三日，望见无名岛。</p>
+        </div>
+      </div>
+      <div class="note"><b>280×180</b> — 纯文字卡片（基础用法）</div>
+    </div>
+
+    <div class="specimen">
+      <div class="card-parchment card-parchment--dark" style="width:280px;height:180px">
+        <div class="card-body">
+          <strong style="font-size:15px">藏宝图 · 黑礁海域</strong>
+          <p style="margin:8px 0 0;font-size:13px">深色做旧版：同一个类 + 一个修饰符。</p>
+        </div>
+      </div>
+      <div class="note"><b>280×180</b> — <code>--dark</code> 深色做旧（覆盖 6 个旋钮：5 个配色 + <code>--pch-clip</code> 波浪轮廓）</div>
+    </div>
+
+    <div class="specimen">
+      <div class="card-parchment card-parchment--dark is-selected" style="width:400px;height:260px">
+        <img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 180'%3E%3Cdefs%3E%3ClinearGradient id='sky' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23f7e7b4'/%3E%3Cstop offset='1' stop-color='%23e9b56a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='280' height='180' fill='url(%23sky)'/%3E%3Ccircle cx='205' cy='52' r='26' fill='%23f3c969'/%3E%3Cpath d='M0 120 Q 70 90 140 120 T 280 118 L 280 180 L 0 180 Z' fill='%238a6a3f'/%3E%3Cpath d='M0 145 Q 90 115 180 148 T 280 140 L 280 180 L 0 180 Z' fill='%236e5230'/%3E%3C/svg%3E">
+        <div class="card-body">
+          <strong style="font-size:16px">全出血图片子层</strong>
+          <p style="margin:8px 0 0;font-size:13.5px">&lt;img&gt; 与剪层同剪（<code>clip-path: var(--pch-clip)</code>）；烧边暗角在 z 2 压住图片边缘。</p>
+        </div>
+      </div>
+      <div class="note"><b>400×260</b> — <code>--dark</code> + <code>is-selected</code>（2px 剪影描边环）+ 内联 SVG 图片（零外部资源）</div>
+    </div>
+  </div>
+
+  <h2>② .card-tech — 未来科技 / HUD 赛博（科技1~6 六款切角剪影 + L 型发光包角）</h2>
+  <p class="sub" style="margin-bottom:8px">v10.7 起六款 SVG 剪影（<code>#hud-frame-1..6</code>，objectBoundingBox 自适应）；基础 = 科技4（四角对称斜切）。四角 8 条 2px 亮条 + 8 条柔光副本的几何由切深变量（<code>--tl-a</code>…）驱动——换剪影时包角自动贴合，22px 网格 + 4px 扫描线配方不变。v10.8：编辑器里选主题自动带 16px 外缘底板（<code>--plated</code> 演示变体见下方画廊）。</p>
+
+  <div class="gallery">
+    <div class="specimen">
+      <div class="card-tech" style="width:280px;height:180px">
+        <div class="card-body">
+          <strong style="font-size:15px">SYS://GRID-07</strong>
+          <p style="margin:8px 0 0;font-size:13px">链路稳定 · 信号强度 94%</p>
+        </div>
+      </div>
+      <div class="note"><b>280×180</b> — 纯文字 HUD 卡（基础用法）</div>
+    </div>
+
+    <div class="specimen">
+      <div class="card-tech is-selected" style="width:400px;height:260px">
+        <img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2306223a'/%3E%3Cstop offset='1' stop-color='%231a0f3c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='280' height='180' fill='url(%23g)'/%3E%3Cg stroke='%2322d3ee' stroke-width='2' fill='none' opacity='0.8'%3E%3Cpath d='M40 60 L 120 30 L 200 70 L 240 130 L 180 150 L 80 130 Z'/%3E%3Ccircle cx='120' cy='90' r='12'/%3E%3C/g%3E%3C/svg%3E">
+        <div class="card-body">
+          <strong style="font-size:16px">NODE // DELTA</strong>
+          <p style="margin:8px 0 0;font-size:13.5px">选中态：霓虹光晕 + 剪影描边环；包角与切角在任何尺寸下都精确贴合（全 % 几何）。</p>
+        </div>
+      </div>
+      <div class="note"><b>400×260</b> — <code>is-selected</code> + 内联 SVG 图（同样零外部资源）</div>
+    </div>
+
+    <div class="specimen">
+      <div class="card-tech" style="width:160px;height:100px">
+        <div class="card-body" style="padding:10px 12px">
+          <strong style="font-size:13px">160×100</strong>
+          <p style="margin:4px 0 0;font-size:12px">切角与包角随尺寸缩放。</p>
+        </div>
+      </div>
+      <div class="note"><b>160×100</b> — 小尺寸：% 几何自动适配</div>
+    </div>
+  </div>
+
+  <p class="sub" style="margin:28px 0 0">六款剪影速览 —— 同一配方，只换 <code>--tech-clip</code> + 切深变量（<code>--f1</code>…<code>--f6</code> 修饰符，与编辑器「科技1~6」按钮一一对应）：</p>
+  <div class="gallery" style="padding-top:16px">
+    <div class="specimen">
+      <div class="card-tech card-tech--f1" style="width:150px;height:95px">
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技1</strong></div>
+      </div>
+      <div class="note">左上缺角 + 右下大斜切</div>
+    </div>
+    <div class="specimen">
+      <div class="card-tech card-tech--f2" style="width:150px;height:95px">
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技2</strong></div>
+      </div>
+      <div class="note">左上大斜切 + 左下阶梯缺角</div>
+    </div>
+    <div class="specimen">
+      <div class="card-tech card-tech--f3" style="width:150px;height:95px">
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技3</strong></div>
+      </div>
+      <div class="note">左右双向平行大斜切</div>
+    </div>
+    <div class="specimen">
+      <div class="card-tech card-tech--f4" style="width:150px;height:95px">
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4</strong></div>
+      </div>
+      <div class="note">四角对称斜切（基础剪影）</div>
+    </div>
+    <div class="specimen">
+      <div class="card-tech card-tech--f5" style="width:150px;height:95px">
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技5</strong></div>
+      </div>
+      <div class="note">经典矩形 + 右下单边大切角</div>
+    </div>
+    <div class="specimen">
+      <div class="card-tech card-tech--f6" style="width:150px;height:95px">
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技6</strong></div>
+      </div>
+      <div class="note">八边形战术卡槽 + 上下中缝缺口</div>
+    </div>
+    <div class="specimen">
+      <div class="card-tech card-tech--plated" style="width:150px;height:95px">
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4 + 外板</strong></div>
+      </div>
+      <div class="note"><b>v10.8</b> — 选主题自动带外板（编辑器 16px，演示 <code>--plate:14px</code>）：剪影等比放大一圈 + 板边框/光晕，阴影跟随外板</div>
+    </div>
+    <div class="specimen">
+      <div class="card-tech card-tech--plated" style="width:150px;height:95px">
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23334'/%3E%3Cstop offset='1' stop-color='%23633'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='100' fill='url(%23g)'/%3E%3C/svg%3E" alt="">
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4 + 外板 + 背景图</strong></div>
+      </div>
+      <div class="note"><b>v10.9</b> — 背景图外扩铺满外板（编辑器 <code>.card-bg-img</code> 同规则）：图片成为外背景本体，板边框/光晕让位</div>
+    </div>
+    <div class="specimen">
+      <div class="card-tech card-tech--plated" style="width:150px;height:95px;--plate-gap:12px">
+        <div class="plate-hole"></div>
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4 + 外板 + 边距</strong></div>
+      </div>
+      <div class="note"><b>v10.10→v10.12</b> — 外板边距 <code>--plate-gap:12px</code>（编辑器「外板边距」滑块）：板再外推 12px，环带厚 14px、距卡 12px；间距带由 <code>.plate-hole</code> 子层挖成页面底色（编辑器同构 <code>.card-outer-hole</code>，画布底色）——真正空白，不再是衬边。v10.13 起挖空层带 clip 只画间距带，不再盖住卡片区域</div>
+    </div>
+    <div class="specimen">
+      <div class="card-tech card-tech--plated img-band" style="width:150px;height:95px;--plate-gap:12px;--plate-img:calc(var(--plate) + var(--plate-gap))">
+        <div class="plate-hole"></div>
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23334'/%3E%3Cstop offset='1' stop-color='%23633'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='100' fill='url(%23g)'/%3E%3C/svg%3E" alt="">
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">外板 + 边距 + 背景图</strong></div>
+      </div>
+      <div class="note"><b>v10.13</b> — 图片始终盖满板盒（<code>--plate-img:calc(plate + gap)</code>）+ 环带 clip（<code>.img-band</code>）：图片只保留环带、与外板之间的可见边距恰好 = gap（12px），图片不再贴住板内沿；v10.11/v10.12 曾让图片回卡片边界 → 国旗卡上被国旗图盖死（用户反馈「增加边距的时候背景图片就不见了」）</div>
+    </div>
+  </div>
+
+  <h2>③ 标签级药丸 — 证明小尺寸可行（编辑器 caption 用浅齿变体）</h2>
+  <div class="pill-row">
+    <div class="specimen">
+      <div class="card-parchment card-parchment--soft" style="width:120px;height:28px">
+        <div class="card-body" style="padding:0 10px;font-size:12px;line-height:28px;text-align:center">羊皮纸标签</div>
+      </div>
+      <div class="note"><b>120×28</b> — <code>--soft</code>（clipSoft 浅齿 ≤1.2%）</div>
+    </div>
+    <div class="specimen">
+      <div class="card-parchment card-parchment--dark card-parchment--soft" style="width:120px;height:28px">
+        <div class="card-body" style="padding:0 10px;font-size:12px;line-height:28px;text-align:center">藏宝图标签</div>
+      </div>
+      <div class="note"><b>120×28</b> — <code>--dark --soft</code> 自由组合</div>
+    </div>
+    <div class="specimen">
+      <div class="card-tech card-tech--soft" style="width:120px;height:28px">
+        <div class="card-body" style="padding:0 10px;font-size:12px;line-height:28px;text-align:center">HUD 标签</div>
+      </div>
+      <div class="note"><b>120×28</b> — tech 软切角（3%）</div>
+    </div>
+  </div>
+
+  <h2>④ 与编辑器（fluidcanvas-editor.html）的映射</h2>
+  <p class="sub" style="margin-bottom:8px">配方复制自编辑器的 <code>EDGE_STYLES</code>（v10.8），改配色时两处手动同步；褶皱纸/波浪/科技1~6 六款轮廓 = 两页共享同款 <code>#paper-edge-clip</code> / <code>#map-wave-clip</code> / <code>#hud-frame-1..6</code> SVG 定义（编辑器由 <code>hudOverlay()</code> 按 <code>HUD_CORNERS</code> 生成包角层，演示页用 <code>--tl-a</code>… 切深变量 + calc 表达同一几何；自动外板 v10.8 = 编辑器 ::before 改画板 + .card-tint 子层复刻剪影，演示页 <code>--plated</code> 用矩形近似）。</p>
+  <table>
+    <tr><th>编辑器 EDGE_STYLES 字段</th><th>演示页对应规则</th></tr>
+    <tr><td><code>clip</code></td><td><code>--pch-clip</code> / <code>--tech-clip</code>（<code>::before</code> 与 <code>::after</code> 的 <code>clip-path</code>；宿主不剪）</td></tr>
+    <tr><td><code>cardLayers</code></td><td><code>::before</code> 的 <code>background-image</code> 层栈（底色渐变 → 斑驳/网格 → 噪点瓦片）</td></tr>
+    <tr><td><code>cardOverlay</code></td><td><code>::after</code> 的 <code>background-image</code> 层栈（烧边暗角 / L 型包角 + 扫描线）</td></tr>
+    <tr><td><code>labelLayers</code></td><td>演示页药丸仍走完整 <code>::before</code> 剪层（input 标签无伪元素，编辑器里是简化层栈直接画在标签上）</td></tr>
+    <tr><td><code>clipSoft</code></td><td><code>--soft</code> 修饰符（浅齿/软切角多边形）</td></tr>
+    <tr><td><code>tint / border / radius / glow / color</code></td><td>演示页 <code>--plated</code> 用 tint 渐变 + 边框近似（编辑器保留给标签内联配方与自动外板；组件化时建议弃用）</td></tr>
+    <tr><td>选中环（编辑器 filter 选中态）</td><td><code>.is-selected</code> 修饰符（四方向零模糊 drop-shadow trace 剪影描边）</td></tr>
+    <tr><td>编辑器 CSS 变量（<code>--card-clip/--card-layers/--card-overlay/--card-tint-base</code>）</td><td>演示页直接把配方写进规则；组件化时保留变量注入方式更灵活（主题可运行时切换）</td></tr>
+  </table>
+
+  <p class="foot">
+    FluidCanvas v10.8 配套组件演示 · 所有效果由纯 CSS 与内联 SVG 实现，无外部图片、无字体依赖。
+    提取到 Vue / React：复制一个类 + 一个修饰符（或把旋钮映射为组件 props），其余规则原样可用。
+  </p>
+
+</div>
+</body>
+</html>

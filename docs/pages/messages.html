@@ -1,0 +1,2628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages | M.NationWorld</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    @keyframes fadeUp {
+      0%   { transform: translateY(16px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+    .msg-row { transition: transform 0.15s ease; }
+    .msg-row.fade-up {
+      animation: fadeUp 0.4s cubic-bezier(0.22,0.61,0.36,1) forwards;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main" style="display:flex;flex-direction:column;height:calc(100vh - 64px);overflow-x:hidden;position:relative">
+
+    <!-- Sub nav -->
+    <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md)">
+      <div class="subnav" id="msgSubnav" data-slider>
+        <button class="subnav-pill active" data-tab="private">Private messages</button>
+        <button class="subnav-pill" data-tab="groups">Groups</button>
+        <button class="subnav-pill" data-tab="announcements">Announcements</button>
+      </div>
+      <div class="search-capsule" style="margin-left:auto" id="searchCapsule">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" placeholder="Search messages..." id="searchInput" oninput="handleSearch(this.value)">
+      </div>
+    </div>
+
+    <!-- Content area with slide+fade -->
+    <div style="overflow:hidden;flex:1;min-height:0;padding:4px 8px">
+      <div id="msgSlide" style="display:flex;transition:transform 0.55s cubic-bezier(0.25,0.1,0.25,1);height:100%">
+
+      <!-- ═══════════════════ Panel 0: Private messages ═══════════════════ -->
+      <div style="display:flex;gap:var(--space-md);width:100%;flex-shrink:0;min-width:0;min-height:0;transition:opacity 0.4s ease" id="privatePanel">
+
+        <div id="convSidebar" style="width:320px;flex-shrink:0;display:flex;flex-direction:column;gap:var(--space-xs);transition:width 0.3s ease">
+          <button id="convCollapseBtn" onclick="toggleConvSidebar()" style="align-self:flex-end;background:none;border:none;cursor:pointer;color:var(--color-outline);width:28px;height:28px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.12s" onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'" title="Collapse sidebar">
+            <span class="material-symbols-outlined" style="font-size:18px" id="convCollapseIcon">first_page</span>
+          </button>
+          <div id="conversationList" style="flex:1;display:flex;flex-direction:column;gap:var(--space-xs);overflow-y:auto;overflow-x:hidden" class="custom-scrollbar">
+          </div>
+        </div>
+
+        <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0" id="chatArea">
+          <div class="flex-between" style="padding-bottom:var(--space-sm);border-bottom:1px solid rgba(118,117,134,0.1);margin-bottom:var(--space-sm);display:none" id="chatHeader">
+            <div class="flex-center gap-sm">
+              <div class="avatar-sm" style="background:var(--color-primary);border-radius:50%"></div>
+              <div>
+                <div style="font-weight:600;font-size:var(--fs-label-md)" id="chatName">Select a conversation</div>
+                <div class="label-sm" style="color:var(--color-outline)" id="chatStatus"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:4px">
+              <button class="btn btn-ghost btn-icon btn-sm" onclick="openChatInfo()"><span class="material-symbols-outlined">info</span></button>
+            </div>
+          </div>
+          <div class="custom-scrollbar" style="flex:1;overflow-y:auto;padding-right:8px;display:flex;align-items:center;justify-content:center" id="messageList">
+            <div class="card" style="text-align:center;padding:var(--space-xl) 48px;max-width:280px" id="emptyChat">
+              <span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline-variant);margin-bottom:var(--space-sm)">chat</span>
+              <p style="color:var(--color-outline);font-size:var(--fs-body-md);line-height:1.5">Select a friend to start chatting</p>
+            </div>
+          </div>
+          <!-- File preview strip -->
+          <div id="filePreview" style="display:none;padding:var(--space-sm) 0;gap:var(--space-sm);flex-wrap:wrap;align-items:flex-end"></div>
+          <div style="display:none;gap:8px;align-items:center;margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid rgba(118,117,134,0.1)" id="chatInputBar">
+            <button style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:1px solid rgba(118,117,134,0.15);background:var(--card-bg);color:var(--color-on-surface-variant);cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="openUploadPopup(event)" onmouseenter="this.style.background='rgba(70,72,212,0.05)'" onmouseleave="this.style.background='var(--card-bg)'"><span class="material-symbols-outlined" style="font-size:20px">add_circle</span></button>
+            <input type="text" class="input-glass" placeholder="Type a message..." style="border-radius:var(--radius-full)" id="chatInput" onkeydown="if(event.key==='Enter')sendMessage()">
+            <button style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:none;background:var(--color-primary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(70,72,212,0.25)" onclick="sendMessage()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'"><span class="material-symbols-outlined" style="font-size:20px">send</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════ Panel 1: Groups ═══════════════════ -->
+      <div style="display:flex;gap:var(--space-md);width:100%;flex-shrink:0;min-width:0;min-height:0;transition:opacity 0.4s ease" id="groupsPanel">
+
+        <div id="groupSidebar" style="width:320px;flex-shrink:0;display:flex;flex-direction:column;gap:var(--space-xs);transition:width 0.3s ease">
+          <button id="groupCollapseBtn" onclick="toggleGroupSidebar()" style="align-self:flex-end;background:none;border:none;cursor:pointer;color:var(--color-outline);width:28px;height:28px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.12s" onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'" title="Collapse sidebar">
+            <span class="material-symbols-outlined" style="font-size:18px" id="groupCollapseIcon">first_page</span>
+          </button>
+          <div id="groupList" style="flex:1;display:flex;flex-direction:column;gap:var(--space-xs);overflow-y:auto;overflow-x:hidden" class="custom-scrollbar">
+          </div>
+        </div>
+
+        <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0" id="groupChatArea">
+          <div class="flex-between" style="padding-bottom:var(--space-sm);border-bottom:1px solid rgba(118,117,134,0.1);margin-bottom:var(--space-sm);display:none" id="groupChatHeader">
+            <div class="flex-center gap-sm">
+              <div class="avatar-sm" style="background:var(--color-secondary);border-radius:var(--radius-DEFAULT);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px" id="groupAvatar"></div>
+              <div>
+                <div style="font-weight:600;font-size:var(--fs-label-md)" id="groupChatName">Select a group</div>
+                <div class="label-sm" style="color:var(--color-outline)" id="groupChatMeta"></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:4px">
+              <button class="btn btn-ghost btn-icon btn-sm" onclick="openMembersModal()"><span class="material-symbols-outlined">group</span></button>
+              <button class="btn btn-ghost btn-icon btn-sm" onclick="openChatInfo()"><span class="material-symbols-outlined">info</span></button>
+            </div>
+          </div>
+          <div class="custom-scrollbar" style="flex:1;overflow-y:auto;padding-right:8px;display:flex;align-items:center;justify-content:center" id="groupMessageList">
+            <div class="card" style="text-align:center;padding:var(--space-xl) 48px;max-width:280px" id="emptyGroupChat">
+              <span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline-variant);margin-bottom:var(--space-sm)">groups</span>
+              <p style="color:var(--color-outline);font-size:var(--fs-body-md);line-height:1.5">Select a group to view messages</p>
+            </div>
+          </div>
+          <!-- File preview strip -->
+          <div id="groupFilePreview" style="display:none;padding:var(--space-sm) 0;gap:var(--space-sm);flex-wrap:wrap;align-items:flex-end"></div>
+          <div style="display:none;gap:8px;align-items:center;margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid rgba(118,117,134,0.1)" id="groupChatInputBar">
+            <button style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:1px solid rgba(118,117,134,0.15);background:var(--card-bg);color:var(--color-on-surface-variant);cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="openUploadPopup(event)" onmouseenter="this.style.background='rgba(22,163,74,0.05)'" onmouseleave="this.style.background='var(--card-bg)'"><span class="material-symbols-outlined" style="font-size:20px">add_circle</span></button>
+            <input type="text" class="input-glass" placeholder="Type a message..." style="border-radius:var(--radius-full)" id="groupChatInput" onkeydown="if(event.key==='Enter')sendGroupMessage()">
+            <button style="width:38px;height:38px;padding:0;border-radius:50%;border:none;background:var(--color-secondary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(22,163,74,0.25)" onclick="sendGroupMessage()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'"><span class="material-symbols-outlined" style="font-size:20px">send</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════ Panel 2: Announcements ═══════════════════ -->
+      <div style="display:flex;flex-direction:column;width:100%;flex-shrink:0;min-width:0;min-height:0;height:100%;transition:opacity 0.4s ease" id="announcementsPanel">
+        <!-- Category filter pills -->
+        <div class="flex-between" style="margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-sm)">
+          <div class="subnav" data-slider style="flex-wrap:wrap" id="categoryFilters">
+            <button class="subnav-pill active" data-cat="all">All</button>
+            <button class="subnav-pill" data-cat="official">📢 Official</button>
+            <button class="subnav-pill" data-cat="community">👥 Community</button>
+            <button class="subnav-pill" data-cat="system">⚙ System</button>
+          </div>
+          <span class="label-sm" style="color:var(--color-outline)" id="announceCount"></span>
+        </div>
+
+        <!-- Announcement list -->
+        <div class="custom-scrollbar" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:var(--space-sm);padding:8px 10px 24px;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 6px,black calc(100% - 28px),transparent 100%),linear-gradient(to right,transparent 0%,black 10px,black calc(100% - 10px),transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0%,black 6px,black calc(100% - 28px),transparent 100%),linear-gradient(to right,transparent 0%,black 10px,black calc(100% - 10px),transparent 100%);mask-composite:intersect" id="announceList">
+        </div>
+      </div>
+
+      </div>
+    </div>
+
+    <!-- Floating Action Button (visible on Private & Groups panels) -->
+    <button
+      id="fabBtn"
+      onclick="openActionModal()"
+      title="Add friend or create group"
+      style="
+        position:absolute;
+        bottom:28px;left:28px;
+        width:52px;height:52px;
+        border-radius:50%;
+        background:var(--color-primary);
+        color:white;
+        border:none;
+        cursor:pointer;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        box-shadow:0 4px 20px rgba(70,72,212,0.35),0 2px 8px rgba(0,0,0,0.15);
+        transition:opacity 0.35s ease,transform 0.25s ease,box-shadow 0.25s ease;
+        z-index:10;
+      "
+      onmouseenter="this.style.transform='scale(1.08)';this.style.boxShadow='0 6px 28px rgba(70,72,212,0.45),0 4px 12px rgba(0,0,0,0.2)'"
+      onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(70,72,212,0.35),0 2px 8px rgba(0,0,0,0.15)'"
+    >
+      <span class="material-symbols-outlined" style="font-size:26px">add</span>
+    </button>
+
+  </main>
+</div>
+
+<!-- ═══════════════════ Action Modal ═══════════════════ -->
+<div id="actionModal" style="
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.45);
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+">
+  <div style="
+    background:var(--card-bg);
+    border-radius:var(--radius-xl);
+    padding:var(--space-xl);
+    width:500px;
+    max-width:calc(100vw - 40px);
+    box-shadow:0 8px 40px rgba(0,0,0,0.15);
+    position:relative;
+  ">
+    <!-- Top bar: back + close -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg)">
+      <button id="modalBackBtn" onclick="resetModal()" style="
+        display:none;
+        background:none;border:none;cursor:pointer;
+        color:var(--color-outline);
+        font-size:var(--fs-label-md);
+        align-items:center;gap:4px;
+        padding:0;
+      " onmouseenter="this.style.color='var(--color-on-surface)'" onmouseleave="this.style.color='var(--color-outline)'">
+        <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+        Back
+      </button>
+      <button onclick="closeModal()" style="
+        background:none;border:none;
+        cursor:pointer;
+        color:var(--color-outline);
+        width:32px;height:32px;
+        border-radius:50%;
+        display:flex;align-items:center;justify-content:center;
+        transition:background 0.2s ease;
+        margin-left:auto;
+      " onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'">
+        <span class="material-symbols-outlined" style="font-size:20px">close</span>
+      </button>
+    </div>
+
+    <h3 id="modalTitle" style="font-weight:700;font-size:var(--fs-headline-md);margin-bottom:6px">Start something new</h3>
+    <p id="modalDesc" style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-lg)">Add a friend or create a group conversation</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);align-items:start">
+      <!-- Add Friend -->
+      <button id="modalAddFriend" onclick="chooseAction('friend')" style="
+        aspect-ratio:1;
+        display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:var(--space-sm);
+        padding:var(--space-md);
+        border:1px solid rgba(118,117,134,0.15);
+        border-radius:var(--radius-lg);
+        background:var(--card-bg);
+        cursor:pointer;
+        transition:all 0.2s ease;
+        text-align:left;
+        width:100%;
+      " onmouseenter="this.style.borderColor='var(--color-primary)';this.style.boxShadow='0 0 0 3px rgba(70,72,212,0.08)';this.style.background='rgba(70,72,212,0.02)'"
+         onmouseleave="this.style.borderColor='rgba(118,117,134,0.15)';this.style.boxShadow='none';this.style.background='var(--card-bg)'">
+        <div style="
+          width:44px;height:44px;
+          border-radius:50%;
+          background:rgba(70,72,212,0.1);
+          display:flex;align-items:center;justify-content:center;
+        ">
+          <span class="material-symbols-outlined" style="font-size:24px;color:var(--color-primary)">person_add</span>
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:var(--fs-label-md)">Add Friend</div>
+          <div style="font-size:11px;color:var(--color-outline);margin-top:2px">Start a private chat</div>
+        </div>
+      </button>
+
+      <!-- Create Group -->
+      <button id="modalCreateGroup" onclick="chooseAction('group')" style="
+        aspect-ratio:1;
+        display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:var(--space-sm);
+        padding:var(--space-md);
+        border:1px solid rgba(118,117,134,0.15);
+        border-radius:var(--radius-lg);
+        background:var(--card-bg);
+        cursor:pointer;
+        transition:all 0.2s ease;
+        text-align:left;
+        width:100%;
+      " onmouseenter="this.style.borderColor='var(--color-secondary)';this.style.boxShadow='0 0 0 3px rgba(22,163,74,0.08)';this.style.background='rgba(22,163,74,0.02)'"
+         onmouseleave="this.style.borderColor='rgba(118,117,134,0.15)';this.style.boxShadow='none';this.style.background='var(--card-bg)'">
+        <div style="
+          width:44px;height:44px;
+          border-radius:50%;
+          background:rgba(22,163,74,0.1);
+          display:flex;align-items:center;justify-content:center;
+        ">
+          <span class="material-symbols-outlined" style="font-size:24px;color:var(--color-secondary)">group_add</span>
+        </div>
+        <div>
+          <div style="font-weight:600;font-size:var(--fs-label-md)">Create Group</div>
+          <div style="font-size:11px;color:var(--color-outline);margin-top:2px">Start a group chat</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Sub-form area (hidden by default) -->
+    <div id="modalSubForm" style="display:none;border-top:1px solid rgba(118,117,134,0.1);padding-top:var(--space-md)">
+      <div id="modalSubFormContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Message context menu -->
+<div id="msgContextMenu" style="
+  position:fixed;
+  background:var(--card-bg);
+  border-radius:var(--radius-lg);
+  box-shadow:0 4px 24px rgba(0,0,0,0.14),0 1px 4px rgba(0,0,0,0.08);
+  z-index:95;
+  display:none;
+  overflow:hidden;
+  min-width:180px;
+">
+  <button onclick="ctxPin()" style="display:flex;align-items:center;gap:var(--space-sm);width:100%;padding:10px 16px;border:none;background:var(--card-bg);cursor:pointer;text-align:left;font-size:var(--fs-label-md);transition:background 0.12s" onmouseenter="this.style.background='rgba(70,72,212,0.05)'" onmouseleave="this.style.background='var(--card-bg)'">
+    <span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)">push_pin</span>
+    <span id="ctxPinLabel">Pin</span>
+  </button>
+  <button onclick="ctxForward()" style="display:flex;align-items:center;gap:var(--space-sm);width:100%;padding:10px 16px;border:none;background:var(--card-bg);cursor:pointer;text-align:left;font-size:var(--fs-label-md);transition:background 0.12s" onmouseenter="this.style.background='rgba(70,72,212,0.05)'" onmouseleave="this.style.background='var(--card-bg)'">
+    <span class="material-symbols-outlined" style="font-size:18px;color:var(--color-on-surface-variant)">forward</span>
+    Forward
+  </button>
+  <button onclick="ctxDelete()" style="display:flex;align-items:center;gap:var(--space-sm);width:100%;padding:10px 16px;border:none;background:var(--card-bg);cursor:pointer;text-align:left;font-size:var(--fs-label-md);transition:background 0.12s;color:#dc2626" onmouseenter="this.style.background='rgba(220,38,38,0.05)'" onmouseleave="this.style.background='var(--card-bg)'">
+    <span class="material-symbols-outlined" style="font-size:18px;color:#dc2626">delete</span>
+    Delete
+  </button>
+</div>
+
+<!-- Forward picker modal -->
+<div id="forwardModal" style="
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.45);
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+">
+  <div style="
+    background:var(--card-bg);
+    border-radius:var(--radius-xl);
+    padding:var(--space-lg);
+    width:400px;
+    max-width:calc(100vw - 40px);
+    box-shadow:0 8px 40px rgba(0,0,0,0.15);
+    display:flex;flex-direction:column;
+  ">
+    <div class="flex-between" style="margin-bottom:var(--space-sm)">
+      <h4 style="font-weight:700;font-size:var(--fs-headline-sm)">Forward to...</h4>
+      <button onclick="closeForwardModal()" style="background:none;border:none;cursor:pointer;color:var(--color-outline);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center" onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'">
+        <span class="material-symbols-outlined" style="font-size:20px">close</span>
+      </button>
+    </div>
+    <!-- Search -->
+    <div class="search-capsule" style="margin-bottom:var(--space-sm)">
+      <span class="material-symbols-outlined">search</span>
+      <input type="text" placeholder="Search contacts..." id="forwardSearchInput" oninput="renderForwardContacts(this.value)">
+    </div>
+    <!-- Contact list -->
+    <div style="display:flex;flex-direction:column;gap:2px;max-height:260px;overflow-y:auto" class="custom-scrollbar" id="forwardContactList">
+    </div>
+    <!-- Message input + send -->
+    <div style="display:flex;gap:8px;margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid rgba(118,117,134,0.1);align-items:center">
+      <input type="text" class="input-glass" placeholder="Add a message..." style="border-radius:var(--radius-full);flex:1" id="forwardMsgInput" onkeydown="if(event.key==='Enter')doForward()">
+      <button style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:none;background:var(--color-primary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(70,72,212,0.25)" onclick="doForward()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'">
+        <span class="material-symbols-outlined" style="font-size:20px">send</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Chat Info Modal -->
+<div id="chatInfoModal" style="
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.45);
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+">
+  <div style="
+    background:var(--card-bg);
+    border-radius:var(--radius-xl);
+    width:580px;
+    max-width:calc(100vw - 40px);
+    max-height:92vh;
+    display:flex;flex-direction:column;
+    box-shadow:0 8px 40px rgba(0,0,0,0.15);
+    overflow:hidden;
+  ">
+    <!-- Header -->
+    <div class="flex-between" style="padding:var(--space-md) var(--space-lg);border-bottom:1px solid rgba(118,117,134,0.1)">
+      <span style="font-weight:700;font-size:var(--fs-headline-sm)">Chat Info</span>
+      <button onclick="closeChatInfo()" style="background:none;border:none;cursor:pointer;color:var(--color-outline);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center" onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'">
+        <span class="material-symbols-outlined" style="font-size:20px">close</span>
+      </button>
+    </div>
+
+    <!-- Top: avatar + name + bio -->
+    <div style="padding:var(--space-lg);text-align:center;border-bottom:1px solid rgba(118,117,134,0.06)">
+      <div style="width:72px;height:72px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:24px;margin:0 auto var(--space-sm);letter-spacing:0.5px" id="infoAvatar">?</div>
+      <div style="font-weight:700;font-size:var(--fs-headline-sm);margin-bottom:4px" id="infoName">—</div>
+      <div style="font-size:var(--fs-label-md);color:var(--color-on-surface-variant);line-height:1.5" id="infoBio">—</div>
+    </div>
+
+    <!-- Tab bar -->
+    <div style="display:flex;border-bottom:1px solid rgba(118,117,134,0.1);padding:0 var(--space-md)">
+      <button class="infoTab active" data-infotab="pinned" onclick="switchInfoTab('pinned')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-on-surface);border-bottom:2px solid transparent;transition:all 0.15s">📌 Pinned</button>
+      <button class="infoTab" data-infotab="images" onclick="switchInfoTab('images')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:all 0.15s">🖼 Images</button>
+      <button class="infoTab" data-infotab="videos" onclick="switchInfoTab('videos')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:all 0.15s">🎬 Videos</button>
+      <button class="infoTab" data-infotab="links" onclick="switchInfoTab('links')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:all 0.15s">🔗 Links</button>
+      <button class="infoTab" data-infotab="files" onclick="switchInfoTab('files')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:all 0.15s">📁 Files</button>
+    </div>
+
+    <!-- Tab content -->
+    <div style="padding:var(--space-md);overflow-y:auto;flex:1;min-height:300px;max-height:520px" class="custom-scrollbar" id="infoTabContent">
+    </div>
+  </div>
+</div>
+
+<!-- Members Modal -->
+<div id="membersModal" style="
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.45);
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+">
+  <div style="
+    background:var(--card-bg);
+    border-radius:var(--radius-xl);
+    width:420px;
+    max-width:calc(100vw - 40px);
+    max-height:92vh;
+    display:flex;flex-direction:column;
+    box-shadow:0 8px 40px rgba(0,0,0,0.15);
+    overflow:hidden;
+  ">
+    <!-- Header -->
+    <div class="flex-between" style="padding:var(--space-md) var(--space-lg);border-bottom:1px solid rgba(118,117,134,0.1)">
+      <span style="font-weight:700;font-size:var(--fs-headline-sm)" id="membersTitle">Members</span>
+      <button onclick="closeMembersModal()" style="background:none;border:none;cursor:pointer;color:var(--color-outline);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center" onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'">
+        <span class="material-symbols-outlined" style="font-size:20px">close</span>
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div style="padding:var(--space-sm) var(--space-lg)">
+      <div class="search-capsule" style="width:100%">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" placeholder="Search members..." id="memberSearchInput" oninput="renderMembersList(this.value)" style="flex:1">
+      </div>
+    </div>
+
+    <!-- Member list -->
+    <div style="padding:var(--space-sm) var(--space-lg) var(--space-lg);overflow-y:auto;flex:1;min-height:200px;max-height:440px" class="custom-scrollbar" id="membersListContent">
+    </div>
+  </div>
+</div>
+
+<!-- Image Lightbox -->
+<div id="lightbox" style="
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.92);
+  display:none;
+  align-items:center;justify-content:center;
+  flex-direction:column;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+" onclick="if(event.target===this)closeLightbox()">
+  <!-- Top bar -->
+  <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:flex-end;padding:12px 16px;z-index:2">
+    <button onclick="closeLightbox()" style="background:rgba(255,255,255,0.1);border:none;color:white;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s" onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">
+      <span class="material-symbols-outlined" style="font-size:20px">close</span>
+    </button>
+  </div>
+  <!-- Image -->
+  <img id="lightboxImg" src="" style="max-width:90vw;max-height:80vh;object-fit:contain;user-select:none;-webkit-user-select:none;will-change:transform;transform-origin:center center" draggable="false">
+  <!-- Zoom controls -->
+  <div style="display:flex;align-items:center;gap:16px;margin-top:20px">
+    <button onclick="zoomLightbox(-0.3)" style="background:rgba(255,255,255,0.1);border:none;color:white;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:background 0.15s" onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">
+      <span class="material-symbols-outlined" style="font-size:22px">zoom_out</span>
+    </button>
+    <button onclick="zoomLightbox(0.3)" style="background:rgba(255,255,255,0.1);border:none;color:white;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;transition:background 0.15s" onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">
+      <span class="material-symbols-outlined" style="font-size:22px">zoom_in</span>
+    </button>
+    <button onclick="zoomLightbox(0)" style="background:rgba(255,255,255,0.1);border:none;color:white;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:background 0.15s" onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">
+      <span class="material-symbols-outlined" style="font-size:20px">fit_screen</span>
+    </button>
+  </div>
+</div>
+
+<!-- Hidden file input — positioned off-screen so programmatic click() works in all browsers -->
+<input type="file" id="hiddenFileInput" style="position:fixed;top:-1000px;opacity:0;pointer-events:none;width:1px;height:1px" onchange="handleFileSelect(event)">
+
+<!-- Upload options popup -->
+<div id="uploadPopup" style="
+  position:fixed;
+  background:var(--card-bg);
+  border-radius:var(--radius-lg);
+  box-shadow:0 4px 24px rgba(0,0,0,0.12),0 1px 4px rgba(0,0,0,0.08);
+  z-index:90;
+  display:none;
+  overflow:hidden;
+  min-width:200px;
+">
+  <button onclick="selectUpload('compress')" style="
+    display:flex;align-items:center;gap:var(--space-sm);
+    width:100%;padding:12px 16px;
+    border:none;background:var(--card-bg);cursor:pointer;
+    text-align:left;font-size:var(--fs-label-md);
+    transition:background 0.15s ease;
+  " onmouseenter="this.style.background='rgba(70,72,212,0.04)'" onmouseleave="this.style.background='var(--card-bg)'">
+    <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">compress</span>
+    <div>
+      <div style="font-weight:500">Compressed</div>
+      <div style="font-size:11px;color:var(--color-outline)">Smaller size, faster send</div>
+    </div>
+  </button>
+  <button onclick="selectUpload('original')" style="
+    display:flex;align-items:center;gap:var(--space-sm);
+    width:100%;padding:12px 16px;
+    border:none;background:var(--card-bg);cursor:pointer;
+    text-align:left;font-size:var(--fs-label-md);
+    transition:background 0.15s ease;
+  " onmouseenter="this.style.background='rgba(70,72,212,0.04)'" onmouseleave="this.style.background='var(--card-bg)'">
+    <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-on-surface-variant)">folder_open</span>
+    <div>
+      <div style="font-weight:500">Original</div>
+      <div style="font-size:11px;color:var(--color-outline)">Full quality, larger size</div>
+    </div>
+  </button>
+</div>
+
+<!-- Video Player Modal -->
+<div id="videoPlayerModal" style="
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,0.92);
+  display:none;
+  align-items:center;justify-content:center;
+  flex-direction:column;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+" onclick="if(event.target===this)closeVideoPlayer()">
+  <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:flex-end;padding:12px 16px;z-index:2">
+    <button onclick="closeVideoPlayer()" style="background:rgba(255,255,255,0.1);border:none;color:white;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s" onmouseenter="this.style.background='rgba(255,255,255,0.2)'" onmouseleave="this.style.background='rgba(255,255,255,0.1)'">
+      <span class="material-symbols-outlined" style="font-size:20px">close</span>
+    </button>
+  </div>
+  <video id="videoPlayer" controls style="max-width:90vw;max-height:80vh;border-radius:var(--radius-lg);outline:none" playsinline></video>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script src="../assets/js/subnav.js"></script>
+<script>
+  // ──────────────────────────────────────────────
+  //  CONTEXT MENU + FORWARD + PERSISTENCE
+  // ──────────────────────────────────────────────
+  var ctxTarget = null;
+  var pinnedMessages = {};
+  var justPinnedRef = null; // tracks message just pinned for animation
+
+  var DATA_VERSION = 3; // bump to invalidate stale localStorage
+
+  // Safe media registry — avoids embedding long base64 data URLs in inline onclick
+  var _mediaReg = {};
+  var _mediaRegId = 0;
+  function _regMedia(data) { var id = 'mr' + (++_mediaRegId); _mediaReg[id] = data; return id; }
+  window._openRegMedia = function(id) {
+    var m = _mediaReg[id];
+    if (!m) return;
+    if (m.videoUrl) { openVideoPlayer(m.videoUrl, m.vidType || 'video/mp4'); }
+    else if (m.dataUrl) { openLightbox(m.dataUrl); }
+  };
+  window._openRegLightbox = function(id) {
+    var m = _mediaReg[id];
+    if (m && m.dataUrl) openLightbox(m.dataUrl);
+  };
+  function _resetMediaReg() { _mediaReg = {}; _mediaRegId = 0; }
+
+  // Detect video by _kind tag, MIME type, OR file extension (some browsers don't set type)
+  function isVideoFile(f) {
+    if (!f) return false;
+    if (f._kind === 'video') return true;
+    if (f._kind === 'image') return false;
+    if (f.type && f.type.match(/^video\//)) return true;
+    var name = f.name || '';
+    return !!name.match(/\.(mp4|mov|webm|avi|mkv|wmv|flv|m4v|ogg|ogv|3gp|3g2)$/i);
+  }
+
+  // Load persisted data
+  function loadData() {
+    try {
+      var raw = localStorage.getItem('slati_messages');
+      if (!raw) { console.log('[M.NationWorld] No saved messages in localStorage'); return; }
+      var d = JSON.parse(raw);
+      // If saved data is from an older version, discard it
+      if (d._version !== DATA_VERSION) {
+        console.log('[M.NationWorld] Data version mismatch (' + d._version + ' vs ' + DATA_VERSION + '), clearing old data');
+        localStorage.removeItem('slati_messages');
+        return;
+      }
+      if (d.conversations) conversations = d.conversations;
+      if (d.groups) groups = d.groups;
+      // Merge saved messages INTO defaults so new seed data isn't lost
+      if (d.mockMessages) {
+        Object.keys(d.mockMessages).forEach(function(id) {
+          mockMessages[id] = d.mockMessages[id];
+        });
+      }
+      if (d.mockGroupMessages) {
+        Object.keys(d.mockGroupMessages).forEach(function(id) {
+          mockGroupMessages[id] = d.mockGroupMessages[id];
+        });
+      }
+      console.log('[M.NationWorld] Loaded messages from localStorage');
+    } catch(e) { console.warn('[M.NationWorld] Failed to load messages:', e); }
+    // Blob URLs expire — clear any stale ones from saved data
+    function clearVideoUrls(store) {
+      Object.keys(store).forEach(function(id) {
+        store[id].forEach(function(m) {
+          if (m._file && m._file.videoUrl && m._file.videoUrl.indexOf('blob:') === 0) {
+            m._file.videoUrl = null;
+          }
+        });
+      });
+    }
+    clearVideoUrls(mockMessages);
+    clearVideoUrls(mockGroupMessages);
+    // Rebuild pinnedMessages using REFERENCES from the live arrays
+    // (JSON round-trip breaks object identity, so we must reconcile)
+    pinnedMessages = {};
+    function collectPinned(store) {
+      Object.keys(store).forEach(function(id) {
+        store[id].forEach(function(m) {
+          if (m._pinned) {
+            if (!pinnedMessages[id]) pinnedMessages[id] = [];
+            pinnedMessages[id].push(m);
+          }
+        });
+      });
+    }
+    collectPinned(mockMessages);
+    collectPinned(mockGroupMessages);
+  }
+  function saveData() {
+    try {
+      var data = JSON.stringify({
+        _version: DATA_VERSION,
+        conversations: conversations,
+        mockMessages: mockMessages,
+        groups: groups,
+        mockGroupMessages: mockGroupMessages,
+        pinnedMessages: pinnedMessages
+      });
+      localStorage.setItem('slati_messages', data);
+      console.log('[M.NationWorld] Saved ' + (data.length / 1024).toFixed(1) + ' KB to localStorage');
+    } catch(e) {
+      console.warn('[M.NationWorld] Failed to save messages — localStorage may be full:', e);
+      showToast('⚠ Could not save — storage full. Try clearing old data.', true);
+    }
+  }
+
+  function msgBubble(m, idx, isPinned, panel, chatId, isJustPinned) {
+    var isSent = !m.sent;
+    var animClass = isJustPinned ? ' fade-up' : '';
+    var pinBadge = isPinned ? '<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-right:2px;color:#eab308">push_pin</span>' : '';
+    var fwdLabel = m._forwardedFrom
+      ? '<div class="label-sm" style="margin-bottom:4px;opacity:0.55;font-style:italic;font-size:10px">↪ Forwarded from <b>' + m._forwardedFrom + '</b></div>'
+      : '';
+
+    // Video messages: thumbnail with play button overlay
+    if (m._file && isVideoFile(m._file)) {
+      var vStyle = 'max-width:260px;max-height:320px;border-radius:var(--radius-lg);display:block;cursor:pointer;object-fit:cover';
+      var vReadMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">Read</div>' : '';
+      if (m._file.dataUrl) {
+        // Video with real thumbnail
+        var hasVideo = !!m._file.videoUrl;
+        var vMediaId = _regMedia({ dataUrl: m._file.dataUrl, videoUrl: m._file.videoUrl || null, vidType: m._file.type || 'video/mp4' });
+        var vidClick = '_openRegMedia(\'' + vMediaId + '\')';
+        // Play button only when video URL is actually available
+        var playOverlay = hasVideo
+          ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">' +
+              '<div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.25);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,0.35)">' +
+                '<span class="material-symbols-outlined" style="font-size:26px;color:white;margin-left:3px">play_arrow</span>' +
+              '</div></div>'
+          : '<div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.55);color:white;font-size:9px;font-weight:600;padding:3px 7px;border-radius:6px;pointer-events:none;display:flex;align-items:center;gap:3px">' +
+              '<span class="material-symbols-outlined" style="font-size:12px">smart_display</span>Video</div>';
+        return '<div class="msg-row' + animClass + '" style="display:flex;flex-direction:column;align-items:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:12px" oncontextmenu="showContextMenu(event,\'' + panel + '\',\'' + chatId + '\',' + idx + ',' + (isPinned ? 'true' : 'false') + ')">' +
+          '<div style="position:relative;display:inline-block;cursor:pointer" onclick="' + vidClick + '">' +
+            '<img src="' + m._file.dataUrl + '" style="' + vStyle + '" alt="' + m._file.name + '">' +
+            playOverlay +
+          '</div>' + vReadMark +
+        '</div>';
+      } else {
+        // Video without thumbnail — gradient placeholder
+        var vNoThumbClick = '';
+        if (m._file.videoUrl) {
+          var vNoThumbId = _regMedia({ dataUrl: null, videoUrl: m._file.videoUrl, vidType: m._file.type || 'video/mp4' });
+          vNoThumbClick = ' onclick="_openRegMedia(\'' + vNoThumbId + '\')"';
+        }
+        return '<div class="msg-row' + animClass + '" style="display:flex;flex-direction:column;align-items:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:12px" oncontextmenu="showContextMenu(event,\'' + panel + '\',\'' + chatId + '\',' + idx + ',' + (isPinned ? 'true' : 'false') + ')">' +
+          '<div style="position:relative;width:200px;height:140px;border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;background:linear-gradient(135deg,#0f172a,#1e3a5f);display:flex;align-items:center;justify-content:center"' + vNoThumbClick + '>' +
+            '<div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,0.3)">' +
+              '<span class="material-symbols-outlined" style="font-size:26px;color:white;margin-left:3px">play_arrow</span>' +
+            '</div>' +
+            '<div style="position:absolute;bottom:0;left:0;right:0;padding:8px 10px;background:linear-gradient(transparent,rgba(0,0,0,0.6));color:white;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + m._file.name + '</div>' +
+          '</div>' + vReadMark +
+        '</div>';
+      }
+    }
+
+    // Image messages: no bubble wrapping, just the image with rounded corners
+    if (m._file && m._file.dataUrl) {
+      var imgStyle = 'max-width:260px;max-height:320px;border-radius:var(--radius-lg);display:block;cursor:pointer;object-fit:cover';
+      var readMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">Read</div>' : '';
+      var imgMediaId = _regMedia({ dataUrl: m._file.dataUrl, videoUrl: null });
+      return '<div class="msg-row' + animClass + '" style="display:flex;flex-direction:column;align-items:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:12px" oncontextmenu="showContextMenu(event,\'' + panel + '\',\'' + chatId + '\',' + idx + ',' + (isPinned ? 'true' : 'false') + ')">' +
+        '<img src="' + m._file.dataUrl + '" style="' + imgStyle + '" alt="' + m._file.name + '" onclick="_openRegLightbox(\'' + imgMediaId + '\')">' +
+        readMark +
+      '</div>';
+    }
+
+    // Build content: file preview + optional text
+    var body = '';
+    if (m._file) {
+      if (!m._file.dataUrl && !(m._file.type && m._file.type.match(/^video\//))) {
+        // File card (non-image, non-video)
+        body += '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--divider-line);border-radius:var(--radius-DEFAULT);margin-bottom:6px">' +
+          '<span class="material-symbols-outlined" style="font-size:24px;' + (isSent ? 'color:rgba(255,255,255,0.8)' : 'color:var(--color-primary)') + '">draft</span>' +
+          '<div style="min-width:0"><div style="font-weight:500;font-size:var(--fs-label-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + m._file.name + '</div>' +
+          '<div style="font-size:10px;opacity:0.55">' + (m._file.mode === 'compress' ? 'Compressed' : 'Original') + '</div></div>' +
+        '</div>';
+      }
+    }
+    body += m.text;
+    var readMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">Read</div>' : '';
+
+    return '<div class="msg-row' + animClass + '" style="display:flex;flex-direction:column;align-items:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:12px" oncontextmenu="showContextMenu(event,\'' + panel + '\',\'' + chatId + '\',' + idx + ',' + (isPinned ? 'true' : 'false') + ')">' +
+      '<div style="max-width:70%;padding:10px 16px;border-radius:' + (isSent ? 'var(--radius-xl) var(--radius-xl) 4px var(--radius-xl)' : 'var(--radius-xl) var(--radius-xl) var(--radius-xl) 4px') + ';' +
+        (isSent ? 'background:var(--color-primary);color:white;' : 'background:var(--card-bg);border:1px solid var(--divider-line);color:var(--color-on-surface);') +
+        'font-size:var(--fs-label-md);cursor:default;overflow:hidden">' +
+        '<div class="label-sm" style="margin-bottom:2px;opacity:0.7">' + pinBadge + m.from + '</div>' +
+        fwdLabel + body +
+      '</div>' +
+      readMark +
+    '</div>';
+  }
+
+  // Mark all non-"You" messages as read, and compute _readByOther for "You" messages
+  function markMessagesRead(store, chatId) {
+    var msgs = store[chatId];
+    if (!msgs) return;
+    // Mark all messages not from "You" as _read: true
+    msgs.forEach(function(m) { if (m.from !== 'You') m._read = true; });
+    // For each "You" message, check if a read message from other exists after it
+    var hasReadAfter = false;
+    for (var i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].from !== 'You') {
+        if (msgs[i]._read) hasReadAfter = true;
+      } else {
+        msgs[i]._readByOther = hasReadAfter;
+      }
+    }
+  }
+
+  // Slime-pop animation on the last message bubble
+  function animateLastBubble(containerId) {
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+        var last = container.querySelector('.msg-row:last-child');
+        if (last) {
+          last.classList.add('fade-up');
+          last.addEventListener('animationend', function() {
+            last.classList.remove('fade-up');
+          }, { once: true });
+        }
+      });
+    });
+  }
+
+  function showContextMenu(e, panel, chatId, idx, isPinned) {
+    e.preventDefault();
+    ctxTarget = { panel: panel, chatId: chatId, msgIndex: idx, isPinned: isPinned };
+    var menu = document.getElementById('msgContextMenu');
+    menu.style.display = 'block';
+    menu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
+    menu.style.top = Math.min(e.clientY, window.innerHeight - 140) + 'px';
+    document.getElementById('ctxPinLabel').textContent = isPinned ? 'Unpin' : 'Pin';
+  }
+
+  function hideContextMenu() {
+    document.getElementById('msgContextMenu').style.display = 'none';
+    ctxTarget = null;
+  }
+
+  document.addEventListener('click', function(e) {
+    var menu = document.getElementById('msgContextMenu');
+    if (menu.style.display === 'block' && !menu.contains(e.target)) {
+      hideContextMenu();
+    }
+  });
+
+  // ──────────────────────────────────────────────
+  //  TOAST
+  // ──────────────────────────────────────────────
+  function showToast(msg, isError) {
+    var existing = document.getElementById('msgToast');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.id = 'msgToast';
+    toast.textContent = msg;
+    toast.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:var(--radius-full);font-size:var(--fs-label-md);font-weight:600;z-index:200;pointer-events:none;transition:opacity 0.3s ease;' +
+      (isError ? 'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;' : 'background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;');
+    document.body.appendChild(toast);
+    setTimeout(function() { toast.style.opacity = '0'; }, 2000);
+    setTimeout(function() { if (toast.parentNode) toast.remove(); }, 2500);
+  }
+
+  function rerenderTarget(panel, chatId) {
+    if (panel === 'group') {
+      openGroupChat(chatId);
+    } else {
+      openChat(chatId);
+    }
+  }
+
+  function ctxPin() {
+    if (!ctxTarget) return;
+    var target = ctxTarget; // save before hideContextMenu clears it
+    var id = target.chatId;
+    var idx = target.msgIndex;
+    if (!pinnedMessages[id]) pinnedMessages[id] = [];
+    var msgs = target.panel === 'group' ? (mockGroupMessages[id] || []) : (mockMessages[id] || []);
+
+    if (target.isPinned) {
+      var pm = pinnedMessages[id][idx];
+      if (pm) {
+        pm._pinned = false;
+        pinnedMessages[id].splice(idx, 1);
+        saveData();
+        showToast('✓ Message unpinned');
+      } else {
+        showToast('✗ Failed to unpin', true);
+      }
+    } else {
+      var msg = msgs[idx];
+      if (msg) {
+        msg._pinned = true;
+        pinnedMessages[id].push(msg);
+        justPinnedRef = msg;
+        saveData();
+        showToast('✓ Message pinned');
+      } else {
+        showToast('✗ Failed to pin', true);
+      }
+    }
+    hideContextMenu();
+    rerenderTarget(target.panel, id);
+  }
+
+  // ──────────────────────────────────────────────
+  //  FORWARD (with search, selection, message input)
+  // ──────────────────────────────────────────────
+  var forwardSelected = []; // [{ panel, id }] — multi-select
+  var forwardSource = null;  // { panel, chatId, msgIndex, isPinned } — survives hideContextMenu
+
+  function findForwardIndex(panel, id) {
+    for (var i = 0; i < forwardSelected.length; i++) {
+      if (forwardSelected[i].panel === panel && forwardSelected[i].id === id) return i;
+    }
+    return -1;
+  }
+
+  function renderForwardContacts(filter) {
+    var q = (filter || '').toLowerCase();
+    var html = '';
+    conversations.forEach(function(c) {
+      if (q && c.name.toLowerCase().indexOf(q) === -1) return;
+      var sel = findForwardIndex('private', c.id) !== -1;
+      html += '<div style="display:flex;align-items:center;gap:var(--space-sm);padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;transition:background 0.12s' + (sel ? ';background:rgba(70,72,212,0.08)' : '') + '" onclick="selectForwardTarget(\'private\',\'' + c.id + '\')">' +
+        '<div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0">' + c.avatar + '</div>' +
+        '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + c.name + '</span>' +
+        '<span class="label-sm" style="color:var(--color-outline)">Private</span>' +
+        (sel ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline-variant)">radio_button_unchecked</span>') +
+      '</div>';
+    });
+    groups.forEach(function(g) {
+      if (q && g.name.toLowerCase().indexOf(q) === -1) return;
+      var sel = findForwardIndex('group', g.id) !== -1;
+      html += '<div style="display:flex;align-items:center;gap:var(--space-sm);padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;transition:background 0.12s' + (sel ? ';background:rgba(22,163,74,0.08)' : '') + '" onclick="selectForwardTarget(\'group\',\'' + g.id + '\')">' +
+        '<div style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + g.avatar + '</div>' +
+        '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + g.name + '</span>' +
+        '<span class="label-sm" style="color:var(--color-outline)">Group</span>' +
+        (sel ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-secondary)">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline-variant)">radio_button_unchecked</span>') +
+      '</div>';
+    });
+    document.getElementById('forwardContactList').innerHTML = html || '<p style="text-align:center;color:var(--color-outline);padding:var(--space-md)">No contacts match</p>';
+  }
+
+  function selectForwardTarget(panel, id) {
+    var idx = findForwardIndex(panel, id);
+    if (idx !== -1) {
+      forwardSelected.splice(idx, 1); // toggle off
+    } else {
+      forwardSelected.push({ panel: panel, id: id }); // toggle on
+    }
+    renderForwardContacts(document.getElementById('forwardSearchInput').value);
+  }
+
+  function ctxForward() {
+    if (!ctxTarget) return;
+    forwardSelected = [];
+    // Save source info before clearing ctxTarget
+    forwardSource = {
+      panel: ctxTarget.panel,
+      chatId: ctxTarget.chatId,
+      msgIndex: ctxTarget.msgIndex,
+      isPinned: ctxTarget.isPinned
+    };
+    hideContextMenu();
+    renderForwardContacts('');
+    document.getElementById('forwardModal').style.display = 'flex';
+    document.getElementById('forwardSearchInput').value = '';
+    document.getElementById('forwardMsgInput').value = '';
+  }
+
+  function doForward() {
+    if (!forwardSource || forwardSelected.length === 0) return;
+    var id = forwardSource.chatId;
+    var idx = forwardSource.msgIndex;
+    var msgs = forwardSource.panel === 'group' ? (mockGroupMessages[id] || []) : (mockMessages[id] || []);
+    var msg = forwardSource.isPinned ? (pinnedMessages[id] || [])[idx] : msgs[idx];
+    if (!msg) { showToast('✗ Failed to forward', true); closeForwardModal(); return; }
+
+    var senderName = forwardSource.panel === 'group'
+      ? (groups.find(function(g) { return g.id === id; }) || {}).name || 'Unknown'
+      : (conversations.find(function(c) { return c.id === id; }) || {}).name || 'Unknown';
+
+    var extraText = document.getElementById('forwardMsgInput').value.trim();
+
+    // Send to ALL selected targets
+    var count = 0;
+    forwardSelected.forEach(function(target) {
+      var targetPanel = target.panel;
+      var targetId = target.id;
+
+      // Bubble 1: the forwarded message
+      var fwdMsg = { from: 'You', text: msg.text, sent: false, _forwardedFrom: senderName };
+      if (targetPanel === 'group') {
+        if (!mockGroupMessages[targetId]) mockGroupMessages[targetId] = [];
+        mockGroupMessages[targetId].push(fwdMsg);
+        var grp = groups.find(function(g) { return g.id === targetId; });
+        if (grp) { grp.lastMsg = '[Forwarded] ' + msg.text; grp.time = 'Now'; }
+      } else {
+        if (!mockMessages[targetId]) mockMessages[targetId] = [];
+        mockMessages[targetId].push(fwdMsg);
+        var conv = conversations.find(function(c) { return c.id === targetId; });
+        if (conv) { conv.lastMsg = '[Forwarded] ' + msg.text; conv.time = 'Now'; }
+      }
+
+      // Bubble 2: the supplementary message (if any)
+      if (extraText) {
+        var extraMsg = { from: 'You', text: extraText, sent: false };
+        if (targetPanel === 'group') {
+          mockGroupMessages[targetId].push(extraMsg);
+        } else {
+          mockMessages[targetId].push(extraMsg);
+        }
+      }
+      count++;
+    });
+
+    // Snapshot before closeForwardModal clears the array
+    var lastTarget = forwardSelected[forwardSelected.length - 1];
+
+    saveData();
+    showToast('✓ Forwarded to ' + count + ' chat' + (count > 1 ? 's' : ''));
+    closeForwardModal();
+
+    // Navigate to the last selected target
+    if (lastTarget.panel === 'group') {
+      renderGroupList();
+      activeGroup = lastTarget.id;
+      switchToPanel(1);
+      setTimeout(function() { openGroupChat(lastTarget.id); }, 100);
+    } else {
+      renderConversationList();
+      activeChat = lastTarget.id;
+      switchToPanel(0);
+      setTimeout(function() { openChat(lastTarget.id); }, 100);
+    }
+  }
+
+  function closeForwardModal() {
+    document.getElementById('forwardModal').style.display = 'none';
+    forwardSelected = [];
+    forwardSource = null;
+  }
+  document.getElementById('forwardModal').addEventListener('click', function(e) {
+    if (e.target === this) closeForwardModal();
+  });
+
+  function ctxDelete() {
+    if (!ctxTarget) return;
+    var target = ctxTarget;
+    var id = target.chatId;
+    var idx = target.msgIndex;
+    var deleted = false;
+    if (target.isPinned) {
+      var pm = (pinnedMessages[id] || [])[idx];
+      if (pm) { pm._pinned = false; }
+      if (pinnedMessages[id]) { pinnedMessages[id].splice(idx, 1); deleted = true; }
+    } else {
+      var msgs = target.panel === 'group' ? (mockGroupMessages[id] || []) : (mockMessages[id] || []);
+      if (msgs[idx] !== undefined) { msgs.splice(idx, 1); deleted = true; }
+    }
+    hideContextMenu();
+    if (deleted) {
+      saveData();
+      showToast('✓ Message deleted');
+    } else {
+      showToast('✗ Failed to delete', true);
+    }
+    rerenderTarget(target.panel, id);
+  }
+
+  // ──────────────────────────────────────────────
+  //  CHAT INFO MODAL
+  // ──────────────────────────────────────────────
+  var infoChatId = null;
+  var infoPanel = 'private'; // 'private' | 'group'
+  var infoTab = 'pinned';
+
+  var chatBios = {
+    c1: 'Urban planner & architect specializing in modular aquatic developments. Based in Neo-Venice.',
+    c2: 'Digital design studio creating immersive embassy experiences across the M.NationWorld network.',
+    c3: 'Official governance council of the M.NationWorld micronation federation. Est. 2024.',
+    g1: 'Editorial team for the Etheria Times — the official M.NationWorld publication.',
+    g2: 'Collaborative mapping initiative charting all micronation territories.',
+    g3: 'Diplomatic representatives from all member nations.',
+    g4: 'Archivists preserving the history and lore of the M.NationWorld universe.',
+    g5: 'Creative workshop for designing buildings, landscapes, and urban layouts.',
+    g6: 'Cross-cultural exchange program connecting micronations worldwide.'
+  };
+
+  // Mock media: images (gradient thumbnails), videos (gradient+play), links, files
+  var chatMedia = {
+    c1: {
+      images: [
+        { label: 'District_Plan_v3.png', grad: 'linear-gradient(135deg,#a5b4fc 0%,#6366f1 50%,#4f46e5 100%)' },
+        { label: 'Aquatic_Foundation.jpg', grad: 'linear-gradient(135deg,#67e8f9 0%,#0ea5e9 50%,#0284c7 100%)' },
+        { label: 'Territory_Overlay.png', grad: 'linear-gradient(135deg,#6ee7b7 0%,#10b981 50%,#059669 100%)' },
+        { label: 'Modular_Units.jpg', grad: 'linear-gradient(135deg,#fde68a 0%,#f59e0b 50%,#d97706 100%)' },
+        { label: 'Phase1_Blueprint.png', grad: 'linear-gradient(135deg,#f9a8d4 0%,#ec4899 50%,#db2777 100%)' },
+        { label: 'Satellite_View.png', grad: 'linear-gradient(135deg,#c4b5fd 0%,#8b5cf6 50%,#6d28d9 100%)' },
+        { label: 'Structural_Report.jpg', grad: 'linear-gradient(135deg,#99f6e4 0%,#14b8a6 50%,#0d9488 100%)' }
+      ],
+      videos: [
+        { label: 'District_Walkthrough.mp4', duration: '2:34', grad: 'linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#1e3a5f 100%)' },
+        { label: 'Aquatic_Module_Demo.mov', duration: '4:12', grad: 'linear-gradient(135deg,#0c1929 0%,#1e3a5f 50%,#0f766e 100%)' },
+        { label: 'Phase1_Presentation.mp4', duration: '8:05', grad: 'linear-gradient(135deg,#1a0a2e 0%,#3b1f6e 50%,#1e3a5f 100%)' }
+      ],
+      links: [
+        { title: 'Modular Aquatic Urbanism — Whitepaper', url: 'm.nationworld.org/whitepaper/aquatic-urbanism' },
+        { title: 'Neo-Venice Building Code Standards', url: 'm.nationworld.org/standards/neo-venice' },
+        { title: 'Phase 1 Environmental Impact Assessment', url: 'm.nationworld.org/reports/eia-phase1' }
+      ],
+      files: [
+        { name: 'District_Plan_v3.pdf', size: '4.2 MB', type: 'pdf' },
+        { name: 'Budget_Proposal_Q3.xlsx', size: '1.8 MB', type: 'spreadsheet' },
+        { name: 'Contractor_Briefing.pptx', size: '6.5 MB', type: 'presentation' }
+      ]
+    },
+    c2: {
+      images: [
+        { label: 'Embassy_Render_v2.png', grad: 'linear-gradient(135deg,#c7d2fe 0%,#818cf8 50%,#6366f1 100%)' },
+        { label: 'Virtual_Tour_Thumb.jpg', grad: 'linear-gradient(135deg,#bae6fd 0%,#38bdf8 50%,#0ea5e9 100%)' },
+        { label: 'Lobby_Design.png', grad: 'linear-gradient(135deg,#a7f3d0 0%,#34d399 50%,#10b981 100%)' },
+        { label: 'Exterior_View.jpg', grad: 'linear-gradient(135deg,#fde68a 0%,#fbbf24 50%,#f59e0b 100%)' },
+        { label: 'Interior_Shot.png', grad: 'linear-gradient(135deg,#fbcfe8 0%,#f472b6 50%,#ec4899 100%)' }
+      ],
+      videos: [
+        { label: 'Embassy_Tour_3D.mov', duration: '3:18', grad: 'linear-gradient(135deg,#1e1b4b 0%,#3730a3 50%,#1e3a5f 100%)' },
+        { label: 'Client_Walkthrough.mp4', duration: '5:42', grad: 'linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#134e4a 100%)' }
+      ],
+      links: [
+        { title: 'Digital Embassy Design Guide', url: 'studioprime.io/guides/digital-embassy' },
+        { title: 'Virtual Walkthrough — M.NationWorld HQ', url: 'studioprime.io/portfolio/slatiwalk' }
+      ],
+      files: [
+        { name: 'Embassy_Render_Source.blend', size: '128 MB', type: '3d' },
+        { name: 'Client_Feedback_Round2.pdf', size: '2.1 MB', type: 'pdf' }
+      ]
+    },
+    c3: {
+      images: [
+        { label: 'Summit_Agenda.png', grad: 'linear-gradient(135deg,#e0e7ff 0%,#818cf8 50%,#6366f1 100%)' },
+        { label: 'Trade_Agreement_Draft.jpg', grad: 'linear-gradient(135deg,#dbeafe 0%,#60a5fa 50%,#3b82f6 100%)' },
+        { label: 'Council_Photo.jpg', grad: 'linear-gradient(135deg,#d1fae5 0%,#6ee7b7 50%,#10b981 100%)' },
+        { label: 'Chamber_View.png', grad: 'linear-gradient(135deg,#fef3c7 0%,#fcd34d 50%,#f59e0b 100%)' },
+        { label: 'Resolution_Text.png', grad: 'linear-gradient(135deg,#fce7f3 0%,#f9a8d4 50%,#ec4899 100%)' }
+      ],
+      videos: [
+        { label: 'Summit_Opening_Ceremony.mp4', duration: '12:08', grad: 'linear-gradient(135deg,#1e1b4b 0%,#4338ca 50%,#1e3a5f 100%)' }
+      ],
+      links: [
+        { title: 'Governance Summit 2026 — Official Agenda', url: 'council.m.nationworld.org/summit-2026' },
+        { title: 'Trade Agreement Framework v2.1', url: 'council.m.nationworld.org/trade-framework' },
+        { title: 'Border Treaty — Ratification Status', url: 'council.m.nationworld.org/treaties/border' }
+      ],
+      files: [
+        { name: 'Summit_Minutes_2026.pdf', size: '3.4 MB', type: 'pdf' },
+        { name: 'Member_Nation_Ratifications.xlsx', size: '0.9 MB', type: 'spreadsheet' },
+        { name: 'Resolution_2026-07.docx', size: '1.2 MB', type: 'document' }
+      ]
+    },
+    g1: {
+      images: [
+        { label: 'Issue_42_Cover.png', grad: 'linear-gradient(135deg,#e0e7ff 0%,#a5b4fc 50%,#818cf8 100%)' },
+        { label: 'Feature_Spread.jpg', grad: 'linear-gradient(135deg,#dbeafe 0%,#7dd3fc 50%,#38bdf8 100%)' }
+      ],
+      videos: [
+        { label: 'Editorial_Meeting_Recap.mp4', duration: '6:22', grad: 'linear-gradient(135deg,#1a0a2e 0%,#4c1d95 50%,#1e3a5f 100%)' }
+      ],
+      links: [{title:'Etheria Times — Latest Issue',url:'etheria.m.nationworld.org/issue-42'}],
+      files: [{name:'Print_Layout.indd',size:'45 MB',type:'design'}]
+    },
+    g2: {
+      images: [
+        { label: 'World_Map_v7.png', grad: 'linear-gradient(135deg,#d1fae5 0%,#6ee7b7 50%,#34d399 100%)' },
+        { label: 'Topography_Data.jpg', grad: 'linear-gradient(135deg,#fef3c7 0%,#fcd34d 50%,#fbbf24 100%)' },
+        { label: 'Territory_Overlay.png', grad: 'linear-gradient(135deg,#fce7f3 0%,#f9a8d4 50%,#f472b6 100%)' }
+      ],
+      videos: [],
+      links: [{title:'Cartography Standards v3',url:'cartography.m.nationworld.org/standards'}],
+      files: [{name:'Map_Project.qgz',size:'220 MB',type:'gis'}]
+    },
+    g3: {
+      images: [
+        { label: 'Council_Group_Photo.jpg', grad: 'linear-gradient(135deg,#e0e7ff 0%,#c7d2fe 50%,#a5b4fc 100%)' }
+      ],
+      videos: [
+        { label: 'Diplomatic_Session_Record.mp4', duration: '18:45', grad: 'linear-gradient(135deg,#0c1929 0%,#1e3a5f 50%,#0f172a 100%)' },
+        { label: 'Treaty_Signing_Ceremony.mp4', duration: '4:30', grad: 'linear-gradient(135deg,#1a0a2e 0%,#312e81 50%,#1a0a2e 100%)' }
+      ],
+      links: [{title:'Diplomatic Protocol Handbook',url:'council.m.nationworld.org/protocol'}],
+      files: [{name:'Treaty_Template.docx',size:'0.5 MB',type:'document'}]
+    },
+    g4: {
+      images: [
+        { label: 'Lore_Compendium.png', grad: 'linear-gradient(135deg,#ede9fe 0%,#c4b5fd 50%,#a78bfa 100%)' }
+      ],
+      videos: [],
+      links: [{title:'M.NationWorld Historical Archive',url:'lore.m.nationworld.org/archive'}],
+      files: [{name:'Founding_Lore_v12.pdf',size:'8.7 MB',type:'pdf'}]
+    },
+    g5: {
+      images: [
+        { label: 'Workshop_Banner.png', grad: 'linear-gradient(135deg,#ccfbf1 0%,#5eead4 50%,#2dd4bf 100%)' }
+      ],
+      videos: [
+        { label: 'Workshop_23_Recording.mp4', duration: '45:12', grad: 'linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#134e4a 100%)' }
+      ],
+      links: [],
+      files: []
+    },
+    g6: {
+      images: [],
+      videos: [
+        { label: 'Festival_Highlights_2026.mp4', duration: '3:55', grad: 'linear-gradient(135deg,#1e1b4b 0%,#5b21b6 50%,#1e3a5f 100%)' }
+      ],
+      links: [{title:'Cultural Exchange Directory',url:'exchange.m.nationworld.org/directory'}],
+      files: []
+    }
+  };
+
+  function openChatInfo() {
+    // Determine which chat/group is active based on current panel
+    var id, panel;
+    if (msgPanel === 1 && activeGroup) { id = activeGroup; panel = 'group'; }
+    else if (msgPanel === 0 && activeChat) { id = activeChat; panel = 'private'; }
+    else if (activeGroup) { id = activeGroup; panel = 'group'; }
+    else if (activeChat) { id = activeChat; panel = 'private'; }
+    else return;
+
+    infoChatId = id;
+    infoPanel = panel;
+
+    var name, avatar, bio;
+    if (panel === 'group') {
+      var grp = groups.find(function(g) { return g.id === id; });
+      if (!grp) return;
+      name = grp.name;
+      avatar = grp.avatar;
+      bio = chatBios[id] || 'Group chat — ' + grp.members + ' members';
+    } else {
+      var conv = conversations.find(function(c) { return c.id === id; });
+      if (!conv) return;
+      name = conv.name;
+      avatar = conv.avatar;
+      bio = chatBios[id] || 'M.NationWorld member';
+    }
+
+    document.getElementById('infoAvatar').textContent = avatar;
+    document.getElementById('infoName').textContent = name;
+    document.getElementById('infoBio').textContent = bio;
+
+    infoTab = 'pinned';
+    switchInfoTab('pinned');
+    document.getElementById('chatInfoModal').style.display = 'flex';
+  }
+
+  function closeChatInfo() {
+    document.getElementById('chatInfoModal').style.display = 'none';
+    infoChatId = null;
+  }
+
+  // ──────────────────────────────────────────────
+  //  MEMBERS MODAL
+  // ──────────────────────────────────────────────
+  function openMembersModal() {
+    if (!activeGroup) return;
+    var grp = groups.find(function(g) { return g.id === activeGroup; });
+    if (!grp) return;
+    document.getElementById('membersTitle').textContent = grp.name + ' — Members';
+    document.getElementById('memberSearchInput').value = '';
+    renderMembersList('');
+    document.getElementById('membersModal').style.display = 'flex';
+  }
+
+  function closeMembersModal() {
+    document.getElementById('membersModal').style.display = 'none';
+  }
+
+  document.getElementById('membersModal').addEventListener('click', function(e) {
+    if (e.target === this) closeMembersModal();
+  });
+
+  function renderMembersList(filter) {
+    if (!activeGroup) return;
+    var members = groupMembers[activeGroup] || [];
+    var q = (filter || '').toLowerCase();
+    if (q) {
+      members = members.filter(function(m) { return m.name.toLowerCase().indexOf(q) !== -1; });
+    }
+    // Sort: Admins first
+    members = members.slice().sort(function(a, b) {
+      if (a.role === 'Admin' && b.role !== 'Admin') return -1;
+      if (a.role !== 'Admin' && b.role === 'Admin') return 1;
+      return 0;
+    });
+    var html = '';
+    if (members.length === 0) {
+      html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">person_search</span><p style="font-size:var(--fs-label-md)">No members found</p></div>';
+    } else {
+      members.forEach(function(m) {
+        var isAdmin = m.role === 'Admin';
+        html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0">' +
+          '<div style="width:36px;height:36px;border-radius:50%;background:' + (isAdmin ? 'var(--color-primary)' : 'var(--color-secondary)') + ';color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0">' + m.avatar + '</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-weight:600;font-size:var(--fs-label-md)">' + m.name + (m.name === 'You' ? ' <span style="font-weight:400;font-size:10px;color:var(--color-outline)">(you)</span>' : '') + '</div>' +
+            '<div style="font-size:11px;color:' + (isAdmin ? 'var(--color-primary)' : 'var(--color-outline)') + ';font-weight:' + (isAdmin ? '600' : '400') + '">' + m.role + '</div>' +
+          '</div>' +
+        '</div>';
+      });
+    }
+    document.getElementById('membersListContent').innerHTML = html;
+  }
+
+  // ──────────────────────────────────────────────
+  //  IMAGE LIGHTBOX
+  // ──────────────────────────────────────────────
+  var lightboxZoom = 1;
+  var lbPanX = 0, lbPanY = 0;
+  var lbDragging = false, lbDragStartX = 0, lbDragStartY = 0;
+  var lbPanStartX = 0, lbPanStartY = 0;
+  var lbRafPending = false;
+
+  var lbImg = document.getElementById('lightboxImg');
+
+  function lbApplyTransform() {
+    if (lbRafPending) return;
+    lbRafPending = true;
+    requestAnimationFrame(function() {
+      lbRafPending = false;
+      // GPU-accelerated: translate3d + scale
+      lbImg.style.transform = 'translate3d(' + lbPanX + 'px,' + lbPanY + 'px,0) scale(' + lightboxZoom + ')';
+      lbImg.style.cursor = lightboxZoom > 1 ? (lbDragging ? 'grabbing' : 'grab') : 'default';
+    });
+  }
+
+  function openLightbox(src) {
+    lightboxZoom = 1;
+    lbPanX = 0; lbPanY = 0;
+    lbImg.src = src;
+    lbImg.style.transform = 'translate3d(0,0,0) scale(1)';
+    lbImg.style.cursor = 'default';
+    document.getElementById('lightbox').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  // ──────────────────────────────────────────────
+  //  VIDEO PLAYER
+  // ──────────────────────────────────────────────
+  function openVideoPlayer(src, type) {
+    var modal = document.getElementById('videoPlayerModal');
+    var player = document.getElementById('videoPlayer');
+    player.src = src;
+    player.type = type || 'video/mp4';
+    modal.style.display = 'flex';
+    player.play().catch(function() {});
+  }
+
+  function closeVideoPlayer() {
+    var modal = document.getElementById('videoPlayerModal');
+    var player = document.getElementById('videoPlayer');
+    player.pause();
+    player.src = '';
+    modal.style.display = 'none';
+  }
+
+  function zoomLightbox(delta) {
+    if (delta === 0) {
+      lightboxZoom = 1;
+      lbPanX = 0; lbPanY = 0;
+    } else {
+      lightboxZoom = Math.max(0.5, Math.min(5, lightboxZoom + delta));
+    }
+    lbApplyTransform();
+  }
+
+  // Mouse wheel zoom
+  document.getElementById('lightbox').addEventListener('wheel', function(e) {
+    if (this.style.display !== 'flex') return;
+    e.preventDefault();
+    zoomLightbox(e.deltaY < 0 ? 0.2 : -0.2);
+  });
+
+  // Pan: mousedown
+  lbImg.addEventListener('mousedown', function(e) {
+    if (lightboxZoom <= 1) return;
+    e.preventDefault();
+    lbDragging = true;
+    lbDragStartX = e.clientX;
+    lbDragStartY = e.clientY;
+    lbPanStartX = lbPanX;
+    lbPanStartY = lbPanY;
+    lbApplyTransform();
+  });
+
+  // Pan: mousemove — throttled by rAF in lbApplyTransform
+  document.addEventListener('mousemove', function(e) {
+    if (!lbDragging) return;
+    lbPanX = lbPanStartX + (e.clientX - lbDragStartX);
+    lbPanY = lbPanStartY + (e.clientY - lbDragStartY);
+    lbApplyTransform();
+  });
+
+  // Pan: mouseup
+  document.addEventListener('mouseup', function() {
+    if (!lbDragging) return;
+    lbDragging = false;
+    lbApplyTransform();
+  });
+
+  // Touch: touchstart
+  lbImg.addEventListener('touchstart', function(e) {
+    if (lightboxZoom <= 1) return;
+    if (e.touches.length === 1) {
+      lbDragging = true;
+      lbDragStartX = e.touches[0].clientX;
+      lbDragStartY = e.touches[0].clientY;
+      lbPanStartX = lbPanX;
+      lbPanStartY = lbPanY;
+    }
+  }, { passive: false });
+
+  // Touch: touchmove — throttled by rAF
+  document.addEventListener('touchmove', function(e) {
+    if (!lbDragging) return;
+    if (e.touches.length === 1) {
+      lbPanX = lbPanStartX + (e.touches[0].clientX - lbDragStartX);
+      lbPanY = lbPanStartY + (e.touches[0].clientY - lbDragStartY);
+      lbApplyTransform();
+    }
+  }, { passive: false });
+
+  // Touch: touchend
+  document.addEventListener('touchend', function() {
+    if (!lbDragging) return;
+    lbDragging = false;
+    lbApplyTransform();
+  });
+
+  function switchInfoTab(tab) {
+    infoTab = tab;
+    // Update tab active states
+    document.querySelectorAll('.infoTab').forEach(function(btn) {
+      var isActive = btn.dataset.infotab === tab;
+      btn.style.color = isActive ? 'var(--color-on-surface)' : 'var(--color-outline)';
+      btn.style.borderBottomColor = isActive ? 'var(--color-primary)' : 'transparent';
+    });
+    renderInfoTab(tab);
+  }
+
+  function renderInfoTab(tab) {
+    _resetMediaReg();
+    var container = document.getElementById('infoTabContent');
+    var id = infoChatId;
+    var panel = infoPanel;
+    var html = '';
+
+    // Helper: get the right message store
+    var msgStore = panel === 'group' ? mockGroupMessages : mockMessages;
+    var chatMsgs = msgStore[id] || [];
+
+    if (tab === 'pinned') {
+      var pinned = chatMsgs.filter(function(m) { return m._pinned; });
+      if (pinned.length === 0) {
+        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">push_pin</span><p style="font-size:var(--fs-label-md)">No pinned messages</p></div>';
+      } else {
+        pinned.forEach(function(pm, pi) {
+          var isSent = !pm.sent;
+          html += '<div style="display:flex;justify-content:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:8px">' +
+            '<div style="max-width:80%;padding:8px 14px;border-radius:var(--radius-lg);font-size:var(--fs-label-md);' +
+              (isSent ? 'background:var(--color-primary);color:white;' : 'background:var(--card-bg);border:1px solid var(--divider-line);') + '">' +
+              '<div style="font-size:10px;opacity:0.65;margin-bottom:2px"><span class="material-symbols-outlined" style="font-size:10px;vertical-align:middle">push_pin</span> ' + pm.from + '</div>' +
+              (pm._forwardedFrom ? '<div style="font-size:9px;opacity:0.45;margin-bottom:2px">↪ Forwarded from ' + pm._forwardedFrom + '</div>' : '') +
+              pm.text +
+            '</div></div>';
+        });
+      }
+    } else if (tab === 'images') {
+      // Only collect images from actual messages — no seed/hardcoded data
+      var mediaImgs = [];
+      chatMsgs.forEach(function(m) {
+        if (m._file && m._file.dataUrl && m._file._kind !== 'video') {
+          mediaImgs.unshift({ label: m._file.name, dataUrl: m._file.dataUrl });
+        }
+      });
+      if (mediaImgs.length === 0) {
+        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">image</span><p style="font-size:var(--fs-label-md)">No images shared</p></div>';
+      } else {
+        html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">';
+        mediaImgs.forEach(function(img) {
+          var imgRegId = _regMedia({ dataUrl: img.dataUrl, videoUrl: null });
+          html += '<div style="aspect-ratio:1;border-radius:var(--radius-lg);cursor:pointer;overflow:hidden;transition:transform 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.1)" onmouseenter="this.style.transform=\'scale(1.04)\'" onmouseleave="this.style.transform=\'scale(1)\'" onclick="_openRegLightbox(\'' + imgRegId + '\')">' +
+            '<div style="width:100%;height:100%;position:relative">' +
+              '<img src="' + img.dataUrl + '" style="width:100%;height:100%;object-fit:cover" alt="' + img.label + '">' +
+              '<div style="position:absolute;bottom:0;left:0;right:0;padding:6px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.55));color:white;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + img.label + '</div>' +
+            '</div>' +
+          '</div>';
+        });
+        html += '</div>';
+      }
+    } else if (tab === 'videos') {
+      // Only collect videos from actual messages — no seed/hardcoded data
+      var mediaVids = [];
+      chatMsgs.forEach(function(m) {
+        if (m._file && (m._file._kind === 'video' || isVideoFile(m._file))) {
+          mediaVids.unshift({ label: m._file.name, duration: '', dataUrl: m._file.dataUrl || null, videoUrl: m._file.videoUrl || null, vidType: m._file.type || 'video/mp4', grad: 'linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%)' });
+        }
+      });
+      if (mediaVids.length === 0) {
+        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">movie</span><p style="font-size:var(--fs-label-md)">No videos shared</p></div>';
+      } else {
+        html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">';
+        mediaVids.forEach(function(vid) {
+          var bgStyle = vid.dataUrl
+            ? 'background:url(' + vid.dataUrl + ') center/cover'
+            : 'background:' + vid.grad;
+          var vidRegId = _regMedia({ dataUrl: vid.dataUrl || null, videoUrl: vid.videoUrl || null, vidType: vid.vidType || 'video/mp4' });
+          html += '<div style="aspect-ratio:1;border-radius:var(--radius-lg);cursor:pointer;overflow:hidden;transition:transform 0.15s;box-shadow:0 1px 3px rgba(0,0,0,0.1)" onmouseenter="this.style.transform=\'scale(1.04)\'" onmouseleave="this.style.transform=\'scale(1)\'" onclick="_openRegMedia(\'' + vidRegId + '\')">' +
+            '<div style="width:100%;height:100%;' + bgStyle + ';display:flex;align-items:center;justify-content:center;position:relative">' +
+              '<div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.2)">' +
+                '<span class="material-symbols-outlined" style="font-size:20px;color:white;margin-left:2px">play_arrow</span>' +
+              '</div>' +
+              (vid.duration ? '<div style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.6);color:white;font-size:10px;font-weight:600;padding:2px 5px;border-radius:4px">' + vid.duration + '</div>' : '') +
+              '<div style="position:absolute;bottom:0;left:0;right:0;padding:6px 8px;background:linear-gradient(transparent,rgba(0,0,0,0.55));color:white;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + vid.label + '</div>' +
+            '</div>' +
+          '</div>';
+        });
+        html += '</div>';
+      }
+    } else if (tab === 'links') {
+      // Only collect links from actual messages — no seed/hardcoded data
+      var mediaLinks = [];
+      chatMsgs.forEach(function(m) {
+        var urlRe = /https?:\/\/[^\s<>"{}|\\^`\[\]]+/gi;
+        var matches = m.text.match(urlRe);
+        if (matches) {
+          matches.forEach(function(url) {
+            // Avoid duplicates
+            var exists = mediaLinks.some(function(l) { return l.url === url; });
+            if (!exists) {
+              mediaLinks.unshift({ title: url.replace(/^https?:\/\//, '').replace(/\/$/, ''), url: url });
+            }
+          });
+        }
+      });
+      if (mediaLinks.length === 0) {
+        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">link</span><p style="font-size:var(--fs-label-md)">No links shared</p></div>';
+      } else {
+        mediaLinks.forEach(function(link) {
+          html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;margin-bottom:4px;transition:background 0.12s" onmouseenter="this.style.background=\'rgba(70,72,212,0.04)\'" onmouseleave="this.style.background=\'transparent\'">' +
+            '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary);flex-shrink:0">link</span>' +
+            '<div style="min-width:0;flex:1">' +
+              '<div style="font-weight:500;font-size:var(--fs-label-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + link.title + '</div>' +
+              '<div style="font-size:11px;color:var(--color-outline)">' + link.url + '</div>' +
+            '</div>' +
+          '</div>';
+        });
+      }
+    } else if (tab === 'files') {
+      // Only collect files from actual messages — no seed/hardcoded data
+      var mediaFiles = [];
+      chatMsgs.forEach(function(m) {
+        // Collect non-image, non-video files
+        if (m._file && !m._file.dataUrl && !isVideoFile(m._file) && !(m._file._kind === 'image')) {
+          var sizeStr = m._file.size
+            ? (m._file.size > 1048576 ? (m._file.size / 1048576).toFixed(1) + ' MB' : (m._file.size / 1024).toFixed(0) + ' KB')
+            : '';
+          mediaFiles.unshift({ name: m._file.name, size: sizeStr, type: 'document' });
+        }
+      });
+      var fileIcons = { pdf: 'picture_as_pdf', spreadsheet: 'table', presentation: 'slideshow', document: 'description', '3d': 'view_in_ar', design: 'design_services', gis: 'map' };
+      if (mediaFiles.length === 0) {
+        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">folder</span><p style="font-size:var(--fs-label-md)">No files shared</p></div>';
+      } else {
+        mediaFiles.forEach(function(file) {
+          html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;margin-bottom:4px;transition:background 0.12s" onmouseenter="this.style.background=\'rgba(70,72,212,0.04)\'" onmouseleave="this.style.background=\'transparent\'">' +
+            '<span class="material-symbols-outlined" style="font-size:22px;color:var(--color-primary);flex-shrink:0">' + (fileIcons[file.type] || 'draft') + '</span>' +
+            '<div style="min-width:0;flex:1">' +
+              '<div style="font-weight:500;font-size:var(--fs-label-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + file.name + '</div>' +
+              '<div style="font-size:11px;color:var(--color-outline)">' + file.size + '</div>' +
+            '</div>' +
+          '</div>';
+        });
+      }
+    }
+    container.innerHTML = html;
+  }
+
+  // Click outside to close info modal
+  document.getElementById('chatInfoModal').addEventListener('click', function(e) {
+    if (e.target === this) closeChatInfo();
+  });
+
+  // ──────────────────────────────────────────────
+  //  PRIVATE MESSAGES
+  // ──────────────────────────────────────────────
+  var activeChat = null;
+  var convCollapsed = false;
+
+  function toggleConvSidebar() {
+    convCollapsed = !convCollapsed;
+    var sidebar = document.getElementById('convSidebar');
+    var icon = document.getElementById('convCollapseIcon');
+    var btn = document.getElementById('convCollapseBtn');
+    if (convCollapsed) {
+      sidebar.style.width = '56px';
+      icon.textContent = 'last_page';
+      btn.style.alignSelf = 'center';
+    } else {
+      sidebar.style.width = '320px';
+      icon.textContent = 'first_page';
+      btn.style.alignSelf = 'flex-end';
+    }
+    renderConversationList();
+  }
+
+  var conversations = [
+    { id: 'c1', name: 'Marcus Vane', lastMsg: 'The floating district plans look...', time: '12:34 PM', avatar: 'M', online: true },
+    { id: 'c2', name: 'Studio Prime', lastMsg: 'Digital embassy renderings attached.', time: '10:15 AM', avatar: 'S', online: false },
+    { id: 'c3', name: 'Sovereign Council', lastMsg: 'Agenda for next governance summit.', time: 'Yesterday', avatar: 'SC', online: true },
+  ];
+
+  var mockMessages = {
+    c1: [
+      { from: 'Marcus Vane', text: 'I\'ve been working on the modular aquatic district proposals.', sent: true },
+      { from: 'You', text: 'Looking forward to reviewing them. Any updates on Phase 1?', sent: false },
+      { from: 'Marcus Vane', text: 'The floating district plans look promising — I\'ve attached the preliminary blueprints.', sent: true },
+    ],
+    c2: [
+      { from: 'Studio Prime', text: 'Here are the latest digital embassy renderings for your review.', sent: true },
+      { from: 'You', text: 'These look incredible. Can we schedule a walkthrough?', sent: false },
+      { from: 'Studio Prime', text: 'Absolutely. I\'ll set up a virtual tour for Thursday at 3 PM.', sent: true },
+    ],
+    c3: [
+      { from: 'Sovereign Council', text: 'The agenda for the next governance summit has been finalized.', sent: true },
+      { from: 'You', text: 'Great. Is the trade agreement still on the agenda?', sent: false },
+      { from: 'Sovereign Council', text: 'Yes — moved to item #4. I\'ve also added the border treaty discussion as a new item.', sent: true },
+    ]
+  };
+
+  function renderConversationList() {
+    var html;
+    if (convCollapsed) {
+      html = conversations.map(function(c) {
+        var isActive = c.id === activeChat;
+        var ring = isActive ? '2px solid var(--color-primary)' : '2px solid transparent';
+        return '<div title="' + c.name + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openChat(\'' + c.id + '\')">' +
+          '<div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
+            c.avatar +
+            (c.online ? '<span class="status-dot status-dot-green" style="position:absolute;bottom:0;right:0;border:2px solid white"></span>' : '') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    } else {
+      html = conversations.map(function(c) {
+        return '<div class="card card-hover" style="cursor:pointer;padding:var(--space-sm)" onclick="openChat(\'' + c.id + '\')">' +
+          '<div class="flex-center gap-sm">' +
+            '<div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative">' +
+              c.avatar +
+              (c.online ? '<span class="status-dot status-dot-green" style="position:absolute;bottom:0;right:0;border:2px solid white"></span>' : '') +
+            '</div>' +
+            '<div style="min-width:0;flex:1">' +
+              '<div class="flex-between">' +
+                '<span style="font-weight:600;font-size:var(--fs-label-md)">' + c.name + '</span>' +
+                '<span class="label-sm" style="color:var(--color-outline)">' + c.time + '</span>' +
+              '</div>' +
+              '<div class="label-sm" style="color:var(--color-outline);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + c.lastMsg + '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+    document.getElementById('conversationList').innerHTML = html;
+  }
+
+  function openChat(id) {
+    if (pendingFile && pendingFile.source === 'private') cancelFilePreview();
+    activeChat = id;
+    var conv = conversations.find(function(c) { return c.id === id; });
+    if (!conv) return;
+    document.getElementById('chatName').textContent = conv.name;
+    document.getElementById('chatStatus').textContent = conv.online ? 'Online' : 'Offline';
+    document.getElementById('chatHeader').style.display = 'flex';
+    document.getElementById('chatInputBar').style.display = 'flex';
+    // emptyChat is a child of messageList — it gets destroyed by innerHTML
+    // so we must guard against null after the first openChat call
+    var ec = document.getElementById('emptyChat');
+    if (ec) ec.style.display = 'none';
+    var ml = document.getElementById('messageList');
+    ml.style.display = '';
+    ml.style.alignItems = '';
+    ml.style.justifyContent = '';
+
+    markMessagesRead(mockMessages, id);
+
+    var msgs = mockMessages[id] || [];
+    justPinnedRef = null;
+    _resetMediaReg();
+    var html = '';
+    msgs.forEach(function(m, mi) {
+      html += msgBubble(m, mi, !!m._pinned, 'private', id);
+    });
+    ml.innerHTML = html || '<p style="text-align:center;color:var(--color-outline);margin-top:var(--space-xl)">No messages yet. Say hello!</p>';
+    renderConversationList();
+  }
+
+  function sendMessage() {
+    var input = document.getElementById('chatInput');
+    if (!input) return;
+    var text = input.value.trim();
+    var hasFile = pendingFile && pendingFile.source === 'private';
+    if (!text && !hasFile) return;
+    if (!activeChat) return;
+
+    if (!mockMessages[activeChat]) mockMessages[activeChat] = [];
+
+    // Send file bubble first (if pending)
+    if (hasFile) {
+      var isImg = pendingFile.type.match(/^image\//);
+      var isVid = isVideoFile(pendingFile);
+      var fileMsg = {
+        from: 'You',
+        sent: false,
+        _file: {
+          name: pendingFile.name,
+          type: pendingFile.type,
+          size: pendingFile.size,
+          mode: pendingFile.mode,
+          dataUrl: pendingFile.dataUrl || null,
+          videoUrl: pendingFile.videoUrl || null,
+          _kind: isVid ? 'video' : 'image'
+        },
+        text: (isImg || pendingFile.dataUrl) ? '' : ('[File: ' + pendingFile.name + ']')
+      };
+      mockMessages[activeChat].push(fileMsg);
+      pendingFile = null;
+      clearFilePreviewUI();
+    }
+
+    // Send text bubble
+    if (text) {
+      mockMessages[activeChat].push({ from: 'You', text: text, sent: false });
+    }
+
+    var conv = conversations.find(function(c) { return c.id === activeChat; });
+    if (conv) { conv.lastMsg = hasFile ? '[Image]' : text; conv.time = 'Now'; }
+
+    input.value = '';
+    saveData();
+    renderConversationList();
+    // Refresh read receipts + re-render messages directly
+    markMessagesRead(mockMessages, activeChat);
+    var msgs = mockMessages[activeChat] || [];
+    justPinnedRef = null;
+    _resetMediaReg();
+    var html = '';
+    msgs.forEach(function(m, mi) { html += msgBubble(m, mi, !!m._pinned, 'private', activeChat); });
+    document.getElementById('messageList').innerHTML = html;
+    document.getElementById('messageList').scrollTop = document.getElementById('messageList').scrollHeight;
+    animateLastBubble('messageList');
+  }
+
+  function simulateUpload(mode) {
+    if (!activeChat) return;
+    if (!mockMessages[activeChat]) mockMessages[activeChat] = [];
+    var label = mode === 'compress' ? '[File sent — compressed]' : '[File sent — original]';
+    mockMessages[activeChat].push({ from: 'You', text: label, sent: false });
+    saveData();
+    openChat(activeChat);
+  }
+
+  // ──────────────────────────────────────────────
+  //  UPLOAD OPTIONS POPUP
+  // ──────────────────────────────────────────────
+  function openUploadPopup(e) {
+    e.stopPropagation();
+    var popup = document.getElementById('uploadPopup');
+    var btn = e.currentTarget;
+    var rect = btn.getBoundingClientRect();
+    popup.style.display = 'block';
+    popup.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+    popup.style.left = (rect.left - 10) + 'px';
+    // Store which panel opened it
+    popup.dataset.source = msgPanel === 1 ? 'group' : 'private';
+  }
+
+  var pendingUploadMode = 'compress';
+  var pendingFile = null; // { name, type, mode, dataUrl, source }
+
+  function selectUpload(mode) {
+    var popup = document.getElementById('uploadPopup');
+    popup.style.display = 'none';
+    pendingUploadMode = mode;
+    document.getElementById('hiddenFileInput').click();
+  }
+
+  function handleFileSelect(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+    var popup = document.getElementById('uploadPopup');
+    var source = popup.dataset.source || 'private';
+
+    pendingFile = {
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      mode: pendingUploadMode,
+      source: source,
+      dataUrl: null,
+      videoUrl: null
+    };
+
+    if (file.type.match(/^image\//)) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        pendingFile.dataUrl = e.target.result;
+        renderFilePreview();
+      };
+      reader.readAsDataURL(file);
+    } else if (isVideoFile(file)) {
+      // Generate thumbnail from video frame
+      var blobUrl = URL.createObjectURL(file);
+      pendingFile.videoUrl = blobUrl;
+      var video = document.createElement('video');
+      video.preload = 'auto';
+      video.muted = true;
+      video.playsInline = true;
+      video.crossOrigin = 'anonymous';
+      var captured = false;
+      function captureFrame() {
+        if (captured) return;
+        captured = true;
+        try {
+          var c = document.createElement('canvas');
+          c.width = video.videoWidth || 320;
+          c.height = video.videoHeight || 180;
+          var ctx = c.getContext('2d');
+          ctx.drawImage(video, 0, 0, c.width, c.height);
+          pendingFile.dataUrl = c.toDataURL('image/jpeg', 0.75);
+        } catch(e) {}
+        renderFilePreview();
+      }
+      video.addEventListener('loadeddata', function() {
+        video.currentTime = 0.1;
+      });
+      video.addEventListener('seeked', captureFrame);
+      video.addEventListener('canplay', function() {
+        // If seeked doesn't fire, capture from canplay after short delay
+        setTimeout(function() {
+          if (!captured) captureFrame();
+        }, 500);
+      });
+      video.src = blobUrl;
+      video.load();
+      // Ultimate fallback
+      setTimeout(function() {
+        if (!captured) { captured = true; renderFilePreview(); }
+      }, 3000);
+    } else {
+      renderFilePreview();
+    }
+
+    event.target.value = '';
+  }
+
+  function renderFilePreview() {
+    if (!pendingFile) return;
+    var isGroup = pendingFile.source === 'group';
+    var container = document.getElementById(isGroup ? 'groupFilePreview' : 'filePreview');
+    if (!container) return;
+
+    var isImage = pendingFile.type.match(/^image\//);
+    var isVideo = isVideoFile(pendingFile);
+    var sizeLabel = pendingFile.size > 1048576
+      ? (pendingFile.size / 1048576).toFixed(1) + ' MB'
+      : (pendingFile.size / 1024).toFixed(0) + ' KB';
+
+    var html = '<div style="position:relative;width:100px;height:100px;border-radius:var(--radius-lg);overflow:hidden;background:rgba(0,0,0,0.03);border:1px solid rgba(118,117,134,0.12);flex-shrink:0">';
+    // Close button
+    html += '<button onclick="cancelFilePreview()" style="position:absolute;top:4px;right:4px;z-index:2;width:22px;height:22px;border-radius:50%;border:none;background:rgba(0,0,0,0.5);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0"><span class="material-symbols-outlined" style="font-size:14px">close</span></button>';
+
+    if (isImage && pendingFile.dataUrl) {
+      html += '<img src="' + pendingFile.dataUrl + '" style="width:100%;height:100%;object-fit:cover" alt="' + pendingFile.name + '">';
+    } else if (isVideo && pendingFile.dataUrl) {
+      // Video thumbnail with play button
+      html += '<img src="' + pendingFile.dataUrl + '" style="width:100%;height:100%;object-fit:cover" alt="' + pendingFile.name + '">';
+      html += '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">' +
+        '<div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.25);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3)">' +
+          '<span class="material-symbols-outlined" style="font-size:18px;color:white;margin-left:2px">play_arrow</span>' +
+        '</div></div>';
+    } else if (isVideo) {
+      // Video without thumbnail — gradient placeholder
+      html += '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;text-align:center;background:linear-gradient(135deg,#0f172a,#1e3a5f)">';
+      html += '<div style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:4px">';
+      html += '<span class="material-symbols-outlined" style="font-size:16px;color:white;margin-left:1px">play_arrow</span></div>';
+      html += '<span style="font-size:9px;color:rgba(255,255,255,0.7);margin-top:2px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all">' + pendingFile.name + '</span>';
+      html += '</div>';
+    } else {
+      html += '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;text-align:center">';
+      html += '<span class="material-symbols-outlined" style="font-size:28px;color:var(--color-primary)">draft</span>';
+      html += '<span style="font-size:9px;color:var(--color-outline);margin-top:4px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all">' + pendingFile.name + '</span>';
+      html += '</div>';
+    }
+
+    html += '<div style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,0.55);color:white;font-size:8px;padding:1px 5px;border-radius:4px">' + sizeLabel + '</div>';
+    html += '</div>';
+
+    container.innerHTML = html;
+    container.style.display = 'flex';
+  }
+
+  function clearFilePreviewUI() {
+    // Just hide the UI, keep the data (for when file was sent)
+    var priv = document.getElementById('filePreview');
+    var grp = document.getElementById('groupFilePreview');
+    if (priv) priv.style.display = 'none';
+    if (grp) grp.style.display = 'none';
+  }
+
+  function cancelFilePreview() {
+    if (pendingFile && pendingFile.videoUrl) {
+      URL.revokeObjectURL(pendingFile.videoUrl);
+    }
+    pendingFile = null;
+    clearFilePreviewUI();
+  }
+
+  // Close popup on outside click
+  document.addEventListener('click', function(e) {
+    var popup = document.getElementById('uploadPopup');
+    if (popup.style.display === 'block' && !popup.contains(e.target) && !e.target.closest('[onclick*="openUploadPopup"]')) {
+      popup.style.display = 'none';
+    }
+  });
+
+  // ──────────────────────────────────────────────
+  //  GROUPS (WhatsApp-style)
+  // ──────────────────────────────────────────────
+  var activeGroup = null;
+  var groupCollapsed = false;
+
+  function toggleGroupSidebar() {
+    groupCollapsed = !groupCollapsed;
+    var sidebar = document.getElementById('groupSidebar');
+    var icon = document.getElementById('groupCollapseIcon');
+    var btn = document.getElementById('groupCollapseBtn');
+    if (groupCollapsed) {
+      sidebar.style.width = '56px';
+      icon.textContent = 'last_page';
+      btn.style.alignSelf = 'center';
+    } else {
+      sidebar.style.width = '320px';
+      icon.textContent = 'first_page';
+      btn.style.alignSelf = 'flex-end';
+    }
+    renderGroupList();
+  }
+
+  var groups = [
+    { id: 'g1', name: 'Etheria Editorial Board', members: 12, online: 3, lastMsg: 'Final draft approved for publication', time: '2:45 PM', avatar: 'EE', unread: 3, isAnnouncement: true },
+    { id: 'g2', name: 'Cartography Guild', members: 28, online: 8, lastMsg: 'New map overlay ready for review', time: '11:30 AM', avatar: 'CG', unread: 0 },
+    { id: 'g3', name: 'Diplomatic Council', members: 8, online: 2, lastMsg: 'Treaty draft v3 uploaded to repository', time: 'Yesterday', avatar: 'DC', unread: 5, isAnnouncement: true },
+    { id: 'g4', name: 'Lore Keepers', members: 15, online: 4, lastMsg: 'Chapter 7 revisions done. Ready for your review!', time: 'Monday', avatar: 'LK', unread: 0 },
+    { id: 'g5', name: 'Worldbuilding Workshop', members: 42, online: 12, lastMsg: 'Workshop #23 notes posted in the channel', time: 'Tuesday', avatar: 'WW', unread: 1 },
+    { id: 'g6', name: 'Cultural Exchange Forum', members: 19, online: 6, lastMsg: 'New festival proposal from Neo-Venice', time: 'Wednesday', avatar: 'CE', unread: 0 },
+  ];
+
+  var groupMembers = {
+    g1: [
+      { name: 'Marcus Vane', role: 'Admin', avatar: 'MV' },
+      { name: 'Elena Rossi', role: 'Admin', avatar: 'ER' },
+      { name: 'You', role: 'Admin', avatar: 'Y' },
+      { name: 'Sofia Chen', role: 'Member', avatar: 'SC' },
+      { name: 'Liam O\'Brien', role: 'Member', avatar: 'LO' },
+      { name: 'Aria Patel', role: 'Member', avatar: 'AP' },
+      { name: 'Noah Kim', role: 'Member', avatar: 'NK' },
+      { name: 'Zara Williams', role: 'Member', avatar: 'ZW' },
+      { name: 'Hugo Tanaka', role: 'Member', avatar: 'HT' },
+      { name: 'Ivy Laurent', role: 'Member', avatar: 'IL' },
+    ],
+    g2: [
+      { name: 'Prof. Atlas Stone', role: 'Admin', avatar: 'AS' },
+      { name: 'You', role: 'Admin', avatar: 'Y' },
+      { name: 'Mira Novak', role: 'Member', avatar: 'MN' },
+      { name: 'Dr. Kai Rivers', role: 'Member', avatar: 'KR' },
+      { name: 'Nina Szabo', role: 'Member', avatar: 'NS' },
+      { name: 'Oscar Flint', role: 'Member', avatar: 'OF' },
+    ],
+    g3: [
+      { name: 'Ambassador Keen', role: 'Admin', avatar: 'AK' },
+      { name: 'Council Chair', role: 'Admin', avatar: 'CC' },
+      { name: 'You', role: 'Admin', avatar: 'Y' },
+      { name: 'Delegate Sarah Wu', role: 'Member', avatar: 'SW' },
+      { name: 'Envoy Ravi Singh', role: 'Member', avatar: 'RS' },
+      { name: 'Minister Grace Okafor', role: 'Member', avatar: 'GO' },
+      { name: 'Consul Lars Johansson', role: 'Member', avatar: 'LJ' },
+      { name: 'Attaché Yuki Mori', role: 'Member', avatar: 'YM' },
+    ],
+    g4: [
+      { name: 'Archivist Prime', role: 'Admin', avatar: 'AP' },
+      { name: 'You', role: 'Member', avatar: 'Y' },
+      { name: 'Scribe Elowen', role: 'Member', avatar: 'SE' },
+      { name: 'Keeper Thorne', role: 'Member', avatar: 'KT' },
+      { name: 'Lore Master Jin', role: 'Member', avatar: 'LJ' },
+      { name: 'Chronicler Maya', role: 'Member', avatar: 'CM' },
+    ],
+    g5: [
+      { name: 'Master Builder Ty', role: 'Admin', avatar: 'MT' },
+      { name: 'Architect Dana', role: 'Admin', avatar: 'AD' },
+      { name: 'You', role: 'Member', avatar: 'Y' },
+      { name: 'Designer Finn', role: 'Member', avatar: 'DF' },
+      { name: 'Planner Zoe', role: 'Member', avatar: 'PZ' },
+      { name: 'Sculptor Remy', role: 'Member', avatar: 'SR' },
+      { name: 'Engineer Petra', role: 'Member', avatar: 'EP' },
+    ],
+    g6: [
+      { name: 'Curator Faye', role: 'Admin', avatar: 'CF' },
+      { name: 'You', role: 'Member', avatar: 'Y' },
+      { name: 'Ambassador Niko', role: 'Member', avatar: 'AN' },
+      { name: 'Delegate Priya', role: 'Member', avatar: 'DP' },
+      { name: 'Envoy Hassan', role: 'Member', avatar: 'EH' },
+      { name: 'Liaison Chloe', role: 'Member', avatar: 'LC' },
+    ]
+  };
+
+  var mockGroupMessages = {
+    g1: [
+      { from: 'Marcus Vane', text: 'I think the editorial guidelines need a revision for the upcoming issue.', sent: true },
+      { from: 'You', text: 'Agreed. Let\'s schedule a meeting to discuss the changes.', sent: false },
+      { from: 'Elena Rossi', text: 'I\'ve drafted some proposals. Sharing them in a moment.', sent: true },
+    ],
+    g2: [
+      { from: 'CartographyBot', text: 'New satellite imagery overlay has been processed.', sent: true },
+      { from: 'You', text: 'Looks great! Can we add elevation data to the eastern region?', sent: false },
+    ],
+    g3: [
+      { from: 'Council Chair', text: 'The treaty draft is ready for review. All members please read before Friday.', sent: true },
+      { from: 'Ambassador Keen', text: 'Section 4 needs clarification on territorial waters.', sent: true },
+      { from: 'You', text: 'I\'ll prepare a summary of proposed amendments.', sent: false },
+    ],
+  };
+
+  function renderGroupList() {
+    var html;
+    if (groupCollapsed) {
+      html = groups.map(function(g) {
+        var isActive = g.id === activeGroup;
+        var ring = isActive ? '2px solid var(--color-secondary)' : '2px solid transparent';
+        return '<div title="' + g.name + (g.unread > 0 ? ' (' + g.unread + ' unread)' : '') + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openGroupChat(\'' + g.id + '\')">' +
+          '<div style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
+            g.avatar +
+            (g.unread > 0 ? '<span style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:var(--color-primary);border-radius:50%;border:1px solid white"></span>' : '') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    } else {
+      html = groups.map(function(g) {
+        var unreadBadge = g.unread > 0
+          ? '<span style="background:var(--color-primary);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:var(--radius-full);min-width:20px;text-align:center;flex-shrink:0">' + g.unread + '</span>'
+          : '';
+        return '<div class="card card-hover" style="cursor:pointer;padding:var(--space-sm)" onclick="openGroupChat(\'' + g.id + '\')">' +
+          '<div class="flex-center gap-sm">' +
+            '<div style="width:40px;height:40px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">' +
+              g.avatar +
+            '</div>' +
+            '<div style="min-width:0;flex:1">' +
+              '<div class="flex-between">' +
+                '<span style="font-weight:600;font-size:var(--fs-label-md)">' + g.name + (g.isAnnouncement ? ' <span class="material-symbols-outlined" style="font-size:14px;color:var(--color-outline);vertical-align:middle">campaign</span>' : '') + '</span>' +
+                '<span class="label-sm" style="color:var(--color-outline)">' + g.time + '</span>' +
+              '</div>' +
+              '<div class="flex-between">' +
+                '<span class="label-sm" style="color:var(--color-outline)">' + g.members + ' members · ' + g.online + ' online</span>' +
+                unreadBadge +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+    document.getElementById('groupList').innerHTML = html;
+  }
+
+  function openGroupChat(id) {
+    if (pendingFile && pendingFile.source === 'group') cancelFilePreview();
+    activeGroup = id;
+    var grp = groups.find(function(g) { return g.id === id; });
+    if (!grp) return;
+    document.getElementById('groupChatName').textContent = grp.name;
+    document.getElementById('groupChatMeta').textContent = grp.members + ' members';
+    document.getElementById('groupAvatar').textContent = grp.avatar;
+    document.getElementById('groupAvatar').style.background = 'var(--color-secondary)';
+    document.getElementById('groupChatHeader').style.display = 'flex';
+    document.getElementById('groupChatInputBar').style.display = 'flex';
+    var egc = document.getElementById('emptyGroupChat');
+    if (egc) egc.style.display = 'none';
+    var gml = document.getElementById('groupMessageList');
+    gml.style.display = '';
+    gml.style.alignItems = '';
+    gml.style.justifyContent = '';
+
+    // Clear unread
+    grp.unread = 0;
+
+    markMessagesRead(mockGroupMessages, id);
+
+    var msgs = mockGroupMessages[id] || [];
+    justPinnedRef = null;
+    _resetMediaReg();
+    var html = '';
+    msgs.forEach(function(m, mi) {
+      html += msgBubble(m, mi, !!m._pinned, 'group', id);
+    });
+    gml.innerHTML = html || '<p style="text-align:center;color:var(--color-outline);margin-top:var(--space-xl)">No messages yet. Start the conversation!</p>';
+    renderGroupList();
+  }
+
+  function sendGroupMessage() {
+    var input = document.getElementById('groupChatInput');
+    if (!input) return;
+    var text = input.value.trim();
+    var hasFile = pendingFile && pendingFile.source === 'group';
+    if (!text && !hasFile) return;
+    if (!activeGroup) return;
+
+    if (!mockGroupMessages[activeGroup]) mockGroupMessages[activeGroup] = [];
+
+    // Send file bubble first (if pending)
+    if (hasFile) {
+      var isImg = pendingFile.type.match(/^image\//);
+      var isVid = isVideoFile(pendingFile);
+      var fileMsg = {
+        from: 'You',
+        sent: false,
+        _file: {
+          name: pendingFile.name,
+          type: pendingFile.type,
+          size: pendingFile.size,
+          mode: pendingFile.mode,
+          dataUrl: pendingFile.dataUrl || null,
+          videoUrl: pendingFile.videoUrl || null,
+          _kind: isVid ? 'video' : 'image'
+        },
+        text: (isImg || pendingFile.dataUrl) ? '' : ('[File: ' + pendingFile.name + ']')
+      };
+      mockGroupMessages[activeGroup].push(fileMsg);
+      pendingFile = null;
+      clearFilePreviewUI();
+    }
+
+    // Send text bubble
+    if (text) {
+      mockGroupMessages[activeGroup].push({ from: 'You', text: text, sent: false });
+    }
+
+    var grp = groups.find(function(g) { return g.id === activeGroup; });
+    if (grp) { grp.lastMsg = hasFile ? '[Image]' : text; grp.time = 'Now'; }
+
+    input.value = '';
+    saveData();
+    renderGroupList();
+    // Refresh read receipts + re-render messages directly
+    markMessagesRead(mockGroupMessages, activeGroup);
+    var msgs = mockGroupMessages[activeGroup] || [];
+    justPinnedRef = null;
+    _resetMediaReg();
+    var html = '';
+    msgs.forEach(function(m, mi) { html += msgBubble(m, mi, !!m._pinned, 'group', activeGroup); });
+    document.getElementById('groupMessageList').innerHTML = html;
+    document.getElementById('groupMessageList').scrollTop = document.getElementById('groupMessageList').scrollHeight;
+    animateLastBubble('groupMessageList');
+  }
+
+  function simulateGroupUpload(mode) {
+    if (!activeGroup) return;
+    if (!mockGroupMessages[activeGroup]) mockGroupMessages[activeGroup] = [];
+    var label = mode === 'compress' ? '[File sent — compressed]' : '[File sent — original]';
+    mockGroupMessages[activeGroup].push({ from: 'You', text: label, sent: false });
+    saveData();
+    openGroupChat(activeGroup);
+  }
+
+  // ──────────────────────────────────────────────
+  //  FAB BUTTON VISIBILITY
+  // ──────────────────────────────────────────────
+  function updateFab() {
+    var fab = document.getElementById('fabBtn');
+    if (msgPanel === 2) {
+      fab.style.opacity = '0';
+      fab.style.pointerEvents = 'none';
+      fab.style.transform = 'scale(0.8)';
+    } else {
+      fab.style.opacity = '1';
+      fab.style.pointerEvents = 'auto';
+      fab.style.transform = 'scale(1)';
+    }
+  }
+
+  // ──────────────────────────────────────────────
+  //  ACTION MODAL
+  // ──────────────────────────────────────────────
+  function openActionModal() {
+    document.getElementById('actionModal').style.display = 'flex';
+    resetModal();
+  }
+
+  function closeModal() {
+    document.getElementById('actionModal').style.display = 'none';
+  }
+
+  function resetModal() {
+    document.getElementById('modalSubForm').style.display = 'none';
+    document.getElementById('modalAddFriend').style.display = '';
+    document.getElementById('modalCreateGroup').style.display = '';
+    document.getElementById('modalTitle').style.display = '';
+    document.getElementById('modalDesc').style.display = '';
+    document.getElementById('modalBackBtn').style.display = 'none';
+  }
+
+  function chooseAction(type) {
+    var subForm = document.getElementById('modalSubForm');
+    var content = document.getElementById('modalSubFormContent');
+    // Hide main title + desc, show back button
+    document.getElementById('modalTitle').style.display = 'none';
+    document.getElementById('modalDesc').style.display = 'none';
+    document.getElementById('modalBackBtn').style.display = 'flex';
+    // Hide option buttons
+    document.getElementById('modalAddFriend').style.display = 'none';
+    document.getElementById('modalCreateGroup').style.display = 'none';
+
+    subForm.style.display = 'block';
+
+    if (type === 'friend') {
+      content.innerHTML =
+        '<h4 style="font-weight:600;margin-bottom:var(--space-sm)">Add a Friend</h4>' +
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-md)">Enter a username or friend code to start a conversation.</p>' +
+        '<input type="text" class="input-glass" placeholder="Username or Friend Code" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-sm)" id="friendInput">' +
+        '<button class="btn btn-primary" style="width:100%" onclick="addFriendDemo()">' +
+          '<span class="material-symbols-outlined" style="font-size:18px">person_add</span> Send Request' +
+        '</button>' +
+        '<p id="friendResult" style="text-align:center;margin-top:var(--space-sm);font-size:var(--fs-label-md);color:var(--color-secondary);display:none"></p>';
+    } else {
+      content.innerHTML =
+        '<h4 style="font-weight:600;margin-bottom:var(--space-sm)">Create a Group</h4>' +
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-md)">Set up a new group conversation for your community.</p>' +
+        '<input type="text" class="input-glass" placeholder="Group Name" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-sm)" id="groupNameInput">' +
+        '<input type="text" class="input-glass" placeholder="Add members (usernames, comma-separated)" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-md)" id="groupMembersInput">' +
+        '<p style="font-size:11px;color:var(--color-outline);margin-bottom:var(--space-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Group Type</p>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);margin-bottom:var(--space-md)" id="groupTypeGrid">' +
+          '<button onclick="selectGroupType(\'chat\',this)" style="' +
+            'aspect-ratio:1;width:100%;' +
+            'display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:var(--space-xs);' +
+            'padding:var(--space-sm);' +
+            'border:2px solid var(--color-primary);border-radius:var(--radius-lg);' +
+            'background:rgba(70,72,212,0.04);cursor:pointer;transition:all 0.2s ease;text-align:left;' +
+          '" id="typeGroup">' +
+            '<div style="width:36px;height:36px;border-radius:50%;background:rgba(70,72,212,0.1);display:flex;align-items:center;justify-content:center">' +
+              '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">groups</span>' +
+            '</div>' +
+            '<div>' +
+              '<div style="font-weight:600;font-size:var(--fs-label-md)">Group</div>' +
+              '<div style="font-size:10px;color:var(--color-outline);margin-top:1px">Chat-based group</div>' +
+            '</div>' +
+          '</button>' +
+          '<button onclick="selectGroupType(\'announcement\',this)" style="' +
+            'aspect-ratio:1;width:100%;' +
+            'display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:var(--space-xs);' +
+            'padding:var(--space-sm);' +
+            'border:1px solid rgba(118,117,134,0.15);border-radius:var(--radius-lg);' +
+            'background:var(--card-bg);cursor:pointer;transition:all 0.2s ease;text-align:left;' +
+          '" id="typeAnnouncement">' +
+            '<div style="width:36px;height:36px;border-radius:50%;background:rgba(234,88,12,0.1);display:flex;align-items:center;justify-content:center">' +
+              '<span class="material-symbols-outlined" style="font-size:20px;color:#ea580c">campaign</span>' +
+            '</div>' +
+            '<div>' +
+              '<div style="font-weight:600;font-size:var(--fs-label-md)">Broadcast</div>' +
+              '<div style="font-size:10px;color:var(--color-outline);margin-top:1px">Announcement channel</div>' +
+            '</div>' +
+          '</button>' +
+        '</div>' +
+        '<button class="btn btn-primary" style="width:100%;background:var(--color-secondary);border-color:var(--color-secondary)" onclick="createGroupDemo()">' +
+          '<span class="material-symbols-outlined" style="font-size:18px">group_add</span> Create Group' +
+        '</button>' +
+        '<p id="groupResult" style="text-align:center;margin-top:var(--space-sm);font-size:var(--fs-label-md);color:var(--color-secondary);display:none"></p>';
+    }
+  }
+
+  function addFriendDemo() {
+    var input = document.getElementById('friendInput');
+    var name = input.value.trim();
+    if (!name) return;
+    var el = document.getElementById('friendResult');
+    el.textContent = '✓ Friend request sent to ' + name + '!';
+    el.style.display = 'block';
+    el.style.color = 'var(--color-secondary)';
+    // Add to conversations after a short delay
+    setTimeout(function() {
+      conversations.push({
+        id: 'c' + (conversations.length + 1),
+        name: name,
+        lastMsg: 'Friend request accepted. Say hello!',
+        time: 'Now',
+        avatar: name.charAt(0).toUpperCase(),
+        online: true
+      });
+      saveData();
+      renderConversationList();
+      closeModal();
+    }, 1200);
+  }
+
+  var selectedGroupType = 'chat';
+
+  function selectGroupType(type, btn) {
+    selectedGroupType = type;
+    // Reset both buttons
+    var chatBtn = document.getElementById('typeGroup');
+    var announceBtn = document.getElementById('typeAnnouncement');
+    chatBtn.style.border = '1px solid rgba(118,117,134,0.15)';
+    chatBtn.style.background = 'white';
+    announceBtn.style.border = '1px solid rgba(118,117,134,0.15)';
+    announceBtn.style.background = 'white';
+    // Highlight selected
+    if (type === 'chat') {
+      chatBtn.style.border = '2px solid var(--color-primary)';
+      chatBtn.style.background = 'rgba(70,72,212,0.04)';
+    } else {
+      announceBtn.style.border = '2px solid #ea580c';
+      announceBtn.style.background = 'rgba(234,88,12,0.04)';
+    }
+  }
+
+  function createGroupDemo() {
+    var nameInput = document.getElementById('groupNameInput');
+    var name = nameInput.value.trim();
+    if (!name) return;
+    var el = document.getElementById('groupResult');
+    var typeLabel = selectedGroupType === 'chat' ? 'Group' : 'Broadcast';
+    el.textContent = '✓ ' + typeLabel + ' "' + name + '" created!';
+    el.style.display = 'block';
+    el.style.color = 'var(--color-secondary)';
+    // Capitalize first two letters for avatar
+    var avatar = name.replace(/\s+/g, '').substring(0, 2).toUpperCase();
+    setTimeout(function() {
+      groups.unshift({
+        id: 'g' + (groups.length + 1),
+        name: name,
+        members: 1,
+        lastMsg: 'Group created. Invite members to get started!',
+        time: 'Now',
+        avatar: avatar,
+        unread: 0
+      });
+      saveData();
+      renderGroupList();
+      // Switch to Groups panel
+      switchToPanel(1);
+      closeModal();
+    }, 1200);
+  }
+
+  // Close modal on overlay click
+  document.getElementById('actionModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // ──────────────────────────────────────────────
+  //  ANNOUNCEMENTS
+  // ──────────────────────────────────────────────
+  var activeCategory = 'all';
+  var expandedAnnounce = null;
+
+  var announcements = [
+    {
+      id: 'a1',
+      title: 'M.NationWorld Beta Launch — Welcome All Nations',
+      category: 'official',
+      icon: 'campaign',
+      date: '2026-08-05',
+      author: 'Sovereign Council',
+      summary: 'The M.NationWorld platform officially enters its public beta phase. All registered nations now have access to the full suite of governance, worldbuilding, and diplomatic tools.',
+      content: 'After months of development, we are proud to announce the public beta launch of M.NationWorld — the premier platform for micronation governance and worldbuilding.\n\nWhat\'s included in the beta:\n• National Registry with verification system\n• Community Hub with topic discussions\n• FluidCanvas studio for content creation\n• Diplomatic messaging and embassy channels\n• Premium subscription tiers with advanced features\n\nWe welcome all existing and new nations to explore the platform. Feedback is highly encouraged — use the Help & Support channel for any questions.',
+    },
+    {
+      id: 'a2',
+      title: 'Governance Summit 2026 — Registration Open',
+      category: 'official',
+      icon: 'event',
+      date: '2026-08-03',
+      author: 'Sovereign Council',
+      summary: 'The annual Governance Summit is now open for registration. This year\'s theme: "Digital Sovereignty in the Modern Age."',
+      content: 'Join us for the 2026 Governance Summit, a gathering of micronation leaders, diplomats, and worldbuilders from across the M.NationWorld community.\n\nEvent Details:\n• Date: September 15-17, 2026\n• Format: Virtual sessions + in-person meetups\n• Tracks: Governance Design, Diplomatic Relations, Legal Frameworks, Cultural Exchange\n\nEarly registration is now open. Reserve your nation\'s seat today.',
+    },
+    {
+      id: 'a3',
+      title: 'Cartography Guild — Monthly Map Contest',
+      category: 'community',
+      icon: 'map',
+      date: '2026-08-02',
+      author: 'Cartography Guild',
+      summary: 'Submit your best territorial maps for the August mapping contest. Theme: "Uncharted Territories." Prizes include Premium subscriptions.',
+      content: 'The Cartography Guild invites all nation cartographers to participate in the August Map Contest.\n\nTheme: "Uncharted Territories" — create a map depicting undiscovered or frontier regions of your nation.\n\nPrizes:\n• 1st Place: 6 months of Premium Ultra\n• 2nd Place: 3 months of Premium\n• 3rd Place: 1 month of Premium\n\nSubmissions close August 25. Voting runs August 26-31.',
+    },
+    {
+      id: 'a4',
+      title: 'New Feature: FluidCanvas Studio Now Live',
+      category: 'system',
+      icon: 'draw',
+      date: '2026-08-01',
+      author: 'M.NationWorld Team',
+      summary: 'FluidCanvas, our collaborative content studio, is now available to all users. Create articles, media galleries, and interactive content.',
+      content: 'FluidCanvas is M.NationWorld\'s integrated content creation platform, designed specifically for micronation storytelling and documentation.\n\nFeatures:\n• Rich text editor with markdown support\n• Media uploads and gallery management\n• Team collaboration with role-based permissions\n• Publishing workflow (draft → review → publish)\n• Analytics dashboard for content performance\n\nAccess FluidCanvas from the sidebar or dashboard. For tutorials, visit the Help Center.',
+    },
+    {
+      id: 'a5',
+      title: 'New Nation Spotlight: Republic of Etheria',
+      category: 'community',
+      icon: 'emoji_flags',
+      date: '2026-07-30',
+      author: 'Community Team',
+      summary: 'This week\'s spotlight features the Republic of Etheria, a floating city-state with a unique governance model blending direct democracy and AI-assisted administration.',
+      content: 'Every week, we highlight a nation that exemplifies the creativity and diversity of the M.NationWorld community.\n\nThis week: Republic of Etheria\n• Classification: Maritime City-State\n• Population: 2.4 million\n• Governance: Hybrid Direct Democracy with AI Advisory\n• Notable: The world\'s first fully modular floating district system\n\nRead the full profile on the MicroNationary Explore page. Want your nation featured? Submit a nomination through the Community Hub.',
+    },
+    {
+      id: 'a6',
+      title: 'Platform Update v1.2 — Sidebar & Navigation Improvements',
+      category: 'system',
+      icon: 'update',
+      date: '2026-07-28',
+      author: 'M.NationWorld Team',
+      summary: 'Version 1.2 brings a collapsible sidebar, smoother page transitions, and an improved navigation experience across all pages.',
+      content: 'M.NationWorld v1.2 Release Notes:\n\n✨ New Features:\n• Collapsible sidebar — toggle between expanded and icon-only mode\n• Direction-aware page transitions with staggered card animations\n• Persistent sidebar state across page loads\n• Improved responsive behavior for smaller screens\n\n🔧 Fixes:\n• Premium page pricing now correctly detects timezone for localization\n• Sidebar no longer flashes on page load\n• Various CSS and layout refinements\n\nUpdate is live now — no action needed on your part.',
+    },
+    {
+      id: 'a7',
+      title: 'Call for Moderators — Join the Community Team',
+      category: 'community',
+      icon: 'volunteer_activism',
+      date: '2026-07-25',
+      author: 'Community Team',
+      summary: 'We\'re expanding our moderation team. If you\'re passionate about fostering a positive micronation community, apply today.',
+      content: 'As M.NationWorld grows, we need dedicated community members to help maintain a welcoming and constructive environment.\n\nModerator Responsibilities:\n• Review and approve topic posts in the Community Hub\n• Mediate disputes between nations\n• Help onboard new members\n• Flag and escalate policy violations\n\nRequirements:\n• Active M.NationWorld account (30+ days)\n• Good standing in the community\n• Available 3-5 hours per week\n\nApply via the Community Hub or message the Community Team directly.',
+    },
+    {
+      id: 'a8',
+      title: 'Premium Ultra — Early Adopter Pricing Extended',
+      category: 'official',
+      icon: 'rocket_launch',
+      date: '2026-07-20',
+      author: 'M.NationWorld Team',
+      summary: 'The early adopter discount for Premium Ultra has been extended through August. Lock in reduced pricing for your first 12 months.',
+      content: 'Due to popular demand, we\'re extending the Premium Ultra early adopter pricing through August 31, 2026.\n\nPremium Ultra includes:\n• All Premium features\n• Advanced analytics with export\n• Custom domain for your nation page\n• Priority support with 4-hour response SLA\n• 4 team member slots for FluidCanvas\n• API access for nation data\n\nView the full comparison and subscribe on the Premium page.',
+    },
+  ];
+
+  function formatDate(dateStr) {
+    var d = new Date(dateStr);
+    var now = new Date();
+    var diff = now - d;
+    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return days + ' days ago';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function getCategoryStyle(cat) {
+    var map = {
+      official: { bg: 'rgba(70,72,212,0.1)', color: '#4648d4', label: 'Official' },
+      community: { bg: 'rgba(22,163,74,0.1)', color: '#16a34a', label: 'Community' },
+      system: { bg: 'rgba(6,182,212,0.1)', color: '#06b6d4', label: 'System' },
+    };
+    return map[cat] || { bg: 'rgba(118,117,134,0.1)', color: '#767586', label: cat };
+  }
+
+  function renderAnnouncements(filter) {
+    var cat = filter || activeCategory;
+    var filtered = cat === 'all' ? announcements.slice() : announcements.filter(function(a) { return a.category === cat; });
+
+    document.getElementById('announceCount').textContent = filtered.length + ' announcement' + (filtered.length !== 1 ? 's' : '');
+
+    if (filtered.length === 0) {
+      document.getElementById('announceList').innerHTML =
+        '<div class="card" style="text-align:center;padding:var(--space-xl)">' +
+          '<span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline-variant);margin-bottom:var(--space-sm)">campaign</span>' +
+          '<p style="color:var(--color-outline)">No announcements in this category yet.</p>' +
+        '</div>';
+      return;
+    }
+
+    var html = filtered.map(function(a) {
+      var cs = getCategoryStyle(a.category);
+      var isExpanded = expandedAnnounce === a.id;
+      return '<div class="card card-hover tilt-container" style="padding:var(--space-md);cursor:pointer;transition:all 0.25s ease' + (isExpanded ? ';box-shadow:0 0 0 1px ' + cs.color + ',0 4px 24px rgba(0,0,0,0.06)' : '') + '" onclick="toggleAnnouncement(\'' + a.id + '\')">' +
+        '<div class="flex-between" style="margin-bottom:4px">' +
+          '<div class="flex-center gap-sm" style="justify-content:flex-start;min-width:0">' +
+            '<span class="material-symbols-outlined" style="font-size:22px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +
+            '<span class="label-sm" style="background:' + cs.bg + ';color:' + cs.color + ';padding:2px 8px;border-radius:var(--radius-full);font-weight:600;flex-shrink:0">' + cs.label + '</span>' +
+            '<span style="font-weight:600;font-size:var(--fs-label-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.title + '</span>' +
+          '</div>' +
+          '<div class="flex-center gap-sm" style="flex-shrink:0">' +
+            '<span class="label-sm" style="color:var(--color-outline)">' + formatDate(a.date) + '</span>' +
+            '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);transition:transform 0.25s ease' + (isExpanded ? ';transform:rotate(180deg)' : '') + '">expand_more</span>' +
+          '</div>' +
+        '</div>' +
+        '<p style="font-size:var(--fs-label-md);color:var(--color-on-surface-variant);margin-top:6px;line-height:1.5;margin-left:30px">' + a.summary + '</p>' +
+        '<div class="label-sm" style="margin-left:30px;color:var(--color-outline);margin-top:2px">by ' + a.author + '</div>' +
+        '<div style="margin-left:30px;overflow:hidden;transition:max-height 0.4s ease,opacity 0.4s ease,margin-top 0.4s ease' + (isExpanded ? ';max-height:600px;opacity:1;margin-top:var(--space-md)' : ';max-height:0;opacity:0;margin-top:0') + '">' +
+          '<div style="border-top:1px solid rgba(118,117,134,0.1);padding-top:var(--space-md)">' +
+            '<p style="font-size:var(--fs-body-md);color:var(--color-on-surface);line-height:1.7;white-space:pre-line">' + a.content + '</p>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    document.getElementById('announceList').innerHTML = html;
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+  }
+
+  function toggleAnnouncement(id) {
+    if (expandedAnnounce === id) {
+      expandedAnnounce = null;
+    } else {
+      expandedAnnounce = id;
+    }
+    renderAnnouncements();
+  }
+
+  // ──────────────────────────────────────────────
+  //  TAB SWITCHING (3-panel system)
+  // ──────────────────────────────────────────────
+  var msgPanel = 0;
+
+  function switchToPanel(targetPanel) {
+    if (targetPanel === msgPanel) return;
+
+    // Update subnav active state
+    var tabMap = ['private', 'groups', 'announcements'];
+    document.querySelectorAll('#msgSubnav .subnav-pill').forEach(function(b) { b.classList.remove('active'); });
+    var targetBtn = document.querySelector('#msgSubnav [data-tab="' + tabMap[targetPanel] + '"]');
+    if (targetBtn) targetBtn.classList.add('active');
+
+    var privateP = document.getElementById('privatePanel');
+    var groupsP = document.getElementById('groupsPanel');
+    var announceP = document.getElementById('announcementsPanel');
+    var searchInput = document.getElementById('searchInput');
+
+    // Fade all panels
+    privateP.style.opacity = targetPanel === 0 ? '1' : '0.3';
+    groupsP.style.opacity = targetPanel === 1 ? '1' : '0.3';
+    announceP.style.opacity = targetPanel === 2 ? '1' : '0.3';
+
+    // Update search placeholder
+    searchInput.placeholder = targetPanel === 2 ? 'Search announcements...' : 'Search messages...';
+
+    msgPanel = targetPanel;
+    // Clear stale state from other panels so info modal / members modal read the right data
+    if (targetPanel !== 0) activeChat = null;
+    if (targetPanel !== 1) activeGroup = null;
+    document.getElementById('msgSlide').style.transform = 'translateX(' + (-targetPanel * 100) + '%)';
+
+    // FAB visibility
+    updateFab();
+  }
+
+  document.getElementById('msgSubnav').addEventListener('click', function(e) {
+    var btn = e.target.closest('.subnav-pill');
+    if (!btn) return;
+    var tab = btn.dataset.tab;
+    var targetPanel = tab === 'private' ? 0 : tab === 'groups' ? 1 : 2;
+    switchToPanel(targetPanel);
+  });
+
+  // Category filter clicks
+  document.getElementById('categoryFilters').addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-cat]');
+    if (!btn) return;
+    document.querySelectorAll('#categoryFilters .subnav-pill').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    activeCategory = btn.dataset.cat;
+    expandedAnnounce = null;
+    renderAnnouncements();
+  });
+
+  // Search
+  function handleSearch(query) {
+    if (msgPanel === 2) {
+      if (!query) {
+        renderAnnouncements();
+        return;
+      }
+      var q = query.toLowerCase();
+      var results = announcements.filter(function(a) {
+        return a.title.toLowerCase().includes(q) ||
+               a.summary.toLowerCase().includes(q) ||
+               a.content.toLowerCase().includes(q) ||
+               a.category.toLowerCase().includes(q) ||
+               a.author.toLowerCase().includes(q);
+      });
+      var saved = activeCategory;
+      activeCategory = '__search__';
+      renderFilteredAnnouncements(results);
+      activeCategory = saved;
+    }
+    // Private/Groups search not implemented for demo
+  }
+
+  function renderFilteredAnnouncements(filtered) {
+    document.getElementById('announceCount').textContent = filtered.length + ' result' + (filtered.length !== 1 ? 's' : '');
+    if (filtered.length === 0) {
+      document.getElementById('announceList').innerHTML =
+        '<div class="card" style="text-align:center;padding:var(--space-xl)">' +
+          '<span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline-variant);margin-bottom:var(--space-sm)">search_off</span>' +
+          '<p style="color:var(--color-outline)">No announcements match your search.</p>' +
+        '</div>';
+      return;
+    }
+    var html = filtered.map(function(a) {
+      var cs = getCategoryStyle(a.category);
+      var isExpanded = expandedAnnounce === a.id;
+      return '<div class="card card-hover tilt-container" style="padding:var(--space-md);cursor:pointer;transition:all 0.25s ease' + (isExpanded ? ';box-shadow:0 0 0 1px ' + cs.color + ',0 4px 24px rgba(0,0,0,0.06)' : '') + '" onclick="toggleAnnouncement(\'' + a.id + '\')">' +
+        '<div class="flex-between" style="margin-bottom:4px">' +
+          '<div class="flex-center gap-sm" style="justify-content:flex-start;min-width:0">' +
+            '<span class="material-symbols-outlined" style="font-size:22px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +
+            '<span class="label-sm" style="background:' + cs.bg + ';color:' + cs.color + ';padding:2px 8px;border-radius:var(--radius-full);font-weight:600;flex-shrink:0">' + cs.label + '</span>' +
+            '<span style="font-weight:600;font-size:var(--fs-label-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.title + '</span>' +
+          '</div>' +
+          '<div class="flex-center gap-sm" style="flex-shrink:0">' +
+            '<span class="label-sm" style="color:var(--color-outline)">' + formatDate(a.date) + '</span>' +
+            '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);transition:transform 0.25s ease' + (isExpanded ? ';transform:rotate(180deg)' : '') + '">expand_more</span>' +
+          '</div>' +
+        '</div>' +
+        '<p style="font-size:var(--fs-label-md);color:var(--color-on-surface-variant);margin-top:6px;line-height:1.5;margin-left:30px">' + a.summary + '</p>' +
+        '<div class="label-sm" style="margin-left:30px;color:var(--color-outline);margin-top:2px">by ' + a.author + '</div>' +
+        '<div style="margin-left:30px;overflow:hidden;transition:max-height 0.4s ease,opacity 0.4s ease,margin-top 0.4s ease' + (isExpanded ? ';max-height:600px;opacity:1;margin-top:var(--space-md)' : ';max-height:0;opacity:0;margin-top:0') + '">' +
+          '<div style="border-top:1px solid rgba(118,117,134,0.1);padding-top:var(--space-md)">' +
+            '<p style="font-size:var(--fs-body-md);color:var(--color-on-surface);line-height:1.7;white-space:pre-line">' + a.content + '</p>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    document.getElementById('announceList').innerHTML = html;
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+  }
+
+  // ──────────────────────────────────────────────
+  //  INIT
+  // ──────────────────────────────────────────────
+  loadData();
+  renderConversationList();
+  renderGroupList();
+  renderAnnouncements();
+  updateFab();
+
+  // Auto-switch tab based on URL parameter
+  (function(){
+    var params = new URLSearchParams(window.location.search);
+    var tab = params.get('tab');
+    if (tab === 'announcements') {
+      switchToPanel(2);
+    } else if (tab === 'groups') {
+      switchToPanel(1);
+    }
+  })();
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

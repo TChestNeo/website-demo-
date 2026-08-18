@@ -1,0 +1,274 @@
+SlatiWorld Project — Development Log
+Date: 2026-08-07
+
+============================================================
+SUMMARY
+============================================================
+
+Focused on global pricing localization, sidebar SVG icon replacement,
+and onboarding UX improvements:
+- Shared pricing detection module covering 100+ countries/regions
+- Regional pricing for all continents
+- Sidebar collapse button converted to custom SVG icons
+- Onboarding country list expanded to all nations + territories
+- Language field changed to UN 6 official languages dropdown
+
+============================================================
+GROUPS PAGE + FAB BUTTON
+============================================================
+
+============================================================
+MESSAGES PAGE 3-PANEL RESTRUCTURE
+============================================================
+
+Restructured messages.html from 2-panel to 3-panel system:
+- Panel 0: Private messages (unchanged)
+- Panel 1: Groups (NEW — WhatsApp-style group chats)
+- Panel 2: Announcements (unchanged)
+- Subnav: Private messages | Groups | Announcements
+- Slide container now 300% width; translateX(0%/-100%/-200%) for each panel
+- Created centralized switchToPanel(targetPanel) function replacing inline logic
+- URL param support: ?tab=announcements → panel 2, ?tab=groups → panel 1
+
+============================================================
+GROUPS PANEL (WhatsApp-style)
+============================================================
+
+Groups panel mirrors Private messages layout:
+- Left: group list (320px) — 6 seed groups
+- Right: group chat area with header, messages, and input
+- Group avatars: rounded squares (border-radius:var(--radius-DEFAULT))
+  with two-letter abbreviation, green background (--color-secondary)
+- Each group shows: avatar, name, last message, time, unread badge
+- Sent messages use green background (--color-secondary) vs blue in private
+- Full message send/upload functionality (mirrors private chat)
+
+Seed groups data:
+- Etheria Editorial Board (12 members)
+- Cartography Guild (28 members)
+- Diplomatic Council (8 members)
+- Lore Keepers (15 members)
+- Worldbuilding Workshop (42 members)
+- Cultural Exchange Forum (19 members)
+
+============================================================
+FLOATING ACTION BUTTON (FAB)
+============================================================
+
+Added "+" button at bottom-right of main content area:
+- Position: absolute, bottom:28px, right:28px
+- 52px circle, purple background (--color-primary)
+- Box shadow: 0 4px 20px rgba(70,72,212,0.35)
+- Hover: scale(1.08) + deeper shadow
+- Visible on panels 0 (Private) and 1 (Groups)
+- Hides on panel 2 (Announcements): opacity→0, pointer-events→none, scale→0.8
+- Smooth 0.35s opacity + 0.25s transform transitions
+- Positioned OUTSIDE the slide container so it stays in place when
+  switching between Private ↔ Groups (user requirement)
+
+============================================================
+ACTION MODAL
+============================================================
+
+Full-screen overlay modal (z-index:100) with backdrop-blur:
+- Title: "Start something new"
+- Two large option cards:
+  1. "Add Friend" (person_add icon, purple highlight on hover)
+     → Opens sub-form with username/friend code input + Send Request button
+  2. "Create Group" (group_add icon, green highlight on hover)
+     → Opens sub-form with group name + member selection + Create Group button
+- Sub-form has "Back" button to return to main options
+- Close button (×) + click-outside-to-close
+- Shared between Private Messages and Groups panels
+
+Demo functionality:
+- Add Friend: After sending request, adds to conversation list after 1.2s
+  delay, auto-closes modal
+- Create Group: After creating, adds to groups list + auto-switches to
+  Groups panel + auto-closes modal
+
+============================================================
+GLOBAL PRICE LOCALIZATION
+============================================================
+
+Created shared pricing detection module (docs/assets/js/pricing.js):
+- Timezone-first detection with language prefix fallback
+- window.SlatiPrice with key/price/all/loc/tz exposed for programmatic use
+- Auto-applies to any element with [data-slati-price] attribute
+- Replaced exact-match navigator.language approach (which failed for
+  en-MY Malaysian users) across all pages
+
+Sidebar price spans changed from id-based to data-slati-price attribute
+on: dashboard.html, community-hub.html, overview.html, explore.html
+
+premium.html: replaced 26-line duplicated detection logic with single
+line using SlatiPrice.key from shared module
+
+Added regional pricing for ALL major world regions:
+
+Asia-Pacific:
+- Japan (JPY ¥): ¥1,800 — Asia/Tokyo + ja language
+- Korea (KRW ₩): ₩15,000 — Asia/Seoul + ko language
+
+South America (13 countries):
+- Brazil (BRL R$): R$59.90 — pt language + 17 BR timezones
+- Argentina (ARS $): ARS$12,000 — America/Argentina/
+- Chile (CLP $): CLP$10,990 — America/Santiago
+- Colombia (COP $): COP$46,900 — America/Bogota
+- Peru (PEN S/): S/45.90 — America/Lima
+- Uruguay (UYU $U): $U479 — America/Montevideo
+- Paraguay (PYG ₲): ₲87,000 — America/Asuncion
+- Bolivia (BOB Bs): Bs 83 — America/La_Paz
+- Ecuador (USD): $11.99 — America/Guayaquil
+- Venezuela (USD): $11.99 — America/Caracas
+- Guyana (GYD G$): G$2,500 — America/Guyana
+- Suriname (SRD $): SRD$439 — America/Paramaribo + nl language
+- French Guiana (EUR): €11.99 — America/Cayenne
+
+North America:
+- Canada (CAD C$): C$15.99 — 13 CA timezones + en-CA locale
+  (was incorrectly showing USD $11.99)
+- Mexico (MXN $): MXN$230 — 10 MX timezones + es-MX locale
+
+Middle East (13 countries):
+- Saudi Arabia (SAR): SAR 44.99 — Asia/Riyadh
+- UAE (AED): AED 44.00 — Asia/Dubai
+- Qatar (QAR): QAR 43.50 — Asia/Qatar
+- Kuwait (KWD): KWD 3.600 — Asia/Kuwait
+- Bahrain (BHD): BHD 4.500 — Asia/Bahrain
+- Oman (OMR): OMR 4.600 — Asia/Muscat
+- Jordan (JOD): JOD 8.500 — Asia/Amman
+- Israel (ILS): ₪45.00 — Asia/Jerusalem + he language
+- Lebanon (LBP): LBP 1,070,000 — Asia/Beirut
+- Iraq (IQD): IQD 15,700 — Asia/Baghdad
+- Iran (IRR): IRR 500,000 — Asia/Tehran + fa language
+- Egypt (EGP): EGP 599 — Africa/Cairo
+- Turkey (TRY): TRY 429 — Europe/Istanbul + tr language
+
+Non-EU Europe (16 countries):
+- UK (GBP £): £9.99 — Europe/London (was incorrectly showing EUR)
+- Russia (RUB ₽): ₽1,090 — 22 timezones + ru language
+- Ukraine (UAH ₴): ₴450 — Europe/Kyiv + uk language
+- Belarus (BYN Br): Br 39.00 — Europe/Minsk + be language
+- Serbia (RSD): RSD 1,300 — Europe/Belgrade + sr language
+- Montenegro (EUR): €11.99 — Europe/Podgorica
+- Norway (NOK kr): kr 129 — Europe/Oslo + nb/nn language
+- Switzerland (CHF): CHF 11.00 — Europe/Zurich
+- Liechtenstein (CHF): CHF 11.00 — Europe/Vaduz
+- Iceland (ISK kr): kr 1,699 — Atlantic/Reykjavik + is language
+- Albania (ALL L): L 1,100 — Europe/Tirane + sq language
+- Bosnia (BAM KM): KM 22.00 — Europe/Sarajevo + bs language
+- North Macedonia (MKD): ден 690 — Europe/Skopje + mk language
+- Moldova (MDL): MDL 215 — Europe/Chisinau (timezone only)
+- Monaco (EUR): €11.99 — Europe/Monaco
+- San Marino (EUR): €11.99 — Europe/San_Marino
+- Andorra (EUR): €11.99 — Europe/Andorra
+
+South & Central Asia (13 countries):
+- India (INR ₹): ₹899 — Asia/Kolkata + hi language
+- Pakistan (PKR ₨): ₨3,300 — Asia/Karachi + ur language
+- Bangladesh (BDT ৳): ৳1,350 — Asia/Dhaka + bn language
+- Sri Lanka (LKR රු): රු3,600 — Asia/Colombo + si language
+- Nepal (NPR रू): रू1,600 — Asia/Kathmandu + ne language
+- Bhutan (BTN Nu.): Nu. 1,000 — Asia/Thimphu + dz language
+- Maldives (MVR ރ): ރ185 — Indian/Maldives + dv language
+- Afghanistan (AFN ؋): ؋870 — Asia/Kabul
+- Kazakhstan (KZT ₸): ₸5,500 — 7 timezones + kk language
+- Uzbekistan (UZS so'm): so'm 145,000 — Asia/Tashkent + uz language
+- Turkmenistan (TMT m): m 209 — Asia/Ashgabat + tk language
+- Kyrgyzstan (KGS с): с 1,050 — Asia/Bishkek + ky language
+- Tajikistan (TJS с): с 130 — Asia/Dushanbe + tg language
+
+Oceania (6 countries):
+- Australia (AUD A$): A$17.99 — Australia/ timezones
+- New Zealand (NZD NZ$): NZ$19.99 — Pacific/Auckland
+- Fiji (FJD FJ$): FJ$27.00 — Pacific/Fiji
+- Papua New Guinea (PGK K): K 47.00 — Pacific/Port_Moresby
+- Samoa (WST T): T 33 — Pacific/Apia + sm language
+- Tonga (TOP T$): T$28 — Pacific/Tongatapu + to language
+
+Africa (27 countries):
+- South Africa (ZAR R): R 219 — Africa/Johannesburg
+- Nigeria (NGN ₦): ₦18,500 — Africa/Lagos + ha/yo languages
+- Kenya (KES KSh): KSh 1,550 — Africa/Nairobi + sw language
+- Ghana (GHS GH₵): GH₵185 — Africa/Accra
+- Ethiopia (ETB Br): Br 1,500 — Africa/Addis_Ababa + am language
+- Tanzania (TZS TSh): TSh 31,000 — Africa/Dar_es_Salaam
+- Uganda (UGX USh): USh 44,000 — Africa/Kampala
+- Morocco (MAD): MAD 120 — Africa/Casablanca
+- Tunisia (TND DT): DT 37 — Africa/Tunis
+- Algeria (DZD DA): DA 1,580 — Africa/Algiers
+- Senegal / Ivory Coast (XOF F): 7,800 F — CFA Franc zone
+  (covers 8 West African countries: SN, ML, BF, NE, CI, TG, BJ, GW)
+- Cameroon (XAF F): 7,800 F — CFA Franc zone
+  (covers 7 Central African countries: CM, GA, CG, CF, TD, GQ)
+- Angola (AOA Kz): Kz 10,000 — Africa/Luanda
+- Mozambique (MZN MT): MT 770 — Africa/Maputo
+- Mauritius (MUR ₨): ₨ 545 — Indian/Mauritius
+- Botswana (BWP P): P 165 — Africa/Gaborone
+- Namibia (NAD N$): N$219 — Africa/Windhoek
+- Zambia (ZMW ZK): ZK 320 — Africa/Lusaka
+- Zimbabwe (USD $): $11.99 — Africa/Harare
+- Sudan (SDG): SDG 7,500 — Africa/Khartoum
+- Rwanda (RWF FRw): FRw 15,500 — Africa/Kigali + rw language
+
+Detection architecture:
+- Timezone checks always run before generic language prefix checks
+- Africa/Oceania/Non-EU Europe blocks placed before Eurozone (de/fr)
+  language checks to prevent misclassification
+- South/Central Asia placed before Middle East to prevent fa-IR
+  from catching fa-AF via language prefix
+- All detection lives in single shared pricing.js (no duplication)
+
+============================================================
+SIDEBAR — SVG COLLAPSE BUTTON ICON
+============================================================
+
+Replaced Material Icons collapse button with custom SVG files:
+- Expanded state: left_panel_close_24dp_434343 (dark gray, arrow left)
+- Collapsed state: left_panel_open_24dp_434343 (dark gray, arrow right)
+
+Files: docs/assets/image/left_panel_{close,open}_24dp_434343_*.svg
+
+Changes:
+- sidebar.js: <span> → <img> tag, icon.textContent → icon.src
+- ethereal.css: .material-symbols-outlined → img selector
+
+(Color corrected from E3E3E3 to 434343 per user request)
+
+============================================================
+ONBOARDING — COUNTRY & LANGUAGE SELECTION
+============================================================
+
+onboarding-identity.html updates:
+
+Country dropdown expanded from ~60 to 195+ entries:
+- All 193 UN member states
+- Hong Kong, Macau, Taiwan
+- Palestine, Holy See (Vatican City)
+
+Language field changed from free-text input to dropdown with
+UN 6 official languages only:
+- English, 中文 (Chinese), Français (French),
+  Русский (Russian), Español (Spanish), العربية (Arabic)
+
+Both dropdowns support: search/filter (country), outside-click close,
+pre-filled value restoration from stored user data
+
+============================================================
+FILE CHANGES
+============================================================
+
+Created:
+- docs/assets/js/pricing.js — shared region-aware pricing detection
+
+Modified:
+- docs/pages/dashboard.html — pricing.js + data-slati-price attribute
+- docs/pages/community-hub.html — pricing.js + data-slati-price attribute
+- docs/pages/overview.html — pricing.js + data-slati-price attribute
+- docs/pages/explore.html — pricing.js + data-slati-price attribute
+- docs/pages/premium.html — pricing.js + full global pricing tables
+- docs/pages/messages.html — complete 3-panel rewrite with Groups panel, FAB, modal
+- docs/assets/js/sidebar.js — SVG collapse button icons
+- docs/assets/css/ethereal.css — collapse button img styling
+- docs/pages/onboarding-identity.html — full country list + UN languages

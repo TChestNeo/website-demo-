@@ -1,0 +1,66 @@
+============================================================
+  SlatiWorld Development Log — 2026-08-09
+============================================================
+
+1. fluidcanvas-editor.html — Notion-Style Article Editor Transformation
+   - Stripped Etheria identity, card backgrounds, and asset panel clutter
+   - Clean Notion-style layout: max-width 780px centered, minimal chrome
+   - Kept left asset panel as draggable card menu per user request
+   - Custom CSS variables for full theme support (light/dark)
+
+2. Drag-and-Drop Asset Blocks
+   - Asset panel cards made draggable (dragstart/dataTransfer with JSON payload)
+   - Drop canvas with flex-wrap, dashed border placeholder, drag-over highlight
+   - Blocks: resizable (CSS resize:both), removable (hover-reveal × button)
+   - Block icon + editable label displayed per block
+
+3. Flag Block — Full Selection Flow
+   - Flag block click → Source modal: "Upload from file" + "Search within the platform"
+   - Upload: hidden file input triggered programmatically, FileReader.readAsDataURL()
+   - Search: Flag browser modal with Search/My flag tabs, search bar, flag grid
+   - 12 seed flags + 3 personal flags with colored stripe DOM rendering
+   - Double-click = select + confirm in one action
+   - Flag display via DOM colored stripe divs (renderFlagStripes), avoiding SVG data URI issues
+
+4. Critical Bug Fix — Variable Scope (currentFlagBlock)
+   - Inline onclick="currentFlagBlock=this.parentElement" created window.currentFlagBlock
+   - IIFE functions checked var currentFlagBlock (module-scoped), always null
+   - confirmFlagSelection() silently exited via if (!currentFlagBlock) return;
+   - Fixed: setCurrentFlagBlock(el) exposed on window, sets IIFE-scoped variable
+
+5. Editable Auto-Sizing Block Labels
+   - Changed from <span> to <input class="block-label">
+   - Positioned bottom-left (left: 4px, bottom: 6px), left text alignment
+   - Auto-size: hidden <span> sizer spans measure text width via getBoundingClientRect()
+   - oninput="autoSizeLabel(this)" for dynamic resize on keystroke
+   - Initial sizing called in all creation paths: createBlock, handleFlagFileUpload,
+     applyFlagToBlock, loadDraft flag restore
+   - event.stopPropagation() prevents input clicks bubbling to parent handlers
+
+6. Draft Persistence (localStorage)
+   - saveDraft() / loadDraft() via localStorage key "slati_fluidcanvas_draft"
+   - Auto-save: 3s debounce after content change
+   - Saves: title, content, tags, blocks (asset, label, hasImage, imgSrc, stripesHtml, flagName)
+   - Restores blocks via createBlock() then patches flag images/stripes
+   - Unsaved status badge in header when content differs from last save
+
+7. Sidebar + Transitions Updated
+   - sidebar.js: Editor nav entry { id:'editor', icon:'article', label:'Editor', href:'../pages/editor.html' }
+   - sidebar.js: getActiveId() — if (path.includes('editor')) return 'editor'
+   - transitions.js: 'editor.html': 5 added to NAV_ORDER (between messages:4 and workspace:8)
+
+============================================================
+  Files Modified
+============================================================
+  docs/pages/fluidcanvas-editor.html
+  docs/pages/editor.html
+  docs/assets/js/sidebar.js
+  docs/assets/js/transitions.js
+
+============================================================
+  Known Issues / Pending
+============================================================
+  - Flag block end-to-end flow not fully tested (drag → select → browse →
+    confirm → display → edit label → save → refresh → restore)
+  - Upload-from-file flag label auto-size not user-verified
+  - Flag block draft restore with auto-sized labels not user-verified

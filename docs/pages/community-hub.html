@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Hub | M.NationWorld</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <!-- Sub nav -->
+    <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md);flex-wrap:wrap">
+      <div class="subnav" data-slider id="communitySubnav">
+        <a class="subnav-pill active" data-tab="recommend">Recommend</a>
+        <a class="subnav-pill" data-tab="following">Following</a>
+        <a class="subnav-pill" data-tab="topic">Topic</a>
+      </div>
+      <div class="search-capsule" style="margin-left:auto">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" placeholder="Search topics...">
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:var(--space-md)">
+      <!-- Feed -->
+      <div id="feedContent" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
+
+      <!-- Right sidebar -->
+      <div style="display:flex;flex-direction:column;gap:var(--space-md)">
+        <!-- Premium Card -->
+        <div class="tilt-container" style="border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:white;padding:var(--space-md);position:relative">
+          <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,0.03);border-radius:50%;pointer-events:none"></div>
+          <div style="position:relative;z-index:1">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
+              <span class="material-symbols-outlined" style="font-size:20px;color:#eab308">verified</span>
+              <span style="font-weight:700;font-size:13px">M.NationWorld Premium</span>
+            </div>
+            <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4">Advanced analytics, custom themes, priority support.</p>
+            <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;font-size:12px" onclick="window.location.href='premium.html'">
+              <span class="material-symbols-outlined" style="font-size:14px">rocket_launch</span>
+              Subscribe — <span data-slati-price>$4.99</span>/mo
+            </button>
+            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'">View all plans →</button>
+          </div>
+        </div>
+        <!-- Discovery Hub -->
+        <div class="card" id="discoveryHub">
+          <h3 class="label-md" style="margin-bottom:var(--space-sm)">Discovery Hub</h3>
+          <div class="subnav" data-slider style="margin-bottom:var(--space-sm)" id="discoveryTabs">
+            <a class="subnav-pill active" data-dtab="topics">Topics</a>
+            <a class="subnav-pill" data-dtab="channels">Channels</a>
+          </div>
+          <div id="discoveryList" style="display:flex;flex-direction:column;gap:4px"></div>
+        </div>
+
+        <!-- Trending -->
+        <div class="card">
+          <h3 class="label-md" style="margin-bottom:var(--space-sm)">Trending</h3>
+          <div id="trendingList" style="display:flex;flex-direction:column;gap:4px"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script src="../assets/js/pricing.js"></script>
+<script src="../assets/js/subnav.js"></script>
+<script>
+  var currentTab = 'recommend';
+  var currentDiscoveryTab = 'topics';
+  var topics = SlatiDB.getTopics();
+
+  // Feed content per tab
+  var feedData = {
+    recommend: [
+      { icon: 'person', badge: 'Sovereign Log', badgeClass: 'badge-primary', author: 'Marcus Vane', title: 'The Floating District Plans', desc: 'A comprehensive proposal for modular aquatic urbanism in micronation territories. Phase 1 blueprints attached.', time: '3 hours ago', likes: 47, comments: 12 },
+      { icon: 'smart_display', badge: 'Video', badgeClass: 'badge-secondary', author: 'Studio Prime', title: 'Building Digital Embassies', desc: 'A visual guide to establishing virtual diplomatic missions across the M.NationWorld network.', time: '5 hours ago', likes: 128, comments: 34 },
+      { icon: 'event', badge: 'Event', badgeClass: 'badge-warning', author: 'Council Admin', title: 'Governance Summit 2026', desc: 'Annual gathering of micronation leaders. Keynote: Direct Democracy at Scale.', time: 'Starts Jul 15', likes: 256, comments: 89 },
+    ],
+    following: [
+      { icon: 'shield', badge: 'Sovereign Log', badgeClass: 'badge-primary', author: 'Kingdom of Aethelgard', title: 'Royal Decree: Renewable Energy Initiative', desc: 'Mandating 80% renewable energy across all territories by 2030.', time: '1 hour ago', likes: 92, comments: 18 },
+      { icon: 'edit_note', badge: 'Wiki Revision', badgeClass: 'badge-success', author: 'Neo-Venice Archive', title: 'Lore Update: Founding of Aqua Centro', desc: 'Revised historical account with new archival documents.', time: '4 hours ago', likes: 34, comments: 7 },
+    ],
+    topic: [
+      { icon: 'forum', badge: 'r/DigitalSovereignty', badgeClass: 'badge-primary', author: '', title: 'Standards for Digital-First Micronations', desc: '1,240 members · Active discussions on blockchain governance and digital identity protocols.', time: 'Trending', likes: 1240, comments: 89 },
+      { icon: 'forum', badge: 'r/MicroNationDesign', badgeClass: 'badge-secondary', author: '', title: 'Aesthetics & Architecture for New Nations', desc: '2,100 members · Flag design, capital planning, and cultural branding.', time: 'Popular', likes: 2100, comments: 156 },
+      { icon: 'forum', badge: 'r/GovernanceDesign', badgeClass: 'badge-success', author: '', title: 'Experimental Political Systems', desc: '3,400 members · Proposing and stress-testing novel constitutions.', time: 'Hot', likes: 3400, comments: 234 },
+    ]
+  };
+
+  function renderFeed() {
+    var items = feedData[currentTab] || [];
+    var html = '';
+    items.forEach(function(item) {
+      html +=
+        '<div class="card card-hover tilt-container">' +
+          '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:8px">' +
+            '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + item.icon + '</span>' +
+            '<span class="badge ' + item.badgeClass + '">' + item.badge + '</span>' +
+            (item.author ? '<span style="font-weight:600;font-size:var(--fs-label-md)">' + item.author + '</span>' : '') +
+            '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + item.time + '</span>' +
+          '</div>' +
+          '<h4 style="font-weight:600;font-size:var(--fs-body-md);margin-bottom:4px">' + item.title + '</h4>' +
+          '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + item.desc + '</p>' +
+          '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
+            '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">favorite</span> ' + item.likes + '</span>' +
+            '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">chat_bubble</span> ' + item.comments + '</span>' +
+          '</div>' +
+        '</div>';
+    });
+    document.getElementById('feedContent').innerHTML = html;
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+  }
+
+  function renderDiscovery() {
+    var list = currentDiscoveryTab === 'topics' ? topics : [
+      { name: 'Sovereign Council', members: 1200 },
+      { name: 'Cartography Guild', members: 842 },
+      { name: 'Neural Architects', members: 2500 },
+    ];
+    var html = list.map(function(item) {
+      return '<div class="nav-item" style="justify-content:space-between">' +
+        '<span>' + item.name + '</span>' +
+        '<span class="label-sm" style="color:var(--color-outline)">' + (item.memberCount || item.members || 0).toLocaleString() + '</span>' +
+      '</div>';
+    }).join('');
+    document.getElementById('discoveryList').innerHTML = html;
+  }
+
+  function renderTrending() {
+    var html = topics.map(function(t) {
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0">' +
+        '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)">tag</span>' +
+        '<span style="flex:1;font-size:var(--fs-label-md);font-weight:500">#' + t.name.replace(/\s+/g, '_') + '</span>' +
+        '<span class="label-sm" style="color:var(--color-outline)">' + t.memberCount.toLocaleString() + '</span>' +
+      '</div>';
+    }).join('');
+    document.getElementById('trendingList').innerHTML = html;
+  }
+
+  // Tab switching
+  document.getElementById('communitySubnav').addEventListener('click', function(e) {
+    if (e.target.classList.contains('subnav-pill')) {
+      currentTab = e.target.dataset.tab;
+      document.querySelectorAll('#communitySubnav .subnav-pill').forEach(function(b) { b.classList.remove('active'); });
+      e.target.classList.add('active');
+      renderFeed();
+    }
+  });
+
+  document.getElementById('discoveryTabs').addEventListener('click', function(e) {
+    if (e.target.classList.contains('subnav-pill')) {
+      currentDiscoveryTab = e.target.dataset.dtab;
+      document.querySelectorAll('#discoveryTabs .subnav-pill').forEach(function(b) { b.classList.remove('active'); });
+      e.target.classList.add('active');
+      renderDiscovery();
+    }
+  });
+
+  renderFeed();
+  renderDiscovery();
+  renderTrending();
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

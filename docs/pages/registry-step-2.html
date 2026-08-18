@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>National Registry — Step 02 | M.NationWorld</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    body { background: radial-gradient(ellipse at 50% 30%, rgba(70,72,212,0.04) 0%, transparent 60%), var(--color-background); }
+    .registry-card { max-width: 800px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <div style="max-width:800px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:var(--space-lg)">
+        <h1 class="headline-lg" style="margin-bottom:4px">National Incorporation Registry</h1>
+        <p class="body-md" style="color:var(--color-on-surface-variant)">Step 02 — Geopolitics</p>
+
+        <div class="progress-steps" style="justify-content:center;margin-top:var(--space-md)">
+          <div class="progress-step completed">
+            <span class="dot" style="background:#22c55e"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span>Identity</span>
+          </div>
+          <div class="progress-connector done"></div>
+          <div class="progress-step active">
+            <span class="dot">2</span><span>Geopolitics</span>
+          </div>
+          <div class="progress-connector"></div>
+          <div class="progress-step pending">
+            <span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">3</span><span style="color:var(--color-outline)">Macro Metrics</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card tilt-container registry-card" style="padding:var(--space-lg)">
+        <div class="form-group">
+          <label class="form-label">Designated Capital</label>
+          <input type="text" class="input-glass" id="capital" placeholder="e.g. Nova Centauri">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Establishment Date</label>
+          <input type="date" class="input-glass" id="established">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Primary Lore Manifest</label>
+          <textarea class="input-glass" id="lore" placeholder="Describe your nation's founding story, core values, and vision for the future..." rows="5"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cartography Data (optional)</label>
+          <div class="upload-zone">
+            <span class="material-symbols-outlined" style="font-size:40px;color:var(--color-outline);margin-bottom:8px">cloud_upload</span>
+            <p class="label-md" style="color:var(--color-on-surface-variant)">Drop map files here or click to browse</p>
+            <p class="label-sm" style="color:var(--color-outline)">.SHP, .GEOJSON, .SVG — Max 50MB</p>
+            <p id="uploadStatus" class="label-sm" style="color:var(--color-primary);margin-top:4px"></p>
+          </div>
+        </div>
+
+        <div class="flex-between" style="margin-top:var(--space-lg)">
+          <a href="registry-step-1.html" class="btn btn-ghost">
+            <span class="material-symbols-outlined">arrow_back</span> Previous
+          </a>
+          <button class="btn btn-primary btn-lg" onclick="handleNext()">
+            Next Step: Macro Metrics
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </div>
+        <p id="formError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script>
+  // Restore draft
+  var draft = SlatiDB.getNationDraft();
+  if (draft && draft.steps[2]) {
+    document.getElementById('capital').value = draft.steps[2].capital || '';
+    document.getElementById('established').value = draft.steps[2].established || '';
+    document.getElementById('lore').value = draft.steps[2].lore || '';
+  }
+
+  // File upload simulation
+  var uploadZone = document.querySelector('.upload-zone');
+  uploadZone.addEventListener('click', function() {
+    document.getElementById('uploadStatus').textContent = '✨ Map uploaded (demo mode)';
+  });
+  uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); });
+  uploadZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    document.getElementById('uploadStatus').textContent = '✨ Map file received (demo mode)';
+  });
+
+  function handleNext() {
+    var capital = document.getElementById('capital').value.trim();
+    var established = document.getElementById('established').value;
+    var lore = document.getElementById('lore').value.trim();
+    if (!capital) { showError('Please enter a designated capital'); return; }
+    if (!established) { showError('Please select an establishment date'); return; }
+
+    SlatiDB.saveNationDraft(2, { capital: capital, established: established, lore: lore });
+    SlatiDB.setRegistryStep(3);
+    window.location.href = 'registry-step-3.html';
+  }
+
+  function showError(msg) {
+    var el = document.getElementById('formError');
+    el.textContent = msg; el.style.display = '';
+    setTimeout(function () { el.style.display = 'none'; }, 3000);
+  }
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

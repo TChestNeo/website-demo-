@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M.NationWorld — Welcome</title>
+  <link rel="stylesheet" href="assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    .auth-bg {
+      background: radial-gradient(ellipse at 30% 20%, rgba(70,72,212,0.06) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 80%, rgba(129,39,207,0.04) 0%, transparent 60%),
+                  var(--color-background);
+    }
+  </style>
+</head>
+<body class="auth-bg">
+
+<div class="auth-layout">
+  <div class="auth-card tilt-container" id="authCard">
+
+    <!-- Left branding panel -->
+    <div class="auth-left">
+      <div style="position:relative;z-index:1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:var(--space-lg)">
+          <img src="assets/image/M.NationWorld logo.png" alt="M.NationWorld" style="height:36px;width:auto">
+          <span style="font-size:24px;font-weight:700">M.NationWorld</span>
+        </div>
+        <h1 class="display-lg" style="margin-bottom:var(--space-sm)">Build Your<br>Micronation</h1>
+        <p class="body-lg" style="opacity:0.85;margin-bottom:var(--space-lg)">
+          Design constitutions. Forge alliances. Shape worlds.
+        </p>
+
+        <!-- Step indicator -->
+        <div id="stepIndicator" style="margin-top:var(--space-xl)">
+          <div class="progress-steps" style="flex-direction:column;align-items:flex-start;gap:16px">
+            <div class="progress-step completed" id="step1indicator">
+              <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>
+              <span style="color:rgba(255,255,255,0.9)">Create account</span>
+            </div>
+            <div class="progress-step" id="step2indicator" style="opacity:0.5">
+              <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">2</span>
+              <span style="color:rgba(255,255,255,0.6)">Identity Setup</span>
+            </div>
+            <div class="progress-step" id="step3indicator" style="opacity:0.5">
+              <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">3</span>
+              <span style="color:rgba(255,255,255,0.6)">Complete</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right form panel -->
+    <div class="auth-right">
+      <!-- Tab toggle -->
+      <div class="segmented-control" style="margin-bottom:var(--space-lg);max-width:240px">
+        <button class="segmented-option active" id="tabSignup" onclick="switchTab('signup')">Sign up</button>
+        <button class="segmented-option" id="tabLogin" onclick="switchTab('login')">Log in</button>
+      </div>
+
+      <!-- Signup form -->
+      <div id="signupForm">
+        <h2 class="headline-md" style="margin-bottom:4px">Create your account</h2>
+        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+          Join the global community of worldbuilders
+        </p>
+        <div class="form-group">
+          <label class="form-label">Display Name</label>
+          <input type="text" class="input-glass" id="signupName" placeholder="e.g. Alex Rivera" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="input-glass" id="signupEmail" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="input-glass" id="signupPassword" placeholder="Min. 6 characters" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleSignup()">
+          Create Account
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+        <p id="signupError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+      </div>
+
+      <!-- Login form (hidden by default) -->
+      <div id="loginForm" style="display:none">
+        <h2 class="headline-md" style="margin-bottom:4px">Welcome back, Sovereign</h2>
+        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+          Ready to make your mark today?
+        </p>
+        <div class="form-group">
+          <label class="form-label">Email or Username</label>
+          <input type="text" class="input-glass" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="input-glass" id="loginPassword" placeholder="Your password" autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleLogin()">
+          Enter Console
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+        <p id="loginError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+      </div>
+
+      <!-- Demo hint -->
+      <p style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
+        Demo mode — any credentials work
+      </p>
+      <!-- Legal links -->
+      <p style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
+        By continuing, you agree to our
+        <a href="pages/terms.html" style="color:var(--color-primary)">服务条款</a> and
+        <a href="pages/privacy.html" style="color:var(--color-primary)">隐私政策</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Shared JS -->
+<script src="assets/js/tilt.js"></script>
+<script src="assets/js/storage.js"></script>
+<script>
+  var currentTab = 'signup';
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+    document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+    document.getElementById('signupForm').style.display = tab === 'signup' ? '' : 'none';
+    document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+    document.getElementById('signupError').style.display = 'none';
+    document.getElementById('loginError').style.display = 'none';
+    // Update step indicator
+    document.getElementById('step1indicator').className = 'progress-step ' + (tab === 'signup' ? 'completed' : '');
+    document.getElementById('step2indicator').style.opacity = tab === 'signup' ? '0.5' : '1';
+    document.getElementById('step1indicator').querySelector('.dot').innerHTML = tab === 'signup'
+      ? '<span class="material-symbols-outlined" style="font-size:14px">check</span>'
+      : '<span class="material-symbols-outlined" style="font-size:14px">login</span>';
+  }
+
+  function handleSignup() {
+    var name = document.getElementById('signupName').value.trim();
+    var email = document.getElementById('signupEmail').value.trim();
+    var password = document.getElementById('signupPassword').value;
+
+    if (!name) { showError('signupError', 'Please enter a display name'); return; }
+    if (!email) { showError('signupError', 'Please enter an email address'); return; }
+    if (!password || password.length < 3) { showError('signupError', 'Password must be at least 3 characters'); return; }
+
+    SlatiDB.saveUser({
+      displayName: name,
+      email: email,
+      citizenId: 'CIT-' + Math.floor(Math.random() * 10000),
+      avatarUrl: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=4648d4&color=fff&size=80',
+      createdAt: new Date().toISOString()
+    });
+    SlatiDB.setOnboardingStep(1);
+    window.location.href = 'pages/onboarding-identity.html';
+  }
+
+  function handleLogin() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var password = document.getElementById('loginPassword').value;
+
+    if (!email) { showError('loginError', 'Please enter your email or username'); return; }
+    if (!password || password.length < 3) { showError('loginError', 'Invalid credentials'); return; }
+
+    // In demo mode, accept any credentials. If a previous user exists, restore them.
+    var existingUser = SlatiDB.getUser();
+    if (!existingUser) {
+      SlatiDB.saveUser({
+        displayName: email.split('@')[0] || 'Sovereign',
+        email: email,
+        citizenId: 'CIT-' + Math.floor(Math.random() * 10000),
+        avatarUrl: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(email.split('@')[0]) + '&background=4648d4&color=fff&size=80',
+        createdAt: new Date().toISOString()
+      });
+    } else {
+      // Re-set session
+      SlatiDB.set(SlatiDB.KEYS.SESSION, { loggedIn: true, at: new Date().toISOString() });
+    }
+    window.location.href = 'pages/dashboard.html';
+  }
+
+  function showError(id, msg) {
+    var el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = '';
+    setTimeout(function () { el.style.display = 'none'; }, 3000);
+  }
+
+  // Check if already logged in
+  if (SlatiDB.isLoggedIn()) {
+    // Offer quick entry
+  }
+</script>
+<script src="assets/js/transitions.js"></script>
+</body>
+</html>

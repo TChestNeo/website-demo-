@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics | FluidCanvas</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    body { background: radial-gradient(ellipse at 30% 20%, rgba(70,72,212,0.04) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(129,39,207,0.03) 0%, transparent 60%), var(--color-background); }
+    .studio-header { display:flex;align-items:center;gap:var(--space-sm);padding:var(--space-sm) var(--space-lg);border-bottom:1px solid var(--divider-line);background:var(--card-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);position:sticky;top:0;z-index:10; }
+    .metric-card { text-align:center;padding:var(--space-md); }
+    .metric-value { font-size:28px;font-weight:700;line-height:1.2; }
+    .metric-label { font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:2px; }
+    .metric-change { font-size:var(--fs-label-sm);font-weight:600;margin-top:4px; }
+    .content-row { display:flex;align-items:center;gap:var(--space-sm);padding:12px 0;border-bottom:1px solid rgba(118,117,134,0.06); }
+    .content-row:last-child { border-bottom:none; }
+    .mini-stat { text-align:center;min-width:70px; }
+    .sparkline { display:flex;align-items:flex-end;gap:2px;height:28px; }
+    .sparkline-bar { width:5px;border-radius:1px;min-height:3px;background:var(--color-primary);opacity:0.5;transition:opacity 0.2s; }
+    .sparkline-bar:last-child { opacity:1; }
+    /* Comparison bar */
+    .compare-bar { display:flex;align-items:center;gap:6px; }
+    .compare-bar-fill { height:6px;border-radius:3px;transition:width 0.5s ease; }
+  </style>
+</head>
+<body>
+
+<div class="studio-header">
+  <a href="fluidcanvas.html" class="btn btn-ghost btn-icon btn-sm"><span class="material-symbols-outlined">arrow_back</span></a>
+  <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:24px">draw</span>
+  <span style="font-weight:700;font-size:var(--fs-body-md)">FluidCanvas</span>
+  <span class="badge badge-secondary" style="margin-left:4px">Analytics</span>
+  <span style="flex:1"></span>
+  <a href="fluidcanvas.html#upload" class="btn btn-ghost btn-sm"><span class="material-symbols-outlined">cloud_upload</span> Upload</a>
+  <a href="fluidcanvas-editor.html" class="btn btn-primary"><span class="material-symbols-outlined">edit</span> Open Editor</a>
+</div>
+
+<div style="padding:var(--space-lg)">
+  <div style="display:flex;gap:var(--space-md);align-items:flex-start">
+
+  <!-- Left: 3D menu card -->
+  <div class="tilt-container" style="width:220px;flex-shrink:0;position:sticky;top:80px;background:linear-gradient(145deg,var(--card-bg-hover) 0%,var(--card-bg) 100%);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:var(--card-border);border-radius:var(--radius-lg);box-shadow:0 20px 50px -12px rgba(0,0,0,0.12),0 4px 16px -4px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.8);padding:var(--space-md);transform:perspective(800px) rotateY(-2deg);transition:transform 0.4s cubic-bezier(0.25,0.1,0.25,1),box-shadow 0.4s ease;" onmouseenter="this.style.transform='perspective(800px) rotateY(0deg)';this.style.boxShadow='0 28px 60px -14px rgba(0,0,0,0.18),0 6px 20px -4px rgba(0,0,0,0.08),inset 0 1px 0 rgba(255,255,255,0.9)'" onmouseleave="this.style.transform='perspective(800px) rotateY(-2deg)';this.style.boxShadow='0 20px 50px -12px rgba(0,0,0,0.12),0 4px 16px -4px rgba(0,0,0,0.06),inset 0 1px 0 rgba(255,255,255,0.8)'">
+    <a href="fluidcanvas.html" style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-md);text-decoration:none"><span class="material-symbols-outlined" style="color:var(--color-primary);font-size:24px">draw</span><span style="font-weight:700;font-size:var(--fs-body-md);color:var(--color-on-surface)">FluidCanvas</span></a>
+    <div class="divider"></div>
+    <nav style="display:flex;flex-direction:column;gap:2px">
+      <a href="fluidcanvas.html" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
+      <a href="fluidcanvas-analytics.html" class="nav-item active" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">analytics</span> Analytics</a>
+      <a href="fluidcanvas.html#content" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">article</span> Content</a>
+      <a href="fluidcanvas.html#upload" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">cloud_upload</span> Upload</a>
+      <a href="fluidcanvas-articles.html" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">edit_note</span> Articles</a>
+    </nav>
+    <div class="divider"></div>
+    <nav style="display:flex;flex-direction:column;gap:2px">
+      <a href="#" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">settings</span> Settings</a>
+      <a href="dashboard.html" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">arrow_back</span> Back to Console</a>
+    </nav>
+  </div>
+
+  <!-- Right: Main content -->
+  <div style="flex:1;min-width:0">
+
+  <!-- Period selector -->
+  <div class="flex-between" style="margin-bottom:var(--space-md)">
+    <h1 class="headline-lg" id="analyticsTitle">Content Analytics</h1>
+    <div class="subnav" id="periodTabs">
+      <button class="subnav-pill" data-period="7d">Last 7 days</button>
+      <button class="subnav-pill active" data-period="28d">Last 28 days</button>
+      <button class="subnav-pill" data-period="month">vs Last Month</button>
+    </div>
+  </div>
+
+  <!-- Overview cards -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-sm);margin-bottom:var(--space-lg)" id="overviewCards"></div>
+
+  <!-- Channel summary -->
+  <div class="card tilt-container" style="padding:var(--space-lg);margin-bottom:var(--space-md);background:linear-gradient(135deg,rgba(70,72,212,0.04),rgba(129,39,207,0.02)),var(--card-bg)" id="channelSummary"></div>
+
+  <!-- Detailed breakdown -->
+  <div class="subnav" style="margin-bottom:var(--space-md)" id="detailTabs">
+    <button class="subnav-pill active" data-tab="articles">Article Analytics</button>
+    <button class="subnav-pill" data-tab="media">Media Analytics</button>
+  </div>
+
+  <div style="overflow:hidden"><div id="detailSlide" style="display:flex;transition:transform 0.6s cubic-bezier(0.25,0.1,0.25,1)"></div></div>
+
+  </div><!-- end right -->
+  </div><!-- end two-column -->
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/transitions.js"></script>
+<script>
+  var user = SlatiDB.getUser() || { displayName: 'Alex Rivera', citizenId: 'CIT-8842', avatarUrl: 'https://ui-avatars.com/api/?name=Alex+Rivera&background=4648d4&color=fff&size=80' };
+  var teams = SlatiDB.getTeams();
+  var activeAccount = SlatiDB.getActiveAccount();
+  var activeTeam = (activeAccount !== 'personal') ? teams.find(function(t) { return t.id === activeAccount; }) : null;
+  var currentPeriod = '28d';
+  var detailPanel = 0;
+
+  // --- Sparkline helper ---
+  function makeSparkline(values, color) {
+    var max = Math.max.apply(null, values);
+    return '<div class="sparkline">' + values.map(function(v) { return '<div class="sparkline-bar" style="height:' + Math.max(3, (v/max)*100) + '%;background:' + (color||'var(--color-primary)') + '"></div>'; }).join('') + '</div>';
+  }
+
+  // --- Content render ---
+  function renderContent() {
+    var isPersonal = activeAccount === 'personal';
+    var aLabel = isPersonal ? (user.displayName || 'Personal') : (activeTeam ? activeTeam.name : 'Team');
+    var mult = isPersonal ? 1 : (activeTeam ? activeTeam.members : 1);
+
+    document.getElementById('analyticsTitle').textContent = aLabel + ' — Content Analytics';
+
+    // Overview cards — data differs per period
+    var pData = {
+      '7d':  { views: 12.4, bm: 1240, shares: 420, readMin: 3.8, viewsPct: 5.2, bmPct: 3.1, sharesPct: 8.4, readPct: -1.2 },
+      '28d': { views: 48.2, bm: 3842, shares: 1256, readMin: 4.2, viewsPct: 12.4, bmPct: 8.1, sharesPct: 21.7, readPct: -3.2 },
+      'month':{ views: 195.0, bm: 15200, shares: 5100, readMin: 4.5, viewsPct: 14.3, bmPct: 9.8, sharesPct: 18.2, readPct: -1.8 },
+    };
+    var pd = pData[currentPeriod] || pData['28d'];
+    var periodLabel = currentPeriod === '7d' ? 'Last 7 days' : currentPeriod === '28d' ? 'Last 28 days' : 'vs Last Month';
+    var vc = pd.viewsPct >= 0 ? '↑ ' : '↓ ';
+    var rc = pd.readPct >= 0 ? '↑ ' : '↓ ';
+    document.getElementById('overviewCards').innerHTML =
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + (pd.views * mult).toFixed(1) + 'K</div><div class="metric-label">Total Views</div><div class="metric-change" style="color:' + (pd.viewsPct>=0?'#22c55e':'#dc2626') + '">' + vc + Math.abs(pd.viewsPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + Math.round(pd.bm * mult).toLocaleString() + '</div><div class="metric-label">Total Bookmarks</div><div class="metric-change" style="color:' + (pd.bmPct>=0?'#22c55e':'#dc2626') + '">' + (pd.bmPct>=0?'↑ ':'↓ ') + Math.abs(pd.bmPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + Math.round(pd.shares * mult).toLocaleString() + '</div><div class="metric-label">Total Shares</div><div class="metric-change" style="color:' + (pd.sharesPct>=0?'#22c55e':'#dc2626') + '">' + (pd.sharesPct>=0?'↑ ':'↓ ') + Math.abs(pd.sharesPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + (pd.readMin * mult).toFixed(1) + ' min</div><div class="metric-label">Avg. Read Time</div><div class="metric-change" style="color:' + (pd.readPct>=0?'#22c55e':'#dc2626') + '">' + rc + Math.abs(pd.readPct).toFixed(1) + '% ' + periodLabel + '</div></div>';
+
+    // Channel summary — data per period
+    var sData = {
+      '7d':  { reach: 12.4, pct:'+5.2%', viewsMax:18, bm:1.2, bmMax:2, shares:0.42, sharesMax:0.8, trend:[3,5,4,7,6,9,8,12], prev:[2,4,3,6,5,8,7,10] },
+      '28d': { reach: 52, pct:'+14.3%', viewsMax:70, bm:3.8, bmMax:5, shares:1.3, sharesMax:2, trend:[12,18,15,22,19,28,35,30,38,42,36,48,45,52], prev:[8,14,12,20,16,24,32,26,34,40,32,44,42,48] },
+      'month':{ reach: 195, pct:'+11.8%', viewsMax:260, bm:15.2, bmMax:20, shares:5.1, sharesMax:7, trend:[45,52,48,58,55,62,68,72,65,78,82,88,92,95], prev:[40,46,42,52,50,56,60,64,58,70,74,78,80,85] },
+    };
+    var sd = sData[currentPeriod] || sData['28d'];
+    document.getElementById('channelSummary').innerHTML =
+      '<div style="display:flex;align-items:center;gap:var(--space-lg);flex-wrap:wrap">' +
+        '<div style="flex:1;min-width:240px">' +
+          '<span class="badge badge-primary" style="margin-bottom:8px">' + periodLabel + '</span>' +
+          '<h2 class="headline-md" style="margin-bottom:4px">Performance Overview</h2>' +
+          '<p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:12px">' +
+            'Total content reach: <strong style="color:var(--color-on-surface)">' + (sd.reach * mult).toFixed(1) + 'K</strong> views · ' +
+            '<strong style="color:#22c55e">' + sd.pct + '</strong> vs previous period' +
+          '</p>' +
+          '<div class="compare-bar" style="margin-bottom:4px"><span class="label-sm" style="width:60px">Views</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.reach/sd.viewsMax*100) + '%;background:var(--color-primary)"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.reach*mult).toFixed(1) + 'K</span></div>' +
+          '<div class="compare-bar" style="margin-bottom:4px"><span class="label-sm" style="width:60px">Bookmarks</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.bm/sd.bmMax*100) + '%;background:var(--color-secondary)"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.bm*mult).toFixed(1) + 'K</span></div>' +
+          '<div class="compare-bar"><span class="label-sm" style="width:60px">Shares</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.shares/sd.sharesMax*100) + '%;background:#16a34a"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.shares*mult).toFixed(1) + 'K</span></div>' +
+        '</div>' +
+        '<div style="text-align:center;min-width:160px">' +
+          '<div style="margin-bottom:4px" class="label-sm">View Trend (' + (currentPeriod==='7d'?'7':'14') + ' days)</div>' +
+          makeSparkline(sd.trend.map(function(v){return v*mult;}), 'var(--color-primary)') +
+          '<div style="margin-top:8px" class="label-sm">Previous period</div>' +
+          '<div style="margin-top:4px">' + makeSparkline(sd.prev.map(function(v){return v*mult;}), 'var(--color-outline-variant)') + '</div>' +
+        '</div>' +
+      '</div>';
+
+    // Detail panels
+    renderDetailPanels();
+  }
+
+  function renderDetailPanels() {
+    var isPersonal = activeAccount === 'personal';
+    var aLabel = isPersonal ? (user.displayName || 'Personal') : (activeTeam ? activeTeam.name : 'Team');
+    var track = document.getElementById('detailSlide');
+
+    // Article analytics with week-over-week and month-over-month comparison
+    var articles = [
+      { name:'The Founding Charter of Etheria', viewsNow:12420, viewsPrev:10520, bmNow:1204, bmPrev:1080, sharesNow:486, sharesPrev:392, readMin:8.2, readPrev:7.8, trend:[8,10,9,14,12,18,15,20] },
+      { name:'Aether Prime: Smart Sovereign City', viewsNow:15630, viewsPrev:11840, bmNow:2108, bmPrev:1650, sharesNow:742, sharesPrev:530, readMin:12.5, readPrev:11.2, trend:[12,15,13,18,16,22,20,28] },
+      { name:'Digital Rights & Citizenship Act', viewsNow:8920, viewsPrev:8340, bmNow:853, bmPrev:810, sharesNow:312, sharesPrev:322, readMin:5.8, readPrev:6.1, trend:[7,8,7,9,10,9,8,10] },
+      { name:'Economic Policy Whitepaper', viewsNow:4280, viewsPrev:3920, bmNow:645, bmPrev:550, sharesNow:198, sharesPrev:210, readMin:3.4, readPrev:3.8, trend:[5,4,5,6,5,7,6,5] },
+    ];
+
+    function pct(a,b) { var p=((a-b)/b*100); return (p>=0?'↑ ':'↓ ')+Math.abs(p).toFixed(1)+'%'; }
+    function color(a,b) { return a>=b?'#22c55e':'#dc2626'; }
+
+    var articleHTML = '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">Article Performance — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">Current vs Last Month</span></div>' +
+      '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase"><span style="flex:1;min-width:160px">Article</span><span class="mini-stat">Views</span><span class="mini-stat">vs Prev</span><span class="mini-stat">Bookmarks</span><span class="mini-stat">vs Prev</span><span class="mini-stat">Shares</span><span class="mini-stat">Read Time</span><span style="width:80px">Trend</span></div>' +
+      articles.map(function(a,i) { return '<div class="content-row"><span style="flex:1;min-width:160px;font-weight:600">'+a.name+'</span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+a.viewsNow.toLocaleString()+'</span></span>' +
+        '<span class="mini-stat"><span style="font-size:11px;color:'+color(a.viewsNow,a.viewsPrev)+'">'+pct(a.viewsNow,a.viewsPrev)+'</span></span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+a.bmNow.toLocaleString()+'</span></span>' +
+        '<span class="mini-stat"><span style="font-size:11px;color:'+color(a.bmNow,a.bmPrev)+'">'+pct(a.bmNow,a.bmPrev)+'</span></span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+a.sharesNow.toLocaleString()+'</span></span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+a.readMin+' min</span></span>' +
+        '<span style="width:80px">'+makeSparkline(a.trend, i===1?'#ea580c':'var(--color-primary)')+'</span>' +
+      '</div>'; }).join('') + '</div>';
+
+    // Media analytics
+    var media = [
+      { name:'Aether Prime — Drone Tour 4K', type:'🎬', viewsNow:45100, viewsPrev:28900, likesNow:8920, likesPrev:6020, bmNow:4105, bmPrev:3110, sharesNow:2830, sharesPrev:1690 },
+      { name:'Etheria — Official Flag Reveal', type:'🖼️', viewsNow:22800, viewsPrev:17000, likesNow:3421, likesPrev:2800, bmNow:1892, bmPrev:1600, sharesNow:1204, sharesPrev:850 },
+      { name:'Governance Summit — Highlights', type:'🎬', viewsNow:18400, viewsPrev:16000, likesNow:4210, likesPrev:3900, bmNow:2340, bmPrev:2440, sharesNow:982, sharesPrev:890 },
+      { name:'National Anthem — Recording', type:'🎵', viewsNow:9620, viewsPrev:9080, likesNow:5340, likesPrev:4760, bmNow:3210, bmPrev:2700, sharesNow:1540, sharesPrev:1570 },
+    ];
+
+    var mediaHTML = '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">Media Performance — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">Current vs Last Month</span></div>' +
+      '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase"><span style="flex:1;min-width:160px">Media</span><span style="width:44px;text-align:center">Type</span><span class="mini-stat">Views</span><span class="mini-stat">vs Prev</span><span class="mini-stat">Likes</span><span class="mini-stat">vs Prev</span><span class="mini-stat">Bookmarks</span><span class="mini-stat">Shares</span></div>' +
+      media.map(function(m,i) { return '<div class="content-row"><span style="flex:1;min-width:160px;font-weight:600">'+m.name+'</span><span style="width:44px;text-align:center">'+m.type+'</span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+(m.viewsNow/1000).toFixed(1)+'K</span></span>' +
+        '<span class="mini-stat"><span style="font-size:11px;color:'+color(m.viewsNow,m.viewsPrev)+'">'+pct(m.viewsNow,m.viewsPrev)+'</span></span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+m.likesNow.toLocaleString()+'</span></span>' +
+        '<span class="mini-stat"><span style="font-size:11px;color:'+color(m.likesNow,m.likesPrev)+'">'+pct(m.likesNow,m.likesPrev)+'</span></span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+m.bmNow.toLocaleString()+'</span></span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+m.sharesNow.toLocaleString()+'</span></span>' +
+      '</div>'; }).join('') + '</div>';
+
+    track.innerHTML = articleHTML + mediaHTML;
+    var panels = track.querySelectorAll('.card');
+    panels.forEach(function(p,i) { p.style.opacity = i===0 ? '1' : '0.3'; p.style.transition = 'opacity 0.6s cubic-bezier(0.25,0.1,0.25,1)'; });
+    track.style.transform = 'translateX(0)';
+    detailPanel = 0;
+
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+  }
+
+  // --- Period switching with horizontal slide ---
+  // 7d → 28d → month: forward (exit LEFT, enter from RIGHT)
+  // month → 28d → 7d: backward (exit RIGHT, enter from LEFT)
+  var periodOrder = ['7d', '28d', 'month'];
+  document.getElementById('periodTabs').addEventListener('click', function(e) {
+    if (!e.target.classList.contains('subnav-pill')) return;
+    var newPeriod = e.target.dataset.period;
+    if (newPeriod === currentPeriod) return;
+
+    var oldIdx = periodOrder.indexOf(currentPeriod);
+    var newIdx = periodOrder.indexOf(newPeriod);
+    var forward = newIdx > oldIdx;
+    var exitX = forward ? '-30px' : '30px';
+    var enterX = forward ? '30px' : '-30px';
+
+    // Update tab immediately so re-render reads correct period
+    this.querySelectorAll('.subnav-pill').forEach(function(b){b.classList.remove('active');});
+    e.target.classList.add('active');
+    var newP = newPeriod;
+    currentPeriod = newP;
+
+    var cards = document.querySelectorAll('#overviewCards, #channelSummary, #detailTabs, #detailSlide');
+    cards.forEach(function(el, i) {
+      el.style.transition = 'opacity 0.2s ease, transform 0.25s cubic-bezier(0.25,0.1,0.25,1)';
+      el.style.transitionDelay = (i*0.03)+'s';
+      el.style.opacity = '0';
+      el.style.transform = 'translateX(' + exitX + ')';
+    });
+
+    setTimeout(function() {
+      renderContent();
+      var nc = document.querySelectorAll('#overviewCards, #channelSummary, #detailTabs, #detailSlide');
+      nc.forEach(function(el) { el.style.opacity='0'; el.style.transform='translateX('+enterX+')'; el.style.transition='none'; });
+      requestAnimationFrame(function() {
+        nc.forEach(function(el, i) {
+          el.style.transition = 'opacity 0.3s ease, transform 0.35s cubic-bezier(0.25,0.1,0.25,1)';
+          el.style.transitionDelay = (i*0.04)+'s';
+          el.style.opacity = '1';
+          el.style.transform = 'translateX(0)';
+        });
+      });
+    }, 250);
+  });
+
+  // --- Detail tab switching ---
+  document.getElementById('detailTabs').addEventListener('click', function(e) {
+    if (!e.target.classList.contains('subnav-pill')) return;
+    this.querySelectorAll('.subnav-pill').forEach(function(b){b.classList.remove('active');});
+    e.target.classList.add('active');
+    var tgt = e.target.dataset.tab === 'articles' ? 0 : 1;
+    if (tgt === detailPanel) return;
+    var track = document.getElementById('detailSlide');
+    var panels = track.querySelectorAll('.card');
+    panels[detailPanel].style.opacity = '0.3';
+    panels[tgt].style.opacity = '1';
+    detailPanel = tgt;
+    track.style.transform = 'translateX(' + (-tgt * 100) + '%)';
+  });
+
+  // --- Init ---
+  renderContent();
+</script>
+</body>
+</html>

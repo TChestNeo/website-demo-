@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>National Registry — Step 01 | M.NationWorld</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: radial-gradient(ellipse at 50% 30%, rgba(70,72,212,0.04) 0%, transparent 60%),
+                  var(--color-background);
+    }
+    .registry-card { max-width: 800px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <div style="max-width:800px;margin:0 auto">
+      <!-- Header -->
+      <div style="text-align:center;margin-bottom:var(--space-lg)">
+        <h1 class="headline-lg" style="margin-bottom:4px">National Incorporation Registry</h1>
+        <p class="body-md" style="color:var(--color-on-surface-variant)">Step 01 — Identity</p>
+
+        <!-- Progress -->
+        <div class="progress-steps" style="justify-content:center;margin-top:var(--space-md)">
+          <div class="progress-step active">
+            <span class="dot">1</span><span>Identity</span>
+          </div>
+          <div class="progress-connector"></div>
+          <div class="progress-step pending">
+            <span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">2</span><span style="color:var(--color-outline)">Geopolitics</span>
+          </div>
+          <div class="progress-connector"></div>
+          <div class="progress-step pending">
+            <span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">3</span><span style="color:var(--color-outline)">Macro Metrics</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form card -->
+      <div class="card tilt-container registry-card" style="padding:var(--space-lg)">
+        <div class="form-group">
+          <label class="form-label">Official Nation Name</label>
+          <input type="text" class="input-glass" id="nationName" placeholder="e.g. The Republic of Caledonia">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Common Moniker</label>
+          <input type="text" class="input-glass" id="nationMoniker" placeholder="e.g. Caledonia">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sovereign Entity Classification</label>
+          <div style="position:relative" id="classDropdown">
+            <div class="input-glass flex-between" onclick="toggleDropdown()" style="cursor:pointer" id="classSelector">
+              <span id="selectedClass" style="color:var(--color-outline)">Select classification</span>
+              <span class="material-symbols-outlined" id="classArrow" style="font-size:20px;color:var(--color-outline);transition:transform 0.2s">expand_more</span>
+            </div>
+            <div class="dropdown-menu" id="classMenu" style="left:0;right:0">
+              <div class="dropdown-option" onclick="selectClass('Sovereign Nation')">🏛️ Sovereign Nation</div>
+              <div class="dropdown-option" onclick="selectClass('Colonial Territory')">🏴 Colonial Territory</div>
+              <div class="dropdown-option" onclick="selectClass('Puppet State')">🎭 Puppet State</div>
+              <div class="dropdown-option" onclick="selectClass('Free Association')">🤝 Free Association</div>
+              <div class="dropdown-option" onclick="selectClass('Protectorate')">🛡️ Protectorate</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-between" style="margin-top:var(--space-lg)">
+          <a href="dashboard.html" class="btn btn-ghost">Cancel</a>
+          <button class="btn btn-primary btn-lg" onclick="handleNext()">
+            Next Step: Geopolitics
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </div>
+        <p id="formError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+      </div>
+
+      <p style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
+        <span class="status-dot status-dot-green" style="display:inline-block;vertical-align:middle"></span>
+        Sovereign Validation Node: Online
+      </p>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script>
+  var selectedClass = '';
+  var dropdownOpen = false;
+
+  // Restore draft
+  var draft = SlatiDB.getNationDraft();
+  if (draft && draft.steps[1]) {
+    document.getElementById('nationName').value = draft.steps[1].name || '';
+    document.getElementById('nationMoniker').value = draft.steps[1].moniker || '';
+    if (draft.steps[1].classification) {
+      selectClass(draft.steps[1].classification);
+    }
+  }
+
+  function toggleDropdown() {
+    dropdownOpen = !dropdownOpen;
+    document.getElementById('classMenu').classList.toggle('open', dropdownOpen);
+    document.getElementById('classArrow').style.transform = dropdownOpen ? 'rotate(180deg)' : '';
+  }
+
+  function selectClass(val) {
+    selectedClass = val;
+    document.getElementById('selectedClass').textContent = val;
+    document.getElementById('selectedClass').style.color = '';
+    dropdownOpen = false;
+    document.getElementById('classMenu').classList.remove('open');
+    document.getElementById('classArrow').style.transform = '';
+  }
+
+  document.addEventListener('click', function(e) {
+    if (dropdownOpen && !document.getElementById('classDropdown').contains(e.target)) {
+      dropdownOpen = false;
+      document.getElementById('classMenu').classList.remove('open');
+      document.getElementById('classArrow').style.transform = '';
+    }
+  });
+
+  function handleNext() {
+    var name = document.getElementById('nationName').value.trim();
+    var moniker = document.getElementById('nationMoniker').value.trim();
+    if (!name) { showError('Please enter an official nation name'); return; }
+    if (!moniker) { showError('Please enter a common moniker'); return; }
+    if (!selectedClass) { showError('Please select a sovereign classification'); return; }
+
+    SlatiDB.saveNationDraft(1, { name: name, moniker: moniker, classification: selectedClass });
+    SlatiDB.setRegistryStep(2);
+    window.location.href = 'registry-step-2.html';
+  }
+
+  function showError(msg) {
+    var el = document.getElementById('formError');
+    el.textContent = msg; el.style.display = '';
+    setTimeout(function () { el.style.display = 'none'; }, 3000);
+  }
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

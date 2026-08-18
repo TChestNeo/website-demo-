@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Topic — Step 02 | M.NationWorld</title>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    body { background: radial-gradient(ellipse at 50% 30%, rgba(70,72,212,0.04) 0%, transparent 60%), var(--color-background); min-height:100vh;display:flex;flex-direction:column; }
+    .topic-wizard { max-width: 640px; margin: 80px auto; width: 90%; }
+  </style>
+</head>
+<body>
+
+<div style="position:fixed;top:0;left:0;right:0;padding:var(--space-sm) var(--space-md);z-index:50;display:flex;align-items:center;gap:12px">
+  <img src="../assets/image/M.NationWorld logo.png" alt="M.NationWorld" style="height:24px;width:auto">
+  <span style="font-weight:700">M.NationWorld</span>
+  <a href="dashboard.html" style="margin-left:auto;font-size:var(--fs-label-sm);color:var(--color-outline)">Cancel</a>
+</div>
+
+<div class="topic-wizard">
+  <div class="progress-steps" style="justify-content:center;margin-bottom:var(--space-lg)">
+    <div class="progress-step completed"><span class="dot" style="background:#22c55e"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span>Info</span></div>
+    <div class="progress-connector done"></div>
+    <div class="progress-step active"><span class="dot">2</span><span>Branding</span></div>
+    <div class="progress-connector"></div>
+    <div class="progress-step pending"><span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">3</span><span style="color:var(--color-outline)">Review</span></div>
+  </div>
+
+  <div class="card tilt-container" style="padding:var(--space-lg)">
+    <h2 class="headline-md" style="margin-bottom:4px">Topic Branding</h2>
+    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">Step 2: Customize the look</p>
+
+    <div class="form-group">
+      <label class="form-label">Topic Avatar</label>
+      <div class="upload-zone" style="max-width:160px">
+        <span class="material-symbols-outlined" style="font-size:32px;color:var(--color-outline)">add_a_photo</span>
+        <p class="label-sm" style="color:var(--color-outline)">Upload image</p>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Accent Color</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="colorSwatches">
+        <button class="color-swatch" data-color="#4648d4" style="width:36px;height:36px;background:#4648d4;border-radius:50%;border:3px solid transparent;cursor:pointer" onclick="selectColor('#4648d4',this)"></button>
+        <button class="color-swatch" data-color="#8127cf" style="width:36px;height:36px;background:#8127cf;border-radius:50%;border:3px solid transparent;cursor:pointer" onclick="selectColor('#8127cf',this)"></button>
+        <button class="color-swatch" data-color="#0d9488" style="width:36px;height:36px;background:#0d9488;border-radius:50%;border:3px solid transparent;cursor:pointer" onclick="selectColor('#0d9488',this)"></button>
+        <button class="color-swatch" data-color="#dc2626" style="width:36px;height:36px;background:#dc2626;border-radius:50%;border:3px solid transparent;cursor:pointer" onclick="selectColor('#dc2626',this)"></button>
+        <button class="color-swatch" data-color="#ea580c" style="width:36px;height:36px;background:#ea580c;border-radius:50%;border:3px solid transparent;cursor:pointer" onclick="selectColor('#ea580c',this)"></button>
+        <button class="color-swatch" data-color="#2563eb" style="width:36px;height:36px;background:#2563eb;border-radius:50%;border:3px solid transparent;cursor:pointer" onclick="selectColor('#2563eb',this)"></button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Visibility</label>
+      <div class="segmented-control" style="max-width:280px">
+        <button class="segmented-option active" data-vis="public" id="visPublic">Public</button>
+        <button class="segmented-option" data-vis="private" id="visPrivate">Private</button>
+      </div>
+      <p class="label-sm" style="color:var(--color-outline);margin-top:4px" id="visDesc">Anyone can view and join this topic.</p>
+    </div>
+
+    <div class="flex-between" style="margin-top:var(--space-lg)">
+      <a href="create-topic-step-1.html" class="btn btn-ghost"><span class="material-symbols-outlined">arrow_back</span> Previous</a>
+      <button class="btn btn-primary btn-lg" onclick="handleNext()">Continue to Review <span class="material-symbols-outlined">arrow_forward</span></button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script>
+  var selectedColor = '#4648d4';
+  var visibility = 'public';
+
+  function selectColor(color, el) {
+    selectedColor = color;
+    document.querySelectorAll('.color-swatch').forEach(function(b) { b.style.borderColor = 'transparent'; });
+    el.style.borderColor = 'var(--color-outline)';
+  }
+
+  document.getElementById('visPublic').addEventListener('click', function() {
+    visibility = 'public';
+    this.classList.add('active');
+    document.getElementById('visPrivate').classList.remove('active');
+    document.getElementById('visDesc').textContent = 'Anyone can view and join this topic.';
+  });
+  document.getElementById('visPrivate').addEventListener('click', function() {
+    visibility = 'private';
+    this.classList.add('active');
+    document.getElementById('visPublic').classList.remove('active');
+    document.getElementById('visDesc').textContent = 'Only invited members can view this topic.';
+  });
+
+  function handleNext() {
+    var draft = JSON.parse(localStorage.getItem('slati_topic_draft') || '{}');
+    draft.accentColor = selectedColor;
+    draft.visibility = visibility;
+    localStorage.setItem('slati_topic_draft', JSON.stringify(draft));
+    window.location.href = 'create-topic-step-3.html';
+  }
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

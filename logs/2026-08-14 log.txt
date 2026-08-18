@@ -1,0 +1,116 @@
+============================================================
+  SlatiWorld Development Log — 2026-08-14
+============================================================
+
+1. FluidCanvas v8.0 — Full Rewrite: Cards-Only Canvas
+   - User request: page boundary with margin (cards cannot leave the page,
+     toggleable), new "content card" type, background opacity via
+     right-click "Background card nature", grid snap toggle (default ON),
+     content cards opaque by default.
+   - Removed the entire paragraph system (v7 paragraph-block dodge model):
+     paragraphs, overlap engine, shape-outside spacers, composition
+     listeners, selected-text-to-card toolbar.
+   - New content cards: contenteditable root, auto-height with minHeight
+     frame (spanH·cs+(spanH−1)·gap), text can still overflow the frame.
+   - Boundary: PAGE_MARGIN=16, rotation-aware bbox clamp to
+     [margin, pageW−margin]; oversized bbox centers horizontally.
+   - Draft v8: {v:8, title, tags, cards, settings:{boundaryOn,snapOn},
+     activePreset, presets}; old drafts auto-migrate (paragraphs → one
+     content card each at (1, 1+i·5)).
+   - Verified: headless Chrome 3-pass battery 69/69
+     (seed v6 draft → v8 battery → round-trip).
+
+2. FluidCanvas v9.0 — Free Card Resizing (8 Handles)
+   - User request: users can freely resize any card.
+   - Design (confirmed): 8 Canva-style handles (4 corners + 4 edges),
+     visible only on the selected card; whole-cell granularity
+     (min 1×1 cell, matches the grid); opposite edge stays fixed.
+   - Handles are siblings of gridCanvas — never children of cards
+     (cards have overflow:hidden; content cards are contenteditable and
+     child nodes would pollute saved HTML / break IME).
+   - Rotation-exact math: client delta → local delta via R(−θ)·(dx,dy);
+     span = max(1, round((wPx+2)/step)) with step = cs+2;
+     center shift Δc_local = (dirX·Δw/2, dirY·Δh/2) rotated back to
+     canvas coords; handles themselves rotate with the card.
+   - mouseup commits dataset.colSpan/rowSpan → moveCardPx (clamp)
+     → onContentChange; justDragged suppresses click modals.
+   - Content cards: resizing grows/shrinks the minHeight frame only;
+     overflowing text is untouched. Escape cancels an in-flight resize.
+   - Bug fixed (found via 7 escalating probes): the forEach parameter `h`
+     in refreshResizeHandles shadowed the height variable `h`, producing
+     NaNpx handle positions that the browser silently dropped.
+     Renamed to cardW/cardH.
+
+3. FluidCanvas v9.0 — Canva-Style Alignment Guides + Auto-Snap
+   - User request: Canva-like alignment guide lines with a toggle;
+     alignment auto-snaps when ON.
+   - Design (confirmed): toggle default ON (third toolbar switch,
+     next to 边界/吸附).
+   - computeAlignSnap (pure): targets = every other card's rotated-bbox
+     6 lines + page centerX/centerY pseudo-target; per-axis nearest
+     |Δ| ≤ 6px wins (strict <, first-found breaks ties); only the
+     dragged card ever moves → no oscillation (same event re-dispatched
+     → identical position, tested).
+   - Two pooled guide divs .align-guide-v/h (pointer-events:none,
+     z-index 55, key-cached); hidden on mouseup / Escape / toggle OFF.
+   - Deterministic pipeline during drag: grid snap → alignment snap
+     (per axis, wins) → boundary clamp (last, wins over both)
+     → coverage highlight + guides + handle refresh.
+   - Draft v9: v:9 + settings.alignOn (old drafts default to true);
+     getCardFingerprint now also pushes colSpan/rowSpan/x/y so pure
+     resize/drag triggers autosave (fixes a pre-existing gap).
+   - Verified: headless Chrome 3-pass battery 95/95
+     (resize math incl. rotated local frame, min 1×1, content-card
+     minHeight, Escape cancel, x/y snaps incl. rotated bbox and page
+     center, threshold/no-oscillation/toggle-off/boundary-wins,
+     v9 draft persistence + round-trip, all regressions).
+
+4. Testing notes (environment facts learned this day)
+   - Preset '169' actually sets --cell-size:20px + --grid-cols:21
+     (pageW = 460), NOT the 24px/36 cols the toolbar visually suggests.
+   - Page centerX (230) is not grid-aligned (230/22 = 10.45), so the
+     page-center guide is reachable in free-pixel mode (snap OFF);
+     with grid snap ON the drag rounds away from it.
+   - createAssetCard positions get boundary-clamped at creation
+     (col 18 → x 374 → clamped to 358 when 374+86 > pageW−16).
+
+5. Known Issues / Pending
+   - Real-browser verification pending (headless cannot simulate IME):
+     Chinese IME typing inside content cards; 8-handle resize feel
+     (incl. rotated cards); alignment snap feel with toggle on/off.
+
+============================================================
+  Files Modified
+============================================================
+  docs/pages/fluidcanvas-editor.html
+
+============================================================
+  Key Code Locations
+============================================================
+  var boundaryOn / snapOn / alignOn     — line 675-679
+  clampCardToPage (v8 boundary)         — line 691
+  toggleBoundary / toggleSnap           — line 716 / 724
+  toggleAlign (v9)                      — line 731
+  getCardFingerprint (v9: +spans/x/y)   — line 756
+  moveCardPx / positionCardSilent       — line 883 / 897
+  loadDraft (settings restore)          — line 1034 (alignOn: 1052)
+  saveDraft (v:9 + settings)            — line 1206 (1254, 1258)
+  drag mousemove align hook             — line 1402-1412
+  drag mouseup hideAlignGuides          — line 1424
+  createGridCard / createAssetCard      — line 1442 / 1482
+  createContentCard (v8)                — line 1530
+  selectCard / deselectAll              — line 1585 / 1593
+  HANDLE_SIZE / resize block (v9)       — line 1605-1752
+    refreshResizeHandles                — line 1628
+    beginResize                         — line 1658
+    onResizeMove / onResizeUp           — line 1686 / 1730
+  alignment block (v9)                  — line 1759-1846
+    ALIGN_THRESHOLD = 6                 — line 1759
+    cardLineSet                         — line 1763
+    computeAlignSnap                    — line 1776
+    ensureAlignGuides                   — line 1819
+    updateAlignGuides / hideAlignGuides — line 1830 / 1841
+  Escape handler (cancel resize+guides) — line 1886-1889
+  rotateCard / applyTemplate            — line 2102 / 2180
+  deleteSelectedCard (hide handles)     — line 2215
+  badge FC v9.0                         — line 2707

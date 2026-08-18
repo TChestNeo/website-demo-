@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M.NationWorld Premium | Subscription Plans</title>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    body { background:#0a0a1a !important; overflow-x:hidden; color:#fff; }
+    .pricing-hero { text-align:center; padding:var(--space-xl) var(--space-md) var(--space-md); position:relative; z-index:1; }
+    .plan-card { background:rgba(30,28,50,0.7) !important; backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); color:rgba(255,255,255,0.9); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center; position:relative; border:1px solid rgba(255,255,255,0.08); transition:all 0.3s; box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+    .plan-card:hover { transform:translateY(-4px); box-shadow:0 16px 48px rgba(100,80,200,0.2); border-color:rgba(255,255,255,0.15); }
+    .plan-card.premium { border:2px solid rgba(234,179,8,0.5); box-shadow:0 8px 40px rgba(234,179,8,0.12); }
+    .plan-card.ultra { border:2px solid rgba(129,39,207,0.5); box-shadow:0 8px 40px rgba(129,39,207,0.12); }
+    .plan-card p { color:rgba(255,255,255,0.55) !important; }
+    .plan-badge { position:absolute; top:-12px; left:50%; transform:translateX(-50%); padding:4px 16px; border-radius:999px; font-size:12px; font-weight:700; }
+    .plan-badge.popular { background:linear-gradient(135deg,#eab308,#ca8a04); color:#1a1a2e; }
+    .plan-badge.best { background:linear-gradient(135deg,#8127cf,#6a1db0); color:white; }
+    .feature-row { display:flex; align-items:center; gap:8px; padding:8px 0; font-size:14px; color:rgba(255,255,255,0.8); text-align:left; }
+    .package-card { background:rgba(30,28,50,0.7) !important; backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-lg); padding:var(--space-lg); color:rgba(255,255,255,0.9); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+    .pkg-premium { border-color:rgba(234,179,8,0.3); }
+    .pkg-ultra { border-color:rgba(129,39,207,0.3); }
+    .package-card p { color:rgba(255,255,255,0.55) !important; }
+    .card { background:rgba(30,28,50,0.7) !important; backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); color:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.08); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+    .card table { color:rgba(255,255,255,0.85); }
+    .card th { color:rgba(255,255,255,0.55); }
+    .card td { color:rgba(255,255,255,0.8); border-color:rgba(255,255,255,0.06); }
+    .addon-card { padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; background:rgba(30,28,50,0.7); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); color:rgba(255,255,255,0.85); }
+    .addon-card h4 { color:rgba(255,255,255,0.9); }
+    .addon-card p { color:rgba(255,255,255,0.5) !important; }
+    .section-title { color:#fff; text-align:center; margin-bottom:var(--space-lg); }
+    /* Countdown */
+    .cd-overlay { position:fixed; inset:0; z-index:999; background:rgba(5,5,16,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center; flex-direction:column; opacity:0; pointer-events:none; transition:opacity 0.3s ease; }
+    .cd-overlay.active { opacity:1; pointer-events:auto; }
+    .cd-ring { width:120px; height:120px; border-radius:50%; border:3px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:24px; }
+    .cd-ring-inner { position:absolute; inset:-3px; border-radius:50%; border:3px solid transparent; border-top-color:rgba(234,179,8,0.8); animation:cdSpin 1s linear infinite; }
+    @keyframes cdSpin { to { transform:rotate(360deg); } }
+    .cd-num { font-size:48px; font-weight:800; color:#fff; }
+    .cd-text { font-size:15px; color:rgba(255,255,255,0.5); margin-bottom:6px; }
+    .cd-sub { font-size:12px; color:rgba(255,255,255,0.25); }
+    /* Page entrance animation */
+    .reveal { opacity:0; transform:translateY(30px); animation:revealUp 0.7s cubic-bezier(0.22,0.61,0.36,1) forwards; }
+    @keyframes revealUp { to { opacity:1; transform:translateY(0); } }
+    .reveal-d1 { animation-delay:0.1s; } .reveal-d2 { animation-delay:0.2s; } .reveal-d3 { animation-delay:0.3s; } .reveal-d4 { animation-delay:0.4s; } .reveal-d5 { animation-delay:0.5s; }
+  </style>
+</head>
+<body>
+
+<!-- Cyberfall Background -->
+<canvas id="bgCanvas" style="position:fixed;inset:0;z-index:0"></canvas>
+<div class="bg-overlay" id="bgOverlay" style="position:fixed;inset:0;z-index:0;pointer-events:none"></div>
+<svg id="bgSvg" viewBox="0 0 800 1000" style="position:fixed;inset:0;z-index:0;pointer-events:none;width:100%;height:100%"></svg>
+
+<div style="position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:var(--space-md) var(--space-lg)">
+
+  <div class="pricing-hero reveal">
+    <span class="badge badge-warning" style="margin-bottom:8px;font-size:13px">⭐ M.NationWorld Premium</span>
+    <h1 class="display-lg" style="margin-bottom:8px;color:#fff">Choose Your <span class="text-gradient">Plan</span></h1>
+    <p class="body-lg" style="color:rgba(255,255,255,0.6);max-width:600px;margin:0 auto">From essential tools to AI-powered worldbuilding. Upgrade anytime.</p>
+    <div style="margin-top:12px;font-size:13px;color:rgba(255,255,255,0.4)">Prices shown in <strong id="currencyLabel" style="color:rgba(255,255,255,0.7)">USD</strong> · Based on your location</div>
+  </div>
+
+  <!-- Three tiers -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);max-width:1050px;margin:0 auto var(--space-xl)">
+
+    <div class="plan-card reveal reveal-d1">
+      <span class="material-symbols-outlined" style="font-size:32px;color:#4648d4;margin-bottom:8px">person</span>
+      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Basic</h3>
+      <p style="color:#767586;font-size:13px;margin-bottom:16px">Essential worldbuilding tools</p>
+      <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="basicPrice">$5.99</div>
+      <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
+      <button class="btn btn-primary btn-sm" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:600">Subscribe</button>
+      <div style="margin-top:20px;text-align:left">
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Basic wiki cards</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Basic 3D decorations</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Analytics and statistics</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#767586;font-size:18px">remove</span> No identity verification</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#767586;font-size:18px">remove</span> No AI features</div>
+      </div>
+    </div>
+
+    <div class="plan-card premium reveal reveal-d2">
+      <div class="plan-badge popular">Most Popular</div>
+      <span class="material-symbols-outlined" style="font-size:32px;color:#eab308;margin-bottom:8px;margin-top:8px">diamond</span>
+      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium</h3>
+      <p style="color:#767586;font-size:13px;margin-bottom:16px">Advanced creator toolkit</p>
+      <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="premiumPrice">$11.99</div>
+      <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
+      <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700">Subscribe</button>
+      <div style="margin-top:20px;text-align:left">
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Everything in Basic</strong></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Identity verification</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Advanced wiki text</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Personal business cards</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> AI search and optimization</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> AI basic summary</div>
+      </div>
+    </div>
+
+    <div class="plan-card ultra reveal reveal-d3">
+      <div class="plan-badge best">Best Value</div>
+      <span class="material-symbols-outlined" style="font-size:32px;color:#8127cf;margin-bottom:8px;margin-top:8px">star</span>
+      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium Ultra</h3>
+      <p style="color:#767586;font-size:13px;margin-bottom:16px">Full AI-powered suite</p>
+      <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="ultraPrice">$15.99</div>
+      <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
+      <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700">Subscribe</button>
+      <div style="margin-top:20px;text-align:left">
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Everything in Premium</strong></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Full identity suite</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Premium 3D decorations</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Full decor suite</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Multi-article AI summary</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Auto AI and suggestions</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Packages -->
+  <h2 class="headline-md section-title reveal reveal-d4">Bundle Packages — Save More</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);max-width:1050px;margin:0 auto var(--space-xl)" class="reveal reveal-d4">
+    <div class="package-card pkg-premium">
+      <span class="badge badge-warning" style="margin-bottom:8px">⭐ Recommended</span>
+      <h3 style="font-size:22px;font-weight:700;margin-bottom:4px">Premium Package</h3>
+      <p style="color:#767586;font-size:13px;margin-bottom:12px">Everything for a professional micronation</p>
+      <div style="font-size:36px;font-weight:800;margin-bottom:4px" id="pkgPremiumPrice">$12.99</div>
+      <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
+      <div style="text-align:left;margin-bottom:16px">
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Premium subscription tier</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Team channel: <strong>36 members</strong></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Full wiki customization</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Advanced decor customization</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Identity verification included</div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700">Get Premium Package</button>
+    </div>
+    <div class="package-card pkg-ultra">
+      <span class="badge badge-secondary" style="margin-bottom:8px">💎 Ultimate</span>
+      <h3 style="font-size:22px;font-weight:700;margin-bottom:4px">Premium Ultra Package</h3>
+      <p style="color:#767586;font-size:13px;margin-bottom:12px">Unlimited power — most ambitious nations</p>
+      <div style="font-size:36px;font-weight:800;margin-bottom:4px" id="pkgUltraPrice">$19.99</div>
+      <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
+      <div style="text-align:left;margin-bottom:16px">
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Premium Ultra subscription tier</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Team channel: <strong>Unlimited members</strong></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> All customization unlocked</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Special identity verification</div>
+      </div>
+      <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700">Get Ultra Package</button>
+    </div>
+  </div>
+
+  <!-- Feature Matrix -->
+  <div class="card reveal reveal-d5" style="max-width:1050px;margin:0 auto var(--space-xl);padding:var(--space-lg)">
+    <h2 class="headline-md" style="text-align:center;margin-bottom:var(--space-lg)">Complete Feature Matrix</h2>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:14px">
+      <thead>
+        <tr style="border-bottom:2px solid rgba(0,0,0,0.06)">
+          <th style="text-align:left;padding:12px">Feature</th>
+          <th style="text-align:center;padding:12px;width:100px">Basic</th>
+          <th style="text-align:center;padding:12px;width:120px;color:#eab308">Premium</th>
+          <th style="text-align:center;padding:12px;width:120px;color:#8127cf">Ultra</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>Identity Verification</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">Basic + Advanced</td><td style="text-align:center;color:#22c55e">Full Suite + Special</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>Custom Wiki Cards</strong></td><td style="text-align:center">Basic</td><td style="text-align:center;color:#22c55e">Basic + Advanced</td><td style="text-align:center;color:#22c55e">Basic + Advanced</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>Advanced Wiki Text</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>3D Card Decorations</strong></td><td style="text-align:center">Basic</td><td style="text-align:center;color:#dc2626">—</td><td style="text-align:center;color:#22c55e">Basic + Advanced</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>Personal Business Cards</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">Card + Basic Decor</td><td style="text-align:center;color:#22c55e">Card + Full Decor</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>Analytics and Statistics</strong></td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>AI Search</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>AI Article Optimization</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>AI Summary</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">Basic Summary</td><td style="text-align:center;color:#22c55e">Multi-article Advanced</td></tr>
+        <tr><td style="padding:12px"><strong>Auto AI + AI Suggestions</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e;font-weight:600">✓ Exclusive</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Add-ons -->
+  <div class="card reveal reveal-d5" style="max-width:1050px;margin:0 auto var(--space-xl);padding:var(--space-lg)">
+    <h2 class="headline-md" style="text-align:center;margin-bottom:var(--space-lg)">Add-ons and Unlocks</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md)">
+      <div class="addon-card">
+        <h4 style="font-weight:600;margin-bottom:4px">Official Team Verification</h4>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px">Lv.15 + 650 followers required</p>
+        <p style="font-weight:700" id="addonVerify">$5.99</p><p style="font-size:11px;color:#767586">One-time purchase · Lifetime access</p>
+      </div>
+      <div class="addon-card">
+        <h4 style="font-weight:600;margin-bottom:4px">Channel Boost</h4>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px">Increase channel visibility</p>
+        <p style="font-weight:700" id="addonBoost">$5.10</p><p style="font-size:11px;color:#767586">One-time purchase</p>
+      </div>
+      <div class="addon-card">
+        <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Basic</h4>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>12</strong> 位成员</p>
+        <p style="font-weight:700" id="addonBasic">$5.50</p><p style="font-size:11px;color:#767586">Per month</p>
+        <button class="btn btn-primary btn-sm" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff" onclick="startCountdown()">Subscribe</button>
+      </div>
+      <div class="addon-card">
+        <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Plus</h4>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>24</strong> 位成员</p>
+        <p style="font-weight:700" id="addonPlus">$6.50</p><p style="font-size:11px;color:#767586">Per month</p>
+        <button class="btn btn-primary btn-sm" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff" onclick="startCountdown()">Subscribe</button>
+      </div>
+      <div class="addon-card">
+        <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Premium</h4>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>36</strong> 位成员</p>
+        <p style="font-weight:700" id="addonPremium">$7.99</p><p style="font-size:11px;color:#767586">Per month</p>
+        <button class="btn btn-primary btn-sm" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff" onclick="startCountdown()">Subscribe</button>
+      </div>
+      <div class="addon-card">
+        <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Ultra</h4>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px"><strong>Unlimited</strong> 无限成员</p>
+        <p style="font-weight:700" id="addonUltra">$8.99</p><p style="font-size:11px;color:#767586">Per month</p>
+        <button class="btn btn-primary btn-sm" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff" onclick="startCountdown()">Subscribe</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Countdown Overlay -->
+<div class="cd-overlay" id="cdOverlay">
+  <div class="cd-ring"><div class="cd-ring-inner"></div><span class="cd-num" id="cdNum">3</span></div>
+  <p class="cd-text">正在为您跳转至付费页面</p>
+  <p class="cd-sub">Redirecting to payment...</p>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/pricing.js"></script>
+<script src="../assets/js/transitions.js"></script>
+<script>
+var pricing = {
+  'zh-TW':{label:'TWD (NT$)',basic:'NT$92.99',premium:'NT$182.99',ultra:'NT$356.20',pkgPremium:'NT$182.99',pkgUltra:'NT$356.20',verify:'NT$123.99',boost:'NT$66.99',addonBasic:'NT$92.99',addonPlus:'NT$129.99',addonPremium:'NT$182.99',addonUltra:'NT$220.99'},
+  'zh-MO':{label:'MOP (MOP$)',basic:'MOP$22.99',premium:'MOP$45.99',ultra:'MOP$89.99',pkgPremium:'MOP$45.99',pkgUltra:'MOP$89.99',verify:'MOP$30.99',boost:'MOP$16.99',addonBasic:'MOP$22.99',addonPlus:'MOP$32.99',addonPremium:'MOP$45.99',addonUltra:'MOP$55.99'},
+  'zh-HK':{label:'HKD (HK$)',basic:'HK$22.99',premium:'HK$44.99',ultra:'HK$86.99',pkgPremium:'HK$44.99',pkgUltra:'HK$86.99',verify:'HK$30.99',boost:'HK$15.99',addonBasic:'HK$22.99',addonPlus:'HK$32.99',addonPremium:'HK$44.99',addonUltra:'HK$55.99'},
+  'id-ID':{label:'IDR (Rp)',basic:'Rp 52,600',premium:'Rp 103,000',ultra:'Rp 199,500',pkgPremium:'Rp 103,000',pkgUltra:'Rp 199,500',verify:'Rp 70,150',boost:'Rp 37,700',addonBasic:'Rp 52,600',addonPlus:'Rp 75,000',addonPremium:'Rp 103,000',addonUltra:'Rp 125,000'},
+  'ms-MY':{label:'MYR (RM)',basic:'RM12',premium:'RM23.50',ultra:'RM45.50',pkgPremium:'RM29.90',pkgUltra:'RM60.90',verify:'RM32.00',boost:'RM8.60',addonBasic:'RM10',addonPlus:'RM14',addonPremium:'RM20',addonUltra:'RM24'},
+  'en-US':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'},
+  'en-CA':{label:'CAD (C$)',basic:'C$7.99',premium:'C$15.99',ultra:'C$21.99',pkgPremium:'C$17.99',pkgUltra:'C$26.99',verify:'C$10.99',boost:'C$6.99',addonBasic:'C$7.50',addonPlus:'C$8.99',addonPremium:'C$10.99',addonUltra:'C$12.50'},
+  'es-MX':{label:'MXN ($)',basic:'MXN$115',premium:'MXN$230',ultra:'MXN$310',pkgPremium:'MXN$250',pkgUltra:'MXN$385',verify:'MXN$153',boost:'MXN$99',addonBasic:'MXN$105',addonPlus:'MXN$125',addonPremium:'MXN$155',addonUltra:'MXN$175'},
+  // ── South & Central Asia ──
+  'hi-IN':{label:'INR (₹)',basic:'₹449',premium:'₹899',ultra:'₹1,199',pkgPremium:'₹975',pkgUltra:'₹1,499',verify:'₹599',boost:'₹383',addonBasic:'₹413',addonPlus:'₹485',addonPremium:'₹599',addonUltra:'₹674'},
+  'ur-PK':{label:'PKR (₨)',basic:'₨1,650',premium:'₨3,300',ultra:'₨4,400',pkgPremium:'₨3,600',pkgUltra:'₨5,500',verify:'₨2,200',boost:'₨1,400',addonBasic:'₨1,500',addonPlus:'₨1,800',addonPremium:'₨2,200',addonUltra:'₨2,475'},
+  'bn-BD':{label:'BDT (৳)',basic:'৳675',premium:'৳1,350',ultra:'৳1,800',pkgPremium:'৳1,460',pkgUltra:'৳2,250',verify:'৳900',boost:'৳575',addonBasic:'৳620',addonPlus:'৳730',addonPremium:'৳900',addonUltra:'৳1,010'},
+  'si-LK':{label:'LKR (රු)',basic:'රු1,800',premium:'රු3,600',ultra:'රු4,800',pkgPremium:'රු3,900',pkgUltra:'රු6,000',verify:'රු2,400',boost:'රු1,530',addonBasic:'රු1,650',addonPlus:'රු1,950',addonPremium:'රු2,400',addonUltra:'රු2,700'},
+  'ne-NP':{label:'NPR (रू)',basic:'रू800',premium:'रू1,600',ultra:'रू2,150',pkgPremium:'रू1,740',pkgUltra:'रू2,660',verify:'रू1,050',boost:'रू685',addonBasic:'रू735',addonPlus:'रू865',addonPremium:'रू1,070',addonUltra:'रू1,200'},
+  'dz-BT':{label:'BTN (Nu.)',basic:'Nu. 500',premium:'Nu. 1,000',ultra:'Nu. 1,340',pkgPremium:'Nu. 1,085',pkgUltra:'Nu. 1,665',verify:'Nu. 667',boost:'Nu. 425',addonBasic:'Nu. 460',addonPlus:'Nu. 540',addonPremium:'Nu. 670',addonUltra:'Nu. 750'},
+  'dv-MV':{label:'MVR (ރ)',basic:'ރ92',premium:'ރ185',ultra:'ރ248',pkgPremium:'ރ200',pkgUltra:'ރ308',verify:'ރ123',boost:'ރ79',addonBasic:'ރ85',addonPlus:'ރ100',addonPremium:'ރ124',addonUltra:'ރ139'},
+  'fa-AF':{label:'AFN (؋)',basic:'؋435',premium:'؋870',ultra:'؋1,160',pkgPremium:'؋945',pkgUltra:'؋1,450',verify:'؋580',boost:'؋370',addonBasic:'؋400',addonPlus:'؋470',addonPremium:'؋580',addonUltra:'؋652'},
+  'kk-KZ':{label:'KZT (₸)',basic:'₸2,750',premium:'₸5,500',ultra:'₸7,350',pkgPremium:'₸5,975',pkgUltra:'₸9,150',verify:'₸3,650',boost:'₸2,350',addonBasic:'₸2,500',addonPlus:'₸2,975',addonPremium:'₸3,675',addonUltra:'₸4,125'},
+  'uz-UZ':{label:'UZS (so\'m)',basic:'so\'m 72,500',premium:'so\'m 145,000',ultra:'so\'m 194,000',pkgPremium:'so\'m 157,500',pkgUltra:'so\'m 241,000',verify:'so\'m 96,700',boost:'so\'m 62,000',addonBasic:'so\'m 66,500',addonPlus:'so\'m 78,500',addonPremium:'so\'m 97,000',addonUltra:'so\'m 109,000'},
+  'tk-TM':{label:'TMT (m)',basic:'m 105',premium:'m 209',ultra:'m 279',pkgPremium:'m 227',pkgUltra:'m 348',verify:'m 140',boost:'m 89',addonBasic:'m 96',addonPlus:'m 113',addonPremium:'m 140',addonUltra:'m 157'},
+  'ky-KG':{label:'KGS (с)',basic:'с 525',premium:'с 1,050',ultra:'с 1,400',pkgPremium:'с 1,140',pkgUltra:'с 1,750',verify:'с 700',boost:'с 448',addonBasic:'с 483',addonPlus:'с 567',addonPremium:'с 700',addonUltra:'с 788'},
+  'tg-TJ':{label:'TJS (с)',basic:'с 65',premium:'с 130',ultra:'с 174',pkgPremium:'с 141',pkgUltra:'с 216',verify:'с 87',boost:'с 55',addonBasic:'с 60',addonPlus:'с 70',addonPremium:'с 87',addonUltra:'с 98'},
+  // ── Oceania ──
+  'en-AU':{label:'AUD (A$)',basic:'A$8.99',premium:'A$17.99',ultra:'A$23.99',pkgPremium:'A$19.49',pkgUltra:'A$29.99',verify:'A$11.99',boost:'A$7.65',addonBasic:'A$8.25',addonPlus:'A$9.70',addonPremium:'A$11.99',addonUltra:'A$13.49'},
+  'en-NZ':{label:'NZD (NZ$)',basic:'NZ$9.99',premium:'NZ$19.99',ultra:'NZ$26.99',pkgPremium:'NZ$21.99',pkgUltra:'NZ$33.99',verify:'NZ$12.99',boost:'NZ$8.50',addonBasic:'NZ$9.20',addonPlus:'NZ$10.80',addonPremium:'NZ$13.40',addonUltra:'NZ$14.99'},
+  'en-FJ':{label:'FJD (FJ$)',basic:'FJ$13.50',premium:'FJ$27.00',ultra:'FJ$36.00',pkgPremium:'FJ$29.50',pkgUltra:'FJ$45.00',verify:'FJ$17.99',boost:'FJ$11.50',addonBasic:'FJ$12.40',addonPlus:'FJ$14.60',addonPremium:'FJ$18.00',addonUltra:'FJ$20.25'},
+  'en-PG':{label:'PGK (K)',basic:'K 23.50',premium:'K 47.00',ultra:'K 63.00',pkgPremium:'K 51.00',pkgUltra:'K 78.00',verify:'K 30.99',boost:'K 20.00',addonBasic:'K 21.50',addonPlus:'K 25.50',addonPremium:'K 31.50',addonUltra:'K 35.25'},
+  'en-WS':{label:'WST (T)',basic:'T 16.50',premium:'T 33',ultra:'T 44',pkgPremium:'T 36',pkgUltra:'T 55',verify:'T 21.99',boost:'T 14',addonBasic:'T 15',addonPlus:'T 18',addonPremium:'T 22',addonUltra:'T 25'},
+  'en-TO':{label:'TOP (T$)',basic:'T$14',premium:'T$28',ultra:'T$37',pkgPremium:'T$30',pkgUltra:'T$46',verify:'T$19',boost:'T$12',addonBasic:'T$13',addonPlus:'T$15',addonPremium:'T$19',addonUltra:'T$21'},
+  // ── Africa ──
+  'en-ZA':{label:'ZAR (R)',basic:'R 110',premium:'R 219',ultra:'R 293',pkgPremium:'R 238',pkgUltra:'R 365',verify:'R 147',boost:'R 93',addonBasic:'R 101',addonPlus:'R 118',addonPremium:'R 146',addonUltra:'R 164'},
+  'en-NG':{label:'NGN (₦)',basic:'₦9,250',premium:'₦18,500',ultra:'₦24,800',pkgPremium:'₦20,100',pkgUltra:'₦30,800',verify:'₦12,350',boost:'₦7,880',addonBasic:'₦8,500',addonPlus:'₦10,000',addonPremium:'₦12,350',addonUltra:'₦13,875'},
+  'en-KE':{label:'KES (KSh)',basic:'KSh 775',premium:'KSh 1,550',ultra:'KSh 2,070',pkgPremium:'KSh 1,680',pkgUltra:'KSh 2,580',verify:'KSh 1,050',boost:'KSh 660',addonBasic:'KSh 713',addonPlus:'KSh 837',addonPremium:'KSh 1,035',addonUltra:'KSh 1,163'},
+  'en-GH':{label:'GHS (GH₵)',basic:'GH₵92',premium:'GH₵185',ultra:'GH₵247',pkgPremium:'GH₵200',pkgUltra:'GH₵308',verify:'GH₵123',boost:'GH₵79',addonBasic:'GH₵85',addonPlus:'GH₵100',addonPremium:'GH₵124',addonUltra:'GH₵139'},
+  'am-ET':{label:'ETB (Br)',basic:'Br 750',premium:'Br 1,500',ultra:'Br 2,000',pkgPremium:'Br 1,630',pkgUltra:'Br 2,500',verify:'Br 1,000',boost:'Br 640',addonBasic:'Br 690',addonPlus:'Br 810',addonPremium:'Br 1,000',addonUltra:'Br 1,125'},
+  'sw-TZ':{label:'TZS (TSh)',basic:'TSh 15,500',premium:'TSh 31,000',ultra:'TSh 41,500',pkgPremium:'TSh 33,600',pkgUltra:'TSh 51,500',verify:'TSh 20,700',boost:'TSh 13,200',addonBasic:'TSh 14,300',addonPlus:'TSh 16,800',addonPremium:'TSh 20,700',addonUltra:'TSh 23,250'},
+  'en-UG':{label:'UGX (USh)',basic:'USh 22,000',premium:'USh 44,000',ultra:'USh 59,000',pkgPremium:'USh 48,000',pkgUltra:'USh 73,000',verify:'USh 29,350',boost:'USh 18,700',addonBasic:'USh 20,200',addonPlus:'USh 23,800',addonPremium:'USh 29,400',addonUltra:'USh 33,000'},
+  'ar-MA':{label:'MAD (MAD)',basic:'MAD 60',premium:'MAD 120',ultra:'MAD 160',pkgPremium:'MAD 130',pkgUltra:'MAD 200',verify:'MAD 80',boost:'MAD 51',addonBasic:'MAD 55',addonPlus:'MAD 65',addonPremium:'MAD 80',addonUltra:'MAD 90'},
+  'ar-TN':{label:'TND (DT)',basic:'DT 18.50',premium:'DT 37',ultra:'DT 49.50',pkgPremium:'DT 40',pkgUltra:'DT 61.50',verify:'DT 24.99',boost:'DT 15.80',addonBasic:'DT 17',addonPlus:'DT 20',addonPremium:'DT 24.70',addonUltra:'DT 27.75'},
+  'ar-DZ':{label:'DZD (DA)',basic:'DA 790',premium:'DA 1,580',ultra:'DA 2,110',pkgPremium:'DA 1,715',pkgUltra:'DA 2,630',verify:'DA 1,050',boost:'DA 675',addonBasic:'DA 725',addonPlus:'DA 855',addonPremium:'DA 1,055',addonUltra:'DA 1,185'},
+  'fr-SN':{label:'XOF (F)',basic:'3,900 F',premium:'7,800 F',ultra:'10,400 F',pkgPremium:'8,500 F',pkgUltra:'13,000 F',verify:'5,200 F',boost:'3,300 F',addonBasic:'3,600 F',addonPlus:'4,200 F',addonPremium:'5,200 F',addonUltra:'5,850 F'},
+  'fr-CI':{label:'XOF (F)',basic:'3,900 F',premium:'7,800 F',ultra:'10,400 F',pkgPremium:'8,500 F',pkgUltra:'13,000 F',verify:'5,200 F',boost:'3,300 F',addonBasic:'3,600 F',addonPlus:'4,200 F',addonPremium:'5,200 F',addonUltra:'5,850 F'},
+  'fr-CM':{label:'XAF (F)',basic:'3,900 F',premium:'7,800 F',ultra:'10,400 F',pkgPremium:'8,500 F',pkgUltra:'13,000 F',verify:'5,200 F',boost:'3,300 F',addonBasic:'3,600 F',addonPlus:'4,200 F',addonPremium:'5,200 F',addonUltra:'5,850 F'},
+  'pt-AO':{label:'AOA (Kz)',basic:'Kz 5,000',premium:'Kz 10,000',ultra:'Kz 13,400',pkgPremium:'Kz 10,850',pkgUltra:'Kz 16,650',verify:'Kz 6,650',boost:'Kz 4,260',addonBasic:'Kz 4,600',addonPlus:'Kz 5,400',addonPremium:'Kz 6,680',addonUltra:'Kz 7,500'},
+  'pt-MZ':{label:'MZN (MT)',basic:'MT 385',premium:'MT 770',ultra:'MT 1,030',pkgPremium:'MT 835',pkgUltra:'MT 1,280',verify:'MT 514',boost:'MT 328',addonBasic:'MT 354',addonPlus:'MT 416',addonPremium:'MT 515',addonUltra:'MT 578'},
+  'en-MU':{label:'MUR (₨)',basic:'₨ 273',premium:'₨ 545',ultra:'₨ 728',pkgPremium:'₨ 592',pkgUltra:'₨ 908',verify:'₨ 364',boost:'₨ 232',addonBasic:'₨ 251',addonPlus:'₨ 295',addonPremium:'₨ 364',addonUltra:'₨ 409'},
+  'en-BW':{label:'BWP (P)',basic:'P 82',premium:'P 165',ultra:'P 220',pkgPremium:'P 179',pkgUltra:'P 275',verify:'P 109',boost:'P 70',addonBasic:'P 76',addonPlus:'P 89',addonPremium:'P 110',addonUltra:'P 124'},
+  'en-NA':{label:'NAD (N$)',basic:'N$110',premium:'N$219',ultra:'N$293',pkgPremium:'N$238',pkgUltra:'N$365',verify:'N$147',boost:'N$93',addonBasic:'N$101',addonPlus:'N$118',addonPremium:'N$146',addonUltra:'N$164'},
+  'en-ZM':{label:'ZMW (ZK)',basic:'ZK 160',premium:'ZK 320',ultra:'ZK 428',pkgPremium:'ZK 348',pkgUltra:'ZK 533',verify:'ZK 213',boost:'ZK 136',addonBasic:'ZK 147',addonPlus:'ZK 173',addonPremium:'ZK 214',addonUltra:'ZK 240'},
+  'en-ZW':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'},
+  'ar-SD':{label:'SDG (SDG)',basic:'SDG 3,750',premium:'SDG 7,500',ultra:'SDG 10,000',pkgPremium:'SDG 8,150',pkgUltra:'SDG 12,500',verify:'SDG 5,000',boost:'SDG 3,200',addonBasic:'SDG 3,450',addonPlus:'SDG 4,050',addonPremium:'SDG 5,000',addonUltra:'SDG 5,625'},
+  'rw-RW':{label:'RWF (FRw)',basic:'FRw 7,750',premium:'FRw 15,500',ultra:'FRw 20,700',pkgPremium:'FRw 16,800',pkgUltra:'FRw 25,800',verify:'FRw 10,350',boost:'FRw 6,600',addonBasic:'FRw 7,100',addonPlus:'FRw 8,400',addonPremium:'FRw 10,350',addonUltra:'FRw 11,625'},
+  // ── Middle East ──
+  'ar-SA':{label:'SAR (﷼)',basic:'SAR 22.99',premium:'SAR 44.99',ultra:'SAR 59.99',pkgPremium:'SAR 48.99',pkgUltra:'SAR 74.99',verify:'SAR 30.99',boost:'SAR 19.00',addonBasic:'SAR 20.50',addonPlus:'SAR 24.50',addonPremium:'SAR 29.99',addonUltra:'SAR 33.99'},
+  'ar-AE':{label:'AED (د.إ)',basic:'AED 22.00',premium:'AED 44.00',ultra:'AED 59.00',pkgPremium:'AED 48.00',pkgUltra:'AED 73.00',verify:'AED 28.99',boost:'AED 18.50',addonBasic:'AED 20.00',addonPlus:'AED 24.00',addonPremium:'AED 29.50',addonUltra:'AED 33.00'},
+  'ar-QA':{label:'QAR (ر.ق)',basic:'QAR 22.00',premium:'QAR 43.50',ultra:'QAR 58.00',pkgPremium:'QAR 47.00',pkgUltra:'QAR 72.00',verify:'QAR 28.99',boost:'QAR 18.50',addonBasic:'QAR 20.00',addonPlus:'QAR 23.50',addonPremium:'QAR 29.00',addonUltra:'QAR 32.50'},
+  'ar-KW':{label:'KWD (د.ك)',basic:'KWD 1.800',premium:'KWD 3.600',ultra:'KWD 4.800',pkgPremium:'KWD 3.900',pkgUltra:'KWD 6.000',verify:'KWD 2.400',boost:'KWD 1.550',addonBasic:'KWD 1.650',addonPlus:'KWD 1.950',addonPremium:'KWD 2.400',addonUltra:'KWD 2.700'},
+  'ar-BH':{label:'BHD (د.ب)',basic:'BHD 2.250',premium:'BHD 4.500',ultra:'BHD 6.000',pkgPremium:'BHD 4.900',pkgUltra:'BHD 7.500',verify:'BHD 3.000',boost:'BHD 1.920',addonBasic:'BHD 2.070',addonPlus:'BHD 2.430',addonPremium:'BHD 3.000',addonUltra:'BHD 3.370'},
+  'ar-OM':{label:'OMR (ر.ع)',basic:'OMR 2.300',premium:'OMR 4.600',ultra:'OMR 6.150',pkgPremium:'OMR 5.000',pkgUltra:'OMR 7.650',verify:'OMR 3.050',boost:'OMR 1.960',addonBasic:'OMR 2.120',addonPlus:'OMR 2.480',addonPremium:'OMR 3.070',addonUltra:'OMR 3.450'},
+  'ar-JO':{label:'JOD (د.ا)',basic:'JOD 4.250',premium:'JOD 8.500',ultra:'JOD 11.350',pkgPremium:'JOD 9.200',pkgUltra:'JOD 14.150',verify:'JOD 5.650',boost:'JOD 3.620',addonBasic:'JOD 3.900',addonPlus:'JOD 4.600',addonPremium:'JOD 5.700',addonUltra:'JOD 6.400'},
+  'he-IL':{label:'ILS (₪)',basic:'₪22.50',premium:'₪45.00',ultra:'₪60.00',pkgPremium:'₪48.50',pkgUltra:'₪74.50',verify:'₪29.99',boost:'₪19.00',addonBasic:'₪20.50',addonPlus:'₪24.00',addonPremium:'₪30.00',addonUltra:'₪33.50'},
+  'ar-LB':{label:'LBP (ل.ل)',basic:'LBP 535,000',premium:'LBP 1,070,000',ultra:'LBP 1,430,000',pkgPremium:'LBP 1,160,000',pkgUltra:'LBP 1,780,000',verify:'LBP 713,650',boost:'LBP 455,000',addonBasic:'LBP 490,000',addonPlus:'LBP 580,000',addonPremium:'LBP 715,000',addonUltra:'LBP 800,000'},
+  'ar-IQ':{label:'IQD (ع.د)',basic:'IQD 7,850',premium:'IQD 15,700',ultra:'IQD 20,950',pkgPremium:'IQD 17,000',pkgUltra:'IQD 26,100',verify:'IQD 10,450',boost:'IQD 6,680',addonBasic:'IQD 7,200',addonPlus:'IQD 8,500',addonPremium:'IQD 10,500',addonUltra:'IQD 11,800'},
+  'fa-IR':{label:'IRR (﷼)',basic:'IRR 250,000',premium:'IRR 500,000',ultra:'IRR 670,000',pkgPremium:'IRR 540,000',pkgUltra:'IRR 830,000',verify:'IRR 333,450',boost:'IRR 213,000',addonBasic:'IRR 230,000',addonPlus:'IRR 270,000',addonPremium:'IRR 335,000',addonUltra:'IRR 375,000'},
+  'ar-EG':{label:'EGP (ج.م)',basic:'EGP 300',premium:'EGP 599',ultra:'EGP 800',pkgPremium:'EGP 649',pkgUltra:'EGP 999',verify:'EGP 400',boost:'EGP 255',addonBasic:'EGP 275',addonPlus:'EGP 325',addonPremium:'EGP 400',addonUltra:'EGP 450'},
+  'tr-TR':{label:'TRY (₺)',basic:'TRY 215',premium:'TRY 429',ultra:'TRY 575',pkgPremium:'TRY 465',pkgUltra:'TRY 715',verify:'TRY 287',boost:'TRY 183',addonBasic:'TRY 197',addonPlus:'TRY 232',addonPremium:'TRY 287',addonUltra:'TRY 322'},
+  // ── Non-EU Europe ──
+  'en-GB':{label:'GBP (£)',basic:'£4.99',premium:'£9.99',ultra:'£13.99',pkgPremium:'£10.99',pkgUltra:'£16.99',verify:'£6.99',boost:'£4.25',addonBasic:'£4.60',addonPlus:'£5.50',addonPremium:'£6.70',addonUltra:'£7.50'},
+  'ru-RU':{label:'RUB (₽)',basic:'₽545',premium:'₽1,090',ultra:'₽1,460',pkgPremium:'₽1,190',pkgUltra:'₽1,820',verify:'₽727',boost:'₽465',addonBasic:'₽500',addonPlus:'₽590',addonPremium:'₽730',addonUltra:'₽820'},
+  'uk-UA':{label:'UAH (₴)',basic:'₴225',premium:'₴450',ultra:'₴600',pkgPremium:'₴489',pkgUltra:'₴749',verify:'₴300',boost:'₴192',addonBasic:'₴207',addonPlus:'₴243',addonPremium:'₴300',addonUltra:'₴338'},
+  'be-BY':{label:'BYN (Br)',basic:'Br 19.50',premium:'Br 39.00',ultra:'Br 52.00',pkgPremium:'Br 42.00',pkgUltra:'Br 65.00',verify:'Br 25.99',boost:'Br 16.60',addonBasic:'Br 17.90',addonPlus:'Br 21.00',addonPremium:'Br 26.00',addonUltra:'Br 29.00'},
+  'sr-RS':{label:'RSD (дин)',basic:'RSD 650',premium:'RSD 1,300',ultra:'RSD 1,740',pkgPremium:'RSD 1,410',pkgUltra:'RSD 2,160',verify:'RSD 867',boost:'RSD 555',addonBasic:'RSD 600',addonPlus:'RSD 700',addonPremium:'RSD 870',addonUltra:'RSD 975'},
+  'sr-ME':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€12.99',pkgUltra:'€19.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
+  'nb-NO':{label:'NOK (kr)',basic:'kr 65',premium:'kr 129',ultra:'kr 175',pkgPremium:'kr 140',pkgUltra:'kr 215',verify:'kr 87',boost:'kr 55',addonBasic:'kr 60',addonPlus:'kr 70',addonPremium:'kr 87',addonUltra:'kr 97'},
+  'de-CH':{label:'CHF (CHF)',basic:'CHF 5.50',premium:'CHF 11.00',ultra:'CHF 14.50',pkgPremium:'CHF 12.00',pkgUltra:'CHF 18.00',verify:'CHF 6.99',boost:'CHF 4.70',addonBasic:'CHF 5.00',addonPlus:'CHF 6.00',addonPremium:'CHF 7.30',addonUltra:'CHF 8.20'},
+  'de-LI':{label:'CHF (CHF)',basic:'CHF 5.50',premium:'CHF 11.00',ultra:'CHF 14.50',pkgPremium:'CHF 12.00',pkgUltra:'CHF 18.00',verify:'CHF 6.99',boost:'CHF 4.70',addonBasic:'CHF 5.00',addonPlus:'CHF 6.00',addonPremium:'CHF 7.30',addonUltra:'CHF 8.20'},
+  'is-IS':{label:'ISK (kr)',basic:'kr 849',premium:'kr 1,699',ultra:'kr 2,299',pkgPremium:'kr 1,849',pkgUltra:'kr 2,799',verify:'kr 1,150',boost:'kr 725',addonBasic:'kr 780',addonPlus:'kr 920',addonPremium:'kr 1,140',addonUltra:'kr 1,275'},
+  'sq-AL':{label:'ALL (L)',basic:'L 550',premium:'L 1,100',ultra:'L 1,470',pkgPremium:'L 1,190',pkgUltra:'L 1,830',verify:'L 734',boost:'L 470',addonBasic:'L 505',addonPlus:'L 595',addonPremium:'L 735',addonUltra:'L 825'},
+  'bs-BA':{label:'BAM (KM)',basic:'KM 11.00',premium:'KM 22.00',ultra:'KM 29.50',pkgPremium:'KM 24.00',pkgUltra:'KM 36.50',verify:'KM 14.99',boost:'KM 9.40',addonBasic:'KM 10.00',addonPlus:'KM 12.00',addonPremium:'KM 14.70',addonUltra:'KM 16.50'},
+  'mk-MK':{label:'MKD (ден)',basic:'ден 345',premium:'ден 690',ultra:'ден 920',pkgPremium:'ден 750',pkgUltra:'ден 1,150',verify:'ден 460',boost:'ден 295',addonBasic:'ден 315',addonPlus:'ден 375',addonPremium:'ден 460',addonUltra:'ден 520'},
+  'ro-MD':{label:'MDL (L)',basic:'MDL 108',premium:'MDL 215',ultra:'MDL 289',pkgPremium:'MDL 233',pkgUltra:'MDL 358',verify:'MDL 144',boost:'MDL 92',addonBasic:'MDL 99',addonPlus:'MDL 116',addonPremium:'MDL 144',addonUltra:'MDL 161'},
+  'fr-MC':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€12.99',pkgUltra:'€19.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
+  'it-SM':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€12.99',pkgUltra:'€19.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
+  'ca-AD':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€12.99',pkgUltra:'€19.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
+  'de-DE':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€11.99',pkgUltra:'€15.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
+  'fr-FR':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€11.99',pkgUltra:'€15.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
+  'vi-VN':{label:'VND (₫)',basic:'₫149,000',premium:'₫299,000',ultra:'₫399,000',pkgPremium:'₫329,000',pkgUltra:'₫499,000',verify:'₫198,750',boost:'₫129,000',addonBasic:'₫139,000',addonPlus:'₫165,000',addonPremium:'₫199,000',addonUltra:'₫225,000'},
+  'th-TH':{label:'THB (฿)',basic:'฿199',premium:'฿399',ultra:'฿549',pkgPremium:'฿449',pkgUltra:'฿699',verify:'฿265',boost:'฿179',addonBasic:'฿189',addonPlus:'฿225',addonPremium:'฿279',addonUltra:'฿319'},
+  'my-MM':{label:'MMK (K)',basic:'K 12,500',premium:'K 25,000',ultra:'K 33,500',pkgPremium:'K 27,500',pkgUltra:'K 42,000',verify:'K 16,650',boost:'K 10,500',addonBasic:'K 11,500',addonPlus:'K 13,500',addonPremium:'K 16,500',addonUltra:'K 18,500'},
+  'ja-JP':{label:'JPY (¥)',basic:'¥900',premium:'¥1,800',ultra:'¥2,400',pkgPremium:'¥2,000',pkgUltra:'¥3,000',verify:'¥1,200',boost:'¥770',addonBasic:'¥830',addonPlus:'¥980',addonPremium:'¥1,200',addonUltra:'¥1,350'},
+  'ko-KR':{label:'KRW (₩)',basic:'₩8,000',premium:'₩15,000',ultra:'₩21,000',pkgPremium:'₩17,000',pkgUltra:'₩26,000',verify:'₩10,650',boost:'₩6,800',addonBasic:'₩7,400',addonPlus:'₩8,700',addonPremium:'₩10,700',addonUltra:'₩12,000'},
+  // ── South America ──
+  'pt-BR':{label:'BRL (R$)',basic:'R$29.90',premium:'R$59.90',ultra:'R$79.90',pkgPremium:'R$64.90',pkgUltra:'R$99.90',verify:'R$39.99',boost:'R$25.50',addonBasic:'R$27.50',addonPlus:'R$32.50',addonPremium:'R$39.90',addonUltra:'R$44.90'},
+  'es-AR':{label:'ARS ($)',basic:'ARS$6,000',premium:'ARS$12,000',ultra:'ARS$16,000',pkgPremium:'ARS$13,000',pkgUltra:'ARS$20,000',verify:'ARS$8,000',boost:'ARS$5,100',addonBasic:'ARS$5,500',addonPlus:'ARS$6,500',addonPremium:'ARS$8,000',addonUltra:'ARS$9,000'},
+  'es-CL':{label:'CLP ($)',basic:'CLP$5,490',premium:'CLP$10,990',ultra:'CLP$14,990',pkgPremium:'CLP$11,990',pkgUltra:'CLP$17,990',verify:'CLP$7,300',boost:'CLP$4,690',addonBasic:'CLP$5,000',addonPlus:'CLP$5,900',addonPremium:'CLP$7,300',addonUltra:'CLP$8,200'},
+  'es-CO':{label:'COP ($)',basic:'COP$23,500',premium:'COP$46,900',ultra:'COP$62,900',pkgPremium:'COP$50,900',pkgUltra:'COP$77,900',verify:'COP$31,350',boost:'COP$20,000',addonBasic:'COP$21,500',addonPlus:'COP$25,500',addonPremium:'COP$31,500',addonUltra:'COP$35,000'},
+  'es-PE':{label:'PEN (S/)',basic:'S/22.90',premium:'S/45.90',ultra:'S/61.90',pkgPremium:'S/49.90',pkgUltra:'S/75.90',verify:'S/30.99',boost:'S/19.50',addonBasic:'S/21.00',addonPlus:'S/24.90',addonPremium:'S/30.90',addonUltra:'S/34.50'},
+  'es-UY':{label:'UYU ($U)',basic:'$U239',premium:'$U479',ultra:'$U639',pkgPremium:'$U519',pkgUltra:'$U799',verify:'$U319',boost:'$U204',addonBasic:'$U220',addonPlus:'$U259',addonPremium:'$U320',addonUltra:'$U359'},
+  'es-PY':{label:'PYG (₲)',basic:'₲43,000',premium:'₲87,000',ultra:'₲116,000',pkgPremium:'₲94,000',pkgUltra:'₲145,000',verify:'₲57,350',boost:'₲37,000',addonBasic:'₲40,000',addonPlus:'₲47,000',addonPremium:'₲58,000',addonUltra:'₲65,000'},
+  'es-BO':{label:'BOB (Bs)',basic:'Bs 41',premium:'Bs 83',ultra:'Bs 111',pkgPremium:'Bs 90',pkgUltra:'Bs 138',verify:'Bs 55',boost:'Bs 35',addonBasic:'Bs 38',addonPlus:'Bs 45',addonPremium:'Bs 55',addonUltra:'Bs 62'},
+  'es-EC':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'},
+  'es-VE':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'},
+  'en-GY':{label:'GYD (G$)',basic:'G$1,250',premium:'G$2,500',ultra:'G$3,350',pkgPremium:'G$2,720',pkgUltra:'G$4,180',verify:'G$1,650',boost:'G$1,070',addonBasic:'G$1,150',addonPlus:'G$1,360',addonPremium:'G$1,670',addonUltra:'G$1,880'},
+  'nl-SR':{label:'SRD ($)',basic:'SRD$220',premium:'SRD$439',ultra:'SRD$585',pkgPremium:'SRD$475',pkgUltra:'SRD$730',verify:'SRD$293',boost:'SRD$187',addonBasic:'SRD$202',addonPlus:'SRD$238',addonPremium:'SRD$294',addonUltra:'SRD$329'},
+  'fr-GF':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€11.99',pkgUltra:'€15.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
+  'default':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'}
+};
+
+var p = pricing[SlatiPrice.key] || pricing['default'];
+document.getElementById('currencyLabel').textContent = p.label;
+document.getElementById('basicPrice').textContent = p.basic;
+document.getElementById('premiumPrice').textContent = p.premium;
+document.getElementById('ultraPrice').textContent = p.ultra;
+document.getElementById('pkgPremiumPrice').textContent = p.pkgPremium;
+document.getElementById('pkgUltraPrice').textContent = p.pkgUltra;
+document.getElementById('addonVerify').textContent = p.verify;
+document.getElementById('addonBoost').textContent = p.boost;
+var ab=document.getElementById('addonBasic'),ap=document.getElementById('addonPlus'),ap2=document.getElementById('addonPremium'),au=document.getElementById('addonUltra');
+if(ab)ab.textContent=p.addonBasic;if(ap)ap.textContent=p.addonPlus;if(ap2)ap2.textContent=p.addonPremium;if(au)au.textContent=p.addonUltra;
+
+// Countdown function
+window.startCountdown = function(){
+  var overlay = document.getElementById('cdOverlay');
+  var numEl = document.getElementById('cdNum');
+  overlay.classList.add('active');
+  var count = 3;
+  numEl.style.color = '#fff';
+  numEl.textContent = count;
+  var cdTextEl = overlay.querySelector('.cd-text');
+  cdTextEl.textContent = '正在为您跳转至付费页面';
+  var timer = setInterval(function(){
+    count--;
+    if (count <= 0) {
+      clearInterval(timer);
+      numEl.textContent = '✓';
+      numEl.style.color = '#22c55e';
+      cdTextEl.textContent = '即将跳转...';
+      setTimeout(function(){ overlay.classList.remove('active'); numEl.style.color='#fff'; }, 800);
+    } else {
+      numEl.textContent = count;
+    }
+  }, 1000);
+};
+
+// Bind to all subscribe buttons
+document.querySelectorAll('button').forEach(function(btn){
+  var t = btn.textContent;
+  if (t.includes('Subscribe') || t.includes('Get Premium') || t.includes('Get Ultra')) {
+    btn.addEventListener('click', function(e){ e.preventDefault(); startCountdown(); });
+  }
+});
+
+// ── Cyberfall Background ──
+(function(){
+  var canvas = document.getElementById('bgCanvas');
+  if(!canvas) return;
+  var gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+  if(!gl) return;
+
+  function resize(){ canvas.width=innerWidth; canvas.height=innerHeight; gl.viewport(0,0,canvas.width,canvas.height); }
+  resize(); window.addEventListener('resize',resize);
+
+  var isGL2 = !!gl.createVertexArray;
+  var vertSrc = isGL2 ? '#version 300 es\nin vec2 aPos;\nvoid main(){gl_Position=vec4(aPos,0.0,1.0);}' : 'attribute vec2 aPos;\nvoid main(){gl_Position=vec4(aPos,0.0,1.0);}';
+  var fOut = isGL2 ? 'fragColor' : 'gl_FragColor';
+  var fragSrc = (isGL2 ? '#version 300 es\nprecision highp float;\nout vec4 fragColor;\n' : 'precision highp float;\n') + `
+uniform vec2 uRes;uniform float uTime;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){float v=0.0,a=0.5;vec2 s=vec2(0);for(int i=0;i<4;i++){v+=a*noise(p+s);s+=vec2(3.7,5.1);p*=2.0;a*=0.5;}return v;}
+void main(){
+  vec2 uv=(gl_FragCoord.xy-0.5*uRes)/min(uRes.x,uRes.y);
+  float diag=uv.x*0.6-uv.y*0.8;
+  float aurora1=smoothstep(-0.4,0.3,uv.y)*smoothstep(0.5,-0.2,uv.y);
+  float aurora2=smoothstep(-0.2,0.5,uv.y)*smoothstep(0.7,0.0,uv.y);
+  float an=fbm(uv*4.0+vec2(uTime*0.1,uTime*0.05));
+  float aurora=(aurora1*0.4+aurora2*0.3)*an;
+  float particles=0.0;
+  for(int i=0;i<3;i++){vec2 o=vec2(float(i)*3.3,float(i)*5.7);vec2 g=floor(uv*60.0+o);float r=hash(g);if(r>0.96){float b=(r-0.96)*25.0;b*=0.6+0.4*sin(uTime*2.0+r*100.0);b*=smoothstep(1.2,0.3,length(uv));particles+=b;}}
+  float neon=0.0;
+  for(int j=0;j<4;j++){float line=abs(sin(uv.x*8.0+uv.y*3.0+float(j)*1.57+uTime*0.2));neon+=smoothstep(0.03,0.0,line)*0.08;}
+  vec3 col=vec3(0.02,0.01,0.04);
+  col+=vec3(0.15,0.08,0.35)*aurora*1.5;
+  col+=vec3(0.6,0.5,0.9)*particles*0.7;
+  col+=vec3(0.7,0.4,1.0)*neon;
+  float beam=smoothstep(0.05,0.0,abs(uv.x*0.7-uv.y*0.7))*smoothstep(0.6,0.0,abs(uv.x+uv.y));
+  col+=vec3(0.3,0.2,0.6)*beam*0.15;
+  float vig=1.0-smoothstep(0.3,1.2,length(uv));col*=0.7+0.3*vig;
+  `+fOut+`=vec4(col,1.0);
+}`;
+
+  function compileShader(type,src){var s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);return s;}
+  var vs=compileShader(gl.VERTEX_SHADER,vertSrc),fs=compileShader(gl.FRAGMENT_SHADER,fragSrc);
+  if(!vs||!fs)return;
+  var prg=gl.createProgram();gl.attachShader(prg,vs);gl.attachShader(prg,fs);gl.linkProgram(prg);
+  var buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  var aPos=gl.getAttribLocation(prg,'aPos');gl.enableVertexAttribArray(aPos);gl.vertexAttribPointer(aPos,2,gl.FLOAT,false,0,0);gl.useProgram(prg);
+  var uRes=gl.getUniformLocation(prg,'uRes'),uTime=gl.getUniformLocation(prg,'uTime');
+  var st=performance.now();
+  function animate(now){requestAnimationFrame(animate);gl.uniform2f(uRes,canvas.width,canvas.height);gl.uniform1f(uTime,(now-st)*0.001);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);}
+  requestAnimationFrame(animate);
+
+  // Floating DOM elements
+  var overlay=document.getElementById('bgOverlay');
+  if(!overlay)return;
+  for(var i=0;i<6;i++){var cube=document.createElement('div');var s=20+Math.random()*30;cube.style.cssText='position:absolute;width:'+s+'px;height:'+s+'px;left:'+Math.random()*90+'%;top:'+(50+Math.random()*50)+'%;border:1px solid rgba(180,160,255,0.3);background:rgba(160,140,255,0.04);border-radius:4px;animation:floatCubeBG '+(8+Math.random()*12)+'s linear infinite;animation-delay:'+Math.random()*6+'s';overlay.appendChild(cube);}
+  for(var i=0;i<20;i++){var p=document.createElement('div');var w=5+Math.random()*12;p.style.cssText='position:absolute;width:'+w+'px;height:'+(w*(0.5+Math.random()))+'px;left:'+Math.random()*100+'%;top:'+(30+Math.random()*70)+'%;background:rgba(255,255,255,0.1);border-radius:1px;animation:floatPaperBG '+(6+Math.random()*10)+'s linear infinite;animation-delay:'+Math.random()*5+'s';overlay.appendChild(p);}
+  for(var i=0;i<10;i++){var l=document.createElement('div');l.style.cssText='position:absolute;height:1px;width:'+(20+Math.random()*50)+'px;left:'+Math.random()*90+'%;top:'+(40+Math.random()*60)+'%;background:linear-gradient(90deg,transparent,rgba(180,160,255,0.5),transparent);animation:floatLineBG '+(8+Math.random()*10)+'s linear infinite;animation-delay:'+Math.random()*4+'s;transform:rotate('+Math.random()*90+'deg)';overlay.appendChild(l);}
+
+  // SVG fragments
+  var svg=document.getElementById('bgSvg');
+  if(!svg)return;
+  var ns='http://www.w3.org/2000/svg';
+  var defs=document.createElementNS(ns,'defs');
+  defs.innerHTML='<filter id="bgGlow"><feGaussianBlur stdDeviation="3"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+  svg.appendChild(defs);
+  for(var i=0;i<8;i++){var line=document.createElementNS(ns,'line');line.setAttribute('x1',100+Math.random()*600);line.setAttribute('y1',100+Math.random()*700);line.setAttribute('x2',line.getAttribute('x1')*1+Math.random()*30-15);line.setAttribute('y2',line.getAttribute('y1')*1+Math.random()*30-15);line.setAttribute('stroke','rgba(180,160,255,0.3)');line.setAttribute('stroke-width','0.5');line.setAttribute('filter','url(#bgGlow)');svg.appendChild(line);}
+  for(var i=0;i<4;i++){var r=document.createElementNS(ns,'rect');var s2=6+Math.random()*16;r.setAttribute('x',80+Math.random()*600);r.setAttribute('y',150+Math.random()*650);r.setAttribute('width',s2);r.setAttribute('height',s2);r.setAttribute('fill','rgba(160,140,255,0.05)');r.setAttribute('stroke','rgba(180,160,255,0.25)');r.setAttribute('stroke-width','0.5');r.setAttribute('transform','rotate('+Math.random()*45+' '+(parseFloat(r.getAttribute('x'))+s2/2)+' '+(parseFloat(r.getAttribute('y'))+s2/2)+')');svg.appendChild(r);}
+})();
+
+// Animation keyframes for background
+var bgStyle=document.createElement('style');
+bgStyle.textContent='@keyframes floatCubeBG{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}50%{opacity:0.5}100%{transform:translateY(-100vh) rotate(360deg) scale(0.3);opacity:0}}@keyframes floatPaperBG{0%{transform:translateY(0) rotate(0deg) translateX(0);opacity:0.7}25%{transform:translateX(30px) rotate(90deg)}50%{transform:translateX(-20px) rotate(180deg);opacity:0.4}75%{transform:translateX(15px) rotate(270deg)}100%{transform:translateY(-100vh) rotate(360deg) translateX(-10px);opacity:0}}@keyframes floatLineBG{0%{transform:translateY(0);opacity:0.6}100%{transform:translateY(-100vh);opacity:0}}';
+document.head.appendChild(bgStyle);
+</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="badge.meta.title">官方人员身份验证 | M.NationWorld</title>
+
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    .badge-status {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px; border-radius: var(--radius-full);
+      font-size: 13px; font-weight: 700;
+    }
+    .badge-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+    .badge-status.ok { background: rgba(34,197,94,0.12); color: #16a34a; }
+    .badge-status.bad { background: rgba(220,38,38,0.12); color: #dc2626; }
+
+    .badge-row {
+      display: flex; align-items: baseline; gap: var(--space-sm);
+      padding: 10px 0; border-bottom: 1px solid var(--color-outline-variant);
+    }
+    .badge-row:last-child { border-bottom: none; }
+    .badge-label { flex-shrink: 0; width: 110px; font-size: 13px; color: var(--color-outline); }
+    .badge-value { font-size: 14.5px; font-weight: 600; color: var(--color-on-surface); }
+    #bCount { font-variant-numeric: tabular-nums; letter-spacing: 0.5px; }
+
+    .verify-form {
+      display: flex; gap: var(--space-sm); max-width: 560px;
+    }
+    .verify-form input {
+      flex: 1; min-width: 0;
+      padding: 12px 16px; border-radius: var(--radius-lg);
+      border: 1px solid var(--color-outline-variant);
+      background: var(--color-surface); color: var(--color-on-surface);
+      font-size: 15px; font-family: inherit;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .verify-form input:focus { outline: none; border-color: var(--color-primary); }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <!-- Hero -->
+    <div style="margin-bottom:var(--space-lg)">
+      <h1 class="display-lg" style="margin-bottom:8px" data-i18n="badge.hero.title">官方人员身份验证</h1>
+      <p class="body-lg" style="color:var(--color-on-surface-variant);max-width:700px" data-i18n="badge.hero.sub">
+        输入官方客服私信中出示的验证码（12 小时内有效），即可核实对方身份。
+      </p>
+    </div>
+
+    <!-- 验证码输入 -->
+    <div style="margin-bottom:var(--space-md)">
+      <p class="body-md" style="color:var(--color-on-surface-variant);max-width:700px;margin-bottom:var(--space-sm)" data-i18n="verify.desc">
+        如官方人员在特殊情况下私信联系你，请输入对方出示的官方验证码（12 小时内有效）核实身份。
+      </p>
+      <div class="verify-form">
+        <input type="text" id="badgeCode" maxlength="16" autocomplete="off" spellcheck="false"
+               placeholder="输入验证码，如 A7K2Q9" data-i18n-placeholder="verify.placeholder">
+        <button type="button" class="btn btn-primary" id="badgeVerifyBtn" data-i18n="verify.btn">验证</button>
+      </div>
+      <p class="body-md" style="margin-top:var(--space-xs);font-size:0.85em;color:var(--color-outline)" data-i18n="verify.demo">
+        （演示模式：示例验证码 A7K2Q9）
+      </p>
+    </div>
+
+    <!-- 验证结果（默认隐藏，由 badge.js 渲染） -->
+    <div id="badgeResult" class="card" style="padding:var(--space-lg);max-width:560px;display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-md)">
+        <span class="badge-status ok" id="badgeStatus">验证通过，确认为官方人员</span>
+        <span class="material-symbols-outlined" style="font-size:28px;color:var(--color-primary)">verified_user</span>
+      </div>
+
+      <div class="badge-row">
+        <span class="badge-label" data-i18n="verify.label.alias">工作人员（化名）</span>
+        <span class="badge-value" id="bAlias">—</span>
+      </div>
+      <div class="badge-row">
+        <span class="badge-label" data-i18n="verify.label.role">职位</span>
+        <span class="badge-value" id="bRole">—</span>
+      </div>
+      <div class="badge-row">
+        <span class="badge-label" data-i18n="verify.label.duties">负责事项</span>
+        <span class="badge-value" id="bDuties">—</span>
+      </div>
+      <div class="badge-row">
+        <span class="badge-label" data-i18n="verify.label.issued">验证码创建于</span>
+        <span class="badge-value" id="bIssued">—</span>
+      </div>
+      <div class="badge-row">
+        <span class="badge-label" data-i18n="verify.label.expires">有效期至</span>
+        <span class="badge-value" id="bExpires">—</span>
+      </div>
+      <div class="badge-row">
+        <span class="badge-label" data-i18n="verify.label.countdown">剩余有效期</span>
+        <span class="badge-value" style="color:var(--color-primary)" id="bCount">—</span>
+      </div>
+
+      <p id="badgeDemo" class="body-md" style="display:none;margin-top:var(--space-md);font-size:0.85em;color:var(--color-outline)" data-i18n="verify.demo">
+        （演示模式：示例验证码 A7K2Q9）
+      </p>
+      <p class="body-md" style="margin-top:var(--space-sm);font-size:0.85em;color:var(--color-outline)" data-i18n="verify.note">
+        官方人员一律以化名或员工网民名称示人，不使用真实姓名；每枚验证码有效期为 12 小时。
+      </p>
+    </div>
+
+    <!-- 无效/过期提示（默认隐藏） -->
+    <div id="badgeError" class="card" style="padding:var(--space-lg);max-width:560px;display:none;border:1px solid rgba(220,38,38,0.4)">
+      <h3 class="headline-md" style="margin-bottom:var(--space-sm);color:#dc2626">
+        <span class="material-symbols-outlined" style="font-size:22px;vertical-align:-4px">error</span>
+        <span id="errText" data-i18n="verify.invalid">无效的验证码</span>
+      </h3>
+      <p class="body-md" style="color:var(--color-on-surface-variant)" data-i18n="verify.invalidGuide">
+        验证码可能输入有误或已过期（12 小时内有效）；如对方出示的验证码无法通过验证，请勿信任，并前往官方 Discord 社区核实或举报。
+      </p>
+    </div>
+
+    <!-- 防诈骗提示 -->
+    <p class="body-md" style="margin-top:var(--space-lg);max-width:700px" data-i18n="badge.fraud">
+      ⚠️ 防诈骗提示：平台客服在正常情况下不会主动私信联系你；特殊情况下（如账号安全核查、订单异常处理）运营团队会以官方名义主动联系，并会先出示官方验证码（12 小时内有效）自证身份。你可以在本页输入验证码核实，验证结果会显示验证码的创建时间，以及该工作人员的化名、职位与负责事项。官方人员无论何种情况都不会向你索要密码、短信验证码或支付信息；任何不出示验证码、验证码无效、或索要上述信息的“官方私信”均为冒充，请勿回应，并前往官方 Discord 社区核实或举报。
+    </p>
+
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script src="../assets/js/transitions.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/badge.zh.js"></script>
+<script src="../assets/js/badge.js"></script>
+<script>
+  // 官方人员身份验证配置（后端上线后的唯一改动点）
+  //   mode: 'offline' —— 当前：演示模式（示例验证码 A7K2Q9 通过，其余一律无效）
+  //   mode: 'api'     —— 后端上线后：POST {apiBase}/badge/verify，接口约定见 badge.js 头部注释
+  window.MN_BADGE_CONFIG = { mode: 'offline', apiBase: '' };
+</script>
+<script>
+  MN_I18N.apply();
+  // badge.js 在 DOMContentLoaded 时自动绑定验证输入框与按钮
+</script>
+</body>
+</html>

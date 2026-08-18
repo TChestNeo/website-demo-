@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyberfall — Surrealist Void</title>
+  <style>
+    body { margin:0; overflow:hidden; background:#050510; font-family:'Inter',sans-serif; }
+    canvas { display:block; position:fixed; inset:0; z-index:0; }
+    .overlay { position:fixed; inset:0; z-index:1; pointer-events:none; }
+    .glass-cube {
+      position:absolute; border:1px solid rgba(180,160,255,0.4);
+      background:rgba(160,140,255,0.06);
+      backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+      animation: floatCube linear infinite;
+    }
+    @keyframes floatCube {
+      0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}
+      50%{opacity:0.6}
+      100%{transform:translateY(-100vh) rotate(360deg) scale(0.3);opacity:0}
+    }
+    .paper {
+      position:absolute; background:rgba(255,255,255,0.15);
+      animation: floatPaper linear infinite;
+      border-radius:1px;
+    }
+    @keyframes floatPaper {
+      0%{transform:translateY(0) rotate(0deg) translateX(0);opacity:0.9}
+      25%{transform:translateX(30px) rotate(90deg)}
+      50%{transform:translateX(-20px) rotate(180deg);opacity:0.5}
+      75%{transform:translateX(15px) rotate(270deg)}
+      100%{transform:translateY(-100vh) rotate(360deg) translateX(-10px);opacity:0}
+    }
+    .geom-line {
+      position:absolute; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(180,160,255,0.6),transparent);
+      animation: floatLine linear infinite;
+      transform-origin:left center;
+    }
+    @keyframes floatLine {
+      0%{transform:translateY(0) rotate(var(--r,45deg)) scale(1);opacity:0.8}
+      100%{transform:translateY(-100vh) rotate(calc(var(--r,45deg)+180deg)) scale(0.2);opacity:0}
+    }
+  </style>
+</head>
+<body>
+
+<!-- Floating elements -->
+<div class="overlay" id="overlay"></div>
+
+<canvas id="c"></canvas>
+
+<script>
+// ── WebGL Background Shader: atmosphere, neon glow, particle field ──
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; gl.viewport(0, 0, canvas.width, canvas.height); }
+resize(); window.addEventListener('resize', resize);
+
+const isGL2 = !!gl.createVertexArray;
+const vertSrc = isGL2 ? '#version 300 es\nin vec2 aPos;\nvoid main(){gl_Position=vec4(aPos,0.0,1.0);}' : 'attribute vec2 aPos;\nvoid main(){gl_Position=vec4(aPos,0.0,1.0);}';
+const fragOut = isGL2 ? 'fragColor' : 'gl_FragColor';
+
+const fragSrc = (isGL2 ? '#version 300 es\nprecision highp float;\nout vec4 fragColor;\n' : 'precision highp float;\n') + `
+uniform vec2 uRes;
+uniform float uTime;
+
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+float fbm(vec2 p){float v=0.0,a=0.5;vec2 s=vec2(0);for(int i=0;i<4;i++){v+=a*noise(p+s);s+=vec2(3.7,5.1);p*=2.0;a*=0.5;}return v;}
+
+void main(){
+  vec2 uv=(gl_FragCoord.xy-0.5*uRes)/min(uRes.x,uRes.y);
+
+  // Diagonal sweeping atmosphere
+  float diag=uv.x*0.6-uv.y*0.8;
+  float sweep=0.5+0.5*sin(diag*3.0+uTime*0.3);
+
+  // Gradient aurora
+  float aurora1=smoothstep(-0.4,0.3,uv.y)*smoothstep(0.5,-0.2,uv.y);
+  float aurora2=smoothstep(-0.2,0.5,uv.y)*smoothstep(0.7,0.0,uv.y);
+  float auroraNoise=fbm(uv*4.0+vec2(uTime*0.1,uTime*0.05));
+  float aurora=(aurora1*0.4+aurora2*0.3)*auroraNoise;
+
+  // Particle field
+  float particles=0.0;
+  for(int i=0;i<3;i++){
+    vec2 offset=vec2(float(i)*3.3,float(i)*5.7);
+    vec2 grid=floor(uv*60.0+offset);
+    float r=hash(grid);
+    if(r>0.96){
+      float b=(r-0.96)*25.0;
+      b*=0.6+0.4*sin(uTime*2.0+r*100.0);
+      b*=smoothstep(1.2,0.3,length(uv));
+      particles+=b;
+    }
+  }
+
+  // Neon accent lines
+  float neonLine=0.0;
+  for(int j=0;j<4;j++){
+    float phase=float(j)*1.57+uTime*0.2;
+    float line=abs(sin(uv.x*8.0+uv.y*3.0+phase));
+    neonLine+=smoothstep(0.03,0.0,line)*0.08;
+  }
+
+  vec3 col=vec3(0.0);
+
+  // Deep void background
+  col+=vec3(0.02,0.01,0.04);
+
+  // Aurora
+  col+=vec3(0.15,0.08,0.35)*aurora*1.5;
+  col+=vec3(0.08,0.05,0.3)*aurora*1.0;
+
+  // Particles
+  col+=vec3(0.6,0.5,0.9)*particles*0.7;
+
+  // Neon lines
+  col+=vec3(0.7,0.4,1.0)*neonLine;
+
+  // Central glow
+  float centerGlow=exp(-length(uv)*1.5)*0.08;
+  col+=vec3(0.5,0.3,0.9)*centerGlow;
+
+  // Diagonal beam
+  float beam=smoothstep(0.05,0.0,abs(uv.x*0.7-uv.y*0.7));
+  beam*=smoothstep(0.6,0.0,abs(uv.x+uv.y));
+  col+=vec3(0.3,0.2,0.6)*beam*0.15;
+
+  // Vignette
+  float vig=1.0-smoothstep(0.3,1.2,length(uv));
+  col*=0.7+0.3*vig;
+
+  // Subtle scanlines
+  float scanline=sin(gl_FragCoord.y*2.0)*0.03+0.97;
+  col*=scanline;
+
+  ${fragOut}=vec4(col,1.0);
+}`;
+
+function compileShader(type, src) {
+  const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { console.error(gl.getShaderInfoLog(s)); return null; }
+  return s;
+}
+const vs = compileShader(gl.VERTEX_SHADER, vertSrc);
+const fs = compileShader(gl.FRAGMENT_SHADER, fragSrc);
+if (!vs||!fs) throw new Error('Shader');
+
+const program = gl.createProgram();
+gl.attachShader(program, vs); gl.attachShader(program, fs); gl.linkProgram(program);
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+const aPos = gl.getAttribLocation(program, 'aPos');
+gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+gl.useProgram(program);
+const uRes = gl.getUniformLocation(program, 'uRes');
+const uTime = gl.getUniformLocation(program, 'uTime');
+
+const start = performance.now();
+function animate(now) {
+  requestAnimationFrame(animate);
+  gl.uniform2f(uRes, canvas.width, canvas.height);
+  gl.uniform1f(uTime, (now-start)*0.001);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+requestAnimationFrame(animate);
+
+// ── DOM overlay: floating elements ──
+const overlay = document.getElementById('overlay');
+
+// Glass cubes
+for (let i=0; i<8; i++) {
+  const cube = document.createElement('div');
+  cube.className = 'glass-cube';
+  const size = Math.random()*40+20;
+  cube.style.cssText = `
+    width:${size}px;height:${size}px;
+    left:${Math.random()*90}%;top:${60+Math.random()*40}%;
+    animation-duration:${Math.random()*12+8}s;
+    animation-delay:${Math.random()*6}s;
+    border-radius:4px;
+  `;
+  overlay.appendChild(cube);
+}
+
+// Paper fragments
+for (let i=0; i<25; i++) {
+  const paper = document.createElement('div');
+  paper.className = 'paper';
+  const w = Math.random()*15+5;
+  paper.style.cssText = `
+    width:${w}px;height:${w*(0.5+Math.random())}px;
+    left:${Math.random()*100}%;top:${40+Math.random()*60}%;
+    animation-duration:${Math.random()*10+6}s;
+    animation-delay:${Math.random()*5}s;
+  `;
+  overlay.appendChild(paper);
+}
+
+// Geometric lines
+for (let i=0; i<12; i++) {
+  const line = document.createElement('div');
+  line.className = 'geom-line';
+  const w = Math.random()*60+20;
+  line.style.cssText = `
+    width:${w}px;
+    left:${Math.random()*90}%;top:${50+Math.random()*50}%;
+    animation-duration:${Math.random()*10+8}s;
+    animation-delay:${Math.random()*4}s;
+    --r:${Math.random()*90}deg;
+  `;
+  overlay.appendChild(line);
+}
+
+// ── SVG: Girl silhouette + crystal piano ──
+const svgNS = 'http://www.w3.org/2000/svg';
+const svg = document.createElementNS(svgNS, 'svg');
+svg.setAttribute('viewBox', '0 0 800 1000');
+svg.style.cssText = 'position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%';
+
+// Glow filter
+const defs = document.createElementNS(svgNS, 'defs');
+defs.innerHTML = `
+  <filter id="neonGlow"><feGaussianBlur stdDeviation="6" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="softGlow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+`;
+svg.appendChild(defs);
+
+
+// Floating geometric fragments
+for (let i=0; i<6; i++) {
+  const frag = document.createElementNS(svgNS, 'line');
+  const x = 150 + Math.random()*500;
+  const y = 100 + Math.random()*700;
+  frag.setAttribute('x1', x); frag.setAttribute('y1', y);
+  frag.setAttribute('x2', x+Math.random()*40-20); frag.setAttribute('y2', y+Math.random()*40-20);
+  frag.setAttribute('stroke', 'rgba(180,160,255,0.4)');
+  frag.setAttribute('stroke-width', '0.5');
+  svg.appendChild(frag);
+}
+
+// Small glass cubes (SVG)
+for (let i=0; i<5; i++) {
+  const cube = document.createElementNS(svgNS, 'rect');
+  const x = 100 + Math.random()*550;
+  const y = 200 + Math.random()*600;
+  const s = 8 + Math.random()*20;
+  cube.setAttribute('x', x); cube.setAttribute('y', y);
+  cube.setAttribute('width', s); cube.setAttribute('height', s);
+  cube.setAttribute('fill', 'rgba(160,140,255,0.08)');
+  cube.setAttribute('stroke', 'rgba(180,160,255,0.35)');
+  cube.setAttribute('stroke-width', '0.5');
+  cube.setAttribute('transform', `rotate(${Math.random()*45} ${x+s/2} ${y+s/2})`);
+  svg.appendChild(cube);
+}
+
+document.body.appendChild(svg);
+</script>
+</body>
+</html>

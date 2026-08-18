@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FluidCanvas | M.NationWorld Studio</title>
+  
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main" style="display:flex;gap:var(--space-md);height:calc(100vh - 64px)">
+
+    <!-- Left: Asset sidebar -->
+    <div style="width:240px;flex-shrink:0;display:flex;flex-direction:column;gap:var(--space-sm)">
+      <div class="card" style="display:flex;align-items:center;gap:8px;padding:var(--space-sm)">
+        <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:28px">draw</span>
+        <span style="font-weight:700;font-size:var(--fs-body-md)">FluidCanvas</span>
+      </div>
+
+      <div class="search-capsule" style="width:100%">
+        <span class="material-symbols-outlined">search</span>
+        <input type="text" placeholder="Filter assets..." oninput="filterAssets(this.value)">
+      </div>
+
+      <div class="custom-scrollbar" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px" id="assetList">
+        <!-- Populated by JS -->
+      </div>
+
+      <a href="dashboard.html" class="btn btn-ghost btn-sm" style="width:100%">
+        <span class="material-symbols-outlined">arrow_back</span> Back to Console
+      </a>
+    </div>
+
+    <!-- Right: Editor -->
+    <div class="card" style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+      <!-- Editor header -->
+      <div class="flex-between" style="padding-bottom:var(--space-sm);border-bottom:1px solid rgba(118,117,134,0.1);margin-bottom:var(--space-sm)">
+        <div class="flex-center gap-sm">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">ET</div>
+          <span style="font-weight:700">Etheria</span>
+          <span class="badge badge-success">SEC-001-ALPHA</span>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-outline btn-sm" onclick="openModal('migrateModal')">Migrate</button>
+          <button class="btn btn-outline btn-sm" onclick="openModal('historyModal')">History</button>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('tagsModal')">Tags</button>
+          <button class="btn btn-primary btn-sm">Save & Publish</button>
+        </div>
+      </div>
+
+      <!-- Tag bar -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:var(--space-sm)" id="tagBar">
+        <span class="badge badge-primary">Sovereignty</span>
+        <span class="badge badge-secondary">Lore</span>
+        <span class="badge badge-success">Manifesto</span>
+      </div>
+
+      <!-- Editor content -->
+      <div class="custom-scrollbar" style="flex:1;overflow-y:auto;padding-right:8px">
+        <h2 class="headline-md" style="margin-bottom:12px">Lore & Manifestos</h2>
+
+        <div class="form-group">
+          <label class="form-label">Article Title</label>
+          <input type="text" class="input-glass" value="The Founding of Etheria" placeholder="Article title">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Content</label>
+          <textarea class="input-glass" rows="12" placeholder="Write your lore...">The Republic of Etheria was founded on principles of digital sovereignty and transparent governance. Established in the wake of the Great Reorganization, Etheria emerged as a beacon of innovation — blending AI-assisted legislation with direct citizen participation.
+
+Our founding charter enshrines three core principles:
+1. All citizens have the right to propose, debate, and vote on legislation.
+2. Government data and decision-making processes are publicly auditable.
+3. Technological progress must serve human flourishing — not replace it.
+
+The capital city of Aether Prime was designed from the ground up as a "smart sovereign city" — where every public service is accessible via the Citizen Console, and every policy decision is tracked on the public ledger.</textarea>
+        </div>
+
+        <!-- Data table -->
+        <h3 class="label-md" style="margin-top:var(--space-md);margin-bottom:var(--space-sm)">Territorial & Financial Log</h3>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:var(--fs-label-md)">
+            <thead>
+              <tr style="border-bottom:1px solid rgba(118,117,134,0.15)">
+                <th style="text-align:left;padding:8px 12px;color:var(--color-on-surface-variant)">Sector</th>
+                <th style="text-align:right;padding:8px 12px;color:var(--color-on-surface-variant)">Allocation</th>
+                <th style="text-align:right;padding:8px 12px;color:var(--color-on-surface-variant)">GDP Contribution</th>
+                <th style="text-align:right;padding:8px 12px;color:var(--color-on-surface-variant)">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid rgba(118,117,134,0.08)"><td style="padding:8px 12px">Technological</td><td style="text-align:right;padding:8px 12px">35%</td><td style="text-align:right;padding:8px 12px">$312B</td><td style="text-align:right;padding:8px 12px"><span class="status-dot status-dot-green"></span> Active</td></tr>
+              <tr style="border-bottom:1px solid rgba(118,117,134,0.08)"><td style="padding:8px 12px">Industrial</td><td style="text-align:right;padding:8px 12px">25%</td><td style="text-align:right;padding:8px 12px">$223B</td><td style="text-align:right;padding:8px 12px"><span class="status-dot status-dot-blue"></span> Stable</td></tr>
+              <tr style="border-bottom:1px solid rgba(118,117,134,0.08)"><td style="padding:8px 12px">Financial</td><td style="text-align:right;padding:8px 12px">10%</td><td style="text-align:right;padding:8px 12px">$89B</td><td style="text-align:right;padding:8px 12px"><span class="status-dot status-dot-yellow"></span> Growing</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modals -->
+<div class="modal-backdrop" id="modalBackdrop"></div>
+
+<div class="modal-container" id="migrateModal">
+  <div class="modal-card" id="migrateCard">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md">Migrate Article</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModal('migrateModal')"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">Import content from an external source with AI-assisted formatting.</p>
+    <div class="upload-zone" style="margin-bottom:var(--space-md)">
+      <span class="material-symbols-outlined" style="font-size:40px;color:var(--color-outline)">upload_file</span>
+      <p class="label-md" style="color:var(--color-on-surface-variant)">Drop files here or click to upload</p>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="closeModal('migrateModal')">Start Migration</button>
+  </div>
+</div>
+
+<div class="modal-container" id="historyModal">
+  <div class="modal-card" id="historyCard">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md">Version History</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModal('historyModal')"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="card" style="padding:var(--space-sm)"><span style="font-weight:600">v3</span> <span class="label-sm" style="color:var(--color-outline)">Today, 2:34 PM — Added territorial data</span></div>
+      <div class="card" style="padding:var(--space-sm)"><span style="font-weight:600">v2</span> <span class="label-sm" style="color:var(--color-outline)">Yesterday, 10:15 AM — Revised founding narrative</span></div>
+      <div class="card" style="padding:var(--space-sm)"><span style="font-weight:600">v1</span> <span class="label-sm" style="color:var(--color-outline)">Mar 15, 2024 — Initial draft</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-container" id="tagsModal">
+  <div class="modal-card" id="tagsCard">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md">Manage Tags</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModal('tagsModal')"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <input type="text" class="input-glass" placeholder="Search or create tags..." style="margin-bottom:var(--space-sm)">
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <span class="badge badge-primary">Sovereignty</span>
+      <span class="badge badge-secondary">Lore</span>
+      <span class="badge badge-success">Manifesto</span>
+      <span class="badge badge-warning">Economy</span>
+      <span class="badge badge-primary">Governance</span>
+      <span class="badge badge-secondary">Culture</span>
+    </div>
+    <button class="btn btn-primary btn-sm" style="margin-top:var(--space-md);width:100%" onclick="closeModal('tagsModal')">Apply</button>
+  </div>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script>
+  var assets = [
+    { icon: 'flag', title: 'National Flag Card', type: 'Identity' },
+    { icon: 'shield', title: 'Emblem Card', type: 'Identity' },
+    { icon: 'music_note', title: 'Audio Player Card', type: 'Media' },
+    { icon: 'map', title: 'Territorial Map Card', type: 'Geography' },
+    { icon: 'groups', title: 'Population Card', type: 'Demographics' },
+    { icon: 'account_balance', title: 'Governance Card', type: 'Politics' },
+    { icon: 'payments', title: 'Economic Ledger Card', type: 'Economy' },
+    { icon: 'military_tech', title: 'Military OOB Card', type: 'Defense' },
+    { icon: 'menu_book', title: 'Constitution Card', type: 'Legal' },
+    { icon: 'history_edu', title: 'Timeline Card', type: 'History' },
+    { icon: 'translate', title: 'Translation Card', type: 'Localization' },
+    { icon: 'image', title: 'Gallery Card', type: 'Media' },
+  ];
+
+  function renderAssets(filter) {
+    var filtered = filter ? assets.filter(function(a) {
+      return a.title.toLowerCase().includes(filter.toLowerCase()) ||
+             a.type.toLowerCase().includes(filter.toLowerCase());
+    }) : assets;
+    document.getElementById('assetList').innerHTML = filtered.map(function(a) {
+      return '<div class="card card-hover" style="padding:var(--space-sm);cursor:pointer">' +
+        '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
+          '<span class="material-symbols-outlined" style="color:var(--color-primary);font-size:20px">' + a.icon + '</span>' +
+          '<div>' +
+            '<div class="label-md" style="color:var(--color-on-surface)">' + a.title + '</div>' +
+            '<div class="label-sm" style="color:var(--color-outline)">' + a.type + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function filterAssets(val) { renderAssets(val); }
+
+  function openModal(id) {
+    document.getElementById('modalBackdrop').classList.add('active');
+    document.getElementById(id).querySelector('.modal-card').classList.add('active');
+  }
+
+  function closeModal(id) {
+    document.getElementById('modalBackdrop').classList.remove('active');
+    document.getElementById(id).querySelector('.modal-card').classList.remove('active');
+  }
+
+  document.getElementById('modalBackdrop').addEventListener('click', function() {
+    document.querySelectorAll('.modal-card.active').forEach(function(c) { c.classList.remove('active'); });
+    this.classList.remove('active');
+  });
+
+  renderAssets();
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

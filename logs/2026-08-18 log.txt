@@ -1,0 +1,75 @@
+============================================================
+  SlatiWorld Development Log — 2026-08-18
+============================================================
+
+1. FluidCanvas v10.13 — 外板背景图环带（gap>0 图片保持可见）+ 演示页中空修复
+   - 用户反馈：「为什么增加边距的时候背景图片就不见了，你检查检查
+     还有个bug我不会描述」
+   - Bug 1 根因（图片消失）：v10.12 在 gap>0 时把背景图回退到卡片边界
+     （--outer-img-extent: 0），而国旗卡上国旗图（.card-img-bg，z 0、
+     树序在背景图之后）盖满卡片区域 → 背景图整块被盖死「消失」。
+   - Bug 2（「还有个bug」的演示页对应面）：v10.12 的 .plate-hole 挖空
+     层无裁剪地盖住板中间，把内层实心层的卡片区域一起盖掉 → 无图
+     gap 样张卡片中空。
+   - v10.13 设计：背景图始终盖满板盒（inset −(extent+gap)、size
+     100%+2(extent+gap)，gap 参与盒大小），可见部分 = 环带
+     [−(extent+gap), −gap]（厚 extent、距卡 gap，图片边到卡的边距 =
+     gap 随滑块 1:1）；gap=0 → 无裁剪 = v10.9 逐字节一致。
+   - 裁剪方案迭代（本日核心发现）：初版用 2 层 mask（整块 XOR 方角
+     矩形，mask-composite: exclude）——电池 86 全绿但截图目视发现
+     A 卡边距带显示图片而非画布色。最小实验矩阵逐层排除定位：
+     **Chrome（151 headless）对 mask-composite 的非 add 值（exclude/
+     xor）语法接受（可解析、computed 可读回）但渲染不执行**
+     （CSS.supports('mask-composite','source-over, exclude') = false、
+     'add, subtract' = true → Chromium 值集是 add/subtract/intersect/
+     exclude，WebKit 的 source-over/xor 别名不被接受）。实测矩阵：
+     单层 mask ✓ / 多层 add 合成 ✓ / 非 add composite ✗ / clip-path ✓。
+   - 最终方案：evenodd polygon clip-path 环带（单层、无 composite）：
+     外矩形 = 图片盒，内矩形 inset extent（= 挖空层外盒）→ 只保留
+     环带。先在最小实验页像素验证（纯 % 与 px+calc 两种写法均渲染
+     正确）再落地。
+   - 生产改动：.card-bg-img 规则 mask → clip-path:
+     var(--outer-img-clip, none)；applyOuterBg 写入 evenodd polygon
+     （内矩形 inset var(--outer-extent, 16px) → resize 自适应）；方角
+     裁切与挖空层圆角对齐的论证不变（角落角片有图无图都是板色）。
+   - 演示页同步：.img-band img 与 .plate-hole 的 2 层 mask → evenodd
+     polygon（img 内矩形 inset var(--plate)；hole 内矩形 inset
+     var(--plate-gap) → 只画间距带）。
+   - 版本号保持 v10.13（mask 版从未真机交付渲染正确过，clip 版是
+     对 v10.13 的修正而非新功能；草稿 v 保持 9，零新字段）。
+
+2. 电池与无头工具链经验（本日新增）
+   - elementsFromPoint 在 Chrome headless 跳过 pointer-events:none
+     元素 → 层叠断言改用确定性方法：computed z-index + 树序
+     （compareDocumentPosition）+ getBoundingClientRect 矩形包含。
+   - --screenshot 在首次 load 时拍摄（reload 后的最终状态拍不到）→
+     shot 模式：电池检测 ?shot=1 直接 return（boot loadDraft 渲染
+     已持久化的最终草稿），runner 用同一 PROFILE 第二次运行只拍截图。
+   - MSYS Git Bash 会把相对 --user-data-dir 搞坏（exit 21 无输出），
+     必须绝对路径。
+   - 生产规格确认：applyOuterBg 守卫 .card-label → 外板是国旗/素材
+     卡专属功能（文本卡/content 卡无标签直接退出）；legacy 纯色板
+     无 .card-tint（tint 是主题专属剪影层）。
+   - 截图像素验证坐标偏移教训：dump 几何用的运行未带
+     --hide-scrollbars → 滚动条改变视口宽度与居中偏移（+18px），
+     采样前必须先按截图自身结构定位。
+
+验证：静态 17/17；运行时 69/69（B 57 + C 12 跨 reload 合并）；
+两张截图像素验证：
+- 编辑器：A 卡环带 = BG 渐变（上/下/左/右 6 点）、边距带 = 画布白、
+  卡内 = 国旗三色、左下角片 = 板 tint（hole 圆角弧外，正确）；
+  B 卡环带 = #334455、边距带 = 画布白。
+- 演示页：img-band 样张环带 = 渐变（左右上下）、边距带 = #101018、
+  卡内容正常；无图 gap 样张板环 + 页面色边距；v10.9 样张渐变完好。
+
+真机复测清单：
+1. Ctrl+F5 强刷确认徽章 FC v10.13
+2. 国旗卡 → 边缘主题 → 卡片背景上传背景图 → 外板边距滑块
+3. 拉滑块：背景图作为环带保持可见，图片边到卡边距 = 滑块值 1:1，
+   环带厚 16px（extent）
+4. 边距带显示画布底色（真正空白）
+5. 滑块拉到 0：图片铺满外板 = v10.9 原样
+6. 无背景图的国旗卡 + 边距：环带为板色，边距带为画布色
+7. 保存 → 重开 → 完整恢复
+8. edge-themes-demo.html：外板+边距+背景图样张（图片环带 + 页面色
+   间距带）、外板+边距样张（卡片不再中空）

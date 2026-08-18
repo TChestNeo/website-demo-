@@ -1,0 +1,126 @@
+SlatiWorld Project — Development Log
+Date: 2026-08-06
+
+============================================================
+SUMMARY
+============================================================
+
+Focused on UI refinements across the platform:
+- Sidebar collapse button border-radius adjustment
+- Removed Discord-style Server page, replaced with Announcements system
+- Dashboard Network Metrics redesign with bar chart and tooltip
+- Dashboard Announcements section
+- Messages page subnav sliding highlight (slime animation)
+- Unified subnav slider across MicroNationary and Community pages
+
+============================================================
+SIDEBAR COLLAPSE BUTTON
+============================================================
+
+- Increased border-radius from 4px (--radius-sm) to 8px for more visible rounding
+- Attempted Google Fonts optimized loading (reverted per user request)
+
+============================================================
+SERVER → ANNOUNCEMENTS
+============================================================
+
+Deleted:
+- docs/pages/server.html — entire Discord-style server page
+
+Rewrote messages.html:
+- Replaced "Server" tab with "Announcements" (公告)
+- Removed all server code: templates, channels, voice chat, forums, create modal
+- New announcements system:
+  - 4 category filters: All / Official / Community / System
+  - 8 seed announcements with real micronation content
+  - Expandable cards with smooth height animation
+  - Search across title, summary, content, author
+  - Click-to-expand detail view
+- "View all announcements" link on dashboard navigates with ?tab=announcements param
+- Messages page reads URL param to auto-switch to announcements tab
+
+============================================================
+DASHBOARD NETWORK METRICS REDESIGN
+============================================================
+
+Redesigned the Network Metrics card in dashboard.html:
+
+Top hero section:
+- Green pulse dot + "ONLINE NOW" label
+- Large online user count (12,847)
+- Daily peak display (15,420)
+- 20-bar SVG bar chart showing exponential growth trend
+  - Rightmost bar (today) highlighted in full purple
+  - Historical bars semi-transparent
+  - Proper date order: left = 20 days ago → right = today
+  - White card tooltip on hover showing date + online count
+  - Tooltip positioned above bar (not following cursor)
+
+2×2 stat grid below:
+- Featured Articles: 347 (star icon)
+- Total Articles: 12,840 (article icon)
+- Active Nations: 892+ (globe icon)
+- Total Users: 128,400 (group icon)
+
+Dashboard Announcements section:
+- Added below Recent Activity in left column
+- 10 latest announcements, compact list cards
+- Each shows: colored icon + category badge + title + date
+- Click navigates to messages.html?tab=announcements
+
+============================================================
+SUBNAV SLIDING HIGHLIGHT (SLIME ANIMATION)
+============================================================
+
+Created docs/assets/js/subnav.js — shared component:
+- Auto-initializes on all .subnav[data-slider] elements
+- Injects white highlight pill + trailing purple blob
+- CSS transition 0.55s cubic-bezier(0.25,0.1,0.25,1) matching panel slide speed
+- Slime stretch effect on tab switch (scaleX 1.06 → 0.97 → 1.0)
+- Trailing blob fades out at old position
+- Shadow depth: 0 2px 12px rgba(0,0,0,0.08) + 0 1px 3px rgba(0,0,0,0.06)
+- MutationObserver for programmatic tab changes
+- Resize handler for repositioning
+
+Updated CSS:
+- .subnav-pill.active: background → transparent, box-shadow → none
+  (highlight pill handles the white background + shadow)
+
+Pages updated with data-slider:
+- messages.html — 2 subnavs: main tabs + announcement category filters
+- overview.html — MicroNationary subnav (Overview/Explore/Guidelines)
+- explore.html — MicroNationary subnav
+- guidelines.html — MicroNationary subnav
+- community-hub.html — 2 subnavs: Community tabs + Discovery tabs
+
+============================================================
+FIXES
+============================================================
+
+- Fixed premium.html link path in dashboard.html (pages/premium.html → premium.html)
+- Fixed horizontal scrollbar on messages page (overflow-x:hidden + min-width:0)
+- Fixed announcement card shadow clipping (mask-image gradient fade on edges)
+- Fixed tooltip date order (was reversed — oldest data had today's date)
+- Fixed negative margin causing bottom card glow to disappear
+- Removed SVG goo filter that caused highlight to disappear
+- tuned spring stiffness from 0.18→0.06 for visible slide, then switched to CSS transition for consistency
+
+============================================================
+FILE CHANGES
+============================================================
+
+Modified:
+- docs/assets/css/ethereal.css — subnav-pill.active transparent bg, collapse btn border-radius
+- docs/assets/js/sidebar.js — reverted Google Fonts injection
+- docs/pages/dashboard.html — Network Metrics redesign + Announcements section + premium link fix
+- docs/pages/messages.html — Server→Announcements rewrite + subnav slider + mask fade
+- docs/pages/overview.html — data-slider + subnav.js
+- docs/pages/explore.html — data-slider + subnav.js
+- docs/pages/guidelines.html — data-slider + subnav.js
+- docs/pages/community-hub.html — data-slider on both subnavs + subnav.js
+
+Created:
+- docs/assets/js/subnav.js — shared sliding highlight component
+
+Deleted:
+- docs/pages/server.html — Discord-style server page
