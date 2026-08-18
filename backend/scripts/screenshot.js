@@ -72,24 +72,36 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
     // SHOT_DUMP=1：渲染后 DOM 冒烟（Read 工具不支持图片时的替代验证）
     if (process.env.SHOT_DUMP) {
-      const expr = `JSON.stringify({
-        title: document.title,
-        gate: document.getElementById('adminGate') && document.getElementById('adminGate').style.display,
-        root: document.getElementById('adminRoot') && document.getElementById('adminRoot').style.display,
-        login: document.getElementById('adminLogin') && document.getElementById('adminLogin').style.display,
-        adminLinkGone: !document.querySelector('#slati-sidebar a[href*="admin.html"]'),
-        stats: ['dUsers','dPosts','dMod','dTickets','dCost','dBudget'].map(function(id){ return document.getElementById(id).textContent; }),
-        dashQueue: document.getElementById('dashQueue').textContent.replace(/\\s+/g,' ').slice(0, 60),
-        dashBudget: document.getElementById('dashBudget').textContent.replace(/\\s+/g,' ').slice(0, 60),
-        feedCount: document.querySelectorAll('#dashFeed .feed-item').length,
-        modCards: document.querySelectorAll('#modList .adm-card').length,
-        modFirstPreview: (document.querySelector('#modList .adm-card .preview') || {}).textContent || null,
-        banner: document.getElementById('admBanner').style.display === 'none' ? null : document.getElementById('admBanner').textContent.slice(0, 80),
-        tabs: Array.prototype.map.call(document.querySelectorAll('#admTabs [data-tab]'), function(b){ return b.textContent.replace(/\\s+/g,'').trim(); }),
-        sidebarModules: document.querySelectorAll('.adm-side > .sidebar-module').length,
-        navItems: document.querySelectorAll('.adm-side .nav-item').length,
-      })`;
-      const ev = await cmd('Runtime.evaluate', { expression: expr, returnByValue: true });
+      const expr = `(async function () {
+        var base = {
+          title: document.title,
+          gate: document.getElementById('adminGate') && document.getElementById('adminGate').style.display,
+          root: document.getElementById('adminRoot') && document.getElementById('adminRoot').style.display,
+          login: document.getElementById('adminLogin') && document.getElementById('adminLogin').style.display,
+          adminLinkGone: !document.querySelector('#slati-sidebar a[href*="admin.html"]'),
+          stats: ['dUsers','dPosts','dMod','dTickets','dCost','dBudget'].map(function(id){ return document.getElementById(id).textContent; }),
+          dashQueue: document.getElementById('dashQueue').textContent.replace(/\\s+/g,' ').slice(0, 60),
+          dashBudget: document.getElementById('dashBudget').textContent.replace(/\\s+/g,' ').slice(0, 60),
+          feedCount: document.querySelectorAll('#dashFeed .feed-item').length,
+          modCards: document.querySelectorAll('#modList .adm-card').length,
+          modFirstPreview: (document.querySelector('#modList .adm-card .preview') || {}).textContent || null,
+          banner: document.getElementById('admBanner').style.display === 'none' ? null : document.getElementById('admBanner').textContent.slice(0, 80),
+          tabs: Array.prototype.map.call(document.querySelectorAll('#admTabs [data-tab]'), function(b){ return b.textContent.replace(/\\s+/g,'').trim(); }),
+          sidebarModules: document.querySelectorAll('.adm-side > .sidebar-module').length,
+          navItems: document.querySelectorAll('.adm-side .nav-item').length
+        };
+        // 切到工单 tab（懒加载）→ 默认折叠断言（只有标题+标签可见）
+        document.querySelector('#admTabs [data-tab="ticket"]').click();
+        await new Promise(function(r){ setTimeout(r, 1200); });
+        var heads = document.querySelectorAll('#ticketList .tk-head');
+        base.ticketCards = heads.length;
+        base.ticketOpenBodies = Array.prototype.filter.call(document.querySelectorAll('#ticketList .tk-body'), function(b){ return b.style.display !== 'none'; }).length;
+        base.firstTicketHead = ((heads[0] || {}).textContent || '').replace(/\\s+/g, ' ').slice(0, 90);
+        if (heads[0]) { heads[0].click(); await new Promise(function(r){ setTimeout(r, 100); }); }
+        base.ticketOpenAfterClick = Array.prototype.filter.call(document.querySelectorAll('#ticketList .tk-body'), function(b){ return b.style.display !== 'none'; }).length;
+        return JSON.stringify(base);
+      })()`;
+      const ev = await cmd('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });
       console.log('DOM dump:', ev.result && ev.result.result && ev.result.result.value);
     }
     if (consoleLines.length) {

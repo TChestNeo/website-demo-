@@ -359,6 +359,13 @@
   // ── 工单 ──
   var TK_FILTER_ZH = { queued: '待处理', in_progress: '处理中', closed: '已关闭', all: '全部' };
   $('pane-ticket').addEventListener('click', function (e) {
+    var tg = e.target.closest('[data-tk-toggle]');
+    if (tg) {
+      // 折叠卡片：默认只显示标题 + 标签，点击展开详情
+      var open = tg.classList.toggle('open');
+      tg.parentElement.querySelector('.tk-body').style.display = open ? 'block' : 'none';
+      return;
+    }
     var f = e.target.closest('[data-tk-filter]');
     if (f) { state.tkFilter = f.dataset.tkFilter; loadTickets(); return; }
     var send = e.target.closest('[data-tk-send]');
@@ -382,28 +389,33 @@
       var list = r.data.tickets || [];
       if (!list.length) { box.innerHTML = '<p class="adm-meta">该队列为空 🎉</p>'; return; }
       box.innerHTML = list.map(function (t) {
-        var row = '<div class="row"><span class="mono">' + esc(t.id) + '</span>';
-        if (t.priority === 'urgent') row += chip('紧急', 'high');
-        row += chip((t.category || '') + '/' + (t.type || '—'), 'neutral');
-        row += statusChip(t.status);
-        row += '<span class="adm-meta">联系方式：' + esc(t.contact || '—') + '</span>';
-        row += '<span class="adm-meta">提交于 ' + fmtTime(t.submittedAt) + '</span>';
-        row += slaBadge(t) + '</div>';
-        row += '<div style="font-weight:700;margin:var(--space-xs) 0">' + esc(t.subject) + '</div>';
-        row += '<div class="preview">' + esc(t.description) + '</div>';
+        // 折叠头：标题 + 标签；展开体：编号/联系方式/正文/回复/操作
+        var head = '<div class="tk-head cursor-row" data-tk-toggle="' + esc(t.id) + '" style="display:flex;align-items:center;gap:var(--space-sm);flex-wrap:wrap">' +
+          '<span class="material-symbols-outlined tk-caret" style="font-size:18px">chevron_right</span>' +
+          '<strong>' + esc(t.subject) + '</strong>' +
+          (t.priority === 'urgent' ? chip('紧急', 'high') : '') +
+          chip((t.category || '') + '/' + (t.type || '—'), 'neutral') +
+          statusChip(t.status) +
+          slaBadge(t) + '</div>';
+        var body = '<div class="tk-body" style="display:none;margin-top:var(--space-sm)">' +
+          '<div class="row"><span class="mono">' + esc(t.id) + '</span>' +
+          '<span class="adm-meta">联系方式：' + esc(t.contact || '—') + '</span>' +
+          '<span class="adm-meta">提交于 ' + fmtTime(t.submittedAt) + '</span></div>' +
+          '<div class="preview">' + esc(t.description) + '</div>';
         if (t.replies && t.replies.length) {
-          row += '<div style="margin-top:var(--space-xs)">' + t.replies.map(function (rp) {
+          body += '<div style="margin-top:var(--space-xs)">' + t.replies.map(function (rp) {
             return '<div class="timeline-item">' + chip(rp.authorType === 'admin' ? '官方回复' : '用户', rp.authorType === 'admin' ? 'ok' : 'neutral') +
               ' ' + esc(rp.body) + ' <span class="adm-meta">' + fmtTime(rp.createdAt) + '</span></div>';
           }).join('') + '</div>';
         }
         if (t.status !== 'closed') {
-          row += '<div class="actions">' +
+          body += '<div class="actions">' +
             '<textarea class="adm-textarea" data-tk-input="' + esc(t.id) + '" placeholder="回复内容（1-4000 字）"></textarea>' +
             '<button class="btn btn-primary" data-tk-send="' + esc(t.id) + '">回复</button>' +
             '<button class="btn" data-tk-close="' + esc(t.id) + '">关闭工单</button></div>';
         }
-        return '<div class="adm-card">' + row + '</div>';
+        body += '</div>';
+        return '<div class="adm-card">' + head + body + '</div>';
       }).join('');
     });
   }
