@@ -607,7 +607,7 @@
       h += '<div class="adm-card"><h3 class="headline-sm" style="margin-bottom:var(--space-sm)">回复此工单</h3>' +
         '<div class="row" style="margin-bottom:var(--space-sm)">' +
         '<button class="btn" id="tkTplBtn" title="选择回复模板"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">description</span> 模板</button></div>' +
-        '<textarea class="adm-textarea" id="tkInput" placeholder="回复内容（1-4000 字）"></textarea>' +
+        '<textarea class="adm-textarea" id="tkInput" placeholder="回复内容（1-4000 字）" style="min-height:180px"></textarea>' +
         '<div class="actions"><button class="btn btn-primary" id="tkSendBtn">发送回复</button>' +
         '<button class="btn" id="tkCloseBtn" style="border-color:#dc2626;color:#dc2626">关闭工单</button></div></div>';
     }

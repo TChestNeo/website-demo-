@@ -99,6 +99,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         if (firstCard) { firstCard.click(); await new Promise(function(r){ setTimeout(r, 400); }); }
         base.ticketDetailShown = document.getElementById('ticketDetail').style.display !== 'none';
         base.ticketDetailTitle = ((document.querySelector('#ticketDetailBody .tk-title') || {}).textContent || '').slice(0, 60);
+        base.tkInputHeight = Math.round(document.getElementById('tkInput').getBoundingClientRect().height);
         base.ticketHash = location.hash.slice(0, 24);
         // 回复模板弹窗：点「模板」→ 左菜单 6 内置 → 选中 → 右侧预览 → 十语下拉切换/回退提示 → + 添加（十语表单）→ 保存 → 法语预览 → 使用填入回复框
         document.getElementById('tkTplBtn').click();
