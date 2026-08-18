@@ -90,15 +90,18 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
           sidebarModules: document.querySelectorAll('.adm-side > .sidebar-module').length,
           navItems: document.querySelectorAll('.adm-side .nav-item').length
         };
-        // 切到工单 tab（懒加载）→ 默认折叠断言（只有标题+标签可见）
+        // 切到工单 tab（懒加载）→ 三行卡片（标签状态/标题/详情）→ 点击进专属回复页 → 返回
         document.querySelector('#admTabs [data-tab="ticket"]').click();
         await new Promise(function(r){ setTimeout(r, 1200); });
-        var heads = document.querySelectorAll('#ticketList .tk-head');
-        base.ticketCards = heads.length;
-        base.ticketOpenBodies = Array.prototype.filter.call(document.querySelectorAll('#ticketList .tk-body'), function(b){ return b.style.display !== 'none'; }).length;
-        base.firstTicketHead = ((heads[0] || {}).textContent || '').replace(/\\s+/g, ' ').slice(0, 90);
-        if (heads[0]) { heads[0].click(); await new Promise(function(r){ setTimeout(r, 100); }); }
-        base.ticketOpenAfterClick = Array.prototype.filter.call(document.querySelectorAll('#ticketList .tk-body'), function(b){ return b.style.display !== 'none'; }).length;
+        base.ticketCards = document.querySelectorAll('#ticketList [data-tk-open]').length;
+        base.ticketDetailHidden = document.getElementById('ticketDetail').style.display === 'none';
+        var firstCard = document.querySelector('#ticketList [data-tk-open]');
+        if (firstCard) { firstCard.click(); await new Promise(function(r){ setTimeout(r, 400); }); }
+        base.ticketDetailShown = document.getElementById('ticketDetail').style.display !== 'none';
+        base.ticketDetailTitle = ((document.querySelector('#ticketDetailBody .tk-title') || {}).textContent || '').slice(0, 60);
+        base.ticketHash = location.hash.slice(0, 24);
+        document.getElementById('tkBackBtn').click(); await new Promise(function(r){ setTimeout(r, 100); });
+        base.ticketBackToList = document.getElementById('ticketDetail').style.display === 'none';
         return JSON.stringify(base);
       })()`;
       const ev = await cmd('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });

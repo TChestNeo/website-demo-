@@ -13,6 +13,8 @@
   var state = {
     modFilter: 'open',
     tkFilter: 'queued',
+    tkList: [],
+    ticket: null,
     selUserId: null,
     usage: null,
     budgets: {}
@@ -190,6 +192,12 @@
       refreshStats();
       loadModList();
       loadUsage(); // 横幅 + 成本看板数据（横幅供审核 tab 展示降级状态）
+      // 深链恢复：刷新后回到工单专属回复页（#ticket:MN-…）
+      if (location.hash.indexOf('#ticket:') === 0) {
+        loaded.ticket = true; // 防 switchTab 懒加载重复拉取
+        switchTab('ticket');
+        loadTickets(function () { openTicket(location.hash.slice(8)); });
+      }
     });
   }
 
@@ -359,19 +367,12 @@
   // ── 工单 ──
   var TK_FILTER_ZH = { queued: '待处理', in_progress: '处理中', closed: '已关闭', all: '全部' };
   $('pane-ticket').addEventListener('click', function (e) {
-    var tg = e.target.closest('[data-tk-toggle]');
-    if (tg) {
-      // 折叠卡片：默认只显示标题 + 标签，点击展开详情
-      var open = tg.classList.toggle('open');
-      tg.parentElement.querySelector('.tk-body').style.display = open ? 'block' : 'none';
-      return;
-    }
+    var open = e.target.closest('[data-tk-open]');
+    if (open) { openTicket(open.dataset.tkOpen); return; }
     var f = e.target.closest('[data-tk-filter]');
     if (f) { state.tkFilter = f.dataset.tkFilter; loadTickets(); return; }
-    var send = e.target.closest('[data-tk-send]');
-    if (send) { tkReply(send.dataset.tkSend, 'reply'); return; }
-    var close = e.target.closest('[data-tk-close]');
-    if (close) { tkReply(close.dataset.tkClose, 'close'); }
+    if (e.target.closest('#tkSendBtn')) { tkReply('reply'); return; }
+    if (e.target.closest('#tkCloseBtn')) { tkReply('close'); }
   });
 
   function slaBadge(t) {
@@ -381,60 +382,104 @@
     return '';
   }
 
-  function loadTickets() {
+  function loadTickets(cb) {
     $('tkFilterLabel').textContent = TK_FILTER_ZH[state.tkFilter] || state.tkFilter;
     MN_API.get('/admin/tickets?status=' + encodeURIComponent(state.tkFilter)).then(function (r) {
       var box = $('ticketList');
-      if (!r.ok || !r.data) { box.innerHTML = '<p class="adm-meta">加载失败（' + (r.status || '网络错误') + '）</p>'; return; }
+      if (!r.ok || !r.data) { box.innerHTML = '<p class="adm-meta">加载失败（' + (r.status || '网络错误') + '）</p>'; if (cb) cb(); return; }
       var list = r.data.tickets || [];
-      if (!list.length) { box.innerHTML = '<p class="adm-meta">该队列为空 🎉</p>'; return; }
+      state.tkList = list;
+      if (!list.length) { box.innerHTML = '<p class="adm-meta">该队列为空 🎉</p>'; if (cb) cb(); return; }
+      // 卡片三行：标签与状态 / 标题 / 详细信息；点击整卡进入专属回复页
       box.innerHTML = list.map(function (t) {
-        // 折叠头：标题 + 标签；展开体：编号/联系方式/正文/回复/操作
-        var head = '<div class="tk-head cursor-row" data-tk-toggle="' + esc(t.id) + '" style="display:flex;align-items:center;gap:var(--space-sm);flex-wrap:wrap">' +
-          '<span class="material-symbols-outlined tk-caret" style="font-size:18px">chevron_right</span>' +
-          '<strong>' + esc(t.subject) + '</strong>' +
+        return '<div class="adm-card cursor-row" data-tk-open="' + esc(t.id) + '">' +
+          '<div class="row">' +
           (t.priority === 'urgent' ? chip('紧急', 'high') : '') +
           chip((t.category || '') + '/' + (t.type || '—'), 'neutral') +
-          statusChip(t.status) +
-          slaBadge(t) + '</div>';
-        var body = '<div class="tk-body" style="display:none;margin-top:var(--space-sm)">' +
-          '<div class="row"><span class="mono">' + esc(t.id) + '</span>' +
-          '<span class="adm-meta">联系方式：' + esc(t.contact || '—') + '</span>' +
-          '<span class="adm-meta">提交于 ' + fmtTime(t.submittedAt) + '</span></div>' +
-          '<div class="preview">' + esc(t.description) + '</div>';
-        if (t.replies && t.replies.length) {
-          body += '<div style="margin-top:var(--space-xs)">' + t.replies.map(function (rp) {
-            return '<div class="timeline-item">' + chip(rp.authorType === 'admin' ? '官方回复' : '用户', rp.authorType === 'admin' ? 'ok' : 'neutral') +
-              ' ' + esc(rp.body) + ' <span class="adm-meta">' + fmtTime(rp.createdAt) + '</span></div>';
-          }).join('') + '</div>';
-        }
-        if (t.status !== 'closed') {
-          body += '<div class="actions">' +
-            '<textarea class="adm-textarea" data-tk-input="' + esc(t.id) + '" placeholder="回复内容（1-4000 字）"></textarea>' +
-            '<button class="btn btn-primary" data-tk-send="' + esc(t.id) + '">回复</button>' +
-            '<button class="btn" data-tk-close="' + esc(t.id) + '">关闭工单</button></div>';
-        }
-        body += '</div>';
-        return '<div class="adm-card">' + head + body + '</div>';
+          statusChip(t.status) + slaBadge(t) + '</div>' +
+          '<div style="font-weight:700;font-size:15px;margin:var(--space-xs) 0">' + esc(t.subject) + '</div>' +
+          '<div class="row" style="gap:var(--space-md)"><span class="adm-meta mono">' + esc(t.id) + '</span>' +
+          '<span class="adm-meta">' + esc(t.contact || '—') + '</span>' +
+          '<span class="adm-meta">' + fmtTime(t.submittedAt) + '</span></div>' +
+          '<div class="adm-meta" style="margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+          esc(t.description) + '</div>' +
+          '</div>';
       }).join('');
+      if (cb) cb();
     });
   }
 
-  function tkReply(id, mode) {
-    var card = document.querySelector('[data-tk-send="' + id + '"]') || document.querySelector('[data-tk-close="' + id + '"]');
-    card = card && card.closest('.adm-card');
+  // ── 专属回复页（列表 ⇄ 详情；#ticket:<id> 深链刷新可恢复） ──
+  function openTicket(id) {
+    var t = state.tkList.find(function (x) { return x.id === id; });
+    if (!t) return;
+    state.ticket = t;
+    $('ticketListWrap').style.display = 'none';
+    $('ticketDetail').style.display = 'block';
+    renderTicketDetail(t);
+    if (location.hash !== '#ticket:' + id) location.hash = 'ticket:' + id;
+  }
+  function closeTicketDetail() {
+    $('ticketDetail').style.display = 'none';
+    $('ticketListWrap').style.display = 'block';
+    state.ticket = null;
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  }
+  $('tkBackBtn').addEventListener('click', closeTicketDetail);
+
+  function renderTicketDetail(t) {
+    var h = '<div class="row">' +
+      (t.priority === 'urgent' ? chip('紧急', 'high') : '') +
+      chip((t.category || '') + '/' + (t.type || '—'), 'neutral') +
+      statusChip(t.status) + slaBadge(t) + '</div>' +
+      '<h3 class="tk-title headline-md" style="margin:var(--space-sm) 0 var(--space-xs)">' + esc(t.subject) + '</h3>' +
+      '<div class="adm-meta row" style="gap:var(--space-md)"><span class="mono">' + esc(t.id) + '</span>' +
+      '<span>联系方式：' + esc(t.contact || '—') + '</span><span>提交于 ' + fmtTime(t.submittedAt) + '</span></div>' +
+      '<div class="adm-card"><h3 class="headline-sm" style="margin-bottom:var(--space-sm)">详细信息</h3>' +
+      '<div class="preview">' + esc(t.description) + '</div></div>';
+    if (t.replies && t.replies.length) {
+      h += '<div class="adm-card"><h3 class="headline-sm" style="margin-bottom:var(--space-xs)">回复记录（' + t.replies.length + '）</h3>' +
+        t.replies.map(function (rp) {
+          return '<div class="timeline-item">' + chip(rp.authorType === 'admin' ? '官方回复' : '用户', rp.authorType === 'admin' ? 'ok' : 'neutral') +
+            ' ' + esc(rp.body) + ' <span class="adm-meta">' + fmtTime(rp.createdAt) + '</span></div>';
+        }).join('') + '</div>';
+    }
+    if (t.status !== 'closed') {
+      h += '<div class="adm-card"><h3 class="headline-sm" style="margin-bottom:var(--space-sm)">回复此工单</h3>' +
+        '<textarea class="adm-textarea" id="tkInput" placeholder="回复内容（1-4000 字）"></textarea>' +
+        '<div class="actions"><button class="btn btn-primary" id="tkSendBtn">发送回复</button>' +
+        '<button class="btn" id="tkCloseBtn" style="border-color:#dc2626;color:#dc2626">关闭工单</button></div></div>';
+    }
+    $('ticketDetailBody').innerHTML = h;
+  }
+
+  // 回复/关闭后重拉详情（status=all 兜底：关闭后的工单可能不在当前筛选）
+  function reloadTicket() {
+    var id = state.ticket && state.ticket.id;
+    if (!id) return;
+    MN_API.get('/admin/tickets?status=all').then(function (r) {
+      if (!r.ok || !r.data) return;
+      var t = (r.data.tickets || []).find(function (x) { return x.id === id; });
+      if (t) { state.ticket = t; renderTicketDetail(t); }
+      loadTickets();
+      refreshStats();
+    });
+  }
+
+  function tkReply(mode) {
+    var id = state.ticket && state.ticket.id;
+    if (!id) return;
     if (mode === 'reply') {
-      var ta = card && card.querySelector('[data-tk-input]');
-      var content = ta ? ta.value.trim() : '';
+      var content = $('tkInput').value.trim();
       if (!content) { toast('回复内容不能为空'); return; }
       MN_API.post('/admin/tickets/' + encodeURIComponent(id) + '/reply', { content: content }).then(function (r) {
-        if (r.ok) { toast('已回复'); loadTickets(); refreshStats(); }
+        if (r.ok) { toast('已回复'); reloadTicket(); }
         else toast('回复失败：' + (r.data && r.data.error && r.data.error.message || r.status));
       });
     } else {
       if (!confirm('确认关闭工单 ' + id + ' ？')) return;
       MN_API.post('/admin/tickets/' + encodeURIComponent(id) + '/close', {}).then(function (r) {
-        if (r.ok) { toast('已关闭'); loadTickets(); refreshStats(); }
+        if (r.ok) { toast('已关闭'); reloadTicket(); }
         else toast('关闭失败：' + (r.data && r.data.error && r.data.error.message || r.status));
       });
     }

@@ -87,9 +87,6 @@
       background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.4); color: #b45309; font-size: 13.5px; font-weight: 600; }
     .cursor-row { cursor: pointer; }
     .cursor-row:hover { background: var(--color-surface-variant, rgba(128,128,128,0.08)); }
-    .tk-head { user-select: none; border-radius: var(--radius-md); padding: 2px 4px; }
-    .tk-caret { transition: transform 0.15s ease; }
-    .tk-head.open .tk-caret { transform: rotate(90deg); }
   </style>
 </head>
 <body>
@@ -197,14 +194,21 @@
 
     <!-- 工单 -->
     <div id="pane-ticket" style="display:none">
-      <div class="adm-form">
-        <button class="btn btn-primary" data-tk-filter="queued">待处理</button>
-        <button class="btn" data-tk-filter="in_progress">处理中</button>
-        <button class="btn" data-tk-filter="closed">已关闭</button>
-        <button class="btn" data-tk-filter="all">全部</button>
-        <span class="adm-meta" id="tkFilterLabel">queued</span>
+      <div id="ticketListWrap">
+        <div class="adm-form">
+          <button class="btn btn-primary" data-tk-filter="queued">待处理</button>
+          <button class="btn" data-tk-filter="in_progress">处理中</button>
+          <button class="btn" data-tk-filter="closed">已关闭</button>
+          <button class="btn" data-tk-filter="all">全部</button>
+          <span class="adm-meta" id="tkFilterLabel">queued</span>
+        </div>
+        <div id="ticketList"></div>
       </div>
-      <div id="ticketList"></div>
+      <!-- 专属回复页（点击工单卡进入；#ticket:<id> 深链，刷新可恢复） -->
+      <div id="ticketDetail" style="display:none">
+        <div class="adm-form"><button class="btn" id="tkBackBtn">← 返回工单列表</button></div>
+        <div id="ticketDetailBody"></div>
+      </div>
     </div>
 
     <!-- 徽章码 -->
