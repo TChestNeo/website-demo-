@@ -115,6 +115,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         document.getElementById('tkTplAddBtn').click();
         await new Promise(function(r){ setTimeout(r, 100); });
         base.tkTplAddShown = document.getElementById('tkTplAddModal').style.display !== 'none';
+        base.tkTplAddWidth = Math.round(document.getElementById('tkTplAddName').getBoundingClientRect().width);
         document.getElementById('tkTplAddName').value = 'E2E 测试模板';
         document.getElementById('tkTplAddZh').value = '这是测试模板的中文内容。';
         document.getElementById('tkTplAddEn').value = 'This is the English content of the test template.';
