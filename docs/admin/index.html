@@ -13,10 +13,15 @@
   <style>
     /* 管理后台专用样式（内联中文文案，未走 i18n 机制——见 commit 说明）。
        独立站点 admin.<域名>：自带登录页、无公网站点侧栏。 */
-    .adm-shell { max-width: 1100px; margin: 0 auto; padding: var(--space-lg) var(--space-md); }
-    .adm-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-md);
-      flex-wrap: wrap; margin-bottom: var(--space-lg); }
-    .adm-header-right { display: flex; align-items: center; gap: var(--space-sm); }
+    .adm-shell { max-width: 1280px; margin: 0 auto; padding: var(--space-lg) var(--space-md); }
+    /* 左侧卡片菜单（与公网站点侧栏同款 .sidebar-module 卡片视觉） */
+    .adm-layout { display: flex; gap: var(--space-lg); align-items: flex-start; }
+    .adm-side { width: 232px; flex-shrink: 0; position: sticky; top: var(--space-md);
+      display: flex; flex-direction: column; gap: var(--space-sm); }
+    .adm-side .sidebar-module { margin-top: 0; } /* ethereal 自带 margin-top，改用 gap 控制 */
+    .adm-side .nav-item { width: 100%; }
+    .adm-main { flex: 1; min-width: 0; }
+    @media (max-width: 760px) { .adm-layout { flex-direction: column; } .adm-side { width: 100%; position: static; } }
 
     .adm-login { max-width: 520px; margin: var(--space-xl) auto; padding: var(--space-lg); }
     .adm-login .headline-md { margin-bottom: var(--space-xs); }
@@ -34,12 +39,6 @@
     .dash-card-title { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-sm); }
     .feed-item { padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-outline-variant); }
     .feed-item:last-child { border-bottom: none; }
-
-    .adm-tabs { display: flex; gap: var(--space-xs); flex-wrap: wrap; margin-bottom: var(--space-md); border-bottom: 1px solid var(--color-outline-variant); padding-bottom: var(--space-sm); }
-    .adm-tab { padding: 8px 16px; border-radius: var(--radius-full); border: none; background: transparent; color: var(--color-on-surface-variant);
-      font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
-    .adm-tab:hover { background: var(--color-surface); }
-    .adm-tab.active { background: var(--color-primary); color: #fff; }
 
     .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: var(--radius-full);
       font-size: 12px; font-weight: 700; white-space: nowrap; }
@@ -94,17 +93,6 @@
 
 <div class="adm-shell">
 
-  <header class="adm-header">
-    <div>
-      <h1 class="display-lg" style="margin-bottom:4px">管理后台</h1>
-      <p class="body-md adm-meta">总览 · 审核队列 · 工单 · 徽章码 · 用户 · 成本看板 —— 所有操作自动写入审计日志（admin_audit_log）</p>
-    </div>
-    <div class="adm-header-right">
-      <span id="admWho" class="adm-meta mono" style="display:none"></span>
-      <button class="btn" id="logoutBtn" style="display:none">退出登录</button>
-    </div>
-  </header>
-
   <!-- 独立登录页（邮箱验证码两段式；管理端无 demo/离线回退） -->
   <div id="adminLogin" class="card adm-login" style="display:none">
     <h3 class="headline-md">管理员登录</h3>
@@ -134,54 +122,62 @@
   </div>
 
   <div id="adminRoot" style="display:none">
-    <div id="admBanner"></div>
+    <div class="adm-layout">
 
-    <!-- Tabs -->
-    <div class="adm-tabs" id="admTabs">
-      <button class="adm-tab active" data-tab="dash">总览</button>
-      <button class="adm-tab" data-tab="mod">审核队列</button>
-      <button class="adm-tab" data-tab="ticket">工单</button>
-      <button class="adm-tab" data-tab="badge">徽章码</button>
-      <button class="adm-tab" data-tab="user">用户</button>
-      <button class="adm-tab" data-tab="usage">成本看板</button>
-    </div>
-
-    <!-- 总览（管理首页）：全站统计 + 队列快照 + 预算 + 最近动态 -->
-    <div id="pane-dash">
-      <div class="stat-strip">
-        <div class="stat-card"><div class="stat-num" id="dUsers">—</div><div class="stat-label">用户</div><div class="stat-sub" id="dUsersSub"></div></div>
-        <div class="stat-card"><div class="stat-num" id="dPosts">—</div><div class="stat-label">帖子</div><div class="stat-sub" id="dPostsSub"></div></div>
-        <div class="stat-card"><div class="stat-num" id="dNations">—</div><div class="stat-label">国家</div></div>
-        <div class="stat-card"><div class="stat-num" id="dTopics">—</div><div class="stat-label">话题</div></div>
-        <div class="stat-card"><div class="stat-num" id="dArticles">—</div><div class="stat-label">文章</div></div>
-        <div class="stat-card"><div class="stat-num" id="dMod">—</div><div class="stat-label">待办审核</div><div class="stat-sub" id="dModSub"></div></div>
-        <div class="stat-card"><div class="stat-num" id="dTickets">—</div><div class="stat-label">未完工单</div></div>
-        <div class="stat-card"><div class="stat-num" id="dReports">—</div><div class="stat-label">开放举报</div></div>
-        <div class="stat-card"><div class="stat-num" id="dBadges">—</div><div class="stat-label">有效徽章码</div></div>
-        <div class="stat-card"><div class="stat-num" id="dSessions">—</div><div class="stat-label">活跃会话</div></div>
-        <div class="stat-card"><div class="stat-num" id="dCost">—</div><div class="stat-label">本月成本</div></div>
-        <div class="stat-card"><div class="stat-num" id="dBudget">—</div><div class="stat-label">预算状态</div></div>
-      </div>
-
-      <div class="dash-grid">
-        <div class="adm-card">
-          <div class="dash-card-title"><h3 class="headline-sm">审核队列</h3><button class="btn" id="dashGoMod">前往处理 →</button></div>
-          <div id="dashQueue"></div>
+      <!-- 左侧卡片菜单（与公网站点侧栏同款卡片视觉，一项一卡） -->
+      <aside id="admTabs" class="adm-side">
+        <div class="sidebar-module">
+          <div style="font-weight:700;font-size:14px">管理后台</div>
+          <span id="admWho" class="adm-meta mono" style="display:none;word-break:break-all"></span>
+          <button class="btn" id="logoutBtn" style="display:none;width:100%;margin-top:var(--space-sm)">退出登录</button>
         </div>
-        <div class="adm-card">
-          <div class="dash-card-title"><h3 class="headline-sm">本月预算</h3><button class="btn" id="dashGoUsage">成本看板 →</button></div>
-          <div id="dashBudget"></div>
+        <div class="sidebar-module"><a class="nav-item active" data-tab="dash"><span class="material-symbols-outlined">dashboard</span>总览</a></div>
+        <div class="sidebar-module"><a class="nav-item" data-tab="mod"><span class="material-symbols-outlined">fact_check</span>审核队列</a></div>
+        <div class="sidebar-module"><a class="nav-item" data-tab="ticket"><span class="material-symbols-outlined">support_agent</span>工单</a></div>
+        <div class="sidebar-module"><a class="nav-item" data-tab="badge"><span class="material-symbols-outlined">verified</span>徽章码</a></div>
+        <div class="sidebar-module"><a class="nav-item" data-tab="user"><span class="material-symbols-outlined">group</span>用户</a></div>
+        <div class="sidebar-module"><a class="nav-item" data-tab="usage"><span class="material-symbols-outlined">monitoring</span>成本看板</a></div>
+      </aside>
+
+      <main class="adm-main">
+        <div id="admBanner"></div>
+
+        <!-- 总览（管理首页）：全站统计 + 队列快照 + 预算 + 最近动态 -->
+        <div id="pane-dash">
+          <div class="stat-strip">
+            <div class="stat-card"><div class="stat-num" id="dUsers">—</div><div class="stat-label">用户</div><div class="stat-sub" id="dUsersSub"></div></div>
+            <div class="stat-card"><div class="stat-num" id="dPosts">—</div><div class="stat-label">帖子</div><div class="stat-sub" id="dPostsSub"></div></div>
+            <div class="stat-card"><div class="stat-num" id="dNations">—</div><div class="stat-label">国家</div></div>
+            <div class="stat-card"><div class="stat-num" id="dTopics">—</div><div class="stat-label">话题</div></div>
+            <div class="stat-card"><div class="stat-num" id="dArticles">—</div><div class="stat-label">文章</div></div>
+            <div class="stat-card"><div class="stat-num" id="dMod">—</div><div class="stat-label">待办审核</div><div class="stat-sub" id="dModSub"></div></div>
+            <div class="stat-card"><div class="stat-num" id="dTickets">—</div><div class="stat-label">未完工单</div></div>
+            <div class="stat-card"><div class="stat-num" id="dReports">—</div><div class="stat-label">开放举报</div></div>
+            <div class="stat-card"><div class="stat-num" id="dBadges">—</div><div class="stat-label">有效徽章码</div></div>
+            <div class="stat-card"><div class="stat-num" id="dSessions">—</div><div class="stat-label">活跃会话</div></div>
+            <div class="stat-card"><div class="stat-num" id="dCost">—</div><div class="stat-label">本月成本</div></div>
+            <div class="stat-card"><div class="stat-num" id="dBudget">—</div><div class="stat-label">预算状态</div></div>
+          </div>
+
+          <div class="dash-grid">
+            <div class="adm-card">
+              <div class="dash-card-title"><h3 class="headline-sm">审核队列</h3><button class="btn" id="dashGoMod">前往处理 →</button></div>
+              <div id="dashQueue"></div>
+            </div>
+            <div class="adm-card">
+              <div class="dash-card-title"><h3 class="headline-sm">本月预算</h3><button class="btn" id="dashGoUsage">成本看板 →</button></div>
+              <div id="dashBudget"></div>
+            </div>
+          </div>
+
+          <div class="adm-card">
+            <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">最近动态</h3>
+            <div id="dashFeed"></div>
+          </div>
         </div>
-      </div>
 
-      <div class="adm-card">
-        <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">最近动态</h3>
-        <div id="dashFeed"></div>
-      </div>
-    </div>
-
-    <!-- 审核队列 -->
-    <div id="pane-mod" style="display:none">
+        <!-- 审核队列 -->
+        <div id="pane-mod" style="display:none">
       <div class="adm-form">
         <button class="btn btn-primary" data-mod-filter="open">待处理</button>
         <button class="btn" data-mod-filter="l0_hold">L0 拦截</button>
@@ -291,6 +287,9 @@
           <button class="btn btn-primary" id="budgetSaveBtn">保存</button>
         </div>
       </div>
+    </div>
+
+      </main>
     </div>
   </div>
 

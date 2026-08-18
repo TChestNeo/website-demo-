@@ -85,7 +85,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         modCards: document.querySelectorAll('#modList .adm-card').length,
         modFirstPreview: (document.querySelector('#modList .adm-card .preview') || {}).textContent || null,
         banner: document.getElementById('admBanner').style.display === 'none' ? null : document.getElementById('admBanner').textContent.slice(0, 80),
-        tabs: Array.prototype.map.call(document.querySelectorAll('.adm-tab'), function(b){ return b.textContent; })
+        tabs: Array.prototype.map.call(document.querySelectorAll('#admTabs [data-tab]'), function(b){ return b.textContent.replace(/\\s+/g,'').trim(); }),
+        sidebarModules: document.querySelectorAll('.adm-side > .sidebar-module').length,
       })`;
       const ev = await cmd('Runtime.evaluate', { expression: expr, returnByValue: true });
       console.log('DOM dump:', ev.result && ev.result.result && ev.result.result.value);

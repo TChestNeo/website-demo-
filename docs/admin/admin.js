@@ -270,7 +270,7 @@
   var loaded = { ticket: false, badge: false, user: false };
   var PANES = ['dash', 'mod', 'ticket', 'badge', 'user', 'usage'];
   function switchTab(tab) {
-    document.querySelectorAll('.adm-tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tab); });
+    document.querySelectorAll('#admTabs [data-tab]').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tab); });
     PANES.forEach(function (t) { $('pane-' + t).style.display = t === tab ? 'block' : 'none'; });
     if (tab === 'ticket' && !loaded.ticket) { loaded.ticket = true; loadTickets(); }
     if (tab === 'badge' && !loaded.badge) { loaded.badge = true; loadBadges(); }
