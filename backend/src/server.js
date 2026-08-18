@@ -11,6 +11,7 @@ const { createRateLimiter } = require('./middleware/ratelimit');
 const { createMailer } = require('./email');
 const { register: registerAuth } = require('./routes/auth');
 const { register: registerSocial } = require('./routes/social');
+const { register: registerMessages } = require('./routes/messages');
 
 const VERSION = '0.1.0';
 
@@ -39,6 +40,7 @@ function createServer(deps = {}) {
   const ctx = { db, config: cfg, limiter, mailer };
   registerAuth(router, ctx);
   registerSocial(router, ctx);
+  registerMessages(router, ctx);
 
   const server = http.createServer((req, res) => {
     (async () => {

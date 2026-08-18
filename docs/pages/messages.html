@@ -547,6 +547,7 @@
 
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/storage.js"></script>
+<script src="../assets/js/api.js"></script>
 <script src="../assets/js/sidebar.js"></script>
 <script src="../assets/js/settings-modal.js"></script>
 <script src="../assets/js/subnav.js"></script>
@@ -643,10 +644,16 @@
   }
   function saveData() {
     try {
+      // 云端会话不入 localStorage（死 key 弃用于云用户）：列表与消息由服务端权威
+      var saveConvs = cloudMode ? conversations.filter(function(c) { return !cloudConvs[c.id]; }) : conversations;
+      var saveMsgs = {};
+      Object.keys(mockMessages).forEach(function(id) {
+        if (!cloudMode || !cloudConvs[id]) saveMsgs[id] = mockMessages[id];
+      });
       var data = JSON.stringify({
         _version: DATA_VERSION,
-        conversations: conversations,
-        mockMessages: mockMessages,
+        conversations: saveConvs,
+        mockMessages: saveMsgs,
         groups: groups,
         mockGroupMessages: mockGroupMessages,
         pinnedMessages: pinnedMessages
@@ -1635,6 +1642,12 @@
   }
 
   function openChat(id) {
+    // 云端会话走云端加载；其余（demo/群组）保持原渲染
+    if (cloudConvs[id]) { openCloudChat(id); return; }
+    renderOpenChat(id);
+  }
+
+  function renderOpenChat(id) {
     if (pendingFile && pendingFile.source === 'private') cancelFilePreview();
     activeChat = id;
     var conv = conversations.find(function(c) { return c.id === id; });
@@ -1672,6 +1685,13 @@
     var hasFile = pendingFile && pendingFile.source === 'private';
     if (!text && !hasFile) return;
     if (!activeChat) return;
+
+    // 云端会话：v1 不支持文件，纯文本走 /api/conversations
+    if (cloudConvs[activeChat]) {
+      if (hasFile) { showToast('⚠ Files are not available in cloud chats yet.', true); return; }
+      sendCloudMessage(text);
+      return;
+    }
 
     if (!mockMessages[activeChat]) mockMessages[activeChat] = [];
 
@@ -2194,7 +2214,7 @@
       content.innerHTML =
         '<h4 style="font-weight:600;margin-bottom:var(--space-sm)">Add a Friend</h4>' +
         '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-md)">Enter a username or friend code to start a conversation.</p>' +
-        '<input type="text" class="input-glass" placeholder="Username or Friend Code" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-sm)" id="friendInput">' +
+        '<input type="text" class="input-glass" placeholder="' + (cloudMode ? 'Email address' : 'Username or Friend Code') + '" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-sm)" id="friendInput">' +
         '<button class="btn btn-primary" style="width:100%" onclick="addFriendDemo()">' +
           '<span class="material-symbols-outlined" style="font-size:18px">person_add</span> Send Request' +
         '</button>' +
@@ -2250,6 +2270,28 @@
     var name = input.value.trim();
     if (!name) return;
     var el = document.getElementById('friendResult');
+    // 云端模式：输入视为 email（USR- 前缀视为 userId），POST 建会话
+    if (cloudMode) {
+      var body = String(name).indexOf('USR-') === 0 ? { userId: name } : { email: name };
+      MN_API.post('/conversations', body).then(function(res) {
+        if (res.ok) {
+          el.textContent = '✓ Conversation started!';
+          el.style.display = 'block';
+          el.style.color = 'var(--color-secondary)';
+          refreshCloudChat();
+          setTimeout(closeModal, 600);
+        } else if (res.status === 404) {
+          el.textContent = 'No user found with that email.';
+          el.style.display = 'block';
+          el.style.color = '#ef4444';
+        } else {
+          el.textContent = 'Could not start a conversation — try again.';
+          el.style.display = 'block';
+          el.style.color = '#ef4444';
+        }
+      });
+      return;
+    }
     el.textContent = '✓ Friend request sent to ' + name + '!';
     el.style.display = 'block';
     el.style.color = 'var(--color-secondary)';
@@ -2604,6 +2646,123 @@
   }
 
   // ──────────────────────────────────────────────
+  //  CLOUD DMS（P4）— 云端会话适配为 demo 形状（conversations/mockMessages），
+  //  现有渲染（气泡/右键/转发/置顶）零改动；demo 用户无 USR- id → 零请求。
+  // ──────────────────────────────────────────────
+  var cloudMode = false;
+  var myCloudId = null;
+  var cloudConvs = {}; // convId -> demo 形状条目（在 conversations 数组内同一引用）
+
+  function convTime(iso) {
+    var d = new Date(iso);
+    var now = new Date();
+    if (d.toDateString() === now.toDateString()) {
+      var h = d.getHours(), m = d.getMinutes();
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12; if (!h) h = 12;
+      return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+    }
+    var yest = new Date(now); yest.setDate(now.getDate() - 1);
+    if (d.toDateString() === yest.toDateString()) return 'Yesterday';
+    return (d.getMonth() + 1) + '/' + d.getDate();
+  }
+
+  function adaptCloudMessage(m) {
+    var msg = m.senderId === myCloudId
+      ? { from: 'You', text: m.content, sent: false }
+      : { from: m.senderName, text: m.content, sent: true };
+    msg._mid = m.id; // 轮询比对用（msgBubble 忽略未知字段）
+    return msg;
+  }
+
+  function mergeCloudConversations(list) {
+    list.forEach(function(cv) {
+      var other = cv.members.filter(function(m) { return m.id !== myCloudId; })[0] || cv.members[0];
+      var entry = {
+        id: cv.id,
+        name: other.displayName || other.id,
+        lastMsg: cv.lastMessage ? cv.lastMessage.content : 'Say hello!',
+        time: cv.lastMessage ? convTime(cv.lastMessage.createdAt) : '',
+        avatar: (other.displayName || '?').charAt(0).toUpperCase(),
+        online: false
+      };
+      cloudConvs[cv.id] = entry;
+      var i = -1;
+      for (var k = 0; k < conversations.length; k++) {
+        if (conversations[k].id === cv.id) { i = k; break; }
+      }
+      if (i >= 0) conversations[i] = entry;
+      else conversations.unshift(entry);
+    });
+  }
+
+  function openCloudChat(id) {
+    MN_API.get('/conversations/' + id + '/messages').then(function(res) {
+      if (res.ok && res.data) {
+        mockMessages[id] = res.data.messages.map(adaptCloudMessage);
+      }
+      renderOpenChat(id);
+    });
+  }
+
+  function sendCloudMessage(text) {
+    var id = activeChat;
+    MN_API.post('/conversations/' + id + '/messages', { content: text }).then(function(res) {
+      if (res.ok && res.data && res.data.message) {
+        mockMessages[id] = mockMessages[id] || [];
+        mockMessages[id].push(adaptCloudMessage(res.data.message));
+        var conv = conversations.find(function(c) { return c.id === id; });
+        if (conv) { conv.lastMsg = text; conv.time = 'Now'; }
+        var input = document.getElementById('chatInput');
+        if (input) input.value = '';
+        renderConversationList();
+        renderOpenChat(id);
+        var ml = document.getElementById('messageList');
+        ml.scrollTop = ml.scrollHeight;
+        animateLastBubble('messageList');
+      } else {
+        showToast('⚠ Message failed to send — try again.', true);
+      }
+    });
+  }
+
+  function refreshCloudChat() {
+    MN_API.get('/conversations').then(function(res) {
+      if (!res.ok || !res.data) return;
+      mergeCloudConversations(res.data.conversations || []);
+      renderConversationList();
+      // 打开中的云端会话：拉新消息，有变化才重渲（不打断输入框）
+      if (activeChat && cloudConvs[activeChat]) {
+        MN_API.get('/conversations/' + activeChat + '/messages').then(function(r2) {
+          if (!r2.ok || !r2.data) return;
+          var fresh = r2.data.messages.map(adaptCloudMessage);
+          var cur = mockMessages[activeChat] || [];
+          var changed = fresh.length !== cur.length;
+          if (!changed && fresh.length) {
+            changed = fresh[fresh.length - 1]._mid !== cur[cur.length - 1]._mid;
+          }
+          if (changed) {
+            mockMessages[activeChat] = fresh;
+            renderOpenChat(activeChat);
+          }
+        });
+      }
+    });
+  }
+
+  function initCloudDMs() {
+    if (!window.MN_API) return;
+    MN_API.probe().then(function(up) {
+      var u = SlatiDB.getUser();
+      if (!up || !u || !u.id || String(u.id).indexOf('USR-') !== 0) return;
+      myCloudId = u.id;
+      cloudMode = true;
+      refreshCloudChat();
+      setInterval(refreshCloudChat, 15000);
+    });
+  }
+
+  // ──────────────────────────────────────────────
   //  INIT
   // ──────────────────────────────────────────────
   loadData();
@@ -2611,6 +2770,7 @@
   renderGroupList();
   renderAnnouncements();
   updateFab();
+  initCloudDMs();
 
   // Auto-switch tab based on URL parameter
   (function(){

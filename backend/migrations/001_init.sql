@@ -124,7 +124,7 @@ CREATE TABLE conversations (
 CREATE TABLE conversation_members (
   conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
   user_id         TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  last_read_at    TEXT,
+  last_read_at    TEXT,                                -- 已读到的最新消息 id（unread 按 seq 比较，同毫秒安全）
   joined_at       TEXT NOT NULL,
   PRIMARY KEY (conversation_id, user_id)
 );
