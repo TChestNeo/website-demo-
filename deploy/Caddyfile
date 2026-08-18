@@ -1,7 +1,8 @@
-# M.NationWorld —— Caddy 2 配置（P10）
+# M.NationWorld —— Caddy 2 配置（前后端分离版：API 独立子域）
+# 前端静态站托管在腾讯云 COS + CDN（见 cos-deploy.md），本机 Caddy 只反代 api.<域名> 后端。
 # 部署：把 <你的域名> 换成真实域名；`caddy validate --config /etc/caddy/Caddyfile` 后 `systemctl reload caddy`。
-# 证书：Caddy 自动申请/续期 Let's Encrypt（需 80/443 入站放行 + 域名 A 记录指向本机）。
-<你的域名> {
+# 证书：Caddy 自动申请/续期 Let's Encrypt（需 80/443 入站放行 + api.<域名> A 记录指向本机 IP）。
+api.<你的域名> {
 	# 安全头
 	header {
 		X-Content-Type-Options nosniff
@@ -10,18 +11,9 @@
 		-Server
 	}
 
-	# API 反代到本机后端（cookie 由同域自动携带，无 CORS）
-	handle /api/* {
-		reverse_proxy 127.0.0.1:3000 {
-			header_up X-Forwarded-Proto https
-		}
-	}
-
-	# 静态站：docs/ 为站点根（38 页 vanilla JS + localStorage 运行时）
-	handle {
-		root * /opt/mn/docs
-		encode zstd gzip
-		file_server
+	# 全量反代本机后端（路由均在 /api/*；其余路径后端返回 JSON 404）
+	reverse_proxy 127.0.0.1:3000 {
+		header_up X-Forwarded-Proto https
 	}
 
 	log {

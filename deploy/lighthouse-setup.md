@@ -1,8 +1,10 @@
 # M.NationWorld 部署手册 —— 腾讯云轻量服务器（Lighthouse 国际站）
 
-单机部署：Caddy（静态站 + 自动 HTTPS）+ Node 24 后端（node:http + SQLite，零框架）+ systemd + 每日在线备份。全程约 1-2 小时。
+单机部署：Caddy（自动 HTTPS + **只反代 API 子域**）+ Node 24 后端（node:http + SQLite，零框架）+ systemd + 每日在线备份。全程约 1-2 小时。
 
-配套文件（本目录）：`Caddyfile`、`mn-backend.service`、`journald-mn.conf`；备份脚本 `backend/scripts/backup.sh`。
+**前后端分离**：前端静态站托管在腾讯云 COS + CDN（`https://<域名>`，见同目录 `cos-deploy.md`）；本机只服务 `https://api.<域名>`。两部分独立部署、互不阻塞。
+
+配套文件（本目录）：`Caddyfile`、`mn-backend.service`、`journald-mn.conf`、`cos-deploy.md`、`site-config.cos.js`；备份脚本 `backend/scripts/backup.sh`。
 
 ---
 
@@ -10,7 +12,7 @@
 
 | 项 | 说明 |
 |---|---|
-| 域名 | A 记录指向服务器 IP（`@` 与 `www` 各一条）；解析生效后再装 Caddy 省去证书等待 |
+| 域名 | **`api.<域名>` 一条 A 记录**指向服务器 IP，解析生效后再装 Caddy 省去证书等待。根域 `@`/`www` 走 COS + CDN（CNAME，见 cos-deploy.md §3），与本机无关 |
 | 腾讯云 **SES 国际站可用性** | 开通并配好发信域名（SPF/DKIM/DMARC），拿到 SMTP 凭据。**不可用 → 换 Mailgun**（只改 `.env` 的 SMTP_*，零代码改动） |
 | 腾讯云 **IMS 国际站可用性** | 开通内容安全，确认可创建 API 密钥（TC3 签名已实现，见 `src/moderation/image.js`）。**不可用 → 备选 AWS Rekognition / 阿里云国际站内容安全**（换配置级改动，image.js 已隔离） |
 | DeepSeek 余额 | 平台充值 ≥100 元（月度预算硬上限 60 元是最后防线，不是充值额） |
@@ -73,6 +75,9 @@ cp .env.example .env && chmod 600 .env && nano .env
 #   DEEPSEEK_API_KEY（充值后填）
 #   TENCENT_SECRET_ID/KEY/IMS_REGION（图像审核）
 #   预算 BUDGET_* 保持默认即可（后台可调）
+#   ── 前后端分离（配合 COS 前端，缺一不可）──
+#   COOKIE_DOMAIN=mn.world                      ← cookie 放大到根域，前端子域才能携带登录态
+#   FRONTEND_ORIGIN=https://mn.world,https://www.mn.world   ← CORS 白名单（完整 scheme+域名）
 
 # 初始化 DB（跑迁移 001+002，24 张表 + user_version=2）
 node --env-file-if-exists=.env -e "const{openDb}=require('./src/db');openDb(process.env.DATABASE_PATH).close();console.log('db init ok')"
@@ -94,11 +99,12 @@ systemctl enable --now mn-backend
 journalctl -u mn-backend -f        # 看到 listening on 127.0.0.1:3000 即起
 curl http://127.0.0.1:3000/api/health   # {"status":"ok","db":"ok","tables":24}
 
-cp /opt/mn/deploy/Caddyfile /etc/caddy/Caddyfile   # 先改 <你的域名>
+cp /opt/mn/deploy/Caddyfile /etc/caddy/Caddyfile   # 先改 api.<你的域名>
 systemctl restart systemd-journald   # drop-in 生效
 caddy validate --config /etc/caddy/Caddyfile
 systemctl reload caddy
-# 首次访问 https://<域名> 触发证书签发；失败看 journalctl -u caddy
+# 首次访问 https://api.<域名>/api/health 触发证书签发；失败看 journalctl -u caddy
+# 静态站不在本机：前端托管 COS+CDN（cos-deploy.md），本机 Caddy 只反代 API
 ```
 
 ## 6. 备份 + 周报 cron（北京时间 10:17 备份 / 周一 10:00 周报，错开整点）
@@ -119,7 +125,8 @@ crontab -e   # root
 
 ## 7. 上线检查清单（全部打勾才算完成）
 
-- [ ] `https://<域名>/api/health` → 200 ok（公网，非本机）
+- [ ] `https://api.<域名>/api/health` → 200 ok（公网，非本机）
+- [ ] **前后端分离链路**（前端部分见 cos-deploy.md §8）：COS 前端登录成功；cookie `mn_session` 带 `Domain=<域名>`；API 响应头 `Access-Control-Allow-Origin` 反射白名单 Origin（非 `*`）；白名单外 Origin 请求无 CORS 头
 - [ ] **验证码邮件实测**：Gmail + Outlook 各注册一个账号，均能收到（进垃圾箱即检查 SPF/DKIM/DMARC，SES 控制台验证记录）
 - [ ] 登录 → 侧栏出现 Admin（先 `npm run seed`）→ admin.html 五 tab 能打开、有数据
 - [ ] 发一条普通帖 → 立即可见（先发后审）→ 夜间三班 cron 后 usage_log 有 moderation_text 行、审核队列有 AI 结果
@@ -127,8 +134,8 @@ crontab -e   # root
 - [ ] AI 客服：help.html 问「退款」→ 走规则卡不扣费；问 FAQ 内问题 → 0 元命中（后台 usage 见 chat_faq_hit）
 - [ ] 私讯：账号 A↔B 互发可见、互不可见者 403；管理员调阅后 audit 有 view_dm
 - [ ] 工单：提交 → 邮箱无回执要求、后台出现、回复后前端状态变化；badge 签发 → 另一浏览器 verify 通过
-- [ ] 断网/后端停机演练：停 mn-backend 后前台页面仍可浏览（本地为主）；恢复后登录正常
-- [ ] SSL Labs 评级 ≥ A；curl -I 响应头含安全头
+- [ ] 断网/后端停机演练：停 mn-backend 后前台页面仍可浏览（本地为主；COS 静态站与后端天然隔离）；恢复后登录正常
+- [ ] SSL Labs 评级 ≥ A（`api.<域名>`）；curl -I 响应头含安全头
 - [ ] 备份演练（见 §6）+ `crontab -l` 已确认
 - [ ] `.env` 权限 600；`/var/backups/mn` 权限检查；安全组仅 22/80/443
 
@@ -137,6 +144,7 @@ crontab -e   # root
 | 项 | 估算 |
 |---|---|
 | Lighthouse 2C2G 国际站 | ~USD 4-7/月（固定） |
+| COS + CDN（前端） | ~¥1-5/月（1.5MB 存储免费额度内；小站流量 <10GB） |
 | 域名 + DNS | ~USD 1/月摊 |
 | SES 邮件 | ~¥0.05/千封（验证码量级≈0） |
 | IMS 图像审核 | ~¥0.0025/张 |
@@ -149,7 +157,7 @@ crontab -e   # root
 systemctl status mn-backend           # 后端状态
 journalctl -u mn-backend -n 100 -f    # 后端日志（30 天保留）
 systemctl restart mn-backend          # 改代码后：npm ci 若依赖未变则无需重装；重启即生效
-journalctl -u caddy -n 50             # 证书/静态站问题
+journalctl -u caddy -n 50             # api.<域名> 证书/反代问题（静态站在 COS，不在本机）
 ls -l /var/backups/mn | tail          # 备份检查
 # 预算调整：admin.html → 成本看板（写 audit）；kv 直改：sqlite3 不在服务器上时用 node -e
 # 迁移：新增 migrations/NNN_*.sql 进 git → 服务器 git pull（或重传）→ restart（openDb 自动升 user_version）

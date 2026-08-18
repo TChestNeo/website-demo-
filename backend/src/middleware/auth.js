@@ -66,6 +66,7 @@ function destroySession(db, token) {
 function sessionCookie(token, cfg, maxAgeSec) {
   const parts = [`${cfg.sessionCookie}=${token}`, 'HttpOnly', 'Path=/', `Max-Age=${maxAgeSec}`, 'SameSite=Lax'];
   if (cfg.nodeEnv === 'production') parts.push('Secure');
+  if (cfg.cookieDomain) parts.push(`Domain=${cfg.cookieDomain}`); // 前后端分离：放大到根域供前端子域共享
   return parts.join('; ');
 }
 

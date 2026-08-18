@@ -1,5 +1,7 @@
 /**
- * MN_API — 后端 API 封装（baseURL '/api'，同源零 CORS）。
+ * MN_API — 后端 API 封装（baseURL 默认 '/api' 同源零 CORS）。
+ * 前后端分离部署时由 site-config.js 提前设置 window.MN_SITE.apiBase = 'https://api.<域名>/api'，
+ * 跨域请求带 credentials（cookie 登录态，后端 CORS 白名单 + Domain 放大配合）。
  * probe() 探测后端可达性（各页据此切换 api/demo 双模式，首次探测后缓存）；
  * request() 统一 JSON 往返：401 触发 mn:unauthorized 事件（storage.js 监听清会话）、
  * 429 暴露 retryAfter、网络失败永不 reject（返回 {ok:false,status:0,networkError:true}，
@@ -8,7 +10,7 @@
 (function (global) {
   'use strict';
 
-  var BASE = '/api';
+  var BASE = (global.MN_SITE && global.MN_SITE.apiBase) || '/api';
   var PROBE_TIMEOUT_MS = 2500;
   var backendUp = null; // null=未知 true/false=探测结果
 
@@ -26,6 +28,7 @@
     opts = opts || {};
     opts.headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
     if (opts.body != null && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
+    opts.credentials = opts.credentials || 'include'; // 跨域携带会话 cookie；同域时无副作用
     return fetch(BASE + path, opts).then(function (res) {
       if (res.status === 401) {
         global.dispatchEvent(new CustomEvent('mn:unauthorized'));

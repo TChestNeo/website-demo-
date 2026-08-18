@@ -50,7 +50,13 @@ const config = {
   // 认证参数
   sessionTtlMs: 30 * 24 * 3600 * 1000,   // 会话 30 天
   emailCodeTtlMs: 10 * 60 * 1000,        // 验证码 10 分钟
-  sessionCookie: 'mn_session'
+  sessionCookie: 'mn_session',
+
+  // 前后端分离（前端独立托管，API 独立子域）：
+  // COOKIE_DOMAIN 例 'mn.world'（不含端口；配了才会加 Domain=，本地同域开发不配）
+  // FRONTEND_ORIGIN 例 'https://mn.world,https://www.mn.world'（CORS 白名单，逗号分隔；不在白名单的 Origin 不返回 CORS 头）
+  cookieDomain: process.env.COOKIE_DOMAIN || '',
+  frontendOrigins: (process.env.FRONTEND_ORIGIN || '').split(',').map((s) => s.trim()).filter(Boolean)
 };
 
 module.exports = config;
