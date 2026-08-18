@@ -18,7 +18,8 @@ function testApp(overrides = {}) {
   // 邮件桩：拦截验证码，测试直接读取
   const mails = [];
   const mailer = {
-    sendCode: async (email, code, opts) => { mails.push({ email, code, opts }); return { dev: true }; }
+    sendCode: async (email, code, opts) => { mails.push({ email, code, opts }); return { dev: true }; },
+    sendAlert: async (subject, text) => { mails.push({ type: 'alert', subject, text }); return { dev: true }; }
   };
 
   const baseConfig = { ...require('../src/config'), databasePath: ':memory:' };

@@ -36,7 +36,18 @@ function createMailer(cfg) {
     return transporter.sendMail({ from: cfg.mail.from, to: email, subject, text });
   }
 
-  return { sendCode };
+  // 运维告警（预算 80%/耗尽，P11）：发给管理员邮箱；未配 SMTP 打 dev 日志（告警链路不崩）。
+  function sendAlert(subject, text) {
+    const to = cfg.adminEmail;
+    if (!to) return Promise.resolve({ skipped: true });
+    if (!transporter) {
+      console.log(`[dev-mail-alert] to=${to} subject=${subject}`);
+      return Promise.resolve({ dev: true });
+    }
+    return transporter.sendMail({ from: cfg.mail.from, to, subject, text });
+  }
+
+  return { sendCode, sendAlert };
 }
 
 module.exports = { createMailer };

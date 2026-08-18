@@ -101,11 +101,13 @@ systemctl reload caddy
 # 首次访问 https://<域名> 触发证书签发；失败看 journalctl -u caddy
 ```
 
-## 6. 备份 cron（每日 10:17 北京时间，错开整点）
+## 6. 备份 + 周报 cron（北京时间 10:17 备份 / 周一 10:00 周报，错开整点）
 
 ```bash
 crontab -e   # root
 17 2 * * * /opt/mn/backend/scripts/backup.sh >> /var/log/mn-backup.log 2>&1
+# 周报（成本 vs 预算 + 审核时效 + 调参建议）发到 ADMIN_EMAIL；预算 80%/耗尽告警由后端内置 cron 每日 10:30 自动发
+0 2 * * 1 cd /opt/mn/backend && node --env-file-if-exists=.env scripts/weekly-report.js --send >> /var/log/mn-weekly.log 2>&1
 ```
 
 - `.backup()` 在线备份（WAL 安全，不锁写）；保留 30 天；文件 600。
