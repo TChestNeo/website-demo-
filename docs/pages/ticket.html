@@ -190,7 +190,7 @@
   //   mode: 'discord' —— 当前：生成文本 → 复制 → Discord 工单频道粘贴
   //   mode: 'api'     —— 后端上线后：POST {apiBase}/tickets，失败自动回退 Discord 模式
   // apiBase 填接口根地址，如 'https://api.mnation.world'；接口约定见 ticket-submit.js 头部注释
-  window.MN_TICKET_CONFIG = { mode: 'discord', apiBase: '' };
+  window.MN_TICKET_CONFIG = { mode: 'api', apiBase: '/api' };
 </script>
 <script>
   (function () {

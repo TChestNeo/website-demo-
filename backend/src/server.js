@@ -12,6 +12,8 @@ const { createMailer } = require('./email');
 const { register: registerAuth } = require('./routes/auth');
 const { register: registerSocial } = require('./routes/social');
 const { register: registerMessages } = require('./routes/messages');
+const { register: registerTickets } = require('./routes/tickets');
+const { register: registerBadge } = require('./routes/badge');
 
 const VERSION = '0.1.0';
 
@@ -41,6 +43,8 @@ function createServer(deps = {}) {
   registerAuth(router, ctx);
   registerSocial(router, ctx);
   registerMessages(router, ctx);
+  registerTickets(router, ctx);
+  registerBadge(router, ctx);
 
   const server = http.createServer((req, res) => {
     (async () => {

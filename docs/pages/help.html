@@ -597,7 +597,7 @@
   // 官方人员身份验证配置（后端上线后的唯一改动点）
   //   mode: 'offline' —— 当前：演示模式（示例验证码 A7K2Q9 通过，其余一律无效）
   //   mode: 'api'     —— 后端上线后：POST {apiBase}/badge/verify，接口约定见 badge.js 头部注释
-  window.MN_BADGE_CONFIG = { mode: 'offline', apiBase: '' };
+  window.MN_BADGE_CONFIG = { mode: 'api', apiBase: '/api' };
 </script>
 <script>
   MN_I18N.apply();
