@@ -15,6 +15,7 @@
     tkFilter: 'queued',
     tkList: [],
     ticket: null,
+    tkTpl: null,
     selUserId: null,
     usage: null,
     budgets: {}
@@ -427,6 +428,50 @@
   }
   $('tkBackBtn').addEventListener('click', closeTicketDetail);
 
+  // ── 快捷回复模板面板：选模板 + 选语言（默认跟随工单提交语言）→ 自动填入回复框 ──
+  // 内置三语（zh/en/ms）；换模板或换语言时，先撤下上一次插入的模板文本再填新的
+  var REPLIES = [
+    { id: 'ack', name: '已收到工单',
+      zh: '您好，我们已收到您的工单，正在为您核实处理中。处理进展会在此工单中同步，请耐心等待。',
+      en: 'Hello, we have received your ticket and are currently looking into it. We will keep you updated in this thread — thank you for your patience.',
+      ms: 'Hai, kami telah menerima tiket anda dan sedang menyiasatnya. Kami akan mengemas kini perkembangan dalam tiket ini — terima kasih atas kesabaran anda.' },
+    { id: 'more', name: '需要更多信息',
+      zh: '感谢您的耐心等待。为了更快地为您处理，请您补充以下信息：账号 / 邮箱、问题发生时间、相关截图。收到后我们会尽快跟进。',
+      en: 'Thank you for your patience. To resolve this faster, please provide more details: account / email, when the issue occurred, and any relevant screenshots. We will follow up as soon as we receive them.',
+      ms: 'Terima kasih atas kesabaran anda. Untuk menyelesaikan ini dengan lebih cepat, sila berikan maklumat lanjut: akaun / e-mel, masa isu berlaku, dan tangkapan skrin berkaitan. Kami akan susuli sebaik sahaja menerimanya.' },
+    { id: 'resolved', name: '问题已解决',
+      zh: '您好，您反馈的问题我们已处理完成。如仍有疑问，欢迎随时通过工单联系我们。感谢您对 M.NationWorld 的支持！',
+      en: 'Hello, the issue you reported has been resolved. If you have any further questions, feel free to reach out via a new ticket. Thank you for supporting M.NationWorld!',
+      ms: 'Hai, isu yang anda laporkan telah diselesaikan. Jika ada sebarang soalan lanjut, sila hubungi kami melalui tiket. Terima kasih kerana menyokong M.NationWorld!' },
+    { id: 'escalated', name: '已转交相关部门',
+      zh: '您好，您的问题已转交相关部门优先处理，我们会在有进展后第一时间通过本工单通知您。',
+      en: 'Hello, your issue has been escalated to the relevant team for priority handling. We will notify you in this thread as soon as there is progress.',
+      ms: 'Hai, isu anda telah diserahkan kepada pasukan berkaitan untuk diproses secara keutamaan. Kami akan memaklumkan anda dalam tiket ini sebaik sahaja terdapat perkembangan.' },
+    { id: 'rules', name: '社区规则处理',
+      zh: '经核实，您的内容 / 账号因违反《社区规则》已被相应处理。如对处理有异议，可提交工单说明情况申请复核。',
+      en: 'After review, your content / account has been penalized for violating the Community Rules. If you disagree with this decision, you may submit a ticket explaining the situation to request a review.',
+      ms: 'Selepas semakan, kandungan / akaun anda telah dikenakan tindakan kerana melanggar Peraturan Komuniti. Jika anda tidak bersetuju, anda boleh menghantar tiket menerangkan situasi untuk memohon semakan.' },
+    { id: 'refund', name: '退款政策',
+      zh: '很抱歉，根据平台政策，虚拟内容 / 服务一经开通不支持退款。如为重复扣费，请提供支付凭证，我们会优先为您核查处理。',
+      en: 'We are sorry — per platform policy, virtual content / services are non-refundable once activated. If you were charged twice, please attach your payment receipt and we will prioritize the check for you.',
+      ms: 'Maaf — mengikut polisi platform, kandungan / perkhidmatan maya tidak boleh dikembalikan selepas diaktifkan. Jika anda dicaj dua kali, sila lampirkan resit pembayaran dan kami akan utamakan semakan untuk anda.' }
+  ];
+  function insertTpl() {
+    var ta = $('tkInput');
+    if (!ta) return;
+    // 先撤下上一次插入的模板文本（仍在末尾则精确移除）
+    if (state.tkTpl && ta.value.slice(-state.tkTpl.text.length) === state.tkTpl.text) {
+      ta.value = ta.value.slice(0, ta.value.length - state.tkTpl.text.length).replace(/\n$/, '');
+    }
+    state.tkTpl = null;
+    var t = REPLIES.find(function (r) { return r.id === $('tkTplSel').value; });
+    if (!t) return;
+    var text = t[$('tkTplLang').value] || t.zh;
+    if (ta.value && ta.value.charAt(ta.value.length - 1) !== '\n') ta.value += '\n';
+    ta.value += text;
+    state.tkTpl = { text: text };
+  }
+
   function renderTicketDetail(t) {
     var h = '<div class="row">' +
       (t.priority === 'urgent' ? chip('紧急', 'high') : '') +
@@ -446,11 +491,26 @@
     }
     if (t.status !== 'closed') {
       h += '<div class="adm-card"><h3 class="headline-sm" style="margin-bottom:var(--space-sm)">回复此工单</h3>' +
+        '<div class="row" style="gap:var(--space-sm);margin-bottom:var(--space-sm);flex-wrap:wrap">' +
+        '<select class="adm-select" id="tkTplSel" style="width:auto" title="回复模板">' +
+        '<option value="">选择回复模板…</option>' +
+        REPLIES.map(function (r) { return '<option value="' + r.id + '">' + esc(r.name) + '</option>'; }).join('') +
+        '</select>' +
+        '<select class="adm-select" id="tkTplLang" style="width:auto" title="模板语言">' +
+        '<option value="zh">中文</option><option value="en">English</option><option value="ms">Bahasa Melayu</option>' +
+        '</select></div>' +
         '<textarea class="adm-textarea" id="tkInput" placeholder="回复内容（1-4000 字）"></textarea>' +
         '<div class="actions"><button class="btn btn-primary" id="tkSendBtn">发送回复</button>' +
         '<button class="btn" id="tkCloseBtn" style="border-color:#dc2626;color:#dc2626">关闭工单</button></div></div>';
     }
     $('ticketDetailBody').innerHTML = h;
+    state.tkTpl = null;
+    if (t.status !== 'closed') {
+      var lang0 = (t.locale && /^(zh|en|ms)$/.test(t.locale)) ? t.locale : 'zh';
+      $('tkTplLang').value = lang0;
+      $('tkTplSel').addEventListener('change', insertTpl);
+      $('tkTplLang').addEventListener('change', insertTpl);
+    }
   }
 
   // 回复/关闭后重拉详情（status=all 兜底：关闭后的工单可能不在当前筛选）

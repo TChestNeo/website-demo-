@@ -100,6 +100,18 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         base.ticketDetailShown = document.getElementById('ticketDetail').style.display !== 'none';
         base.ticketDetailTitle = ((document.querySelector('#ticketDetailBody .tk-title') || {}).textContent || '').slice(0, 60);
         base.ticketHash = location.hash.slice(0, 24);
+        // 回复模板面板：语言默认 = 工单 locale → 选模板自动填入 → 换语言替换
+        base.tkTplOpts = document.querySelectorAll('#tkTplSel option').length;
+        base.tkTplLangDefault = document.getElementById('tkTplLang').value;
+        var tplSel = document.getElementById('tkTplSel');
+        tplSel.value = 'ack';
+        tplSel.dispatchEvent(new Event('change', { bubbles: true }));
+        var tplTa = document.getElementById('tkInput');
+        base.tkTplInserted = tplTa.value.slice(0, 24);
+        var tplLang = document.getElementById('tkTplLang');
+        tplLang.value = 'en';
+        tplLang.dispatchEvent(new Event('change', { bubbles: true }));
+        base.tkTplLangSwitch = tplTa.value.slice(0, 24);
         document.getElementById('tkBackBtn').click(); await new Promise(function(r){ setTimeout(r, 100); });
         base.ticketBackToList = document.getElementById('ticketDetail').style.display === 'none';
         return JSON.stringify(base);
