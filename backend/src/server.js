@@ -17,6 +17,7 @@ const { register: registerBadge } = require('./routes/badge');
 const { register: registerDrafts } = require('./routes/drafts');
 const { register: registerArticles } = require('./routes/articles');
 const { register: registerReports } = require('./routes/reports');
+const { register: registerChat } = require('./routes/chat');
 const { createBudget } = require('./moderation/budget');
 const blocklist = require('../data/blocklist.json');
 
@@ -61,6 +62,7 @@ function createServer(deps = {}) {
   registerDrafts(router, ctx);
   registerArticles(router, ctx);
   registerReports(router, ctx);
+  registerChat(router, ctx);
 
   const server = http.createServer((req, res) => {
     (async () => {

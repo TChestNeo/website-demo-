@@ -587,11 +587,11 @@
 <script src="../assets/i18n/badge.zh.js"></script>
 <script src="../assets/js/badge.js"></script>
 <script>
-  // AI 客服配置（后端上线后的唯一改动点）
-  //   mode: 'offline' —— 当前：本地演示规则应答（状态栏显示“演示模式”）
-  //   mode: 'api'     —— 后端上线后：POST {apiBase}/chat，接口约定见 ai-chat.js 头部注释
-  // 后端负责代理调用 Gemini / DeepSeek，API 密钥仅存于后端，前端不直接调用模型接口。
-  window.MN_AI_CONFIG = { mode: 'offline', apiBase: '' };
+  // AI 客服配置（P8：已切后端；后端不可达时显示错误提示并引导转工单，见 ai-chat.js 头部注释）
+  //   mode: 'offline' —— 本地演示规则应答（状态栏显示“演示模式”）
+  //   mode: 'api'     —— POST {apiBase}/chat，接口约定见 ai-chat.js 头部注释
+  // 后端负责代理调用 DeepSeek，API 密钥仅存于后端，前端不直接调用模型接口。
+  window.MN_AI_CONFIG = { mode: 'api', apiBase: '/api' };
 </script>
 <script>
   // 官方人员身份验证配置（后端上线后的唯一改动点）

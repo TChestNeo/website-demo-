@@ -1,0 +1,832 @@
+{
+  "_meta": {
+    "source": "docs/pages/help.html（顺序/分类） + docs/assets/i18n/help.zh.js（文案）",
+    "generatedBy": "backend/scripts/extract-faq.js",
+    "count": 23
+  },
+  "entries": [
+    {
+      "id": "q1",
+      "category": {
+        "key": "beginner",
+        "label": "新手入门"
+      },
+      "question": "什么是 micronation？第一次来应该从哪里开始？",
+      "answer": "Micronation 是由用户创建的虚构国家——你可以在平台上设计自己的国旗、宪法、世界观与历史。第一次使用建议按以下顺序开始：注册账号并完成身份设定 → 在 Creation 版块建立你的国家 → 用 FluidCanvas 编辑器撰写第一篇百科文章 → 在 Community Hub 与其他创作者互动。更多细节见本页顶部的「快速上手」版块。",
+      "keywords": {
+        "zh": [
+          "micronation",
+          "微国家",
+          "微国",
+          "入门",
+          "新手",
+          "第一次",
+          "怎么开始",
+          "怎么玩",
+          "是什么",
+          "什么是"
+        ],
+        "en": [
+          "micronation",
+          "start",
+          "begin",
+          "first time",
+          "new",
+          "what is"
+        ],
+        "ms": [
+          "micronation",
+          "mula",
+          "pertama",
+          "negara kecil",
+          "cara main"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q2",
+      "category": {
+        "key": "beginner",
+        "label": "新手入门"
+      },
+      "question": "平台支持哪些语言？",
+      "answer": "平台目前以简体中文为主要语言，多语言系统正在逐步完善中；新语言上线后，你可以在设置中选择界面语言，无需其他操作即可切换。",
+      "keywords": {
+        "zh": [
+          "语言",
+          "哪些语言",
+          "中文",
+          "英文",
+          "马来语",
+          "翻译",
+          "多语言"
+        ],
+        "en": [
+          "language",
+          "chinese",
+          "english",
+          "malay",
+          "translate",
+          "multilingual"
+        ],
+        "ms": [
+          "bahasa",
+          "cina",
+          "inggeris",
+          "melayu",
+          "terjemah"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q3",
+      "category": {
+        "key": "account",
+        "label": "账号与数据"
+      },
+      "question": "登出后我的数据会保留多久？",
+      "answer": "登出后您的数据将保留 3 年；若您在 3 年内重新登录，保留期限将从重新登录之日起重新计算。超过 3 年未登录的账号，数据将被彻底删除。",
+      "keywords": {
+        "zh": [
+          "数据",
+          "保留",
+          "多久",
+          "三年",
+          "3年",
+          "登出",
+          "清除",
+          "保存时间"
+        ],
+        "en": [
+          "data",
+          "keep",
+          "retain",
+          "how long",
+          "logout",
+          "delete",
+          "3 years"
+        ],
+        "ms": [
+          "data",
+          "simpan",
+          "berapa lama",
+          "log keluar",
+          "3 tahun",
+          "padam"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q4",
+      "category": {
+        "key": "account",
+        "label": "账号与数据"
+      },
+      "question": "删除账号后可以恢复吗？",
+      "answer": "可以。申请删除账号后有 30 天的后悔期，期间重新登录即可恢复账号；后悔期届满后，所有关联数据将被彻底抹除，不可恢复。",
+      "keywords": {
+        "zh": [
+          "删除",
+          "账号",
+          "删号",
+          "注销",
+          "恢复",
+          "后悔",
+          "找回账号"
+        ],
+        "en": [
+          "delete",
+          "account",
+          "recover",
+          "restore",
+          "undo",
+          "30 days"
+        ],
+        "ms": [
+          "padam",
+          "akaun",
+          "hapus",
+          "pulih",
+          "30 hari"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q5",
+      "category": {
+        "key": "account",
+        "label": "账号与数据"
+      },
+      "question": "平台会出售我的个人数据吗？",
+      "answer": "绝不会。您的数据仅在提供服务所必需的范围内共享（如云服务商与支付网关），详情见隐私政策。",
+      "keywords": {
+        "zh": [
+          "出售",
+          "数据",
+          "隐私",
+          "卖数据",
+          "个人信息",
+          "泄露给第三方"
+        ],
+        "en": [
+          "sell",
+          "data",
+          "privacy",
+          "personal info",
+          "third party"
+        ],
+        "ms": [
+          "jual",
+          "data",
+          "privasi",
+          "maklumat peribadi"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q6",
+      "category": {
+        "key": "account",
+        "label": "账号与数据"
+      },
+      "question": "忘记密码了怎么办？账号被盗如何找回？",
+      "answer": "忘记密码可在登录页通过注册邮箱重置。若怀疑账号被盗，请尽快通过 Discord 官方社区联系管理员、或提交工单（账户问题 → 账号被盗），我们会优先处理；请保留注册邮箱的访问权，账号找回须以此验证身份。",
+      "keywords": {
+        "zh": [
+          "密码",
+          "忘记",
+          "重置",
+          "找回",
+          "被盗",
+          "盗号",
+          "登录不上"
+        ],
+        "en": [
+          "password",
+          "forgot",
+          "reset",
+          "stolen",
+          "hijacked",
+          "recover",
+          "locked"
+        ],
+        "ms": [
+          "kata laluan",
+          "lupa",
+          "tetapkan",
+          "dicuri",
+          "akaun",
+          "kunci"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q7",
+      "category": {
+        "key": "account",
+        "label": "账号与数据"
+      },
+      "question": "如何导出我的数据？",
+      "answer": "你可以通过提交「隐私请求」工单申请导出个人数据与创作内容（旗帜、文章、世界观设定等）；申请由人工受理，我们会在首个人工回复目标期内与你联系并安排导出。",
+      "keywords": {
+        "zh": [
+          "导出",
+          "数据",
+          "隐私请求",
+          "下载数据",
+          "导出我的"
+        ],
+        "en": [
+          "export",
+          "data",
+          "download",
+          "privacy request"
+        ],
+        "ms": [
+          "eksport",
+          "data",
+          "muat turun",
+          "permintaan privasi"
+        ]
+      },
+      "needsHuman": true,
+      "ticketHint": "数据导出/删除请求由人工受理。请提交工单（账号问题 → 隐私请求），首个人工回复目标为 3 天内。"
+    },
+    {
+      "id": "q8",
+      "category": {
+        "key": "account",
+        "label": "账号与数据"
+      },
+      "question": "未成年人可以注册吗？",
+      "answer": "平台不为 13 周岁以下的儿童提供服务；未成年人使用平台须遵守服务条款第 2 条的未成年人保护规定。",
+      "keywords": {
+        "zh": [
+          "未成年",
+          "13岁",
+          "儿童",
+          "年龄",
+          "孩子",
+          "注册限制"
+        ],
+        "en": [
+          "minor",
+          "13",
+          "underage",
+          "children",
+          "age"
+        ],
+        "ms": [
+          "bawah umur",
+          "13 tahun",
+          "kanak-kanak",
+          "umur"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q9",
+      "category": {
+        "key": "account",
+        "label": "账号与数据"
+      },
+      "question": "发生数据安全事件时会如何通知我？",
+      "answer": "一旦发生可能影响你权益的数据安全事件，我们将在合理时间内通过站内公告、Discord 社区等渠道通报事件概况、可能的影响与应对措施，并依法向监管机构报告（详见隐私政策）。",
+      "keywords": {
+        "zh": [
+          "数据安全",
+          "泄露",
+          "安全事件",
+          "通知",
+          "隐私泄露"
+        ],
+        "en": [
+          "data breach",
+          "security",
+          "incident",
+          "leak",
+          "notify"
+        ],
+        "ms": [
+          "kebocoran data",
+          "keselamatan",
+          "insiden",
+          "maklum"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q10",
+      "category": {
+        "key": "billing",
+        "label": "订阅与付费"
+      },
+      "question": "有哪些订阅套餐？价格分别是多少？",
+      "answer": "平台提供多档订阅（含旗舰版 Premium Ultra）。全部订阅用户均可使用 AI 搜索、AI 文章优化与 AI 总结等基础 AI 功能；自动化 AI 建议等高级功能仅限 Premium Ultra。各套餐价格与完整权益清单将在订阅系统上线时公布。",
+      "keywords": {
+        "zh": [
+          "订阅",
+          "套餐",
+          "价格",
+          "多少钱",
+          "会员",
+          "收费",
+          "付费",
+          "premium",
+          "ultra"
+        ],
+        "en": [
+          "subscription",
+          "plan",
+          "price",
+          "cost",
+          "premium",
+          "ultra",
+          "how much"
+        ],
+        "ms": [
+          "langganan",
+          "pakej",
+          "harga",
+          "berapa",
+          "premium",
+          "ultra"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q11",
+      "category": {
+        "key": "billing",
+        "label": "订阅与付费"
+      },
+      "question": "支持哪些支付方式？",
+      "answer": "支持 Stripe 与 FPX（马来西亚网银）等支付网关，信用卡号等敏感信息由支付网关直接处理，平台绝不存储您的支付凭证。",
+      "keywords": {
+        "zh": [
+          "支付",
+          "付款",
+          "方式",
+          "stripe",
+          "fpx",
+          "信用卡",
+          "网银"
+        ],
+        "en": [
+          "payment",
+          "pay",
+          "stripe",
+          "fpx",
+          "credit card",
+          "method"
+        ],
+        "ms": [
+          "bayaran",
+          "bayar",
+          "stripe",
+          "fpx",
+          "kad kredit",
+          "cara"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q12",
+      "category": {
+        "key": "billing",
+        "label": "订阅与付费"
+      },
+      "question": "订阅会自动续费吗？",
+      "answer": "会。除非您在当前订阅周期结束前至少 24 小时取消订阅，否则系统将在到期时自动扣费续订。",
+      "keywords": {
+        "zh": [
+          "续费",
+          "自动",
+          "扣费",
+          "取消订阅",
+          "自动扣款"
+        ],
+        "en": [
+          "renew",
+          "auto",
+          "automatic",
+          "cancel",
+          "subscription",
+          "charge"
+        ],
+        "ms": [
+          "perbaharui",
+          "auto",
+          "batal",
+          "langganan",
+          "caj"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q13",
+      "category": {
+        "key": "billing",
+        "label": "订阅与付费"
+      },
+      "question": "可以申请退款吗？",
+      "answer": "数字服务原则上不予退款；若平台服务连续中断超过 48 小时，可联系管理员申请按比例补偿。",
+      "keywords": {
+        "zh": [
+          "退款",
+          "退钱",
+          "退费",
+          "补偿"
+        ],
+        "en": [
+          "refund",
+          "money back",
+          "reimbursement",
+          "compensation"
+        ],
+        "ms": [
+          "bayar balik",
+          "pulangan",
+          "pampasan",
+          "refund"
+        ]
+      },
+      "needsHuman": true,
+      "ticketHint": "退款与账单问题需要人工核查。请提交工单（支付与订阅 → 退款问题），首个人工回复目标为 3 天内。"
+    },
+    {
+      "id": "q14",
+      "category": {
+        "key": "billing",
+        "label": "订阅与付费"
+      },
+      "question": "支持哪些货币付款？",
+      "answer": "支持的货币由支付网关（Stripe / FPX）与你的发卡行决定，结算时以支付网关页面显示的金额与汇率为准；马来西亚本地支付优先推荐 FPX 网银。",
+      "keywords": {
+        "zh": [
+          "货币",
+          "汇率",
+          "myr",
+          "usd",
+          "币种",
+          "令吉",
+          "马币"
+        ],
+        "en": [
+          "currency",
+          "exchange rate",
+          "myr",
+          "usd",
+          "ringgit",
+          "dollar"
+        ],
+        "ms": [
+          "mata wang",
+          "kadar",
+          "myr",
+          "usd",
+          "ringgit"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q15",
+      "category": {
+        "key": "editor",
+        "label": "编辑器与创作"
+      },
+      "question": "文字遇到卡片会自动换行吗？",
+      "answer": "只有当文字所在的格子被卡片实际占据时，文字才会换行跳过；卡片只是与文字同行、或只是靠近文字，都不会影响文字的位置。",
+      "keywords": {
+        "zh": [
+          "换行",
+          "卡片",
+          "文字",
+          "排版",
+          "环绕"
+        ],
+        "en": [
+          "text",
+          "wrap",
+          "card",
+          "layout",
+          "flow"
+        ],
+        "ms": [
+          "teks",
+          "kad",
+          "susun atur",
+          "balut"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q16",
+      "category": {
+        "key": "editor",
+        "label": "编辑器与创作"
+      },
+      "question": "我的创作内容归谁所有？",
+      "answer": "完全归您所有。您的原创设定、世界观数据、旗帜与资产的知识产权属于您；平台仅在展示、传输与备份所必需的范围内使用。",
+      "keywords": {
+        "zh": [
+          "版权",
+          "所有权",
+          "知识产权",
+          "归属",
+          "归谁",
+          "著作权"
+        ],
+        "en": [
+          "copyright",
+          "ownership",
+          "intellectual property",
+          "belong",
+          "ip"
+        ],
+        "ms": [
+          "hak cipta",
+          "milik",
+          "harta intelek",
+          "kepunyaan"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q17",
+      "category": {
+        "key": "ai",
+        "label": "AI 功能"
+      },
+      "question": "AI 功能会拿我的内容去训练模型吗？",
+      "answer": "不会。AI 功能由 Google Gemini 驱动，我们不会使用您的任何内容训练 AI 模型。",
+      "keywords": {
+        "zh": [
+          "训练",
+          "模型",
+          "ai",
+          "内容",
+          "机器学习"
+        ],
+        "en": [
+          "train",
+          "training",
+          "model",
+          "ai",
+          "content"
+        ],
+        "ms": [
+          "latih",
+          "model",
+          "ai",
+          "kandungan"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q18",
+      "category": {
+        "key": "ai",
+        "label": "AI 功能"
+      },
+      "question": "哪些订阅包含 AI 功能？",
+      "answer": "订阅用户均可使用 AI 搜索、AI 文章优化与 AI 总结等基础功能；自动化 AI 建议等高级功能仅限旗舰版（Premium Ultra）。",
+      "keywords": {
+        "zh": [
+          "ai",
+          "订阅",
+          "功能",
+          "哪些",
+          "套餐",
+          "包含"
+        ],
+        "en": [
+          "ai",
+          "subscription",
+          "feature",
+          "plan",
+          "include",
+          "which"
+        ],
+        "ms": [
+          "ai",
+          "langganan",
+          "ciri",
+          "pelan",
+          "termasuk"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q19",
+      "category": {
+        "key": "ai",
+        "label": "AI 功能"
+      },
+      "question": "AI 生成的内容版权归谁？",
+      "answer": "AI 功能由第三方模型（Google Gemini 等）驱动，AI 输出仅供辅助参考；你基于 AI 输出完成的创作，其原创部分的知识产权归你所有（与「我的创作内容归谁所有」一致）。建议对 AI 输出进行人工审校后再发布使用。",
+      "keywords": {
+        "zh": [
+          "ai",
+          "版权",
+          "生成",
+          "内容",
+          "归属"
+        ],
+        "en": [
+          "ai",
+          "copyright",
+          "generated",
+          "content",
+          "belong"
+        ],
+        "ms": [
+          "ai",
+          "hak cipta",
+          "kandungan",
+          "jana"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q20",
+      "category": {
+        "key": "creator",
+        "label": "创作者与结算"
+      },
+      "question": "创作者如何获得收入？结算多久到账？",
+      "answer": "平台为创作者提供收入分成（来自订阅、单次付费与捐款），并每季度结束后 30 天内公布简化财报；结算周期、提现方式与分成比例以《财务与支付条款》为准。结算相关疑问可通过「创作者结算」工单提出，由人工核查处理。",
+      "keywords": {
+        "zh": [
+          "收入",
+          "结算",
+          "提现",
+          "分成",
+          "到账",
+          "创作者",
+          "收益"
+        ],
+        "en": [
+          "income",
+          "payout",
+          "settlement",
+          "withdrawal",
+          "revenue",
+          "creator",
+          "earnings"
+        ],
+        "ms": [
+          "pendapatan",
+          "penyelesaian",
+          "pengeluaran",
+          "bahagian",
+          "pencipta"
+        ]
+      },
+      "needsHuman": true,
+      "ticketHint": "结算问题由人工核查。请提交工单（创作者结算 → 结算查询），首个人工回复目标为 3 天内。"
+    },
+    {
+      "id": "q21",
+      "category": {
+        "key": "support",
+        "label": "联系与支持"
+      },
+      "question": "提交工单后多久能收到回复？",
+      "answer": "人工工单按提交顺序受理，并结合问题的紧急与影响程度调整处理优先级（如账号安全、支付异常等紧急事项优先）；首个人工回复目标为 3 天内送达，如遇高峰或节假日可能延迟，平台将通过公告说明。处理进展将通过你留下的电子邮件告知。",
+      "keywords": {
+        "zh": [
+          "工单",
+          "回复",
+          "多久",
+          "时间",
+          "处理",
+          "响应"
+        ],
+        "en": [
+          "ticket",
+          "reply",
+          "how long",
+          "response",
+          "sla",
+          "time"
+        ],
+        "ms": [
+          "tiket",
+          "balas",
+          "berapa lama",
+          "respons",
+          "masa"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q22",
+      "category": {
+        "key": "support",
+        "label": "联系与支持"
+      },
+      "question": "如何举报违规内容或抄袭？",
+      "answer": "发现违规内容或抄袭，请使用平台专用举报入口：点击相关内容旁的「举报」按钮进入举报流程提交（含「违规内容举报」与「知识产权投诉」），举报不经过工单系统；平台将在合理时间内核查并处置（详见社区规则第 5 条）。",
+      "keywords": {
+        "zh": [
+          "举报",
+          "违规",
+          "抄袭",
+          "侵权",
+          "投诉"
+        ],
+        "en": [
+          "report",
+          "violation",
+          "plagiarism",
+          "infringement",
+          "abuse"
+        ],
+        "ms": [
+          "lapor",
+          "langgar",
+          "plagiat",
+          "aduan"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    },
+    {
+      "id": "q23",
+      "category": {
+        "key": "support",
+        "label": "联系与支持"
+      },
+      "question": "收到自称官方人员的私信，如何验证对方身份？",
+      "answer": "平台客服在正常情况下不会主动私信联系你；特殊情况下（如账号安全核查、订单异常处理）运营团队会以官方名义主动联系，并会先出示官方验证码（12 小时内有效）。你可以在本页下方「验证官方人员身份」输入该验证码核实：验证通过后，页面会显示验证码的创建时间、该工作人员的化名（官方人员不使用真实姓名）、职位与负责事项。官方人员无论何种情况都不会向你索要密码、短信验证码或支付信息；任何不出示验证码、验证码无效、或索要上述信息的「官方私信」均为冒充，请勿回应，并前往官方 Discord 社区核实或举报。",
+      "keywords": {
+        "zh": [
+          "官方",
+          "验证",
+          "冒充",
+          "私信",
+          "身份",
+          "验证码",
+          "工作人员"
+        ],
+        "en": [
+          "official",
+          "verify",
+          "impersonation",
+          "dm",
+          "identity",
+          "code",
+          "staff"
+        ],
+        "ms": [
+          "rasmi",
+          "sahkan",
+          "menyamar",
+          "dm",
+          "kod",
+          "kakitangan"
+        ]
+      },
+      "needsHuman": false,
+      "ticketHint": null
+    }
+  ]
+}
