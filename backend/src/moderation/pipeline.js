@@ -88,14 +88,20 @@ function isDuplicate(db, userId, hash, nowIso) {
 function applyDecision(db, cfg, decision) {
   const iso = new Date().toISOString();
   const muteHours = ((cfg.moderation || {}).muteHours) || 72;
-  db.prepare('INSERT INTO moderation_decisions (item_id, action, actor, reason_code, notes, created_at) '
-    + 'VALUES (?, ?, ?, ?, ?, ?)')
-    .run(decision.itemId, decision.action, decision.actor, decision.reasonCode || null, decision.notes || null, iso);
-
-  const target = db.prepare('SELECT * FROM moderation_items WHERE id = ?').get(decision.itemId) || {};
-  const userId = decision.userId || (target.target_type === 'post'
-    ? (db.prepare('SELECT author_id FROM posts WHERE id = ?').get(target.target_id) || {}).author_id
-    : null);
+  // user_id 先解析再落库（002 列；管理端直接处罚传 decision.userId + itemId null，
+  // 否则从 item → target → owner 反查）——处罚历史时间线按此列查
+  const target = decision.itemId
+    ? db.prepare('SELECT * FROM moderation_items WHERE id = ?').get(decision.itemId) || {}
+    : {};
+  const ownerCol = { post: 'author_id', article: 'author_id', nation: 'owner_id', topic: 'creator_id' }[target.target_type];
+  const userId = decision.userId
+    || (target.target_type === 'user' ? target.target_id : null)
+    || (ownerCol && target.target_id
+      ? (db.prepare(`SELECT ${ownerCol} AS uid FROM ${TARGET_TABLES[target.target_type]} WHERE id = ?`).get(target.target_id) || {}).uid
+      : null);
+  db.prepare('INSERT INTO moderation_decisions (item_id, user_id, action, actor, reason_code, notes, created_at) '
+    + 'VALUES (?, ?, ?, ?, ?, ?, ?)')
+    .run(decision.itemId || null, userId || null, decision.action, decision.actor, decision.reasonCode || null, decision.notes || null, iso);
 
   function notify(uid, title, body) {
     if (!uid) return;

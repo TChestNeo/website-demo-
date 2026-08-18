@@ -18,6 +18,7 @@ const { register: registerDrafts } = require('./routes/drafts');
 const { register: registerArticles } = require('./routes/articles');
 const { register: registerReports } = require('./routes/reports');
 const { register: registerChat } = require('./routes/chat');
+const { register: registerAdmin } = require('./routes/admin');
 const { createBudget } = require('./moderation/budget');
 const blocklist = require('../data/blocklist.json');
 
@@ -63,6 +64,7 @@ function createServer(deps = {}) {
   registerArticles(router, ctx);
   registerReports(router, ctx);
   registerChat(router, ctx);
+  registerAdmin(router, ctx);
 
   const server = http.createServer((req, res) => {
     (async () => {
@@ -72,6 +74,8 @@ function createServer(deps = {}) {
           return sendJson(res, 404, { error: { code: 'NOT_FOUND', message: 'Not found' } });
         }
         req.params = route.params;
+        req.query = {}; // ?a=1&b=2 → {a:'1',b:'2'}（P9 管理端列表过滤用）
+        for (const [k, v] of new URLSearchParams((req.url || '').split('?')[1] || '')) req.query[k] = v;
         await route.handler(req, res, ctx);
       } catch (err) {
         sendError(res, err);

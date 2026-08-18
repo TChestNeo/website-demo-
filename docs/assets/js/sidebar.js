@@ -45,6 +45,7 @@
     if (path.includes('editor')) return 'editor';
     if (path.includes('following')) return 'following';
     if (path.includes('workspace') || path.includes('fluidcanvas')) return 'studio';
+    if (path.includes('admin')) return 'admin';
     if (path.includes('help')) return 'help';
     return 'home';
   }
@@ -57,6 +58,13 @@
     };
 
     var activeId = getActiveId();
+
+    // 管理员入口：仅 role==='admin' 显示（/auth/me 权威覆盖本地用户后生效）
+    var navTop = NAV_ITEMS.slice(0, 5);
+    var navBottom = NAV_ITEMS.slice(5);
+    if (user.role === 'admin') {
+      navBottom.push({ id: 'admin', icon: 'shield_person', label: 'Admin', href: '../pages/admin.html' });
+    }
 
     function navHTML(items) {
       return items.map(function (item) {
@@ -111,9 +119,9 @@
       '<!-- Nav Module -->' +
       '<div class="sidebar-module nav-module custom-scrollbar" style="flex:1;overflow-y:auto;padding:var(--space-sm)">' +
         '<nav class="sidebar-nav">' +
-          navHTML(NAV_ITEMS.slice(0, 5)) +
+          navHTML(navTop) +
           '<div class="divider sidebar-divider"></div>' +
-          navHTML(NAV_ITEMS.slice(5)) +
+          navHTML(navBottom) +
           '<div class="divider sidebar-divider"></div>' +
           navHTML(BOTTOM_NAV) +
         '</nav>' +
@@ -242,4 +250,15 @@
   } else {
     renderSidebar();
   }
+
+  // /auth/me 权威覆盖（storage.js cloudMerge）可能晚于首次渲染：
+  // 若 1.2s 后本地用户变为 admin 且本次尚未渲染 Admin 入口，重渲染一次
+  setTimeout(function () {
+    try {
+      var u = (window.SlatiDB && SlatiDB.getUser()) || {};
+      if (u.role === 'admin' && document.querySelector('#slati-sidebar a[href*="admin.html"]') === null) {
+        renderSidebar();
+      }
+    } catch (e) {}
+  }, 1200);
 })();
