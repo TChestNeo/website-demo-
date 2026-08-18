@@ -87,6 +87,28 @@
       background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.4); color: #b45309; font-size: 13.5px; font-weight: 600; }
     .cursor-row { cursor: pointer; }
     .cursor-row:hover { background: var(--color-surface-variant, rgba(128,128,128,0.08)); }
+
+    /* 回复模板弹窗：左侧模板菜单（左上角 + 添加）→ 右侧所选模板预览（语言切换 + 使用） */
+    .tk-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 90; display: flex;
+      align-items: center; justify-content: center; padding: var(--space-md); }
+    .tk-modal { background: var(--color-surface); border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg);
+      width: 100%; padding: var(--space-lg); }
+    .tk-shell { display: grid; grid-template-columns: 250px 1fr; gap: var(--space-md); }
+    .tk-menu { border-right: 1px solid var(--color-outline-variant); padding-right: var(--space-sm);
+      overflow-y: auto; max-height: 52vh; }
+    .tk-menu-item { padding: 8px 10px; border-radius: var(--radius-md); cursor: pointer; font-size: 13.5px;
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-xs); }
+    .tk-menu-item:hover { background: var(--color-surface-variant, rgba(128,128,128,0.08)); }
+    .tk-menu-item.active { background: rgba(59,130,246,0.12); color: var(--color-primary); font-weight: 700; }
+    .tk-del { color: var(--color-outline); cursor: pointer; font-size: 12px; }
+    .tk-del:hover { color: #dc2626; }
+    .lang-chip { padding: 1px 9px; border-radius: var(--radius-full); font-size: 11.5px; font-weight: 700; cursor: pointer;
+      border: 1px solid var(--color-outline-variant); color: var(--color-outline); }
+    .lang-chip.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+    .tk-preview-box { margin-top: var(--space-sm); padding: var(--space-md); min-height: 140px;
+      background: var(--color-surface-variant, rgba(128,128,128,0.08)); border-radius: var(--radius-md);
+      font-size: 13.5px; color: var(--color-on-surface-variant); white-space: pre-wrap; word-break: break-word; }
+    @media (max-width: 620px) { .tk-shell { grid-template-columns: 1fr; } .tk-menu { border-right: none; max-height: none; } }
   </style>
 </head>
 <body>
@@ -305,6 +327,53 @@
 </div>
 
 <div id="admToast"></div>
+
+<!-- 回复模板弹窗：左侧模板菜单（左上角 + 添加）→ 右侧所选模板预览（语言切换 + 使用此模板） -->
+<div class="tk-overlay" id="tkTplModal" style="display:none">
+  <div class="tk-modal" style="max-width:760px">
+    <div class="dash-card-title">
+      <h3 class="headline-md">回复模板</h3>
+      <button class="btn btn-ghost btn-icon" id="tkTplCloseBtn"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="tk-shell">
+      <div>
+        <div class="row" style="margin-bottom:var(--space-xs)">
+          <button class="btn btn-primary btn-icon" id="tkTplAddBtn" title="添加模板" style="width:32px;height:32px;padding:0">
+            <span class="material-symbols-outlined" style="font-size:18px">add</span>
+          </button>
+          <span class="adm-meta">模板列表</span>
+        </div>
+        <div class="tk-menu" id="tkTplMenu"></div>
+      </div>
+      <div>
+        <div class="dash-card-title" style="margin-bottom:var(--space-xs)">
+          <span id="tkTplPreviewName" style="font-weight:700">—</span>
+          <span id="tkTplLangs"></span>
+        </div>
+        <div class="tk-preview-box" id="tkTplPreviewText">从左侧选择一个模板</div>
+        <div class="actions"><button class="btn btn-primary" id="tkTplUseBtn">使用此模板</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 添加模板弹窗：名称 + 三语内容（中文必填，其余可选） -->
+<div class="tk-overlay" id="tkTplAddModal" style="display:none">
+  <div class="tk-modal" style="max-width:560px">
+    <div class="dash-card-title">
+      <h3 class="headline-md">添加模板</h3>
+      <button class="btn btn-ghost btn-icon" id="tkTplAddCloseBtn"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <input class="adm-input" id="tkTplAddName" placeholder="模板名称（必填）" style="width:100%;margin-bottom:var(--space-sm)">
+    <textarea class="adm-textarea" id="tkTplAddZh" placeholder="中文内容（必填）" style="margin-bottom:var(--space-sm)"></textarea>
+    <textarea class="adm-textarea" id="tkTplAddEn" placeholder="English 内容" style="margin-bottom:var(--space-sm)"></textarea>
+    <textarea class="adm-textarea" id="tkTplAddMs" placeholder="Bahasa Melayu 内容"></textarea>
+    <div class="actions">
+      <button class="btn btn-primary" id="tkTplAddSave">保存</button>
+      <button class="btn" id="tkTplAddCancel">取消</button>
+    </div>
+  </div>
+</div>
 
 <script src="../assets/js/site-config.js"></script>
 <script src="../assets/js/api.js"></script>
