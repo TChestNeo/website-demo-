@@ -1,0 +1,33 @@
+# M.NationWorld —— Caddy 2 配置（P10）
+# 部署：把 <你的域名> 换成真实域名；`caddy validate --config /etc/caddy/Caddyfile` 后 `systemctl reload caddy`。
+# 证书：Caddy 自动申请/续期 Let's Encrypt（需 80/443 入站放行 + 域名 A 记录指向本机）。
+<你的域名> {
+	# 安全头
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options SAMEORIGIN
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	# API 反代到本机后端（cookie 由同域自动携带，无 CORS）
+	handle /api/* {
+		reverse_proxy 127.0.0.1:3000 {
+			header_up X-Forwarded-Proto https
+		}
+	}
+
+	# 静态站：docs/ 为站点根（38 页 vanilla JS + localStorage 运行时）
+	handle {
+		root * /opt/mn/docs
+		encode zstd gzip
+		file_server
+	}
+
+	log {
+		output file /var/log/caddy/mn.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+	}
+}

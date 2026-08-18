@@ -1,0 +1,26 @@
+# M.NationWorld 后端 systemd unit（P10）——装到 /etc/systemd/system/mn-backend.service
+# 依赖：代码在 /opt/mn（owner mn:mn）、backend/.env 已填（600）、backend/node_modules 已 npm ci。
+[Unit]
+Description=M.NationWorld backend (node:http + SQLite, zero-framework)
+After=network.target
+
+[Service]
+Type=simple
+User=mn
+Group=mn
+WorkingDirectory=/opt/mn/backend
+ExecStart=/usr/bin/node --env-file-if-exists=.env src/server.js
+Environment=NODE_ENV=production
+Restart=always
+RestartSec=3
+
+# 安全加固：只放行 SQLite 写路径（.env/代码只读；备份由 root cron 写 /var/backups）
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/mn/backend/data
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
