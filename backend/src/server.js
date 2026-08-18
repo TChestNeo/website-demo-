@@ -7,6 +7,9 @@ const config = require('./config');
 const { openDb } = require('./db');
 const Router = require('./router');
 const { sendJson, sendError } = require('./http');
+const { createRateLimiter } = require('./middleware/ratelimit');
+const { createMailer } = require('./email');
+const { register: registerAuth } = require('./routes/auth');
 
 const VERSION = '0.1.0';
 
@@ -14,6 +17,8 @@ function createServer(deps = {}) {
   const cfg = deps.config || config;
   const db = deps.db || openDb(cfg.databasePath);
   const router = deps.router || new Router();
+  const limiter = deps.limiter || createRateLimiter();
+  const mailer = deps.mailer || createMailer(cfg);
 
   // 健康检查：进程存活 + 数据库可查询 + 用户表数量（部署清单第一项）
   router.add('GET', '/api/health', (req, res) => {
@@ -29,6 +34,10 @@ function createServer(deps = {}) {
     });
   });
 
+  // 依赖上下文（各 routes/* 共享）
+  const ctx = { db, config: cfg, limiter, mailer };
+  registerAuth(router, ctx);
+
   const server = http.createServer((req, res) => {
     (async () => {
       try {
@@ -37,7 +46,7 @@ function createServer(deps = {}) {
           return sendJson(res, 404, { error: { code: 'NOT_FOUND', message: 'Not found' } });
         }
         req.params = route.params;
-        await route.handler(req, res, { db, config: cfg });
+        await route.handler(req, res, ctx);
       } catch (err) {
         sendError(res, err);
       }

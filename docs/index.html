@@ -78,8 +78,14 @@
           <label class="form-label">Password</label>
           <input type="password" class="input-glass" id="signupPassword" placeholder="Min. 6 characters" autocomplete="new-password">
         </div>
+        <!-- 邮箱验证码（后端可达时显示，替代密码框） -->
+        <div class="form-group" id="signupCodeGroup" style="display:none">
+          <label class="form-label">Verification Code</label>
+          <input type="text" class="input-glass" id="signupCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+          <p id="signupCodeHint" style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:4px"></p>
+        </div>
         <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleSignup()">
-          Create Account
+          <span id="signupBtnLabel">Create Account</span>
           <span class="material-symbols-outlined">arrow_forward</span>
         </button>
         <p id="signupError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
@@ -99,15 +105,21 @@
           <label class="form-label">Password</label>
           <input type="password" class="input-glass" id="loginPassword" placeholder="Your password" autocomplete="current-password">
         </div>
+        <!-- 邮箱验证码（后端可达时显示，替代密码框） -->
+        <div class="form-group" id="loginCodeGroup" style="display:none">
+          <label class="form-label">Verification Code</label>
+          <input type="text" class="input-glass" id="loginCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+          <p id="loginCodeHint" style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:4px"></p>
+        </div>
         <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleLogin()">
-          Enter Console
+          <span id="loginBtnLabel">Enter Console</span>
           <span class="material-symbols-outlined">arrow_forward</span>
         </button>
         <p id="loginError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
       </div>
 
       <!-- Demo hint -->
-      <p style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
+      <p id="demoHint" style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
         Demo mode — any credentials work
       </p>
       <!-- Legal links -->
@@ -123,8 +135,12 @@
 <!-- Shared JS -->
 <script src="assets/js/tilt.js"></script>
 <script src="assets/js/storage.js"></script>
+<script src="assets/js/api.js"></script>
 <script>
   var currentTab = 'signup';
+  var AUTH_API = false;              // 后端可达 → 邮箱验证码登录；否则 demo 模式
+  var codeSent = { signup: false, login: false };
+  var countdown = { signup: 0, login: 0 };
 
   function switchTab(tab) {
     currentTab = tab;
@@ -143,6 +159,8 @@
   }
 
   function handleSignup() {
+    if (AUTH_API) return apiSignup();
+
     var name = document.getElementById('signupName').value.trim();
     var email = document.getElementById('signupEmail').value.trim();
     var password = document.getElementById('signupPassword').value;
@@ -163,6 +181,8 @@
   }
 
   function handleLogin() {
+    if (AUTH_API) return apiLogin();
+
     var email = document.getElementById('loginEmail').value.trim();
     var password = document.getElementById('loginPassword').value;
 
@@ -186,6 +206,100 @@
     window.location.href = 'pages/dashboard.html';
   }
 
+  // ── 邮箱验证码两段式（api 模式）──
+  // 第一步点击发码（60s 倒计时），码到达后第二步同按钮提交验证。
+  // 任何网络失败 → 回退原 demo 分支（已填内容不丢失）。
+  function setCodeHint(tab, text) {
+    document.getElementById(tab + 'CodeHint').textContent = text;
+  }
+
+  function startCountdown(tab) {
+    var label = document.getElementById(tab === 'signup' ? 'signupBtnLabel' : 'loginBtnLabel');
+    codeSent[tab] = true;
+    countdown[tab] = 60;
+    label.textContent = 'Resend in ' + countdown[tab] + 's';
+    var timer = setInterval(function () {
+      countdown[tab]--;
+      if (countdown[tab] <= 0) {
+        clearInterval(timer);
+        label.textContent = 'Resend Code';
+        codeSent[tab] = false; // 允许重新发码
+        return;
+      }
+      label.textContent = 'Resend in ' + countdown[tab] + 's';
+    }, 1000);
+  }
+
+  function demoSignup() {
+    if (!document.getElementById('signupPassword').value)
+      document.getElementById('signupPassword').value = 'demo';
+    handleSignup();
+  }
+
+  function demoLogin() {
+    if (!document.getElementById('loginPassword').value)
+      document.getElementById('loginPassword').value = 'demo';
+    handleLogin();
+  }
+
+  function apiSignup() {
+    var name = document.getElementById('signupName').value.trim();
+    var email = document.getElementById('signupEmail').value.trim();
+    var code = document.getElementById('signupCode').value.trim();
+
+    if (!name) { showError('signupError', 'Please enter a display name'); return; }
+    if (!email) { showError('signupError', 'Please enter an email address'); return; }
+
+    if (!codeSent.signup) {
+      MN_API.post('/auth/email-code', { email: email }).then(function (r) {
+        if (r.ok) {
+          setCodeHint('signup', 'Verification code sent to ' + email + ' — valid for 10 minutes');
+          startCountdown('signup');
+        } else if (r.status === 429) {
+          showError('signupError', 'Please wait before requesting another code');
+        } else {
+          demoSignup();
+        }
+      }).catch(demoSignup);
+      return;
+    }
+    if (!code) { showError('signupError', 'Enter the 6-digit code from your email'); return; }
+    MN_API.post('/auth/verify', { email: email, code: code, displayName: name }).then(function (r) {
+      if (!r.ok) { showError('signupError', 'Invalid or expired code'); return; }
+      SlatiDB.saveUser(r.data.user);
+      if (r.data.status === 'new') SlatiDB.setOnboardingStep(1);
+      window.location.href = 'pages/onboarding-identity.html';
+    }).catch(demoSignup);
+  }
+
+  function apiLogin() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var code = document.getElementById('loginCode').value.trim();
+
+    if (!email) { showError('loginError', 'Please enter your email'); return; }
+
+    if (!codeSent.login) {
+      MN_API.post('/auth/email-code', { email: email }).then(function (r) {
+        if (r.ok) {
+          setCodeHint('login', 'Verification code sent to ' + email + ' — valid for 10 minutes');
+          startCountdown('login');
+        } else if (r.status === 429) {
+          showError('loginError', 'Please wait before requesting another code');
+        } else {
+          demoLogin();
+        }
+      }).catch(demoLogin);
+      return;
+    }
+    if (!code) { showError('loginError', 'Enter the 6-digit code from your email'); return; }
+    MN_API.post('/auth/verify', { email: email, code: code }).then(function (r) {
+      if (!r.ok) { showError('loginError', 'Invalid or expired code'); return; }
+      SlatiDB.saveUser(r.data.user);
+      if (r.data.status === 'new') SlatiDB.setOnboardingStep(1);
+      window.location.href = 'pages/dashboard.html';
+    }).catch(demoLogin);
+  }
+
   function showError(id, msg) {
     var el = document.getElementById(id);
     el.textContent = msg;
@@ -193,10 +307,23 @@
     setTimeout(function () { el.style.display = 'none'; }, 3000);
   }
 
-  // Check if already logged in
-  if (SlatiDB.isLoggedIn()) {
-    // Offer quick entry
-  }
+  // 后端探测：可达 → api 模式（隐藏密码框、显示验证码框）；
+  // cookie 会话仍有效 → 免登录直达控制台；不可达 → 保持 demo 模式原样。
+  MN_API.probe().then(function (up) {
+    if (!up) return;
+    AUTH_API = true;
+    document.getElementById('signupPassword').closest('.form-group').style.display = 'none';
+    document.getElementById('loginPassword').closest('.form-group').style.display = 'none';
+    document.getElementById('signupCodeGroup').style.display = '';
+    document.getElementById('loginCodeGroup').style.display = '';
+    document.getElementById('demoHint').textContent = 'Secure email-code login — no password needed';
+    MN_API.get('/auth/me').then(function (r) {
+      if (r.ok && r.data && r.data.user) {
+        SlatiDB.saveUser(r.data.user);
+        window.location.href = 'pages/dashboard.html';
+      }
+    });
+  });
 </script>
 <script src="assets/js/transitions.js"></script>
 </body>

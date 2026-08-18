@@ -1,18 +1,33 @@
 'use strict';
-// testApp 工厂：临时 SQLite（独立目录、隔离迁移）+ listen(0) 真实端口 + fetch 请求助手。
-// P2 起扩展：nodemailer jsonTransport 邮件桩、DeepSeek/IMS fetch 桩。
-// 每个测试文件独立实例；测试结束必须 await t.close()。
+// testApp 工厂：临时 SQLite（独立目录、隔离迁移）+ 邮件桩（收集验证码）+ listen(0) 真实端口。
+// 测试结束必须 await t.close()。
+// 常用辅助：t.request(method, path, body, {cookie})、t.loginAs(email, overrides)、t.seedUser(overrides)。
 
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { openDb } = require('../src/db');
 const { createServer } = require('../src/server');
+const { createSession } = require('../src/middleware/auth');
+const { createUser } = require('../src/routes/auth');
 
 function testApp(overrides = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mn-test-'));
   const db = openDb(path.join(dir, 'test.sqlite'));
-  const app = createServer({ db, config: { ...require('../src/config'), databasePath: ':memory:' }, ...overrides });
+
+  // 邮件桩：拦截验证码，测试直接读取
+  const mails = [];
+  const mailer = {
+    sendCode: async (email, code, opts) => { mails.push({ email, code, opts }); return { dev: true }; }
+  };
+
+  const baseConfig = { ...require('../src/config'), databasePath: ':memory:' };
+  const app = createServer({
+    db,
+    config: { ...baseConfig, ...(overrides.config || {}) },
+    mailer: overrides.mailer || mailer,
+    limiter: overrides.limiter || undefined
+  });
 
   return new Promise((resolve) => {
     app.listen(0, '127.0.0.1', () => {
@@ -22,12 +37,24 @@ function testApp(overrides = {}) {
         db,
         base,
         dir,
-        request: (method, p, body) =>
+        mails,
+        request: (method, p, body, opts = {}) =>
           fetch(`${base}${p}`, {
             method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              ...(opts.cookie ? { Cookie: opts.cookie } : {}),
+              ...(opts.headers || {})
+            },
             body: body === undefined ? undefined : JSON.stringify(body)
           }),
+        // 直接建号 + 会话（跳过邮件流程的快捷路径）
+        seedUser: (over = {}) => createUser(db, { email: over.email || 'seed@example.com', ...over }),
+        loginAs: (email, over = {}) => {
+          const user = createUser(db, { email, ...over });
+          const token = createSession(db, user.id, 30 * 24 * 3600 * 1000);
+          return { user, cookie: 'mn_session=' + token };
+        },
         close: () => new Promise((r) => app.close(r))
       });
     });

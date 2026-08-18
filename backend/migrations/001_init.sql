@@ -7,7 +7,7 @@
 
 CREATE TABLE users (
   seq                 INTEGER PRIMARY KEY AUTOINCREMENT,
-  id                  TEXT NOT NULL UNIQUE,          -- USR-xxxxxx
+  id                  TEXT UNIQUE,                   -- USR-xxxxxx（insertWithId 后置写入）
   email               TEXT NOT NULL COLLATE NOCASE UNIQUE,
   display_name        TEXT NOT NULL DEFAULT '',
   citizen_id          TEXT UNIQUE,                   -- CIT-xxxxxx（complete-profile 生成）
@@ -56,7 +56,7 @@ CREATE INDEX idx_email_codes_email ON email_codes(email, created_at);
 
 CREATE TABLE nations (
   seq        INTEGER PRIMARY KEY AUTOINCREMENT,
-  id         TEXT NOT NULL UNIQUE,                   -- NAT-xxxxxx（服务端生成，覆盖本地 demo id）
+  id         TEXT UNIQUE,                            -- NAT-xxxxxx（服务端生成，覆盖本地 demo id）
   owner_id   TEXT REFERENCES users(id),
   data       TEXT NOT NULL,                          -- JSON：与 slati_nations 元素同形状（name/moniker/capital/lore/sectors/demographics…）
   status     TEXT NOT NULL DEFAULT 'visible' CHECK (status IN ('visible','hidden','removed')),
@@ -67,7 +67,7 @@ CREATE INDEX idx_nations_owner ON nations(owner_id);
 
 CREATE TABLE topics (
   seq        INTEGER PRIMARY KEY AUTOINCREMENT,
-  id         TEXT NOT NULL UNIQUE,                   -- TOP-xxxxxx
+  id         TEXT UNIQUE,                            -- TOP-xxxxxx
   creator_id TEXT REFERENCES users(id),
   data       TEXT NOT NULL,                          -- JSON：与 slati_topics 元素同形状（name/description/category/memberCount…）
   status     TEXT NOT NULL DEFAULT 'visible' CHECK (status IN ('visible','hidden','removed')),
@@ -92,7 +92,7 @@ CREATE TABLE following (
 
 CREATE TABLE posts (
   seq        INTEGER PRIMARY KEY AUTOINCREMENT,
-  id         TEXT NOT NULL UNIQUE,                   -- PST-xxxxxx
+  id         TEXT UNIQUE,                            -- PST-xxxxxx
   author_id  TEXT NOT NULL REFERENCES users(id),
   topic_id   TEXT REFERENCES topics(id),
   content    TEXT NOT NULL,
@@ -115,7 +115,8 @@ CREATE TABLE team_members (
 -- ═══ 私讯（明文 + 参与者 ACL；审核管线绝不触碰本区；管理调阅强制审计）═══
 
 CREATE TABLE conversations (
-  id         TEXT PRIMARY KEY,                       -- CONV-xxxxxx
+  seq        INTEGER PRIMARY KEY AUTOINCREMENT,
+  id         TEXT UNIQUE,                            -- CONV-xxxxxx（insertWithId）
   kind       TEXT NOT NULL DEFAULT 'dm' CHECK (kind IN ('dm','group')),
   created_at TEXT NOT NULL
 );
@@ -131,7 +132,7 @@ CREATE INDEX idx_conv_members_user ON conversation_members(user_id);
 
 CREATE TABLE messages (
   seq               INTEGER PRIMARY KEY AUTOINCREMENT,
-  id                TEXT NOT NULL UNIQUE,            -- MSG-xxxxxx
+  id                TEXT UNIQUE,                    -- MSG-xxxxxx
   conversation_id   TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
   sender_id         TEXT NOT NULL REFERENCES users(id),
   content           TEXT NOT NULL,                   -- ≤4000 字（写入层校验）
@@ -144,7 +145,7 @@ CREATE INDEX idx_messages_conv ON messages(conversation_id, seq);
 
 CREATE TABLE tickets (
   seq          INTEGER PRIMARY KEY AUTOINCREMENT,
-  id           TEXT NOT NULL UNIQUE,                 -- MN-2026-000123（年 + 6 位 seq，契约形状）
+  id           TEXT UNIQUE,                          -- MN-2026-000123（年 + 6 位 seq，契约形状）
   user_id      TEXT REFERENCES users(id),            -- 未登录可提交 → NULL
   category     TEXT NOT NULL CHECK (category IN ('bug','account','payment','payout','suggestion')),
   type         TEXT NOT NULL,
@@ -184,7 +185,8 @@ CREATE TABLE badge_codes (
 -- ═══ 审核 ═══
 
 CREATE TABLE moderation_items (
-  id           TEXT PRIMARY KEY,                     -- MOD-xxxxxx
+  seq          INTEGER PRIMARY KEY AUTOINCREMENT,
+  id           TEXT UNIQUE,                          -- MOD-xxxxxx（insertWithId）
   kind         TEXT NOT NULL CHECK (kind IN ('text','image')),
   target_type  TEXT NOT NULL,                        -- post/nation/topic/article/…
   target_id    TEXT NOT NULL,
@@ -213,7 +215,7 @@ CREATE INDEX idx_mod_decisions_item ON moderation_decisions(item_id);
 
 CREATE TABLE reports (
   seq         INTEGER PRIMARY KEY AUTOINCREMENT,
-  id          TEXT NOT NULL UNIQUE,                  -- RPT-xxxxxx
+  id          TEXT UNIQUE,                           -- RPT-xxxxxx
   reporter_id TEXT REFERENCES users(id),
   target_type TEXT NOT NULL,
   target_id   TEXT NOT NULL,
@@ -237,7 +239,7 @@ CREATE TABLE fluidcanvas_drafts (
 
 CREATE TABLE articles (
   seq                INTEGER PRIMARY KEY AUTOINCREMENT,
-  id                 TEXT NOT NULL UNIQUE,           -- ART-xxxxxx
+  id                 TEXT UNIQUE,                    -- ART-xxxxxx
   author_id          TEXT NOT NULL REFERENCES users(id),
   title              TEXT NOT NULL,
   content_json       TEXT NOT NULL,
