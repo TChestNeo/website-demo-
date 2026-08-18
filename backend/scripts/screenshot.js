@@ -87,6 +87,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         banner: document.getElementById('admBanner').style.display === 'none' ? null : document.getElementById('admBanner').textContent.slice(0, 80),
         tabs: Array.prototype.map.call(document.querySelectorAll('#admTabs [data-tab]'), function(b){ return b.textContent.replace(/\\s+/g,'').trim(); }),
         sidebarModules: document.querySelectorAll('.adm-side > .sidebar-module').length,
+        navItems: document.querySelectorAll('.adm-side .nav-item').length,
       })`;
       const ev = await cmd('Runtime.evaluate', { expression: expr, returnByValue: true });
       console.log('DOM dump:', ev.result && ev.result.result && ev.result.result.value);
