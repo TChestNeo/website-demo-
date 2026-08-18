@@ -10,6 +10,7 @@ const { sendJson, sendError } = require('./http');
 const { createRateLimiter } = require('./middleware/ratelimit');
 const { createMailer } = require('./email');
 const { register: registerAuth } = require('./routes/auth');
+const { register: registerSocial } = require('./routes/social');
 
 const VERSION = '0.1.0';
 
@@ -37,6 +38,7 @@ function createServer(deps = {}) {
   // 依赖上下文（各 routes/* 共享）
   const ctx = { db, config: cfg, limiter, mailer };
   registerAuth(router, ctx);
+  registerSocial(router, ctx);
 
   const server = http.createServer((req, res) => {
     (async () => {

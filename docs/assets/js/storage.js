@@ -47,6 +47,7 @@ var SlatiDB = (function () {
   function saveUser(user) {
     set(KEYS.USER, user);
     set(KEYS.SESSION, { loggedIn: true, at: new Date().toISOString() });
+    mirrorProfile(user); // 云端镜像 PATCH /me（demo 用户自动跳过）
   }
 
   function getUser() {
@@ -59,6 +60,7 @@ var SlatiDB = (function () {
   }
 
   function logout() {
+    mirrorLogout(); // 云端会话一并失效（demo 用户自动跳过）
     remove(KEYS.SESSION);
   }
 
@@ -94,6 +96,7 @@ var SlatiDB = (function () {
     };
     nations.push(nation);
     set(KEYS.NATIONS, nations);
+    mirrorNation(nation); // 云端镜像：服务端 id 回写（demo 用户自动跳过）
     remove(KEYS.NATION);
     remove(KEYS.REGISTRY_STEP);
     return nation;
@@ -111,6 +114,7 @@ var SlatiDB = (function () {
     topic.memberCount = 1;
     topics.push(topic);
     set(KEYS.TOPICS, topics);
+    mirrorTopic(topic); // 云端镜像：服务端 id 回写（demo 用户自动跳过）
     return topic;
   }
 
@@ -198,6 +202,7 @@ var SlatiDB = (function () {
   }
   function saveFollowing(data) {
     set(KEYS.FOLLOWING, data);
+    mirrorFollowing(data); // 云端镜像：整对象 PUT（demo 用户自动跳过）
   }
 
   function seedFollowing() {
@@ -245,10 +250,153 @@ var SlatiDB = (function () {
     }
   }
 
+  // ── 云端镜像（P3 混合模式）──────────────────────────────────────────
+  // 原则：localStorage 仍是运行时唯一事实来源，HTTP 仅旁路镜像——
+  // 写 = 先同步写本地再 fire-and-forget 云端（失败静默，离线自然降级）；
+  // 读 = 模块加载时后台 GET 按 id 合并（云端优先，本地未同步保留）。
+  // 仅当本地用户是云端账号（id 以 USR- 开头）且后端可达时才发请求：
+  // demo 用户零 API 调用，杜绝服务端 401 误清本地演示会话。
+  function hasCloudUser() {
+    var u = get(KEYS.USER);
+    return !!(u && u.id && String(u.id).indexOf('USR-') === 0);
+  }
+
+  function apiScriptSrc() {
+    return (window.location.pathname.indexOf('/pages/') >= 0 ? '../' : '') + 'assets/js/api.js';
+  }
+
+  // 确保 MN_API 可用后回调：已加载直接用；页面有 api.js 标签但未执行完 → 挂 load；
+  // 都没有 → 动态注入（storage.js 被 38 页引用，api.js 仅首页静态引入）。
+  function ensureApi(cb) {
+    if (window.MN_API) { cb(window.MN_API); return; }
+    if (!window.document) return;
+    var tag = window.document.querySelector('script[src$="api.js"]');
+    if (tag) { tag.addEventListener('load', function () { cb(window.MN_API); }); return; }
+    var s = window.document.createElement('script');
+    s.src = apiScriptSrc();
+    s.onload = function () { cb(window.MN_API); };
+    window.document.head.appendChild(s);
+  }
+
+  function whenUp(cb) {
+    ensureApi(function (api) {
+      api.probe().then(function (up) { if (up) cb(api); });
+    });
+  }
+
+  function mergeById(remote, local) {
+    var map = {};
+    (remote || []).forEach(function (x) { if (x && x.id) map[x.id] = x; });           // 云端优先
+    (local || []).forEach(function (x) { if (x && x.id && !map[x.id]) map[x.id] = x; }); // 本地未同步保留
+    var out = [];
+    for (var k in map) out.push(map[k]);
+    return out;
+  }
+
+  function unionStrings(a, b) {
+    var seen = {};
+    (a || []).concat(b || []).forEach(function (x) { if (x) seen[x] = true; });
+    return Object.keys(seen);
+  }
+
+  function mergeInto(api, key, path, field) {
+    api.get(path).then(function (r) {
+      if (!r.ok || !r.data || !Array.isArray(r.data[field])) return;
+      set(key, mergeById(r.data[field], get(key) || []));
+    });
+  }
+
+  function mergeFollowing(api) {
+    api.get('/social/following').then(function (r) {
+      if (!r.ok || !r.data) return;
+      var local = getFollowing();
+      set(KEYS.FOLLOWING, {
+        nations: unionStrings(r.data.nations, local.nations),
+        topics: unionStrings(r.data.topics, local.topics),
+        users: unionStrings(r.data.users, local.users),
+      });
+    });
+  }
+
+  // 模块加载：后台 GET 合并 nations/topics/teams/following；/me 权威覆盖本地用户
+  //（服务端 401 由 api.js 派发 mn:unauthorized → bindAuthEvents 清本地会话）。
+  function cloudMerge() {
+    if (!hasCloudUser()) return;
+    whenUp(function (api) {
+      mergeInto(api, KEYS.NATIONS, '/social/nations', 'nations');
+      mergeInto(api, KEYS.TOPICS, '/social/topics', 'topics');
+      mergeInto(api, KEYS.TEAMS, '/social/teams', 'teams');
+      mergeFollowing(api);
+      api.get('/auth/me').then(function (r) {
+        if (r.ok && r.data && r.data.user) set(KEYS.USER, r.data.user);
+      });
+    });
+  }
+
+  function mirrorProfile(user) {
+    if (!hasCloudUser()) return;
+    whenUp(function (api) {
+      var body = {};
+      ['displayName', 'avatarUrl', 'language', 'country', 'dob', 'bio'].forEach(function (k) {
+        if (user[k] != null) body[k] = user[k];
+      });
+      api.patch('/auth/me', body);
+    });
+  }
+
+  // 服务端 id 回写：按本地临时 id（NAT-+Date.now()）定位并整体替换
+  function mirrorNation(nation) {
+    if (!hasCloudUser()) return;
+    whenUp(function (api) {
+      api.post('/social/nations', nation).then(function (r) {
+        if (!r.ok || !r.data || !r.data.nation) return;
+        var list = get(KEYS.NATIONS) || [];
+        for (var i = 0; i < list.length; i++) {
+          if (list[i] && list[i].id === nation.id) list[i] = r.data.nation;
+        }
+        set(KEYS.NATIONS, list);
+      });
+    });
+  }
+
+  function mirrorTopic(topic) {
+    if (!hasCloudUser()) return;
+    whenUp(function (api) {
+      api.post('/social/topics', topic).then(function (r) {
+        if (!r.ok || !r.data || !r.data.topic) return;
+        var list = get(KEYS.TOPICS) || [];
+        for (var i = 0; i < list.length; i++) {
+          if (list[i] && list[i].id === topic.id) list[i] = r.data.topic;
+        }
+        set(KEYS.TOPICS, list);
+      });
+    });
+  }
+
+  function mirrorFollowing(data) {
+    if (!hasCloudUser()) return;
+    whenUp(function (api) { api.request('/social/following', { method: 'PUT', body: data }); });
+  }
+
+  function mirrorLogout() {
+    if (!hasCloudUser()) return;
+    whenUp(function (api) { api.post('/auth/logout'); });
+  }
+
+  // 服务端会话失效 → 清本地会话；demo 用户（无 USR- id）不受影响
+  function bindAuthEvents() {
+    if (!window.addEventListener) return;
+    window.addEventListener('mn:unauthorized', function () {
+      if (hasCloudUser()) remove(KEYS.SESSION);
+    });
+  }
+
   // --- Init ---
   seedIfEmpty();
   seedTeams();
   seedFollowing();
+  bindAuthEvents();
+  cloudMerge();
 
   return {
     KEYS: KEYS,
