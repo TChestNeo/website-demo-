@@ -218,3 +218,36 @@ test('会话过期：过期 token 401；未登录 PATCH /me 401', async () => {
     assert.strictEqual((await t.request('PATCH', '/api/auth/me', { displayName: 'X' })).status, 401);
   } finally { await t.close(); }
 });
+
+test('开发固定登录码：devLoginCode 直登已有账号（免邮件码）；不存在邮箱与错码响应一致', async () => {
+  const t = await testApp({ config: { devLoginCode: '888888' } });
+  try {
+    await t.seedUser({ email: 'dev@mn.test' });
+    const res = await t.request('POST', '/api/auth/verify', { email: 'dev@mn.test', code: '888888' });
+    assert.strictEqual(res.status, 200);
+    const body = await res.json();
+    assert.strictEqual(body.user.email, 'dev@mn.test');
+    assert.ok(res.headers.get('set-cookie'));
+
+    const noUser = await t.request('POST', '/api/auth/verify', { email: 'ghost@mn.test', code: '888888' });
+    assert.strictEqual(noUser.status, 400); // 不暴露魔码，与普通错码一致
+  } finally { await t.close(); }
+});
+
+test('开发固定登录码：未配置时 888888 只是普通错码；nodeEnv=production 配置也强制忽略', async () => {
+  const t1 = await testApp();
+  try {
+    await t1.seedUser({ email: 'p@mn.test' });
+    const res = await t1.request('POST', '/api/auth/verify', { email: 'p@mn.test', code: '888888' });
+    assert.strictEqual(res.status, 400);
+  } finally { await t1.close(); }
+
+  const t2 = await testApp({ config: { devLoginCode: '888888', nodeEnv: 'production' } });
+  try {
+    // testApp 的 config 会整体替换 nodeEnv？直接断言 config.js 的生产强制逻辑：
+    // 传入 production 时 testApp 应已按 config 语义忽略（见 config.js devLoginCode 行）
+    await t2.seedUser({ email: 'p@mn.test' });
+    const res = await t2.request('POST', '/api/auth/verify', { email: 'p@mn.test', code: '888888' });
+    assert.strictEqual(res.status, 400);
+  } finally { await t2.close(); }
+});

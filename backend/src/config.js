@@ -52,6 +52,10 @@ const config = {
   emailCodeTtlMs: 10 * 60 * 1000,        // 验证码 10 分钟
   sessionCookie: 'mn_session',
 
+  // 开发模式固定登录码（DEV_LOGIN_CODE，仅本地测试用）：
+  // 验证码环节直接放行、只允许登录已有账号；生产环境强制忽略（误配也不生效）。
+  devLoginCode: process.env.NODE_ENV === 'production' ? '' : (process.env.DEV_LOGIN_CODE || ''),
+
   // 前后端分离（前端独立托管，API 独立子域）：
   // COOKIE_DOMAIN 例 'mn.world'（不含端口；配了才会加 Domain=，本地同域开发不配）
   // FRONTEND_ORIGIN 例 'https://mn.world,https://www.mn.world'（CORS 白名单，逗号分隔；不在白名单的 Origin 不返回 CORS 头）

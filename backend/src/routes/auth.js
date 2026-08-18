@@ -109,19 +109,26 @@ function register(router, deps) {
       throw new HttpError('RATE_LIMITED', '尝试过于频繁，请稍后再试');
 
     const now = Date.now();
-    // 爆破防护按「邮箱」计失败次数（错码不匹配 code_hash，不能按码查）
-    const recent = db.prepare(
-      "SELECT * FROM email_codes WHERE email = ? AND purpose = 'login' AND consumed_at IS NULL AND expires_at > ? ORDER BY created_at DESC LIMIT 1"
-    ).get(email, new Date(now).toISOString());
-    const row = recent && recent.code_hash === hashCode(code) ? recent : null;
-    if (!row || recent.attempts >= CODE_ATTEMPTS_MAX) {
-      // 失败计数封顶在 MAX（锁定后不再递增）
-      if (recent && recent.attempts < CODE_ATTEMPTS_MAX)
-        db.prepare('UPDATE email_codes SET attempts = attempts + 1 WHERE code_hash = ?').run(recent.code_hash);
-      throw new HttpError('VALIDATION', '验证码无效或已过期');
+    if (config.devLoginCode && config.nodeEnv !== 'production' && code === config.devLoginCode) {
+      // 开发模式固定登录码：跳过邮件码校验（仅登录已有账号；不存在的邮箱与普通错码响应一致）
+      // nodeEnv 生产双重拒绝——config.js 已按 NODE_ENV 剥离，此处再兜底（测试可注入 nodeEnv 验证）
+      if (!db.prepare('SELECT 1 FROM users WHERE email = ?').get(email))
+        throw new HttpError('VALIDATION', '验证码无效或已过期');
+    } else {
+      // 爆破防护按「邮箱」计失败次数（错码不匹配 code_hash，不能按码查）
+      const recent = db.prepare(
+        "SELECT * FROM email_codes WHERE email = ? AND purpose = 'login' AND consumed_at IS NULL AND expires_at > ? ORDER BY created_at DESC LIMIT 1"
+      ).get(email, new Date(now).toISOString());
+      const row = recent && recent.code_hash === hashCode(code) ? recent : null;
+      if (!row || recent.attempts >= CODE_ATTEMPTS_MAX) {
+        // 失败计数封顶在 MAX（锁定后不再递增）
+        if (recent && recent.attempts < CODE_ATTEMPTS_MAX)
+          db.prepare('UPDATE email_codes SET attempts = attempts + 1 WHERE code_hash = ?').run(recent.code_hash);
+        throw new HttpError('VALIDATION', '验证码无效或已过期');
+      }
+      db.prepare('UPDATE email_codes SET consumed_at = ? WHERE code_hash = ?')
+        .run(new Date(now).toISOString(), row.code_hash);
     }
-    db.prepare('UPDATE email_codes SET consumed_at = ? WHERE code_hash = ?')
-      .run(new Date(now).toISOString(), row.code_hash);
 
     let user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
     let status = 'login';
