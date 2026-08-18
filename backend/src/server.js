@@ -14,6 +14,8 @@ const { register: registerSocial } = require('./routes/social');
 const { register: registerMessages } = require('./routes/messages');
 const { register: registerTickets } = require('./routes/tickets');
 const { register: registerBadge } = require('./routes/badge');
+const { register: registerDrafts } = require('./routes/drafts');
+const { register: registerArticles } = require('./routes/articles');
 
 const VERSION = '0.1.0';
 
@@ -45,6 +47,8 @@ function createServer(deps = {}) {
   registerMessages(router, ctx);
   registerTickets(router, ctx);
   registerBadge(router, ctx);
+  registerDrafts(router, ctx);
+  registerArticles(router, ctx);
 
   const server = http.createServer((req, res) => {
     (async () => {

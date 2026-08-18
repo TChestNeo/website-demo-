@@ -1134,6 +1134,8 @@
 <!-- ═══ SCRIPTS ═══ -->
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/transitions.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/api.js"></script>
 <script>
 (function () {
   'use strict';
@@ -1634,10 +1636,16 @@
 
   // ── Load Draft ──
   function loadDraft() {
+    var raw = null;
+    try { raw = localStorage.getItem('slati_fluidcanvas_draft'); } catch (e) { raw = null; }
+    if (!raw) return;
+    try { applyDraft(JSON.parse(raw)); } catch (e) { console.error('[FluidCanvas] loadDraft:', e); }
+  }
+
+  // 草稿应用与来源解耦（P6）：loadDraft 读 localStorage；云端草稿经 applyDraft 直接入画布
+  function applyDraft(draft) {
     try {
-      var raw = localStorage.getItem('slati_fluidcanvas_draft');
-      if (raw) {
-        var draft = JSON.parse(raw);
+      if (draft) {
         if (draft.title) titleInput.value = draft.title;
         if (draft.tags) renderModalTags(draft.tags);
         if (draft.presets) {
@@ -1799,7 +1807,7 @@
         updateWordCount();
       }
     } catch (e) {
-      console.error('[FluidCanvas] loadDraft:', e);
+      console.error('[FluidCanvas] applyDraft:', e);
     }
   }
 
@@ -1870,7 +1878,7 @@
   window.onContentChange = onContentChange;
 
   // ── Save Draft ──
-  function saveDraft() {
+  function buildDraft() {
     var tags = [];
     tagModalList.querySelectorAll('.badge').forEach(function (b) { tags.push(b.textContent.trim()); });
 
@@ -1964,6 +1972,11 @@
       presets: presetData,
       lastSaved: Date.now()
     };
+    return draft;
+  }
+
+  function saveDraft() {
+    var draft = buildDraft();
     try {
       localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(draft));
       lastSavedContent = getCardFingerprint();
@@ -1972,6 +1985,7 @@
       headerStatus.textContent = 'Draft';
       headerStatus.className = 'badge badge-secondary';
       showToast('Draft saved');
+      putCloudDraft(draft); // P6: fire-and-forget 云端镜像（409 冲突在回调中处理）
     } catch (e) {
       if (e && e.name === 'QuotaExceededError') {
         // v10.0: draft exceeds the localStorage quota (usually a big
@@ -1993,11 +2007,83 @@
   // ── Publish ──
   function publishArticle() {
     saveDraft();
+    if (fcCloudMode) { publishCloudArticle(); return; }
     headerStatus.textContent = 'Published';
     headerStatus.className = 'badge badge-success';
     showToast('Article published successfully!');
   }
   window.publishArticle = publishArticle;
+
+  // ──────────────────────────────────────────────
+  //  P6 云端草稿同步 + 真发布（demo 用户零请求；失败静默回退本地行为）
+  // ──────────────────────────────────────────────
+  var fcCloudMode = false;
+  var cloudDraftVersion = null; // 服务端版本（PUT baseVersion → 409 检测）
+
+  function putCloudDraft(draft) {
+    if (!window.MN_API || !fcCloudMode) return;
+    var body = { data: draft };
+    if (cloudDraftVersion != null) body.baseVersion = cloudDraftVersion;
+    MN_API.request('/drafts/fluidcanvas/main', { method: 'PUT', body: body }).then(function (res) {
+      if (res.ok && res.data && res.data.draft) {
+        cloudDraftVersion = res.data.draft.version;
+      } else if (res.status === 409) {
+        var server = res.data && res.data.draft;
+        var serverVersion = server ? server.version : cloudDraftVersion;
+        if (confirm('云端草稿有更新版本（可能在其他设备保存过）。\n「确定」加载云端版本；「取消」用本地版本覆盖云端。')) {
+          if (server) {
+            try { localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(server.data)); } catch (e) {}
+            applyDraft(server.data);
+          }
+          cloudDraftVersion = serverVersion;
+        } else if (server) {
+          // 本地为准：带最新服务端版本强写
+          MN_API.request('/drafts/fluidcanvas/main', { method: 'PUT', body: { data: draft, baseVersion: serverVersion } })
+            .then(function (r2) {
+              if (r2.ok && r2.data && r2.data.draft) cloudDraftVersion = r2.data.draft.version;
+            });
+        }
+      }
+      // 其余失败（网络/401/429）静默：本地草稿已在，下次保存重试
+    });
+  }
+
+  function syncCloudDraft() {
+    if (!window.MN_API || !fcCloudMode) return;
+    MN_API.get('/drafts/fluidcanvas/main').then(function (res) {
+      if (!res.ok || !res.data || !res.data.draft) return;
+      var server = res.data.draft;
+      cloudDraftVersion = server.version;
+      var localRaw = null, local = null;
+      try { localRaw = localStorage.getItem('slati_fluidcanvas_draft'); } catch (e) {}
+      try { local = localRaw ? JSON.parse(localRaw) : null; } catch (e) {}
+      var localTs = (local && local.lastSaved) ? local.lastSaved : 0;
+      var cloudTs = Date.parse(server.updatedAt) || 0;
+      if (!local) {
+        applyDraft(server.data);
+        showToast('已从云端恢复草稿');
+      } else if (cloudTs > localTs) {
+        if (confirm('云端有更新的草稿（可能在其他设备保存过）。是否加载云端版本？\n「取消」保留本地草稿。')) {
+          try { localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(server.data)); } catch (e) {}
+          applyDraft(server.data);
+        }
+      }
+    });
+  }
+
+  function publishCloudArticle() {
+    var draft = buildDraft();
+    if (!draft.title) { showToast('请先填写标题再发布'); return; }
+    MN_API.post('/articles', { title: draft.title, contentJson: JSON.stringify(draft) }).then(function (res) {
+      if (res.ok && res.data && res.data.article) {
+        headerStatus.textContent = 'Pending review';
+        headerStatus.className = 'badge badge-warning';
+        showToast('已提交审核');
+      } else {
+        showToast('发布失败，请稍后重试');
+      }
+    });
+  }
 
   // ── Tags Modal ──
   function addTagFromModal() {
@@ -3480,8 +3566,9 @@
   function isSubscriberUser() {
     if (SUBSCRIPTION_TEST_MODE) return true;
     try {
-      var s = localStorage.getItem('slati_subscription');
-      return s === 'premium' || s === 'ultra';
+      // P6: 订阅判定改走云端 tier（服务端权威）；本地 slati_subscription 不再作为依据
+      var u = SlatiDB.getUser();
+      return !!(u && (u.tier === 'premium' || u.tier === 'ultra'));
     } catch (e) { return false; }
   }
   window.isSubscriberUser = isSubscriberUser;
@@ -4706,6 +4793,16 @@
   updateWordCount();
   if (!titleInput.value) {
     saveStatusEl.textContent = 'Ready';
+  }
+
+  // P6: 云端草稿同步（仅 USR- 云用户；demo 用户零请求）
+  if (window.MN_API) {
+    MN_API.probe().then(function (up) {
+      var u = SlatiDB.getUser();
+      if (!up || !u || !u.id || String(u.id).indexOf('USR-') !== 0) return;
+      fcCloudMode = true;
+      syncCloudDraft();
+    });
   }
 
   // Refit on window resize
