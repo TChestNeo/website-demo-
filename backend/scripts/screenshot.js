@@ -105,6 +105,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         document.getElementById('tkTplBtn').click();
         await new Promise(function(r){ setTimeout(r, 150); });
         base.tkTplModalShown = document.getElementById('tkTplModal').style.display !== 'none';
+        base.tkTplUseGap = Math.round(document.getElementById('tkTplUseBtn').getBoundingClientRect().top -
+          document.getElementById('tkTplPreviewText').getBoundingClientRect().bottom);
         base.tkTplMenuCount = document.querySelectorAll('#tkTplMenu [data-tpl-id]').length;
         base.tkTplLangOpts = document.querySelectorAll('#tkTplLangSel option').length;
         base.tkTplLangDefault = document.getElementById('tkTplLangSel').value;
