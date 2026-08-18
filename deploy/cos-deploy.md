@@ -57,7 +57,8 @@ sed 's|<你的域名>|真实域名|' site-config.cos.js > /tmp/site-config.js
 coscmd upload /tmp/site-config.js assets/js/site-config.js
 
 # ② 全量上传 docs/（仓库内 site-config.js 空对象会被后续覆盖的本地文件顶替 —— 见下方「注意」）
-coscmd upload -r ../docs/ /
+#    必须排除 admin/ 目录：管理后台走独立子域（§8），公共桶零管理员痕迹
+coscmd upload -r ../docs/ / --ignore "^admin/"
 ```
 
 **注意**：`docs/assets/js/site-config.js`（仓库版）是空对象（同源默认），上传后必须再执行一次 ① 的覆盖
@@ -84,13 +85,37 @@ coscmd upload -r ../docs/ /
 
 ```
 COOKIE_DOMAIN=mn.world                    # 会话 cookie 放大到根域，前端子域才能携带登录态
-FRONTEND_ORIGIN=https://mn.world,https://www.mn.world   # CORS 白名单（完整 scheme+域名，无路径）
+FRONTEND_ORIGIN=https://mn.world,https://www.mn.world,https://admin.mn.world   # CORS 白名单（完整 scheme+域名，无路径；admin 子域见 §8）
 ```
 
 链路原理：登录在 `api.mn.world` 种 `mn_session`（Domain=mn.world，SameSite=Lax，Secure）→
 前端跨域请求 `credentials: 'include'` 自动携带（同站不同源，Lax 放行）→ 后端 CORS 白名单反射 Origin。
 
-## 8. 上线检查清单（前端部分）
+## 8. 管理后台独立子域（admin.<域名>）
+
+公网站点零管理员痕迹：管理页与管理 JS 全部在仓库 `docs/admin/`（公共桶上传排除该目录，见 §5），
+独立桶 `mn-admin-<APPID>` 托管，自带邮箱验证码登录页。
+
+1. 创建桶 `mn-admin-<APPID>`（私有读写，地域同主站）；静态网站开启，索引文档 `index.html`（步骤同 §1/§2）
+2. CDN 添加加速域名 `admin.<域名>`（源站 = 该桶，步骤同 §4）；DNS 加 `admin` CNAME（同 §3）
+3. 上传（共享资源沿用 `../assets/` 相对路径，按下面布局放置保证引用有效）：
+
+```bash
+coscmd config -a <SecretId> -s <SecretKey> -b mn-admin-<APPID> -r ap-singapore
+coscmd upload -r docs/admin/ /                 # → /index.html + /admin.js
+coscmd upload docs/assets/js/api.js assets/js/api.js
+coscmd upload docs/assets/js/theme-init.js assets/js/theme-init.js
+coscmd upload docs/assets/css/ethereal.css assets/css/ethereal.css
+# site-config.js 同样覆盖 apiBase（模板 deploy/site-config.cos.js，方法同 §5）
+sed 's|<你的域名>|真实域名|' deploy/site-config.cos.js > /tmp/site-config.js
+coscmd upload /tmp/site-config.js assets/js/site-config.js
+```
+
+4. 缓存策略同 §6；改 admin.js 后 600s 自然过期或手动刷新 `/admin.js`
+5. 后端配合：`FRONTEND_ORIGIN` 必须包含 `https://admin.<域名>`（§7）；cookie `Domain=根域` 天然覆盖 admin 子域——登录态共享，但 `role=admin` 门禁由后端 requireAdmin 强制，非管理员登录只看到「无访问权限」
+6. 验证：`https://admin.<域名>` → 独立登录页 → 邮箱验证码 → 五 tab 可用；非管理员账号登录被拒；公共桶无 admin/ 文件（`https://<域名>/admin/` 不存在）
+
+## 9. 上线检查清单（前端部分）
 
 - [ ] `https://mn.world` 与 `https://www.mn.world` 打开正常（证书锁、无混合内容）
 - [ ] 控制台 `window.MN_SITE.apiBase` 指向 `https://api.<域名>/api`（site-config.js 覆盖成功）
@@ -100,7 +125,7 @@ FRONTEND_ORIGIN=https://mn.world,https://www.mn.world   # CORS 白名单（完�
 - [ ] 断网/后端停机演练：页面仍可浏览（本地为主）；恢复后登录正常
 - [ ] 改动一个 HTML 后刷新可见（缓存策略生效）；改 site-config.js 后「目录刷新」生效
 
-## 9. 成本
+## 10. 成本
 
 | 项 | 估算 |
 |---|---|
@@ -108,11 +133,12 @@ FRONTEND_ORIGIN=https://mn.world,https://www.mn.world   # CORS 白名单（完�
 | CDN 流量 | 境外 0.1 元/GB 量级；小站月流量 <10GB ≈ **¥1-5/月** |
 | 托管证书 | 免费 |
 
-## 10. 更新流程（日常）
+## 11. 更新流程（日常）
 
 ```bash
 cd <repo>
-coscmd upload -r docs/ /            # 全量上传（增量同步，只传变化文件）
+coscmd upload -r docs/ / --ignore "^admin/"   # 公共桶：增量同步，只传变化文件；admin/ 永远不进公共桶
+coscmd upload -r docs/admin/ /                # admin 桶（用 mn-admin-<APPID> 的 coscmd 配置；admin.js 改动才需）
 # 若 site-config.js 之外另有改动且 apiBase 仍正确：无需重新覆盖
 # CDN：html 不缓存即时可见；js/css 等 10 分钟或手动目录刷新
 ```

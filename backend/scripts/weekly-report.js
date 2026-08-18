@@ -106,7 +106,7 @@ try {
     + `举报 ${row('SELECT COUNT(*) n FROM reports WHERE created_at >= ?', sinceIso).n} · `
     + `工单 ${row('SELECT COUNT(*) n FROM tickets WHERE created_at >= ?', sinceIso).n}`);
   push('');
-  push('（预算 80%/耗尽 实时告警见每日邮件；管理后台 /pages/admin.html 成本看板可查明细。）');
+  push('（预算 80%/耗尽 实时告警见每日邮件；管理后台 admin.<域名> 成本看板可查明细。）');
 
   const text = lines.join('\n');
   console.log(text);

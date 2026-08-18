@@ -77,7 +77,7 @@ cp .env.example .env && chmod 600 .env && nano .env
 #   预算 BUDGET_* 保持默认即可（后台可调）
 #   ── 前后端分离（配合 COS 前端，缺一不可）──
 #   COOKIE_DOMAIN=mn.world                      ← cookie 放大到根域，前端子域才能携带登录态
-#   FRONTEND_ORIGIN=https://mn.world,https://www.mn.world   ← CORS 白名单（完整 scheme+域名）
+#   FRONTEND_ORIGIN=https://mn.world,https://www.mn.world,https://admin.mn.world   ← CORS 白名单（完整 scheme+域名；含独立管理后台子域）
 
 # 初始化 DB（跑迁移 001+002，24 张表 + user_version=2）
 node --env-file-if-exists=.env -e "const{openDb}=require('./src/db');openDb(process.env.DATABASE_PATH).close();console.log('db init ok')"
@@ -126,9 +126,9 @@ crontab -e   # root
 ## 7. 上线检查清单（全部打勾才算完成）
 
 - [ ] `https://api.<域名>/api/health` → 200 ok（公网，非本机）
-- [ ] **前后端分离链路**（前端部分见 cos-deploy.md §8）：COS 前端登录成功；cookie `mn_session` 带 `Domain=<域名>`；API 响应头 `Access-Control-Allow-Origin` 反射白名单 Origin（非 `*`）；白名单外 Origin 请求无 CORS 头
+- [ ] **前后端分离链路**（前端部分见 cos-deploy.md §9）：COS 前端登录成功；cookie `mn_session` 带 `Domain=<域名>`；API 响应头 `Access-Control-Allow-Origin` 反射白名单 Origin（非 `*`）；白名单外 Origin 请求无 CORS 头
 - [ ] **验证码邮件实测**：Gmail + Outlook 各注册一个账号，均能收到（进垃圾箱即检查 SPF/DKIM/DMARC，SES 控制台验证记录）
-- [ ] 登录 → 侧栏出现 Admin（先 `npm run seed`）→ admin.html 五 tab 能打开、有数据
+- [ ] **管理后台独立子域** `https://admin.<域名>`（部署见 cos-deploy.md §8）：独立登录页邮箱验证码登录（先 `npm run seed`）→ 五 tab 能打开、有数据；非管理员账号登录显示「无访问权限」；公网站点无 admin 文件/入口
 - [ ] 发一条普通帖 → 立即可见（先发后审）→ 夜间三班 cron 后 usage_log 有 moderation_text 行、审核队列有 AI 结果
 - [ ] 举报链路：另一账号举报该帖 → 审核队列出现高优先级项 → 人工 decide 撤回（community-hub 卡片状态变化）
 - [ ] AI 客服：help.html 问「退款」→ 走规则卡不扣费；问 FAQ 内问题 → 0 元命中（后台 usage 见 chat_faq_hit）
@@ -159,7 +159,7 @@ journalctl -u mn-backend -n 100 -f    # 后端日志（30 天保留）
 systemctl restart mn-backend          # 改代码后：npm ci 若依赖未变则无需重装；重启即生效
 journalctl -u caddy -n 50             # api.<域名> 证书/反代问题（静态站在 COS，不在本机）
 ls -l /var/backups/mn | tail          # 备份检查
-# 预算调整：admin.html → 成本看板（写 audit）；kv 直改：sqlite3 不在服务器上时用 node -e
+# 预算调整：admin.<域名> → 成本看板（写 audit）；kv 直改：sqlite3 不在服务器上时用 node -e
 # 迁移：新增 migrations/NNN_*.sql 进 git → 服务器 git pull（或重传）→ restart（openDb 自动升 user_version）
 ```
 

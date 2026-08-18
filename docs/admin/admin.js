@@ -1,8 +1,9 @@
 /**
- * 管理后台（P9）：/api/admin/* 全端点前端。
- * 访问控制：/auth/me 确认 role==='admin'，否则显示无权限面板（服务端 requireAdmin 双重强制）。
+ * 管理后台（独立站点 admin.<域名>）：/api/admin/* 全端点前端。
+ * 访问控制：自带邮箱验证码登录页（/auth/email-code + /auth/verify），登录后再经 /auth/me 确认
+ * role==='admin'，否则显示无权限面板（服务端 requireAdmin 双重强制）。
  * 所有写操作由后端落 admin_audit_log。内联中文文案（未走 i18n 机制——与计划偏差，见 commit）。
- * 后端不可达 / 会话失效 → 仅显示提示，不进入 demo（管理端无离线回退）。
+ * 后端不可达 / 会话失效 → 登录页或提示，不进入 demo（管理端无离线回退）。
  */
 (function () {
   'use strict';
@@ -57,29 +58,111 @@
     return chip(STATUS_ZH[s] || s, cls);
   }
 
-  // ── 访问门禁 ──
-  function showGate(title, msg) {
+  // ── 登录页 / 门禁 / 面板三态切换 ──
+  function hideAll() {
+    $('adminLogin').style.display = 'none';
+    $('adminGate').style.display = 'none';
+    $('adminRoot').style.display = 'none';
+  }
+  function showLogin() {
+    hideAll();
+    $('adminLogin').style.display = 'block';
+    $('logoutBtn').style.display = 'none';
+    $('admWho').style.display = 'none';
+  }
+  function showGate(title, msg, withLogout) {
+    hideAll();
     $('gateTitle').textContent = title;
     $('gateMsg').textContent = msg;
+    $('gateActions').style.display = withLogout ? 'flex' : 'none';
     $('adminGate').style.display = 'block';
+    $('logoutBtn').style.display = withLogout ? '' : 'none';
+    $('admWho').style.display = 'none';
   }
+  function showPanel(u) {
+    hideAll();
+    $('admWho').textContent = u.email;
+    $('admWho').style.display = '';
+    $('logoutBtn').style.display = '';
+    $('adminRoot').style.display = 'block';
+  }
+
+  function setLoginMsg(msg, err) {
+    var el = $('loginMsg');
+    el.textContent = msg;
+    el.classList.toggle('err', !!err);
+  }
+  var loginTimer;
+  function countdown(s) {
+    var btn = $('sendCodeBtn');
+    btn.disabled = true;
+    var left = s;
+    btn.textContent = '重新发送（' + left + 's）';
+    clearInterval(loginTimer);
+    loginTimer = setInterval(function () {
+      left--;
+      if (left <= 0) {
+        clearInterval(loginTimer);
+        btn.disabled = false;
+        btn.textContent = '发送验证码';
+        return;
+      }
+      btn.textContent = '重新发送（' + left + 's）';
+    }, 1000);
+  }
+
+  $('sendCodeBtn').addEventListener('click', function () {
+    var email = $('loginEmail').value.trim();
+    if (!email) { setLoginMsg('请输入管理员邮箱', true); return; }
+    MN_API.post('/auth/email-code', { email: email }).then(function (r) {
+      if (r.ok) {
+        $('codeRow').style.display = 'flex';
+        setLoginMsg('验证码已发送至 ' + email + '，10 分钟内有效');
+        countdown(60);
+      } else if (r.status === 429) {
+        setLoginMsg('请求过于频繁，请稍后再试', true);
+      } else {
+        setLoginMsg('发送失败：' + (r.data && r.data.error && r.data.error.message || r.status), true);
+      }
+    });
+  });
+  $('loginBtn').addEventListener('click', function () {
+    var email = $('loginEmail').value.trim();
+    var code = $('loginCode').value.trim();
+    if (!email || !code) { setLoginMsg('请输入邮箱和验证码', true); return; }
+    MN_API.post('/auth/verify', { email: email, code: code }).then(function (r) {
+      if (!r.ok) {
+        setLoginMsg(r.status === 401 ? '验证码错误或已过期' : '登录失败，请重试', true);
+        return;
+      }
+      setLoginMsg('登录成功，正在进入…');
+      boot(); // 重新走 /auth/me 门禁（非管理员账号 → 无权限面板）
+    });
+  });
+  $('loginCode').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('loginBtn').click(); });
+
+  function logout() {
+    MN_API.post('/auth/logout', {}).then(function () { location.reload(); });
+  }
+  $('logoutBtn').addEventListener('click', logout);
+  $('gateLogoutBtn').addEventListener('click', logout);
 
   function boot() {
     MN_API.get('/auth/me').then(function (r) {
       if (r.networkError) {
-        showGate('后端不可达', '无法连接后端服务（/api/health 探测失败）。请确认后端已启动或稍后重试。');
+        showGate('后端不可达', '无法连接后端服务。请确认后端已启动或稍后重试。');
         return;
       }
       if (r.status === 401 || !r.ok) {
-        showGate('未登录', '管理后台需要登录。请先在首页使用邮箱验证码登录。');
+        showLogin();
         return;
       }
       var u = r.data && r.data.user;
       if (!u || u.role !== 'admin') {
-        showGate('无访问权限', '当前账号（' + (u && u.email ? u.email : '未知') + '）不是管理员。如需权限请联系平台管理员（ADMIN_EMAIL 配置）。');
+        showGate('无访问权限', '当前账号（' + (u && u.email ? u.email : '未知') + '）不是管理员。如需权限请联系平台管理员（ADMIN_EMAIL 配置）。', true);
         return;
       }
-      $('adminRoot').style.display = 'block';
+      showPanel(u);
       refreshStats();
       loadModList();
       loadUsage(); // 横幅 + 成本看板数据（横幅供审核 tab 展示降级状态）
