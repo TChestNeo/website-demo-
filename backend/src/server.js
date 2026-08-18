@@ -16,6 +16,9 @@ const { register: registerTickets } = require('./routes/tickets');
 const { register: registerBadge } = require('./routes/badge');
 const { register: registerDrafts } = require('./routes/drafts');
 const { register: registerArticles } = require('./routes/articles');
+const { register: registerReports } = require('./routes/reports');
+const { createBudget } = require('./moderation/budget');
+const blocklist = require('../data/blocklist.json');
 
 const VERSION = '0.1.0';
 
@@ -41,7 +44,15 @@ function createServer(deps = {}) {
   });
 
   // 依赖上下文（各 routes/* 共享）
-  const ctx = { db, config: cfg, limiter, mailer };
+  // moderation：审核管线共享件——budget（月度硬上限）、fetchImpl（测试注入桩）、L0 词表
+  const ctx = {
+    db, config: cfg, limiter, mailer,
+    moderation: {
+      budget: createBudget(db, cfg),
+      fetchImpl: deps.fetchImpl || global.fetch,
+      blocklist
+    }
+  };
   registerAuth(router, ctx);
   registerSocial(router, ctx);
   registerMessages(router, ctx);
@@ -49,6 +60,7 @@ function createServer(deps = {}) {
   registerBadge(router, ctx);
   registerDrafts(router, ctx);
   registerArticles(router, ctx);
+  registerReports(router, ctx);
 
   const server = http.createServer((req, res) => {
     (async () => {
@@ -65,6 +77,7 @@ function createServer(deps = {}) {
     })();
   });
   server.db = db;
+  server.ctx = ctx;
   return server;
 }
 
@@ -73,6 +86,9 @@ if (require.main === module) {
   server.listen(config.port, config.host, () => {
     console.log(`MN backend v${VERSION} listening on http://${config.host}:${config.port}`);
   });
+  // 审核三班 cron（仅 main 进程；测试进程不启动）
+  const { startCron } = require('./cron');
+  startCron(server.ctx);
 }
 
 module.exports = { createServer };

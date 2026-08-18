@@ -73,10 +73,12 @@
 
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/storage.js"></script>
+<script src="../assets/js/api.js"></script>
 <script src="../assets/js/sidebar.js"></script>
 <script src="../assets/js/settings-modal.js"></script>
 <script src="../assets/js/pricing.js"></script>
 <script src="../assets/js/subnav.js"></script>
+<script src="../assets/js/report.js"></script>
 <script>
   var currentTab = 'recommend';
   var currentDiscoveryTab = 'topics';
@@ -100,9 +102,88 @@
     ]
   };
 
+  // ── 云模式（P7）：USR- 账号 → 真实帖子流（先发后审）+ 发帖框 + 举报；demo 账号零 API 调用 ──
+  var cloudMode = false;
+  var cloudPosts = [];
+
+  function relativeTime(iso) {
+    var diff = Date.now() - new Date(iso).getTime();
+    if (Number.isNaN(diff)) return '';
+    if (diff < 60000) return 'just now';
+    var m = Math.floor(diff / 60000);
+    if (m < 60) return m + ' min ago';
+    var h = Math.floor(m / 60);
+    if (h < 24) return h + ' hr ago';
+    return Math.floor(h / 24) + ' d ago';
+  }
+
+  function toastMsg(msg, isError) {
+    if (window.MN_Report && MN_Report.toast) MN_Report.toast(msg, isError);
+  }
+
+  function cloudPostItem(p) {
+    return {
+      icon: 'person', badge: 'Citizen Post', badgeClass: 'badge-primary', author: p.authorName || 'Citizen',
+      title: p.content.length > 90 ? p.content.slice(0, 90) + '…' : p.content,
+      desc: p.content.length > 90 ? p.content.slice(90, 240) : '',
+      time: relativeTime(p.createdAt), likes: 0, comments: 0, cloudId: p.id
+    };
+  }
+
+  function composerHtml() {
+    return '<div class="card">' +
+      '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="Share an update with your fellow citizens… (max 2000 chars)" style="width:100%;background:transparent;border:1px solid var(--color-outline);border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:vertical;margin-bottom:8px"></textarea>' +
+      '<div style="display:flex;justify-content:flex-end">' +
+      '<button class="btn btn-primary btn-sm" id="postSubmit">Publish</button>' +
+      '</div></div>';
+  }
+
+  function submitCloudPost() {
+    var el = document.getElementById('postComposer');
+    var btn = document.getElementById('postSubmit');
+    if (!el || btn.disabled) return;
+    var content = el.value.trim();
+    if (!content) { toastMsg('写点内容再发布'); return; }
+    btn.disabled = true;
+    MN_API.post('/social/posts', { content: content, media: [] }).then(function (r) {
+      btn.disabled = false;
+      if (r.ok && r.data && r.data.post) {
+        var p = r.data.post;
+        if (p.status === 'removed') { toastMsg('内容违反社区规则，已被拦截', true); return; }
+        toastMsg(r.data.moderation && r.data.moderation.verdict === 'hold' ? '已发布，内容待审核' : '发布成功');
+        el.value = '';
+        refreshCloudFeed();
+      } else if (r.status === 429) { toastMsg('发布过于频繁，请稍后再试', true); }
+      else if (r.status === 401) { toastMsg('登录已过期，请重新登录', true); }
+      else { toastMsg((r.data && r.data.error && r.data.error.message) || '发布失败，请稍后再试', true); }
+    });
+  }
+
+  function refreshCloudFeed() {
+    if (!cloudMode) return;
+    MN_API.get('/social/posts').then(function (r) {
+      if (r.ok && r.data && Array.isArray(r.data.posts)) {
+        cloudPosts = r.data.posts;
+        renderFeed();
+      }
+    });
+  }
+
+  function initCloudFeed() {
+    MN_API.probe().then(function (up) {
+      if (!up) return; // 后端不可达 → 纯 demo（本地内容照常）
+      var u = SlatiDB.getUser();
+      if (!u || String(u.id).indexOf('USR-') !== 0) return; // demo 账号零 API 调用
+      cloudMode = true;
+      refreshCloudFeed();
+      setInterval(refreshCloudFeed, 60000);
+    });
+  }
+
   function renderFeed() {
     var items = feedData[currentTab] || [];
-    var html = '';
+    if (currentTab === 'recommend' && cloudMode) items = cloudPosts.map(cloudPostItem).concat(items);
+    var html = (currentTab === 'recommend' && cloudMode) ? composerHtml() : '';
     items.forEach(function(item) {
       html +=
         '<div class="card card-hover tilt-container">' +
@@ -111,9 +192,10 @@
             '<span class="badge ' + item.badgeClass + '">' + item.badge + '</span>' +
             (item.author ? '<span style="font-weight:600;font-size:var(--fs-label-md)">' + item.author + '</span>' : '') +
             '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + item.time + '</span>' +
+            (item.cloudId ? '<button data-cloud-post="' + item.cloudId + '" title="Report" style="border:none;background:transparent;color:var(--color-outline);cursor:pointer;padding:2px;margin-left:4px"><span class="material-symbols-outlined" style="font-size:16px">flag</span></button>' : '') +
           '</div>' +
           '<h4 style="font-weight:600;font-size:var(--fs-body-md);margin-bottom:4px">' + item.title + '</h4>' +
-          '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + item.desc + '</p>' +
+          (item.desc ? '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + item.desc + '</p>' : '') +
           '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
             '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">favorite</span> ' + item.likes + '</span>' +
             '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">chat_bubble</span> ' + item.comments + '</span>' +
@@ -122,6 +204,14 @@
     });
     document.getElementById('feedContent').innerHTML = html;
     if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+    // 发帖 + 举报绑定（每次重渲染后重新挂）
+    var submitBtn = document.getElementById('postSubmit');
+    if (submitBtn) submitBtn.addEventListener('click', submitCloudPost);
+    if (cloudMode) {
+      document.querySelectorAll('[data-cloud-post]').forEach(function (el) {
+        MN_Report.mount(el, { targetType: 'post', targetId: el.getAttribute('data-cloud-post') });
+      });
+    }
   }
 
   function renderDiscovery() {
@@ -172,6 +262,7 @@
   renderFeed();
   renderDiscovery();
   renderTrending();
+  initCloudFeed();
 </script>
 <script src="../assets/js/transitions.js"></script>
 </body>

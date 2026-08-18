@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "note": "L0 分级违禁词（0 元规则层）。zero_tolerance 命中即拒绝+封号（跳过阶梯）；warning 命中 → l0_hold 人工。zh 按子串匹配（无空格）；en/ms 按词边界匹配（防 hello 误伤 hell）。列表随社区规则更新，进 git 可 diff。",
+    "updated": "2026-08-18"
+  },
+  "zero_tolerance": {
+    "zh": [
+      "支那", "儿童色情", "代开发票", "博彩平台", "时时彩", "裸聊", "招嫖", "办假证",
+      "枪支买卖", "毒品交易", "黑客攻击服务", "迷药"
+    ],
+    "en": [
+      "nigger", "nigga", "faggot", "child porn", "child pornography", "pedophile",
+      "pipe bomb", "how to make a bomb", "how to make bombs", "stolen credit card"
+    ],
+    "ms": [
+      "pukimak", "pukima", "lancau", "cibai", "sundal", "kote"
+    ]
+  },
+  "warning": {
+    "zh": [
+      "傻逼", "妈的", "白痴", "废物", "混蛋", "去死", "操你", "神经病"
+    ],
+    "en": [
+      "stupid", "idiot", "dumbass", "moron", "jerk", "shut up", "damn", "hell", "crap", "screw you", "loser"
+    ],
+    "ms": [
+      "bangsat", "anjing", "bodoh", "sial", "babi", "gila", "celaka"
+    ]
+  }
+}

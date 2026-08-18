@@ -22,11 +22,14 @@ function testApp(overrides = {}) {
   };
 
   const baseConfig = { ...require('../src/config'), databasePath: ':memory:' };
+  // fetchImpl 默认抛错桩：AI 调用在测试里必须显式注入（防误连真实 DeepSeek/IMS 产生账单）
+  const noNetworkFetch = async () => { throw new Error('test fetch stub not configured'); };
   const app = createServer({
     db,
     config: { ...baseConfig, ...(overrides.config || {}) },
     mailer: overrides.mailer || mailer,
-    limiter: overrides.limiter || undefined
+    limiter: overrides.limiter || undefined,
+    fetchImpl: overrides.fetchImpl || noNetworkFetch
   });
 
   return new Promise((resolve) => {

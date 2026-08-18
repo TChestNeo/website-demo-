@@ -4,8 +4,9 @@ node_modules/
 # secrets (never commit; .env.example is the template)
 .env
 
-# runtime data
-backend/data/
+# runtime data（blocklist.json 例外——L0 词表进 git 可 diff）
+backend/data/*
+!backend/data/blocklist.json
 
 # logs (logs/*.txt 开发日志除外，保留提交)
 *.log
