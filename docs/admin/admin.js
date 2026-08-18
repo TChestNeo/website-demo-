@@ -55,7 +55,7 @@
   var STATUS_ZH = {
     l0_hold: 'L0 拦截', queued: '排队中', ai_approved: 'AI 通过', ai_rejected: 'AI 拒绝',
     needs_human: '需人工', human_approved: '人工通过', human_rejected: '人工拒绝',
-    in_progress: '处理中', closed: '已关闭', active: '正常', banned: '已封禁',
+    in_progress: '已回复', closed: '已关闭', active: '正常', banned: '已封禁',
     pending: '待上线', visible: '可见', hidden: '已下架'
   };
   function statusChip(s) {
@@ -368,7 +368,7 @@
   }
 
   // ── 工单 ──
-  var TK_FILTER_ZH = { queued: '待处理', in_progress: '处理中', closed: '已关闭', all: '全部' };
+  var TK_FILTER_ZH = { queued: '待处理', in_progress: '已回复', closed: '已关闭', all: '全部' };
   $('pane-ticket').addEventListener('click', function (e) {
     var open = e.target.closest('[data-tk-open]');
     if (open) { openTicket(open.dataset.tkOpen); return; }
@@ -635,10 +635,7 @@
     if (mode === 'reply') {
       var content = $('tkInput').value.trim();
       if (!content) { toast('回复内容不能为空'); return; }
-      MN_API.post('/admin/tickets/' + encodeURIComponent(id) + '/reply', { content: content }).then(function (r) {
-        if (r.ok) { toast('已回复'); reloadTicket(); }
-        else toast('回复失败：' + (r.data && r.data.error && r.data.error.message || r.status));
-      });
+      $('tkReplyModal').style.display = 'flex'; // 弹窗选择回复后状态（等待下一步 / 已完成）
     } else {
       if (!confirm('确认关闭工单 ' + id + ' ？')) return;
       MN_API.post('/admin/tickets/' + encodeURIComponent(id) + '/close', {}).then(function (r) {
@@ -647,6 +644,27 @@
       });
     }
   }
+
+  // 发送回复 + 可选关闭：wait → 回复后进「已回复」队列等待用户；done → 回复并关闭
+  function sendReply(done) {
+    var id = state.ticket && state.ticket.id;
+    var content = $('tkInput').value.trim();
+    if (!id || !content) return;
+    $('tkReplyModal').style.display = 'none';
+    MN_API.post('/admin/tickets/' + encodeURIComponent(id) + '/reply', { content: content }).then(function (r) {
+      if (!r.ok) { toast('回复失败：' + (r.data && r.data.error && r.data.error.message || r.status)); return; }
+      if (!done) { toast('已回复，工单进入「已回复」队列'); reloadTicket(); return; }
+      MN_API.post('/admin/tickets/' + encodeURIComponent(id) + '/close', {}).then(function (r2) {
+        toast(r2.ok ? '已回复并完成' : '回复成功但关闭失败：' + (r2.data && r2.data.error && r2.data.error.message || r2.status));
+        reloadTicket();
+      });
+    });
+  }
+  $('tkReplyWait').addEventListener('click', function () { sendReply(false); });
+  $('tkReplyDone').addEventListener('click', function () { sendReply(true); });
+  $('tkReplyCancel').addEventListener('click', function () { $('tkReplyModal').style.display = 'none'; });
+  $('tkReplyCloseBtn').addEventListener('click', function () { $('tkReplyModal').style.display = 'none'; });
+  $('tkReplyModal').addEventListener('click', function (e) { if (e.target === this) this.style.display = 'none'; });
 
   // ── 徽章码 ──
   $('bgIssueBtn').addEventListener('click', function () {

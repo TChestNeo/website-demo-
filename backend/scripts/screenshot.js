@@ -94,6 +94,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         document.querySelector('#admTabs [data-tab="ticket"]').click();
         await new Promise(function(r){ setTimeout(r, 1200); });
         base.ticketCards = document.querySelectorAll('#ticketList [data-tk-open]').length;
+        var ipFilter = document.querySelector('[data-tk-filter="in_progress"]');
+        base.tkRepliedFilter = ipFilter ? ipFilter.textContent.trim() : null;
         base.ticketDetailHidden = document.getElementById('ticketDetail').style.display === 'none';
         var firstCard = document.querySelector('#ticketList [data-tk-open]');
         if (firstCard) { firstCard.click(); await new Promise(function(r){ setTimeout(r, 400); }); }
@@ -144,6 +146,16 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         await new Promise(function(r){ setTimeout(r, 100); });
         base.tkTplModalClosed = document.getElementById('tkTplModal').style.display === 'none';
         base.tkTplInserted = document.getElementById('tkInput').value.slice(0, 24);
+        // 发送回复 → 状态选择弹窗（等待下一步/已完成）→ 取消不发（不污染活库 fixture）
+        document.getElementById('tkSendBtn').click();
+        await new Promise(function(r){ setTimeout(r, 100); });
+        base.tkReplyModalShown = document.getElementById('tkReplyModal').style.display !== 'none';
+        base.tkReplyOptWait = document.getElementById('tkReplyWait').textContent.replace(/\\s+/g, '').slice(0, 5);
+        base.tkReplyOptDone = document.getElementById('tkReplyDone').textContent.replace(/\\s+/g, '').slice(0, 3);
+        document.getElementById('tkReplyCancel').click();
+        await new Promise(function(r){ setTimeout(r, 100); });
+        base.tkReplyModalClosed = document.getElementById('tkReplyModal').style.display === 'none';
+        base.tkReplyKept = document.getElementById('tkInput').value.slice(0, 24);
         document.getElementById('tkBackBtn').click(); await new Promise(function(r){ setTimeout(r, 100); });
         base.ticketBackToList = document.getElementById('ticketDetail').style.display === 'none';
         return JSON.stringify(base);

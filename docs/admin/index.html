@@ -105,6 +105,9 @@
     .tk-preview-box { margin-top: var(--space-sm); padding: var(--space-md); min-height: 140px;
       background: var(--color-surface-variant, rgba(128,128,128,0.08)); border-radius: var(--radius-md);
       font-size: 13.5px; color: var(--color-on-surface-variant); white-space: pre-wrap; word-break: break-word; }
+    .tk-opt { border: 1px solid var(--color-outline-variant); border-radius: var(--radius-md);
+      padding: var(--space-sm) var(--space-md); margin-bottom: var(--space-sm); cursor: pointer; }
+    .tk-opt:hover { background: var(--color-surface-variant, rgba(128,128,128,0.08)); border-color: var(--color-primary); }
     @media (max-width: 620px) { .tk-shell { grid-template-columns: 1fr; } .tk-menu { border-right: none; max-height: none; } }
   </style>
 </head>
@@ -216,7 +219,7 @@
       <div id="ticketListWrap">
         <div class="adm-form">
           <button class="btn btn-primary" data-tk-filter="queued">待处理</button>
-          <button class="btn" data-tk-filter="in_progress">处理中</button>
+          <button class="btn" data-tk-filter="in_progress">已回复</button>
           <button class="btn" data-tk-filter="closed">已关闭</button>
           <button class="btn" data-tk-filter="all">全部</button>
           <span class="adm-meta" id="tkFilterLabel">queued</span>
@@ -367,6 +370,26 @@
       <button class="btn btn-primary" id="tkTplAddSave">保存</button>
       <button class="btn" id="tkTplAddCancel">取消</button>
     </div>
+  </div>
+</div>
+
+<!-- 发送回复弹窗：选择回复后工单的状态（回复都会进入「已回复」队列） -->
+<div class="tk-overlay" id="tkReplyModal" style="display:none">
+  <div class="tk-modal" style="max-width:440px">
+    <div class="dash-card-title">
+      <h3 class="headline-md">发送回复</h3>
+      <button class="btn btn-ghost btn-icon" id="tkReplyCloseBtn"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <p class="adm-meta" style="margin-bottom:var(--space-sm)">回复将发送给用户，请选择回复后工单的状态：</p>
+    <div class="tk-opt" id="tkReplyWait">
+      <div style="font-weight:700">等待下一步</div>
+      <div class="adm-meta">工单进入「已回复」队列，等待用户后续回复</div>
+    </div>
+    <div class="tk-opt" id="tkReplyDone">
+      <div style="font-weight:700">已完成</div>
+      <div class="adm-meta">回复并关闭工单（进入已关闭队列）</div>
+    </div>
+    <div class="actions"><button class="btn" id="tkReplyCancel">取消</button></div>
   </div>
 </div>
 
