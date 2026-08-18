@@ -102,9 +102,6 @@
     .tk-menu-item.active { background: rgba(59,130,246,0.12); color: var(--color-primary); font-weight: 700; }
     .tk-del { color: var(--color-outline); cursor: pointer; font-size: 12px; }
     .tk-del:hover { color: #dc2626; }
-    .lang-chip { padding: 1px 9px; border-radius: var(--radius-full); font-size: 11.5px; font-weight: 700; cursor: pointer;
-      border: 1px solid var(--color-outline-variant); color: var(--color-outline); }
-    .lang-chip.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
     .tk-preview-box { margin-top: var(--space-sm); padding: var(--space-md); min-height: 140px;
       background: var(--color-surface-variant, rgba(128,128,128,0.08)); border-radius: var(--radius-md);
       font-size: 13.5px; color: var(--color-on-surface-variant); white-space: pre-wrap; word-break: break-word; }
@@ -348,7 +345,7 @@
       <div>
         <div class="dash-card-title" style="margin-bottom:var(--space-xs)">
           <span id="tkTplPreviewName" style="font-weight:700">—</span>
-          <span id="tkTplLangs"></span>
+          <select class="adm-select" id="tkTplLangSel" style="width:auto" title="模板语言"></select>
         </div>
         <div class="tk-preview-box" id="tkTplPreviewText">从左侧选择一个模板</div>
         <div class="actions"><button class="btn btn-primary" id="tkTplUseBtn">使用此模板</button></div>
@@ -357,7 +354,7 @@
   </div>
 </div>
 
-<!-- 添加模板弹窗：名称 + 三语内容（中文必填，其余可选） -->
+<!-- 添加模板弹窗：名称 + 十语内容（至少填一种语言） -->
 <div class="tk-overlay" id="tkTplAddModal" style="display:none">
   <div class="tk-modal" style="max-width:720px">
     <div class="dash-card-title">
@@ -365,9 +362,7 @@
       <button class="btn btn-ghost btn-icon" id="tkTplAddCloseBtn"><span class="material-symbols-outlined">close</span></button>
     </div>
     <input class="adm-input" id="tkTplAddName" placeholder="模板名称（必填）" style="width:100%;margin-bottom:var(--space-sm)">
-    <textarea class="adm-textarea" id="tkTplAddZh" placeholder="中文内容（必填）" style="margin-bottom:var(--space-sm)"></textarea>
-    <textarea class="adm-textarea" id="tkTplAddEn" placeholder="English 内容" style="margin-bottom:var(--space-sm)"></textarea>
-    <textarea class="adm-textarea" id="tkTplAddMs" placeholder="Bahasa Melayu 内容"></textarea>
+    <div id="tkTplAddLangs" style="max-height:46vh;overflow-y:auto;display:grid;gap:var(--space-sm)"></div>
     <div class="actions">
       <button class="btn btn-primary" id="tkTplAddSave">保存</button>
       <button class="btn" id="tkTplAddCancel">取消</button>

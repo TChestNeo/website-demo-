@@ -460,14 +460,30 @@
       ms: 'Maaf — mengikut polisi platform, kandungan / perkhidmatan maya tidak boleh dikembalikan selepas diaktifkan. Jika anda dicaj dua kali, sila lampirkan resit pembayaran dan kami akan utamakan semakan untuk anda.' }
   ];
   var TPL_KEY = 'slati_admin_templates';
-  var TPL_LANG_NAME = { zh: '中文', en: 'English', ms: 'Melayu' };
+  // 支持语言：联合国六种工作语言 + 马来文 / 印尼文 / 泰文 / 越南文
+  var TPL_LANGS = [
+    { id: 'zh', name: '中文' }, { id: 'en', name: 'English' }, { id: 'ar', name: 'العربية' },
+    { id: 'fr', name: 'Français' }, { id: 'ru', name: 'Русский' }, { id: 'es', name: 'Español' },
+    { id: 'ms', name: 'Bahasa Melayu' }, { id: 'id', name: 'Bahasa Indonesia' },
+    { id: 'th', name: 'ไทย' }, { id: 'vi', name: 'Tiếng Việt' }
+  ];
   function getCustomTpls() {
     try { return JSON.parse(localStorage.getItem(TPL_KEY) || '[]'); } catch (e) { return []; }
   }
   function allTpls() { return getCustomTpls().concat(BUILTIN_TPLS); } // 自定义在上
   function ticketLang() {
     var t = state.ticket;
-    return (t && t.locale && /^(zh|en|ms)$/.test(t.locale)) ? t.locale : 'zh';
+    return (t && t.locale && TPL_LANGS.some(function (l) { return l.id === t.locale; })) ? t.locale : 'zh';
+  }
+  // 语言无内容 → 回退中文（无中文 → 首个非空语言）；fb 供预览提示
+  function tplText(tpl, lang) {
+    if (tpl && tpl[lang]) return { text: tpl[lang], fb: false };
+    if (tpl) {
+      var ids = TPL_LANGS.map(function (l) { return l.id; });
+      var text = tpl.zh || ids.map(function (l) { return tpl[l]; }).find(function (x) { return x; }) || '';
+      return { text: text, fb: true };
+    }
+    return { text: '', fb: false };
   }
   function renderTplMenu() {
     var box = $('tkTplMenu');
@@ -481,10 +497,14 @@
   function renderTplPreview() {
     var tpl = allTpls().find(function (x) { return x.id === state.tplSel; });
     $('tkTplPreviewName').textContent = tpl ? tpl.name : '—';
-    $('tkTplPreviewText').textContent = tpl ? (tpl[state.tplLang] || tpl.zh || '（该语言无内容）') : '从左侧选择一个模板';
-    $('tkTplLangs').innerHTML = ['zh', 'en', 'ms'].map(function (l) {
-      return '<span class="lang-chip' + (state.tplLang === l ? ' active' : '') + '" data-tpl-lang="' + l + '">' + TPL_LANG_NAME[l] + '</span>';
-    }).join('');
+    if (tpl) {
+      var r = tplText(tpl, state.tplLang);
+      $('tkTplPreviewText').textContent = (r.text || '（无内容）') +
+        (r.fb ? '\n\n（该语言暂无内容，已回退显示其他语言版本）' : '');
+    } else {
+      $('tkTplPreviewText').textContent = '从左侧选择一个模板';
+    }
+    $('tkTplLangSel').value = state.tplLang;
   }
   function selectTpl(id) {
     state.tplSel = id;
@@ -522,16 +542,22 @@
     var item = e.target.closest('[data-tpl-id]');
     if (item) selectTpl(item.dataset.tplId);
   });
-  $('tkTplLangs').addEventListener('click', function (e) {
-    var c = e.target.closest('[data-tpl-lang]');
-    if (c) { state.tplLang = c.dataset.tplLang; renderTplPreview(); }
-  });
+  // 语言下拉（静态选项，只在预览时同步选中值）+ 添加表单十语 textarea（动态生成）
+  $('tkTplLangSel').innerHTML = TPL_LANGS.map(function (l) {
+    return '<option value="' + l.id + '">' + esc(l.name) + '</option>';
+  }).join('');
+  $('tkTplLangSel').addEventListener('change', function () { state.tplLang = this.value; renderTplPreview(); });
+  $('tkTplAddLangs').innerHTML = TPL_LANGS.map(function (l) {
+    return '<label class="adm-meta">' + esc(l.name) +
+      '<textarea class="adm-textarea" data-tpl-add-lang="' + l.id + '" placeholder="' + esc(l.name) +
+      ' 内容" style="min-height:44px;margin-top:2px"></textarea></label>';
+  }).join('');
   $('tkTplCloseBtn').addEventListener('click', closeTplModal);
   $('tkTplModal').addEventListener('click', function (e) { if (e.target === this) closeTplModal(); });
   $('tkTplUseBtn').addEventListener('click', function () {
     var tpl = allTpls().find(function (x) { return x.id === state.tplSel; });
     if (!tpl) { toast('请先选择一个模板'); return; }
-    insertTpl(tpl[state.tplLang] || tpl.zh);
+    insertTpl(tplText(tpl, state.tplLang).text);
     closeTplModal();
   });
   $('tkTplAddBtn').addEventListener('click', function () { $('tkTplAddModal').style.display = 'flex'; });
@@ -540,14 +566,20 @@
   $('tkTplAddModal').addEventListener('click', function (e) { if (e.target === this) closeTplAdd(); });
   $('tkTplAddSave').addEventListener('click', function () {
     var name = $('tkTplAddName').value.trim();
-    var zh = $('tkTplAddZh').value.trim();
-    if (!name || !zh) { toast('模板名称与中文内容必填'); return; }
-    var tpl = { id: 'tpl_' + Date.now(), name: name, zh: zh,
-      en: $('tkTplAddEn').value.trim(), ms: $('tkTplAddMs').value.trim() };
+    if (!name) { toast('模板名称必填'); return; }
+    var tpl = { id: 'tpl_' + Date.now(), name: name };
+    var filled = 0;
+    TPL_LANGS.forEach(function (l) {
+      var v = document.querySelector('[data-tpl-add-lang="' + l.id + '"]').value.trim();
+      tpl[l.id] = v;
+      if (v) filled++;
+    });
+    if (!filled) { toast('至少填写一种语言的内容'); return; }
     var customs = getCustomTpls();
     customs.unshift(tpl);
     localStorage.setItem(TPL_KEY, JSON.stringify(customs));
-    $('tkTplAddName').value = ''; $('tkTplAddZh').value = ''; $('tkTplAddEn').value = ''; $('tkTplAddMs').value = '';
+    $('tkTplAddName').value = '';
+    document.querySelectorAll('[data-tpl-add-lang]').forEach(function (el) { el.value = ''; });
     closeTplAdd();
     state.tplLang = ticketLang();
     selectTpl(tpl.id); // 新模板选中并预览
