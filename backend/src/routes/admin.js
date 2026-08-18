@@ -71,20 +71,56 @@ function register(router, ctx) {
     }
   }
 
-  // ── 总览 ──
+  // ── 总览（管理首页）── 一次请求聚合全站统计 + 分项预算 + 最近动态
+  const AUDIT_ZH = { mod_decide: '审核决定', penalty: '执行处罚', ticket_reply: '工单回复',
+    badge_issue: '签发徽章码', badge_revoke: '吊销徽章码', set_tier: '调整 tier',
+    budget_set: '修改预算', view_dm: '调阅私讯' };
   router.add('GET', '/api/admin/stats', requireAdmin((req, res) => {
     const iso = new Date().toISOString();
-    const n = (sql) => db.prepare(sql).get().n;
+    const n = (sql, ...args) => db.prepare(sql).get(...args).n;
+    const dayAgo = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const weekAgo = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
     const items = {};
     for (const st of QUEUE_OPEN) items[st] = n("SELECT count(*) AS n FROM moderation_items WHERE status = '" + st + "'");
     const st = budget.status('total', iso);
+    // 分项预算进度（status 自带分项/总额 ratio 取大）
+    const features = {};
+    for (const f of BUDGET_FEATURES) {
+      if (f === 'total') continue;
+      const s = budget.status(f, iso);
+      features[f] = { spent: s.spent, limit: s.limit, ratio: s.ratio, state: s.state };
+    }
+    // 最近动态：注册/发帖/工单/举报/管理操作 五路合并按时间倒序取 15 条
+    const act = [];
+    for (const r of db.prepare('SELECT display_name AS d, email AS e, created_at AS at FROM users ORDER BY seq DESC LIMIT 6').all())
+      act.push({ at: r.at, type: 'user', text: '新用户注册：' + r.d + '（' + r.e + '）' });
+    for (const r of db.prepare('SELECT content AS c, created_at AS at FROM posts ORDER BY seq DESC LIMIT 6').all())
+      act.push({ at: r.at, type: 'post', text: '新帖：' + String(r.c).replace(/\s+/g, ' ').slice(0, 60) });
+    for (const r of db.prepare('SELECT subject AS s, created_at AS at FROM tickets ORDER BY seq DESC LIMIT 6').all())
+      act.push({ at: r.at, type: 'ticket', text: '新工单：' + r.s });
+    for (const r of db.prepare('SELECT target_type AS tt, target_id AS ti, reason AS rs, created_at AS at FROM reports ORDER BY seq DESC LIMIT 6').all())
+      act.push({ at: r.at, type: 'report', text: '新举报：' + r.tt + ' ' + r.ti + '（' + r.rs + '）' });
+    for (const r of db.prepare('SELECT action AS a, target AS t, created_at AS at FROM admin_audit_log ORDER BY seq DESC LIMIT 6').all())
+      act.push({ at: r.at, type: 'audit', text: (AUDIT_ZH[r.a] || r.a) + '：' + (r.t || '—') });
+    act.sort((x, y) => (x.at < y.at ? 1 : x.at > y.at ? -1 : 0));
     sendJson(res, 200, {
       users: n('SELECT count(*) AS n FROM users'),
+      users7d: n('SELECT count(*) AS n FROM users WHERE created_at >= ?', weekAgo),
+      usersActive24h: n('SELECT count(*) AS n FROM users WHERE last_active_at >= ?', dayAgo),
       posts: n('SELECT count(*) AS n FROM posts'),
+      posts24h: n('SELECT count(*) AS n FROM posts WHERE created_at >= ?', dayAgo),
+      nations: n('SELECT count(*) AS n FROM nations'),
+      topics: n('SELECT count(*) AS n FROM topics'),
+      articles: n('SELECT count(*) AS n FROM articles'),
       moderationItems: items,
       openTickets: n("SELECT count(*) AS n FROM tickets WHERE status IN ('queued','in_progress')"),
+      openReports: n("SELECT count(*) AS n FROM reports WHERE status = 'open'"),
+      badgeActive: n('SELECT count(*) AS n FROM badge_codes WHERE revoked_at IS NULL AND expires_at > ?', iso),
+      sessionsActive: n('SELECT count(*) AS n FROM sessions WHERE expires_at > ?', iso),
       monthCostMicro: st.totalSpent,
-      budgetState: st.state
+      budgetState: st.state,
+      budget: { total: { spent: st.spent, limit: st.limit, ratio: st.ratio, state: st.state }, features },
+      activity: act.slice(0, 15)
     });
   }));
 

@@ -35,6 +35,38 @@ test('admin：权限矩阵（匿名 401 / 普通用户 403 / 管理员 200）', 
   } finally { await t.close(); }
 });
 
+test('admin：stats 总览扩展（全站计数/分项预算/活动流倒序）', async () => {
+  const t = await adminT();
+  try {
+    const post = await makePost(t, t.alice.cookie);
+    const s = await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json();
+    assert.strictEqual(s.users, 3);
+    assert.strictEqual(s.users7d, 3);
+    assert.strictEqual(s.posts, 1);
+    assert.strictEqual(s.posts24h, 1);
+    assert.strictEqual(s.nations, 0);
+    assert.strictEqual(s.topics, 0);
+    assert.strictEqual(s.articles, 0);
+    assert.strictEqual(s.openReports, 0);
+    assert.strictEqual(s.openTickets, 0);
+    assert.strictEqual(s.moderationItems.queued, 1);
+    assert.ok(s.budget.total && typeof s.budget.total.limit === 'number');
+    for (const f of ['moderation_text', 'chat', 'moderation_image']) {
+      assert.ok(s.budget.features[f] && typeof s.budget.features[f].spent === 'number' && typeof s.budget.features[f].limit === 'number');
+    }
+    const postAct = s.activity.find(a => a.type === 'post');
+    assert.ok(postAct && postAct.text.includes('新帖'), '活动流含发帖事件');
+    for (let i = 1; i < s.activity.length; i++) {
+      assert.ok(s.activity[i - 1].at >= s.activity[i].at, '活动流按时间倒序');
+    }
+    // 管理操作（decide）也应进入活动流
+    const item = t.db.prepare('SELECT * FROM moderation_items WHERE target_id = ?').get(post.id);
+    await t.request('POST', `/api/admin/moderation/${item.id}/decide`, { verdict: 'reject' }, { cookie: t.admin.cookie });
+    const s2 = await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json();
+    assert.ok(s2.activity.some(a => a.type === 'audit' && a.text.includes('审核决定')), '活动流含审计事件');
+  } finally { await t.close(); }
+});
+
 test('admin：审核队列 open 含 queued 项（带预览）→ approve → human_approved + pending 上线', async () => {
   const t = await adminT();
   try {

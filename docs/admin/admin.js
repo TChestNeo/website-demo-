@@ -33,6 +33,9 @@
     var n = Number(micro) || 0;
     return '¥' + (n / 1e6).toFixed(dp == null ? 2 : dp);
   }
+  function fmtLimit(yuan) { // 预算额度已是元（非微元），不能走 fmtYuan
+    return '¥' + (Number(yuan) || 0).toFixed(2);
+  }
   var toastTimer;
   function toast(msg) {
     var el = $('admToast');
@@ -190,40 +193,94 @@
     });
   }
 
-  // ── 总览 ──
+  // ── 总览（管理首页）：统计卡 + 队列快照 + 预算条 + 最近动态 ──
   function refreshStats() {
     MN_API.get('/admin/stats').then(function (r) {
       if (!r.ok || !r.data) return;
       var d = r.data;
-      $('stUsers').textContent = d.users;
-      $('stPosts').textContent = d.posts;
+      $('dUsers').textContent = d.users;
+      $('dUsersSub').textContent = '7 天 +' + d.users7d + ' · 24h 活跃 ' + d.usersActive24h;
+      $('dPosts').textContent = d.posts;
+      $('dPostsSub').textContent = '24h +' + d.posts24h;
+      $('dNations').textContent = d.nations;
+      $('dTopics').textContent = d.topics;
+      $('dArticles').textContent = d.articles;
       var m = d.moderationItems || {};
       var modTotal = (m.l0_hold || 0) + (m.queued || 0) + (m.needs_human || 0) + (m.ai_rejected || 0);
-      $('stMod').textContent = modTotal;
-      $('stModLabel').title = 'l0_hold ' + (m.l0_hold || 0) + ' · queued ' + (m.queued || 0) +
-        ' · needs_human ' + (m.needs_human || 0) + ' · ai_rejected ' + (m.ai_rejected || 0);
-      $('stTickets').textContent = d.openTickets;
-      $('stCost').textContent = fmtYuan(d.monthCostMicro);
-      var b = $('stBudget');
+      $('dMod').textContent = modTotal;
+      $('dModSub').textContent = 'L0 ' + (m.l0_hold || 0) + ' · 排队 ' + (m.queued || 0) +
+        ' · 人工 ' + (m.needs_human || 0) + ' · AI拒 ' + (m.ai_rejected || 0);
+      $('dTickets').textContent = d.openTickets;
+      $('dReports').textContent = d.openReports;
+      $('dBadges').textContent = d.badgeActive;
+      $('dSessions').textContent = d.sessionsActive;
+      $('dCost').textContent = fmtYuan(d.monthCostMicro);
+      var b = $('dBudget');
       b.textContent = d.budgetState === 'ok' ? '正常' : d.budgetState === 'warn' ? '≥80%' : '已耗尽';
       b.style.color = d.budgetState === 'ok' ? '#16a34a' : d.budgetState === 'warn' ? '#b45309' : '#dc2626';
+      renderDashQueue(m);
+      renderDashBudget(d.budget);
+      renderDashFeed(d.activity);
     });
   }
+  function renderDashQueue(m) {
+    var rows = [['l0_hold', 'L0 拦截', 'warn'], ['queued', '排队中', 'neutral'],
+      ['needs_human', '需人工', 'high'], ['ai_rejected', 'AI 拒绝', 'high']];
+    $('dashQueue').innerHTML = rows.map(function (r) {
+      return '<div class="feed-item cursor-row" data-dash-filter="' + r[0] + '" style="display:flex;justify-content:space-between;align-items:center">' +
+        '<span>' + chip(r[1], r[2]) + '</span><strong style="font-size:16px">' + ((m && m[r[0]]) || 0) + '</strong></div>';
+    }).join('');
+  }
+  function renderDashBudget(bg) {
+    if (!bg) return;
+    var rows = ['moderation_text', 'chat', 'moderation_image', 'total'].map(function (f) {
+      var s = f === 'total' ? bg.total : (bg.features || {})[f];
+      if (!s) return '';
+      var pct = Math.min(100, Math.round(s.ratio * 100));
+      var cls = s.state === 'exhausted' ? 'bad' : s.state === 'warn' ? 'warn' : '';
+      return '<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between;margin-bottom:4px">' +
+        '<span style="font-size:13px">' + FEATURE_ZH[f] + '</span>' +
+        '<span class="adm-meta">' + fmtYuan(s.spent) + ' / ' + fmtLimit(s.limit) + '（' + pct + '%）</span></div>' +
+        '<div class="bar-track"><div class="bar-fill ' + cls + '" style="width:' + pct + '%"></div></div></div>';
+    });
+    $('dashBudget').innerHTML = rows.join('');
+  }
+  var FEED_CHIP = { user: ['新用户', 'ok'], post: ['新帖', 'neutral'], ticket: ['工单', 'warn'],
+    report: ['举报', 'high'], audit: ['管理', 'neutral'] };
+  function renderDashFeed(act) {
+    $('dashFeed').innerHTML = (act || []).map(function (a) {
+      var c = FEED_CHIP[a.type] || [a.type, 'neutral'];
+      return '<div class="feed-item"><div class="row" style="justify-content:space-between;margin-bottom:2px">' +
+        chip(c[0], c[1]) + '<span class="adm-meta">' + fmtTime(a.at) + '</span></div>' +
+        '<span style="font-size:13.5px">' + esc(a.text) + '</span></div>';
+    }).join('') || '<p class="adm-meta">暂无动态</p>';
+  }
+  // 队列快照点击 → 跳审核 tab 并切到对应筛选
+  $('dashQueue').addEventListener('click', function (e) {
+    var row = e.target.closest('[data-dash-filter]');
+    if (!row) return;
+    switchTab('mod');
+    state.modFilter = row.dataset.dashFilter;
+    loadModList();
+  });
+  $('dashGoMod').addEventListener('click', function () { switchTab('mod'); });
+  $('dashGoUsage').addEventListener('click', function () { switchTab('usage'); });
 
   // ── Tab 切换（懒加载） ──
   var loaded = { ticket: false, badge: false, user: false };
-  $('admTabs').addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-tab]');
-    if (!btn) return;
-    var tab = btn.dataset.tab;
-    document.querySelectorAll('.adm-tab').forEach(function (b) { b.classList.toggle('active', b === btn); });
-    ['mod', 'ticket', 'badge', 'user', 'usage'].forEach(function (t) {
-      $('pane-' + t).style.display = t === tab ? 'block' : 'none';
-    });
+  var PANES = ['dash', 'mod', 'ticket', 'badge', 'user', 'usage'];
+  function switchTab(tab) {
+    document.querySelectorAll('.adm-tab').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tab); });
+    PANES.forEach(function (t) { $('pane-' + t).style.display = t === tab ? 'block' : 'none'; });
     if (tab === 'ticket' && !loaded.ticket) { loaded.ticket = true; loadTickets(); }
     if (tab === 'badge' && !loaded.badge) { loaded.badge = true; loadBadges(); }
     if (tab === 'user' && !loaded.user) { loaded.user = true; loadUsers(); }
     if (tab === 'usage') loadUsage();
+  }
+  $('admTabs').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-tab]');
+    if (!btn) return;
+    switchTab(btn.dataset.tab);
   });
 
   // ── 审核队列 ──
@@ -523,7 +580,7 @@
       var cls = s.state === 'exhausted' ? 'bad' : s.state === 'warn' ? 'warn' : '';
       return '<div class="adm-card" style="margin-bottom:var(--space-sm)"><div class="row" style="justify-content:space-between;margin-bottom:6px">' +
         '<strong>' + FEATURE_ZH[f] + '</strong>' +
-        '<span class="adm-meta">' + fmtYuan(s.spent) + ' / ' + fmtYuan(s.limit) + '（' + pct + '%）</span></div>' +
+        '<span class="adm-meta">' + fmtYuan(s.spent) + ' / ' + fmtLimit(s.limit) + '（' + pct + '%）</span></div>' +
         '<div class="bar-track"><div class="bar-fill ' + cls + '" style="width:' + pct + '%"></div></div></div>';
     });
     $('usageBars').innerHTML = rows.join('');
