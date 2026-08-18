@@ -69,6 +69,7 @@
     $('adminLogin').style.display = 'block';
     $('logoutBtn').style.display = 'none';
     $('admWho').style.display = 'none';
+    restoreLogin();
   }
   function showGate(title, msg, withLogout) {
     hideAll();
@@ -111,6 +112,24 @@
     }, 1000);
   }
 
+  // 请求成功后把邮箱+发送时间记进 sessionStorage：刷新页面直接恢复验证码输入框，
+  // 且 60s 冷却未过时继续倒计时（避免页面重载后重发撞 429）。
+  function saveCodeState(email) {
+    try { sessionStorage.setItem('mnAdmCode', JSON.stringify({ email: email, sentAt: Date.now() })); } catch (e) {}
+  }
+  function restoreLogin() {
+    var raw = null;
+    try { raw = sessionStorage.getItem('mnAdmCode'); } catch (e) {}
+    if (!raw) return;
+    var st = null;
+    try { st = JSON.parse(raw); } catch (e) {}
+    if (!st || !st.email) return;
+    var elapsed = Date.now() - st.sentAt;
+    if (elapsed > 10 * 60 * 1000) { try { sessionStorage.removeItem('mnAdmCode'); } catch (e) {} return; }
+    $('loginEmail').value = st.email;
+    $('codeRow').style.display = 'flex';
+    if (elapsed < 60 * 1000) countdown(60 - Math.floor(elapsed / 1000));
+  }
   $('sendCodeBtn').addEventListener('click', function () {
     var email = $('loginEmail').value.trim();
     if (!email) { setLoginMsg('请输入管理员邮箱', true); return; }
@@ -119,8 +138,9 @@
         $('codeRow').style.display = 'flex';
         setLoginMsg('验证码已发送至 ' + email + '，10 分钟内有效');
         countdown(60);
+        saveCodeState(email);
       } else if (r.status === 429) {
-        setLoginMsg('请求过于频繁，请稍后再试', true);
+        setLoginMsg('请求过于频繁，请 60 秒后再试', true);
       } else {
         setLoginMsg('发送失败：' + (r.data && r.data.error && r.data.error.message || r.status), true);
       }
@@ -136,6 +156,7 @@
         return;
       }
       setLoginMsg('登录成功，正在进入…');
+      try { sessionStorage.removeItem('mnAdmCode'); } catch (e) {}
       boot(); // 重新走 /auth/me 门禁（非管理员账号 → 无权限面板）
     });
   });

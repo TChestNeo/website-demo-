@@ -35,7 +35,8 @@ http.createServer((req, res) => {
     req.pipe(proxy);
     return;
   }
-  const p = url.pathname === '/' ? '/index.html' : url.pathname;
+  let p = url.pathname === '/' ? '/index.html' : url.pathname;
+  if (p.endsWith('/')) p += 'index.html'; // 目录 → 索引文档（对齐 COS 静态网站 /admin/ → index.html）
   const file = path.join(DOCS, decodeURIComponent(p));
   if (!file.startsWith(DOCS)) { res.writeHead(403); res.end(); return; }
   fs.readFile(file, (err, buf) => {
