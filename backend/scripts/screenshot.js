@@ -158,6 +158,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         base.tkReplyKept = document.getElementById('tkInput').value.slice(0, 24);
         document.getElementById('tkBackBtn').click(); await new Promise(function(r){ setTimeout(r, 100); });
         base.ticketBackToList = document.getElementById('ticketDetail').style.display === 'none';
+        // 订阅收入 pane：统计卡（数字 + RM 格式）+ tier 调整时间线
+        document.querySelector('#admTabs [data-tab="sub"]').click();
+        await new Promise(function(r){ setTimeout(r, 200); });
+        base.subPaneShown = document.getElementById('pane-sub').style.display !== 'none';
+        base.subTotal = document.getElementById('dSubTotal').textContent;
+        base.subPremium = document.getElementById('dSubPremium').textContent;
+        base.subUltra = document.getElementById('dSubUltra').textContent;
+        base.subBasic = document.getElementById('dSubBasic').textContent;
+        base.subRevenue = document.getElementById('dSubRevenue').textContent;
+        base.subPaid = document.getElementById('dSubPaid').textContent;
+        base.subTimeline = document.getElementById('dSubTimeline').textContent.replace(/\\s+/g, ' ').slice(0, 80);
         return JSON.stringify(base);
       })()`;
       const ev = await cmd('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });

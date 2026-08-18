@@ -103,6 +103,23 @@ function register(router, ctx) {
     for (const r of db.prepare('SELECT action AS a, target AS t, created_at AS at FROM admin_audit_log ORDER BY seq DESC LIMIT 6').all())
       act.push({ at: r.at, type: 'audit', text: (AUDIT_ZH[r.a] || r.a) + '：' + (r.t || '—') });
     act.sort((x, y) => (x.at < y.at ? 1 : x.at > y.at ? -1 : 0));
+    // 订阅与收入（一期无支付：tier 为管理员手动指定 → paidMicro 恒 0，收入按 tier 月价估算）
+    const tiers = { basic: 0, premium: 0, ultra: 0 };
+    for (const r of db.prepare("SELECT tier, count(*) AS n FROM users WHERE status = 'active' GROUP BY tier").all())
+      if (r.tier in tiers) tiers[r.tier] = r.n;
+    const tierPrice = { premium: 23.5, ultra: 45.5 }; // 对齐 docs/pages/premium.html LOCALES['ms-MY'] tier 月价（RM）
+    const sub = {
+      tiers,
+      subscribers: tiers.premium + tiers.ultra,
+      pricing: { currency: 'RM', monthly: tierPrice },
+      revenue: {
+        paidMicro: 0,
+        estimatedMonthly: Math.round((tiers.premium * tierPrice.premium + tiers.ultra * tierPrice.ultra) * 100) / 100
+      },
+      tierEvents: db.prepare("SELECT l.created_at AS at, u.email AS actor, l.target, l.detail FROM admin_audit_log l "
+        + "LEFT JOIN users u ON u.id = l.admin_id WHERE l.action = 'set_tier' ORDER BY l.seq DESC LIMIT 20").all()
+        .map((r) => { let d = null; try { d = JSON.parse(r.detail); } catch (e) {} return { at: r.at, actor: r.actor || null, target: r.target, from: (d && d.from) || null, to: (d && d.to) || null }; })
+    };
     sendJson(res, 200, {
       users: n('SELECT count(*) AS n FROM users'),
       users7d: n('SELECT count(*) AS n FROM users WHERE created_at >= ?', weekAgo),
@@ -120,6 +137,7 @@ function register(router, ctx) {
       monthCostMicro: st.totalSpent,
       budgetState: st.state,
       budget: { total: { spent: st.spent, limit: st.limit, ratio: st.ratio, state: st.state }, features },
+      sub,
       activity: act.slice(0, 15)
     });
   }));

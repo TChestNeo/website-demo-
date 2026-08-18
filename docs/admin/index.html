@@ -159,6 +159,7 @@
           <a class="nav-item" data-tab="ticket"><span class="material-symbols-outlined">support_agent</span>工单</a>
           <a class="nav-item" data-tab="badge"><span class="material-symbols-outlined">verified</span>徽章码</a>
           <a class="nav-item" data-tab="user"><span class="material-symbols-outlined">group</span>用户</a>
+          <a class="nav-item" data-tab="sub"><span class="material-symbols-outlined">payments</span>订阅收入</a>
           <a class="nav-item" data-tab="usage"><span class="material-symbols-outlined">monitoring</span>成本看板</a>
         </div>
       </aside>
@@ -295,6 +296,22 @@
         </div>
         <h4 class="headline-sm" style="margin:var(--space-md) 0 var(--space-xs)">处罚时间线</h4>
         <div id="udTimeline"></div>
+      </div>
+    </div>
+
+    <!-- 订阅与收入（一期无支付：tier 为管理员手动指定，收入为按定价估算） -->
+    <div id="pane-sub" style="display:none">
+      <div class="stat-strip">
+        <div class="stat-card"><div class="stat-num" id="dSubTotal">—</div><div class="stat-label">订阅用户</div><div class="stat-sub">premium + ultra</div></div>
+        <div class="stat-card"><div class="stat-num" id="dSubPremium">—</div><div class="stat-label">premium</div></div>
+        <div class="stat-card"><div class="stat-num" id="dSubUltra">—</div><div class="stat-label">ultra</div></div>
+        <div class="stat-card"><div class="stat-num" id="dSubBasic">—</div><div class="stat-label">basic（免费）</div></div>
+        <div class="stat-card"><div class="stat-num" id="dSubRevenue">—</div><div class="stat-label">预计月收入（RM）</div></div>
+        <div class="stat-card"><div class="stat-num" id="dSubPaid">—</div><div class="stat-label">实际收款（RM）</div></div>
+      </div>
+      <div class="adm-card">
+        <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">tier 调整记录（set_tier 审计，最近 20 条）</h3>
+        <div id="dSubTimeline"></div>
       </div>
     </div>
 

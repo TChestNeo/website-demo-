@@ -32,6 +32,7 @@ test('admin：权限矩阵（匿名 401 / 普通用户 403 / 管理员 200）', 
     assert.strictEqual(s.users, 3);
     assert.strictEqual(typeof s.monthCostMicro, 'number');
     assert.ok(['ok', 'warn', 'exhausted'].includes(s.budgetState));
+    assert.ok(s.sub && typeof s.sub.subscribers === 'number' && s.sub.tierEvents.length === 0);
   } finally { await t.close(); }
 });
 
@@ -204,6 +205,16 @@ test('admin：用户搜索 + tier PATCH（一期唯一支付路径 + set_tier �
     const a = t.db.prepare("SELECT * FROM admin_audit_log WHERE action = 'set_tier'").get();
     assert.strictEqual(a.target, t.alice.user.id);
     assert.strictEqual(JSON.parse(a.detail).to, 'premium');
+    // 订阅收入（一期无支付：实际收款 0，预计月收入 = tier 月价 × 数量）
+    const s = await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json();
+    assert.deepStrictEqual(s.sub.tiers, { basic: 2, premium: 1, ultra: 0 });
+    assert.strictEqual(s.sub.subscribers, 1);
+    assert.strictEqual(s.sub.pricing.currency, 'RM');
+    assert.strictEqual(s.sub.pricing.monthly.ultra, 45.5);
+    assert.strictEqual(s.sub.revenue.paidMicro, 0);
+    assert.strictEqual(s.sub.revenue.estimatedMonthly, 23.5);
+    assert.strictEqual(s.sub.tierEvents[0].to, 'premium');
+    assert.strictEqual(s.sub.tierEvents[0].from, 'basic');
     // 详情 + 时间线（先处罚一次再查）
     await t.request('POST', '/api/admin/penalties', { userId: t.alice.user.id, action: 'warn' }, { cookie: t.admin.cookie });
     const detail = await (await t.request('GET', `/api/admin/users/${t.alice.user.id}`, undefined, { cookie: t.admin.cookie })).json();

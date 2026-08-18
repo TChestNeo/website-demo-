@@ -232,7 +232,25 @@
       renderDashQueue(m);
       renderDashBudget(d.budget);
       renderDashFeed(d.activity);
+      renderSub(d.sub);
     });
+  }
+  // ── 订阅与收入（统计卡 + set_tier 时间线；一期无支付 → 实际收款恒 0） ──
+  function renderSub(sub) {
+    if (!sub) return;
+    var t = sub.tiers || {};
+    $('dSubTotal').textContent = sub.subscribers;
+    $('dSubPremium').textContent = t.premium || 0;
+    $('dSubUltra').textContent = t.ultra || 0;
+    $('dSubBasic').textContent = t.basic || 0;
+    var rv = sub.revenue || {};
+    $('dSubRevenue').textContent = 'RM ' + (rv.estimatedMonthly || 0).toFixed(2);
+    $('dSubPaid').textContent = 'RM ' + ((rv.paidMicro || 0) / 1e6).toFixed(2);
+    $('dSubTimeline').innerHTML = (sub.tierEvents || []).map(function (e) {
+      return '<div class="feed-item"><div class="row" style="justify-content:space-between;margin-bottom:2px">' +
+        chip(e.to || '—', 'neutral') + '<span class="adm-meta">' + fmtTime(e.at) + '</span></div>' +
+        '<span style="font-size:13.5px">' + esc(e.actor) + '：' + esc(e.target) + ' 从 ' + esc(e.from || '—') + ' → ' + esc(e.to || '—') + '</span></div>';
+    }).join('') || '<p class="adm-meta">暂无 tier 调整记录</p>';
   }
   function renderDashQueue(m) {
     var rows = [['l0_hold', 'L0 拦截', 'warn'], ['queued', '排队中', 'neutral'],
@@ -279,7 +297,7 @@
 
   // ── Tab 切换（懒加载） ──
   var loaded = { ticket: false, badge: false, user: false };
-  var PANES = ['dash', 'mod', 'ticket', 'badge', 'user', 'usage'];
+  var PANES = ['dash', 'mod', 'ticket', 'badge', 'user', 'sub', 'usage'];
   function switchTab(tab) {
     document.querySelectorAll('#admTabs [data-tab]').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tab); });
     PANES.forEach(function (t) { $('pane-' + t).style.display = t === tab ? 'block' : 'none'; });
