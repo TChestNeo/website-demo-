@@ -318,3 +318,47 @@
      finRangeSel 本就在 fin-overview-sec 内（切成本子视图时下拉
      随总览隐藏），成本页各处标注「本月实账」——上一轮重构已
      天然解决，无需再改。0 console error（commit f3f1a06）。
+
+10. 流水账（财报实账全套，用户要求「把全部所需的重要和必须记录的
+    资讯也做一补充下」）
+   - 财报缺口分析结论（上一轮交付）：做财报缺 ①收款流水/退款/
+     递延收入/发票 ②成本侧固定成本明细 + 汇率历史 ③治理
+     （权责发生制/月结锁定/对账）——一期最小集 = 流水账；
+     递延收入/发票附件/对账留二期（接入支付后）。
+   - 003_ledger.sql：ledger 表（kind income/refund/expense/
+     adjustment、category 8 类、amount 正数方向由 kind 决定、
+     currency RM/CNY、occurred_at 经济事件日 = 期间归属、对方/
+     发票号/备注、created_by/created_at、occurred_at 索引）。
+   - **迁移编号踩坑**：最初起名 002_ledger.sql 与既有
+     002_admin_decisions.sql 撞版本——迁移器 applied 只在循环前
+     取一次，同名版本第二个文件在旧库（user_version=2）永远跳过
+     （新库却会应用 → 新旧库行为分叉）；改名 003（uv 2→3），
+     health 测试表数 24→25、user_version 2→3。
+   - **insertWithId 契约**：id 列必须允许 NULL（先插后回写）；首版
+     id TEXT UNIQUE NOT NULL → POST 500，改 TEXT UNIQUE。
+   - 后端端点：GET/POST /api/admin/ledger（LED-6 位、录入人
+     JOIN）、PUT/DELETE（原/新日期双 ledGuard：两日期任一落在锁定
+     月内即 403 RESTRICTED）、POST /close（kv ledger.closed_upto
+     单调只进不退 + 审计）、GET /export（Excel BOM + 流水号 + 中文
+     表头 CSV，Content-Disposition attachment；fetch .text() 会剥
+     BOM → 测试断言查 arrayBuffer 原始字节 efbbbf）。
+   - stats 接入：sub.revenue.paidMicro = 本月流水实账（收款 −
+     退款，¥ × fx 折 RM）；fin.paidRM/expenseRM/ledgerLocked；
+     series 增 paid（paidByDay 按日累计全史 + minD 扩展）；
+     四动作审计 ledger_add/edit/delete/close。
+   - 前端「流水」第三子 tab：录入表单（类型/分类/金额/币种/日期/
+     对方/发票/备注 + 保存/取消）、明细表（chip 类型着色 + 编辑/
+     删除带 confirm + 空态引导文案）、月结锁定（type=month 输入 +
+     确认 + 状态标签橙字）、导出 CSV 链接（纯 <a href 带 cookie
+     下载）；保存/删除后 loadLedger + refreshStats 联动（实际收款
+     卡、流水支出行、paid 曲线即时刷新）。
+   - 总览：实际收款卡 + paid 曲线自动接流水实账（FIN_CURVES.paid
+     口径注释更新）；成本结构增「流水支出（本月实账 RM，未计入
+     合计）」行 6→7。
+   - 测试 111/111（新增流水账矩阵：权限 401/403、CRUD、stats 联动
+     paidRM/paidMicro/expenseRM/series 末点、校验 400×6、404×2、
+     CSV BOM 字节 + 表头 + 行、锁定 403×3 + 单调 400、审计计数）。
+   - 冒烟：finTabBtns 3；流水流程全绿 ledSecShown/ledTabActive/
+     ledFormFields 8/未锁定标签/新增 SMK-1 行（收款 chip）/
+     dSubPaidAfter RM 66.66 即时刷新/CSV 表头+行/删除净零（库 0 行
+     + add/delete 审计对）0 console error（commit 83e41c8）。
