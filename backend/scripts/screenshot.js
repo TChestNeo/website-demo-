@@ -73,6 +73,45 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     // SHOT_DUMP=1：渲染后 DOM 冒烟（Read 工具不支持图片时的替代验证）
     if (process.env.SHOT_DUMP) {
       const expr = `(async function () {
+        // ── premium 页（一期订阅流程）：等级感知 + 申请开通工单全链路 ──
+        if (location.pathname.indexOf('/premium.html') > -1) {
+          var b = {
+            title: document.title,
+            priceKey: (window.SlatiPrice || {}).key,
+            premiumPrice: document.getElementById('premiumPrice').textContent,
+            pkgPrice: document.getElementById('pkgPremiumPrice').textContent,
+            planCards: document.querySelectorAll('[data-plan-card]').length,
+            addonCtas: document.querySelectorAll('[data-addon-cta]').length
+          };
+          for (var i = 0; i < 30 && !(window.__mnSubState && window.__mnSubState.ready); i++) {
+            await new Promise(function (r) { setTimeout(r, 100); });
+          }
+          b.tier = (window.__mnSubState || {}).tier || null;
+          b.bannerShown = document.getElementById('subStatus').style.display !== 'none';
+          b.bannerText = document.getElementById('subStatus').textContent.replace(/\\s+/g, ' ').trim().slice(0, 70);
+          b.ctas = {};
+          document.querySelectorAll('[data-plan-cta]').forEach(function (x) {
+            b.ctas[x.dataset.planCta] = { t: x.textContent.replace(/\\s+/g, ' ').trim(), d: x.disabled };
+          });
+          b.chips = Array.prototype.filter.call(document.querySelectorAll('.cur-chip'), function (c) { return c.offsetParent !== null; }).length;
+          var pc = document.querySelector('[data-plan-cta="premium"]');
+          if (!pc.disabled && !pc.dataset.guestLink) {
+            pc.click();
+            await new Promise(function (r) { setTimeout(r, 150); });
+            b.modalShown = document.getElementById('applyModal').classList.contains('active');
+            b.modalTitle = document.getElementById('applyTitle').textContent.slice(0, 30);
+            b.modalPrice = document.getElementById('applyPrice').textContent;
+            document.getElementById('applyNote').value = '冒烟申请备注';
+            document.getElementById('applySubmit').click();
+            await new Promise(function (r) { setTimeout(r, 900); });
+            b.modalClosed = !document.getElementById('applyModal').classList.contains('active');
+            b.ctaAfter = pc.textContent.replace(/\\s+/g, ' ').trim();
+            b.appliedStored = localStorage.getItem('slati_apply_premium') || null;
+          } else {
+            b.applySkipped = pc.dataset.guestLink ? 'guest' : (pc.disabled ? 'disabled' : 'unknown');
+          }
+          return JSON.stringify(b);
+        }
         var base = {
           title: document.title,
           gate: document.getElementById('adminGate') && document.getElementById('adminGate').style.display,

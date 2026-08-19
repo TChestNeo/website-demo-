@@ -40,6 +40,19 @@
     .cd-num { font-size:48px; font-weight:800; color:#fff; }
     .cd-text { font-size:15px; color:rgba(255,255,255,0.5); margin-bottom:6px; }
     .cd-sub { font-size:12px; color:rgba(255,255,255,0.25); }
+    /* ── 一期订阅流程（等级感知 + 申请开通工单）── */
+    .sub-status { display:none; max-width:1050px; margin:-8px auto var(--space-lg); padding:14px 18px; border:1px solid rgba(234,179,8,0.25); border-radius:12px; background:rgba(234,179,8,0.06); color:rgba(255,255,255,0.85); font-size:14px; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; }
+    .cur-chip { display:none; vertical-align:2px; margin-left:8px; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:700; background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.4); }
+    .plan-cta { font-family:inherit; cursor:pointer; }
+    .plan-cta[disabled] { opacity:.55; cursor:default; }
+    .apply-card { background:rgba(30,28,50,0.95); border:1px solid rgba(255,255,255,0.12); border-radius:var(--radius-lg); padding:var(--space-lg); max-width:440px; width:calc(100% - 48px); }
+    .apply-card h3 { color:#fff; margin-bottom:4px; font-size:20px; }
+    .apply-card textarea { width:100%; min-height:84px; margin-top:12px; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(10,10,26,0.6); color:#fff; font-size:13px; resize:vertical; font-family:inherit; }
+    .apply-card textarea::placeholder { color:rgba(255,255,255,0.3); }
+    .apply-err { color:#f87171; font-size:12px; min-height:16px; margin-top:6px; }
+    .apply-actions { display:flex; gap:10px; margin-top:12px; }
+    .apply-actions .btn { flex:1; }
+    .plan-note { max-width:1050px; margin:0 auto var(--space-xl); text-align:center; font-size:12px; color:rgba(255,255,255,0.35); }
     /* Page entrance animation */
     .reveal { opacity:0; transform:translateY(30px); animation:revealUp 0.7s cubic-bezier(0.22,0.61,0.36,1) forwards; }
     @keyframes revealUp { to { opacity:1; transform:translateY(0); } }
@@ -62,16 +75,19 @@
     <div style="margin-top:12px;font-size:13px;color:rgba(255,255,255,0.4)">Prices shown in <strong id="currencyLabel" style="color:rgba(255,255,255,0.7)">USD</strong> · Based on your location</div>
   </div>
 
+  <!-- 订阅状态条（未登录 / 当前方案，由脚本渲染）-->
+  <div id="subStatus" class="sub-status"></div>
+
   <!-- Three tiers -->
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);max-width:1050px;margin:0 auto var(--space-xl)">
 
-    <div class="plan-card reveal reveal-d1">
+    <div class="plan-card reveal reveal-d1" data-plan-card="basic" data-apply-label="Basic">
       <span class="material-symbols-outlined" style="font-size:32px;color:#4648d4;margin-bottom:8px">person</span>
-      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Basic</h3>
+      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Basic<span class="cur-chip">✓ 当前方案</span></h3>
       <p style="color:#767586;font-size:13px;margin-bottom:16px">Essential worldbuilding tools</p>
-      <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="basicPrice">$5.99</div>
+      <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="basicPrice" data-plan-price>$5.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
-      <a class="btn btn-primary btn-sm" href="../pages/ticket.html" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:600;text-decoration:none">联系管理员开通</a>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="basic" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:600;text-decoration:none">联系管理员开通</button>
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Basic wiki cards</div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Basic 3D decorations</div>
@@ -81,14 +97,14 @@
       </div>
     </div>
 
-    <div class="plan-card premium reveal reveal-d2">
+    <div class="plan-card premium reveal reveal-d2" data-plan-card="premium" data-apply-label="Premium">
       <div class="plan-badge popular">Most Popular</div>
       <span class="material-symbols-outlined" style="font-size:32px;color:#eab308;margin-bottom:8px;margin-top:8px">diamond</span>
-      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium</h3>
+      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium<span class="cur-chip">✓ 当前方案</span></h3>
       <p style="color:#767586;font-size:13px;margin-bottom:16px">Advanced creator toolkit</p>
-      <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="premiumPrice">$11.99</div>
+      <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="premiumPrice" data-plan-price>$11.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
-      <a class="btn btn-primary btn-sm" href="../pages/ticket.html" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">联系管理员开通</a>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="premium" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">联系管理员开通</button>
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Everything in Basic</strong></div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Identity verification</div>
@@ -99,14 +115,14 @@
       </div>
     </div>
 
-    <div class="plan-card ultra reveal reveal-d3">
+    <div class="plan-card ultra reveal reveal-d3" data-plan-card="ultra" data-apply-label="Premium Ultra">
       <div class="plan-badge best">Best Value</div>
       <span class="material-symbols-outlined" style="font-size:32px;color:#8127cf;margin-bottom:8px;margin-top:8px">star</span>
-      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium Ultra</h3>
+      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium Ultra<span class="cur-chip">✓ 当前方案</span></h3>
       <p style="color:#767586;font-size:13px;margin-bottom:16px">Full AI-powered suite</p>
-      <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="ultraPrice">$15.99</div>
+      <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="ultraPrice" data-plan-price>$15.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
-      <a class="btn btn-primary btn-sm" href="../pages/ticket.html" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">联系管理员开通</a>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="ultra" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">联系管理员开通</button>
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Everything in Premium</strong></div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Full identity suite</div>
@@ -121,11 +137,11 @@
   <!-- Packages -->
   <h2 class="headline-md section-title reveal reveal-d4">Bundle Packages — Save More</h2>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);max-width:1050px;margin:0 auto var(--space-xl)" class="reveal reveal-d4">
-    <div class="package-card pkg-premium">
+    <div class="package-card pkg-premium" data-plan-card="pkg-premium" data-target-tier="premium" data-apply-label="Premium 包价（36 人团队频道）">
       <span class="badge badge-warning" style="margin-bottom:8px">⭐ Recommended</span>
       <h3 style="font-size:22px;font-weight:700;margin-bottom:4px">Premium Package</h3>
       <p style="color:#767586;font-size:13px;margin-bottom:12px">Everything for a professional micronation</p>
-      <div style="font-size:36px;font-weight:800;margin-bottom:4px" id="pkgPremiumPrice">$12.99</div>
+      <div style="font-size:36px;font-weight:800;margin-bottom:4px" id="pkgPremiumPrice" data-plan-price>$12.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
       <div style="text-align:left;margin-bottom:16px">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Premium subscription tier</div>
@@ -134,13 +150,13 @@
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Advanced decor customization</div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Identity verification included</div>
       </div>
-      <a class="btn btn-primary btn-sm" href="../pages/ticket.html" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">联系管理员开通</a>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="pkg-premium" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">联系管理员开通</button>
     </div>
-    <div class="package-card pkg-ultra">
+    <div class="package-card pkg-ultra" data-plan-card="pkg-ultra" data-target-tier="ultra" data-apply-label="Premium Ultra 包价（无限成员）">
       <span class="badge badge-secondary" style="margin-bottom:8px">💎 Ultimate</span>
       <h3 style="font-size:22px;font-weight:700;margin-bottom:4px">Premium Ultra Package</h3>
       <p style="color:#767586;font-size:13px;margin-bottom:12px">Unlimited power — most ambitious nations</p>
-      <div style="font-size:36px;font-weight:800;margin-bottom:4px" id="pkgUltraPrice">$19.99</div>
+      <div style="font-size:36px;font-weight:800;margin-bottom:4px" id="pkgUltraPrice" data-plan-price>$19.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
       <div style="text-align:left;margin-bottom:16px">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Premium Ultra subscription tier</div>
@@ -148,7 +164,7 @@
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> All customization unlocked</div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Special identity verification</div>
       </div>
-      <a class="btn btn-primary btn-sm" href="../pages/ticket.html" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">联系管理员开通</a>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="pkg-ultra" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">联系管理员开通</button>
     </div>
   </div>
 
@@ -198,32 +214,33 @@
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Basic</h4>
         <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>12</strong> 位成员</p>
-        <p style="font-weight:700" id="addonBasic">$5.50</p><p style="font-size:11px;color:#767586">Per month</p>
-        <a class="btn btn-primary btn-sm" href="../pages/ticket.html" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;text-decoration:none">联系管理员开通</a>
+        <p style="font-weight:700" id="addonBasic" data-addon-price>$5.50</p><p style="font-size:11px;color:#767586">Per month</p>
+        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-basic" data-apply-label="Team Slots — Basic" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;text-decoration:none">联系管理员开通</button>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Plus</h4>
         <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>24</strong> 位成员</p>
-        <p style="font-weight:700" id="addonPlus">$6.50</p><p style="font-size:11px;color:#767586">Per month</p>
-        <a class="btn btn-primary btn-sm" href="../pages/ticket.html" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">联系管理员开通</a>
+        <p style="font-weight:700" id="addonPlus" data-addon-price>$6.50</p><p style="font-size:11px;color:#767586">Per month</p>
+        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-plus" data-apply-label="Team Slots — Plus" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">联系管理员开通</button>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Premium</h4>
         <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>36</strong> 位成员</p>
-        <p style="font-weight:700" id="addonPremium">$7.99</p><p style="font-size:11px;color:#767586">Per month</p>
-        <a class="btn btn-primary btn-sm" href="../pages/ticket.html" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">联系管理员开通</a>
+        <p style="font-weight:700" id="addonPremium" data-addon-price>$7.99</p><p style="font-size:11px;color:#767586">Per month</p>
+        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-premium" data-apply-label="Team Slots — Premium" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">联系管理员开通</button>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Ultra</h4>
         <p style="font-size:12px;color:#767586;margin-bottom:4px"><strong>Unlimited</strong> 无限成员</p>
-        <p style="font-weight:700" id="addonUltra">$8.99</p><p style="font-size:11px;color:#767586">Per month</p>
-        <a class="btn btn-primary btn-sm" href="../pages/ticket.html" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">联系管理员开通</a>
+        <p style="font-weight:700" id="addonUltra" data-addon-price>$8.99</p><p style="font-size:11px;color:#767586">Per month</p>
+        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-ultra" data-apply-label="Team Slots — Ultra" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">联系管理员开通</button>
       </div>
     </div>
   </div>
 
 </div>
 
+<script src="../assets/js/api.js"></script>
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/pricing.js"></script>
 <script src="../assets/js/transitions.js"></script>
@@ -423,6 +440,161 @@ void main(){
 var bgStyle=document.createElement('style');
 bgStyle.textContent='@keyframes floatCubeBG{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}50%{opacity:0.5}100%{transform:translateY(-100vh) rotate(360deg) scale(0.3);opacity:0}}@keyframes floatPaperBG{0%{transform:translateY(0) rotate(0deg) translateX(0);opacity:0.7}25%{transform:translateX(30px) rotate(90deg)}50%{transform:translateX(-20px) rotate(180deg);opacity:0.4}75%{transform:translateX(15px) rotate(270deg)}100%{transform:translateY(-100vh) rotate(360deg) translateX(-10px);opacity:0}}@keyframes floatLineBG{0%{transform:translateY(0);opacity:0.6}100%{transform:translateY(-100vh);opacity:0}}';
 document.head.appendChild(bgStyle);
+</script>
+
+<!-- 申请开通弹窗（一期：提交支付工单 → 管理员人工确认开通）-->
+<div id="applyModal" class="cd-overlay">
+  <div class="apply-card">
+    <h3 id="applyTitle">申请开通</h3>
+    <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:4px">价格：<strong id="applyPrice" style="color:#fff">—</strong></p>
+    <p style="color:rgba(255,255,255,0.45);font-size:12px">提交后将生成一张「支付」工单，管理员人工确认后为你开通，付款方式另行沟通。</p>
+    <textarea id="applyNote" maxlength="500" placeholder="备注（可选）：希望的付款方式等"></textarea>
+    <div id="applyErr" class="apply-err"></div>
+    <div class="apply-actions">
+      <button id="applyCancel" class="btn btn-sm" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff">取消</button>
+      <button id="applySubmit" class="btn btn-primary btn-sm" style="background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700">提交申请</button>
+    </div>
+  </div>
+</div>
+<div class="plan-note">一期为人工开通流程：申请提交后由管理员确认并开通，收款方式由管理员另行沟通。</div>
+
+<script>
+// ── 一期订阅流程：等级感知 + 申请开通（工单预填 → 管理员人工开通）──
+// 口径：一期无在线支付。tier 以服务端为准（GET /api/auth/me）；
+// 「申请开通」= POST /api/tickets（category=payment 自动 urgent），管理员在工单队列确认后 PATCH tier。
+(function () {
+  var TIER_RANK = { basic: 1, premium: 2, ultra: 3 };
+  var TIER_ZH = { basic: 'Basic', premium: 'Premium', ultra: 'Premium Ultra' };
+  var me = null; // { tier, email } 或 null（未登录/后端不可达）
+  var pending = null;
+
+  function $(id) { return document.getElementById(id); }
+  function applyKey(k) { return 'slati_apply_' + k; }
+
+  function setCta(btn, text, disabled, href) {
+    btn.textContent = text;
+    btn.disabled = !!disabled;
+    btn.dataset.guestLink = href || '';
+  }
+
+  function renderGuest() {
+    var b = $('subStatus');
+    b.style.display = 'flex';
+    b.innerHTML = '<span>登录后即可申请开通会员方案（一期为人工开通流程）</span>'
+      + '<a class="btn btn-primary btn-sm" href="../index.html" style="margin:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:#fff;text-decoration:none">登录 / 注册</a>';
+    document.querySelectorAll('[data-plan-card]').forEach(function (card) {
+      var btn = card.querySelector('[data-plan-cta]');
+      if (!btn) return;
+      if (card.dataset.planCard === 'basic') setCta(btn, '免费注册', false, '../index.html');
+      else setCta(btn, '登录后申请开通', false, '../index.html');
+    });
+    document.querySelectorAll('[data-addon-cta]').forEach(function (btn) {
+      setCta(btn, '登录后申请开通', false, '../index.html');
+    });
+  }
+
+  function renderUser() {
+    var rank = TIER_RANK[me.tier] || 1;
+    var b = $('subStatus');
+    b.style.display = 'flex';
+    b.innerHTML = '<span>你当前的方案是 <b style="color:#eab308">' + (TIER_ZH[me.tier] || me.tier) + '</b>'
+      + '<span style="color:rgba(255,255,255,0.4)"> · ' + me.email + '</span></span>'
+      + '<span style="color:rgba(255,255,255,0.45)">升级 / 加购请点卡片按钮提交申请，管理员确认后开通</span>';
+
+    document.querySelectorAll('[data-plan-card]').forEach(function (card) {
+      var key = card.dataset.planCard;
+      var target = card.dataset.targetTier || key;
+      var btn = card.querySelector('[data-plan-cta]');
+      var chip = card.querySelector('.cur-chip');
+      var done = localStorage.getItem(applyKey(key));
+      if (done) { setCta(btn, '已提交申请 · ' + done.slice(-10), true); return; }
+      var tr = TIER_RANK[target] || 1;
+      if (card.dataset.targetTier) { // 包价卡：等级 ≥ 包价等级时仍可购买（叠加团队等权益）
+        if (tr < rank) setCta(btn, '已包含', true);
+        else setCta(btn, '申请开通', false);
+        return;
+      }
+      if (tr > rank) setCta(btn, '申请开通', false);
+      else if (tr === rank) { setCta(btn, '✓ 当前方案', true); if (chip) chip.style.display = 'inline-block'; }
+      else setCta(btn, '已包含', true);
+    });
+    document.querySelectorAll('[data-addon-cta]').forEach(function (btn) {
+      var done = localStorage.getItem(applyKey(btn.dataset.addonCta));
+      if (done) setCta(btn, '已提交申请 · ' + done.slice(-10), true);
+      else setCta(btn, '申请开通', false);
+    });
+  }
+
+  function openApply(key, label, price) {
+    pending = { key: key, label: label, price: price };
+    $('applyTitle').textContent = '申请开通「' + label + '」';
+    $('applyPrice').textContent = price + ' / 月';
+    $('applyNote').value = '';
+    $('applyErr').textContent = '';
+    $('applySubmit').disabled = false;
+    $('applyModal').classList.add('active');
+  }
+  function closeApply() { pending = null; $('applyModal').classList.remove('active'); }
+
+  document.addEventListener('click', function (ev) {
+    var btn = ev.target.closest('[data-plan-cta]');
+    if (btn) {
+      if (btn.disabled) return;
+      if (btn.dataset.guestLink) { location.href = btn.dataset.guestLink; return; }
+      var card = btn.closest('[data-plan-card]');
+      var price = ((card.querySelector('[data-plan-price]') || {}).textContent || '?').trim();
+      openApply(card.dataset.planCard, card.dataset.applyLabel || card.dataset.planCard, price);
+      return;
+    }
+    var ab = ev.target.closest('[data-addon-cta]');
+    if (ab) {
+      if (ab.disabled) return;
+      if (ab.dataset.guestLink) { location.href = ab.dataset.guestLink; return; }
+      var acard = ab.closest('.addon-card');
+      var ap = (((acard.querySelector('[data-addon-price]') || {}).textContent) || '?').trim();
+      openApply(ab.dataset.addonCta, ab.dataset.applyLabel || ab.dataset.addonCta, ap);
+    }
+  });
+
+  $('applyCancel').addEventListener('click', closeApply);
+  $('applyModal').addEventListener('click', function (ev) { if (ev.target === this) closeApply(); });
+
+  $('applySubmit').addEventListener('click', function () {
+    if (!pending || !me) return;
+    var note = $('applyNote').value.trim().slice(0, 500);
+    var subject = '订阅申请：' + pending.label + '（' + pending.price + '/月）';
+    var description = '用户 ' + me.email + ' 申请开通「' + pending.label + '」，计价 ' + pending.price
+      + '/月。付款方式与开通由管理员确认。' + (note ? '\n\n备注：' + note : '');
+    $('applySubmit').disabled = true;
+    $('applyErr').textContent = '';
+    MN_API.post('/tickets', {
+      category: 'payment', type: 'subscription', contact: me.email,
+      subject: subject, description: description, locale: 'zh', submittedAt: new Date().toISOString()
+    }).then(function (r) {
+      $('applySubmit').disabled = false;
+      if (r.ok && r.data && r.data.id) {
+        localStorage.setItem(applyKey(pending.key), r.data.id);
+        closeApply();
+        renderUser();
+      } else if (r.status === 429) {
+        $('applyErr').textContent = '提交过于频繁，请稍后再试';
+      } else {
+        $('applyErr').textContent = '提交失败（' + (r.status || '网络') + '），请稍后重试或到工单页提交';
+      }
+    });
+  });
+
+  // 初始化：读服务端权威 tier（401/网络失败 → 未登录态）
+  MN_API.get('/auth/me').then(function (r) {
+    if (r.ok && r.data && r.data.user) {
+      me = { tier: r.data.user.tier || 'basic', email: r.data.user.email };
+      renderUser();
+    } else {
+      renderGuest();
+    }
+    window.__mnSubState = { ready: true, tier: me && me.tier, email: me && me.email };
+  });
+})();
 </script>
 </body>
 </html>
