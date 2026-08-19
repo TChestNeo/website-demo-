@@ -17,7 +17,7 @@
 | 腾讯云 **IMS 国际站可用性** | 开通内容安全，确认可创建 API 密钥（TC3 签名已实现，见 `src/moderation/image.js`）。**不可用 → 备选 AWS Rekognition / 阿里云国际站内容安全**（换配置级改动，image.js 已隔离） |
 | DeepSeek 余额 | 平台充值 ≥100 元（月度预算硬上限 60 元是最后防线，不是充值额） |
 | 预算初值 | `.env` 三值按计划默认 30/20/10/60 元，上线后按真实流量在管理后台调 |
-| Stripe 在线支付（**可选，可后补**） | 付费页真实扣款（订阅自动续费 + 单次购买 1 个月）。注册 → 4×2 个 MYR 价 → Customer Portal → webhook → `.env` 填 STRIPE_*，全程见 `stripe-setup.md`；未配置时付费页自动回退一期人工开通 |
+| Stripe 在线支付（**可选，可后补**） | 付费页真实扣款（订阅自动续费 + 单次购买 1 个月）。注册 → 5×2 个 MYR 价（含 Basic 学生价 RM12）→ Customer Portal → webhook → `.env` 填 STRIPE_*，全程见 `stripe-setup.md`；未配置时付费页自动回退一期人工开通 |
 
 ## 1. 购买与安全组
 

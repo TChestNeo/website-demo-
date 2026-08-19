@@ -320,7 +320,7 @@
         <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">用户详情 <span class="mono" id="udId"></span></h3>
         <div class="row" style="margin-bottom:var(--space-sm)">
           <select class="adm-select" id="udTier">
-            <option value="basic">basic</option><option value="premium">premium</option><option value="ultra">ultra</option>
+            <option value="free">free</option><option value="basic">basic</option><option value="premium">premium</option><option value="ultra">ultra</option>
           </select>
           <button class="btn btn-primary" id="udTierBtn">保存 tier</button>
           <span class="adm-meta" id="udTierNote"></span>
@@ -396,10 +396,11 @@
         <div class="adm-card">
           <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">订阅与收入结构</h3>
           <div class="stat-strip">
-            <div class="stat-card"><div class="stat-num" id="dSubTotal">—</div><div class="stat-label">订阅用户</div><div class="stat-sub">premium + ultra</div></div>
+            <div class="stat-card"><div class="stat-num" id="dSubTotal">—</div><div class="stat-label">订阅用户</div><div class="stat-sub">basic + premium + ultra</div></div>
+            <div class="stat-card"><div class="stat-num" id="dSubFree">—</div><div class="stat-label">free（普通用户）</div></div>
+            <div class="stat-card"><div class="stat-num" id="dSubBasic">—</div><div class="stat-label">basic（RM12/月）</div></div>
             <div class="stat-card"><div class="stat-num" id="dSubPremium">—</div><div class="stat-label">premium</div></div>
             <div class="stat-card"><div class="stat-num" id="dSubUltra">—</div><div class="stat-label">ultra</div></div>
-            <div class="stat-card"><div class="stat-num" id="dSubBasic">—</div><div class="stat-label">basic（免费）</div></div>
             <div class="stat-card"><div class="stat-num" id="dSubGrowth">—</div><div class="stat-label">订阅 7 天净增</div></div>
           </div>
         </div>

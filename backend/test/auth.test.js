@@ -59,7 +59,7 @@ test('email-code：同 IP 每小时 5 封封顶，第 6 封 429', async () => {
   } finally { await t.close(); }
 });
 
-test('verify：新邮箱 → status new、CIT-/USR- 可读 ID、tier basic、cookie 可通 /me', async () => {
+test('verify：新邮箱 → status new、CIT-/USR- 可读 ID、tier free（普通用户默认层）、cookie 可通 /me', async () => {
   const t = await testApp();
   try {
     const code = await sendCode(t, 'new@example.com');
@@ -70,7 +70,7 @@ test('verify：新邮箱 → status new、CIT-/USR- 可读 ID、tier basic、coo
     assert.match(data.user.id, /^USR-\d{6}$/);
     assert.match(data.user.citizenId, /^CIT-\d{6}$/);
     assert.strictEqual(data.user.displayName, 'Ada');
-    assert.strictEqual(data.user.tier, 'basic');
+    assert.strictEqual(data.user.tier, 'free');
     assert.ok(data.user.avatarUrl.startsWith('https://ui-avatars.com/api/?name='));
     const cookie = cookieOf(res);
     assert.ok(cookie && cookie.startsWith('mn_session='));

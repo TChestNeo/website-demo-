@@ -17,7 +17,7 @@
 2. Dashboard → Developers → API keys 拿 `sk_test_...`。
 3. 下载 **Stripe CLI**（<https://stripe.com/docs/stripe-cli>）——本地联调 webhook 用。
 
-## 2. 建 4×2 个价（Product + Price）
+## 2. 建 5×2 个价（Product + Price）
 
 最快方式（推荐）：本地跑一条命令自动建齐并打印 .env 行（幂等，可重复跑）：
 
@@ -29,14 +29,15 @@ cd backend && node scripts/stripe-init.js <sk_test_xxx>
 
 | SKU（后端 key） | 方案 | 月价 MYR |
 |---|---|---|
+| `basic` | Basic（学生价；注册默认层为 free 普通用户） | 12.00 |
 | `premium` | Premium | 23.50 |
 | `ultra` | Premium Ultra | 45.50 |
 | `pkg-premium` | Premium + 团队包 | 29.90 |
 | `pkg-ultra` | Premium Ultra + 团队包 | 60.90 |
 
-记下 8 个 Price ID（`price_...`）。**缺哪个，哪个 SKU 的对应通道就自动回退申请流**（前端按 `/api/subscription/status` 的 `prices[key].hasPrice`/`hasOnce` 判断，零代码改动）。
+记下 10 个 Price ID（`price_...`）。**缺哪个，哪个 SKU 的对应通道就自动回退申请流**（前端按 `/api/subscription/status` 的 `prices[key].hasPrice`/`hasOnce` 判断，零代码改动）。
 
-> 正式上线激活 live 后要再建一组 live Price（8 个），替换 `.env` 里的 ID。
+> 正式上线激活 live 后要再建一组 live Price（10 个），替换 `.env` 里的 ID。
 
 ## 3. Customer Portal（用户自助取消/换卡/看账单）
 
@@ -56,7 +57,7 @@ Dashboard → Settings → Billing → **Customer portal**：
 | `checkout.session.async_payment_succeeded` | 开通（与上面二选一先到者生效，事件去重保证只开一次） |
 | `invoice.paid` | 首期 = pending 行转 paid；续费 = 新增行 + 到期顺延 1 个月（只订阅有，单次购买无发票） |
 | `invoice.payment_failed` | 记 failed 行，tier 不动（Stripe 催款重试；最终失败会发 deleted） |
-| `customer.subscription.deleted` | 立即降回 basic + 清到期 |
+| `customer.subscription.deleted` | 立即降回 free（普通用户）+ 清到期 |
 
 其他事件一律 200 忽略。
 
@@ -102,13 +103,13 @@ STRIPE_RETURN_ORIGIN=
    - 卡号 `4000 0000 0000 0002`（declined）→ 扣款失败 → 生成 `invoice.payment_failed`，tier 不动。
 2. 单次购买：点「单次购买 · RM23.50 · 1 个月」→ 结账页选 **FPX** → 测试银行（模拟成功/失败两个选项）→ 验证异步到账开通路径（`async_payment_succeeded`）→ tier 开通、到期 +1 个月、审计 `via=stripe_once`（不产生订阅，无「管理订阅」入口）。
 3. 到期顺延：Stripe Dashboard 对该订阅点「模拟下月账单/立即收月费」（或直接等 `invoice.paid`）→ 到期 +1 个月。
-4. 取消：「管理订阅」进 portal → 取消 → `customer.subscription.deleted` → 用户立即降 basic。
+4. 取消：「管理订阅」进 portal → 取消 → `customer.subscription.deleted` → 用户立即降 free（普通用户）。
 5. 本地联调记得开 `stripe listen`，否则 webhook 进不来、支付成功但 tier 不动。
 
 ## 7. 正式上线（live 激活）
 
 1. Dashboard → Settings → Activate your account：提交公司/个人信息 + 银行账户（MYR 收款）。
-2. 建 live 版 8 个 Price（4 订阅 + 4 单次），`.env` 换 `sk_live_...` + live Price ID + 生产 webhook `whsec_live_...`（STRIPE_ENABLED 保持 true）。
+2. 建 live 版 10 个 Price（5 订阅 + 5 单次），`.env` 换 `sk_live_...` + live Price ID + 生产 webhook `whsec_live_...`（STRIPE_ENABLED 保持 true）。
 3. 先用自己卡跑一遍 §6 全链路（会真实扣款，随后可退款）。
 
 ## 8. 故障排查
@@ -121,7 +122,7 @@ STRIPE_RETURN_ORIGIN=
 | 单次购买按钮不出现 | 该 SKU 缺 `STRIPE_PRICE_*_ONCE`；或 `onceMethods` 为空（`/api/subscription/status` 查 `onceMethods`） |
 | 订阅结账页报错/建会话失败 | 订阅清单混入了非卡类方式（FPX/支付宝不支撑订阅）：`STRIPE_PAYMENT_METHODS` 只保留 `card` |
 | 微信支付不出现 | 马区未开通：Dashboard → Payment methods 确认后，把 `wechat_pay` 加进 `STRIPE_ONCE_PAYMENT_METHODS` 重启 |
-| 退款 | Stripe 后台手动退款（我方不做自动退款接口）→ 管理员在管理后台把该用户 PATCH 回 basic（手动授予 = 永久，清空到期时间） |
+| 退款 | Stripe 后台手动退款（我方不做自动退款接口）→ 管理员在管理后台把该用户 PATCH 回 free 或原等级（手动授予 = 永久，清空到期时间） |
 | 扣款失败催款 | Stripe 自动重试（默认 dunning 配置）；最终失败发 `customer.subscription.deleted` 自动降级，无需人工 |
 | FPX 走不通 | 改 `STRIPE_ONCE_PAYMENT_METHODS=card`，零代码改动 |
 

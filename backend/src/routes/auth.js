@@ -53,7 +53,7 @@ function publicUser(row) {
 }
 
 // 建号（verify 与测试共用）：返回完整 users 行
-function createUser(db, { email, displayName, tier = 'basic', role = 'user', status = 'active' }) {
+function createUser(db, { email, displayName, tier = 'free', role = 'user', status = 'active' }) {
   const iso = new Date().toISOString();
   let name = String(displayName || '').trim() || normalizeEmail(email).split('@')[0] || 'Sovereign';
   if (name.length > DISPLAY_MAX) name = name.slice(0, DISPLAY_MAX);

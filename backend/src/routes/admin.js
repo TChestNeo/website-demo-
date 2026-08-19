@@ -11,7 +11,7 @@ const { requireAdmin } = require('../middleware/auth');
 const { applyDecision, TARGET_TABLES, textOf } = require('../moderation/pipeline');
 const { insertWithId, pad6 } = require('../ids');
 
-const TIERS = ['basic', 'premium', 'ultra'];
+const TIERS = ['free', 'basic', 'premium', 'ultra'];
 const PENALTY_ACTIONS = ['warn', 'remove_content', 'rate_limit', 'mute', 'ban', 'restore'];
 const QUEUE_OPEN = ['l0_hold', 'queued', 'needs_human', 'ai_rejected'];
 const BUDGET_FEATURES = ['moderation_text', 'chat', 'moderation_image', 'total'];
@@ -107,18 +107,19 @@ function register(router, ctx) {
     for (const r of db.prepare('SELECT action AS a, target AS t, created_at AS at FROM admin_audit_log ORDER BY seq DESC LIMIT 6').all())
       act.push({ at: r.at, type: 'audit', text: (AUDIT_ZH[r.a] || r.a) + '：' + (r.t || '—') });
     act.sort((x, y) => (x.at < y.at ? 1 : x.at > y.at ? -1 : 0));
-    // 订阅与收入（tier 为管理员手动指定；paidMicro = 本月流水实账（收款 − 退款），无流水则 0，收入按 tier 月价估算）
-    const tiers = { basic: 0, premium: 0, ultra: 0 };
+    // 订阅与收入（free=普通用户不计费；Basic 学生价 RM12/月；paidMicro = 本月流水实账（收款 − 退款），
+    // 无流水则 0，收入按 tier 月价估算——存量 Basic 一并计费属估算口径，实账以流水为准）
+    const tiers = { free: 0, basic: 0, premium: 0, ultra: 0 };
     for (const r of db.prepare("SELECT tier, count(*) AS n FROM users WHERE status = 'active' GROUP BY tier").all())
       if (r.tier in tiers) tiers[r.tier] = r.n;
-    const tierPrice = { premium: 23.5, ultra: 45.5 }; // 对齐 docs/pages/premium.html LOCALES['ms-MY'] tier 月价（RM）
+    const tierPrice = { basic: 12, premium: 23.5, ultra: 45.5 }; // 对齐 docs/pages/premium.html LOCALES['ms-MY'] tier 月价（RM）
     const sub = {
       tiers,
-      subscribers: tiers.premium + tiers.ultra,
+      subscribers: tiers.basic + tiers.premium + tiers.ultra,
       pricing: { currency: 'RM', monthly: tierPrice },
       revenue: {
         paidMicro: 0,
-        estimatedMonthly: Math.round((tiers.premium * tierPrice.premium + tiers.ultra * tierPrice.ultra) * 100) / 100
+        estimatedMonthly: Math.round((tiers.basic * tierPrice.basic + tiers.premium * tierPrice.premium + tiers.ultra * tierPrice.ultra) * 100) / 100
       },
       tierEvents: db.prepare("SELECT l.created_at AS at, u.email AS actor, l.target, l.detail FROM admin_audit_log l "
         + "LEFT JOIN users u ON u.id = l.admin_id WHERE l.action = 'set_tier' ORDER BY l.seq DESC LIMIT 20").all()
@@ -147,12 +148,12 @@ function register(router, ctx) {
     const totalCostRM = Math.round((fin.fixedMonthly + usageCostRM) * 100) / 100;
     const taxRM = Math.round(estRevenueRM * fin.taxRate * 100) / 100;
     const netProfitRM = Math.round((estRevenueRM - totalCostRM - taxRM) * 100) / 100;
-    // 7 天订阅净增长：set_tier 事件进 premium/ultra +1、出 −1
+    // 7 天订阅净增长：set_tier 事件进付费层（basic/premium/ultra）+1、出 −1（free 不计）
     let growth7d = 0;
     for (const r of db.prepare("SELECT detail FROM admin_audit_log WHERE action = 'set_tier' AND created_at >= ?").all(weekAgo)) {
       let d = null; try { d = JSON.parse(r.detail); } catch (e) {}
-      if ((d && d.to) === 'premium' || (d && d.to) === 'ultra') growth7d++;
-      if ((d && d.from) === 'premium' || (d && d.from) === 'ultra') growth7d--;
+      if (d && d.to && d.to !== 'free') growth7d++;
+      if (d && d.from && d.from !== 'free') growth7d--;
     }
     const coverage = estRevenueRM <= 0 ? 0 : Math.round(estRevenueRM / Math.max(totalCostRM, 0.01) * 100) / 100;
     let healthState, healthReason;
@@ -203,7 +204,7 @@ function register(router, ctx) {
     for (const d of Object.keys(dayEvts)) if (d < minD) minD = d;
     for (const d of Object.keys(usageByDay)) if (d < minD) minD = d;
     for (const d of Object.keys(paidByDay)) if (d < minD) minD = d;
-    const cnt = { premium: 0, ultra: 0 };
+    const cnt = { basic: 0, premium: 0, ultra: 0 };
     const prm = { fx: FIN_DEFAULTS.fx, taxRate: FIN_DEFAULTS.taxRate, fixedMonthly: FIN_DEFAULTS.fixedMonthly };
     const series = [];
     let mtd = 0, prevMonth = '';
@@ -214,7 +215,7 @@ function register(router, ctx) {
       for (const [kind, detail] of dayEvts[d] || []) {
         let de = null; try { de = JSON.parse(detail); } catch (err) {}
         if (kind === 'tier') {
-          if (de && de.from in cnt) cnt[de.from]--;
+          if (de && de.from in cnt && cnt[de.from] > 0) cnt[de.from]--; // 存量 Basic 升级事件自 0 起步不减负（重放无此前 +basic 事件）
           if (de && de.to in cnt) cnt[de.to]++;
         } else {
           const src = de && de.to ? de.to : de; // 新格式 {from,to} 取 to / 旧格式直接值
@@ -224,7 +225,7 @@ function register(router, ctx) {
       const month = d.slice(0, 7);
       if (month !== prevMonth) { mtd = 0; prevMonth = month; }
       mtd += ((usageByDay[d] || 0) / 1e6) * prm.fx;
-      const rev = Math.round((cnt.premium * tierPrice.premium + cnt.ultra * tierPrice.ultra) * 100) / 100;
+      const rev = Math.round((cnt.basic * tierPrice.basic + cnt.premium * tierPrice.premium + cnt.ultra * tierPrice.ultra) * 100) / 100;
       const tax = Math.round(rev * prm.taxRate * 100) / 100;
       const cost = Math.round((prm.fixedMonthly + mtd) * 100) / 100;
       const pd = paidByDay[d] || { rm: 0, cny: 0 };
@@ -449,7 +450,7 @@ function register(router, ctx) {
     const u = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
     if (!u) throw new HttpError('NOT_FOUND', '用户不存在');
     const body = await readJson(req);
-    if (!TIERS.includes(body.tier)) throw new HttpError('VALIDATION', 'tier 需为 basic/premium/ultra');
+    if (!TIERS.includes(body.tier)) throw new HttpError('VALIDATION', 'tier 需为 free/basic/premium/ultra（free=普通用户）');
     db.prepare('UPDATE users SET tier = ?, tier_expires_at = NULL, updated_at = ? WHERE id = ?')
       .run(body.tier, new Date().toISOString(), u.id);
     audit(ctx, 'set_tier', u.id, { from: u.tier, to: body.tier });
@@ -613,7 +614,7 @@ function register(router, ctx) {
   // 口径：权责发生制（occurred_at 期间归属）；¥ 按月末汇率（finance_set 审计重放）折 RM；
   // 税费 = 预计收入 × 月末税率（估算，与总览一致）；固定成本为估算；实际收款 = 流水收款 − 退款；
   // 未月结月份在报表中标「未锁定」——月结后重新生成即定格。
-  const RPT_PRICE = { premium: 23.5, ultra: 45.5 }; // 对齐 docs/pages/premium.html ms-MY 月价
+  const RPT_PRICE = { basic: 12, premium: 23.5, ultra: 45.5 }; // 对齐 docs/pages/premium.html ms-MY 月价（Basic 学生价）
   function reportMonths(y, q) {
     const out = [];
     for (let i = 0; i < 3; i++) out.push(new Date(Date.UTC(y, (q - 1) * 3 + i, 1)).toISOString().slice(0, 7));
@@ -626,7 +627,7 @@ function register(router, ctx) {
     const usageMonths = {};
     for (const r of db.prepare("SELECT strftime('%Y-%m', created_at) AS m, SUM(cost_micro) AS c FROM usage_log GROUP BY m").all()) usageMonths[r.m] = r.c;
     const lockUpto = (db.prepare("SELECT value FROM kv WHERE key = 'ledger.closed_upto'").get() || {}).value || null;
-    const cnt = { premium: 0, ultra: 0 };
+    const cnt = { basic: 0, premium: 0, ultra: 0 };
     const prm = { fx: FIN_DEFAULTS.fx, taxRate: FIN_DEFAULTS.taxRate, fixedMonthly: FIN_DEFAULTS.fixedMonthly };
     const catSum = {};
     let evI = 0;
@@ -638,7 +639,7 @@ function register(router, ctx) {
         const e = events[evI++];
         let de = null; try { de = JSON.parse(e.detail); } catch (err) {}
         if (e.action === 'set_tier') {
-          if (de && de.from in cnt) cnt[de.from]--;
+          if (de && de.from in cnt && cnt[de.from] > 0) cnt[de.from]--; // 存量 Basic 升级事件自 0 起步不减负（重放无此前 +basic 事件）
           if (de && de.to in cnt) cnt[de.to]++;
         } else {
           const src = de && de.to ? de.to : de; // 新格式 {from,to} 取 to / 旧格式直接值（与曲线重放同口径）
@@ -655,7 +656,7 @@ function register(router, ctx) {
         else if (r.kind === 'withdrawal') withdrawn += v; // 提现转出他用：单列资金去向，不进支出/不进净利
         else adj += v;
       }
-      const est = Math.round((cnt.premium * RPT_PRICE.premium + cnt.ultra * RPT_PRICE.ultra) * 100) / 100;
+      const est = Math.round((cnt.basic * RPT_PRICE.basic + cnt.premium * RPT_PRICE.premium + cnt.ultra * RPT_PRICE.ultra) * 100) / 100;
       const ai = Math.round(((usageMonths[m] || 0) / 1e6) * prm.fx * 100) / 100;
       const paid = Math.round((income - refund) * 100) / 100;
       const tax = Math.round(est * prm.taxRate * 100) / 100;

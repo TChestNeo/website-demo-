@@ -197,7 +197,7 @@ test('admin：用户搜索 + tier PATCH（一期唯一支付路径 + set_tier �
     const found = (await (await t.request('GET', '/api/admin/users?q=alice%40x.com', undefined, { cookie: t.admin.cookie })).json()).users;
     assert.strictEqual(found.length, 1);
     assert.strictEqual(found[0].displayName, 'Alice');
-    assert.strictEqual(found[0].tier, 'basic');
+    assert.strictEqual(found[0].tier, 'free');
     const patch = await t.request('PATCH', `/api/admin/users/${t.alice.user.id}`, { tier: 'premium' }, { cookie: t.admin.cookie });
     assert.strictEqual(patch.status, 200);
     assert.strictEqual(t.db.prepare('SELECT tier FROM users WHERE id = ?').get(t.alice.user.id).tier, 'premium');
@@ -207,14 +207,14 @@ test('admin：用户搜索 + tier PATCH（一期唯一支付路径 + set_tier �
     assert.strictEqual(JSON.parse(a.detail).to, 'premium');
     // 订阅收入（一期无支付：实际收款 0，预计月收入 = tier 月价 × 数量）
     const s = await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json();
-    assert.deepStrictEqual(s.sub.tiers, { basic: 2, premium: 1, ultra: 0 });
+    assert.deepStrictEqual(s.sub.tiers, { free: 2, basic: 0, premium: 1, ultra: 0 });
     assert.strictEqual(s.sub.subscribers, 1);
     assert.strictEqual(s.sub.pricing.currency, 'RM');
     assert.strictEqual(s.sub.pricing.monthly.ultra, 45.5);
     assert.strictEqual(s.sub.revenue.paidMicro, 0);
     assert.strictEqual(s.sub.revenue.estimatedMonthly, 23.5);
     assert.strictEqual(s.sub.tierEvents[0].to, 'premium');
-    assert.strictEqual(s.sub.tierEvents[0].from, 'basic');
+    assert.strictEqual(s.sub.tierEvents[0].from, 'free');
     // 详情 + 时间线（先处罚一次再查）
     await t.request('POST', '/api/admin/penalties', { userId: t.alice.user.id, action: 'warn' }, { cookie: t.admin.cookie });
     const detail = await (await t.request('GET', `/api/admin/users/${t.alice.user.id}`, undefined, { cookie: t.admin.cookie })).json();
@@ -306,6 +306,7 @@ test('admin：财务曲线序列（审计重放：跨天 tier/finance 事件 + �
   try {
     const ago = (h) => new Date(Date.now() - h * 3600 * 1000).toISOString();
     // 3 天前 alice → premium；2 天前 taxRate 0.1；1 天前 bob → ultra + chat 实账 ¥0.20
+    // from 'basic' 为存量口径：重放自 0 起步无此前 +basic 事件，重放器不减负（guard 实证见 rev 断言）
     t.db.prepare("INSERT INTO admin_audit_log (admin_id, action, target, detail, created_at) VALUES (?, 'set_tier', ?, ?, ?)")
       .run(t.admin.user.id, t.alice.user.id, JSON.stringify({ from: 'basic', to: 'premium' }), ago(72));
     t.db.prepare("INSERT INTO admin_audit_log (admin_id, action, target, detail, created_at) VALUES (?, 'finance_set', 'finance', ?, ?)")

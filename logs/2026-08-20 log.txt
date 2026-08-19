@@ -60,3 +60,60 @@
      apply 态行为不变）。
    - 用法：http://127.0.0.1:8080/pages/premium.html?payDemo=1（无需登录、
      无需密钥）；预览回跳/任意入口均带演示徽标，不会真实扣款。
+
+4. 等级模型调整 —— Basic 变学生价付费层 + 新增免费「普通用户」默认层
+   - 用户口径：「Basic 属于一个比较偏向学生的选项价格而不是直接拥有的方案」；
+     AskUserQuestion 四分支全拍板：① 注册默认 = 新增 free 普通用户层（免费）
+     ② Basic 价格保持 RM12/月 ③ 购买通道 = 双通道同其他方案（Stripe 订阅自动
+     续费 + 单次购买 1 个月 + 未配置回退申请流）④ 存量用户保留已拥有（grandfather，
+     不收费不降级）。
+   - 后端：
+     · migrations/005_free_tier.sql：SQLite 不能 ALTER CHECK → users 表重建
+       （PRAGMA foreign_keys OFF/BEGIN/COMMIT/ON 自理事务，INSERT SELECT 原样
+       搬行只改新表默认值），tier DEFAULT 'free' + CHECK ('free','basic',
+       'premium','ultra')。踩坑：初版重建漏 004 增的 tier_expires_at /
+       stripe_customer_id 两列 → 测试全红「no such column」当场抓住，补列后绿。
+     · auth.js createUser 默认 tier 'free'；subscriptions.js TIER_OF 加
+       basic:'basic'（checkout 白名单自动入列）、TIER_RANK 加 free:0、等级阶梯
+       free<basic<premium<ultra，enforceTierExpiry / handleSubDeleted 降级目标
+       basic→free（Basic 订阅到期/取消也落 free，不再停 basic）。
+     · admin.js：TIERS 加 free；总览 tiers 图加 free 计数 + tierPrice 加
+       basic:12 + subscribers/estimatedMonthly 计 basic；7 天增长口径改「进
+       付费层 +1 出付费层 −1」；收入曲线/季度财报 RPT_PRICE 加 basic:12 +
+       两个 set_tier 重放 cnt 加 basic；新增重放减负 guard（存量 basic 升级
+       事件自 0 起步不减到负数——grandfather 用户重放窗口前就有 basic，
+       按事件计会凭空 −12）；PATCH 校验 'tier 需为 free/basic/premium/ultra'。
+     · config.js prices/pricesOnce 加 basic（STRIPE_PRICE_BASIC[_ONCE]）；
+       .env.example 2 行 + 注释 4→5 个价。
+   - 前端 premium.html：TIER_RANK free:0 + 4 处「|| 1」0 值陷阱修复（free=0
+     是 falsy，|| 兜底会把 0 当缺省→ rank 1，free 用户被误判已开 Basic）改
+     「!= null ? x : 1」；TIER_ZH free:普通用户；Basic 卡加学生价徽标 + 单次
+     购买按钮（data-plan-once="basic"）；guest 态 banner「注册默认普通用户免费
+     · Basic 学生价 RM12/月」+ 五卡 CTA 免费注册/登录后申请开通 → 统一
+     「登录后订阅」；本地 demo 登录与预览伪用户默认 free（预览态可点 Basic
+     购买）；页脚 plan-note 补口径。
+   - docs/admin：tier 下拉加 free 选项；订阅结构卡加 dSubFree（free 普通用户）
+     并把 basic（免费）→ basic（RM12/月）；用户列表 free 徽标改 neutral 色。
+   - 测试 131/131（+1：Basic SKU 全链路——新用户默认 free 断言 → checkout
+     basic → completed 开通 tier basic + 到期顺延 + 审计 {from:free,to:basic,
+     via:stripe} → 过期惰性降级落 free + stripe_expired 审计 → 存量 basic
+     用户升级 premium 审计 from basic 兼容）。既有断言改 free：verify 默认
+     tier、checkout 非法 key 改 addon、降级目标全改 free、admin tiers 图加
+     free/basic、health user_version 5。曲线测试 from 'basic' 存量事件不改
+     ——减负 guard 保证 rev 23.5/69 不变（guard 实证在断言里）。
+   - 冒烟五态 0 console error：
+     · guest：banner「登录后即可订阅会员方案（注册默认「普通用户」免费；Basic
+       学生价 RM12/月）」+ 五卡「登录后订阅」+ 单次按钮全隐藏 + chips 0；
+     · local（free）：banner「你当前的方案是 普通用户」+ 五卡「申请开通」
+       （Basic 不再 ✓ 当前方案）+ chips 0 + 申请流落库 MN-2026-000013；
+     · server（alice 存量保留实证）：banner 仍「Basic」+ Basic 卡「✓ 当前
+       方案」disabled + chip 1 + 申请流 MN-2026-000014——迁移实证 dev 库
+       user_version 5、5 存量用户全保留 basic、CHECK 放宽生效；
+     · payDemo（普通用户伪用户）：五卡全「订阅 · RMxx/月」含 Basic
+       RM12/月 + 五卡「单次购买」含 Basic RM12 · 1 个月 + chips 0；
+     · 演示结账页 label=Basic&price=RM12.00：订单/模式注/卡流程 → 支付成功；
+     · 管理后台：dSubFree 0 / 订阅用户 4 / RM 48.00（4×12 估收计 basic）/
+       曲线末点 RM 12.00（重放计 basic 事件）/ 0 console error。
+   - 配套：stripe-init.js 5 Product×2 价（Basic 12.00 学生价）+ 打印
+     STRIPE_PRICE_BASIC[_ONCE] 行；stripe-setup.md §2 表 5 SKU + 10 价 +
+     live 10 价 + deleted 降 free + 退款 PATCH free；lighthouse-setup.md 5×2。

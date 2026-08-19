@@ -8,7 +8,8 @@
 // once = 单次购买 1 个月（FPX 网银/支付宝/GrabPay 等一次性支付方式，到期不自动续，webhook 以
 // session.mode=payment 区分，审计 via=stripe_once）。
 // 口径：支付/续费 = tier 提升 + 到期顺延（tier_expires_at，NULL=管理员永久授予）；
-// 取消（customer.subscription.deleted）= 立即降 basic；到期惰性降级兜底（/auth/me 等读取路径）。
+// 取消（customer.subscription.deleted）= 立即降 free；到期惰性降级兜底（/auth/me 等读取路径）。
+// 等级阶梯：free(普通用户，注册默认) < basic(学生价 RM12/月) < premium < ultra；降级一律落 free。
 // 幂等：stripe_event_id 去重 + 行状态机（pending→paid 只一次）；tier_key/months 一律取本库 pending 行
 // （checkout 时由服务端写入），绝不信任 webhook 事件里的 metadata/金额口径。
 // 财务口径不变：payments 是支付事件账，不对接 ledger（流水账仍人工记账，Stripe 打款到账后录 income）。
@@ -20,9 +21,9 @@ const { requireSession, authenticate } = require('../middleware/auth');
 const { insertWithId, pad6 } = require('../ids');
 const { createCheckoutSession, createPortalSession, verifyWebhook } = require('../stripe');
 
-const TIER_OF = { premium: 'premium', ultra: 'ultra', 'pkg-premium': 'premium', 'pkg-ultra': 'ultra' };
+const TIER_OF = { basic: 'basic', premium: 'premium', ultra: 'ultra', 'pkg-premium': 'premium', 'pkg-ultra': 'ultra' };
 const TIER_KEYS = Object.keys(TIER_OF);
-const TIER_RANK = { basic: 1, premium: 2, ultra: 3 };
+const TIER_RANK = { free: 0, basic: 1, premium: 2, ultra: 3 };
 const MONTHS = 1; // 全部 SKU 月付
 
 // 到期顺延：现有到期（未过期）→ 从它顺延；否则从 now 顺延。日历月加（对齐 Stripe 月结周期）。
@@ -71,12 +72,12 @@ function applyPaid(db, cfg, row, opts) {
 
 // 到期惰性降级兜底（读取路径调用；webhook 断链/扣款失败最终兜底）。返回最新 users 行。
 function enforceTierExpiry(db, cfg, user) {
-  if (!user || user.tier === 'basic' || !user.tier_expires_at) return user;
+  if (!user || user.tier === 'free' || !user.tier_expires_at) return user;
   if (user.tier_expires_at > new Date().toISOString()) return user;
   const iso = new Date().toISOString();
-  db.prepare("UPDATE users SET tier = 'basic', tier_expires_at = NULL, updated_at = ? WHERE id = ?")
+  db.prepare("UPDATE users SET tier = 'free', tier_expires_at = NULL, updated_at = ? WHERE id = ?")
     .run(iso, user.id);
-  auditTier(db, user, 'basic', 'stripe_expired');
+  auditTier(db, user, 'free', 'stripe_expired');
   return db.prepare('SELECT * FROM users WHERE id = ?').get(user.id);
 }
 
@@ -153,16 +154,16 @@ function handleInvoiceFailed(db, cfg, event) {
     (s) => 'PAY-' + pad6(s));
 }
 
-// 订阅终止（取消/催款耗尽）：立即降 basic + 清到期（订阅多并存属一期可接受范围）
+// 订阅终止（取消/催款耗尽）：立即降 free + 清到期（订阅多并存属一期可接受范围）
 function handleSubDeleted(db, cfg, event) {
   const sub = event.data.object || {};
   const row = db.prepare('SELECT * FROM payments WHERE stripe_subscription_id = ? ORDER BY seq DESC LIMIT 1').get(sub.id);
   if (!row) { console.log('[webhook] 未知订阅 ' + sub.id); return; }
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(row.user_id);
-  if (!user || user.tier === 'basic') return;
-  db.prepare("UPDATE users SET tier = 'basic', tier_expires_at = NULL, updated_at = ? WHERE id = ?")
+  if (!user || user.tier === 'free') return;
+  db.prepare("UPDATE users SET tier = 'free', tier_expires_at = NULL, updated_at = ? WHERE id = ?")
     .run(new Date().toISOString(), user.id);
-  auditTier(db, user, 'basic', 'stripe_cancel');
+  auditTier(db, user, 'free', 'stripe_cancel');
 }
 
 function register(router, ctx) {

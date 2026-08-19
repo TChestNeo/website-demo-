@@ -242,9 +242,10 @@
     if (!sub || !fin) return;
     var t = sub.tiers || {};
     $('dSubTotal').textContent = sub.subscribers;
+    $('dSubFree').textContent = t.free || 0;
+    $('dSubBasic').textContent = t.basic || 0;
     $('dSubPremium').textContent = t.premium || 0;
     $('dSubUltra').textContent = t.ultra || 0;
-    $('dSubBasic').textContent = t.basic || 0;
     var rv = sub.revenue || {};
     $('dSubRevenue').textContent = 'RM ' + (rv.estimatedMonthly || 0).toFixed(2);
     $('dSubPaid').textContent = 'RM ' + ((rv.paidMicro || 0) / 1e6).toFixed(2);
@@ -1095,7 +1096,7 @@
         var t = '<tr class="cursor-row" data-uid="' + esc(u.id) + '">' +
           '<td>' + esc(u.displayName || '—') + ' <span class="adm-meta mono">' + esc(u.citizenId || '') + '</span></td>' +
           '<td>' + esc(u.email) + '</td>' +
-          '<td>' + chip(u.tier, u.tier === 'basic' ? 'neutral' : 'ok') + '</td>' +
+          '<td>' + chip(u.tier, (u.tier === 'free' || u.tier === 'basic') ? 'neutral' : 'ok') + '</td>' +
           '<td>' + statusChip(u.status) + (u.mutedUntil ? ' <span class="adm-sla">禁言中</span>' : '') + '</td>' +
           '<td>' + (u.warningCount || 0) + '</td>' +
           '<td class="adm-meta">' + fmtTime(u.createdAt) + '</td></tr>';

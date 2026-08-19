@@ -1,8 +1,8 @@
 'use strict';
-// Stripe 测试模式初始化（零 SDK）：给 sk_test → 建 4 个 Product × 2 个 Price（订阅 recurring/monthly + 单次 one_time，MYR）→ 打印 .env 配置行。
+// Stripe 测试模式初始化（零 SDK）：给 sk_test → 建 5 个 Product × 2 个 Price（订阅 recurring/monthly + 单次 one_time，MYR）→ 打印 .env 配置行。
 // 用法：node scripts/stripe-init.js <sk_test_xxx>
 // 幂等：按 metadata[app]=mnworld + name 查已有 Product/Price，重复跑不重复建。
-// 4 个价的金额是付费页口径（Overview.txt）：premium 23.50 / ultra 45.50 / pkg-premium 29.90 / pkg-ultra 60.90 MYR。
+// 5 个价的金额是付费页口径（Overview.txt）：basic 12.00（学生价）/ premium 23.50 / ultra 45.50 / pkg-premium 29.90 / pkg-ultra 60.90 MYR。
 // 混合模式：订阅 = 自动续费（卡类）；单次 = 买 1 个月（FPX 网银/支付宝/GrabPay 等一次性方式，不续费）。
 
 const key = process.argv[2];
@@ -13,6 +13,7 @@ if (!key || !key.startsWith('sk_')) {
 
 const API = 'https://api.stripe.com/v1';
 const PLANS = [
+  { key: 'basic', name: 'M.NationWorld Basic（学生价）', amount: 12.00 },
   { key: 'premium', name: 'M.NationWorld Premium', amount: 23.50 },
   { key: 'ultra', name: 'M.NationWorld Premium Ultra', amount: 45.50 },
   { key: 'pkg-premium', name: 'M.NationWorld Premium + Team Pack', amount: 29.90 },
@@ -73,10 +74,12 @@ async function call(method, path, form) {
   console.log('\n── 粘贴进 backend/.env（.env 永不提交）──');
   console.log('STRIPE_ENABLED=true');
   console.log('STRIPE_SECRET_KEY=' + key);
+  console.log('STRIPE_PRICE_BASIC=' + env.basic);
   console.log('STRIPE_PRICE_PREMIUM=' + env.premium);
   console.log('STRIPE_PRICE_ULTRA=' + env.ultra);
   console.log('STRIPE_PRICE_PKG_PREMIUM=' + env['pkg-premium']);
   console.log('STRIPE_PRICE_PKG_ULTRA=' + env['pkg-ultra']);
+  console.log('STRIPE_PRICE_BASIC_ONCE=' + env.basic_once);
   console.log('STRIPE_PRICE_PREMIUM_ONCE=' + env.premium_once);
   console.log('STRIPE_PRICE_ULTRA_ONCE=' + env.ultra_once);
   console.log('STRIPE_PRICE_PKG_PREMIUM_ONCE=' + env['pkg-premium_once']);

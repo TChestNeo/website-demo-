@@ -18,6 +18,7 @@
     .plan-badge { position:absolute; top:-12px; left:50%; transform:translateX(-50%); padding:4px 16px; border-radius:999px; font-size:12px; font-weight:700; }
     .plan-badge.popular { background:linear-gradient(135deg,#eab308,#ca8a04); color:#1a1a2e; }
     .plan-badge.best { background:linear-gradient(135deg,#8127cf,#6a1db0); color:white; }
+    .plan-badge.student { background:linear-gradient(135deg,#4648d4,#312e81); color:white; }
     .feature-row { display:flex; align-items:center; gap:8px; padding:8px 0; font-size:14px; color:rgba(255,255,255,0.8); text-align:left; }
     .package-card { background:rgba(30,28,50,0.7) !important; backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-lg); padding:var(--space-lg); color:rgba(255,255,255,0.9); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
     .pkg-premium { border-color:rgba(234,179,8,0.3); }
@@ -84,12 +85,14 @@
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);max-width:1050px;margin:0 auto var(--space-xl)">
 
     <div class="plan-card reveal reveal-d1" data-plan-card="basic" data-apply-label="Basic">
-      <span class="material-symbols-outlined" style="font-size:32px;color:#4648d4;margin-bottom:8px">person</span>
+      <div class="plan-badge student">学生价 Student</div>
+      <span class="material-symbols-outlined" style="font-size:32px;color:#4648d4;margin-bottom:8px;margin-top:8px">person</span>
       <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Basic<span class="cur-chip">✓ 当前方案</span></h3>
       <p style="color:#767586;font-size:13px;margin-bottom:16px">Essential worldbuilding tools</p>
       <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="basicPrice" data-plan-price>$5.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="basic" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:600;text-decoration:none">联系管理员开通</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="basic" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">单次购买</button>
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Basic wiki cards</div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Basic 3D decorations</div>
@@ -462,7 +465,7 @@ document.head.appendChild(bgStyle);
     </div>
   </div>
 </div>
-<div class="plan-note">会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay，可随时在「管理订阅」取消）或单次购买 1 个月（FPX 网银 / 支付宝 / GrabPay，不自动续费）；未开通在线支付的方案或本地登录时，可提交申请由管理员确认开通。</div>
+<div class="plan-note">注册默认「普通用户」（免费）；Basic 为学生价方案（RM12/月）。会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay，可随时在「管理订阅」取消）或单次购买 1 个月（FPX 网银 / 支付宝 / GrabPay，不自动续费）；未开通在线支付的方案或本地登录时，可提交申请由管理员确认开通。</div>
 
 <script>
 // ── 订阅流程：等级感知 + 在线支付（Stripe 混合模式）/ 一期申请开通回退 ──
@@ -472,8 +475,9 @@ document.head.appendChild(bgStyle);
 // 其余（本地 demo 登录 / 无价 SKU / addon / Stripe 未配置 / checkout 失败）→ 回退一期申请弹窗
 // 「申请开通」= POST /api/tickets（category=payment 自动 urgent），管理员在工单队列确认后 PATCH tier。
 (function () {
-  var TIER_RANK = { basic: 1, premium: 2, ultra: 3 };
-  var TIER_ZH = { basic: 'Basic', premium: 'Premium', ultra: 'Premium Ultra' };
+  var TIER_RANK = { free: 0, basic: 1, premium: 2, ultra: 3 }; // free=普通用户（注册默认，不再直接拥有 Basic）
+  var TIER_ZH = { free: '普通用户', basic: 'Basic', premium: 'Premium', ultra: 'Premium Ultra' };
+  // 注意：free 的 rank 是 0（falsy）——所有 TIER_RANK 查找必须用 != null 判断，不能用 || 兜底（0 会被误当缺省）
   var me = null; // { tier, email, tierExpiresAt, source } 或 null（未登录/后端不可达）
   var sub = null; // GET /api/subscription/status 结果 { enabled, prices, hasPortal, … }
   var pending = null;
@@ -494,13 +498,12 @@ document.head.appendChild(bgStyle);
   function renderGuest() {
     var b = $('subStatus');
     b.style.display = 'flex';
-    b.innerHTML = '<span>登录后即可申请开通会员方案（一期为人工开通流程）</span>'
+    b.innerHTML = '<span>登录后即可订阅会员方案（注册默认「普通用户」免费；Basic 学生价 RM12/月）</span>'
       + '<a class="btn btn-primary btn-sm" href="../index.html" style="margin:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:#fff;text-decoration:none">登录 / 注册</a>';
     document.querySelectorAll('[data-plan-card]').forEach(function (card) {
       var btn = card.querySelector('[data-plan-cta]');
       if (!btn) return;
-      if (card.dataset.planCard === 'basic') setCta(btn, '免费注册', false, '../index.html');
-      else setCta(btn, '登录后申请开通', false, '../index.html');
+      setCta(btn, '登录后订阅', false, '../index.html');
     });
     document.querySelectorAll('[data-addon-cta]').forEach(function (btn) {
       setCta(btn, '登录后申请开通', false, '../index.html');
@@ -530,7 +533,7 @@ document.head.appendChild(bgStyle);
   }
 
   function renderUser() {
-    var rank = TIER_RANK[me.tier] || 1;
+    var rank = TIER_RANK[me.tier] != null ? TIER_RANK[me.tier] : 1;
     var b = $('subStatus');
     b.style.display = 'flex';
     var extra = '';
@@ -744,15 +747,16 @@ document.head.appendChild(bgStyle);
     n.style.borderColor = 'rgba(34,197,94,0.4)';
     n.style.background = 'rgba(34,197,94,0.06)';
     n.innerHTML = '<span>✅ 支付已确认，正在生效（银行到账可能延迟几分钟）…</span>';
-    var baseRank = TIER_RANK[(me && me.tier) || 'basic'] || 1;
+    var baseTier = (me && me.tier) || 'free';
+    var baseRank = TIER_RANK[baseTier] != null ? TIER_RANK[baseTier] : 1;
     var tries = 0;
     (function poll() {
       tries++;
       if (tries > 12) { n.innerHTML = '<span>仍在处理中，请稍后刷新页面查看。</span>'; return; }
       setTimeout(function () {
         MN_API.get('/auth/me').then(function (r) {
-          var t = (r.ok && r.data && r.data.user && r.data.user.tier) || 'basic';
-          if ((TIER_RANK[t] || 1) > baseRank) {
+          var t = (r.ok && r.data && r.data.user && r.data.user.tier) || 'free';
+          if ((TIER_RANK[t] != null ? TIER_RANK[t] : 1) > baseRank) {
             n.innerHTML = '<span>✅ 已开通 <b style="color:#eab308">' + (TIER_ZH[t] || t) + '</b>，感谢订阅！</span>';
             me = {
               tier: t,
@@ -800,10 +804,10 @@ document.head.appendChild(bgStyle);
     } else {
       var lu = localUser();
       if (lu) {
-        me = { tier: lu.tier || 'basic', email: lu.email, tierExpiresAt: null, source: 'local' };
+        me = { tier: lu.tier || 'free', email: lu.email, tierExpiresAt: null, source: 'local' };
         renderUser();
-      } else if (PAY_DEMO) { // 预览模式免登录：伪用户直接进入预览态
-        me = { tier: 'basic', email: '预览访客（未登录）', tierExpiresAt: null, source: 'demo' };
+      } else if (PAY_DEMO) { // 预览模式免登录：伪用户直接进入预览态（free：所有卡含 Basic 均可点预览购买）
+        me = { tier: 'free', email: '预览访客（未登录）', tierExpiresAt: null, source: 'demo' };
         renderUser();
       } else {
         renderGuest();
