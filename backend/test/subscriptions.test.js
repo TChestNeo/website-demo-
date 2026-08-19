@@ -26,11 +26,13 @@ function stripeStub() {
 }
 
 const PRICES = { premium: 'price_premium', ultra: 'price_ultra', 'pkg-premium': 'price_pkg_premium', 'pkg-ultra': 'price_pkg_ultra' };
+const PRICES_ONCE = { premium: 'price_premium_once', ultra: 'price_ultra_once', 'pkg-premium': 'price_pkg_premium_once', 'pkg-ultra': 'price_pkg_ultra_once' };
 function stripeConfig(over = {}) {
   return {
     stripe: {
       enabled: true, secretKey: 'sk_test_x', webhookSecret: 'whsec_test',
-      paymentMethods: ['card', 'fpx'], returnOrigin: '', prices: { ...PRICES },
+      paymentMethods: ['card', 'fpx'], oncePaymentMethods: ['card', 'fpx', 'alipay', 'grabpay'],
+      returnOrigin: '', prices: { ...PRICES }, pricesOnce: { ...PRICES_ONCE },
       ...over
     }
   };
@@ -62,7 +64,8 @@ function sessionEvent(type, o) {
 function paidSession(o) {
   return sessionEvent('checkout.session.completed', {
     evt: o.evt, id: o.id, payment_status: o.payment_status || 'paid',
-    subscription: o.subscription, customer: o.customer, amount_total: o.amount_total ?? 2350, currency: 'myr'
+    subscription: o.subscription, customer: o.customer, amount_total: o.amount_total ?? 2350,
+    currency: 'myr', mode: o.mode || 'subscription'
   });
 }
 
@@ -73,22 +76,26 @@ test('订阅状态：未配置 → enabled:false，匿名只有配置态无会�
     const r = await t.request('GET', '/api/subscription/status');
     const d = await r.json();
     assert.strictEqual(d.enabled, false);
-    assert.strictEqual(d.mode, 'subscription');
+    assert.strictEqual(d.mode, 'hybrid');
+    assert.deepStrictEqual(d.onceMethods, ['card', 'fpx', 'alipay', 'grabpay']); // 未配置时仍回默认清单（前端文案用）
     assert.strictEqual(d.prices.premium.hasPrice, false);
+    assert.strictEqual(d.prices.premium.hasOnce, false);
     assert.strictEqual(d.prices['pkg-ultra'].hasPrice, false);
     assert.strictEqual(d.tier, undefined);
     assert.strictEqual(d.hasPortal, undefined);
   } finally { await t.close(); }
 });
 
-test('订阅状态：已配置 + 登录 → enabled/prices/tier/tierExpiresAt/hasPortal', async () => {
-  const t = await testApp({ config: stripeConfig({ prices: { ...PRICES, 'pkg-ultra': '' } }), fetchImpl: stripeStub().fetchImpl });
+test('订阅状态：已配置 + 登录 → enabled/prices 双通道/tier/tierExpiresAt/hasPortal', async () => {
+  const t = await testApp({ config: stripeConfig({ prices: { ...PRICES, 'pkg-ultra': '' }, pricesOnce: { ...PRICES_ONCE, 'pkg-ultra': '' } }), fetchImpl: stripeStub().fetchImpl });
   try {
     const alice = t.loginAs('alice@x.com', { tier: 'premium' });
     const d = await (await t.request('GET', '/api/subscription/status', undefined, { cookie: alice.cookie })).json();
     assert.strictEqual(d.enabled, true);
     assert.strictEqual(d.prices.premium.hasPrice, true);
-    assert.strictEqual(d.prices['pkg-ultra'].hasPrice, false); // 缺 Price ID 的 SKU 回退申请流
+    assert.strictEqual(d.prices.premium.hasOnce, true);
+    assert.strictEqual(d.prices['pkg-ultra'].hasPrice, false); // 缺订阅 Price ID 的 SKU 回退申请流
+    assert.strictEqual(d.prices['pkg-ultra'].hasOnce, false); // 缺一次性 Price ID 同理会回退
     assert.strictEqual(d.tier, 'premium');
     assert.strictEqual(d.tierExpiresAt, null);
     assert.strictEqual(d.hasPortal, false);
@@ -140,12 +147,52 @@ test('checkout：pending 行 + url + Stripe 请求形状（subscription 模式/p
     assert.strictEqual(form['line_items[0][quantity]'], '1');
     assert.strictEqual(form.client_reference_id, alice.user.id);
     assert.strictEqual(form.customer_email, 'alice@x.com');
+    assert.strictEqual(form['payment_method_types[0]'], 'card');
+    assert.strictEqual(form['payment_method_types[1]'], 'fpx');
+    assert.strictEqual(form['payment_method_types[2]'], undefined); // 不再有固定 2 槽假字段
     assert.strictEqual(form['subscription_data[metadata][user_id]'], alice.user.id);
     assert.strictEqual(form['subscription_data[metadata][tier_key]'], 'ultra');
     assert.strictEqual(form['metadata[tier_key]'], 'ultra');
     assert.strictEqual(form['metadata[months]'], '1');
     assert.strictEqual(form.success_url, 'https://mn.world/pages/premium.html?paid=1');
     assert.strictEqual(form.cancel_url, 'https://mn.world/pages/premium.html?canceled=1');
+  } finally { await t.close(); }
+});
+
+test('checkout once：单次购买请求形状（mode=payment/一次性 Price/4 槽方法/无 subscription_data）+ pending 行', async () => {
+  const stub = stripeStub();
+  const t = await testApp({ config: stripeConfig({ returnOrigin: 'https://mn.world' }), fetchImpl: stub.fetchImpl });
+  try {
+    const alice = t.loginAs('alice@x.com');
+    const d = await (await t.request('POST', '/api/subscription/checkout', { tierKey: 'premium', mode: 'once' }, { cookie: alice.cookie })).json();
+    assert.match(d.url, /^https:\/\/checkout\.stripe\.com\//);
+    const row = t.db.prepare('SELECT * FROM payments WHERE user_id = ?').get(alice.user.id);
+    assert.strictEqual(row.status, 'pending');
+    assert.strictEqual(row.tier_key, 'premium');
+    assert.strictEqual(row.months, 1);
+
+    const form = Object.fromEntries(new URLSearchParams(stub.calls[0].opts.body).entries());
+    assert.strictEqual(form.mode, 'payment');
+    assert.strictEqual(form['line_items[0][price]'], 'price_premium_once');
+    assert.strictEqual(form.client_reference_id, alice.user.id);
+    assert.strictEqual(form['payment_method_types[0]'], 'card');
+    assert.strictEqual(form['payment_method_types[1]'], 'fpx');
+    assert.strictEqual(form['payment_method_types[2]'], 'alipay');
+    assert.strictEqual(form['payment_method_types[3]'], 'grabpay');
+    assert.strictEqual(form['payment_method_types[4]'], undefined);
+    assert.strictEqual(form['subscription_data[metadata][user_id]'], undefined); // payment 模式禁带 subscription_data
+    assert.strictEqual(form['metadata[tier_key]'], 'premium');
+    assert.strictEqual(form['metadata[months]'], '1');
+    assert.strictEqual(form.success_url, 'https://mn.world/pages/premium.html?paid=1');
+  } finally { await t.close(); }
+});
+
+test('checkout once：mode 非法 400 / 缺一次性 Price ID → 409（回退申请流）', async () => {
+  const t = await testApp({ config: stripeConfig({ pricesOnce: { premium: '', ultra: '', 'pkg-premium': '', 'pkg-ultra': '' } }), fetchImpl: stripeStub().fetchImpl });
+  try {
+    const alice = t.loginAs('alice@x.com');
+    assert.strictEqual((await t.request('POST', '/api/subscription/checkout', { tierKey: 'premium', mode: 'bogus' }, { cookie: alice.cookie })).status, 400);
+    assert.strictEqual((await t.request('POST', '/api/subscription/checkout', { tierKey: 'premium', mode: 'once' }, { cookie: alice.cookie })).status, 409);
   } finally { await t.close(); }
 });
 
@@ -242,6 +289,50 @@ test('FPX 异步：completed(unpaid) 只存 id 不开通；async_payment_succeed
     assert.strictEqual(t.db.prepare("SELECT count(*) AS n FROM admin_audit_log WHERE action = 'set_tier'").get().n, 1);
     await postWebhook(t, asyncOk); // 事件重放 → 状态机挡住
     assert.strictEqual(t.db.prepare("SELECT count(*) AS n FROM admin_audit_log WHERE action = 'set_tier'").get().n, 1);
+  } finally { await t.close(); }
+});
+
+test('单次购买 webhook：mode=payment completed(paid) → 开通 + via=stripe_once 审计 + 无订阅 id + 无 portal', async () => {
+  const stub = stripeStub();
+  const t = await testApp({ config: stripeConfig(), fetchImpl: stub.fetchImpl });
+  try {
+    const alice = t.loginAs('alice@x.com');
+    await t.request('POST', '/api/subscription/checkout', { tierKey: 'premium', mode: 'once' }, { cookie: alice.cookie });
+    const before = Date.now();
+    const evt = paidSession({ evt: 'evt_once_1', id: 'cs_test_1', customer: 'cus_test_1', amount_total: 2350, mode: 'payment' });
+    assert.strictEqual((await postWebhook(t, evt)).status, 200);
+
+    const row = t.db.prepare('SELECT * FROM payments WHERE stripe_session_id = ?').get('cs_test_1');
+    assert.strictEqual(row.status, 'paid');
+    assert.strictEqual(row.stripe_subscription_id, null); // 单次购买无订阅
+    const u = t.db.prepare('SELECT * FROM users WHERE id = ?').get(alice.user.id);
+    assert.strictEqual(u.tier, 'premium');
+    assert.strictEqual(u.stripe_customer_id, 'cus_test_1');
+    const exp = new Date(u.tier_expires_at).getTime();
+    assert.ok(exp > before + 27 * 86400000);
+    assert.ok(exp < before + 33 * 86400000);
+    const aud = t.db.prepare("SELECT * FROM admin_audit_log WHERE action = 'set_tier'").all();
+    assert.strictEqual(aud.length, 1);
+    assert.deepStrictEqual(JSON.parse(aud[0].detail), { from: 'basic', to: 'premium', via: 'stripe_once' });
+
+    // 只有 customer 无订阅 → portal 不给（portal 只管订阅取消/换卡/账单）
+    const d = await (await t.request('GET', '/api/subscription/status', undefined, { cookie: alice.cookie })).json();
+    assert.strictEqual(d.hasPortal, false);
+    // 重放 → 状态机挡住，不重复开
+    await postWebhook(t, evt);
+    assert.strictEqual(t.db.prepare("SELECT count(*) AS n FROM admin_audit_log WHERE action = 'set_tier'").get().n, 1);
+  } finally { await t.close(); }
+});
+
+test('hasPortal 口径：有已付订阅行 → true；仅单次购买已付行 → false', async () => {
+  const stub = stripeStub();
+  const t = await testApp({ config: stripeConfig(), fetchImpl: stub.fetchImpl });
+  try {
+    const alice = t.loginAs('alice@x.com');
+    await checkoutFor(t, alice.cookie);
+    await postWebhook(t, paidSession({ evt: 'evt_hp_1', id: 'cs_test_1', subscription: 'sub_test_1', customer: 'cus_test_1', amount_total: 2350 }));
+    let d = await (await t.request('GET', '/api/subscription/status', undefined, { cookie: alice.cookie })).json();
+    assert.strictEqual(d.hasPortal, true);
   } finally { await t.close(); }
 });
 

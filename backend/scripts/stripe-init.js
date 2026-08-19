@@ -1,8 +1,9 @@
 'use strict';
-// Stripe 测试模式初始化（零 SDK）：给 sk_test → 建 4 个 Product + Price（recurring/monthly MYR）→ 打印 .env 配置行。
+// Stripe 测试模式初始化（零 SDK）：给 sk_test → 建 4 个 Product × 2 个 Price（订阅 recurring/monthly + 单次 one_time，MYR）→ 打印 .env 配置行。
 // 用法：node scripts/stripe-init.js <sk_test_xxx>
 // 幂等：按 metadata[app]=mnworld + name 查已有 Product/Price，重复跑不重复建。
 // 4 个价的金额是付费页口径（Overview.txt）：premium 23.50 / ultra 45.50 / pkg-premium 29.90 / pkg-ultra 60.90 MYR。
+// 混合模式：订阅 = 自动续费（卡类）；单次 = 买 1 个月（FPX 网银/支付宝/GrabPay 等一次性方式，不续费）。
 
 const key = process.argv[2];
 if (!key || !key.startsWith('sk_')) {
@@ -45,19 +46,28 @@ async function call(method, path, form) {
       prodId = prod.id;
       console.log('新建 Product:', p.key, '→', prodId);
     }
-    // 已有月付价则复用，否则建
+    // 已有价则复用，否则建：订阅价（recurring/monthly）+ 单次价（one_time）各一个
     const prices = await call('GET', '/prices?product=' + prodId + '&limit=10');
-    let price = prices.data.find((x) => x.recurring && x.recurring.interval === 'month' && x.active);
-    if (!price) {
-      price = await call('POST', '/prices', {
+    let subPrice = prices.data.find((x) => x.type === 'recurring' && x.recurring && x.recurring.interval === 'month' && x.active);
+    if (!subPrice) {
+      subPrice = await call('POST', '/prices', {
         product: prodId,
         currency: 'myr',
         unit_amount: Math.round(p.amount * 100),
         'recurring[interval]': 'month'
       });
     }
-    env[p.key] = price.id;
-    console.log('Price 就绪:', p.key, '→', price.id, 'MYR', (price.unit_amount / 100).toFixed(2) + '/月');
+    let oncePrice = prices.data.find((x) => x.type === 'one_time' && x.active);
+    if (!oncePrice) {
+      oncePrice = await call('POST', '/prices', {
+        product: prodId,
+        currency: 'myr',
+        unit_amount: Math.round(p.amount * 100)
+      });
+    }
+    env[p.key] = subPrice.id;
+    env[p.key + '_once'] = oncePrice.id;
+    console.log('Price 就绪:', p.key, '→ 订阅', subPrice.id, '/ 单次', oncePrice.id, 'MYR', (subPrice.unit_amount / 100).toFixed(2));
   }
 
   console.log('\n── 粘贴进 backend/.env（.env 永不提交）──');
@@ -67,14 +77,21 @@ async function call(method, path, form) {
   console.log('STRIPE_PRICE_ULTRA=' + env.ultra);
   console.log('STRIPE_PRICE_PKG_PREMIUM=' + env['pkg-premium']);
   console.log('STRIPE_PRICE_PKG_ULTRA=' + env['pkg-ultra']);
-  console.log('STRIPE_PAYMENT_METHODS=card,fpx');
+  console.log('STRIPE_PRICE_PREMIUM_ONCE=' + env.premium_once);
+  console.log('STRIPE_PRICE_ULTRA_ONCE=' + env.ultra_once);
+  console.log('STRIPE_PRICE_PKG_PREMIUM_ONCE=' + env['pkg-premium_once']);
+  console.log('STRIPE_PRICE_PKG_ULTRA_ONCE=' + env['pkg-ultra_once']);
+  console.log('STRIPE_PAYMENT_METHODS=card');
+  console.log('STRIPE_ONCE_PAYMENT_METHODS=card,fpx,alipay,grabpay');
   console.log('\n── webhook 密钥（本地测试）──');
   console.log('1. 装 Stripe CLI: https://stripe.com/docs/stripe-cli  （Windows: scoop install stripe / 或官网 exe）');
   console.log('2. 终端执行: stripe login');
   console.log('3. 终端执行: stripe listen --forward-to http://127.0.0.1:3000/api/webhooks/stripe');
   console.log('4. 把打印的 whsec_... 填: STRIPE_WEBHOOK_SECRET=<whsec_...>');
   console.log('\n── 然后 ──');
-  console.log('重启后端 → 付费页 CTA 变「订阅 · RMxx/月」→ 点击直跳 Stripe 结账页');
+  console.log('Dashboard → Settings → Payment methods：确认 card 已启用，并按需开启 FPX / Alipay / GrabPay');
+  console.log('（微信支付：先在 Dashboard 确认马区可用，再往 STRIPE_ONCE_PAYMENT_METHODS 加 wechat_pay）');
+  console.log('重启后端 → 付费页双按钮：「订阅 · RMxx/月」（自动续费）+「单次购买 · RMxx · 1 个月」→ 点击直跳 Stripe 结账页');
   console.log('测试卡: 4242 4242 4242 4242（成功）/ 4000 0000 0000 0002（失败），任意未来有效期 + 任意 CVC');
   console.log('详细全链路与生产激活见 deploy/stripe-setup.md');
 })().catch((e) => { console.error('FAIL:', e.message); process.exit(1); });

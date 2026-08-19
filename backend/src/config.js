@@ -62,21 +62,32 @@ const config = {
   cookieDomain: process.env.COOKIE_DOMAIN || '',
   frontendOrigins: (process.env.FRONTEND_ORIGIN || '').split(',').map((s) => s.trim()).filter(Boolean),
 
-  // Stripe 自动续费订阅（真实在线支付；零前端密钥——前端只拿后端返回的跳转 URL）
+  // Stripe 在线支付（真实扣款；零前端密钥——前端只拿后端返回的跳转 URL）。混合模式：
+  //   subscription = 自动续费订阅（仅卡类支撑反复扣款；Apple Pay/Google Pay 随卡自动出现）
+  //   once         = 单次购买 1 个月（FPX 网银/支付宝/GrabPay 等一次性支付方式，到期不自动续）
   // STRIPE_ENABLED 未开 / 密钥未配 → 付费页回退一期「申请开通」工单流程（降级路径）。
-  // prices：4 个主 SKU 的价格 ID（Stripe Dashboard 建 recurring/monthly MYR 价）；
-  // 缺哪个，哪个 SKU 就不走支付、回退申请流。paymentMethods 逗号分隔（FPX 对订阅的支持以实测为准，不支持改 card）。
+  // prices：4 个主 SKU 的 recurring Price ID；pricesOnce：同 SKU 的一次性（one_time）Price ID。
+  // 缺哪个，哪个 SKU 的对应通道就不走支付、回退申请流。
+  // paymentMethods（订阅）：只放卡类——FPX/支付宝等一次性方式不支撑订阅，放进订阅清单 Checkout 建会话会失败。
+  // oncePaymentMethods（单次）：默认 card,fpx,alipay,grabpay；微信支付等需先在 Dashboard 确认马区可用再加 wechat_pay。
   stripe: {
     enabled: process.env.STRIPE_ENABLED === 'true',
     secretKey: process.env.STRIPE_SECRET_KEY || '',
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
-    paymentMethods: (process.env.STRIPE_PAYMENT_METHODS || 'card,fpx').split(',').map((s) => s.trim()).filter(Boolean),
+    paymentMethods: (process.env.STRIPE_PAYMENT_METHODS || 'card').split(',').map((s) => s.trim()).filter(Boolean),
+    oncePaymentMethods: (process.env.STRIPE_ONCE_PAYMENT_METHODS || 'card,fpx,alipay,grabpay').split(',').map((s) => s.trim()).filter(Boolean),
     returnOrigin: process.env.STRIPE_RETURN_ORIGIN || '',
     prices: {
       premium: process.env.STRIPE_PRICE_PREMIUM || '',
       ultra: process.env.STRIPE_PRICE_ULTRA || '',
       'pkg-premium': process.env.STRIPE_PRICE_PKG_PREMIUM || '',
       'pkg-ultra': process.env.STRIPE_PRICE_PKG_ULTRA || ''
+    },
+    pricesOnce: {
+      premium: process.env.STRIPE_PRICE_PREMIUM_ONCE || '',
+      ultra: process.env.STRIPE_PRICE_ULTRA_ONCE || '',
+      'pkg-premium': process.env.STRIPE_PRICE_PKG_PREMIUM_ONCE || '',
+      'pkg-ultra': process.env.STRIPE_PRICE_PKG_ULTRA_ONCE || ''
     }
   }
 };

@@ -107,6 +107,7 @@
       <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="premiumPrice" data-plan-price>$11.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="premium" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">联系管理员开通</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="premium" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">单次购买</button>
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Everything in Basic</strong></div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Identity verification</div>
@@ -125,6 +126,7 @@
       <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="ultraPrice" data-plan-price>$15.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="ultra" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">联系管理员开通</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="ultra" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">单次购买</button>
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Everything in Premium</strong></div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Full identity suite</div>
@@ -153,6 +155,7 @@
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Identity verification included</div>
       </div>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="pkg-premium" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">联系管理员开通</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="pkg-premium" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">单次购买</button>
     </div>
     <div class="package-card pkg-ultra" data-plan-card="pkg-ultra" data-target-tier="ultra" data-apply-label="Premium Ultra 包价（无限成员）">
       <span class="badge badge-secondary" style="margin-bottom:8px">💎 Ultimate</span>
@@ -167,6 +170,7 @@
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Special identity verification</div>
       </div>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="pkg-ultra" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">联系管理员开通</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="pkg-ultra" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">单次购买</button>
     </div>
   </div>
 
@@ -458,12 +462,13 @@ document.head.appendChild(bgStyle);
     </div>
   </div>
 </div>
-<div class="plan-note">会员方案支持在线支付（Stripe 自动续费，可随时在「管理订阅」取消）；未开通在线支付的方案或本地登录时，可提交申请由管理员确认开通。</div>
+<div class="plan-note">会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay，可随时在「管理订阅」取消）或单次购买 1 个月（FPX 网银 / 支付宝 / GrabPay，不自动续费）；未开通在线支付的方案或本地登录时，可提交申请由管理员确认开通。</div>
 
 <script>
-// ── 订阅流程：等级感知 + 在线支付（Stripe 订阅，自动续费）/ 一期申请开通回退 ──
+// ── 订阅流程：等级感知 + 在线支付（Stripe 混合模式）/ 一期申请开通回退 ──
 // 口径：tier 以服务端为准（GET /api/auth/me）。GET /api/subscription/status 决定支付态：
-// 服务端会话 + Stripe 已配置 + 该 SKU 有 Price ID → CTA「订阅」→ POST /subscription/checkout 跳 Stripe；
+// 服务端会话 + Stripe 已配置 + 该 SKU 有 Price ID → CTA「订阅 · RMxx/月」（自动续费，卡类）→ POST /subscription/checkout 跳 Stripe；
+// 该 SKU 有一次性 Price（hasOnce）→ 第二个 CTA「单次购买」（FPX 网银/支付宝/GrabPay，1 个月不续费）→ 同端点 mode=once；
 // 其余（本地 demo 登录 / 无价 SKU / addon / Stripe 未配置 / checkout 失败）→ 回退一期申请弹窗
 // 「申请开通」= POST /api/tickets（category=payment 自动 urgent），管理员在工单队列确认后 PATCH tier。
 (function () {
@@ -496,11 +501,22 @@ document.head.appendChild(bgStyle);
     document.querySelectorAll('[data-addon-cta]').forEach(function (btn) {
       setCta(btn, '登录后申请开通', false, '../index.html');
     });
+    document.querySelectorAll('[data-plan-once]').forEach(function (x) { x.style.display = 'none'; });
+    document.querySelectorAll('[data-once-hint]').forEach(function (x) { x.style.display = 'none'; });
   }
 
   // 该 SKU 是否可在线支付（服务端会话 + Stripe 已配置 + 该 SKU 有 Price ID；否则回退一期申请流）
   function payKey(key) {
     return !!(me && me.source === 'server' && sub && sub.enabled && sub.prices && sub.prices[key] && sub.prices[key].hasPrice);
+  }
+  // 该 SKU 是否可单次购买（一次性 Price ID；FPX/支付宝等一次性方式，1 个月不自动续费）
+  function onceKey(key) {
+    return !!(sub && sub.prices && sub.prices[key] && sub.prices[key].hasOnce);
+  }
+  var METHOD_ZH = { card: '银行卡', fpx: 'FPX 网银', alipay: '支付宝', grabpay: 'GrabPay', wechat_pay: '微信支付' };
+  function onceHintText() {
+    var list = ((sub && sub.onceMethods) || []).map(function (m) { return METHOD_ZH[m] || m; });
+    return list.length ? '支持 ' + list.join(' / ') + '，1 个月不自动续费' : '';
   }
   function cardPrice(card) {
     return (((card.querySelector('[data-plan-price]') || {}).textContent) || '?').trim();
@@ -532,22 +548,49 @@ document.head.appendChild(bgStyle);
       });
     }
 
+    // 单次购买通道态：服务端会话 + Stripe 已配置 + 该 SKU 有一次性 Price；hide=true 强制隐藏
+    function onceState(key) {
+      return !!(me && me.source === 'server' && sub && sub.enabled && onceKey(key));
+    }
+    function setOnceBtn(card, key, hide) {
+      var ob = card.querySelector('[data-plan-once]');
+      if (!ob) return;
+      var show = !hide && onceState(key);
+      var hint = card.querySelector('[data-once-hint]');
+      if (!show) { ob.style.display = 'none'; if (hint) hint.style.display = 'none'; return; }
+      ob.style.display = 'block';
+      ob.textContent = '单次购买 · ' + cardPrice(card) + ' · 1 个月';
+      var ht = onceHintText();
+      if (!hint) {
+        hint = document.createElement('div');
+        hint.dataset.onceHint = '';
+        hint.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.45);margin-top:6px;text-align:center';
+        ob.insertAdjacentElement('afterend', hint);
+      }
+      hint.textContent = ht;
+      hint.style.display = ht ? 'block' : 'none';
+    }
     document.querySelectorAll('[data-plan-card]').forEach(function (card) {
       var key = card.dataset.planCard;
       var target = card.dataset.targetTier || key;
       var btn = card.querySelector('[data-plan-cta]');
       var chip = card.querySelector('.cur-chip');
       var done = localStorage.getItem(applyKey(key));
-      if (done) { setCta(btn, '已提交申请 · ' + done.slice(-10), true); return; }
+      if (done) { setCta(btn, '已提交申请 · ' + done.slice(-10), true); setOnceBtn(card, key, true); return; }
       var tr = TIER_RANK[target] || 1;
       if (card.dataset.targetTier) { // 包价卡：等级 ≥ 包价等级时仍可购买（叠加团队等权益）
-        if (tr < rank) setCta(btn, '已包含', true);
-        else setCta(btn, payKey(key) ? '订阅 · ' + cardPrice(card) + '/月' : '申请开通', false);
+        if (tr < rank) { setCta(btn, '已包含', true); setOnceBtn(card, key, true); }
+        else { setCta(btn, payKey(key) ? '订阅 · ' + cardPrice(card) + '/月' : '申请开通', false); setOnceBtn(card, key, false); }
         return;
       }
-      if (tr > rank) setCta(btn, payKey(key) ? '订阅 · ' + cardPrice(card) + '/月' : '申请开通', false);
-      else if (tr === rank) { setCta(btn, '✓ 当前方案', true); if (chip) chip.style.display = 'inline-block'; }
-      else setCta(btn, '已包含', true);
+      if (tr > rank) {
+        setCta(btn, payKey(key) ? '订阅 · ' + cardPrice(card) + '/月' : '申请开通', false);
+        setOnceBtn(card, key, false);
+      } else if (tr === rank) {
+        setCta(btn, '✓ 当前方案', true);
+        if (chip) chip.style.display = 'inline-block';
+        setOnceBtn(card, key, true);
+      } else { setCta(btn, '已包含', true); setOnceBtn(card, key, true); }
     });
     document.querySelectorAll('[data-addon-cta]').forEach(function (btn) {
       var done = localStorage.getItem(applyKey(btn.dataset.addonCta));
@@ -568,10 +611,11 @@ document.head.appendChild(bgStyle);
   function closeApply() { pending = null; $('applyModal').classList.remove('active'); }
 
   // 在线支付：POST checkout 拿 Stripe 跳转 URL；失败回退一期申请弹窗
-  function startCheckout(btn, key, card) {
+  // mode：subscription（自动续费订阅）/ once（单次购买 1 个月）
+  function startCheckout(btn, key, card, mode) {
     btn.disabled = true;
     btn.textContent = '跳转到支付页…';
-    MN_API.post('/subscription/checkout', { tierKey: key }).then(function (r) {
+    MN_API.post('/subscription/checkout', { tierKey: key, mode: mode || 'subscription' }).then(function (r) {
       if (r.ok && r.data && r.data.url) { location.href = r.data.url; return; }
       btn.disabled = false;
       setCta(btn, '申请开通', false);
@@ -586,8 +630,15 @@ document.head.appendChild(bgStyle);
       if (btn.dataset.guestLink) { location.href = btn.dataset.guestLink; return; }
       var card = btn.closest('[data-plan-card]');
       var key = card.dataset.planCard;
-      if (payKey(key)) { startCheckout(btn, key, card); return; }
+      if (payKey(key)) { startCheckout(btn, key, card, 'subscription'); return; }
       openApply(key, card.dataset.applyLabel || key, cardPrice(card));
+      return;
+    }
+    var ob = ev.target.closest('[data-plan-once]');
+    if (ob) {
+      if (ob.disabled) return;
+      var ocard = ob.closest('[data-plan-card]');
+      startCheckout(ob, ocard.dataset.planCard, ocard, 'once');
       return;
     }
     var ab = ev.target.closest('[data-addon-cta]');
@@ -679,11 +730,15 @@ document.head.appendChild(bgStyle);
   }
 
   function syncState() {
+    var onceKeys = [];
+    if (sub && sub.prices) Object.keys(sub.prices).forEach(function (k) { if (sub.prices[k].hasOnce) onceKeys.push(k); });
     window.__mnSubState = {
       ready: true, tier: me && me.tier, email: me && me.email, source: me && me.source,
       pay: (me && me.source === 'server' && sub && sub.enabled) ? 'stripe' : 'apply',
       enabled: !!(sub && sub.enabled), hasPortal: !!(sub && sub.hasPortal),
-      expiry: (me && me.tierExpiresAt) || null
+      expiry: (me && me.tierExpiresAt) || null,
+      once: ((sub && sub.onceMethods) || []).join(','), // 单次购买支付方式清单（配置态）
+      onceKeys: onceKeys.join(',') // 有一次性 Price 的 SKU
     };
   }
 

@@ -156,3 +156,46 @@
      Product+Price（recurring/monthly MYR，幂等可重复跑）+ 打印
      .env 行 + webhook（stripe listen）步骤。等用户注册 Stripe 发
      密钥即完成实机直跳支付全链路（测试卡 4242…）。
+
+5. 支付方式扩围 —— Stripe 混合模式（用户：「支持微信支付 支付宝 tng maybank cimb visa paypal apple pay 信用卡支付等等」）
+   - 需求查证（2026-08 WebSearch 马区口径）：Stripe 马区能接的 = 卡类
+     （Visa/Mastercard/Amex，Apple Pay/Google Pay 随卡自动出现）+ FPX 网银
+     （覆盖 Maybank/CIMB 等约 20 家大马银行）+ 支付宝 + GrabPay；微信支付
+     马区可用性来源分歧，以 Dashboard 实测为准；TNG eWallet / PayPal 不在
+     Stripe 体系内，任何配置都出不来（需另接聚合商/PayPal API，本次不做）。
+   - 关键口径：订阅（自动续费）只有「能反复扣款」的方式可用 = 卡类；
+     FPX/支付宝等是一次性方式，只能出现在「单次购买 N 个月」通道。用户
+     拍板混合模式（AskUserQuestion 四选一）。
+   - 后端：config 增 pricesOnce（4 个 STRIPE_PRICE_*_ONCE）+ oncePaymentMethods
+     （默认 card,fpx,alipay,grabpay）；stripe.js createCheckoutSession 泛化——
+     mode=subscription|payment、payment_method_types 配置列表展开 N 槽（此前
+     硬编码 2 槽、第 3 个方法起被静默丢弃）、payment 模式禁带 subscription_data
+     （Stripe 会拒绝建会话）；checkout 端点收 mode（非法 400、缺对应价 409）；
+     webhook 以 session.mode=payment 区分单次购买 → 审计 via=stripe_once（订阅
+     via=stripe 不变，财报 set_tier 重放口径兼容）；status → mode:'hybrid' +
+     prices[key].hasOnce + onceMethods；hasPortal 收紧为「有已付订阅行」
+     （单次购买用户有 customer id 无订阅，不给空 portal）。
+   - 修正一个存量隐患：STRIPE_PAYMENT_METHODS 默认 card,fpx → 改默认 card
+     ——FPX 不支撑订阅，混入订阅清单 Checkout 建会话会失败（此前后端从不
+     打真实 Stripe 所以未暴露）。
+   - 前端 premium.html：4 卡各加「单次购买」第二按钮（订阅 CTA 下，等宽）
+     + 方法提示行（onceMethods 中文映射：银行卡/FPX 网银/支付宝/GrabPay/
+     微信支付）；startCheckout 带 mode；guest/隐藏态幂等收起；
+     __mnSubState 增 once（方法清单）/onceKeys（有一次性价的 SKU）。
+   - 测试 130/130（+4：once 请求形状含 4 槽方法断言与禁 subscription_data、
+     once 缺价 409/mode 非法 400、单次 webhook via=stripe_once + 无订阅 id +
+     无 portal + 重放、hasPortal 口径）。
+   - 冒烟：无密钥三态回归（guest/local/server）恒 pay=apply、onceCtas 全
+     隐藏、0 console error；假密钥重启后端（临时环境变量 8 假价）→
+     pay=stripe、四卡「订阅 · RM23.50/45.50/29.90/60.90 每月」+ 四卡「单次
+     购买 · RMxx · 1 个月」全亮、onceHint「支持 银行卡 / FPX 网银 / 支付宝 /
+     GrabPay，1 个月不自动续费」、几何断言 onceGeo{w:250,h:31,insideCard,
+     belowCta,fullWidth 全 true}（电池全绿≠渲染正确的目视兜底）、
+     applySkipped=stripe-cta 防真实跳转、0 console error；随后恢复原 .env
+     （enabled=false）。冒烟污染口径不变（payment 工单 MN-2026-000009/10）。
+   - 配套：stripe-init.js 升级 4×2 价（订阅 recurring + 单次 one_time 各建，
+     幂等）+ 打印新 .env 行与 Dashboard 开方式提示；.env.example 增 4 个
+     *_ONCE 行 + STRIPE_ONCE_PAYMENT_METHODS（订阅行改默认 card 并注释
+     禁令）；stripe-setup.md 改混合模式（能力边界表：TNG/PayPal 不可达、
+     微信支付实测后加、Apple Pay 需注册域名；§6 增单次 FPX 测试路径；
+     故障排查增「单次按钮不出现/订阅建会话失败/微信不出现」三项）。

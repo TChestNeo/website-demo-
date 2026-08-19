@@ -108,6 +108,27 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
           document.querySelectorAll('[data-plan-cta]').forEach(function (x) {
             b.ctas[x.dataset.planCta] = { t: x.textContent.replace(/\\s+/g, ' ').trim(), d: x.disabled };
           });
+          b.once = (window.__mnSubState || {}).once || '';
+          b.onceKeys = (window.__mnSubState || {}).onceKeys || '';
+          b.onceCtas = {};
+          document.querySelectorAll('[data-plan-once]').forEach(function (x) {
+            b.onceCtas[x.dataset.planOnce] = { t: x.textContent.replace(/\\s+/g, ' ').trim(), v: x.style.display !== 'none' };
+          });
+          b.onceHint = ((document.querySelector('[data-once-hint]') || {}).textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 60);
+          // 目视兜底（电池全绿 ≠ 渲染正确）：单次按钮真实渲染几何——在卡内、在主 CTA 下方、非零尺寸
+          var og = document.querySelector('[data-plan-once="premium"]');
+          var ogc = document.querySelector('[data-plan-cta="premium"]');
+          if (og && ogc && b.pay === 'stripe') {
+            var r1 = og.getBoundingClientRect();
+            var r2 = ogc.getBoundingClientRect();
+            var r3 = og.closest('[data-plan-card]').getBoundingClientRect();
+            b.onceGeo = {
+              w: r1.width, h: r1.height,
+              insideCard: r1.top >= r3.top && r1.bottom <= r3.bottom + 1,
+              belowCta: r1.top >= r2.bottom - 1,
+              fullWidth: Math.abs(r1.width - r2.width) < 2
+            };
+          }
           b.chips = Array.prototype.filter.call(document.querySelectorAll('.cur-chip'), function (c) { return c.offsetParent !== null; }).length;
           var pc = document.querySelector('[data-plan-cta="premium"]');
           // pay=stripe 时点 CTA 会真实跳转 Stripe，冒烟只跑回退一期流（本机 dev 恒为 apply）

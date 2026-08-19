@@ -1,9 +1,12 @@
 'use strict';
-// 订阅（真实在线支付，Stripe 自动续费）——付费页二期契约：
-//   GET  /api/subscription/status   （公开）{ enabled, mode, prices, ...会话态附 tier/tierExpiresAt/hasPortal }
-//   POST /api/subscription/checkout （会话）{ tierKey } → { url }（Stripe Checkout 跳转，前端零密钥）
-//   POST /api/subscription/portal   （会话）→ { url }（Customer Portal：取消/换卡/账单）
+// 在线支付（Stripe 混合模式）——付费页契约：
+//   GET  /api/subscription/status   （公开）{ enabled, mode:'hybrid', prices{hasPrice,hasOnce}, onceMethods, ...会话态附 tier/tierExpiresAt/hasPortal }
+//   POST /api/subscription/checkout （会话）{ tierKey, mode:'subscription'|'once' } → { url }（Stripe Checkout 跳转，前端零密钥）
+//   POST /api/subscription/portal   （会话）→ { url }（Customer Portal：取消/换卡/账单；仅订阅用户）
 //   POST /api/webhooks/stripe       （Stripe 服务器→服务器，HMAC 验签）
+// 混合通道：subscription = 自动续费订阅（仅卡类支撑反复扣款，Apple Pay 随卡自动出现）；
+// once = 单次购买 1 个月（FPX 网银/支付宝/GrabPay 等一次性支付方式，到期不自动续，webhook 以
+// session.mode=payment 区分，审计 via=stripe_once）。
 // 口径：支付/续费 = tier 提升 + 到期顺延（tier_expires_at，NULL=管理员永久授予）；
 // 取消（customer.subscription.deleted）= 立即降 basic；到期惰性降级兜底（/auth/me 等读取路径）。
 // 幂等：stripe_event_id 去重 + 行状态机（pending→paid 只一次）；tier_key/months 一律取本库 pending 行
@@ -61,7 +64,7 @@ function applyPaid(db, cfg, row, opts) {
   if (newTier !== user.tier || expiry !== user.tier_expires_at) {
     db.prepare('UPDATE users SET tier = ?, tier_expires_at = ?, updated_at = ? WHERE id = ?')
       .run(newTier, expiry, iso, user.id);
-    if (newTier !== user.tier) auditTier(db, user, newTier, 'stripe');
+    if (newTier !== user.tier) auditTier(db, user, newTier, opts.via || 'stripe');
   }
   return true;
 }
@@ -102,9 +105,11 @@ function handleSession(db, cfg, event) {
       .run(s.customer, row.user_id);
   }
   if (s.payment_status !== 'paid') return;
+  // 单次购买（mode=payment）无 subscription，审计 via=stripe_once 与订阅区分（财报口径可追溯）
   applyPaid(db, cfg, row, {
     eventId: event.id, subscriptionId: s.subscription || null, customerId: s.customer || null,
-    amountMicro: s.amount_total || 0, currency: (s.currency || 'myr').toLowerCase()
+    amountMicro: s.amount_total || 0, currency: (s.currency || 'myr').toLowerCase(),
+    via: s.mode === 'payment' ? 'stripe_once' : 'stripe'
   });
 }
 
@@ -167,11 +172,15 @@ function register(router, ctx) {
   // 订阅状态（公开；带会话则附 tier/到期/portal 可用性——前端据此切支付态 vs 申请流）
   router.add('GET', '/api/subscription/status', (req, res) => {
     const prices = {};
-    for (const k of TIER_KEYS) prices[k] = { hasPrice: !!cfg.stripe.prices[k] };
+    for (const k of TIER_KEYS) prices[k] = {
+      hasPrice: !!cfg.stripe.prices[k],      // 订阅通道（自动续费，卡类）
+      hasOnce: !!cfg.stripe.pricesOnce[k]    // 单次购买通道（FPX/支付宝等一次性方式）
+    };
     const out = {
       enabled: !!(cfg.stripe.enabled && cfg.stripe.secretKey),
-      mode: 'subscription',
-      prices
+      mode: 'hybrid', // subscription（自动续费，卡类）+ once（单次购买 1 个月）
+      prices,
+      onceMethods: cfg.stripe.oncePaymentMethods
     };
     let user = null;
     try { user = authenticate(ctx.db, req, res, ctx); } catch (e) { /* 匿名：只给配置态 */ }
@@ -179,25 +188,34 @@ function register(router, ctx) {
       user = enforceTierExpiry(ctx.db, cfg, user);
       out.tier = user.tier;
       out.tierExpiresAt = user.tier_expires_at || null;
-      out.hasPortal = !!user.stripe_customer_id;
+      // portal 只管订阅（取消/换卡/账单）；单次购买用户有 customer id 但无订阅，不给 portal
+      out.hasPortal = !!db.prepare(
+        "SELECT 1 FROM payments WHERE user_id = ? AND status = 'paid' AND stripe_subscription_id IS NOT NULL LIMIT 1"
+      ).get(user.id);
     }
     sendJson(res, 200, out);
   });
 
-  // 创建 Checkout Session（前端拿 url 跳转；prices 未配的 SKU → PAYMENTS_DISABLED，前端回退申请流）
+  // 创建 Checkout Session（前端拿 url 跳转；对应通道 Price ID 未配 → PAYMENTS_DISABLED，前端回退申请流）
+  // mode：subscription（默认，自动续费订阅，卡类）/ once（单次购买 1 个月，一次性支付方式）
   router.add('POST', '/api/subscription/checkout', requireSession(async (req, res) => {
     const w = (cfg.rateLimits || {}).checkout || { max: 5, windowMs: 60000 };
     if (!ctx.limiter('pay:u:' + ctx.user.id, w.max, w.windowMs)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
     const body = await readJson(req);
     const tierKey = String(body.tierKey || '');
     if (!TIER_OF[tierKey]) throw new HttpError('VALIDATION', 'tierKey 非法');
-    const priceId = cfg.stripe.prices[tierKey];
+    let mode = 'subscription';
+    if (body.mode === 'once') mode = 'once';
+    else if (body.mode !== undefined && body.mode !== 'subscription') throw new HttpError('VALIDATION', 'mode 非法');
+    const priceId = mode === 'once' ? cfg.stripe.pricesOnce[tierKey] : cfg.stripe.prices[tierKey];
     if (!cfg.stripe.enabled || !cfg.stripe.secretKey || !priceId) {
       throw new HttpError('PAYMENTS_DISABLED', '在线支付未开通，请通过申请流程开通');
     }
     const session = await createCheckoutSession(ctx.moderation.fetchImpl, cfg, {
       priceId, userId: ctx.user.id, email: ctx.user.email,
-      origin: returnOrigin(ctx, req), tierKey, months: MONTHS
+      origin: returnOrigin(ctx, req), tierKey, months: MONTHS,
+      mode: mode === 'once' ? 'payment' : 'subscription',
+      paymentMethods: mode === 'once' ? cfg.stripe.oncePaymentMethods : cfg.stripe.paymentMethods
     });
     insertWithId(db, 'payments',
       ['user_id', 'stripe_session_id', 'tier_key', 'amount_micro', 'currency', 'months', 'status', 'created_at'],

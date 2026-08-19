@@ -41,26 +41,30 @@ async function stripeCall(fetchImpl, cfg, method, path, form) {
   return res.json();
 }
 
-// 创建订阅 Checkout Session：mode=subscription + price + 用户标识（client_reference_id + subscription_data.metadata）
+// 创建 Checkout Session（mode=subscription 自动续费订阅 / mode=payment 单次购买）：
+// price 由调用方按通道选好（recurring / one_time）；payment_method_types 由配置列表展开 N 槽。
+// 订阅模式才带 subscription_data.metadata（mode=payment 下 Stripe 会拒绝该参数）。
 // 前端只拿 url 跳转，不接触任何密钥。
-async function createCheckoutSession(fetchImpl, cfg, { priceId, userId, email, origin, tierKey, months }) {
+async function createCheckoutSession(fetchImpl, cfg, { priceId, userId, email, origin, tierKey, months, mode, paymentMethods }) {
   const successUrl = origin + '/pages/premium.html?paid=1';
   const cancelUrl = origin + '/pages/premium.html?canceled=1';
-  return stripeCall(fetchImpl, cfg, 'POST', '/checkout/sessions', {
-    mode: 'subscription',
+  const form = {
+    mode: mode === 'payment' ? 'payment' : 'subscription',
     'line_items[0][price]': priceId,
     'line_items[0][quantity]': 1,
     client_reference_id: userId,
     customer_email: email,
-    'payment_method_types[0]': cfg.stripe.paymentMethods[0] || 'card',
-    'payment_method_types[1]': cfg.stripe.paymentMethods[1] || '',
     'metadata[tier_key]': tierKey,
     'metadata[months]': months,
-    'subscription_data[metadata][user_id]': userId,
-    'subscription_data[metadata][tier_key]': tierKey,
     success_url: successUrl,
     cancel_url: cancelUrl
-  });
+  };
+  (paymentMethods || []).forEach((m, i) => { form['payment_method_types[' + i + ']'] = m; });
+  if (form.mode === 'subscription') {
+    form['subscription_data[metadata][user_id]'] = userId;
+    form['subscription_data[metadata][tier_key]'] = tierKey;
+  }
+  return stripeCall(fetchImpl, cfg, 'POST', '/checkout/sessions', form);
 }
 
 // Customer Portal（取消/换卡/看账单，Stripe 托管页面）
