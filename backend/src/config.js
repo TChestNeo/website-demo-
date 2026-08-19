@@ -60,7 +60,25 @@ const config = {
   // COOKIE_DOMAIN 例 'mn.world'（不含端口；配了才会加 Domain=，本地同域开发不配）
   // FRONTEND_ORIGIN 例 'https://mn.world,https://www.mn.world'（CORS 白名单，逗号分隔；不在白名单的 Origin 不返回 CORS 头）
   cookieDomain: process.env.COOKIE_DOMAIN || '',
-  frontendOrigins: (process.env.FRONTEND_ORIGIN || '').split(',').map((s) => s.trim()).filter(Boolean)
+  frontendOrigins: (process.env.FRONTEND_ORIGIN || '').split(',').map((s) => s.trim()).filter(Boolean),
+
+  // Stripe 自动续费订阅（真实在线支付；零前端密钥——前端只拿后端返回的跳转 URL）
+  // STRIPE_ENABLED 未开 / 密钥未配 → 付费页回退一期「申请开通」工单流程（降级路径）。
+  // prices：4 个主 SKU 的价格 ID（Stripe Dashboard 建 recurring/monthly MYR 价）；
+  // 缺哪个，哪个 SKU 就不走支付、回退申请流。paymentMethods 逗号分隔（FPX 对订阅的支持以实测为准，不支持改 card）。
+  stripe: {
+    enabled: process.env.STRIPE_ENABLED === 'true',
+    secretKey: process.env.STRIPE_SECRET_KEY || '',
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+    paymentMethods: (process.env.STRIPE_PAYMENT_METHODS || 'card,fpx').split(',').map((s) => s.trim()).filter(Boolean),
+    returnOrigin: process.env.STRIPE_RETURN_ORIGIN || '',
+    prices: {
+      premium: process.env.STRIPE_PRICE_PREMIUM || '',
+      ultra: process.env.STRIPE_PRICE_ULTRA || '',
+      'pkg-premium': process.env.STRIPE_PRICE_PKG_PREMIUM || '',
+      'pkg-ultra': process.env.STRIPE_PRICE_PKG_ULTRA || ''
+    }
+  }
 };
 
 module.exports = config;

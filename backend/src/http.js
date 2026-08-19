@@ -10,6 +10,7 @@ const CODES = {
   NOT_FOUND: 404,
   CONFLICT: 409,
   RATE_LIMITED: 429,
+  PAYMENTS_DISABLED: 409,
   INTERNAL: 500,
   SERVICE_UNAVAILABLE: 503
 };
@@ -56,4 +57,16 @@ async function readJson(req, limit = 64 * 1024) {
   }
 }
 
-module.exports = { CODES, HttpError, sendJson, sendError, readJson };
+// 读取原始请求体字节（Stripe webhook 验签需要未经解析的原文）；超限抛 VALIDATION
+async function readRaw(req, limit = 512 * 1024) {
+  const chunks = [];
+  let size = 0;
+  for await (const c of req) {
+    size += c.length;
+    if (size > limit) throw new HttpError('VALIDATION', '请求体过大');
+    chunks.push(c);
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
+
+module.exports = { CODES, HttpError, sendJson, sendError, readJson, readRaw };

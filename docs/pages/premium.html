@@ -77,6 +77,8 @@
 
   <!-- 订阅状态条（未登录 / 当前方案，由脚本渲染）-->
   <div id="subStatus" class="sub-status"></div>
+  <!-- 支付回跳提示条（?paid=1 / ?canceled=1，由脚本渲染）-->
+  <div id="payNotice" class="sub-status"></div>
 
   <!-- Three tiers -->
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);max-width:1050px;margin:0 auto var(--space-xl)">
@@ -456,16 +458,19 @@ document.head.appendChild(bgStyle);
     </div>
   </div>
 </div>
-<div class="plan-note">一期为人工开通流程：申请提交后由管理员确认并开通，收款方式由管理员另行沟通。</div>
+<div class="plan-note">会员方案支持在线支付（Stripe 自动续费，可随时在「管理订阅」取消）；未开通在线支付的方案或本地登录时，可提交申请由管理员确认开通。</div>
 
 <script>
-// ── 一期订阅流程：等级感知 + 申请开通（工单预填 → 管理员人工开通）──
-// 口径：一期无在线支付。tier 以服务端为准（GET /api/auth/me）；
+// ── 订阅流程：等级感知 + 在线支付（Stripe 订阅，自动续费）/ 一期申请开通回退 ──
+// 口径：tier 以服务端为准（GET /api/auth/me）。GET /api/subscription/status 决定支付态：
+// 服务端会话 + Stripe 已配置 + 该 SKU 有 Price ID → CTA「订阅」→ POST /subscription/checkout 跳 Stripe；
+// 其余（本地 demo 登录 / 无价 SKU / addon / Stripe 未配置 / checkout 失败）→ 回退一期申请弹窗
 // 「申请开通」= POST /api/tickets（category=payment 自动 urgent），管理员在工单队列确认后 PATCH tier。
 (function () {
   var TIER_RANK = { basic: 1, premium: 2, ultra: 3 };
   var TIER_ZH = { basic: 'Basic', premium: 'Premium', ultra: 'Premium Ultra' };
-  var me = null; // { tier, email } 或 null（未登录/后端不可达）
+  var me = null; // { tier, email, tierExpiresAt, source } 或 null（未登录/后端不可达）
+  var sub = null; // GET /api/subscription/status 结果 { enabled, prices, hasPortal, … }
   var pending = null;
 
   function $(id) { return document.getElementById(id); }
@@ -493,15 +498,39 @@ document.head.appendChild(bgStyle);
     });
   }
 
+  // 该 SKU 是否可在线支付（服务端会话 + Stripe 已配置 + 该 SKU 有 Price ID；否则回退一期申请流）
+  function payKey(key) {
+    return !!(me && me.source === 'server' && sub && sub.enabled && sub.prices && sub.prices[key] && sub.prices[key].hasPrice);
+  }
+  function cardPrice(card) {
+    return (((card.querySelector('[data-plan-price]') || {}).textContent) || '?').trim();
+  }
+
   function renderUser() {
     var rank = TIER_RANK[me.tier] || 1;
     var b = $('subStatus');
     b.style.display = 'flex';
+    var extra = '';
+    if (me.tierExpiresAt) extra += '<span style="color:rgba(255,255,255,0.4)"> · 有效期至 ' + me.tierExpiresAt.slice(0, 10) + '</span>';
+    if (sub && sub.hasPortal && me.source === 'server') {
+      extra += '<a id="portalLink" href="javascript:void(0)" style="color:#eab308;font-weight:600;text-decoration:none;margin-left:auto">管理订阅</a>';
+    }
     b.innerHTML = '<span>你当前的方案是 <b style="color:#eab308">' + (TIER_ZH[me.tier] || me.tier) + '</b>'
       + '<span style="color:rgba(255,255,255,0.4)"> · ' + me.email + '</span></span>'
+      + extra
       + '<span style="color:rgba(255,255,255,0.45)">'
-      + (me.source === 'local' ? '当前为本地资料，开通以管理员确认为准' : '升级 / 加购请点卡片按钮提交申请，管理员确认后开通')
+      + (me.source === 'local' ? '当前为本地资料，开通以管理员确认为准' : '升级 / 加购请点卡片按钮在线支付，或提交申请由管理员开通')
       + '</span>';
+    var pl = document.getElementById('portalLink');
+    if (pl) {
+      pl.addEventListener('click', function () {
+        pl.textContent = '跳转中…';
+        MN_API.post('/subscription/portal', {}).then(function (r) {
+          if (r.ok && r.data && r.data.url) location.href = r.data.url;
+          else pl.textContent = '管理订阅（暂不可用）';
+        });
+      });
+    }
 
     document.querySelectorAll('[data-plan-card]').forEach(function (card) {
       var key = card.dataset.planCard;
@@ -513,10 +542,10 @@ document.head.appendChild(bgStyle);
       var tr = TIER_RANK[target] || 1;
       if (card.dataset.targetTier) { // 包价卡：等级 ≥ 包价等级时仍可购买（叠加团队等权益）
         if (tr < rank) setCta(btn, '已包含', true);
-        else setCta(btn, '申请开通', false);
+        else setCta(btn, payKey(key) ? '订阅 · ' + cardPrice(card) + '/月' : '申请开通', false);
         return;
       }
-      if (tr > rank) setCta(btn, '申请开通', false);
+      if (tr > rank) setCta(btn, payKey(key) ? '订阅 · ' + cardPrice(card) + '/月' : '申请开通', false);
       else if (tr === rank) { setCta(btn, '✓ 当前方案', true); if (chip) chip.style.display = 'inline-block'; }
       else setCta(btn, '已包含', true);
     });
@@ -538,14 +567,27 @@ document.head.appendChild(bgStyle);
   }
   function closeApply() { pending = null; $('applyModal').classList.remove('active'); }
 
+  // 在线支付：POST checkout 拿 Stripe 跳转 URL；失败回退一期申请弹窗
+  function startCheckout(btn, key, card) {
+    btn.disabled = true;
+    btn.textContent = '跳转到支付页…';
+    MN_API.post('/subscription/checkout', { tierKey: key }).then(function (r) {
+      if (r.ok && r.data && r.data.url) { location.href = r.data.url; return; }
+      btn.disabled = false;
+      setCta(btn, '申请开通', false);
+      openApply(key, card.dataset.applyLabel || key, cardPrice(card));
+    });
+  }
+
   document.addEventListener('click', function (ev) {
     var btn = ev.target.closest('[data-plan-cta]');
     if (btn) {
       if (btn.disabled) return;
       if (btn.dataset.guestLink) { location.href = btn.dataset.guestLink; return; }
       var card = btn.closest('[data-plan-card]');
-      var price = ((card.querySelector('[data-plan-price]') || {}).textContent || '?').trim();
-      openApply(card.dataset.planCard, card.dataset.applyLabel || card.dataset.planCard, price);
+      var key = card.dataset.planCard;
+      if (payKey(key)) { startCheckout(btn, key, card); return; }
+      openApply(key, card.dataset.applyLabel || key, cardPrice(card));
       return;
     }
     var ab = ev.target.closest('[data-addon-cta]');
@@ -595,21 +637,83 @@ document.head.appendChild(bgStyle);
     } catch (e) { return null; }
   }
 
-  // 初始化：服务端会话优先（tier 权威）；无会话回退本地用户（demo 登录/离线降级，与 index 登录 demo 分支对齐）
+  // 支付回跳（?paid=1 / ?canceled=1）：paid → 轮询 /auth/me 直到 tier 生效（FPX 银行到账可能延迟几分钟）
+  function handleReturn() {
+    var n = $('payNotice');
+    if (!n) return;
+    var q = new URLSearchParams(location.search);
+    if (q.get('canceled') === '1') {
+      n.style.display = 'flex';
+      n.innerHTML = '<span>已取消支付，可随时重试。</span>';
+      return;
+    }
+    if (q.get('paid') !== '1') return;
+    n.style.display = 'flex';
+    n.style.borderColor = 'rgba(34,197,94,0.4)';
+    n.style.background = 'rgba(34,197,94,0.06)';
+    n.innerHTML = '<span>✅ 支付已确认，正在生效（银行到账可能延迟几分钟）…</span>';
+    var baseRank = TIER_RANK[(me && me.tier) || 'basic'] || 1;
+    var tries = 0;
+    (function poll() {
+      tries++;
+      if (tries > 12) { n.innerHTML = '<span>仍在处理中，请稍后刷新页面查看。</span>'; return; }
+      setTimeout(function () {
+        MN_API.get('/auth/me').then(function (r) {
+          var t = (r.ok && r.data && r.data.user && r.data.user.tier) || 'basic';
+          if ((TIER_RANK[t] || 1) > baseRank) {
+            n.innerHTML = '<span>✅ 已开通 <b style="color:#eab308">' + (TIER_ZH[t] || t) + '</b>，感谢订阅！</span>';
+            me = {
+              tier: t,
+              email: (me && me.email) || (r.data.user.email || ''),
+              tierExpiresAt: r.data.user.tierExpiresAt || null,
+              source: 'server'
+            };
+            renderUser();
+            syncState();
+          } else {
+            poll();
+          }
+        });
+      }, 5000);
+    })();
+  }
+
+  function syncState() {
+    window.__mnSubState = {
+      ready: true, tier: me && me.tier, email: me && me.email, source: me && me.source,
+      pay: (me && me.source === 'server' && sub && sub.enabled) ? 'stripe' : 'apply',
+      enabled: !!(sub && sub.enabled), hasPortal: !!(sub && sub.hasPortal),
+      expiry: (me && me.tierExpiresAt) || null
+    };
+  }
+
+  // 初始化：服务端会话优先（tier 权威）；无会话回退本地用户（demo 登录/离线降级，与 index 登录 demo 分支对齐）；
+  // 支付配置态并行拉取，到齐后重渲一次（pay 态 CTA 依赖 status 结果）
   MN_API.get('/auth/me').then(function (r) {
     if (r.ok && r.data && r.data.user) {
-      me = { tier: r.data.user.tier || 'basic', email: r.data.user.email, source: 'server' };
+      me = {
+        tier: r.data.user.tier || 'basic',
+        email: r.data.user.email,
+        tierExpiresAt: r.data.user.tierExpiresAt || null,
+        source: 'server'
+      };
       renderUser();
     } else {
       var lu = localUser();
       if (lu) {
-        me = { tier: lu.tier || 'basic', email: lu.email, source: 'local' };
+        me = { tier: lu.tier || 'basic', email: lu.email, tierExpiresAt: null, source: 'local' };
         renderUser();
       } else {
         renderGuest();
       }
     }
-    window.__mnSubState = { ready: true, tier: me && me.tier, email: me && me.email, source: me && me.source };
+    syncState();
+  });
+  MN_API.get('/subscription/status').then(function (r) {
+    if (r.ok && r.data) sub = r.data;
+    if (me) renderUser(); // status 到齐后 CTA 才能定 pay 态
+    handleReturn();
+    syncState();
   });
 })();
 </script>

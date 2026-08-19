@@ -416,8 +416,8 @@ function register(router, ctx) {
     sendJson(res, 200, {
       users: rows.map(u => ({
         id: u.id, email: u.email, displayName: u.display_name, citizenId: u.citizen_id,
-        tier: u.tier, role: u.role, status: u.status, warningCount: u.warning_count,
-        mutedUntil: u.muted_until, rateLimitedUntil: u.rate_limited_until,
+        tier: u.tier, tierExpiresAt: u.tier_expires_at || null, role: u.role, status: u.status,
+        warningCount: u.warning_count, mutedUntil: u.muted_until, rateLimitedUntil: u.rate_limited_until,
         createdAt: u.created_at, lastActiveAt: u.last_active_at
       }))
     });
@@ -428,25 +428,30 @@ function register(router, ctx) {
     if (!u) throw new HttpError('NOT_FOUND', '用户不存在');
     const decisions = db.prepare('SELECT action, actor, reason_code AS reasonCode, notes, created_at AS createdAt '
       + 'FROM moderation_decisions WHERE user_id = ? ORDER BY seq DESC LIMIT 50').all(u.id);
+    const payments = db.prepare('SELECT id, tier_key AS tierKey, amount_micro AS amountMicro, currency, months, '
+      + 'status, created_at AS createdAt, paid_at AS paidAt FROM payments WHERE user_id = ? ORDER BY seq DESC LIMIT 10').all(u.id);
     sendJson(res, 200, {
       user: {
         id: u.id, email: u.email, displayName: u.display_name, citizenId: u.citizen_id,
-        tier: u.tier, role: u.role, status: u.status, warningCount: u.warning_count,
-        mutedUntil: u.muted_until, rateLimitedUntil: u.rate_limited_until,
+        tier: u.tier, tierExpiresAt: u.tier_expires_at || null, role: u.role, status: u.status,
+        warningCount: u.warning_count, mutedUntil: u.muted_until, rateLimitedUntil: u.rate_limited_until,
         createdAt: u.created_at, lastActiveAt: u.last_active_at
       },
-      decisions
+      decisions,
+      payments
     });
   }));
 
-  // 一期唯一「支付」路径：tier 由管理员手动指定（写审计）
+  // tier 调整：管理员手动指定（写审计）。手动授予 = 永久（清空订阅到期时间）；
+  // 若用户仍有活跃订阅，后续 invoice.paid 会按支付口径重新写入到期时间。
   router.add('PATCH', '/api/admin/users/:id', requireAdmin(async (req, res) => {
     adminWrite();
     const u = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
     if (!u) throw new HttpError('NOT_FOUND', '用户不存在');
     const body = await readJson(req);
     if (!TIERS.includes(body.tier)) throw new HttpError('VALIDATION', 'tier 需为 basic/premium/ultra');
-    db.prepare('UPDATE users SET tier = ?, updated_at = ? WHERE id = ?').run(body.tier, new Date().toISOString(), u.id);
+    db.prepare('UPDATE users SET tier = ?, tier_expires_at = NULL, updated_at = ? WHERE id = ?')
+      .run(body.tier, new Date().toISOString(), u.id);
     audit(ctx, 'set_tier', u.id, { from: u.tier, to: body.tier });
     sendJson(res, 200, { user: { id: u.id, tier: body.tier } });
   }));

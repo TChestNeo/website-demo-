@@ -219,8 +219,14 @@ test('admin：用户搜索 + tier PATCH（一期唯一支付路径 + set_tier �
     await t.request('POST', '/api/admin/penalties', { userId: t.alice.user.id, action: 'warn' }, { cookie: t.admin.cookie });
     const detail = await (await t.request('GET', `/api/admin/users/${t.alice.user.id}`, undefined, { cookie: t.admin.cookie })).json();
     assert.strictEqual(detail.user.tier, 'premium');
+    assert.strictEqual(detail.user.tierExpiresAt, null);
+    assert.deepStrictEqual(detail.payments, []);
     assert.strictEqual(detail.decisions.length, 1);
     assert.strictEqual(detail.decisions[0].action, 'warn');
+    // 管理员手动授予 = 永久：PATCH 清空订阅到期（若用户仍有活跃订阅，后续 invoice.paid 会重写到期）
+    t.db.prepare('UPDATE users SET tier_expires_at = ? WHERE id = ?').run('2026-09-01T00:00:00.000Z', t.alice.user.id);
+    await t.request('PATCH', `/api/admin/users/${t.alice.user.id}`, { tier: 'premium' }, { cookie: t.admin.cookie });
+    assert.strictEqual(t.db.prepare('SELECT tier_expires_at FROM users WHERE id = ?').get(t.alice.user.id).tier_expires_at, null);
   } finally { await t.close(); }
 });
 

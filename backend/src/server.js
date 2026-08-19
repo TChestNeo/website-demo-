@@ -13,6 +13,7 @@ const { register: registerAuth } = require('./routes/auth');
 const { register: registerSocial } = require('./routes/social');
 const { register: registerMessages } = require('./routes/messages');
 const { register: registerTickets } = require('./routes/tickets');
+const { register: registerSubscriptions } = require('./routes/subscriptions');
 const { register: registerBadge } = require('./routes/badge');
 const { register: registerDrafts } = require('./routes/drafts');
 const { register: registerArticles } = require('./routes/articles');
@@ -59,6 +60,7 @@ function createServer(deps = {}) {
   registerSocial(router, ctx);
   registerMessages(router, ctx);
   registerTickets(router, ctx);
+  registerSubscriptions(router, ctx);
   registerBadge(router, ctx);
   registerDrafts(router, ctx);
   registerArticles(router, ctx);

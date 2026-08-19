@@ -16,6 +16,7 @@ const {
 } = require('../middleware/auth');
 const { ipOf } = require('../middleware/ratelimit');
 const { pad6, insertWithId } = require('../ids');
+const { enforceTierExpiry } = require('./subscriptions');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DISPLAY_MAX = 40;
@@ -44,6 +45,7 @@ function publicUser(row) {
     citizenId: row.citizen_id,
     avatarUrl: row.avatar_url,
     tier: row.tier,
+    tierExpiresAt: row.tier_expires_at || null, // 订阅到期（NULL = 永久/未开通）
     role: row.role,
     status: row.status,
     createdAt: row.created_at
@@ -147,6 +149,8 @@ function register(router, deps) {
       user = db.prepare('SELECT * FROM users WHERE id = ?').get(user.id);
       restored = true;
     }
+    // 订阅到期惰性降级（登录即生效）
+    user = enforceTierExpiry(db, config, user);
 
     const token = createSession(db, user.id, config.sessionTtlMs);
     db.prepare('UPDATE users SET last_active_at = ? WHERE id = ?').run(new Date(now).toISOString(), user.id);
@@ -165,12 +169,14 @@ function register(router, deps) {
   // ── 当前用户 ──
   router.add('GET', '/api/auth/me', requireSession((req, res, ctx) => {
     const now = Date.now();
+    // 订阅到期惰性降级（webhook 断链/扣款失败的最终兜底）
+    const user = enforceTierExpiry(ctx.db, ctx.config, ctx.user);
     // 活跃时间 1 小时刷新一次，避免每请求写库
-    if (!ctx.user.last_active_at || now - new Date(ctx.user.last_active_at).getTime() > 3600 * 1000) {
+    if (!user.last_active_at || now - new Date(user.last_active_at).getTime() > 3600 * 1000) {
       ctx.db.prepare('UPDATE users SET last_active_at = ? WHERE id = ?')
-        .run(new Date(now).toISOString(), ctx.user.id);
+        .run(new Date(now).toISOString(), user.id);
     }
-    sendJson(res, 200, { user: publicUser(ctx.user) });
+    sendJson(res, 200, { user: publicUser(user) });
   }));
 
   router.add('PATCH', '/api/auth/me', requireSession(async (req, res, ctx) => {

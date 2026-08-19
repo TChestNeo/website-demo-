@@ -65,3 +65,80 @@
      MN-2026-000005 挂 USR-000003）。
    - 后端测试 112/112（零后端改动）。
    - commit 9f7aa78。
+
+3. 付费页二期 — 真实在线支付（Stripe 自动续费订阅，用户推翻一期口径）
+   - 用户：「不是我支付页面呢」→ 澄清 → 「我想要真的在线付款」；
+     AskUserQuestion 选「自动续费订阅」→ 计划批准后开工。
+   - 架构核心：零前端密钥——Checkout Session 后端创建，前端只拿
+     url 跳转；Stripe 客户端零 SDK（fetch + form-encoded + Bearer），
+     webhook HMAC-SHA256 验签（±300s 容忍 + timingSafeEqual）。
+   - 口径锁定：
+     · 4 主 SKU 接 Stripe（premium 23.50 / ultra 45.50 /
+       pkg-premium 29.90 / pkg-ultra 60.90 MYR 月付）；addon 与
+       Basic 恒走一期申请流；无 Price ID 的 SKU / 本地 demo 登录 /
+       Stripe 未配置 / checkout 失败 → 回退申请弹窗。
+     · tier_expires_at（NULL = 管理员永久授予）：支付/续费 = 提升 +
+       到期顺延（日历月，max(now, 现有)）；取消立即降 basic；到期
+       惰性降级兜底（/auth/me、/verify、status 三处 enforce）。
+     · 审计兼容：Stripe 开通写 set_tier 审计行，admin_id = 被开通
+       用户自身 id（列 NOT NULL），detail {from,to,via}——财报曲线/
+       季度财报/7 天增长重放零改动，支付订阅者照常计入预计收入。
+     · 财务口径不变：payments 表只是支付事件账，流水账仍人工记账。
+   - 后端（9 文件）：migrations/004_payments.sql（payments 表 +
+     users 增 tier_expires_at/stripe_customer_id）；src/stripe.js
+     （~90 行零 SDK：createCheckoutSession/createPortalSession/
+     verifyWebhook）；routes/subscriptions.js（status/checkout/
+     portal/webhooks 5 事件 + enforceTierExpiry + applyPaid 幂等
+     状态机）；auth.js（publicUser tierExpiresAt + verify/me 惰性
+     降级）；admin.js（列表/详情 tierExpiresAt + 详情 payments 最近
+     10 条 + PATCH tier 清到期=永久）；http.js（PAYMENTS_DISABLED
+     409 + readRaw）；server.js 注册；.env.example STRIPE_* 8 行。
+   - 5 事件表：checkout.session.completed（payment_status=paid 才
+     开通，unpaid=FPX 等异步）；async_payment_succeeded（与前者
+     二选一先到，event_id 去重保证只开一次）；invoice.paid（首期=
+     pending 行转 paid，续费=新增行+顺延）；invoice.payment_failed
+     （failed 行，tier 不动）；customer.subscription.deleted（立即
+     降 basic）。未知会话/订阅/tier_key → 打日志 + 200 忽略。
+   - 前端 premium.html：初始化并行 GET /subscription/status；
+     payKey = server 会话 + enabled + prices[key].hasPrice →
+     CTA「订阅 · RMxx/月」→ POST checkout → 「跳转到支付页…」→
+     location.href（失败回退申请弹窗）；banner 加「有效期至
+     YYYY-MM-DD」+「管理订阅」（hasPortal → POST portal 跳转）；
+     回跳 ?paid=1 绿横幅 + 轮询 /auth/me（5s×12）直到 tier 生效、
+     ?canceled=1 提示可重试；__mnSubState 增 pay/enabled/
+     hasPortal/expiry。
+   - 测试 126/126（+14 subscriptions 矩阵 + admin 到期清空断言 +
+     health 表数 25→26）：status 匿名/会话契约；checkout 401/400/
+     409/限流/请求形状（mode=subscription、price id、client_
+     reference_id、subscription_data.metadata、回跳 URL）；验签
+     合法/篡改/过期 ts/未配密钥忽略；completed(paid) 全链路 +
+     重放不重复开通；FPX unpaid→async 恰好一次；invoice.paid 顺延
+     与过期重算；payment_failed 不动 tier；deleted 降级；惰性降级
+     /auth/me 落库；portal 404/正常；容错 200 忽略（含脏 tier_key
+     不崩——applyPaid 守卫提前，此前会把 undefined 写进 users.tier）。
+   - 冒烟五态（screenshot.js premium 分支增 pay/enabled/hasPortal/
+     expiry/payNoticeShown/payNoticeText；pay=stripe 时跳过申请
+     弹窗点击防真实跳转）：guest / local（SHOT_SEED_LOCAL）/ server
+     （alice@e2e.com）三态恒 pay=apply、enabled=false（本机无
+     STRIPE 配置，回退正确）+ ?paid=1（「支付已确认，正在生效
+     （银行到账可能延迟几分钟）…」）/ ?canceled=1（「已取消支付，
+     可随时重试。」）横幅文案断言——全 0 console error。server 态
+     申请全链路 MN-2026-000006~000008 落库；paid/canceled 态
+     弹窗未关 = 工单 IP 限流 429 属预期（一期流前三轮已证全链路）。
+   - 踩坑一：迁移命名 002_payments 与既有 002_admin_decisions
+     撞版本号——db.js 按 version ≤ user_version 跳过，老库（已 v3）
+     静默不迁移（dev 库 tables 恒 25），测试库从 0 起步全跑所以全
+     绿。改 004_payments.sql（对齐 003_ledger 避撞先例）+ db.js 增
+     版本号重复检查（启动即抛错，不再静默）。
+   - 踩坑二：冒烟 payNoticeShown 读内联 style.display，未设置时
+     恒 ''≠'none' → 恒 true 假断言；改 getComputedStyle（CSS 默认
+     display:none，空提示条本就不可见）。
+   - 踩坑三：TaskStop 只杀 npm 包装、node 子进程残留占 3000；且
+     失败启动的进程仍会先 openDb 落迁移再 EADDRINUSE 退出——表数
+     变 26 但服务仍是旧进程内存代码。杀 PID 重启后一致。
+   - deploy/stripe-setup.md 新增（注册→4 价→portal→webhook
+     （本地 stripe listen/生产 Dashboard）→.env→测试卡全链路→
+     live 激活→故障排查 8 项）+ lighthouse-setup.md 前置清单与
+     配套文件链接（在线支付可选可后补，不阻塞上线）。
+   - 未交付待办：用户提供 sk_test 后实机联调（测试卡订阅→开通→
+     顺延→portal 取消→降级全链路）；live 激活同手册 §7。

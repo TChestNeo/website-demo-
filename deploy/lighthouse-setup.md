@@ -4,7 +4,7 @@
 
 **前后端分离**：前端静态站托管在腾讯云 COS + CDN（`https://<域名>`，见同目录 `cos-deploy.md`）；本机只服务 `https://api.<域名>`。两部分独立部署、互不阻塞。
 
-配套文件（本目录）：`Caddyfile`、`mn-backend.service`、`journald-mn.conf`、`cos-deploy.md`、`site-config.cos.js`；备份脚本 `backend/scripts/backup.sh`。
+配套文件（本目录）：`Caddyfile`、`mn-backend.service`、`journald-mn.conf`、`cos-deploy.md`、`site-config.cos.js`、`stripe-setup.md`（在线支付开通）；备份脚本 `backend/scripts/backup.sh`。
 
 ---
 
@@ -17,6 +17,7 @@
 | 腾讯云 **IMS 国际站可用性** | 开通内容安全，确认可创建 API 密钥（TC3 签名已实现，见 `src/moderation/image.js`）。**不可用 → 备选 AWS Rekognition / 阿里云国际站内容安全**（换配置级改动，image.js 已隔离） |
 | DeepSeek 余额 | 平台充值 ≥100 元（月度预算硬上限 60 元是最后防线，不是充值额） |
 | 预算初值 | `.env` 三值按计划默认 30/20/10/60 元，上线后按真实流量在管理后台调 |
+| Stripe 在线支付（**可选，可后补**） | 付费页真实扣款。注册 → 4 个 MYR 月付价 → Customer Portal → webhook → `.env` 填 STRIPE_*，全程见 `stripe-setup.md`；未配置时付费页自动回退一期人工开通 |
 
 ## 1. 购买与安全组
 

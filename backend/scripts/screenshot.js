@@ -96,6 +96,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
           }
           b.tier = (window.__mnSubState || {}).tier || null;
           b.source = (window.__mnSubState || {}).source || null;
+          b.pay = (window.__mnSubState || {}).pay || null; // 'stripe'（已配密钥环境）/'apply'（回退一期流；本机 dev 无 STRIPE 配置应恒为 apply）
+          b.enabled = !!(window.__mnSubState || {}).enabled;
+          b.hasPortal = !!(window.__mnSubState || {}).hasPortal;
+          b.expiry = (window.__mnSubState || {}).expiry || null;
+          b.payNoticeShown = getComputedStyle(document.getElementById('payNotice')).display !== 'none';
+          b.payNoticeText = document.getElementById('payNotice').textContent.replace(/\\s+/g, ' ').trim().slice(0, 60);
           b.bannerShown = document.getElementById('subStatus').style.display !== 'none';
           b.bannerText = document.getElementById('subStatus').textContent.replace(/\\s+/g, ' ').trim().slice(0, 70);
           b.ctas = {};
@@ -104,7 +110,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
           });
           b.chips = Array.prototype.filter.call(document.querySelectorAll('.cur-chip'), function (c) { return c.offsetParent !== null; }).length;
           var pc = document.querySelector('[data-plan-cta="premium"]');
-          if (!pc.disabled && !pc.dataset.guestLink) {
+          // pay=stripe 时点 CTA 会真实跳转 Stripe，冒烟只跑回退一期流（本机 dev 恒为 apply）
+          if (!pc.disabled && !pc.dataset.guestLink && b.pay !== 'stripe') {
             pc.click();
             await new Promise(function (r) { setTimeout(r, 150); });
             b.modalShown = document.getElementById('applyModal').classList.contains('active');
@@ -117,7 +124,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             b.ctaAfter = pc.textContent.replace(/\\s+/g, ' ').trim();
             b.appliedStored = localStorage.getItem('slati_apply_premium') || null;
           } else {
-            b.applySkipped = pc.dataset.guestLink ? 'guest' : (pc.disabled ? 'disabled' : 'unknown');
+            b.applySkipped = pc.dataset.guestLink ? 'guest' : (pc.disabled ? 'disabled' : (b.pay === 'stripe' ? 'stripe-cta' : 'unknown'));
           }
           return JSON.stringify(b);
         }
