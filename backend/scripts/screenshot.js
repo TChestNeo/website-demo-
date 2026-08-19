@@ -98,6 +98,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
           b.source = (window.__mnSubState || {}).source || null;
           b.pay = (window.__mnSubState || {}).pay || null; // 'stripe'（已配密钥环境）/'apply'（回退一期流；本机 dev 无 STRIPE 配置应恒为 apply）
           b.enabled = !!(window.__mnSubState || {}).enabled;
+          b.payDisabled = !!(window.__mnSubState || {}).payDisabled; // server 会话 + Stripe 未配置 → banner 自解释提示「在线支付通道未启用…」（用户三问申请开通回退）
           b.hasPortal = !!(window.__mnSubState || {}).hasPortal;
           b.expiry = (window.__mnSubState || {}).expiry || null;
           b.payNoticeShown = getComputedStyle(document.getElementById('payNotice')).display !== 'none';

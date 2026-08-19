@@ -535,7 +535,9 @@ document.head.appendChild(bgStyle);
       + '<span style="color:rgba(255,255,255,0.4)"> · ' + me.email + '</span></span>'
       + extra
       + '<span style="color:rgba(255,255,255,0.45)">'
-      + (me.source === 'local' ? '当前为本地资料，开通以管理员确认为准' : '升级 / 加购请点卡片按钮在线支付，或提交申请由管理员开通')
+      + (me.source === 'local' ? '当前为本地资料，开通以管理员确认为准'
+        : (sub && sub.enabled) ? '升级 / 加购请点卡片按钮在线支付，或提交申请由管理员开通'
+        : '在线支付通道未启用（后端未配置 Stripe 密钥）：按钮暂为「申请开通」，配置完成后自动变为「订阅 · RMxx/月」并直接跳转支付页，无需审核')
       + '</span>';
     var pl = document.getElementById('portalLink');
     if (pl) {
@@ -735,7 +737,8 @@ document.head.appendChild(bgStyle);
     window.__mnSubState = {
       ready: true, tier: me && me.tier, email: me && me.email, source: me && me.source,
       pay: (me && me.source === 'server' && sub && sub.enabled) ? 'stripe' : 'apply',
-      enabled: !!(sub && sub.enabled), hasPortal: !!(sub && sub.hasPortal),
+      enabled: !!(sub && sub.enabled), payDisabled: !!(me && me.source === 'server' && !(sub && sub.enabled)),
+      hasPortal: !!(sub && sub.hasPortal),
       expiry: (me && me.tierExpiresAt) || null,
       once: ((sub && sub.onceMethods) || []).join(','), // 单次购买支付方式清单（配置态）
       onceKeys: onceKeys.join(',') // 有一次性 Price 的 SKU

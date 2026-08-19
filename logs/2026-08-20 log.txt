@@ -1,0 +1,24 @@
+============================================================
+  SlatiWorld Development Log — 2026-08-20
+============================================================
+
+1. 付费页回退态自解释提示（用户第 3 问「为什么点击后依旧是申请开通」）
+   - 根因不变：本机 backend/.env 零 STRIPE_ 行 → /subscription/status
+     enabled=false → 按设计回退一期申请流（非 bug）。用户三次撞同一按钮，
+     判定回退态对用户不自解释是呈现问题——按钮必须讲清楚「为什么是申请
+     开通、什么时候变订阅」。
+   - 修复（premium.html）：server 会话 + Stripe 未配置时，banner 尾注改为
+     「在线支付通道未启用（后端未配置 Stripe 密钥）：按钮暂为「申请开通」，
+     配置完成后自动变为「订阅 · RMxx/月」并直接跳转支付页，无需审核」；
+     enabled=true 态文案一字未动。__mnSubState 增 payDisabled。
+   - 冒烟（screenshot.js premium 分支增 b.payDisabled）：三态 0 console
+     error——guest（引导登录 banner、payDisabled=false）、local（本地资料
+     文案、payDisabled=false）、server（pay=apply、payDisabled=true、
+     banner 含「在线支付通道未启用」、四卡 CTA 仍「申请开通」、单次按钮
+     全隐藏、applySkipped 防真实跳转）。enabled=true 分支文案未动，沿用
+     08-19 假密钥冒烟结论不重跑。
+   - 记忆：新增 premium-payment-auto-checkout（用户产品口径：付费页全自动
+     传统在线支付，显示卡号输入/方式选择/地区特定方式，无审核无申请；
+     「申请开通」只是未配置密钥时的临时回退，任何改动不得把它当主路径）。
+   - 待办不变：等用户注册 Stripe 发 sk_test → stripe-init.js 建 8 价 →
+     实机联调（测试卡订阅全链路 + FPX 单次路径）。
