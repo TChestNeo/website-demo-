@@ -93,6 +93,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
           admCardBg: getComputedStyle(document.querySelector('.adm-card')).backgroundImage.slice(0, 30),
           admBorder: getComputedStyle(document.querySelector('.adm-card')).borderTopColor,
           statCardH: Math.round(document.querySelector('.stat-card').getBoundingClientRect().height),
+          admShellW: Math.round(document.querySelector('.adm-shell').getBoundingClientRect().width),
+          admVW: window.innerWidth,
           statCardH2: Math.round(document.querySelectorAll('.stat-card')[11].getBoundingClientRect().height)
         };
         // 切到工单 tab（懒加载）→ 三行卡片（标签状态/标题/详情）→ 点击进专属回复页 → 返回

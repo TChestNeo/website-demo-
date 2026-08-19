@@ -242,6 +242,12 @@
      rgba(255,255,255,0.10)），.adm-card/.stat-card/tk-modal 三处；
      表单控件/表格线/选项卡边框不动（功能性描边保留）。冒烟新增
      admBorder/admBorderDark computed 断言。
+   - 全屏铺开（用户要求「UI 集中在中央，覆盖整个屏幕」）：
+     .adm-shell 去掉 max-width 1280 + margin auto → 全视口宽
+     （冒烟断言 admShellW == admVW 1418）；#adminGate 无权限卡
+     补 margin:0 auto 自居中（登录卡本就自带）；弹窗 max-width
+     保留（弹窗不该全屏）；headless --window-size=1440 实际
+     innerWidth=1418 属正常。曲线卡随全宽变 347px。
    - 用户反馈「顶部卡片拉长」→ 第一次理解错做成加高（min-height
      140），用户澄清「我是说 x 轴的部分，曲线在右侧」→ 撤回加高，
      改**财务顶部曲线卡加宽**：该 stat-strip 加 .fin-strip

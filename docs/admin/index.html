@@ -13,7 +13,7 @@
   <style>
     /* 管理后台专用样式（内联中文文案，未走 i18n 机制——见 commit 说明）。
        独立站点 admin.<域名>：自带登录页、无公网站点侧栏。 */
-    .adm-shell { max-width: 1280px; margin: 0 auto; padding: var(--space-lg) var(--space-md); }
+    .adm-shell { padding: var(--space-lg); } /* 全屏铺开（用户要求覆盖整个屏幕），去掉 1280 上限 */
     /* 左侧卡片菜单（与公网站点侧栏同款 .sidebar-module 卡片视觉） */
     .adm-layout { display: flex; gap: var(--space-lg); align-items: flex-start; }
     .adm-side { width: 232px; flex-shrink: 0; position: sticky; top: var(--space-md);
@@ -162,7 +162,7 @@
   </div>
 
   <!-- 无权限 / 后端不可达 -->
-  <div id="adminGate" class="card" style="max-width:640px;display:none">
+  <div id="adminGate" class="card" style="max-width:640px;margin:0 auto;display:none">
     <h3 class="headline-md" style="margin-bottom:var(--space-sm)">
       <span class="material-symbols-outlined" style="font-size:22px;vertical-align:-4px">gpp_maybe</span>
       <span id="gateTitle">无访问权限</span>
