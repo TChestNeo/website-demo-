@@ -253,6 +253,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="overview"]').click();
         await new Promise(function(r){ setTimeout(r, 100); });
         base.finOverviewBack = document.getElementById('fin-overview-sec').style.display !== 'none';
+        // 财务参数保存（同值）→ 时间线出现「参数」审计条目（finance_set 审计渲染链路）
+        document.getElementById('finSaveBtn').click();
+        await new Promise(function(r){ setTimeout(r, 700); });
+        base.paramTimeline = document.getElementById('dSubTimeline').textContent.indexOf('调整财务参数') > -1;
         // 停在成本子视图（供 SHOT_AFTER 二次截图目视）
         document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="cost"]').click();
         await new Promise(function(r){ setTimeout(r, 100); });

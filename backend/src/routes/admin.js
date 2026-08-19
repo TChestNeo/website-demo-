@@ -75,6 +75,8 @@ function register(router, ctx) {
   const AUDIT_ZH = { mod_decide: '审核决定', penalty: '执行处罚', ticket_reply: '工单回复',
     badge_issue: '签发徽章码', badge_revoke: '吊销徽章码', set_tier: '调整 tier',
     budget_set: '修改预算', finance_set: '调整财务参数', view_dm: '调阅私讯' };
+  // ¥→RM 汇率（AI 账单折算）/ 税率 / 固定月成本（RM）/ 季度目标（RM）——stats 与 finance PUT 共用
+  const FIN_DEFAULTS = { fx: 0.6, taxRate: 0.08, fixedMonthly: 50, quarterTarget: 0 };
   router.add('GET', '/api/admin/stats', requireAdmin((req, res) => {
     const iso = new Date().toISOString();
     const n = (sql, ...args) => db.prepare(sql).get(...args).n;
@@ -121,7 +123,6 @@ function register(router, ctx) {
         .map((r) => { let d = null; try { d = JSON.parse(r.detail); } catch (e) {} return { at: r.at, actor: r.actor || null, target: r.target, from: (d && d.from) || null, to: (d && d.to) || null }; })
     };
     // 财务总览（全 MYR：收入 = tier 定价估算、AI 用量实账为人民币账单按汇率折算 RM、税费 = 收入 × 税率估算，口径前端全标注）
-    const FIN_DEFAULTS = { fx: 0.6, taxRate: 0.08, fixedMonthly: 50, quarterTarget: 0 }; // ¥→RM 汇率（AI 账单折算）/ 税率 / 固定月成本（RM）/ 季度目标（RM）
     const fin = {};
     for (const k of Object.keys(FIN_DEFAULTS)) {
       const row = db.prepare('SELECT value FROM kv WHERE key = ?').get('finance.' + k);
@@ -158,6 +159,10 @@ function register(router, ctx) {
       state: healthState, reason: healthReason, coverage, growth7d,
       quarter: { target: fin.quarterTarget, est: quarterEst, pct: quarterPct, met: quarterPct !== null && quarterPct >= 100 }
     };
+    // 财务参数调整记录（时间线用）：新格式 {from,to} / 旧格式直接值（兼容重放前的旧审计行）
+    fin.paramEvents = db.prepare('SELECT l.created_at AS at, u.email AS actor, l.detail FROM admin_audit_log l '
+      + "LEFT JOIN users u ON u.id = l.admin_id WHERE l.action = 'finance_set' ORDER BY l.seq DESC LIMIT 20").all()
+      .map((r) => { let d = null; try { d = JSON.parse(r.detail); } catch (e) {} return { at: r.at, actor: r.actor || null, from: (d && d.from) || null, to: (d && d.from) ? d.to : d }; });
     // 收入曲线序列（估算口径，供前端卡片迷你曲线/详情弹窗）：自最早审计事件（或今天）逐日推进，
     // 每天一个「月度口径」快照——收入 = tier 月价 × 当日订阅数（set_tier 事件重放，订阅数 0 起步：
     // 一期 tier 全部经由 set_tier）、税费 = 收入 × 当日税率、成本 = 当日固定成本 + 当月 AI 实账累计
@@ -188,7 +193,8 @@ function register(router, ctx) {
           if (de && de.from in cnt) cnt[de.from]--;
           if (de && de.to in cnt) cnt[de.to]++;
         } else {
-          for (const k of ['fx', 'taxRate', 'fixedMonthly']) if (de && Number.isFinite(Number(de[k]))) prm[k] = Number(de[k]);
+          const src = de && de.to ? de.to : de; // 新格式 {from,to} 取 to / 旧格式直接值
+          for (const k of ['fx', 'taxRate', 'fixedMonthly']) if (src && Number.isFinite(Number(src[k]))) prm[k] = Number(src[k]);
         }
       }
       const month = d.slice(0, 7);
@@ -457,18 +463,20 @@ function register(router, ctx) {
     adminWrite();
     const body = await readJson(req);
     if (!Object.keys(FIN_FIELDS).some(k => k in body)) throw new HttpError('VALIDATION', '至少提供一个参数');
-    const saved = {};
+    const saved = {}, from = {};
     for (const k of Object.keys(FIN_FIELDS)) {
       if (!(k in body)) continue;
       const v = Number(body[k]);
       const [lo, hi] = FIN_FIELDS[k];
       if (!Number.isFinite(v) || v < lo || v > hi) throw new HttpError('VALIDATION', k + ' 需为 ' + lo + '-' + hi + ' 数字');
+      const old = db.prepare('SELECT value FROM kv WHERE key = ?').get('finance.' + k);
+      from[k] = old ? Number(old.value) : FIN_DEFAULTS[k]; // 从未设过 → 记录默认值为「改前值」
       db.prepare('INSERT INTO kv (key, value, updated_at) VALUES (?, ?, ?) '
         + 'ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at')
         .run('finance.' + k, String(v), new Date().toISOString());
       saved[k] = v;
     }
-    audit(ctx, 'finance_set', 'finance', saved);
+    audit(ctx, 'finance_set', 'finance', { from, to: saved }); // 时间线可显示「谁/何时/从什么改成什么」
     sendJson(res, 200, { ok: true, saved });
   }));
 

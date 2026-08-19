@@ -249,6 +249,14 @@ test('admin：财务总览（全 MYR：税费/成本/净利/健康分档/季度�
     const put = await t.request('PUT', '/api/admin/finance', { fixedMonthly: 20, quarterTarget: 200, taxRate: 0.1 }, { cookie: t.admin.cookie });
     assert.strictEqual(put.status, 200);
     s = await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json();
+    // 参数调整进时间线：paramEvents 含本次修改（谁/何时/从什么改成什么）
+    assert.strictEqual(s.finance.paramEvents.length, 1);
+    assert.strictEqual(s.finance.paramEvents[0].actor, 'admin@x.com');
+    assert.strictEqual(s.finance.paramEvents[0].to.taxRate, 0.1);
+    assert.strictEqual(s.finance.paramEvents[0].from.taxRate, 0.08);
+    assert.strictEqual(s.finance.paramEvents[0].to.fixedMonthly, 20);
+    assert.strictEqual(s.finance.paramEvents[0].from.fixedMonthly, 50);
+    assert.strictEqual(s.finance.paramEvents[0].from.quarterTarget, 0);
     assert.strictEqual(s.finance.estRevenueRM, 23.5);
     assert.strictEqual(s.finance.taxRM, 2.35);
     assert.strictEqual(s.finance.netProfitRM, 1.15);
@@ -277,8 +285,11 @@ test('admin：财务总览（全 MYR：税费/成本/净利/健康分档/季度�
     assert.strictEqual((await t.request('PUT', '/api/admin/finance', { fx: 0.005 }, { cookie: t.admin.cookie })).status, 400);
     assert.strictEqual((await t.request('PUT', '/api/admin/finance', {}, { cookie: t.admin.cookie })).status, 400);
     const a = t.db.prepare("SELECT * FROM admin_audit_log WHERE action = 'finance_set'").get();
-    assert.strictEqual(JSON.parse(a.detail).taxRate, 0.1);
-    assert.strictEqual(JSON.parse(a.detail).fixedMonthly, 20);
+    const ad = JSON.parse(a.detail);
+    assert.strictEqual(ad.to.taxRate, 0.1);
+    assert.strictEqual(ad.to.fixedMonthly, 20);
+    assert.strictEqual(ad.from.taxRate, 0.08); // 从未设过 → 改前值回退默认
+    assert.strictEqual(ad.from.fixedMonthly, 50);
     assert.strictEqual(t.db.prepare("SELECT value FROM kv WHERE key = 'finance.quarterTarget'").get().value, '200');
     assert.strictEqual(t.db.prepare("SELECT value FROM kv WHERE key = 'finance.fixedMonthly'").get().value, '20');
   } finally { await t.close(); }

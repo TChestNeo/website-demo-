@@ -298,12 +298,31 @@
     $('finTaxRate').value = fin.taxRate;
     $('finFixed').value = fin.fixedMonthly;
     $('finQuarter').value = fin.quarterTarget;
-    // tier 调整时间线
-    $('dSubTimeline').innerHTML = (sub.tierEvents || []).map(function (e) {
+    // 时间线：tier 调整 + 财务参数调整（finance_set 审计）合并按时间倒序
+    var tl = [];
+    (sub.tierEvents || []).forEach(function (e) { tl.push({ at: e.at, kind: 'tier', e: e }); });
+    (fin.paramEvents || []).forEach(function (e) { tl.push({ at: e.at, kind: 'fin', e: e }); });
+    tl.sort(function (a, b) { return a.at < b.at ? 1 : a.at > b.at ? -1 : 0; });
+    var FIN_PART = { fx: '汇率', taxRate: '税率', fixedMonthly: '固定成本', quarterTarget: '季度目标' };
+    $('dSubTimeline').innerHTML = tl.map(function (t) {
+      if (t.kind === 'fin') {
+        var parts = [];
+        Object.keys(FIN_PART).forEach(function (k) {
+          var to = t.e.to && t.e.to[k], from = t.e.from && t.e.from[k];
+          if (to == null && from == null) return;
+          var f = function (v) {
+            return k === 'taxRate' ? Math.round(v * 100) + '%' : k === 'fx' ? String(v) : 'RM ' + v;
+          };
+          parts.push(FIN_PART[k] + ' ' + (from != null ? f(from) + '→' : '') + f(to));
+        });
+        return '<div class="feed-item"><div class="row" style="justify-content:space-between;margin-bottom:2px">' +
+          chip('参数', 'neutral') + '<span class="adm-meta">' + fmtTime(t.e.at) + '</span></div>' +
+          '<span style="font-size:13.5px">' + esc(t.e.actor) + '：调整财务参数（' + parts.join(' · ') + '）</span></div>';
+      }
       return '<div class="feed-item"><div class="row" style="justify-content:space-between;margin-bottom:2px">' +
-        chip(e.to || '—', 'neutral') + '<span class="adm-meta">' + fmtTime(e.at) + '</span></div>' +
-        '<span style="font-size:13.5px">' + esc(e.actor) + '：' + esc(e.target) + ' 从 ' + esc(e.from || '—') + ' → ' + esc(e.to || '—') + '</span></div>';
-    }).join('') || '<p class="adm-meta">暂无 tier 调整记录</p>';
+        chip(t.e.to || '—', 'neutral') + '<span class="adm-meta">' + fmtTime(t.e.at) + '</span></div>' +
+        '<span style="font-size:13.5px">' + esc(t.e.actor) + '：' + esc(t.e.target) + ' 从 ' + esc(t.e.from || '—') + ' → ' + esc(t.e.to || '—') + '</span></div>';
+    }).join('') || '<p class="adm-meta">暂无 tier / 参数调整记录</p>';
   }
   // ── 收入曲线：卡片右侧迷你曲线 + 详情弹窗（中央曲线，右上角时间范围；序列 = 后端估算口径日快照） ──
   var FIN_CURVES = {
