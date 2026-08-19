@@ -30,10 +30,11 @@
     #loginMsg.err { color: #dc2626; }
 
     .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-lg); }
-    .stat-card { background: var(--color-surface); border: 1px solid var(--adm-border); border-radius: var(--radius-lg); padding: var(--space-md); }
+    .stat-card { background: var(--color-surface); border: 1px solid var(--adm-border); border-radius: var(--radius-lg);
+      padding: var(--space-md); min-height: 140px; display: flex; flex-direction: column; justify-content: center; }
     .stat-num { font-size: 22px; font-weight: 800; color: var(--color-on-surface); font-variant-numeric: tabular-nums; }
     .stat-label { font-size: 12px; color: var(--color-outline); margin-top: 2px; }
-    .stat-sub { font-size: 11px; color: var(--color-outline); margin-top: 4px; }
+    .stat-sub { font-size: 11px; color: var(--color-outline); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md); }
     .dash-grid .adm-card { margin-bottom: 0; }
     .dash-card-title { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-sm); }

@@ -242,3 +242,9 @@
      rgba(255,255,255,0.10)），.adm-card/.stat-card/tk-modal 三处；
      表单控件/表格线/选项卡边框不动（功能性描边保留）。冒烟新增
      admBorder/admBorderDark computed 断言。
+   - 用户反馈「顶部卡片拉长」→ .stat-card 统一加高：min-height
+     140px + flex 列居中 + .stat-sub 单行省略（防长副文本换行把
+     同行卡撑得参差不齐）；踩坑：ethereal --space-lg = 40px（不是
+     想象中的 16-20），padding 用它会让带 sub 卡 160/无 sub 卡 140
+     两行不等高——改回 space-md + min-height 兜底全统一 140。
+     冒烟加 statCardH/statCardH2 双卡高度断言。
