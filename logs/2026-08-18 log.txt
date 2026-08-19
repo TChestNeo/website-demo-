@@ -190,3 +190,30 @@
      error）；后端重启新 task bulf28hs9（旧 task 127 属预期——kill 后
      自然退出；新 task 起步踩了 cwd 坑：忘了 cd backend → 找不到
      src/server.js 退出 1）。
+
+8. 财务总览卡片右侧收入曲线 + 详情弹窗（用户要求：每张卡右侧曲线、
+   点击弹详情、右上角时间范围 近5年/1年分四季度/这个季度/这个月/这个星期）
+   - 一期无支付 → 历史数据只能从审计重建：stats 加 fin.series 日序列
+     （估算口径）——set_tier 事件重放 tier 订阅数（0 起步）、finance_set
+     重放参数（fx/taxRate/fixedMonthly）、usage_log 按日汇总当月累计
+     （人民币账单 × 当日 fx）；每天一个「月度口径」快照
+     {d,rev,paid,tax,cost,net}，上限 400 天，末点与卡片数字严格一致
+     （测试锁定）。
+   - 前端零依赖 canvas：5 张金额卡右侧 76×30 迷你曲线（data-fin-key
+     rev/paid/tax/cost/net）；点击 → tk-overlay 详情弹窗，标题行右上角
+     5 档时间范围按钮，中央 320px 曲线图（网格/y 轴刻度/面积渐变/悬停
+     引导线+值/末点标记），meta 行标范围+点数+口径，底部备注各卡口径。
+   - 聚合：5y 按月 60 桶 / 1y 按季度 4 桶 / quarter 按周 / month·week
+     按日；值 = 桶末点快照（无数据桶 0）。成本看板不受影响（¥ 实账
+     保留）；覆盖率卡无曲线。
+   - 测试：110/110（新增跨天重放用例：合成 3 天前 tier 事件 + 2 天前
+     taxRate + 1 天前 usage，断言逐日 rev/tax/cost 与末点对齐——合成
+     事件绕过 API 需同步 users.tier/kv 否则末点不齐，教训）；冒烟全绿
+     0 console error，新增**画布像素断言**（getImageData 数非透明像素，
+     sparkPainted/chartPainted=true——防「画了但空白」类渲染假绿，
+     呼应 v10.13 mask-composite 教训）。
+
+真机复测清单（追加）：
+8. 财务总览 5 张金额卡右侧迷你曲线可见；点卡弹详情，右上角切 5 个
+   时间范围曲线即时重画；悬停显示引导线与值；遮罩/关闭按钮可退出
+9. 调 tier 后刷新 → 曲线末点与卡片数字同步变化

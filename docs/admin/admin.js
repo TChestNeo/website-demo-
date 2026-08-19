@@ -290,6 +290,9 @@
     } else {
       $('dFinQuarterCard').innerHTML = '<p class="adm-meta">未设置季度目标——在右侧「财务参数」填写后自动显示进度与「符合/未达季度预期」判定。</p>';
     }
+    // 曲线序列缓存 + 卡片右侧迷你曲线
+    finSeries = fin.series || [];
+    drawFinSparks();
     // 参数表单回填
     $('finFx').value = fin.fx;
     $('finTaxRate').value = fin.taxRate;
@@ -302,6 +305,190 @@
         '<span style="font-size:13.5px">' + esc(e.actor) + '：' + esc(e.target) + ' 从 ' + esc(e.from || '—') + ' → ' + esc(e.to || '—') + '</span></div>';
     }).join('') || '<p class="adm-meta">暂无 tier 调整记录</p>';
   }
+  // ── 收入曲线：卡片右侧迷你曲线 + 详情弹窗（中央曲线，右上角时间范围；序列 = 后端估算口径日快照） ──
+  var FIN_CURVES = {
+    rev: { title: '预计月收入', color: '#3b82f6', note: '估算口径：tier 月价 × 当日订阅数（set_tier 审计重放，订阅数自 0 起步）。' },
+    paid: { title: '实际收款', color: '#8b5cf6', note: '一期无支付：实际收款恒为 0，接入支付后此曲线开始记数。' },
+    tax: { title: '预计税费', color: '#d97706', note: '估算口径：收入 × 当日税率（finance_set 审计重放），上线前请以税务顾问意见为准。' },
+    cost: { title: '总成本', color: '#ef4444', note: '固定月成本 + 当月 AI 实账累计（usage_log，人民币账单按当日汇率折算 RM）。' },
+    net: { title: '净利润', color: '#16a34a', note: '收入 − 成本 − 税费（月度口径估算）。' }
+  };
+  var finSeries = [], finCurKey = 'rev', finRange = 'month', finHover = -1;
+  var finFmtFull = function (x) { return (x < 0 ? '-' : '') + 'RM ' + Math.abs(x).toFixed(2); };
+  function finFmtAxis(v) {
+    var a = Math.abs(v);
+    return (v < 0 ? '-' : '') + (a >= 1000 ? (a / 1000).toFixed(1) + 'k' : a >= 100 ? a.toFixed(0) : a.toFixed(1));
+  }
+  function drawFinSparks() {
+    var cvs = document.querySelectorAll('canvas.fin-spark');
+    for (var i = 0; i < cvs.length; i++) {
+      var key = cvs[i].parentNode.getAttribute('data-fin-key');
+      drawFinMini(cvs[i], finSeries.map(function (p) { return p[key]; }), FIN_CURVES[key].color);
+    }
+  }
+  function drawFinMini(cv, vals, color) {
+    var ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    if (!vals.length) return;
+    var mn = Math.min.apply(null, vals), mx = Math.max.apply(null, vals);
+    if (mn === mx) { mn -= 1; mx += 1; }
+    ctx.beginPath();
+    for (var i = 0; i < vals.length; i++) {
+      var x = vals.length === 1 ? cv.width / 2 : i / (vals.length - 1) * (cv.width - 4) + 2;
+      var y = cv.height - 3 - (vals[i] - mn) / (mx - mn) * (cv.height - 6);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+  }
+  // 时间范围 → 桶：5y 按月 60 桶 / 1y 分四季度 4 桶 / quarter 按周 / month·week 按日；值取桶末点快照，无数据桶 = 0
+  var FIN_RANGE_ZH = { '5y': '近5年（按月）', '1y': '近1年（分四季度）', 'quarter': '这个季度（按周）', 'month': '这个月（按日）', 'week': '这个星期（按日）' };
+  function finWeekKey(d) { // 周一为一周 → 周起始日
+    var t = new Date(d + 'T00:00:00Z');
+    t = new Date(t.getTime() - ((t.getUTCDay() + 6) % 7) * 86400000);
+    return t.toISOString().slice(0, 10);
+  }
+  function finBucketKey(range, d) {
+    if (range === '5y') return d.slice(0, 7);
+    if (range === '1y') return d.slice(0, 4) + '-Q' + (Math.floor((+d.slice(5, 7) - 1) / 3) + 1);
+    if (range === 'quarter') return finWeekKey(d);
+    return d; // month / week：按日
+  }
+  function finBuckets() {
+    var out = [], now = new Date(), t;
+    var fmt = function (x) { return x.toISOString().slice(0, 10); };
+    if (finRange === '5y') {
+      t = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      t.setUTCMonth(t.getUTCMonth() - 59);
+      for (var m = 0; m < 60; m++) {
+        out.push({ k: t.toISOString().slice(0, 7), label: m % 12 === 11 ? String(t.getUTCFullYear()) : '', d: t.toISOString().slice(0, 7) });
+        t.setUTCMonth(t.getUTCMonth() + 1);
+      }
+    } else if (finRange === '1y') {
+      var q0 = Math.floor(now.getUTCMonth() / 3), ym = now.getUTCFullYear();
+      for (var q = 3; q >= 0; q--) {
+        var qq = q0 - q, y = ym + Math.floor(qq / 4), qm = ((qq % 4) + 4) % 4;
+        out.push({ k: y + '-Q' + (qm + 1), label: y + ' Q' + (qm + 1), d: y + '-' + String(qm * 3 + 1).padStart(2, '0') });
+      }
+    } else if (finRange === 'quarter') {
+      t = new Date(Date.UTC(now.getUTCFullYear(), Math.floor(now.getUTCMonth() / 3) * 3, 1));
+      var wkEnd = finWeekKey(fmt(now));
+      for (var w = finWeekKey(fmt(t)); w <= wkEnd; w = fmt(new Date(new Date(w + 'T00:00:00Z').getTime() + 7 * 86400000))) {
+        out.push({ k: w, label: w.slice(5).replace('-', '/'), d: w });
+      }
+    } else if (finRange === 'month') {
+      t = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+      for (var dd = new Date(t); fmt(dd) <= fmt(now); dd = new Date(dd.getTime() + 86400000)) {
+        out.push({ k: fmt(dd), label: String(dd.getUTCDate()), d: fmt(dd) });
+      }
+    } else { // week：近 7 天
+      t = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 6));
+      for (var i2 = 0; i2 < 7; i2++) {
+        out.push({ k: fmt(t), label: fmt(t).slice(5).replace('-', '/'), d: fmt(t) });
+        t = new Date(t.getTime() + 86400000);
+      }
+    }
+    var byKey = {};
+    for (var i3 = 0; i3 < finSeries.length; i3++) {
+      byKey[finBucketKey(finRange, finSeries[i3].d)] = finSeries[i3][finCurKey];
+    }
+    for (var i4 = 0; i4 < out.length; i4++) out[i4].v = byKey[out[i4].k] || 0;
+    return out;
+  }
+  function drawFinChart() {
+    var cvs = $('finChart');
+    var dpr = window.devicePixelRatio || 1;
+    var W = cvs.clientWidth || 700, H = 320;
+    if (cvs.width !== Math.round(W * dpr)) { cvs.width = Math.round(W * dpr); cvs.height = Math.round(H * dpr); }
+    var ctx = cvs.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    var bk = finBuckets();
+    var vals = bk.map(function (b) { return b.v; });
+    var mn = Math.min(0, Math.min.apply(null, vals));
+    var mx = Math.max(0, Math.max.apply(null, vals));
+    if (mx === mn) mx = mn + 1;
+    var padL = 64, padR = 14, padT = 14, padB = 26;
+    var cw = W - padL - padR, ch = H - padT - padB;
+    var X = function (i) { return padL + (bk.length === 1 ? cw / 2 : i / (bk.length - 1) * cw); };
+    var Y = function (v) { return padT + (1 - (v - mn) / (mx - mn)) * ch; };
+    var col = FIN_CURVES[finCurKey].color;
+    // 网格 + y 刻度（4 档）
+    ctx.strokeStyle = 'rgba(128,128,128,0.18)';
+    ctx.fillStyle = 'rgba(148,163,184,0.9)';
+    ctx.font = '11px system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    for (var g = 0; g <= 4; g++) {
+      var gv = mn + (mx - mn) * g / 4, gy = Y(gv);
+      ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(W - padR, gy); ctx.stroke();
+      ctx.fillText(finFmtAxis(gv), padL - 6, gy + 4);
+    }
+    // x 刻度（≤8 个）
+    var step = Math.max(1, Math.ceil(bk.length / 8));
+    ctx.textAlign = 'center';
+    for (var i = 0; i < bk.length; i += step) {
+      if (bk[i].label) ctx.fillText(bk[i].label, X(i), H - padB + 14);
+    }
+    // 曲线 + 面积
+    ctx.beginPath();
+    for (var i2 = 0; i2 < bk.length; i2++) {
+      var x = X(i2), y = Y(bk[i2].v);
+      if (i2 === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke();
+    ctx.lineTo(X(bk.length - 1), Y(mn)); ctx.lineTo(X(0), Y(mn)); ctx.closePath();
+    ctx.fillStyle = col + '22'; ctx.fill();
+    // 悬停引导线 + 末点标记
+    var hi = finHover >= 0 && finHover < bk.length ? finHover : bk.length - 1;
+    if (finHover >= 0 && finHover < bk.length) {
+      ctx.beginPath(); ctx.moveTo(X(hi), padT); ctx.lineTo(X(hi), padT + ch);
+      ctx.strokeStyle = 'rgba(148,163,184,0.35)'; ctx.lineWidth = 1; ctx.stroke();
+    }
+    ctx.beginPath(); ctx.arc(X(hi), Y(bk[hi].v), 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = col; ctx.fill();
+    $('finChartMeta').textContent = FIN_RANGE_ZH[finRange] + ' · ' + bk.length + ' 个点 · 值 = 桶末点快照（估算）';
+    $('finChartVal').textContent = bk[hi].d + '　' + finFmtFull(bk[hi].v);
+  }
+  function openFinChart(key) {
+    finCurKey = key; finHover = -1;
+    $('finChartTitle').textContent = FIN_CURVES[key].title + '曲线';
+    $('finChartNote').textContent = FIN_CURVES[key].note;
+    document.querySelectorAll('#finRangeBtns [data-fin-range]').forEach(function (x) {
+      x.classList.toggle('active', x.getAttribute('data-fin-range') === finRange);
+    });
+    $('finChartModal').style.display = 'flex';
+    drawFinChart();
+  }
+  function closeFinChart() { $('finChartModal').style.display = 'none'; }
+  document.querySelectorAll('.fin-curve-card').forEach(function (card) {
+    card.addEventListener('click', function () { openFinChart(card.getAttribute('data-fin-key')); });
+  });
+  document.querySelectorAll('#finRangeBtns [data-fin-range]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      finRange = b.getAttribute('data-fin-range');
+      finHover = -1;
+      document.querySelectorAll('#finRangeBtns [data-fin-range]').forEach(function (x) {
+        x.classList.toggle('active', x === b);
+      });
+      drawFinChart();
+    });
+  });
+  $('finChartClose').addEventListener('click', closeFinChart);
+  $('finChartCloseBtn').addEventListener('click', closeFinChart);
+  $('finChartModal').addEventListener('click', function (e) { if (e.target === this) closeFinChart(); });
+  $('finChart').addEventListener('mousemove', function (e) {
+    var bk = finBuckets();
+    var r = e.target.getBoundingClientRect();
+    var padL = 64, padR = 14, cw = r.width - padL - padR;
+    var best = 0, bd = Infinity;
+    for (var i = 0; i < bk.length; i++) {
+      var x = padL + (bk.length === 1 ? cw / 2 : i / (bk.length - 1) * cw);
+      var dx = Math.abs(x - (e.clientX - r.left));
+      if (dx < bd) { bd = dx; best = i; }
+    }
+    finHover = best;
+    drawFinChart();
+  });
+  $('finChart').addEventListener('mouseleave', function () { finHover = -1; drawFinChart(); });
   // 财务参数保存（kv + finance_set 审计）
   $('finSaveBtn').addEventListener('click', function () {
     var body = { fx: Number($('finFx').value), taxRate: Number($('finTaxRate').value),

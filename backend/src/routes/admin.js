@@ -158,6 +158,48 @@ function register(router, ctx) {
       state: healthState, reason: healthReason, coverage, growth7d,
       quarter: { target: fin.quarterTarget, est: quarterEst, pct: quarterPct, met: quarterPct !== null && quarterPct >= 100 }
     };
+    // 收入曲线序列（估算口径，供前端卡片迷你曲线/详情弹窗）：自最早审计事件（或今天）逐日推进，
+    // 每天一个「月度口径」快照——收入 = tier 月价 × 当日订阅数（set_tier 事件重放，订阅数 0 起步：
+    // 一期 tier 全部经由 set_tier）、税费 = 收入 × 当日税率、成本 = 当日固定成本 + 当月 AI 实账累计
+    // （usage_log 按日、人民币账单按当日 fx 折算）、收款恒 0（一期无支付）。上限 400 天。
+    const dayEvts = {};
+    for (const e of db.prepare("SELECT created_at AS at, detail FROM admin_audit_log WHERE action = 'set_tier' ORDER BY seq ASC").all())
+      (dayEvts[e.at.slice(0, 10)] = dayEvts[e.at.slice(0, 10)] || []).push(['tier', e.detail]);
+    for (const e of db.prepare("SELECT created_at AS at, detail FROM admin_audit_log WHERE action = 'finance_set' ORDER BY seq ASC").all())
+      (dayEvts[e.at.slice(0, 10)] = dayEvts[e.at.slice(0, 10)] || []).push(['fin', e.detail]);
+    const usageByDay = {};
+    for (const r of db.prepare('SELECT date(created_at) AS d, SUM(cost_micro) AS c FROM usage_log GROUP BY d').all()) usageByDay[r.d] = r.c;
+    const nowU = new Date();
+    const todayU = new Date(Date.UTC(nowU.getUTCFullYear(), nowU.getUTCMonth(), nowU.getUTCDate()));
+    let minD = todayU.toISOString().slice(0, 10);
+    for (const d of Object.keys(dayEvts)) if (d < minD) minD = d;
+    for (const d of Object.keys(usageByDay)) if (d < minD) minD = d;
+    const cnt = { premium: 0, ultra: 0 };
+    const prm = { fx: FIN_DEFAULTS.fx, taxRate: FIN_DEFAULTS.taxRate, fixedMonthly: FIN_DEFAULTS.fixedMonthly };
+    const series = [];
+    let mtd = 0, prevMonth = '';
+    const startU = new Date(minD + 'T00:00:00Z');
+    if (todayU - startU > 400 * 86400000) startU.setTime(todayU.getTime() - 400 * 86400000);
+    for (let t = new Date(startU); t <= todayU; t = new Date(t.getTime() + 86400000)) {
+      const d = t.toISOString().slice(0, 10);
+      for (const [kind, detail] of dayEvts[d] || []) {
+        let de = null; try { de = JSON.parse(detail); } catch (err) {}
+        if (kind === 'tier') {
+          if (de && de.from in cnt) cnt[de.from]--;
+          if (de && de.to in cnt) cnt[de.to]++;
+        } else {
+          for (const k of ['fx', 'taxRate', 'fixedMonthly']) if (de && Number.isFinite(Number(de[k]))) prm[k] = Number(de[k]);
+        }
+      }
+      const month = d.slice(0, 7);
+      if (month !== prevMonth) { mtd = 0; prevMonth = month; }
+      mtd += ((usageByDay[d] || 0) / 1e6) * prm.fx;
+      const rev = Math.round((cnt.premium * tierPrice.premium + cnt.ultra * tierPrice.ultra) * 100) / 100;
+      const tax = Math.round(rev * prm.taxRate * 100) / 100;
+      const cost = Math.round((prm.fixedMonthly + mtd) * 100) / 100;
+      series.push({ d, rev, paid: 0, tax, cost, net: Math.round((rev - cost - tax) * 100) / 100 });
+    }
+    fin.series = series;
     sendJson(res, 200, {
       users: n('SELECT count(*) AS n FROM users'),
       users7d: n('SELECT count(*) AS n FROM users WHERE created_at >= ?', weekAgo),

@@ -176,6 +176,32 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         base.finFormFields = document.querySelectorAll('#finForm input').length;
         base.finQuarterCard = document.getElementById('dFinQuarterCard').textContent.replace(/\\s+/g, ' ').slice(0, 40);
         base.subTimeline = document.getElementById('dSubTimeline').textContent.replace(/\\s+/g, ' ').slice(0, 80);
+        // 收入曲线：5 卡迷你曲线 → 点击弹详情（标题/5 时间范围/图表/meta）→ 切 5y → 关闭
+        base.sparkCount = document.querySelectorAll('canvas.fin-spark').length;
+        // 迷你曲线像素断言：canvas 内需有非透明像素（防止「画了但空白」）
+        var spk = document.querySelector('canvas.fin-spark').getContext('2d').getImageData(0, 0, 76, 30).data;
+        var painted = 0;
+        for (var pi = 3; pi < spk.length; pi += 4) if (spk[pi] > 0) painted++;
+        base.sparkPainted = painted > 4;
+        document.querySelector('.fin-curve-card[data-fin-key="rev"]').click();
+        await new Promise(function(r){ setTimeout(r, 150); });
+        base.finModalShown = document.getElementById('finChartModal').style.display !== 'none';
+        base.finChartTitle = document.getElementById('finChartTitle').textContent;
+        base.finRangeBtns = document.querySelectorAll('#finRangeBtns [data-fin-range]').length;
+        base.finChartMeta = document.getElementById('finChartMeta').textContent.slice(0, 44);
+        base.finChartVal = document.getElementById('finChartVal').textContent.slice(0, 30);
+        base.finChartW = document.getElementById('finChart').clientWidth;
+        // 大图像素断言同上
+        var fc = document.getElementById('finChart');
+        var bg = fc.getContext('2d').getImageData(0, 0, fc.width, Math.min(fc.height, 120)).data;
+        var painted2 = 0;
+        for (var pj = 3; pj < bg.length; pj += 4) if (bg[pj] > 0) painted2++;
+        base.chartPainted = painted2 > 4;
+        document.querySelector('#finRangeBtns [data-fin-range="5y"]').click();
+        await new Promise(function(r){ setTimeout(r, 100); });
+        base.finChartMeta5y = document.getElementById('finChartMeta').textContent.slice(0, 30);
+        document.getElementById('finChartClose').click();
+        base.finModalClosed = document.getElementById('finChartModal').style.display === 'none';
         return JSON.stringify(base);
       })()`;
       const ev = await cmd('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });

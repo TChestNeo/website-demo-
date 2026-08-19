@@ -235,6 +235,7 @@ test('admin：财务总览（全 MYR：税费/成本/净利/健康分档/季度�
     assert.strictEqual(s.finance.taxRM, 0);
     assert.strictEqual(s.finance.netProfitRM, -50);
     assert.strictEqual(s.finance.health.quarter.pct, null);
+    assert.strictEqual(s.finance.series[s.finance.series.length - 1].rev, 0); // 曲线末点 = 当前数字
     // alice → premium：RM23.5；税 1.88；成本 50 → 覆盖率 0.47 → 危险
     await t.request('PATCH', `/api/admin/users/${t.alice.user.id}`, { tier: 'premium' }, { cookie: t.admin.cookie });
     s = await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json();
@@ -266,6 +267,12 @@ test('admin：财务总览（全 MYR：税费/成本/净利/健康分档/季度�
     assert.strictEqual(s.finance.health.growth7d, 2);
     assert.strictEqual(s.finance.health.quarter.pct, 103); // 207/200 浮点 = 103.4999… → round 103
     assert.strictEqual(s.finance.health.quarter.met, true);
+    const sl = s.finance.series[s.finance.series.length - 1];
+    assert.strictEqual(sl.rev, s.finance.estRevenueRM);
+    assert.strictEqual(sl.tax, s.finance.taxRM);
+    assert.strictEqual(sl.cost, s.finance.totalCostRM);
+    assert.strictEqual(sl.net, s.finance.netProfitRM);
+    assert.strictEqual(sl.paid, 0);
     // 校验 + 审计
     assert.strictEqual((await t.request('PUT', '/api/admin/finance', { fx: 0.005 }, { cookie: t.admin.cookie })).status, 400);
     assert.strictEqual((await t.request('PUT', '/api/admin/finance', {}, { cookie: t.admin.cookie })).status, 400);
@@ -274,6 +281,46 @@ test('admin：财务总览（全 MYR：税费/成本/净利/健康分档/季度�
     assert.strictEqual(JSON.parse(a.detail).fixedMonthly, 20);
     assert.strictEqual(t.db.prepare("SELECT value FROM kv WHERE key = 'finance.quarterTarget'").get().value, '200');
     assert.strictEqual(t.db.prepare("SELECT value FROM kv WHERE key = 'finance.fixedMonthly'").get().value, '20');
+  } finally { await t.close(); }
+});
+
+test('admin：财务曲线序列（审计重放：跨天 tier/finance 事件 + 当月 AI 实账累计 + 末点对齐）', async () => {
+  const t = await adminT();
+  try {
+    const ago = (h) => new Date(Date.now() - h * 3600 * 1000).toISOString();
+    // 3 天前 alice → premium；2 天前 taxRate 0.1；1 天前 bob → ultra + chat 实账 ¥0.20
+    t.db.prepare("INSERT INTO admin_audit_log (admin_id, action, target, detail, created_at) VALUES (?, 'set_tier', ?, ?, ?)")
+      .run(t.admin.user.id, t.alice.user.id, JSON.stringify({ from: 'basic', to: 'premium' }), ago(72));
+    t.db.prepare("INSERT INTO admin_audit_log (admin_id, action, target, detail, created_at) VALUES (?, 'finance_set', 'finance', ?, ?)")
+      .run(t.admin.user.id, JSON.stringify({ taxRate: 0.1 }), ago(48));
+    t.db.prepare("INSERT INTO admin_audit_log (admin_id, action, target, detail, created_at) VALUES (?, 'set_tier', ?, ?, ?)")
+      .run(t.admin.user.id, t.bob.user.id, JSON.stringify({ from: 'basic', to: 'ultra' }), ago(24));
+    t.db.prepare("INSERT INTO usage_log (feature, price_snapshot, cost_micro, created_at) VALUES ('chat', '{}', 200000, ?)").run(ago(24));
+    // 合成事件绕过 API → 同步当前态（users.tier / kv），使「当前数字 = 曲线末点」成立
+    t.db.prepare("UPDATE users SET tier = 'premium' WHERE id = ?").run(t.alice.user.id);
+    t.db.prepare("UPDATE users SET tier = 'ultra' WHERE id = ?").run(t.bob.user.id);
+    t.db.prepare("INSERT INTO kv (key, value, updated_at) VALUES ('finance.taxRate', '0.1', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at").run(ago(48));
+    const s = await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json();
+    const se = s.finance.series;
+    assert.ok(Array.isArray(se) && se.length >= 4, '跨 4 天');
+    const byDay = Object.fromEntries(se.map((p) => [p.d, p]));
+    const days = se.map((p) => p.d);
+    assert.strictEqual(byDay[days[0]].rev, 23.5); // 首日：alice premium 生效
+    assert.strictEqual(byDay[days[1]].rev, 23.5);
+    assert.strictEqual(byDay[days[1]].tax, 2.35); // 次日：taxRate 0.1 生效
+    assert.strictEqual(byDay[days[1]].cost, 50); // 次日：usage 未发生
+    assert.strictEqual(byDay[days[2]].rev, 69); // 第三日：bob ultra 生效
+    // 第三日成本 = 50 + 当日实账 ¥0.20 × fx 0.6（跨月边界时 usage 计入上月则不加）
+    const usageDay = ago(24).slice(0, 10);
+    const inMonth = usageDay.slice(0, 7) === days[days.length - 1].slice(0, 7);
+    const mtd = inMonth ? 0.2 * 0.6 : 0;
+    assert.strictEqual(byDay[usageDay].cost, Math.round((50 + mtd) * 100) / 100);
+    const last = se[se.length - 1];
+    assert.strictEqual(last.rev, s.finance.estRevenueRM);
+    assert.strictEqual(last.tax, s.finance.taxRM);
+    assert.strictEqual(last.cost, s.finance.totalCostRM);
+    assert.strictEqual(last.net, s.finance.netProfitRM);
+    assert.strictEqual(last.paid, 0);
   } finally { await t.close(); }
 });
 
