@@ -253,12 +253,39 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="overview"]').click();
         await new Promise(function(r){ setTimeout(r, 100); });
         base.finOverviewBack = document.getElementById('fin-overview-sec').style.display !== 'none';
+        // 流水子视图：切流水 → 懒加载 → 新增一笔收款 → 行出现 + 实际收款卡更新 → 删除 → 行消失（净零不污染实账）
+        document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="ledger"]').click();
+        await new Promise(function(r){ setTimeout(r, 400); });
+        base.ledSecShown = document.getElementById('fin-ledger-sec').style.display !== 'none';
+        base.ledTabActive = document.querySelector('#finTabs .fin-tab-btn.active').dataset.finTab;
+        base.ledFormFields = document.querySelectorAll('#ledForm input, #ledForm select').length;
+        base.ledLockedInitial = document.getElementById('ledLockedLabel').textContent;
+        document.getElementById('ledKind').value = 'income';
+        document.getElementById('ledCat').value = 'subscription';
+        document.getElementById('ledAmount').value = '66.66';
+        document.getElementById('ledCurrency').value = 'RM';
+        document.getElementById('ledDate').value = new Date().toISOString().slice(0, 10);
+        document.getElementById('ledCounter').value = 'smoke@test';
+        document.getElementById('ledInvoice').value = 'SMK-1';
+        document.getElementById('ledNote').value = '冒烟流水';
+        document.getElementById('ledSaveBtn').click();
+        await new Promise(function(r){ setTimeout(r, 700); });
+        base.ledRowAdded = document.getElementById('ledRows').textContent.indexOf('SMK-1') > -1;
+        base.ledRowKind = document.getElementById('ledRows').textContent.indexOf('收款') > -1;
+        base.dSubPaidAfter = document.getElementById('dSubPaid').textContent;
+        var ledCsv = await fetch('/api/admin/ledger/export', { credentials: 'include' }).then(function(r){ return r.text(); });
+        base.ledCsvHeader = ledCsv.indexOf('流水号,日期,类型') > -1;
+        base.ledCsvHasRow = ledCsv.indexOf('SMK-1') > -1;
+        window.confirm = function () { return true; };
+        document.querySelector('#ledRows [data-led-del]').click();
+        await new Promise(function(r){ setTimeout(r, 700); });
+        base.ledRowRemoved = document.getElementById('ledRows').textContent.indexOf('SMK-1') === -1;
         // 财务参数保存（同值）→ 时间线出现「参数」审计条目（finance_set 审计渲染链路）
         document.getElementById('finSaveBtn').click();
         await new Promise(function(r){ setTimeout(r, 700); });
         base.paramTimeline = document.getElementById('dSubTimeline').textContent.indexOf('调整财务参数') > -1;
-        // 停在成本子视图（供 SHOT_AFTER 二次截图目视）
-        document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="cost"]').click();
+        // 停在流水子视图（供 SHOT_AFTER 二次截图目视新页）
+        document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="ledger"]').click();
         await new Promise(function(r){ setTimeout(r, 100); });
         // 暗色主题阴影断言（临时切 data-theme 再还原；先关 transition 防过渡中间值）
         var ac = document.querySelector('.adm-card');

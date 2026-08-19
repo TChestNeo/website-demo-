@@ -337,10 +337,11 @@
 
     <!-- 财务总览（一期无支付：收入 = tier 定价估算、成本 = AI 实账 + 固定成本、税费 = 收入 × 税率估算） -->
     <div id="pane-sub" style="display:none">
-      <!-- 顶部子菜单：总览 / 成本（成本看板已并入财务总览） -->
+      <!-- 顶部子菜单：总览 / 成本 / 流水（成本看板已并入财务总览；流水 = 财报实账） -->
       <div class="fin-tabs" id="finTabs">
         <button class="fin-tab-btn active" data-fin-tab="overview">总览</button>
         <button class="fin-tab-btn" data-fin-tab="cost">成本</button>
+        <button class="fin-tab-btn" data-fin-tab="ledger">流水</button>
       </div>
       <div id="fin-overview-sec">
       <div class="adm-card" id="finHealth" style="margin-bottom:var(--space-sm);border-left:4px solid #64748b">
@@ -441,6 +442,55 @@
             <label class="adm-meta">总预算 <input class="adm-input" id="bgTotal" type="number" min="0" step="0.5" style="width:90px"></label>
             <button class="btn btn-primary" id="budgetSaveBtn">保存</button>
           </div>
+        </div>
+      </div>
+      <!-- 流水（财报实账：收款/退款/支出/调整 + 月结锁定 + CSV 导出；写操作全落审计） -->
+      <div id="fin-ledger-sec" style="display:none">
+        <div class="adm-card" style="margin-bottom:var(--space-sm)">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-sm);flex-wrap:wrap">
+            <div>
+              <h3 class="headline-sm" style="margin:0">流水账（财报实账）</h3>
+              <p class="adm-meta" style="margin:4px 0 0">口径：权责发生制——金额为正数，方向由类型决定（退款冲减收款）；¥ 按汇率折 RM 入账；月结锁定后，该月及更早流水不可改动。</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex:none;flex-wrap:wrap">
+              <span class="adm-meta" id="ledLockedLabel">月结：未锁定</span>
+              <input class="adm-input" id="ledMonth" type="month" style="width:150px">
+              <button class="btn" id="ledCloseBtn">月结锁定至该月</button>
+              <a class="btn" href="/api/admin/ledger/export">导出 CSV</a>
+            </div>
+          </div>
+        </div>
+        <div class="adm-card" style="margin-bottom:var(--space-sm)">
+          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">记录流水（<span id="ledFormTitle">新增</span>）</h3>
+          <div class="adm-form" id="ledForm" style="align-items:flex-end;flex-wrap:wrap">
+            <label class="adm-meta">类型 <select class="adm-select" id="ledKind">
+              <option value="income">收款</option><option value="refund">退款</option>
+              <option value="expense">支出</option><option value="adjustment">调整</option>
+            </select></label>
+            <label class="adm-meta">分类 <select class="adm-select" id="ledCat">
+              <option value="server">服务器</option><option value="domain">域名</option>
+              <option value="saas">SaaS 订阅</option><option value="legal">法务</option>
+              <option value="marketing">推广</option><option value="tax">税费</option>
+              <option value="subscription">订阅收款</option><option value="other">其他</option>
+            </select></label>
+            <label class="adm-meta">金额 <input class="adm-input" id="ledAmount" type="number" min="0.01" step="0.01" style="width:90px"></label>
+            <label class="adm-meta">币种 <select class="adm-select" id="ledCurrency">
+              <option value="RM">RM</option><option value="CNY">CNY（¥）</option>
+            </select></label>
+            <label class="adm-meta">日期 <input class="adm-input" id="ledDate" type="date" style="width:140px"></label>
+            <label class="adm-meta">对方 <input class="adm-input" id="ledCounter" style="width:150px" placeholder="客户邮箱/供应商"></label>
+            <label class="adm-meta">发票号 <input class="adm-input" id="ledInvoice" style="width:110px"></label>
+            <label class="adm-meta">备注 <input class="adm-input" id="ledNote" style="width:170px"></label>
+            <button class="btn btn-primary" id="ledSaveBtn">保存</button>
+            <button class="btn" id="ledNewBtn">取消 / 新增</button>
+          </div>
+        </div>
+        <div class="adm-card" style="overflow-x:auto">
+          <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">流水明细（最近 200 条）</h3>
+          <table class="adm-table">
+            <thead><tr><th>流水号</th><th>日期</th><th>类型</th><th>分类</th><th>金额</th><th>币种</th><th>对方</th><th>发票号</th><th>备注</th><th>录入人</th><th>操作</th></tr></thead>
+            <tbody id="ledRows"></tbody>
+          </table>
         </div>
       </div>
     </div>

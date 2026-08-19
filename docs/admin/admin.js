@@ -235,7 +235,7 @@
       renderSub(d);
     });
   }
-  // ── 财务总览（收入/税费/成本/净利 + 健康推测 + 季度预期 + 参数设置；一期无支付 → 实际收款恒 0） ──
+  // ── 财务总览（收入/税费/成本/净利 + 健康推测 + 季度预期 + 参数设置；实际收款 = 流水实账（收款 − 退款，¥ 按汇率折 RM）） ──
   var FIN_STATE = { danger: ['危险', '#dc2626'], warn: ['不妙', '#d97706'], ok: ['健康', '#16a34a'], best: ['最佳', '#059669'] };
   function renderSub(d) {
     var sub = d.sub, fin = d.finance;
@@ -272,6 +272,7 @@
       ['· 文字审核', rm(((feats.moderation_text || {}).spent || 0) / 1e6 * fin.fx)],
       ['· AI 客服', rm(((feats.chat || {}).spent || 0) / 1e6 * fin.fx)],
       ['· 图像审核', rm(((feats.moderation_image || {}).spent || 0) / 1e6 * fin.fx)],
+      ['流水支出（本月实账 RM，未计入合计）', rm(fin.expenseRM || 0)],
       ['合计', rm(fin.totalCostRM)]
     ];
     $('dFinCosts').innerHTML = rows.map(function (r) {
@@ -327,7 +328,7 @@
   // ── 收入曲线：卡片右侧迷你曲线 + 详情弹窗（中央曲线，右上角时间范围；序列 = 后端估算口径日快照） ──
   var FIN_CURVES = {
     rev: { title: '预计月收入', color: '#3b82f6', note: '估算口径：tier 月价 × 当日订阅数（set_tier 审计重放，订阅数自 0 起步）。' },
-    paid: { title: '实际收款', color: '#8b5cf6', note: '一期无支付：实际收款恒为 0，接入支付后此曲线开始记数。' },
+    paid: { title: '实际收款', color: '#8b5cf6', note: '流水实账：收款 − 退款按日累计（¥ 按汇率折 RM），在「流水」页录入。' },
     tax: { title: '预计税费', color: '#d97706', note: '估算口径：收入 × 当日税率（finance_set 审计重放），上线前请以税务顾问意见为准。' },
     cost: { title: '总成本', color: '#ef4444', note: '固定月成本 + 当月 AI 实账累计（usage_log，人民币账单按当日汇率折算 RM）。' },
     net: { title: '净利润', color: '#16a34a', note: '收入 − 成本 − 税费（月度口径估算）。' }
@@ -634,13 +635,15 @@
     if (tab === 'badge' && !loaded.badge) { loaded.badge = true; loadBadges(); }
     if (tab === 'user' && !loaded.user) { loaded.user = true; loadUsers(); }
   }
-  // 财务总览顶部子菜单：总览 / 成本（成本看板已并入）
+  // 财务总览顶部子菜单：总览 / 成本 / 流水（成本看板已并入；流水 = 财报实账）
   var finTab = 'overview';
   function switchFinTab(v) {
     finTab = v;
     $('fin-overview-sec').style.display = v === 'overview' ? '' : 'none';
     $('fin-cost-sec').style.display = v === 'cost' ? 'block' : 'none';
+    $('fin-ledger-sec').style.display = v === 'ledger' ? 'block' : 'none';
     document.querySelectorAll('.fin-tab-btn').forEach(function (b) { b.classList.toggle('active', b.dataset.finTab === v); });
+    if (v === 'ledger' && !ledgerLoaded) { ledgerLoaded = true; loadLedger(); }
   }
   $('finTabs').addEventListener('click', function (e) {
     var b = e.target.closest('.fin-tab-btn');
@@ -1233,6 +1236,116 @@
     }
     next();
   });
+
+  // ── 流水账（财报实账：收款/退款/支出/调整 + 月结锁定 + CSV 导出；写操作全落审计，总览曲线/卡片同步刷新） ──
+  var LED_KIND_ZH = { income: '收款', refund: '退款', expense: '支出', adjustment: '调整' };
+  var LED_CAT_ZH = { server: '服务器', domain: '域名', saas: 'SaaS 订阅', legal: '法务', marketing: '推广', tax: '税费', subscription: '订阅收款', other: '其他' };
+  var ledgerLoaded = false, ledRowsCache = [], ledEditId = null;
+  function ledFormToBody() {
+    return {
+      kind: $('ledKind').value,
+      category: $('ledCat').value,
+      amount: Number($('ledAmount').value),
+      currency: $('ledCurrency').value,
+      occurred_at: $('ledDate').value,
+      counterparty: $('ledCounter').value,
+      invoice: $('ledInvoice').value,
+      note: $('ledNote').value
+    };
+  }
+  function ledResetForm() {
+    ledEditId = null;
+    $('ledFormTitle').textContent = '新增';
+    $('ledKind').value = 'income';
+    $('ledCat').value = 'server';
+    $('ledAmount').value = '';
+    $('ledCurrency').value = 'RM';
+    $('ledDate').value = new Date().toISOString().slice(0, 10); // UTC 日，与后端期间归属口径一致
+    $('ledCounter').value = '';
+    $('ledInvoice').value = '';
+    $('ledNote').value = '';
+  }
+  function loadLedger() {
+    MN_API.get('/admin/ledger?limit=200').then(function (r) {
+      if (!r.ok || !r.data) { toast('流水加载失败'); return; }
+      ledRowsCache = r.data.rows || [];
+      var lb = $('ledLockedLabel');
+      if (r.data.locked) { lb.textContent = '月结：已锁定至 ' + r.data.locked; lb.style.color = '#d97706'; }
+      else { lb.textContent = '月结：未锁定'; lb.style.color = ''; }
+      renderLedRows();
+    });
+  }
+  function renderLedRows() {
+    $('ledRows').innerHTML = ledRowsCache.map(function (r) {
+      return '<tr>' +
+        '<td class="mono">' + esc(r.id) + '</td>' +
+        '<td>' + esc(r.occurred_at) + '</td>' +
+        '<td>' + chip(LED_KIND_ZH[r.kind] || r.kind, r.kind === 'income' ? 'ok' : r.kind === 'refund' ? 'neutral' : 'warn') + '</td>' +
+        '<td>' + esc(LED_CAT_ZH[r.category] || r.category) + '</td>' +
+        '<td class="mono">' + r.amount.toFixed(2) + '</td>' +
+        '<td>' + esc(r.currency) + '</td>' +
+        '<td>' + esc(r.counterparty || '—') + '</td>' +
+        '<td>' + esc(r.invoice || '—') + '</td>' +
+        '<td class="adm-meta">' + esc(r.note || '—') + '</td>' +
+        '<td class="adm-meta">' + esc(r.by || '—') + '</td>' +
+        '<td><button class="btn" data-led-edit="' + esc(r.id) + '" style="margin-right:4px">编辑</button>' +
+        '<button class="btn" data-led-del="' + esc(r.id) + '" style="border-color:#dc2626;color:#dc2626">删除</button></td></tr>';
+    }).join('') || '<tr><td colspan="11" class="adm-meta">暂无流水——录入第一笔收款/支出后，总览「实际收款」「流水支出」即开始记数。</td></tr>';
+  }
+  $('ledSaveBtn').addEventListener('click', function () {
+    var body = ledFormToBody();
+    if (!body.occurred_at) { toast('请选择日期'); return; }
+    if (!(body.amount > 0)) { toast('金额需为正数'); return; }
+    var req = ledEditId
+      ? MN_API.request('/admin/ledger/' + ledEditId, { method: 'PUT', body: body })
+      : MN_API.request('/admin/ledger', { method: 'POST', body: body });
+    req.then(function (r) {
+      if (!r.ok) { toast('保存失败：' + (r.data && r.data.error && r.data.error.message || r.status)); return; }
+      toast(ledEditId ? '流水已修改（写入审计）' : '流水已记录（写入审计）');
+      ledResetForm();
+      loadLedger();
+      refreshStats(); // 实际收款卡 / 流水支出行 / paid 曲线即时更新
+    });
+  });
+  $('ledNewBtn').addEventListener('click', ledResetForm);
+  $('ledRows').addEventListener('click', function (e) {
+    var d = e.target.closest('[data-led-del]');
+    if (d) {
+      if (!confirm('删除流水 ' + d.dataset.ledDel + '？此操作写入审计日志，不可撤销。')) return;
+      MN_API.del('/admin/ledger/' + d.dataset.ledDel).then(function (r) {
+        if (!r.ok) { toast('删除失败：' + (r.data && r.data.error && r.data.error.message || r.status)); return; }
+        toast('已删除（写入审计）');
+        loadLedger();
+        refreshStats();
+      });
+      return;
+    }
+    var ed = e.target.closest('[data-led-edit]');
+    if (!ed) return;
+    var row = ledRowsCache.find(function (r) { return r.id === ed.dataset.ledEdit; });
+    if (!row) return;
+    ledEditId = row.id;
+    $('ledFormTitle').textContent = '编辑 ' + row.id;
+    $('ledKind').value = row.kind;
+    $('ledCat').value = row.category;
+    $('ledAmount').value = row.amount;
+    $('ledCurrency').value = row.currency;
+    $('ledDate').value = row.occurred_at;
+    $('ledCounter').value = row.counterparty || '';
+    $('ledInvoice').value = row.invoice || '';
+    $('ledNote').value = row.note || '';
+  });
+  $('ledCloseBtn').addEventListener('click', function () {
+    var m = $('ledMonth').value;
+    if (!m) { toast('请选择月份'); return; }
+    if (!confirm('月结锁定至 ' + m + '：该月及更早的流水将不可新增/修改/删除（只可向更晚月份推进）。继续？')) return;
+    MN_API.post('/admin/ledger/close', { month: m }).then(function (r) {
+      if (!r.ok) { toast('锁定失败：' + (r.data && r.data.error && r.data.error.message || r.status)); return; }
+      toast('已锁定至 ' + m + '（写入审计）');
+      loadLedger();
+    });
+  });
+  ledResetForm();
 
   // ── 启动 ──
   if (document.readyState === 'loading') {

@@ -9,6 +9,7 @@ const crypto = require('node:crypto');
 const { HttpError, sendJson, readJson } = require('../http');
 const { requireAdmin } = require('../middleware/auth');
 const { applyDecision, TARGET_TABLES, textOf } = require('../moderation/pipeline');
+const { insertWithId, pad6 } = require('../ids');
 
 const TIERS = ['basic', 'premium', 'ultra'];
 const PENALTY_ACTIONS = ['warn', 'remove_content', 'rate_limit', 'mute', 'ban', 'restore'];
@@ -74,7 +75,8 @@ function register(router, ctx) {
   // ── 总览（管理首页）── 一次请求聚合全站统计 + 分项预算 + 最近动态
   const AUDIT_ZH = { mod_decide: '审核决定', penalty: '执行处罚', ticket_reply: '工单回复',
     badge_issue: '签发徽章码', badge_revoke: '吊销徽章码', set_tier: '调整 tier',
-    budget_set: '修改预算', finance_set: '调整财务参数', view_dm: '调阅私讯' };
+    budget_set: '修改预算', finance_set: '调整财务参数', view_dm: '调阅私讯',
+    ledger_add: '记录流水', ledger_edit: '修改流水', ledger_delete: '删除流水', ledger_close: '月结锁定' };
   // ¥→RM 汇率（AI 账单折算）/ 税率 / 固定月成本（RM）/ 季度目标（RM）——stats 与 finance PUT 共用
   const FIN_DEFAULTS = { fx: 0.6, taxRate: 0.08, fixedMonthly: 50, quarterTarget: 0 };
   router.add('GET', '/api/admin/stats', requireAdmin((req, res) => {
@@ -105,7 +107,7 @@ function register(router, ctx) {
     for (const r of db.prepare('SELECT action AS a, target AS t, created_at AS at FROM admin_audit_log ORDER BY seq DESC LIMIT 6').all())
       act.push({ at: r.at, type: 'audit', text: (AUDIT_ZH[r.a] || r.a) + '：' + (r.t || '—') });
     act.sort((x, y) => (x.at < y.at ? 1 : x.at > y.at ? -1 : 0));
-    // 订阅与收入（一期无支付：tier 为管理员手动指定 → paidMicro 恒 0，收入按 tier 月价估算）
+    // 订阅与收入（tier 为管理员手动指定；paidMicro = 本月流水实账（收款 − 退款），无流水则 0，收入按 tier 月价估算）
     const tiers = { basic: 0, premium: 0, ultra: 0 };
     for (const r of db.prepare("SELECT tier, count(*) AS n FROM users WHERE status = 'active' GROUP BY tier").all())
       if (r.tier in tiers) tiers[r.tier] = r.n;
@@ -131,6 +133,17 @@ function register(router, ctx) {
     }
     const estRevenueRM = sub.revenue.estimatedMonthly;
     const usageCostRM = Math.round(st.totalSpent / 1e6 * fin.fx * 100) / 100;
+    // 流水账实账（本月）：收款 − 退款（¥ 按当前汇率折 RM）；支出单列（成本结构展示，不并入估算模型）
+    let paidRM = 0, expenseRM = 0;
+    for (const r of db.prepare('SELECT kind, amount, currency FROM ledger WHERE occurred_at >= ?')
+      .all(new Date().toISOString().slice(0, 7) + '-01')) {
+      const v = Math.round(Number(r.amount) * (r.currency === 'CNY' ? fin.fx : 1) * 100) / 100;
+      if (r.kind === 'income') paidRM += v;
+      else if (r.kind === 'refund') paidRM -= v;
+      else if (r.kind === 'expense') expenseRM += v;
+    }
+    paidRM = Math.round(paidRM * 100) / 100; expenseRM = Math.round(expenseRM * 100) / 100;
+    sub.revenue.paidMicro = Math.round(paidRM * 1e6); // 实际收款卡 = 流水实账（原一期恒 0）
     const totalCostRM = Math.round((fin.fixedMonthly + usageCostRM) * 100) / 100;
     const taxRM = Math.round(estRevenueRM * fin.taxRate * 100) / 100;
     const netProfitRM = Math.round((estRevenueRM - totalCostRM - taxRM) * 100) / 100;
@@ -163,6 +176,9 @@ function register(router, ctx) {
     fin.paramEvents = db.prepare('SELECT l.created_at AS at, u.email AS actor, l.detail FROM admin_audit_log l '
       + "LEFT JOIN users u ON u.id = l.admin_id WHERE l.action = 'finance_set' ORDER BY l.seq DESC LIMIT 20").all()
       .map((r) => { let d = null; try { d = JSON.parse(r.detail); } catch (e) {} return { at: r.at, actor: r.actor || null, from: (d && d.from) || null, to: (d && d.from) ? d.to : d }; });
+    fin.paidRM = paidRM; fin.expenseRM = expenseRM;
+    const lockedRow = db.prepare("SELECT value FROM kv WHERE key = 'ledger.closed_upto'").get();
+    fin.ledgerLocked = lockedRow ? lockedRow.value : null;
     // 收入曲线序列（估算口径，供前端卡片迷你曲线/详情弹窗）：自最早审计事件（或今天）逐日推进，
     // 每天一个「月度口径」快照——收入 = tier 月价 × 当日订阅数（set_tier 事件重放，订阅数 0 起步：
     // 一期 tier 全部经由 set_tier）、税费 = 收入 × 当日税率、成本 = 当日固定成本 + 当月 AI 实账累计
@@ -174,11 +190,19 @@ function register(router, ctx) {
       (dayEvts[e.at.slice(0, 10)] = dayEvts[e.at.slice(0, 10)] || []).push(['fin', e.detail]);
     const usageByDay = {};
     for (const r of db.prepare('SELECT date(created_at) AS d, SUM(cost_micro) AS c FROM usage_log GROUP BY d').all()) usageByDay[r.d] = r.c;
+    // 流水账收款/退款按日（¥ 在逐日重放内按当日汇率折 RM）
+    const paidByDay = {};
+    for (const r of db.prepare("SELECT kind, amount, currency, occurred_at FROM ledger WHERE kind IN ('income','refund')").all()) {
+      const d = String(r.occurred_at).slice(0, 10);
+      const pd = paidByDay[d] = paidByDay[d] || { rm: 0, cny: 0 };
+      pd[r.currency === 'CNY' ? 'cny' : 'rm'] += r.kind === 'income' ? Number(r.amount) : -Number(r.amount);
+    }
     const nowU = new Date();
     const todayU = new Date(Date.UTC(nowU.getUTCFullYear(), nowU.getUTCMonth(), nowU.getUTCDate()));
     let minD = todayU.toISOString().slice(0, 10);
     for (const d of Object.keys(dayEvts)) if (d < minD) minD = d;
     for (const d of Object.keys(usageByDay)) if (d < minD) minD = d;
+    for (const d of Object.keys(paidByDay)) if (d < minD) minD = d;
     const cnt = { premium: 0, ultra: 0 };
     const prm = { fx: FIN_DEFAULTS.fx, taxRate: FIN_DEFAULTS.taxRate, fixedMonthly: FIN_DEFAULTS.fixedMonthly };
     const series = [];
@@ -203,7 +227,9 @@ function register(router, ctx) {
       const rev = Math.round((cnt.premium * tierPrice.premium + cnt.ultra * tierPrice.ultra) * 100) / 100;
       const tax = Math.round(rev * prm.taxRate * 100) / 100;
       const cost = Math.round((prm.fixedMonthly + mtd) * 100) / 100;
-      series.push({ d, rev, paid: 0, tax, cost, net: Math.round((rev - cost - tax) * 100) / 100 });
+      const pd = paidByDay[d] || { rm: 0, cny: 0 };
+      const paid = Math.round((pd.rm + pd.cny * prm.fx) * 100) / 100;
+      series.push({ d, rev, paid, tax, cost, net: Math.round((rev - cost - tax) * 100) / 100 });
     }
     fin.series = series;
     sendJson(res, 200, {
@@ -478,6 +504,104 @@ function register(router, ctx) {
     }
     audit(ctx, 'finance_set', 'finance', { from, to: saved }); // 时间线可显示「谁/何时/从什么改成什么」
     sendJson(res, 200, { ok: true, saved });
+  }));
+
+  // ── 流水账（财报基础：收款/退款/支出/调整 + 月结锁定 + CSV 导出；全部写操作落审计） ──
+  // 金额 REAL 2 位小数、币种 RM/CNY（人工录入的经营数据，与 usage_log 机器微元口径不同）；
+  // occurred_at = 经济事件日期（期间归属），月结按它锁定；¥ 流水按汇率折 RM 入账。
+  const LED_KINDS = { income: '收款', refund: '退款', expense: '支出', adjustment: '调整' };
+  const LED_CATS = ['server', 'domain', 'saas', 'legal', 'marketing', 'tax', 'subscription', 'other'];
+  const LED_CAT_ZH = { server: '服务器', domain: '域名', saas: 'SaaS 订阅', legal: '法务', marketing: '推广', tax: '税费', subscription: '订阅收款', other: '其他' };
+  const LED_COLS = ['kind', 'category', 'amount', 'currency', 'occurred_at', 'counterparty', 'note', 'invoice'];
+  const ledLocked = () => { const r = db.prepare("SELECT value FROM kv WHERE key = 'ledger.closed_upto'").get(); return r ? r.value : null; };
+  function ledGuard(at) { const c = ledLocked(); if (c && at.slice(0, 7) <= c) throw new HttpError('RESTRICTED', '该日期所在月份已月结锁定（截至 ' + c + '），流水不可改动'); }
+  function ledBody(body) {
+    const kind = body.kind, cat = body.category || 'other';
+    if (!(kind in LED_KINDS)) throw new HttpError('VALIDATION', 'kind 需为 income/refund/expense/adjustment');
+    if (!LED_CATS.includes(cat)) throw new HttpError('VALIDATION', 'category 非法');
+    const amount = Math.round(Number(body.amount) * 100) / 100;
+    if (!Number.isFinite(amount) || amount <= 0 || amount > 1e9) throw new HttpError('VALIDATION', 'amount 需为 0-1e9 正数');
+    const currency = body.currency === 'CNY' ? 'CNY' : (body.currency === 'RM' ? 'RM' : null);
+    if (!currency) throw new HttpError('VALIDATION', 'currency 需为 RM/CNY');
+    const at = String(body.occurred_at || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(at)) throw new HttpError('VALIDATION', 'occurred_at 需为 YYYY-MM-DD');
+    return { kind, category: cat, amount, currency, occurred_at: at,
+      counterparty: String(body.counterparty || '').slice(0, 120),
+      note: String(body.note || '').slice(0, 300),
+      invoice: String(body.invoice || '').slice(0, 100) };
+  }
+  const ledRow = (r) => ({ id: r.id, kind: r.kind, category: r.category, amount: r.amount, currency: r.currency,
+    occurred_at: r.occurred_at, counterparty: r.counterparty, note: r.note, invoice: r.invoice,
+    by: r.by || null, createdAt: r.created_at });
+
+  router.add('GET', '/api/admin/ledger', requireAdmin((req, res) => {
+    const limit = Math.min(Number(req.query.limit) || 100, 500);
+    const rows = db.prepare('SELECT l.*, u.email AS by FROM ledger l LEFT JOIN users u ON u.id = l.created_by '
+      + 'ORDER BY l.occurred_at DESC, l.seq DESC LIMIT ?').all(limit);
+    sendJson(res, 200, { rows: rows.map(ledRow), locked: ledLocked() });
+  }));
+
+  // CSV 导出（Excel 兼容：BOM + 中文表头；含全部流水）
+  router.add('GET', '/api/admin/ledger/export', requireAdmin((req, res) => {
+    const rows = db.prepare('SELECT l.*, u.email AS by FROM ledger l LEFT JOIN users u ON u.id = l.created_by '
+      + 'ORDER BY l.occurred_at ASC, l.seq ASC').all();
+    const esc = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const lines = ['﻿流水号,日期,类型,分类,金额,币种,对方,备注,发票号,录入人,录入时间'];
+    for (const r of rows) lines.push([
+      r.id, r.occurred_at, LED_KINDS[r.kind] || r.kind, LED_CAT_ZH[r.category] || r.category,
+      r.amount, r.currency, r.counterparty, r.note, r.invoice, r.by || '', (r.created_at || '').slice(0, 19).replace('T', ' ')
+    ].map(esc).join(','));
+    res.writeHead(200, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="ledger.csv"' });
+    res.end(lines.join('\r\n'));
+  }));
+
+  // 月结锁定：财报出完锁定某月及更早的流水（只可向更晚月份推进；解锁需直接改 kv，走审计）
+  router.add('POST', '/api/admin/ledger/close', requireAdmin(async (req, res) => {
+    adminWrite();
+    const body = await readJson(req);
+    const month = String(body.month || '');
+    if (!/^\d{4}-\d{2}$/.test(month)) throw new HttpError('VALIDATION', 'month 需为 YYYY-MM');
+    const cur = ledLocked();
+    if (cur && month <= cur) throw new HttpError('VALIDATION', '月结只可向更晚月份推进（当前截至 ' + cur + '）');
+    db.prepare("INSERT INTO kv (key, value, updated_at) VALUES ('ledger.closed_upto', ?, ?) "
+      + 'ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at')
+      .run(month, new Date().toISOString());
+    audit(ctx, 'ledger_close', 'ledger', { month });
+    sendJson(res, 200, { ok: true, locked: month });
+  }));
+
+  router.add('POST', '/api/admin/ledger', requireAdmin(async (req, res) => {
+    adminWrite();
+    const body = await readJson(req);
+    const e = ledBody(body);
+    ledGuard(e.occurred_at);
+    const { id } = insertWithId(db, 'ledger', LED_COLS.concat(['created_by', 'created_at']),
+      LED_COLS.map((k) => e[k]).concat([ctx.user.id, new Date().toISOString()]), (s) => 'LED-' + pad6(s));
+    audit(ctx, 'ledger_add', id, e);
+    sendJson(res, 200, { ok: true, id });
+  }));
+
+  router.add('PUT', '/api/admin/ledger/:id', requireAdmin(async (req, res) => {
+    adminWrite();
+    const old = db.prepare('SELECT * FROM ledger WHERE id = ?').get(req.params.id);
+    if (!old) throw new HttpError('NOT_FOUND', '流水不存在');
+    const body = await readJson(req);
+    const e = ledBody(body);
+    ledGuard(e.occurred_at); ledGuard(old.occurred_at); // 原日期与改后日期都不得在锁定月内
+    db.prepare('UPDATE ledger SET ' + LED_COLS.map((k) => k + ' = ?').join(', ') + ' WHERE id = ?')
+      .run(...LED_COLS.map((k) => e[k]), req.params.id);
+    audit(ctx, 'ledger_edit', old.id, { before: { kind: old.kind, amount: old.amount, currency: old.currency, occurred_at: old.occurred_at }, after: e });
+    sendJson(res, 200, { ok: true, id: old.id });
+  }));
+
+  router.add('DELETE', '/api/admin/ledger/:id', requireAdmin(async (req, res) => {
+    adminWrite();
+    const old = db.prepare('SELECT * FROM ledger WHERE id = ?').get(req.params.id);
+    if (!old) throw new HttpError('NOT_FOUND', '流水不存在');
+    ledGuard(old.occurred_at);
+    db.prepare('DELETE FROM ledger WHERE id = ?').run(req.params.id);
+    audit(ctx, 'ledger_delete', old.id, { kind: old.kind, amount: old.amount, currency: old.currency, occurred_at: old.occurred_at });
+    sendJson(res, 200, { ok: true, id: old.id });
   }));
 
   // ── 审计 ──

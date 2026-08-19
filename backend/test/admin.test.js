@@ -335,6 +335,88 @@ test('admin：财务曲线序列（审计重放：跨天 tier/finance 事件 + �
   } finally { await t.close(); }
 });
 
+test('admin：流水账（CRUD/实账统计/CSV/月结锁定/审计）', async () => {
+  const t = await adminT();
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const month = today.slice(0, 7);
+    const led = (body) => t.request('POST', '/api/admin/ledger', body, { cookie: t.admin.cookie });
+    const stats = async () => (await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json());
+    const fin = async () => (await stats()).finance;
+    // 权限矩阵
+    assert.strictEqual((await t.request('GET', '/api/admin/ledger')).status, 401);
+    assert.strictEqual((await t.request('GET', '/api/admin/ledger', undefined, { cookie: t.alice.cookie })).status, 403);
+    // 收款 RM50 → 实账 50
+    const inc = await led({ kind: 'income', category: 'subscription', amount: 50, currency: 'RM', occurred_at: today, counterparty: 'alice@x.com', invoice: 'INV-1', note: '测试收款' });
+    assert.strictEqual(inc.status, 200);
+    const incId = (await inc.json()).id;
+    assert.match(incId, /^LED-\d{6}$/);
+    assert.strictEqual((await fin()).paidRM, 50);
+    assert.strictEqual((await stats()).sub.revenue.paidMicro, 50000000);
+    // 退款 RM10 冲减 → 40
+    const ref = await led({ kind: 'refund', category: 'subscription', amount: 10, currency: 'RM', occurred_at: today });
+    assert.strictEqual(ref.status, 200);
+    assert.strictEqual((await fin()).paidRM, 40);
+    // 支出 ¥100 × fx0.6 → expenseRM 60，不动收款
+    await led({ kind: 'expense', category: 'server', amount: 100, currency: 'CNY', occurred_at: today });
+    assert.strictEqual((await fin()).paidRM, 40);
+    assert.strictEqual((await fin()).expenseRM, 60);
+    // 曲线序列末点 paid = 流水实账
+    let s = (await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json()).finance;
+    const last = s.series[s.series.length - 1];
+    assert.strictEqual(last.d, today);
+    assert.strictEqual(last.paid, 40);
+    // 列表含行 + 录入人
+    const list = await (await t.request('GET', '/api/admin/ledger', undefined, { cookie: t.admin.cookie })).json();
+    assert.strictEqual(list.rows.length, 3);
+    assert.strictEqual(list.rows[0].by, 'admin@x.com'); // 按 occurred_at DESC, seq DESC → 最后录入的支出在前
+    assert.strictEqual(list.rows[0].kind, 'expense');
+    assert.strictEqual(list.locked, null);
+    // 编辑：收款 50 → 60
+    const put = await t.request('PUT', `/api/admin/ledger/${incId}`, { kind: 'income', category: 'subscription', amount: 60, currency: 'RM', occurred_at: today, counterparty: 'alice@x.com', invoice: 'INV-1' }, { cookie: t.admin.cookie });
+    assert.strictEqual(put.status, 200);
+    assert.strictEqual((await fin()).paidRM, 50); // 60 − 10
+    // 删除退款 → 60
+    const list2 = await (await t.request('GET', '/api/admin/ledger', undefined, { cookie: t.admin.cookie })).json();
+    const refundRow = list2.rows.find((r) => r.kind === 'refund');
+    assert.strictEqual((await t.request('DELETE', `/api/admin/ledger/${refundRow.id}`, undefined, { cookie: t.admin.cookie })).status, 200);
+    assert.strictEqual((await fin()).paidRM, 60);
+    // 校验矩阵
+    assert.strictEqual((await led({ kind: 'steal', category: 'other', amount: 1, currency: 'RM', occurred_at: today })).status, 400);
+    assert.strictEqual((await led({ kind: 'income', category: 'weapons', amount: 1, currency: 'RM', occurred_at: today })).status, 400);
+    assert.strictEqual((await led({ kind: 'income', category: 'other', amount: 0, currency: 'RM', occurred_at: today })).status, 400);
+    assert.strictEqual((await led({ kind: 'income', category: 'other', amount: -5, currency: 'RM', occurred_at: today })).status, 400);
+    assert.strictEqual((await led({ kind: 'income', category: 'other', amount: 1, currency: 'USD', occurred_at: today })).status, 400);
+    assert.strictEqual((await led({ kind: 'income', category: 'other', amount: 1, currency: 'RM', occurred_at: '2026/08/01' })).status, 400);
+    assert.strictEqual((await t.request('PUT', '/api/admin/ledger/LED-999999', { kind: 'income', category: 'other', amount: 1, currency: 'RM', occurred_at: today }, { cookie: t.admin.cookie })).status, 404);
+    assert.strictEqual((await t.request('DELETE', '/api/admin/ledger/LED-999999', undefined, { cookie: t.admin.cookie })).status, 404);
+    // CSV 导出：BOM + 中文表头 + 行数据（fetch .text() 会剥 BOM → 直接查原始字节）
+    const buf = Buffer.from(await (await t.request('GET', '/api/admin/ledger/export', undefined, { cookie: t.admin.cookie })).arrayBuffer());
+    assert.deepStrictEqual([buf[0], buf[1], buf[2]], [0xef, 0xbb, 0xbf]); // Excel BOM
+    const csv = buf.toString('utf8');
+    assert.ok(csv.includes('流水号,日期,类型,分类,金额,币种'));
+    assert.ok(csv.includes(incId) && csv.includes('INV-1'));
+    assert.ok(csv.includes('收款') && csv.includes('支出'));
+    // 月结锁定：当前月 → 之后一切写操作 403；只可向更晚推进
+    const close = await t.request('POST', '/api/admin/ledger/close', { month }, { cookie: t.admin.cookie });
+    assert.strictEqual(close.status, 200);
+    assert.strictEqual((await close.json()).locked, month);
+    assert.strictEqual((await (await t.request('GET', '/api/admin/ledger', undefined, { cookie: t.admin.cookie })).json()).locked, month);
+    assert.strictEqual((await led({ kind: 'income', category: 'other', amount: 1, currency: 'RM', occurred_at: today })).status, 403);
+    assert.strictEqual((await t.request('PUT', `/api/admin/ledger/${incId}`, { kind: 'income', category: 'subscription', amount: 70, currency: 'RM', occurred_at: today }, { cookie: t.admin.cookie })).status, 403);
+    assert.strictEqual((await t.request('DELETE', `/api/admin/ledger/${incId}`, undefined, { cookie: t.admin.cookie })).status, 403);
+    assert.strictEqual((await t.request('POST', '/api/admin/ledger/close', { month: '2019-01' }, { cookie: t.admin.cookie })).status, 400);
+    assert.strictEqual((await t.request('POST', '/api/admin/ledger/close', { month: '2026-8' }, { cookie: t.admin.cookie })).status, 400);
+    // 审计四动作
+    const acts = t.db.prepare('SELECT action, COUNT(*) AS n FROM admin_audit_log WHERE action LIKE ? GROUP BY action').all('ledger_%');
+    const byAct = Object.fromEntries(acts.map((r) => [r.action, r.n]));
+    assert.strictEqual(byAct.ledger_add, 3); // 收款/退款/支出；校验 400 与锁定 403 不入审计
+    assert.ok(byAct.ledger_edit >= 1 && byAct.ledger_delete >= 1 && byAct.ledger_close >= 1);
+    const addA = t.db.prepare("SELECT * FROM admin_audit_log WHERE action = 'ledger_add' ORDER BY seq LIMIT 1").get();
+    assert.strictEqual(JSON.parse(addA.detail).invoice, 'INV-1');
+  } finally { await t.close(); }
+});
+
 test('admin：成本看板 usage（分功能 + recent）+ budget 读写（kv + 审计 + 校验）', async () => {
   const t = await adminT();
   try {
