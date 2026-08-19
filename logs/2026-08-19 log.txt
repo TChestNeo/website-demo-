@@ -142,3 +142,17 @@
      配套文件链接（在线支付可选可后补，不阻塞上线）。
    - 未交付待办：用户提供 sk_test 后实机联调（测试卡订阅→开通→
      顺延→portal 取消→降级全链路）；live 激活同手册 §7。
+
+4. 付费页支付态澄清（用户：「为什么是先申请开通，我要传统的点击直接跳支付页面」）
+   - 答复：代码本就是点击直跳支付（payKey 分支 → POST checkout →
+     location.href = Stripe Checkout URL，零申请环节）；页面显示「申请
+     开通」只是 Stripe 密钥未配置时的自动回退，密钥一到按钮自动变
+     「订阅 · RMxx/月」。
+   - 实证：临时环境变量（STRIPE_ENABLED=true + 假密钥/假价）重启
+     后端 → 冒烟同一页面：pay='stripe'、四卡 CTA「订阅 · RM23.50/
+     RM45.50/RM29.90/RM60.90 每月」全可点（applySkipped=stripe-cta
+     防真实跳转）、0 console error；随后恢复原 .env（enabled=false）。
+   - 新增 scripts/stripe-init.js：用户给 sk_test 一条命令建好 4 个
+     Product+Price（recurring/monthly MYR，幂等可重复跑）+ 打印
+     .env 行 + webhook（stripe listen）步骤。等用户注册 Stripe 发
+     密钥即完成实机直跳支付全链路（测试卡 4242…）。
