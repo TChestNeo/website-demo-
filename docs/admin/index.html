@@ -30,8 +30,7 @@
     #loginMsg.err { color: #dc2626; }
 
     .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-lg); }
-    .stat-card { background: var(--color-surface); border: 1px solid var(--adm-border); border-radius: var(--radius-lg);
-      padding: var(--space-md); min-height: 140px; display: flex; flex-direction: column; justify-content: center; }
+    .stat-card { background: var(--color-surface); border: 1px solid var(--adm-border); border-radius: var(--radius-lg); padding: var(--space-md); }
     .stat-num { font-size: 22px; font-weight: 800; color: var(--color-on-surface); font-variant-numeric: tabular-nums; }
     .stat-label { font-size: 12px; color: var(--color-outline); margin-top: 2px; }
     .stat-sub { font-size: 11px; color: var(--color-outline); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -111,6 +110,8 @@
     .tk-opt:hover { background: var(--color-surface-variant, rgba(128,128,128,0.08)); border-color: var(--color-primary); }
     /* 财务曲线卡：右侧迷你曲线 + 点击弹详情（右上角时间范围） */
     .fin-curve-card { display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; }
+    .fin-curve-card > div { flex: 1; min-width: 0; } /* 文本占剩余宽度，曲线始终贴右 */
+    .fin-strip { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } /* 财务顶部卡加宽（x 轴），曲线右侧留足空间 */
     .fin-curve-card:hover { border-color: var(--color-primary); }
     .fin-spark { flex: none; }
     .fin-range-btn.active { border-color: var(--color-primary); color: var(--color-primary); font-weight: 700; }
@@ -334,7 +335,7 @@
         <h3 class="headline-sm" style="margin:0">收入健康推测：<span id="dFinHealth">—</span> <span class="adm-meta" id="dFinQuarter"></span></h3>
         <p class="adm-meta" id="dFinReason" style="margin:4px 0 0"></p>
       </div>
-      <div class="stat-strip">
+      <div class="stat-strip fin-strip">
         <div class="stat-card fin-curve-card" data-fin-key="rev" title="点击查看收入曲线">
           <div><div class="stat-num" id="dSubRevenue">—</div><div class="stat-label">预计月收入（RM）</div></div>
           <canvas class="fin-spark" width="76" height="30"></canvas>

@@ -188,6 +188,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         var painted = 0;
         for (var pi = 3; pi < spk.length; pi += 4) if (spk[pi] > 0) painted++;
         base.sparkPainted = painted > 4;
+        // 曲线贴右几何断言：迷你曲线右缘在卡内、距卡右缘 ≈ 内边距；卡宽 ≥ 260
+        var fr = document.querySelector('.fin-curve-card').getBoundingClientRect();
+        var sr = document.querySelector('canvas.fin-spark').getBoundingClientRect();
+        base.finCardW = Math.round(fr.width);
+        base.finSparkGap = Math.round(fr.right - sr.right);
         document.querySelector('.fin-curve-card[data-fin-key="rev"]').click();
         await new Promise(function(r){ setTimeout(r, 150); });
         base.finModalShown = document.getElementById('finChartModal').style.display !== 'none';

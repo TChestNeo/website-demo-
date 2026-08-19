@@ -242,9 +242,11 @@
      rgba(255,255,255,0.10)），.adm-card/.stat-card/tk-modal 三处；
      表单控件/表格线/选项卡边框不动（功能性描边保留）。冒烟新增
      admBorder/admBorderDark computed 断言。
-   - 用户反馈「顶部卡片拉长」→ .stat-card 统一加高：min-height
-     140px + flex 列居中 + .stat-sub 单行省略（防长副文本换行把
-     同行卡撑得参差不齐）；踩坑：ethereal --space-lg = 40px（不是
-     想象中的 16-20），padding 用它会让带 sub 卡 160/无 sub 卡 140
-     两行不等高——改回 space-md + min-height 兜底全统一 140。
-     冒烟加 statCardH/statCardH2 双卡高度断言。
+   - 用户反馈「顶部卡片拉长」→ 第一次理解错做成加高（min-height
+     140），用户澄清「我是说 x 轴的部分，曲线在右侧」→ 撤回加高，
+     改**财务顶部曲线卡加宽**：该 stat-strip 加 .fin-strip
+     （grid minmax 150→260px，卡宽 ~180→312）+ .fin-curve-card >
+     div { flex:1; min-width:0 } 文本占剩余、曲线贴右（冒烟几何
+     断言 finCardW 312 / finSparkGap 25 = 内边距+边框，曲线在卡
+     内右缘）；.stat-sub 单行省略保留（防换行撑行参差）。踩坑：
+     ethereal --space-lg = 40px（非 16-20）、--space-md = 24px。
