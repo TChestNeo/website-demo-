@@ -33,3 +33,30 @@
    - 冒烟：guest 态回归 0 console error（脚本解析/回退路径无回归；倒数
      分支需真实密钥，逻辑简单 + 实机联调时走测试卡验证）。
    - 提交 9ce7725 前项；本项随提交。
+
+3. 付费页支付预览模式（用户：「能不能先只做预览不需要密钥」）
+   - 需求：没有 Stripe 密钥也能先看传统支付全流程（订阅按钮 → 倒数 →
+     结账页卡号输入/方式选择/马区方式）。
+   - 实现（纯前端，零后端改动、零密钥、真实模式无参路径零改动）：
+     · premium.html ?payDemo=1：PAY_DEMO 下 payKey/onceState 恒真 →
+       四卡「订阅 · RMxx/月」+「单次购买 · RMxx · 1 个月」全亮；未登录
+       时伪用户「预览访客」直接进预览态；banner 明示「预览模式：…不会
+       真实扣款」；startCheckout 抽 countdownJump（3-2-1 倒数，真实模式
+       跳 Stripe / 预览跳本地演示页）复用；addon 预览同样跳演示页（真实
+       模式仍申请弹窗）；?paid=1&payDemo=1 绿色横幅「支付成功（预览演示，
+       非真实扣款）」不轮询后端；__mnSubState 增 demo，pay='demo'。
+     · 新增 premium-demo-checkout.html：仿传统结账页——订单摘要、4 方式
+       tab（银行卡/FPX 网银/支付宝/GrabPay）、卡号/有效期/CVC 输入、
+       FPX 银行下拉（Maybank/CIMB/Public Bank/Hong Leong/RHB/AmBank）、
+       支付宝/GrabPay 占位、「根据地区（马来西亚）提供以上支付方式」、
+       支付按钮 → 处理中 → 成功屏 → 3 秒回跳；顶部「预览演示 · 非真实
+       支付页（不会扣款）」徽标。
+   - 冒烟四态 0 console error：demo-guest（伪用户 pay=demo、CTA「订阅 ·
+     RM23.50/月」、单次按钮亮 + 方式提示、banner 预览文案）；demo-server
+     （同 + source=server）；演示结账页（订单/4 tab/6 银行/卡号三输入/
+     地区注/支付按钮/点击支付成功屏/回跳目标 next 全字段断言）；回跳态
+     （绿色横幅「✅ 支付成功（预览演示，非真实扣款）」）。冒烟 CTA 点击
+     守卫 pay==='apply' 收紧（demo/stripe 均不点，防倒数导航打断 dump，
+     apply 态行为不变）。
+   - 用法：http://127.0.0.1:8080/pages/premium.html?payDemo=1（无需登录、
+     无需密钥）；预览回跳/任意入口均带演示徽标，不会真实扣款。

@@ -477,6 +477,10 @@ document.head.appendChild(bgStyle);
   var me = null; // { tier, email, tierExpiresAt, source } 或 null（未登录/后端不可达）
   var sub = null; // GET /api/subscription/status 结果 { enabled, prices, hasPortal, … }
   var pending = null;
+  // 预览模式（?payDemo=1）：纯前端演示在线支付全流程——订阅/单次按钮亮起、3 秒倒数、
+  // 跳本地演示结账页（卡号输入/方式选择/马区方式），不调后端 checkout、不需要 Stripe 密钥。
+  // 无参数时行为与真实模式完全一致（未配置密钥仍回退申请流）。
+  var PAY_DEMO = new URLSearchParams(location.search).get('payDemo') === '1';
 
   function $(id) { return document.getElementById(id); }
   function applyKey(k) { return 'slati_apply_' + k; }
@@ -505,17 +509,20 @@ document.head.appendChild(bgStyle);
     document.querySelectorAll('[data-once-hint]').forEach(function (x) { x.style.display = 'none'; });
   }
 
-  // 该 SKU 是否可在线支付（服务端会话 + Stripe 已配置 + 该 SKU 有 Price ID；否则回退一期申请流）
+  // 该 SKU 是否可在线支付（预览模式恒可；否则需服务端会话 + Stripe 已配置 + 该 SKU 有 Price ID；不满足回退一期申请流）
   function payKey(key) {
+    if (PAY_DEMO) return true;
     return !!(me && me.source === 'server' && sub && sub.enabled && sub.prices && sub.prices[key] && sub.prices[key].hasPrice);
   }
-  // 该 SKU 是否可单次购买（一次性 Price ID；FPX/支付宝等一次性方式，1 个月不自动续费）
+  // 该 SKU 是否可单次购买（预览模式恒可；否则需一次性 Price ID）
   function onceKey(key) {
+    if (PAY_DEMO) return true;
     return !!(sub && sub.prices && sub.prices[key] && sub.prices[key].hasOnce);
   }
   var METHOD_ZH = { card: '银行卡', fpx: 'FPX 网银', alipay: '支付宝', grabpay: 'GrabPay', wechat_pay: '微信支付' };
   function onceHintText() {
     var list = ((sub && sub.onceMethods) || []).map(function (m) { return METHOD_ZH[m] || m; });
+    if (PAY_DEMO && !list.length) list = ['银行卡', 'FPX 网银', '支付宝', 'GrabPay'];
     return list.length ? '支持 ' + list.join(' / ') + '，1 个月不自动续费' : '';
   }
   function cardPrice(card) {
@@ -535,7 +542,8 @@ document.head.appendChild(bgStyle);
       + '<span style="color:rgba(255,255,255,0.4)"> · ' + me.email + '</span></span>'
       + extra
       + '<span style="color:rgba(255,255,255,0.45)">'
-      + (me.source === 'local' ? '当前为本地资料，开通以管理员确认为准'
+      + (PAY_DEMO ? '预览模式：以下「订阅/单次购买」按钮与 3 秒倒数跳转均为在线支付演示（跳本地演示结账页，不会真实扣款）'
+        : me.source === 'local' ? '当前为本地资料，开通以管理员确认为准'
         : (sub && sub.enabled) ? '升级 / 加购请点卡片按钮在线支付，或提交申请由管理员开通'
         : '在线支付通道未启用（后端未配置 Stripe 密钥）：按钮暂为「申请开通」，配置完成后自动变为「订阅 · RMxx/月」并直接跳转支付页，无需审核')
       + '</span>';
@@ -552,6 +560,7 @@ document.head.appendChild(bgStyle);
 
     // 单次购买通道态：服务端会话 + Stripe 已配置 + 该 SKU 有一次性 Price；hide=true 强制隐藏
     function onceState(key) {
+      if (PAY_DEMO) return true;
       return !!(me && me.source === 'server' && sub && sub.enabled && onceKey(key));
     }
     function setOnceBtn(card, key, hide) {
@@ -612,22 +621,31 @@ document.head.appendChild(bgStyle);
   }
   function closeApply() { pending = null; $('applyModal').classList.remove('active'); }
 
-  // 在线支付：POST checkout 拿 Stripe 跳转 URL，3-2-1 倒数后自动跳转（传统支付体验）；失败回退一期申请弹窗
+  // 3-2-1 倒数后自动跳转（传统支付体验）：真实模式跳 Stripe Checkout 结账页，预览模式跳本地演示结账页
+  function countdownJump(btn, url) {
+    btn.disabled = true;
+    var n = 3;
+    (function tick() {
+      if (n < 0) { location.href = url; return; }
+      btn.textContent = n + ' 秒后跳转到支付页…';
+      n--;
+      setTimeout(tick, 1000);
+    })();
+  }
+  // 在线支付：POST checkout 拿 Stripe 跳转 URL，3-2-1 倒数后自动跳转；失败回退一期申请弹窗。
+  // 预览模式（?payDemo=1）不走后端：直接倒数跳本地演示结账页，无需任何密钥。
   // mode：subscription（自动续费订阅）/ once（单次购买 1 个月）
   function startCheckout(btn, key, card, mode) {
+    if (PAY_DEMO) {
+      countdownJump(btn, 'premium-demo-checkout.html?label=' + encodeURIComponent(card.dataset.applyLabel || key)
+        + '&price=' + encodeURIComponent(cardPrice(card))
+        + '&mode=' + (mode === 'once' ? 'once' : 'subscription'));
+      return;
+    }
     btn.disabled = true;
     btn.textContent = '跳转到支付页…';
     MN_API.post('/subscription/checkout', { tierKey: key, mode: mode || 'subscription' }).then(function (r) {
-      if (r.ok && r.data && r.data.url) {
-        var n = 3;
-        (function tick() {
-          if (n < 0) { location.href = r.data.url; return; }
-          btn.textContent = n + ' 秒后跳转到支付页…';
-          n--;
-          setTimeout(tick, 1000);
-        })();
-        return;
-      }
+      if (r.ok && r.data && r.data.url) { countdownJump(btn, r.data.url); return; }
       btn.disabled = false;
       setCta(btn, '申请开通', false);
       openApply(key, card.dataset.applyLabel || key, cardPrice(card));
@@ -658,6 +676,11 @@ document.head.appendChild(bgStyle);
       if (ab.dataset.guestLink) { location.href = ab.dataset.guestLink; return; }
       var acard = ab.closest('.addon-card');
       var ap = (((acard.querySelector('[data-addon-price]') || {}).textContent) || '?').trim();
+      if (PAY_DEMO) {
+        countdownJump(ab, 'premium-demo-checkout.html?label=' + encodeURIComponent(ab.dataset.applyLabel || ab.dataset.addonCta)
+          + '&price=' + encodeURIComponent(ap) + '&mode=subscription');
+        return;
+      }
       openApply(ab.dataset.addonCta, ab.dataset.applyLabel || ab.dataset.addonCta, ap);
     }
   });
@@ -709,6 +732,13 @@ document.head.appendChild(bgStyle);
       n.innerHTML = '<span>已取消支付，可随时重试。</span>';
       return;
     }
+    if (PAY_DEMO && q.get('paid') === '1') { // 预览演示支付成功回跳（无真实扣款，不轮询后端）
+      n.style.display = 'flex';
+      n.style.borderColor = 'rgba(34,197,94,0.4)';
+      n.style.background = 'rgba(34,197,94,0.06)';
+      n.innerHTML = '<span>✅ 支付成功（预览演示，非真实扣款）</span>';
+      return;
+    }
     if (q.get('paid') !== '1') return;
     n.style.display = 'flex';
     n.style.borderColor = 'rgba(34,197,94,0.4)';
@@ -745,8 +775,10 @@ document.head.appendChild(bgStyle);
     if (sub && sub.prices) Object.keys(sub.prices).forEach(function (k) { if (sub.prices[k].hasOnce) onceKeys.push(k); });
     window.__mnSubState = {
       ready: true, tier: me && me.tier, email: me && me.email, source: me && me.source,
-      pay: (me && me.source === 'server' && sub && sub.enabled) ? 'stripe' : 'apply',
-      enabled: !!(sub && sub.enabled), payDisabled: !!(me && me.source === 'server' && !(sub && sub.enabled)),
+      pay: PAY_DEMO ? 'demo' : (me && me.source === 'server' && sub && sub.enabled) ? 'stripe' : 'apply',
+      enabled: !!(sub && sub.enabled),
+      payDisabled: PAY_DEMO ? false : !!(me && me.source === 'server' && !(sub && sub.enabled)),
+      demo: PAY_DEMO,
       hasPortal: !!(sub && sub.hasPortal),
       expiry: (me && me.tierExpiresAt) || null,
       once: ((sub && sub.onceMethods) || []).join(','), // 单次购买支付方式清单（配置态）
@@ -769,6 +801,9 @@ document.head.appendChild(bgStyle);
       var lu = localUser();
       if (lu) {
         me = { tier: lu.tier || 'basic', email: lu.email, tierExpiresAt: null, source: 'local' };
+        renderUser();
+      } else if (PAY_DEMO) { // 预览模式免登录：伪用户直接进入预览态
+        me = { tier: 'basic', email: '预览访客（未登录）', tierExpiresAt: null, source: 'demo' };
         renderUser();
       } else {
         renderGuest();
