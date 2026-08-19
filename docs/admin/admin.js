@@ -336,7 +336,34 @@
       drawFinMini(cvs[i2], bks.map(function (bb) { return last[key][bb.k] || 0; }), FIN_CURVES[key].color);
     }
   }
+  // canvas 无 CSS transition → rAF 数值插值过渡（桶数不同按比例重采样旧值；值无变化则直画不重放动画——悬停重画高频）
+  function finTween(cv, from, to, dur, apply) {
+    var same = from.length === to.length;
+    if (same) for (var si = 0; si < to.length; si++) if (from[si] !== to[si]) { same = false; break; }
+    if (same) { apply(to); return; }
+    cancelAnimationFrame(cv._finTween || 0);
+    var t0 = performance.now();
+    function step(now) {
+      var p = Math.min(1, (now - t0) / dur);
+      var e = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      var v = new Array(to.length);
+      for (var i = 0; i < to.length; i++) {
+        var fi = from.length === to.length ? i :
+          Math.min(from.length - 1, Math.round(i * (from.length - 1) / Math.max(1, to.length - 1)));
+        v[i] = from[fi] + (to[i] - from[fi]) * e;
+      }
+      apply(v);
+      if (p < 1) cv._finTween = requestAnimationFrame(step);
+    }
+    cv._finTween = requestAnimationFrame(step);
+  }
   function drawFinMini(cv, vals, color) {
+    var prev = cv._finVals;
+    cv._finVals = vals;
+    if (!prev) { finMiniRaw(cv, vals, color); return; } // 首次直画（页面加载时 pane 未显示，动画不可见）
+    finTween(cv, prev, vals, 350, function (v) { finMiniRaw(cv, v, color); });
+  }
+  function finMiniRaw(cv, vals, color) {
     var ctx = cv.getContext('2d');
     ctx.clearRect(0, 0, cv.width, cv.height);
     if (!vals.length) return;
@@ -410,11 +437,23 @@
     var dpr = window.devicePixelRatio || 1;
     var W = cvs.clientWidth || 700, H = 320;
     if (cvs.width !== Math.round(W * dpr)) { cvs.width = Math.round(W * dpr); cvs.height = Math.round(H * dpr); }
+    var bk = finBuckets();
+    var vals = bk.map(function (b) { return b.v; });
+    var hi = finHover >= 0 && finHover < bk.length ? finHover : bk.length - 1;
+    $('finChartMeta').textContent = FIN_RANGE_ZH[finRange] + ' · ' + bk.length + ' 个点 · 值 = 桶末点快照（估算）';
+    $('finChartVal').textContent = bk[hi].d + '　' + finFmtFull(bk[hi].v); // 文本立即更新为最终值
+    var prev = cvs._finVals;
+    cvs._finVals = vals;
+    if (!prev) { finChartRaw(cvs, bk, vals); return; } // 首次直画
+    finTween(cvs, prev, vals, 350, function (v) { finChartRaw(cvs, bk, v); });
+  }
+  function finChartRaw(cvs, bk, drawVals) {
+    var dpr = window.devicePixelRatio || 1;
+    var W = cvs.clientWidth || 700, H = 320;
     var ctx = cvs.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
-    var bk = finBuckets();
-    var vals = bk.map(function (b) { return b.v; });
+    var vals = bk.map(function (b) { return b.v; }); // 标尺用最终值（过渡中 y 轴稳定不抖）
     var mn = Math.min(0, Math.min.apply(null, vals));
     var mx = Math.max(0, Math.max.apply(null, vals));
     if (mx === mn) mx = mn + 1;
@@ -462,14 +501,14 @@
     for (var i = 0; i < bk.length; i += step) {
       if (bk[i].label) ctx.fillText(bk[i].label, X(i), H - padB + 14);
     }
-    // 曲线 + 面积
+    // 曲线 + 面积（用过渡中的插值 drawVals）
     ctx.beginPath();
-    for (var i2 = 0; i2 < bk.length; i2++) {
-      var x = X(i2), y = Y(bk[i2].v);
+    for (var i2 = 0; i2 < drawVals.length; i2++) {
+      var x = X(i2), y = Y(drawVals[i2]);
       if (i2 === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke();
-    ctx.lineTo(X(bk.length - 1), Y(mn)); ctx.lineTo(X(0), Y(mn)); ctx.closePath();
+    ctx.lineTo(X(drawVals.length - 1), Y(mn)); ctx.lineTo(X(0), Y(mn)); ctx.closePath();
     ctx.fillStyle = col + '22'; ctx.fill();
     // 悬停引导线 + 末点标记
     var hi = finHover >= 0 && finHover < bk.length ? finHover : bk.length - 1;
@@ -477,10 +516,8 @@
       ctx.beginPath(); ctx.moveTo(X(hi), padT); ctx.lineTo(X(hi), padT + ch);
       ctx.strokeStyle = 'rgba(148,163,184,0.35)'; ctx.lineWidth = 1; ctx.stroke();
     }
-    ctx.beginPath(); ctx.arc(X(hi), Y(bk[hi].v), 3.5, 0, Math.PI * 2);
+    ctx.beginPath(); ctx.arc(X(hi), Y(drawVals[hi]), 3.5, 0, Math.PI * 2);
     ctx.fillStyle = col; ctx.fill();
-    $('finChartMeta').textContent = FIN_RANGE_ZH[finRange] + ' · ' + bk.length + ' 个点 · 值 = 桶末点快照（估算）';
-    $('finChartVal').textContent = bk[hi].d + '　' + finFmtFull(bk[hi].v);
   }
   function openFinChart(key) {
     finCurKey = key; finHover = -1;

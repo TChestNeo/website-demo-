@@ -218,7 +218,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         var sel2 = document.getElementById('finRangeSel');
         sel2.value = '5y';
         sel2.dispatchEvent(new Event('change', { bubbles: true }));
-        await new Promise(function(r){ setTimeout(r, 100); });
+        base.sparkAnimOn5y = !!document.querySelector('canvas.fin-spark')._finTween; // 过渡动画已排程（同步断言）
+        base.chartAnimOn5y = !!document.getElementById('finChart')._finTween;
+        await new Promise(function(r){ setTimeout(r, 500); }); // 350ms 过渡播完再取像素，防抓到中间帧
         base.finChartMeta5y = document.getElementById('finChartMeta').textContent.slice(0, 30);
         var spk2 = document.querySelector('canvas.fin-spark').getContext('2d').getImageData(0, 0, 76, 30).data;
         var painted3 = 0;
