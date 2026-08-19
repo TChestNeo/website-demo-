@@ -76,7 +76,7 @@ function register(router, ctx) {
   const AUDIT_ZH = { mod_decide: '审核决定', penalty: '执行处罚', ticket_reply: '工单回复',
     badge_issue: '签发徽章码', badge_revoke: '吊销徽章码', set_tier: '调整 tier',
     budget_set: '修改预算', finance_set: '调整财务参数', view_dm: '调阅私讯',
-    ledger_add: '记录流水', ledger_edit: '修改流水', ledger_delete: '删除流水', ledger_close: '月结锁定' };
+    ledger_add: '记录流水', ledger_edit: '修改流水', ledger_delete: '删除流水', ledger_close: '月结锁定', ledger_report: '生成季度财报' };
   // ¥→RM 汇率（AI 账单折算）/ 税率 / 固定月成本（RM）/ 季度目标（RM）——stats 与 finance PUT 共用
   const FIN_DEFAULTS = { fx: 0.6, taxRate: 0.08, fixedMonthly: 50, quarterTarget: 0 };
   router.add('GET', '/api/admin/stats', requireAdmin((req, res) => {
@@ -602,6 +602,123 @@ function register(router, ctx) {
     db.prepare('DELETE FROM ledger WHERE id = ?').run(req.params.id);
     audit(ctx, 'ledger_delete', old.id, { kind: old.kind, amount: old.amount, currency: old.currency, occurred_at: old.occurred_at });
     sendJson(res, 200, { ok: true, id: old.id });
+  }));
+
+  // ── 季度财报（管理端一键生成：分月聚合流水/用量 + 审计重放月末参数 + 月结状态 + 上季对比；生成落审计） ──
+  // 口径：权责发生制（occurred_at 期间归属）；¥ 按月末汇率（finance_set 审计重放）折 RM；
+  // 税费 = 预计收入 × 月末税率（估算，与总览一致）；固定成本为估算；实际收款 = 流水收款 − 退款；
+  // 未月结月份在报表中标「未锁定」——月结后重新生成即定格。
+  const RPT_PRICE = { premium: 23.5, ultra: 45.5 }; // 对齐 docs/pages/premium.html ms-MY 月价
+  function reportMonths(y, q) {
+    const out = [];
+    for (let i = 0; i < 3; i++) out.push(new Date(Date.UTC(y, (q - 1) * 3 + i, 1)).toISOString().slice(0, 7));
+    return out;
+  }
+  function buildReport(y, q) {
+    const months = reportMonths(y, q);
+    const events = db.prepare("SELECT created_at AS at, action, detail FROM admin_audit_log WHERE action IN ('set_tier','finance_set') ORDER BY seq ASC").all();
+    const ledRows = db.prepare('SELECT kind, category, amount, currency, occurred_at FROM ledger').all();
+    const usageMonths = {};
+    for (const r of db.prepare("SELECT strftime('%Y-%m', created_at) AS m, SUM(cost_micro) AS c FROM usage_log GROUP BY m").all()) usageMonths[r.m] = r.c;
+    const lockUpto = (db.prepare("SELECT value FROM kv WHERE key = 'ledger.closed_upto'").get() || {}).value || null;
+    const cnt = { premium: 0, ultra: 0 };
+    const prm = { fx: FIN_DEFAULTS.fx, taxRate: FIN_DEFAULTS.taxRate, fixedMonthly: FIN_DEFAULTS.fixedMonthly };
+    const catSum = {};
+    let evI = 0;
+    const monthly = [];
+    const t = { est: 0, income: 0, refund: 0, paid: 0, expense: 0, ai: 0, fixed: 0, tax: 0, net: 0, adj: 0 };
+    for (const m of months) {
+      const bound = m + '-31'; // 字符串比较的月末上界（合法日期最大 31 号，各月天数无碍）
+      while (evI < events.length && events[evI].at.slice(0, 10) <= bound) {
+        const e = events[evI++];
+        let de = null; try { de = JSON.parse(e.detail); } catch (err) {}
+        if (e.action === 'set_tier') {
+          if (de && de.from in cnt) cnt[de.from]--;
+          if (de && de.to in cnt) cnt[de.to]++;
+        } else {
+          const src = de && de.to ? de.to : de; // 新格式 {from,to} 取 to / 旧格式直接值（与曲线重放同口径）
+          for (const k of ['fx', 'taxRate', 'fixedMonthly']) if (src && Number.isFinite(Number(src[k]))) prm[k] = Number(src[k]);
+        }
+      }
+      let income = 0, refund = 0, expense = 0, adj = 0;
+      for (const r of ledRows) {
+        if (String(r.occurred_at).slice(0, 7) !== m) continue;
+        const v = Math.round(Number(r.amount) * (r.currency === 'CNY' ? prm.fx : 1) * 100) / 100;
+        if (r.kind === 'income') income += v;
+        else if (r.kind === 'refund') refund += v;
+        else if (r.kind === 'expense') { expense += v; catSum[r.category] = (catSum[r.category] || 0) + v; }
+        else adj += v;
+      }
+      const est = Math.round((cnt.premium * RPT_PRICE.premium + cnt.ultra * RPT_PRICE.ultra) * 100) / 100;
+      const ai = Math.round(((usageMonths[m] || 0) / 1e6) * prm.fx * 100) / 100;
+      const paid = Math.round((income - refund) * 100) / 100;
+      const tax = Math.round(est * prm.taxRate * 100) / 100;
+      const net = Math.round((paid - expense - ai - prm.fixedMonthly - tax) * 100) / 100;
+      monthly.push({
+        month: m, locked: !!lockUpto && m <= lockUpto, fx: prm.fx, taxRate: prm.taxRate,
+        est, income: Math.round(income * 100) / 100, refund: Math.round(refund * 100) / 100, paid,
+        expense: Math.round(expense * 100) / 100, ai, fixed: prm.fixedMonthly, tax, net, adj: Math.round(adj * 100) / 100
+      });
+      const cur = monthly[monthly.length - 1];
+      for (const k of Object.keys(t)) t[k] = Math.round((t[k] + cur[k]) * 100) / 100;
+    }
+    const target = Number((db.prepare("SELECT value FROM kv WHERE key = 'finance.quarterTarget'").get() || {}).value) || 0;
+    return {
+      year: y, q, quarter: y + '-Q' + q, months, monthly, totals: t,
+      byCategory: Object.keys(catSum).map((k) => ({ category: k, amount: Math.round(catSum[k] * 100) / 100 })).sort((a, b) => b.amount - a.amount),
+      gap: Math.round((t.est - t.paid) * 100) / 100,
+      target,
+      targetPaidPct: target > 0 ? Math.round(t.paid / target * 100) : null,
+      targetEstPct: target > 0 ? Math.round(t.est / target * 100) : null,
+      unclosed: monthly.filter((mm) => !mm.locked).map((mm) => mm.month)
+    };
+  }
+  function rptParams(query) {
+    const now = new Date();
+    let y = Number(query.year), q = Number(query.quarter);
+    if (!query.year && !query.quarter) { y = now.getUTCFullYear(); q = Math.floor(now.getUTCMonth() / 3) + 1; }
+    else {
+      if (!Number.isInteger(y) || y < 2000 || y > 2100) throw new HttpError('VALIDATION', 'year 需为 2000-2100');
+      if (!Number.isInteger(q) || q < 1 || q > 4) throw new HttpError('VALIDATION', 'quarter 需为 1-4');
+    }
+    return { year: y, quarter: q };
+  }
+
+  router.add('GET', '/api/admin/finance/report', requireAdmin((req, res) => {
+    const { year, quarter } = rptParams(req.query);
+    const rp = buildReport(year, quarter);
+    const pv = buildReport(quarter === 1 ? year - 1 : year, quarter === 1 ? 4 : quarter - 1);
+    const emailRow = db.prepare('SELECT email FROM users WHERE id = ?').get(ctx.user.id);
+    audit(ctx, 'ledger_report', rp.quarter, { year, quarter }); // 生成即落审计（谁/何时/哪一季）
+    sendJson(res, 200, {
+      ...rp,
+      generatedAt: new Date().toISOString(),
+      generatedBy: emailRow ? emailRow.email : ctx.user.id,
+      prev: { quarter: pv.quarter, totals: pv.totals }
+    });
+  }));
+
+  // 财报 CSV 导出（Excel 兼容：BOM + 分节；口径说明在首节）
+  router.add('GET', '/api/admin/finance/report/export', requireAdmin((req, res) => {
+    const { year, quarter } = rptParams(req.query);
+    const rp = buildReport(year, quarter);
+    const esc = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const ln = [];
+    ln.push(['M.NationWorld 季度财报', rp.quarter + '（' + rp.months[0] + ' ~ ' + rp.months[2] + '）'].map(esc).join(','));
+    ln.push(['口径', '权责发生制（按经济事件日期）；¥ 按月末汇率折 RM；税费 = 预计收入 × 税率（估算）；固定成本为估算；实际收款 = 流水收款 − 退款'].map(esc).join(','));
+    ln.push('');
+    ln.push(['月份,月结,预计收入(RM),实际收款(RM),流水支出(RM),AI 成本(RM),固定成本(RM),税费(RM),净利润(RM),调整(RM)']);
+    for (const m of rp.monthly) ln.push([m.month, m.locked ? '已锁定' : '未锁定', m.est, m.paid, m.expense, m.ai, m.fixed, m.tax, m.net, m.adj].map(esc).join(','));
+    ln.push(['合计', '', rp.totals.est, rp.totals.paid, rp.totals.expense, rp.totals.ai, rp.totals.fixed, rp.totals.tax, rp.totals.net, rp.totals.adj].map(esc).join(','));
+    ln.push('');
+    ln.push(['支出分类汇总（流水支出）']);
+    ln.push(['分类,金额(RM)']);
+    for (const c of rp.byCategory) ln.push([LED_CAT_ZH[c.category] || c.category, c.amount].map(esc).join(','));
+    ln.push('');
+    ln.push(['季度目标(RM)', rp.target, '实收达成', rp.targetPaidPct == null ? '未设置' : rp.targetPaidPct + '%'].map(esc).join(','));
+    ln.push(['预计收入 − 实际收款（应收实收差）', rp.gap].map(esc).join(','));
+    res.writeHead(200, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="quarterly-report-' + rp.quarter + '.csv"' });
+    res.end('﻿' + ln.join('\r\n'));
   }));
 
   // ── 审计 ──

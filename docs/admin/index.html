@@ -119,6 +119,12 @@
     .fin-tab-btn { border: none; background: transparent; color: var(--color-on-surface-variant); font-size: 13.5px; font-weight: 600;
       padding: 6px 16px; border-radius: var(--radius-full); cursor: pointer; }
     .fin-tab-btn.active { background: var(--color-surface); color: var(--color-primary); box-shadow: 0 1px 3px rgba(16,24,40,0.12); }
+    /* 财报打印：只留报表卡片（隐藏侧栏/顶栏/选项卡/控制条/公告横幅，去阴影边框） */
+    @media print {
+      body.rpt-printing #admTabs, body.rpt-printing .fin-tabs, body.rpt-printing #admBanner,
+      body.rpt-printing #admToast, body.rpt-printing #fin-report-sec > .adm-card:first-child { display: none !important; }
+      body.rpt-printing #finReportCard { border: none; box-shadow: none; }
+    }
     .fin-curve-card:hover { border-color: var(--color-primary); }
     .fin-spark { flex: none; }
     .fin-range-btn.active { border-color: var(--color-primary); color: var(--color-primary); font-weight: 700; }
@@ -337,11 +343,12 @@
 
     <!-- 财务总览（一期无支付：收入 = tier 定价估算、成本 = AI 实账 + 固定成本、税费 = 收入 × 税率估算） -->
     <div id="pane-sub" style="display:none">
-      <!-- 顶部子菜单：总览 / 成本 / 流水（成本看板已并入财务总览；流水 = 财报实账） -->
+      <!-- 顶部子菜单：总览 / 成本 / 流水 / 财报（成本看板已并入财务总览；流水 = 财报实账；财报 = 一键生成季度报表） -->
       <div class="fin-tabs" id="finTabs">
         <button class="fin-tab-btn active" data-fin-tab="overview">总览</button>
         <button class="fin-tab-btn" data-fin-tab="cost">成本</button>
         <button class="fin-tab-btn" data-fin-tab="ledger">流水</button>
+        <button class="fin-tab-btn" data-fin-tab="report">财报</button>
       </div>
       <div id="fin-overview-sec">
       <div class="adm-card" id="finHealth" style="margin-bottom:var(--space-sm);border-left:4px solid #64748b">
@@ -492,6 +499,29 @@
             <tbody id="ledRows"></tbody>
           </table>
         </div>
+      </div>
+      <div id="fin-report-sec" style="display:none">
+        <div class="adm-card" style="margin-bottom:var(--space-sm)">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-sm);flex-wrap:wrap">
+            <div>
+              <h3 class="headline-sm" style="margin:0">季度财报（一键生成）</h3>
+              <p class="adm-meta" style="margin:4px 0 0">口径：权责发生制（按经济事件日期归属期间）；¥ 按月末汇率折 RM；税费 = 预计收入 × 税率（估算）；固定成本为估算。未月结月份为草稿口径，月结后重新生成即定格。</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex:none;flex-wrap:wrap">
+              <select class="adm-select" id="rptYear" style="width:auto"></select>
+              <select class="adm-select" id="rptQuarter" style="width:auto">
+                <option value="1">Q1（1-3 月）</option>
+                <option value="2">Q2（4-6 月）</option>
+                <option value="3">Q3（7-9 月）</option>
+                <option value="4">Q4（10-12 月）</option>
+              </select>
+              <button class="btn btn-primary" id="rptGenBtn">生成报表</button>
+              <a class="btn" id="rptCsvLink" href="#" style="display:none">导出 CSV</a>
+              <button class="btn" id="rptPrintBtn" style="display:none">打印 / 存 PDF</button>
+            </div>
+          </div>
+        </div>
+        <div class="adm-card" id="finReportCard" style="display:none"></div>
       </div>
     </div>
 

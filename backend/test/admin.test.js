@@ -417,6 +417,87 @@ test('admin：流水账（CRUD/实账统计/CSV/月结锁定/审计）', async (
   } finally { await t.close(); }
 });
 
+test('admin：季度财报（一键生成：分月聚合/审计重放月末参数/月结状态/上季对比/CSV/审计）', async () => {
+  const t = await adminT();
+  try {
+    const now = new Date();
+    const y = now.getUTCFullYear(), q = Math.floor(now.getUTCMonth() / 3) + 1;
+    const m1 = (q - 1) * 3 + 1, m2 = m1 + 1;
+    const pq = q === 1 ? 4 : q - 1, py = q === 1 ? y - 1 : y, pm1 = (pq - 1) * 3 + 1;
+    const pad = (n) => String(n).padStart(2, '0');
+    const day = (yy, m, dd) => yy + '-' + pad(m) + '-' + pad(dd);
+    const led = (body) => t.request('POST', '/api/admin/ledger', body, { cookie: t.admin.cookie });
+    const rep = async (qs) => (await (await t.request('GET', '/api/admin/finance/report' + (qs || ''), undefined, { cookie: t.admin.cookie })).json());
+    // 权限矩阵
+    assert.strictEqual((await t.request('GET', '/api/admin/finance/report')).status, 401);
+    assert.strictEqual((await t.request('GET', '/api/admin/finance/report', undefined, { cookie: t.alice.cookie })).status, 403);
+    // 流水：本季 M1 收款 RM100 − 退款 RM20；M2 支出 ¥50；上季 M1 收款 RM10
+    assert.strictEqual((await led({ kind: 'income', category: 'subscription', amount: 100, currency: 'RM', occurred_at: day(y, m1, 5) })).status, 200);
+    assert.strictEqual((await led({ kind: 'refund', category: 'subscription', amount: 20, currency: 'RM', occurred_at: day(y, m1, 5) })).status, 200);
+    assert.strictEqual((await led({ kind: 'expense', category: 'server', amount: 50, currency: 'CNY', occurred_at: day(y, m2, 3) })).status, 200);
+    assert.strictEqual((await led({ kind: 'income', category: 'subscription', amount: 10, currency: 'RM', occurred_at: day(py, pm1, 2) })).status, 200);
+    // 历史用量（M2 0.3 元）+ 历史 finance_set 事件（M1 8 日 fx 0.6→0.5，M1 月末快照 = 0.5）
+    t.db.prepare("INSERT INTO usage_log (feature, price_snapshot, cost_micro, created_at) VALUES ('chat', '{}', 300000, ?)").run(day(y, m2, 10) + 'T04:00:00.000Z');
+    const adminId = t.db.prepare("SELECT id FROM users WHERE email = 'admin@x.com'").get().id;
+    t.db.prepare("INSERT INTO admin_audit_log (admin_id, action, target, detail, created_at) VALUES (?, 'finance_set', 'finance', ?, ?)")
+      .run(adminId, JSON.stringify({ from: { fx: 0.6 }, to: { fx: 0.5 } }), day(y, m1, 8) + 'T04:00:00.000Z');
+    // 无参 = 当前季度；分月口径（月末快照 fx 0.5 折 ¥）
+    const r1 = await rep();
+    assert.strictEqual(r1.quarter, y + '-Q' + q);
+    assert.strictEqual(r1.months.length, 3);
+    assert.strictEqual(r1.generatedBy, 'admin@x.com');
+    assert.deepStrictEqual(r1.unclosed, r1.months);
+    const mo1 = r1.monthly[0], mo2 = r1.monthly[1], mo3 = r1.monthly[2];
+    assert.strictEqual(mo1.fx, 0.5); // 重放吸收 8 日事件
+    assert.strictEqual(mo1.income, 100);
+    assert.strictEqual(mo1.refund, 20);
+    assert.strictEqual(mo1.paid, 80);
+    assert.strictEqual(mo2.expense, 25); // ¥50 × 0.5
+    assert.strictEqual(mo2.ai, 0.15);   // 0.3 元 × 0.5
+    assert.strictEqual(mo2.fixed, 50);
+    assert.strictEqual(mo2.net, -75.15);
+    assert.strictEqual(mo3.net, -50);   // 无流水月份只剩固定成本
+    assert.strictEqual(r1.totals.paid, 80);
+    assert.strictEqual(r1.totals.expense, 25);
+    assert.strictEqual(r1.totals.ai, 0.15);
+    assert.strictEqual(r1.totals.fixed, 150);
+    assert.strictEqual(r1.totals.net, -95.15);
+    assert.strictEqual(r1.gap, -80);    // 预计 0 − 实收 80
+    assert.deepStrictEqual(r1.byCategory, [{ category: 'server', amount: 25 }]);
+    // 上季对比（重放口径独立：上季末 fx 仍为默认 0.6，事件在上季之后）
+    assert.strictEqual(r1.prev.quarter, py + '-Q' + pq);
+    assert.strictEqual(r1.prev.totals.paid, 10);
+    assert.strictEqual(r1.prev.totals.net, -140); // 10 − 固定 150
+    // 月结锁定 M1 → 月结状态与未月结列表联动
+    assert.strictEqual((await t.request('POST', '/api/admin/ledger/close', { month: day(y, m1, 5).slice(0, 7) }, { cookie: t.admin.cookie })).status, 200);
+    const r2 = await rep();
+    assert.strictEqual(r2.monthly[0].locked, true);
+    assert.strictEqual(r2.monthly[1].locked, false);
+    assert.deepStrictEqual(r2.unclosed, [r2.months[1], r2.months[2]]);
+    // 季度目标：PUT 1000 → 实收达成 8%
+    assert.strictEqual((await t.request('PUT', '/api/admin/finance', { quarterTarget: 1000 }, { cookie: t.admin.cookie })).status, 200);
+    const r3 = await rep();
+    assert.strictEqual(r3.target, 1000);
+    assert.strictEqual(r3.targetPaidPct, 8);
+    // CSV：BOM + 分节表头 + 分类中文 + 合计
+    const buf = Buffer.from(await (await t.request('GET', '/api/admin/finance/report/export', undefined, { cookie: t.admin.cookie })).arrayBuffer());
+    assert.deepStrictEqual([buf[0], buf[1], buf[2]], [0xef, 0xbb, 0xbf]);
+    const csv = buf.toString('utf8');
+    assert.ok(csv.includes('M.NationWorld 季度财报'));
+    assert.ok(csv.includes('月份,月结,预计收入(RM)'));
+    assert.ok(csv.includes('支出分类汇总') && csv.includes('服务器'));
+    assert.ok(csv.includes('合计'));
+    // 参数校验 + 审计（每次生成落 ledger_report）
+    assert.strictEqual((await t.request('GET', '/api/admin/finance/report?year=1999&quarter=1', undefined, { cookie: t.admin.cookie })).status, 400);
+    assert.strictEqual((await t.request('GET', '/api/admin/finance/report?year=2026&quarter=5', undefined, { cookie: t.admin.cookie })).status, 400);
+    assert.strictEqual((await t.request('GET', '/api/admin/finance/report?year=2026', undefined, { cookie: t.admin.cookie })).status, 400);
+    const rp = t.db.prepare("SELECT * FROM admin_audit_log WHERE action = 'ledger_report'").all();
+    assert.ok(rp.length >= 3);
+    assert.strictEqual(rp[0].target, y + '-Q' + q);
+    assert.deepStrictEqual(JSON.parse(rp[0].detail), { year: y, quarter: q });
+  } finally { await t.close(); }
+});
+
 test('admin：成本看板 usage（分功能 + recent）+ budget 读写（kv + 审计 + 校验）', async () => {
   const t = await adminT();
   try {

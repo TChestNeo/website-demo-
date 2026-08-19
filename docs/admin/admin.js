@@ -635,13 +635,14 @@
     if (tab === 'badge' && !loaded.badge) { loaded.badge = true; loadBadges(); }
     if (tab === 'user' && !loaded.user) { loaded.user = true; loadUsers(); }
   }
-  // 财务总览顶部子菜单：总览 / 成本 / 流水（成本看板已并入；流水 = 财报实账）
+  // 财务总览顶部子菜单：总览 / 成本 / 流水 / 财报（成本看板已并入；流水 = 财报实账；财报 = 一键生成季度报表）
   var finTab = 'overview';
   function switchFinTab(v) {
     finTab = v;
     $('fin-overview-sec').style.display = v === 'overview' ? '' : 'none';
     $('fin-cost-sec').style.display = v === 'cost' ? 'block' : 'none';
     $('fin-ledger-sec').style.display = v === 'ledger' ? 'block' : 'none';
+    $('fin-report-sec').style.display = v === 'report' ? 'block' : 'none';
     document.querySelectorAll('.fin-tab-btn').forEach(function (b) { b.classList.toggle('active', b.dataset.finTab === v); });
     if (v === 'ledger' && !ledgerLoaded) { ledgerLoaded = true; loadLedger(); }
   }
@@ -1346,6 +1347,82 @@
     });
   });
   ledResetForm();
+
+  // ── 季度财报（一键生成：选季度 → GET /admin/finance/report → 屏幕报表 + CSV 导出 + 打印/存 PDF） ──
+  var nowY = new Date().getUTCFullYear(), nowQ = Math.floor(new Date().getUTCMonth() / 3) + 1;
+  var ys = $('rptYear');
+  for (var yy = nowY - 2; yy <= nowY + 1; yy++) {
+    var o = document.createElement('option');
+    o.value = yy; o.textContent = yy + ' 年';
+    ys.appendChild(o);
+  }
+  ys.value = nowY;
+  $('rptQuarter').value = nowQ;
+  function rptMoney(x) { return (x < 0 ? '-' : '') + 'RM ' + Math.abs(x).toFixed(2); }
+  function rptStat(label, val, sub) {
+    return '<div class="stat-card"><div class="stat-label">' + label + '</div><div class="stat-num">' + val + '</div>' + (sub || '') + '</div>';
+  }
+  $('rptGenBtn').addEventListener('click', function () {
+    var y = Number($('rptYear').value), q = Number($('rptQuarter').value);
+    var btn = $('rptGenBtn');
+    btn.disabled = true; var old = btn.textContent; btn.textContent = '生成中…';
+    MN_API.get('/admin/finance/report?year=' + y + '&quarter=' + q).then(function (r) {
+      btn.disabled = false; btn.textContent = old;
+      if (!r.ok || !r.data || !r.data.monthly) { toast('生成失败：' + (r.data && r.data.error && r.data.error.message || r.status)); return; }
+      renderReport(r.data, y, q);
+    });
+  });
+  function renderReport(d, y, q) {
+    var t = d.totals;
+    var expTotal = Math.round((t.expense + t.ai + t.fixed) * 100) / 100;
+    var warn = d.unclosed && d.unclosed.length
+      ? '<p style="margin:8px 0 0;color:#d97706">⚠ 草稿：' + d.unclosed.join('、') + ' 尚未月结，数据可能变动——月结后重新生成即定格。</p>'
+      : '<p style="margin:8px 0 0;color:#16a34a">✓ 本季全部月份已月结，报表数据已定格。</p>';
+    var pctSub = d.targetPaidPct == null
+      ? '<div class="stat-sub">未设置季度目标</div>'
+      : '<div class="stat-sub" style="color:' + (d.targetPaidPct >= 100 ? '#16a34a' : '#d97706') + '">目标 RM ' + d.target + '</div>';
+    $('finReportCard').innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-sm);flex-wrap:wrap;margin-bottom:var(--space-xs)">' +
+      '<div><h3 class="headline-sm" style="margin:0">' + d.quarter + ' 季度财报</h3>' +
+      '<p class="adm-meta" style="margin:4px 0 0">期间 ' + d.months[0] + ' ~ ' + d.months[2] + ' · 生成于 ' + fmtTime(d.generatedAt) + ' · ' + esc(d.generatedBy) + '</p></div></div>' + warn +
+      '<div class="stat-strip">' +
+      rptStat('预计收入', rptMoney(t.est)) +
+      rptStat('实际收款', rptMoney(t.paid)) +
+      rptStat('应收实收差', rptMoney(d.gap)) +
+      rptStat('支出合计', rptMoney(expTotal)) +
+      rptStat('税费（估算）', rptMoney(t.tax)) +
+      rptStat('净利润', rptMoney(t.net)) +
+      rptStat('目标达成（实收）', d.targetPaidPct == null ? '—' : d.targetPaidPct + '%', pctSub) +
+      rptStat('上季净利润', rptMoney(d.prev && d.prev.totals ? d.prev.totals.net : 0)) +
+      '</div>' +
+      '<h4 class="headline-sm" style="margin:var(--space-md) 0 var(--space-xs)">分月明细（RM）</h4>' +
+      '<div style="overflow-x:auto"><table class="adm-table"><thead><tr><th>月份</th><th>月结</th><th>预计收入</th><th>实际收款</th><th>流水支出</th><th>AI 成本</th><th>固定成本</th><th>税费</th><th>净利润</th></tr></thead><tbody>' +
+      d.monthly.map(function (m) {
+        return '<tr><td>' + m.month + '</td><td>' + (m.locked ? '<span style="color:#16a34a">已锁定</span>' : '<span style="color:#d97706">未锁定</span>') + '</td>' +
+          '<td class="mono">' + m.est.toFixed(2) + '</td><td class="mono">' + m.paid.toFixed(2) + '</td><td class="mono">' + m.expense.toFixed(2) + '</td>' +
+          '<td class="mono">' + m.ai.toFixed(2) + '</td><td class="mono">' + m.fixed.toFixed(2) + '</td><td class="mono">' + m.tax.toFixed(2) + '</td><td class="mono">' + m.net.toFixed(2) + '</td></tr>';
+      }).join('') +
+      '<tr style="border-top:2px solid var(--adm-border)"><td><strong>合计</strong></td><td></td>' +
+      '<td class="mono"><strong>' + t.est.toFixed(2) + '</strong></td><td class="mono"><strong>' + t.paid.toFixed(2) + '</strong></td>' +
+      '<td class="mono"><strong>' + t.expense.toFixed(2) + '</strong></td><td class="mono"><strong>' + t.ai.toFixed(2) + '</strong></td>' +
+      '<td class="mono"><strong>' + t.fixed.toFixed(2) + '</strong></td><td class="mono"><strong>' + t.tax.toFixed(2) + '</strong></td>' +
+      '<td class="mono"><strong>' + t.net.toFixed(2) + '</strong></td></tr></tbody></table></div>' +
+      '<h4 class="headline-sm" style="margin:var(--space-md) 0 var(--space-xs)">支出分类汇总（流水支出，RM）</h4>' +
+      (d.byCategory.length ? d.byCategory.map(function (c) {
+        return '<div class="row" style="justify-content:space-between;margin-bottom:4px"><span style="font-size:13.5px">' + esc(LED_CAT_ZH[c.category] || c.category) + '</span><span class="mono" style="font-size:13px">' + c.amount.toFixed(2) + '</span></div>';
+      }).join('') : '<p class="adm-meta">本季暂无流水支出</p>') +
+      '<h4 class="headline-sm" style="margin:var(--space-md) 0 var(--space-xs)">上一季度对比</h4>' +
+      '<p class="adm-meta" style="margin:0">' + esc(d.prev.quarter) + '：实际收款 ' + rptMoney(d.prev.totals.paid) + ' · 流水支出 ' + rptMoney(d.prev.totals.expense) + ' · 净利润 ' + rptMoney(d.prev.totals.net) + '</p>';
+    $('finReportCard').style.display = 'block';
+    $('rptCsvLink').style.display = '';
+    $('rptCsvLink').href = '/api/admin/finance/report/export?year=' + y + '&quarter=' + q;
+    $('rptPrintBtn').style.display = '';
+  }
+  $('rptPrintBtn').addEventListener('click', function () {
+    document.body.classList.add('rpt-printing'); // @media print 只留报表卡片
+    window.print();
+  });
+  window.addEventListener('afterprint', function () { document.body.classList.remove('rpt-printing'); });
 
   // ── 启动 ──
   if (document.readyState === 'loading') {

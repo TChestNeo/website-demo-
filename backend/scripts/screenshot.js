@@ -284,8 +284,31 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         document.getElementById('finSaveBtn').click();
         await new Promise(function(r){ setTimeout(r, 700); });
         base.paramTimeline = document.getElementById('dSubTimeline').textContent.indexOf('调整财务参数') > -1;
-        // 停在流水子视图（供 SHOT_AFTER 二次截图目视新页）
-        document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="ledger"]').click();
+        // 财报子视图：切财报 → 选默认本季 → 一键生成 → 报表卡出现 + 分月明细 + CSV 链接 → 导出 CSV 分节断言
+        document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="report"]').click();
+        await new Promise(function(r){ setTimeout(r, 200); });
+        base.rptSecShown = document.getElementById('fin-report-sec').style.display !== 'none';
+        base.rptTabActive = document.querySelector('#finTabs .fin-tab-btn.active').dataset.finTab;
+        base.rptYearOpts = document.querySelectorAll('#rptYear option').length;
+        base.rptQuarterVal = document.getElementById('rptQuarter').value;
+        base.rptYearVal = document.getElementById('rptYear').value;
+        document.getElementById('rptGenBtn').click();
+        await new Promise(function(r){ setTimeout(r, 900); });
+        base.rptCardShown = document.getElementById('finReportCard').style.display !== 'none';
+        base.rptCardText = document.getElementById('finReportCard').textContent.slice(0, 120);
+        base.rptHasTitle = document.getElementById('finReportCard').textContent.indexOf('季度财报') > -1;
+        base.rptHasMonthly = document.getElementById('finReportCard').textContent.indexOf('分月明细') > -1;
+        base.rptHasNet = document.getElementById('finReportCard').textContent.indexOf('净利润') > -1;
+        base.rptHasWarn = document.getElementById('finReportCard').textContent.indexOf('草稿') > -1; // 未月结 → 草稿警示
+        base.rptMonthsRows = document.querySelectorAll('#finReportCard tbody tr').length;
+        base.rptCsvShown = document.getElementById('rptCsvLink').style.display !== 'none';
+        base.rptCsvHref = document.getElementById('rptCsvLink').getAttribute('href') || '';
+        base.rptPrintShown = document.getElementById('rptPrintBtn').style.display !== 'none';
+        var rptCsv = await fetch('/api/admin/finance/report/export?year=' + document.getElementById('rptYear').value + '&quarter=' + document.getElementById('rptQuarter').value, { credentials: 'include' }).then(function(r){ return r.text(); });
+        base.rptCsvTitle = rptCsv.indexOf('M.NationWorld 季度财报') > -1;
+        base.rptCsvCat = rptCsv.indexOf('支出分类汇总') > -1;
+        // 停在财报子视图（生成后的报表，供 SHOT_AFTER 二次截图目视新页）
+        document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="report"]').click();
         await new Promise(function(r){ setTimeout(r, 100); });
         // 暗色主题阴影断言（临时切 data-theme 再还原；先关 transition 防过渡中间值）
         var ac = document.querySelector('.adm-card');
