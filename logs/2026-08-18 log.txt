@@ -233,3 +233,7 @@
    - 冒烟新增 computed 断言 admShadow/admCardBg/admShadowDark
      （暗色断言先内联关 transition 再切 data-theme——否则读到 0.2s
      过渡中间值，教训）；全绿 0 console error。
+   - 用户反馈「阴影太重」→ 调淡：三层投影砍到两层（近距 1px 2px
+     定轮廓 + 3px 10px 柔影），alpha 明 0.04/0.06、暗 0.22/0.20
+     （原来 0.11/0.42 远层）；悬停/弹窗同比例减淡，高光内缘与
+     渐变保留（凸起感主要来自它俩，阴影只做点缀）。
