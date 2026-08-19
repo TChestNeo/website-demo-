@@ -405,4 +405,18 @@
      （95KB 实图停在财报页）；生成落 dev 库 +1 ledger_report 审计
      行（与 paramTimeline 同性质冒烟污染）0 console error
      （commit e00eb11）。
+   - 补「提现」类型（用户追问：赚来的钱转出去做其他事情也要进
+     财报）——LED_KINDS 增 withdrawal（提现/转出他用），登记入口
+     = 流水表单第 5 选项（选提现/调整自动带出「其他」分类）；口径：
+     提现单列资金去向，**不计支出、不进净利**（不是损益项），
+     buildReport 分月/totals 增 withdrawn + totals.retained（留存
+     资金 = 净利 − 提现）；CSV 分月表加提现转出(RM) 列 + 留存行 +
+     口径更新；前端报表卡 8→10（提现转出/留存资金）+ 分月表提现
+     列。kind 白名单一改即全链路生效（流水 CSV 类型列/明细 chip/
+     月结锁定无需另改）；无迁移（kind 无 CHECK 约束）。测试
+     112/112（提现行 M2 RM30 → withdrawn 30 / retained −125.15 /
+     不进 byCategory / paid·expense 不变 + CSV 两断言）；冒烟
+     ledKindOpts 5 + 联动 ledCatAfterWithdrawal=other +
+     rptHasWithdrawn/rptHasRetained/rptCsvWithdrawn 全绿
+     0 console error（commit 76cf0c7）。
 
