@@ -566,19 +566,30 @@
     loadModList();
   });
   $('dashGoMod').addEventListener('click', function () { switchTab('mod'); });
-  $('dashGoUsage').addEventListener('click', function () { switchTab('usage'); });
+  $('dashGoUsage').addEventListener('click', function () { switchTab('sub'); switchFinTab('cost'); });
 
   // ── Tab 切换（懒加载） ──
   var loaded = { ticket: false, badge: false, user: false };
-  var PANES = ['dash', 'mod', 'ticket', 'badge', 'user', 'sub', 'usage'];
+  var PANES = ['dash', 'mod', 'ticket', 'badge', 'user', 'sub'];
   function switchTab(tab) {
     document.querySelectorAll('#admTabs [data-tab]').forEach(function (b) { b.classList.toggle('active', b.dataset.tab === tab); });
     PANES.forEach(function (t) { $('pane-' + t).style.display = t === tab ? 'block' : 'none'; });
     if (tab === 'ticket' && !loaded.ticket) { loaded.ticket = true; loadTickets(); }
     if (tab === 'badge' && !loaded.badge) { loaded.badge = true; loadBadges(); }
     if (tab === 'user' && !loaded.user) { loaded.user = true; loadUsers(); }
-    if (tab === 'usage') loadUsage();
   }
+  // 财务总览顶部子菜单：总览 / 成本（成本看板已并入）
+  var finTab = 'overview';
+  function switchFinTab(v) {
+    finTab = v;
+    $('fin-overview-sec').style.display = v === 'overview' ? '' : 'none';
+    $('fin-cost-sec').style.display = v === 'cost' ? 'block' : 'none';
+    document.querySelectorAll('.fin-tab-btn').forEach(function (b) { b.classList.toggle('active', b.dataset.finTab === v); });
+  }
+  $('finTabs').addEventListener('click', function (e) {
+    var b = e.target.closest('.fin-tab-btn');
+    if (b) switchFinTab(b.dataset.finTab);
+  });
   $('admTabs').addEventListener('click', function (e) {
     var btn = e.target.closest('[data-tab]');
     if (!btn) return;

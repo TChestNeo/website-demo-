@@ -113,6 +113,12 @@
     .fin-curve-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .fin-curve-row > div { flex: 1; min-width: 0; } /* 数字占剩余宽度，曲线始终贴右 */
     .fin-strip { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } /* 财务顶部卡加宽（x 轴），曲线右侧留足空间 */
+    /* 财务总览顶部子菜单：总览 / 成本（分段胶囊） */
+    .fin-tabs { display: inline-flex; gap: 2px; padding: 3px; background: var(--color-surface-variant, rgba(128,128,128,0.12));
+      border-radius: var(--radius-full); margin-bottom: var(--space-sm); }
+    .fin-tab-btn { border: none; background: transparent; color: var(--color-on-surface-variant); font-size: 13.5px; font-weight: 600;
+      padding: 6px 16px; border-radius: var(--radius-full); cursor: pointer; }
+    .fin-tab-btn.active { background: var(--color-surface); color: var(--color-primary); box-shadow: 0 1px 3px rgba(16,24,40,0.12); }
     .fin-curve-card:hover { border-color: var(--color-primary); }
     .fin-spark { flex: none; }
     .fin-range-btn.active { border-color: var(--color-primary); color: var(--color-primary); font-weight: 700; }
@@ -191,7 +197,6 @@
           <a class="nav-item" data-tab="badge"><span class="material-symbols-outlined">verified</span>徽章码</a>
           <a class="nav-item" data-tab="user"><span class="material-symbols-outlined">group</span>用户</a>
           <a class="nav-item" data-tab="sub"><span class="material-symbols-outlined">payments</span>财务总览</a>
-          <a class="nav-item" data-tab="usage"><span class="material-symbols-outlined">monitoring</span>成本看板</a>
         </div>
       </aside>
 
@@ -332,6 +337,12 @@
 
     <!-- 财务总览（一期无支付：收入 = tier 定价估算、成本 = AI 实账 + 固定成本、税费 = 收入 × 税率估算） -->
     <div id="pane-sub" style="display:none">
+      <!-- 顶部子菜单：总览 / 成本（成本看板已并入财务总览） -->
+      <div class="fin-tabs" id="finTabs">
+        <button class="fin-tab-btn active" data-fin-tab="overview">总览</button>
+        <button class="fin-tab-btn" data-fin-tab="cost">成本</button>
+      </div>
+      <div id="fin-overview-sec">
       <div class="adm-card" id="finHealth" style="margin-bottom:var(--space-sm);border-left:4px solid #64748b">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-sm);flex-wrap:wrap">
           <div>
@@ -410,26 +421,26 @@
         <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">tier 调整记录（set_tier 审计，最近 20 条）</h3>
         <div id="dSubTimeline"></div>
       </div>
-    </div>
-
-    <!-- 成本看板 -->
-    <div id="pane-usage" style="display:none">
-      <div id="usageBars"></div>
-      <div class="adm-card" style="overflow-x:auto">
-        <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">最近 50 条用量记录</h3>
-        <table class="adm-table">
-          <thead><tr><th>时间</th><th>功能</th><th>入</th><th>出</th><th>缓存</th><th>成本</th><th>批次</th></tr></thead>
-          <tbody id="usageRows"></tbody>
-        </table>
       </div>
-      <div class="adm-card">
-        <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">月度预算额度（元，写入审计）</h3>
-        <div class="adm-form" id="budgetForm">
-          <label class="adm-meta">文字审核 <input class="adm-input" id="bgText" type="number" min="0" step="0.5" style="width:90px"></label>
-          <label class="adm-meta">AI 客服 <input class="adm-input" id="bgChat" type="number" min="0" step="0.5" style="width:90px"></label>
-          <label class="adm-meta">图像审核 <input class="adm-input" id="bgImage" type="number" min="0" step="0.5" style="width:90px"></label>
-          <label class="adm-meta">总预算 <input class="adm-input" id="bgTotal" type="number" min="0" step="0.5" style="width:90px"></label>
-          <button class="btn btn-primary" id="budgetSaveBtn">保存</button>
+      <!-- 成本（并入财务总览的子视图：用量条 + 最近记录 + 预算额度） -->
+      <div id="fin-cost-sec" style="display:none">
+        <div id="usageBars"></div>
+        <div class="adm-card" style="overflow-x:auto">
+          <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">最近 50 条用量记录</h3>
+          <table class="adm-table">
+            <thead><tr><th>时间</th><th>功能</th><th>入</th><th>出</th><th>缓存</th><th>成本</th><th>批次</th></tr></thead>
+            <tbody id="usageRows"></tbody>
+          </table>
+        </div>
+        <div class="adm-card">
+          <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">月度预算额度（元，写入审计）</h3>
+          <div class="adm-form" id="budgetForm">
+            <label class="adm-meta">文字审核 <input class="adm-input" id="bgText" type="number" min="0" step="0.5" style="width:90px"></label>
+            <label class="adm-meta">AI 客服 <input class="adm-input" id="bgChat" type="number" min="0" step="0.5" style="width:90px"></label>
+            <label class="adm-meta">图像审核 <input class="adm-input" id="bgImage" type="number" min="0" step="0.5" style="width:90px"></label>
+            <label class="adm-meta">总预算 <input class="adm-input" id="bgTotal" type="number" min="0" step="0.5" style="width:90px"></label>
+            <button class="btn btn-primary" id="budgetSaveBtn">保存</button>
+          </div>
         </div>
       </div>
     </div>

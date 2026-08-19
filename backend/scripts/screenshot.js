@@ -231,6 +231,29 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         base.finChartVal1y = document.getElementById('finChartVal').textContent.slice(0, 30);
         document.getElementById('finChartClose').click();
         base.finModalClosed = document.getElementById('finChartModal').style.display === 'none';
+        // 成本看板并入财务：顶部子菜单切成本 → 用量条/记录表/预算表单 → 切回总览
+        base.finTabBtns = document.querySelectorAll('#finTabs .fin-tab-btn').length;
+        base.finTabActive = document.querySelector('#finTabs .fin-tab-btn.active').dataset.finTab;
+        // 几何：子菜单在健康横幅上方；激活 tab 背景与未激活不同（样式生效探针）
+        base.finTabsAbove = document.getElementById('finTabs').getBoundingClientRect().bottom <=
+          document.getElementById('finHealth').getBoundingClientRect().top + 1;
+        var tabAct = getComputedStyle(document.querySelector('#finTabs .fin-tab-btn.active')).backgroundColor;
+        var tabInact = getComputedStyle(document.querySelector('#finTabs .fin-tab-btn:not(.active)')).backgroundColor;
+        base.finTabStyleDiff = tabAct !== tabInact;
+        document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="cost"]').click();
+        await new Promise(function(r){ setTimeout(r, 200); });
+        base.finCostSecShown = document.getElementById('fin-cost-sec').style.display !== 'none';
+        base.finOverviewHidden = document.getElementById('fin-overview-sec').style.display === 'none';
+        base.finCostTabActive = document.querySelector('#finTabs .fin-tab-btn.active').dataset.finTab;
+        base.usageBarRows = document.querySelectorAll('#usageBars > div').length;
+        base.usageRowCount = document.querySelectorAll('#usageRows tr').length;
+        base.budgetFields = document.querySelectorAll('#budgetForm input').length;
+        document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="overview"]').click();
+        await new Promise(function(r){ setTimeout(r, 100); });
+        base.finOverviewBack = document.getElementById('fin-overview-sec').style.display !== 'none';
+        // 停在成本子视图（供 SHOT_AFTER 二次截图目视）
+        document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="cost"]').click();
+        await new Promise(function(r){ setTimeout(r, 100); });
         // 暗色主题阴影断言（临时切 data-theme 再还原；先关 transition 防过渡中间值）
         var ac = document.querySelector('.adm-card');
         ac.style.transition = 'none';
@@ -243,6 +266,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       })()`;
       const ev = await cmd('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });
       console.log('DOM dump:', ev.result && ev.result.result && ev.result.result.value);
+    }
+    if (process.env.SHOT_AFTER) {
+      const shot2 = await cmd('Page.captureScreenshot', process.env.SHOT_FMT === 'jpeg'
+        ? { format: 'jpeg', quality: 85 } : { format: 'png' });
+      const out2 = out.replace(/\.(png|jpe?g)$/i, '-after.$1');
+      writeFileSync(out2, Buffer.from(shot2.result.data, 'base64'));
+      console.log('saved:', out2, '| bytes:', shot2.result.data.length * 3 / 4 | 0);
     }
     if (consoleLines.length) {
       console.log('page console errors (' + consoleLines.length + '):');
