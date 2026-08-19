@@ -224,43 +224,56 @@ test('admin：用户搜索 + tier PATCH（一期唯一支付路径 + set_tier �
   } finally { await t.close(); }
 });
 
-test('admin：财务总览（税费/成本/净利/健康分档/季度预期）+ 参数读写审计', async () => {
+test('admin：财务总览（全 MYR：税费/成本/净利/健康分档/季度预期）+ 参数读写审计', async () => {
   const t = await adminT();
   try {
-    // 默认参数 fx 1.65 / 税率 8% / 固定成本 50 / 季度目标 0；全 basic → 无收入 → 危险
+    // 默认参数 fx 0.6（¥→RM 折算 AI 账单）/ 税率 8% / 固定成本 RM50 / 季度目标 0；全 basic → 无收入 → 危险
     let s = await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json();
     assert.strictEqual(s.finance.health.state, 'danger');
-    assert.strictEqual(s.finance.estRevenueCNY, 0);
-    assert.strictEqual(s.finance.totalCostYuan, 50);
-    assert.strictEqual(s.finance.taxYuan, 0);
-    assert.strictEqual(s.finance.netProfitYuan, -50);
+    assert.strictEqual(s.finance.estRevenueRM, 0);
+    assert.strictEqual(s.finance.totalCostRM, 50);
+    assert.strictEqual(s.finance.taxRM, 0);
+    assert.strictEqual(s.finance.netProfitRM, -50);
     assert.strictEqual(s.finance.health.quarter.pct, null);
-    // alice → premium：RM23.5 × 1.65 = ¥38.78；成本 50 → 覆盖率 0.78 → 不妙
+    // alice → premium：RM23.5；税 1.88；成本 50 → 覆盖率 0.47 → 危险
     await t.request('PATCH', `/api/admin/users/${t.alice.user.id}`, { tier: 'premium' }, { cookie: t.admin.cookie });
     s = await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json();
-    assert.strictEqual(s.finance.estRevenueCNY, 38.78);
-    assert.strictEqual(s.finance.taxYuan, 3.1);
-    assert.strictEqual(s.finance.netProfitYuan, -14.32);
-    assert.strictEqual(s.finance.health.state, 'warn');
+    assert.strictEqual(s.finance.estRevenueRM, 23.5);
+    assert.strictEqual(s.finance.taxRM, 1.88);
+    assert.strictEqual(s.finance.netProfitRM, -28.38);
+    assert.strictEqual(s.finance.health.coverage, 0.47);
+    assert.strictEqual(s.finance.health.state, 'danger');
     assert.strictEqual(s.finance.health.growth7d, 1);
-    // bob → ultra：RM69 × 1.65 = ¥113.85 → 覆盖率 2.28 + 增长 → 最佳；季度目标 200 → 符合 171%
-    await t.request('PATCH', `/api/admin/users/${t.bob.user.id}`, { tier: 'ultra' }, { cookie: t.admin.cookie });
-    const put = await t.request('PUT', '/api/admin/finance', { quarterTarget: 200, taxRate: 0.1 }, { cookie: t.admin.cookie });
+    // 调参：固定成本 20 / 税率 10% / 季度目标 200 → RM23.5 覆盖 1.18 → 健康；季度 70.5/200 → 未达 35%
+    const put = await t.request('PUT', '/api/admin/finance', { fixedMonthly: 20, quarterTarget: 200, taxRate: 0.1 }, { cookie: t.admin.cookie });
     assert.strictEqual(put.status, 200);
     s = await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json();
-    assert.strictEqual(s.finance.estRevenueCNY, 113.85);
-    assert.strictEqual(s.finance.taxYuan, 11.39);
-    assert.strictEqual(s.finance.netProfitYuan, 52.46);
+    assert.strictEqual(s.finance.estRevenueRM, 23.5);
+    assert.strictEqual(s.finance.taxRM, 2.35);
+    assert.strictEqual(s.finance.netProfitRM, 1.15);
+    assert.strictEqual(s.finance.health.coverage, 1.18);
+    assert.strictEqual(s.finance.health.state, 'ok');
+    assert.strictEqual(s.finance.health.quarter.pct, 35);
+    assert.strictEqual(s.finance.health.quarter.met, false);
+    // bob → ultra：RM69；覆盖 3.45 + 增长 → 最佳；季度 207/200 → 符合 103%
+    await t.request('PATCH', `/api/admin/users/${t.bob.user.id}`, { tier: 'ultra' }, { cookie: t.admin.cookie });
+    s = await (await t.request('GET', '/api/admin/stats', undefined, { cookie: t.admin.cookie })).json();
+    assert.strictEqual(s.finance.estRevenueRM, 69);
+    assert.strictEqual(s.finance.taxRM, 6.9);
+    assert.strictEqual(s.finance.netProfitRM, 42.1);
+    assert.strictEqual(s.finance.health.coverage, 3.45);
     assert.strictEqual(s.finance.health.state, 'best');
     assert.strictEqual(s.finance.health.growth7d, 2);
-    assert.strictEqual(s.finance.health.quarter.pct, 171);
+    assert.strictEqual(s.finance.health.quarter.pct, 103); // 207/200 浮点 = 103.4999… → round 103
     assert.strictEqual(s.finance.health.quarter.met, true);
     // 校验 + 审计
-    assert.strictEqual((await t.request('PUT', '/api/admin/finance', { fx: 0.05 }, { cookie: t.admin.cookie })).status, 400);
+    assert.strictEqual((await t.request('PUT', '/api/admin/finance', { fx: 0.005 }, { cookie: t.admin.cookie })).status, 400);
     assert.strictEqual((await t.request('PUT', '/api/admin/finance', {}, { cookie: t.admin.cookie })).status, 400);
     const a = t.db.prepare("SELECT * FROM admin_audit_log WHERE action = 'finance_set'").get();
     assert.strictEqual(JSON.parse(a.detail).taxRate, 0.1);
+    assert.strictEqual(JSON.parse(a.detail).fixedMonthly, 20);
     assert.strictEqual(t.db.prepare("SELECT value FROM kv WHERE key = 'finance.quarterTarget'").get().value, '200');
+    assert.strictEqual(t.db.prepare("SELECT value FROM kv WHERE key = 'finance.fixedMonthly'").get().value, '20');
   } finally { await t.close(); }
 });
 

@@ -248,11 +248,10 @@
     var rv = sub.revenue || {};
     $('dSubRevenue').textContent = 'RM ' + (rv.estimatedMonthly || 0).toFixed(2);
     $('dSubPaid').textContent = 'RM ' + ((rv.paidMicro || 0) / 1e6).toFixed(2);
-    var ym = function (x) { return (x < 0 ? '-' : '') + '¥' + Math.abs(x).toFixed(2); };
-    $('dFinRevenueCNY').textContent = ym(fin.estRevenueCNY);
-    $('dFinTax').textContent = ym(fin.taxYuan);
-    $('dFinCost').textContent = ym(fin.totalCostYuan);
-    $('dFinProfit').textContent = ym(fin.netProfitYuan);
+    var rm = function (x) { return (x < 0 ? '-' : '') + 'RM ' + Math.abs(x).toFixed(2); };
+    $('dFinTax').textContent = rm(fin.taxRM);
+    $('dFinCost').textContent = rm(fin.totalCostRM);
+    $('dFinProfit').textContent = rm(fin.netProfitRM);
     $('dFinCoverage').textContent = fin.health.coverage.toFixed(2) + '×';
     $('dSubGrowth').textContent = (fin.health.growth7d >= 0 ? '+' : '') + fin.health.growth7d;
     // 健康横幅
@@ -268,12 +267,12 @@
     // 成本结构
     var feats = (d.budget && d.budget.features) || {};
     var rows = [
-      ['固定成本（服务器/域名/CDN，估算）', ym(fin.fixedMonthly)],
-      ['AI 用量（本月实账）', ym(fin.usageCostYuan)],
-      ['· 文字审核', ym(((feats.moderation_text || {}).spent || 0) / 1e6)],
-      ['· AI 客服', ym(((feats.chat || {}).spent || 0) / 1e6)],
-      ['· 图像审核', ym(((feats.moderation_image || {}).spent || 0) / 1e6)],
-      ['合计', ym(fin.totalCostYuan)]
+      ['固定成本（服务器/域名/CDN，估算）', rm(fin.fixedMonthly)],
+      ['AI 用量（本月实账，¥ 按汇率折算）', rm(fin.usageCostRM)],
+      ['· 文字审核', rm(((feats.moderation_text || {}).spent || 0) / 1e6 * fin.fx)],
+      ['· AI 客服', rm(((feats.chat || {}).spent || 0) / 1e6 * fin.fx)],
+      ['· 图像审核', rm(((feats.moderation_image || {}).spent || 0) / 1e6 * fin.fx)],
+      ['合计', rm(fin.totalCostRM)]
     ];
     $('dFinCosts').innerHTML = rows.map(function (r) {
       var last = r[0] === '合计';
@@ -285,7 +284,7 @@
       var pct = Math.max(0, Math.min(100, q.pct));
       $('dFinQuarterCard').innerHTML =
         '<div class="row" style="justify-content:space-between;margin-bottom:4px">' +
-        '<span class="adm-meta">季度目标 ' + ym(q.target) + ' · 预计 ' + ym(q.est) + '（' + q.pct + '%）</span>' +
+        '<span class="adm-meta">季度目标 ' + rm(q.target) + ' · 预计 ' + rm(q.est) + '（' + q.pct + '%）</span>' +
         '<span style="color:' + (q.met ? '#16a34a' : '#d97706') + ';font-size:13px">' + (q.met ? '符合预期' : '未达预期') + '</span></div>' +
         '<div class="bar-track"><div class="bar-fill ' + (q.met ? '' : 'warn') + '" style="width:' + pct + '%"></div></div>';
     } else {

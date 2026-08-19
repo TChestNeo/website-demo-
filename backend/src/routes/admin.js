@@ -120,19 +120,19 @@ function register(router, ctx) {
         + "LEFT JOIN users u ON u.id = l.admin_id WHERE l.action = 'set_tier' ORDER BY l.seq DESC LIMIT 20").all()
         .map((r) => { let d = null; try { d = JSON.parse(r.detail); } catch (e) {} return { at: r.at, actor: r.actor || null, target: r.target, from: (d && d.from) || null, to: (d && d.to) || null }; })
     };
-    // 财务总览（一期无支付：收入 = tier 定价估算、成本 = AI 用量实账 + 固定月成本、税费 = 收入 × 税率估算，口径前端全标注）
-    const FIN_DEFAULTS = { fx: 1.65, taxRate: 0.08, fixedMonthly: 50, quarterTarget: 0 }; // RM→CNY 汇率 / 税率 / 固定成本（元）/ 季度目标（元）
+    // 财务总览（全 MYR：收入 = tier 定价估算、AI 用量实账为人民币账单按汇率折算 RM、税费 = 收入 × 税率估算，口径前端全标注）
+    const FIN_DEFAULTS = { fx: 0.6, taxRate: 0.08, fixedMonthly: 50, quarterTarget: 0 }; // ¥→RM 汇率（AI 账单折算）/ 税率 / 固定月成本（RM）/ 季度目标（RM）
     const fin = {};
     for (const k of Object.keys(FIN_DEFAULTS)) {
       const row = db.prepare('SELECT value FROM kv WHERE key = ?').get('finance.' + k);
       const v = row ? Number(row.value) : FIN_DEFAULTS[k];
       fin[k] = Number.isFinite(v) ? v : FIN_DEFAULTS[k];
     }
-    const estRevenueCNY = Math.round(sub.revenue.estimatedMonthly * fin.fx * 100) / 100;
-    const usageCostYuan = Math.round(st.totalSpent / 1e6 * 100) / 100;
-    const totalCostYuan = Math.round((fin.fixedMonthly + usageCostYuan) * 100) / 100;
-    const taxYuan = Math.round(estRevenueCNY * fin.taxRate * 100) / 100;
-    const netProfitYuan = Math.round((estRevenueCNY - totalCostYuan - taxYuan) * 100) / 100;
+    const estRevenueRM = sub.revenue.estimatedMonthly;
+    const usageCostRM = Math.round(st.totalSpent / 1e6 * fin.fx * 100) / 100;
+    const totalCostRM = Math.round((fin.fixedMonthly + usageCostRM) * 100) / 100;
+    const taxRM = Math.round(estRevenueRM * fin.taxRate * 100) / 100;
+    const netProfitRM = Math.round((estRevenueRM - totalCostRM - taxRM) * 100) / 100;
     // 7 天订阅净增长：set_tier 事件进 premium/ultra +1、出 −1
     let growth7d = 0;
     for (const r of db.prepare("SELECT detail FROM admin_audit_log WHERE action = 'set_tier' AND created_at >= ?").all(weekAgo)) {
@@ -140,20 +140,20 @@ function register(router, ctx) {
       if ((d && d.to) === 'premium' || (d && d.to) === 'ultra') growth7d++;
       if ((d && d.from) === 'premium' || (d && d.from) === 'ultra') growth7d--;
     }
-    const coverage = estRevenueCNY <= 0 ? 0 : Math.round(estRevenueCNY / Math.max(totalCostYuan, 0.01) * 100) / 100;
+    const coverage = estRevenueRM <= 0 ? 0 : Math.round(estRevenueRM / Math.max(totalCostRM, 0.01) * 100) / 100;
     let healthState, healthReason;
-    if (estRevenueCNY <= 0) { healthState = 'danger'; healthReason = '无收入：支付未上线或订阅用户为 0'; }
+    if (estRevenueRM <= 0) { healthState = 'danger'; healthReason = '无收入：支付未上线或订阅用户为 0'; }
     else if (coverage < 0.5) { healthState = 'danger'; healthReason = '预计收入不足成本的 50%'; }
     else if (coverage < 1) { healthState = 'warn'; healthReason = '预计收入不抵成本（入不敷出）'; }
     else if (coverage >= 2 && growth7d >= 0) { healthState = 'best'; healthReason = '收入覆盖成本 2× 以上且订阅 7 天净增长'; }
     else { healthState = 'ok'; healthReason = coverage >= 2 ? '收入覆盖成本 2× 以上（订阅 7 天净减）' : '收入覆盖成本'; }
-    const quarterEst = Math.round(estRevenueCNY * 3 * 100) / 100;
+    const quarterEst = Math.round(estRevenueRM * 3 * 100) / 100;
     const quarterPct = fin.quarterTarget > 0 ? Math.round(quarterEst / fin.quarterTarget * 100) : null;
-    fin.estRevenueCNY = estRevenueCNY;
-    fin.usageCostYuan = usageCostYuan;
-    fin.totalCostYuan = totalCostYuan;
-    fin.taxYuan = taxYuan;
-    fin.netProfitYuan = netProfitYuan;
+    fin.estRevenueRM = estRevenueRM;
+    fin.usageCostRM = usageCostRM;
+    fin.totalCostRM = totalCostRM;
+    fin.taxRM = taxRM;
+    fin.netProfitRM = netProfitRM;
     fin.health = {
       state: healthState, reason: healthReason, coverage, growth7d,
       quarter: { target: fin.quarterTarget, est: quarterEst, pct: quarterPct, met: quarterPct !== null && quarterPct >= 100 }
@@ -410,7 +410,7 @@ function register(router, ctx) {
   }));
 
   // ── 财务参数（汇率/税率/固定月成本/季度目标：kv + 审计） ──
-  const FIN_FIELDS = { fx: [0.1, 100], taxRate: [0, 1], fixedMonthly: [0, 1e6], quarterTarget: [0, 1e9] };
+  const FIN_FIELDS = { fx: [0.01, 100], taxRate: [0, 1], fixedMonthly: [0, 1e6], quarterTarget: [0, 1e9] };
   router.add('PUT', '/api/admin/finance', requireAdmin(async (req, res) => {
     adminWrite();
     const body = await readJson(req);

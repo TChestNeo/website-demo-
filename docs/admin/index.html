@@ -307,11 +307,10 @@
       </div>
       <div class="stat-strip">
         <div class="stat-card"><div class="stat-num" id="dSubRevenue">—</div><div class="stat-label">预计月收入（RM）</div></div>
-        <div class="stat-card"><div class="stat-num" id="dFinRevenueCNY">—</div><div class="stat-label">预计月收入（¥）</div></div>
         <div class="stat-card"><div class="stat-num" id="dSubPaid">—</div><div class="stat-label">实际收款（RM）</div></div>
-        <div class="stat-card"><div class="stat-num" id="dFinTax">—</div><div class="stat-label">预计税费（¥/月）</div></div>
-        <div class="stat-card"><div class="stat-num" id="dFinCost">—</div><div class="stat-label">总成本（¥/月）</div></div>
-        <div class="stat-card"><div class="stat-num" id="dFinProfit">—</div><div class="stat-label">净利润（¥/月）</div></div>
+        <div class="stat-card"><div class="stat-num" id="dFinTax">—</div><div class="stat-label">预计税费（RM/月）</div></div>
+        <div class="stat-card"><div class="stat-num" id="dFinCost">—</div><div class="stat-label">总成本（RM/月）</div></div>
+        <div class="stat-card"><div class="stat-num" id="dFinProfit">—</div><div class="stat-label">净利润（RM/月）</div></div>
         <div class="stat-card"><div class="stat-num" id="dFinCoverage">—</div><div class="stat-label">成本覆盖率</div></div>
       </div>
       <div class="dash-grid">
@@ -326,7 +325,7 @@
           </div>
         </div>
         <div class="adm-card">
-          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">成本结构（¥/月）</h3>
+          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">成本结构（RM/月）</h3>
           <div id="dFinCosts"></div>
         </div>
       </div>
@@ -338,13 +337,13 @@
         <div class="adm-card">
           <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">财务参数（保存写入审计）</h3>
           <div class="adm-form" id="finForm">
-            <label class="adm-meta">汇率 RM→¥ <input class="adm-input" id="finFx" type="number" min="0.1" max="100" step="0.01" style="width:90px"></label>
+            <label class="adm-meta">汇率 ¥→RM <input class="adm-input" id="finFx" type="number" min="0.01" max="100" step="0.01" style="width:90px"></label>
             <label class="adm-meta">税率 <input class="adm-input" id="finTaxRate" type="number" min="0" max="1" step="0.01" style="width:90px"></label>
-            <label class="adm-meta">固定月成本（¥） <input class="adm-input" id="finFixed" type="number" min="0" step="1" style="width:90px"></label>
-            <label class="adm-meta">季度目标（¥） <input class="adm-input" id="finQuarter" type="number" min="0" step="1" style="width:110px"></label>
+            <label class="adm-meta">固定月成本（RM） <input class="adm-input" id="finFixed" type="number" min="0" step="1" style="width:90px"></label>
+            <label class="adm-meta">季度目标（RM） <input class="adm-input" id="finQuarter" type="number" min="0" step="1" style="width:110px"></label>
             <button class="btn btn-primary" id="finSaveBtn">保存</button>
           </div>
-          <p class="adm-meta">口径：收入 = tier 月价 × 数量估算（ms-MY 定价 RM23.50/RM45.50，汇率折算）；成本 = AI 用量实账 + 固定成本（服务器/域名/CDN 估算，50 元为默认值）；税费 = 收入 × 税率估算，上线前请以税务顾问意见为准。</p>
+          <p class="adm-meta">口径：收入 = tier 月价 × 数量估算（ms-MY 定价 RM23.50/RM45.50）；成本 = AI 用量实账（人民币账单按汇率折算）+ 固定成本（服务器/域名/CDN 估算，默认 RM50）；税费 = 收入 × 税率估算，上线前请以税务顾问意见为准。</p>
         </div>
       </div>
       <div class="adm-card">
