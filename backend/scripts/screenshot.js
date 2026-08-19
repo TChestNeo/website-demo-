@@ -158,7 +158,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         base.tkReplyKept = document.getElementById('tkInput').value.slice(0, 24);
         document.getElementById('tkBackBtn').click(); await new Promise(function(r){ setTimeout(r, 100); });
         base.ticketBackToList = document.getElementById('ticketDetail').style.display === 'none';
-        // 订阅收入 pane：统计卡（数字 + RM 格式）+ tier 调整时间线
+        // 财务总览 pane：健康横幅/核心数字/成本结构/季度预期/参数表单/时间线
         document.querySelector('#admTabs [data-tab="sub"]').click();
         await new Promise(function(r){ setTimeout(r, 200); });
         base.subPaneShown = document.getElementById('pane-sub').style.display !== 'none';
@@ -168,6 +168,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         base.subBasic = document.getElementById('dSubBasic').textContent;
         base.subRevenue = document.getElementById('dSubRevenue').textContent;
         base.subPaid = document.getElementById('dSubPaid').textContent;
+        base.finHealth = document.getElementById('dFinHealth').textContent;
+        base.finQuarterBadge = document.getElementById('dFinQuarter').textContent.replace(/\\s+/g, ' ').slice(0, 30);
+        base.finProfit = document.getElementById('dFinProfit').textContent;
+        base.finCoverage = document.getElementById('dFinCoverage').textContent;
+        base.finCostRows = document.querySelectorAll('#dFinCosts > div').length;
+        base.finFormFields = document.querySelectorAll('#finForm input').length;
+        base.finQuarterCard = document.getElementById('dFinQuarterCard').textContent.replace(/\\s+/g, ' ').slice(0, 40);
         base.subTimeline = document.getElementById('dSubTimeline').textContent.replace(/\\s+/g, ' ').slice(0, 80);
         return JSON.stringify(base);
       })()`;

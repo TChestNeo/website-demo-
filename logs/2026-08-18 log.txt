@@ -73,3 +73,65 @@
 7. 保存 → 重开 → 完整恢复
 8. edge-themes-demo.html：外板+边距+背景图样张（图片环带 + 页面色
    间距带）、外板+边距样张（卡片不再中空）
+
+============================================================
+  SlatiWorld Development Log — 2026-08-19（管理后台场，接 08-18）
+============================================================
+
+1. 工单回复模板系统（弹窗式，docs/admin/）
+   - 用户需求迭代 4 版：内联两下拉 → 弹窗（左菜单 + 右上角加号、
+     右预览）→ 加宽输入框 → 语言改下拉十语。
+   - 最终设计：回复此工单卡「模板」按钮 → tkTplModal（左 250px 模板
+     列表、左上角 + 添加、右侧预览 + 语言下拉 + 使用此模板按钮）；
+     + → tkTplAddModal 第二层弹窗（名称 + 十语 textarea）。
+   - 语言：联合国六官方语（zh/en/ar/fr/ru/es）+ 马来/印尼/泰/越共
+     10 种；默认 = 工单 locale，回退链 lang→zh→首个非空语言（预览
+     尾部提示「已回退显示其他语言版本」）。
+   - 内置 6 条模板（ack/more/resolved/escalated/rules/refund，中英马
+     三语，builtin 不可删）；自定义模板存管理员浏览器 localStorage
+     slati_admin_templates（unshift 置顶，✕ 删除）。
+   - 「使用此模板」insertTpl：先撤旧块（state.tkTpl 精确后缀匹配）
+     再填入，可反复换模板。
+
+2. 回复流程改状态弹窗（用户要求：点回复弹窗选状态，自动进已回复队列）
+   - 点「发送回复」（非空校验）→ 弹窗两选项：
+     「等待下一步」= 回复后进已回复队列（后端 status in_progress 不变）
+     「已完成」= 回复 + 串行 close（进已关闭队列）
+   - 取消/✕/点遮罩关闭，回复框内容保留。
+   - 「处理中」队列与状态徽章改名「已回复」（纯前端标签，后端不变）。
+
+3. 订阅收入页（用户要求：一个页面查看全站订阅量和收入量）
+   - 新侧栏项（payments 图标）+ pane-sub：6 统计卡（订阅用户 =
+     premium+ultra / premium / ultra / basic / 预计月收入 RM / 实际
+     收款 RM）+ set_tier 审计时间线（最近 20 条：谁把谁从什么调成
+     什么）。
+   - 数据 = /api/admin/stats 新增 sub 字段（零新端点）：tiers 按
+     status=active 计数、estimatedMonthly = tier 月价 × 数量
+     （premium RM23.50 / ultra RM45.50，对齐 premium.html ms-MY）、
+     paidMicro 恒 0、tierEvents（audit detail JSON 解析）。
+   - 一期无支付：tier 由管理员手动指定 → 实际收款恒 0，预计收入是
+     估算（页面已标注口径）；二期接支付后只改 paidMicro 一处。
+
+4. 工具链教训（本日新增）
+   - admin_audit_log 只有 admin_id 无 actor 列 → 时间线查询必须
+     LEFT JOIN users 取 email（首跑 SQLiteError no such column）。
+   - fmtYuan 自带 ¥ 前缀 → RM 金额不能复用（'RM ¥0.00' bug，改
+     (micro/1e6).toFixed(2)）。
+   - 活库 E2E 工单 fixture 会被更早测试移到 closed/in_progress →
+     冒烟前 SQL 复位（000001→queued、000002 留 in_progress），否则
+     dump 在 tkInput 报 null（queued 列表空）。
+   - 后端改路由后必须重启任务（kill PID + 新后台任务）。
+
+验证：后端测试 9/9（含 tiers/定价/tierEvents 断言）；冒烟 SHOT_DUMP
+全绿（模板弹窗全链路 + 回复弹窗 + 订阅收入 pane + 0 console error）；
+本系列提交 3147974/95e1834/56e6984/2395c65/19ef0ba/45d1389/e7f1291/
+9e44598。
+
+真机复测清单：
+1. 管理后台 → 工单 tab → 打开工单 → 模板按钮 → 弹窗左右结构、
+   + 添加模板（十语表单）→ 使用填入回复框
+2. 发送回复 → 状态弹窗 → 等待下一步：工单进「已回复」队列；
+   已完成：工单进「已关闭」队列
+3. 订阅收入 tab：统计卡数字与用户 tab 的 tier 一致；用户详情改
+   tier 保存后回订阅收入页数字同步刷新、时间线新增一行
+4. 实际收款显示 RM 0.00（一期无支付，预期值）

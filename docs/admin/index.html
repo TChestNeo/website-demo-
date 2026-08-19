@@ -159,7 +159,7 @@
           <a class="nav-item" data-tab="ticket"><span class="material-symbols-outlined">support_agent</span>工单</a>
           <a class="nav-item" data-tab="badge"><span class="material-symbols-outlined">verified</span>徽章码</a>
           <a class="nav-item" data-tab="user"><span class="material-symbols-outlined">group</span>用户</a>
-          <a class="nav-item" data-tab="sub"><span class="material-symbols-outlined">payments</span>订阅收入</a>
+          <a class="nav-item" data-tab="sub"><span class="material-symbols-outlined">payments</span>财务总览</a>
           <a class="nav-item" data-tab="usage"><span class="material-symbols-outlined">monitoring</span>成本看板</a>
         </div>
       </aside>
@@ -299,15 +299,53 @@
       </div>
     </div>
 
-    <!-- 订阅与收入（一期无支付：tier 为管理员手动指定，收入为按定价估算） -->
+    <!-- 财务总览（一期无支付：收入 = tier 定价估算、成本 = AI 实账 + 固定成本、税费 = 收入 × 税率估算） -->
     <div id="pane-sub" style="display:none">
+      <div class="adm-card" id="finHealth" style="margin-bottom:var(--space-sm);border-left:4px solid #64748b">
+        <h3 class="headline-sm" style="margin:0">收入健康推测：<span id="dFinHealth">—</span> <span class="adm-meta" id="dFinQuarter"></span></h3>
+        <p class="adm-meta" id="dFinReason" style="margin:4px 0 0"></p>
+      </div>
       <div class="stat-strip">
-        <div class="stat-card"><div class="stat-num" id="dSubTotal">—</div><div class="stat-label">订阅用户</div><div class="stat-sub">premium + ultra</div></div>
-        <div class="stat-card"><div class="stat-num" id="dSubPremium">—</div><div class="stat-label">premium</div></div>
-        <div class="stat-card"><div class="stat-num" id="dSubUltra">—</div><div class="stat-label">ultra</div></div>
-        <div class="stat-card"><div class="stat-num" id="dSubBasic">—</div><div class="stat-label">basic（免费）</div></div>
         <div class="stat-card"><div class="stat-num" id="dSubRevenue">—</div><div class="stat-label">预计月收入（RM）</div></div>
+        <div class="stat-card"><div class="stat-num" id="dFinRevenueCNY">—</div><div class="stat-label">预计月收入（¥）</div></div>
         <div class="stat-card"><div class="stat-num" id="dSubPaid">—</div><div class="stat-label">实际收款（RM）</div></div>
+        <div class="stat-card"><div class="stat-num" id="dFinTax">—</div><div class="stat-label">预计税费（¥/月）</div></div>
+        <div class="stat-card"><div class="stat-num" id="dFinCost">—</div><div class="stat-label">总成本（¥/月）</div></div>
+        <div class="stat-card"><div class="stat-num" id="dFinProfit">—</div><div class="stat-label">净利润（¥/月）</div></div>
+        <div class="stat-card"><div class="stat-num" id="dFinCoverage">—</div><div class="stat-label">成本覆盖率</div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="adm-card">
+          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">订阅与收入结构</h3>
+          <div class="stat-strip">
+            <div class="stat-card"><div class="stat-num" id="dSubTotal">—</div><div class="stat-label">订阅用户</div><div class="stat-sub">premium + ultra</div></div>
+            <div class="stat-card"><div class="stat-num" id="dSubPremium">—</div><div class="stat-label">premium</div></div>
+            <div class="stat-card"><div class="stat-num" id="dSubUltra">—</div><div class="stat-label">ultra</div></div>
+            <div class="stat-card"><div class="stat-num" id="dSubBasic">—</div><div class="stat-label">basic（免费）</div></div>
+            <div class="stat-card"><div class="stat-num" id="dSubGrowth">—</div><div class="stat-label">订阅 7 天净增</div></div>
+          </div>
+        </div>
+        <div class="adm-card">
+          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">成本结构（¥/月）</h3>
+          <div id="dFinCosts"></div>
+        </div>
+      </div>
+      <div class="dash-grid">
+        <div class="adm-card">
+          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">季度预期</h3>
+          <div id="dFinQuarterCard"></div>
+        </div>
+        <div class="adm-card">
+          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">财务参数（保存写入审计）</h3>
+          <div class="adm-form" id="finForm">
+            <label class="adm-meta">汇率 RM→¥ <input class="adm-input" id="finFx" type="number" min="0.1" max="100" step="0.01" style="width:90px"></label>
+            <label class="adm-meta">税率 <input class="adm-input" id="finTaxRate" type="number" min="0" max="1" step="0.01" style="width:90px"></label>
+            <label class="adm-meta">固定月成本（¥） <input class="adm-input" id="finFixed" type="number" min="0" step="1" style="width:90px"></label>
+            <label class="adm-meta">季度目标（¥） <input class="adm-input" id="finQuarter" type="number" min="0" step="1" style="width:110px"></label>
+            <button class="btn btn-primary" id="finSaveBtn">保存</button>
+          </div>
+          <p class="adm-meta">口径：收入 = tier 月价 × 数量估算（ms-MY 定价 RM23.50/RM45.50，汇率折算）；成本 = AI 用量实账 + 固定成本（服务器/域名/CDN 估算，50 元为默认值）；税费 = 收入 × 税率估算，上线前请以税务顾问意见为准。</p>
+        </div>
       </div>
       <div class="adm-card">
         <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">tier 调整记录（set_tier 审计，最近 20 条）</h3>

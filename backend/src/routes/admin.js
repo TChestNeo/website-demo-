@@ -74,7 +74,7 @@ function register(router, ctx) {
   // ── 总览（管理首页）── 一次请求聚合全站统计 + 分项预算 + 最近动态
   const AUDIT_ZH = { mod_decide: '审核决定', penalty: '执行处罚', ticket_reply: '工单回复',
     badge_issue: '签发徽章码', badge_revoke: '吊销徽章码', set_tier: '调整 tier',
-    budget_set: '修改预算', view_dm: '调阅私讯' };
+    budget_set: '修改预算', finance_set: '调整财务参数', view_dm: '调阅私讯' };
   router.add('GET', '/api/admin/stats', requireAdmin((req, res) => {
     const iso = new Date().toISOString();
     const n = (sql, ...args) => db.prepare(sql).get(...args).n;
@@ -120,6 +120,44 @@ function register(router, ctx) {
         + "LEFT JOIN users u ON u.id = l.admin_id WHERE l.action = 'set_tier' ORDER BY l.seq DESC LIMIT 20").all()
         .map((r) => { let d = null; try { d = JSON.parse(r.detail); } catch (e) {} return { at: r.at, actor: r.actor || null, target: r.target, from: (d && d.from) || null, to: (d && d.to) || null }; })
     };
+    // 财务总览（一期无支付：收入 = tier 定价估算、成本 = AI 用量实账 + 固定月成本、税费 = 收入 × 税率估算，口径前端全标注）
+    const FIN_DEFAULTS = { fx: 1.65, taxRate: 0.08, fixedMonthly: 50, quarterTarget: 0 }; // RM→CNY 汇率 / 税率 / 固定成本（元）/ 季度目标（元）
+    const fin = {};
+    for (const k of Object.keys(FIN_DEFAULTS)) {
+      const row = db.prepare('SELECT value FROM kv WHERE key = ?').get('finance.' + k);
+      const v = row ? Number(row.value) : FIN_DEFAULTS[k];
+      fin[k] = Number.isFinite(v) ? v : FIN_DEFAULTS[k];
+    }
+    const estRevenueCNY = Math.round(sub.revenue.estimatedMonthly * fin.fx * 100) / 100;
+    const usageCostYuan = Math.round(st.totalSpent / 1e6 * 100) / 100;
+    const totalCostYuan = Math.round((fin.fixedMonthly + usageCostYuan) * 100) / 100;
+    const taxYuan = Math.round(estRevenueCNY * fin.taxRate * 100) / 100;
+    const netProfitYuan = Math.round((estRevenueCNY - totalCostYuan - taxYuan) * 100) / 100;
+    // 7 天订阅净增长：set_tier 事件进 premium/ultra +1、出 −1
+    let growth7d = 0;
+    for (const r of db.prepare("SELECT detail FROM admin_audit_log WHERE action = 'set_tier' AND created_at >= ?").all(weekAgo)) {
+      let d = null; try { d = JSON.parse(r.detail); } catch (e) {}
+      if ((d && d.to) === 'premium' || (d && d.to) === 'ultra') growth7d++;
+      if ((d && d.from) === 'premium' || (d && d.from) === 'ultra') growth7d--;
+    }
+    const coverage = estRevenueCNY <= 0 ? 0 : Math.round(estRevenueCNY / Math.max(totalCostYuan, 0.01) * 100) / 100;
+    let healthState, healthReason;
+    if (estRevenueCNY <= 0) { healthState = 'danger'; healthReason = '无收入：支付未上线或订阅用户为 0'; }
+    else if (coverage < 0.5) { healthState = 'danger'; healthReason = '预计收入不足成本的 50%'; }
+    else if (coverage < 1) { healthState = 'warn'; healthReason = '预计收入不抵成本（入不敷出）'; }
+    else if (coverage >= 2 && growth7d >= 0) { healthState = 'best'; healthReason = '收入覆盖成本 2× 以上且订阅 7 天净增长'; }
+    else { healthState = 'ok'; healthReason = coverage >= 2 ? '收入覆盖成本 2× 以上（订阅 7 天净减）' : '收入覆盖成本'; }
+    const quarterEst = Math.round(estRevenueCNY * 3 * 100) / 100;
+    const quarterPct = fin.quarterTarget > 0 ? Math.round(quarterEst / fin.quarterTarget * 100) : null;
+    fin.estRevenueCNY = estRevenueCNY;
+    fin.usageCostYuan = usageCostYuan;
+    fin.totalCostYuan = totalCostYuan;
+    fin.taxYuan = taxYuan;
+    fin.netProfitYuan = netProfitYuan;
+    fin.health = {
+      state: healthState, reason: healthReason, coverage, growth7d,
+      quarter: { target: fin.quarterTarget, est: quarterEst, pct: quarterPct, met: quarterPct !== null && quarterPct >= 100 }
+    };
     sendJson(res, 200, {
       users: n('SELECT count(*) AS n FROM users'),
       users7d: n('SELECT count(*) AS n FROM users WHERE created_at >= ?', weekAgo),
@@ -138,6 +176,7 @@ function register(router, ctx) {
       budgetState: st.state,
       budget: { total: { spent: st.spent, limit: st.limit, ratio: st.ratio, state: st.state }, features },
       sub,
+      finance: fin,
       activity: act.slice(0, 15)
     });
   }));
@@ -368,6 +407,27 @@ function register(router, ctx) {
     budget.setLimit(body.feature, yuan);
     audit(ctx, 'budget_set', 'budget.' + body.feature, { yuan });
     sendJson(res, 200, { ok: true, feature: body.feature, yuan });
+  }));
+
+  // ── 财务参数（汇率/税率/固定月成本/季度目标：kv + 审计） ──
+  const FIN_FIELDS = { fx: [0.1, 100], taxRate: [0, 1], fixedMonthly: [0, 1e6], quarterTarget: [0, 1e9] };
+  router.add('PUT', '/api/admin/finance', requireAdmin(async (req, res) => {
+    adminWrite();
+    const body = await readJson(req);
+    if (!Object.keys(FIN_FIELDS).some(k => k in body)) throw new HttpError('VALIDATION', '至少提供一个参数');
+    const saved = {};
+    for (const k of Object.keys(FIN_FIELDS)) {
+      if (!(k in body)) continue;
+      const v = Number(body[k]);
+      const [lo, hi] = FIN_FIELDS[k];
+      if (!Number.isFinite(v) || v < lo || v > hi) throw new HttpError('VALIDATION', k + ' 需为 ' + lo + '-' + hi + ' 数字');
+      db.prepare('INSERT INTO kv (key, value, updated_at) VALUES (?, ?, ?) '
+        + 'ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at')
+        .run('finance.' + k, String(v), new Date().toISOString());
+      saved[k] = v;
+    }
+    audit(ctx, 'finance_set', 'finance', saved);
+    sendJson(res, 200, { ok: true, saved });
   }));
 
   // ── 审计 ──

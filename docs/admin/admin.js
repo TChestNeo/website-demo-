@@ -232,12 +232,14 @@
       renderDashQueue(m);
       renderDashBudget(d.budget);
       renderDashFeed(d.activity);
-      renderSub(d.sub);
+      renderSub(d);
     });
   }
-  // ── 订阅与收入（统计卡 + set_tier 时间线；一期无支付 → 实际收款恒 0） ──
-  function renderSub(sub) {
-    if (!sub) return;
+  // ── 财务总览（收入/税费/成本/净利 + 健康推测 + 季度预期 + 参数设置；一期无支付 → 实际收款恒 0） ──
+  var FIN_STATE = { danger: ['危险', '#dc2626'], warn: ['不妙', '#d97706'], ok: ['健康', '#16a34a'], best: ['最佳', '#059669'] };
+  function renderSub(d) {
+    var sub = d.sub, fin = d.finance;
+    if (!sub || !fin) return;
     var t = sub.tiers || {};
     $('dSubTotal').textContent = sub.subscribers;
     $('dSubPremium').textContent = t.premium || 0;
@@ -246,12 +248,70 @@
     var rv = sub.revenue || {};
     $('dSubRevenue').textContent = 'RM ' + (rv.estimatedMonthly || 0).toFixed(2);
     $('dSubPaid').textContent = 'RM ' + ((rv.paidMicro || 0) / 1e6).toFixed(2);
+    var ym = function (x) { return (x < 0 ? '-' : '') + '¥' + Math.abs(x).toFixed(2); };
+    $('dFinRevenueCNY').textContent = ym(fin.estRevenueCNY);
+    $('dFinTax').textContent = ym(fin.taxYuan);
+    $('dFinCost').textContent = ym(fin.totalCostYuan);
+    $('dFinProfit').textContent = ym(fin.netProfitYuan);
+    $('dFinCoverage').textContent = fin.health.coverage.toFixed(2) + '×';
+    $('dSubGrowth').textContent = (fin.health.growth7d >= 0 ? '+' : '') + fin.health.growth7d;
+    // 健康横幅
+    var hs = FIN_STATE[fin.health.state] || FIN_STATE.danger;
+    $('dFinHealth').textContent = hs[0];
+    $('dFinHealth').style.color = hs[1];
+    $('finHealth').style.borderLeftColor = hs[1];
+    $('dFinReason').textContent = fin.health.reason + '（覆盖率 ' + fin.health.coverage.toFixed(2) + '×）';
+    var q = fin.health.quarter;
+    $('dFinQuarter').textContent = q.target > 0
+      ? (q.met ? '季度预期：符合（' + q.pct + '%）' : '季度预期：未达（' + q.pct + '%）')
+      : '季度预期：未设置';
+    // 成本结构
+    var feats = (d.budget && d.budget.features) || {};
+    var rows = [
+      ['固定成本（服务器/域名/CDN，估算）', ym(fin.fixedMonthly)],
+      ['AI 用量（本月实账）', ym(fin.usageCostYuan)],
+      ['· 文字审核', ym(((feats.moderation_text || {}).spent || 0) / 1e6)],
+      ['· AI 客服', ym(((feats.chat || {}).spent || 0) / 1e6)],
+      ['· 图像审核', ym(((feats.moderation_image || {}).spent || 0) / 1e6)],
+      ['合计', ym(fin.totalCostYuan)]
+    ];
+    $('dFinCosts').innerHTML = rows.map(function (r) {
+      var last = r[0] === '合计';
+      return '<div class="row" style="justify-content:space-between;margin-bottom:6px;' + (last ? 'border-top:1px solid rgba(255,255,255,0.08);padding-top:6px' : '') + '">' +
+        '<span style="font-size:13.5px">' + esc(r[0]) + '</span><span class="mono" style="font-size:13px">' + r[1] + '</span></div>';
+    }).join('');
+    // 季度预期卡
+    if (q.target > 0) {
+      var pct = Math.max(0, Math.min(100, q.pct));
+      $('dFinQuarterCard').innerHTML =
+        '<div class="row" style="justify-content:space-between;margin-bottom:4px">' +
+        '<span class="adm-meta">季度目标 ' + ym(q.target) + ' · 预计 ' + ym(q.est) + '（' + q.pct + '%）</span>' +
+        '<span style="color:' + (q.met ? '#16a34a' : '#d97706') + ';font-size:13px">' + (q.met ? '符合预期' : '未达预期') + '</span></div>' +
+        '<div class="bar-track"><div class="bar-fill ' + (q.met ? '' : 'warn') + '" style="width:' + pct + '%"></div></div>';
+    } else {
+      $('dFinQuarterCard').innerHTML = '<p class="adm-meta">未设置季度目标——在右侧「财务参数」填写后自动显示进度与「符合/未达季度预期」判定。</p>';
+    }
+    // 参数表单回填
+    $('finFx').value = fin.fx;
+    $('finTaxRate').value = fin.taxRate;
+    $('finFixed').value = fin.fixedMonthly;
+    $('finQuarter').value = fin.quarterTarget;
+    // tier 调整时间线
     $('dSubTimeline').innerHTML = (sub.tierEvents || []).map(function (e) {
       return '<div class="feed-item"><div class="row" style="justify-content:space-between;margin-bottom:2px">' +
         chip(e.to || '—', 'neutral') + '<span class="adm-meta">' + fmtTime(e.at) + '</span></div>' +
         '<span style="font-size:13.5px">' + esc(e.actor) + '：' + esc(e.target) + ' 从 ' + esc(e.from || '—') + ' → ' + esc(e.to || '—') + '</span></div>';
     }).join('') || '<p class="adm-meta">暂无 tier 调整记录</p>';
   }
+  // 财务参数保存（kv + finance_set 审计）
+  $('finSaveBtn').addEventListener('click', function () {
+    var body = { fx: Number($('finFx').value), taxRate: Number($('finTaxRate').value),
+      fixedMonthly: Number($('finFixed').value), quarterTarget: Number($('finQuarter').value) };
+    MN_API.request('/admin/finance', { method: 'PUT', body: body }).then(function (r) {
+      toast(r.ok ? '财务参数已保存' : '保存失败：' + (r.data && r.data.error && r.data.error.message || r.status));
+      if (r.ok) refreshStats();
+    });
+  });
   function renderDashQueue(m) {
     var rows = [['l0_hold', 'L0 拦截', 'warn'], ['queued', '排队中', 'neutral'],
       ['needs_human', '需人工', 'high'], ['ai_rejected', 'AI 拒绝', 'high']];
