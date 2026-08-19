@@ -1,0 +1,45 @@
+============================================================
+  SlatiWorld Development Log — 2026-08-19
+============================================================
+
+1. 付费页一期口径 — 等级感知 + 申请开通（用户选定，无在线支付）
+   - 用户：「要不我们先做一下付费页面」；AskUserQuestion 两选一
+     （一期口径 vs 真实 Stripe/FPX 支付），用户选定一期口径。
+   - 口径锁定：一期无在线支付。tier 服务端权威（GET /api/auth/me），
+     「申请开通」= POST /api/tickets（category=payment → 后端自动
+     priority=urgent），管理员在工单队列确认后 PATCH tier 开通；
+     收款线下沟通，配合流水账记 subscription 收款。
+   - premium.html 改造（此前 P11 已做完定价修正 + 联系管理员按钮，
+     本次把静态页变活）：
+     · 三态渲染：未登录（401/网络失败）→ 状态条「登录后申请开通」
+       + 登录/注册按钮 → index.html；等级卡 CTA「登录后申请开通」、
+       Basic 卡「免费注册」。
+     · 已登录：状态条「你当前的方案是 X · email」；当前等级卡
+       CTA「✓ 当前方案」disabled + 绿色「✓ 当前方案」徽标 chip；
+       低于当前等级卡「已包含」；升级卡/包价卡/加购卡「申请开通」。
+     · 包价卡口径：等级 ≥ 包价等级时仍可购买（包价是 tier+团队叠加
+       权益），只有等级高于包价才「已包含」。
+     · 申请弹窗（复用 .cd-overlay 样式）：方案名 + 本地化价格 + 备注
+       → 提交生成工单（subject「订阅申请：Premium（RM23.50/月）」、
+       description 含 email/计价/备注、contact=me.email）。
+     · 成功后 CTA 变「已提交申请 · 单号尾 10 位」+ localStorage
+       slati_apply_<key> 防重复提交（刷新后保持已提交态）。
+   - 零后端改动：/api/auth/me 与 /api/tickets 契约现成，前端纯消费。
+   - 冒烟（screenshot.js 增 premium 分支，pathname 早退互不干扰）：
+     guest 态（无 token）：priceKey ms-MY → premium RM23.50 /
+     pkg RM29.90（P11 定价权威复验）、planCards 5 + addonCtas 4、
+     ctas 免费注册/登录后申请开通、chips 0、applySkipped guest、
+     0 console error。
+     user 态（alice@e2e.com，tier basic）：banner 当前方案 Basic、
+     basic「✓ 当前方案」disabled + chips 1、premium/ultra/pkg 全
+     「申请开通」→ 点 premium → 弹窗「申请开通『Premium』
+     RM23.50 / 月」→ 填备注提交 → 弹窗关、CTA「已提交申请 ·
+     026-000003」、localStorage MN-2026-000003 → 落库复核
+     {payment, subscription, urgent, queued, 挂 USR-000003,
+     subject 订阅申请：Premium（RM23.50/月）}；SHOT_AFTER
+     双截图（-after = 已提交态）。0 console error。
+   - 后端测试 112/112（零后端改动，纯回归确认）。
+   - 冒烟污染口径不变：每轮 user 冒烟生成 1 张 payment 工单进 dev
+     库（与 ledger_report 审计行同性质）；temp profile 每次全新 →
+     localStorage 无残留。
+   - commit 48ea723（premium.html 237+/26−、screenshot.js 冒烟分支）。
