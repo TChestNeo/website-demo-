@@ -431,10 +431,11 @@ test('admin：季度财报（一键生成：分月聚合/审计重放月末参�
     // 权限矩阵
     assert.strictEqual((await t.request('GET', '/api/admin/finance/report')).status, 401);
     assert.strictEqual((await t.request('GET', '/api/admin/finance/report', undefined, { cookie: t.alice.cookie })).status, 403);
-    // 流水：本季 M1 收款 RM100 − 退款 RM20；M2 支出 ¥50；上季 M1 收款 RM10
+    // 流水：本季 M1 收款 RM100 − 退款 RM20；M2 支出 ¥50 + 提现 RM30（转出他用，不计支出/净利）；上季 M1 收款 RM10
     assert.strictEqual((await led({ kind: 'income', category: 'subscription', amount: 100, currency: 'RM', occurred_at: day(y, m1, 5) })).status, 200);
     assert.strictEqual((await led({ kind: 'refund', category: 'subscription', amount: 20, currency: 'RM', occurred_at: day(y, m1, 5) })).status, 200);
     assert.strictEqual((await led({ kind: 'expense', category: 'server', amount: 50, currency: 'CNY', occurred_at: day(y, m2, 3) })).status, 200);
+    assert.strictEqual((await led({ kind: 'withdrawal', category: 'other', amount: 30, currency: 'RM', occurred_at: day(y, m2, 3), note: '转出用于其他项目' })).status, 200);
     assert.strictEqual((await led({ kind: 'income', category: 'subscription', amount: 10, currency: 'RM', occurred_at: day(py, pm1, 2) })).status, 200);
     // 历史用量（M2 0.3 元）+ 历史 finance_set 事件（M1 8 日 fx 0.6→0.5，M1 月末快照 = 0.5）
     t.db.prepare("INSERT INTO usage_log (feature, price_snapshot, cost_micro, created_at) VALUES ('chat', '{}', 300000, ?)").run(day(y, m2, 10) + 'T04:00:00.000Z');
@@ -456,14 +457,18 @@ test('admin：季度财报（一键生成：分月聚合/审计重放月末参�
     assert.strictEqual(mo2.ai, 0.15);   // 0.3 元 × 0.5
     assert.strictEqual(mo2.fixed, 50);
     assert.strictEqual(mo2.net, -75.15);
+    assert.strictEqual(mo2.withdrawn, 30); // 提现单列：不进支出、不进净利
+    assert.strictEqual(mo1.withdrawn, 0);
     assert.strictEqual(mo3.net, -50);   // 无流水月份只剩固定成本
     assert.strictEqual(r1.totals.paid, 80);
     assert.strictEqual(r1.totals.expense, 25);
     assert.strictEqual(r1.totals.ai, 0.15);
     assert.strictEqual(r1.totals.fixed, 150);
     assert.strictEqual(r1.totals.net, -95.15);
+    assert.strictEqual(r1.totals.withdrawn, 30);
+    assert.strictEqual(r1.totals.retained, -125.15); // 净利 − 提现
     assert.strictEqual(r1.gap, -80);    // 预计 0 − 实收 80
-    assert.deepStrictEqual(r1.byCategory, [{ category: 'server', amount: 25 }]);
+    assert.deepStrictEqual(r1.byCategory, [{ category: 'server', amount: 25 }]); // 提现不进支出分类
     // 上季对比（重放口径独立：上季末 fx 仍为默认 0.6，事件在上季之后）
     assert.strictEqual(r1.prev.quarter, py + '-Q' + pq);
     assert.strictEqual(r1.prev.totals.paid, 10);
@@ -486,6 +491,8 @@ test('admin：季度财报（一键生成：分月聚合/审计重放月末参�
     assert.ok(csv.includes('M.NationWorld 季度财报'));
     assert.ok(csv.includes('月份,月结,预计收入(RM)'));
     assert.ok(csv.includes('支出分类汇总') && csv.includes('服务器'));
+    assert.ok(csv.includes('提现转出(RM)'));
+    assert.ok(csv.includes('留存资金（净利 − 提现）'));
     assert.ok(csv.includes('合计'));
     // 参数校验 + 审计（每次生成落 ledger_report）
     assert.strictEqual((await t.request('GET', '/api/admin/finance/report?year=1999&quarter=1', undefined, { cookie: t.admin.cookie })).status, 400);

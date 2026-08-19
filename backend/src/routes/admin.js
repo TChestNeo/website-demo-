@@ -509,7 +509,7 @@ function register(router, ctx) {
   // ── 流水账（财报基础：收款/退款/支出/调整 + 月结锁定 + CSV 导出；全部写操作落审计） ──
   // 金额 REAL 2 位小数、币种 RM/CNY（人工录入的经营数据，与 usage_log 机器微元口径不同）；
   // occurred_at = 经济事件日期（期间归属），月结按它锁定；¥ 流水按汇率折 RM 入账。
-  const LED_KINDS = { income: '收款', refund: '退款', expense: '支出', adjustment: '调整' };
+  const LED_KINDS = { income: '收款', refund: '退款', expense: '支出', withdrawal: '提现', adjustment: '调整' };
   const LED_CATS = ['server', 'domain', 'saas', 'legal', 'marketing', 'tax', 'subscription', 'other'];
   const LED_CAT_ZH = { server: '服务器', domain: '域名', saas: 'SaaS 订阅', legal: '法务', marketing: '推广', tax: '税费', subscription: '订阅收款', other: '其他' };
   const LED_COLS = ['kind', 'category', 'amount', 'currency', 'occurred_at', 'counterparty', 'note', 'invoice'];
@@ -626,7 +626,7 @@ function register(router, ctx) {
     const catSum = {};
     let evI = 0;
     const monthly = [];
-    const t = { est: 0, income: 0, refund: 0, paid: 0, expense: 0, ai: 0, fixed: 0, tax: 0, net: 0, adj: 0 };
+    const t = { est: 0, income: 0, refund: 0, paid: 0, expense: 0, ai: 0, fixed: 0, tax: 0, net: 0, adj: 0, withdrawn: 0 };
     for (const m of months) {
       const bound = m + '-31'; // 字符串比较的月末上界（合法日期最大 31 号，各月天数无碍）
       while (evI < events.length && events[evI].at.slice(0, 10) <= bound) {
@@ -640,13 +640,14 @@ function register(router, ctx) {
           for (const k of ['fx', 'taxRate', 'fixedMonthly']) if (src && Number.isFinite(Number(src[k]))) prm[k] = Number(src[k]);
         }
       }
-      let income = 0, refund = 0, expense = 0, adj = 0;
+      let income = 0, refund = 0, expense = 0, adj = 0, withdrawn = 0;
       for (const r of ledRows) {
         if (String(r.occurred_at).slice(0, 7) !== m) continue;
         const v = Math.round(Number(r.amount) * (r.currency === 'CNY' ? prm.fx : 1) * 100) / 100;
         if (r.kind === 'income') income += v;
         else if (r.kind === 'refund') refund += v;
         else if (r.kind === 'expense') { expense += v; catSum[r.category] = (catSum[r.category] || 0) + v; }
+        else if (r.kind === 'withdrawal') withdrawn += v; // 提现转出他用：单列资金去向，不进支出/不进净利
         else adj += v;
       }
       const est = Math.round((cnt.premium * RPT_PRICE.premium + cnt.ultra * RPT_PRICE.ultra) * 100) / 100;
@@ -657,12 +658,14 @@ function register(router, ctx) {
       monthly.push({
         month: m, locked: !!lockUpto && m <= lockUpto, fx: prm.fx, taxRate: prm.taxRate,
         est, income: Math.round(income * 100) / 100, refund: Math.round(refund * 100) / 100, paid,
-        expense: Math.round(expense * 100) / 100, ai, fixed: prm.fixedMonthly, tax, net, adj: Math.round(adj * 100) / 100
+        expense: Math.round(expense * 100) / 100, ai, fixed: prm.fixedMonthly, tax, net,
+        adj: Math.round(adj * 100) / 100, withdrawn: Math.round(withdrawn * 100) / 100
       });
       const cur = monthly[monthly.length - 1];
       for (const k of Object.keys(t)) t[k] = Math.round((t[k] + cur[k]) * 100) / 100;
     }
     const target = Number((db.prepare("SELECT value FROM kv WHERE key = 'finance.quarterTarget'").get() || {}).value) || 0;
+    t.retained = Math.round((t.net - t.withdrawn) * 100) / 100; // 留存资金：净利 − 提现（提现不计损益，只记资金去向）
     return {
       year: y, q, quarter: y + '-Q' + q, months, monthly, totals: t,
       byCategory: Object.keys(catSum).map((k) => ({ category: k, amount: Math.round(catSum[k] * 100) / 100 })).sort((a, b) => b.amount - a.amount),
@@ -705,11 +708,11 @@ function register(router, ctx) {
     const esc = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
     const ln = [];
     ln.push(['M.NationWorld 季度财报', rp.quarter + '（' + rp.months[0] + ' ~ ' + rp.months[2] + '）'].map(esc).join(','));
-    ln.push(['口径', '权责发生制（按经济事件日期）；¥ 按月末汇率折 RM；税费 = 预计收入 × 税率（估算）；固定成本为估算；实际收款 = 流水收款 − 退款'].map(esc).join(','));
+    ln.push(['口径', '权责发生制（按经济事件日期）；¥ 按月末汇率折 RM；税费 = 预计收入 × 税率（估算）；固定成本为估算；实际收款 = 流水收款 − 退款；提现转出单列（不计支出/净利），留存 = 净利 − 提现'].map(esc).join(','));
     ln.push('');
-    ln.push(['月份,月结,预计收入(RM),实际收款(RM),流水支出(RM),AI 成本(RM),固定成本(RM),税费(RM),净利润(RM),调整(RM)']);
-    for (const m of rp.monthly) ln.push([m.month, m.locked ? '已锁定' : '未锁定', m.est, m.paid, m.expense, m.ai, m.fixed, m.tax, m.net, m.adj].map(esc).join(','));
-    ln.push(['合计', '', rp.totals.est, rp.totals.paid, rp.totals.expense, rp.totals.ai, rp.totals.fixed, rp.totals.tax, rp.totals.net, rp.totals.adj].map(esc).join(','));
+    ln.push(['月份,月结,预计收入(RM),实际收款(RM),流水支出(RM),AI 成本(RM),固定成本(RM),税费(RM),净利润(RM),调整(RM),提现转出(RM)']);
+    for (const m of rp.monthly) ln.push([m.month, m.locked ? '已锁定' : '未锁定', m.est, m.paid, m.expense, m.ai, m.fixed, m.tax, m.net, m.adj, m.withdrawn].map(esc).join(','));
+    ln.push(['合计', '', rp.totals.est, rp.totals.paid, rp.totals.expense, rp.totals.ai, rp.totals.fixed, rp.totals.tax, rp.totals.net, rp.totals.adj, rp.totals.withdrawn].map(esc).join(','));
     ln.push('');
     ln.push(['支出分类汇总（流水支出）']);
     ln.push(['分类,金额(RM)']);
@@ -717,6 +720,7 @@ function register(router, ctx) {
     ln.push('');
     ln.push(['季度目标(RM)', rp.target, '实收达成', rp.targetPaidPct == null ? '未设置' : rp.targetPaidPct + '%'].map(esc).join(','));
     ln.push(['预计收入 − 实际收款（应收实收差）', rp.gap].map(esc).join(','));
+    ln.push(['留存资金（净利 − 提现）', rp.totals.retained].map(esc).join(','));
     res.writeHead(200, { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="quarterly-report-' + rp.quarter + '.csv"' });
     res.end('﻿' + ln.join('\r\n'));
   }));

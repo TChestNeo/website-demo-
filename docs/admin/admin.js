@@ -1239,7 +1239,7 @@
   });
 
   // ── 流水账（财报实账：收款/退款/支出/调整 + 月结锁定 + CSV 导出；写操作全落审计，总览曲线/卡片同步刷新） ──
-  var LED_KIND_ZH = { income: '收款', refund: '退款', expense: '支出', adjustment: '调整' };
+  var LED_KIND_ZH = { income: '收款', refund: '退款', expense: '支出', withdrawal: '提现', adjustment: '调整' };
   var LED_CAT_ZH = { server: '服务器', domain: '域名', saas: 'SaaS 订阅', legal: '法务', marketing: '推广', tax: '税费', subscription: '订阅收款', other: '其他' };
   var ledgerLoaded = false, ledRowsCache = [], ledEditId = null;
   function ledFormToBody() {
@@ -1347,6 +1347,10 @@
     });
   });
   ledResetForm();
+  // 提现/调整常配「其他」分类：选类型自动带出（可再手动改）
+  $('ledKind').addEventListener('change', function () {
+    if (this.value === 'withdrawal' || this.value === 'adjustment') $('ledCat').value = 'other';
+  });
 
   // ── 季度财报（一键生成：选季度 → GET /admin/finance/report → 屏幕报表 + CSV 导出 + 打印/存 PDF） ──
   var nowY = new Date().getUTCFullYear(), nowQ = Math.floor(new Date().getUTCMonth() / 3) + 1;
@@ -1392,21 +1396,24 @@
       rptStat('支出合计', rptMoney(expTotal)) +
       rptStat('税费（估算）', rptMoney(t.tax)) +
       rptStat('净利润', rptMoney(t.net)) +
+      rptStat('提现转出', rptMoney(t.withdrawn)) +
+      rptStat('留存资金', rptMoney(t.retained)) +
       rptStat('目标达成（实收）', d.targetPaidPct == null ? '—' : d.targetPaidPct + '%', pctSub) +
       rptStat('上季净利润', rptMoney(d.prev && d.prev.totals ? d.prev.totals.net : 0)) +
       '</div>' +
       '<h4 class="headline-sm" style="margin:var(--space-md) 0 var(--space-xs)">分月明细（RM）</h4>' +
-      '<div style="overflow-x:auto"><table class="adm-table"><thead><tr><th>月份</th><th>月结</th><th>预计收入</th><th>实际收款</th><th>流水支出</th><th>AI 成本</th><th>固定成本</th><th>税费</th><th>净利润</th></tr></thead><tbody>' +
+      '<div style="overflow-x:auto"><table class="adm-table"><thead><tr><th>月份</th><th>月结</th><th>预计收入</th><th>实际收款</th><th>流水支出</th><th>AI 成本</th><th>固定成本</th><th>税费</th><th>净利润</th><th>提现转出</th></tr></thead><tbody>' +
       d.monthly.map(function (m) {
         return '<tr><td>' + m.month + '</td><td>' + (m.locked ? '<span style="color:#16a34a">已锁定</span>' : '<span style="color:#d97706">未锁定</span>') + '</td>' +
           '<td class="mono">' + m.est.toFixed(2) + '</td><td class="mono">' + m.paid.toFixed(2) + '</td><td class="mono">' + m.expense.toFixed(2) + '</td>' +
-          '<td class="mono">' + m.ai.toFixed(2) + '</td><td class="mono">' + m.fixed.toFixed(2) + '</td><td class="mono">' + m.tax.toFixed(2) + '</td><td class="mono">' + m.net.toFixed(2) + '</td></tr>';
+          '<td class="mono">' + m.ai.toFixed(2) + '</td><td class="mono">' + m.fixed.toFixed(2) + '</td><td class="mono">' + m.tax.toFixed(2) + '</td><td class="mono">' + m.net.toFixed(2) + '</td>' +
+          '<td class="mono">' + m.withdrawn.toFixed(2) + '</td></tr>';
       }).join('') +
       '<tr style="border-top:2px solid var(--adm-border)"><td><strong>合计</strong></td><td></td>' +
       '<td class="mono"><strong>' + t.est.toFixed(2) + '</strong></td><td class="mono"><strong>' + t.paid.toFixed(2) + '</strong></td>' +
       '<td class="mono"><strong>' + t.expense.toFixed(2) + '</strong></td><td class="mono"><strong>' + t.ai.toFixed(2) + '</strong></td>' +
       '<td class="mono"><strong>' + t.fixed.toFixed(2) + '</strong></td><td class="mono"><strong>' + t.tax.toFixed(2) + '</strong></td>' +
-      '<td class="mono"><strong>' + t.net.toFixed(2) + '</strong></td></tr></tbody></table></div>' +
+      '<td class="mono"><strong>' + t.net.toFixed(2) + '</strong></td><td class="mono"><strong>' + t.withdrawn.toFixed(2) + '</strong></td></tr></tbody></table></div>' +
       '<h4 class="headline-sm" style="margin:var(--space-md) 0 var(--space-xs)">支出分类汇总（流水支出，RM）</h4>' +
       (d.byCategory.length ? d.byCategory.map(function (c) {
         return '<div class="row" style="justify-content:space-between;margin-bottom:4px"><span style="font-size:13.5px">' + esc(LED_CAT_ZH[c.category] || c.category) + '</span><span class="mono" style="font-size:13px">' + c.amount.toFixed(2) + '</span></div>';

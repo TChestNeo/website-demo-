@@ -260,6 +260,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         base.ledTabActive = document.querySelector('#finTabs .fin-tab-btn.active').dataset.finTab;
         base.ledFormFields = document.querySelectorAll('#ledForm input, #ledForm select').length;
         base.ledLockedInitial = document.getElementById('ledLockedLabel').textContent;
+        // 提现类型 + 自动带出「其他」分类（选回收款继续走收款流程）
+        base.ledKindOpts = document.querySelectorAll('#ledKind option').length;
+        document.getElementById('ledKind').value = 'withdrawal';
+        document.getElementById('ledKind').dispatchEvent(new Event('change', { bubbles: true }));
+        base.ledCatAfterWithdrawal = document.getElementById('ledCat').value;
         document.getElementById('ledKind').value = 'income';
         document.getElementById('ledCat').value = 'subscription';
         document.getElementById('ledAmount').value = '66.66';
@@ -299,6 +304,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         base.rptHasTitle = document.getElementById('finReportCard').textContent.indexOf('季度财报') > -1;
         base.rptHasMonthly = document.getElementById('finReportCard').textContent.indexOf('分月明细') > -1;
         base.rptHasNet = document.getElementById('finReportCard').textContent.indexOf('净利润') > -1;
+        base.rptHasWithdrawn = document.getElementById('finReportCard').textContent.indexOf('提现转出') > -1;
+        base.rptHasRetained = document.getElementById('finReportCard').textContent.indexOf('留存资金') > -1;
         base.rptHasWarn = document.getElementById('finReportCard').textContent.indexOf('草稿') > -1; // 未月结 → 草稿警示
         base.rptMonthsRows = document.querySelectorAll('#finReportCard tbody tr').length;
         base.rptCsvShown = document.getElementById('rptCsvLink').style.display !== 'none';
@@ -307,6 +314,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         var rptCsv = await fetch('/api/admin/finance/report/export?year=' + document.getElementById('rptYear').value + '&quarter=' + document.getElementById('rptQuarter').value, { credentials: 'include' }).then(function(r){ return r.text(); });
         base.rptCsvTitle = rptCsv.indexOf('M.NationWorld 季度财报') > -1;
         base.rptCsvCat = rptCsv.indexOf('支出分类汇总') > -1;
+        base.rptCsvWithdrawn = rptCsv.indexOf('提现转出(RM)') > -1;
         // 停在财报子视图（生成后的报表，供 SHOT_AFTER 二次截图目视新页）
         document.querySelector('#finTabs .fin-tab-btn[data-fin-tab="report"]').click();
         await new Promise(function(r){ setTimeout(r, 100); });

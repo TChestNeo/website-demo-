@@ -457,7 +457,7 @@
           <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-sm);flex-wrap:wrap">
             <div>
               <h3 class="headline-sm" style="margin:0">流水账（财报实账）</h3>
-              <p class="adm-meta" style="margin:4px 0 0">口径：权责发生制——金额为正数，方向由类型决定（退款冲减收款）；¥ 按汇率折 RM 入账；月结锁定后，该月及更早流水不可改动。</p>
+              <p class="adm-meta" style="margin:4px 0 0">口径：权责发生制——金额为正数，方向由类型决定（退款冲减收款；提现 = 资金转出他用，不计入支出与净利，财报单列）；¥ 按汇率折 RM 入账；月结锁定后，该月及更早流水不可改动。</p>
             </div>
             <div style="display:flex;align-items:center;gap:6px;flex:none;flex-wrap:wrap">
               <span class="adm-meta" id="ledLockedLabel">月结：未锁定</span>
@@ -472,7 +472,7 @@
           <div class="adm-form" id="ledForm" style="align-items:flex-end;flex-wrap:wrap">
             <label class="adm-meta">类型 <select class="adm-select" id="ledKind">
               <option value="income">收款</option><option value="refund">退款</option>
-              <option value="expense">支出</option><option value="adjustment">调整</option>
+              <option value="expense">支出</option><option value="withdrawal">提现（转出他用）</option><option value="adjustment">调整</option>
             </select></label>
             <label class="adm-meta">分类 <select class="adm-select" id="ledCat">
               <option value="server">服务器</option><option value="domain">域名</option>
@@ -505,7 +505,7 @@
           <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-sm);flex-wrap:wrap">
             <div>
               <h3 class="headline-sm" style="margin:0">季度财报（一键生成）</h3>
-              <p class="adm-meta" style="margin:4px 0 0">口径：权责发生制（按经济事件日期归属期间）；¥ 按月末汇率折 RM；税费 = 预计收入 × 税率（估算）；固定成本为估算。未月结月份为草稿口径，月结后重新生成即定格。</p>
+              <p class="adm-meta" style="margin:4px 0 0">口径：权责发生制（按经济事件日期归属期间）；¥ 按月末汇率折 RM；税费 = 预计收入 × 税率（估算）；固定成本为估算；提现转出单列（不计支出/净利），留存 = 净利 − 提现。未月结月份为草稿口径，月结后重新生成即定格。</p>
             </div>
             <div style="display:flex;align-items:center;gap:6px;flex:none;flex-wrap:wrap">
               <select class="adm-select" id="rptYear" style="width:auto"></select>
