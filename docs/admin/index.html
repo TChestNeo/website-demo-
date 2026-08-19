@@ -30,7 +30,7 @@
     #loginMsg.err { color: #dc2626; }
 
     .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-lg); }
-    .stat-card { background: var(--color-surface); border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); padding: var(--space-md); }
+    .stat-card { background: var(--color-surface); border: 1px solid var(--adm-border); border-radius: var(--radius-lg); padding: var(--space-md); }
     .stat-num { font-size: 22px; font-weight: 800; color: var(--color-on-surface); font-variant-numeric: tabular-nums; }
     .stat-label { font-size: 12px; color: var(--color-outline); margin-top: 2px; }
     .stat-sub { font-size: 11px; color: var(--color-outline); margin-top: 4px; }
@@ -47,7 +47,7 @@
     .chip.warn { background: rgba(234,179,8,0.15); color: #b45309; }
     .chip.neutral { background: var(--color-surface-variant, rgba(128,128,128,0.15)); color: var(--color-on-surface-variant); }
 
-    .adm-card { background: var(--color-surface); border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg);
+    .adm-card { background: var(--color-surface); border: 1px solid var(--adm-border); border-radius: var(--radius-lg);
       padding: var(--space-md); margin-bottom: var(--space-md); }
     .adm-card .row { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
     .adm-card .preview { margin: var(--space-sm) 0; padding: var(--space-sm) var(--space-md); background: var(--color-surface-variant, rgba(128,128,128,0.08));
@@ -91,7 +91,7 @@
     /* 回复模板弹窗：左侧模板菜单（左上角 + 添加）→ 右侧所选模板预览（语言切换 + 使用） */
     .tk-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 90; display: flex;
       align-items: center; justify-content: center; padding: var(--space-md); }
-    .tk-modal { background: var(--color-surface); border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg);
+    .tk-modal { background: var(--color-surface); border: 1px solid var(--adm-border); border-radius: var(--radius-lg);
       width: 100%; padding: var(--space-lg); }
     .tk-shell { display: grid; grid-template-columns: 250px 1fr; gap: var(--space-md); }
     .tk-menu { border-right: 1px solid var(--color-outline-variant); padding-right: var(--space-sm);
@@ -121,6 +121,7 @@
       --adm-shadow-modal: 0 12px 40px rgba(16,24,40,0.18);
       --adm-highlight: inset 0 1px 0 rgba(255,255,255,0.65);
       --adm-card-bg: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
+      --adm-border: rgba(16,24,40,0.10);
     }
     :root[data-theme="dark"] {
       --adm-shadow-card: 0 1px 2px rgba(0,0,0,0.22), 0 3px 10px rgba(0,0,0,0.20);
@@ -128,6 +129,7 @@
       --adm-shadow-modal: 0 12px 40px rgba(0,0,0,0.45);
       --adm-highlight: inset 0 1px 0 rgba(255,255,255,0.07);
       --adm-card-bg: linear-gradient(180deg, #26263c 0%, #1e1e30 100%);
+      --adm-border: rgba(255,255,255,0.10);
     }
     .adm-card, .stat-card { background: var(--adm-card-bg); box-shadow: var(--adm-shadow-card), var(--adm-highlight);
       transition: box-shadow .2s ease, transform .2s ease; }

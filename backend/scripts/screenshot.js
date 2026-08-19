@@ -90,7 +90,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
           sidebarModules: document.querySelectorAll('.adm-side > .sidebar-module').length,
           navItems: document.querySelectorAll('.adm-side .nav-item').length,
           admShadow: getComputedStyle(document.querySelector('.adm-card')).boxShadow.slice(0, 46),
-          admCardBg: getComputedStyle(document.querySelector('.adm-card')).backgroundImage.slice(0, 30)
+          admCardBg: getComputedStyle(document.querySelector('.adm-card')).backgroundImage.slice(0, 30),
+          admBorder: getComputedStyle(document.querySelector('.adm-card')).borderTopColor
         };
         // 切到工单 tab（懒加载）→ 三行卡片（标签状态/标题/详情）→ 点击进专属回复页 → 返回
         document.querySelector('#admTabs [data-tab="ticket"]').click();
@@ -213,6 +214,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         ac.style.transition = 'none';
         document.documentElement.setAttribute('data-theme', 'dark');
         base.admShadowDark = getComputedStyle(ac).boxShadow.slice(0, 40);
+        base.admBorderDark = getComputedStyle(ac).borderTopColor;
         document.documentElement.removeAttribute('data-theme');
         ac.style.transition = '';
         return JSON.stringify(base);
