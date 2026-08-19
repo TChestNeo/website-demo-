@@ -499,7 +499,9 @@ document.head.appendChild(bgStyle);
     b.style.display = 'flex';
     b.innerHTML = '<span>你当前的方案是 <b style="color:#eab308">' + (TIER_ZH[me.tier] || me.tier) + '</b>'
       + '<span style="color:rgba(255,255,255,0.4)"> · ' + me.email + '</span></span>'
-      + '<span style="color:rgba(255,255,255,0.45)">升级 / 加购请点卡片按钮提交申请，管理员确认后开通</span>';
+      + '<span style="color:rgba(255,255,255,0.45)">'
+      + (me.source === 'local' ? '当前为本地资料，开通以管理员确认为准' : '升级 / 加购请点卡片按钮提交申请，管理员确认后开通')
+      + '</span>';
 
     document.querySelectorAll('[data-plan-card]').forEach(function (card) {
       var key = card.dataset.planCard;
@@ -584,15 +586,30 @@ document.head.appendChild(bgStyle);
     });
   });
 
-  // 初始化：读服务端权威 tier（401/网络失败 → 未登录态）
+  // 本地登录态（与 index.html demo 登录同源：slati_session + slati_user）
+  function localUser() {
+    try {
+      var s = JSON.parse(localStorage.getItem('slati_session') || 'null');
+      var u = JSON.parse(localStorage.getItem('slati_user') || 'null');
+      return (s && s.loggedIn && u) ? u : null;
+    } catch (e) { return null; }
+  }
+
+  // 初始化：服务端会话优先（tier 权威）；无会话回退本地用户（demo 登录/离线降级，与 index 登录 demo 分支对齐）
   MN_API.get('/auth/me').then(function (r) {
     if (r.ok && r.data && r.data.user) {
-      me = { tier: r.data.user.tier || 'basic', email: r.data.user.email };
+      me = { tier: r.data.user.tier || 'basic', email: r.data.user.email, source: 'server' };
       renderUser();
     } else {
-      renderGuest();
+      var lu = localUser();
+      if (lu) {
+        me = { tier: lu.tier || 'basic', email: lu.email, source: 'local' };
+        renderUser();
+      } else {
+        renderGuest();
+      }
     }
-    window.__mnSubState = { ready: true, tier: me && me.tier, email: me && me.email };
+    window.__mnSubState = { ready: true, tier: me && me.tier, email: me && me.email, source: me && me.source };
   });
 })();
 </script>

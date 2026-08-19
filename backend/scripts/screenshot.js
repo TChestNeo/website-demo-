@@ -64,6 +64,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await cmd('Page.navigate', { url });
     await loaded;
     await sleep(2500); // 等 /auth/me + stats/usage XHR 与 sidebar 重渲染
+    // SHOT_SEED_LOCAL=1：种入本地 demo 登录态后重载（premium 本地回退态冒烟）
+    if (process.env.SHOT_SEED_LOCAL) {
+      await cmd('Runtime.evaluate', { expression: `localStorage.setItem('slati_session', JSON.stringify({loggedIn:true, at:new Date().toISOString()})); localStorage.setItem('slati_user', JSON.stringify({email:'demo@local.test', displayName:'LocalDemo', citizenId:'CIT-9999'})); 'seeded'` });
+      const loaded2 = new Promise((res) => { const h = ws.onmessage; ws.onmessage = (ev) => { h(ev); const m = JSON.parse(ev.data); if (m.method === 'Page.loadEventFired') res(); }; });
+      await cmd('Page.navigate', { url });
+      await loaded2;
+      await sleep(2500);
+    }
 
     const shot = await cmd('Page.captureScreenshot', process.env.SHOT_FMT === 'jpeg'
       ? { format: 'jpeg', quality: 85 } : { format: 'png' });
@@ -87,6 +95,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             await new Promise(function (r) { setTimeout(r, 100); });
           }
           b.tier = (window.__mnSubState || {}).tier || null;
+          b.source = (window.__mnSubState || {}).source || null;
           b.bannerShown = document.getElementById('subStatus').style.display !== 'none';
           b.bannerText = document.getElementById('subStatus').textContent.replace(/\\s+/g, ' ').trim().slice(0, 70);
           b.ctas = {};
