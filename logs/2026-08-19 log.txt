@@ -43,3 +43,25 @@
      库（与 ledger_report 审计行同性质）；temp profile 每次全新 →
      localStorage 无残留。
    - commit 48ea723（premium.html 237+/26−、screenshot.js 冒烟分支）。
+
+2. 付费页修复 — 本地登录态回退（用户反馈：登录后仍显示「登录后申请开通」）
+   - 根因：index 登录双模式——后端可达走邮箱验证码（产生 mn_session
+     会话）；后端不可达回退 demo 分支（任何凭证，只写 localStorage
+     slati_session/slati_user，无后端会话）。premium 页只查
+     GET /api/auth/me → demo 登录用户永远 401 → 永远 guest 态
+     （「登录后申请开通」）。
+   - 修复（对齐「本地为主、云端镜像」降级原则）：/auth/me 失败时
+     回退读本地登录态（slati_session.loggedIn + slati_user）；
+     tier 缺省 basic（demo 用户对象无 tier 字段，与服务端默认一致）；
+     banner 尾注区分：「当前为本地资料，开通以管理员确认为准」vs
+     服务端态正常文案。申请提交仍可用：tickets 契约本就允许匿名，
+     contact = 本地 email → 后端可达时照常落 payment/urgent 工单
+     （user_id NULL）。
+   - 冒烟扩三态（screenshot.js 增 SHOT_SEED_LOCAL=1：先加载后
+     Runtime.evaluate 种 localStorage → 二次 navigate 重载 → 断言
+     本地态）+ premium 分支 b.source。三态全绿 0 console error：
+     guest（引导登录）；local（demo@local.test、banner 本地资料、
+     申请全链路 → MN-2026-000004 匿名落库）；server（alice 会话 →
+     MN-2026-000005 挂 USR-000003）。
+   - 后端测试 112/112（零后端改动）。
+   - commit 9f7aa78。
