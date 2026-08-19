@@ -322,7 +322,8 @@
   function drawFinSparks() {
     var cvs = document.querySelectorAll('canvas.fin-spark');
     for (var i = 0; i < cvs.length; i++) {
-      var key = cvs[i].parentNode.getAttribute('data-fin-key');
+      var card = cvs[i].closest('.fin-curve-card'); // canvas 嵌套层级变化时仍能定位卡片（标题在上的新结构）
+      var key = card ? card.getAttribute('data-fin-key') : null;
       drawFinMini(cvs[i], finSeries.map(function (p) { return p[key]; }), FIN_CURVES[key].color);
     }
   }

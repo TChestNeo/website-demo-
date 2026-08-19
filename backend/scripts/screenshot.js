@@ -195,6 +195,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         var sr = document.querySelector('canvas.fin-spark').getBoundingClientRect();
         base.finCardW = Math.round(fr.width);
         base.finSparkGap = Math.round(fr.right - sr.right);
+        // 标题在卡顶断言：首子元素为 .stat-label（而非数字/曲线）
+        base.finLabelTop = fr && document.querySelector('.fin-curve-card').firstElementChild.className + '/' +
+          document.querySelector('.fin-curve-card').firstElementChild.textContent.slice(0, 6);
         document.querySelector('.fin-curve-card[data-fin-key="rev"]').click();
         await new Promise(function(r){ setTimeout(r, 150); });
         base.finModalShown = document.getElementById('finChartModal').style.display !== 'none';

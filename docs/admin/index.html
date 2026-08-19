@@ -109,8 +109,9 @@
       padding: var(--space-sm) var(--space-md); margin-bottom: var(--space-sm); cursor: pointer; }
     .tk-opt:hover { background: var(--color-surface-variant, rgba(128,128,128,0.08)); border-color: var(--color-primary); }
     /* 财务曲线卡：右侧迷你曲线 + 点击弹详情（右上角时间范围） */
-    .fin-curve-card { display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; }
-    .fin-curve-card > div { flex: 1; min-width: 0; } /* 文本占剩余宽度，曲线始终贴右 */
+    .fin-curve-card { display: flex; flex-direction: column; align-items: stretch; gap: 6px; cursor: pointer; } /* 标题在上，数字+曲线在下 */
+    .fin-curve-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .fin-curve-row > div { flex: 1; min-width: 0; } /* 数字占剩余宽度，曲线始终贴右 */
     .fin-strip { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } /* 财务顶部卡加宽（x 轴），曲线右侧留足空间 */
     .fin-curve-card:hover { border-color: var(--color-primary); }
     .fin-spark { flex: none; }
@@ -337,24 +338,24 @@
       </div>
       <div class="stat-strip fin-strip">
         <div class="stat-card fin-curve-card" data-fin-key="rev" title="点击查看收入曲线">
-          <div><div class="stat-num" id="dSubRevenue">—</div><div class="stat-label">预计月收入（RM）</div></div>
-          <canvas class="fin-spark" width="76" height="30"></canvas>
+          <div class="stat-label">预计月收入（RM）</div>
+          <div class="fin-curve-row"><div class="stat-num" id="dSubRevenue">—</div><canvas class="fin-spark" width="76" height="30"></canvas></div>
         </div>
         <div class="stat-card fin-curve-card" data-fin-key="paid" title="点击查看收款曲线">
-          <div><div class="stat-num" id="dSubPaid">—</div><div class="stat-label">实际收款（RM）</div></div>
-          <canvas class="fin-spark" width="76" height="30"></canvas>
+          <div class="stat-label">实际收款（RM）</div>
+          <div class="fin-curve-row"><div class="stat-num" id="dSubPaid">—</div><canvas class="fin-spark" width="76" height="30"></canvas></div>
         </div>
         <div class="stat-card fin-curve-card" data-fin-key="tax" title="点击查看税费曲线">
-          <div><div class="stat-num" id="dFinTax">—</div><div class="stat-label">预计税费（RM/月）</div></div>
-          <canvas class="fin-spark" width="76" height="30"></canvas>
+          <div class="stat-label">预计税费（RM/月）</div>
+          <div class="fin-curve-row"><div class="stat-num" id="dFinTax">—</div><canvas class="fin-spark" width="76" height="30"></canvas></div>
         </div>
         <div class="stat-card fin-curve-card" data-fin-key="cost" title="点击查看成本曲线">
-          <div><div class="stat-num" id="dFinCost">—</div><div class="stat-label">总成本（RM/月）</div></div>
-          <canvas class="fin-spark" width="76" height="30"></canvas>
+          <div class="stat-label">总成本（RM/月）</div>
+          <div class="fin-curve-row"><div class="stat-num" id="dFinCost">—</div><canvas class="fin-spark" width="76" height="30"></canvas></div>
         </div>
         <div class="stat-card fin-curve-card" data-fin-key="net" title="点击查看净利润曲线">
-          <div><div class="stat-num" id="dFinProfit">—</div><div class="stat-label">净利润（RM/月）</div></div>
-          <canvas class="fin-spark" width="76" height="30"></canvas>
+          <div class="stat-label">净利润（RM/月）</div>
+          <div class="fin-curve-row"><div class="stat-num" id="dFinProfit">—</div><canvas class="fin-spark" width="76" height="30"></canvas></div>
         </div>
         <div class="stat-card"><div class="stat-num" id="dFinCoverage">—</div><div class="stat-label">成本覆盖率</div></div>
       </div>
