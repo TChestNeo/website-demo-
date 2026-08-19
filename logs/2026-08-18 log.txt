@@ -221,3 +221,15 @@
 8. 财务总览 5 张金额卡右侧迷你曲线可见；点卡弹详情，右上角切 5 个
    时间范围曲线即时重画；悬停显示引导线与值；遮罩/关闭按钮可退出
 9. 调 tier 后刷新 → 曲线末点与卡片数字同步变化
+
+9. 立体阴影美化（用户反馈「这后端怎么这么丑」）
+   - 明暗双主题多层柔和投影：--adm-shadow-card（近/中/远 3 层）/
+     --adm-shadow-hover（悬停更深 + 浮起 translateY(-2px)）/
+     --adm-shadow-modal（弹窗大投影）；顶部高光内缘 --adm-highlight
+     （inset 白 1px / 暗色 0.07 白）造凸起斜面；卡片微渐变
+     --adm-card-bg（亮 #fff→#fbfbfd / 暗 #26263c→#1e1e30）。
+   - 应用面：.adm-card/.stat-card（含悬停）+ 侧栏模块 + tk-modal；
+     transition box-shadow/transform .2s。
+   - 冒烟新增 computed 断言 admShadow/admCardBg/admShadowDark
+     （暗色断言先内联关 transition 再切 data-theme——否则读到 0.2s
+     过渡中间值，教训）；全绿 0 console error。

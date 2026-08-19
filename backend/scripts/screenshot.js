@@ -88,7 +88,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
           banner: document.getElementById('admBanner').style.display === 'none' ? null : document.getElementById('admBanner').textContent.slice(0, 80),
           tabs: Array.prototype.map.call(document.querySelectorAll('#admTabs [data-tab]'), function(b){ return b.textContent.replace(/\\s+/g,'').trim(); }),
           sidebarModules: document.querySelectorAll('.adm-side > .sidebar-module').length,
-          navItems: document.querySelectorAll('.adm-side .nav-item').length
+          navItems: document.querySelectorAll('.adm-side .nav-item').length,
+          admShadow: getComputedStyle(document.querySelector('.adm-card')).boxShadow.slice(0, 46),
+          admCardBg: getComputedStyle(document.querySelector('.adm-card')).backgroundImage.slice(0, 30)
         };
         // 切到工单 tab（懒加载）→ 三行卡片（标签状态/标题/详情）→ 点击进专属回复页 → 返回
         document.querySelector('#admTabs [data-tab="ticket"]').click();
@@ -206,6 +208,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         base.finChartVal1y = document.getElementById('finChartVal').textContent.slice(0, 30);
         document.getElementById('finChartClose').click();
         base.finModalClosed = document.getElementById('finChartModal').style.display === 'none';
+        // 暗色主题阴影断言（临时切 data-theme 再还原；先关 transition 防过渡中间值）
+        var ac = document.querySelector('.adm-card');
+        ac.style.transition = 'none';
+        document.documentElement.setAttribute('data-theme', 'dark');
+        base.admShadowDark = getComputedStyle(ac).boxShadow.slice(0, 40);
+        document.documentElement.removeAttribute('data-theme');
+        ac.style.transition = '';
         return JSON.stringify(base);
       })()`;
       const ev = await cmd('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });
