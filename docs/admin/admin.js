@@ -320,11 +320,20 @@
     return (v < 0 ? '-' : '') + (a >= 1000 ? (a / 1000).toFixed(1) + 'k' : a >= 100 ? a.toFixed(0) : a.toFixed(1));
   }
   function drawFinSparks() {
+    // 迷你曲线跟随页面顶部下拉的时间范围（与详情图同桶口径：桶末点快照，空桶 0）
+    var bks = finBuckets();
+    var KEYS = ['rev', 'paid', 'tax', 'cost', 'net'];
+    var last = {};
+    for (var j = 0; j < KEYS.length; j++) last[KEYS[j]] = {};
+    for (var i = 0; i < finSeries.length; i++) {
+      var b = finBucketKey(finRange, finSeries[i].d);
+      for (var j2 = 0; j2 < KEYS.length; j2++) last[KEYS[j2]][b] = finSeries[i][KEYS[j2]];
+    }
     var cvs = document.querySelectorAll('canvas.fin-spark');
-    for (var i = 0; i < cvs.length; i++) {
-      var card = cvs[i].closest('.fin-curve-card'); // canvas 嵌套层级变化时仍能定位卡片（标题在上的新结构）
+    for (var i2 = 0; i2 < cvs.length; i2++) {
+      var card = cvs[i2].closest('.fin-curve-card'); // canvas 嵌套层级变化时仍能定位卡片（标题在上的新结构）
       var key = card ? card.getAttribute('data-fin-key') : null;
-      drawFinMini(cvs[i], finSeries.map(function (p) { return p[key]; }), FIN_CURVES[key].color);
+      drawFinMini(cvs[i2], bks.map(function (bb) { return last[key][bb.k] || 0; }), FIN_CURVES[key].color);
     }
   }
   function drawFinMini(cv, vals, color) {
@@ -477,9 +486,6 @@
     finCurKey = key; finHover = -1;
     $('finChartTitle').textContent = FIN_CURVES[key].title + '曲线';
     $('finChartNote').textContent = FIN_CURVES[key].note;
-    document.querySelectorAll('#finRangeBtns [data-fin-range]').forEach(function (x) {
-      x.classList.toggle('active', x.getAttribute('data-fin-range') === finRange);
-    });
     $('finChartModal').style.display = 'flex';
     drawFinChart();
   }
@@ -487,15 +493,11 @@
   document.querySelectorAll('.fin-curve-card').forEach(function (card) {
     card.addEventListener('click', function () { openFinChart(card.getAttribute('data-fin-key')); });
   });
-  document.querySelectorAll('#finRangeBtns [data-fin-range]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      finRange = b.getAttribute('data-fin-range');
-      finHover = -1;
-      document.querySelectorAll('#finRangeBtns [data-fin-range]').forEach(function (x) {
-        x.classList.toggle('active', x === b);
-      });
-      drawFinChart();
-    });
+  // 页面顶部时间范围下拉：卡片迷你曲线即时重画；弹窗开着的话详情图同步重画
+  $('finRangeSel').addEventListener('change', function () {
+    finRange = this.value; finHover = -1;
+    drawFinSparks();
+    if ($('finChartModal').style.display !== 'none') drawFinChart();
   });
   $('finChartClose').addEventListener('click', closeFinChart);
   $('finChartCloseBtn').addEventListener('click', closeFinChart);

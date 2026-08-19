@@ -256,6 +256,15 @@
      （无 console error！）——像素断言 sparkPainted=false 当场抓住，
      改 closest('.fin-curve-card') 修复。再次印证「电池全绿 ≠
      渲染正确」，画布类改动必须留像素断言。**
+   - 时间范围改页面顶部下拉（用户要求「弹窗内的时间改成页面顶部，
+     365days 那种」）：健康横幅右侧加 finRangeSel 下拉 5 档
+     （近 5 年（1825 天）/近 365 天（分四季度）/本季度/本月/近
+     7 天，默认本月）；弹窗内 5 个 finRangeBtn 撤掉（冒烟断言
+     finRangeBtnsGone）。全页范围统一：下拉 change → 卡片迷你
+     曲线即时重画（drawFinSparks 改按 finBuckets 同桶口径聚合
+     5 键桶末点，空桶 0）+ 弹窗开着则详情图同步重画。冒烟新增
+     finRangeSel/finRangeOpts/sparkPainted5y（切 5y 后迷你曲线
+     像素复检）全绿 0 console error。
    - 用户反馈「顶部卡片拉长」→ 第一次理解错做成加高（min-height
      140），用户澄清「我是说 x 轴的部分，曲线在右侧」→ 撤回加高，
      改**财务顶部曲线卡加宽**：该 stat-strip 加 .fin-strip

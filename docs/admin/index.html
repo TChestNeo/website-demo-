@@ -333,8 +333,22 @@
     <!-- 财务总览（一期无支付：收入 = tier 定价估算、成本 = AI 实账 + 固定成本、税费 = 收入 × 税率估算） -->
     <div id="pane-sub" style="display:none">
       <div class="adm-card" id="finHealth" style="margin-bottom:var(--space-sm);border-left:4px solid #64748b">
-        <h3 class="headline-sm" style="margin:0">收入健康推测：<span id="dFinHealth">—</span> <span class="adm-meta" id="dFinQuarter"></span></h3>
-        <p class="adm-meta" id="dFinReason" style="margin:4px 0 0"></p>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-sm);flex-wrap:wrap">
+          <div>
+            <h3 class="headline-sm" style="margin:0">收入健康推测：<span id="dFinHealth">—</span> <span class="adm-meta" id="dFinQuarter"></span></h3>
+            <p class="adm-meta" id="dFinReason" style="margin:4px 0 0"></p>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex:none">
+            <span class="adm-meta">时间范围</span>
+            <select class="adm-select" id="finRangeSel" title="曲线时间范围">
+              <option value="5y">近 5 年（1825 天）</option>
+              <option value="1y">近 365 天（分四季度）</option>
+              <option value="quarter">本季度</option>
+              <option value="month" selected>本月</option>
+              <option value="week">近 7 天</option>
+            </select>
+          </div>
+        </div>
       </div>
       <div class="stat-strip fin-strip">
         <div class="stat-card fin-curve-card" data-fin-key="rev" title="点击查看收入曲线">
@@ -493,19 +507,12 @@
   </div>
 </div>
 
-<!-- 收入曲线详情弹窗：中央曲线 + 右上角时间范围（近5年/1年分四季度/这个季度/这个月/这个星期） -->
+<!-- 收入曲线详情弹窗：中央曲线（时间范围由页面顶部下拉统一控制） -->
 <div class="tk-overlay" id="finChartModal" style="display:none">
   <div class="tk-modal" style="max-width:760px">
     <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:var(--space-sm)">
       <h3 class="headline-md" id="finChartTitle" style="margin:0">收入曲线</h3>
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <div id="finRangeBtns" style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn fin-range-btn" data-fin-range="5y">近5年</button>
-          <button class="btn fin-range-btn" data-fin-range="1y">1年</button>
-          <button class="btn fin-range-btn" data-fin-range="quarter">这个季度</button>
-          <button class="btn fin-range-btn" data-fin-range="month">这个月</button>
-          <button class="btn fin-range-btn" data-fin-range="week">这个星期</button>
-        </div>
         <button class="btn btn-ghost btn-icon" id="finChartCloseBtn" title="关闭"><span class="material-symbols-outlined">close</span></button>
       </div>
     </div>
