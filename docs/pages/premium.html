@@ -612,13 +612,22 @@ document.head.appendChild(bgStyle);
   }
   function closeApply() { pending = null; $('applyModal').classList.remove('active'); }
 
-  // 在线支付：POST checkout 拿 Stripe 跳转 URL；失败回退一期申请弹窗
+  // 在线支付：POST checkout 拿 Stripe 跳转 URL，3-2-1 倒数后自动跳转（传统支付体验）；失败回退一期申请弹窗
   // mode：subscription（自动续费订阅）/ once（单次购买 1 个月）
   function startCheckout(btn, key, card, mode) {
     btn.disabled = true;
     btn.textContent = '跳转到支付页…';
     MN_API.post('/subscription/checkout', { tierKey: key, mode: mode || 'subscription' }).then(function (r) {
-      if (r.ok && r.data && r.data.url) { location.href = r.data.url; return; }
+      if (r.ok && r.data && r.data.url) {
+        var n = 3;
+        (function tick() {
+          if (n < 0) { location.href = r.data.url; return; }
+          btn.textContent = n + ' 秒后跳转到支付页…';
+          n--;
+          setTimeout(tick, 1000);
+        })();
+        return;
+      }
       btn.disabled = false;
       setCta(btn, '申请开通', false);
       openApply(key, card.dataset.applyLabel || key, cardPrice(card));
