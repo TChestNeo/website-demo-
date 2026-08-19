@@ -341,7 +341,7 @@
     ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
   }
   // 时间范围 → 桶：5y 按月 60 桶 / 1y 分四季度 4 桶 / quarter 按周 / month·week 按日；值取桶末点快照，无数据桶 = 0
-  var FIN_RANGE_ZH = { '5y': '近5年（按月）', '1y': '近1年（分四季度）', 'quarter': '这个季度（按周）', 'month': '这个月（按日）', 'week': '这个星期（按日）' };
+  var FIN_RANGE_ZH = { '5y': '近5年（按月）', '1y': '近1年（分四季度 · 按周）', 'quarter': '这个季度（按周）', 'month': '这个月（按日）', 'week': '这个星期（按日）' };
   function finWeekKey(d) { // 周一为一周 → 周起始日
     var t = new Date(d + 'T00:00:00Z');
     t = new Date(t.getTime() - ((t.getUTCDay() + 6) % 7) * 86400000);
@@ -349,7 +349,7 @@
   }
   function finBucketKey(range, d) {
     if (range === '5y') return d.slice(0, 7);
-    if (range === '1y') return d.slice(0, 4) + '-Q' + (Math.floor((+d.slice(5, 7) - 1) / 3) + 1);
+    if (range === '1y') return finWeekKey(d);
     if (range === 'quarter') return finWeekKey(d);
     return d; // month / week：按日
   }
@@ -364,10 +364,11 @@
         t.setUTCMonth(t.getUTCMonth() + 1);
       }
     } else if (finRange === '1y') {
-      var q0 = Math.floor(now.getUTCMonth() / 3), ym = now.getUTCFullYear();
-      for (var q = 3; q >= 0; q--) {
-        var qq = q0 - q, y = ym + Math.floor(qq / 4), qm = ((qq % 4) + 4) % 4;
-        out.push({ k: y + '-Q' + (qm + 1), label: y + ' Q' + (qm + 1), d: y + '-' + String(qm * 3 + 1).padStart(2, '0') });
+      // 近 1 年 52 周桶：每桶 = 一个周（周一起始），带所属季度 q（绘图按季度色带分割）
+      var wkStart = finWeekKey(fmt(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 357))));
+      var wkEnd1 = finWeekKey(fmt(now));
+      for (var w1 = wkStart; w1 <= wkEnd1; w1 = fmt(new Date(new Date(w1 + 'T00:00:00Z').getTime() + 7 * 86400000))) {
+        out.push({ k: w1, label: w1.slice(5).replace('-', '/'), d: w1, q: w1.slice(0, 4) + '-Q' + (Math.floor((+w1.slice(5, 7) - 1) / 3) + 1) });
       }
     } else if (finRange === 'quarter') {
       t = new Date(Date.UTC(now.getUTCFullYear(), Math.floor(now.getUTCMonth() / 3) * 3, 1));
@@ -412,6 +413,29 @@
     var X = function (i) { return padL + (bk.length === 1 ? cw / 2 : i / (bk.length - 1) * cw); };
     var Y = function (v) { return padT + (1 - (v - mn) / (mx - mn)) * ch; };
     var col = FIN_CURVES[finCurKey].color;
+    // 1y：季度颜色带（Q1 蓝 / Q2 绿 / Q3 橙 / Q4 紫）+ 带首季度标签
+    if (finRange === '1y') {
+      var Q_FILL = ['rgba(59,130,246,', 'rgba(16,185,129,', 'rgba(245,158,11,', 'rgba(139,92,246,'];
+      var qGap = bk.length > 1 ? cw / (bk.length - 1) / 2 : 0;
+      var qs = 0;
+      for (var qi2 = 0; qi2 <= bk.length; qi2++) {
+        if (qi2 === bk.length || (qi2 > 0 && bk[qi2].q !== bk[qs].q)) {
+          var qe = qi2 - 1;
+          var qx0 = Math.max(padL, X(qs) - qGap), qx1 = Math.min(W - padR, X(qe) + qGap);
+          var qn = +bk[qs].q.slice(-1) - 1; // Q1..Q4 → 0..3
+          ctx.fillStyle = Q_FILL[qn] + '0.09)';
+          ctx.fillRect(qx0, padT, qx1 - qx0, ch);
+          ctx.strokeStyle = Q_FILL[qn] + '0.45)';
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(qx0, padT); ctx.lineTo(qx0, padT + ch); ctx.stroke();
+          ctx.fillStyle = Q_FILL[qn] + '0.9)';
+          ctx.font = '11px system-ui, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(bk[qs].q.slice(0, 4) + ' Q' + (qn + 1), qx0 + 5, padT + 14);
+          qs = qi2;
+        }
+      }
+    }
     // 网格 + y 刻度（4 档）
     ctx.strokeStyle = 'rgba(128,128,128,0.18)';
     ctx.fillStyle = 'rgba(148,163,184,0.9)';
