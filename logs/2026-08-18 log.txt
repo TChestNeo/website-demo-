@@ -362,3 +362,47 @@
      ledFormFields 8/未锁定标签/新增 SMK-1 行（收款 chip）/
      dSubPaidAfter RM 66.66 即时刷新/CSV 表头+行/删除净零（库 0 行
      + add/delete 审计对）0 console error（commit 83e41c8）。
+
+11. 季度财报一键生成（用户「你能不能把他做到可以自动化完成季度财报的
+    程度？」→ 范围确认选「管理页一键生成」：年+季选择 → 生成 →
+    屏幕报表 + 导出 CSV + 打印/存 PDF；非 cron 邮件、非脚本）
+   - 后端 GET /api/admin/finance/report（+ /export CSV）：
+     buildReport(y,q) 按季度三分月聚合——审计重放（set_tier 推订阅
+     数、finance_set 推 fx/税率/固定成本，src=de.to?de.to:de 旧格式
+     兼容，与曲线重放同口径）+ 流水按月（occurred_at 期间归属，
+     ¥×月末 fx 折 RM）+ usage_log 按月 ×fx；分月 {月结状态、预计
+     收入、实收（收款−退款）、流水支出、AI 实账、固定成本、税费、
+     净利、调整} + 合计 + 应收实收差（est−paid）+ 支出分类汇总 +
+     上季同函数重算对比 + 季度目标实收达成%（kv
+     finance.quarterTarget）+ 未月结清单 + generatedBy/At。
+     无参默认当前季；year 2000-2100/quarter 1-4 否则 400；每次
+     生成落审计 ledger_report（含谁/何时/哪一季）。CSV 分节（表头
+     +口径/分月/合计/分类/目标/差额）+ Excel BOM。
+   - 前端「财报」第 4 子 tab：rptYear（今年 −2~+1）/rptQuarter
+     （默认本季）→ 生成（按钮防连点）→ 报表卡（8 统计卡：预计/
+     实收/差额/支出合计/税费/净利/目标达成/上季净利 + 分月明细表
+     9 列 + 分类汇总 + 上季对比行）；未月结 → 橙色草稿警示（月结
+     后重新生成即定格），全锁 → 绿色定格；导出 CSV 纯 <a href
+     带 cookie；打印按钮 body.rpt-printing 类 → @media print 只留
+     报表卡（隐藏侧栏/子菜单/控制条/公告横幅），afterprint 摘除。
+   - 测试 112/112（新增财报矩阵 1 条：权限 401/403、分月聚合
+     ¥50×fx0.5=RM25、AI 0.3×0.5=0.15、M1 月末快照 fx（重放吸收
+     8 日事件）、上季独立重放（fx 默认 0.6）、月结状态与 unclosed
+     联动、目标 80/1000=8%、CSV BOM+分节+服务器中文、参数 400×3、
+     审计 ledger_report ≥3）。
+   - 踩坑：①buildReport 返回对象写 {year, q} 但形参是 y,q →
+     ReferenceError 500（探针抓堆栈定位）；②又踩「Edit 替换吞掉
+     下一测试开头行」→ 顶层 await 语法错误（补回成本看板 test
+     行）；③冒烟 URL 必须 http://127.0.0.1:8080/admin/（dev-serve
+     :8080 静态 + /api 代理；后端 :3000 无静态服务 /admin/ 404 →
+     dump 空对象 + 截图 11KB 空白）；④PowerShell
+     Invoke-WebRequest -SessionVariable 在 NonInteractive 下报错
+     且吐出的 token 无效 → 换 node fetch 脚本取 Set-Cookie。
+   - 冒烟：finTabBtns 4；财报流程 rptSecShown/rptTabActive/
+     rptYearOpts 4/rptQuarterVal 3/rptCardShown/rptHasTitle+Monthly
+     +Net+Warn/rptMonthsRows 4（3 月+合计）/rptCsvShown+rptCsvHref
+     /rptPrintShown/CSV 表头+分类断言全绿；SHOT_AFTER 双截图
+     （95KB 实图停在财报页）；生成落 dev 库 +1 ledger_report 审计
+     行（与 paramTimeline 同性质冒烟污染）0 console error
+     （commit e00eb11）。
+
