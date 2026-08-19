@@ -303,3 +303,18 @@
      确实执行，不靠肉眼）+ 5y 切换等待 100→500ms（350ms 动画播完
      再取像素，防抓中间帧），sparkPainted5y 终帧复检全绿
      0 console error（commit fec1ae6）。
+   - 财务缺口补 1/2（用户采纳建议清单）：①参数变更进时间线——
+     finance PUT 审计升级 {from,to}（从未设过 → 改前值回退
+     FIN_DEFAULTS；FIN_DEFAULTS 上移模块级供 stats+PUT 共用），
+     stats 新增 fin.paramEvents（新格式 from/to + 旧格式直接值兼容）；
+     **曲线重放同步兼容**（重放读 detail 改 src=de.to?de.to:de，
+     否则 {from,to} 会解析不出参数导致全序列错）；前端时间线
+     tier+参数事件合并按时间倒序（chip「参数」+ 汇率 0.6→0.62 ·
+     税率 8%→10% 格式）；测试 110/110（审计形状断言更新 + 新
+     格式重放由 PUT 后序列末点等值断言覆盖 + 旧格式由既有序列
+     测试覆盖，两分支都有守）。冒烟加 finSaveBtn 同值保存 →
+     paramTimeline 断言（每次跑会往 dev 库加一条同值审计行，
+     与模板添加污染同性质可接受）。②时间范围口径：查证后
+     finRangeSel 本就在 fin-overview-sec 内（切成本子视图时下拉
+     随总览隐藏），成本页各处标注「本月实账」——上一轮重构已
+     天然解决，无需再改。0 console error（commit f3f1a06）。
