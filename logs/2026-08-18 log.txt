@@ -291,3 +291,15 @@
      finTabStyleDiff（激活/未激活 tab 背景不同）。另给 screenshot.js
      加 SHOT_AFTER=1：dump 跑完后二次截图（dump 末尾停在成本子视图），
      供有图环境目视。全绿 0 console error（commit a3d9383）。
+   - 财务曲线过渡动画（用户要求「给曲线添加过渡动画」）：canvas 无
+     CSS transition → 新增 finTween rAF 数值插值（easeOutCubic 350ms；
+     桶数不同按比例重采样旧值；from==to 直画短路——悬停 mousemove
+     每次都会 drawFinChart 重画，不能重放动画）。drawFinMini 拆出
+     finMiniRaw（首次直画，此后旧→新过渡）；drawFinChart 拆出
+     finChartRaw（标尺/y 轴/网格/文字用最终值保持稳定不抖，曲线+
+     面积+末点标记走插值）；tween 句柄挂 canvas._finTween，新动画
+     先 cancel 旧动画（快速连切下拉不会打架）。冒烟新增同步断言
+     sparkAnimOn5y/chartAnimOn5y（dispatch 后 raf 已排程 = 动画路径
+     确实执行，不靠肉眼）+ 5y 切换等待 100→500ms（350ms 动画播完
+     再取像素，防抓中间帧），sparkPainted5y 终帧复检全绿
+     0 console error（commit fec1ae6）。
