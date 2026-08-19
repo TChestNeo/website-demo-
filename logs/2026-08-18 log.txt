@@ -273,3 +273,21 @@
      断言 finCardW 312 / finSparkGap 25 = 内边距+边框，曲线在卡
      内右缘）；.stat-sub 单行省略保留（防换行撑行参差）。踩坑：
      ethereal --space-lg = 40px（非 16-20）、--space-md = 24px。
+   - 成本看板并入财务总览（用户要求「成本看板统一进财务总览 + 页面
+     顶部加菜单（总览和成本）」）：侧栏「成本看板」入口删除
+     （navItems 7→6）；原 pane-usage 内容整体移入 pane-sub 底部
+     #fin-cost-sec（用量条 usageBars + 最近 50 条用量记录表 +
+     月度预算额度表单）；页面顶部新增 .fin-tabs 分段胶囊
+     （总览/成本，激活态白底主色字）。JS：PANES 去 'usage'、
+     switchTab 去 loadUsage 懒加载行（loadUsage 本就 init 时调用，
+     渲染进隐藏区无需接线）、dashGoUsage 改 switchTab('sub') +
+     switchFinTab('cost') 直跳成本子视图；新增 finTab 状态 +
+     switchFinTab（显隐两 section + active 类切换）+ finTabs 点击
+     委托。冒烟新增：finTabBtns 2/默认激活 overview/切成本
+     （finCostSecShown + finOverviewHidden + usageBarRows 4 +
+     usageRowCount 10 + budgetFields 4）/切回总览 finOverviewBack；
+     本环境 Read 工具不支持看图（截图三次 [Unsupported Image]），
+     改用几何+computed 代目视：finTabsAbove（子菜单在健康横幅上方）+
+     finTabStyleDiff（激活/未激活 tab 背景不同）。另给 screenshot.js
+     加 SHOT_AFTER=1：dump 跑完后二次截图（dump 末尾停在成本子视图），
+     供有图环境目视。全绿 0 console error（commit a3d9383）。
