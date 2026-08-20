@@ -327,3 +327,38 @@
   0 console error。一次跑通无 headless 挂起。
 - 渲染效果请用户实机肉眼复核（本机截图管线仍全黑，见记忆 headless-screenshot-black-chrome151）：
   右键卡片 → Border Edge Style → 油漆1~6。
+
+## 6.6 FluidCanvas v10.15 修正：油漆1~6 从边框菜单迁入「背景边缘」主题体系（用户：「他是属于背景边缘的 >:(」）
+
+6.5 交付后用户指出：油漆笔触属于背景边缘（与破旧纸/藏宝图/科技同族——只裁背景层剪影，
+内容/标签完好），而不是整卡裁剪的边框样式。本次把油漆1~6 从 Border Edge Style 菜单整体
+迁入 cardEdge 主题体系，并回退全部边框体系集成：
+
+- EDGE_STYLES 新增 paintFrame(n) + paint1~6：clip url(#mn-paint-clip-N) 走 --card-clip 只裁
+  背景层（::before/.card-tint/满幅子层），卡本体零裁剪；demo 色块 = 不透明双停渐变
+  （PAINT_GRADS 六色）；无叠加层无噪点（demo 平涂）；clipSoft 沿用软撕边；油漆无外板——
+  setCardEdge 对 paint* 跳过 v10.8 自动外板（demo 无底板，避免色板环带），剪影留在
+  ::before（无 has-outer-bg 路径）；用户显式 outerBgColor 仍可共存。
+- 油漆5 噪点撕裂滤镜必须在卡级 filter 链首（父级 filter 合成的是子层 clip 之后的结果——
+  卡级位移才能把剪影边缘撕成墨雾、影子跟雾边跑；子层级 filter 会被自身 clip-path 裁回
+  干净边缘）。CSS 用 .card-edge-paint[data-card-edge="paint5"] 属性选择器 × 4 态阶梯
+  （基/悬停/选中/拖拽）各加 url(#mn-paint-filter-5) 链首版本，避免在 filter 列表里混
+  var() 落 none 的语法风险。阴影配方 = 纸款（笔触剪影投影 + 选中四向环）。
+- applyCardBg 归一 paintN → card-edge-paint 类 + 移除列表补 card-edge-paint；边缘菜单
+  CARD_EDGE_BUTTONS + 6 项（brush 图标，共 15 按钮），订阅门照旧。
+- 边框菜单回退到 7 选项：移除 paintStyleOf/clearPaintClass/PAINT_* 常量/提示行/宽度颜色
+  守卫/modal 提示元素；指纹/buildDraft/模板三处回退原样；SVG defs 与滤镜保留（id 不变，
+  改由主题配方消费）。
+- 草稿向后兼容迁移：旧 borderStyle 'paintN' 草稿载入时迁移为 cardEdge 主题
+  （paintMigration 标记 + 清内联边框长手——否则保存的 borderWidth/borderColor 会画出矩形
+  边框——+ 直调 applyOuterBg/applyCardBg，renderer 不检查订阅）。v:9 注释同步改写。
+- 冒烟（tmp 电池跑完即删）：18/18 PASS——经典虚线卡不受影响；旧 paint3 草稿迁移
+  （cardEdge 数据集 + card-edge-paint 类 + 无 paint-edge 类 + 长手清空 + 整卡 clipPath
+  none + --card-layers 赭色渐变 + ::before 剪影 clip + 无外板无 tint）；油漆5 新格式
+  （类 + 卡级 filter 含 mn-paint-filter-5 与 drop-shadow + 无外板）；边框菜单 7 选项
+  （源码无 paint1 + 提示元素/测试钩子移除）；边缘菜单 15 按钮 + 油漆6 标签 + 订阅锁
+  （setSubscriptionTestMode 钩子翻门重建按钮）+ 外板边距滑块禁用 + 订阅态点击套用/
+  guest 守卫拦截；0 console error。两次电池调试修复：stderr pipe 满阻塞 Chrome 启动
+  （stdio 改 ignore）+ httpGet 错误路径 JSON.parse(undefined) 崩溃（改 reject 重试）。
+- 渲染效果请用户实机肉眼复核（本机截图管线仍全黑）：右键卡片 → 背景边缘 → 油漆1~6；
+  内容/标签不再被裁。旧草稿自动迁移无需重做。

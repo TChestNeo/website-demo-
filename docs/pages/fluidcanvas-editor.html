@@ -379,7 +379,8 @@
        identical to v10.1 themed cards (same 1px border box). */
     .grid-card.card-edge-paper,
     .grid-card.card-edge-treasure,
-    .grid-card.card-edge-tech {
+    .grid-card.card-edge-tech,
+    .grid-card.card-edge-paint {
       background: transparent;
       border: 1px solid transparent;
       border-color: transparent; /* beats :hover/.selected border-color (0,2,0 > 0,1,1) */
@@ -429,7 +430,8 @@
        drag. */
     .grid-card.card-edge-paper::before,
     .grid-card.card-edge-treasure::before,
-    .grid-card.card-edge-tech::before {
+    .grid-card.card-edge-tech::before,
+    .grid-card.card-edge-paint::before {
       content: '';
       position: absolute;
       z-index: -1;
@@ -444,7 +446,8 @@
     }
     .grid-card.card-edge-paper::after,
     .grid-card.card-edge-treasure::after,
-    .grid-card.card-edge-tech::after {
+    .grid-card.card-edge-tech::after,
+    .grid-card.card-edge-paint::after {
       content: '';
       position: absolute;
       z-index: 2;
@@ -470,7 +473,8 @@
        Gemini: drop-shadow on the outer layer). */
     .grid-card.card-edge-paper.has-outer-bg::before,
     .grid-card.card-edge-treasure.has-outer-bg::before,
-    .grid-card.card-edge-tech.has-outer-bg::before {
+    .grid-card.card-edge-tech.has-outer-bg::before,
+    .grid-card.card-edge-paint.has-outer-bg::before {
       /* v10.10: gap pushes the themed plate out too (same formula as legacy) */
       inset: calc(-1 * (var(--outer-extent, 16px) + var(--outer-gap, 0px)));
       border-radius: 0; /* the clip shapes it */
@@ -538,31 +542,10 @@
        are inset:0 layers; the var inherits from the card. */
     .grid-card.card-edge-paper .card-img-bg, .grid-card.card-edge-paper .card-stripes, .grid-card.card-edge-paper .card-bg-img,
     .grid-card.card-edge-treasure .card-img-bg, .grid-card.card-edge-treasure .card-stripes, .grid-card.card-edge-treasure .card-bg-img,
-    .grid-card.card-edge-tech .card-img-bg, .grid-card.card-edge-tech .card-stripes, .grid-card.card-edge-tech .card-bg-img {
+    .grid-card.card-edge-tech .card-img-bg, .grid-card.card-edge-tech .card-stripes, .grid-card.card-edge-tech .card-bg-img,
+    .grid-card.card-edge-paint .card-img-bg, .grid-card.card-edge-paint .card-stripes, .grid-card.card-edge-paint .card-bg-img {
       clip-path: var(--card-clip, none);
     }
-    /* v10.15 — 油漆1~6 笔刷/墨迹/水彩异形边缘（Border Edge Style 菜单，
-       用户提供方案：SVG clipPath objectBoundingBox 自适应任意尺寸）。
-       clip-path 直接裁整卡（背景/内容/图层随卡成笔触形状）；卡盒保持
-       矩形供布局，缩放手柄在画布层不受影响。已知取舍：
-       · box-shadow（选中环/悬停/拖拽阴影）被 clip-path 裁掉——选中
-         状态靠 8 个缩放手柄指示（v10.2 阴影阶梯对油漆卡无效）；
-       · CSS 边框是矩形描线会被笔触裁断，油漆样式边框强制归零
-         （borderWidth 内联值保留在序列化里，切回经典样式即恢复）；
-       · 边缘主题的外板/外背景环带是卡内子层，同被裁进笔触形状；
-       · 油漆5 的 url(#mn-paint-filter-5) 滤镜会替换边缘主题的
-         drop-shadow 滤镜（同元素单 filter），两者勿混用。 */
-    .grid-card.paint-edge-1, .grid-card.paint-edge-2,
-    .grid-card.paint-edge-3, .grid-card.paint-edge-4,
-    .grid-card.paint-edge-5, .grid-card.paint-edge-6 {
-      border: 0 !important;
-    }
-    .grid-card.paint-edge-1 { clip-path: url(#mn-paint-clip-1); }
-    .grid-card.paint-edge-2 { clip-path: url(#mn-paint-clip-2); }
-    .grid-card.paint-edge-3 { clip-path: url(#mn-paint-clip-3); }
-    .grid-card.paint-edge-4 { clip-path: url(#mn-paint-clip-4); }
-    .grid-card.paint-edge-5 { clip-path: url(#mn-paint-clip-5); filter: url(#mn-paint-filter-5); }
-    .grid-card.paint-edge-6 { clip-path: url(#mn-paint-clip-6); }
     /* v10.2 — silhouette shadows + state halos. filter is NOT in the
        .grid-card transition list (box-shadow/border-color only), so state
        swaps are instant — no transition flakiness. Specificity ladder:
@@ -595,6 +578,36 @@
     }
     .grid-card.card-edge-tech.selected {
       filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.85)) drop-shadow(0 0 14px rgba(34, 211, 238, 0.45)) drop-shadow(2px 0 0 var(--color-primary-fixed-dim)) drop-shadow(-2px 0 0 var(--color-primary-fixed-dim)) drop-shadow(0 2px 0 var(--color-primary-fixed-dim)) drop-shadow(0 -2px 0 var(--color-primary-fixed-dim)) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
+    }
+    /* v10.15 — 油漆1~6 笔刷/墨迹/水彩异形边缘（背景边缘主题体系：
+       只裁背景层剪影，内容/标签完好——与纸/藏宝图/科技同族）。
+       阴影同纸款配方（笔触剪影投影 + 选中四向环）。油漆5 的噪点
+       撕裂滤镜必须在卡级（filter 链首）：父级 filter 合成的是子层
+       clip 之后的结果，卡级位移才能把剪影边缘撕成墨雾、且影子
+       跟着雾边跑；子层级 filter 会被自身 clip-path 裁回干净边缘。 */
+    .grid-card.card-edge-paint {
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
+    }
+    .grid-card.card-edge-paint[data-card-edge="paint5"] {
+      filter: url(#mn-paint-filter-5) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
+    }
+    .grid-card.card-edge-paint:hover {
+      filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
+    }
+    .grid-card.card-edge-paint[data-card-edge="paint5"]:hover {
+      filter: url(#mn-paint-filter-5) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
+    }
+    .grid-card.card-edge-paint.selected {
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(-2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 -2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 0 8px var(--color-primary-fixed-dim));
+    }
+    .grid-card.card-edge-paint[data-card-edge="paint5"].selected {
+      filter: url(#mn-paint-filter-5) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(-2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 -2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 0 8px var(--color-primary-fixed-dim));
+    }
+    .grid-card.card-edge-paint.dragging {
+      filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.45));
+    }
+    .grid-card.card-edge-paint[data-card-edge="paint5"].dragging {
+      filter: url(#mn-paint-filter-5) drop-shadow(0 18px 34px rgba(0, 0, 0, 0.45));
     }
     .grid-card.card-edge-paper.dragging, .grid-card.card-edge-treasure.dragging,
     .grid-card.card-edge-tech.dragging {
@@ -949,11 +962,12 @@
     <clipPath id="hud-frame-6" clipPathUnits="objectBoundingBox">
       <polygon points="0.12 0, 0.38 0, 0.40 0.05, 0.60 0.05, 0.62 0, 0.88 0, 1 0.18, 1 0.82, 0.88 1, 0.62 1, 0.60 0.95, 0.40 0.95, 0.38 1, 0.12 1, 0 0.82, 0 0.18" />
     </clipPath>
-    <!-- 油漆1~6（v10.15）：6 款笔刷/水彩/墨迹异形边缘（用户提供方案，
-         Border Edge Style 菜单）。与边缘主题不同——clip-path 直接作用在
-         .grid-card 本体（整卡连同内容/图层一起裁成笔触形状，卡盒保持
-         矩形供布局/手柄；手柄在画布层不受影响）。款式5 加 feTurbulence
-         + feDisplacementMap 噪点撕裂滤镜（demo 同款，整卡位移含内容）。 -->
+    <!-- 油漆1~6（v10.15）：6 款笔刷/水彩/墨迹异形边缘（用户提供方案）。
+         属背景边缘主题体系（EDGE_STYLES paint1~6）——clip 经 --card-clip
+         只裁背景层剪影（::before/.card-tint/满幅子层），内容/标签完好，
+         与纸/藏宝图/科技同族。款式5 加 feTurbulence + feDisplacementMap
+         噪点撕裂滤镜（demo 同款参数，卡级 filter 链首把剪影边缘撕成
+         墨雾）。 -->
     <clipPath id="mn-paint-clip-1" clipPathUnits="objectBoundingBox">
       <path d="
         M 0.05 0.04 C 0.15 0.01, 0.35 0.08, 0.55 0.02 C 0.75 -0.01, 0.88 0.05, 0.95 0.02
@@ -1359,7 +1373,7 @@
       parts.push(c.dataset.cardId);
       var label = c.querySelector('.card-label');
       if (label) parts.push(label.value);
-      parts.push(c.style.borderRadius, c.style.background, paintStyleOf(c) || c.style.borderStyle);
+      parts.push(c.style.borderRadius, c.style.background, c.style.borderStyle);
       parts.push(c.dataset.rotate || '0');
       // v9: size + position — resize/drag-only changes must trip autosave
       parts.push(c.dataset.colSpan || '', c.dataset.rowSpan || '');
@@ -1896,14 +1910,15 @@
   }
 
   function applyCardStyleFromDraft(card, cData) {
+    var paintMigration = ''; // v10.15: 旧油漆草稿 → 边缘主题迁移标记
     if (cData.borderRadius) card.style.borderRadius = cData.borderRadius + 'px';
     if (cData.background) card.style.background = cData.background;
     if (cData.borderStyle) {
       if (String(cData.borderStyle).indexOf('paint') === 0) {
-        // v10.15: 油漆草稿——类驱动 clip（内联 borderStyle 落 solid 兜底；
-        // borderWidth/borderColor 按保存值恢复、CSS border:0 隐藏边框）
-        clearPaintClass(card);
-        card.classList.add('paint-edge-' + String(cData.borderStyle).slice(5));
+        // v10.15: 油漆从边框体系迁入背景边缘——旧 borderStyle 'paintN'
+        // 值迁移为 cardEdge 主题（尾块处理：清长手 + 直调渲染器，
+        // renderer 不检查订阅，草稿恢复不受订阅门槛影响）
+        paintMigration = String(cData.borderStyle);
         card.style.borderStyle = 'solid';
       } else {
         card.style.borderStyle = cData.borderStyle;
@@ -1955,6 +1970,16 @@
       applyOuterBg(card);
       applyCardBg(card);
     }
+    if (paintMigration) {
+      // v10.15: 旧油漆草稿（无 cardBg 字段 → 上面的 hasNewCardBg 分支
+      // 不跑）在此落主题：cardEdge 数据集 + 清内联边框长手（否则保存的
+      // borderWidth/borderColor 会画出矩形边框）+ 双渲染器直调。
+      // applyCardBg 归一 paintN → card-edge-paint 类，油漆无外板。
+      card.dataset.cardEdge = paintMigration;
+      clearInlineCardBorderLonghands(card);
+      applyOuterBg(card);
+      applyCardBg(card);
+    }
   }
 
   // ── Content Change ──
@@ -1991,7 +2016,7 @@
         rotate: parseFloat(c.dataset.rotate) || 0,
         borderRadius: parseInt(c.style.borderRadius) || 8,
         background: c.style.background || '',
-        borderStyle: paintStyleOf(c) || c.style.borderStyle || 'solid',
+        borderStyle: c.style.borderStyle || 'solid',
         borderColor: c.style.borderColor || '',
         borderWidth: parseInt(c.style.borderWidth) || 2
       };
@@ -2057,7 +2082,7 @@
     // Save current card positions to active preset before persisting
     saveCurrentPresetCards();
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘 = borderStyle 'paint1'~'paint6' 值 + .paint-edge-N 类标记; clip 走常量 url(#mn-paint-clip-1..6)/滤镜 url(#mn-paint-filter-5))
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -3311,23 +3336,6 @@
   window.clearCardBackground = clearCardBackground;
 
   // ── Border Style Modal ──
-  // v10.15: 油漆1~6 笔刷/墨迹/水彩异形边缘（用户提供方案）。油漆不是
-  // CSS border 值——用 .paint-edge-N 类标记 + clip-path 裁整卡；持久化
-  // 沿用 borderStyle 字段值 'paint1'~'paint6'（无新字段，值级扩展）。
-  var PAINT_CLIP_IDS = { paint1: 'mn-paint-clip-1', paint2: 'mn-paint-clip-2', paint3: 'mn-paint-clip-3', paint4: 'mn-paint-clip-4', paint5: 'mn-paint-clip-5', paint6: 'mn-paint-clip-6' };
-  var PAINT_DEMO_COLORS = { paint1: '#e63920', paint2: '#1fa396', paint3: '#ca8a32', paint4: '#f59e0b', paint5: '#dc2626', paint6: '#65a30d' };
-  function paintStyleOf(card) {
-    var el = card || selectedCard;
-    if (!el) return '';
-    for (var n = 1; n <= 6; n++) {
-      if (el.classList.contains('paint-edge-' + n)) return 'paint' + n;
-    }
-    return '';
-  }
-  window.paintStyleOf = paintStyleOf; // test hook
-  function clearPaintClass(card) {
-    for (var n = 1; n <= 6; n++) card.classList.remove('paint-edge-' + n);
-  }
   function openBorderStyleModal() {
     if (!selectedCard) return;
     hideContextMenu();
@@ -3338,48 +3346,26 @@
       { name: 'Double', value: 'double' },
       { name: 'Groove', value: 'groove' },
       { name: 'Ridge', value: 'ridge' },
-      { name: 'None', value: 'none' },
-      { name: '油漆1', value: 'paint1' },
-      { name: '油漆2', value: 'paint2' },
-      { name: '油漆3', value: 'paint3' },
-      { name: '油漆4', value: 'paint4' },
-      { name: '油漆5', value: 'paint5' },
-      { name: '油漆6', value: 'paint6' }
+      { name: 'None', value: 'none' }
     ];
-    var curStyle = paintStyleOf(selectedCard) || selectedCard.style.borderStyle || 'solid';
+    var curStyle = selectedCard.style.borderStyle || 'solid';
     var curWidth = parseInt(selectedCard.style.borderWidth) || 2;
     var html = '';
     styles.forEach(function (s) {
-      var preview = s.value.indexOf('paint') === 0
-        ? '<div style="width:60px;height:22px;background:' + PAINT_DEMO_COLORS[s.value] + ';clip-path:url(#' + PAINT_CLIP_IDS[s.value] + ');' + (s.value === 'paint5' ? 'filter:url(#mn-paint-filter-5);' : '') + '"></div>'
-        : '<div style="width:60px;height:0;border-top:3px ' + s.value + ' var(--color-on-surface)"></div>';
       html += '<button class="card" style="padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid var(--divider-line);background:var(--card-bg);font-family:var(--font-family);font-size:13px;margin-bottom:4px;' + (s.value === curStyle ? 'border-color:var(--color-primary);box-shadow:0 0 0 2px var(--color-primary-fixed-dim)' : '') + '" onclick="applyCardBorderStyle(\'' + s.value + '\')">' +
-        preview + '<span>' + s.name + '</span></button>';
+        '<div style="width:60px;height:0;border-top:3px ' + s.value + ' var(--color-on-surface)"></div>' +
+        '<span>' + s.name + '</span></button>';
     });
     document.getElementById('borderStyleOptions').innerHTML = html;
     document.getElementById('borderWidthSlider').value = curWidth;
     document.getElementById('borderWidthVal').textContent = curWidth + 'px';
-    // v10.15: 油漆提示行（宽度/颜色对油漆样式不适用）
-    var hint = document.getElementById('borderPaintHint');
-    if (hint) hint.textContent = paintStyleOf(selectedCard)
-      ? '油漆样式：笔触边缘即卡边（无矩形边框），宽度/颜色仅作用于经典样式'
-      : '';
     openModal('borderStyleModal');
   }
   window.openBorderStyleModal = openBorderStyleModal;
 
   function applyCardBorderStyle(style) {
     if (!selectedCard) return;
-    if (style.indexOf('paint') === 0) {
-      clearPaintClass(selectedCard);
-      selectedCard.classList.add('paint-edge-' + style.slice(5));
-      // borderStyle 落 solid 兜底（油漆卡无边框：CSS border:0），切回
-      // 经典样式时宽度/颜色从保留的 borderWidth/borderColor 内联值恢复
-      selectedCard.style.borderStyle = 'solid';
-    } else {
-      clearPaintClass(selectedCard);
-      selectedCard.style.borderStyle = style;
-    }
+    selectedCard.style.borderStyle = style;
     openBorderStyleModal(); // refresh
     onContentChange();
   }
@@ -3387,7 +3373,6 @@
 
   function updateCardBorderWidth(val) {
     if (!selectedCard) return;
-    if (paintStyleOf(selectedCard)) return; // v10.15: 油漆无矩形边框
     selectedCard.style.borderWidth = val + 'px';
     document.getElementById('borderWidthVal').textContent = val + 'px';
     onContentChange();
@@ -3396,7 +3381,6 @@
 
   function updateCardBorderColor(color) {
     if (!selectedCard) return;
-    if (paintStyleOf(selectedCard)) return; // v10.15: 油漆无矩形边框
     selectedCard.style.borderColor = color;
     onContentChange();
   }
@@ -3582,6 +3566,35 @@
       glow: TECH_GLOW, color: TECH_COLOR
     };
   }
+  // v10.15: 油漆1~6 笔刷/墨迹/水彩背景边缘（用户提供方案，原属边框
+  // 菜单——迁移进边缘主题体系：clip 走 --card-clip 只裁背景层剪影，
+  // 内容/标签完好）。demo 色块 = 不透明双停渐变（底色 + 深一档），
+  // 无叠加层无噪点（demo 平涂）；油漆5 卡级位移滤镜（CSS 阶梯链首，
+  // 把剪影边缘撕成墨雾）。油漆无外板（demo 无底板——setCardEdge 对
+  // paint* 跳过 v10.8 自动外板，避免色板环带）。clipSoft 沿用软撕边
+  // （纸/藏宝图同款，手绘感）。
+  var PAINT_GRADS = {
+    1: 'linear-gradient(135deg, #e63920, #b02a15)',
+    2: 'linear-gradient(135deg, #1fa396, #14796f)',
+    3: 'linear-gradient(135deg, #ca8a32, #9e6b25)',
+    4: 'linear-gradient(135deg, #f59e0b, #c77c05)',
+    5: 'linear-gradient(135deg, #dc2626, #a81b1b)',
+    6: 'linear-gradient(135deg, #65a30d, #4c7a09)'
+  };
+  function paintFrame(n) {
+    return {
+      clip: 'url(#mn-paint-clip-' + n + ')',
+      clipSoft: TORN_CLIP_SOFT,
+      cardLayers: [PAINT_GRADS[n]],
+      cardOverlay: [], // demo 无叠加层（join 得空串 → ::after 不画）
+      labelLayers: [PAINT_GRADS[n]],
+      tint: PAINT_GRADS[n],
+      border: '1px solid rgba(255, 255, 255, 0.40)',
+      radius: '4px',
+      glow: '0 1px 3px rgba(0, 0, 0, 0.35)',
+      color: '#ffffff'
+    };
+  }
   var EDGE_STYLES = {
     paper: {
       clip: 'url(#paper-edge-clip)', clipSoft: TORN_CLIP_SOFT, // v10.6: 褶皱折角纸（右上斜切折角+左下圆弧卷角+四边微撕边）
@@ -3626,7 +3639,9 @@
     // v10.7: tech 别名 = tech4。卡片入口（setCardEdge）只发 tech1~6；
     // 别名服务于外缘底板（outerEdge）与名称标签（captionEdge）——六款
     // tint/border/glow/clipSoft/labelLayers 全同，剪影不参与这两处。
-    tech: techFrame(4)
+    tech: techFrame(4),
+    paint1: paintFrame(1), paint2: paintFrame(2), paint3: paintFrame(3),
+    paint4: paintFrame(4), paint5: paintFrame(5), paint6: paintFrame(6)
   };
 
   // #rrggbb → rgba() string (rgbaWithAlpha only parses rgb() forms)
@@ -4024,10 +4039,11 @@
     // silhouettes share ONE class (card-edge-tech) — the shape difference
     // rides --card-clip, not per-variant CSS rule groups, so the dataset
     // value tech1~6 is normalized to a 'tech' class name.
-    card.classList.remove('card-edge-paper', 'card-edge-treasure', 'card-edge-tech');
+    card.classList.remove('card-edge-paper', 'card-edge-treasure', 'card-edge-tech', 'card-edge-paint');
     if (edge) {
       var edgeCls = card.dataset.cardEdge;
       if (edgeCls.indexOf('tech') === 0) edgeCls = 'tech';
+      else if (edgeCls.indexOf('paint') === 0) edgeCls = 'paint'; // v10.15
       card.classList.add('card-edge-' + edgeCls);
     }
   }
@@ -4148,7 +4164,9 @@
   // 不再是独立功能（v10.8 移除标签页）——选主题自动带 16px 外板。
   var CARD_EDGE_BUTTONS = [['', '无'], ['paper', '破旧的纸'], ['treasure', '藏宝图'],
     ['tech1', '科技1'], ['tech2', '科技2'], ['tech3', '科技3'],
-    ['tech4', '科技4'], ['tech5', '科技5'], ['tech6', '科技6']];
+    ['tech4', '科技4'], ['tech5', '科技5'], ['tech6', '科技6'],
+    ['paint1', '油漆1'], ['paint2', '油漆2'], ['paint3', '油漆3'],
+    ['paint4', '油漆4'], ['paint5', '油漆5'], ['paint6', '油漆6']];
 
   function refreshCardBgPopoverState() {
     var pop = document.getElementById('cardBgPopover');
@@ -4201,7 +4219,7 @@
     }
     // legacy 'tech' dataset (pre-normalization race) highlights the tech4 button
     buildEdgeButtons('cardEdgeButtons', card.dataset.cardEdge === 'tech' ? 'tech4' : (card.dataset.cardEdge || ''), setCardEdge, 'cardEdgeUpgradeLink',
-      CARD_EDGE_BUTTONS, ['block', 'description', 'map', 'memory', 'memory', 'memory', 'memory', 'memory', 'memory']);
+      CARD_EDGE_BUTTONS, ['block', 'description', 'map', 'memory', 'memory', 'memory', 'memory', 'memory', 'memory', 'brush', 'brush', 'brush', 'brush', 'brush', 'brush']);
   }
 
   // ── card background (inner) setters ──
@@ -4327,8 +4345,15 @@
     // tech variants share identical tint/border/glow, so the dataset keeps
     // the 'tech' alias. The card silhouette moves to .card-tint (applyCardBg)
     // while ::before paints the plate (v10.8 CSS rule).
-    selectedCard.dataset.outerEdge = name.indexOf('tech') === 0 ? 'tech' : name;
-    selectedCard.dataset.outerBgExtent = 16;
+    // v10.15: 油漆无外板（demo 无底板）——跳过自动外板，剪影留在
+    // ::before（无 has-outer-bg 路径），用户显式 outerBgColor 仍共存。
+    if (name.indexOf('paint') !== 0) {
+      selectedCard.dataset.outerEdge = name.indexOf('tech') === 0 ? 'tech' : name;
+      selectedCard.dataset.outerBgExtent = 16;
+    } else {
+      delete selectedCard.dataset.outerEdge;
+      delete selectedCard.dataset.outerBgExtent;
+    }
     applyOuterBg(selectedCard);
     applyCardBg(selectedCard);
     refreshCardBgPopoverState();
@@ -4379,7 +4404,7 @@
       background: selectedCard.dataset.cardEdge
         ? (selectedCard.style.getPropertyValue('--card-tint-base') || '')
         : (selectedCard.style.background || ''),
-      borderStyle: paintStyleOf(selectedCard) || selectedCard.style.borderStyle || 'solid',
+      borderStyle: selectedCard.style.borderStyle || 'solid',
       borderColor: selectedCard.style.borderColor || '',
       borderWidth: selectedCard.style.borderWidth || '2px',
       rotate: selectedCard.dataset.rotate || '0',
@@ -4405,15 +4430,10 @@
       } else {
         msg.style.display = 'none';
         grid.innerHTML = templates.map(function (t) {
-          var isPaint = String(t.borderStyle || '').indexOf('paint') === 0;
-          // v10.15: 油漆模板预览 = demo 色块 + 同款 clip（border 简写对
-          // 'paintN' 是非法值，会整条失效——必须走独立分支）
-          var box = isPaint
-            ? '<div style="width:100%;height:80px;border-radius:' + t.borderRadius + ';background:' + (PAINT_DEMO_COLORS[t.borderStyle] || '#dc2626') + ';clip-path:url(#' + (PAINT_CLIP_IDS[t.borderStyle] || 'mn-paint-clip-1') + ');' + (t.borderStyle === 'paint5' ? 'filter:url(#mn-paint-filter-5);' : '') + 'display:flex;align-items:center;justify-content:center;transform:rotate(' + (t.rotate || 0) + 'deg)">'
-            : '<div style="width:100%;height:80px;border-radius:' + t.borderRadius + ';background:' + (t.background || 'var(--card-bg)') + ';border:' + t.borderWidth + ' ' + t.borderStyle + ' ' + (t.borderColor || 'var(--divider-line-strong)') + ';display:flex;align-items:center;justify-content:center;transform:rotate(' + (t.rotate || 0) + 'deg)">';
-          var nameSpan = '<span style="font-size:11px;color:' + (isPaint ? '#fff' : 'var(--color-on-surface)') + (isPaint ? ';text-shadow:0 1px 2px rgba(0,0,0,0.5)' : '') + '">' + t.name + '</span>';
           return '<div class="flag-card-item" onclick="applyTemplate(\'' + t.id + '\')" style="cursor:pointer">' +
-            box + nameSpan + '</div>' +
+            '<div style="width:100%;height:80px;border-radius:' + t.borderRadius + ';background:' + (t.background || 'var(--card-bg)') + ';border:' + t.borderWidth + ' ' + t.borderStyle + ' ' + (t.borderColor || 'var(--divider-line-strong)') + ';display:flex;align-items:center;justify-content:center;transform:rotate(' + (t.rotate || 0) + 'deg)">' +
+              '<span style="font-size:11px;color:var(--color-on-surface)">' + t.name + '</span>' +
+            '</div>' +
             '<div class="flag-name" style="display:flex;justify-content:space-between">' +
               '<span>' + t.name + '</span>' +
               '<span style="color:var(--color-error);cursor:pointer" onclick="event.stopPropagation();deleteTemplate(\'' + t.id + '\')">✕</span>' +
@@ -4433,15 +4453,7 @@
       if (!t) return;
       selectedCard.style.borderRadius = t.borderRadius;
       selectedCard.style.background = t.background;
-      if (String(t.borderStyle || '').indexOf('paint') === 0) {
-        // v10.15: 油漆模板套用——类驱动 clip + solid 兜底（同 applyCardBorderStyle）
-        clearPaintClass(selectedCard);
-        selectedCard.classList.add('paint-edge-' + String(t.borderStyle).slice(5));
-        selectedCard.style.borderStyle = 'solid';
-      } else {
-        clearPaintClass(selectedCard);
-        selectedCard.style.borderStyle = t.borderStyle;
-      }
+      selectedCard.style.borderStyle = t.borderStyle;
       selectedCard.style.borderColor = t.borderColor;
       selectedCard.style.borderWidth = t.borderWidth;
       if (t.rotate) {
@@ -5305,7 +5317,6 @@
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div style="display:flex;flex-direction:column;gap:4px" id="borderStyleOptions"></div>
-    <p class="label-sm" id="borderPaintHint" style="margin:8px 0 0;color:var(--color-outline);min-height:16px"></p>
     <div style="margin-top:var(--space-md);display:flex;align-items:center;gap:12px">
       <span class="label-md">Width:</span>
       <input type="range" id="borderWidthSlider" min="0" max="8" value="2" oninput="updateCardBorderWidth(this.value)" style="flex:1;accent-color:var(--color-primary)">
