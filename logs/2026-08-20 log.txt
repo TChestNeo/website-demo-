@@ -197,3 +197,20 @@
      正确性由 DOM dump + onceGeo 几何断言兜底。
    - 待办：等用户 FluidCanvas 新功能需求清单；后端剩余（部署 + Stripe
      实机联调，等 sk_test）攒批一次过。
+
+## 6.1 全屏倒数跳转遮罩（2026-08-20，用户：倒数三秒要覆盖全屏）
+
+   - 用户要求：3-2-1 倒数不再显示在按钮上，改为全屏遮罩。
+   - premium.html：恢复全屏倒数遮罩（#cdOverlay + cd-ring 转圈动画 + cd-num
+     大数字，inset:0 盖满全屏 z 9999，rgba(5,5,16,0.92) + blur）；countdownJump
+     改为开遮罩 → 数字 3→2→1（1s/档）→ location.href 跳 Stripe；遮罩文案
+     「即将跳转到支付页面… / 在线支付由 Stripe 安全处理 · 请勿关闭页面」；
+     toast z-index 降至 9000（倒数遮罩恒在最上层）。
+   - screenshot.js：payDisabled 点击分支追加全屏倒数全链路冒烟——桩一个成功
+     checkout 响应（url=#cd-smoke 锚点，不导航不扣款）再点 CTA，3.2s 后断言：
+     cdActive / cdFullscreen（rect=viewport）/ cdNum=1 / cdText / cdSub /
+     cdJumped（hash=#cd-smoke 证明倒数结束真跳转）。
+   - 冒烟三态 0 console error：guest/local 只验 cdOverlayPresent=true；
+     server（alice）点击全链路 cdActive=true、cdFullscreen=true、cdNum="1"、
+     cdJumped=true，409-toast 断言照旧全绿。-after 截图（premium-server-after.png）
+     即全屏倒数画面，可目视。

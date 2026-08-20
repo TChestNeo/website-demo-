@@ -106,6 +106,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
           b.payDisabled = !!(window.__mnSubState || {}).payDisabled; // server 会话 + Stripe 未配置 → banner 说明「即将上线」，按钮仍为最终态
           b.hasPortal = !!(window.__mnSubState || {}).hasPortal;
           b.expiry = (window.__mnSubState || {}).expiry || null;
+          b.cdOverlayPresent = !!document.getElementById('cdOverlay'); // 全屏倒数遮罩（3-2-1 → 跳 Stripe）
           b.payNoticeShown = getComputedStyle(document.getElementById('payNotice')).display !== 'none';
           b.payNoticeText = document.getElementById('payNotice').textContent.replace(/\\s+/g, ' ').trim().slice(0, 60);
           b.bannerShown = document.getElementById('subStatus').style.display !== 'none';
@@ -146,6 +147,21 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             b.toastShown = !!document.querySelector('[data-mn-toast]');
             b.toastText = ((document.querySelector('[data-mn-toast]') || {}).textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 50);
             b.ctaAfter = pc.textContent.replace(/\\s+/g, ' ').trim();
+            // 全屏倒数冒烟：桩一个成功 checkout 响应再点一次——验证遮罩盖满全屏 + 3-2-1 倒数后跳转
+            // （跳转目标用 #cd-smoke 锚点，不导航不扣款；真实环境跳 Stripe URL）
+            var realPost = window.MN_API.post;
+            window.MN_API.post = function () { return Promise.resolve({ ok: true, data: { url: '#cd-smoke' } }); };
+            pc.click();
+            await new Promise(function (r) { setTimeout(r, 3200); });
+            window.MN_API.post = realPost;
+            var ov = document.getElementById('cdOverlay');
+            var orr = ov ? ov.getBoundingClientRect() : { width: 0, height: 0, top: -1, left: -1 };
+            b.cdActive = ov ? ov.classList.contains('active') : false;
+            b.cdNum = (document.getElementById('cdNum') || {}).textContent || '';
+            b.cdText = (document.getElementById('cdText') || {}).textContent || '';
+            b.cdSub = (document.getElementById('cdSub') || {}).textContent || '';
+            b.cdFullscreen = orr.width === window.innerWidth && orr.height === window.innerHeight && orr.top === 0 && orr.left === 0;
+            b.cdJumped = location.hash === '#cd-smoke';
           } else {
             b.clickSkipped = pc ? (pc.dataset.guestLink ? 'guest' : (pc.disabled ? 'disabled' : 'pay-enabled-no-click')) : 'no-cta';
           }
