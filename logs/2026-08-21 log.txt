@@ -213,3 +213,37 @@ c9 legacy 滑杆 60 对照：tech band 填充 rgb(34,211,238) + 环带 borderIma
 
 Ctrl+F5 后看徽标 FC v10.21：tech 板/藏宝板/纸板的环带与边距带现在完全
 不透明（油漆本就是）；如果用的是纯色板，透明度滑杆拉到 100 即不透明。
+
+## FluidCanvas v10.22 — 环带与边距带一体（用户「为啥他和边缘不是一体的」）
+
+用户反馈（第 10 次撞外板）：边距带填充与环带不是一体，接缝可见。
+
+### 根因
+
+外板由两个图层各画一半：环带走 border-image（同一根渐变被压进 16px 环带
+取样）、边距带走 .card-outer-band 背景（渐变在整块板盒取样）——同一渐变、
+两处取样区域不同 → 环带内缘（≈渐变 100% 端）与边距带外缘（≈0% 端）颜色
+跳变，读作两块拼起来的。
+
+### v10.22 修复（docs/pages/fluidcanvas-editor.html，无新草稿字段）
+
+1. 两条板规则删除 border + border-image 环带——环带并入 .card-outer-band
+   本层：环带+边距带 = 同一渐变在整块板盒一次取样、连续铺开，一体无色缝；
+   band 在任何 gap 下都创建（gap 0 的板 = band 画出的 extent 厚环带）。
+2. 板 ::before 只剩 box-shadow（glow + 1px 边线）勾外轮廓，主题剪影/
+   圆角形状不变。徽标 FC v10.22。
+
+### 冒烟（tmp 电池，跑完即删）
+
+48/48 PASS，0 console error（环境性 404 过滤不变）。9 旗卡草稿：::before
+无 border 环带四型实证（paint/treasure/tech/legacy）+ 1px 边线/glow 保留
+（主题卡有、legacy 无边线 v10.9 亦然）；band 整盒连续渐变（Chrome 隐式
+0%/100% 色标不序列化——断言按序列化后字面量）；gap 0 band 存在 inset
+-16px（环带本体）；运行时 gap 0↔16 band 持续存在、inset -16px↔-32px；
+v10.21（剥 alpha 三型 + legacy 滑杆 100/60 双证）+ v10.20（板 z -1 四型 /
+不盖图 / 卡级 z 2 / select 9 档）全量回归。
+
+### 待用户复核
+
+Ctrl+F5 后看徽标 FC v10.22：外板现在是一整块连续渐变（科技板 = 青→紫
+一气呵成），外缘有 1px 边线 + 辉光勾轮廓，接缝消失。
