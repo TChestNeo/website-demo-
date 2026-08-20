@@ -1,0 +1,54 @@
+# 2026-08-21 工作日志
+
+## FluidCanvas v10.17 — 油漆外板环带「被吃掉一部分」修复
+
+用户反馈（第 5 次撞外板环带）：「并没有还是一样被吃掉了一部分」，并提供截图
+（docs/assets/image/Screenshot 2026-08-21 010843.png，未入库）。截图像素分析
+（PowerShell System.Drawing 色图，Chrome/Edge 151 全黑截图管线阻断期间）：
+环带上/右/下三段渲染正常，左下段缺失。
+
+### 根因（两条并存）
+
+1. **油漆剪影咬断 16px 环带**：主题板规则 clip-path: var(--card-clip) 把 border
+   环带裁成主题形状；油漆剪影（mn-paint-clip-1~6，clipPathUnits=objectBoundingBox）
+   是「内缩水彩/锯齿墨迹」异形（边缘 0.88~1.01、油漆5 整圈内缩 0.94），在板盒
+   （比卡大 extent+gap）上按百分比重解析后比环带内缘（≈(W+s+g)/(W+2s)≈0.947）
+   更深/更内 → 环带被裁成断带/近乎全无（用户截图左下段缺失即此）。纸/藏宝/科技
+   切角是「盒满剪影」（角部小裁角），环带咬角属设计观感，维持剪影不动。
+2. **板 z-index:-1 垫底**：环带画在所有卡之下，两张卡相叠时上卡把下卡环带盖住。
+   用户截图左段被邻卡压掉即此。
+
+### v10.17 修复（docs/pages/fluidcanvas-editor.html）
+
+- 新增 `.grid-card.card-edge-paint.has-outer-bg::before` 覆盖规则（0,3,1，同特异
+  度源序在后）：clip-path: none + border-radius: var(--outer-radius)——油漆板环带
+  免剪影、改圆角边框（同 legacy），extent/gap 任意值环带都完整；油漆笔刷边仍由
+  卡身剪影（tint/满幅子层）承载，不丢主题特征。
+- 两条板规则（legacy + 主题组）z-index: -1 → 1：环带恒画在所有卡内容之上。
+  环带在卡盒外（inset 负值）不压本卡内容，无副作用。
+- 版本徽标 FC v10.17 + 版本注释（v10.17 无新草稿字段，老草稿零迁移）。
+
+### 冒烟（tmp 电池，跑完即删；本机截图管线仍全黑 → DOM computed 断言 + 用户复核）
+
+22/22 PASS，0 console error。草稿复刻用户真实状态（paint1 卡 + outerEdge paint1
+旧草稿 + gap 12；treasure 同构对照；legacy 纯色板）：
+- paint 板 ::before：clip-path none（修复①实证）/ z-index 1（修复②实证）/
+  border 16px / background transparent / radius 36px（卡圆角+extent+gap 算法）/
+  border-image = paint1 红色渐变（环带显色走 tint）/ inset top -28px（16+12）；
+  .card-tint 子层仍走 mn-paint-clip-1 剪影（卡身特征保留）
+- treasure 板：剪影 map-wave-clip 保持（设计裁角不动）/ z 1 / border 16px
+- legacy 纯色板：z 1 / clip none / border 16px / radius 32px
+- 徽标 FC v10.17 在 DOM；3 卡 + demo 全渲染；0 console error
+
+电池排障三连（记教训）：① CDP target 必须取 /json 里 type==='page' 的项——
+list[0] 可能是组件扩展后台页（chrome-extension://…，bodyLen 3 的空 <body>）；
+② 主流程包 try/finally，崩溃也 taskkill 子 Chrome + 关 server + 删 profile（否则
+孤儿进程劫持端口，下轮跑全歪）；③ 油漆卡环带显色依赖 outerEdge（--outer-tint =
+EDGE_STYLES[outerEdge].tint），v10.15 起油漆主题不再自动带外板——用户截图状态
+是 v10.15 前旧草稿（outerEdge 已存）。草稿只写 cardEdge 会得到隐形环带假阴性。
+
+### 待用户复核
+
+Ctrl+F5 后看左上角徽标 FC v10.17 确认新版本；再看原画布：油漆卡外板环带应完整
+一圈（圆角、红色渐变），不再缺段；相叠的卡不再盖掉彼此的环带。
+若仍有问题，卸载护栏不变：整块「外板边距」功能移除（gap 恒 0 = v10.9 样貌）。
