@@ -397,14 +397,18 @@
       position: absolute;
       z-index: -1;
       /* v10.10: + var(--outer-gap, 0px) — 外板边距把板再推远 gap（默认 0）。
-         v10.12: gap>0 时 .card-outer-hole 子层挖空板中间（至卡+gap），
-         可见环 = extent 厚、距卡 gap（实心板盒本身内沿贴死卡边）。 */
+         v10.16: gap>0 时可见环带由 --outer-mask 挖空板中间实现（板盒仍
+         为实心填充盒）：mask 只保留外沿 extent 厚一圈，中间真透明 →
+         画布网格透出。v10.12 曾用 .card-outer-hole 实心画布色层挖空 —
+         用户反馈「调整间距时出现白色背景」后移除（2026-08-21）。 */
       inset: calc(-1 * (var(--outer-extent, 16px) + var(--outer-gap, 0px)));
       border-radius: var(--outer-radius, 20px);
       background-color: var(--outer-bg, transparent);
       background-image: var(--outer-tint, none);
       border: var(--outer-border, none);
       box-shadow: var(--outer-glow, none);
+      mask-image: var(--outer-mask, none); /* v10.16 — 4 条渐变环带（applyOuterBg 写入） */
+      mask-clip: no-clip; /* v10.16 — 光晕在板盒外，不被 mask 裁掉 */
     }
     /* v10.2 — clip layer (::before) + overlay (::after). While a card
        theme is active the themed ::before rule replaces every plate
@@ -482,6 +486,8 @@
       background-image: var(--outer-tint, none);
       border: var(--outer-border, none);
       box-shadow: var(--outer-glow, none);
+      mask-image: var(--outer-mask, none); /* v10.16 — 环带 mask 与剪影 clip-path 各自独立：剪影环带保留（见 legacy 板规则） */
+      mask-clip: no-clip; /* v10.16 — 光晕在板盒外，不被 mask 裁掉 */
     }
     /* v10.8 — the silhouette layer when the plate coexists. applyCardBg
        creates/removes the div. z-index:-1 + later tree order than ::before
@@ -491,12 +497,13 @@
        v10.11 — the v10.10 gap-fill (inset -gap) is reverted: the tint
        stays at the card bounds at every gap; it no longer paints the
        margin band.
-       v10.12 — the margin-band hole is now the .card-outer-hole child
-       (rule below): it paints canvas color over the plate's middle
-       (card+gap region), so the visible ring is extent-thick at distance
-       gap. Tree order plate ::before → hole → tint (applyOuterBg inserts
-       the hole before the tint; applyCardBg inserts the tint after the
-       hole — order-independent either way). */
+       v10.16 — the margin ring no longer uses a painted hole layer
+       (.card-outer-hole removed, user feedback 2026-08-21: the flat
+       canvas-color band read as a white background). The plate itself
+       is masked to the outer extent ring (--outer-mask), so the margin
+       band is truly transparent and the canvas grid shows through.
+       Tree order plate ::before → tint (applyCardBg inserts the tint
+       first — no hole to order around any more). */
     .grid-card .card-tint {
       position: absolute;
       z-index: -1;
@@ -504,37 +511,6 @@
       background-color: var(--card-tint-base, var(--card-bg-color));
       background-image: var(--card-layers, none);
       clip-path: var(--card-clip, none);
-      pointer-events: none;
-    }
-    /* v10.12 — the margin-band hole (外板边距的真正可见间距). The plate
-       ::before is a FILLED box at inset -(extent+gap) — without this layer
-       its visible inner edge always sits at the card edge and the gap is
-       invisible (user feedback on v10.10/v10.11: the image stayed glued
-       to the plate no matter the gap). This child covers the plate's
-       middle up to card+gap, leaving only the outer band
-       [-(extent+gap), -gap] visible: an extent-thick ring at distance gap
-       from the card — the visible margin between card and plate = gap,
-       incrementing 1:1 with the slider. Painted in the canvas base color
-       so the band reads as empty board (the faint canvas grid lines stop
-       at the band — accepted, they are ~8% alpha). Created by
-       applyOuterBg only when gap>0 (gap 0 keeps the v10.9 look exactly);
-       removed at gap 0 / outer removal. Radius = card radius + gap
-       (--outer-radius - extent). NOT clipped to the silhouette: the band
-       must hug the full rect (a clipped hole would let the plate peek
-       through at torn edges). Assumes the card's z 0 layers (image /
-       stripes / tint) cover the card region — true for every outer-bg
-       card (flag cards always carry an image).
-       v10.13 — with a bg image the image covers the plate box and its
-       --outer-img-clip keeps only the same ring band (image = the outer
-       background band); the hole (z -1, below the image) still paints
-       the margin band canvas color and its outer corner radius
-       (card radius + gap) matches the image clip's inner corner exactly. */
-    .grid-card .card-outer-hole {
-      position: absolute;
-      z-index: -1;
-      inset: calc(-1 * var(--outer-gap, 0px));
-      border-radius: calc(var(--outer-radius, 0px) - var(--outer-extent, 16px));
-      background-color: var(--color-surface-container-lowest);
       pointer-events: none;
     }
     /* Full-bleed children must be clipped to the silhouette too — the
@@ -2082,7 +2058,7 @@
     // Save current card positions to active preset before persisting
     saveCurrentPresetCards();
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now a mask on the plate ::before itself: --outer-mask = 4 hard gradient strips derived from outerBgExtent keeping the outer extent band; the margin band is truly transparent and the canvas grid shows through — user feedback 2026-08-21: white background while adjusting the gap)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -3996,11 +3972,11 @@
         if (!tintEl) {
           tintEl = document.createElement('div');
           tintEl.className = 'card-tint';
-          // v10.12: insert AFTER the .card-outer-hole (which paints the
-          // plate's middle up to card+gap) so the tint paints the card
-          // over the hole; without a hole keep the firstChild insertion.
-          var holeEl = card.querySelector('.card-outer-hole');
-          card.insertBefore(tintEl, holeEl ? holeEl.nextSibling : card.firstChild);
+          // v10.16: .card-outer-hole removed (the margin ring is now a
+          // mask on the plate itself) — plain firstChild insertion as
+          // before v10.12. z -1 + later tree order paints the tint above
+          // the plate ::before, below the z 0 image/stripes layers.
+          card.insertBefore(tintEl, card.firstChild);
         }
       } else if (tintEl) {
         tintEl.remove();
@@ -4064,8 +4040,7 @@
       card.style.removeProperty('--outer-glow');
       card.style.removeProperty('--outer-gap'); // v10.10
       card.style.removeProperty('--outer-img-clip'); // v10.13
-      var hole0 = card.querySelector('.card-outer-hole');
-      if (hole0) hole0.remove(); // v10.12
+      card.style.removeProperty('--outer-mask'); // v10.16
       return;
     }
     var extent = card.dataset.outerBgExtent != null ? parseInt(card.dataset.outerBgExtent) : 16; // v10.8: 16px spec (was 12)
@@ -4080,12 +4055,11 @@
     // background band at distance gap from the card (user feedback: the
     // image must stay visible as the margin grows, not vanish under the
     // flag image). Polygon = full rect XOR square rect at inset extent
-    // (= [−gap, card+gap], the hole's outer box). The cut's corners stay
-    // square on purpose: the corner slivers outside the hole's rounded
-    // corners (radius cardR+gap) are plate-colored in the no-image case
-    // too (the hole is a rounded rect and never covers them), and the
-    // transparent image lets the plate show there identically — the
-    // square cut aligns exactly.
+    // (= [−gap, card+gap], the masked-out plate middle). The cut's
+    // corners stay square on purpose: the corner slivers between the
+    // square cut and the plate's rounded outer corners show the plate
+    // band identically in the no-image case (the transparent image lets
+    // the plate show there too) — the square cut aligns exactly.
     // Why not a 2-layer mask (full rect XOR square rect, mask-composite
     // exclude): Chrome accepts non-add mask-composite values syntactically
     // but does not render them (CSS.supports('mask-composite','source-
@@ -4102,25 +4076,24 @@
     } else {
       card.style.setProperty('--outer-img-clip', 'none');
     }
-    // v10.12 — the margin-band hole: covers the plate's middle at card+gap
-    // so the visible ring is extent-thick at distance gap (the plate box is
-    // filled — without this its visible inner edge stays glued to the card
-    // and no margin appears, user feedback on v10.11). Painted canvas base
-    // color → the band reads as empty board. Only exists at gap>0 (gap 0
-    // keeps the v10.9 look exactly). Inserted BEFORE the tint so it paints
-    // above the plate ::before and below the tint; applyCardBg inserts the
-    // tint after the hole — order-independent either way.
-    var hole = card.querySelector('.card-outer-hole');
-    if (gap > 0) {
-      if (!hole) {
-        hole = document.createElement('div');
-        hole.className = 'card-outer-hole';
-        var tint = card.querySelector('.card-tint');
-        card.insertBefore(hole, tint || card.firstChild);
-      }
-    } else if (hole) {
-      hole.remove();
-    }
+    // v10.16 — the margin-band ring via mask on the plate itself: 4 hard
+    // gradient strips keep only the outer extent-thick band of the plate
+    // box (the box is filled — without the cut its visible inner edge
+    // stays glued to the card and no margin appears, user feedback on
+    // v10.11). The masked middle is truly transparent → the canvas grid
+    // shows through the margin band. v10.12's .card-outer-hole painted it
+    // flat canvas base color instead — user feedback 2026-08-21: a white
+    // background while adjusting the gap → removed. Multi-layer masks
+    // composite with default add, the only mask-composite mode Chrome
+    // renders (pixel-proven in the v10.13 investigation). Silhouette
+    // clip-path / border-radius / border / glow are independent of the
+    // mask and all preserved. Harmless at gap 0 (the kept band is exactly
+    // the visible plate — gap 0 keeps the v10.9 look).
+    card.style.setProperty('--outer-mask',
+      'linear-gradient(to bottom, #000 var(--outer-extent, 16px), transparent var(--outer-extent, 16px)), ' +
+      'linear-gradient(to top, #000 var(--outer-extent, 16px), transparent var(--outer-extent, 16px)), ' +
+      'linear-gradient(to right, #000 var(--outer-extent, 16px), transparent var(--outer-extent, 16px)), ' +
+      'linear-gradient(to left, #000 var(--outer-extent, 16px), transparent var(--outer-extent, 16px))');
     card.style.setProperty('--outer-bg', color ? hexToRgba(color, Math.max(0, Math.min(1, op / 100))) : 'transparent');
     card.style.setProperty('--outer-tint', edge ? edge.tint : 'none');
     // computed radius picks up edge-theme radii too (inline is cleared);

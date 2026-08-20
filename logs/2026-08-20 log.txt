@@ -362,3 +362,35 @@
   （stdio 改 ignore）+ httpGet 错误路径 JSON.parse(undefined) 崩溃（改 reject 重试）。
 - 渲染效果请用户实机肉眼复核（本机截图管线仍全黑）：右键卡片 → 背景边缘 → 油漆1~6；
   内容/标签不再被裁。旧草稿自动迁移无需重做。
+
+### 6.7 v10.16 外板边距白底修复 — mask 环带取代 .card-outer-hole（2026-08-21）
+
+用户反馈「为什么当我调整间距的时候会出现一个白色背景」：v10.12 的 .card-outer-hole
+挖空层（gap>0 时盖住板中间至卡+gap、画成画布底色）——flat 底色盖掉画布网格线，间距带
+读作一块白底。2026-08-21 移除该层，环带改由外板自身 mask 实现：
+
+- 板 ::before 加 mask-image: var(--outer-mask, none)（legacy + themed 两条板规则）：
+  --outer-mask = 4 条硬边线性渐变（to bottom/top/right/left，黑色到 --outer-extent）
+  只留板盒外沿 extent 厚一圈，中间真透明 → 画布网格直接透出。多层 mask 默认 add
+  composite —— Chrome 唯一渲染的 composite 值（v10.13 像素实证），无语法风险。
+- 剪影 clip-path / border-radius / 边框 / 光晕与 mask 各自独立，全部保留：themed 板
+  的剪影环带（v10.8 HUD 外框）不变；圆角不被覆盖（clip-path 环带方案会吃掉圆角，
+  弃用）；光晕在板盒外 → mask-clip: no-clip 防被裁。
+- gap=0 时 mask 保留带与可见板完全一致（v10.9 样貌零变化），故 mask 无条件设置、
+  outer 移除时清掉；--outer-img-clip（v10.13 图片环带 polygon）不动。
+- applyOuterBg 删 hole 创建/移除块，改写 --outer-mask；applyCardBg tint 插入回退
+  firstChild；v:9 注释补 v10.16（无新字段）。
+- edge-themes-demo.html 同构：::before 只剩板 tint + mask 环带，卡片本体层独立为
+  .plate-body 子层（inset 0 骑卡同剪影，= 编辑器 .card-tint），.plate-hole 移除，
+  4 张样张全部补 body 层，注释/说明同步。
+- 冒烟（tmp 电池跑完即删）：编辑器 27/27 PASS（legacy gap12：hole 无/--outer-mask
+  4 渐变/computed maskImage 4 渐变/mask-clip no-clip×4/圆角 36px 保留/clip none/板色
+  rgb(18,52,86)/--outer-gap 12px；treasure gap12：剪影 clip 保留 + mask 4 渐变 +
+  tint 在 + .card-tint 层在；tech4 gap0：mask 照设 + hud-frame-4 剪影保留；paint5：
+  无板无 mask；滑块 0↔12 往返 gap/img-clip 正确）+ 演示页 7/7（plate-hole 全无/
+  plate-body×4/mask 渐变/gap 样张/img-band polygon/body 剪影与底色）；0 console error。
+  电池基建修复：nav 等待从 readyState 收紧到 #gridCanvas（about:blank 立即 complete
+  导致 localStorage SecurityError）+ 静态服务 startsWith 正反斜杠不匹配 403
+  （path.resolve 统一）。
+- 渲染效果请用户实机 Ctrl+F5 肉眼复核：调「外板边距」滑块，间距带应是画布网格透出
+  而非白底；主题卡（纸/藏宝/科技）剪影外板环带照旧；油漆卡不受影响。

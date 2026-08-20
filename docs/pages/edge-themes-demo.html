@@ -324,22 +324,21 @@
               drop-shadow(0 12px 26px rgba(0, 0, 0, 0.40));
     }
     .card-tech--plated::before {
-      /* v10.10: 板再外推 gap。v10.12: 内层实心层改铺到 [−gap, 100%+gap]
-         （position = plate，size = 100% + 2×gap）——板盒是实心的，内层
-         只盖卡片本体的话可见环内沿永远贴死卡边、gap 不可见。内层铺到
-         卡+gap 之后，可见环带 = [−(plate+gap), −gap]（厚 plate、距卡
-         gap）；间距带 [−gap, 0] 由 .plate-hole 子层挖成页面底色（下方
-         规则，编辑器 .card-outer-hole 的同构版）。 */
+      /* v10.10: 板再外推 gap。v10.16: 可见环带由 mask 只留板盒外沿
+         plate 厚一圈实现（中间真透明 → 页面底色透出）——v10.12 曾用
+         .plate-hole 实心挖空层画页面底色，编辑器用户反馈「调整间距时
+         出现白色背景」后两个机制统一换成 mask（编辑器 --outer-mask
+         的同构版；多层 mask 默认 add composite，Chrome 渲染 ✓）。卡片
+         本体层移到 .plate-body 子层（下方规则）。 */
       inset: calc(-1 * (var(--plate) + var(--plate-gap)));
       border: 1px solid var(--plate-border); /* 板边框：跟随板盒四边，切角处被剪影裁掉 */
       background-color: transparent;
-      background-image:
-        var(--plate-tint),
-        linear-gradient(135deg, var(--tech-bg), var(--tech-bg2)) calc(var(--plate)) calc(var(--plate)) / calc(100% + 2 * var(--plate-gap)) calc(100% + 2 * var(--plate-gap)) no-repeat,
-        repeating-linear-gradient(0deg, var(--tech-grid) 0 1px, transparent 1px 22px) calc(var(--plate)) calc(var(--plate)) / calc(100% + 2 * var(--plate-gap)) calc(100% + 2 * var(--plate-gap)),
-        repeating-linear-gradient(90deg, var(--tech-grid) 0 1px, transparent 1px 22px) calc(var(--plate)) calc(var(--plate)) / calc(100% + 2 * var(--plate-gap)) calc(100% + 2 * var(--plate-gap)),
-        radial-gradient(ellipse 120% 90% at 18% 0%, var(--tech-cyan), transparent 60%) calc(var(--plate)) calc(var(--plate)) / calc(100% + 2 * var(--plate-gap)) calc(100% + 2 * var(--plate-gap)) no-repeat,
-        radial-gradient(ellipse 120% 90% at 82% 100%, var(--tech-violet), transparent 60%) calc(var(--plate)) calc(var(--plate)) / calc(100% + 2 * var(--plate-gap)) calc(100% + 2 * var(--plate-gap)) no-repeat;
+      background-image: var(--plate-tint);
+      mask-image:
+        linear-gradient(to bottom, #000 var(--plate), transparent var(--plate)),
+        linear-gradient(to top, #000 var(--plate), transparent var(--plate)),
+        linear-gradient(to right, #000 var(--plate), transparent var(--plate)),
+        linear-gradient(to left, #000 var(--plate), transparent var(--plate));
     }
     /* v10.9 — 背景图适配外板：图片子层外扩到板盒，同一剪影对更大的盒
        解析 = 外板剪影 → 图片铺满整个外背景（图片 z 0 在板 ::before
@@ -360,11 +359,11 @@
     }
     /* v10.13 — 图片环带 clip（编辑器 --outer-img-clip 的同构版）：
        evenodd polygon 环带（外矩形 = 图片盒、内矩形 inset plate =
-       [−gap, 卡+gap]，与 .plate-hole 的外盒完全重合）→ 只保留环带
-       [−(plate+gap), −gap]（厚 plate、距卡 gap）；中间（间距带 +
-       卡区域）被裁掉，露出下方挖空层与卡片本体。切角保持方角：挖空
-       层圆角外的角片在无图样张里就是板色（演示页板被剪影裁剪、圆角
-       为 0，角片为空），图片在角片处透明 → 板色透出，两种样张一致。
+       [−gap, 卡+gap]，与 v10.16 mask 挖空的板中间完全重合）→ 只保留
+       环带 [−(plate+gap), −gap]（厚 plate、距卡 gap）；中间（间距带 +
+       卡区域）被裁掉，露出下方板 mask 的透明区与卡片本体。切角保持
+       方角：演示页板被剪影裁剪、圆角为 0，角片为空，图片在角片处
+       透明 → 板色透出，两种样张一致。
        为何不用 2 层 mask（整块 XOR、mask-composite exclude）：Chrome
        对非 add composite 值语法接受但不渲染（像素实证）——evenodd
        polygon 单层、无 composite、渲染正确。clip-path 是几何裁剪、
@@ -375,29 +374,26 @@
         calc(100% - var(--plate)) calc(100% - var(--plate)),
         var(--plate) calc(100% - var(--plate)), var(--plate) var(--plate));
     }
-    /* v10.12 — 间距带挖空层（编辑器 .card-outer-hole 的演示同构版）：
-       盖住板的中间 [−gap, 100%+gap] 并画成页面底色 → 可见环带
-       [−(plate+gap), −gap] 厚 plate、距卡 gap，间距带读作空白。
-       树序在 ::before（生成内容先于真实子元素）之后、图片 (z 0) 与
-       内容 (z 1) 之下。gap 样张手写该子层；gap=0 时无需存在
-       （板即外背景，v10.9 样张）。
-       v10.13 — 本层加 evenodd clip 只画间距带（环带内矩形 inset
-       gap = 卡片区域 [0, 100%]）：v10.12 无 clip 时会把内层实心层
-       的卡片区域一起盖掉 → 无图样张卡片中空（用户反馈「还有个 bug
-       不会描述」的演示页对应面）。编辑器版挖空层在 z -1（tint/图片
-       之下）无需 clip；演示版 z auto 在 ::before 之上、卡内容之下，
-       必须裁出卡区域。为何不用 2 层 mask：Chrome 非 add composite
-       不渲染（见 .img-band 注释）。切角保持方角：演示板被剪影裁剪、
-       圆角为 0，角片为空，方角切除即精确对齐。 */
-    .card-tech--plated .plate-hole {
+    /* v10.16 — 卡片本体层（编辑器 .card-tint 的演示同构版）：v10.12
+       时代本体层画在 ::before 上（position/size 铺到 [−gap, 100%+gap]），
+       环带改用 mask 后 ::before 只剩板 tint，本体层独立成子层 ——
+       inset 0 骑卡、同剪影，树序在 ::before 之上、图片 (z 0) 与内容
+       (z 1) 之下。间距带 [−gap, 0] 由板的 mask 挖成真透明 → 页面
+       底色透出（v10.12 的 .plate-hole 实心挖空层移除，编辑器用户
+       反馈白色背景）。 */
+    .card-tech--plated .plate-body {
       position: absolute;
-      inset: calc(-1 * var(--plate-gap));
-      background: #101018; /* 页面底色（编辑器用画布底色 var） */
+      inset: 0;
+      z-index: -1;
+      clip-path: var(--tech-clip);
+      background-color: var(--tech-bg);
+      background-image:
+        linear-gradient(135deg, var(--tech-bg), var(--tech-bg2)),
+        repeating-linear-gradient(0deg, var(--tech-grid) 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(90deg, var(--tech-grid) 0 1px, transparent 1px 22px),
+        radial-gradient(ellipse 120% 90% at 18% 0%, var(--tech-cyan), transparent 60%),
+        radial-gradient(ellipse 120% 90% at 82% 100%, var(--tech-violet), transparent 60%);
       pointer-events: none;
-      clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0,
-        var(--plate-gap) var(--plate-gap), calc(100% - var(--plate-gap)) var(--plate-gap),
-        calc(100% - var(--plate-gap)) calc(100% - var(--plate-gap)),
-        var(--plate-gap) calc(100% - var(--plate-gap)), var(--plate-gap) var(--plate-gap));
     }
   </style>
 </head>
@@ -589,12 +585,14 @@
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--plated" style="width:150px;height:95px">
+        <div class="plate-body"></div>
         <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4 + 外板</strong></div>
       </div>
       <div class="note"><b>v10.8</b> — 选主题自动带外板（编辑器 16px，演示 <code>--plate:14px</code>）：剪影等比放大一圈 + 板边框/光晕，阴影跟随外板</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--plated" style="width:150px;height:95px">
+        <div class="plate-body"></div>
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23334'/%3E%3Cstop offset='1' stop-color='%23633'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='100' fill='url(%23g)'/%3E%3C/svg%3E" alt="">
         <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4 + 外板 + 背景图</strong></div>
       </div>
@@ -602,14 +600,14 @@
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--plated" style="width:150px;height:95px;--plate-gap:12px">
-        <div class="plate-hole"></div>
+        <div class="plate-body"></div>
         <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4 + 外板 + 边距</strong></div>
       </div>
-      <div class="note"><b>v10.10→v10.12</b> — 外板边距 <code>--plate-gap:12px</code>（编辑器「外板边距」滑块）：板再外推 12px，环带厚 14px、距卡 12px；间距带由 <code>.plate-hole</code> 子层挖成页面底色（编辑器同构 <code>.card-outer-hole</code>，画布底色）——真正空白，不再是衬边。v10.13 起挖空层带 clip 只画间距带，不再盖住卡片区域</div>
+      <div class="note"><b>v10.10→v10.16</b> — 外板边距 <code>--plate-gap:12px</code>（编辑器「外板边距」滑块）：板再外推 12px，环带厚 14px、距卡 12px；间距带由板 mask 挖成真透明（页面底色透出）——真正空白，不再是衬边。v10.16 起环带改 mask（.plate-hole 实心层移除：用户反馈白色背景），卡片本体独立成 .plate-body 子层</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--plated img-band" style="width:150px;height:95px;--plate-gap:12px;--plate-img:calc(var(--plate) + var(--plate-gap))">
-        <div class="plate-hole"></div>
+        <div class="plate-body"></div>
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23334'/%3E%3Cstop offset='1' stop-color='%23633'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='100' fill='url(%23g)'/%3E%3C/svg%3E" alt="">
         <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">外板 + 边距 + 背景图</strong></div>
       </div>
