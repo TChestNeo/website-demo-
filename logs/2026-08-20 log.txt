@@ -279,3 +279,24 @@
      （右键卡片 → Border Edge Style → Blurred (虚化)）。
    - 待办不变：FluidCanvas 新需求清单 + 后端剩余攒批；截图管线修好前
      冒烟纪律降级为 DOM 断言 + 用户肉眼复核。
+
+## 6.4 FluidCanvas 虚化边缘整体移除（2026-08-20，用户：「还是这样你先移除刚才提出的虚化」）
+
+用户三次反馈虚化不可见（①「为什么是阴影而不是边缘虚化」②「还是一样没有」+ Gemini 方案参考 ③「还是这样」），
+最终下令移除。移除方式：editor 文件整体恢复到 92b669c 之前（6e56cfe）——::before 内缩虚化与 mask 羽化
+重写一并撤净，菜单回到 7 项经典样式（Solid/Dashed/Dotted/Double/Groove/Ridge/None），虚化零残留
+（grep 0 处）。
+
+- mask 羽化版实现记录（已移除，留档供将来重做参考）：卡片羽化 = JS 按卡尺寸生成 SVG data-URI 蒙版
+  （feGaussianBlur stdDeviation 按 bbox 单位 = 羽化px/卡尺寸，宽度滑杆联动 4~24px，maskSize 100% 100%
+  + maskRepeat no-repeat 双陷阱）；图片羽化 = 静态 CSS 蒙版作用于 .card-img-bg（固定 6%）。持久化走
+  borderStyle 'blurred'/'blurred-img' 值 + 类标记，无新草稿字段。
+- 旧页面缓存嫌疑：dev-serve 原本只有 Content-Type 无缓存头，浏览器对无 ETag HTML 做启发式缓存 →
+  用户可能一直看到旧页面。已给静态响应加 Cache-Control: no-cache 并重启 dev-serve（此修复保留，
+  不随虚化撤销）。
+- 冒烟（tmp 电池/AB/探针全部跑完即删）：A/B 验证过恢复/蒙版生成/σ 数学/模态框序列全 SAFE，但电池
+  在 E1 起连续多次 eval timeout（本机 headless Chrome 151 主线程挂起病，无 crash 事件，A/B 永不复现，
+  逐行拆步 E1a-f 六步均存活——机器级 flakiness，未查明，已随功能移除失去追查价值）。
+- 移除后回归冒烟：草稿恢复 + 模态框 7 选项（无 Blurred/虚化字样）+ 0 console error PASS。
+- 结论：虚化边缘产品效果未达用户预期（本机截图管线全黑无法像素自证），按用户指令整体移除，
+  不做降级保留。待办不变：FluidCanvas 新需求清单 + 后端剩余攒批。

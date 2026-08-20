@@ -165,21 +165,6 @@
       box-shadow: var(--card-shadow, var(--shadow-sm)), 0 0 0 3px var(--color-primary-fixed-dim);
     }
     .grid-card.dragging { cursor: grabbing; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
-    /* v10.14: 虚化边缘 — 模糊的是边线本身：::before 画一条与卡片同宽同色的
-       边框线再 filter:blur()，锐利边界扩散成柔和过渡（向内弥散；向外被
-       overflow:hidden 裁掉，外轮廓保持锐利）。宽度/颜色/模糊量由
-       applyCardBlurEdge 写入 --blur-edge-* 变量，与宽度滑杆/颜色选择器联动；
-       真边框设透明，与 box-shadow 体系（选中环/悬停/拖拽）零交集。 */
-    .grid-card.blur-edge { border-color: transparent !important; }
-    .grid-card.blur-edge::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      border: var(--blur-edge-w, 2px) solid var(--blur-edge-c, #c8c8d0);
-      filter: blur(var(--blur-edge-b, 4px));
-      pointer-events: none;
-    }
     .grid-card.cell-highlight::after {
       content: ''; position: absolute; inset: 0;
       background: var(--color-primary-fixed); opacity: 0.6; pointer-events: none; z-index: 1;
@@ -1291,8 +1276,7 @@
       parts.push(c.dataset.cardId);
       var label = c.querySelector('.card-label');
       if (label) parts.push(label.value);
-      parts.push(c.style.borderRadius, c.style.background,
-                 c.classList.contains('blur-edge') ? 'blurred' : c.style.borderStyle); // v10.14: 虚化边缘状态入指纹
+      parts.push(c.style.borderRadius, c.style.background, c.style.borderStyle);
       parts.push(c.dataset.rotate || '0');
       // v9: size + position — resize/drag-only changes must trip autosave
       parts.push(c.dataset.colSpan || '', c.dataset.rowSpan || '');
@@ -1831,15 +1815,9 @@
   function applyCardStyleFromDraft(card, cData) {
     if (cData.borderRadius) card.style.borderRadius = cData.borderRadius + 'px';
     if (cData.background) card.style.background = cData.background;
-    // v10.14: 虚化边缘 — 值级扩展 borderStyle 'blurred'（无新草稿字段），
-    // 类标记 + solid 兜底；光晕需等宽度/颜色到齐后重算
-    if (cData.borderStyle === 'blurred') {
-      card.classList.add('blur-edge');
-      card.style.borderStyle = 'solid';
-    } else if (cData.borderStyle) card.style.borderStyle = cData.borderStyle;
+    if (cData.borderStyle) card.style.borderStyle = cData.borderStyle;
     if (cData.borderColor) card.style.borderColor = cData.borderColor;
     if (cData.borderWidth) card.style.borderWidth = cData.borderWidth + 'px';
-    if (cData.borderStyle === 'blurred') applyCardBlurEdge(card);
     // v9.5: caption position + vertical writing (additive — legacy drafts
     // omit both and keep the centered horizontal default)
     if (cData.captionPos) card.dataset.captionPos = cData.captionPos;
@@ -1920,7 +1898,7 @@
         rotate: parseFloat(c.dataset.rotate) || 0,
         borderRadius: parseInt(c.style.borderRadius) || 8,
         background: c.style.background || '',
-        borderStyle: c.classList.contains('blur-edge') ? 'blurred' : (c.style.borderStyle || 'solid'),
+        borderStyle: c.style.borderStyle || 'solid',
         borderColor: c.style.borderColor || '',
         borderWidth: parseInt(c.style.borderWidth) || 2
       };
@@ -1986,7 +1964,7 @@
     // Save current card positions to active preset before persisting
     saveCurrentPresetCards();
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.14 adds NO new fields (虚化边缘 = borderStyle 'blurred' 值 + .blur-edge 类标记；边线模糊由 ::before 消费 --blur-edge-w/c/b 三变量，宽度/颜色/模糊量联动)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -3250,18 +3228,14 @@
       { name: 'Double', value: 'double' },
       { name: 'Groove', value: 'groove' },
       { name: 'Ridge', value: 'ridge' },
-      { name: 'Blurred (虚化)', value: 'blurred' },
       { name: 'None', value: 'none' }
     ];
-    var curStyle = selectedCard.classList.contains('blur-edge') ? 'blurred' : (selectedCard.style.borderStyle || 'solid');
+    var curStyle = selectedCard.style.borderStyle || 'solid';
     var curWidth = parseInt(selectedCard.style.borderWidth) || 2;
     var html = '';
     styles.forEach(function (s) {
-      var linePreview = s.value === 'blurred'
-        ? '<div style="width:60px;height:0;border-top:3px solid var(--color-on-surface);filter:blur(2.5px)"></div>'
-        : '<div style="width:60px;height:0;border-top:3px ' + s.value + ' var(--color-on-surface)"></div>';
       html += '<button class="card" style="padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid var(--divider-line);background:var(--card-bg);font-family:var(--font-family);font-size:13px;margin-bottom:4px;' + (s.value === curStyle ? 'border-color:var(--color-primary);box-shadow:0 0 0 2px var(--color-primary-fixed-dim)' : '') + '" onclick="applyCardBorderStyle(\'' + s.value + '\')">' +
-        linePreview +
+        '<div style="width:60px;height:0;border-top:3px ' + s.value + ' var(--color-on-surface)"></div>' +
         '<span>' + s.name + '</span></button>';
     });
     document.getElementById('borderStyleOptions').innerHTML = html;
@@ -3273,42 +3247,16 @@
 
   function applyCardBorderStyle(style) {
     if (!selectedCard) return;
-    if (style === 'blurred') {
-      // v10.14: 虚化边缘 — 边线本身模糊（::before 消费 --blur-edge-* 变量），
-      // 真边框设透明，与 box-shadow 体系（选中环/悬停/拖拽）零交集。
-      // 状态以 .blur-edge 类标记，序列化仍走 borderStyle 'blurred' 值。
-      selectedCard.classList.add('blur-edge');
-      selectedCard.style.borderStyle = 'solid';
-      applyCardBlurEdge(selectedCard);
-    } else {
-      selectedCard.classList.remove('blur-edge');
-      selectedCard.style.removeProperty('--blur-edge-w');
-      selectedCard.style.removeProperty('--blur-edge-c');
-      selectedCard.style.removeProperty('--blur-edge-b');
-      selectedCard.style.borderStyle = style;
-    }
+    selectedCard.style.borderStyle = style;
     openBorderStyleModal(); // refresh
     onContentChange();
   }
   window.applyCardBorderStyle = applyCardBorderStyle;
 
-  // v10.14: 虚化边缘三参数（线宽/颜色/模糊量）写入 CSS 变量，::before 消费。
-  // 模糊量随线宽缩放（2~8px），粗边线更糊、细边线更锐。
-  function applyCardBlurEdge(card) {
-    if (!card || !card.classList.contains('blur-edge')) return;
-    var w = parseInt(card.style.borderWidth) || 2;
-    var c = card.style.borderColor || '#c8c8d0';
-    card.style.setProperty('--blur-edge-w', w + 'px');
-    card.style.setProperty('--blur-edge-c', c);
-    card.style.setProperty('--blur-edge-b', Math.min(8, Math.max(2, w * 1.5)) + 'px');
-  }
-  window.applyCardBlurEdge = applyCardBlurEdge;
-
   function updateCardBorderWidth(val) {
     if (!selectedCard) return;
     selectedCard.style.borderWidth = val + 'px';
     document.getElementById('borderWidthVal').textContent = val + 'px';
-    applyCardBlurEdge(selectedCard); // v10.14: 虚化边线随宽度联动
     onContentChange();
   }
   window.updateCardBorderWidth = updateCardBorderWidth;
@@ -3316,7 +3264,6 @@
   function updateCardBorderColor(color) {
     if (!selectedCard) return;
     selectedCard.style.borderColor = color;
-    applyCardBlurEdge(selectedCard); // v10.14: 虚化边线随颜色联动
     onContentChange();
   }
   window.updateCardBorderColor = updateCardBorderColor;
@@ -4298,7 +4245,7 @@
       background: selectedCard.dataset.cardEdge
         ? (selectedCard.style.getPropertyValue('--card-tint-base') || '')
         : (selectedCard.style.background || ''),
-      borderStyle: selectedCard.classList.contains('blur-edge') ? 'blurred' : (selectedCard.style.borderStyle || 'solid'),
+      borderStyle: selectedCard.style.borderStyle || 'solid',
       borderColor: selectedCard.style.borderColor || '',
       borderWidth: selectedCard.style.borderWidth || '2px',
       rotate: selectedCard.dataset.rotate || '0',
@@ -4324,10 +4271,8 @@
       } else {
         msg.style.display = 'none';
         grid.innerHTML = templates.map(function (t) {
-          // v10.14: 虚化模板预览 — border 用 solid 兜底 + 整体微虚化示意
-          var tBlur = t.borderStyle === 'blurred' ? ';filter:blur(1.2px) drop-shadow(0 0 6px ' + (t.borderColor || '#c8c8d0') + ')' : '';
           return '<div class="flag-card-item" onclick="applyTemplate(\'' + t.id + '\')" style="cursor:pointer">' +
-            '<div style="width:100%;height:80px;border-radius:' + t.borderRadius + ';background:' + (t.background || 'var(--card-bg)') + ';border:' + t.borderWidth + ' ' + (t.borderStyle === 'blurred' ? 'solid' : t.borderStyle) + ' ' + (t.borderColor || 'var(--divider-line-strong)') + tBlur + ';display:flex;align-items:center;justify-content:center;transform:rotate(' + (t.rotate || 0) + 'deg)">' +
+            '<div style="width:100%;height:80px;border-radius:' + t.borderRadius + ';background:' + (t.background || 'var(--card-bg)') + ';border:' + t.borderWidth + ' ' + t.borderStyle + ' ' + (t.borderColor || 'var(--divider-line-strong)') + ';display:flex;align-items:center;justify-content:center;transform:rotate(' + (t.rotate || 0) + 'deg)">' +
               '<span style="font-size:11px;color:var(--color-on-surface)">' + t.name + '</span>' +
             '</div>' +
             '<div class="flag-name" style="display:flex;justify-content:space-between">' +
@@ -4349,20 +4294,9 @@
       if (!t) return;
       selectedCard.style.borderRadius = t.borderRadius;
       selectedCard.style.background = t.background;
-      // v10.14: 虚化模板套用 — 类标记 + solid + 光晕；非虚化清空残留
-      if (t.borderStyle === 'blurred') {
-        selectedCard.classList.add('blur-edge');
-        selectedCard.style.borderStyle = 'solid';
-      } else {
-        selectedCard.classList.remove('blur-edge');
-        selectedCard.style.removeProperty('--blur-edge-w');
-        selectedCard.style.removeProperty('--blur-edge-c');
-        selectedCard.style.removeProperty('--blur-edge-b');
-        selectedCard.style.borderStyle = t.borderStyle;
-      }
+      selectedCard.style.borderStyle = t.borderStyle;
       selectedCard.style.borderColor = t.borderColor;
       selectedCard.style.borderWidth = t.borderWidth;
-      if (t.borderStyle === 'blurred') applyCardBlurEdge(selectedCard);
       if (t.rotate) {
         selectedCard.dataset.rotate = t.rotate;
         selectedCard.style.transform = 'rotate(' + t.rotate + 'deg)';
@@ -4961,7 +4895,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (v10.14) — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (v10.13) — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -4970,7 +4904,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC v10.14';
+    b.textContent = 'FC v10.13';
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';

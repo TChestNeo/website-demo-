@@ -41,7 +41,11 @@ http.createServer((req, res) => {
   if (!file.startsWith(DOCS)) { res.writeHead(403); res.end(); return; }
   fs.readFile(file, (err, buf) => {
     if (err) { res.writeHead(404); res.end('Not found'); return; }
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
+    // dev: 强制每次校验（无 ETag 时浏览器会对 HTML 做启发式缓存 → 用户可能看到旧页面）
+    res.writeHead(200, {
+      'Content-Type': MIME[path.extname(file)] || 'application/octet-stream',
+      'Cache-Control': 'no-cache'
+    });
     res.end(buf);
   });
 }).listen(PORT, () => console.log(`dev-serve http://127.0.0.1:${PORT} (docs/ + /api → :${API_PORT})`));
