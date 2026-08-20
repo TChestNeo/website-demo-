@@ -89,7 +89,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             premiumPrice: document.getElementById('premiumPrice').textContent,
             pkgPrice: document.getElementById('pkgPremiumPrice').textContent,
             planCards: document.querySelectorAll('[data-plan-card]').length,
-            addonCtas: document.querySelectorAll('[data-addon-cta]').length
+            addonCtas: document.querySelectorAll('[data-addon-cta]').length,
+            // 功能矩阵（等级模型：普通用户 free / Basic / Premium / Ultra 四档 5 列）
+            matrixCols: document.querySelectorAll('table thead th').length,
+            matrixHead2: ((document.querySelector('table thead th:nth-child(2)') || {}).textContent || '').slice(0, 10),
+            matrixRows: document.querySelectorAll('table tbody tr').length,
+            matrixRow1Cells: (function () { var t = document.querySelector('table tbody tr'); return t ? t.querySelectorAll('td').length : 0; })()
           };
           for (var i = 0; i < 30 && !(window.__mnSubState && window.__mnSubState.ready); i++) {
             await new Promise(function (r) { setTimeout(r, 100); });

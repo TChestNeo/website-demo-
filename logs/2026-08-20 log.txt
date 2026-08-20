@@ -117,3 +117,30 @@
    - 配套：stripe-init.js 5 Product×2 价（Basic 12.00 学生价）+ 打印
      STRIPE_PRICE_BASIC[_ONCE] 行；stripe-setup.md §2 表 5 SKU + 10 价 +
      live 10 价 + deleted 降 free + 退款 PATCH free；lighthouse-setup.md 5×2。
+
+5. 前端收尾（用户指令「先把前端做完才一次过做完后端」→ AskUserQuestion 定范围：FluidCanvas 续迭代 + 付费/会员收尾；三决策：功能矩阵加普通用户列 / 门控暂不实弹 / 编辑器新需求等用户清单）
+   - 等级模型前端口径一致性修复（tier 模型变更的遗留）：
+     · fluidcanvas-editor.html isSubscriberUser：只认 premium/ultra →
+       计入三档付费层（u.tier 存在且 !== 'free'）——Basic 已是付费层
+       RM12/月，付费订阅判定必须含 basic；SUBSCRIPTION_TEST_MODE 保持
+       true 暂不实弹（用户拍板）。
+     · premium.html 功能矩阵：Basic/Premium/Ultra 三列 → 加「普通用户
+       （免费 Free）」第 1 列共 5 列；矩阵标题下加说明行「注册默认免费
+       普通用户层；Basic 为学生价方案（RM12/月）」；免费列按常识填
+       （基础统计 ✓、其余 ✕，待用户验收微调）。
+     · financial-terms.zh.js + financial-terms.html：订阅条款补「注册默认
+       获得免费普通用户层，无需订阅」+ Basic 标注学生价 RM12/月。
+     · screenshot.js premium 分支加矩阵断言（matrixCols/matrixHead2/
+       matrixRows/matrixRow1Cells）。
+   - 验证（本会话两个后台服务已停，先重启 :3000 后端 + :8080 dev-serve）：
+     · 编辑器门控一次性无头检查（tmp 脚本，跑完即删）：booted=true、
+       setSubscriptionTestMode(false) 下 none=false / free=false / basic=true
+       / premium=true / ultra=true / 恢复 true 后 true，0 console error；
+     · premium guest 冒烟：matrixCols=5、表头「普通用户免费 Free」、
+       matrixRows=10、matrixRow1Cells=5，banner/五卡「登录后订阅」/
+       chips 0 不变，0 console error；
+     · premium server（alice）冒烟：tier=basic 路径不变（Basic 卡
+       ✓ 当前方案 disabled + chip 1 + 申请流落库 MN-2026-000015 预期
+       污染），矩阵 5 列渲染，0 console error。
+   - 待办：FluidCanvas 新功能需求等用户清单；后端剩余（部署 + Stripe
+     实机联调）按用户指令攒批一次过。

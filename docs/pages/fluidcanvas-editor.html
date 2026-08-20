@@ -3568,8 +3568,9 @@
     if (SUBSCRIPTION_TEST_MODE) return true;
     try {
       // P6: 订阅判定改走云端 tier（服务端权威）；本地 slati_subscription 不再作为依据
+      // 等级模型（2026-08-20）：basic 已是付费层（RM12/月），订阅判定计入三档付费层；free 普通用户除外
       var u = SlatiDB.getUser();
-      return !!(u && (u.tier === 'premium' || u.tier === 'ultra'));
+      return !!(u && u.tier && u.tier !== 'free');
     } catch (e) { return false; }
   }
   window.isSubscriberUser = isSubscriberUser;
