@@ -242,3 +242,40 @@
    - 记忆：backend-build-state.md 补 006 反转条目（Basic 不是自带）。
    - 待办不变：FluidCanvas 新需求清单 + 后端剩余（部署 + Stripe 联调）
      攒批。
+
+## 6.3 FluidCanvas v10.14：Border Edge Style 新增「Blurred (虚化)」虚化边缘（用户：「右键后的 Border Edge Style 添加一个虚化边缘的功能」）
+
+   - 口径（中途修正）：第一版实现成 filter drop-shadow 三层外光晕，用户
+     当场纠正「为什么是阴影而不是边缘虚化？？？」——光晕是发光边缘不是
+     虚化。改为真正的边线虚化：::before 画一条与卡片同宽同色的边框线再
+     filter:blur()，锐利边界扩散成柔和过渡；真边框设透明（!important 压过
+     hover/selected 的 border-color），卡片本体无 filter（内容零影响），与
+     box-shadow 体系（选中环/悬停/拖拽）零交集。overflow:hidden 裁掉向外
+     弥散，可见效果 = 边界向内柔和过渡、外轮廓保持锐利。
+   - 实现（无新草稿字段，值级扩展）：
+     · CSS：.grid-card.blur-edge { border-color: transparent !important }
+       + ::before（inset 0 / border-radius inherit / border var(--blur-edge-w)
+       solid var(--blur-edge-c) / filter blur(var(--blur-edge-b)) /
+       pointer-events none）。
+     · JS applyCardBlurEdge：宽度/颜色/模糊量写入 --blur-edge-w/c/b 三变量
+       （模糊量 = clamp(2, 8, w×1.5)，粗边更糊）；applyCardBorderStyle
+       'blurred' → 加类 + borderStyle solid 兜底 + 重算，其它样式 → 清类
+       + 清三变量 + 还原；updateCardBorderWidth/Color 联动重算。
+     · 序列化沿用 borderStyle 'blurred' 值 + .blur-edge 类标记（类标记在
+       指纹/草稿保存/模板保存三处三元；草稿载入/模板套用还原类 + 重算；
+       模板预览 solid 兜底 + 微虚化示意）。模板套用非虚化时清类清变量。
+     · 版本注释 v10.14 adds NO new fields；徽标/console ready 升 v10.14。
+   - 冒烟（tmp 电池跑完即删）：36/36——11 静态（选项/函数/光晕零残留/CSS/
+     三元/指纹/预览/套用/版本注释/徽标唯一/console）+ 25 运行时（草稿
+     重载、点击选中、8 选项、类标记、真边框 rgba(0,0,0,0)、本体无 filter、
+     ::before 宽/模糊计算样式、宽度 6 → 6px+blur(8px)、颜色联动
+     rgb(255,85,0)、草稿序列化/重载恢复、模板 blur↔dashed 互切（含
+     ::before 卸载 + 变量清理）、选中环共存）0 console error。
+   - 截图/像素验证缺席说明：本机 Chrome/Edge 151 全部截图路径输出黑帧
+     （CDP captureScreenshot ±fromSurface / beginFrame / screencast / CLI
+     --screenshot / 窗口模式全黑；GPU 进程启动即终止 termination=4；
+     14 组旗标变体矩阵全灭——详见记忆 headless-screenshot-black-chrome151）。
+     本版以 DOM 计算样式断言替代，渲染效果请用户实机浏览器肉眼复核
+     （右键卡片 → Border Edge Style → Blurred (虚化)）。
+   - 待办不变：FluidCanvas 新需求清单 + 后端剩余攒批；截图管线修好前
+     冒烟纪律降级为 DOM 断言 + 用户肉眼复核。
