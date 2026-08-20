@@ -133,3 +133,53 @@ gap 吸附 12→16 → inset -32px radius 40px / select 9 档默认 16 / 徽标 
 Ctrl+F5 后看徽标 FC v10.19；调边距时卡四周的白色带应消失，变成外板自己的
 颜色（油漆卡=红色实心板带）。若外板颜色本身偏白（如选的白/浅色板），那是
 颜色选择，可在「背景边缘」里换深色或主题色。
+
+## FluidCanvas v10.20 — 「为什么还在啊？覆盖在图片上方」双修复
+
+用户反馈（第 7 次撞外板）：「为什么还在啊？还有为什么是覆盖在图片上方」。
+两条根因都在 v10.19 的填充实现上：
+
+### 根因
+
+1. **填充盖图**：v10.19 把边距带填充画在板 ::before（内部 z 3）上。
+   ::before 盒覆盖卡区域、z 3 高于卡自己的图片层（z 0）→ 填充直接盖在
+   国旗图/背景图上方。v10.18 的内部 z 3 对邻卡压环带本就没有作用——
+   邻卡覆盖由卡级 z 2 解决（有板卡整体是独立层叠上下文，环带跟着卡一起
+   压过 z 1 无板邻卡）；内部 z 只在卡内排序，z 3 只剩破坏卡内层级。
+2. **白色还在**：填充色 = 板自己的颜色；用户外板是浅色主题板（tech/
+   paper 系浅色），板色本身就是白色系 → 观感仍是白色。这不是 bug，是
+   颜色选择——想非白色需在「背景边缘」换深色/主题色。
+
+### v10.20 修复（docs/pages/fluidcanvas-editor.html，无新草稿字段）
+
+1. 两条板规则 z-index 3 → -1（恢复 v10.2-16 架构）：图片恒在板之上
+   （v10.9 设计「图片成为外背景本体」），邻卡层级仍由卡级 z 2 保证。
+2. v10.19 的 ::before 填充规则整体删除；边距带填充改走独立
+   `.card-outer-band` 子层（z -2 垫底）：与板同盒（inset −(extent+gap)、
+   同 radius、同 --card-clip 剪影——objectBoundingBox 对同尺寸盒解析
+   一致，主题板填充与环带形状完全吻合）；环带（z -1）恒在其上、卡身
+   （背景/图片 z 0+）恒在其上，只有卡外的边距带 [−gap, 0] 露出板色。
+   油漆板填充层免剪影（同 v10.17）；有背景图的卡 CSS display:none
+   （v10.13 图片环带照旧是外背景本体）。
+3. applyOuterBg：gap>0 时创建/保留 band（insertBefore firstChild）、
+   无板或 gap 0 时移除。
+
+### 冒烟（tmp 电池，跑完即删）
+
+34/34 PASS，0 console error（环境性 /api/health、favicon 404 过滤不变）。
+7 旗卡草稿（用户画布=旗卡）：板 z -1 四型全实证（paint×2/treasure/
+legacy）；::before 填充已删（bgImage none + 透明）双证；band 层矩阵
+（z -2 / inset -32px radius 40px 油漆渐变免剪影 / treasure 剪影波形 /
+legacy rgb(51,102,153) gap 8 双证 / gap 0 不创建 / 背景图卡隐藏 +
+evenodd 环带照旧 / 位图旗卡图 z 0 > band -2 不再盖图）；卡级 z 2/1
+对照；v10.18 回归（select 9 档默认 16 + output 16px）；运行时 gap 0↔16
+band 移除/重建双向；徽标 FC v10.20。电池排障：content 卡无 .card-label
+（applyOuterBg 守卫早退）——电池全用旗卡；getComputedStyle(el, pseudo)
+第三参伪类误写；Log.entryAdded 的 404 需看 entry.url（text 无 URL）。
+
+### 待用户复核
+
+Ctrl+F5 后看徽标 FC v10.20：图片不再被盖住（图恒在填充/环带之上）；
+边距带颜色 = 外板自己的颜色——若外板是浅色主题板（tech/paper），
+边距带就是浅色系，这是颜色选择：在「背景边缘」换深色或油漆等主题色
+即可非白。
