@@ -300,3 +300,30 @@
 - 移除后回归冒烟：草稿恢复 + 模态框 7 选项（无 Blurred/虚化字样）+ 0 console error PASS。
 - 结论：虚化边缘产品效果未达用户预期（本机截图管线全黑无法像素自证），按用户指令整体移除，
   不做降级保留。待办不变：FluidCanvas 新需求清单 + 后端剩余攒批。
+
+## 6.5 FluidCanvas v10.15：Border Edge Style 新增「油漆1~6」笔刷/墨迹/水彩异形边缘（用户提供 Gemini 方案：「完成这个 名称是油漆1~6」）
+
+虚化移除后用户直接给出可运行的参考实现：6 款 SVG clipPath（clipPathUnits="objectBoundingBox"
+百分比坐标，任意尺寸自适应）+ 款式5 的 feTurbulence+feDisplacementMap 噪点撕裂滤镜。
+原样接入编辑器：
+
+- SVG defs：6 个 clipPath + 1 个 filter 进既有隐藏 SVG defs 块（id 加 mn-paint- 前缀防撞，
+  width/height 0 而非 display:none——隐藏 SVG 引用解析坑）。
+- CSS：.grid-card.paint-edge-1~6 直接裁整卡（clip-path 作用于卡片本体：背景/内容/图层随卡
+  成笔触形状；卡盒保持矩形供布局，缩放手柄在画布层不受影响）。已知取舍写进注释：
+  ① box-shadow（选中环/悬停阴影）被 clip 裁掉——选中靠 8 手柄指示；② 油漆卡 border:0
+  !important（矩形描线会被笔触裁断；borderWidth 内联值保留在序列化，切回经典样式即恢复）；
+  ③ 边缘主题外板/外背景环带是卡内子层同被裁进笔触；④ 油漆5 滤镜会替换边缘主题 drop-shadow。
+- 模态框：13 选项（7 经典 + 油漆1~6），油漆选项预览 = demo 同款色块 + 同款 clip（油漆5 带滤镜）；
+  curStyle 优先读类标记；提示行「油漆样式：笔触边缘即卡边（无矩形边框），宽度/颜色仅作用于
+  经典样式」；updateCardBorderWidth/Color 对油漆卡守卫早退。
+- 持久化无新字段：borderStyle 值 'paint1'~'paint6' + .paint-edge-N 类标记（指纹/草稿存/草稿载/
+  模板存/模板预览/模板套用六处全扩展；草稿载入与模板套用 = 类驱动 + solid 兜底；模板预览对
+  'paintN' 走独立色块分支——border 简写对非法值整条失效）。版本注释 v:9 加 v10.15 说明；
+  console ready + 徽标 FC v10.15。
+- 冒烟（tmp 电池跑完即删）：25/25 PASS——草稿恢复类标记+solid兜底+宽度保留、SVG defs 在场、
+  13 选项+油漆1~6名+提示行、套用油漆5 类切换+宽度守卫、样式表 6 条 clip 规则+边框归零规则、
+  切回 dashed 类清空+宽度恢复、草稿存 paint4/dashed、重载恢复、模板预览 clip 色块+套用油漆、
+  0 console error。一次跑通无 headless 挂起。
+- 渲染效果请用户实机肉眼复核（本机截图管线仍全黑，见记忆 headless-screenshot-black-chrome151）：
+  右键卡片 → Border Edge Style → 油漆1~6。
