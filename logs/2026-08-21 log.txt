@@ -100,3 +100,36 @@ error 仍一票否决）。草稿 5 卡复刻用户状态（paint1/treasure 旧�
 Ctrl+F5 后看徽标 FC v10.18；原画布环带应完整不再被邻卡吃掉（这次板真的在
 所有卡之上）；popover「外板边距」变下拉 9 档，默认 16px。
 若仍有问题，卸载护栏不变：整块「外板边距」功能移除（gap 恒 0 = v10.9 样貌）。
+
+## FluidCanvas v10.19 — 「白色背景」真身：白色画布透出边距带，已填板色
+
+用户反馈：「不是前面说的那个白色背景就不能丢掉吗？」——白色背景从未真正消失
+的根因找到了：v10.16 把边距带（gap>0 时环带与卡之间的区域）改成透明、露出
+画布，但浅色主题画布 --color-surface-container-lowest = #ffffff（ethereal.css
+第 12 行）——v10.12 的 hole 层画的也是画布色，v10.16 只是把「实心画布色」
+换成「透明透出画布色」，用户看到的一直是同一个白色。
+
+### v10.19 修复（docs/pages/fluidcanvas-editor.html，无新草稿字段）
+
+新增 .grid-card.has-outer-bg:not(.has-card-bg-img)::before（0,3,1，源序在
+paint 覆盖规则之后）：中段填板自己的颜色——主题卡 background-image =
+--outer-tint 渐变（与 border-image 环带同源同色，环带+中段连成一块实心板，
+paint1 = 不透明红；treasure/paper 自带半透明 alpha 属主题设计）、legacy
+background-color = --outer-bg 纯色（含透明度滑杆）。有背景图的卡不填
+（:not(.has-card-bg-img)），v10.13 图片环带照旧显示在边距带。gap 0 时中段
+全在卡身后（卡 2026-08-17 起 100% 不透明）无视觉变化。
+
+### 冒烟（tmp 电池，跑完即删）
+
+39/39 PASS，0 console error（环境性 /api/health、favicon 404 过滤不变）。
+6 卡草稿（新增 c6 背景图卡对照组）：paint/treasure 中段 backgroundImage =
+主题渐变、bg-color 透明；legacy 中段 rgb(51,102,153) 纯色（c3 gap 8 与
+c4 默认 16 双证）；c6 有图卡不填（bgImage none + 透明）+ has-card-bg-img +
+.card-bg-img + evenodd 环带 clip 全在；v10.18 全量回归（板 z 3 / 有板卡 z 2 /
+gap 吸附 12→16 → inset -32px radius 40px / select 9 档默认 16 / 徽标 v10.19）。
+
+### 待用户复核
+
+Ctrl+F5 后看徽标 FC v10.19；调边距时卡四周的白色带应消失，变成外板自己的
+颜色（油漆卡=红色实心板带）。若外板颜色本身偏白（如选的白/浅色板），那是
+颜色选择，可在「背景边缘」里换深色或主题色。
