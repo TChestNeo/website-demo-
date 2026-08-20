@@ -81,7 +81,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     // SHOT_DUMP=1：渲染后 DOM 冒烟（Read 工具不支持图片时的替代验证）
     if (process.env.SHOT_DUMP) {
       const expr = `(async function () {
-        // ── premium 页（一期订阅流程）：等级感知 + 申请开通工单全链路 ──
+        // ── premium 页（最终支付态）：等级感知 + 在线支付，无申请回退/无预览模式 ──
         if (location.pathname.indexOf('/premium.html') > -1) {
           var b = {
             title: document.title,
@@ -101,10 +101,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
           }
           b.tier = (window.__mnSubState || {}).tier || null;
           b.source = (window.__mnSubState || {}).source || null;
-          b.pay = (window.__mnSubState || {}).pay || null; // 'stripe'（已配密钥环境）/'apply'（回退一期流；本机 dev 无 STRIPE 配置应恒为 apply）
+          b.pay = (window.__mnSubState || {}).pay || null; // 最终态：'stripe'（服务端会话）/'local'（本地资料）/'guest'
           b.enabled = !!(window.__mnSubState || {}).enabled;
-          b.payDisabled = !!(window.__mnSubState || {}).payDisabled; // server 会话 + Stripe 未配置 → banner 自解释提示「在线支付通道未启用…」（用户三问申请开通回退）
-          b.demo = !!(window.__mnSubState || {}).demo; // ?payDemo=1 预览模式：订阅/单次按钮全亮 + 倒数跳演示结账页，无密钥
+          b.payDisabled = !!(window.__mnSubState || {}).payDisabled; // server 会话 + Stripe 未配置 → banner 说明「即将上线」，按钮仍为最终态
           b.hasPortal = !!(window.__mnSubState || {}).hasPortal;
           b.expiry = (window.__mnSubState || {}).expiry || null;
           b.payNoticeShown = getComputedStyle(document.getElementById('payNotice')).display !== 'none';
@@ -137,50 +136,20 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
             };
           }
           b.chips = Array.prototype.filter.call(document.querySelectorAll('.cur-chip'), function (c) { return c.offsetParent !== null; }).length;
+          b.addonCtaText = ((document.querySelector('[data-addon-cta]') || {}).textContent || '').trim();
           var pc = document.querySelector('[data-plan-cta="premium"]');
-          // pay=stripe 时点 CTA 会真实跳转 Stripe、pay=demo 会倒数跳演示结账页——冒烟只跑回退一期流（本机 dev 恒为 apply）
-          if (!pc.disabled && !pc.dataset.guestLink && b.pay === 'apply') {
+          // 点击冒烟：仅当通道未配置（本机 dev，checkout 必 409）时点 CTA——验证「按钮保持最终态 + 如实 toast」；
+          // 已配置密钥环境点 CTA 会真实倒数跳 Stripe，冒烟不点（payDisabled=false）
+          if (pc && !pc.disabled && !pc.dataset.guestLink && b.payDisabled) {
             pc.click();
-            await new Promise(function (r) { setTimeout(r, 150); });
-            b.modalShown = document.getElementById('applyModal').classList.contains('active');
-            b.modalTitle = document.getElementById('applyTitle').textContent.slice(0, 30);
-            b.modalPrice = document.getElementById('applyPrice').textContent;
-            document.getElementById('applyNote').value = '冒烟申请备注';
-            document.getElementById('applySubmit').click();
-            await new Promise(function (r) { setTimeout(r, 900); });
-            b.modalClosed = !document.getElementById('applyModal').classList.contains('active');
+            await new Promise(function (r) { setTimeout(r, 600); });
+            b.toastShown = !!document.querySelector('[data-mn-toast]');
+            b.toastText = ((document.querySelector('[data-mn-toast]') || {}).textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 50);
             b.ctaAfter = pc.textContent.replace(/\\s+/g, ' ').trim();
-            b.appliedStored = localStorage.getItem('slati_apply_premium') || null;
           } else {
-            b.applySkipped = pc.dataset.guestLink ? 'guest' : (pc.disabled ? 'disabled' : (b.pay === 'stripe' ? 'stripe-cta' : (b.pay === 'demo' ? 'demo' : 'unknown')));
+            b.clickSkipped = pc ? (pc.dataset.guestLink ? 'guest' : (pc.disabled ? 'disabled' : 'pay-enabled-no-click')) : 'no-cta';
           }
           return JSON.stringify(b);
-        }
-        // ── 付费页支付预览（?payDemo=1 演示结账页）：订单/方式/卡号输入/点击支付成功全链路 ──
-        if (location.pathname.indexOf('/premium-demo-checkout.html') > -1) {
-          var c = {
-            title: document.title,
-            badge: (document.getElementById('demoBadge') || {}).textContent || '',
-            label: (document.getElementById('demoLabel') || {}).textContent || '',
-            price: (document.getElementById('demoPrice') || {}).textContent || '',
-            modeNote: (document.getElementById('demoModeNote') || {}).textContent || '',
-            tabs: Array.prototype.map.call(document.querySelectorAll('[data-pm-tab]'), function (t) { return t.textContent.trim(); }),
-            bankOpts: Array.prototype.map.call(document.querySelectorAll('#fpxBank option'), function (o) { return o.value; }),
-            cardInputs: !!document.getElementById('cardNum') && !!document.getElementById('cardExp') && !!document.getElementById('cardCvc'),
-            regionNote: (document.getElementById('demoRegion') || {}).textContent || '',
-            payBtn: (document.getElementById('demoPay') || {}).textContent || '',
-            next: window.__demoNext || ''
-          };
-          // 点击支付全链路：切到银行卡 tab → 填测试卡号 → 点支付 → 1.2s 后读成功屏（3s 才回跳，dump 先返回）
-          var tab = document.querySelector('[data-pm-tab="card"]');
-          if (tab) { tab.click(); await new Promise(function (r) { setTimeout(r, 100); }); }
-          var cn = document.getElementById('cardNum');
-          if (cn) cn.value = '4242 4242 4242 4242';
-          document.getElementById('demoPay').click();
-          await new Promise(function (r) { setTimeout(r, 1200); });
-          c.success = getComputedStyle(document.getElementById('demoSuccess')).display !== 'none';
-          c.successText = (document.getElementById('demoSuccess') || {}).textContent.replace(/\\s+/g, ' ').trim().slice(0, 60);
-          return JSON.stringify(c);
         }
         var base = {
           title: document.title,

@@ -144,3 +144,56 @@
        污染），矩阵 5 列渲染，0 console error。
    - 待办：FluidCanvas 新功能需求等用户清单；后端剩余（部署 + Stripe
      实机联调）按用户指令攒批一次过。
+
+## 6. 付费页最终支付态收尾：申请开通流 + 预览模式整体移除（2026-08-20）
+
+   - 背景：用户第 4 次撞「申请开通」回退按钮后直接下令：「能不能不要是
+     Demo 直接使用最总情况 把那个申请开通的删掉」——付费页永远最终形态。
+   - docs/pages/premium.html：
+     · 申请开通整体删除：applyModal 弹窗 HTML/CSS、openApply/closeApply、
+       applySubmit 工单 POST（POST /api/tickets category=payment）、
+       slati_apply_* localStorage 去重——全部移除；
+     · 付费页恒为最终支付态：登录用户卡片 CTA 恒为「订阅 · RMxx/月」+
+       「单次购买 · RMxx · 1 个月」（不再依赖 sub.enabled/hasPrice 门控；
+       未配置密钥时单次按钮也全部亮起，已配置时按 hasOnce 精确显示）；
+     · startCheckout 失败不降级申请：401 → toast 请登录正式账号；409 →
+       toast「在线支付通道即将上线（后端 Stripe 密钥配置完成后即可在线
+       扣款）」（enabled 时则「该方案在线支付暂未开通」），按钮恢复原文案；
+       成功仍 3-2-1 倒数跳 Stripe（countdownJump 保留）；
+     · 新增 toast() 轻提示（data-mn-toast，4.2s 自动消失）；
+     · ?payDemo=1 预览模式全部移除（PAY_DEMO 变量/伪用户/演示回跳分支），
+       docs/pages/premium-demo-checkout.html 整个删除；
+     · addon 卡（Team Slots 等，无 Stripe 价）：按钮「购买」，点击 toast
+       「该增值项在线购买即将上线」；guest 态「登录后订阅 / 登录后购买」；
+     · banner 口径更新：未配置密钥 →「在线支付通道即将上线：后端 Stripe
+       密钥配置完成后即可在线扣款」（按钮不再变申请开通）；本地资料 →
+       「请登录正式账号后在线支付」；plan-note 去掉申请尾巴；静态按钮
+       文案「联系管理员开通」→「订阅 / 购买」防闪烁。
+   - backend/scripts/screenshot.js：
+     · premium 分支删申请流点击断言（modalShown/applySubmit 落库）与
+       payDemo/demo 字段；新增最终态断言：addonCtaText、点击-toast 全链路
+       （仅 payDisabled 即本机未配密钥时点击，避免真实跳 Stripe）——
+       toastShown/toastText/ctaAfter 恢复断言；删除 premium-demo-checkout
+       分支；
+     · __mnSubState：pay ∈ stripe（服务端会话）/local/guest，payDisabled
+       仅作 banner 条件（按钮仍最终态）。
+   - 冒烟（:3000 后端 + :8080 dev-serve 存活；三态 0 console error）：
+     · guest：pay=guest，五卡「登录后订阅」、单次隐藏、addon「登录后购
+       买」，banner 登录引导不变，矩阵 5 列 10 行；
+     · server（alice，basic）：pay=stripe，Basic「✓ 当前方案」disabled +
+       chip 1，其余四卡「订阅 · RM23.50/45.50/29.90/60.90 ·/月」+ 单次
+       购买按钮全部亮起（onceGeo 250×31 在卡内/CTA 下方/等宽），点击
+       premium CTA → toastShown=true、toastText「在线支付通道即将上线…」、
+       ctaAfter 恢复「订阅 · RM23.50/月」；
+     · local（种子 free）：pay=local，五卡订阅+单次全亮（RM12/23.50/45.50/
+       29.90/60.90），banner 请登录正式账号，点击不跑（本地态无 payDisabled
+       触发条件，避免误 POST）。
+   - 记忆：premium-payment-auto-checkout.md 口径重写（申请流已删，页面
+     恒为最终支付态；tickets payment 工单后端保留但页面不再链接）；
+     frontend-first-then-backend.md 进度补录；MEMORY.md 索引同步。
+   - 说明：本会话 Read 工具无法预览截图（[Unsupported Image]），三态
+     截图已落 /tmp（premium-{guest,server,local}.png + server.jpg）；
+     本次改动不涉及绘制层 CSS（仅文案/JS 流程/几何断言覆盖），渲染
+     正确性由 DOM dump + onceGeo 几何断言兜底。
+   - 待办：等用户 FluidCanvas 新功能需求清单；后端剩余（部署 + Stripe
+     实机联调，等 sk_test）攒批一次过。

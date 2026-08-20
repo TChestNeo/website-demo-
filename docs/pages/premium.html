@@ -32,27 +32,11 @@
     .addon-card h4 { color:rgba(255,255,255,0.9); }
     .addon-card p { color:rgba(255,255,255,0.5) !important; }
     .section-title { color:#fff; text-align:center; margin-bottom:var(--space-lg); }
-    /* Countdown */
-    .cd-overlay { position:fixed; inset:0; z-index:999; background:rgba(5,5,16,0.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center; flex-direction:column; opacity:0; pointer-events:none; transition:opacity 0.3s ease; }
-    .cd-overlay.active { opacity:1; pointer-events:auto; }
-    .cd-ring { width:120px; height:120px; border-radius:50%; border:3px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; position:relative; margin-bottom:24px; }
-    .cd-ring-inner { position:absolute; inset:-3px; border-radius:50%; border:3px solid transparent; border-top-color:rgba(234,179,8,0.8); animation:cdSpin 1s linear infinite; }
-    @keyframes cdSpin { to { transform:rotate(360deg); } }
-    .cd-num { font-size:48px; font-weight:800; color:#fff; }
-    .cd-text { font-size:15px; color:rgba(255,255,255,0.5); margin-bottom:6px; }
-    .cd-sub { font-size:12px; color:rgba(255,255,255,0.25); }
-    /* ── 一期订阅流程（等级感知 + 申请开通工单）── */
+    /* ── 订阅流程（等级感知 + 在线支付）── */
     .sub-status { display:none; max-width:1050px; margin:-8px auto var(--space-lg); padding:14px 18px; border:1px solid rgba(234,179,8,0.25); border-radius:12px; background:rgba(234,179,8,0.06); color:rgba(255,255,255,0.85); font-size:14px; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; }
     .cur-chip { display:none; vertical-align:2px; margin-left:8px; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:700; background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.4); }
     .plan-cta { font-family:inherit; cursor:pointer; }
     .plan-cta[disabled] { opacity:.55; cursor:default; }
-    .apply-card { background:rgba(30,28,50,0.95); border:1px solid rgba(255,255,255,0.12); border-radius:var(--radius-lg); padding:var(--space-lg); max-width:440px; width:calc(100% - 48px); }
-    .apply-card h3 { color:#fff; margin-bottom:4px; font-size:20px; }
-    .apply-card textarea { width:100%; min-height:84px; margin-top:12px; padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(10,10,26,0.6); color:#fff; font-size:13px; resize:vertical; font-family:inherit; }
-    .apply-card textarea::placeholder { color:rgba(255,255,255,0.3); }
-    .apply-err { color:#f87171; font-size:12px; min-height:16px; margin-top:6px; }
-    .apply-actions { display:flex; gap:10px; margin-top:12px; }
-    .apply-actions .btn { flex:1; }
     .plan-note { max-width:1050px; margin:0 auto var(--space-xl); text-align:center; font-size:12px; color:rgba(255,255,255,0.35); }
     /* Page entrance animation */
     .reveal { opacity:0; transform:translateY(30px); animation:revealUp 0.7s cubic-bezier(0.22,0.61,0.36,1) forwards; }
@@ -91,7 +75,7 @@
       <p style="color:#767586;font-size:13px;margin-bottom:16px">Essential worldbuilding tools</p>
       <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="basicPrice" data-plan-price>$5.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
-      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="basic" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:600;text-decoration:none">联系管理员开通</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="basic" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:600;text-decoration:none">订阅</button>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-once="basic" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">单次购买</button>
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Basic wiki cards</div>
@@ -109,7 +93,7 @@
       <p style="color:#767586;font-size:13px;margin-bottom:16px">Advanced creator toolkit</p>
       <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="premiumPrice" data-plan-price>$11.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
-      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="premium" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">联系管理员开通</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="premium" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">订阅</button>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-once="premium" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">单次购买</button>
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Everything in Basic</strong></div>
@@ -128,7 +112,7 @@
       <p style="color:#767586;font-size:13px;margin-bottom:16px">Full AI-powered suite</p>
       <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="ultraPrice" data-plan-price>$15.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
-      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="ultra" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">联系管理员开通</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="ultra" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">订阅</button>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-once="ultra" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">单次购买</button>
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Everything in Premium</strong></div>
@@ -157,7 +141,7 @@
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Advanced decor customization</div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Identity verification included</div>
       </div>
-      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="pkg-premium" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">联系管理员开通</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="pkg-premium" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">订阅</button>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-once="pkg-premium" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">单次购买</button>
     </div>
     <div class="package-card pkg-ultra" data-plan-card="pkg-ultra" data-target-tier="ultra" data-apply-label="Premium Ultra 包价（无限成员）">
@@ -172,7 +156,7 @@
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> All customization unlocked</div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Special identity verification</div>
       </div>
-      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="pkg-ultra" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">联系管理员开通</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="pkg-ultra" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">订阅</button>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-once="pkg-ultra" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">单次购买</button>
     </div>
   </div>
@@ -226,25 +210,25 @@
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Basic</h4>
         <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>12</strong> 位成员</p>
         <p style="font-weight:700" id="addonBasic" data-addon-price>$5.50</p><p style="font-size:11px;color:#767586">Per month</p>
-        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-basic" data-apply-label="Team Slots — Basic" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;text-decoration:none">联系管理员开通</button>
+        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-basic" data-apply-label="Team Slots — Basic" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;text-decoration:none">购买</button>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Plus</h4>
         <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>24</strong> 位成员</p>
         <p style="font-weight:700" id="addonPlus" data-addon-price>$6.50</p><p style="font-size:11px;color:#767586">Per month</p>
-        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-plus" data-apply-label="Team Slots — Plus" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">联系管理员开通</button>
+        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-plus" data-apply-label="Team Slots — Plus" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">购买</button>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Premium</h4>
         <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>36</strong> 位成员</p>
         <p style="font-weight:700" id="addonPremium" data-addon-price>$7.99</p><p style="font-size:11px;color:#767586">Per month</p>
-        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-premium" data-apply-label="Team Slots — Premium" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">联系管理员开通</button>
+        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-premium" data-apply-label="Team Slots — Premium" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">购买</button>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Ultra</h4>
         <p style="font-size:12px;color:#767586;margin-bottom:4px"><strong>Unlimited</strong> 无限成员</p>
         <p style="font-weight:700" id="addonUltra" data-addon-price>$8.99</p><p style="font-size:11px;color:#767586">Per month</p>
-        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-ultra" data-apply-label="Team Slots — Ultra" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">联系管理员开通</button>
+        <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-ultra" data-apply-label="Team Slots — Ultra" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">购买</button>
       </div>
     </div>
   </div>
@@ -453,43 +437,36 @@ bgStyle.textContent='@keyframes floatCubeBG{0%{transform:translateY(0) rotate(0d
 document.head.appendChild(bgStyle);
 </script>
 
-<!-- 申请开通弹窗（一期：提交支付工单 → 管理员人工确认开通）-->
-<div id="applyModal" class="cd-overlay">
-  <div class="apply-card">
-    <h3 id="applyTitle">申请开通</h3>
-    <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:4px">价格：<strong id="applyPrice" style="color:#fff">—</strong></p>
-    <p style="color:rgba(255,255,255,0.45);font-size:12px">提交后将生成一张「支付」工单，管理员人工确认后为你开通，付款方式另行沟通。</p>
-    <textarea id="applyNote" maxlength="500" placeholder="备注（可选）：希望的付款方式等"></textarea>
-    <div id="applyErr" class="apply-err"></div>
-    <div class="apply-actions">
-      <button id="applyCancel" class="btn btn-sm" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:#fff">取消</button>
-      <button id="applySubmit" class="btn btn-primary btn-sm" style="background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700">提交申请</button>
-    </div>
-  </div>
-</div>
-<div class="plan-note">注册默认「普通用户」（免费）；Basic 为学生价方案（RM12/月）。会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay，可随时在「管理订阅」取消）或单次购买 1 个月（FPX 网银 / 支付宝 / GrabPay，不自动续费）；未开通在线支付的方案或本地登录时，可提交申请由管理员确认开通。</div>
+<div class="plan-note">注册默认「普通用户」（免费）；Basic 为学生价方案（RM12/月）。会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay，可随时在「管理订阅」取消）或单次购买 1 个月（FPX 网银 / 支付宝 / GrabPay，不自动续费）。</div>
 
 <script>
-// ── 订阅流程：等级感知 + 在线支付（Stripe 混合模式）/ 一期申请开通回退 ──
-// 口径：tier 以服务端为准（GET /api/auth/me）。GET /api/subscription/status 决定支付态：
-// 服务端会话 + Stripe 已配置 + 该 SKU 有 Price ID → CTA「订阅 · RMxx/月」（自动续费，卡类）→ POST /subscription/checkout 跳 Stripe；
-// 该 SKU 有一次性 Price（hasOnce）→ 第二个 CTA「单次购买」（FPX 网银/支付宝/GrabPay，1 个月不续费）→ 同端点 mode=once；
-// 其余（本地 demo 登录 / 无价 SKU / addon / Stripe 未配置 / checkout 失败）→ 回退一期申请弹窗
-// 「申请开通」= POST /api/tickets（category=payment 自动 urgent），管理员在工单队列确认后 PATCH tier。
+// ── 订阅流程：等级感知 + 在线支付（Stripe 混合模式）──
+// 口径：tier 以服务端为准（GET /api/auth/me）。付费页恒为最终支付态：登录用户的卡片 CTA 始终是
+// 「订阅 · RMxx/月」（自动续费，卡类）与「单次购买」（FPX 网银/支付宝/GrabPay，1 个月不续费），
+// 点击 POST /subscription/checkout → 3-2-1 倒数跳 Stripe 结账页；后端 Stripe 未配置时按钮不变、
+// 点击后如实 toast「即将上线」。2026-08-20：一期「申请开通」工单回退与 ?payDemo 预览模式已整体移除。
 (function () {
   var TIER_RANK = { free: 0, basic: 1, premium: 2, ultra: 3 }; // free=普通用户（注册默认，不再直接拥有 Basic）
   var TIER_ZH = { free: '普通用户', basic: 'Basic', premium: 'Premium', ultra: 'Premium Ultra' };
   // 注意：free 的 rank 是 0（falsy）——所有 TIER_RANK 查找必须用 != null 判断，不能用 || 兜底（0 会被误当缺省）
   var me = null; // { tier, email, tierExpiresAt, source } 或 null（未登录/后端不可达）
   var sub = null; // GET /api/subscription/status 结果 { enabled, prices, hasPortal, … }
-  var pending = null;
-  // 预览模式（?payDemo=1）：纯前端演示在线支付全流程——订阅/单次按钮亮起、3 秒倒数、
-  // 跳本地演示结账页（卡号输入/方式选择/马区方式），不调后端 checkout、不需要 Stripe 密钥。
-  // 无参数时行为与真实模式完全一致（未配置密钥仍回退申请流）。
-  var PAY_DEMO = new URLSearchParams(location.search).get('payDemo') === '1';
 
   function $(id) { return document.getElementById(id); }
-  function applyKey(k) { return 'slati_apply_' + k; }
+
+  // 轻提示：checkout 失败/通道未配置时的如实反馈（不降级申请）
+  function toast(msg) {
+    var t = document.createElement('div');
+    t.setAttribute('data-mn-toast', '');
+    t.style.cssText = 'position:fixed;left:50%;bottom:36px;transform:translateX(-50%);z-index:9999;background:rgba(20,20,40,0.96);border:1px solid rgba(255,255,255,0.18);color:#fff;font-size:13px;line-height:1.5;padding:12px 20px;border-radius:12px;max-width:min(560px,calc(100vw - 48px));box-shadow:0 12px 40px rgba(0,0,0,0.45)';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function () {
+      t.style.transition = 'opacity .35s ease';
+      t.style.opacity = '0';
+      setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 350);
+    }, 4200);
+  }
 
   function setCta(btn, text, disabled, href) {
     btn.textContent = text;
@@ -508,26 +485,16 @@ document.head.appendChild(bgStyle);
       setCta(btn, '登录后订阅', false, '../index.html');
     });
     document.querySelectorAll('[data-addon-cta]').forEach(function (btn) {
-      setCta(btn, '登录后申请开通', false, '../index.html');
+      setCta(btn, '登录后购买', false, '../index.html');
     });
     document.querySelectorAll('[data-plan-once]').forEach(function (x) { x.style.display = 'none'; });
     document.querySelectorAll('[data-once-hint]').forEach(function (x) { x.style.display = 'none'; });
   }
 
-  // 该 SKU 是否可在线支付（预览模式恒可；否则需服务端会话 + Stripe 已配置 + 该 SKU 有 Price ID；不满足回退一期申请流）
-  function payKey(key) {
-    if (PAY_DEMO) return true;
-    return !!(me && me.source === 'server' && sub && sub.enabled && sub.prices && sub.prices[key] && sub.prices[key].hasPrice);
-  }
-  // 该 SKU 是否可单次购买（预览模式恒可；否则需一次性 Price ID）
-  function onceKey(key) {
-    if (PAY_DEMO) return true;
-    return !!(sub && sub.prices && sub.prices[key] && sub.prices[key].hasOnce);
-  }
+  // 付费页恒为最终支付态：登录即可点「订阅」走 checkout，无申请回退（2026-08-20 起）
   var METHOD_ZH = { card: '银行卡', fpx: 'FPX 网银', alipay: '支付宝', grabpay: 'GrabPay', wechat_pay: '微信支付' };
   function onceHintText() {
     var list = ((sub && sub.onceMethods) || []).map(function (m) { return METHOD_ZH[m] || m; });
-    if (PAY_DEMO && !list.length) list = ['银行卡', 'FPX 网银', '支付宝', 'GrabPay'];
     return list.length ? '支持 ' + list.join(' / ') + '，1 个月不自动续费' : '';
   }
   function cardPrice(card) {
@@ -547,10 +514,9 @@ document.head.appendChild(bgStyle);
       + '<span style="color:rgba(255,255,255,0.4)"> · ' + me.email + '</span></span>'
       + extra
       + '<span style="color:rgba(255,255,255,0.45)">'
-      + (PAY_DEMO ? '预览模式：以下「订阅/单次购买」按钮与 3 秒倒数跳转均为在线支付演示（跳本地演示结账页，不会真实扣款）'
-        : me.source === 'local' ? '当前为本地资料，开通以管理员确认为准'
-        : (sub && sub.enabled) ? '升级 / 加购请点卡片按钮在线支付，或提交申请由管理员开通'
-        : '在线支付通道未启用（后端未配置 Stripe 密钥）：按钮暂为「申请开通」，配置完成后自动变为「订阅 · RMxx/月」并直接跳转支付页，无需审核')
+      + (me.source === 'local' ? '当前为本地资料，请登录正式账号后在线支付'
+        : (sub && sub.enabled) ? '升级 / 加购请点卡片按钮在线支付（订阅自动续费 / 单次购买 1 个月）'
+        : '在线支付通道即将上线：后端 Stripe 密钥配置完成后即可在线扣款')
       + '</span>';
     var pl = document.getElementById('portalLink');
     if (pl) {
@@ -563,10 +529,11 @@ document.head.appendChild(bgStyle);
       });
     }
 
-    // 单次购买通道态：服务端会话 + Stripe 已配置 + 该 SKU 有一次性 Price；hide=true 强制隐藏
+    // 单次购买通道态：已配置密钥时按该 SKU 一次性 Price 决定；未配置密钥时全部亮起（最终态预览，点击后后端如实提示）
     function onceState(key) {
-      if (PAY_DEMO) return true;
-      return !!(me && me.source === 'server' && sub && sub.enabled && onceKey(key));
+      if (!me) return false;
+      if (sub && sub.enabled) return !!(sub.prices && sub.prices[key] && sub.prices[key].hasOnce);
+      return true;
     }
     function setOnceBtn(card, key, hide) {
       var ob = card.querySelector('[data-plan-once]');
@@ -591,16 +558,14 @@ document.head.appendChild(bgStyle);
       var target = card.dataset.targetTier || key;
       var btn = card.querySelector('[data-plan-cta]');
       var chip = card.querySelector('.cur-chip');
-      var done = localStorage.getItem(applyKey(key));
-      if (done) { setCta(btn, '已提交申请 · ' + done.slice(-10), true); setOnceBtn(card, key, true); return; }
       var tr = TIER_RANK[target] || 1;
       if (card.dataset.targetTier) { // 包价卡：等级 ≥ 包价等级时仍可购买（叠加团队等权益）
         if (tr < rank) { setCta(btn, '已包含', true); setOnceBtn(card, key, true); }
-        else { setCta(btn, payKey(key) ? '订阅 · ' + cardPrice(card) + '/月' : '申请开通', false); setOnceBtn(card, key, false); }
+        else { setCta(btn, '订阅 · ' + cardPrice(card) + '/月', false); setOnceBtn(card, key, false); }
         return;
       }
       if (tr > rank) {
-        setCta(btn, payKey(key) ? '订阅 · ' + cardPrice(card) + '/月' : '申请开通', false);
+        setCta(btn, '订阅 · ' + cardPrice(card) + '/月', false);
         setOnceBtn(card, key, false);
       } else if (tr === rank) {
         setCta(btn, '✓ 当前方案', true);
@@ -609,24 +574,11 @@ document.head.appendChild(bgStyle);
       } else { setCta(btn, '已包含', true); setOnceBtn(card, key, true); }
     });
     document.querySelectorAll('[data-addon-cta]').forEach(function (btn) {
-      var done = localStorage.getItem(applyKey(btn.dataset.addonCta));
-      if (done) setCta(btn, '已提交申请 · ' + done.slice(-10), true);
-      else setCta(btn, '申请开通', false);
+      setCta(btn, '购买', false); // 增值项在线购买即将上线：点击如实提示
     });
   }
 
-  function openApply(key, label, price) {
-    pending = { key: key, label: label, price: price };
-    $('applyTitle').textContent = '申请开通「' + label + '」';
-    $('applyPrice').textContent = price + ' / 月';
-    $('applyNote').value = '';
-    $('applyErr').textContent = '';
-    $('applySubmit').disabled = false;
-    $('applyModal').classList.add('active');
-  }
-  function closeApply() { pending = null; $('applyModal').classList.remove('active'); }
-
-  // 3-2-1 倒数后自动跳转（传统支付体验）：真实模式跳 Stripe Checkout 结账页，预览模式跳本地演示结账页
+  // 3-2-1 倒数后自动跳转（传统支付体验）：跳 Stripe Checkout 结账页
   function countdownJump(btn, url) {
     btn.disabled = true;
     var n = 3;
@@ -637,23 +589,19 @@ document.head.appendChild(bgStyle);
       setTimeout(tick, 1000);
     })();
   }
-  // 在线支付：POST checkout 拿 Stripe 跳转 URL，3-2-1 倒数后自动跳转；失败回退一期申请弹窗。
-  // 预览模式（?payDemo=1）不走后端：直接倒数跳本地演示结账页，无需任何密钥。
+  // 在线支付：POST checkout 拿 Stripe 跳转 URL，3-2-1 倒数后自动跳转；失败如实提示（不降级申请）。
   // mode：subscription（自动续费订阅）/ once（单次购买 1 个月）
-  function startCheckout(btn, key, card, mode) {
-    if (PAY_DEMO) {
-      countdownJump(btn, 'premium-demo-checkout.html?label=' + encodeURIComponent(card.dataset.applyLabel || key)
-        + '&price=' + encodeURIComponent(cardPrice(card))
-        + '&mode=' + (mode === 'once' ? 'once' : 'subscription'));
-      return;
-    }
+  function startCheckout(btn, key, mode) {
+    var label = btn.textContent;
     btn.disabled = true;
     btn.textContent = '跳转到支付页…';
     MN_API.post('/subscription/checkout', { tierKey: key, mode: mode || 'subscription' }).then(function (r) {
       if (r.ok && r.data && r.data.url) { countdownJump(btn, r.data.url); return; }
       btn.disabled = false;
-      setCta(btn, '申请开通', false);
-      openApply(key, card.dataset.applyLabel || key, cardPrice(card));
+      btn.textContent = label;
+      if (r.status === 401) toast('请登录正式账号后在线支付');
+      else if (r.status === 409) toast((sub && sub.enabled) ? '该方案在线支付暂未开通，请稍后再试' : '在线支付通道即将上线（后端 Stripe 密钥配置完成后即可在线扣款）');
+      else toast('支付请求失败（' + (r.status || '网络') + '），请稍后重试');
     });
   }
 
@@ -663,59 +611,22 @@ document.head.appendChild(bgStyle);
       if (btn.disabled) return;
       if (btn.dataset.guestLink) { location.href = btn.dataset.guestLink; return; }
       var card = btn.closest('[data-plan-card]');
-      var key = card.dataset.planCard;
-      if (payKey(key)) { startCheckout(btn, key, card, 'subscription'); return; }
-      openApply(key, card.dataset.applyLabel || key, cardPrice(card));
+      startCheckout(btn, card.dataset.planCard, 'subscription');
       return;
     }
     var ob = ev.target.closest('[data-plan-once]');
     if (ob) {
       if (ob.disabled) return;
       var ocard = ob.closest('[data-plan-card]');
-      startCheckout(ob, ocard.dataset.planCard, ocard, 'once');
+      startCheckout(ob, ocard.dataset.planCard, 'once');
       return;
     }
     var ab = ev.target.closest('[data-addon-cta]');
     if (ab) {
       if (ab.disabled) return;
       if (ab.dataset.guestLink) { location.href = ab.dataset.guestLink; return; }
-      var acard = ab.closest('.addon-card');
-      var ap = (((acard.querySelector('[data-addon-price]') || {}).textContent) || '?').trim();
-      if (PAY_DEMO) {
-        countdownJump(ab, 'premium-demo-checkout.html?label=' + encodeURIComponent(ab.dataset.applyLabel || ab.dataset.addonCta)
-          + '&price=' + encodeURIComponent(ap) + '&mode=subscription');
-        return;
-      }
-      openApply(ab.dataset.addonCta, ab.dataset.applyLabel || ab.dataset.addonCta, ap);
+      toast('该增值项在线购买即将上线，敬请期待');
     }
-  });
-
-  $('applyCancel').addEventListener('click', closeApply);
-  $('applyModal').addEventListener('click', function (ev) { if (ev.target === this) closeApply(); });
-
-  $('applySubmit').addEventListener('click', function () {
-    if (!pending || !me) return;
-    var note = $('applyNote').value.trim().slice(0, 500);
-    var subject = '订阅申请：' + pending.label + '（' + pending.price + '/月）';
-    var description = '用户 ' + me.email + ' 申请开通「' + pending.label + '」，计价 ' + pending.price
-      + '/月。付款方式与开通由管理员确认。' + (note ? '\n\n备注：' + note : '');
-    $('applySubmit').disabled = true;
-    $('applyErr').textContent = '';
-    MN_API.post('/tickets', {
-      category: 'payment', type: 'subscription', contact: me.email,
-      subject: subject, description: description, locale: 'zh', submittedAt: new Date().toISOString()
-    }).then(function (r) {
-      $('applySubmit').disabled = false;
-      if (r.ok && r.data && r.data.id) {
-        localStorage.setItem(applyKey(pending.key), r.data.id);
-        closeApply();
-        renderUser();
-      } else if (r.status === 429) {
-        $('applyErr').textContent = '提交过于频繁，请稍后再试';
-      } else {
-        $('applyErr').textContent = '提交失败（' + (r.status || '网络') + '），请稍后重试或到工单页提交';
-      }
-    });
   });
 
   // 本地登录态（与 index.html demo 登录同源：slati_session + slati_user）
@@ -735,13 +646,6 @@ document.head.appendChild(bgStyle);
     if (q.get('canceled') === '1') {
       n.style.display = 'flex';
       n.innerHTML = '<span>已取消支付，可随时重试。</span>';
-      return;
-    }
-    if (PAY_DEMO && q.get('paid') === '1') { // 预览演示支付成功回跳（无真实扣款，不轮询后端）
-      n.style.display = 'flex';
-      n.style.borderColor = 'rgba(34,197,94,0.4)';
-      n.style.background = 'rgba(34,197,94,0.06)';
-      n.innerHTML = '<span>✅ 支付成功（预览演示，非真实扣款）</span>';
       return;
     }
     if (q.get('paid') !== '1') return;
@@ -781,10 +685,9 @@ document.head.appendChild(bgStyle);
     if (sub && sub.prices) Object.keys(sub.prices).forEach(function (k) { if (sub.prices[k].hasOnce) onceKeys.push(k); });
     window.__mnSubState = {
       ready: true, tier: me && me.tier, email: me && me.email, source: me && me.source,
-      pay: PAY_DEMO ? 'demo' : (me && me.source === 'server' && sub && sub.enabled) ? 'stripe' : 'apply',
+      pay: me ? (me.source === 'server' ? 'stripe' : 'local') : 'guest', // 恒为最终支付态；申请回退已移除
       enabled: !!(sub && sub.enabled),
-      payDisabled: PAY_DEMO ? false : !!(me && me.source === 'server' && !(sub && sub.enabled)),
-      demo: PAY_DEMO,
+      payDisabled: !!(me && me.source === 'server' && !(sub && sub.enabled)), // 通道未配置：banner 说明，按钮仍为最终态
       hasPortal: !!(sub && sub.hasPortal),
       expiry: (me && me.tierExpiresAt) || null,
       once: ((sub && sub.onceMethods) || []).join(','), // 单次购买支付方式清单（配置态）
@@ -807,9 +710,6 @@ document.head.appendChild(bgStyle);
       var lu = localUser();
       if (lu) {
         me = { tier: lu.tier || 'free', email: lu.email, tierExpiresAt: null, source: 'local' };
-        renderUser();
-      } else if (PAY_DEMO) { // 预览模式免登录：伪用户直接进入预览态（free：所有卡含 Basic 均可点预览购买）
-        me = { tier: 'free', email: '预览访客（未登录）', tierExpiresAt: null, source: 'demo' };
         renderUser();
       } else {
         renderGuest();
