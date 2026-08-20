@@ -52,3 +52,51 @@ EDGE_STYLES[outerEdge].tint），v10.15 起油漆主题不再自动带外板—�
 Ctrl+F5 后看左上角徽标 FC v10.17 确认新版本；再看原画布：油漆卡外板环带应完整
 一圈（圆角、红色渐变），不再缺段；相叠的卡不再盖掉彼此的环带。
 若仍有问题，卸载护栏不变：整块「外板边距」功能移除（gap 恒 0 = v10.9 样貌）。
+
+## FluidCanvas v10.18 — 环带「还是这样」真根因修复 + 外板边距固定档位
+
+用户反馈（第 6 次撞外板环带）：「并没有啊，还是这样」，并附新需求：外板边距从
+自由滑杆改固定档位（最多 64、最小 0、默认 16，选项 0/8/16/24/32/40/48/56/64）。
+
+### 根因（v10.17 的 z 1 结构性无效）
+
+.grid-card { z-index: 1 }（160 行）——所有卡都在 z 1。v10.17 把板提到 z 1 只是
+与卡打平：z 相同按树序，树序靠后的卡仍把靠前卡的环带盖掉。且主题卡带 filter
+（drop-shadow 链 / paint5 SVG 滤镜）——filter 建层叠上下文，把板 ::before 的
+z-index 困在卡内，对无板邻卡也压不过去。v10.17 冒烟断言的是「板 z 1」这一声明
+而非「环带压过邻卡」这一渲染结果——断言写错了对象，教训。
+
+### v10.18 修复（docs/pages/fluidcanvas-editor.html）
+
+1. 两条板规则 z-index 1 → 3：严格高于所有卡元素（无板卡 z 1 / 有板卡 z 2），
+   无论树序环带恒可见；环带在卡盒外（inset 负值）不压本卡内容。
+2. 新增 .grid-card.has-outer-bg { z-index: 2 }：有板卡高于无板卡——救出被
+   filter 层叠上下文困在卡内的主题板（legacy 板无 filter 上下文，板 z 3 直接
+   生效）。已知限制：主题板卡对主题板卡相叠仍按树序（卡的 filter 上下文不可绕）。
+3. 外板边距固定档位：outerGapSlider 滑杆 → select 下拉，档位 0/8/16/24/32/40/
+   48/56/64，默认 16（0 = 无间距贴卡）；新增 snapOuterGap（四舍五入到 8 的倍数、
+   0-64 夹紧），applyDraft 载入旧草稿值吸附（12→16）、updateOuterGap 再兜底；
+   applyOuterBg / popover 回填默认 16；无新草稿字段（旧草稿零迁移）。
+
+### 冒烟（tmp 电池，跑完即删；截图管线仍全黑 → DOM computed 断言 + 用户复核）
+
+37/37 PASS，0 console error（除环境性 /api/health、favicon 404——静态电池服务器
+无后端，v10.17 轮同样存在但当时未接 Log.entryAdded 捕获看不见；其余任何 console
+error 仍一票否决）。草稿 5 卡复刻用户状态（paint1/treasure 旧草稿 outerEdge + gap
+12；legacy gap 8；无 gap 默认 16；无板对照）：
+- 板 ::before z 3（paint/treasure/legacy 三型全实证）+ 有板卡 computed z 2 /
+  无板卡 z 1 对照
+- gap 12 → 吸附 16 实证：inset top -32px（16+16）+ radius 40px（8+16+16，
+  v10.17 的 36px 为旧值 12）；gap 8 档内不变（-24px / 32px）；无 gap 字段 →
+  默认 16（-32px）且 dataset 不写
+- paint 板免剪影（clip none）+ tint borderImage 红渐变 + .card-tint 卡身仍走
+  mn-paint-clip-1 剪影（v10.17 成果回归）；treasure 剪影 map-wave-clip 保持
+- select 9 档 + 默认 16 + output 16px（静态 + 运行时双向）；徽标 FC v10.18
+  静态 + DOM 双现
+- 5 电池卡 + demo 全渲染；0 console error
+
+### 待用户复核
+
+Ctrl+F5 后看徽标 FC v10.18；原画布环带应完整不再被邻卡吃掉（这次板真的在
+所有卡之上）；popover「外板边距」变下拉 9 档，默认 16px。
+若仍有问题，卸载护栏不变：整块「外板边距」功能移除（gap 恒 0 = v10.9 样貌）。

@@ -391,14 +391,16 @@
        auto-carries its 16px outer plate (setCardEdge writes outerEdge +
        outerBgExtent=16 and applyOuterBg paints it; this rule now only serves
        legacy drafts with a plain outerBgColor and no card theme). */
-    .grid-card.has-outer-bg { overflow: visible; }
+    .grid-card.has-outer-bg { overflow: visible; z-index: 2; /* v10.18: 有板卡高于无板卡（.grid-card z 1）——主题卡带 filter 建层叠上下文，板 ::before 的 z 3 被困在卡内出不来，靠卡级 z 2 越过无板邻卡（legacy 板无上下文，z 3 直接压过所有卡元素） */ }
     .grid-card.has-outer-bg::before {
       content: '';
       position: absolute;
-      /* v10.17: z-index 1 — 环带恒画在所有卡内容之上（v10.8 的 -1 让板
-         永远垫底：两张卡相叠时上卡把下卡环带盖住，用户反馈「被吃掉了
-         一部分」）。环带在卡盒外（inset 负值）不会压到本卡内容。 */
-      z-index: 1;
+      /* v10.18: z-index 3 — 环带恒画在所有卡内容之上。v10.17 的 z 1
+         与 .grid-card 的 z 1 打平（z 相同按树序），树序靠后的卡仍把靠前
+         卡的环带盖掉（用户反馈「还是这样」）；z 3 严格高于所有卡元素
+         （无板卡 z 1 / 有板卡 z 2），无论树序环带恒可见。环带在卡盒外
+         （inset 负值）不压本卡内容。 */
+      z-index: 3;
       /* v10.10: + var(--outer-gap, 0px) — 外板边距把板再推远 gap（默认 0）。
          v10.16b: 可见环带由板的 BORDER 本身画出 —— border = extent 厚、
          background 透明 → 中间真透明（画布网格透出、无白底），圆角由
@@ -488,8 +490,10 @@
          v10.16b: border 环带（同 legacy 板规则）+ 剪影始终生效 ——
          --card-clip 把 border 环带裁成主题形状，gap>0 也保持 HUD 外框/
          藏宝波形（v10.16 polygon 版 gap>0 矩形环带 = 用户反馈「方正」，
-         弃用）。v10.17: z-index 1（同 legacy——环带不被相叠的卡盖住）。 */
-      z-index: 1;
+         弃用）。v10.18: z-index 3（v10.17 的 z 1 与 .grid-card z 1 打平
+         按树序，树序靠后的卡仍盖环带——用户反馈「还是这样」；z 3 严格
+         高于所有卡元素，详见 legacy 板注释）。 */
+      z-index: 3;
       inset: calc(-1 * (var(--outer-extent, 16px) + var(--outer-gap, 0px)));
       border-radius: 0; /* the clip shapes it */
       background-color: transparent;
@@ -1963,7 +1967,7 @@
     if (cData.outerBgOpacity != null) card.dataset.outerBgOpacity = cData.outerBgOpacity;
     if (cData.outerBgExtent != null) card.dataset.outerBgExtent = cData.outerBgExtent;
     if (cData.outerEdge) card.dataset.outerEdge = cData.outerEdge;
-    if (cData.outerBgGap != null) card.dataset.outerBgGap = cData.outerBgGap; // v10.10
+    if (cData.outerBgGap != null) card.dataset.outerBgGap = snapOuterGap(cData.outerBgGap); // v10.18: 旧草稿值吸附固定档
     if (hasNewCardBg) {
       // edge theme border/radius live in CSS classes — the inline longhands
       // restored above would win over them, so clear when a theme is on
@@ -2085,7 +2089,7 @@
     // Save current card positions to active preset before persisting
     saveCurrentPresetCards();
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16))
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -4051,6 +4055,14 @@
     }
   }
 
+  // v10.18 — 外板边距固定档位（用户要求：自由滑杆改固定值
+  // 0/8/16/24/32/40/48/56/64，默认 16，0 = 无间距贴卡）。草稿旧值
+  // （如 12）就近吸附（Math.round 半进位：12→16、4→8）。
+  var OUTER_GAP_STEPS = [0, 8, 16, 24, 32, 40, 48, 56, 64];
+  function snapOuterGap(v) {
+    return Math.max(0, Math.min(64, Math.round((parseInt(v) || 0) / 8) * 8));
+  }
+
   function applyOuterBg(card) {
     if (!card || !card.querySelector('.card-label')) return;
     var color = card.dataset.outerBgColor || '';
@@ -4071,7 +4083,7 @@
       return;
     }
     var extent = card.dataset.outerBgExtent != null ? parseInt(card.dataset.outerBgExtent) : 16; // v10.8: 16px spec (was 12)
-    var gap = card.dataset.outerBgGap != null ? parseInt(card.dataset.outerBgGap) : 0; // v10.10: 外板边距
+    var gap = card.dataset.outerBgGap != null ? parseInt(card.dataset.outerBgGap) : 16; // v10.18: 外板边距默认 16（原 0，固定档位用户要求）
     var op = card.dataset.outerBgOpacity != null ? parseInt(card.dataset.outerBgOpacity) : 100;
     card.style.setProperty('--outer-extent', extent + 'px');
     card.style.setProperty('--outer-gap', gap + 'px');
@@ -4135,13 +4147,15 @@
     if (edge) card.classList.add('outer-edge-' + card.dataset.outerEdge);
   }
 
-  // v10.10 — 外板边距：外板与卡片之间的间距（0-40px，默认 0）。纯
+  // v10.18 — 外板边距：固定档位 0/8/16/24/32/40/48/56/64（默认 16，
+  // 0 = 无间距贴卡；用户要求，替换 v10.10 的 0-40 自由滑杆）。纯
   // dataset + CSS 变量驱动（applyOuterBg 读 dataset.outerBgGap 写
-  // --outer-gap），几何全部在 CSS calc 里，无布局 JS。
+  // --outer-gap），几何全部在 CSS calc 里，无布局 JS。select 只发
+  // 档位值，这里再吸附一次兜底（防旧代码/控制台直调任意值）。
   function updateOuterGap(v) {
     if (!selectedCard || !selectedCard.querySelector('.card-label')) return;
     if (!selectedCard.classList.contains('has-outer-bg')) return; // 无外板时边距无意义
-    var val = Math.max(0, Math.min(40, parseInt(v) || 0));
+    var val = snapOuterGap(v);
     selectedCard.dataset.outerBgGap = val;
     var out = document.getElementById('outerGapValue');
     if (out) out.textContent = val + 'px';
@@ -4195,12 +4209,12 @@
     document.getElementById('cardShadowOpacityValue').textContent = (card.dataset.cardShadowOpacity != null ? card.dataset.cardShadowOpacity : 0) + '%';
     var rm = document.getElementById('cardBgRemoveBtn');
     if (rm) rm.style.display = card.querySelector('.card-bg-img') ? '' : 'none';
-    // v10.10 — 外板边距滑块：只在外板存在时有意义（v10.8 起外板随边缘
-    // 主题自动携带，legacy 纯色外板也计入）
+    // v10.18 — 外板边距下拉（固定档位）：只在外板存在时有意义（v10.8 起
+    // 外板随边缘主题自动携带，legacy 纯色外板也计入）；无值默认 16
     var gapSlider = document.getElementById('outerGapSlider');
     if (gapSlider) {
       var hasPlate = !!(card.dataset.outerEdge || card.dataset.outerBgColor);
-      gapSlider.value = card.dataset.outerBgGap != null ? card.dataset.outerBgGap : 0;
+      gapSlider.value = card.dataset.outerBgGap != null ? card.dataset.outerBgGap : 16;
       gapSlider.disabled = !hasPlate;
       document.getElementById('outerGapValue').textContent = gapSlider.value + 'px';
     }
@@ -5058,7 +5072,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (v10.17) — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (v10.18) — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5067,7 +5081,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC v10.17';
+    b.textContent = 'FC v10.18';
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -5252,13 +5266,24 @@
     <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">背景边缘</span>
     <div id="cardEdgeButtons" style="display:flex;flex-direction:column"></div>
     <a href="premium.html" id="cardEdgeUpgradeLink" style="display:none;font-size:12px;color:var(--color-primary);text-decoration:none;margin-top:6px">订阅后解锁背景边缘 →</a>
-    <!-- v10.10 — 外板边距：外板与卡片之间的间距滑块（0-40px，默认 0）。
-         无外板（未选边缘主题）时滑块禁用。 -->
+    <!-- v10.18 — 外板边距：固定档位下拉 0/8/16/24/32/40/48/56/64（默认 16，
+         0 = 无间距贴卡；用户要求，替换 v10.10 的 0-40 自由滑杆）。
+         无外板（未选边缘主题）时禁用。 -->
     <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">外板边距</span>
     <div class="caption-slider-row">
       <label>间距</label>
-      <input type="range" id="outerGapSlider" min="0" max="40" value="0" step="1" oninput="updateOuterGap(this.value)">
-      <output id="outerGapValue">0px</output>
+      <select id="outerGapSlider" onchange="updateOuterGap(this.value)">
+        <option value="0">0px（无间距）</option>
+        <option value="8">8px</option>
+        <option value="16" selected>16px</option>
+        <option value="24">24px</option>
+        <option value="32">32px</option>
+        <option value="40">40px</option>
+        <option value="48">48px</option>
+        <option value="56">56px</option>
+        <option value="64">64px</option>
+      </select>
+      <output id="outerGapValue">16px</output>
     </div>
     <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:10px" onclick="resetCardBg()">恢复默认</button>
   </div>
