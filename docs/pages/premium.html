@@ -518,7 +518,7 @@ document.head.appendChild(bgStyle);
   }
 
   function renderUser() {
-    var rank = TIER_RANK[me.tier] != null ? TIER_RANK[me.tier] : 1;
+    var rank = TIER_RANK[me.tier] != null ? TIER_RANK[me.tier] : 0; // 未知 tier 按 free（普通用户）处理：Basic 不是自带默认
     var b = $('subStatus');
     b.style.display = 'flex';
     var extra = '';
@@ -674,7 +674,7 @@ document.head.appendChild(bgStyle);
     n.style.background = 'rgba(34,197,94,0.06)';
     n.innerHTML = '<span>✅ 支付已确认，正在生效（银行到账可能延迟几分钟）…</span>';
     var baseTier = (me && me.tier) || 'free';
-    var baseRank = TIER_RANK[baseTier] != null ? TIER_RANK[baseTier] : 1;
+    var baseRank = TIER_RANK[baseTier] != null ? TIER_RANK[baseTier] : 0;
     var tries = 0;
     (function poll() {
       tries++;
@@ -682,7 +682,7 @@ document.head.appendChild(bgStyle);
       setTimeout(function () {
         MN_API.get('/auth/me').then(function (r) {
           var t = (r.ok && r.data && r.data.user && r.data.user.tier) || 'free';
-          if ((TIER_RANK[t] != null ? TIER_RANK[t] : 1) > baseRank) {
+          if ((TIER_RANK[t] != null ? TIER_RANK[t] : 0) > baseRank) {
             n.innerHTML = '<span>✅ 已开通 <b style="color:#eab308">' + (TIER_ZH[t] || t) + '</b>，感谢订阅！</span>';
             me = {
               tier: t,
@@ -720,7 +720,7 @@ document.head.appendChild(bgStyle);
   MN_API.get('/auth/me').then(function (r) {
     if (r.ok && r.data && r.data.user) {
       me = {
-        tier: r.data.user.tier || 'basic',
+        tier: r.data.user.tier || 'free', // 兜底 free 普通用户：Basic 不是自带默认（订阅/管理员授予才可得）
         email: r.data.user.email,
         tierExpiresAt: r.data.user.tierExpiresAt || null,
         source: 'server'

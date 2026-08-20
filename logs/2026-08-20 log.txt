@@ -214,3 +214,31 @@
      server（alice）点击全链路 cdActive=true、cdFullscreen=true、cdNum="1"、
      cdJumped=true，409-toast 断言照旧全绿。-after 截图（premium-server-after.png）
      即全屏倒数画面，可目视。
+
+## 6.2 Basic 不是自带：存量 basic 全部落回 free（用户：「Basic 属于三个订阅项里的其中一个 不是自带的」）
+
+   - 根因定位：005 的「存量保留」让未订阅账号也显示「你当前的方案是
+     Basic」——开发库 5 个账号全 basic（grandfather 实证的副作用），用户
+     登录就看到 Basic 像自带的一样，与「Basic 只能订阅获得」口径矛盾。
+     用户新指令撤销 005 的存量保留：Basic 是三个订阅项之一，不是自带。
+   - 后端：
+     · migrations/006_basic_not_builtin.sql：UPDATE users SET tier='free',
+       tier_expires_at=NULL WHERE tier='basic'——存量 basic 静默降级，不写
+       set_tier 审计（迁移级数据修正不计财务事件；admin 侧存量 Basic
+       升级事件的减负 guard 继续兜底财报重放）；Basic 此后只能经两条路径
+       获得：Stripe 订阅/单次购买（checkout 事件），或管理员 PATCH 授予。
+     · health.test.js user_version 5→6（两处 + 迁移清单注释）。
+   - 前端 premium.html：/auth/me 兜底 tier 'basic'→'free'；三处未知 tier
+     rank 兜底 1→0（renderUser / handleReturn baseRank / 轮询比较——未知
+     一律按 free 普通用户，Basic 不再做代码默认）。
+   - 验证：npm test 131/131（存量 basic 升级 premium from basic 审计兼容
+     用例为 fixture 后建用户，不受 006 影响，照旧通过）；重启后端后开发
+     库实证 user_version 6 + 5 账号全 free；三态冒烟 0 console error——
+     guest 不变；local（种子 free）与 server（alice 登录）均 free：banner
+     「你当前的方案是 普通用户」、chips 0（Basic 不再「✓ 当前方案」）、
+     Basic 卡「订阅 · RM12/月」+「单次购买 · RM12 · 1 个月」亮起（与
+     Premium/Ultra 同待遇）；server 态 409-toast + 全屏倒数全链路
+     （cdActive/cdFullscreen/cdNum=1/cdJumped）照旧全绿。
+   - 记忆：backend-build-state.md 补 006 反转条目（Basic 不是自带）。
+   - 待办不变：FluidCanvas 新需求清单 + 后端剩余（部署 + Stripe 联调）
+     攒批。
