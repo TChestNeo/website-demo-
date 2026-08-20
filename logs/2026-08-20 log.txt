@@ -394,3 +394,37 @@
   （path.resolve 统一）。
 - 渲染效果请用户实机 Ctrl+F5 肉眼复核：调「外板边距」滑块，间距带应是画布网格透出
   而非白底；主题卡（纸/藏宝/科技）剪影外板环带照旧；油漆卡不受影响。
+
+### 6.8 v10.16 同夜 mask→polygon clip 环带（2026-08-21 深夜）
+
+用户反馈「现在是外边缘不见了被那个白色背景吃掉了能不能去掉他啊，怎么这么麻烦」：
+6.7 的 mask 环带本机电池 computed 全对、但用户实机不渲染——外板环带整个不见
+（mask 在用户机器上任何形式都不可靠：v10.13 的 composite 教训扩写为「computed 正确
+≠ 渲染正确」）。同夜弃 mask，环带改 evenodd polygon clip-path——v10.13 图片环带
+像素实证过的唯一可靠机制：
+
+- --outer-plate-clip（自定义属性传 clip-path，clip-path 本身不继承）：gap>0 写
+  polygon(evenodd, 外矩形 = 板盒, 内矩形 inset var(--outer-extent))，与图片环带共用
+  同一个 ring 字符串（applyOuterBg 一个变量写两处）；legacy 板规则
+  clip-path: var(--outer-plate-clip, none)，themed 板规则
+  clip-path: var(--outer-plate-clip, var(--card-clip, none))。
+- 取舍（接受）：gap>0 时 themed 板取矩形环带（单一 clip-path 装不下剪影+环带两份
+  形状，HUD 外框剪影让位）；gap 0 删 --outer-plate-clip → 回落剪影 var(--card-clip)
+  = v10.9 逐字节。tint/边框/光晕照旧。legacy 板 gap>0 时 clip 覆盖圆角（clip 与
+  border-radius 不共存）——legacy 纯色板环带方角，可接受；光晕被裁同 v10.8 以来
+  剪影行为。
+- 编辑器：applyOuterBg gap>0 写 --outer-img-clip 与 --outer-plate-clip 同一 ring、
+  删 --outer-mask setProperty 块、!hasOuter removeProperty 换名；v:9 注释 v10.16
+  条目改写为 polygon。demo：::before mask-image → 静态 polygon(evenodd, ..., 
+  var(--plate) ...)，注释/说明同步。版本号仍 v10.16（mask 版同夜废弃未交付）。
+- 冒烟（tmp 电池跑完即删）：编辑器 27/27 PASS（legacy gap12：hole 无/maskImage
+  none/::before clipPath = polygon(evenodd/--outer-img-clip === --outer-plate-clip/
+  圆角 computed 36px 保留/板色 rgb(18,52,86)/--outer-gap 12px；treasure gap12：
+  clipPath = polygon(evenodd 且不含 map-wave-clip（环带取代剪影）+ mask none +
+  tint 在 + .card-tint 层在；tech4 gap0：mask none + hud-frame-4 剪影保留；
+  paint5：无板无 --outer-plate-clip、clip 无 evenodd；滑块 0↔12 往返：gap0 时
+  --outer-plate-clip 移除 + --outer-img-clip none，gap12 双 clip 同串）+ 演示页
+  8/8（plate-hole 全无/plate-body×4/::before clipPath polygon(evenodd/gap 样张
+  同/img-band polygon/body 剪影 hud-frame 与底色）；0 console error。
+- 渲染效果请用户实机 Ctrl+F5 复核。卸载护栏：若 polygon 仍不渲染，整块「外板边距」
+  功能移除（gap 恒 0 = v10.9 样貌），不再迭代。

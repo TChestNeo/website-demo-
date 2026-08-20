@@ -324,21 +324,22 @@
               drop-shadow(0 12px 26px rgba(0, 0, 0, 0.40));
     }
     .card-tech--plated::before {
-      /* v10.10: 板再外推 gap。v10.16: 可见环带由 mask 只留板盒外沿
-         plate 厚一圈实现（中间真透明 → 页面底色透出）——v10.12 曾用
-         .plate-hole 实心挖空层画页面底色，编辑器用户反馈「调整间距时
-         出现白色背景」后两个机制统一换成 mask（编辑器 --outer-mask
-         的同构版；多层 mask 默认 add composite，Chrome 渲染 ✓）。卡片
-         本体层移到 .plate-body 子层（下方规则）。 */
+      /* v10.10: 板再外推 gap。v10.16: 可见环带由 evenodd polygon
+         clip-path 只留板盒外沿 plate 厚一圈实现（中间真透明 → 页面底色
+         透出）——v10.12 曾用 .plate-hole 实心挖空层画页面底色，编辑器
+         用户反馈「调整间距时出现白色背景」后两个机制统一换成 polygon
+         clip（编辑器 --outer-plate-clip 的同构版；与下方图片环带同一
+         机制，像素实证 ✓）。曾试 4 条硬梯度 mask——computed 正确但实机
+         不渲染（用户反馈外边缘不见）→ 弃用。卡片本体层移到 .plate-body
+         子层（下方规则）。 */
       inset: calc(-1 * (var(--plate) + var(--plate-gap)));
       border: 1px solid var(--plate-border); /* 板边框：跟随板盒四边，切角处被剪影裁掉 */
       background-color: transparent;
       background-image: var(--plate-tint);
-      mask-image:
-        linear-gradient(to bottom, #000 var(--plate), transparent var(--plate)),
-        linear-gradient(to top, #000 var(--plate), transparent var(--plate)),
-        linear-gradient(to right, #000 var(--plate), transparent var(--plate)),
-        linear-gradient(to left, #000 var(--plate), transparent var(--plate));
+      clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0,
+        var(--plate) var(--plate), calc(100% - var(--plate)) var(--plate),
+        calc(100% - var(--plate)) calc(100% - var(--plate)),
+        var(--plate) calc(100% - var(--plate)), var(--plate) var(--plate));
     }
     /* v10.9 — 背景图适配外板：图片子层外扩到板盒，同一剪影对更大的盒
        解析 = 外板剪影 → 图片铺满整个外背景（图片 z 0 在板 ::before
@@ -359,9 +360,9 @@
     }
     /* v10.13 — 图片环带 clip（编辑器 --outer-img-clip 的同构版）：
        evenodd polygon 环带（外矩形 = 图片盒、内矩形 inset plate =
-       [−gap, 卡+gap]，与 v10.16 mask 挖空的板中间完全重合）→ 只保留
+       [−gap, 卡+gap]，与 v10.16 polygon clip 挖空的板中间完全重合）→ 只保留
        环带 [−(plate+gap), −gap]（厚 plate、距卡 gap）；中间（间距带 +
-       卡区域）被裁掉，露出下方板 mask 的透明区与卡片本体。切角保持
+       卡区域）被裁掉，露出下方板 clip 裁掉的透明区与卡片本体。切角保持
        方角：演示页板被剪影裁剪、圆角为 0，角片为空，图片在角片处
        透明 → 板色透出，两种样张一致。
        为何不用 2 层 mask（整块 XOR、mask-composite exclude）：Chrome
@@ -376,9 +377,9 @@
     }
     /* v10.16 — 卡片本体层（编辑器 .card-tint 的演示同构版）：v10.12
        时代本体层画在 ::before 上（position/size 铺到 [−gap, 100%+gap]），
-       环带改用 mask 后 ::before 只剩板 tint，本体层独立成子层 ——
+       环带改用 polygon clip 后 ::before 只剩板 tint，本体层独立成子层 ——
        inset 0 骑卡、同剪影，树序在 ::before 之上、图片 (z 0) 与内容
-       (z 1) 之下。间距带 [−gap, 0] 由板的 mask 挖成真透明 → 页面
+       (z 1) 之下。间距带 [−gap, 0] 由板的 clip 挖成真透明 → 页面
        底色透出（v10.12 的 .plate-hole 实心挖空层移除，编辑器用户
        反馈白色背景）。 */
     .card-tech--plated .plate-body {
@@ -603,7 +604,7 @@
         <div class="plate-body"></div>
         <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4 + 外板 + 边距</strong></div>
       </div>
-      <div class="note"><b>v10.10→v10.16</b> — 外板边距 <code>--plate-gap:12px</code>（编辑器「外板边距」滑块）：板再外推 12px，环带厚 14px、距卡 12px；间距带由板 mask 挖成真透明（页面底色透出）——真正空白，不再是衬边。v10.16 起环带改 mask（.plate-hole 实心层移除：用户反馈白色背景），卡片本体独立成 .plate-body 子层</div>
+      <div class="note"><b>v10.10→v10.16</b> — 外板边距 <code>--plate-gap:12px</code>（编辑器「外板边距」滑块）：板再外推 12px，环带厚 14px、距卡 12px；间距带由板 polygon clip 挖成真透明（页面底色透出）——真正空白，不再是衬边。v10.16 起环带改 polygon clip（.plate-hole 实心层移除：用户反馈白色背景），卡片本体独立成 .plate-body 子层</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--plated img-band" style="width:150px;height:95px;--plate-gap:12px;--plate-img:calc(var(--plate) + var(--plate-gap))">
