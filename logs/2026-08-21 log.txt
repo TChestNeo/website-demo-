@@ -183,3 +183,33 @@ Ctrl+F5 后看徽标 FC v10.20：图片不再被盖住（图恒在填充/环带�
 边距带颜色 = 外板自己的颜色——若外板是浅色主题板（tech/paper），
 边距带就是浅色系，这是颜色选择：在「背景边缘」换深色或油漆等主题色
 即可非白。
+
+## FluidCanvas v10.21 — 外板半透明剥除（用户「我不要半透明的！！」）
+
+用户反馈（第 9 次撞外板）：边距带/板是半透明的。根因：主题 tint 自带
+alpha（tech 0.16/0.18、treasure 0.55、paper 0.88，早期主题设计），板
+（border-image 环带 + .card-outer-band 填充）直接用 --outer-tint → 半透明
+漏出画布/网格。用户外板 = tech 系（0.16 alpha 近全透，画布白透出来也
+解释了此前反复的「白色背景」观感）。
+
+### v10.21 修复（docs/pages/fluidcanvas-editor.html，无新草稿字段）
+
+applyOuterBg 写 --outer-tint 前经 stripTintAlpha 剥掉每个 rgba 的 alpha
+分量（→ rgb）——环带 + 边距带填充整体完全不透明；卡身 layers 不动（主题
+设计保留）；legacy 纯色板仍走用户自己的透明度滑杆（滑杆 100 = 不透明，
+<100 是用户自选半透明，保留）。徽标 FC v10.21。
+
+### 冒烟（tmp 电池，跑完即删）
+
+43/43 PASS，0 console error（环境性 404 过滤不变）。新增 c8 tech 板 +
+c9 legacy 滑杆 60 对照：tech band 填充 rgb(34,211,238) + 环带 borderImage
+均无 rgba（剥 alpha 实证）；treasure 同证 rgb(121,85,40)；paint 本就
+不透明；c4 滑杆 100 计算值 rgb（Chrome alpha=1 序列化老陷阱）+ --outer-bg
+原值 rgba(...,1)（滑杆路径未动）+ c9 滑杆 60 保留 rgba(...,0.6)（用户
+自选半透明不受剥除）；v10.20 全量回归（板 z -1 四型 / band 矩阵 / 不盖图 /
+卡级 z 2 / select 9 档 / 运行时 gap 0↔16 / 徽标）。
+
+### 待用户复核
+
+Ctrl+F5 后看徽标 FC v10.21：tech 板/藏宝板/纸板的环带与边距带现在完全
+不透明（油漆本就是）；如果用的是纯色板，透明度滑杆拉到 100 即不透明。
