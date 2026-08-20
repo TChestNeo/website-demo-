@@ -428,3 +428,36 @@
   同/img-band polygon/body 剪影 hud-frame 与底色）；0 console error。
 - 渲染效果请用户实机 Ctrl+F5 复核。卸载护栏：若 polygon 仍不渲染，整块「外板边距」
   功能移除（gap 恒 0 = v10.9 样貌），不再迭代。
+
+### 6.9 v10.16 同夜三修 — border 环带（2026-08-21）
+
+用户反馈「为什么一调整边距的时候就直接变成方正的了」：6.8 的 polygon 环带渲染了，
+但 clip-path 只能裁直角 —— 圆角板环带方角、主题卡 gap>0 剪影让位矩形环带，v10.12
+的圆角/主题形状丢失。同夜第三次换机制：**环带 = 板 ::before 自己的 BORDER**：
+
+- 板盒保持 inset −(extent+gap)；background 全透明（中间真透明 → 网格透出、无白底）；
+  border: var(--outer-extent) solid var(--outer-bg)（环带本体）+ border-image:
+  var(--outer-tint) 1（主题 tint；legacy tint=none → 回落 border 色）。
+- 圆角：border-radius 天然作用于 border → legacy 环带圆角（36px 保留，无任何裁剪）。
+- 主题形状：themed 板 clip-path 恢复恒为 var(--card-clip) —— 剪影把 border 环带裁成
+  HUD 外框/藏宝波形，gap>0 也不方角（v10.12 形状回归）。--outer-plate-clip 全清除
+  （CSS 两规则 + applyOuterBg + v:9 注释）。
+- 1px 板边线：原 --outer-border 改走 themed 规则 box-shadow 0 0 0 1px（颜色由
+  applyOuterBg 临时元素提取 border shorthand 写入 --outer-border-line；none 关键字
+  不能出现在 box-shadow 列表 → 只放 themed 规则，legacy 本无此线）。主题 glow 照旧
+  列表首位；inset glow（藏宝）在透明中段上不可见，可接受。
+- 图片环带不动（v10.13 polygon 方角）：板 border 环带（圆角）在方角切除的角片处
+  透出 = 环带圆角观感一致；clip-path 无法圆角裁剪（无 mask 的 CSS 硬限制）。
+- demo 同构：::before = border var(--plate) + border-image tint + clip var(--tech-clip)
+  恒剪影 + box-shadow 1px 边线；注释/说明同步。
+- 冒烟（tmp 电池跑完即删）：编辑器 36/36 PASS（legacy gap12：borderTopWidth 16px/
+  色 rgb(18,52,86)/bg 透明/bg-image none/border-image none/radius 36px/clip none/
+  mask none/shadow none（legacy 无边线）/--outer-plate-clip 变量已清除；treasure
+  gap12：剪影 map-wave-clip 恢复且不含 polygon/ring/tint 走 border-image/1px 边线
+  box-shadow；tech4 gap0：hud-frame-4/border 16px；paint5：无板无边线变量；滑块
+  0↔12 往返：gap0 img-clip none + border 环带恒在，gap12 img-clip polygon）+ 演示页
+  14/14（borderWidth 14px/tint border-image/剪影 hud-frame（gap 样张同）/mask none/
+  plate-body×4/img-band polygon）；0 console error。
+- 渲染效果请用户实机 Ctrl+F5 复核：调「外板边距」，环带应保持圆角（纯色板）与
+  主题形状（藏宝/科技），中间空白透网格。若仍有问题，卸载护栏不变：整块「外板
+  边距」功能移除（gap 恒 0 = v10.9 样貌）。
