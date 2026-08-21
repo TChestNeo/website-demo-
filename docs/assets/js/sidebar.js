@@ -15,7 +15,7 @@
 
   var NAV_ITEMS = [
     { id: 'home', icon: 'home', label: 'Home', href: '../pages/dashboard.html' },
-    { id: 'micronationary', icon: 'language', label: 'MicroNationary', href: '../pages/overview.html' },
+    { id: 'omnarium', icon: 'language', label: 'Omnarium', href: '../pages/overview.html' },
     { id: 'community', icon: 'groups', label: 'Community', href: '../pages/community-hub.html' },
     { id: 'creation', icon: 'edit_note', label: 'Creation', href: '../pages/construction.html' },
     { id: 'messages', icon: 'chat', label: 'Messages', href: '../pages/messages.html' },
@@ -37,7 +37,7 @@
   function getActiveId() {
     var path = window.location.pathname;
     if (path.includes('dashboard')) return 'home';
-    if (path.includes('explore') || path.includes('overview') || path.includes('guidelines')) return 'micronationary';
+    if (path.includes('explore') || path.includes('overview') || path.includes('guidelines')) return 'omnarium';
     if (path.includes('community')) return 'community';
     if (path.includes('create-topic') || path.includes('construction')) return 'creation';
     if (path.includes('messages')) return 'messages';
@@ -77,9 +77,9 @@
       '<div class="sidebar-module brand-module" style="padding:10px var(--space-sm)">' +
         '<div class="brand-inner">' +
           '<a href="../pages/dashboard.html" style="display:contents;text-decoration:none">' +
-            '<img src="../assets/image/M.NationWorld logo.png" alt="" class="brand-logo" style="height:34px;width:auto">' +
+            '<img src="../assets/image/M.LoreWorld logo.png" alt="" class="brand-logo" style="height:34px;width:auto">' +
             '<div style="display:flex;flex-direction:column;gap:0;min-width:0">' +
-              '<span class="brand-text" style="font-weight:700;font-size:13px;color:var(--color-on-surface);line-height:1.2">M.NationWorld<sup style="font-size:9px;font-weight:600;color:#4648d4;background:rgba(70,72,212,0.1);padding:1px 5px;border-radius:var(--radius-full);margin-left:3px;letter-spacing:0.03em">BETA</sup></span>' +
+              '<span class="brand-text" style="font-weight:700;font-size:13px;color:var(--color-on-surface);line-height:1.2">M.LoreWorld<sup style="font-size:9px;font-weight:600;color:#4648d4;background:rgba(70,72,212,0.1);padding:1px 5px;border-radius:var(--radius-full);margin-left:3px;letter-spacing:0.03em">BETA</sup></span>' +
               '<span style="font-size:10px;color:var(--color-outline);opacity:0.45;letter-spacing:0.03em;line-height:1.2">v0.1.6.5</span>' +
             '</div>' +
           '</a>' +

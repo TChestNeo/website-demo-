@@ -32,7 +32,7 @@ try {
   const lines = [];
   const push = (s = '') => lines.push(s);
 
-  push(`M.NationWorld 周报 ${sinceIso.slice(0, 10)} ~ ${now.toISOString().slice(0, 10)}（${days} 天窗口）`);
+  push(`M.LoreWorld 周报 ${sinceIso.slice(0, 10)} ~ ${now.toISOString().slice(0, 10)}（${days} 天窗口）`);
   push('');
 
   // ── 成本 vs 预算 ──
@@ -116,7 +116,7 @@ try {
     const { createMailer } = require('../src/email');
     if (!config.adminEmail) { console.error('[weekly-report] ADMIN_EMAIL 未配置，跳过发送'); process.exitCode = 1; }
     else {
-      createMailer(config).sendAlert(`[M.NationWorld] 周报 ${now.toISOString().slice(0, 10)}`, text)
+      createMailer(config).sendAlert(`[M.LoreWorld] 周报 ${now.toISOString().slice(0, 10)}`, text)
         .then((r) => { if (r.skipped) console.error('[weekly-report] 发送跳过'); else console.error('[weekly-report] 已发送（或 dev 日志）'); })
         .catch((e) => { console.error('[weekly-report] 发送失败:', e.message); process.exitCode = 1; });
     }

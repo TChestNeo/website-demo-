@@ -1,4 +1,4 @@
--- 001_init.sql — M.NationWorld 初始 schema（24 张表）
+-- 001_init.sql — M.LoreWorld 初始 schema（24 张表）
 -- 约定：公开实体 TEXT 主键带前缀 + seq（USR-/NAT-/TOP-/PST-/CONV-/MSG-/MN-/MOD-/RPT-/ART-）；
 -- 时间 ISO8601 UTC；金额整数微元（1 元 = 1e6）；WAL/busy_timeout/foreign_keys 由 db.js 设置。
 -- nations/topics/teams 存完整 JSON（与 localStorage SlatiDB 元素形状逐字段一致，前端零适配）。

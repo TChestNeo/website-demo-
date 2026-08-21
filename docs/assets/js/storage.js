@@ -1,5 +1,5 @@
 /**
- * M.NationWorld localStorage data layer.
+ * M.LoreWorld localStorage data layer.
  * Simulates a backend for the static demo.
  */
 var SlatiDB = (function () {

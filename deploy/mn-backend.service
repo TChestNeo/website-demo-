@@ -1,7 +1,7 @@
-# M.NationWorld 后端 systemd unit（P10）——装到 /etc/systemd/system/mn-backend.service
+# M.LoreWorld 后端 systemd unit（P10）——装到 /etc/systemd/system/mn-backend.service
 # 依赖：代码在 /opt/mn（owner mn:mn）、backend/.env 已填（600）、backend/node_modules 已 npm ci。
 [Unit]
-Description=M.NationWorld backend (node:http + SQLite, zero-framework)
+Description=M.LoreWorld backend (node:http + SQLite, zero-framework)
 After=network.target
 
 [Service]

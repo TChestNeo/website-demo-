@@ -278,3 +278,20 @@ Ctrl+F5 → 徽标 FC v10.22：外板一整块连续渐变、完全不透明、�
 1. 后端实机部署 + Stripe 实机联调（等用户 sk_test，前端优先指令不变）
 2. 截图管线修复（候选：装 Chrome for Testing 旧版，绕开 Chrome/Edge
    151 GPU 进程即死 → 全黑）
+
+---
+
+## 2026-08-21 深夜加更 — 定位转向：M.LoreWorld + Omnarium（世界观创作口径）
+
+**背景**：用户问「架空国家平台能否进中国」→ 结论：正式进入（ICP/大陆服务器/本地支付/实名/PIPL）需等成年；现在能走 = 定位改「架空世界/世界观创作」+ 借中国平台做社区 + 海外部署直接访问（Stripe 对中国持 Visa/MC 双币卡用户可刷）。用户拍板转向（市场更大、题材更多）。
+
+**本轮交付**：
+1. 品牌更名 **M.NationWorld → M.LoreWorld**：全局 69 文件 200+ 处（页面/标题/邮件/AI 提示词/i18n/条款/管理后台/测试/部署文档/种子脚本），git mv logo.png 与 Project_Overview.txt；零残留（_backup 故意不动）。
+2. 百科栏目 **MicroNationary → Omnarium**（用户钦定造词：-arium 系「观赏 X 的场馆」，中文名「万象殿」；侧栏 id/label/激活逻辑同步）。
+3. ①层门面文案转向：index hero「Build Your World」、onboarding「The global platform for worldbuilding」、dashboard「Welcome back, Creator」+ worldbuilding console、premium/guidelines/overview/transitioning、help 步骤「建立世界」、FAQ 三件套（faq.json/help.zh.js/help.html 同文案；关键词加 架空世界/世界观/创作/lore/worldbuilding，**保留 micronation/微国家**——chat 测试 bestMatch 依赖 + 微国仍是合法子题材）。
+4. AI 口径：客服 prompt「架空世界创作平台」+ 审核员 prompt「架空世界创作社区」；**prompt 字节级常量 → 哈希同步** 6ec9c…→b02cfa…（chat.test.js:49）。
+5. 微国设定资产全保留（宪法/国旗/货币 = 创作设定）；demo 帖内 micronation 题材内容保留（子题材）。
+
+**验证**：后端 npm test 131/131（含新哈希断言）；前端冒烟 13/13 0 console error（index/overview/help：新品牌出现 + 旧名零残留 + hero 新文案 + Omnarium 激活 + FAQ 新口径；教训：FAQ 答案在折叠 <details> 内，断言要用 textContent 不是 innerText）。
+
+**遗留**：① logo.png 文件名已改但图内仍旧名，需重绘；② ②层文案：registry 流程 Create Nation / National Registry / sovereignty 系待转；③ 生产 .env MAIL_FROM 部署时同步；④ 中文名「万象」线（万象殿/万象图鉴）待落地；⑤ 进中国正式路径（备案等）等成年；⑥ 后端部署 + Stripe 联调仍等 sk_test。

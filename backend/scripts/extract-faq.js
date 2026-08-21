@@ -50,7 +50,7 @@ while ((m = re.exec(html)) !== null) {
 // ── 3. 关键词表（人工维护；zh 子串 / en·ms 词边界匹配）──────────────────────
 // 每项 2 个及以上关键词命中即可检索（score = min(1, hits/3)，阈值 0.6 见 ai/faq.js）。
 const KEYWORDS = {
-  q1:  { zh: ['micronation', '微国家', '微国', '入门', '新手', '第一次', '怎么开始', '怎么玩', '是什么', '什么是'], en: ['micronation', 'start', 'begin', 'first time', 'new', 'what is'], ms: ['micronation', 'mula', 'pertama', 'negara kecil', 'cara main'] },
+  q1:  { zh: ['micronation', '微国家', '微国', '架空世界', '世界观', '创作', 'lore', 'worldbuilding', '入门', '新手', '第一次', '怎么开始', '怎么玩', '是什么', '什么是'], en: ['micronation', 'worldbuilding', 'lore', 'world', 'create', 'start', 'begin', 'first time', 'new', 'what is'], ms: ['micronation', 'worldbuilding', 'lore', 'dunia', 'cipta', 'mula', 'pertama', 'negara kecil', 'cara main'] },
   q2:  { zh: ['语言', '哪些语言', '中文', '英文', '马来语', '翻译', '多语言'], en: ['language', 'chinese', 'english', 'malay', 'translate', 'multilingual'], ms: ['bahasa', 'cina', 'inggeris', 'melayu', 'terjemah'] },
   q3:  { zh: ['数据', '保留', '多久', '三年', '3年', '登出', '清除', '保存时间'], en: ['data', 'keep', 'retain', 'how long', 'logout', 'delete', '3 years'], ms: ['data', 'simpan', 'berapa lama', 'log keluar', '3 tahun', 'padam'] },
   q4:  { zh: ['删除', '账号', '删号', '注销', '恢复', '后悔', '找回账号'], en: ['delete', 'account', 'recover', 'restore', 'undo', '30 days'], ms: ['padam', 'akaun', 'hapus', 'pulih', '30 hari'] },

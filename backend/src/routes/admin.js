@@ -713,7 +713,7 @@ function register(router, ctx) {
     const rp = buildReport(year, quarter);
     const esc = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
     const ln = [];
-    ln.push(['M.NationWorld 季度财报', rp.quarter + '（' + rp.months[0] + ' ~ ' + rp.months[2] + '）'].map(esc).join(','));
+    ln.push(['M.LoreWorld 季度财报', rp.quarter + '（' + rp.months[0] + ' ~ ' + rp.months[2] + '）'].map(esc).join(','));
     ln.push(['口径', '权责发生制（按经济事件日期）；¥ 按月末汇率折 RM；税费 = 预计收入 × 税率（估算）；固定成本为估算；实际收款 = 流水收款 − 退款；提现转出单列（不计支出/净利），留存 = 净利 − 提现'].map(esc).join(','));
     ln.push('');
     ln.push(['月份,月结,预计收入(RM),实际收款(RM),流水支出(RM),AI 成本(RM),固定成本(RM),税费(RM),净利润(RM),调整(RM),提现转出(RM)']);

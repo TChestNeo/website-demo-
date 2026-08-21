@@ -5,17 +5,17 @@
  * 并在本文件之后引入即可，无需改动页面 HTML。
  */
 window.MN_I18N.add('zh', {
-  'meta.title': '帮助与支持 | M.NationWorld',
+  'meta.title': '帮助与支持 | M.LoreWorld',
 
   'hero.title': '帮助与支持',
-  'hero.sub': '快速上手、常见问题与联系我们 — 一站式解决你在 M.NationWorld 的所有疑问。',
+  'hero.sub': '快速上手、常见问题与联系我们 — 一站式解决你在 M.LoreWorld 的所有疑问。',
 
   'sec.getting.title': '快速上手',
   'steps.1.title': '创建账号',
-  'steps.1.body': '在登录页注册账号并完成身份设定，成为 M.NationWorld 公民。',
+  'steps.1.body': '在登录页注册账号并完成身份设定，成为 M.LoreWorld 创作者。',
   'steps.1.btn': '前往注册',
-  'steps.2.title': '建立国家',
-  'steps.2.body': '在 Creation 版块创建你的第一个 micronation，设计国旗、宪法与世界观。',
+  'steps.2.title': '建立世界',
+  'steps.2.body': '在 Creation 版块创建你的第一个世界——微国家、科幻、奇幻皆可，设计国旗、宪法与世界观。',
   'steps.2.btn': '开始创建',
   'steps.3.title': '开始写作',
   'steps.3.body': '用 FluidCanvas 编辑器撰写你的第一篇百科文章，拖入旗帜与卡片。',
@@ -28,8 +28,8 @@ window.MN_I18N.add('zh', {
   'faq.search.placeholder': '搜索常见问题',
   // 新手入门
   'faq.cat.beginner': '新手入门',
-  'faq.q.1': '什么是 micronation？第一次来应该从哪里开始？',
-  'faq.a.1': 'Micronation 是由用户创建的虚构国家——你可以在平台上设计自己的国旗、宪法、世界观与历史。第一次使用建议按以下顺序开始：注册账号并完成身份设定 → 在 Creation 版块建立你的国家 → 用 FluidCanvas 编辑器撰写第一篇百科文章 → 在 Community Hub 与其他创作者互动。更多细节见本页顶部的「快速上手」版块。',
+  'faq.q.1': '什么是架空世界创作？第一次来应该从哪里开始？',
+  'faq.a.1': '架空世界创作就是在 M.LoreWorld 上设计完全虚构的世界——微国家、科幻、奇幻都可以。你可以设计国旗、宪法、世界观与历史，缔造属于你的世界。第一次使用建议按以下顺序开始：注册账号并完成身份设定 → 在 Creation 版块建立你的世界 → 用 FluidCanvas 编辑器撰写第一篇百科文章 → 在 Community Hub 与其他创作者互动。更多细节见本页顶部的「快速上手」版块。',
   'faq.q.2': '平台支持哪些语言？',
   'faq.a.2': '平台目前以简体中文为主要语言，多语言系统正在逐步完善中；新语言上线后，你可以在设置中选择界面语言，无需其他操作即可切换。',
   // 账号与数据

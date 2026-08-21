@@ -406,7 +406,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
         base.rptCsvHref = document.getElementById('rptCsvLink').getAttribute('href') || '';
         base.rptPrintShown = document.getElementById('rptPrintBtn').style.display !== 'none';
         var rptCsv = await fetch('/api/admin/finance/report/export?year=' + document.getElementById('rptYear').value + '&quarter=' + document.getElementById('rptQuarter').value, { credentials: 'include' }).then(function(r){ return r.text(); });
-        base.rptCsvTitle = rptCsv.indexOf('M.NationWorld 季度财报') > -1;
+        base.rptCsvTitle = rptCsv.indexOf('M.LoreWorld 季度财报') > -1;
         base.rptCsvCat = rptCsv.indexOf('支出分类汇总') > -1;
         base.rptCsvWithdrawn = rptCsv.indexOf('提现转出(RM)') > -1;
         // 停在财报子视图（生成后的报表，供 SHOT_AFTER 二次截图目视新页）

@@ -1,6 +1,6 @@
 /**
  * 3D Perspective Tilt Effect
- * Shared across all M.NationWorld pages.
+ * Shared across all M.LoreWorld pages.
  * Apply to any element with class "tilt-container".
  */
 (function () {

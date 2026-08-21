@@ -495,7 +495,7 @@ test('admin：季度财报（一键生成：分月聚合/审计重放月末参�
     const buf = Buffer.from(await (await t.request('GET', '/api/admin/finance/report/export', undefined, { cookie: t.admin.cookie })).arrayBuffer());
     assert.deepStrictEqual([buf[0], buf[1], buf[2]], [0xef, 0xbb, 0xbf]);
     const csv = buf.toString('utf8');
-    assert.ok(csv.includes('M.NationWorld 季度财报'));
+    assert.ok(csv.includes('M.LoreWorld 季度财报'));
     assert.ok(csv.includes('月份,月结,预计收入(RM)'));
     assert.ok(csv.includes('支出分类汇总') && csv.includes('服务器'));
     assert.ok(csv.includes('提现转出(RM)'));

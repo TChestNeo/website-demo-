@@ -1,4 +1,4 @@
-# M.NationWorld —— Caddy 2 配置（前后端分离版：API 独立子域）
+# M.LoreWorld —— Caddy 2 配置（前后端分离版：API 独立子域）
 # 前端静态站托管在腾讯云 COS + CDN（见 cos-deploy.md），本机 Caddy 只反代 api.<域名> 后端。
 # 部署：把 <你的域名> 换成真实域名；`caddy validate --config /etc/caddy/Caddyfile` 后 `systemctl reload caddy`。
 # 证书：Caddy 自动申请/续期 Let's Encrypt（需 80/443 入站放行 + api.<域名> A 记录指向本机 IP）。

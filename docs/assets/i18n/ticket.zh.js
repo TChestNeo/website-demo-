@@ -5,7 +5,7 @@
  * 并在本文件之后引入即可，无需改动页面 HTML。
  */
 window.MN_I18N.add('zh', {
-  'meta.title': '人工工单 | M.NationWorld',
+  'meta.title': '人工工单 | M.LoreWorld',
 
   'hero.title': '人工工单',
   'hero.sub': '需要特别权限、或 AI 客服无法处理的事项（支付与账单、创作者结算、账号与处罚申诉、隐私请求等），请在此提交人工工单。',

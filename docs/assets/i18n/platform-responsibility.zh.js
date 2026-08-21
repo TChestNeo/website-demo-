@@ -5,12 +5,12 @@
  * 并在本文件之后引入即可，无需改动页面 HTML。
  */
 window.MN_I18N.add('zh', {
-  'meta.title': '平台责任条款 | M.NationWorld',
-  'back.label': '返回 M.NationWorld',
+  'meta.title': '平台责任条款 | M.LoreWorld',
+  'back.label': '返回 M.LoreWorld',
 
   'page.title': '平台责任条款',
-  'page.effective': '生效日期：2026年8月13日 · 运营主体：SlatiStudio（M.NationWorld Project）',
-  'intro.1': '本条款旨在明确 M.NationWorld 平台与用户各自的责任范围，保障社区的公平、安全与可持续发展。',
+  'page.effective': '生效日期：2026年8月13日 · 运营主体：SlatiStudio（M.LoreWorld Project）',
+  'intro.1': '本条款旨在明确 M.LoreWorld 平台与用户各自的责任范围，保障社区的公平、安全与可持续发展。',
 
   'toc.1': '1. 总则',
   'toc.2': '2. 平台的责任',
@@ -20,9 +20,9 @@ window.MN_I18N.add('zh', {
   'toc.6': '6. 与其他文件的关系',
 
   'sec1.title': '1. 总则',
-  'sec1.intro': '本条款由运营主体 SlatiStudio（M.NationWorld Project）发布，与《服务条款》《隐私政策》《财务与支付条款》《社区规则》共同构成 M.NationWorld 的法律文件体系。',
+  'sec1.intro': '本条款由运营主体 SlatiStudio（M.LoreWorld Project）发布，与《服务条款》《隐私政策》《财务与支付条款》《社区规则》共同构成 M.LoreWorld 的法律文件体系。',
   'sec1.li1.label': '适用范围：',
-  'sec1.li1.body': '本条款适用于所有使用 M.NationWorld 平台及其相关服务的用户。',
+  'sec1.li1.body': '本条款适用于所有使用 M.LoreWorld 平台及其相关服务的用户。',
   'sec1.li2.label': '并行适用：',
   'sec1.li2.body': '本条款与上述四份文件并行适用，共同约束平台与用户之间的关系。',
 

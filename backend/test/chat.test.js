@@ -46,7 +46,7 @@ test('faq 检索：zh/en/ms 各自命中；无关文本不命中；normalize 去
 
 test('prompt 前缀：sha256 断言（防上线后手滑改动 = 缓存失效）', () => {
   const h = crypto.createHash('sha256').update(SYSTEM_PROMPT, 'utf8').digest('hex');
-  assert.strictEqual(h, '6ec9c99be637743d0586877a7737c5abd2bfee7844107b0608bf7847f7ebd0f9');
+  assert.strictEqual(h, 'b02cfa868d9dd5252e149db58226cd7886ee9cf82425be31a5d103db8f0489ee');
   assert.strictEqual(MAX_TOKENS, 80); // 计划红线：客服单条回复 ≤80 tokens
 });
 
@@ -128,12 +128,12 @@ test('chat：预算耗尽 → 降级 200 needsHuman，零 AI 调用', async () =
 // ── 漏斗第 4 级：DeepSeek 通路 ──
 test('chat：DeepSeek → reply 原样 + system 前缀原样 + max_tokens 80 + 按快照记账', async () => {
   const calls = { n: 0, lastReq: null };
-  const t = await testApp({ fetchImpl: chatStub('欢迎来到 M.NationWorld！', calls) });
+  const t = await testApp({ fetchImpl: chatStub('欢迎来到 M.LoreWorld！', calls) });
   try {
     const r = await t.request('POST', '/api/chat', body(Q('介绍一下平台')));
     const b = await r.json();
     assert.strictEqual(r.status, 200);
-    assert.strictEqual(b.reply, '欢迎来到 M.NationWorld！');
+    assert.strictEqual(b.reply, '欢迎来到 M.LoreWorld！');
     assert.strictEqual(b.needsHuman, false);
     assert.strictEqual(b.ticketHint, null);
     assert.strictEqual(calls.n, 1);
