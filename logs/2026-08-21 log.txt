@@ -295,3 +295,20 @@ Ctrl+F5 → 徽标 FC v10.22：外板一整块连续渐变、完全不透明、�
 **验证**：后端 npm test 131/131（含新哈希断言）；前端冒烟 13/13 0 console error（index/overview/help：新品牌出现 + 旧名零残留 + hero 新文案 + Omnarium 激活 + FAQ 新口径；教训：FAQ 答案在折叠 <details> 内，断言要用 textContent 不是 innerText）。
 
 **遗留**：① logo.png 文件名已改但图内仍旧名，需重绘；② ②层文案：registry 流程 Create Nation / National Registry / sovereignty 系待转；③ 生产 .env MAIL_FROM 部署时同步；④ 中文名「万象」线（万象殿/万象图鉴）待落地；⑤ 进中国正式路径（备案等）等成年；⑥ 后端部署 + Stripe 联调仍等 sk_test。
+
+---
+
+## 2026-08-21 深夜加更② — 社区规则定位适配（架空世界口径）
+
+**背景**：用户「那么社区规则需要适配一下当前的定位」。①层此前只改了 sec3.intro；本轮全文逐条复查，其余「国家」出现均为两类——banned 红线（针对现实国家的分裂/冒充/煽动，合规核心）+ allowed 虚构内容。其他法律页（terms/platform-responsibility/financial/privacy）grep「公民|您的国家|平台上的国家」零残留；community-rules 仅 zh 一个语言变体，无需多语言同步。
+
+**改动**（zh.js 字典 + HTML 内联回退同步，3 处×2）：
+1. sec2.li2 版权合规：旗帜、图片、文章 → 旗帜、地图、图片、文章（世界观核心资产）。
+2. sec3.allowed.li1：虚构国家的建国… → 虚构世界中的建国、外交、联盟、战争推演与经济模拟（世界为伞、建国为一类，微国仍是合法子题材）。
+3. footer.updated：8月13日 → 8月21日（生效日期不动）。
+
+**不改**：sec3.intro（①层已转）；banned 1-9 红线全保留（分裂主义煽动/现实国家扮演/独立地图/冒充现实机构/零容忍）；sec1/sec4/sec5/sec6 通用条款零改动。
+
+**验证**：规则页冒烟 22/22 0 console error（9 文件级双文件同步断言 + 12 页面级 CDP 文本断言含红线保留 + console error 0）。
+
+**教训**：新写冒烟脚本漏 server.listen() → 页面级全超时；文件级断言先行先绿、快速定位是服务器没起而非页面问题。

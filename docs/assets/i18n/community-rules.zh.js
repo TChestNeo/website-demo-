@@ -37,7 +37,7 @@ window.MN_I18N.add('zh', {
   'sec2.li1.label': '文章质量：',
   'sec2.li1.body': '百科文章应结构清晰、信息可查；虚构设定须明确标注为虚构。',
   'sec2.li2.label': '版权合规：',
-  'sec2.li2.body': '上传的旗帜、图片、文章等，须确保拥有相应权利或已获得权利人授权，禁止盗用他人作品。',
+  'sec2.li2.body': '上传的旗帜、地图、图片、文章等，须确保拥有相应权利或已获得权利人授权，禁止盗用他人作品。',
   'sec2.li3.label': '禁止内容：',
   'sec2.li3.body': '不得发布 NSFW、违法、侵权或含恶意程序的内容。',
   'sec2.li4.label': '引用署名：',
@@ -48,7 +48,7 @@ window.MN_I18N.add('zh', {
   'sec3.allowed.tag': '允许',
   'sec3.allowed.title': '允许',
   'sec3.allowed.li1.label': '完全架空的政治模拟：',
-  'sec3.allowed.li1.body': '虚构国家的建国、外交、联盟、战争推演与经济模拟。',
+  'sec3.allowed.li1.body': '虚构世界中的建国、外交、联盟、战争推演与经济模拟。',
   'sec3.allowed.li2.label': '架空化设定：',
   'sec3.allowed.li2.body': '以现实为灵感但经过明显架空化处理的设定，不得直接使用现实国名、旗帜、徽章或与其高度相似的版本。',
   'sec3.allowed.li3.label': '历史科普讨论：',
@@ -108,5 +108,5 @@ window.MN_I18N.add('zh', {
   'footer.privacy': '《隐私政策》',
   'footer.help': '帮助中心',
   'footer.lang': '以简体中文版本为准',
-  'footer.updated': '最后更新：2026年8月13日'
+  'footer.updated': '最后更新：2026年8月21日'
 });
