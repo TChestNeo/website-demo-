@@ -355,3 +355,13 @@ Ctrl+F5 → 徽标 FC v10.22：外板一整块连续渐变、完全不透明、�
 
 **验证**：CDP 冒烟 8/8 PASS 0 console error：construction 页 Coming Soon 文案 + 侧栏指向 + 高亮；dashboard 主 CTA/explore 空态/help 仍指向 create-world.html（选型页入口不丢）；create-world 页正常加载且 Creation 高亮。
 **冒烟教训**：侧栏链接 textContent 含 Material Symbols 图标字形名（'edit_noteCreation'），断言用 includes 不用 ===。
+
+---
+
+## 2026-08-22 深夜加更⑥ — Migrate 按钮图标改 wand_shine
+
+**背景**：用户「把那个迁移文章的按钮的icon 改成 wand_shine_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24」——静态字体文件名取连字名 wand_shine（魔杖+闪光，比 move_to_inbox 更贴「AI/魔法搬运」的观感）。
+
+**改动**（fluidcanvas-editor.html 1 处）：头部 Migrate 按钮 span glyph move_to_inbox → wand_shine。
+
+**验证**：CDP 冒烟 4/4 PASS 0 console error（glyph 文本 + Material Symbols Outlined 字体族 + 弹窗仍可开 + console 干净）。
