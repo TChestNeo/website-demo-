@@ -18,7 +18,7 @@
     <header class="flex-between" style="margin-bottom:var(--space-md)">
       <div class="search-capsule">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search nations, topics...">
+        <input type="text" placeholder="Search worlds, topics...">
         <span style="width:1px;height:20px;background:var(--divider-line);flex-shrink:0;border-radius:1px"></span>
         <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);cursor:pointer">notifications</span>
       </div>
@@ -32,7 +32,7 @@
           <p class="body-md" style="color:var(--color-on-surface-variant)">Your worldbuilding console is fully operational.</p>
         </div>
         <div style="display:flex;gap:var(--space-sm)">
-          <a href="registry-step-1.html" class="btn btn-primary">Create Nation</a>
+          <a href="create-world.html" class="btn btn-primary">Create World</a>
           <a href="explore.html" class="btn btn-outline">View Archive</a>
         </div>
       </div>
@@ -87,7 +87,7 @@
         <div class="card">
           <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">Quick Workbench</h3>
           <div style="display:flex;flex-direction:column;gap:4px">
-            <a href="registry-step-1.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">add_circle</span> New Nation Registration</a>
+            <a href="create-world.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">add_circle</span> New World Registration</a>
             <a href="create-topic-step-1.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">edit_note</span> Create Topic</a>
             <a href="messages.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">chat</span> Open Messages</a>
             <a href="fluidcanvas.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">draw</span> FluidCanvas</a>
@@ -98,8 +98,8 @@
           <div id="metricsCards"></div>
         </div>
         <div class="card">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">My Nations</h3>
-          <div id="myNations"></div>
+          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">My Worlds</h3>
+          <div id="myWorlds"></div>
         </div>
       </div>
     </div>
@@ -119,6 +119,7 @@
     document.getElementById('welcomeBanner').textContent = 'Welcome back, ' + user.displayName;
   }
   var nations = SlatiDB.getNations();
+  var worlds = SlatiDB.getWorlds();
 
   var activityItems = [
     { icon: 'language', badge: 'Nation', badgeClass: 'badge-primary', title: 'Republic of Etheria', desc: 'Updated territorial claims and governance charter.', time: '2 hours ago' },
@@ -279,18 +280,25 @@
     });
   });
 
-  var myNationsHtml;
-  if (nations.length === 0) {
-    myNationsHtml = '<p style="color:var(--color-outline);font-size:var(--fs-label-md);text-align:center;padding:var(--space-sm)">No nations yet.<br><a href="registry-step-1.html">Create your first nation →</a></p>';
+  // My Worlds = 国家（既有流程）+ 世界（22 类型向导）合并，按创建时间新→旧
+  var myWorldsList = nations.map(function (n) {
+    return { name: n.name, subtitle: n.classification, createdAt: n.createdAt || '' };
+  }).concat(worlds.map(function (w) {
+    return { name: w.name, subtitle: (w.emoji ? w.emoji + ' ' : '') + w.typeLabel, createdAt: w.createdAt || '' };
+  })).sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
+
+  var myWorldsHtml;
+  if (myWorldsList.length === 0) {
+    myWorldsHtml = '<p style="color:var(--color-outline);font-size:var(--fs-label-md);text-align:center;padding:var(--space-sm)">No worlds yet.<br><a href="create-world.html">Create your first world →</a></p>';
   } else {
-    myNationsHtml = nations.slice(0, 3).map(function(n) {
+    myWorldsHtml = myWorldsList.slice(0, 3).map(function (n) {
       return '<div style="padding:8px 0;display:flex;align-items:center;gap:8px">' +
         '<div style="width:32px;height:32px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + n.name.charAt(0) + '</div>' +
-        '<div style="min-width:0"><div style="font-weight:600;font-size:var(--fs-label-md)">' + n.name + '</div><div class="label-sm" style="color:var(--color-outline)">' + n.classification + '</div></div>' +
+        '<div style="min-width:0"><div style="font-weight:600;font-size:var(--fs-label-md)">' + n.name + '</div><div class="label-sm" style="color:var(--color-outline)">' + n.subtitle + '</div></div>' +
       '</div>';
     }).join('');
   }
-  document.getElementById('myNations').innerHTML = myNationsHtml;
+  document.getElementById('myWorlds').innerHTML = myWorldsHtml;
   if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
 </script>
 </body>

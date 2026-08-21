@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Creation Wizard | M.LoreWorld</title>
+
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    body { background: radial-gradient(ellipse at 50% 30%, rgba(70,72,212,0.04) 0%, transparent 60%), var(--color-background); }
+    .registry-card { max-width: 800px; margin: 0 auto; }
+  </style>
+</head>
+<body data-wizard="1">
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <div style="max-width:800px;margin:0 auto">
+      <!-- Header -->
+      <div style="text-align:center;margin-bottom:var(--space-lg)">
+        <h1 class="headline-lg" style="margin-bottom:4px" id="wizardTitle">Create World</h1>
+        <p class="body-md" style="color:var(--color-on-surface-variant)" id="wizardSub"></p>
+
+        <!-- Progress -->
+        <div class="progress-steps" style="justify-content:center;margin-top:var(--space-md)" id="progressBar"></div>
+      </div>
+
+      <!-- Form card -->
+      <div class="card tilt-container registry-card" style="padding:var(--space-lg)">
+        <div id="stepPanels"></div>
+
+        <div class="flex-between" style="margin-top:var(--space-lg)">
+          <a href="create-world.html" class="btn btn-ghost" id="btn-prev">返回类型选择</a>
+          <button class="btn btn-primary btn-lg" id="btn-next" onclick="handleNext()">
+            <span id="btn-next-label">下一步</span>
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </button>
+        </div>
+        <p id="formError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/site-config.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script>
+  // ─────────────────────────────────────────────────────────────
+  // 每类型一套专属流程：3 步，每步字段/选项各不相同。
+  // 新增类型 = 在 WORLD_TYPE_CONFIGS 加一段配置，引擎零改动。
+  // nation（架空国家）走既有 registry-step-1 国家流程，不在此表。
+  // ─────────────────────────────────────────────────────────────
+  var WORLD_TYPE_CONFIGS = [
+    // ── 世界级 ──
+    { key: 'althistory-zh', label: '架空历史', en: 'Alternate History', emoji: '📜', tagline: '一个分岔的历史，一段未发生的文明',
+      steps: [
+        { title: '历史基点', fields: [
+          { key: 'name', label: '世界/朝代名称', ph: 'e.g. 大唐永徽四十七年', required: true },
+          { key: 'divergence', label: '历史分歧点', ph: 'e.g. 玄武门之变结局反转' },
+          { key: 'span', label: '时间跨度', ph: 'e.g. 公元 626 年至今' },
+        ]},
+        { title: '历史脉络', fields: [
+          { key: 'lore', label: '历史主线', type: 'textarea', ph: '简述这条历史线从分歧点开始的整体走向……' },
+          { key: 'events', label: '关键事件', ph: 'e.g. 科举废除 · 蒸汽革命提前' },
+          { key: 'tone', label: '推演基调', type: 'select', options: ['悲壮史诗', '硬核推演', '轻松幻想', '黑暗沉郁'] },
+        ]},
+        { title: '社会细节', fields: [
+          { key: 'tech', label: '科技水平', type: 'select', options: ['青铜时代', '铁器时代', '工业革命', '信息时代', '混合科技'] },
+          { key: 'politics', label: '政治形态', ph: 'e.g. 虚君共和' },
+          { key: 'economy', label: '经济形态', ph: 'e.g. 海贸漕运双轨' },
+        ]},
+      ]},
+    { key: 'fantasy', label: '奇幻世界', en: 'Fantasy World', emoji: '✨', tagline: '魔法、种族与神话谱系',
+      steps: [
+        { title: '世界骨架', fields: [
+          { key: 'name', label: '世界名称', ph: 'e.g. 艾瑟兰大陆', required: true },
+          { key: 'sub', label: '奇幻子类', type: 'select', options: ['高奇幻', '低奇幻', '黑暗奇幻', '神话奇幻', '仙侠', '都市奇幻'] },
+          { key: 'scale', label: '世界尺度', type: 'select', options: ['单块大陆', '多大陆', '多元位面', '单城深挖'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '世界观简述', type: 'textarea', ph: '描述这个世界的基调、规则与独特之处……' },
+          { key: 'magic', label: '魔法/力量体系', ph: 'e.g. 元素亲和 · 神格契约' },
+          { key: 'myth', label: '神话源头', ph: 'e.g. 创世双蛇的残响' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'races', label: '主要种族', ph: 'e.g. 人类、精灵、龙裔' },
+          { key: 'era', label: '时代背景', ph: 'e.g. 第三纪元的黄昏' },
+          { key: 'conflict', label: '核心冲突', ph: 'e.g. 远古封印松动' },
+        ]},
+      ]},
+    { key: 'scifi', label: '科幻世界', en: 'Sci-Fi World', emoji: '🚀', tagline: '科技奇点与星际文明',
+      steps: [
+        { title: '世界骨架', fields: [
+          { key: 'name', label: '世界名称', ph: 'e.g. 天琴殖民圈', required: true },
+          { key: 'sub', label: '科幻子类', type: 'select', options: ['硬科幻', '太空歌剧', '赛博朋克', '废土', '星际殖民'] },
+          { key: 'time', label: '时间设定', type: 'select', options: ['近未来', '远未来', '架空现代', '后末日'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '世界观简述', type: 'textarea', ph: '这个未来世界如何运转？……' },
+          { key: 'tech', label: '科技体系', ph: 'e.g. 跃迁引擎 · 义体改造' },
+          { key: 'cosmos', label: '宇宙观', ph: 'e.g. 费米悖论的答案' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'factions', label: '势力阵营', ph: 'e.g. 联合舰队 · 殖民地同盟' },
+          { key: 'coretech', label: '核心科技', ph: 'e.g. 冷聚变' },
+          { key: 'conflict', label: '核心冲突', ph: 'e.g. AI 觉醒与人类存续' },
+        ]},
+      ]},
+    { key: 'multiverse', label: '平行宇宙', en: 'Parallel Universe', emoji: '🪐', tagline: '每一个选择都分裂出一条世界线',
+      steps: [
+        { title: '宇宙骨架', fields: [
+          { key: 'name', label: '主宇宙名称', ph: 'e.g. 原点世界', required: true },
+          { key: 'count', label: '平行宇宙数量', ph: 'e.g. 1048576 个分支' },
+          { key: 'link', label: '连接机制', type: 'select', options: ['固定传送门', '意识跃迁', '时间回溯', '全无交集'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '世界观简述', type: 'textarea', ph: '多元宇宙的总体格局……' },
+          { key: 'rule', label: '分叉规则', ph: 'e.g. 每次重大选择都分裂出新线' },
+          { key: 'travel', label: '穿越方式', ph: 'e.g. 量子锚点' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'nodes', label: '关键分叉点', ph: 'e.g. 第一次接触 · 大分裂' },
+          { key: 'watchers', label: '观察者组织', ph: 'e.g. 时轴守护会' },
+          { key: 'conflict', label: '核心冲突', ph: 'e.g. 宇宙热寂倒计时' },
+        ]},
+      ]},
+    { key: 'althistory-en', label: 'Alternate History', en: 'Alternate History · English', emoji: '⏳', tagline: 'What if history had turned left instead of right?',
+      steps: [
+        { title: 'Divergence', fields: [
+          { key: 'name', label: 'World Title', ph: 'e.g. The Roman Steam Age', required: true },
+          { key: 'pod', label: 'Point of Divergence', ph: 'e.g. Hero of Alexandria builds a working engine' },
+          { key: 'era', label: 'Era', type: 'select', options: ['Classical', 'Medieval', 'Industrial', 'Modern', 'Future'] },
+        ]},
+        { title: 'Narrative Core', fields: [
+          { key: 'lore', label: 'Course of This Timeline', type: 'textarea', ph: 'Outline the arc from the divergence onward…' },
+          { key: 'counterfact', label: 'Key Counterfactuals', ph: 'e.g. No Dark Ages' },
+          { key: 'tone', label: 'Tone', type: 'select', options: ['Rigorous', 'Dramatic', 'Satirical', 'Optimistic'] },
+        ]},
+        { title: 'Details', fields: [
+          { key: 'tech', label: 'Technology Level', ph: 'e.g. Steam + aqueducts' },
+          { key: 'factions', label: 'Key Factions', ph: 'e.g. Senate Guilds' },
+          { key: 'endpoint', label: 'Timeline Endpoint', ph: 'e.g. 1900 AD' },
+        ]},
+      ]},
+    { key: 'geopolitics', label: '地缘政治世界', en: 'Geopolitical World', emoji: '🌍', tagline: '大国博弈、联盟与资源走廊',
+      steps: [
+        { title: '格局骨架', fields: [
+          { key: 'name', label: '世界名称', ph: 'e.g. 双大陆均势世界', required: true },
+          { key: 'scale', label: '世界尺度', type: 'select', options: ['全球', '多极大陆', '单一区域'] },
+          { key: 'era', label: '时代', type: 'select', options: ['古典均势', '殖民时代', '冷战式两强', '多极未来'] },
+        ]},
+        { title: '格局核心', fields: [
+          { key: 'lore', label: '格局简述', type: 'textarea', ph: '国际秩序如何形成与维持……' },
+          { key: 'order', label: '国际秩序', ph: 'e.g. 均势体系 · 霸权稳定' },
+          { key: 'alliances', label: '联盟体系', ph: 'e.g. 环大洋公约' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'powers', label: '主要大国', ph: 'e.g. 北方联邦 · 南方同盟' },
+          { key: 'chokepoints', label: '关键航道/资源', ph: 'e.g. 霍尔木兹式海峡' },
+          { key: 'conflict', label: '核心冲突', ph: 'e.g. 资源走廊争夺' },
+        ]},
+      ]},
+    { key: 'oc', label: 'OC 世界', en: 'OC World', emoji: '🎨', tagline: '原创角色们的舞台与羁绊',
+      steps: [
+        { title: '世界骨架', fields: [
+          { key: 'name', label: '世界名称', ph: 'e.g. 星落学园', required: true },
+          { key: 'count', label: 'OC 数量', ph: 'e.g. 12 位主要 OC' },
+          { key: 'style', label: '风格', type: 'select', options: ['二次元', '欧美卡通', '写实', '像素'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '世界总纲', type: 'textarea', ph: '这个世界的舞台设定……' },
+          { key: 'outline', label: 'OC 设定总纲', ph: 'e.g. 星之信使与守夜人' },
+          { key: 'tone', label: '关系基调', ph: 'e.g. 宿命对手 → 伙伴' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'ocs', label: '主要 OC 列表', ph: 'e.g. 艾琳·星落 / 诺瓦·夜行' },
+          { key: 'places', label: '重要地点', ph: 'e.g. 悬空学院' },
+          { key: 'plot', label: '核心剧情', ph: 'e.g. 星图失窃事件' },
+        ]},
+      ]},
+    { key: 'novel', label: '小说世界', en: 'Novel World', emoji: '📖', tagline: '为一部作品而生的完整设定',
+      steps: [
+        { title: '作品骨架', fields: [
+          { key: 'name', label: '书名/世界名', ph: 'e.g. 《九州浮世录》', required: true },
+          { key: 'genre', label: '题材', type: 'select', options: ['玄幻', '武侠', '悬疑', '言情', '历史', '都市'] },
+          { key: 'length', label: '篇幅', type: 'select', options: ['短篇', '中篇', '长篇', '系列'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '世界观简述', type: 'textarea', ph: '故事的舞台与规则……' },
+          { key: 'plot', label: '主线剧情', ph: 'e.g. 少年持图闯九州的成长线' },
+          { key: 'pov', label: '叙事视角', type: 'select', options: ['第一人称', '第三人称限知', '多视角', '全知'] },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'hero', label: '主角设定', ph: 'e.g. 名/身份/动机一句话' },
+          { key: 'cast', label: '关键配角', ph: 'e.g. 导师·宿敌·同伴' },
+          { key: 'ending', label: '结局基调', ph: 'e.g. 开放式 · 圆满' },
+        ]},
+      ]},
+    { key: 'game', label: '游戏世界', en: 'Game World', emoji: '🎮', tagline: '玩法与世界观的双螺旋',
+      steps: [
+        { title: '世界骨架', fields: [
+          { key: 'name', label: '世界名称', ph: 'e.g. 环形边境', required: true },
+          { key: 'genre', label: '游戏类型', type: 'select', options: ['RPG', '动作冒险', '模拟经营', '策略', '生存', '视觉小说'] },
+          { key: 'platform', label: '平台/载体', type: 'select', options: ['PC', '主机', '移动端', '桌面棋游'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '世界观简述', type: 'textarea', ph: '玩家将进入一个怎样的世界……' },
+          { key: 'mechanics', label: '玩法机制', ph: 'e.g. 时间循环解谜' },
+          { key: 'loop', label: '核心循环', ph: 'e.g. 探索→收集→建设→挑战' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'player', label: '玩家角色', ph: 'e.g. 失忆的天选旅人' },
+          { key: 'factions', label: '势力阵营', ph: 'e.g. 商会·佣兵团' },
+          { key: 'conflict', label: '核心冲突', ph: 'e.g. 王权崩塌' },
+        ]},
+      ]},
+    { key: 'anime', label: '动画世界', en: 'Anime World', emoji: '🎬', tagline: '为银幕编排的世界与演出',
+      steps: [
+        { title: '作品骨架', fields: [
+          { key: 'name', label: '世界名称', ph: 'e.g. 云上邮局', required: true },
+          { key: 'genre', label: '动画类型', type: 'select', options: ['热血', '日常', '机战', '奇幻', '悬疑', '治愈'] },
+          { key: 'style', label: '风格', type: 'select', options: ['赛璐璐复古', '数字光影', '3D 渲染二维'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '世界观简述', type: 'textarea', ph: '画面的舞台与氛围……' },
+          { key: 'plot', label: '主线剧情', ph: 'e.g. 一季 12 集的冲突弧' },
+          { key: 'tone', label: '演出基调', ph: 'e.g. 明快热血 · 泪点燃点分布' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'team', label: '主角团', ph: 'e.g. 三人小队 + 吉祥物' },
+          { key: 'villain', label: '反派组织', ph: 'e.g. 秩序议会' },
+          { key: 'conflict', label: '核心冲突', ph: 'e.g. 记忆被篡改的真相' },
+        ]},
+      ]},
+    { key: 'rpg', label: 'RPG Campaign', en: 'Tabletop RPG Campaign', emoji: '🎲', tagline: '一次跑团战役的完整沙盒',
+      steps: [
+        { title: '战役骨架', fields: [
+          { key: 'name', label: '战役名称', ph: 'e.g. 迷雾群岛远征', required: true },
+          { key: 'system', label: '规则体系', type: 'select', options: ['D&D 5e', 'Pathfinder', 'CoC', '赛博朋克红', '原创规则'] },
+          { key: 'players', label: '玩家数量', ph: 'e.g. 4 名玩家 + GM' },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '战役主线', type: 'textarea', ph: '冒险的背景与目标……' },
+          { key: 'plot', label: '主线脉络', ph: 'e.g. 三幕：召集→远征→决战' },
+          { key: 'tone', label: '玩法基调', type: 'select', options: ['战斗向', '叙事向', '调查向', '沙盒'] },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'region', label: '冒险区域', ph: 'e.g. 迷雾群岛' },
+          { key: 'npcs', label: '关键 NPC', ph: 'e.g. 酒馆老板=前冒险王' },
+          { key: 'bbeg', label: '大反派', ph: 'e.g. 时间领主' },
+        ]},
+      ]},
+    // ── 设定级 ──
+    { key: 'civilization', label: '文明设定', en: 'Civilization', emoji: '🏺', tagline: '一个文明的兴衰全史',
+      steps: [
+        { title: '文明骨架', fields: [
+          { key: 'name', label: '文明名称', ph: 'e.g. 大河王朝', required: true },
+          { key: 'form', label: '文明形态', type: 'select', options: ['城邦联盟', '帝国', '游牧', '海洋贸易', '地底文明'] },
+          { key: 'era', label: '存续纪元', ph: 'e.g. 约 3000 年' },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '文明简述', type: 'textarea', ph: '这个文明的独特之处……' },
+          { key: 'core', label: '文化内核', ph: 'e.g. 契约高于血缘' },
+          { key: 'faith', label: '信仰体系', ph: 'e.g. 万物有灵 · 先祖祭祀' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'language', label: '语言文字', ph: 'e.g. 楔形文字 · 六十进制' },
+          { key: 'techpath', label: '技术路径', type: 'select', options: ['冶炼', '天文历法', '水利', '生物驯化'] },
+          { key: 'risefall', label: '兴衰节点', ph: 'e.g. 大旱灾 → 分裂' },
+        ]},
+      ]},
+    { key: 'universe', label: '宇宙设定', en: 'Universe', emoji: '🌌', tagline: '一个宇宙的物理与终极谜题',
+      steps: [
+        { title: '宇宙骨架', fields: [
+          { key: 'name', label: '宇宙名称', ph: 'e.g. 第七苍穹', required: true },
+          { key: 'scale', label: '尺度', type: 'select', options: ['恒星系', '银河', '星系团', '多元宇宙'] },
+          { key: 'birth', label: '诞生方式', type: 'select', options: ['大爆炸', '神创', '模拟世界', '梦境'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '宇宙简述', type: 'textarea', ph: '这个宇宙的法则……' },
+          { key: 'physics', label: '物理法则特色', ph: 'e.g. 光速可变 · 引力双极性' },
+          { key: 'planes', label: '位面结构', ph: 'e.g. 物质界/灵界/深渊' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'bodies', label: '主要天体', ph: 'e.g. 双星系统 · 环世界' },
+          { key: 'elders', label: '高等文明', ph: 'e.g. 先驱者遗迹' },
+          { key: 'mystery', label: '终极谜题', ph: 'e.g. 宇宙边缘的墙' },
+        ]},
+      ]},
+    { key: 'city', label: '城市设定', en: 'City', emoji: '🏙️', tagline: '一座城就是一部史诗',
+      steps: [
+        { title: '城市骨架', fields: [
+          { key: 'name', label: '城市名称', ph: 'e.g. 千帆港', required: true },
+          { key: 'type', label: '城市类型', type: 'select', options: ['港口', '山城', '浮空城', '地下城', '巨构'] },
+          { key: 'scale', label: '规模', type: 'select', options: ['小镇', '都会', '超级都市', '城邦'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '城市简述', type: 'textarea', ph: '这座城的气质与历史……' },
+          { key: 'vibe', label: '城市气质', ph: 'e.g. 雨夜霓虹 · 百年老街' },
+          { key: 'govern', label: '治理结构', ph: 'e.g. 七区议会' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'districts', label: '地标区域', ph: 'e.g. 钟楼区 · 码头区' },
+          { key: 'powers', label: '势力分布', ph: 'e.g. 商会·帮派·教团' },
+          { key: 'secret', label: '城市秘密', ph: 'e.g. 地下的旧城' },
+        ]},
+      ]},
+    { key: 'company', label: '公司设定', en: 'Corporation', emoji: '🏢', tagline: '一个组织的野心与内斗',
+      steps: [
+        { title: '公司骨架', fields: [
+          { key: 'name', label: '公司名称', ph: 'e.g. 星环工业', required: true },
+          { key: 'industry', label: '行业', type: 'select', options: ['科技', '军工', '医药', '娱乐', '能源', '星际殖民'] },
+          { key: 'scale', label: '规模', type: 'select', options: ['初创', '独角兽', '巨头', '跨星集团'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '公司简述', type: 'textarea', ph: '公司的发家史与目标……' },
+          { key: 'culture', label: '企业文化', ph: 'e.g. 「效率即美德」' },
+          { key: 'product', label: '核心产品', ph: 'e.g. 记忆云存储' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'structure', label: '组织架构', ph: 'e.g. 九大部 · 独立研究院' },
+          { key: 'people', label: '关键人物', ph: 'e.g. 创始人 · 二把手 · 对手' },
+          { key: 'conflict', label: '内部冲突', ph: 'e.g. 董事会 vs 实验室' },
+        ]},
+      ]},
+    { key: 'politics', label: '政治体系', en: 'Political System', emoji: '⚖️', tagline: '一套权力的分配与制衡',
+      steps: [
+        { title: '体系骨架', fields: [
+          { key: 'name', label: '体系名称', ph: 'e.g. 贤者共和制', required: true },
+          { key: 'type', label: '政体类型', type: 'select', options: ['君主制', '共和制', '神权', '议会制', '无政府', '算法治理'] },
+          { key: 'scale', label: '适用尺度', type: 'select', options: ['部落', '城邦', '国家', '星际联邦'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '体系简述', type: 'textarea', ph: '这套体系如何运转……' },
+          { key: 'structure', label: '权力结构', ph: 'e.g. 三权 + 算法第四权' },
+          { key: 'legitimacy', label: '合法性来源', ph: 'e.g. 神授 · 民选 · 功绩制' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'succession', label: '选举/继承规则', ph: 'e.g. 贤者投票制' },
+          { key: 'checks', label: '制衡机制', ph: 'e.g. 公民否决权' },
+          { key: 'evolution', label: '历史演变', ph: 'e.g. 贵族议事 → 全民公投' },
+        ]},
+      ]},
+    { key: 'religion', label: '宗教体系', en: 'Religion', emoji: '⛪', tagline: '一套信仰、教义与仪轨',
+      steps: [
+        { title: '体系骨架', fields: [
+          { key: 'name', label: '宗教名称', ph: 'e.g. 晨星教', required: true },
+          { key: 'type', label: '体系类型', type: 'select', options: ['一神教', '多神教', '泛灵', '哲学宗教', '科技崇拜'] },
+          { key: 'reach', label: '传播范围', type: 'select', options: ['单一部族', '区域性', '全球性', '跨星'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '教义简述', type: 'textarea', ph: '信仰的核心与起源……' },
+          { key: 'doctrine', label: '教义核心', ph: 'e.g. 轮回与业报' },
+          { key: 'pantheon', label: '神话谱系', ph: 'e.g. 创世神 → 十二主神' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'rituals', label: '仪式节庆', ph: 'e.g. 冬至守夜' },
+          { key: 'order', label: '组织架构', ph: 'e.g. 大祭司·修会·修士' },
+          { key: 'heresy', label: '异端派系', ph: 'e.g. 无面者教团' },
+        ]},
+      ]},
+    { key: 'language', label: '语言体系', en: 'Language', emoji: '🗣️', tagline: '一门语言的音系、语法与文字',
+      steps: [
+        { title: '体系骨架', fields: [
+          { key: 'name', label: '语言名称', ph: 'e.g. 高地精灵语', required: true },
+          { key: 'family', label: '语系归属', ph: 'e.g. 北境语族' },
+          { key: 'users', label: '使用人群', ph: 'e.g. 高地精灵' },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '语言简述', type: 'textarea', ph: '这门语言的气质与历史……' },
+          { key: 'grammar', label: '语法特征', ph: 'e.g. 动词居首 · 敬语四级' },
+          { key: 'script', label: '书写系统', type: 'select', options: ['字母', '音节', '意音文字', '结绳', '光纹'] },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'phonology', label: '音系特点', ph: 'e.g. 无浊音 · 四声' },
+          { key: 'coinage', label: '造词规则', ph: 'e.g. 词根+前缀堆叠' },
+          { key: 'mottos', label: '名言/文献', ph: 'e.g. 史诗首句' },
+        ]},
+      ]},
+    // ── 素材级 ──
+    { key: 'map', label: '地图', en: 'Map', emoji: '🗺️', tagline: '一张图就是一个世界',
+      steps: [
+        { title: '地图骨架', fields: [
+          { key: 'name', label: '地图名称', ph: 'e.g. 提尔大陆全图', required: true },
+          { key: 'type', label: '地图类型', type: 'select', options: ['世界全图', '区域图', '城市图', '星图', '地城图'] },
+          { key: 'scale', label: '覆盖尺度', type: 'select', options: ['大陆', '国家', '城市', '星系'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '地图简述', type: 'textarea', ph: '这片土地的故事……' },
+          { key: 'terrain', label: '地理格局', ph: 'e.g. 双大陆 · 内海' },
+          { key: 'style', label: '绘制风格', type: 'select', options: ['古法手绘', '现代制图', '科幻全息', '羊皮纸'] },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'landmarks', label: '关键地标', ph: 'e.g. 世界之脊山脉' },
+          { key: 'borders', label: '边界势力', ph: 'e.g. 五国分界' },
+          { key: 'mysteries', label: '传说秘境', ph: 'e.g. 无风带' },
+        ]},
+      ]},
+    { key: 'timeline', label: '时间线', en: 'Timeline', emoji: '📅', tagline: '纪元的划分与关键节点',
+      steps: [
+        { title: '时间线骨架', fields: [
+          { key: 'name', label: '时间线名称', ph: 'e.g. 星历全史', required: true },
+          { key: 'calendar', label: '纪元体系', ph: 'e.g. 星历/创世纪' },
+          { key: 'span', label: '时间跨度', ph: 'e.g. 创世 → 第四纪' },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '时间线简述', type: 'textarea', ph: '历史的整体脉络……' },
+          { key: 'ages', label: '纪元划分', ph: 'e.g. 神话纪·王朝纪·科技纪' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'events', label: '关键事件列表', ph: 'e.g. 星历 0 年：大陨落' },
+          { key: 'figures', label: '人物节点', ph: 'e.g. 时间旅人首次出现' },
+          { key: 'future', label: '未来走向', ph: 'e.g. 热寂或重启' },
+        ]},
+      ]},
+    { key: 'characters', label: '人物关系', en: 'Character Web', emoji: '👥', tagline: '一张关系网串起所有人物',
+      steps: [
+        { title: '关系网骨架', fields: [
+          { key: 'name', label: '关系网名称', ph: 'e.g. 星落学园关系网', required: true },
+          { key: 'size', label: '人数规模', ph: 'e.g. 核心 8 人' },
+          { key: 'genre', label: '题材', type: 'select', options: ['群像', '主角团', '家族', '组织'] },
+        ]},
+        { title: '设定核心', fields: [
+          { key: 'lore', label: '关系网简述', type: 'textarea', ph: '这张网的总体格局……' },
+          { key: 'tone', label: '关系基调', ph: 'e.g. 羁绊与背叛交织' },
+          { key: 'circles', label: '核心圈层', ph: 'e.g. 主角团·导师圈·对立面' },
+        ]},
+        { title: '细节参数', fields: [
+          { key: 'cast', label: '核心人物列表', ph: 'e.g. 名/身份/关系一句话' },
+          { key: 'bonds', label: '关键羁绊', ph: 'e.g. 兄弟反目 → 和解' },
+          { key: 'conflicts', label: '冲突关系', ph: 'e.g. 三角对立' },
+        ]},
+      ]},
+  ];
+
+  // ── 引擎 ──
+  var params = new URLSearchParams(window.location.search);
+  var typeKey = params.get('type');
+  var cfg = null;
+  for (var i = 0; i < WORLD_TYPE_CONFIGS.length; i++) {
+    if (WORLD_TYPE_CONFIGS[i].key === typeKey) { cfg = WORLD_TYPE_CONFIGS[i]; break; }
+  }
+
+  // nation 走既有国家流程；未知类型回选型页
+  if (typeKey === 'nation') { window.location.href = 'registry-step-1.html'; }
+  else if (!cfg) { window.location.href = 'create-world.html'; }
+  else { bootWizard(cfg); }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function fieldHTML(f, values) {
+    var val = values[f.key] || '';
+    if (f.type === 'textarea') {
+      return '<div class="form-group"><label class="form-label">' + f.label + '</label>' +
+        '<textarea class="input-glass" id="f_' + f.key + '" rows="4" placeholder="' + esc(f.ph || '') + '">' + esc(val) + '</textarea></div>';
+    }
+    if (f.type === 'select') {
+      var opts = '<option value="">请选择…</option>';
+      (f.options || []).forEach(function (o) {
+        opts += '<option value="' + esc(o) + '"' + (val === o ? ' selected' : '') + '>' + esc(o) + '</option>';
+      });
+      return '<div class="form-group"><label class="form-label">' + f.label + '</label>' +
+        '<select class="input-glass" id="f_' + f.key + '">' + opts + '</select></div>';
+    }
+    return '<div class="form-group"><label class="form-label">' + f.label + '</label>' +
+      '<input type="text" class="input-glass" id="f_' + f.key + '" placeholder="' + esc(f.ph || '') + '" value="' + esc(val) + '">' +
+    '</div>';
+  }
+
+  function bootWizard(config) {
+    var state = { step: 0 };
+
+    // 草稿恢复（同类型才恢复；合并所有已存步的字段，并回到上次所在步）
+    var draft = SlatiDB.getWorldDraft();
+    var values = {};
+    if (draft && draft.typeKey === config.key && draft.steps) {
+      for (var s = 1; s <= 3; s++) {
+        if (!draft.steps[s]) continue;
+        Object.keys(draft.steps[s]).forEach(function (k) { values[k] = draft.steps[s][k]; });
+      }
+      state.step = Math.min(Math.max((draft.currentStep || 1) - 1, 0), 2);
+    }
+
+    document.getElementById('wizardTitle').textContent = config.emoji + ' ' + config.label;
+    document.getElementById('wizardSub').textContent = config.tagline;
+
+    // 进度条
+    var bar = '';
+    config.steps.forEach(function (st, idx) {
+      var cls = idx === state.step ? 'active' : (idx < state.step ? 'completed' : 'pending');
+      var dot;
+      if (idx < state.step) dot = '<span class="dot" style="background:#22c55e"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>';
+      else dot = '<span class="dot"' + (cls === 'pending' ? ' style="background:var(--color-outline-variant);color:var(--color-outline)"' : '') + '>' + (idx + 1) + '</span>';
+      var labelStyle = cls === 'pending' ? ' style="color:var(--color-outline)"' : '';
+      bar += '<div class="progress-step ' + cls + '">' + dot + '<span' + labelStyle + '>' + st.title + '</span></div>';
+      if (idx < config.steps.length - 1) bar += '<div class="progress-connector' + (idx < state.step ? ' done' : '') + '"></div>';
+    });
+    document.getElementById('progressBar').innerHTML = bar;
+
+    // 面板
+    document.getElementById('stepPanels').innerHTML = config.steps.map(function (st, idx) {
+      return '<div class="wizard-panel" data-step="' + idx + '"' + (idx === state.step ? '' : ' style="display:none"') + '>' +
+        '<h3 class="label-md" style="margin-bottom:var(--space-md);color:var(--color-on-surface)">Step ' + (idx + 1) + ' — ' + st.title + '</h3>' +
+        st.fields.map(function (f) { return fieldHTML(f, values); }).join('') +
+      '</div>';
+    }).join('');
+
+    var btnNextLabel = document.getElementById('btn-next-label');
+    var btnNext = document.getElementById('btn-next');
+    var btnPrev = document.getElementById('btn-prev');
+
+    function syncButtons() {
+      var last = state.step === config.steps.length - 1;
+      btnNextLabel.textContent = last ? '提交创建' : '下一步：' + config.steps[state.step + 1].title;
+      btnNext.querySelector('.material-symbols-outlined').textContent = last ? 'check' : 'arrow_forward';
+      btnPrev.textContent = state.step === 0 ? '返回类型选择' : '上一步';
+      btnPrev.classList.toggle('btn-ghost', true);
+      if (state.step > 0) {
+        btnPrev.setAttribute('href', 'javascript:void(0)');
+        btnPrev.onclick = function (e) { if (e) e.preventDefault(); goTo(state.step - 1); };
+      } else {
+        btnPrev.setAttribute('href', 'create-world.html');
+        btnPrev.onclick = null;
+      }
+    }
+
+    function goTo(idx) {
+      state.step = idx;
+      var panels = document.querySelectorAll('.wizard-panel');
+      panels.forEach(function (p, i) { p.style.display = i === idx ? '' : 'none'; });
+      // 重建进度条
+      var steps = config.steps;
+      var bar2 = '';
+      steps.forEach(function (st, i2) {
+        var cls = i2 === idx ? 'active' : (i2 < idx ? 'completed' : 'pending');
+        var dot;
+        if (i2 < idx) dot = '<span class="dot" style="background:#22c55e"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>';
+        else dot = '<span class="dot"' + (cls === 'pending' ? ' style="background:var(--color-outline-variant);color:var(--color-outline)"' : '') + '>' + (i2 + 1) + '</span>';
+        var labelStyle = cls === 'pending' ? ' style="color:var(--color-outline)"' : '';
+        bar2 += '<div class="progress-step ' + cls + '">' + dot + '<span' + labelStyle + '>' + st.title + '</span></div>';
+        if (i2 < steps.length - 1) bar2 += '<div class="progress-connector' + (i2 < idx ? ' done' : '') + '"></div>';
+      });
+      document.getElementById('progressBar').innerHTML = bar2;
+      syncButtons();
+    }
+
+    window.handleNext = function () {
+      var st = config.steps[state.step];
+      var stepValues = {};
+      var missing = null;
+      st.fields.forEach(function (f) {
+        var el = document.getElementById('f_' + f.key);
+        stepValues[f.key] = el ? el.value.trim() : '';
+        if (f.required && !stepValues[f.key] && !missing) missing = f.label;
+      });
+      if (missing) { showError('请填写：' + missing); return; }
+
+      // 写入草稿（含本步全部字段，便于恢复）
+      SlatiDB.saveWorldDraft(config.key, state.step + 1, stepValues);
+
+      if (state.step === config.steps.length - 1) {
+        // 汇总全部步的字段 → 提交
+        var all = {};
+        var finalDraft = SlatiDB.getWorldDraft();
+        for (var s = 1; s <= 3; s++) {
+          if (!finalDraft.steps[s]) continue;
+          Object.keys(finalDraft.steps[s]).forEach(function (k) { all[k] = finalDraft.steps[s][k]; });
+        }
+        var record = {
+          type: config.key,
+          typeLabel: config.label,
+          emoji: config.emoji,
+          name: all.name,
+          lore: all.lore || '',
+        };
+        Object.keys(all).forEach(function (k) { record[k] = all[k]; });
+        SlatiDB.submitWorld(record);
+        window.location.href = 'world-created.html';
+        return;
+      }
+      goTo(state.step + 1);
+    };
+
+    function showError(msg) {
+      var el = document.getElementById('formError');
+      el.textContent = msg; el.style.display = '';
+      setTimeout(function () { el.style.display = 'none'; }, 3000);
+    }
+
+    syncButtons();
+  }
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

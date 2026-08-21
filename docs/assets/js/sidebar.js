@@ -17,7 +17,7 @@
     { id: 'home', icon: 'home', label: 'Home', href: '../pages/dashboard.html' },
     { id: 'omnarium', icon: 'language', label: 'Omnarium', href: '../pages/overview.html' },
     { id: 'community', icon: 'groups', label: 'Community', href: '../pages/community-hub.html' },
-    { id: 'creation', icon: 'edit_note', label: 'Creation', href: '../pages/construction.html' },
+    { id: 'creation', icon: 'edit_note', label: 'Creation', href: '../pages/create-world.html' },
     { id: 'messages', icon: 'chat', label: 'Messages', href: '../pages/messages.html' },
     { id: 'activity', icon: 'analytics', label: 'Activity', href: '../pages/activity.html' },
     { id: 'editor', icon: 'article', label: 'Editor', href: '../pages/editor.html' },
@@ -40,6 +40,7 @@
     if (path.includes('explore') || path.includes('overview') || path.includes('guidelines')) return 'omnarium';
     if (path.includes('community')) return 'community';
     if (path.includes('create-topic') || path.includes('construction')) return 'creation';
+    if (path.includes('create-world') || path.includes('world-wizard') || path.includes('world-created')) return 'creation';
     if (path.includes('messages')) return 'messages';
     if (path.includes('activity')) return 'activity';
     if (path.includes('editor')) return 'editor';

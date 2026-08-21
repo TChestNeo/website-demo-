@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Established | M.LoreWorld</title>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #050510;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at 30% 50%, rgba(70,72,212,0.12) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 50%, rgba(129,39,207,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .glass-container {
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      max-width: 560px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .mono-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: var(--radius-full);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #22c55e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+<div id="canvasContainer" style="position:fixed;inset:0;z-index:0;pointer-events:none"></div>
+
+<div class="glass-container tilt-container" style="position:relative;z-index:1">
+  <div class="mono-badge animate-fade-in" style="margin-bottom:var(--space-md)">
+    <span class="material-symbols-outlined" style="font-size:14px">check_circle</span>
+    WORLD ENTRY ARCHIVED
+  </div>
+
+  <h1 class="display-lg" style="font-size:36px;margin-bottom:12px;text-shadow:0 0 40px rgba(70,72,212,0.4)" id="worldTitle">
+    世界创建成功
+  </h1>
+
+  <p class="body-md" style="color:rgba(255,255,255,0.5);margin-bottom:var(--space-md)" id="worldDesc">
+    你的世界已收录进 M.LoreWorld 世界档案。
+  </p>
+
+  <div id="processingIndicator" style="margin-bottom:var(--space-md)">
+    <div class="spinner" style="margin:0 auto var(--space-sm)"></div>
+    <p class="label-sm" style="color:rgba(255,255,255,0.35)">Finalizing archive entry...</p>
+  </div>
+
+  <div style="display:flex;gap:var(--space-sm);justify-content:center;flex-wrap:wrap">
+    <a href="dashboard.html" class="btn btn-primary btn-lg animate-pulse-glow">
+      前往控制台
+      <span class="material-symbols-outlined">arrow_forward</span>
+    </a>
+    <a href="create-world.html" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8)">
+      再创建一个
+    </a>
+  </div>
+
+  <p style="margin-top:var(--space-lg);font-size:var(--fs-label-sm);color:rgba(255,255,255,0.25)">
+    <a href="dashboard.html" style="color:rgba(255,255,255,0.3)">Bypass to Dashboard</a>
+    &nbsp;·&nbsp;
+    <span>Archive Protocol v1.0</span>
+  </p>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/site-config.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script>
+  // 读取最近创建的世界
+  var worlds = SlatiDB.getWorlds();
+  var world = worlds[worlds.length - 1];
+
+  if (world && world.name) {
+    var loreBrief = world.lore ? String(world.lore).slice(0, 60) : '';
+    document.getElementById('worldTitle').textContent = (world.emoji ? world.emoji + ' ' : '') + world.name + ' — 已建立';
+    document.getElementById('worldDesc').textContent =
+      '类型：' + world.typeLabel +
+      (loreBrief ? ' · ' + loreBrief + (String(world.lore).length > 60 ? '…' : '') : '') +
+      ' · 已收录进 M.LoreWorld 世界档案。';
+  }
+
+  // Simulate processing then resolve
+  setTimeout(function () {
+    var indicator = document.getElementById('processingIndicator');
+    if (indicator) {
+      indicator.innerHTML =
+        '<div style="margin-bottom:var(--space-sm)">' +
+          '<span class="material-symbols-outlined animate-scale-in" style="font-size:32px;color:#22c55e">verified</span>' +
+        '</div>' +
+        '<p class="label-sm" style="color:#22c55e">Archive entry complete</p>';
+    }
+  }, 1600);
+
+  // Simple canvas particle animation
+  (function () {
+    var container = document.getElementById('canvasContainer');
+    var canvas = document.createElement('canvas');
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    container.appendChild(canvas);
+    var ctx = canvas.getContext('2d');
+    var particles = [];
+    var w, h;
+
+    function resize() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (var i = 0; i < 60; i++) {
+      particles.push({
+        x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.5 + 0.5,
+        vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+        alpha: Math.random() * 0.4 + 0.1
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, w, h);
+      particles.forEach(function (p) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(70,72,212,' + p.alpha + ')';
+        ctx.fill();
+      });
+      for (var i = 0; i < particles.length; i++) {
+        for (var j = i + 1; j < particles.length; j++) {
+          var dx = particles[i].x - particles[j].x;
+          var dy = particles[i].y - particles[j].y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = 'rgba(70,72,212,' + (0.08 * (1 - dist / 100)) + ')';
+            ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+  })();
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

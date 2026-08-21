@@ -25,7 +25,7 @@
       </div>
       <div class="search-capsule" style="margin-left:auto">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search nations, events..." oninput="filterNations(this.value)">
+        <input type="text" placeholder="Search worlds, events..." oninput="filterNations(this.value)">
       </div>
     </div>
 
@@ -34,7 +34,7 @@
 
       <!-- Left: Nation/Event article cards -->
       <div>
-        <h2 class="headline-md" style="margin-bottom:var(--space-sm)">All Nations & Entities</h2>
+        <h2 class="headline-md" style="margin-bottom:var(--space-sm)">All Worlds & Entities</h2>
         <div style="display:flex;flex-direction:column;gap:var(--space-sm)" id="nationCards"></div>
       </div>
 
@@ -69,7 +69,7 @@
         <div class="card">
           <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
             <span class="material-symbols-outlined" style="font-size:18px;color:#eab308">star</span>
-            Popular Nations
+            Popular Worlds
           </h3>
           <div id="popularNations" style="display:flex;flex-direction:column;gap:4px"></div>
         </div>
@@ -95,7 +95,20 @@
 <script src="../assets/js/pricing.js"></script>
 <script src="../assets/js/subnav.js"></script>
 <script>
-  var allNations = SlatiDB.getNations();
+  // 国家 + 22 类型世界合并展示（世界记录归一化到国家卡片形状）
+  var nations = SlatiDB.getNations();
+  var worlds = SlatiDB.getWorlds().map(function (w) {
+    return {
+      name: w.name,
+      classification: (w.emoji ? w.emoji + ' ' : '') + w.typeLabel,
+      lore: w.lore,
+      capital: '',
+      demographics: {},
+      createdAt: w.createdAt,
+      worldType: true,
+    };
+  });
+  var allNations = nations.concat(worlds);
   var topics = SlatiDB.getTopics();
   var filteredNations = allNations.slice();
 
@@ -103,8 +116,8 @@
     if (nations.length === 0) {
       document.getElementById('nationCards').innerHTML =
         '<div class="card" style="text-align:center;padding:var(--space-xl)">' +
-          '<p style="color:var(--color-outline)">No nations match your search.</p>' +
-          '<a href="registry-step-1.html" class="btn btn-primary" style="margin-top:var(--space-sm)">Register the first nation →</a>' +
+          '<p style="color:var(--color-outline)">No worlds match your search.</p>' +
+          '<a href="create-world.html" class="btn btn-primary" style="margin-top:var(--space-sm)">Create the first world →</a>' +
         '</div>';
       return;
     }
@@ -127,7 +140,7 @@
           '</div>' +
           '<span class="material-symbols-outlined" style="font-size:18px;color:#22c55e">verified</span>' +
         '</div>' +
-        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:10px;line-height:1.5">' + (n.lore || 'A sovereign entity in the M.LoreWorld registry.') + '</p>' +
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:10px;line-height:1.5">' + (n.lore || 'A world in the M.LoreWorld registry.') + '</p>' +
         '<div class="flex-between" style="flex-wrap:wrap;gap:6px">' +
           '<div style="display:flex;gap:4px;flex-wrap:wrap">' +
             '<span class="badge badge-secondary">' + n.classification + '</span>' +

@@ -10,6 +10,8 @@ var SlatiDB = (function () {
     SESSION: 'slati_session',
     NATION: 'slati_nation_draft',
     NATIONS: 'slati_nations',
+    WORLD: 'slati_world_draft',
+    WORLDS: 'slati_worlds',
     TOPICS: 'slati_topics',
     POSTS: 'slati_posts',
     TEAMS: 'slati_teams',
@@ -104,6 +106,37 @@ var SlatiDB = (function () {
 
   function getNations() {
     return get(KEYS.NATIONS) || [];
+  }
+
+  // --- World Draft (multi-step, per-type) ---
+  // 22 种世界类型共用一个草稿位：换类型即覆盖（一次只创建一界）
+  function saveWorldDraft(typeKey, step, data) {
+    var draft = get(KEYS.WORLD) || { steps: {} };
+    draft.typeKey = typeKey;
+    draft.steps[step] = data;
+    draft.currentStep = step;
+    draft.updatedAt = new Date().toISOString();
+    set(KEYS.WORLD, draft);
+  }
+
+  function getWorldDraft() {
+    return get(KEYS.WORLD);
+  }
+
+  function submitWorld(record) {
+    var worlds = get(KEYS.WORLDS) || [];
+    record.id = 'WLD-' + Date.now();
+    record.createdAt = new Date().toISOString();
+    record.status = 'active';
+    worlds.push(record);
+    set(KEYS.WORLDS, worlds);
+    remove(KEYS.WORLD);
+    // 无云端镜像：后端 /social/worlds 端点未建（与 mirrorNation 同理，待后端批次）
+    return record;
+  }
+
+  function getWorlds() {
+    return get(KEYS.WORLDS) || [];
   }
 
   // --- Topics ---
@@ -411,6 +444,10 @@ var SlatiDB = (function () {
     getNationDraft: getNationDraft,
     submitNation: submitNation,
     getNations: getNations,
+    saveWorldDraft: saveWorldDraft,
+    getWorldDraft: getWorldDraft,
+    submitWorld: submitWorld,
+    getWorlds: getWorlds,
     saveTopic: saveTopic,
     getTopics: getTopics,
     getTeams: getTeams,

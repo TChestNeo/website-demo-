@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create World | M.LoreWorld</title>
+
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    body { background: radial-gradient(ellipse at 50% 30%, rgba(70,72,212,0.04) 0%, transparent 60%), var(--color-background); }
+    .type-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: var(--space-sm); }
+    .type-card {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: var(--space-md) var(--space-sm);
+      background: var(--card-bg);
+      border: 1px solid var(--divider-line);
+      border-radius: var(--radius-md);
+      text-decoration: none; text-align: center;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .type-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--color-primary);
+      box-shadow: 0 8px 24px rgba(70,72,212,0.12);
+    }
+    .type-emoji { font-size: 28px; line-height: 1.2; }
+    .type-label { font-weight: 700; font-size: 15px; color: var(--color-on-surface); }
+    .type-en { font-size: 11px; color: var(--color-outline); letter-spacing: 0.02em; }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <div style="max-width:960px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:var(--space-lg)">
+        <h1 class="headline-lg" style="margin-bottom:4px">Create World</h1>
+        <p class="body-md" style="color:var(--color-on-surface-variant)">选择你要创建的世界类型 —— 每一种类型都有专属的创建流程</p>
+      </div>
+
+      <div class="type-grid" id="typeGrid"></div>
+
+      <p style="text-align:center;margin-top:var(--space-lg);font-size:var(--fs-label-sm);color:var(--color-outline)">
+        <span class="status-dot status-dot-green" style="display:inline-block;vertical-align:middle"></span>
+        Creation Engine: Online · 22 world types available
+      </p>
+    </div>
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/site-config.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script>
+  // 22 种世界类型（顺序按产品口径锁定）。
+  // flow 字段：nation → 既有 3 步国家流程（registry-step-1）；
+  // 其余 → world-wizard.html?type=<key>（每类型一套专属步骤/字段）。
+  var WORLD_TYPES = [
+    { key: 'nation',         label: '架空国家',       en: 'Fictional Nation',      emoji: '🏛️', flow: 'registry-step-1.html' },
+    { key: 'althistory-zh',  label: '架空历史',       en: 'Alternate History · 中文', emoji: '📜' },
+    { key: 'fantasy',        label: '奇幻世界',       en: 'Fantasy World',         emoji: '✨' },
+    { key: 'scifi',          label: '科幻世界',       en: 'Sci-Fi World',          emoji: '🚀' },
+    { key: 'multiverse',     label: '平行宇宙',       en: 'Parallel Universe',     emoji: '🪐' },
+    { key: 'althistory-en',  label: 'Alternate History', en: 'Alternate History · English', emoji: '⏳' },
+    { key: 'geopolitics',    label: '地缘政治世界',   en: 'Geopolitical World',    emoji: '🌍' },
+    { key: 'oc',             label: 'OC 世界',        en: 'OC World',              emoji: '🎨' },
+    { key: 'novel',          label: '小说世界',       en: 'Novel World',           emoji: '📖' },
+    { key: 'game',           label: '游戏世界',       en: 'Game World',            emoji: '🎮' },
+    { key: 'anime',          label: '动画世界',       en: 'Anime World',           emoji: '🎬' },
+    { key: 'rpg',            label: 'RPG Campaign',   en: 'Tabletop RPG Campaign', emoji: '🎲' },
+    { key: 'civilization',   label: '文明设定',       en: 'Civilization',          emoji: '🏺' },
+    { key: 'universe',       label: '宇宙设定',       en: 'Universe',              emoji: '🌌' },
+    { key: 'city',           label: '城市设定',       en: 'City',                  emoji: '🏙️' },
+    { key: 'company',        label: '公司设定',       en: 'Corporation',           emoji: '🏢' },
+    { key: 'politics',       label: '政治体系',       en: 'Political System',      emoji: '⚖️' },
+    { key: 'religion',       label: '宗教体系',       en: 'Religion',              emoji: '⛪' },
+    { key: 'language',       label: '语言体系',       en: 'Language',              emoji: '🗣️' },
+    { key: 'map',            label: '地图',           en: 'Map',                   emoji: '🗺️' },
+    { key: 'timeline',       label: '时间线',         en: 'Timeline',              emoji: '📅' },
+    { key: 'characters',     label: '人物关系',       en: 'Character Web',         emoji: '👥' },
+  ];
+
+  document.getElementById('typeGrid').innerHTML = WORLD_TYPES.map(function (t) {
+    var href = t.flow || ('world-wizard.html?type=' + t.key);
+    return '<a class="type-card" href="' + href + '" data-key="' + t.key + '">' +
+      '<span class="type-emoji">' + t.emoji + '</span>' +
+      '<span class="type-label">' + t.label + '</span>' +
+      '<span class="type-en">' + t.en + '</span>' +
+    '</a>';
+  }).join('');
+</script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

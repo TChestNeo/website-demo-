@@ -31,10 +31,10 @@
         <div>
           <span class="badge badge-primary" style="margin-bottom:8px">Knowledge Base</span>
           <h1 class="headline-lg">Omnarium Overview</h1>
-          <p class="body-md" style="color:var(--color-on-surface-variant)">Your gateway to the global registry of sovereign entities, lore archives, and community knowledge.</p>
+          <p class="body-md" style="color:var(--color-on-surface-variant)">Your gateway to the global registry of worlds, lore archives, and community knowledge.</p>
         </div>
         <div style="display:flex;gap:var(--space-sm)">
-          <a href="registry-step-1.html" class="btn btn-primary">Create Article</a>
+          <a href="create-world.html" class="btn btn-primary">Create World</a>
           <a href="explore.html" class="btn btn-outline">View Archive</a>
         </div>
       </div>
@@ -85,13 +85,14 @@
 <script src="../assets/js/subnav.js"></script>
 <script>
   var nations = SlatiDB.getNations();
+  var worlds = SlatiDB.getWorlds();
   var topics = SlatiDB.getTopics();
 
   // Stats
   document.getElementById('statsRow').innerHTML =
     '<div class="card" style="text-align:center">' +
-      '<div class="headline-md" style="color:var(--color-primary);display:flex;align-items:center;justify-content:center;gap:4px">' + nations.length.toLocaleString() + ' <span class="label-sm" style="color:#22c55e">+12%</span></div>' +
-      '<div class="label-sm" style="color:var(--color-outline)">Created Pages</div>' +
+      '<div class="headline-md" style="color:var(--color-primary);display:flex;align-items:center;justify-content:center;gap:4px">' + (nations.length + worlds.length).toLocaleString() + ' <span class="label-sm" style="color:#22c55e">+12%</span></div>' +
+      '<div class="label-sm" style="color:var(--color-outline)">Worlds Created</div>' +
     '</div>' +
     '<div class="card" style="text-align:center">' +
       '<div class="headline-md" style="color:var(--color-secondary);display:flex;align-items:center;justify-content:center;gap:4px">1,402 <span class="label-sm" style="color:#22c55e">+5%</span></div>' +
@@ -119,7 +120,7 @@
         '</div>' +
         '<span class="material-symbols-outlined" style="margin-left:auto;font-size:20px;color:#22c55e">verified</span>' +
       '</div>' +
-      '<p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:12px">' + (featured.lore || 'A sovereign entity in the M.LoreWorld registry.') + '</p>' +
+      '<p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:12px">' + (featured.lore || 'A world in the M.LoreWorld registry.') + '</p>' +
       '<div class="flex-center gap-sm" style="font-size:var(--fs-label-sm);color:var(--color-outline)">' +
         '<span>🏛️ ' + (featured.capital || 'N/A') + '</span>' +
         '<span>👥 ' + (featured.demographics && featured.demographics.population ? featured.demographics.population : 'N/A') + '</span>' +

@@ -312,3 +312,20 @@ Ctrl+F5 → 徽标 FC v10.22：外板一整块连续渐变、完全不透明、�
 **验证**：规则页冒烟 22/22 0 console error（9 文件级双文件同步断言 + 12 页面级 CDP 文本断言含红线保留 + console error 0）。
 
 **教训**：新写冒烟脚本漏 server.listen() → 页面级全超时；文件级断言先行先绿、快速定位是服务器没起而非页面问题。
+
+---
+
+## 2026-08-21 深夜加更③ — Create World：22 类型选型页 + 每类型专属创建流程（②层核心）
+
+**背景**：用户「把 Create Nation 改成 Create World，点击之后进入一个选项页面提供 架空国家/架空历史/奇幻世界/科幻世界/平行宇宙/Alternate History/地缘政治世界/OC 世界/小说世界/游戏世界/动画世界/RPG Campaign/文明设定/宇宙设定/城市设定/公司设定/政治体系/宗教体系/语言体系/地图/时间线/人物关系，每个选项连接着不一样的流程」。
+
+**架构**：一选型页 + 一参数化向导引擎（不写 22 个页面）：
+1. create-world.html（新）：22 张类型卡严格按产品口径顺序；nation（架空国家）→ 既有 registry-step-1 3 步国家流程（升级为国家子题材专属流程，sovereignty 文案保留属设计）；其余 21 类型 → world-wizard.html?type=<key>。
+2. world-wizard.html（新）：21 套 WORLD_TYPE_CONFIGS 每套 3 步专属步骤/字段（fantasy 魔法体系/主要种族/核心冲突；althistory-en 全英文 Divergence/Narrative Core/Details；rpg 规则体系 D&D 5e/Pathfinder/CoC/赛博朋克红/原创规则 + bbeg 大反派……）——新增类型 = 加一段配置，引擎零改动。草稿恢复（同类型才恢复，合并 1-3 步字段、回上次所在步）；提交汇总全字段落库。type=nation 重定向国家流程；未知类型回选型页。
+3. world-created.html（新）：玻璃完成页（sovereignty-ratified 同款），粒子画布 + WORLD ENTRY ARCHIVED 徽标。
+4. storage.js：+WORLD/WORLDS 键；saveWorldDraft(typeKey,step,data)（22 类型共用一个草稿位，换类型即覆盖——一次只创建一界）/getWorldDraft/submitWorld（WLD- 记录，**无云端镜像：后端 /social/worlds 端点未建，待后端批次**）/getWorlds。
+5. 展示合并：dashboard My Nations → My Worlds（nations+worlds 按 createdAt 新→旧）+ 主 CTA Create World + 快捷工作台「New World Registration」；explore 数据源合并（world 归一化 nation 卡形：classification = emoji+typeLabel）；overview 计数 = nations+worlds；侧栏 Creation → create-world.html；transitions NAV_ORDER 三新页；registry-step-1 Cancel 回选型页；help「开始创建」链接更新。
+
+**验证**：CDP 冒烟 28/28 PASS，0 console error（截图管线黑屏期 → DOM 断言）：选型页 22 卡 + 标签与产品口径一致 + nation/fantasy 路由正确；向导 type=nation→国家流程、未知类型→选型页；scifi 与 fantasy 步骤/字段差异化实证（科幻子类 vs 奇幻子类、三步名各自独立）；fantasy 全程 E2E（填名→下一步→填设定→下一步→提交）→ world-created.html 标题/描述正确 → slati_worlds 落库 1 条 type=fantasy 全字段；dashboard（CTA/My Worlds 含新世界/侧栏）、explore、overview 展示链路全通；registry-step-1 完好 + Cancel 正确；全程 0 console error。
+
+**遗留**：后端 /social/worlds 端点 + 云端镜像（与 mirrorNation 同理，待后端批次）；logo.png 重绘；生产 MAIL_FROM 部署时同步；中文名「万象」线。
