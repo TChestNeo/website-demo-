@@ -329,3 +329,18 @@ Ctrl+F5 → 徽标 FC v10.22：外板一整块连续渐变、完全不透明、�
 **验证**：CDP 冒烟 28/28 PASS，0 console error（截图管线黑屏期 → DOM 断言）：选型页 22 卡 + 标签与产品口径一致 + nation/fantasy 路由正确；向导 type=nation→国家流程、未知类型→选型页；scifi 与 fantasy 步骤/字段差异化实证（科幻子类 vs 奇幻子类、三步名各自独立）；fantasy 全程 E2E（填名→下一步→填设定→下一步→提交）→ world-created.html 标题/描述正确 → slati_worlds 落库 1 条 type=fantasy 全字段；dashboard（CTA/My Worlds 含新世界/侧栏）、explore、overview 展示链路全通；registry-step-1 完好 + Cancel 正确；全程 0 console error。
 
 **遗留**：后端 /social/worlds 端点 + 云端镜像（与 mirrorNation 同理，待后端批次）；logo.png 重绘；生产 MAIL_FROM 部署时同步；中文名「万象」线。
+
+---
+
+## 2026-08-21 深夜加更④ — FluidCanvas v10.23：零成本搬运文章（Migrate 复活）
+
+**背景**：用户「我之前在 FluidCanvas 里有一个按钮是可以让用户零成本搬运文章的按钮但是现在不见了 我之前就有考虑过这个问题了」。取证结论：**按钮从未被删**——初版 commit 的 workspace.html（当时题「FluidCanvas | M.NationWorld Studio」，即最初的 Studio 页）头部有 Migrate 按钮 + 「Migrate Article」弹窗（"Import content from an external source with AI-assisted formatting"），当时只是静态 mock；后来画布搬去 fluidcanvas.html / fluidcanvas-editor.html 后，workspace.html 无人引用（仅 transitions.js NAV_ORDER 残留 'workspace.html': 8），成孤岛，入口失联——不是功能被移除，是承载页被弃。
+
+**改动**（fluidcanvas-editor.html，v10.22 → v10.23）：
+1. 编辑器头部（Tags 按钮后）加 Migrate 按钮（move_to_inbox 图标 + 注释引旧页出处）。
+2. migrateModal：描述 + 粘贴文本框（placeholder 教 Markdown 标题规则 + 可直接拖放 .txt/.md 进框）+ Upload .txt/.md 文件按钮（隐藏 file input，1MB 上限）+ 「Migrate to Cards」执行按钮 + 底部规则提示（标题开新卡、段落填当前卡、单次最多 24 卡）。
+3. JS 三件套：splitMigrateChunks（按 /^(#{1,6})\s+/ 切卡，空行成段内换行，无标题且 >900 字符按 24 行/块硬切，无标题块取首行 ≤60 字作标题）；runMigration（逐块 findFreeCell(8,4) → createContentCard → 标题粗体 div + 正文 \n→<br>，标题=首行时不再重复加粗；空输入 toast 守卫；结束 onContentChange + 关弹窗 + 清框 + toast 'Migrated N cards'）；handleMigrateFile（FileReader.readAsText + 拖放 IIFE 同路径）。
+4. 零 AI 依赖（搬运 = 纯解析）；原 mock 的「AI-assisted formatting」留作后续接后端 AI 端点（客服提示词已有）。
+
+**验证**：CDP 冒烟 15/15 PASS，0 console error：头部按钮 + 徽标 FC v10.23；弹窗开合；markdown 样例（# 王国起源 / ## 经济体系 / ## 军事 + 段落）→ 拆 3 卡标题正文全对、弹窗关、框清空、toast 3 cards；空输入守卫；>900 字符无标题长文切 2 块边界在 24/25 行且首行不重复加粗；全程 0 console error。
+**冒烟教训**：脚本 md 拼装用 '\n'（字面反斜杠 n）→ textarea 收到的是字面串不是换行，整篇变 1 行 1 卡——冒烟全红先查脚本自己的换行转义链；断言文案改了别忘同步 grep 关键词。

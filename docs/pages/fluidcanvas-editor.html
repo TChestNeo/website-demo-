@@ -1080,6 +1080,11 @@
   <button class="btn btn-outline btn-sm" onclick="openModal('tagsModal')">
     <span class="material-symbols-outlined">sell</span> Tags
   </button>
+  <!-- v10.23 — 零成本搬运：外部文章粘贴/上传 → 自动拆成内容卡。
+       原 workspace.html「Migrate Article」按钮在此复活（旧 Studio 页成孤岛后失联）。 -->
+  <button class="btn btn-outline btn-sm" onclick="openModal('migrateModal')">
+    <span class="material-symbols-outlined">move_to_inbox</span> Migrate
+  </button>
   <button class="btn btn-outline btn-sm" onclick="saveDraft()">
     <span class="material-symbols-outlined">save</span> Save Draft
   </button>
@@ -1210,6 +1215,29 @@
       <span class="badge badge-warning">Economy</span><span class="badge badge-primary">Governance</span><span class="badge badge-secondary">Culture</span>
     </div>
     <button class="btn btn-primary btn-sm" style="margin-top:var(--space-md);width:100%" onclick="closeAllModals()">Apply Tags</button>
+  </div>
+</div>
+
+<!-- Migrate Content Modal (v10.23) -->
+<div class="modal-container" id="migrateModal">
+  <div class="modal-card" id="migrateCard" style="max-width:560px">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md">Migrate Content</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-sm)">Paste or upload an article — it is split into content cards automatically.</p>
+    <textarea class="input-glass custom-scrollbar" id="migrateText" rows="10" style="width:100%;resize:vertical"
+      placeholder="Paste your article here… Markdown headings (## Title) become card titles.&#10;&#10;Or drop a .txt / .md file anywhere in this box."></textarea>
+    <input type="file" id="migrateFileInput" accept=".txt,.md,text/plain,text/markdown" style="display:none" onchange="handleMigrateFile(this)">
+    <div class="flex-between" style="margin-top:var(--space-sm)">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('migrateFileInput').click()">
+        <span class="material-symbols-outlined">upload_file</span> Upload .txt / .md
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="runMigration()">
+        <span class="material-symbols-outlined">bolt</span> Migrate to Cards
+      </button>
+    </div>
+    <p class="label-sm" style="color:var(--color-outline);margin-top:var(--space-sm)" id="migrateHint">Headings start new cards; paragraphs fill the current card. Max 24 cards per run.</p>
   </div>
 </div>
 
@@ -2275,6 +2303,100 @@
     document.querySelectorAll('.modal-card.active').forEach(function (c) { c.classList.remove('active'); });
   }
   window.closeAllModals = closeAllModals;
+
+  // ── Migrate Content (v10.23 零成本搬运) ──
+  // 外部文章零成本进画布：粘贴或上传 .txt/.md → 按标题/段落自动拆成内容卡。
+  // 原 workspace.html「Migrate Article」弹窗的复活（v9/v10 改版后旧页成孤岛，
+  // 入口失联）。无 AI 依赖；AI 排版留作后续接后端。
+  function splitMigrateChunks(text) {
+    var lines = String(text || '').replace(/\r\n/g, '\n').split('\n');
+    var chunks = [];
+    var cur = null;
+    function flush() { if (cur) { chunks.push(cur); cur = null; } }
+    lines.forEach(function (line) {
+      var h = line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
+      if (h) {
+        flush();
+        cur = { title: h[2].trim(), body: [] };
+      } else if (line.trim() === '') {
+        if (cur) cur.body.push('');
+      } else {
+        if (!cur) cur = { title: '', body: [] };
+        cur.body.push(line);
+      }
+    });
+    flush();
+    // 纯正文无标题且超长：按行数切块（每块 ≤ 24 行）
+    var final = [];
+    chunks.forEach(function (c) {
+      var body = c.body.join('\n').trim();
+      if (c.title || body.length <= 900) { final.push({ title: c.title, body: body }); return; }
+      var lns = body.split('\n');
+      for (var i = 0; i < lns.length; i += 24) {
+        final.push({ title: '', body: lns.slice(i, i + 24).join('\n').trim() });
+      }
+    });
+    // 无标题块：取正文首行作标题（≤60 字）
+    return final.map(function (c) {
+      if (c.title) return c;
+      return { title: (c.body.split('\n')[0] || '').slice(0, 60), body: c.body };
+    });
+  }
+
+  function escMigrate(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function runMigration() {
+    var raw = document.getElementById('migrateText').value.trim();
+    if (!raw) { showToast('Nothing to migrate — paste an article first'); return; }
+    var chunks = splitMigrateChunks(raw).slice(0, 24);
+    if (!chunks.length) { showToast('Nothing to migrate'); return; }
+    chunks.forEach(function (c) {
+      var pos = findFreeCell(8, 4);
+      var card = createContentCard(pos.col, pos.row, 8, 4);
+      var content = card.querySelector('.card-text-content');
+      var html = '';
+      // 标题来自正文首行时不再重复加粗
+      if (c.title && c.title !== (c.body.split('\n')[0] || '').slice(0, 60)) {
+        html += '<div><b>' + escMigrate(c.title) + '</b></div>';
+      }
+      html += '<div>' + escMigrate(c.body).replace(/\n/g, '<br>') + '</div>';
+      content.innerHTML = html;
+    });
+    onContentChange();
+    closeAllModals();
+    document.getElementById('migrateText').value = '';
+    showToast('Migrated ' + chunks.length + ' card' + (chunks.length > 1 ? 's' : ''));
+  }
+  window.runMigration = runMigration;
+
+  function handleMigrateFile(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    if (file.size > 1024 * 1024) { showToast('File too large (max 1 MB)'); return; }
+    var reader = new FileReader();
+    reader.onload = function () {
+      document.getElementById('migrateText').value = String(reader.result || '');
+      showToast('Loaded ' + file.name);
+    };
+    reader.readAsText(file);
+    input.value = '';
+  }
+  window.handleMigrateFile = handleMigrateFile;
+
+  // 拖 .txt/.md 到弹窗文本框 = 读文件（与上传按钮同一条路径）
+  (function () {
+    var ta = document.getElementById('migrateText');
+    if (!ta) return;
+    ta.addEventListener('dragover', function (e) { e.preventDefault(); });
+    ta.addEventListener('drop', function (e) {
+      e.preventDefault();
+      var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      handleMigrateFile({ files: [file], value: '' });
+    });
+  })();
 
   // ── Toast ──
   var toastTimer;
@@ -5127,7 +5249,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (v10.22) — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (v10.23) — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5136,7 +5258,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC v10.22';
+    b.textContent = 'FC v10.23';
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
