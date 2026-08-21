@@ -17,7 +17,8 @@
     { id: 'home', icon: 'home', label: 'Home', href: '../pages/dashboard.html' },
     { id: 'omnarium', icon: 'language', label: 'Omnarium', href: '../pages/overview.html' },
     { id: 'community', icon: 'groups', label: 'Community', href: '../pages/community-hub.html' },
-    { id: 'creation', icon: 'edit_note', label: 'Creation', href: '../pages/create-world.html' },
+    // Creation 根页 = construction.html（未来放 3D 模型）；Create World 选型页入口在 dashboard 主 CTA
+    { id: 'creation', icon: 'edit_note', label: 'Creation', href: '../pages/construction.html' },
     { id: 'messages', icon: 'chat', label: 'Messages', href: '../pages/messages.html' },
     { id: 'activity', icon: 'analytics', label: 'Activity', href: '../pages/activity.html' },
     { id: 'editor', icon: 'article', label: 'Editor', href: '../pages/editor.html' },

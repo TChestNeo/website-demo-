@@ -344,3 +344,14 @@ Ctrl+F5 → 徽标 FC v10.22：外板一整块连续渐变、完全不透明、�
 
 **验证**：CDP 冒烟 15/15 PASS，0 console error：头部按钮 + 徽标 FC v10.23；弹窗开合；markdown 样例（# 王国起源 / ## 经济体系 / ## 军事 + 段落）→ 拆 3 卡标题正文全对、弹窗关、框清空、toast 3 cards；空输入守卫；>900 字符无标题长文切 2 块边界在 24/25 行且首行不重复加粗；全程 0 console error。
 **冒烟教训**：脚本 md 拼装用 '\n'（字面反斜杠 n）→ textarea 收到的是字面串不是换行，整篇变 1 行 1 卡——冒烟全红先查脚本自己的换行转义链；断言文案改了别忘同步 grep 关键词。
+
+---
+
+## 2026-08-21 深夜加更⑤ — Creation 根页回退 construction.html（3D 模型预留页）
+
+**背景**：用户「不是我 Creation 根页面是设计要放3D模型的页面的勒 改回去那个 Coming Soon」。②层落地时把侧栏 Creation 指到了 create-world.html 选型页，覆盖了 construction.html（Coming Soon，设计上预留放 3D 模型的根页）——定位矫正：Creation 根页保持 Coming Soon，选型页是 dashboard 主 CTA 的下一跳，不是侧栏根页。
+
+**改动**（sidebar.js 1 行）：侧栏 Creation href 回退 ../pages/construction.html（加注释「未来放 3D 模型；Create World 入口在 dashboard 主 CTA」）；active 态映射保留 create-world/world-wizard/world-created → creation（进流程时侧栏仍高亮 Creation）。
+
+**验证**：CDP 冒烟 8/8 PASS 0 console error：construction 页 Coming Soon 文案 + 侧栏指向 + 高亮；dashboard 主 CTA/explore 空态/help 仍指向 create-world.html（选型页入口不丢）；create-world 页正常加载且 Creation 高亮。
+**冒烟教训**：侧栏链接 textContent 含 Material Symbols 图标字形名（'edit_noteCreation'），断言用 includes 不用 ===。
