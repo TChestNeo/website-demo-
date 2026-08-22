@@ -161,6 +161,22 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       z-index: 1;
     }
+    /* v10.27: 用户要卡片磨砂玻璃质感（推翻 08-17「100% 不透明」口径，仅普通内容卡）：
+       55% 半透 + backdrop blur；1px 细灰边；右上角 2px 高光条勾出 3D 感。
+       高光用 background-image（卡片 ::before/::after 已被边饰主题占用，不能动）。
+       排除 .has-outer-bg（外板几何按 2px 边宽调过）/ .has-card-bg-img（图走 <img> 子层）/
+       [class*="card-edge-"]（主题卡有板+剪影层）——这些保持原貌。 */
+    .grid-card.content-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]) {
+      --card-border-width: 1px;
+      --card-border-color: rgba(125, 130, 140, 0.38);
+      background-color: color-mix(in srgb, var(--card-bg-color) 55%, transparent);
+      background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
+      background-size: 45% 2px;
+      background-position: top right;
+      background-repeat: no-repeat;
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    }
     .grid-card:hover { box-shadow: var(--card-shadow, var(--shadow-md)); border-color: var(--color-primary); }
     .grid-card.selected {
       border-color: var(--color-primary);
@@ -791,7 +807,7 @@
     .viewport-popover .vp-pop-row { display: flex; gap: 4px; flex-wrap: wrap; }
     .viewport-popover .vp-presets { margin-right: 0; }
 
-    /* ── v10.26 Text Format Toolbar (Canva 式悬浮细长横杆：字体 ▾｜字号 ▾｜颜色 A｜B I U S) ── */
+    /* ── v10.27 Text Format Toolbar (Canva 式悬浮细长横杆：字体 ▾｜字号 ▾｜8 色点+取色器｜B I U S) ── */
     .text-toolbar {
       position: fixed; z-index: 202;
       display: none; align-items: center; gap: 6px;
@@ -831,21 +847,14 @@
     }
     .tt-fontbtn:hover { background: var(--color-surface-container-high, var(--color-surface-container-low)); }
     .tt-fontbtn::after { content: '▾'; margin-left: 6px; font-size: 10px; opacity: 0.7; }
-    /* 颜色 8 色 + 取色器收进小弹层（横杆保持细长） */
-    .tt-color-pop {
-      position: fixed; z-index: 204; display: none;
-      background: var(--modal-bg, var(--card-bg));
-      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      border-radius: 12px;
-      border: 1px solid var(--divider-line-strong);
-      box-shadow: var(--shadow-lg);
-      padding: 8px 10px;
-    }
-    .tt-colors { display: flex; align-items: center; gap: 6px; }
+    /* v10.27: 8 色 + 取色器直接排在横杆里（所见即所得；v10.26 收进 A 钮弹层用户找不到） */
+    .tt-colors { display: flex; align-items: center; gap: 5px; }
     .tt-swatch {
-      width: 18px; height: 18px; border-radius: 50%; padding: 0;
+      width: 14px; height: 14px; border-radius: 50%; padding: 0;
       border: 1px solid var(--divider-line-strong); cursor: pointer;
+      transition: transform 0.1s;
     }
+    .tt-swatch:hover { transform: scale(1.25); }
     .tt-custom {
       width: 20px; height: 20px; padding: 0;
       border: none; background: none; cursor: pointer;
@@ -3413,13 +3422,11 @@
     if (cbg) cbg.classList.remove('active');
     var vp = document.getElementById('viewportPopover');
     if (vp) vp.classList.remove('active');
-    // v10.24/26: 文字格式化工具栏 + 字体面板 + 颜色弹层随统一关闭
+    // v10.24/26: 文字格式化工具栏 + 字体面板随统一关闭
     var tt = document.getElementById('textToolbar');
     if (tt) tt.style.display = 'none';
     var fp = document.getElementById('fontPanel');
     if (fp) fp.style.display = 'none';
-    var tcp = document.getElementById('ttColorPop');
-    if (tcp) tcp.style.display = 'none';
   }
   window.hideContextMenu = hideContextMenu;
 
@@ -3428,7 +3435,7 @@
     // 处理器紧随其后把它立刻关掉——不加排除，弹层永远开不起来。
     if (!e.target.closest('.context-menu') && !e.target.closest('.radius-popover') &&
         !e.target.closest('#viewportBtn') && !e.target.closest('.text-toolbar') &&
-        !e.target.closest('.font-panel') && !e.target.closest('.tt-color-pop') &&
+        !e.target.closest('.font-panel') &&
         // v10.24: 卡内文字也排除——文字选中后（mouseup 之后）click 才会
         // 到达这里，不排除会把刚浮现的格式化工具栏立刻关掉
         !e.target.closest('.card-text-content')) {
@@ -5360,7 +5367,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (v10.26) — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (v10.27) — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5369,7 +5376,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC v10.26';
+    b.textContent = 'FC v10.27';
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -5411,7 +5418,7 @@
   </button>
 </div>
 
-<!-- ═══ v10.26 TEXT FORMAT TOOLBAR (Canva 式悬浮细长横杆：字体 ▾｜字号 ▾｜颜色 A｜B I U S) ═══ -->
+<!-- ═══ v10.27 TEXT FORMAT TOOLBAR (Canva 式悬浮细长横杆：字体 ▾｜字号 ▾｜8 色点+取色器｜B I U S) ═══ -->
 <div class="text-toolbar" id="textToolbar" style="display:none">
   <button type="button" class="tt-fontbtn" id="ttFontBtn" title="Font">Font</button>
   <select class="tt-size" id="ttSize" title="Font size">
@@ -5434,9 +5441,17 @@
     <option value="64">64</option>
     <option value="72">72</option>
   </select>
-  <button type="button" class="tt-btn" id="ttColorBtn" title="Text color">
-    <span class="material-symbols-outlined">format_color_text</span>
-  </button>
+  <div class="tt-colors" id="ttColors">
+    <button type="button" class="tt-swatch" data-color="#ffffff" title="White" style="background:#ffffff"></button>
+    <button type="button" class="tt-swatch" data-color="#000000" title="Black" style="background:#000000"></button>
+    <button type="button" class="tt-swatch" data-color="#8b8b8b" title="Grey" style="background:#8b8b8b"></button>
+    <button type="button" class="tt-swatch" data-color="#4648d4" title="Primary" style="background:#4648d4"></button>
+    <button type="button" class="tt-swatch" data-color="#e02424" title="Red" style="background:#e02424"></button>
+    <button type="button" class="tt-swatch" data-color="#f59e0b" title="Amber" style="background:#f59e0b"></button>
+    <button type="button" class="tt-swatch" data-color="#16a34a" title="Green" style="background:#16a34a"></button>
+    <button type="button" class="tt-swatch" data-color="#0ea5e9" title="Sky" style="background:#0ea5e9"></button>
+    <input type="color" id="ttCustomColor" class="tt-custom" title="Custom color" value="#4648d4">
+  </div>
   <div class="tt-sep"></div>
   <button type="button" class="tt-btn" data-fmt="bold" title="Bold">
     <span class="material-symbols-outlined">format_bold</span>
@@ -5450,21 +5465,6 @@
   <button type="button" class="tt-btn" data-fmt="strike" title="Strikethrough">
     <span class="material-symbols-outlined">format_strikethrough</span>
   </button>
-</div>
-
-<!-- v10.26: 颜色弹层（8 色 + 取色器，随颜色按钮开合；横杆保持细长） -->
-<div class="tt-color-pop" id="ttColorPop" style="display:none">
-  <div class="tt-colors" id="ttColors">
-    <button type="button" class="tt-swatch" data-color="#ffffff" title="White" style="background:#ffffff"></button>
-    <button type="button" class="tt-swatch" data-color="#000000" title="Black" style="background:#000000"></button>
-    <button type="button" class="tt-swatch" data-color="#8b8b8b" title="Grey" style="background:#8b8b8b"></button>
-    <button type="button" class="tt-swatch" data-color="#4648d4" title="Primary" style="background:#4648d4"></button>
-    <button type="button" class="tt-swatch" data-color="#e02424" title="Red" style="background:#e02424"></button>
-    <button type="button" class="tt-swatch" data-color="#f59e0b" title="Amber" style="background:#f59e0b"></button>
-    <button type="button" class="tt-swatch" data-color="#16a34a" title="Green" style="background:#16a34a"></button>
-    <button type="button" class="tt-swatch" data-color="#0ea5e9" title="Sky" style="background:#0ea5e9"></button>
-    <input type="color" id="ttCustomColor" class="tt-custom" title="Custom color" value="#4648d4">
-  </div>
 </div>
 
 <!-- ═══ v10.24 FONT PANEL (451 Google Fonts，10 语言组，行以自身字体渲染 + 滚动懒加载) ═══ -->
@@ -5720,7 +5720,7 @@
   </div>
 </div>
 
-<!-- ═══ v10.26 — Canva 式文字格式化工具栏（悬浮细长横杆）+ Google Fonts 字体面板 ═══
+<!-- ═══ v10.27 — Canva 式文字格式化工具栏（悬浮细长横杆，8 色点直排）+ Google Fonts 字体面板 ═══
      选中卡内文字浮现横杆：字体 ▾｜字号 ▾｜颜色 A（弹层 8 色+取色器）｜B/I/U/S；
      字体面板 451 个 Google Fonts 按语言 10 组分 3 列网格，名字以自身字体展示、
      滚动到哪懒加载到哪。存储零改动：<b>/<i>/<span style> 随草稿 innerHTML 天然往返。 -->
@@ -5765,7 +5765,6 @@
   function hideTextToolbar() {
     if (TOOLBAR) TOOLBAR.style.display = 'none';
     hideFontPanel();
-    hideColorPop();
   }
 
   function positionToolbar() {
@@ -5937,7 +5936,6 @@
 
   function showFontPanel() {
     if (!FONT_PANEL) return;
-    hideColorPop(); // 与颜色弹层互斥（直调入口也兜住）
     buildFontPanel();
     var anchor = document.getElementById('ttFontBtn');
     if (!anchor) return;
@@ -5958,29 +5956,6 @@
   }
   window.hideFontPanel = hideFontPanel;
   window.showFontPanel = showFontPanel;
-
-  // ── 颜色弹层：8 色 + 取色器收进小弹层（横杆保持细长） ──
-  function showColorPop() {
-    var pop = document.getElementById('ttColorPop');
-    var anchor = document.getElementById('ttColorBtn');
-    if (!pop || !anchor) return;
-    hideFontPanel(); // 与字体面板互斥（直调入口也兜住）
-    pop.style.display = 'block';
-    pop.style.visibility = 'hidden';
-    var r = anchor.getBoundingClientRect();
-    var w = pop.offsetWidth, h = pop.offsetHeight;
-    var x = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
-    var y = r.bottom + 6;
-    if (y + h > window.innerHeight - 8) y = Math.max(8, r.top - h - 6);
-    pop.style.left = x + 'px';
-    pop.style.top = y + 'px';
-    pop.style.visibility = '';
-  }
-  function hideColorPop() {
-    var pop = document.getElementById('ttColorPop');
-    if (pop) pop.style.display = 'none';
-  }
-  window.hideColorPop = hideColorPop;
 
   // ── 事件绑定 ──
   document.addEventListener('selectionchange', refreshTextToolbar);
@@ -6006,7 +5981,7 @@
   var colors = document.getElementById('ttColors');
   if (colors) colors.addEventListener('click', function (e) {
     var sw = e.target.closest('.tt-swatch');
-    if (sw) { execFmt('foreColor', sw.dataset.color); hideColorPop(); }
+    if (sw) execFmt('foreColor', sw.dataset.color);
   });
   var custom = document.getElementById('ttCustomColor');
   if (custom) {
@@ -6016,16 +5991,8 @@
   var fontBtn = document.getElementById('ttFontBtn');
   if (fontBtn) fontBtn.addEventListener('click', function () {
     if (FONT_PANEL && FONT_PANEL.style.display !== 'none') hideFontPanel();
-    else { hideColorPop(); showFontPanel(); }
+    else showFontPanel();
   });
-  var colorBtn = document.getElementById('ttColorBtn');
-  if (colorBtn) colorBtn.addEventListener('click', function () {
-    var pop = document.getElementById('ttColorPop');
-    if (pop && pop.style.display !== 'none') hideColorPop();
-    else { hideFontPanel(); showColorPop(); }
-  });
-  var cpop = document.getElementById('ttColorPop');
-  if (cpop) cpop.addEventListener('mousedown', function (e) { e.preventDefault(); });
 })();
 </script>
 
