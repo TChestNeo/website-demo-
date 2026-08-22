@@ -393,3 +393,20 @@ Ctrl+F5 → 徽标 FC v10.22：外板一整块连续渐变、完全不透明、�
 
 **验证**：CDP 冒烟 19/19 PASS 0 console error：面板宽 ≥600、3 列网格、451 行 10 组头、前三行同排横摆第 4 行换行（offsetTop 断言）、懒加载 link 2~150（非全量）、Anton 行自身字体 + 点击应用 + 按钮回显 + 面板关、工具栏/选区/草稿往返回归、console 干净。
 **冒烟教训**：grid 排布断言用行 offsetTop（同排相等、换行递增）——「横着排」要断言渲染结果不是声明。title 截断兜底：3 列下字体名可能放不下，悬停全名比缩小字号更稳。
+
+---
+
+## 2026-08-22 深夜加更⑨ — 工具栏改 Canva 式悬浮细长横杆 + 挖出竖堆真凶（v10.26）
+
+**背景**：用户「没有啊，我要和Canva 一样的」——⑧ 改的是字体面板，但用户不满意的对象是工具栏本体；三选一确认「悬浮细长横杆」（字体 ▾｜字号 ▾｜颜色 A｜B I U S）。追问中挖出此前两轮观感事故的总根因。
+
+**根因（v10.24/25 遗留 bug）**：positionToolbar 用 `TOOLBAR.style.display = 'block'` 显示工具栏——inline style 覆盖 class 里的 `display: none` 后，容器退化成普通块流：flex 布局全部失效（align-items/gap 无效），分隔条 div（block 级）强制断行 → 工具栏一直是竖着堆叠的方块柱，从未横排过。用户第一轮「横着排放的长方形」指的就是这个。
+
+**改动**（fluidcanvas-editor.html）：
+- 显示改 `display = 'flex'`（加注释说明 inline style 覆盖机制——这是该 bug 的机理）。
+- 横杆重排：字体钮（▾ 徽标）→ 字号 select → 颜色钮（A 图标）→ B I U S；胶囊形圆角 20px、min-width 400px、按钮 24px、高约 32px。
+- 8 色 + 取色器收进 #ttColorPop 小弹层（颜色钮开合，点色应用即关；与字体面板互斥——互斥写进 showFontPanel/showColorPop 函数本体，直调入口也兜住）。
+- hideContextMenu/外点白名单/选区折叠随关路径全部纳入颜色弹层。v10.24 → v10.26。
+
+**验证**：CDP 冒烟 27/27 PASS 0 console error：computed display=flex（回归断言锁 bug）、宽 ≥390 高 ≤40、首位字体钮/末位 strike/杆内 0 色点、B/字号 24/红色 rgb(224,36,36) 应用、弹层互斥、面板横版 680/3 列/451/懒加载/Anton 全回归、草稿往返回归（<b>+24px+红色+Anton 一次还原）、console 干净。
+**冒烟教训**：JS 显隐浮层写 display:'block' 会杀死 class 的 flex 布局——显示后必须断言 computed display===flex，且子元素高度全对但容器异常高（79px）先查 display 不查尺寸；「用户连续撞同功能 ≥2 次」该怀疑的不是样式细节而是布局机制坏了。
