@@ -365,3 +365,20 @@ Ctrl+F5 → 徽标 FC v10.22：外板一整块连续渐变、完全不透明、�
 **改动**（fluidcanvas-editor.html 1 处）：头部 Migrate 按钮 span glyph move_to_inbox → wand_shine。
 
 **验证**：CDP 冒烟 4/4 PASS 0 console error（glyph 文本 + Material Symbols Outlined 字体族 + 弹窗仍可开 + console 干净）。
+
+---
+
+## 2026-08-22 深夜加更⑦ — Canva 式选中文字格式化工具栏 + 451 Google Fonts 字体面板（v10.24）
+
+**背景**：用户「现在你先把那个FuildCanvas 的编辑页面文字在被Select 起来的时候会出现和Canva 一样的可以选择文字大小/颜色/字体/是否粗体斜体割掉和底线，还有字体就直接采用GoogleFonts的, 我已经挑出来了放在fonts文件内 有三个 有两个好像是混着的 你需要把不同语言的字体分开 然后字体名称采用他自己的字体来展示」——编辑器选中文字浮现浮动工具栏；字体用用户挑的 Google Fonts 清单，按语言分组，字体名用自身字体展示。
+
+**改动**：
+- 新文件 docs/assets/js/fluidcanvas-fonts.js：fonts/ 三清单（fonts one.txt 317 条 + font.txt 145 条 + vitnam.txt 50 条 = 512 条目；fonts one.txt 含多段 @import URL）去重 → 451 唯一字体、10 语言组（latin 283 / ja 45 / indic 23 / ko 24 / th 23 / zh 20 / ar 18 / other 8 / vi 4 / he 3）；axes 保留用户原 URL 轴串逐字还原。
+- fluidcanvas-editor.html v10.24：#textToolbar（fixed z 202 玻璃）选区上方居中浮现、顶不够翻下方、左右 clamp——B/I/U/S 四钮（Material Symbols + queryCommandState 高亮）｜字号 select 17 档 px（computed 回显）｜8 色 swatch + 取色器｜字体钮（显示当前字体名）；#fontPanel（z 203）10 组 451 行，IntersectionObserver 行级懒加载（行进视口才注入该字体 css2 <link> 并设行 font-family——首次打开只加载可见 ~18 个，不是 283 个），点行应用+关面板。
+- 格式化机制：B/I/U/S/颜色走 execCommand（styleWithCSS 按调用设——foreColor 时 true 出 `<span style="color:rgb()">`，其余 false 保 `<b>/<i>` 标签）；字号/字体族自写 applySpanStyle（extractContents → 包 span → insertNode → 重选；选区整包一个 span 时合并属性；同样式邻 span 合并）。
+- 交互互斥：文字内 mousedown 不 arm 卡拖拽（addCardDrag 两处守卫 + click-select 守卫——handler 2 会复用 stale dragState）；document 外点关闭白名单加 .card-text-content（click 在 mouseup 后、选区已立，不加则工具栏刚浮现即被秒关）；selectionchange/mouseup/keyup + scroll capture → 刷新/隐；并入 hideContextMenu/Esc。
+
+**验证**：CDP 冒烟 38/38 PASS 0 console error：注册表 10 组 451；程序化选中 → 工具栏浮现且定位视口内；B → `<b>`、字号 24 → font-size:24px、颜色 #e02424 → rgb(224,36,36)；字体面板 451 行 10 组头、600ms 后 head link <40（懒加载生效）、Anton 行自身字体渲染 + 点击 → span font-family + link 注入 + 按钮回显 + 面板关；Ctrl+S 存草稿 → reload 格式还原；选区折叠工具栏隐；真实鼠标拖选（Input.dispatchMouseEvent）→ 卡位置不变 + 工具栏现；console 干净。
+**冒烟教训**：注册表 448 vs 451 疑云——我自己的 node 解析只取每个文件第一条 @import（fonts one.txt 含多段 URL）漏 3 字体；agent 与浏览器冒烟一致 451——双解析器矛盾先查自己的解析，再怀疑产物。字体面板 IO 回调异步：打开即刻断言 link 数必假红，600ms 后再断。
+
+（用户肉眼复核待办：编辑器选中出工具栏、字体面板滚动加载、格式随草稿保存。）

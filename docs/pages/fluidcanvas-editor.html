@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="../assets/css/ethereal.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <!-- v10.24: 字体注册表（451 个 Google Fonts，10 语言组；按需注入 link 加载） -->
+  <script src="../assets/js/fluidcanvas-fonts.js"></script>
   <style>
     html, body {
       height: 100%; margin: 0; overflow: hidden;
@@ -788,6 +790,76 @@
        工具栏 vp-presets 自带的右外边距在弹层内归零。 */
     .viewport-popover .vp-pop-row { display: flex; gap: 4px; flex-wrap: wrap; }
     .viewport-popover .vp-presets { margin-right: 0; }
+
+    /* ── v10.24 Text Format Toolbar (Canva 式，选中卡内文字浮现) ── */
+    .text-toolbar {
+      position: fixed; z-index: 202;
+      display: none; align-items: center; gap: 2px;
+      background: var(--modal-bg, var(--card-bg));
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--divider-line-strong);
+      box-shadow: var(--shadow-lg);
+      padding: 4px 6px;
+      font-family: var(--font-family);
+    }
+    .tt-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border: none; border-radius: 6px;
+      background: transparent; color: var(--color-on-surface);
+      cursor: pointer; padding: 0;
+    }
+    .tt-btn:hover { background: var(--color-surface-container-low); }
+    .tt-btn.active { background: var(--color-primary-fixed); color: var(--color-primary); }
+    .tt-btn .material-symbols-outlined { font-size: 18px; }
+    .tt-sep { width: 1px; height: 20px; background: var(--divider-line); margin: 0 4px; flex-shrink: 0; }
+    .tt-size {
+      height: 28px; max-width: 64px; padding: 0 4px;
+      border: 1px solid var(--divider-line-strong); border-radius: 6px;
+      background: var(--card-bg); color: var(--color-on-surface);
+      font-size: 12px; font-family: var(--font-family); cursor: pointer;
+    }
+    .tt-colors { display: flex; align-items: center; gap: 4px; }
+    .tt-swatch {
+      width: 18px; height: 18px; border-radius: 50%; padding: 0;
+      border: 1px solid var(--divider-line-strong); cursor: pointer;
+    }
+    .tt-custom {
+      width: 20px; height: 20px; padding: 0;
+      border: none; background: none; cursor: pointer;
+    }
+    .tt-fontbtn {
+      height: 28px; padding: 0 10px; max-width: 140px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      border: 1px solid var(--divider-line-strong); border-radius: 6px;
+      background: var(--card-bg); color: var(--color-on-surface);
+      font-size: 12px; font-family: var(--font-family); cursor: pointer;
+    }
+    /* ── v10.24 Font Panel：语言分组列表，行以自身字体渲染（滚动懒加载） ── */
+    .font-panel {
+      position: fixed; z-index: 203;
+      width: 260px;
+      background: var(--modal-bg, var(--card-bg));
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--divider-line-strong);
+      box-shadow: var(--shadow-lg);
+      display: none;
+    }
+    .fp-list { max-height: 320px; overflow-y: auto; padding: 6px 0; }
+    .fp-group {
+      position: sticky; top: 0;
+      padding: 8px 14px 4px; font-size: 11px; font-weight: 600;
+      color: var(--color-outline);
+      background: var(--modal-bg, var(--card-bg));
+    }
+    .fp-row {
+      display: block; width: 100%; text-align: left;
+      padding: 7px 14px; border: none; background: transparent;
+      color: var(--color-on-surface); font-size: 15px; cursor: pointer;
+      line-height: 1.3;
+    }
+    .fp-row:hover { background: var(--color-surface-container-low); }
 
     /* ── Flag Source Modal ── */
     .flag-source-options {
@@ -2446,8 +2518,13 @@
       if (card.classList.contains('editing-label')) return;
       if (e.button !== 0) return;
 
+      // v10.24: 文字内按下不 arm 拖拽——mousemove 的 preventDefault 会打断
+      // 原生文字选区（选中文字浮动工具栏依赖它）。卡片选中/菜单关闭照旧。
+      var inText = e.target.closest('.card-text-content');
+
       try { selectCard(card); } catch (err) {}
       try { hideContextMenu(); } catch (err) {}
+      if (inText) return;
 
       dragState = {
         card: card,
@@ -2541,6 +2618,9 @@
     // is held, and mouseup commits the jump via moveCardPx.
     card.addEventListener('mousedown', function activate(e) {
       if (e.button !== 0) return;
+      // v10.24: 文字内按下不共享拖拽状态（第一个 handler 已早退，
+      // 此处 dragState 是上一次按下的旧值——不守卫会连卡一起拖走）
+      if (e.target.closest('.card-text-content')) return;
       addCardDrag._activeDrag = dragState;
     });
   }
@@ -3313,6 +3393,11 @@
     if (cbg) cbg.classList.remove('active');
     var vp = document.getElementById('viewportPopover');
     if (vp) vp.classList.remove('active');
+    // v10.24: 文字格式化工具栏 + 字体面板随统一关闭
+    var tt = document.getElementById('textToolbar');
+    if (tt) tt.style.display = 'none';
+    var fp = document.getElementById('fontPanel');
+    if (fp) fp.style.display = 'none';
   }
   window.hideContextMenu = hideContextMenu;
 
@@ -3320,7 +3405,11 @@
     // #viewportBtn 排除在外：按钮在弹层之外，onclick 打开弹层后 document
     // 处理器紧随其后把它立刻关掉——不加排除，弹层永远开不起来。
     if (!e.target.closest('.context-menu') && !e.target.closest('.radius-popover') &&
-        !e.target.closest('#viewportBtn')) {
+        !e.target.closest('#viewportBtn') && !e.target.closest('.text-toolbar') &&
+        !e.target.closest('.font-panel') &&
+        // v10.24: 卡内文字也排除——文字选中后（mouseup 之后）click 才会
+        // 到达这里，不排除会把刚浮现的格式化工具栏立刻关掉
+        !e.target.closest('.card-text-content')) {
       hideContextMenu();
     }
   });
@@ -5249,7 +5338,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (v10.23) — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (v10.24) — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5258,7 +5347,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC v10.23';
+    b.textContent = 'FC v10.24';
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -5298,6 +5387,62 @@
   <button class="context-menu-item danger" onclick="deleteSelectedCard()">
     <span class="material-symbols-outlined">delete</span> Delete
   </button>
+</div>
+
+<!-- ═══ v10.24 TEXT FORMAT TOOLBAR (Canva 式，选中卡内文字浮现) ═══ -->
+<div class="text-toolbar" id="textToolbar" style="display:none">
+  <button type="button" class="tt-btn" data-fmt="bold" title="Bold">
+    <span class="material-symbols-outlined">format_bold</span>
+  </button>
+  <button type="button" class="tt-btn" data-fmt="italic" title="Italic">
+    <span class="material-symbols-outlined">format_italic</span>
+  </button>
+  <button type="button" class="tt-btn" data-fmt="underline" title="Underline">
+    <span class="material-symbols-outlined">format_underlined</span>
+  </button>
+  <button type="button" class="tt-btn" data-fmt="strike" title="Strikethrough">
+    <span class="material-symbols-outlined">format_strikethrough</span>
+  </button>
+  <div class="tt-sep"></div>
+  <select class="tt-size" id="ttSize" title="Font size">
+    <option value="" disabled hidden>Size</option>
+    <option value="10">10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+    <option value="13">13</option>
+    <option value="14">14</option>
+    <option value="16">16</option>
+    <option value="18">18</option>
+    <option value="20">20</option>
+    <option value="24">24</option>
+    <option value="28">28</option>
+    <option value="32">32</option>
+    <option value="36">36</option>
+    <option value="42">42</option>
+    <option value="48">48</option>
+    <option value="56">56</option>
+    <option value="64">64</option>
+    <option value="72">72</option>
+  </select>
+  <div class="tt-sep"></div>
+  <div class="tt-colors" id="ttColors">
+    <button type="button" class="tt-swatch" data-color="#ffffff" title="White" style="background:#ffffff"></button>
+    <button type="button" class="tt-swatch" data-color="#000000" title="Black" style="background:#000000"></button>
+    <button type="button" class="tt-swatch" data-color="#8b8b8b" title="Grey" style="background:#8b8b8b"></button>
+    <button type="button" class="tt-swatch" data-color="#4648d4" title="Primary" style="background:#4648d4"></button>
+    <button type="button" class="tt-swatch" data-color="#e02424" title="Red" style="background:#e02424"></button>
+    <button type="button" class="tt-swatch" data-color="#f59e0b" title="Amber" style="background:#f59e0b"></button>
+    <button type="button" class="tt-swatch" data-color="#16a34a" title="Green" style="background:#16a34a"></button>
+    <button type="button" class="tt-swatch" data-color="#0ea5e9" title="Sky" style="background:#0ea5e9"></button>
+    <input type="color" id="ttCustomColor" class="tt-custom" title="Custom color" value="#4648d4">
+  </div>
+  <div class="tt-sep"></div>
+  <button type="button" class="tt-fontbtn" id="ttFontBtn" title="Font">Font</button>
+</div>
+
+<!-- ═══ v10.24 FONT PANEL (451 Google Fonts，10 语言组，行以自身字体渲染 + 滚动懒加载) ═══ -->
+<div class="font-panel" id="fontPanel" style="display:none">
+  <div class="fp-list" id="fpList"></div>
 </div>
 
 <!-- ═══ RADIUS POPOVER ═══ -->
@@ -5547,6 +5692,279 @@
     <p class="label-sm" style="color:var(--color-outline);text-align:center;margin-top:var(--space-sm)" id="noTemplatesMsg">No saved templates yet. Right-click a card → Save as template.</p>
   </div>
 </div>
+
+<!-- ═══ v10.24 — Canva 式文字格式化工具栏 + Google Fonts 字体面板 ═══
+     选中卡内文字浮现：B/I/U/S、字号(px)、颜色、字体（451 个 Google Fonts
+     按语言 10 组分面板，名字以自身字体展示、滚动到哪懒加载到哪）。
+     存储零改动：<b>/<i>/<span style> 随草稿 innerHTML 天然往返。 -->
+<script>
+(function () {
+  if (!window.FLUIDCANVAS_FONTS) return;
+
+  var FMT_CMD = { bold: 'bold', italic: 'italic', underline: 'underline', strike: 'strikeThrough' };
+  var FC_SIZES = [10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48, 56, 64, 72];
+  var LOADED_FONTS = { Inter: true }; // 页面已预载，不再重复注入
+  var FP_BUILT = false, FP_OBSERVER = null;
+  var TOOLBAR = null, FONT_PANEL = null, FONT_LIST = null;
+
+  // ── 字体按需加载：css2 <link> 注入（全局去重） ──
+  function ensureFont(name, axes) {
+    if (LOADED_FONTS[name]) return;
+    LOADED_FONTS[name] = true;
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://fonts.googleapis.com/css2?family=' +
+      encodeURIComponent(name) + (axes ? ':' + axes : '') + '&display=swap';
+    document.head.appendChild(link);
+  }
+  window.ensureFont = ensureFont;
+
+  // ── 选区检查：非空且全部落在内容卡 .card-text-content 内 ──
+  function textSelInCard() {
+    var sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
+    var range = sel.getRangeAt(0);
+    var node = range.commonAncestorContainer;
+    var el = node && node.nodeType === 3 ? node.parentNode : node;
+    if (!el || !el.closest) return null;
+    var textEl = el.closest('.card-text-content');
+    if (!textEl) return null;
+    var card = textEl.closest('.grid-card');
+    if (!card || card.dataset.cardType !== 'content') return null;
+    return { sel: sel, range: range, textEl: textEl, card: card };
+  }
+  window.textSelInCard = textSelInCard;
+
+  function hideTextToolbar() {
+    if (TOOLBAR) TOOLBAR.style.display = 'none';
+    hideFontPanel();
+  }
+
+  function positionToolbar() {
+    var info = textSelInCard();
+    if (!info) { hideTextToolbar(); return; }
+    TOOLBAR.style.display = 'block';
+    TOOLBAR.style.visibility = 'hidden';
+    var rect = info.range.getBoundingClientRect();
+    var w = TOOLBAR.offsetWidth, h = TOOLBAR.offsetHeight;
+    var x = rect.left + rect.width / 2 - w / 2;
+    var y = rect.top - h - 8;
+    if (y < 8) y = rect.bottom + 8;
+    x = Math.max(8, Math.min(x, window.innerWidth - w - 8));
+    TOOLBAR.style.left = x + 'px';
+    TOOLBAR.style.top = y + 'px';
+    TOOLBAR.style.visibility = '';
+  }
+
+  // ── 状态同步：B/I/U/S 激活态 + 字号回显 + 字体名回显 ──
+  function syncToolbarState() {
+    if (TOOLBAR.style.display === 'none') return;
+    Object.keys(FMT_CMD).forEach(function (k) {
+      var on = false;
+      try { on = document.queryCommandState(FMT_CMD[k]); } catch (e) {}
+      var btn = TOOLBAR.querySelector('[data-fmt="' + k + '"]');
+      if (btn) btn.classList.toggle('active', !!on);
+    });
+    var info = textSelInCard();
+    if (!info) return;
+    var el = info.range.commonAncestorContainer;
+    if (el.nodeType === 3) el = el.parentNode;
+    var cs = getComputedStyle(el);
+    var size = parseInt(cs.fontSize) || 0;
+    var sizeSel = document.getElementById('ttSize');
+    if (sizeSel) sizeSel.value = FC_SIZES.indexOf(size) >= 0 ? String(size) : '';
+    var fam = (cs.fontFamily || '').split(',')[0].trim().replace(/^['"]|['"]$/g, '');
+    var fontBtn = document.getElementById('ttFontBtn');
+    if (fontBtn) fontBtn.textContent = fam || 'Font';
+  }
+
+  // ── 主入口：选区变化 → 显隐 + 定位 + 状态 ──
+  function refreshTextToolbar() {
+    TOOLBAR = document.getElementById('textToolbar');
+    FONT_PANEL = document.getElementById('fontPanel');
+    FONT_LIST = document.getElementById('fpList');
+    if (!TOOLBAR) return;
+    var info = textSelInCard();
+    if (!info) { hideTextToolbar(); return; }
+    positionToolbar();
+    syncToolbarState();
+  }
+  window.refreshTextToolbar = refreshTextToolbar;
+
+  // ── 执行 B/I/U/S/颜色（styleWithCSS 只为颜色开——保持 <b>/<i> 标签） ──
+  function execFmt(cmd, val) {
+    document.execCommand('styleWithCSS', false, cmd === 'foreColor');
+    document.execCommand(cmd, false, val);
+    refreshTextToolbar();
+  }
+
+  // ── 包 span：字号/字体族（px 精确；选区整包既有 span 时合并属性） ──
+  function setCssProp(cssText, prop, value) {
+    var re = new RegExp('(^|;\\s*)' + prop + '\\s*:[^;]*', 'i');
+    if (re.test(cssText)) return cssText.replace(re, '$1' + prop + ': ' + value);
+    return (cssText ? cssText.replace(/;?\s*$/, '; ') : '') + prop + ': ' + value;
+  }
+
+  // 同样式相邻 span 合并，返回存活的 span（减少嵌套残留）
+  function mergeAdjacent(span) {
+    var parent = span.parentNode;
+    if (!parent) return span;
+    var css = span.getAttribute('style') || '';
+    var next = span.nextSibling;
+    while (next && next.nodeName === 'SPAN' && (next.getAttribute('style') || '') === css) {
+      var after = next.nextSibling;
+      while (next.firstChild) span.appendChild(next.firstChild);
+      parent.removeChild(next);
+      next = after;
+    }
+    var prev = span.previousSibling;
+    if (prev && prev.nodeName === 'SPAN' && (prev.getAttribute('style') || '') === css) {
+      while (span.firstChild) prev.appendChild(span.firstChild);
+      parent.removeChild(span);
+      parent.normalize();
+      return prev;
+    }
+    parent.normalize();
+    return span;
+  }
+
+  function applySpanStyle(styleCss, prop, value) {
+    var info = textSelInCard();
+    if (!info) return;
+    var range = info.range;
+    var node = range.commonAncestorContainer;
+    var el = node && node.nodeType === 3 ? node.parentNode : node;
+    if (el && el.nodeName === 'SPAN' && range.toString() === el.textContent) {
+      // 选区整包单个既有 span → 合并属性，不套新 span
+      el.setAttribute('style', setCssProp(el.getAttribute('style') || '', prop, value));
+    } else {
+      var frag = range.extractContents();
+      var span = document.createElement('span');
+      span.setAttribute('style', styleCss);
+      span.appendChild(frag);
+      range.insertNode(span);
+      var target = mergeAdjacent(span);
+      range.selectNodeContents(target);
+      info.sel.removeAllRanges();
+      info.sel.addRange(range);
+    }
+    refreshTextToolbar();
+    if (window.onContentChange) window.onContentChange();
+  }
+
+  function setFontSize(px) { applySpanStyle('font-size: ' + px + 'px', 'font-size', px + 'px'); }
+  function setFontFamily(font) {
+    ensureFont(font.name, font.axes);
+    applySpanStyle('font-family: ' + font.cssFamily, 'font-family', font.cssFamily);
+    var btn = document.getElementById('ttFontBtn');
+    if (btn) btn.textContent = font.name;
+  }
+  window.setFontSize = setFontSize;
+  window.setFontFamily = setFontFamily;
+
+  // ── 字体面板：10 语言组 + 行字体名以自身字体展示（滚动懒加载） ──
+  function buildFontPanel() {
+    if (FP_BUILT || !FONT_LIST) return;
+    FP_BUILT = true;
+    var rows = [];
+    window.FLUIDCANVAS_FONTS.forEach(function (group) {
+      var head = document.createElement('div');
+      head.className = 'fp-group';
+      head.textContent = group.label + ' · ' + group.fonts.length;
+      FONT_LIST.appendChild(head);
+      group.fonts.forEach(function (f) {
+        var row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'fp-row';
+        row.textContent = f.name;
+        row.dataset.name = f.name;
+        row.dataset.family = f.cssFamily;
+        if (f.axes) row.dataset.axes = f.axes;
+        row.addEventListener('click', function () {
+          setFontFamily({ name: f.name, cssFamily: f.cssFamily, axes: f.axes || null });
+          hideFontPanel();
+        });
+        FONT_LIST.appendChild(row);
+        rows.push(row);
+      });
+    });
+    // 行进入视口（含 200px 预载区）才注入该字体 link + 设自身字体——
+    // 首次打开不触发 283 个拉丁字体批量下载，滚动到哪加载到哪
+    if ('IntersectionObserver' in window) {
+      FP_OBSERVER = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          var row = entry.target;
+          FP_OBSERVER.unobserve(row);
+          ensureFont(row.dataset.name, row.dataset.axes || null);
+          row.style.fontFamily = row.dataset.family;
+        });
+      }, { root: FONT_LIST, rootMargin: '200px' });
+      rows.forEach(function (r) { FP_OBSERVER.observe(r); });
+    }
+  }
+
+  function showFontPanel() {
+    if (!FONT_PANEL) return;
+    buildFontPanel();
+    var anchor = document.getElementById('ttFontBtn');
+    if (!anchor) return;
+    FONT_PANEL.style.display = 'block';
+    FONT_PANEL.style.visibility = 'hidden';
+    var r = anchor.getBoundingClientRect();
+    var w = FONT_PANEL.offsetWidth, h = FONT_PANEL.offsetHeight;
+    var x = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
+    var y = r.bottom + 6;
+    if (y + h > window.innerHeight - 8) y = Math.max(8, r.top - h - 6);
+    FONT_PANEL.style.left = x + 'px';
+    FONT_PANEL.style.top = y + 'px';
+    FONT_PANEL.style.visibility = '';
+  }
+
+  function hideFontPanel() {
+    if (FONT_PANEL) FONT_PANEL.style.display = 'none';
+  }
+  window.hideFontPanel = hideFontPanel;
+  window.showFontPanel = showFontPanel;
+
+  // ── 事件绑定 ──
+  document.addEventListener('selectionchange', refreshTextToolbar);
+  document.addEventListener('mouseup', refreshTextToolbar);
+  document.addEventListener('keyup', refreshTextToolbar);
+  document.addEventListener('scroll', refreshTextToolbar, true);
+  window.addEventListener('resize', refreshTextToolbar);
+
+  var tb = document.getElementById('textToolbar');
+  // 工具栏/面板内按下不吞选区（preventDefault 阻止选区折叠）
+  if (tb) tb.addEventListener('mousedown', function (e) { e.preventDefault(); });
+  var fpanel = document.getElementById('fontPanel');
+  if (fpanel) fpanel.addEventListener('mousedown', function (e) { e.preventDefault(); });
+
+  Object.keys(FMT_CMD).forEach(function (k) {
+    var btn = tb && tb.querySelector('[data-fmt="' + k + '"]');
+    if (btn) btn.addEventListener('click', function () { execFmt(FMT_CMD[k]); });
+  });
+  var sizeSel = document.getElementById('ttSize');
+  if (sizeSel) sizeSel.addEventListener('change', function () {
+    if (sizeSel.value) setFontSize(parseInt(sizeSel.value, 10));
+  });
+  var colors = document.getElementById('ttColors');
+  if (colors) colors.addEventListener('click', function (e) {
+    var sw = e.target.closest('.tt-swatch');
+    if (sw) execFmt('foreColor', sw.dataset.color);
+  });
+  var custom = document.getElementById('ttCustomColor');
+  if (custom) {
+    custom.addEventListener('change', function () { execFmt('foreColor', custom.value); });
+    custom.addEventListener('click', function (e) { e.stopPropagation(); });
+  }
+  var fontBtn = document.getElementById('ttFontBtn');
+  if (fontBtn) fontBtn.addEventListener('click', function () {
+    if (FONT_PANEL && FONT_PANEL.style.display !== 'none') hideFontPanel();
+    else showFontPanel();
+  });
+})();
+</script>
 
 </body>
 </html>
