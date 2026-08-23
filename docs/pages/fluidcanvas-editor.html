@@ -502,11 +502,12 @@
     /* v10.8 — theme + outer plate coexist (the Gemini hud-box two-layer
        look): ::before switches to painting the PLATE — inset by the outer
        extent, plate color/tint/border/glow from the vars applyOuterBg
-       writes, still clipped by --card-clip. The clip is objectBoundingBox
-       and resolves against ::before's own (larger) box, so the plate
-       silhouette is the card silhouette scaled up by the extent — the
-       16px ring reads as the HUD outer frame. The card silhouette itself
-       moves to the .card-tint child (rule below). Specificity (0,3,1)
+       writes. v10.27.1.1: the clip is gone — the plate ring's corners now
+       follow --outer-radius (rounded rect, per-corner included), so the
+       outer background edge is user-customizable (see the v10.27.1.1 note
+       on the themed plate rule below). The card silhouette itself still
+       moves to the .card-tint child (rule below) — the theme identity
+       stays on the card, the ring stays shapeable. Specificity (0,3,1)
        beats both the plate rule (0,2,1) and the themed ::before rule
        (0,2,1, earlier source). The card's drop-shadow filter traces
        ::before too, so the shadow follows the outer frame (matches
@@ -521,59 +522,62 @@
          藏宝波形（v10.16 polygon 版 gap>0 矩形环带 = 用户反馈「方正」，
          弃用）。v10.20: z-index -1（v10.18 的内部 z 3 对邻卡无效——
          邻卡层级靠卡级 z 2；z 3 反而压住卡自己的图片层，详见 legacy
-         板注释）。 */
+         板注释）。v10.27.1.1: 剪影撤出环带（用户反馈「外背景的边缘无法
+         被自定义 + 圆角只能在没设定背景边缘时用」——clip 裁掉
+         --outer-radius 的圆角，滑杆/四角设定在主题卡上全部不可见）。
+         环带+边距带 = 圆角矩形跟随 --outer-radius（四角单独设定也
+         生效；v10.17 油漆板免剪影先例推广到纸/藏宝/科技）。卡身剪影
+         仍由 .card-tint 的 --card-clip 保留——主题外形不动。 */
       z-index: -1;
       inset: calc(-1 * (var(--outer-extent, 16px) + var(--outer-gap, 0px)));
-      border-radius: 0; /* the clip shapes it */
+      border-radius: var(--outer-radius, 20px);
       background-color: transparent;
       background-image: none;
       border: none; /* v10.22: 环带由 .card-outer-band 连续渐变整体画出（见 legacy 板注释） */
       /* 1px 板边线（原 --outer-border）改走 box-shadow 0 0 0 1px：border
          现在是环带本体；主题 glow 恒为真阴影、边线恒有 → 列表恒合法
          （none 关键字不能出现在列表里，legacy 板无此条）。边线跟随
-         圆角/被剪影裁切，与 v10.9 的 1px border 观感一致。 */
+         圆角（v10.27.1.1 起不再被剪影裁切），与 v10.9 的 1px border 观感一致。 */
       box-shadow: var(--outer-glow, none), 0 0 0 1px var(--outer-border-line, transparent);
-      clip-path: var(--card-clip, none);
-    }
-    /* v10.17 — 油漆主题的板环带免剪影：油漆剪影是「内缩水彩/锯齿墨迹」
-       异形（边缘 0.88~1.01、油漆5 整圈内缩 0.94），比 16px 环带深/内，
-       在板盒（比卡大 extent+gap）上 objectBoundingBox 重解析后把 border
-       环带咬成断带/近乎全无（用户截图反馈「被吃掉了一部分」——上/右/
-       下三段在、左下段被剪影咬掉）。油漆的笔刷边是卡身自己的特征
-       （tint/满幅子层仍走剪影），环带改圆角边框（同 legacy）——
-       extent/gap 任意值环带都完整。纸/藏宝/科技切角是「盒满剪影」
-       裁角，环带咬角属设计，维持剪影。 */
-    .grid-card.card-edge-paint.has-outer-bg::before {
+      /* 必须显式 none：上方主题 ::before 规则（0,2,1）仍给本伪元素写
+         --card-clip，本规则不声明的话剪影会回来吃掉环带圆角 */
       clip-path: none;
-      border-radius: var(--outer-radius, 20px);
     }
+    /* v10.27.1.1 — 环带免剪影统一收进上方主题板规则（v10.17 油漆先例：
+       油漆剪影「内缩水彩/锯齿墨迹」异形（边缘 0.88~1.01、油漆5 整圈
+       内缩 0.94）比 16px 环带深/内，板盒 objectBoundingBox 重解析后
+       咬断环带（用户截图「被吃掉了一部分」）；用户 2026-08-23 反馈
+       「外背景的边缘无法被自定义 + 圆角只能在没设定背景边缘时用」——
+       纸/藏宝/科技的盒满剪影裁角同样吃掉 --outer-radius 的圆角，滑杆/
+       四角单独设定在主题卡上全部不可见）。板 ::before 与填充层改为
+       圆角矩形跟随 --outer-radius：环带四角可自定义，卡身剪影仍由
+       .card-tint 的 --card-clip 保留——主题外形不动。 */
     /* v10.20 — 边距带填充改走独立 .card-outer-band 子层（z -2 垫底）：
        v10.19 把填充画在板 ::before（z 3）上——::before 盒盖住卡区域、
        z 3 高于图片层（z 0）→ 填充盖在卡图上方（用户反馈「为什么覆盖
-       在图片上方」）。填充层与板同盒（inset −(extent+gap)、同 radius、
-       同 --card-clip 剪影——objectBoundingBox 对同尺寸盒解析一致，主题
-       板填充与环带形状完全吻合），但 z -2 垫底：卡身（卡背景/图片
-       z 0+）恒在其上，只有卡外的板区域 [−(extent+gap), 0] 露出板色
-       （主题卡 --outer-tint 渐变、legacy --outer-bg 纯色）。
+       在图片上方」）。填充层与板同盒（inset −(extent+gap)、同 radius），
+       但 z -2 垫底：卡身（卡背景/图片 z 0+）恒在其上，只有卡外的板
+       区域 [−(extent+gap), 0] 露出板色（主题卡 --outer-tint 渐变、
+       legacy --outer-bg 纯色）。
        v10.22 — 环带（原 border-image）也并入本层：环带+边距带 = 同一
        渐变在整块板盒上一次取样、连续铺开，一体无色缝（用户「他和边缘
        不是一体的」——border-image 压进 16px 环带取样 vs band 背景整盒
        取样，取样位置不同 → 接缝跳色）；板 ::before 只剩 box-shadow
        （glow + 1px 边线）勾外轮廓。有背景图的卡隐藏本层（v10.13 图片
-       环带照旧是外背景本体）。gap 0 时同样创建（环带即本层）。 */
+       环带照旧是外背景本体）。gap 0 时同样创建（环带即本层）。
+       v10.27.1.1 — --card-clip 撤出本层：剪影裁角吃掉 --outer-radius
+       圆角（见上注），圆角矩形跟随 --outer-radius（四角单独设定
+       亦生效）。legacy 纯色板无 --card-clip，行为不变。 */
     .grid-card .card-outer-band {
       position: absolute;
       inset: calc(-1 * (var(--outer-extent, 16px) + var(--outer-gap, 0px)));
       border-radius: var(--outer-radius, 20px);
       background-color: var(--outer-bg, transparent);
       background-image: var(--outer-tint, none);
-      clip-path: var(--card-clip, none);
       pointer-events: none;
       z-index: -2;
     }
     .grid-card.has-card-bg-img .card-outer-band { display: none; }
-    /* 油漆板同 v10.17：填充层免剪影（油漆剪影内缩异形会咬填充层） */
-    .grid-card.card-edge-paint .card-outer-band { clip-path: none; }
     /* v10.8 — the silhouette layer when the plate coexists. applyCardBg
        creates/removes the div. z-index:-1 + later tree order than ::before
        (generated first) paints it ABOVE the plate ::before and below
@@ -2151,7 +2155,15 @@
     if (hasNewCardBg) {
       // edge theme border/radius live in CSS classes — the inline longhands
       // restored above would win over them, so clear when a theme is on
-      if (cData.cardEdge) clearInlineCardBorderLonghands(card);
+      if (cData.cardEdge) {
+        clearInlineCardBorderLonghands(card);
+        // v10.27.1.1: 圆角保留——主题卡上 inline 半径唯一可见效果是环带
+        // 四角（--outer-radius 随它重算），清除会把用户自定义的环带角
+        // 一起丢掉；边框长手仍清（主题边框类拥有）
+        if (cData.borderRadius) {
+          card.style.borderRadius = /^\d+(\.\d+)?$/.test(String(cData.borderRadius)) ? cData.borderRadius + 'px' : cData.borderRadius;
+        }
+      }
       // v10.8: plate first, then the card layers — applyCardBg keys the
       // .card-tint decision on the dataset so the order is not load-bearing
       applyOuterBg(card);
@@ -2269,7 +2281,7 @@
     // Save current card positions to active preset before persisting
     saveCurrentPresetCards();
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds NO new fields (borderRadius value may now be a 1–4 value string — per-corner editing; legacy numeric drafts restore as uniform)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds NO new fields (borderRadius value may now be a 1–4 value string — per-corner editing; legacy numeric drafts restore as uniform); v10.27.1.1 adds NO new fields (themed plate ring drops the --card-clip silhouette — CSS-only; --outer-radius rounds the ring per-corner, the card silhouette stays on .card-tint)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -5471,7 +5483,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.0') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5480,7 +5492,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.0');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
