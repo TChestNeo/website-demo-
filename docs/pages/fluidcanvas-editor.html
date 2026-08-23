@@ -166,23 +166,16 @@
        高光用 background-image（卡片 ::before/::after 已被边饰主题占用，不能动）。
        排除 .has-outer-bg（外板几何按 2px 边宽调过）/ .has-card-bg-img（图走 <img> 子层）/
        [class*="card-edge-"]（主题卡有板+剪影层）——这些保持原貌。 */
-    /* v10.27.0.1: 高光条主题感知——亮色 0.9 白；暗色降透明（0.9 白在暗卡右上角 = 刺眼白斑，用户反馈） */
-    :root { --card-glint: rgba(255, 255, 255, 0.9); }
-    html[data-theme="dark"] { --card-glint: rgba(255, 255, 255, 0.22); }
-    /* v10.27.0.2: 背景不透明度滑杆改走 --card-bg-alpha 玻璃强度（0 = 完全透明，100 = 默认磨砂）。
-       旧实现解析 computed 背景色只认 rgba()——v10.27 磨砂底是 color-mix，正则失配滑杆失灵；
-       且 backdrop-filter 霜痕不受背景透明影响（用户反馈「调到0不是完全透明」）。 */
     .grid-card.content-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]) {
       --card-border-width: 1px;
       --card-border-color: rgba(125, 130, 140, 0.38);
-      background-color: color-mix(in srgb, var(--card-bg-color) calc(55% * var(--card-bg-alpha, 1)), transparent);
-      background-image: linear-gradient(to left, color-mix(in srgb, var(--card-glint) calc(100% * var(--card-bg-alpha, 1)), transparent), rgba(255, 255, 255, 0));
+      background-color: color-mix(in srgb, var(--card-bg-color) 55%, transparent);
+      background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
       background-size: 45% 2px;
       background-position: top right;
       background-repeat: no-repeat;
-      border-color: color-mix(in srgb, var(--card-border-color) calc(100% * var(--card-bg-alpha, 1)), transparent);
-      backdrop-filter: blur(calc(12px * var(--card-bg-alpha, 1))) saturate(calc(1 + 0.4 * var(--card-bg-alpha, 1)));
-      -webkit-backdrop-filter: blur(calc(12px * var(--card-bg-alpha, 1))) saturate(calc(1 + 0.4 * var(--card-bg-alpha, 1)));
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
     }
     .grid-card:hover { box-shadow: var(--card-shadow, var(--shadow-md)); border-color: var(--color-primary); }
     .grid-card.selected {
@@ -502,12 +495,11 @@
     /* v10.8 — theme + outer plate coexist (the Gemini hud-box two-layer
        look): ::before switches to painting the PLATE — inset by the outer
        extent, plate color/tint/border/glow from the vars applyOuterBg
-       writes. v10.27.1.1: the clip is gone — the plate ring's corners now
-       follow --outer-radius (rounded rect, per-corner included), so the
-       outer background edge is user-customizable (see the v10.27.1.1 note
-       on the themed plate rule below). The card silhouette itself still
-       moves to the .card-tint child (rule below) — the theme identity
-       stays on the card, the ring stays shapeable. Specificity (0,3,1)
+       writes, still clipped by --card-clip. The clip is objectBoundingBox
+       and resolves against ::before's own (larger) box, so the plate
+       silhouette is the card silhouette scaled up by the extent — the
+       16px ring reads as the HUD outer frame. The card silhouette itself
+       moves to the .card-tint child (rule below). Specificity (0,3,1)
        beats both the plate rule (0,2,1) and the themed ::before rule
        (0,2,1, earlier source). The card's drop-shadow filter traces
        ::before too, so the shadow follows the outer frame (matches
@@ -522,72 +514,59 @@
          藏宝波形（v10.16 polygon 版 gap>0 矩形环带 = 用户反馈「方正」，
          弃用）。v10.20: z-index -1（v10.18 的内部 z 3 对邻卡无效——
          邻卡层级靠卡级 z 2；z 3 反而压住卡自己的图片层，详见 legacy
-         板注释）。v10.27.1.1: 剪影撤出环带（用户反馈「外背景的边缘无法
-         被自定义 + 圆角只能在没设定背景边缘时用」——clip 裁掉
-         --outer-radius 的圆角，滑杆/四角设定在主题卡上全部不可见）。
-         v10.27.1.4: 剪影回归但改走 --card-ring-clip（主题环带专用版，
-         defs 区 mn-*-ring-clip：边缘齿贴边压缩、角区压到 ≤2% ——
-         圆角弧恒盖过切角，环带四角跟随 --outer-radius、四边跟随主题
-         齿——用户「自定义背景边缘没了」的修复本体）。卡身剪影仍由
-         .card-tint 的 --card-clip 保留——主题外形不动。 */
+         板注释）。 */
       z-index: -1;
       inset: calc(-1 * (var(--outer-extent, 16px) + var(--outer-gap, 0px)));
-      border-radius: var(--outer-radius, 20px);
+      border-radius: 0; /* the clip shapes it */
       background-color: transparent;
       background-image: none;
       border: none; /* v10.22: 环带由 .card-outer-band 连续渐变整体画出（见 legacy 板注释） */
       /* 1px 板边线（原 --outer-border）改走 box-shadow 0 0 0 1px：border
          现在是环带本体；主题 glow 恒为真阴影、边线恒有 → 列表恒合法
          （none 关键字不能出现在列表里，legacy 板无此条）。边线跟随
-         圆角（v10.27.1.1 起不再被剪影裁切），与 v10.9 的 1px border 观感一致。 */
+         圆角/被剪影裁切，与 v10.9 的 1px border 观感一致。 */
       box-shadow: var(--outer-glow, none), 0 0 0 1px var(--outer-border-line, transparent);
-      /* v10.27.1.4: --card-ring-clip 由 applyCardBg 按主题写入（环带
-         专用剪影 url(#mn-*-ring-clip)；油漆5 = none——其剪影整圈内缩
-         0.06~0.10 深过 16px 环带，环带走纯圆角 + 子层墨雾滤镜）。
-         回退 --card-clip 保旧草稿/未映射主题不丢剪影；再回退 none
-         （legacy 纯色板无主题剪影 = v10.27.1.1 前的状态）。 */
-      clip-path: var(--card-ring-clip, var(--card-clip, none));
+      clip-path: var(--card-clip, none);
     }
-    /* v10.27.1.1 — 环带免剪影统一收进上方主题板规则（v10.17 油漆先例：
-       油漆剪影「内缩水彩/锯齿墨迹」异形（边缘 0.88~1.01、油漆5 整圈
-       内缩 0.94）比 16px 环带深/内，板盒 objectBoundingBox 重解析后
-       咬断环带（用户截图「被吃掉了一部分」）；用户 2026-08-23 反馈
-       「外背景的边缘无法被自定义 + 圆角只能在没设定背景边缘时用」——
-       纸/藏宝/科技的盒满剪影裁角同样吃掉 --outer-radius 的圆角，滑杆/
-       四角单独设定在主题卡上全部不可见）。板 ::before 与填充层改为
-       圆角矩形跟随 --outer-radius：环带四角可自定义，卡身剪影仍由
-       .card-tint 的 --card-clip 保留——主题外形不动。 */
+    /* v10.17 — 油漆主题的板环带免剪影：油漆剪影是「内缩水彩/锯齿墨迹」
+       异形（边缘 0.88~1.01、油漆5 整圈内缩 0.94），比 16px 环带深/内，
+       在板盒（比卡大 extent+gap）上 objectBoundingBox 重解析后把 border
+       环带咬成断带/近乎全无（用户截图反馈「被吃掉了一部分」——上/右/
+       下三段在、左下段被剪影咬掉）。油漆的笔刷边是卡身自己的特征
+       （tint/满幅子层仍走剪影），环带改圆角边框（同 legacy）——
+       extent/gap 任意值环带都完整。纸/藏宝/科技切角是「盒满剪影」
+       裁角，环带咬角属设计，维持剪影。 */
+    .grid-card.card-edge-paint.has-outer-bg::before {
+      clip-path: none;
+      border-radius: var(--outer-radius, 20px);
+    }
     /* v10.20 — 边距带填充改走独立 .card-outer-band 子层（z -2 垫底）：
        v10.19 把填充画在板 ::before（z 3）上——::before 盒盖住卡区域、
        z 3 高于图片层（z 0）→ 填充盖在卡图上方（用户反馈「为什么覆盖
-       在图片上方」）。填充层与板同盒（inset −(extent+gap)、同 radius），
-       但 z -2 垫底：卡身（卡背景/图片 z 0+）恒在其上，只有卡外的板
-       区域 [−(extent+gap), 0] 露出板色（主题卡 --outer-tint 渐变、
-       legacy --outer-bg 纯色）。
+       在图片上方」）。填充层与板同盒（inset −(extent+gap)、同 radius、
+       同 --card-clip 剪影——objectBoundingBox 对同尺寸盒解析一致，主题
+       板填充与环带形状完全吻合），但 z -2 垫底：卡身（卡背景/图片
+       z 0+）恒在其上，只有卡外的板区域 [−(extent+gap), 0] 露出板色
+       （主题卡 --outer-tint 渐变、legacy --outer-bg 纯色）。
        v10.22 — 环带（原 border-image）也并入本层：环带+边距带 = 同一
        渐变在整块板盒上一次取样、连续铺开，一体无色缝（用户「他和边缘
        不是一体的」——border-image 压进 16px 环带取样 vs band 背景整盒
        取样，取样位置不同 → 接缝跳色）；板 ::before 只剩 box-shadow
        （glow + 1px 边线）勾外轮廓。有背景图的卡隐藏本层（v10.13 图片
-       环带照旧是外背景本体）。gap 0 时同样创建（环带即本层）。
-       v10.27.1.1 — --card-clip 撤出本层：剪影裁角吃掉 --outer-radius
-       圆角（见上注），圆角矩形跟随 --outer-radius（四角单独设定
-       亦生效）。legacy 纯色板无 --card-clip，行为不变。
-       v10.27.1.4 — 剪影回归改走 --card-ring-clip（见 defs 区注释）：
-       四边主题齿 + 四角圆角两全。 */
+       环带照旧是外背景本体）。gap 0 时同样创建（环带即本层）。 */
     .grid-card .card-outer-band {
       position: absolute;
       inset: calc(-1 * (var(--outer-extent, 16px) + var(--outer-gap, 0px)));
       border-radius: var(--outer-radius, 20px);
       background-color: var(--outer-bg, transparent);
       background-image: var(--outer-tint, none);
-      /* v10.27.1.4: 主题环带剪影回归（同板 ::before，--card-ring-clip
-         回退 --card-clip）——环带四边跟随主题齿、四角跟随圆角。 */
-      clip-path: var(--card-ring-clip, var(--card-clip, none));
+      clip-path: var(--card-clip, none);
       pointer-events: none;
       z-index: -2;
     }
     .grid-card.has-card-bg-img .card-outer-band { display: none; }
+    /* 油漆板同 v10.17：填充层免剪影（油漆剪影内缩异形会咬填充层） */
+    .grid-card.card-edge-paint .card-outer-band { clip-path: none; }
     /* v10.8 — the silhouette layer when the plate coexists. applyCardBg
        creates/removes the div. z-index:-1 + later tree order than ::before
        (generated first) paints it ABOVE the plate ::before and below
@@ -657,38 +636,33 @@
     }
     /* v10.15 — 油漆1~6 笔刷/墨迹/水彩异形边缘（背景边缘主题体系：
        只裁背景层剪影，内容/标签完好——与纸/藏宝图/科技同族）。
-       阴影同纸款配方（笔触剪影投影 + 选中四向环）。v10.27.1.4:
-       油漆5 噪点撕裂滤镜从卡级移到绘制子层（下方子层规则）——
-       卡级位移会把 v10.27.1.2 自动外板的板/环带一起撕碎（环带
-       破裂、圆角弧被雾位移盖掉——ae38c85 已知缺陷）；子层滤镜
-       （clip 先裁、滤镜后作用于裁剪结果、滤镜输出不被 clip 回裁）
-       照常把剪影边缘撕成墨雾，卡级 drop-shadow 输入 = 含墨雾的
-       合成 → 影子仍跟着雾边跑；板/环带/标签保持锐利、圆角可控。 */
+       阴影同纸款配方（笔触剪影投影 + 选中四向环）。油漆5 的噪点
+       撕裂滤镜必须在卡级（filter 链首）：父级 filter 合成的是子层
+       clip 之后的结果，卡级位移才能把剪影边缘撕成墨雾、且影子
+       跟着雾边跑；子层级 filter 会被自身 clip-path 裁回干净边缘。 */
     .grid-card.card-edge-paint {
       filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
+    }
+    .grid-card.card-edge-paint[data-card-edge="paint5"] {
+      filter: url(#mn-paint-filter-5) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
     }
     .grid-card.card-edge-paint:hover {
       filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
     }
+    .grid-card.card-edge-paint[data-card-edge="paint5"]:hover {
+      filter: url(#mn-paint-filter-5) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
+    }
     .grid-card.card-edge-paint.selected {
       filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(-2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 -2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 0 8px var(--color-primary-fixed-dim));
+    }
+    .grid-card.card-edge-paint[data-card-edge="paint5"].selected {
+      filter: url(#mn-paint-filter-5) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(-2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 -2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 0 8px var(--color-primary-fixed-dim));
     }
     .grid-card.card-edge-paint.dragging {
       filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.45));
     }
-    /* v10.27.1.4 — 油漆5 墨雾位移滤镜落到绘制子层（卡级只留阴影）：
-       .card-tint（外板在位时的卡身剪影）/ 无外板时的 ::before（剪影
-       由主题 ::before 规则画）/ ::after 满幅覆盖层 / 图片与条纹层。
-       标签（.card-label）不入列——文字保持清晰。 */
-    .grid-card.card-edge-paint[data-card-edge="paint5"] .card-tint,
-    .grid-card.card-edge-paint[data-card-edge="paint5"] .card-bg-img,
-    .grid-card.card-edge-paint[data-card-edge="paint5"] .card-img-bg,
-    .grid-card.card-edge-paint[data-card-edge="paint5"] .card-stripes,
-    .grid-card.card-edge-paint[data-card-edge="paint5"]::after {
-      filter: url(#mn-paint-filter-5);
-    }
-    .grid-card.card-edge-paint[data-card-edge="paint5"]:not(.has-outer-bg)::before {
-      filter: url(#mn-paint-filter-5);
+    .grid-card.card-edge-paint[data-card-edge="paint5"].dragging {
+      filter: url(#mn-paint-filter-5) drop-shadow(0 18px 34px rgba(0, 0, 0, 0.45));
     }
     .grid-card.card-edge-paper.dragging, .grid-card.card-edge-treasure.dragging,
     .grid-card.card-edge-tech.dragging {
@@ -1187,55 +1161,6 @@
         C 0.65 0.98, 0.35 0.95, 0.03 0.97
         L 0.08 0.88 L 0.01 0.80 L 0.07 0.72 L 0.00 0.64 L 0.06 0.55 L 0.01 0.46 L 0.08 0.38 L 0.02 0.28 L 0.09 0.18 L 0.03 0.10 Z
       " />
-    </clipPath>
-    <!-- v10.27.1.4 — 12 款主题环带专用剪影（mn-*-ring-clip）：卡身剪影
-         （上方 mn-paint-clip-* 等）在 16px 环带比例下会咬穿/咬断环带
-         （v10.17 用户截图「被吃掉了一部分」），且切角深过 --outer-radius
-         圆角弧 → 圆角在主题卡上不可见（v10.27.1.1 曾因此把剪影整个撤出
-         环带 → 用户反馈「自定义背景边缘没了」）。本组 clip 逐点重映射：
-         边缘齿贴边压缩（每款独立系数，最大侵入 ≤4% < 16px 环带——
-         油漆 0.3×/纸 0.6×/藏宝 0.4×/科技 0.6×），角区双坐标朝最近角
-         压缩 ×0.08（切角 ≤2% ≈ 5px，border-radius 圆角弧恒盖过它——
-         圆角控制环带四角、主题齿控制环带边缘，r=0 时角部仍近似 90°）。
-         卡身剪影不动（.card-tint 仍用 --card-clip）。 -->
-    <clipPath id="mn-map-ring-clip" clipPathUnits="objectBoundingBox">
-      <path d="M 0.0024 0.004 C 0.18 0.004 0.35 0.032 0.52 0.012 C 0.68 0 0.82 0.028 0.9976 0.0032 C 1.004 0.22 0.98 0.48 0.992 0.72 C 0.98 0.85 1 0.9952 0.9968 0.9968 C 0.78 1 0.62 0.976 0.48 0.988 C 0.32 1.004 0.18 0.976 0.0024 0.9968 C -0.004 0.72 0.02 0.45 0.008 0.22 Z" />
-    </clipPath>
-    <clipPath id="mn-paper-ring-clip" clipPathUnits="objectBoundingBox">
-      <path d="M 0.0012 0.001 C 0.0144 0.0006 0.38 0.0096 0.58 0.006 C 0.72 0.0036 0.9856 0.001 0.9888 0.0006 C 0.9928 0.002 0.996 0.0036 0.9996 0.0066 C 0.999 0.02 0.997 0.45 0.9928 0.65 C 0.9986 0.9824 0.9994 0.9904 0.9972 0.9964 C 0.988 0.9974 0.7 0.9748 0.55 0.982 C 0.4 0.9892 0.26 0.979 0.0128 0.9976 C 0.0072 0.9956 0.0024 0.992 0.0004 0.9868 C 0.0072 0.68 0.0036 0.48 0.0072 0.28 C 0.0004 0.012 0.001 0.004 0.0012 0.001 Z" />
-    </clipPath>
-    <clipPath id="mn-hud-ring-clip-1" clipPathUnits="objectBoundingBox">
-      <path d="M 0.0096 0 0.996 0 1 0.0064 1 0.9776 0.9856 1 0.012 1 0 0.988 0 0.0144 Z" />
-    </clipPath>
-    <clipPath id="mn-hud-ring-clip-2" clipPathUnits="objectBoundingBox">
-      <path d="M 0.016 0 0.996 0 1 0.0064 1 0.988 0.9936 1 0.016 1 0.0112 0.9936 0 0.9936 0 0.02 Z" />
-    </clipPath>
-    <clipPath id="mn-hud-ring-clip-3" clipPathUnits="objectBoundingBox">
-      <path d="M 0.0176 0 0.9936 0 1 0.0096 1 0.976 0.9824 1 0.0064 1 0 0.9904 0 0.0176 Z" />
-    </clipPath>
-    <clipPath id="mn-hud-ring-clip-4" clipPathUnits="objectBoundingBox">
-      <path d="M 0.0144 0 0.9856 0 1 0.0144 1 0.9856 0.9856 1 0.0144 1 0 0.9856 0 0.0144 Z" />
-    </clipPath>
-    <clipPath id="mn-hud-ring-clip-5" clipPathUnits="objectBoundingBox">
-      <path d="M 0.0064 0 0.996 0 1 0.0064 1 0.98 0.9824 1 0.004 1 0 0.9936 0 0.0064 Z" />
-    </clipPath>
-    <clipPath id="mn-hud-ring-clip-6" clipPathUnits="objectBoundingBox">
-      <path d="M 0.0096 0 0.38 0 0.4 0.03 0.6 0.03 0.62 0 0.9904 0 1 0.0144 1 0.9856 0.9904 1 0.62 1 0.6 0.97 0.4 0.97 0.38 1 0.0096 1 0 0.9856 0 0.0144 Z" />
-    </clipPath>
-    <clipPath id="mn-paint-ring-clip-1" clipPathUnits="objectBoundingBox">
-      <path d="M 0.004 0.0032 C 0.15 0.003 0.35 0.024 0.55 0.006 C 0.75 -0.003 0.9904 0.004 0.996 0.0016 C 0.9984 0.0064 0.988 0.25 0.994 0.45 C 1.003 0.65 0.985 0.85 0.9968 0.996 C 0.85 0.994 0.65 0.976 0.45 0.991 C 0.25 1.003 0.0096 0.9952 0.0032 0.9968 C -0.003 0.8 0.009 0.6 0.003 0.4 C 0.006 0.2 -0.0008 0.0064 0.004 0.0032 Z M 0.003 0.15 Q 0.0016 0.0096 0.009 0.16 Z M 0.9976 0.0008 Q 0.9992 0 0.9984 0.0024 Z M 0.0048 0.9984 Q 0.0064 1 0.004 0.9992 Z" />
-    </clipPath>
-    <clipPath id="mn-paint-ring-clip-2" clipPathUnits="objectBoundingBox">
-      <path d="M 0.0064 0.0064 L 0.0096 0.0016 L 0.15 0.021 L 0.2 0.003 L 0.24 0.018 L 0.3 0.009 L 0.36 0.024 L 0.42 0.003 L 0.48 0.018 L 0.55 0.006 L 0.62 0.021 L 0.7 0.003 L 0.76 0.024 L 0.82 0.009 L 0.9904 0.0072 L 0.9952 0.0016 L 0.9936 0.0096 L 0.994 0.18 L 0.979 0.25 L 1 0.32 L 0.982 0.4 L 0.994 0.48 L 0.976 0.56 L 0.997 0.64 L 0.979 0.72 L 0.991 0.8 L 0.9928 0.9904 L 0.9968 0.996 L 0.9904 0.9936 L 0.82 0.994 L 0.75 0.979 L 0.68 0.997 L 0.6 0.982 L 0.52 0.994 L 0.45 0.976 L 0.38 0.991 L 0.3 0.973 L 0.22 0.994 L 0.16 0.976 L 0.008 0.9976 L 0.004 0.992 L 0.024 0.82 L 0.003 0.74 L 0.018 0.66 L 0 0.58 L 0.021 0.5 L 0.006 0.42 L 0.024 0.35 L 0.003 0.28 L 0.018 0.2 L 0.0016 0.0096 Z" />
-    </clipPath>
-    <clipPath id="mn-paint-ring-clip-3" clipPathUnits="objectBoundingBox">
-      <path d="M 0.012 0.15 L 0.0056 0.004 L 0.027 0.18 L 0.0096 0.0016 L 0.15 0.036 L 0.18 0.024 L 0.21 0.048 L 0.25 0.003 L 0.28 0.03 L 0.32 0.012 L 0.36 0.045 L 0.4 0.024 L 0.44 0.042 L 0.48 0.009 L 0.52 0.036 L 0.57 0.018 L 0.62 0.045 L 0.68 0.012 L 0.73 0.036 L 0.78 0.021 L 0.83 0.042 L 0.9904 0.0064 L 0.976 0.16 C 0.991 0.22 0.985 0.4 0.991 0.6 C 0.985 0.8 0.9984 0.9936 0.9952 0.9968 C 0.8 0.982 0.6 0.994 0.4 0.985 C 0.2 0.991 0.0064 0.9944 0.0024 0.996 C 0.006 0.75 0.015 0.5 0.009 0.3 Z" />
-    </clipPath>
-    <clipPath id="mn-paint-ring-clip-4" clipPathUnits="objectBoundingBox">
-      <path d="M 0.0064 0.0048 C 0.3 0.006 0.6 0.027 0.9904 0.0032 L 0.9944 0.0008 L 0.992 0.0096 L 0.9984 0.008 L 0.976 0.22 L 1 0.28 L 0.973 0.36 L 0.991 0.44 L 0.967 0.52 L 0.988 0.6 L 0.97 0.68 L 0.994 0.76 L 0.964 0.84 L 0.9952 0.9936 C 0.7 0.991 0.4 0.976 0.0096 0.9968 L 0.0048 0.9936 L 0.03 0.82 L 0.006 0.76 L 0.027 0.68 L 0.003 0.6 L 0.024 0.5 L 0 0.42 L 0.024 0.32 L 0.006 0.24 L 0.027 0.16 L 0.0032 0.0064 Z" />
-    </clipPath>
-    <clipPath id="mn-paint-ring-clip-6" clipPathUnits="objectBoundingBox">
-      <path d="M 0.004 0.0024 C 0.35 0.003 0.65 0.012 0.996 0.0016 L 0.9936 0.0096 L 0.994 0.2 L 0.979 0.28 L 1 0.36 L 0.982 0.45 L 0.994 0.54 L 0.973 0.62 L 0.991 0.7 L 0.976 0.78 L 0.9992 0.9888 L 0.9936 0.9952 C 0.65 0.994 0.35 0.985 0.0024 0.9976 L 0.0064 0.9904 L 0.003 0.8 L 0.021 0.72 L 0 0.64 L 0.018 0.55 L 0.003 0.46 L 0.024 0.38 L 0.006 0.28 L 0.027 0.18 L 0.0024 0.008 Z" />
     </clipPath>
   </defs>
 </svg>
@@ -2041,12 +1966,7 @@
                 var textEl = card.querySelector('.card-text-content');
                 if (textEl) textEl.innerHTML = sanitizeDraftHtml(cData.content);
               }
-              if (cData.bgAlpha != null) {
-                var ba = parseInt(cData.bgAlpha) || 0;
-                card.dataset.bgAlpha = ba;
-                // v10.27.0.2: 玻璃强度草稿恢复（100 = 默认磨砂不写变量；legacy inline 背景不动）
-                if (ba < 100) card.style.setProperty('--card-bg-alpha', ba / 100);
-              }
+              if (cData.bgAlpha != null) card.dataset.bgAlpha = parseInt(cData.bgAlpha) || 0;
             } else {
               card = createAssetCard(cData.type, cData.label, pos.col, pos.row, pos.colSpan || 4, pos.rowSpan || 3);
             }
@@ -2157,12 +2077,7 @@
 
   function applyCardStyleFromDraft(card, cData) {
     var paintMigration = ''; // v10.15: 旧油漆草稿 → 边缘主题迁移标记
-    // v10.27.1: 四角值原串直设；legacy 纯数字草稿按统一圆角恢复
-    if (cData.borderRadius) {
-      // v10.27.1.5: 四角撤销 → 旧草稿 1–4 值串收敛首值统一圆角
-      var _r = parseFloat(cData.borderRadius);
-      if (!isNaN(_r)) card.style.borderRadius = _r + 'px';
-    }
+    if (cData.borderRadius) card.style.borderRadius = cData.borderRadius + 'px';
     if (cData.background) card.style.background = cData.background;
     if (cData.borderStyle) {
       if (String(cData.borderStyle).indexOf('paint') === 0) {
@@ -2211,28 +2126,11 @@
     if (cData.outerBgOpacity != null) card.dataset.outerBgOpacity = cData.outerBgOpacity;
     if (cData.outerBgExtent != null) card.dataset.outerBgExtent = cData.outerBgExtent;
     if (cData.outerEdge) card.dataset.outerEdge = cData.outerEdge;
-    // v10.27.1.2: 旧油漆草稿补外板（油漆与其余主题同款自动外板）——
-    // 有 cardEdge 必进 hasNewCardBg，下方 applyOuterBg 照常落板；老
-    // 草稿无 outerEdge 字段时在此补上，圆角/外板功能对老卡同样生效。
-    if (cData.cardEdge && cData.cardEdge.indexOf('paint') === 0 && !cData.outerEdge) {
-      card.dataset.outerEdge = cData.cardEdge;
-      card.dataset.outerBgExtent = 16;
-    }
     if (cData.outerBgGap != null) card.dataset.outerBgGap = snapOuterGap(cData.outerBgGap); // v10.18: 旧草稿值吸附固定档
     if (hasNewCardBg) {
       // edge theme border/radius live in CSS classes — the inline longhands
       // restored above would win over them, so clear when a theme is on
-      if (cData.cardEdge) {
-        clearInlineCardBorderLonghands(card);
-        // v10.27.1.1: 圆角保留——主题卡上 inline 半径唯一可见效果是环带
-        // 四角（--outer-radius 随它重算），清除会把用户自定义的环带角
-        // 一起丢掉；边框长手仍清（主题边框类拥有）
-        if (cData.borderRadius) {
-          // v10.27.1.5: 四角撤销 → 旧草稿 1–4 值串收敛首值统一圆角
-          var _r2 = parseFloat(cData.borderRadius);
-          if (!isNaN(_r2)) card.style.borderRadius = _r2 + 'px';
-        }
-      }
+      if (cData.cardEdge) clearInlineCardBorderLonghands(card);
       // v10.8: plate first, then the card layers — applyCardBg keys the
       // .card-tint decision on the dataset so the order is not load-bearing
       applyOuterBg(card);
@@ -2242,11 +2140,8 @@
       // v10.15: 旧油漆草稿（无 cardBg 字段 → 上面的 hasNewCardBg 分支
       // 不跑）在此落主题：cardEdge 数据集 + 清内联边框长手（否则保存的
       // borderWidth/borderColor 会画出矩形边框）+ 双渲染器直调。
-      // applyCardBg 归一 paintN → card-edge-paint 类。
-      // v10.27.1.2: 油漆与其余主题同款自动外板（v10.15 无外板口径废止）。
+      // applyCardBg 归一 paintN → card-edge-paint 类，油漆无外板。
       card.dataset.cardEdge = paintMigration;
-      card.dataset.outerEdge = paintMigration;
-      card.dataset.outerBgExtent = 16;
       clearInlineCardBorderLonghands(card);
       applyOuterBg(card);
       applyCardBg(card);
@@ -2285,7 +2180,7 @@
         colSpan: parseFloat(c.dataset.colSpan) || 4,
         rowSpan: parseFloat(c.dataset.rowSpan) || 3,
         rotate: parseFloat(c.dataset.rotate) || 0,
-        borderRadius: readRadius(c) + 'px', // v10.27.1.5: 四角撤销 → 回存单值（旧 1–4 值串读入时已收敛）
+        borderRadius: parseInt(c.style.borderRadius) || 8,
         background: c.style.background || '',
         borderStyle: c.style.borderStyle || 'solid',
         borderColor: c.style.borderColor || '',
@@ -2353,7 +2248,7 @@
     // Save current card positions to active preset before persisting
     saveCurrentPresetCards();
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds NO new fields (borderRadius value may now be a 1–4 value string — per-corner editing; legacy numeric drafts restore as uniform); v10.27.1.2 adds NO new fields (paint themes now carry the auto outer plate like the other three families — setCardEdge writes outerEdge/outerBgExtent for paintN too (v10.15 no-plate spec retired: paint was the only family where the edge theme left 边缘弧度 with no surface, user 2026-08-23 「设定背景边缘的时候边缘弧度的功能会自动封锁/关闭」; the v10.17 reason for paint plates being clip-less — blobs biting the 16px band — is obsolete after the v10.27.1.1 rounded-rect ring); loadDraft heals old paint drafts by adding outerEdge/outerBgExtent 16 — dataset-only, autosaved onward); v10.27.1.3 adds NO new fields (outer ring corner formula: radius 0 now passes through as 0 — sharp 90° ring corners, user 2026-08-23 「弧度调成 0 没有变成 90°」; the concentric r+extent+gap formula stays for any radius > 0, per-corner); v10.27.1.4 adds NO new fields (themed ring silhouette is back — ring and margin band now clip through --card-ring-clip, a derived per-theme value written by applyCardBg: RING_CLIPS maps each card clip to a ring-specific clip (mn-*-ring-clip, defs) whose edge teeth are compressed toward the card edge (per-family amp ≤4% < the 16px ring) and whose corner-region points are compressed ×0.08 toward the nearest corner (cut ≤2% ≈ 5px) so the --outer-radius arc always wins at the corners — user 2026-08-23 「有了自定义圆角弧度之后背景卡片无法展示自定义背景边缘」; paint5's ink-fog filter moves from card level to the child layers (.card-tint/.card-bg-img/.card-img-bg/.card-stripes/::after + no-plate ::before) — per CSS spec the clip applies first and the filter output is not re-clipped, so the fog survives while ring/plate/label/radius stay crisp and the card-level drop-shadow still follows the fog; card-body silhouette (--card-clip on .card-tint) unchanged); v10.27.1.5 adds NO new fields (四角单独设定整体撤销 per user 2026-08-23 「撤销掉刚才做的所有那个拉杆下方的自定义圆角弧度」——borderRadius 回存单值，旧 v10.27.1.0-1.4 草稿/模板的 1–4 值串加载时收敛首值；切换背景边缘不再清圆角（setCardEdge keepRadius），用户圆角跨主题保留)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -3584,23 +3479,14 @@
   });
 
   // ── Border Radius ──
-  // v10.27.1.5: 四角单独设定整体撤销（用户 2026-08-23）——圆角回归统一
-  // 单值。旧草稿/模板可能存 v10.27.1.0-1.4 的 1–4 值串：一律取首值收敛。
-  function readRadius(card) {
-    var v = card.style.borderRadius;
-    if (!v) v = getComputedStyle(card).borderRadius;
-    var n = parseFloat(v);
-    return isNaN(n) ? 8 : n;
-  }
-
   function openBorderRadiusPopover() {
     if (!selectedCard) return;
     hideContextMenu();
     var radiusPopover = getRadiusPopover();
     if (!radiusPopover) return;
-    var r = readRadius(selectedCard);
-    document.getElementById('radiusSlider').value = r;
-    document.getElementById('radiusValue').textContent = r + 'px';
+    var cur = parseInt(selectedCard.style.borderRadius) || 8;
+    document.getElementById('radiusSlider').value = cur;
+    document.getElementById('radiusValue').textContent = cur + 'px';
     var cardRect = selectedCard.getBoundingClientRect();
     var x = cardRect.right + 10, y = cardRect.top;
     if (x + 260 > window.innerWidth) x = cardRect.left - 270;
@@ -3636,19 +3522,6 @@
   function applyBgAlpha(card, alpha) {
     var a = Math.max(0, Math.min(1, alpha));
     card.dataset.bgAlpha = Math.round(a * 100);
-    // v10.27.0.2: 磨砂玻璃内容卡——滑杆即玻璃强度，写 --card-bg-alpha（CSS 同步缩放
-    // tint/blur/描边/高光）。旧 rgba 解析路径对 color-mix 磨砂底失配（滑杆失灵）。
-    var isGlass = card.classList.contains('content-card') &&
-      !card.classList.contains('has-outer-bg') &&
-      !card.classList.contains('has-card-bg-img') &&
-      !/card-edge-/.test(card.className);
-    if (isGlass) {
-      if (a >= 1) card.style.removeProperty('--card-bg-alpha');
-      else card.style.setProperty('--card-bg-alpha', a);
-      card.style.background = '';      // 清旧系统 inline 残留，让 CSS 强度接管
-      card.style.borderColor = '';
-      return;
-    }
     var bg = card.style.background || getComputedStyle(card).backgroundColor;
     if (bg && bg.indexOf('url(') === -1 && bg.indexOf('gradient') === -1) {
       var rgba = rgbaWithAlpha(bg, a);
@@ -3974,9 +3847,8 @@
   // 菜单——迁移进边缘主题体系：clip 走 --card-clip 只裁背景层剪影，
   // 内容/标签完好）。demo 色块 = 不透明双停渐变（底色 + 深一档），
   // 无叠加层无噪点（demo 平涂）；油漆5 卡级位移滤镜（CSS 阶梯链首，
-  // 把剪影边缘撕成墨雾；滤镜区 x/y -20%~140% 覆盖外板环带，板环带
-  // 随卡身一同撕边）。v10.27.1.2: 油漆与其余主题同款自动外板
-  // （v10.15 无外板口径废止，见 setCardEdge 注）。clipSoft 沿用软撕边
+  // 把剪影边缘撕成墨雾）。油漆无外板（demo 无底板——setCardEdge 对
+  // paint* 跳过 v10.8 自动外板，避免色板环带）。clipSoft 沿用软撕边
   // （纸/藏宝图同款，手绘感）。
   var PAINT_GRADS = {
     1: 'linear-gradient(135deg, #e63920, #b02a15)',
@@ -4000,27 +3872,6 @@
       color: '#ffffff'
     };
   }
-  // v10.27.1.4 — 主题剪影 → 环带专用剪影映射（defs 区 mn-*-ring-clip）：
-  // 卡身剪影在 16px 环带比例下咬穿环带（油漆/内缩剪影）或切角深过
-  // --outer-radius 圆角弧（纸折角/科技切角）——环带改挂专用版（边缘齿
-  // 贴边压缩、角区 ≤2%，圆角弧恒胜）。油漆5 无专用版（剪影整圈内缩
-  // 0.06~0.10 深过环带，环带走纯圆角 + 子层墨雾滤镜）。
-  var RING_CLIPS = {
-    'url(#paper-edge-clip)': 'url(#mn-paper-ring-clip)',
-    'url(#map-wave-clip)': 'url(#mn-map-ring-clip)',
-    'url(#hud-frame-1)': 'url(#mn-hud-ring-clip-1)',
-    'url(#hud-frame-2)': 'url(#mn-hud-ring-clip-2)',
-    'url(#hud-frame-3)': 'url(#mn-hud-ring-clip-3)',
-    'url(#hud-frame-4)': 'url(#mn-hud-ring-clip-4)',
-    'url(#hud-frame-5)': 'url(#mn-hud-ring-clip-5)',
-    'url(#hud-frame-6)': 'url(#mn-hud-ring-clip-6)',
-    'url(#mn-paint-clip-1)': 'url(#mn-paint-ring-clip-1)',
-    'url(#mn-paint-clip-2)': 'url(#mn-paint-ring-clip-2)',
-    'url(#mn-paint-clip-3)': 'url(#mn-paint-ring-clip-3)',
-    'url(#mn-paint-clip-4)': 'url(#mn-paint-ring-clip-4)',
-    'url(#mn-paint-clip-5)': 'none',
-    'url(#mn-paint-clip-6)': 'url(#mn-paint-ring-clip-6)'
-  };
   var EDGE_STYLES = {
     paper: {
       clip: 'url(#paper-edge-clip)', clipSoft: TORN_CLIP_SOFT, // v10.6: 褶皱折角纸（右上斜切折角+左下圆弧卷角+四边微撕边）
@@ -4373,10 +4224,8 @@
   // border/radius longhands so they show (user tweaks from the old modals
   // win over them; switching themes resets those tweaks to CSS defaults).
 
-  function clearInlineCardBorderLonghands(card, keepRadius) {
-    // v10.27.1.5: keepRadius = 切换背景边缘时保留用户圆角（用户「一换
-    // 背景边缘圆角又出现了」——主题不再重置圆角，圆角跨主题保留）
-    if (!keepRadius) card.style.borderRadius = '';
+  function clearInlineCardBorderLonghands(card) {
+    card.style.borderRadius = '';
     card.style.borderStyle = '';
     card.style.borderColor = '';
     card.style.borderWidth = '';
@@ -4410,11 +4259,6 @@
       card.style.background = ''; // the card must not paint a rectangle
       card.style.backgroundImage = 'none';
       card.style.setProperty('--card-clip', edge.clip);
-      // v10.27.1.4: 环带剪影走主题专用版（RING_CLIPS）——四边主题齿 +
-      // 四角圆角两全（用户「自定义背景边缘没了」的修复本体）。
-      var ringClip = RING_CLIPS[edge.clip];
-      if (ringClip) card.style.setProperty('--card-ring-clip', ringClip);
-      else card.style.removeProperty('--card-ring-clip');
       card.style.setProperty('--card-layers', edge.cardLayers.join(', '));
       card.style.setProperty('--card-overlay', edge.cardOverlay.join(', '));
       if (rgba) card.style.setProperty('--card-tint-base', rgba);
@@ -4442,7 +4286,6 @@
       if (color) card.style.background = rgba;
       card.style.backgroundImage = 'none';
       card.style.removeProperty('--card-clip');
-      card.style.removeProperty('--card-ring-clip'); // v10.27.1.4
       card.style.removeProperty('--card-layers');
       card.style.removeProperty('--card-overlay');
       card.style.removeProperty('--card-tint-base');
@@ -4539,7 +4382,7 @@
     } else if (band) {
       band.remove();
     }
-    var cardR = readRadius(card); // v10.27.1.5: 四角撤销 → 统一单值
+    var cardR = parseFloat(getComputedStyle(card).borderRadius) || 8;
     // v10.13 — bg image clip: the image always covers the plate box (v10.9
     // geometry, gap included); at gap>0 an evenodd polygon clip keeps only
     // the ring band [-(extent+gap), -gap] — the image is the outer
@@ -4581,10 +4424,7 @@
     card.style.setProperty('--outer-tint', edge ? stripTintAlpha(edge.tint) : 'none'); // v10.21: 板不透明
     // computed radius picks up edge-theme radii too (inline is cleared);
     // the plate sits extent+gap out, so the corner radius grows by both
-    // v10.27.1.3: 圆角 0 → 环带 90° 直角（用户「弧度调成 0 没有变成
-    // 90°」——同心公式 r+extent+gap 让 0 也得到 32px 圆角；0 直接透传，
-    // >0 保持同心（环带厚度均匀））。v10.27.1.5: 四角撤销 → 单值。
-    card.style.setProperty('--outer-radius', (cardR === 0 ? 0 : cardR + extent + gap) + 'px');
+    card.style.setProperty('--outer-radius', (cardR + extent + gap) + 'px');
     card.style.setProperty('--outer-border', edge ? edge.border : 'none');
     // v10.16b — the 1px plate edge line: the border is now the ring
     // itself, so the old 1px --outer-border line rides box-shadow
@@ -4812,21 +4652,21 @@
       return;
     }
     selectedCard.dataset.cardEdge = name;
-    // v10.27.1.5: keepRadius——主题切换保留用户圆角（border 长手仍清，
-    // 主题边框/阴影类照常显示；圆角不再被主题默认值重置）
-    clearInlineCardBorderLonghands(selectedCard, true);
+    clearInlineCardBorderLonghands(selectedCard); // theme border/radius classes must show
     // v10.8: the theme auto-carries its 16px outer plate (user spec) — the
     // Gemini hud-box two-layer look. The plate is never clipped and the six
     // tech variants share identical tint/border/glow, so the dataset keeps
     // the 'tech' alias. The card silhouette moves to .card-tint (applyCardBg)
     // while ::before paints the plate (v10.8 CSS rule).
-    // v10.27.1.2: 油漆也带自动外板（用户反馈「设定背景边缘的时候边缘
-    // 弧度的功能会自动封锁/关闭」——油漆是唯一无外板的主题族，圆角
-    // 没有任何作用面；v10.15 的「油漆无外板」口径废止。v10.17 油漆板
-    // 免剪影的缘由——异形剪影咬断 16px 环带——在 v10.27.1.1 圆角矩形
-    // 环带之后已不存在）。六族统一：主题管卡身剪影，圆角管环带四角。
-    selectedCard.dataset.outerEdge = name.indexOf('tech') === 0 ? 'tech' : name;
-    selectedCard.dataset.outerBgExtent = 16;
+    // v10.15: 油漆无外板（demo 无底板）——跳过自动外板，剪影留在
+    // ::before（无 has-outer-bg 路径），用户显式 outerBgColor 仍共存。
+    if (name.indexOf('paint') !== 0) {
+      selectedCard.dataset.outerEdge = name.indexOf('tech') === 0 ? 'tech' : name;
+      selectedCard.dataset.outerBgExtent = 16;
+    } else {
+      delete selectedCard.dataset.outerEdge;
+      delete selectedCard.dataset.outerBgExtent;
+    }
     applyOuterBg(selectedCard);
     applyCardBg(selectedCard);
     refreshCardBgPopoverState();
@@ -4871,7 +4711,7 @@
     var tpl = {
       id: 'tpl_' + Date.now(),
       name: name,
-      borderRadius: readRadius(selectedCard) + 'px', // v10.27.1.5: 四角撤销 → 模板存单值
+      borderRadius: selectedCard.style.borderRadius || '8px',
       // v10.2: themed cards paint via --card-tint-base (style.background is
       // empty — the card must not paint a rectangle over the clip layer)
       background: selectedCard.dataset.cardEdge
@@ -4924,8 +4764,7 @@
       var templates = JSON.parse(localStorage.getItem('slati_fluidcanvas_templates') || '[]');
       var t = templates.find(function (tp) { return tp.id === id; });
       if (!t) return;
-      // v10.27.1.5: 旧模板可能存 1–4 值串 → 收敛首值统一圆角
-      selectedCard.style.borderRadius = (parseFloat(t.borderRadius) || 0) + 'px';
+      selectedCard.style.borderRadius = t.borderRadius;
       selectedCard.style.background = t.background;
       selectedCard.style.borderStyle = t.borderStyle;
       selectedCard.style.borderColor = t.borderColor;
@@ -5528,7 +5367,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.5') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.0') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5537,7 +5376,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.5');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.0');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -5638,7 +5477,6 @@
   <div style="display:flex;flex-direction:column;gap:8px">
     <span class="label-sm" style="color:var(--color-outline)">Corner radius: <strong id="radiusValue">8px</strong></span>
     <input type="range" id="radiusSlider" min="0" max="90" value="8" step="1" oninput="updateCardBorderRadius(this.value)" style="width:100%;accent-color:var(--color-primary)">
-    <!-- v10.27.1.5: 四角单独设定整体撤销（用户「撤销掉刚才做的所有那个拉杆下方的自定义圆角弧度」）——圆角回归统一滑杆单值。 -->
     <div style="display:flex;gap:4px">
       <button class="btn btn-ghost btn-sm" onclick="updateCardBorderRadius(0)" style="flex:1">0°</button>
       <button class="btn btn-ghost btn-sm" onclick="updateCardBorderRadius(8)" style="flex:1">8px</button>
