@@ -4555,6 +4555,14 @@
     var color = card.dataset.outerBgColor || '';
     var edge = EDGE_STYLES[card.dataset.outerEdge || ''] || null;
     var hasOuter = !!(color || edge);
+    // v10.27.1.1 — 间距 0px = 外板整个消失（用户「设 0px 无间距还是一样有
+    // 默认值的间距卡在那边」——真身是板本身：extent 16px 环带 + 光晕；「间距」
+    // 只控制卡↔板距离，管不了板）。gap 0 → 视同无外板：环带/边距带/光晕/
+    // 边线全不显示，卡外干净、卡级 z 回普通卡；间距 ≥8px 时外板照常恢复。
+    if (hasOuter) {
+      var gapChk = card.dataset.outerBgGap != null ? parseInt(card.dataset.outerBgGap) : 16;
+      if (gapChk === 0) hasOuter = false;
+    }
     card.classList.toggle('has-outer-bg', hasOuter);
     card.classList.remove('outer-edge-paper', 'outer-edge-treasure', 'outer-edge-tech');
     if (!hasOuter) {
@@ -4650,13 +4658,16 @@
   }
 
   // v10.18 — 外板边距：固定档位 0/8/16/24/32/40/48/56/64（默认 16，
-  // 0 = 无间距贴卡；用户要求，替换 v10.10 的 0-40 自由滑杆）。纯
-  // dataset + CSS 变量驱动（applyOuterBg 读 dataset.outerBgGap 写
-  // --outer-gap），几何全部在 CSS calc 里，无布局 JS。select 只发
-  // 档位值，这里再吸附一次兜底（防旧代码/控制台直调任意值）。
+  // v10.27.1.1 起 0 = 外板整个消失；此前 0 = 贴卡。用户要求，替换
+  // v10.10 的 0-40 自由滑杆）。纯 dataset + CSS 变量驱动（applyOuterBg
+  // 读 dataset.outerBgGap 写 --outer-gap），几何全部在 CSS calc 里，
+  // 无布局 JS。select 只发档位值，这里再吸附一次兜底（防旧代码/控制台
+  // 直调任意值）。
   function updateOuterGap(v) {
     if (!selectedCard || !selectedCard.querySelector('.card-label')) return;
-    if (!selectedCard.classList.contains('has-outer-bg')) return; // 无外板时边距无意义
+    // v10.27.1.1: 判定改 dataset——gap 0 时 has-outer-bg 已摘除，用 class 判
+    // 会自锁（0→8 永远回不来）；有主题/外板色配置即有意义
+    if (!selectedCard.dataset.outerEdge && !selectedCard.dataset.outerBgColor) return; // 无外板（未选边缘主题）时边距无意义
     var val = snapOuterGap(v);
     selectedCard.dataset.outerBgGap = val;
     var out = document.getElementById('outerGapValue');
@@ -5596,7 +5607,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.0') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5605,7 +5616,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.0');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -5845,13 +5856,13 @@
     <div id="cardEdgeButtons" style="display:flex;flex-direction:column"></div>
     <a href="premium.html" id="cardEdgeUpgradeLink" style="display:none;font-size:12px;color:var(--color-primary);text-decoration:none;margin-top:6px">订阅后解锁背景边缘 →</a>
     <!-- v10.18 — 外板边距：固定档位下拉 0/8/16/24/32/40/48/56/64（默认 16，
-         0 = 无间距贴卡；用户要求，替换 v10.10 的 0-40 自由滑杆）。
-         无外板（未选边缘主题）时禁用。 -->
+         v10.27.1.1 起 0 = 外板整个消失；此前 0 = 贴卡。用户要求，替换
+         v10.10 的 0-40 自由滑杆）。无外板（未选边缘主题）时禁用。 -->
     <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">外板边距</span>
     <div class="caption-slider-row">
       <label>间距</label>
       <select id="outerGapSlider" onchange="updateOuterGap(this.value)">
-        <option value="0">0px（无间距）</option>
+        <option value="0">0px（无外板）</option>
         <option value="8">8px</option>
         <option value="16" selected>16px</option>
         <option value="24">24px</option>
