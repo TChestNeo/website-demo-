@@ -169,16 +169,20 @@
     /* v10.27.0.1: 高光条主题感知——亮色 0.9 白；暗色降透明（0.9 白在暗卡右上角 = 刺眼白斑，用户反馈） */
     :root { --card-glint: rgba(255, 255, 255, 0.9); }
     html[data-theme="dark"] { --card-glint: rgba(255, 255, 255, 0.22); }
+    /* v10.27.0.2: 背景不透明度滑杆改走 --card-bg-alpha 玻璃强度（0 = 完全透明，100 = 默认磨砂）。
+       旧实现解析 computed 背景色只认 rgba()——v10.27 磨砂底是 color-mix，正则失配滑杆失灵；
+       且 backdrop-filter 霜痕不受背景透明影响（用户反馈「调到0不是完全透明」）。 */
     .grid-card.content-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]) {
       --card-border-width: 1px;
       --card-border-color: rgba(125, 130, 140, 0.38);
-      background-color: color-mix(in srgb, var(--card-bg-color) 55%, transparent);
-      background-image: linear-gradient(to left, var(--card-glint), rgba(255, 255, 255, 0));
+      background-color: color-mix(in srgb, var(--card-bg-color) calc(55% * var(--card-bg-alpha, 1)), transparent);
+      background-image: linear-gradient(to left, color-mix(in srgb, var(--card-glint) calc(100% * var(--card-bg-alpha, 1)), transparent), rgba(255, 255, 255, 0));
       background-size: 45% 2px;
       background-position: top right;
       background-repeat: no-repeat;
-      backdrop-filter: blur(12px) saturate(1.4);
-      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      border-color: color-mix(in srgb, var(--card-border-color) calc(100% * var(--card-bg-alpha, 1)), transparent);
+      backdrop-filter: blur(calc(12px * var(--card-bg-alpha, 1))) saturate(calc(1 + 0.4 * var(--card-bg-alpha, 1)));
+      -webkit-backdrop-filter: blur(calc(12px * var(--card-bg-alpha, 1))) saturate(calc(1 + 0.4 * var(--card-bg-alpha, 1)));
     }
     .grid-card:hover { box-shadow: var(--card-shadow, var(--shadow-md)); border-color: var(--color-primary); }
     .grid-card.selected {
@@ -1969,7 +1973,12 @@
                 var textEl = card.querySelector('.card-text-content');
                 if (textEl) textEl.innerHTML = sanitizeDraftHtml(cData.content);
               }
-              if (cData.bgAlpha != null) card.dataset.bgAlpha = parseInt(cData.bgAlpha) || 0;
+              if (cData.bgAlpha != null) {
+                var ba = parseInt(cData.bgAlpha) || 0;
+                card.dataset.bgAlpha = ba;
+                // v10.27.0.2: 玻璃强度草稿恢复（100 = 默认磨砂不写变量；legacy inline 背景不动）
+                if (ba < 100) card.style.setProperty('--card-bg-alpha', ba / 100);
+              }
             } else {
               card = createAssetCard(cData.type, cData.label, pos.col, pos.row, pos.colSpan || 4, pos.rowSpan || 3);
             }
@@ -3525,6 +3534,19 @@
   function applyBgAlpha(card, alpha) {
     var a = Math.max(0, Math.min(1, alpha));
     card.dataset.bgAlpha = Math.round(a * 100);
+    // v10.27.0.2: 磨砂玻璃内容卡——滑杆即玻璃强度，写 --card-bg-alpha（CSS 同步缩放
+    // tint/blur/描边/高光）。旧 rgba 解析路径对 color-mix 磨砂底失配（滑杆失灵）。
+    var isGlass = card.classList.contains('content-card') &&
+      !card.classList.contains('has-outer-bg') &&
+      !card.classList.contains('has-card-bg-img') &&
+      !/card-edge-/.test(card.className);
+    if (isGlass) {
+      if (a >= 1) card.style.removeProperty('--card-bg-alpha');
+      else card.style.setProperty('--card-bg-alpha', a);
+      card.style.background = '';      // 清旧系统 inline 残留，让 CSS 强度接管
+      card.style.borderColor = '';
+      return;
+    }
     var bg = card.style.background || getComputedStyle(card).backgroundColor;
     if (bg && bg.indexOf('url(') === -1 && bg.indexOf('gradient') === -1) {
       var rgba = rgbaWithAlpha(bg, a);
@@ -5370,7 +5392,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.0') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.2') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5379,7 +5401,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.0');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.2');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
