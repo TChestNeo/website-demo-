@@ -166,11 +166,14 @@
        高光用 background-image（卡片 ::before/::after 已被边饰主题占用，不能动）。
        排除 .has-outer-bg（外板几何按 2px 边宽调过）/ .has-card-bg-img（图走 <img> 子层）/
        [class*="card-edge-"]（主题卡有板+剪影层）——这些保持原貌。 */
+    /* v10.27.0.1: 高光条主题感知——亮色 0.9 白；暗色降透明（0.9 白在暗卡右上角 = 刺眼白斑，用户反馈） */
+    :root { --card-glint: rgba(255, 255, 255, 0.9); }
+    html[data-theme="dark"] { --card-glint: rgba(255, 255, 255, 0.22); }
     .grid-card.content-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]) {
       --card-border-width: 1px;
       --card-border-color: rgba(125, 130, 140, 0.38);
       background-color: color-mix(in srgb, var(--card-bg-color) 55%, transparent);
-      background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
+      background-image: linear-gradient(to left, var(--card-glint), rgba(255, 255, 255, 0));
       background-size: 45% 2px;
       background-position: top right;
       background-repeat: no-repeat;
