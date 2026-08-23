@@ -82,7 +82,7 @@
             '<img src="../assets/image/M.NationWorld logo.png" alt="" class="brand-logo" style="height:34px;width:auto">' +
             '<div style="display:flex;flex-direction:column;gap:0;min-width:0">' +
               '<span class="brand-text" style="font-weight:700;font-size:13px;color:var(--color-on-surface);line-height:1.2">M.NationWorld<sup style="font-size:9px;font-weight:600;color:#4648d4;background:rgba(70,72,212,0.1);padding:1px 5px;border-radius:var(--radius-full);margin-left:3px;letter-spacing:0.03em">BETA</sup></span>' +
-              '<span style="font-size:10px;color:var(--color-outline);opacity:0.45;letter-spacing:0.03em;line-height:1.2">v0.2.0.0</span>' +
+              '<span style="font-size:10px;color:var(--color-outline);opacity:0.45;letter-spacing:0.03em;line-height:1.2">' + (window.MN_SITE_VERSION || 'v0.2.0.0') + '</span>' +
             '</div>' +
           '</a>' +
           '<button class="sidebar-collapse-btn" id="collapseBtn" onclick="window._slatiToggleSidebar()" title="Toggle sidebar">' +

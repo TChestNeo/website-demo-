@@ -6,3 +6,6 @@
  * 必须在 api.js 之前加载（各页已在 storage.js 之前引入本文件）。
  */
 window.MN_SITE = window.MN_SITE || {};
+
+// 站点版本号唯一来源（口径：大版本.小版本.小改动.补丁）——侧栏品牌模块与 FluidCanvas 首页头部共用
+window.MN_SITE_VERSION = 'v0.2.0.0';

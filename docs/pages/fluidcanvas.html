@@ -198,8 +198,15 @@
 <div class="studio-header">
   <a href="dashboard.html" class="btn btn-ghost btn-icon btn-sm"><span class="material-symbols-outlined">arrow_back</span></a>
   <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:24px">draw</span>
-  <span style="font-weight:700;font-size:var(--fs-body-md)">FluidCanvas</span>
-  <span class="badge badge-success" style="margin-left:4px">Studio</span>
+  <!-- v0.2.0.0：名称下挂站点版本号（与侧栏同源 site-config MN_SITE_VERSION），名称右侧 by M.NationWorld -->
+  <div style="display:flex;flex-direction:column;gap:1px;justify-content:center">
+    <div style="display:flex;align-items:center;gap:6px">
+      <span style="font-weight:700;font-size:var(--fs-body-md)">FluidCanvas</span>
+      <span class="badge badge-success">Studio</span>
+      <span style="font-size:11px;color:var(--color-outline);opacity:0.75;font-weight:500;letter-spacing:0.02em">by M.NationWorld</span>
+    </div>
+    <span id="fcSiteVersion" style="font-size:10px;color:var(--color-outline);opacity:0.45;letter-spacing:0.03em;line-height:1.2">v0.2.0.0</span>
+  </div>
   <span style="flex:1"></span>
   <a href="fluidcanvas-editor.html" class="btn btn-primary"><span class="material-symbols-outlined">edit</span> Open Editor</a>
 </div>
@@ -369,6 +376,7 @@
 
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/site-config.js"></script>
+<script>try { var _fcv = document.getElementById('fcSiteVersion'); if (window.MN_SITE_VERSION && _fcv) _fcv.textContent = window.MN_SITE_VERSION; } catch (e) {}</script>
 <script src="../assets/js/storage.js"></script>
 <script src="../assets/js/subnav.js"></script>
 <script src="../assets/js/transitions.js"></script>
