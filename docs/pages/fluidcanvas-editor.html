@@ -1271,6 +1271,10 @@
       </button>
       <button class="col-btn active" id="snapToggle" onclick="toggleSnap()" title="拖拽时自动吸附到方格，关闭后自由移动">吸附</button>
       <button class="col-btn active" id="alignToggle" onclick="toggleAlign()" title="拖拽时吸附对齐到其他卡片与页面中线，并显示对齐线">对齐</button>
+      <!-- v10.27.2 — Canva 式等距分布：作用范围 = 全部卡片一键整理（用户钦定）。
+           两端卡片不动，中间卡片匀出相等间距；至少 3 张，隐藏卡不参与。 -->
+      <button class="col-btn" onclick="distributeCards('h')" title="水平等距：两端不动，中间卡片横向匀开（至少 3 张）">水平等距</button>
+      <button class="col-btn" onclick="distributeCards('v')" title="垂直等距：两端不动，中间卡片纵向匀开（至少 3 张）">垂直等距</button>
       <!-- v10.3 — 合并弹层：画面预设 / 列数 / 格子大小。position:fixed
            挂在 viewportBtn 正下方；display:none 时不影响 .grid-controls 布局。 -->
       <div class="radius-popover viewport-popover" id="viewportPopover">
@@ -3506,6 +3510,63 @@
   }
   window.hideAlignGuides = hideAlignGuides; // test hook
 
+  // ── Distribute (v10.27.2) — Canva 式等距分布 ──
+  // 用户「之前做了对齐，再添加一下间距的对齐，类似 Canva」；作用范围 =
+  // 全部卡片一键整理（用户钦定）。两端卡片不动，中间卡片沿轴匀出相等
+  // 间距；按旋转后的可见外框（getBoundingClientRect）量距——用户眼睛
+  // 看到的间距就是计算依据，旋转卡平移后外框间隙同样等分。至少 3 张
+  // （2 张只有一个间隙无可均分），隐藏卡片（图层眼睛）不参与。
+  function distributeCards(axis) {
+    var cards = getAllCards().filter(function (c) {
+      return !c.classList.contains('layer-hidden');
+    });
+    if (cards.length < 3) {
+      showToast('等距需要至少 3 张卡片（当前 ' + cards.length + ' 张）');
+      return;
+    }
+    var items = cards.map(function (c) {
+      var r = c.getBoundingClientRect();
+      return {
+        card: c,
+        x: parseFloat(c.dataset.x) || 0,
+        y: parseFloat(c.dataset.y) || 0,
+        left: r.left, top: r.top, right: r.right, bottom: r.bottom
+      };
+    });
+    var n = items.length;
+    if (axis === 'h') {
+      items.sort(function (a, b) { return a.left - b.left; });
+      // 总跨度固定：两端卡不动，可用空间 = 最左卡右缘 → 最右卡左缘（两端
+      // 自己的宽度不算进去，否则间隙虚大、中间卡会被推到与末端重叠）；
+      // 中间卡总宽之外的空间均分给 n−1 个间隙（Canva 语义，两端不动）。
+      var span = items[n - 1].left - items[0].right;
+      var midW = 0;
+      for (var i = 1; i < n - 1; i++) midW += items[i].right - items[i].left;
+      var gap = (span - midW) / (n - 1);
+      var cur = items[0].right;
+      for (var j = 1; j < n - 1; j++) {
+        var dx = (cur + gap) - items[j].left; // 相对原始外框的平移量（旋转保持不变）
+        moveCardPx(items[j].card, items[j].x + dx, items[j].y);
+        cur = (cur + gap) + (items[j].right - items[j].left);
+      }
+    } else {
+      items.sort(function (a, b) { return a.top - b.top; });
+      var vspan = items[n - 1].top - items[0].bottom;
+      var midH = 0;
+      for (var k = 1; k < n - 1; k++) midH += items[k].bottom - items[k].top;
+      var vgap = (vspan - midH) / (n - 1);
+      var vcur = items[0].bottom;
+      for (var m = 1; m < n - 1; m++) {
+        var dy = (vcur + vgap) - items[m].top;
+        moveCardPx(items[m].card, items[m].x, items[m].y + dy);
+        vcur = (vcur + vgap) + (items[m].bottom - items[m].top);
+      }
+    }
+    onContentChange();
+    showToast(axis === 'h' ? '已水平等距' : '已垂直等距');
+  }
+  window.distributeCards = distributeCards;
+
   // ── Boundary Reference (v9.4) — page-edge lines inside the align-guide group ──
   // v9.4 removed the boundary clamp: cards can be dragged/resized/rotated
   // beyond the page edge. While a gesture's rotation-aware bbox touches or
@@ -5607,7 +5668,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.2.0') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5616,7 +5677,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.2.0');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
