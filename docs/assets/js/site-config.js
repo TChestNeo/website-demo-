@@ -10,5 +10,5 @@ window.MN_SITE = window.MN_SITE || {};
 // 站点版本号唯一来源（口径：大版本.小版本.小改动.补丁）——侧栏品牌模块显示
 window.MN_SITE_VERSION = 'v0.2.0.0';
 
-// FluidCanvas 自身版本号（FC 独立版本线 v10.x，与站点版本无关）——FluidCanvas 首页头部显示
-window.FLUIDCANVAS_VERSION = 'v10.27';
+// FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
+window.FLUIDCANVAS_VERSION = 'v10.27.0.0';
