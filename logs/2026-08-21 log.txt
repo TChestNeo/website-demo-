@@ -426,3 +426,19 @@ Ctrl+F5 → 徽标 FC v10.22：外板一整块连续渐变、完全不透明、�
 **冒烟教训**：① 断言前先查既有设计——边饰主题卡自 v10.1 就是 `border: 1px solid transparent`（异形边挂不住 2px 周长边，代码注释明写 same 1px border box），我按「排除卡应保持 2px」断言直接假红；排除断言应验「玻璃未套」（backdrop-filter none + bg transparent + bg-image none），不验边宽。② dump 调试测试写 `check || jsonString` 会假绿——truthy 字符串吞掉失败，调试形态必须 fail 时 throw 带 dump。
 
 （用户肉眼复核待办：选文字横杆带 8 色点、普通卡磨砂玻璃+细灰边+右上角高光、主题卡/外板卡/背景图卡原貌不变。）
+
+---
+
+## 2026-08-23 深夜加更⑪ — 品牌回改：M.LoreWorld → M.NationWorld + Omnarium → MicroNationary（硬核架空国家口径）
+
+**背景**：用户「把 M.LoreWorld 改回 M.NationWorld，百科也改回 MicroNationary」——服务对象是硬核架空国家（共和/社会主义/民主主义，不是传统国王制度），国家向品牌比泛世界向更贴。①层世界观创作口径（中国准入原因）不变——只回改两个品牌名，不动文案。
+
+**改动**：
+1. M.LoreWorld → M.NationWorld：全仓 sed（docs+backend+deploy 72 文件 203 行；grep -rIl 防二进制）；git mv「M.LoreWorld logo.png」→「M.NationWorld logo.png」、「M.LoreWorld_Project_Overview.txt」→同名回改（2026-08-04 日志确认原始文件名）；代码里 7 处 logo src 引用随 sed 自动同步；零残留（logs 历史条目与 _backup 故意不动——历史不改写）。
+2. 百科 Omnarium → MicroNationary：sidebar.js（id 'omnarium'→'micronationary' + label + 激活逻辑 return 同步——id 大小写两个 sed 分开）、explore/messages/overview 标题与文案。
+3. 政体类型选项加「社会主义」「民主主义」（world-wizard politics 配置，用户口径：共和/社会主义/民主主义）。
+4. prompt.js 品牌串随动 → sha256 重算 b02cfa…→4dfc3ffe… 同步 chat.test.js:49（字节级常量铁律）。
+5. 顺带修复：storage-hybrid.test.js P2 公开函数面基线漏了 ②层 的 4 个 world 导出（getWorldDraft/getWorlds/saveWorldDraft/submitWorld）——后端套件自 ②层 落地后没再跑过，该红是 ②层 遗留，与本次改名无关。
+
+**验证**：后端 npm test 131/131（含新哈希断言）；前端 CDP 冒烟 10/10 0 console error（index 标题+logo 加载成功、dashboard/overview 侧栏标签 MicroNationary+激活、overview h1、explore 标题、wizard 政体选项、help FAQ「架空世界」关键词保留、registry Create Nation/规则「虚构世界中的建国」回归、浏览器侧 storage 面 4 导出、9 页旧名零残留）。
+**冒烟教训**：world-wizard 无 ?type= 参数会整页跳走——「var 在顶层脚本里就该在 window 上」的假设被页面跳转吞掉，断言 wizard 配置必须带 ?type=<key> 进页。

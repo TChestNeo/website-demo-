@@ -33,8 +33,8 @@ function runDailyBudgetAlert(ctx, nowIso = new Date().toISOString()) {
     const limitYuan = s.limit.toFixed(2);
     if (tier !== 'ok' && config.adminEmail) {
       const subject = tier === 'exhausted'
-        ? `[M.LoreWorld] 预算耗尽：${LABELS[f]} 已降级`
-        : `[M.LoreWorld] 预算预警 80%：${LABELS[f]}`;
+        ? `[M.NationWorld] 预算耗尽：${LABELS[f]} 已降级`
+        : `[M.NationWorld] 预算预警 80%：${LABELS[f]}`;
       const text = tier === 'exhausted'
         ? `${LABELS[f]} 本月已用 ${yuan} 元，达到额度 ${limitYuan} 元的 ${pct}%。该功能已自动降级`
           + '（文字审核→规则+人工、AI 客服→FAQ+工单引导、图像审核→人工）。登录/发帖/私讯/工单不受影响。'

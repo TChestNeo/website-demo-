@@ -1,4 +1,4 @@
-# M.LoreWorld 部署手册 —— 腾讯云轻量服务器（Lighthouse 国际站）
+# M.NationWorld 部署手册 —— 腾讯云轻量服务器（Lighthouse 国际站）
 
 单机部署：Caddy（自动 HTTPS + **只反代 API 子域**）+ Node 24 后端（node:http + SQLite，零框架）+ systemd + 每日在线备份。全程约 1-2 小时。
 

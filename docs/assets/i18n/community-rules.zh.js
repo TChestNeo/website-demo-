@@ -5,12 +5,12 @@
  * 并在本文件之后引入即可，无需改动页面 HTML。
  */
 window.MN_I18N.add('zh', {
-  'meta.title': '社区规则 | M.LoreWorld',
-  'back.label': '返回 M.LoreWorld',
+  'meta.title': '社区规则 | M.NationWorld',
+  'back.label': '返回 M.NationWorld',
 
   'page.title': '社区规则',
-  'page.effective': '生效日期：2026年8月13日 · 运营主体：SlatiStudio（M.LoreWorld Project）',
-  'intro.1': '本规则是《服务条款》第 4 条（社区行为规范）的执行细则，适用于 M.LoreWorld 平台内的一切公开内容、私信与团队频道。所有创作者在享受创作自由的同时，须共同维护一个尊重、安全、可识别为虚构的创作环境。',
+  'page.effective': '生效日期：2026年8月13日 · 运营主体：SlatiStudio（M.NationWorld Project）',
+  'intro.1': '本规则是《服务条款》第 4 条（社区行为规范）的执行细则，适用于 M.NationWorld 平台内的一切公开内容、私信与团队频道。所有创作者在享受创作自由的同时，须共同维护一个尊重、安全、可识别为虚构的创作环境。',
 
   'toc.1': '1. 基本行为准则',
   'toc.2': '2. 内容与创作规范',
@@ -44,7 +44,7 @@ window.MN_I18N.add('zh', {
   'sec2.li4.body': '引用他人作品须注明来源与作者。',
 
   'sec3.title': '3. 虚拟与现实的边界',
-  'sec3.intro': 'M.LoreWorld 是架空世界创作平台。平台上的世界、国家、政治与外交，必须完全虚构。任何内容都不得以创作之名，触碰现实世界的国家主权、领土完整与政治安全。',
+  'sec3.intro': 'M.NationWorld 是架空世界创作平台。平台上的世界、国家、政治与外交，必须完全虚构。任何内容都不得以创作之名，触碰现实世界的国家主权、领土完整与政治安全。',
   'sec3.allowed.tag': '允许',
   'sec3.allowed.title': '允许',
   'sec3.allowed.li1.label': '完全架空的政治模拟：',

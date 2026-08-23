@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>World Established | M.LoreWorld</title>
+  <title>World Established | M.NationWorld</title>
   <link rel="stylesheet" href="../assets/css/ethereal.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -69,7 +69,7 @@
   </h1>
 
   <p class="body-md" style="color:rgba(255,255,255,0.5);margin-bottom:var(--space-md)" id="worldDesc">
-    你的世界已收录进 M.LoreWorld 世界档案。
+    你的世界已收录进 M.NationWorld 世界档案。
   </p>
 
   <div id="processingIndicator" style="margin-bottom:var(--space-md)">
@@ -108,7 +108,7 @@
     document.getElementById('worldDesc').textContent =
       '类型：' + world.typeLabel +
       (loreBrief ? ' · ' + loreBrief + (String(world.lore).length > 60 ? '…' : '') : '') +
-      ' · 已收录进 M.LoreWorld 世界档案。';
+      ' · 已收录进 M.NationWorld 世界档案。';
   }
 
   // Simulate processing then resolve

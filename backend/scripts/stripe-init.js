@@ -13,11 +13,11 @@ if (!key || !key.startsWith('sk_')) {
 
 const API = 'https://api.stripe.com/v1';
 const PLANS = [
-  { key: 'basic', name: 'M.LoreWorld Basic（学生价）', amount: 12.00 },
-  { key: 'premium', name: 'M.LoreWorld Premium', amount: 23.50 },
-  { key: 'ultra', name: 'M.LoreWorld Premium Ultra', amount: 45.50 },
-  { key: 'pkg-premium', name: 'M.LoreWorld Premium + Team Pack', amount: 29.90 },
-  { key: 'pkg-ultra', name: 'M.LoreWorld Premium Ultra + Team Pack', amount: 60.90 }
+  { key: 'basic', name: 'M.NationWorld Basic（学生价）', amount: 12.00 },
+  { key: 'premium', name: 'M.NationWorld Premium', amount: 23.50 },
+  { key: 'ultra', name: 'M.NationWorld Premium Ultra', amount: 45.50 },
+  { key: 'pkg-premium', name: 'M.NationWorld Premium + Team Pack', amount: 29.90 },
+  { key: 'pkg-ultra', name: 'M.NationWorld Premium Ultra + Team Pack', amount: 60.90 }
 ];
 
 async function call(method, path, form) {

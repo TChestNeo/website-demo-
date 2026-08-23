@@ -18,7 +18,7 @@ const config = {
   adminEmail: (process.env.ADMIN_EMAIL || '').toLowerCase(),
 
   mail: {
-    from: process.env.MAIL_FROM || 'M.LoreWorld <no-reply@example.com>',
+    from: process.env.MAIL_FROM || 'M.NationWorld <no-reply@example.com>',
     smtp: {
       host: process.env.SMTP_HOST || '',
       port: int('SMTP_PORT', 465),

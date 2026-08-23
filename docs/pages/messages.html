@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Messages | M.LoreWorld</title>
+  <title>Messages | M.NationWorld</title>
   
   <script src="../assets/js/theme-init.js"></script>
   <link rel="stylesheet" href="../assets/css/ethereal.css">
@@ -592,11 +592,11 @@
   function loadData() {
     try {
       var raw = localStorage.getItem('slati_messages');
-      if (!raw) { console.log('[M.LoreWorld] No saved messages in localStorage'); return; }
+      if (!raw) { console.log('[M.NationWorld] No saved messages in localStorage'); return; }
       var d = JSON.parse(raw);
       // If saved data is from an older version, discard it
       if (d._version !== DATA_VERSION) {
-        console.log('[M.LoreWorld] Data version mismatch (' + d._version + ' vs ' + DATA_VERSION + '), clearing old data');
+        console.log('[M.NationWorld] Data version mismatch (' + d._version + ' vs ' + DATA_VERSION + '), clearing old data');
         localStorage.removeItem('slati_messages');
         return;
       }
@@ -613,8 +613,8 @@
           mockGroupMessages[id] = d.mockGroupMessages[id];
         });
       }
-      console.log('[M.LoreWorld] Loaded messages from localStorage');
-    } catch(e) { console.warn('[M.LoreWorld] Failed to load messages:', e); }
+      console.log('[M.NationWorld] Loaded messages from localStorage');
+    } catch(e) { console.warn('[M.NationWorld] Failed to load messages:', e); }
     // Blob URLs expire — clear any stale ones from saved data
     function clearVideoUrls(store) {
       Object.keys(store).forEach(function(id) {
@@ -660,9 +660,9 @@
         pinnedMessages: pinnedMessages
       });
       localStorage.setItem('slati_messages', data);
-      console.log('[M.LoreWorld] Saved ' + (data.length / 1024).toFixed(1) + ' KB to localStorage');
+      console.log('[M.NationWorld] Saved ' + (data.length / 1024).toFixed(1) + ' KB to localStorage');
     } catch(e) {
-      console.warn('[M.LoreWorld] Failed to save messages — localStorage may be full:', e);
+      console.warn('[M.NationWorld] Failed to save messages — localStorage may be full:', e);
       showToast('⚠ Could not save — storage full. Try clearing old data.', true);
     }
   }
@@ -1042,12 +1042,12 @@
 
   var chatBios = {
     c1: 'Urban planner & architect specializing in modular aquatic developments. Based in Neo-Venice.',
-    c2: 'Digital design studio creating immersive embassy experiences across the M.LoreWorld network.',
-    c3: 'Official governance council of the M.LoreWorld micronation federation. Est. 2024.',
-    g1: 'Editorial team for the Etheria Times — the official M.LoreWorld publication.',
+    c2: 'Digital design studio creating immersive embassy experiences across the M.NationWorld network.',
+    c3: 'Official governance council of the M.NationWorld micronation federation. Est. 2024.',
+    g1: 'Editorial team for the Etheria Times — the official M.NationWorld publication.',
     g2: 'Collaborative mapping initiative charting all micronation territories.',
     g3: 'Diplomatic representatives from all member nations.',
-    g4: 'Archivists preserving the history and lore of the M.LoreWorld universe.',
+    g4: 'Archivists preserving the history and lore of the M.NationWorld universe.',
     g5: 'Creative workshop for designing buildings, landscapes, and urban layouts.',
     g6: 'Cross-cultural exchange program connecting micronations worldwide.'
   };
@@ -1094,7 +1094,7 @@
       ],
       links: [
         { title: 'Digital Embassy Design Guide', url: 'studioprime.io/guides/digital-embassy' },
-        { title: 'Virtual Walkthrough — M.LoreWorld HQ', url: 'studioprime.io/portfolio/slatiwalk' }
+        { title: 'Virtual Walkthrough — M.NationWorld HQ', url: 'studioprime.io/portfolio/slatiwalk' }
       ],
       files: [
         { name: 'Embassy_Render_Source.blend', size: '128 MB', type: '3d' },
@@ -1160,7 +1160,7 @@
         { label: 'Lore_Compendium.png', grad: 'linear-gradient(135deg,#ede9fe 0%,#c4b5fd 50%,#a78bfa 100%)' }
       ],
       videos: [],
-      links: [{title:'M.LoreWorld Historical Archive',url:'lore.m.nationworld.org/archive'}],
+      links: [{title:'M.NationWorld Historical Archive',url:'lore.m.nationworld.org/archive'}],
       files: [{name:'Founding_Lore_v12.pdf',size:'8.7 MB',type:'pdf'}]
     },
     g5: {
@@ -1207,7 +1207,7 @@
       if (!conv) return;
       name = conv.name;
       avatar = conv.avatar;
-      bio = chatBios[id] || 'M.LoreWorld member';
+      bio = chatBios[id] || 'M.NationWorld member';
     }
 
     document.getElementById('infoAvatar').textContent = avatar;
@@ -2376,13 +2376,13 @@
   var announcements = [
     {
       id: 'a1',
-      title: 'M.LoreWorld Beta Launch — Welcome All Nations',
+      title: 'M.NationWorld Beta Launch — Welcome All Nations',
       category: 'official',
       icon: 'campaign',
       date: '2026-08-05',
       author: 'Sovereign Council',
-      summary: 'The M.LoreWorld platform officially enters its public beta phase. All registered nations now have access to the full suite of governance, worldbuilding, and diplomatic tools.',
-      content: 'After months of development, we are proud to announce the public beta launch of M.LoreWorld — the premier platform for micronation governance and worldbuilding.\n\nWhat\'s included in the beta:\n• National Registry with verification system\n• Community Hub with topic discussions\n• FluidCanvas studio for content creation\n• Diplomatic messaging and embassy channels\n• Premium subscription tiers with advanced features\n\nWe welcome all existing and new nations to explore the platform. Feedback is highly encouraged — use the Help & Support channel for any questions.',
+      summary: 'The M.NationWorld platform officially enters its public beta phase. All registered nations now have access to the full suite of governance, worldbuilding, and diplomatic tools.',
+      content: 'After months of development, we are proud to announce the public beta launch of M.NationWorld — the premier platform for micronation governance and worldbuilding.\n\nWhat\'s included in the beta:\n• National Registry with verification system\n• Community Hub with topic discussions\n• FluidCanvas studio for content creation\n• Diplomatic messaging and embassy channels\n• Premium subscription tiers with advanced features\n\nWe welcome all existing and new nations to explore the platform. Feedback is highly encouraged — use the Help & Support channel for any questions.',
     },
     {
       id: 'a2',
@@ -2392,7 +2392,7 @@
       date: '2026-08-03',
       author: 'Sovereign Council',
       summary: 'The annual Governance Summit is now open for registration. This year\'s theme: "Digital Sovereignty in the Modern Age."',
-      content: 'Join us for the 2026 Governance Summit, a gathering of micronation leaders, diplomats, and worldbuilders from across the M.LoreWorld community.\n\nEvent Details:\n• Date: September 15-17, 2026\n• Format: Virtual sessions + in-person meetups\n• Tracks: Governance Design, Diplomatic Relations, Legal Frameworks, Cultural Exchange\n\nEarly registration is now open. Reserve your nation\'s seat today.',
+      content: 'Join us for the 2026 Governance Summit, a gathering of micronation leaders, diplomats, and worldbuilders from across the M.NationWorld community.\n\nEvent Details:\n• Date: September 15-17, 2026\n• Format: Virtual sessions + in-person meetups\n• Tracks: Governance Design, Diplomatic Relations, Legal Frameworks, Cultural Exchange\n\nEarly registration is now open. Reserve your nation\'s seat today.',
     },
     {
       id: 'a3',
@@ -2410,9 +2410,9 @@
       category: 'system',
       icon: 'draw',
       date: '2026-08-01',
-      author: 'M.LoreWorld Team',
+      author: 'M.NationWorld Team',
       summary: 'FluidCanvas, our collaborative content studio, is now available to all users. Create articles, media galleries, and interactive content.',
-      content: 'FluidCanvas is M.LoreWorld\'s integrated content creation platform, designed specifically for micronation storytelling and documentation.\n\nFeatures:\n• Rich text editor with markdown support\n• Media uploads and gallery management\n• Team collaboration with role-based permissions\n• Publishing workflow (draft → review → publish)\n• Analytics dashboard for content performance\n\nAccess FluidCanvas from the sidebar or dashboard. For tutorials, visit the Help Center.',
+      content: 'FluidCanvas is M.NationWorld\'s integrated content creation platform, designed specifically for micronation storytelling and documentation.\n\nFeatures:\n• Rich text editor with markdown support\n• Media uploads and gallery management\n• Team collaboration with role-based permissions\n• Publishing workflow (draft → review → publish)\n• Analytics dashboard for content performance\n\nAccess FluidCanvas from the sidebar or dashboard. For tutorials, visit the Help Center.',
     },
     {
       id: 'a5',
@@ -2422,7 +2422,7 @@
       date: '2026-07-30',
       author: 'Community Team',
       summary: 'This week\'s spotlight features the Republic of Etheria, a floating city-state with a unique governance model blending direct democracy and AI-assisted administration.',
-      content: 'Every week, we highlight a nation that exemplifies the creativity and diversity of the M.LoreWorld community.\n\nThis week: Republic of Etheria\n• Classification: Maritime City-State\n• Population: 2.4 million\n• Governance: Hybrid Direct Democracy with AI Advisory\n• Notable: The world\'s first fully modular floating district system\n\nRead the full profile on the Omnarium Explore page. Want your nation featured? Submit a nomination through the Community Hub.',
+      content: 'Every week, we highlight a nation that exemplifies the creativity and diversity of the M.NationWorld community.\n\nThis week: Republic of Etheria\n• Classification: Maritime City-State\n• Population: 2.4 million\n• Governance: Hybrid Direct Democracy with AI Advisory\n• Notable: The world\'s first fully modular floating district system\n\nRead the full profile on the MicroNationary Explore page. Want your nation featured? Submit a nomination through the Community Hub.',
     },
     {
       id: 'a6',
@@ -2430,9 +2430,9 @@
       category: 'system',
       icon: 'update',
       date: '2026-07-28',
-      author: 'M.LoreWorld Team',
+      author: 'M.NationWorld Team',
       summary: 'Version 1.2 brings a collapsible sidebar, smoother page transitions, and an improved navigation experience across all pages.',
-      content: 'M.LoreWorld v1.2 Release Notes:\n\n✨ New Features:\n• Collapsible sidebar — toggle between expanded and icon-only mode\n• Direction-aware page transitions with staggered card animations\n• Persistent sidebar state across page loads\n• Improved responsive behavior for smaller screens\n\n🔧 Fixes:\n• Premium page pricing now correctly detects timezone for localization\n• Sidebar no longer flashes on page load\n• Various CSS and layout refinements\n\nUpdate is live now — no action needed on your part.',
+      content: 'M.NationWorld v1.2 Release Notes:\n\n✨ New Features:\n• Collapsible sidebar — toggle between expanded and icon-only mode\n• Direction-aware page transitions with staggered card animations\n• Persistent sidebar state across page loads\n• Improved responsive behavior for smaller screens\n\n🔧 Fixes:\n• Premium page pricing now correctly detects timezone for localization\n• Sidebar no longer flashes on page load\n• Various CSS and layout refinements\n\nUpdate is live now — no action needed on your part.',
     },
     {
       id: 'a7',
@@ -2442,7 +2442,7 @@
       date: '2026-07-25',
       author: 'Community Team',
       summary: 'We\'re expanding our moderation team. If you\'re passionate about fostering a positive micronation community, apply today.',
-      content: 'As M.LoreWorld grows, we need dedicated community members to help maintain a welcoming and constructive environment.\n\nModerator Responsibilities:\n• Review and approve topic posts in the Community Hub\n• Mediate disputes between nations\n• Help onboard new members\n• Flag and escalate policy violations\n\nRequirements:\n• Active M.LoreWorld account (30+ days)\n• Good standing in the community\n• Available 3-5 hours per week\n\nApply via the Community Hub or message the Community Team directly.',
+      content: 'As M.NationWorld grows, we need dedicated community members to help maintain a welcoming and constructive environment.\n\nModerator Responsibilities:\n• Review and approve topic posts in the Community Hub\n• Mediate disputes between nations\n• Help onboard new members\n• Flag and escalate policy violations\n\nRequirements:\n• Active M.NationWorld account (30+ days)\n• Good standing in the community\n• Available 3-5 hours per week\n\nApply via the Community Hub or message the Community Team directly.',
     },
     {
       id: 'a8',
@@ -2450,7 +2450,7 @@
       category: 'official',
       icon: 'rocket_launch',
       date: '2026-07-20',
-      author: 'M.LoreWorld Team',
+      author: 'M.NationWorld Team',
       summary: 'The early adopter discount for Premium Ultra has been extended through August. Lock in reduced pricing for your first 12 months.',
       content: 'Due to popular demand, we\'re extending the Premium Ultra early adopter pricing through August 31, 2026.\n\nPremium Ultra includes:\n• All Premium features\n• Advanced analytics with export\n• Custom domain for your nation page\n• Priority support with 4-hour response SLA\n• 4 team member slots for FluidCanvas\n• API access for nation data\n\nView the full comparison and subscribe on the Premium page.',
     },

@@ -193,8 +193,9 @@ test('公开函数面不变（计划静态断言：38 页依赖不可破坏）',
   assert.deepStrictEqual(surface, [
     'KEYS', 'get', 'getActiveAccount', 'getFollowing', 'getNationDraft', 'getNations',
     'getOnboardingStep', 'getRegistryStep', 'getTeams', 'getTopics', 'getUser',
-    'isLoggedIn', 'logout', 'remove', 'saveFollowing', 'saveNationDraft', 'saveTopic',
-    'saveUser', 'set', 'setActiveAccount', 'setOnboardingStep', 'setRegistryStep',
-    'submitNation',
+    'getWorldDraft', 'getWorlds', 'isLoggedIn', 'logout', 'remove', 'saveFollowing',
+    'saveNationDraft', 'saveTopic', 'saveUser', 'saveWorldDraft', 'set',
+    'setActiveAccount', 'setOnboardingStep', 'setRegistryStep', 'submitNation',
+    'submitWorld',
   ].sort(), 'storage.js 公开导出与 P2 基线完全一致');
 });

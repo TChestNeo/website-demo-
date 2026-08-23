@@ -5,12 +5,12 @@
  * 并在本文件之后引入即可，无需改动页面 HTML。
  */
 window.MN_I18N.add('zh', {
-  'meta.title': '财务与支付条款 | M.LoreWorld',
-  'back.label': '返回 M.LoreWorld',
+  'meta.title': '财务与支付条款 | M.NationWorld',
+  'back.label': '返回 M.NationWorld',
 
   'page.title': '财务与支付条款',
-  'page.effective': '生效日期：2026年8月13日 · 运营主体：SlatiStudio（M.LoreWorld Project）',
-  'intro.1': '本条款是《服务条款》第 7 条（订阅、计费与退款政策）的执行细则与延伸，适用于 M.LoreWorld 平台内的一切付费行为、频道捐款与创作者收益结算。付费即表示您已阅读并同意本条款。',
+  'page.effective': '生效日期：2026年8月13日 · 运营主体：SlatiStudio（M.NationWorld Project）',
+  'intro.1': '本条款是《服务条款》第 7 条（订阅、计费与退款政策）的执行细则与延伸，适用于 M.NationWorld 平台内的一切付费行为、频道捐款与创作者收益结算。付费即表示您已阅读并同意本条款。',
 
   'toc.1': '1. 付费项目与计费',
   'toc.2': '2. 价格与汇率',
@@ -86,7 +86,7 @@ window.MN_I18N.add('zh', {
   'sec7.li1.label': '执行细则：',
   'sec7.li1.body': '本条款是《服务条款》第 7 条（订阅、计费与退款政策）的执行细则与延伸；两者冲突时，以《服务条款》为准。',
   'sec7.li2.label': '并行适用：',
-  'sec7.li2.body': '本条款与《服务条款》《隐私政策》《平台责任条款》《社区规则》并行适用，共同构成 M.LoreWorld 的法律文件体系。',
+  'sec7.li2.body': '本条款与《服务条款》《隐私政策》《平台责任条款》《社区规则》并行适用，共同构成 M.NationWorld 的法律文件体系。',
   'sec7.li3.label': '解释与更新：',
   'sec7.li3.body': '平台保留对本条款的解释权与更新权。重大变更（涉及收费标准、结算规则、财报发布或创作者收益权利的变更）将通过站内公告与 Discord 社区提前通知。',
 

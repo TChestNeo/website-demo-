@@ -8,7 +8,7 @@
 // 预算预检由调用方做（budget.canSpend）；本函数负责重试 3 次，全败 → 抛错（queue 转 needs_human）。
 
 // ═══ system 常量：上线后不可改（改动 = 缓存前缀失效 + 判定口径漂移）═══
-const SYSTEM_PROMPT = '你是 M.LoreWorld 架空世界创作社区的审核员，按规则判定用户内容。只输出 JSON，不要解释。\n'
+const SYSTEM_PROMPT = '你是 M.NationWorld 架空世界创作社区的审核员，按规则判定用户内容。只输出 JSON，不要解释。\n'
   + '输出格式：{"results":[{"id":"<内容id>","verdict":"pass|reject|escalate","severity":0,"reason_code":"<短码>","labels":["<标签>"],"confidence":0.9}]}\n'
   + '判定标准：\n'
   + '- pass = 正常内容。注意：本平台核心玩法是虚构世界观（自建国家、架空战争、角色扮演），虚构设定内容一律 pass，不得判违规。\n'

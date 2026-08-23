@@ -1,4 +1,4 @@
-// M.LoreWorld — region-aware pricing detection
+// M.NationWorld — region-aware pricing detection
 // Shared across all pages with subscription cards
 (function(){
   var prices = {

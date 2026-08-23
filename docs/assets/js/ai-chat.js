@@ -383,8 +383,8 @@
 
   function appendGreet() {
     appendMsg('assistant', isOnline()
-      ? T('aichat.greet.online', '你好！我是 M.LoreWorld 的 AI 客服，7×24 小时在线。你可以问我订阅、价格、功能使用等常规问题；涉及账号、订单、申诉等需要特别权限的事项，我会引导你前往工单页面提交人工工单。')
-      : T('aichat.greet.offline', '你好！我是 M.LoreWorld 的 AI 客服。当前为演示模式，尚未连接后端 AI；接入后由 Gemini / DeepSeek 实时应答。你可以点击下方快捷提问，或输入订阅价格、退款规则等常规问题；涉及账号、申诉等需要特别权限的事项，我会引导你前往工单页面。'));
+      ? T('aichat.greet.online', '你好！我是 M.NationWorld 的 AI 客服，7×24 小时在线。你可以问我订阅、价格、功能使用等常规问题；涉及账号、订单、申诉等需要特别权限的事项，我会引导你前往工单页面提交人工工单。')
+      : T('aichat.greet.offline', '你好！我是 M.NationWorld 的 AI 客服。当前为演示模式，尚未连接后端 AI；接入后由 Gemini / DeepSeek 实时应答。你可以点击下方快捷提问，或输入订阅价格、退款规则等常规问题；涉及账号、申诉等需要特别权限的事项，我会引导你前往工单页面。'));
   }
 
   function showTyping() {

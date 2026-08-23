@@ -20,13 +20,13 @@ function createMailer(cfg) {
   function sendCode(email, code, opts = {}) {
     const registered = opts.registered !== false;
     const subject = registered
-      ? 'M.LoreWorld 登录验证码 / Sign-in code'
-      : '欢迎加入 M.LoreWorld / Welcome to M.LoreWorld';
+      ? 'M.NationWorld 登录验证码 / Sign-in code'
+      : '欢迎加入 M.NationWorld / Welcome to M.NationWorld';
     const text =
       (registered
         ? '您的登录验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n'
-        : '感谢注册 M.LoreWorld！您的验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n') +
-      'Your M.LoreWorld verification code: ' + code +
+        : '感谢注册 M.NationWorld！您的验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n') +
+      'Your M.NationWorld verification code: ' + code +
       '\nValid for 10 minutes. If this was not you, ignore this email.';
 
     if (!transporter) {

@@ -1,5 +1,5 @@
 /**
- * M.LoreWorld i18n — lightweight dictionary-based localization.
+ * M.NationWorld i18n — lightweight dictionary-based localization.
  *
  * Pages mark translatable text with data-i18n attributes and register
  * per-language dictionaries, then call MN_I18N.apply():
