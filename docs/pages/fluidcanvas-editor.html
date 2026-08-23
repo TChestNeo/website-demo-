@@ -98,6 +98,12 @@
     }
     .grid-controls .col-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
     .grid-controls .col-btn:hover:not(.active) { border-color: var(--color-primary); color: var(--color-primary); }
+    /* v10.27.2.1 — 等距后的间距数值（用户「和Canva一样会显示 间距 10px 还是 16px」；钦定只显示不可输入） */
+    .grid-controls .dist-gap {
+      font-size: 12px; color: var(--color-outline); white-space: nowrap;
+      padding: 2px 6px; border-radius: var(--radius-sm);
+      background: var(--color-surface-container-lowest); border: 1px solid var(--divider-line);
+    }
 
     .grid-canvas {
       --grid-cols: 36; --cell-size: 24px;
@@ -1275,6 +1281,8 @@
            两端卡片不动，中间卡片匀出相等间距；至少 3 张，隐藏卡不参与。 -->
       <button class="col-btn" onclick="distributeCards('h')" title="水平等距：两端不动，中间卡片横向匀开（至少 3 张）">水平等距</button>
       <button class="col-btn" onclick="distributeCards('v')" title="垂直等距：两端不动，中间卡片纵向匀开（至少 3 张）">垂直等距</button>
+      <!-- v10.27.2.1 — 间距数值显示：点完等距后常驻显示，下次点按钮自动刷新；不参与草稿 -->
+      <span class="dist-gap" id="distGapLabel" hidden>间距 88px</span>
       <!-- v10.3 — 合并弹层：画面预设 / 列数 / 格子大小。position:fixed
            挂在 viewportBtn 正下方；display:none 时不影响 .grid-controls 布局。 -->
       <div class="radius-popover viewport-popover" id="viewportPopover">
@@ -3534,6 +3542,7 @@
       };
     });
     var n = items.length;
+    var distGap = 0;
     if (axis === 'h') {
       items.sort(function (a, b) { return a.left - b.left; });
       // 总跨度固定：两端卡不动，可用空间 = 最左卡右缘 → 最右卡左缘（两端
@@ -3543,6 +3552,7 @@
       var midW = 0;
       for (var i = 1; i < n - 1; i++) midW += items[i].right - items[i].left;
       var gap = (span - midW) / (n - 1);
+      distGap = gap;
       var cur = items[0].right;
       for (var j = 1; j < n - 1; j++) {
         var dx = (cur + gap) - items[j].left; // 相对原始外框的平移量（旋转保持不变）
@@ -3555,6 +3565,7 @@
       var midH = 0;
       for (var k = 1; k < n - 1; k++) midH += items[k].bottom - items[k].top;
       var vgap = (vspan - midH) / (n - 1);
+      distGap = vgap;
       var vcur = items[0].bottom;
       for (var m = 1; m < n - 1; m++) {
         var dy = (vcur + vgap) - items[m].top;
@@ -3562,6 +3573,11 @@
         vcur = (vcur + vgap) + (items[m].bottom - items[m].top);
       }
     }
+    // v10.27.2.1 — 间距数值常驻显示（用户「和Canva一样会显示 间距 10px 还是 16px」；
+    // 钦定只显示不可输入）；下次点按钮自动刷新，不参与草稿。
+    var distLbl = document.getElementById('distGapLabel');
+    distLbl.textContent = (axis === 'h' ? '水平间距 ' : '垂直间距 ') + Math.round(distGap) + 'px';
+    distLbl.removeAttribute('hidden');
     onContentChange();
     showToast(axis === 'h' ? '已水平等距' : '已垂直等距');
   }
@@ -5668,7 +5684,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.2.0') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.2.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5677,7 +5693,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.2.0');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.2.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';

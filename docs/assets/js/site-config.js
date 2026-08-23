@@ -11,4 +11,4 @@ window.MN_SITE = window.MN_SITE || {};
 window.MN_SITE_VERSION = 'v0.2.0.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
-window.FLUIDCANVAS_VERSION = 'v10.27.2.0';
+window.FLUIDCANVAS_VERSION = 'v10.27.2.1';
