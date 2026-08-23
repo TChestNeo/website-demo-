@@ -810,6 +810,32 @@
     .viewport-popover .vp-pop-row { display: flex; gap: 4px; flex-wrap: wrap; }
     .viewport-popover .vp-presets { margin-right: 0; }
 
+    /* ── v10.27.1 Layers 面板（Canva 式分层：顶层在上，眼睛/↑↓，行点选） ── */
+    .layers-popover { width: 240px; min-width: 0; padding: 10px 8px; }
+    .layers-popover #layersList {
+      max-height: 300px; overflow-y: auto;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .layer-row {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 6px; border-radius: 6px; cursor: pointer;
+      font-size: 12px; color: var(--color-on-surface);
+    }
+    .layer-row:hover { background: var(--color-surface-container); }
+    .layer-row.active { background: var(--color-primary-container, var(--color-surface-container)); }
+    .layer-row .layer-icon { font-size: 16px; color: var(--color-outline); flex-shrink: 0; }
+    .layer-row .layer-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .layer-row .layer-name.hidden { opacity: 0.45; }
+    .layer-row .layer-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; padding: 0; border: none; border-radius: 4px;
+      background: transparent; color: var(--color-outline); cursor: pointer; flex-shrink: 0;
+    }
+    .layer-row .layer-btn:hover { background: var(--color-surface-container-highest, var(--color-surface-container)); color: var(--color-on-surface); }
+    .layer-row .layer-btn .material-symbols-outlined { font-size: 16px; }
+    .layer-row .layer-btn:disabled { opacity: 0.3; cursor: default; }
+    .grid-card.layer-hidden { display: none; }
+
     /* ── v10.27 Text Format Toolbar (Canva 式悬浮细长横杆：字体 ▾｜字号 ▾｜8 色点+取色器｜B I U S) ── */
     .text-toolbar {
       position: fixed; z-index: 202;
@@ -1239,6 +1265,10 @@
       <button class="btn btn-ghost btn-sm" onclick="showTemplateLibrary()">
         <span class="material-symbols-outlined">dashboard_customize</span> Templates
       </button>
+      <!-- v10.27.1 — Canva 式图层面板；快捷键 Ctrl+[ 下移一层 / Ctrl+] 上移一层 -->
+      <button class="btn btn-ghost btn-sm" id="layersBtn" onclick="toggleLayersPopover()" title="图层：Ctrl+[ 下移一层 · Ctrl+] 上移一层">
+        <span class="material-symbols-outlined">layers</span> Layers
+      </button>
       <button class="col-btn active" id="snapToggle" onclick="toggleSnap()" title="拖拽时自动吸附到方格，关闭后自由移动">吸附</button>
       <button class="col-btn active" id="alignToggle" onclick="toggleAlign()" title="拖拽时吸附对齐到其他卡片与页面中线，并显示对齐线">对齐</button>
       <!-- v10.3 — 合并弹层：画面预设 / 列数 / 格子大小。position:fixed
@@ -1266,6 +1296,11 @@
           <button class="col-btn" onclick="setCellSize(40)">40px</button>
           <button class="col-btn" onclick="setCellSize(60)">60px</button>
         </div>
+      </div>
+      <!-- v10.27.1 — 图层面板：顶层在前，行点选卡片，眼睛显隐，↑↓ 移层 -->
+      <div class="radius-popover layers-popover" id="layersPopover">
+        <div class="label-sm" style="color:var(--color-outline);margin-bottom:6px">Layers</div>
+        <div id="layersList"></div>
       </div>
     </div>
     <div class="grid-canvas" id="gridCanvas" style="--grid-cols:36;--cell-size:24px"></div>
@@ -2001,6 +2036,9 @@
                 card.style.height = card.dataset.fitH + 'px';
               }
               if (cData.rotate) { card.dataset.rotate = cData.rotate; card.style.transform = 'rotate(' + cData.rotate + 'deg)'; }
+              // v10.27.1: 图层 — 显式 z（混合堆叠）+ 眼睛隐藏态
+              if (cData.z) card.style.zIndex = String(parseInt(cData.z) || 0);
+              if (cData.hidden === '1') { card.dataset.hidden = '1'; card.classList.add('layer-hidden'); }
               // v3+ drafts store free pixel positions — restore exactly
               if (cData.x != null && cData.y != null) moveCardPx(card, parseFloat(cData.x), parseFloat(cData.y));
               // v9.5: re-cap the vertical label height to the final restored size
@@ -2222,6 +2260,9 @@
       if (c.dataset.outerEdge) entry.outerEdge = c.dataset.outerEdge;
       // v10.10: 外板边距 (additive — legacy drafts omit; saved as number)
       if (c.dataset.outerBgGap != null) entry.outerBgGap = parseInt(c.dataset.outerBgGap) || 0;
+      // v10.27.1: 图层 (additive — legacy drafts omit; DOM 序本身随 cards 数组往返)
+      if (c.style.zIndex) entry.z = parseInt(c.style.zIndex) || 0;
+      if (c.dataset.hidden === '1') entry.hidden = '1';
       if (entry.type === 'flag') {
         var stripes = c.querySelector('.card-stripes');
         var img = c.querySelector('.card-img-bg');
@@ -2251,7 +2292,7 @@
     // Save current card positions to active preset before persisting
     saveCurrentPresetCards();
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -2625,7 +2666,10 @@
         addCardDrag._activeDrag = null;
         try {
           st.card.classList.remove('dragging');
-          st.card.style.zIndex = '';
+          // v10.27.1: 图层已启用时拖拽结束不简单清 z，而是全卡归一
+          //（DOM 序 = 层序的同一条 z 轴）；未启用时维持原清空行为。
+          if (layersEngaged()) normalizeCardLayers();
+          else st.card.style.zIndex = '';
           hideCellHighlights();
           hideAlignGuides();
           if (st.moved) {
@@ -2911,6 +2955,7 @@
     card.classList.add('selected');
     selectedCard = card;
     refreshResizeHandles();
+    renderLayersList(); // v10.27.1: 图层面板行高亮跟随选中
   }
   window.selectCard = selectCard;
 
@@ -2919,6 +2964,118 @@
     selectedCard = null;
     refreshResizeHandles();
   }
+
+  // ── Layers (v10.27.1, Canva 式分层) ──
+  // DOM 顺序 = 层级顺序（后兄弟在上）。层操作后给所有卡写内联 z = 1 + 索引，
+  // 覆盖 .has-outer-bg 的类级 z 2（v10.18 外板救板 hack）——混合主题/普通卡
+  // 的堆叠以图层面板为准、真实可信；拖拽结束后也归进同一条 z 轴。
+  // 相邻卡步进器跳过 gridCanvas 里的手柄/对齐线/旋转杆等非卡子元素。
+  function prevCardSibling(card) {
+    var el = card.previousElementSibling;
+    while (el && !el.classList.contains('grid-card')) el = el.previousElementSibling;
+    return el;
+  }
+  function nextCardSibling(card) {
+    var el = card.nextElementSibling;
+    while (el && !el.classList.contains('grid-card')) el = el.nextElementSibling;
+    return el;
+  }
+  function layersEngaged() {
+    return getAllCards().some(function (c) { return c.style.zIndex !== ''; });
+  }
+  function normalizeCardLayers() {
+    getAllCards().forEach(function (c, i) { c.style.zIndex = String(i + 1); });
+  }
+  // dir +1 = 上移一层（Canva Ctrl+]）；dir −1 = 下移一层（Ctrl+[）
+  function moveCardLayer(card, dir) {
+    if (!card || !card.classList.contains('grid-card')) return;
+    if (getAllCards().length < 2) return;
+    var sib = dir > 0 ? nextCardSibling(card) : prevCardSibling(card);
+    if (!sib) return; // 已在顶/底
+    if (dir > 0) gridCanvas.insertBefore(card, sib.nextElementSibling);
+    else gridCanvas.insertBefore(card, sib);
+    normalizeCardLayers();
+    renderLayersList();
+    onContentChange();
+  }
+  window.moveCardLayer = moveCardLayer;
+
+  function setCardLayerVisible(card, visible) {
+    if (!card || !card.classList.contains('grid-card')) return;
+    if (visible) { delete card.dataset.hidden; card.classList.remove('layer-hidden'); }
+    else {
+      card.dataset.hidden = '1';
+      card.classList.add('layer-hidden');
+      if (card === selectedCard) deselectAll(); // 隐藏选中卡 → 手柄随之清掉
+    }
+    renderLayersList();
+    onContentChange();
+  }
+  window.setCardLayerVisible = setCardLayerVisible;
+
+  var LAYER_TYPE_ICONS = {
+    flag: 'flag', shield: 'shield', map: 'map', account_balance: 'account_balance',
+    payments: 'payments', menu_book: 'menu_book', history_edu: 'history_edu',
+    image: 'image', content: 'edit_note', text: 'title'
+  };
+  function renderLayersList() {
+    var list = document.getElementById('layersList');
+    if (!list) return;
+    list.innerHTML = '';
+    var cards = getAllCards().slice().reverse(); // 顶层在前
+    if (!cards.length) {
+      var empty = document.createElement('div');
+      empty.className = 'label-sm';
+      empty.style.cssText = 'color:var(--color-outline);padding:4px 6px';
+      empty.textContent = '暂无卡片——从左侧拖入';
+      list.appendChild(empty);
+      return;
+    }
+    cards.forEach(function (card) {
+      var hidden = card.classList.contains('layer-hidden');
+      var row = document.createElement('div');
+      row.className = 'layer-row' + (card === selectedCard ? ' active' : '');
+      row.title = hidden ? '已隐藏' : '点击选中卡片';
+
+      var eye = document.createElement('button');
+      eye.className = 'layer-btn';
+      eye.title = hidden ? '显示' : '隐藏';
+      eye.innerHTML = '<span class="material-symbols-outlined">' + (hidden ? 'visibility_off' : 'visibility') + '</span>';
+      eye.onclick = function (e) { e.stopPropagation(); setCardLayerVisible(card, hidden); };
+
+      var icon = document.createElement('span');
+      icon.className = 'material-symbols-outlined layer-icon';
+      icon.textContent = LAYER_TYPE_ICONS[card.dataset.cardType] || 'crop_square';
+
+      var name = document.createElement('span');
+      name.className = 'layer-name' + (hidden ? ' hidden' : '');
+      var lbl = card.querySelector('.card-label');
+      name.textContent = (lbl && lbl.value) ? lbl.value : (card.dataset.label || icon.textContent);
+
+      var up = document.createElement('button');
+      up.className = 'layer-btn';
+      up.title = '上移一层 (Ctrl+])';
+      up.innerHTML = '<span class="material-symbols-outlined">keyboard_arrow_up</span>';
+      up.disabled = !nextCardSibling(card);
+      up.onclick = function (e) { e.stopPropagation(); moveCardLayer(card, 1); };
+
+      var down = document.createElement('button');
+      down.className = 'layer-btn';
+      down.title = '下移一层 (Ctrl+[)';
+      down.innerHTML = '<span class="material-symbols-outlined">keyboard_arrow_down</span>';
+      down.disabled = !prevCardSibling(card);
+      down.onclick = function (e) { e.stopPropagation(); moveCardLayer(card, -1); };
+
+      row.appendChild(eye);
+      row.appendChild(icon);
+      row.appendChild(name);
+      row.appendChild(up);
+      row.appendChild(down);
+      row.onclick = function () { selectCard(card); };
+      list.appendChild(row);
+    });
+  }
+  window.renderLayersList = renderLayersList;
 
   // ── Resize Handles (v9) ──
   // 8 Canva-style handles (4 corners + 4 edges), canvas-level siblings of
@@ -3459,6 +3616,8 @@
     if (cbg) cbg.classList.remove('active');
     var vp = document.getElementById('viewportPopover');
     if (vp) vp.classList.remove('active');
+    var lp = document.getElementById('layersPopover');
+    if (lp) lp.classList.remove('active');
     // v10.24/26: 文字格式化工具栏 + 字体面板随统一关闭
     var tt = document.getElementById('textToolbar');
     if (tt) tt.style.display = 'none';
@@ -3471,7 +3630,8 @@
     // #viewportBtn 排除在外：按钮在弹层之外，onclick 打开弹层后 document
     // 处理器紧随其后把它立刻关掉——不加排除，弹层永远开不起来。
     if (!e.target.closest('.context-menu') && !e.target.closest('.radius-popover') &&
-        !e.target.closest('#viewportBtn') && !e.target.closest('.text-toolbar') &&
+        !e.target.closest('#viewportBtn') && !e.target.closest('#layersBtn') &&
+        !e.target.closest('.text-toolbar') &&
         !e.target.closest('.font-panel') &&
         // v10.24: 卡内文字也排除——文字选中后（mouseup 之后）click 才会
         // 到达这里，不排除会把刚浮现的格式化工具栏立刻关掉
@@ -3488,7 +3648,9 @@
       // the next mousemove keeps resizing a deselected card.
       if (resizeState) {
         resizeState.card.classList.remove('dragging');
-        resizeState.card.style.zIndex = '';
+        // v10.27.1: 图层启用时归一回同一条 z 轴，未启用维持原清空
+        if (layersEngaged()) normalizeCardLayers();
+        else resizeState.card.style.zIndex = '';
         // Commit like onResizeUp — otherwise the visual size persists but
         // dataset.colSpan/rowSpan/fitW and dataset.x/y go stale, and the
         // next draft save/reload misplaces or mis-sizes the card. (Fixes
@@ -3506,11 +3668,19 @@
       // v9.3: rotation commits on Escape too (same single rule as resize)
       if (rotateState) {
         rotateState.card.classList.remove('dragging');
-        rotateState.card.style.zIndex = '';
+        if (layersEngaged()) normalizeCardLayers();
+        else rotateState.card.style.zIndex = '';
         hideCellHighlights();
         if (rotateState.moved) commitRotate(rotateState);
         rotateState = null;
       }
+    }
+    // v10.27.1 — Layers 快捷键（与 Canva 一致）：Ctrl+[ 下移一层 / Ctrl+] 上移一层。
+    // 输入框/可编辑文本内不接管（label 输入、卡内文字照常打字）。
+    if ((e.ctrlKey || e.metaKey) && (e.key === '[' || e.key === ']') && selectedCard &&
+        !(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable))) {
+      e.preventDefault();
+      moveCardLayer(selectedCard, e.key === ']' ? 1 : -1);
     }
     if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveDraft(); }
   });
@@ -5273,6 +5443,28 @@
   }
   window.toggleViewportPopover = toggleViewportPopover;
 
+  // v10.27.1 — 图层面板开关。复用 .radius-popover 机制（外部点击/Esc/
+  // hideContextMenu 自动关闭）；锚定 Layers 按钮右缘正下方，高度不够翻到上方。
+  function toggleLayersPopover() {
+    var pop = document.getElementById('layersPopover');
+    if (!pop) return;
+    if (pop.classList.contains('active')) {
+      pop.classList.remove('active');
+      return;
+    }
+    hideContextMenu();
+    renderLayersList();
+    var btn = document.getElementById('layersBtn');
+    var r = btn.getBoundingClientRect();
+    var x = Math.max(8, Math.min(r.right - 240, window.innerWidth - 248));
+    var y = r.bottom + 8;
+    if (y + 320 > window.innerHeight) y = r.top - 328;
+    pop.style.left = x + 'px';
+    pop.style.top = y + 'px';
+    pop.classList.add('active');
+  }
+  window.toggleLayersPopover = toggleLayersPopover;
+
   // Refit columns on window resize or asset panel toggle
   function refitColumns() {
     if (!currentPreset) return;
@@ -5404,7 +5596,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.0') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5413,7 +5605,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.0');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
