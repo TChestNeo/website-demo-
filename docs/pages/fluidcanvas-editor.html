@@ -245,9 +245,12 @@
       text-align: center; min-width: 30px; max-width: 90%;
       border-radius: var(--radius-xs); padding: 2px 6px;
       transition: border-color 0.15s, background 0.15s;
-      cursor: text; pointer-events: none;
+      cursor: text;
+      /* v10.27.0.1: 单击即编辑（原 pointer-events:none，名字藏在双击
+         editing-label 里不可发现——用户「文件名称没办法编辑」）。 */
+      pointer-events: auto;
     }
-    .grid-card.editing-label .card-label { pointer-events: auto; }
+    .grid-card .card-label:hover { border-color: var(--color-outline); }
     .grid-card .card-stripes,
     .grid-card .card-img-bg,
     .grid-card .card-bg-img { pointer-events: none; }
@@ -2664,22 +2667,15 @@
 
     addCardDrag(card);
 
-    // Click → select; double-click → edit label
+    // Click → select; double-click → edit label（v10.27.0.1：走 enterLabelEdit
+    // 统一路径——旧实现内容卡双击也加 editing-label 且无标签可 blur 摘类 →
+    // 类卡死、该卡拖拽/点选永久失效）
     card.addEventListener('click', function (e) {
       if (card.classList.contains('editing-label')) return;
       selectCard(card);
     });
     card.addEventListener('dblclick', function (e) {
-      card.classList.add('editing-label');
-      var lbl = card.querySelector('.card-label');
-      if (lbl) { setTimeout(function () { lbl.focus(); lbl.select(); }, 50); }
-      var onBlur = function () { card.classList.remove('editing-label'); };
-      if (lbl) {
-        lbl.addEventListener('blur', onBlur, { once: true });
-        lbl.addEventListener('keydown', function (ev) {
-          if (ev.key === 'Enter') { ev.preventDefault(); lbl.blur(); }
-        });
-      }
+      enterLabelEdit(card);
     });
 
     // Right-click context menu
@@ -2694,6 +2690,49 @@
     return card;
   }
 
+  // v10.27.0.1 — 单击名称即改名（用户「文件名称没办法编辑」）：标签
+  // pointer-events 常开，点名称直接聚焦全选（原双击卡片进 editing-label
+  // 的路径对笨蛋不可发现）；拖拽结束同点触发的 click 由 justDragged 拦截，
+  // 不误入编辑态。退出编辑走确定性事件（Enter / 标签外 mousedown / blur
+  // 兜底）——headless 无窗口焦点时 focus/blur 事件不派发，退出不能只靠
+  // blur；mousedown 落在标签自身上不退出（保留挪光标/选字）。
+  var editingLabelCard = null;
+  function exitLabelEdit() {
+    var card = editingLabelCard;
+    if (!card) return;
+    editingLabelCard = null;
+    card.classList.remove('editing-label');
+    var l = card.querySelector('.card-label');
+    if (l) l.blur();
+  }
+  document.addEventListener('mousedown', function (e) {
+    if (!editingLabelCard) return;
+    var l = editingLabelCard.querySelector('.card-label');
+    if (l && (e.target === l || l.contains(e.target))) return;
+    exitLabelEdit();
+  });
+  function enterLabelEdit(card) {
+    if (!card.querySelector('.card-label')) return; // 内容卡双击不进标签编辑（顺修旧路径 class 卡死）
+    if (editingLabelCard && editingLabelCard !== card) exitLabelEdit();
+    card.classList.add('editing-label');
+    editingLabelCard = card;
+    var l = card.querySelector('.card-label');
+    setTimeout(function () { l.focus(); l.select(); }, 0);
+  }
+  function setupCardLabelInput(card, labelEl) {
+    labelEl.onclick = function (e) {
+      e.stopPropagation();
+      if (card.dataset.justDragged) return;
+      if (card.classList.contains('editing-label')) return;
+      enterLabelEdit(card);
+    };
+    labelEl.oninput = function () { autoSizeLabel(this); onContentChange(); };
+    labelEl.addEventListener('blur', function () { if (editingLabelCard === card) exitLabelEdit(); });
+    labelEl.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); exitLabelEdit(); }
+    });
+  }
+
   function createAssetCard(asset, label, col, row, spanW, spanH) {
     var card = createGridCard(asset, col, row, spanW, spanH);
     card.dataset.label = label;
@@ -2704,8 +2743,7 @@
     var labelEl = document.createElement('input');
     labelEl.className = 'card-label';
     labelEl.value = label;
-    labelEl.onclick = function (e) { e.stopPropagation(); };
-    labelEl.oninput = function () { autoSizeLabel(this); onContentChange(); };
+    setupCardLabelInput(card, labelEl);
     card.appendChild(iconEl);
     card.appendChild(labelEl);
     autoSizeLabel(labelEl);
@@ -2721,8 +2759,7 @@
     var labelEl = document.createElement('input');
     labelEl.className = 'card-label';
     labelEl.value = label || 'Flag';
-    labelEl.onclick = function (e) { e.stopPropagation(); };
-    labelEl.oninput = function () { autoSizeLabel(this); onContentChange(); };
+    setupCardLabelInput(card, labelEl);
     card.appendChild(iconEl);
     card.appendChild(labelEl);
     autoSizeLabel(labelEl);
@@ -5367,7 +5404,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.0') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5376,7 +5413,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.0');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.0.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
