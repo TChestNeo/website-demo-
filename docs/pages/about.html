@@ -92,7 +92,7 @@
     }
     .founder-modal-card {
       position: relative;
-      width: min(600px, 100%);
+      width: min(680px, 100%);
       max-height: 82vh; overflow-y: auto;
       background: var(--card-bg);
       backdrop-filter: blur(20px);
@@ -114,15 +114,36 @@
     .founder-modal-close:hover { background: rgba(127,127,127,.15); color: var(--color-on-surface); }
     .founder-modal-head { display: flex; align-items: center; gap: 18px; margin-bottom: 6px; padding-right: 40px; }
     .founder-modal-avatar { width: 88px; height: 88px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
+    /* Team Profile 文章排版 */
     .founder-modal-body { margin-top: 14px; }
-    .founder-modal .pop-sec {
-      font-size: 11px; font-weight: 700; letter-spacing: .06em;
-      color: var(--color-primary); text-transform: uppercase;
-      margin: 16px 0 8px;
+    .founder-modal .art-title { font-size: 17px; font-weight: 800; color: var(--color-on-surface); margin: 6px 0 14px; }
+    .founder-modal .art-sec {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 15px; font-weight: 700; color: var(--color-on-surface);
+      margin: 24px 0 8px;
     }
-    .founder-modal .pop-list { margin: 0; padding: 0 0 0 18px; }
-    .founder-modal .pop-list li { margin-bottom: 8px; font-size: 14px; line-height: 1.7; color: var(--color-on-surface-variant); }
-    .founder-modal .pop-list li b { color: var(--color-on-surface); }
+    .founder-modal .art-sec::before {
+      content: ''; width: 4px; height: 16px; border-radius: 2px;
+      background: var(--color-primary); flex-shrink: 0;
+    }
+    .founder-modal-body p { font-size: 14px; line-height: 1.8; color: var(--color-on-surface-variant); margin: 8px 0; }
+    .founder-modal .art-meta { list-style: none; margin: 4px 0 0; padding: 0; }
+    .founder-modal .art-meta li {
+      display: flex; gap: 10px;
+      font-size: 14px; line-height: 1.9; color: var(--color-on-surface-variant);
+    }
+    .founder-modal .art-meta b { color: var(--color-on-surface); min-width: 118px; flex-shrink: 0; font-weight: 600; }
+    .founder-modal .art-list { margin: 8px 0; padding: 0 0 0 18px; }
+    .founder-modal .art-list li { margin-bottom: 5px; font-size: 14px; line-height: 1.75; color: var(--color-on-surface-variant); }
+    .founder-modal .art-key { font-size: 14px; line-height: 1.8; margin: 10px 0 6px; color: var(--color-on-surface-variant); }
+    .founder-modal .art-key b { color: var(--color-on-surface); margin-right: 8px; }
+    .founder-modal .art-quote {
+      margin: 12px 0; padding: 12px 16px;
+      border-left: 3px solid var(--color-primary);
+      background: rgba(129, 49, 207, .08);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: 14px; line-height: 1.7; font-weight: 600; color: var(--color-on-surface);
+    }
     .founder-modal-foot {
       margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--color-outline-variant);
       font-size: 14px; color: var(--color-on-surface-variant);
@@ -327,25 +348,136 @@
       <img class="founder-modal-avatar" src="../assets/image/TChestBox_Neo_2025Avatar.png" alt="TChest_Neo24 头像">
       <div style="min-width:0">
         <h3 class="headline-lg" id="founderModalTitle" style="margin-bottom:4px">TChest_Neo24</h3>
-        <p class="label-sm" style="color:var(--color-outline);margin:0">创始人 · 全栈开发者 · 独立创作者</p>
+        <p class="label-sm" style="color:var(--color-outline);margin:0">创始人 · 产品设计师 · UI/UX 设计师 · 核心开发者</p>
       </div>
     </div>
     <div class="founder-modal-body">
-      <div class="pop-sec">项目足迹</div>
-      <ul class="pop-list">
-        <li><b>平台创立</b>：M.NationWorld + MicroNationary 品牌与定位（硬核架空国家 · 共和/社会主义/民主主义）</li>
-        <li><b>FluidCanvas 编辑器</b>：卡片式世界百科工作台 v10 系列——主题系统、Canva 式工具栏、Google Fonts 字体库、Layers 图层、新卡片族、历史标图</li>
-        <li><b>Create World</b>：22 种世界类型的单向导创建引擎</li>
-        <li><b>帮助中心</b>：FAQ 智能搜索、AI 客服、官方人员 12h 验证码身份验证</li>
-        <li><b>付费系统</b>：订阅与混合支付方式（Stripe）、创作者分成</li>
-        <li><b>管理后台</b>：财务总览、流水账、季度财报、提现</li>
+      <div class="art-title">M.NationWorld 项目个人与职责</div>
+
+      <div class="art-sec">个人简介</div>
+      <ul class="art-meta">
+        <li><b>姓名 / 项目名称</b>Neo</li>
+        <li><b>项目身份</b>Founder · Product Designer · UI/UX Designer · Core Developer</li>
+        <li><b>所属项目</b>M.NationWorld</li>
+        <li><b>开发团队</b>SlatiStudio</li>
+        <li><b>当前开发阶段</b>项目初期独立开发</li>
       </ul>
-      <div class="pop-sec">个人信息</div>
-      <ul class="pop-list">
-        <li>独立创作者——从构想、设计到开发一人完成</li>
-        <li>热爱架空世界与微国家创作</li>
-        <li>日常爱用 kaomoji 颜文字交流 (◕‿◕)</li>
+      <p>Neo 是 M.NationWorld 项目的发起人、核心产品设计者以及项目初期的唯一开发者。目前负责 M.NationWorld 从概念构想、产品定位、功能规划、UI/UX 设计到实际开发落地的大部分核心工作。</p>
+      <p>由于项目目前仍处于早期阶段，Neo 同时承担了传统开发团队中多个不同职位的职责，包括项目负责人、产品经理、UI/UX 设计师、技术负责人以及开发者等。因此，目前 M.NationWorld 的产品方向、设计体系和技术实现主要由 Neo 负责推动。</p>
+
+      <div class="art-sec">项目构想与产品定位</div>
+      <p>Neo 主要负责确定 M.NationWorld 的产品方向与长期定位。</p>
+      <p>项目最初以架空国家 Wiki 为主要构想，随着产品不断设计与调整，逐渐发展成为面向更广泛创作者的<b>世界观创建平台（Worldbuilding Platform）</b>。</p>
+      <p>因此，Neo 的主要工作之一是不断重新思考 M.NationWorld 的核心价值，包括：</p>
+      <ul class="art-list">
+        <li>用户为什么需要 M.NationWorld</li>
+        <li>世界观应该如何创建</li>
+        <li>用户应该拥有多大的自定义自由度</li>
+        <li>Wiki 与社区应该如何结合</li>
+        <li>创作者应该如何展示和管理自己的作品</li>
+        <li>平台如何支持个人与团队创作</li>
+        <li>AI 应该如何参与平台运行</li>
+        <li>平台未来如何形成完整的创作者生态</li>
       </ul>
+      <p>Neo 希望 M.NationWorld 最终不只是一个传统 Wiki，而是一个能够让用户<b>创建、组织、展示、交流和持续发展自己世界观</b>的综合创作平台。</p>
+
+      <div class="art-sec">产品与功能设计</div>
+      <p>在产品层面，Neo 负责规划 M.NationWorld 的整体功能架构以及不同系统之间的关系。</p>
+      <p>目前涉及的主要方向包括：</p>
+      <ul class="art-list">
+        <li>Worldbuilding / 世界观创建</li>
+        <li>Wiki</li>
+        <li>内容编辑</li>
+        <li>社区</li>
+        <li>帖子</li>
+        <li>私信</li>
+        <li>Team / Channel</li>
+        <li>创作者主页</li>
+        <li>数据统计</li>
+        <li>收藏与点赞</li>
+        <li>内容管理</li>
+        <li>AI 服务</li>
+        <li>平台治理</li>
+        <li>用户订阅</li>
+        <li>团队订阅</li>
+      </ul>
+      <p>Neo 负责从用户需求出发设计这些功能，并思考它们如何组成一个完整的平台，而不是单独存在的功能模块。</p>
+
+      <div class="art-sec">UI / UX 设计</div>
+      <p>Neo 同时负责 M.NationWorld 的整体 UI/UX 设计与设计语言。</p>
+      <p>其中包括 Card UI、模块化内容展示、动态 Wiki 背景、高度自定义页面以及 FluidCanvas 等核心设计。</p>
+      <p>设计过程中重点关注两个方面：</p>
+      <p class="art-key"><b>自由度</b>用户能够根据自己的世界观和内容需求自由调整页面，而不是被固定模板限制。</p>
+      <p class="art-key"><b>易用性</b>即使用户没有专业网页开发知识，也能够通过可视化工具创建和管理复杂内容。</p>
+      <p>因此，M.NationWorld 的设计方向并不是单纯追求视觉效果，而是希望建立一个能够真正服务于创作者的<b>高度可自定义创作环境</b>。</p>
+
+      <div class="art-sec">FluidCanvas 与创作工具</div>
+      <p>Neo 负责规划 FluidCanvas 这一中端控制台的产品逻辑。</p>
+      <p>FluidCanvas 用于连接 M.NationWorld 的内容创建与数据管理，包括文章编辑、内容管理以及浏览量、点赞、收藏等数据查看。</p>
+      <p>其核心理念是：</p>
+      <blockquote class="art-quote">将复杂的内容管理能力转化为直观、可视化的创作工具。</blockquote>
+      <p>这也是 Neo 对 M.NationWorld 产品设计理念的重要体现。</p>
+
+      <div class="art-sec">项目开发</div>
+      <p>目前 Neo 是 M.NationWorld <b>项目初期的唯一核心开发者</b>。</p>
+      <p>由于项目处于早期阶段，开发工作主要采用 <b>AI-assisted Development（AI 辅助开发）</b> 的方式进行，并使用 DeepSeek 等 AI 工具辅助代码编写、代码分析、调试和问题排查。</p>
+      <p>AI 主要作为开发工具使用，而项目的产品决策、技术方向和最终实现仍由 Neo 负责。</p>
+      <p>具体而言，Neo 负责：</p>
+      <ul class="art-list">
+        <li>将产品构想转化为具体功能</li>
+        <li>制定开发需求</li>
+        <li>设计功能逻辑</li>
+        <li>确定技术实现方向</li>
+        <li>使用 AI 辅助编写代码</li>
+        <li>检查 AI 生成的代码</li>
+        <li>修改和整合代码</li>
+        <li>调试项目</li>
+        <li>测试功能</li>
+        <li>解决开发过程中出现的问题</li>
+        <li>最终决定功能是否进入正式产品</li>
+      </ul>
+      <p>因此，目前 M.NationWorld 的开发模式可以概括为：</p>
+      <p class="art-key"><b>Human-led · AI-assisted</b></p>
+      <p>即由人负责产品和技术决策，由 AI 提供开发辅助。</p>
+
+      <div class="art-sec">社区与平台治理</div>
+      <p>Neo 也负责 M.NationWorld 社区体系以及平台治理机制的规划。</p>
+      <p>平台未来不仅提供世界观创建工具，也希望形成创作者之间交流、合作和分享作品的社区。</p>
+      <p>因此，Neo 负责规划帖子、私信、Channel、Team、创作者数据以及社区互动等功能，同时思考平台规则、内容审核和用户管理体系。</p>
+      <p>在 AI 应用方面，Neo 规划将 AI 用于内容审核、AI 客服、数据整合、内容总结以及平台管理辅助。</p>
+      <p>当 AI 无法确定某项内容是否符合平台规则时，则由人工审核作为补充。</p>
+
+      <div class="art-sec">商业化与长期发展</div>
+      <p>除了当前产品开发，Neo 也负责思考 M.NationWorld 的商业模式以及长期发展路线。</p>
+      <p>目前规划的方向包括：</p>
+      <ul class="art-list">
+        <li>免费用户体系</li>
+        <li>Pro / 高级订阅</li>
+        <li>Enterprise / 高级服务</li>
+        <li>Team / Channel 订阅</li>
+        <li>广告</li>
+        <li>创作者服务</li>
+        <li>国际化与多语言支持</li>
+        <li>3D 内容</li>
+        <li>游戏与数字世界相关扩展</li>
+      </ul>
+      <p>Neo 希望 M.NationWorld 能够从一个个人项目逐渐发展成为一个完整的 Worldbuilding Ecosystem。</p>
+
+      <div class="art-sec">当前个人定位</div>
+      <p>由于目前项目仍处于初期阶段，Neo 的职责并不是单一的「开发者」。</p>
+      <p>目前更准确的定位是：</p>
+      <p class="art-key"><b>Founder</b>负责项目整体方向与核心决策。</p>
+      <p class="art-key"><b>Product Designer</b>负责产品定位、功能体系和用户体验。</p>
+      <p class="art-key"><b>UI/UX Designer</b>负责整体视觉语言、界面和交互设计。</p>
+      <p class="art-key"><b>Core Developer</b>负责项目初期的实际开发、技术实现、调试与测试。</p>
+      <p>因此，Neo 当前实际上承担着连接<b>创意、产品、设计与技术</b>的核心角色。</p>
+
+      <div class="art-sec">总结</div>
+      <p>目前，Neo 是 M.NationWorld 项目从概念走向实际产品过程中最核心的个人角色。</p>
+      <p>从最初提出项目构想，到确定世界观创建平台的定位，再到设计 Wiki、社区、FluidCanvas、Card UI 等系统，并通过 AI 辅助完成实际开发，Neo 负责推动 M.NationWorld 的整个早期产品生命周期。</p>
+      <p>简单来说：</p>
+      <blockquote class="art-quote">Neo 负责思考 M.NationWorld 应该是什么，设计它应该如何工作，并亲自将这些想法逐步开发成为实际产品。</blockquote>
+      <p>随着未来项目规模扩大，这些职责可以逐渐由不同的团队成员分担。但在当前项目初期阶段，Neo 同时承担着<b>创始人、产品设计师和核心开发者</b>的角色，是 M.NationWorld 当前最主要的产品与技术推动者。</p>
     </div>
     <div class="founder-modal-foot">
       想认识创始人的话，欢迎来官方 Discord 社区：
