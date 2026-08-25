@@ -6360,7 +6360,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.2.2') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.3') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -6369,7 +6369,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.2.2');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.3');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -6740,6 +6740,7 @@
   var LOADED_FONTS = { Inter: true }; // 页面已预载，不再重复注入
   var FP_BUILT = false, FP_OBSERVER = null;
   var TOOLBAR = null, FONT_PANEL = null, FONT_LIST = null;
+  var FONT_AUTO_SUPPRESS = false; // v10.28.3: 手动关掉面板后，本次输入会话内不自动重弹
 
   // ── 字体按需加载：css2 <link> 注入（全局去重） ──
   function ensureFont(name, axes) {
@@ -6768,6 +6769,21 @@
     return { sel: sel, range: range, textEl: textEl, card: card };
   }
   window.textSelInCard = textSelInCard;
+
+  // ── 光标检查（v10.28.3）：折叠选区落在内容卡 .card-text-content 内 = 正在输入 ──
+  function textCaretInCard() {
+    var sel = window.getSelection();
+    if (!sel || !sel.isCollapsed || !sel.rangeCount) return null;
+    var range = sel.getRangeAt(0);
+    var node = range.commonAncestorContainer;
+    var el = node && node.nodeType === 3 ? node.parentNode : node;
+    if (!el || !el.closest) return null;
+    var textEl = el.closest('.card-text-content');
+    if (!textEl) return null;
+    var card = textEl.closest('.grid-card');
+    if (!card || card.dataset.cardType !== 'content') return null;
+    return { sel: sel, range: range, textEl: textEl, card: card };
+  }
 
   function hideTextToolbar() {
     if (TOOLBAR) TOOLBAR.style.display = 'none';
@@ -6815,15 +6831,26 @@
   }
 
   // ── 主入口：选区变化 → 显隐 + 定位 + 状态 ──
+  // v10.28.3: 字体面板自动弹出——选中卡内文字或光标在卡内文字（正在输入）
+  // 时面板直接显示，不用再点工具栏字体钮；离开文字自动收起。
   function refreshTextToolbar() {
     TOOLBAR = document.getElementById('textToolbar');
     FONT_PANEL = document.getElementById('fontPanel');
     FONT_LIST = document.getElementById('fpList');
     if (!TOOLBAR) return;
     var info = textSelInCard();
-    if (!info) { hideTextToolbar(); return; }
+    if (!info) {
+      var caret = textCaretInCard();
+      // 先收（hideFontPanel 会把抑制置 true），离开文字后再把抑制复位
+      if (!caret) { hideTextToolbar(); FONT_AUTO_SUPPRESS = false; return; }
+      // 光标在卡内文字：只弹字体面板，工具栏收起（工具栏仍需非空选区）
+      if (TOOLBAR) TOOLBAR.style.display = 'none';
+      if (!FONT_AUTO_SUPPRESS) showFontPanel(caret.range.getBoundingClientRect());
+      return;
+    }
     positionToolbar();
     syncToolbarState();
+    if (!FONT_AUTO_SUPPRESS) showFontPanel();
   }
   window.refreshTextToolbar = refreshTextToolbar;
 
@@ -6941,18 +6968,26 @@
     }
   }
 
-  function showFontPanel() {
+  function showFontPanel(anchorRect) {
     if (!FONT_PANEL) return;
     buildFontPanel();
-    var anchor = document.getElementById('ttFontBtn');
-    if (!anchor) return;
+    if (!anchorRect) {
+      // v10.28.3: 工具栏可见时锚在字体钮下方；光标输入（工具栏隐藏）时锚在光标位置
+      var anchor = document.getElementById('ttFontBtn');
+      if (anchor && TOOLBAR && TOOLBAR.style.display !== 'none') {
+        anchorRect = anchor.getBoundingClientRect();
+      } else {
+        var ci = textSelInCard() || textCaretInCard();
+        if (ci) anchorRect = ci.range.getBoundingClientRect();
+      }
+    }
+    if (!anchorRect) return;
     FONT_PANEL.style.display = 'block';
     FONT_PANEL.style.visibility = 'hidden';
-    var r = anchor.getBoundingClientRect();
     var w = FONT_PANEL.offsetWidth, h = FONT_PANEL.offsetHeight;
-    var x = Math.max(8, Math.min(r.left, window.innerWidth - w - 8));
-    var y = r.bottom + 6;
-    if (y + h > window.innerHeight - 8) y = Math.max(8, r.top - h - 6);
+    var x = Math.max(8, Math.min(anchorRect.left, window.innerWidth - w - 8));
+    var y = anchorRect.bottom + 6;
+    if (y + h > window.innerHeight - 8) y = Math.max(8, anchorRect.top - h - 6);
     FONT_PANEL.style.left = x + 'px';
     FONT_PANEL.style.top = y + 'px';
     FONT_PANEL.style.visibility = '';
@@ -6960,6 +6995,7 @@
 
   function hideFontPanel() {
     if (FONT_PANEL) FONT_PANEL.style.display = 'none';
+    FONT_AUTO_SUPPRESS = true; // 手动关闭后本次输入会话内不自动重弹（重新点进文字即解除）
   }
   window.hideFontPanel = hideFontPanel;
   window.showFontPanel = showFontPanel;
@@ -6970,6 +7006,10 @@
   document.addEventListener('keyup', refreshTextToolbar);
   document.addEventListener('scroll', refreshTextToolbar, true);
   window.addEventListener('resize', refreshTextToolbar);
+  // v10.28.3: 重新点进卡内文字 = 新的输入会话，解除「手动关闭不自动弹」抑制
+  document.addEventListener('mousedown', function (e) {
+    if (e.target && e.target.closest && e.target.closest('.card-text-content')) FONT_AUTO_SUPPRESS = false;
+  });
 
   var tb = document.getElementById('textToolbar');
   // 工具栏/面板内按下不吞选区（preventDefault 阻止选区折叠）
