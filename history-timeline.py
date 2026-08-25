@@ -54,7 +54,7 @@ CONFIG = {
     "figure_width": 16,          # 图片宽度（英寸）
     "height_per_track": 1.05,    # 每条轨道占的高度（轨道多图会自动变高）
     "dpi": 200,                  # 清晰度，PNG 像素 = 英寸 × dpi
-    "output_file": "docs/assets/image/history-timeline.png",  # 直接输出进网站素材库：FluidCanvas 时间线卡「历史标图」读的就是这张
+    "output_file": "docs/assets/image/history-timeline.png",  # 输出位置（独立导出/打印用；FluidCanvas 时间线卡「历史标图」已升级为卡内直接可编辑，不再读这张图）
 
     "x_tick_step": 200,          # 横轴每隔多少年画一格刻度
     "x_tick_label_neg": "公元前{year}年",   # 负年份的刻度文字模板

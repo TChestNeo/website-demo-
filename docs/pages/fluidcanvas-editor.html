@@ -351,13 +351,11 @@
     .grid-card .tl-title { font-size: 12px; font-weight: 600; width: 100%; }
     .grid-card .tl-desc { font-size: 11px; width: 100%; resize: none; min-height: 28px; overflow: hidden; }
     .grid-card .tl-event .row-del { position: absolute; right: 0; top: 0; }
-    /* v10.28.1.1.1: 时间线卡「历史标图」样式——标图换成 history-timeline.py 生成的朝代演变图（整张可见 contain，两侧留羊皮纸底同色无缝；改数据重跑脚本卡片自动更新）；事件行加羊皮纸白底保证可读，朱红轴/圆点呼应印章色 */
-    .grid-card.timeline-card.tl-history {
-      background-color: #faf3e7;
-      background-image: url('../assets/image/history-timeline.png');
-      background-size: contain; background-position: center;
-      background-repeat: no-repeat;
-    }
+    /* v10.28.2: 时间线卡「历史标图」样式 = 卡内可编辑多轨朝代图（不再是背景图）。
+       色块名字直接点开改；点色块选中 → 下方编辑行改开始/结束年（公元前用负数）+ 删除；
+       「+ 添加朝代」加新条。分轨算法与 history-timeline.py 同款贪心——同段并存自动错开轨道。
+       羊皮纸底 + 朱红轴/圆点呼应标图风 */
+    .grid-card.timeline-card.tl-history { background-color: #faf3e7; }
     .grid-card.tl-history .tl-event {
       background: rgba(255, 250, 241, 0.88);
       border-left-color: #a03c1e;
@@ -369,9 +367,30 @@
       background: #a03c1e; border-color: #fff7ec; box-shadow: 0 0 0 1px #a03c1e;
     }
     .grid-card.tl-history .tl-year { color: #8c2f1c; }
-    .grid-card.tl-history .row-add {
-      background: rgba(255, 250, 241, 0.88); color: #8c2f1c;
-    }
+    /* 历史标图下事件列表整体让位，加号按钮换成图自己的「添加朝代」 */
+    .grid-card.tl-history .tl-list { display: none; }
+    .grid-card.tl-history > .row-add { display: none; }
+    .grid-card .tl-list { display: flex; flex-direction: column; width: 100%; }
+    .grid-card .tl-chart { display: none; flex-direction: column; gap: 6px; width: 100%; padding: 6px 6px 4px; }
+    .grid-card.tl-history .tl-chart { display: flex; }
+    .tl-chart-axis { position: relative; height: 16px; margin: 2px 2px 8px; border-bottom: 1px solid #b08d57; }
+    .tl-chart-tick { position: absolute; bottom: -7px; font-size: 7px; color: #8a6f4d; transform: translateX(-50%); white-space: nowrap; line-height: 1; }
+    .tl-chart-tick::before { content: ''; position: absolute; bottom: 11px; left: 50%; width: 1px; height: 4px; background: #b08d57; }
+    .tl-chart-tracks { position: relative; width: 100%; }
+    .tc-row { position: absolute; left: 0; right: 0; height: 14px; }
+    .tc-bar { position: absolute; top: 1px; bottom: 1px; min-width: 10px; border-radius: 3px; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
+    .tc-bar.selected { outline: 2px solid var(--color-primary); outline-offset: 1px; z-index: 3; }
+    .tc-name { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); min-width: 44px; max-width: 130px; text-align: center; background: transparent; border: none; padding: 0 2px; color: #fff; font-size: 9px; text-shadow: 0 1px 2px rgba(0,0,0,.55); cursor: text; }
+    .tc-name:focus { outline: 1px dashed rgba(255,255,255,.85); }
+    .tc-edit-row { display: flex; align-items: center; gap: 4px; min-height: 20px; font-size: 10px; color: #8a6f4d; }
+    .tc-edit-hint { opacity: .8; }
+    .tc-edit-row .tc-fields { display: none; align-items: center; gap: 4px; }
+    .tc-edit-row.active .tc-fields { display: flex; }
+    .tc-edit-row.active .tc-edit-hint { display: none; }
+    .tc-edit-row input { width: 58px; padding: 1px 4px; font-size: 10px; border: 1px solid #c9b48a; border-radius: 4px; background: #fffdf7; color: #4a3b28; }
+    .tc-del { border: none; background: transparent; color: #a03c1e; font-size: 11px; cursor: pointer; padding: 0 2px; }
+    .tc-del:hover { color: #6d2412; }
+    .tl-chart .row-add { background: rgba(255, 250, 241, 0.9); color: #8c2f1c; margin-top: 2px; }
     /* 时间线种类弹层：两枚样式小预览 */
     .tl-style-opt {
       display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -384,9 +403,9 @@
     .tl-preview-classic { background: #fff; }
     .tl-preview-classic::before { content: ''; position: absolute; left: 10px; top: 6px; bottom: 6px; border-left: 2px solid #9aa3ad; }
     .tl-preview-classic::after { content: ''; position: absolute; left: 7px; top: 10px; width: 7px; height: 7px; border-radius: 50%; background: var(--color-primary); }
-    .tl-preview-history { background: #e0c0a0 url('../assets/image/history-timeline.png') center/cover no-repeat; }
-    .tl-preview-history::before { content: ''; position: absolute; left: 10px; top: 6px; bottom: 6px; border-left: 2px solid #a03c1e; }
-    .tl-preview-history::after { content: ''; position: absolute; left: 7px; top: 10px; width: 7px; height: 7px; border-radius: 50%; background: #a03c1e; }
+    .tl-preview-history { background: #f4e7cf; }
+    .tl-preview-history::before { content: ''; position: absolute; left: 4px; top: 8px; width: 40px; height: 5px; border-radius: 2px; background: #7a6a53; box-shadow: 0 9px 0 #a03c1e, 0 18px 0 #4a7c59, 0 27px 0 #5b7a8c; }
+    .tl-preview-history::after { content: ''; position: absolute; left: 16px; top: 17px; width: 22px; height: 5px; border-radius: 2px; background: #b8860b; }
     .grid-card .card-label:focus {
       /* v10.0: inline caption-background styles override border/background,
          so the edit affordance lives on outline — reserved for focus only */
@@ -2425,6 +2444,7 @@
       } else if (entry.type === 'timeline') {
         entry.tlEvents = c.dataset.tlEvents || '[]';
         if (c.dataset.tlStyle) entry.tlStyle = c.dataset.tlStyle;
+        if (c.dataset.tlChart) entry.tlChart = c.dataset.tlChart;
       }
       if (entry.type === 'flag') {
         var stripes = c.querySelector('.card-stripes');
@@ -3255,7 +3275,6 @@
     card.classList.add('timeline-card');
     var list = document.createElement('div');
     list.className = 'tl-list';
-    list.style.cssText = 'display:flex;flex-direction:column;width:100%';
     var addBtn = document.createElement('button');
     addBtn.className = 'row-add';
     addBtn.textContent = '+ 添加事件';
@@ -3266,6 +3285,25 @@
     card.appendChild(addBtn);
     addTimelineEvent(card, '2020', '建国', '');
     addTimelineEvent(card, '', '', '');
+    // v10.28.2: 「历史标图」可编辑多轨图图层——经典样式下隐藏，切样式时 renderTlChart 填充
+    var chart = document.createElement('div');
+    chart.className = 'tl-chart';
+    var axis = document.createElement('div');
+    axis.className = 'tl-chart-axis';
+    var tracks = document.createElement('div');
+    tracks.className = 'tl-chart-tracks';
+    var editRow = document.createElement('div');
+    editRow.className = 'tc-edit-row';
+    editRow.innerHTML = '<span class="tc-edit-hint">点一个色块选中，再改年份</span>' +
+      '<span class="tc-fields"><span>开始年</span><input type="number" class="tc-start card-edit-field" placeholder="-221"><span>结束年</span><input type="number" class="tc-end card-edit-field" placeholder="220"><button class="tc-del" title="删除这条">✕</button></span>';
+    var chartAdd = document.createElement('button');
+    chartAdd.className = 'row-add';
+    chartAdd.textContent = '+ 添加朝代';
+    chart.appendChild(axis);
+    chart.appendChild(tracks);
+    chart.appendChild(editRow);
+    chart.appendChild(chartAdd);
+    card.appendChild(chart);
     return card;
   }
   window.createTimelineCard = createTimelineCard;
@@ -3310,6 +3348,7 @@
     if (!arr.length) arr = [{ year: '', title: '', desc: '' }];
     arr.forEach(function (ev) { addTimelineEvent(card, ev.year, ev.title, ev.desc); });
     tlSerialize(card);
+    if (cData.tlChart) card.dataset.tlChart = cData.tlChart; // 先填图数据再套样式，避免种子数据盖掉草稿
     if (cData.tlStyle) applyTlStyle(card, cData.tlStyle);
   }
 
@@ -4464,11 +4503,190 @@
   }
   window.openTlStylePopover = openTlStylePopover;
 
+  // ── 历史标图可编辑多轨图 (v10.28.2) ──
+  // 数据存 dataset.tlChart JSON [{name,start,end}]；分轨 = history-timeline.py 同款贪心
+  // （按开始时间排序放最低不冲突轨道，同段并存自动错开）；色块名字行内改，
+  // 点色块选中 → 编辑行改开始/结束年（公元前负数）、✕ 删除；+ 添加朝代追加。
+  var TL_CHART_PALETTE = ['#7a6a53', '#a03c1e', '#5b7a8c', '#b8860b', '#4a7c59', '#3a5a78', '#7a5a8c', '#9c6b3f'];
+  var TL_CHART_SEED = [
+    { name: '夏朝', start: -2070, end: -1600 },
+    { name: '商朝', start: -1600, end: -1046 },
+    { name: '西周', start: -1046, end: -771 },
+    { name: '东周', start: -770, end: -256 },
+    { name: '秦朝', start: -221, end: -206 },
+    { name: '汉朝', start: -202, end: 220 },
+    { name: '魏', start: 220, end: 265 },
+    { name: '蜀汉', start: 221, end: 263 },
+    { name: '吴', start: 229, end: 280 },
+    { name: '晋朝', start: 265, end: 420 },
+    { name: '南北朝', start: 420, end: 589 },
+    { name: '隋朝', start: 581, end: 618 },
+    { name: '唐朝', start: 618, end: 907 },
+    { name: '宋朝', start: 960, end: 1279 },
+    { name: '元朝', start: 1271, end: 1368 },
+    { name: '明朝', start: 1368, end: 1644 },
+    { name: '清朝', start: 1636, end: 1912 }
+  ];
+  function tlChartBars(card) {
+    // 活数组：dataset 只解析一次，之后名字/年份/增删全改内存里的对象，
+    // 序列化时直接 stringify 活数组写回 dataset（改完再读会丢编辑——v10.28.2 电池抓出）
+    if (!card._tlChartBars) {
+      try { card._tlChartBars = JSON.parse(card.dataset.tlChart || '[]'); } catch (e) { card._tlChartBars = []; }
+    }
+    return card._tlChartBars;
+  }
+  function tlChartSerialize(card) {
+    card.dataset.tlChart = JSON.stringify(card._tlChartBars || []);
+  }
+  function tlChartSet(card, arr) {
+    card._tlChartBars = arr;
+    card.dataset.tlChart = JSON.stringify(arr);
+  }
+  function tlChartAssign(bars) {
+    var occupied = {};
+    var sorted = bars.slice().sort(function (a, b) { return (a.start - b.start) || (a.end - b.end); });
+    sorted.forEach(function (b) {
+      delete b.track; // 每次渲染重新计算，绝不沿用旧轨道
+      var t = 0;
+      while ((occupied[t] || []).some(function (o) { return b.start < o.end && b.end > o.start; })) t++;
+      b.track = t;
+      (occupied[t] = occupied[t] || []).push(b);
+    });
+  }
+  function tlChartNiceStep(rough) {
+    var pow = Math.pow(10, Math.floor(Math.log(rough) / Math.LN10));
+    var m = rough / pow;
+    if (m <= 1) m = 1; else if (m <= 2) m = 2; else if (m <= 5) m = 5; else m = 10;
+    return m * pow;
+  }
+  function tlChartYear(y) {
+    y = Math.round(y);
+    if (y < 0) return '前' + (-y);
+    if (y === 0) return '元年';
+    return String(y);
+  }
+  function tlChartSyncEditRow(card) {
+    var chart = card.querySelector('.tl-chart');
+    if (!chart) return;
+    var row = chart.querySelector('.tc-edit-row');
+    var i = parseInt(card.dataset.tlChartSel || '-1', 10);
+    var bars = tlChartBars(card);
+    var ok = i >= 0 && i < bars.length;
+    row.classList.toggle('active', ok);
+    if (ok) {
+      row.querySelector('.tc-start').value = bars[i].start;
+      row.querySelector('.tc-end').value = bars[i].end;
+    }
+  }
+  function renderTlChart(card) {
+    var chart = card.querySelector('.tl-chart');
+    if (!chart) return;
+    var axis = chart.querySelector('.tl-chart-axis');
+    var tracks = chart.querySelector('.tl-chart-tracks');
+    var bars = tlChartBars(card);
+    if (!bars.length) { axis.innerHTML = ''; tracks.innerHTML = ''; return; }
+    tlChartAssign(bars);
+    var lo = Math.min.apply(null, bars.map(function (b) { return b.start; }));
+    var hi = Math.max.apply(null, bars.map(function (b) { return b.end; }));
+    var pad = (hi - lo) * 0.04 || 1;
+    lo -= pad; hi += pad;
+    var span = hi - lo;
+    var maxTrack = 0;
+    bars.forEach(function (b) { maxTrack = Math.max(maxTrack, b.track); });
+    // 年份轴刻度：自动取 1/2/5×10ⁿ 的整齐步长，负年份显示「前N」
+    axis.innerHTML = '';
+    var step = tlChartNiceStep(span / 5);
+    for (var t = Math.ceil(lo / step) * step; t <= hi; t += step) {
+      var tick = document.createElement('div');
+      tick.className = 'tl-chart-tick';
+      tick.style.left = ((t - lo) / span * 100) + '%';
+      tick.textContent = tlChartYear(t);
+      axis.appendChild(tick);
+    }
+    tracks.innerHTML = '';
+    tracks.style.height = ((maxTrack + 1) * 18) + 'px';
+    var sel = parseInt(card.dataset.tlChartSel || '-1', 10);
+    bars.forEach(function (b, i) {
+      var row = document.createElement('div');
+      row.className = 'tc-row';
+      row.style.top = (b.track * 18) + 'px';
+      var bar = document.createElement('div');
+      bar.className = 'tc-bar' + (i === sel ? ' selected' : '');
+      bar.style.left = ((b.start - lo) / span * 100) + '%';
+      bar.style.width = Math.max(((b.end - b.start) / span * 100), 2) + '%';
+      bar.style.background = TL_CHART_PALETTE[i % TL_CHART_PALETTE.length];
+      bar.title = tlChartYear(b.start) + ' ~ ' + tlChartYear(b.end);
+      var nm = document.createElement('input');
+      nm.className = 'tc-name card-edit-field';
+      nm.value = b.name;
+      nm.addEventListener('input', function () {
+        b.name = nm.value;
+        tlChartSerialize(card);
+        onContentChange();
+      });
+      bar.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (e.target === nm) return; // 名字输入框里点按不触发选中
+        card.dataset.tlChartSel = String(i);
+        renderTlChart(card);
+        tlChartSyncEditRow(card);
+      });
+      bar.appendChild(nm);
+      row.appendChild(bar);
+      tracks.appendChild(row);
+    });
+    tlChartSyncEditRow(card);
+  }
+  function initTlChartCard(card) {
+    var chart = card.querySelector('.tl-chart');
+    if (!chart || card._tlChartInit) return;
+    card._tlChartInit = true;
+    chart.querySelector('.row-add').addEventListener('click', function () {
+      var bars = tlChartBars(card);
+      var last = bars.length ? Math.max.apply(null, bars.map(function (b) { return b.end; })) : 2000;
+      bars.push({ name: '新朝代', start: last, end: last + 100 });
+      card.dataset.tlChartSel = String(bars.length - 1);
+      tlChartSerialize(card); // 立即序列化（v10.28.0 教训：追加后不存会丢末条）
+      renderTlChart(card);
+      onContentChange();
+    });
+    var onYear = function () {
+      var bars = tlChartBars(card);
+      var i = parseInt(card.dataset.tlChartSel || '-1', 10);
+      if (i < 0 || i >= bars.length) return;
+      var s = parseFloat(chart.querySelector('.tc-start').value);
+      var e = parseFloat(chart.querySelector('.tc-end').value);
+      if (isNaN(s) && isNaN(e)) return;
+      if (!isNaN(s)) bars[i].start = s;
+      if (!isNaN(e)) bars[i].end = e;
+      tlChartSerialize(card);
+      renderTlChart(card);
+      onContentChange();
+    };
+    chart.querySelector('.tc-start').addEventListener('input', onYear);
+    chart.querySelector('.tc-end').addEventListener('input', onYear);
+    chart.querySelector('.tc-del').addEventListener('click', function () {
+      var bars = tlChartBars(card);
+      var i = parseInt(card.dataset.tlChartSel || '-1', 10);
+      if (i < 0 || bars.length <= 1) return;
+      bars.splice(i, 1);
+      card.dataset.tlChartSel = '-1';
+      tlChartSerialize(card);
+      renderTlChart(card);
+      onContentChange();
+    });
+  }
+
   function applyTlStyle(card, style) {
     if (!card) card = selectedCard;
     if (!card || card.dataset.cardType !== 'timeline') return;
     card.dataset.tlStyle = style;
     card.classList.toggle('tl-history', style === 'history');
+    if (style === 'history') {
+      initTlChartCard(card);
+      if (!tlChartBars(card).length) tlChartSet(card, JSON.parse(JSON.stringify(TL_CHART_SEED)));
+      renderTlChart(card);
+    }
     onContentChange();
     hideContextMenu();
   }
@@ -6142,7 +6360,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.1.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.2') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -6151,7 +6369,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.1.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.2');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
