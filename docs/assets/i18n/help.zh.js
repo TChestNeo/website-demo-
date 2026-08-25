@@ -90,7 +90,7 @@ window.MN_I18N.add('zh', {
 
   'sec.contact.title': '联系我们',
   'contact.discord.title': '官方社区伺服器',
-  'contact.discord.body': '有任何问题，请在 SlatiStudio 官方 Discord 社区伺服器内直接联系管理员（SlatiStudio 团队）。',
+  'contact.discord.body': '有任何问题，请在 Slati Studio 官方 Discord 社区伺服器内直接联系管理员（Slati Studio 团队）。',
   'contact.discord.btn': '加入伺服器',
   'contact.email.title': '官方邮箱',
   'contact.email.body': '平台正式域名确定后，将在此处补充官方联系邮箱。',

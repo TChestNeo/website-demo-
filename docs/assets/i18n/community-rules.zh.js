@@ -9,7 +9,7 @@ window.MN_I18N.add('zh', {
   'back.label': '返回 M.NationWorld',
 
   'page.title': '社区规则',
-  'page.effective': '生效日期：2026年8月13日 · 运营主体：SlatiStudio（M.NationWorld Project）',
+  'page.effective': '生效日期：2026年8月13日 · 运营主体：Slati Studio（M.NationWorld Project）',
   'intro.1': '本规则是《服务条款》第 4 条（社区行为规范）的执行细则，适用于 M.NationWorld 平台内的一切公开内容、私信与团队频道。所有创作者在享受创作自由的同时，须共同维护一个尊重、安全、可识别为虚构的创作环境。',
 
   'toc.1': '1. 基本行为准则',
@@ -92,7 +92,7 @@ window.MN_I18N.add('zh', {
   'sec5.li1.label': '举报渠道：',
   'sec5.li1.body': '发现违规内容、抄袭侵权、诈骗与冒充等行为，请使用平台专用举报入口——点击相关内容旁的「举报」按钮进入举报流程提交；举报不经过工单系统，由平台在合理时间内核查并处置。',
   'sec5.li2.label': '处罚申诉：',
-  'sec5.li2.body': '对处罚决定有异议的，可通过 Discord 官方社区伺服器联系管理员（SlatiStudio 团队）或提交工单提出申诉；申诉由人工受理与处理，不通过 AI 客服办理。',
+  'sec5.li2.body': '对处罚决定有异议的，可通过 Discord 官方社区伺服器联系管理员（Slati Studio 团队）或提交工单提出申诉；申诉由人工受理与处理，不通过 AI 客服办理。',
   'sec5.li3.label': '知识产权投诉：',
   'sec5.li3.body': '如您认为平台内容侵犯了您的知识产权，请通过举报入口（内容旁的「举报」按钮）提交书面投诉，附权利证明与被投诉内容的链接（详见服务条款第 5 条）。',
 

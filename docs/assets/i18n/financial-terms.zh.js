@@ -9,7 +9,7 @@ window.MN_I18N.add('zh', {
   'back.label': '返回 M.NationWorld',
 
   'page.title': '财务与支付条款',
-  'page.effective': '生效日期：2026年8月13日 · 运营主体：SlatiStudio（M.NationWorld Project）',
+  'page.effective': '生效日期：2026年8月13日 · 运营主体：Slati Studio（M.NationWorld Project）',
   'intro.1': '本条款是《服务条款》第 7 条（订阅、计费与退款政策）的执行细则与延伸，适用于 M.NationWorld 平台内的一切付费行为、频道捐款与创作者收益结算。付费即表示您已阅读并同意本条款。',
 
   'toc.1': '1. 付费项目与计费',
