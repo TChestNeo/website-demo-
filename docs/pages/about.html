@@ -75,6 +75,22 @@
     }
     .lift-info-pop.open { opacity: 1; transform: translateX(-50%) scale(1); pointer-events: auto; }
 
+    /* 创始人 rich 弹层 */
+    .lift-info-pop-rich { width: min(320px, 80vw); max-height: 420px; overflow-y: auto; padding: 14px 16px; }
+    .lift-info-pop .pop-head { margin-bottom: 10px; }
+    .lift-info-pop .pop-sec {
+      font-size: 11px; font-weight: 700; letter-spacing: .06em;
+      color: var(--color-primary); text-transform: uppercase;
+      margin: 10px 0 6px;
+    }
+    .lift-info-pop .pop-list { margin: 0; padding: 0 0 0 16px; }
+    .lift-info-pop .pop-list li { margin-bottom: 6px; font-size: 12.5px; line-height: 1.6; }
+    .lift-info-pop .pop-foot {
+      margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--color-outline-variant);
+      font-size: 12.5px;
+    }
+    .lift-info-pop .pop-foot a { color: var(--color-primary); font-weight: 600; }
+
     .brand-pill {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 8px 16px; border-radius: var(--radius-full);
@@ -218,8 +234,27 @@
           <button type="button" class="lift-info-btn" aria-label="更多信息">
             <span class="material-symbols-outlined" style="font-size:20px">info</span>
           </button>
-          <div class="lift-info-pop" role="tooltip">
-            TChest_Neo24 是 M.NationWorld 的创始人，负责平台的全栈开发与日常维护。想合作、反馈或提建议？欢迎加入官方 Discord 社区。
+          <div class="lift-info-pop lift-info-pop-rich" role="tooltip">
+            <div class="pop-head">
+              <div class="label-lg" style="color:var(--color-on-surface)">TChest_Neo24</div>
+              <div class="label-sm" style="color:var(--color-outline)">创始人 · 全栈开发者 · 独立创作者</div>
+            </div>
+            <div class="pop-sec">项目足迹</div>
+            <ul class="pop-list">
+              <li><b>平台创立</b>：M.NationWorld + MicroNationary 品牌与定位（硬核架空国家 · 共和/社会主义/民主主义）</li>
+              <li><b>FluidCanvas 编辑器</b>：卡片式世界百科工作台 v10 系列——主题系统、Canva 式工具栏、Google Fonts 字体库、Layers 图层、新卡片族、历史标图</li>
+              <li><b>Create World</b>：22 种世界类型的单向导创建引擎</li>
+              <li><b>帮助中心</b>：FAQ 智能搜索、AI 客服、官方人员 12h 验证码身份验证</li>
+              <li><b>付费系统</b>：订阅与混合支付方式（Stripe）、创作者分成</li>
+              <li><b>管理后台</b>：财务总览、流水账、季度财报、提现</li>
+            </ul>
+            <div class="pop-sec">个人信息</div>
+            <ul class="pop-list">
+              <li>独立创作者——从构想、设计到开发一人完成</li>
+              <li>热爱架空世界与微国家创作</li>
+              <li>日常爱用 kaomoji 颜文字交流 (◕‿◕)</li>
+            </ul>
+            <div class="pop-foot">想认识或合作？<a href="https://discord.gg/beST9TtMqq" target="_blank" rel="noopener noreferrer">加入官方 Discord</a></div>
           </div>
         </div>
       </div>
@@ -280,6 +315,10 @@
   });
   document.addEventListener('click', closeAllInfoPops);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAllInfoPops(); });
+  // 点弹层内部（选文字/点链接）不触发 document 外点关闭
+  document.querySelectorAll('.lift-info').forEach(function (li) {
+    li.addEventListener('click', function (ev) { ev.stopPropagation(); });
+  });
 
   // 退场 overflow 延迟钳回：滑鼠移开后挂 .lift-leaving 撑 450ms（info 收回需 .12s 延迟 + .25s 过渡），
   // 等按钮滑回底边外再切 hidden，避免「没滑完就被剪掉」；中途重新进入立刻解除。
