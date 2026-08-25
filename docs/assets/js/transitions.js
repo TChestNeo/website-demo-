@@ -9,7 +9,8 @@
   'use strict';
 
   var STAGGER_DELAY = 60;
-  var CARD_SELECTOR = '.card, .app-main h1, .app-main h2, .app-main .search-capsule, .app-main header, .auth-card';
+  // h1 + p = hero 副标题（如 guidelines 的 Standards and protocols…）：跟大标题一起淡入，不再原地呆住
+  var CARD_SELECTOR = '.card, .app-main h1, .app-main h1 + p, .app-main h2, .app-main .search-capsule, .app-main header, .auth-card';
 
   var NAV_ORDER = {
     'dashboard.html': 0,
@@ -151,7 +152,7 @@
 
       // Animate cards individually, skip subnav
       var mainH = getMainEl();
-      var cards = mainH.querySelectorAll('.card, h1, h2, .search-capsule, header, .upload-zone, table, #statsRow > *, #featuredNation, #recentContribs');
+      var cards = mainH.querySelectorAll('.card, h1, h1 + p, h2, .search-capsule, header, .upload-zone, table, #statsRow > *, #featuredNation, #recentContribs');
       cards.forEach(function (card, i) {
         card.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
         card.style.transitionDelay = (i * 0.025) + 's';
