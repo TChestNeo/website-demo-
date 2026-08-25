@@ -254,6 +254,103 @@
     .grid-card .card-stripes,
     .grid-card .card-img-bg,
     .grid-card .card-bg-img { pointer-events: none; }
+    /* ── v10.28 新卡片族：人物卡 / 地图卡 / 数据卡 / 时间线卡 ── */
+    /* 通用行内编辑框（无边框透明态 → 悬停细边 → 聚焦主色边） */
+    .grid-card .char-title, .grid-card .char-bio, .grid-card .stats-label,
+    .grid-card .stats-value, .grid-card .tl-year, .grid-card .tl-title,
+    .grid-card .tl-desc, .grid-card .pin-label {
+      border: 1px solid transparent; background: transparent; outline: none;
+      font-family: var(--font-family); color: var(--color-on-surface);
+      border-radius: var(--radius-xs); padding: 1px 4px;
+      transition: border-color 0.15s, background 0.15s; cursor: text;
+    }
+    .grid-card .char-title:hover, .grid-card .char-bio:hover,
+    .grid-card .stats-label:hover, .grid-card .stats-value:hover,
+    .grid-card .tl-year:hover, .grid-card .tl-title:hover,
+    .grid-card .tl-desc:hover, .grid-card .pin-label:hover { border-color: var(--color-outline); }
+    .grid-card .char-title:focus, .grid-card .char-bio:focus,
+    .grid-card .stats-label:focus, .grid-card .stats-value:focus,
+    .grid-card .tl-year:focus, .grid-card .tl-title:focus,
+    .grid-card .tl-desc:focus, .grid-card .pin-label:focus {
+      border-color: var(--color-primary); background: var(--color-surface-container-lowest);
+    }
+    .grid-card .row-del {
+      border: none; background: transparent; color: var(--color-outline);
+      cursor: pointer; font-size: 15px; line-height: 1; padding: 0 2px; flex-shrink: 0;
+    }
+    .grid-card .row-del:hover { color: var(--color-error); }
+    .grid-card .row-add {
+      width: 100%; border: 1px dashed var(--divider-line-strong); background: transparent;
+      color: var(--color-outline); font-size: 11px; padding: 4px; cursor: pointer;
+      border-radius: var(--radius-sm); font-family: var(--font-family);
+    }
+    .grid-card .row-add:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    /* 人物卡 */
+    .grid-card.character-card { padding: 12px 10px; gap: 6px; justify-content: flex-start; overflow: hidden; }
+    .grid-card .char-avatar {
+      width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0; cursor: pointer;
+      background-color: var(--color-surface-container); background-size: cover; background-position: center;
+      border: 1px dashed var(--divider-line-strong);
+      display: flex; align-items: center; justify-content: center; color: var(--color-outline);
+    }
+    .grid-card .char-avatar:hover { border-color: var(--color-primary); }
+    .grid-card .char-avatar .material-symbols-outlined { font-size: 26px; }
+    .grid-card.character-card .card-label { font-size: 13px; font-weight: 600; }
+    .grid-card .char-title { font-size: 11px; color: var(--color-outline); text-align: center; width: 90%; }
+    .grid-card .char-bio {
+      width: 100%; font-size: 12px; line-height: 1.5; resize: none; min-height: 46px; overflow: hidden;
+    }
+    /* 地图卡 */
+    .grid-card.map-card { padding: 0; overflow: hidden; }
+    .grid-card .map-canvas {
+      position: relative; width: 100%; height: 100%; min-height: 120px; cursor: crosshair;
+      background-size: cover; background-position: center; border-radius: inherit;
+    }
+    .grid-card .map-canvas.map-empty {
+      display: flex; align-items: center; justify-content: center;
+      border: 1px dashed var(--divider-line-strong); border-radius: 8px;
+      color: var(--color-outline); font-size: 12px; text-align: center; padding: 10px; cursor: pointer;
+    }
+    .grid-card .map-pin { position: absolute; transform: translate(-50%, -100%); cursor: pointer; z-index: 2; }
+    .grid-card .map-pin .pin-dot {
+      width: 12px; height: 12px; margin: 0 auto 2px; border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg); background: var(--color-primary);
+      border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+    .grid-card .map-pin .pin-label {
+      display: block; width: 72px; font-size: 10px; text-align: center;
+      background: var(--color-surface-container-lowest);
+    }
+    /* 数据卡 */
+    .grid-card.stats-card { padding: 10px; gap: 6px; justify-content: flex-start; overflow: hidden; }
+    .grid-card .stats-row { display: flex; align-items: center; gap: 6px; width: 100%; }
+    .grid-card .stats-label { width: 42%; font-size: 12px; }
+    .grid-card .stats-value { width: 52px; font-size: 12px; text-align: right; }
+    .grid-card .stats-bar-track {
+      flex: 1; height: 8px; border-radius: 4px; overflow: hidden;
+      background: var(--color-surface-container);
+    }
+    .grid-card .stats-bar {
+      height: 100%; width: 0%; border-radius: 4px;
+      background: var(--color-primary); transition: width 0.2s;
+    }
+    /* 时间线卡 */
+    .grid-card.timeline-card { padding: 10px 10px 10px 6px; gap: 2px; justify-content: flex-start; align-items: stretch; overflow: hidden; }
+    .grid-card .tl-event {
+      position: relative; margin-left: 12px; padding: 0 0 8px 12px;
+      border-left: 2px solid var(--divider-line-strong);
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .grid-card .tl-event::before {
+      content: ''; position: absolute; left: -6px; top: 6px;
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--color-primary); border: 2px solid #fff;
+      box-shadow: 0 0 0 1px var(--color-primary);
+    }
+    .grid-card .tl-year { font-size: 11px; font-weight: 600; width: 56px; }
+    .grid-card .tl-title { font-size: 12px; font-weight: 600; width: 100%; }
+    .grid-card .tl-desc { font-size: 11px; width: 100%; resize: none; min-height: 28px; overflow: hidden; }
+    .grid-card .tl-event .row-del { position: absolute; right: 0; top: 0; }
     .grid-card .card-label:focus {
       /* v10.0: inline caption-background styles override border/background,
          so the edit affordance lives on outline — reserved for focus only */
@@ -1241,6 +1338,9 @@
     <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">Politics & Economy</div>
     <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="account_balance" data-label="Governance"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">account_balance</span><span class="label-md">Governance</span></div></div>
     <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="payments" data-label="Economic Ledger"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">payments</span><span class="label-md">Economic Ledger</span></div></div>
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">People & Data</div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="character" data-label="Character Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">person</span><span class="label-md">Character Card</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="stats" data-label="Stats Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">monitoring</span><span class="label-md">Stats Card</span></div></div>
     <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">Content</div>
     <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="menu_book" data-label="Constitution"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">menu_book</span><span class="label-md">Constitution</span></div></div>
     <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="history_edu" data-label="Timeline"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">history_edu</span><span class="label-md">Timeline</span></div></div>
@@ -2005,6 +2105,18 @@
                 if (textEl) textEl.innerHTML = sanitizeDraftHtml(cData.content);
               }
               if (cData.bgAlpha != null) card.dataset.bgAlpha = parseInt(cData.bgAlpha) || 0;
+            } else if (cData.type === 'character') { // v10.28: 人物卡
+              card = createCharacterCard(pos.col, pos.row, pos.colSpan || 4, pos.rowSpan || 5);
+              restoreCharacter(card, cData);
+            } else if (cData.type === 'map') { // v10.28: 地图卡
+              card = createMapCard(pos.col, pos.row, pos.colSpan || 8, pos.rowSpan || 6);
+              restoreMap(card, cData);
+            } else if (cData.type === 'stats') { // v10.28: 数据卡
+              card = createStatsCard(pos.col, pos.row, pos.colSpan || 6, pos.rowSpan || 5);
+              restoreStats(card, cData);
+            } else if (cData.type === 'timeline') { // v10.28: 时间线卡
+              card = createTimelineCard(pos.col, pos.row, pos.colSpan || 8, pos.rowSpan || 8);
+              restoreTimeline(card, cData);
             } else {
               card = createAssetCard(cData.type, cData.label, pos.col, pos.row, pos.colSpan || 4, pos.rowSpan || 3);
             }
@@ -2263,6 +2375,20 @@
       // v10.27.1: 图层 (additive — legacy drafts omit; DOM 序本身随 cards 数组往返)
       if (c.style.zIndex) entry.z = parseInt(c.style.zIndex) || 0;
       if (c.dataset.hidden === '1') entry.hidden = '1';
+      // v10.28: 新卡片族 additive 字段（legacy drafts omit → 默认空/示例行）
+      if (entry.type === 'character') {
+        entry.charName = (c.querySelector('.card-label') && c.querySelector('.card-label').value) || '';
+        entry.charTitle = (c.querySelector('.char-title') && c.querySelector('.char-title').value) || '';
+        entry.charBio = (c.querySelector('.char-bio') && c.querySelector('.char-bio').value) || '';
+        if (c.dataset.charAvatar) entry.charAvatar = c.dataset.charAvatar;
+      } else if (entry.type === 'map') {
+        if (c.dataset.mapImg) entry.mapImg = c.dataset.mapImg;
+        entry.mapPins = c.dataset.mapPins || '[]';
+      } else if (entry.type === 'stats') {
+        entry.statsRows = c.dataset.statsRows || '[]';
+      } else if (entry.type === 'timeline') {
+        entry.tlEvents = c.dataset.tlEvents || '[]';
+      }
       if (entry.type === 'flag') {
         var stripes = c.querySelector('.card-stripes');
         var img = c.querySelector('.card-img-bg');
@@ -2292,7 +2418,7 @@
     // Save current card positions to active preset before persisting
     saveCurrentPresetCards();
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -2593,7 +2719,8 @@
 
       // v10.24: 文字内按下不 arm 拖拽——mousemove 的 preventDefault 会打断
       // 原生文字选区（选中文字浮动工具栏依赖它）。卡片选中/菜单关闭照旧。
-      var inText = e.target.closest('.card-text-content');
+      // v10.28: 新卡片族行内编辑框同理（打字/点按钮不拖卡）。
+      var inText = e.target.closest('.card-text-content, .card-edit-field');
 
       try { selectCard(card); } catch (err) {}
       try { hideContextMenu(); } catch (err) {}
@@ -2834,6 +2961,320 @@
     return card;
   }
 
+  // ── New card family (v10.28) ──
+  // 人物卡 / 地图卡 / 数据卡 / 时间线卡。全部行内编辑（无新弹窗），数据
+  // 实时同步进 dataset（JSON 串），buildDraft/applyDraft additive 往返；
+  // 编辑框带 .card-edit-field 类，addCardDrag 不 arm 拖拽（打字不拖卡）。
+
+  function charSerialize(card) {
+    card.dataset.charName = card.querySelector('.card-label') ? card.querySelector('.card-label').value : '';
+    card.dataset.charTitle = card.querySelector('.char-title') ? card.querySelector('.char-title').value : '';
+    card.dataset.charBio = card.querySelector('.char-bio') ? card.querySelector('.char-bio').value : '';
+  }
+  function createCharacterCard(col, row, spanW, spanH) {
+    var card = createGridCard('character', col, row, spanW || 4, spanH || 5);
+    card.classList.add('character-card');
+    var avatar = document.createElement('div');
+    avatar.className = 'char-avatar';
+    avatar.title = '点击上传头像';
+    avatar.innerHTML = '<span class="material-symbols-outlined">person</span>';
+    var fi = document.createElement('input');
+    fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
+    fi.addEventListener('change', function () {
+      var file = fi.files && fi.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        card.dataset.charAvatar = e.target.result;
+        avatar.style.backgroundImage = 'url("' + e.target.result + '")';
+        avatar.innerHTML = '';
+        onContentChange();
+        showToast('头像已上传');
+      };
+      reader.readAsDataURL(file);
+      fi.value = '';
+    });
+    avatar.addEventListener('click', function () { fi.click(); });
+    var nameEl = document.createElement('input');
+    nameEl.className = 'card-label card-edit-field';
+    nameEl.placeholder = '姓名';
+    setupCardLabelInput(card, nameEl);
+    var titleEl = document.createElement('input');
+    titleEl.className = 'char-title card-edit-field';
+    titleEl.placeholder = '头衔';
+    var bioEl = document.createElement('textarea');
+    bioEl.className = 'char-bio card-edit-field';
+    bioEl.placeholder = '简介…';
+    card.appendChild(fi);
+    card.appendChild(avatar);
+    card.appendChild(nameEl);
+    card.appendChild(titleEl);
+    card.appendChild(bioEl);
+    var serialize = function () { charSerialize(card); onContentChange(); };
+    nameEl.addEventListener('input', serialize);
+    titleEl.addEventListener('input', serialize);
+    bioEl.addEventListener('input', serialize);
+    return card;
+  }
+  window.createCharacterCard = createCharacterCard;
+
+  function mapPinsFromDataset(card) {
+    try { return JSON.parse(card.dataset.mapPins || '[]'); } catch (e) { return []; }
+  }
+  function mapSerialize(card) {
+    var pins = [];
+    card.querySelectorAll('.map-pin').forEach(function (p) {
+      pins.push({ x: parseFloat(p.dataset.x) || 0, y: parseFloat(p.dataset.y) || 0, label: p.querySelector('.pin-label').value });
+    });
+    card.dataset.mapPins = JSON.stringify(pins);
+  }
+  function mapRenderPins(card, canvas) {
+    mapPinsFromDataset(card).forEach(function (pin) { addMapPin(card, canvas, pin.x, pin.y, pin.label); });
+  }
+  function addMapPin(card, canvas, x, y, label) {
+    var pin = document.createElement('div');
+    pin.className = 'map-pin card-edit-field';
+    pin.dataset.x = x; pin.dataset.y = y;
+    pin.style.left = x + '%'; pin.style.top = y + '%';
+    pin.innerHTML = '<span class="pin-dot"></span>';
+    var lbl = document.createElement('input');
+    lbl.className = 'pin-label card-edit-field';
+    lbl.value = label || '';
+    lbl.placeholder = '地点名';
+    pin.appendChild(lbl);
+    lbl.addEventListener('input', function () { mapSerialize(card); onContentChange(); });
+    lbl.addEventListener('click', function (e) { e.stopPropagation(); });
+    pin.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (!e.target.closest('.pin-label')) lbl.focus();
+    });
+    pin.addEventListener('contextmenu', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      pin.remove();
+      mapSerialize(card); onContentChange();
+    });
+    canvas.appendChild(pin);
+  }
+  function createMapCard(col, row, spanW, spanH) {
+    var card = createGridCard('map', col, row, spanW || 8, spanH || 6);
+    card.classList.add('map-card');
+    var canvas = document.createElement('div');
+    canvas.className = 'map-canvas map-empty';
+    canvas.textContent = '双击上传地图图片 · 单击加标注点';
+    var fi = document.createElement('input');
+    fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
+    fi.addEventListener('change', function () {
+      var file = fi.files && fi.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        card.dataset.mapImg = e.target.result;
+        canvas.style.backgroundImage = 'url("' + e.target.result + '")';
+        canvas.classList.remove('map-empty');
+        canvas.textContent = '';
+        onContentChange();
+        showToast('地图已上传');
+      };
+      reader.readAsDataURL(file);
+      fi.value = '';
+    });
+    var clickTimer = null;
+    canvas.addEventListener('click', function (e) {
+      if (card.dataset.justDragged) return;
+      if (e.target.closest('.map-pin')) return;
+      if (e.target !== canvas) return;
+      clearTimeout(clickTimer);
+      clickTimer = setTimeout(function () {
+        var rect = canvas.getBoundingClientRect();
+        var x = ((e.clientX - rect.left) / rect.width) * 100;
+        var y = ((e.clientY - rect.top) / rect.height) * 100;
+        addMapPin(card, canvas, Math.round(x * 10) / 10, Math.round(y * 10) / 10, '');
+        mapSerialize(card); onContentChange();
+      }, 260);
+    });
+    canvas.addEventListener('dblclick', function (e) {
+      clearTimeout(clickTimer);
+      if (e.target.closest('.map-pin')) return;
+      fi.click();
+    });
+    card.appendChild(fi);
+    card.appendChild(canvas);
+    mapRenderPins(card, canvas);
+    return card;
+  }
+  window.createMapCard = createMapCard;
+
+  function statsSerialize(card) {
+    var rows = [];
+    card.querySelectorAll('.stats-row').forEach(function (r) {
+      rows.push({
+        label: r.querySelector('.stats-label').value,
+        value: parseFloat(r.querySelector('.stats-value').value) || 0
+      });
+    });
+    card.dataset.statsRows = JSON.stringify(rows);
+  }
+  function refreshStatsBars(card) {
+    var rows = card.querySelectorAll('.stats-row');
+    var max = 0;
+    rows.forEach(function (r) {
+      var v = parseFloat(r.querySelector('.stats-value').value) || 0;
+      if (v > max) max = v;
+    });
+    if (max <= 0) max = 1;
+    rows.forEach(function (r) {
+      var v = parseFloat(r.querySelector('.stats-value').value) || 0;
+      r.querySelector('.stats-bar').style.width = Math.max(0, Math.min(100, (v / max) * 100)) + '%';
+    });
+  }
+  function addStatsRow(card, label, value) {
+    var row = document.createElement('div');
+    row.className = 'stats-row';
+    var l = document.createElement('input');
+    l.className = 'stats-label card-edit-field';
+    l.placeholder = '指标'; l.value = label || '';
+    var v = document.createElement('input');
+    v.className = 'stats-value card-edit-field';
+    v.type = 'number'; v.placeholder = '0'; v.value = value != null ? value : '';
+    var track = document.createElement('div');
+    track.className = 'stats-bar-track';
+    track.innerHTML = '<div class="stats-bar"></div>';
+    var del = document.createElement('button');
+    del.className = 'row-del'; del.textContent = '✕'; del.title = '删除此行';
+    del.addEventListener('click', function () {
+      row.remove();
+      if (!card.querySelector('.stats-row')) addStatsRow(card, '', '');
+      statsSerialize(card); refreshStatsBars(card); onContentChange();
+    });
+    row.appendChild(l); row.appendChild(v); row.appendChild(track); row.appendChild(del);
+    card.querySelector('.stats-rows').appendChild(row);
+    var sync = function () { statsSerialize(card); refreshStatsBars(card); onContentChange(); };
+    l.addEventListener('input', sync);
+    v.addEventListener('input', sync);
+    statsSerialize(card); refreshStatsBars(card); onContentChange();
+  }
+  function createStatsCard(col, row, spanW, spanH) {
+    var card = createGridCard('stats', col, row, spanW || 6, spanH || 5);
+    card.classList.add('stats-card');
+    var rows = document.createElement('div');
+    rows.className = 'stats-rows';
+    rows.style.cssText = 'display:flex;flex-direction:column;gap:6px;width:100%';
+    var addBtn = document.createElement('button');
+    addBtn.className = 'row-add';
+    addBtn.textContent = '+ 添加指标';
+    addBtn.addEventListener('click', function () {
+      addStatsRow(card, '', '');
+    });
+    card.appendChild(rows);
+    card.appendChild(addBtn);
+    addStatsRow(card, '人口', 120);
+    addStatsRow(card, '面积', 80);
+    addStatsRow(card, 'GDP', 45);
+    refreshStatsBars(card);
+    return card;
+  }
+  window.createStatsCard = createStatsCard;
+
+  function tlSerialize(card) {
+    var evs = [];
+    card.querySelectorAll('.tl-event').forEach(function (ev) {
+      evs.push({
+        year: ev.querySelector('.tl-year').value,
+        title: ev.querySelector('.tl-title').value,
+        desc: ev.querySelector('.tl-desc').value
+      });
+    });
+    card.dataset.tlEvents = JSON.stringify(evs);
+  }
+  function addTimelineEvent(card, year, title, desc) {
+    var ev = document.createElement('div');
+    ev.className = 'tl-event';
+    var y = document.createElement('input');
+    y.className = 'tl-year card-edit-field';
+    y.placeholder = '年份'; y.value = year || '';
+    var t = document.createElement('input');
+    t.className = 'tl-title card-edit-field';
+    t.placeholder = '事件'; t.value = title || '';
+    var d = document.createElement('textarea');
+    d.className = 'tl-desc card-edit-field';
+    d.placeholder = '描述…'; d.value = desc || '';
+    var del = document.createElement('button');
+    del.className = 'row-del'; del.textContent = '✕'; del.title = '删除此事件';
+    del.addEventListener('click', function () {
+      ev.remove();
+      if (!card.querySelector('.tl-event')) addTimelineEvent(card, '', '', '');
+      tlSerialize(card); onContentChange();
+    });
+    ev.appendChild(del); ev.appendChild(y); ev.appendChild(t); ev.appendChild(d);
+    card.querySelector('.tl-list').appendChild(ev);
+    var sync = function () { tlSerialize(card); onContentChange(); };
+    y.addEventListener('input', sync);
+    t.addEventListener('input', sync);
+    d.addEventListener('input', sync);
+    tlSerialize(card); onContentChange();
+  }
+  function createTimelineCard(col, row, spanW, spanH) {
+    var card = createGridCard('timeline', col, row, spanW || 8, spanH || 8);
+    card.classList.add('timeline-card');
+    var list = document.createElement('div');
+    list.className = 'tl-list';
+    list.style.cssText = 'display:flex;flex-direction:column;width:100%';
+    var addBtn = document.createElement('button');
+    addBtn.className = 'row-add';
+    addBtn.textContent = '+ 添加事件';
+    addBtn.addEventListener('click', function () {
+      addTimelineEvent(card, '', '', '');
+    });
+    card.appendChild(list);
+    card.appendChild(addBtn);
+    addTimelineEvent(card, '2020', '建国', '');
+    addTimelineEvent(card, '', '', '');
+    return card;
+  }
+  window.createTimelineCard = createTimelineCard;
+
+  // v10.28: 草稿还原辅助（applyDraft 调用；DOM 重建后填回字段）
+  function restoreCharacter(card, cData) {
+    if (cData.charName) { var n = card.querySelector('.card-label'); if (n) n.value = cData.charName; }
+    if (cData.charTitle) { var t = card.querySelector('.char-title'); if (t) t.value = cData.charTitle; }
+    if (cData.charBio) { var b = card.querySelector('.char-bio'); if (b) b.value = cData.charBio; }
+    if (cData.charAvatar) {
+      card.dataset.charAvatar = cData.charAvatar;
+      var av = card.querySelector('.char-avatar');
+      if (av) { av.style.backgroundImage = 'url("' + cData.charAvatar + '")'; av.innerHTML = ''; }
+    }
+    charSerialize(card);
+  }
+  function restoreMap(card, cData) {
+    var canvas = card.querySelector('.map-canvas');
+    if (cData.mapImg) {
+      card.dataset.mapImg = cData.mapImg;
+      canvas.style.backgroundImage = 'url("' + cData.mapImg + '")';
+      canvas.classList.remove('map-empty');
+      canvas.textContent = '';
+    }
+    card.dataset.mapPins = cData.mapPins || '[]';
+    mapRenderPins(card, canvas);
+  }
+  function restoreStats(card, cData) {
+    var rows = card.querySelector('.stats-rows');
+    rows.innerHTML = '';
+    var arr = [];
+    try { arr = JSON.parse(cData.statsRows || '[]'); } catch (e) {}
+    if (!arr.length) arr = [{ label: '', value: 0 }];
+    arr.forEach(function (r) { addStatsRow(card, r.label, r.value); });
+    statsSerialize(card); refreshStatsBars(card);
+  }
+  function restoreTimeline(card, cData) {
+    var list = card.querySelector('.tl-list');
+    list.innerHTML = '';
+    var arr = [];
+    try { arr = JSON.parse(cData.tlEvents || '[]'); } catch (e) {}
+    if (!arr.length) arr = [{ year: '', title: '', desc: '' }];
+    arr.forEach(function (ev) { addTimelineEvent(card, ev.year, ev.title, ev.desc); });
+    tlSerialize(card);
+  }
+
   // ── Flag stripe/image setters (for grid cards) ──
   function setCardStripes(card, stripesHtml, flagName) {
     card.classList.add('has-stripes');
@@ -3016,7 +3457,8 @@
   var LAYER_TYPE_ICONS = {
     flag: 'flag', shield: 'shield', map: 'map', account_balance: 'account_balance',
     payments: 'payments', menu_book: 'menu_book', history_edu: 'history_edu',
-    image: 'image', content: 'edit_note', text: 'title'
+    image: 'image', content: 'edit_note', text: 'title',
+    character: 'person', stats: 'monitoring', timeline: 'history_edu'
   };
   function renderLayersList() {
     var list = document.getElementById('layersList');
@@ -5027,6 +5469,10 @@
   function assetSpan(asset) {
     if (asset === 'flag') return { w: 8, h: 6 };
     if (asset === 'content') return { w: 8, h: 4 };
+    if (asset === 'character') return { w: 4, h: 5 };
+    if (asset === 'map') return { w: 8, h: 6 };
+    if (asset === 'stats') return { w: 6, h: 5 };
+    if (asset === 'history_edu') return { w: 8, h: 8 };
     return { w: 4, h: 3 };
   }
 
@@ -5089,6 +5535,14 @@
           createFlagCard(data.label, cc, cr, spanW, spanH);
         } else if (data.asset === 'content') {
           createContentCard(cc, cr, spanW, spanH);
+        } else if (data.asset === 'character') { // v10.28: 人物卡
+          createCharacterCard(cc, cr, spanW, spanH);
+        } else if (data.asset === 'map') { // v10.28: 地图卡（原通用资产卡升级）
+          createMapCard(cc, cr, spanW, spanH);
+        } else if (data.asset === 'stats') { // v10.28: 数据卡
+          createStatsCard(cc, cr, spanW, spanH);
+        } else if (data.asset === 'history_edu') { // v10.28: 时间线卡（原通用资产卡升级）
+          createTimelineCard(cc, cr, spanW, spanH);
         } else {
           createAssetCard(data.asset, data.label, cc, cr, spanW, spanH);
         }
@@ -5607,7 +6061,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.0') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -5616,7 +6070,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.27.1.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.0');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
