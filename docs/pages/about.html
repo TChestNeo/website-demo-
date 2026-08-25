@@ -28,6 +28,14 @@
       color: #fff; font-weight: 800; font-size: 30px;
     }
 
+    .team-avatar-square {
+      width: 80px; height: 80px; border-radius: var(--radius-md); flex-shrink: 0;
+      overflow: hidden; background: #fff;
+      transition: transform 0.2s ease;
+    }
+    .team-avatar-square:hover { transform: scale(1.08); }
+    .team-avatar-square img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
     .brand-pill {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 8px 16px; border-radius: var(--radius-full);
@@ -149,7 +157,9 @@
       </div>
 
       <div class="card tilt-container team-card">
-        <div class="team-avatar">B</div>
+        <div class="team-avatar-square">
+          <img src="../assets/image/TChestBox_Neo_2025Avatar.png" alt="TheBoX2677 头像">
+        </div>
         <div style="flex:1;min-width:0">
           <h3 class="headline-md" style="margin-bottom:2px">TheBoX2677</h3>
           <p class="label-sm" style="color:var(--color-outline)">创始人 · 核心开发者</p>
