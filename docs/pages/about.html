@@ -37,9 +37,12 @@
     .team-avatar-square img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
     /* 团队卡：悬停上浮 + info 按钮从卡片范围外上浮（overflow 机制） */
+    /* !important：transitions.js 入场后残留 inline transform(translateY(0))，类级 important 才能压过。
+       overflow 退场延迟走 JS（.lift-leaving 类撑 450ms 再钳回 hidden）——transitions.js 残留的 inline transition
+       会压掉 CSS 里的 overflow 离散过渡（电池实证），且 discrete transition 依赖浏览器行为不可靠。 */
     .team-lift { position: relative; overflow: hidden; transition: transform .22s ease, box-shadow .22s ease; }
-    /* !important：transitions.js 入场后残留 inline transform(translateY(0))，类级 important 才能压过 */
-    .team-lift:hover { transform: translateY(-6px) !important; box-shadow: 0 12px 32px rgba(0,0,0,.14); overflow: visible; }
+    .team-lift:hover, .team-lift.lift-leaving { overflow: visible; }
+    .team-lift:hover { transform: translateY(-6px) !important; box-shadow: 0 12px 32px rgba(0,0,0,.14); }
     .lift-info {
       position: absolute; left: 50%; bottom: 0;
       transform: translate(-50%, 100%);
@@ -277,6 +280,16 @@
   });
   document.addEventListener('click', closeAllInfoPops);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAllInfoPops(); });
+
+  // 退场 overflow 延迟钳回：滑鼠移开后挂 .lift-leaving 撑 450ms（info 收回需 .12s 延迟 + .25s 过渡），
+  // 等按钮滑回底边外再切 hidden，避免「没滑完就被剪掉」；中途重新进入立刻解除。
+  document.querySelectorAll('.team-lift').forEach(function (card) {
+    card.addEventListener('mouseleave', function () {
+      card.classList.add('lift-leaving');
+      setTimeout(function () { card.classList.remove('lift-leaving'); }, 450);
+    });
+    card.addEventListener('mouseenter', function () { card.classList.remove('lift-leaving'); });
+  });
 </script>
 </body>
 </html>
