@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>关于我们 | M.NationWorld</title>
+
+  <script src="../assets/js/theme-init.js"></script>
+  <link rel="stylesheet" href="../assets/css/ethereal.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <style>
+    .sec-title { display: flex; align-items: baseline; gap: 10px; margin: var(--space-xl) 0 var(--space-md); flex-wrap: wrap; }
+    .sec-title h2 { margin: 0; }
+
+    .feature-icon {
+      width: 40px; height: 40px; border-radius: var(--radius-md);
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(129, 49, 207, 0.12); color: var(--color-primary);
+      margin-bottom: var(--space-sm);
+    }
+
+    .team-card { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-lg); }
+    .team-avatar {
+      width: 64px; height: 64px; border-radius: var(--radius-full); flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--color-primary), #8131cf);
+      color: #fff; font-weight: 800; font-size: 24px;
+    }
+
+    .brand-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: var(--radius-full);
+      border: 1px solid var(--color-outline-variant);
+      background: var(--card-bg); font-size: 14px; font-weight: 600;
+      color: var(--color-on-surface);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-layout">
+  <aside class="app-sidebar" id="slati-sidebar"></aside>
+  <main class="app-main">
+
+    <!-- Hero -->
+    <div style="margin-bottom:var(--space-lg)">
+      <h1 class="display-lg" style="margin-bottom:8px">关于我们</h1>
+      <p class="body-lg" style="color:var(--color-on-surface-variant);max-width:700px">
+        认识 M.NationWorld——一个为架空世界创作者而生的平台，以及它背后的小团队。
+      </p>
+    </div>
+
+    <!-- ══ 我们是谁 ══ -->
+    <div class="card" style="padding:var(--space-xl);margin-bottom:var(--space-lg)">
+      <div class="feature-icon">
+        <span class="material-symbols-outlined" style="font-size:24px">public</span>
+      </div>
+      <h2 class="headline-lg" style="margin-bottom:var(--space-sm)">我们是谁</h2>
+      <p class="body-md" style="color:var(--color-on-surface-variant);max-width:800px;line-height:1.8">
+        M.NationWorld 是一个专注于<b style="color:var(--color-on-surface)">架空世界创作</b>的线上平台。在这里，你可以从零开始设计一个完全属于你自己的世界——<b style="color:var(--color-on-surface)">微国家、科幻、奇幻</b>皆可：起草宪法、设计国旗、建立政体、撰写历史，把脑海里的国度一步步变成有血有肉的百科世界。
+      </p>
+      <p class="body-md" style="color:var(--color-on-surface-variant);max-width:800px;line-height:1.8;margin-top:var(--space-sm)">
+        我们相信，每个人都有想创造的世界。M.NationWorld 要做的，就是把创作的门槛降到最低——让不会编程、不懂设计的普通创作者，也能像搭积木一样搭出属于自己的国度。
+      </p>
+    </div>
+
+    <!-- ══ 平台特色 ══ -->
+    <div class="sec-title">
+      <h2 class="headline-lg">平台特色</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:var(--space-md);margin-bottom:var(--space-lg)">
+
+      <div class="card tilt-container" style="padding:var(--space-lg)">
+        <div class="feature-icon">
+          <span class="material-symbols-outlined" style="font-size:24px">flag</span>
+        </div>
+        <h3 class="headline-md" style="margin-bottom:4px">架空国家创作</h3>
+        <p class="body-md" style="color:var(--color-on-surface-variant)">
+          从国旗、宪法、政体到历史脉络，用向导式流程一步步建立你的国家——硬核细节交给想深入的人，新手也能三步起家。
+        </p>
+      </div>
+
+      <div class="card tilt-container" style="padding:var(--space-lg)">
+        <div class="feature-icon">
+          <span class="material-symbols-outlined" style="font-size:24px">dashboard_customize</span>
+        </div>
+        <h3 class="headline-md" style="margin-bottom:4px">FluidCanvas 编辑器</h3>
+        <p class="body-md" style="color:var(--color-on-surface-variant)">
+          自由拖拽的卡片式百科编辑器：文字、旗帜、时间线、地图卡片随心摆放，像搭积木一样撰写你的世界百科。
+        </p>
+      </div>
+
+      <div class="card tilt-container" style="padding:var(--space-lg)">
+        <div class="feature-icon">
+          <span class="material-symbols-outlined" style="font-size:24px">diversity_3</span>
+        </div>
+        <h3 class="headline-md" style="margin-bottom:4px">社区与联盟</h3>
+        <p class="body-md" style="color:var(--color-on-surface-variant)">
+          在 Community Hub 与其他创作者互动：缔结联盟、互通外交、探索彼此的世界，让架空世界之间产生真实的联系。
+        </p>
+      </div>
+
+      <div class="card tilt-container" style="padding:var(--space-lg)">
+        <div class="feature-icon">
+          <span class="material-symbols-outlined" style="font-size:24px">auto_awesome</span>
+        </div>
+        <h3 class="headline-md" style="margin-bottom:4px">AI 创作助手</h3>
+        <p class="body-md" style="color:var(--color-on-surface-variant)">
+          AI 搜索、文章优化与总结，帮你查资料、润色文字、梳理设定——你负责创意，AI 负责打杂。
+        </p>
+      </div>
+    </div>
+
+    <!-- ══ 品牌与定位 ══ -->
+    <div class="sec-title">
+      <h2 class="headline-lg">品牌与定位</h2>
+    </div>
+
+    <div class="card" style="padding:var(--space-xl);margin-bottom:var(--space-lg)">
+      <div style="display:flex;flex-wrap:wrap;gap:var(--space-sm);margin-bottom:var(--space-md)">
+        <span class="brand-pill"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)">public</span> M.NationWorld</span>
+        <span class="brand-pill"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)">diversity_3</span> MicroNationary</span>
+      </div>
+      <p class="body-md" style="color:var(--color-on-surface-variant);max-width:800px;line-height:1.8">
+        <b style="color:var(--color-on-surface)">M.NationWorld</b> 是平台主品牌；<b style="color:var(--color-on-surface)">MicroNationary</b> 是社区品牌。平台的核心定位是<b style="color:var(--color-on-surface)">硬核架空国家创作</b>——共和制、社会主义、民主主义……各种政体与治国理念都可以在这里被认真对待、被严肃构建，而不只是「随便玩玩的玩具国家」。
+      </p>
+    </div>
+
+    <!-- ══ 我们的团队 ══ -->
+    <div class="sec-title">
+      <h2 class="headline-lg">我们的团队</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--space-md);margin-bottom:var(--space-lg)">
+
+      <div class="card tilt-container team-card">
+        <div class="team-avatar">S</div>
+        <div style="flex:1;min-width:0">
+          <h3 class="headline-md" style="margin-bottom:2px">SlatiStudio</h3>
+          <p class="label-sm" style="color:var(--color-outline)">运营团队 · 平台开发者</p>
+          <p class="body-md" style="color:var(--color-on-surface-variant);margin-top:var(--space-xs)">
+            M.NationWorld 背后的工作室——一支小团队，专注把「架空世界创作」这件事做到极致。
+          </p>
+        </div>
+      </div>
+
+      <div class="card tilt-container team-card">
+        <div class="team-avatar">B</div>
+        <div style="flex:1;min-width:0">
+          <h3 class="headline-md" style="margin-bottom:2px">TheBoX2677</h3>
+          <p class="label-sm" style="color:var(--color-outline)">创始人 · 核心开发者</p>
+          <p class="body-md" style="color:var(--color-on-surface-variant);margin-top:var(--space-xs)">
+            平台的构想、设计与代码，从第一行开始。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 联系我们 ══ -->
+    <div class="sec-title">
+      <h2 class="headline-lg">联系我们</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(--space-md);margin-bottom:var(--space-xl)">
+
+      <div class="card tilt-container" style="padding:var(--space-lg)">
+        <span class="material-symbols-outlined" style="font-size:32px;color:var(--color-primary);margin-bottom:var(--space-sm)">forum</span>
+        <h3 class="headline-md" style="margin-bottom:4px">官方 Discord 社区</h3>
+        <p class="body-md" style="color:var(--color-on-surface-variant)">
+          想认识团队、反馈建议、或只是来逛逛——SlatiStudio 官方 Discord 社区伺服器随时欢迎你。
+        </p>
+        <a href="https://discord.gg/beST9TtMqq" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm" style="margin-top:var(--space-md)">
+          <span class="material-symbols-outlined" style="font-size:18px">open_in_new</span> 加入伺服器
+        </a>
+      </div>
+
+      <div class="card tilt-container" style="padding:var(--space-lg)">
+        <span class="material-symbols-outlined" style="font-size:32px;color:var(--color-primary);margin-bottom:var(--space-sm)">support_agent</span>
+        <h3 class="headline-md" style="margin-bottom:4px">帮助与支持</h3>
+        <p class="body-md" style="color:var(--color-on-surface-variant)">
+          平台使用遇到问题？快速上手、常见问题、人工工单与官方人员身份验证，都在帮助中心。
+        </p>
+        <a href="help.html" class="btn btn-outline btn-sm" style="margin-top:var(--space-md)">
+          <span class="material-symbols-outlined" style="font-size:18px">support_agent</span> 前往帮助中心
+        </a>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../assets/js/tilt.js"></script>
+<script src="../assets/js/site-config.js"></script>
+<script src="../assets/js/storage.js"></script>
+<script src="../assets/js/sidebar.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
+<script src="../assets/js/transitions.js"></script>
+</body>
+</html>

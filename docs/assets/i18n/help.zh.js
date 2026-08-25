@@ -115,5 +115,8 @@ window.MN_I18N.add('zh', {
   'legal.fin.title': '财务与支付条款',
   'legal.fin.sub': '计费、退款、创作者结算与季度财报 · 查看详情',
   'legal.privacy.title': '隐私政策',
-  'legal.privacy.sub': '数据收集、存储与您的权利 · 查看详情'
+  'legal.privacy.sub': '数据收集、存储与您的权利 · 查看详情',
+  'sec.about.title': '关于我们',
+  'about.title': '关于我们',
+  'about.sub': '认识 M.NationWorld 与背后的团队 · 查看详情'
 });
