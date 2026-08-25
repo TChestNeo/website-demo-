@@ -377,10 +377,10 @@
     .tl-chart-tick { position: absolute; bottom: -7px; font-size: 7px; color: #8a6f4d; transform: translateX(-50%); white-space: nowrap; line-height: 1; }
     .tl-chart-tick::before { content: ''; position: absolute; bottom: 11px; left: 50%; width: 1px; height: 4px; background: #b08d57; }
     .tl-chart-tracks { position: relative; width: 100%; }
-    .tc-row { position: absolute; left: 0; right: 0; height: 22px; }
-    .tc-bar { position: absolute; top: 2px; bottom: 2px; min-width: 10px; border-radius: 4px; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
+    .tc-row { position: absolute; left: 0; right: 0; height: 30px; }
+    .tc-bar { position: absolute; top: 3px; bottom: 3px; min-width: 10px; border-radius: 5px; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
     .tc-bar.selected { outline: 2px solid var(--color-primary); outline-offset: 1px; z-index: 3; }
-    .tc-name { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); min-width: 44px; max-width: 130px; text-align: center; background: transparent; border: none; padding: 0 2px; color: #fff; font-size: 10px; text-shadow: 0 1px 2px rgba(0,0,0,.55); cursor: text; }
+    .tc-name { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); min-width: 44px; max-width: 130px; text-align: center; background: transparent; border: none; padding: 0 2px; color: #fff; font-size: 11px; text-shadow: 0 1px 2px rgba(0,0,0,.55); cursor: text; }
     .tc-name:focus { outline: 1px dashed rgba(255,255,255,.85); }
     .tc-edit-row { display: flex; align-items: center; gap: 4px; min-height: 20px; font-size: 10px; color: #8a6f4d; }
     .tc-edit-hint { opacity: .8; }
@@ -4604,12 +4604,12 @@
       axis.appendChild(tick);
     }
     tracks.innerHTML = '';
-    tracks.style.height = ((maxTrack + 1) * 26) + 'px';
+    tracks.style.height = ((maxTrack + 1) * 34) + 'px';
     var sel = parseInt(card.dataset.tlChartSel || '-1', 10);
     bars.forEach(function (b, i) {
       var row = document.createElement('div');
       row.className = 'tc-row';
-      row.style.top = (b.track * 26) + 'px'; // v10.28.2.1: 行距 18→26 方便点击
+      row.style.top = (b.track * 34) + 'px'; // v10.28.2.2: 行距 26→34 再放大方便点击
       var bar = document.createElement('div');
       bar.className = 'tc-bar' + (i === sel ? ' selected' : '');
       bar.style.left = ((b.start - lo) / span * 100) + '%';
@@ -6360,7 +6360,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.2.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.2.2') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -6369,7 +6369,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.2.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.2.2');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
