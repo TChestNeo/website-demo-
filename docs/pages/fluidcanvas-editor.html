@@ -351,6 +351,40 @@
     .grid-card .tl-title { font-size: 12px; font-weight: 600; width: 100%; }
     .grid-card .tl-desc { font-size: 11px; width: 100%; resize: none; min-height: 28px; overflow: hidden; }
     .grid-card .tl-event .row-del { position: absolute; right: 0; top: 0; }
+    /* v10.28.1: 时间线卡「历史标图」样式——用户历史标图整张铺满卡背景，事件行加羊皮纸白底保证可读，朱红轴/圆点呼应印章色 */
+    .grid-card.timeline-card.tl-history {
+      background-image: url('../assets/image/timeline-history.webp');
+      background-size: cover; background-position: center;
+    }
+    .grid-card.tl-history .tl-event {
+      background: rgba(255, 250, 241, 0.88);
+      border-left-color: #a03c1e;
+      border-radius: 0 6px 6px 0;
+      padding: 4px 8px 4px 12px;
+      margin-bottom: 4px;
+    }
+    .grid-card.tl-history .tl-event::before {
+      background: #a03c1e; border-color: #fff7ec; box-shadow: 0 0 0 1px #a03c1e;
+    }
+    .grid-card.tl-history .tl-year { color: #8c2f1c; }
+    .grid-card.tl-history .row-add {
+      background: rgba(255, 250, 241, 0.88); color: #8c2f1c;
+    }
+    /* 时间线种类弹层：两枚样式小预览 */
+    .tl-style-opt {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      width: 96px; padding: 8px; border-radius: 10px;
+      border: 2px solid transparent; background: var(--color-surface-container-low);
+      cursor: pointer; font-size: 12px; color: var(--color-on-surface);
+    }
+    .tl-style-opt.active { border-color: var(--color-primary); }
+    .tl-style-preview { display: block; width: 64px; height: 48px; border-radius: 6px; position: relative; overflow: hidden; }
+    .tl-preview-classic { background: #fff; }
+    .tl-preview-classic::before { content: ''; position: absolute; left: 10px; top: 6px; bottom: 6px; border-left: 2px solid #9aa3ad; }
+    .tl-preview-classic::after { content: ''; position: absolute; left: 7px; top: 10px; width: 7px; height: 7px; border-radius: 50%; background: var(--color-primary); }
+    .tl-preview-history { background: #e0c0a0 linear-gradient(160deg, #e8cfae, #c99c6b); }
+    .tl-preview-history::before { content: ''; position: absolute; left: 10px; top: 6px; bottom: 6px; border-left: 2px solid #a03c1e; }
+    .tl-preview-history::after { content: ''; position: absolute; left: 7px; top: 10px; width: 7px; height: 7px; border-radius: 50%; background: #a03c1e; }
     .grid-card .card-label:focus {
       /* v10.0: inline caption-background styles override border/background,
          so the edit affordance lives on outline — reserved for focus only */
@@ -2388,6 +2422,7 @@
         entry.statsRows = c.dataset.statsRows || '[]';
       } else if (entry.type === 'timeline') {
         entry.tlEvents = c.dataset.tlEvents || '[]';
+        if (c.dataset.tlStyle) entry.tlStyle = c.dataset.tlStyle;
       }
       if (entry.type === 'flag') {
         var stripes = c.querySelector('.card-stripes');
@@ -3273,6 +3308,7 @@
     if (!arr.length) arr = [{ year: '', title: '', desc: '' }];
     arr.forEach(function (ev) { addTimelineEvent(card, ev.year, ev.title, ev.desc); });
     tlSerialize(card);
+    if (cData.tlStyle) applyTlStyle(card, cData.tlStyle);
   }
 
   // ── Flag stripe/image setters (for grid cards) ──
@@ -4015,7 +4051,7 @@
     var contextMenu = getContextMenu();
     if (!contextMenu) return;
     var menuW = 220;
-    var menuH = 260; // v10.1: 7 items now (卡片背景 added)
+    var menuH = 290; // v10.28.1: 8 items now (时间线种类 added)
     if (x + menuW > window.innerWidth) x = window.innerWidth - menuW - 10;
     if (y + menuH > window.innerHeight) y = window.innerHeight - menuH - 10;
     // 背景卡片性质 (opacity) is a content-card-only option
@@ -4037,6 +4073,12 @@
     if (cardBgItem) {
       cardBgItem.style.display =
         (selectedCard && selectedCard.querySelector('.card-label')) ? 'flex' : 'none';
+    }
+    // v10.28.1: 时间线种类 — timeline cards only
+    var tlStyleItem = document.getElementById('tlStyleMenuItem');
+    if (tlStyleItem) {
+      tlStyleItem.style.display =
+        (selectedCard && selectedCard.dataset.cardType === 'timeline') ? 'flex' : 'none';
     }
     contextMenu.style.left = x + 'px';
     contextMenu.style.top = y + 'px';
@@ -4060,6 +4102,8 @@
     if (vp) vp.classList.remove('active');
     var lp = document.getElementById('layersPopover');
     if (lp) lp.classList.remove('active');
+    var tsp = document.getElementById('tlStylePopover');
+    if (tsp) tsp.classList.remove('active');
     // v10.24/26: 文字格式化工具栏 + 字体面板随统一关闭
     var tt = document.getElementById('textToolbar');
     if (tt) tt.style.display = 'none';
@@ -4392,6 +4436,41 @@
     refreshCaptionPopoverState();
   }
   window.openCaptionPosPopover = openCaptionPosPopover;
+
+  // ── 时间线种类 (v10.28.1) ──
+  function refreshTlStylePopover() {
+    if (!selectedCard) return;
+    var style = selectedCard.dataset.tlStyle || 'classic';
+    var c = document.getElementById('tlStyleClassic');
+    var h = document.getElementById('tlStyleHistory');
+    if (c) c.classList.toggle('active', style === 'classic');
+    if (h) h.classList.toggle('active', style === 'history');
+  }
+  function openTlStylePopover() {
+    if (!selectedCard || selectedCard.dataset.cardType !== 'timeline') return;
+    hideContextMenu();
+    var pop = document.getElementById('tlStylePopover');
+    if (!pop) return;
+    var cardRect = selectedCard.getBoundingClientRect();
+    var x = cardRect.right + 10, y = cardRect.top;
+    if (x + 240 > window.innerWidth) x = cardRect.left - 250;
+    y = Math.max(8, Math.min(y, window.innerHeight - 160));
+    pop.style.left = x + 'px';
+    pop.style.top = y + 'px';
+    pop.classList.add('active');
+    refreshTlStylePopover();
+  }
+  window.openTlStylePopover = openTlStylePopover;
+
+  function applyTlStyle(card, style) {
+    if (!card) card = selectedCard;
+    if (!card || card.dataset.cardType !== 'timeline') return;
+    card.dataset.tlStyle = style;
+    card.classList.toggle('tl-history', style === 'history');
+    onContentChange();
+    hideContextMenu();
+  }
+  window.applyTlStyle = applyTlStyle;
 
   // ── Caption Background (v10.0) ──
   // Name-label background: color palette + opacity, shadow (blur/spread/
@@ -6061,7 +6140,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.0') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -6070,7 +6149,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.0');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -6080,6 +6159,17 @@
 </script>
 
 <!-- ═══ RIGHT-CLICK CONTEXT MENU ═══ -->
+<div class="radius-popover" id="tlStylePopover">
+  <span class="label-sm" style="color:var(--color-outline);display:block;margin-bottom:8px">时间线种类</span>
+  <div style="display:flex;gap:8px">
+    <button class="tl-style-opt active" id="tlStyleClassic" onclick="applyTlStyle(null,'classic')">
+      <span class="tl-style-preview tl-preview-classic"></span>经典
+    </button>
+    <button class="tl-style-opt" id="tlStyleHistory" onclick="applyTlStyle(null,'history')">
+      <span class="tl-style-preview tl-preview-history"></span>历史标图
+    </button>
+  </div>
+</div>
 <div class="context-menu" id="contextMenu">
   <button class="context-menu-item" onclick="openBorderRadiusPopover()">
     <span class="material-symbols-outlined">rounded_corner</span> Adjust border radius
@@ -6089,6 +6179,9 @@
   </button>
   <button class="context-menu-item" id="cardBgMenuItem" style="display:none" onclick="openCardBgPopover()">
     <span class="material-symbols-outlined">wallpaper</span> 卡片背景
+  </button>
+  <button class="context-menu-item" id="tlStyleMenuItem" style="display:none" onclick="openTlStylePopover()">
+    <span class="material-symbols-outlined">style</span> 时间线种类
   </button>
   <button class="context-menu-item" onclick="openBorderStyleModal()">
     <span class="material-symbols-outlined">border_style</span> Select border edge style
