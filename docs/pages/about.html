@@ -75,21 +75,59 @@
     }
     .lift-info-pop.open { opacity: 1; transform: translateX(-50%) scale(1); pointer-events: auto; }
 
-    /* 创始人 rich 弹层 */
-    .lift-info-pop-rich { width: min(320px, 80vw); max-height: 420px; overflow-y: auto; padding: 14px 16px; }
-    .lift-info-pop .pop-head { margin-bottom: 10px; }
-    .lift-info-pop .pop-sec {
+    /* 创始人独立大弹窗（模态框） */
+    .founder-modal {
+      position: fixed; inset: 0; z-index: 300;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s ease;
+    }
+    .founder-modal[hidden] { display: none; }
+    .founder-modal.open { opacity: 1; pointer-events: auto; }
+    .founder-modal-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(8, 8, 20, .5);
+      backdrop-filter: blur(4px);
+    }
+    .founder-modal-card {
+      position: relative;
+      width: min(600px, 100%);
+      max-height: 82vh; overflow-y: auto;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--color-outline-variant);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.3);
+      transform: translateY(14px) scale(.97);
+      transition: transform .25s ease;
+    }
+    .founder-modal.open .founder-modal-card { transform: none; }
+    .founder-modal-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 36px; height: 36px; border-radius: var(--radius-full);
+      border: none; background: transparent; color: var(--color-on-surface-variant);
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 20px;
+    }
+    .founder-modal-close:hover { background: rgba(127,127,127,.15); color: var(--color-on-surface); }
+    .founder-modal-head { display: flex; align-items: center; gap: 18px; margin-bottom: 6px; padding-right: 40px; }
+    .founder-modal-avatar { width: 88px; height: 88px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
+    .founder-modal-body { margin-top: 14px; }
+    .founder-modal .pop-sec {
       font-size: 11px; font-weight: 700; letter-spacing: .06em;
       color: var(--color-primary); text-transform: uppercase;
-      margin: 10px 0 6px;
+      margin: 16px 0 8px;
     }
-    .lift-info-pop .pop-list { margin: 0; padding: 0 0 0 16px; }
-    .lift-info-pop .pop-list li { margin-bottom: 6px; font-size: 12.5px; line-height: 1.6; }
-    .lift-info-pop .pop-foot {
-      margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--color-outline-variant);
-      font-size: 12.5px;
+    .founder-modal .pop-list { margin: 0; padding: 0 0 0 18px; }
+    .founder-modal .pop-list li { margin-bottom: 8px; font-size: 14px; line-height: 1.7; color: var(--color-on-surface-variant); }
+    .founder-modal .pop-list li b { color: var(--color-on-surface); }
+    .founder-modal-foot {
+      margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--color-outline-variant);
+      font-size: 14px; color: var(--color-on-surface-variant);
     }
-    .lift-info-pop .pop-foot a { color: var(--color-primary); font-weight: 600; }
+    .founder-modal-foot a { color: var(--color-primary); font-weight: 600; }
 
     .brand-pill {
       display: inline-flex; align-items: center; gap: 8px;
@@ -234,28 +272,6 @@
           <button type="button" class="lift-info-btn" aria-label="更多信息">
             <span class="material-symbols-outlined" style="font-size:20px">info</span>
           </button>
-          <div class="lift-info-pop lift-info-pop-rich" role="tooltip">
-            <div class="pop-head">
-              <div class="label-lg" style="color:var(--color-on-surface)">TChest_Neo24</div>
-              <div class="label-sm" style="color:var(--color-outline)">创始人 · 全栈开发者 · 独立创作者</div>
-            </div>
-            <div class="pop-sec">项目足迹</div>
-            <ul class="pop-list">
-              <li><b>平台创立</b>：M.NationWorld + MicroNationary 品牌与定位（硬核架空国家 · 共和/社会主义/民主主义）</li>
-              <li><b>FluidCanvas 编辑器</b>：卡片式世界百科工作台 v10 系列——主题系统、Canva 式工具栏、Google Fonts 字体库、Layers 图层、新卡片族、历史标图</li>
-              <li><b>Create World</b>：22 种世界类型的单向导创建引擎</li>
-              <li><b>帮助中心</b>：FAQ 智能搜索、AI 客服、官方人员 12h 验证码身份验证</li>
-              <li><b>付费系统</b>：订阅与混合支付方式（Stripe）、创作者分成</li>
-              <li><b>管理后台</b>：财务总览、流水账、季度财报、提现</li>
-            </ul>
-            <div class="pop-sec">个人信息</div>
-            <ul class="pop-list">
-              <li>独立创作者——从构想、设计到开发一人完成</li>
-              <li>热爱架空世界与微国家创作</li>
-              <li>日常爱用 kaomoji 颜文字交流 (◕‿◕)</li>
-            </ul>
-            <div class="pop-foot">想认识或合作？<a href="https://discord.gg/beST9TtMqq" target="_blank" rel="noopener noreferrer">加入官方 Discord</a></div>
-          </div>
         </div>
       </div>
     </div>
@@ -299,8 +315,67 @@
 <script src="../assets/js/sidebar.js"></script>
 <script src="../assets/js/settings-modal.js"></script>
 <script src="../assets/js/transitions.js"></script>
+
+<!-- 创始人独立大弹窗（模态框）：点创始人卡 info 钮打开 -->
+<div class="founder-modal" id="founderModal" role="dialog" aria-modal="true" aria-labelledby="founderModalTitle" hidden>
+  <div class="founder-modal-backdrop"></div>
+  <div class="founder-modal-card">
+    <button type="button" class="founder-modal-close" aria-label="关闭">
+      <span class="material-symbols-outlined" style="font-size:20px">close</span>
+    </button>
+    <div class="founder-modal-head">
+      <img class="founder-modal-avatar" src="../assets/image/TChestBox_Neo_2025Avatar.png" alt="TChest_Neo24 头像">
+      <div style="min-width:0">
+        <h3 class="headline-lg" id="founderModalTitle" style="margin-bottom:4px">TChest_Neo24</h3>
+        <p class="label-sm" style="color:var(--color-outline);margin:0">创始人 · 全栈开发者 · 独立创作者</p>
+      </div>
+    </div>
+    <div class="founder-modal-body">
+      <div class="pop-sec">项目足迹</div>
+      <ul class="pop-list">
+        <li><b>平台创立</b>：M.NationWorld + MicroNationary 品牌与定位（硬核架空国家 · 共和/社会主义/民主主义）</li>
+        <li><b>FluidCanvas 编辑器</b>：卡片式世界百科工作台 v10 系列——主题系统、Canva 式工具栏、Google Fonts 字体库、Layers 图层、新卡片族、历史标图</li>
+        <li><b>Create World</b>：22 种世界类型的单向导创建引擎</li>
+        <li><b>帮助中心</b>：FAQ 智能搜索、AI 客服、官方人员 12h 验证码身份验证</li>
+        <li><b>付费系统</b>：订阅与混合支付方式（Stripe）、创作者分成</li>
+        <li><b>管理后台</b>：财务总览、流水账、季度财报、提现</li>
+      </ul>
+      <div class="pop-sec">个人信息</div>
+      <ul class="pop-list">
+        <li>独立创作者——从构想、设计到开发一人完成</li>
+        <li>热爱架空世界与微国家创作</li>
+        <li>日常爱用 kaomoji 颜文字交流 (◕‿◕)</li>
+      </ul>
+    </div>
+    <div class="founder-modal-foot">
+      想认识创始人的话，欢迎来官方 Discord 社区：
+      <a href="https://discord.gg/beST9TtMqq" target="_blank" rel="noopener noreferrer">discord.gg/beST9TtMqq</a>
+    </div>
+  </div>
+</div>
+
 <script>
-  // 团队卡 info 弹层：点 info 钮开/关，外点或 Esc 统一关闭
+  // 创始人独立大弹窗：开/关（body 滚动锁 + 淡出 260ms 后才 hidden，避免淡出被剪断；关闭期间再点开立刻恢复）
+  var founderModal = document.getElementById('founderModal');
+  var founderModalHideTimer = null;
+  function openFounderModal() {
+    if (founderModalHideTimer) { clearTimeout(founderModalHideTimer); founderModalHideTimer = null; }
+    founderModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(function () {
+      founderModal.classList.add('open');
+      founderModal.querySelector('.founder-modal-close').focus();
+    });
+  }
+  function closeFounderModal() {
+    founderModal.classList.remove('open');
+    document.body.style.overflow = '';
+    founderModalHideTimer = setTimeout(function () { founderModal.hidden = true; founderModalHideTimer = null; }, 260);
+  }
+  founderModal.querySelector('.founder-modal-backdrop').addEventListener('click', closeFounderModal);
+  founderModal.querySelector('.founder-modal-close').addEventListener('click', closeFounderModal);
+
+  // 团队卡 info 弹层：点 info 钮开/关，外点或 Esc 统一关闭；创始人卡没有小弹层 → 开大弹窗
   function closeAllInfoPops() {
     document.querySelectorAll('.lift-info-pop.open').forEach(function (p) { p.classList.remove('open'); });
   }
@@ -308,13 +383,16 @@
     btn.addEventListener('click', function (ev) {
       ev.stopPropagation();
       var pop = btn.parentElement.querySelector('.lift-info-pop');
+      if (!pop) { openFounderModal(); return; }
       var wasOpen = pop.classList.contains('open');
       closeAllInfoPops();
       if (!wasOpen) pop.classList.add('open');
     });
   });
   document.addEventListener('click', closeAllInfoPops);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeAllInfoPops(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeAllInfoPops(); closeFounderModal(); }
+  });
   // 点弹层内部（选文字/点链接）不触发 document 外点关闭
   document.querySelectorAll('.lift-info').forEach(function (li) {
     li.addEventListener('click', function (ev) { ev.stopPropagation(); });
