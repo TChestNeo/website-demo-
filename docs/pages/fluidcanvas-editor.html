@@ -4163,6 +4163,10 @@
         // v10.24: 卡内文字也排除——文字选中后（mouseup 之后）click 才会
         // 到达这里，不排除会把刚浮现的格式化工具栏立刻关掉
         !e.target.closest('.card-text-content')) {
+      // v10.28.3.2: 框选文字松手点常在文字区外（卡空白/画布）——click 目标
+      // 不匹配上面任何排除项，但选区还活着，工具栏不该被这个 click 收掉。
+      // 点画布/非编辑区时原生行为会先折叠选区（textSelInCard 空）→ 照常收。
+      if (window.textSelInCard()) return;
       hideContextMenu();
     }
   });
@@ -6360,7 +6364,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.3.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.3.2') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -6369,7 +6373,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.3.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.3.2');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -6753,19 +6757,28 @@
   }
   window.ensureFont = ensureFont;
 
-  // ── 选区检查：非空且全部落在内容卡 .card-text-content 内 ──
+  // ── 选区检查：非空且落在内容卡文字区（v10.28.3.2 起放宽为「与文字区相交」）──
+  // 鼠标框选常在文字区外松开：选区从文字一路拖进卡片空白处，commonAncestor
+  // 变成卡片本身，旧判定（祖先链找 .card-text-content）直接判空 → 工具栏不弹。
+  // 新判定：先按 anchor/focus 任一端找卡片，再用 range.intersectsNode 判相交，
+  // 相交就把范围夹回文字区内（格式化只作用文字部分，防 extractContents 撕开文字盒）。
   function textSelInCard() {
     var sel = window.getSelection();
     if (!sel || sel.isCollapsed || !sel.rangeCount) return null;
     var range = sel.getRangeAt(0);
-    var node = range.commonAncestorContainer;
-    var el = node && node.nodeType === 3 ? node.parentNode : node;
-    if (!el || !el.closest) return null;
-    var textEl = el.closest('.card-text-content');
-    if (!textEl) return null;
-    var card = textEl.closest('.grid-card');
+    var anchorEl = sel.anchorNode && sel.anchorNode.nodeType === 3 ? sel.anchorNode.parentNode : sel.anchorNode;
+    var focusEl = sel.focusNode && sel.focusNode.nodeType === 3 ? sel.focusNode.parentNode : sel.focusNode;
+    var card = (anchorEl && anchorEl.closest && anchorEl.closest('.grid-card')) ||
+               (focusEl && focusEl.closest && focusEl.closest('.grid-card'));
     if (!card || card.dataset.cardType !== 'content') return null;
-    return { sel: sel, range: range, textEl: textEl, card: card };
+    var textEl = card.querySelector('.card-text-content');
+    if (!textEl || !range.intersectsNode(textEl)) return null;
+    var textRange = document.createRange();
+    textRange.selectNodeContents(textEl);
+    var r2 = range.cloneRange();
+    if (range.compareBoundaryPoints(Range.START_TO_START, textRange) < 0) r2.setStart(textRange.startContainer, textRange.startOffset);
+    if (range.compareBoundaryPoints(Range.END_TO_END, textRange) > 0) r2.setEnd(textRange.endContainer, textRange.endOffset);
+    return { sel: sel, range: r2, textEl: textEl, card: card };
   }
   window.textSelInCard = textSelInCard;
 
