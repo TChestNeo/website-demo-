@@ -54,7 +54,7 @@ CONFIG = {
     "figure_width": 16,          # 图片宽度（英寸）
     "height_per_track": 1.05,    # 每条轨道占的高度（轨道多图会自动变高）
     "dpi": 200,                  # 清晰度，PNG 像素 = 英寸 × dpi
-    "output_file": "history-timeline.png",
+    "output_file": "docs/assets/image/history-timeline.png",  # 直接输出进网站素材库：FluidCanvas 时间线卡「历史标图」读的就是这张
 
     "x_tick_step": 200,          # 横轴每隔多少年画一格刻度
     "x_tick_label_neg": "公元前{year}年",   # 负年份的刻度文字模板
@@ -236,11 +236,16 @@ def build():
 
 if __name__ == "__main__":
     fig = build()
-    fig.savefig(CONFIG["output_file"])
-    print("已保存", CONFIG["output_file"], "（共", len(DATA), "条数据）")
+    # 相对路径按「脚本所在目录」算，保证在哪个目录运行都写到正确位置
+    out = CONFIG["output_file"]
+    if not os.path.isabs(out):
+        out = os.path.join(os.path.dirname(os.path.abspath(__file__)), out)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    fig.savefig(out)
+    print("已保存", out, "（共", len(DATA), "条数据）")
     # Windows 上自动用系统看图器打开，方便立刻检查
     if os.name == "nt":
         try:
-            os.startfile(os.path.abspath(CONFIG["output_file"]))
+            os.startfile(out)
         except Exception:
             pass

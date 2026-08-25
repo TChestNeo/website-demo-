@@ -351,10 +351,12 @@
     .grid-card .tl-title { font-size: 12px; font-weight: 600; width: 100%; }
     .grid-card .tl-desc { font-size: 11px; width: 100%; resize: none; min-height: 28px; overflow: hidden; }
     .grid-card .tl-event .row-del { position: absolute; right: 0; top: 0; }
-    /* v10.28.1: 时间线卡「历史标图」样式——用户历史标图整张铺满卡背景，事件行加羊皮纸白底保证可读，朱红轴/圆点呼应印章色 */
+    /* v10.28.1.1.1: 时间线卡「历史标图」样式——标图换成 history-timeline.py 生成的朝代演变图（整张可见 contain，两侧留羊皮纸底同色无缝；改数据重跑脚本卡片自动更新）；事件行加羊皮纸白底保证可读，朱红轴/圆点呼应印章色 */
     .grid-card.timeline-card.tl-history {
-      background-image: url('../assets/image/timeline-history.webp');
-      background-size: cover; background-position: center;
+      background-color: #faf3e7;
+      background-image: url('../assets/image/history-timeline.png');
+      background-size: contain; background-position: center;
+      background-repeat: no-repeat;
     }
     .grid-card.tl-history .tl-event {
       background: rgba(255, 250, 241, 0.88);
@@ -382,7 +384,7 @@
     .tl-preview-classic { background: #fff; }
     .tl-preview-classic::before { content: ''; position: absolute; left: 10px; top: 6px; bottom: 6px; border-left: 2px solid #9aa3ad; }
     .tl-preview-classic::after { content: ''; position: absolute; left: 7px; top: 10px; width: 7px; height: 7px; border-radius: 50%; background: var(--color-primary); }
-    .tl-preview-history { background: #e0c0a0 linear-gradient(160deg, #e8cfae, #c99c6b); }
+    .tl-preview-history { background: #e0c0a0 url('../assets/image/history-timeline.png') center/cover no-repeat; }
     .tl-preview-history::before { content: ''; position: absolute; left: 10px; top: 6px; bottom: 6px; border-left: 2px solid #a03c1e; }
     .tl-preview-history::after { content: ''; position: absolute; left: 7px; top: 10px; width: 7px; height: 7px; border-radius: 50%; background: #a03c1e; }
     .grid-card .card-label:focus {
@@ -4051,7 +4053,7 @@
     var contextMenu = getContextMenu();
     if (!contextMenu) return;
     var menuW = 220;
-    var menuH = 290; // v10.28.1: 8 items now (时间线种类 added)
+    var menuH = 290; // v10.28.1.1: 8 items now (时间线种类 added)
     if (x + menuW > window.innerWidth) x = window.innerWidth - menuW - 10;
     if (y + menuH > window.innerHeight) y = window.innerHeight - menuH - 10;
     // 背景卡片性质 (opacity) is a content-card-only option
@@ -4074,7 +4076,7 @@
       cardBgItem.style.display =
         (selectedCard && selectedCard.querySelector('.card-label')) ? 'flex' : 'none';
     }
-    // v10.28.1: 时间线种类 — timeline cards only
+    // v10.28.1.1: 时间线种类 — timeline cards only
     var tlStyleItem = document.getElementById('tlStyleMenuItem');
     if (tlStyleItem) {
       tlStyleItem.style.display =
@@ -4437,7 +4439,7 @@
   }
   window.openCaptionPosPopover = openCaptionPosPopover;
 
-  // ── 时间线种类 (v10.28.1) ──
+  // ── 时间线种类 (v10.28.1.1) ──
   function refreshTlStylePopover() {
     if (!selectedCard) return;
     var style = selectedCard.dataset.tlStyle || 'classic';
@@ -6140,7 +6142,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.1.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -6149,7 +6151,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.1.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
