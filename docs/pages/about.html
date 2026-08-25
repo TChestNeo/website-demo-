@@ -93,16 +93,31 @@
     .founder-modal-card {
       position: relative;
       width: min(680px, 100%);
-      max-height: 82vh; overflow-y: auto;
+      max-height: 82vh;
+      overflow: hidden; /* 圆角剪裁：滚动交给内层 .founder-modal-scroll */
+      display: flex; flex-direction: column;
       background: var(--card-bg);
       backdrop-filter: blur(20px);
       border: 1px solid var(--color-outline-variant);
       border-radius: 16px;
-      padding: 28px;
       box-shadow: 0 24px 64px rgba(0,0,0,.3);
       transform: translateY(14px) scale(.97);
       transition: transform .25s ease;
     }
+    .founder-modal-scroll {
+      overflow-y: auto; min-height: 0;
+      padding: 28px;
+      scrollbar-width: thin; /* Firefox */
+      scrollbar-color: var(--color-outline) transparent;
+    }
+    /* 右侧滚动杆适配：细圆角主题色（Chrome/Edge） */
+    .founder-modal-scroll::-webkit-scrollbar { width: 8px; }
+    .founder-modal-scroll::-webkit-scrollbar-track { background: transparent; }
+    .founder-modal-scroll::-webkit-scrollbar-thumb {
+      background: var(--color-outline);
+      border-radius: 4px;
+    }
+    .founder-modal-scroll::-webkit-scrollbar-thumb:hover { background: var(--color-on-surface-variant); }
     .founder-modal.open .founder-modal-card { transform: none; }
     .founder-modal-close {
       position: absolute; top: 14px; right: 14px;
@@ -344,6 +359,7 @@
     <button type="button" class="founder-modal-close" aria-label="关闭">
       <span class="material-symbols-outlined" style="font-size:20px">close</span>
     </button>
+    <div class="founder-modal-scroll">
     <div class="founder-modal-head">
       <img class="founder-modal-avatar" src="../assets/image/TChestBox_Neo_2025Avatar.png" alt="TChest_Neo24 头像">
       <div style="min-width:0">
@@ -482,6 +498,7 @@
     <div class="founder-modal-foot">
       想认识创始人的话，欢迎来官方 Discord 社区：
       <a href="https://discord.gg/beST9TtMqq" target="_blank" rel="noopener noreferrer">discord.gg/beST9TtMqq</a>
+    </div>
     </div>
   </div>
 </div>
