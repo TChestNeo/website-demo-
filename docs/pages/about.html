@@ -61,40 +61,27 @@
       transition: transform .15s ease;
     }
     .lift-info-btn:hover { transform: scale(1.1); }
-    .lift-info-pop {
-      position: absolute; bottom: calc(100% + 10px); left: 50%;
-      transform: translateX(-50%) scale(.92);
-      opacity: 0; pointer-events: none;
-      width: max-content; max-width: 240px;
-      background: var(--card-bg); border: 1px solid var(--color-outline-variant);
-      border-radius: var(--radius-md); padding: 10px 12px;
-      font-size: 12.5px; line-height: 1.6; color: var(--color-on-surface);
-      box-shadow: 0 8px 24px rgba(0,0,0,.16);
-      transition: opacity .18s ease, transform .18s ease;
-      text-align: left;
-    }
-    .lift-info-pop.open { opacity: 1; transform: translateX(-50%) scale(1); pointer-events: auto; }
 
-    /* 创始人独立大弹窗（模态框） */
-    .founder-modal {
+    /* 团队大弹窗（模态框）：创始人 + 运营团队两张卡共用 */
+    .team-modal {
       position: fixed; inset: 0; z-index: 300;
       display: flex; align-items: center; justify-content: center;
       padding: 24px;
       opacity: 0; pointer-events: none;
       transition: opacity .2s ease;
     }
-    .founder-modal[hidden] { display: none; }
-    .founder-modal.open { opacity: 1; pointer-events: auto; }
-    .founder-modal-backdrop {
+    .team-modal[hidden] { display: none; }
+    .team-modal.open { opacity: 1; pointer-events: auto; }
+    .team-modal-backdrop {
       position: absolute; inset: 0;
       background: rgba(8, 8, 20, .5);
       backdrop-filter: blur(4px);
     }
-    .founder-modal-card {
+    .team-modal-card {
       position: relative;
       width: min(680px, 100%);
       max-height: 82vh;
-      overflow: hidden; /* 圆角剪裁：滚动交给内层 .founder-modal-scroll */
+      overflow: hidden; /* 圆角剪裁：滚动交给内层 .team-modal-scroll */
       display: flex; flex-direction: column;
       background: rgba(255, 255, 255, .93); /* 亮化：浅色主题近实白——旧 var(--card-bg) 55% 半透明透出暗背景发灰 */
       backdrop-filter: blur(20px);
@@ -104,67 +91,72 @@
       transform: translateY(14px) scale(.97);
       transition: transform .25s ease;
     }
-    :root[data-theme="dark"] .founder-modal-card { background: #2b2b4a; } /* 暗色主题提亮一档（原 #1e1e32） */
-    .founder-modal-scroll {
+    :root[data-theme="dark"] .team-modal-card { background: #2b2b4a; } /* 暗色主题提亮一档（原 #1e1e32） */
+    .team-modal-scroll {
       overflow-y: auto; min-height: 0;
       padding: 28px;
       scrollbar-width: thin; /* Firefox */
       scrollbar-color: var(--color-outline) transparent;
     }
     /* 右侧滚动杆适配：细圆角主题色（Chrome/Edge） */
-    .founder-modal-scroll::-webkit-scrollbar { width: 8px; }
-    .founder-modal-scroll::-webkit-scrollbar-track { background: transparent; }
-    .founder-modal-scroll::-webkit-scrollbar-thumb {
+    .team-modal-scroll::-webkit-scrollbar { width: 8px; }
+    .team-modal-scroll::-webkit-scrollbar-track { background: transparent; }
+    .team-modal-scroll::-webkit-scrollbar-thumb {
       background: var(--color-outline);
       border-radius: 4px;
     }
-    .founder-modal-scroll::-webkit-scrollbar-thumb:hover { background: var(--color-on-surface-variant); }
-    .founder-modal.open .founder-modal-card { transform: none; }
-    .founder-modal-close {
+    .team-modal-scroll::-webkit-scrollbar-thumb:hover { background: var(--color-on-surface-variant); }
+    .team-modal.open .team-modal-card { transform: none; }
+    .team-modal-close {
       position: absolute; top: 14px; right: 14px;
       width: 36px; height: 36px; border-radius: var(--radius-full);
       border: none; background: transparent; color: var(--color-on-surface-variant);
       display: inline-flex; align-items: center; justify-content: center;
       cursor: pointer; font-size: 20px;
     }
-    .founder-modal-close:hover { background: rgba(127,127,127,.15); color: var(--color-on-surface); }
-    .founder-modal-head { display: flex; align-items: center; gap: 18px; margin-bottom: 6px; padding-right: 40px; }
-    .founder-modal-avatar { width: 88px; height: 88px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
+    .team-modal-close:hover { background: rgba(127,127,127,.15); color: var(--color-on-surface); }
+    .team-modal-head { display: flex; align-items: center; gap: 18px; margin-bottom: 6px; padding-right: 40px; }
+    .team-modal-avatar { width: 88px; height: 88px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
     /* Team Profile 文章排版 */
-    .founder-modal-body { margin-top: 14px; }
-    .founder-modal .art-title { font-size: 17px; font-weight: 800; color: var(--color-on-surface); margin: 6px 0 14px; }
-    .founder-modal .art-sec {
+    .team-modal-body { margin-top: 14px; }
+    .team-modal .art-title { font-size: 17px; font-weight: 800; color: var(--color-on-surface); margin: 6px 0 14px; }
+    .team-modal .art-sec {
       display: flex; align-items: center; gap: 8px;
       font-size: 15px; font-weight: 700; color: var(--color-on-surface);
       margin: 24px 0 8px;
     }
-    .founder-modal .art-sec::before {
+    .team-modal .art-sec::before {
       content: ''; width: 4px; height: 16px; border-radius: 2px;
       background: var(--color-primary); flex-shrink: 0;
     }
-    .founder-modal-body p { font-size: 14px; line-height: 1.8; color: var(--color-on-surface-variant); margin: 8px 0; }
-    .founder-modal .art-meta { list-style: none; margin: 4px 0 0; padding: 0; }
-    .founder-modal .art-meta li {
+    .team-modal .art-sub { font-size: 14px; font-weight: 700; color: var(--color-on-surface); margin: 12px 0 4px; }
+    .team-modal-body p { font-size: 14px; line-height: 1.8; color: var(--color-on-surface-variant); margin: 8px 0; }
+    .team-modal .art-meta { list-style: none; margin: 4px 0 0; padding: 0; }
+    .team-modal .art-meta li {
       display: flex; gap: 10px;
       font-size: 14px; line-height: 1.9; color: var(--color-on-surface-variant);
     }
-    .founder-modal .art-meta b { color: var(--color-on-surface); min-width: 118px; flex-shrink: 0; font-weight: 600; }
-    .founder-modal .art-list { margin: 8px 0; padding: 0 0 0 18px; }
-    .founder-modal .art-list li { margin-bottom: 5px; font-size: 14px; line-height: 1.75; color: var(--color-on-surface-variant); }
-    .founder-modal .art-key { font-size: 14px; line-height: 1.8; margin: 10px 0 6px; color: var(--color-on-surface-variant); }
-    .founder-modal .art-key b { color: var(--color-on-surface); margin-right: 8px; }
-    .founder-modal .art-quote {
+    .team-modal .art-meta b { color: var(--color-on-surface); min-width: 118px; flex-shrink: 0; font-weight: 600; }
+    .team-modal .art-list { margin: 8px 0; padding: 0 0 0 18px; }
+    .team-modal .art-list li { margin-bottom: 5px; font-size: 14px; line-height: 1.75; color: var(--color-on-surface-variant); }
+    .team-modal .art-key { font-size: 14px; line-height: 1.8; margin: 10px 0 6px; color: var(--color-on-surface-variant); }
+    .team-modal .art-key b { color: var(--color-on-surface); margin-right: 8px; }
+    .team-modal .art-chain {
+      text-align: center; font-weight: 600; color: var(--color-on-surface);
+      line-height: 2; margin: 12px 0; font-size: 14px;
+    }
+    .team-modal .art-quote {
       margin: 12px 0; padding: 12px 16px;
       border-left: 3px solid var(--color-primary);
       background: rgba(129, 49, 207, .08);
       border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
       font-size: 14px; line-height: 1.7; font-weight: 600; color: var(--color-on-surface);
     }
-    .founder-modal-foot {
+    .team-modal-foot {
       margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--color-outline-variant);
       font-size: 14px; color: var(--color-on-surface-variant);
     }
-    .founder-modal-foot a { color: var(--color-primary); font-weight: 600; }
+    .team-modal-foot a { color: var(--color-primary); font-weight: 600; }
 
     .brand-pill {
       display: inline-flex; align-items: center; gap: 8px;
@@ -200,6 +192,9 @@
       </p>
       <p class="body-md" style="color:var(--color-on-surface-variant);max-width:800px;line-height:1.8;margin-top:var(--space-sm)">
         我们相信，每个人都有想创造的世界。M.NationWorld 要做的，就是把创作的门槛降到最低——让不会编程、不懂设计的普通创作者，也能像搭积木一样搭出属于自己的国度。
+      </p>
+      <p class="body-md" style="color:var(--color-on-surface-variant);max-width:800px;line-height:1.8;margin-top:var(--space-sm)">
+        平台由 <b style="color:var(--color-on-surface)">SlatiStudio（斯拉蒂工作室）</b>开发与运营——一支由创始人 Neo 主导的独立软件开发工作室，从产品定位、界面设计到代码实现亲力亲为。点下面的团队卡，可以认识我们。
       </p>
     </div>
 
@@ -279,18 +274,15 @@
         </div>
         <div style="flex:1;min-width:0">
           <h3 class="headline-md" style="margin-bottom:2px">SlatiStudio</h3>
-          <p class="label-sm" style="color:var(--color-outline)">运营团队 · 平台开发者</p>
+          <p class="label-sm" style="color:var(--color-outline)">开发工作室 · 核心项目主体</p>
           <p class="body-md" style="color:var(--color-on-surface-variant);margin-top:var(--space-xs)">
-            M.NationWorld 背后的工作室——一支小团队，专注把「架空世界创作」这件事做到极致。
+            M.NationWorld 的开发工作室与核心项目主体，负责产品的构思、设计、开发与长期发展。
           </p>
         </div>
         <div class="lift-info">
-          <button type="button" class="lift-info-btn" aria-label="更多信息">
+          <button type="button" class="lift-info-btn" aria-label="更多信息" data-modal="studioModal">
             <span class="material-symbols-outlined" style="font-size:20px">info</span>
           </button>
-          <div class="lift-info-pop" role="tooltip">
-            SlatiStudio 是 M.NationWorld 的运营主体，负责产品设计、内容运营与社区维护。商务合作与对外联系可通过官方 Discord 社区。
-          </div>
         </div>
       </div>
 
@@ -306,7 +298,7 @@
           </p>
         </div>
         <div class="lift-info">
-          <button type="button" class="lift-info-btn" aria-label="更多信息">
+          <button type="button" class="lift-info-btn" aria-label="更多信息" data-modal="founderModal">
             <span class="material-symbols-outlined" style="font-size:20px">info</span>
           </button>
         </div>
@@ -353,22 +345,22 @@
 <script src="../assets/js/settings-modal.js"></script>
 <script src="../assets/js/transitions.js"></script>
 
-<!-- 创始人独立大弹窗（模态框）：点创始人卡 info 钮打开 -->
-<div class="founder-modal" id="founderModal" role="dialog" aria-modal="true" aria-labelledby="founderModalTitle" hidden>
-  <div class="founder-modal-backdrop"></div>
-  <div class="founder-modal-card">
-    <button type="button" class="founder-modal-close" aria-label="关闭">
+<!-- 创始人独立大弹窗（模态框）：点创始人卡 info 钮打开（另一弹窗 studioModal 在下方） -->
+<div class="team-modal" id="founderModal" role="dialog" aria-modal="true" aria-labelledby="founderModalTitle" hidden>
+  <div class="team-modal-backdrop"></div>
+  <div class="team-modal-card">
+    <button type="button" class="team-modal-close" aria-label="关闭">
       <span class="material-symbols-outlined" style="font-size:20px">close</span>
     </button>
-    <div class="founder-modal-scroll">
-    <div class="founder-modal-head">
-      <img class="founder-modal-avatar" src="../assets/image/TChestBox_Neo_2025Avatar.png" alt="TChest_Neo24 头像">
+    <div class="team-modal-scroll">
+    <div class="team-modal-head">
+      <img class="team-modal-avatar" src="../assets/image/TChestBox_Neo_2025Avatar.png" alt="TChest_Neo24 头像">
       <div style="min-width:0">
         <h3 class="headline-lg" id="founderModalTitle" style="margin-bottom:4px">TChest_Neo24</h3>
         <p class="label-sm" style="color:var(--color-outline);margin:0">创始人 · 产品设计师 · UI/UX 设计师 · 核心开发者</p>
       </div>
     </div>
-    <div class="founder-modal-body">
+    <div class="team-modal-body">
       <div class="art-title">M.NationWorld 项目个人与职责</div>
 
       <div class="art-sec">个人简介</div>
@@ -496,7 +488,7 @@
       <blockquote class="art-quote">Neo 负责思考 M.NationWorld 应该是什么，设计它应该如何工作，并亲自将这些想法逐步开发成为实际产品。</blockquote>
       <p>随着未来项目规模扩大，这些职责可以逐渐由不同的团队成员分担。但在当前项目初期阶段，Neo 同时承担着<b>创始人、产品设计师和核心开发者</b>的角色，是 M.NationWorld 当前最主要的产品与技术推动者。</p>
     </div>
-    <div class="founder-modal-foot">
+    <div class="team-modal-foot">
       想认识创始人的话，欢迎来官方 Discord 社区：
       <a href="https://discord.gg/beST9TtMqq" target="_blank" rel="noopener noreferrer">discord.gg/beST9TtMqq</a>
     </div>
@@ -504,51 +496,298 @@
   </div>
 </div>
 
+<!-- 工作室大弹窗（模态框）：点 SlatiStudio 卡 info 钮打开 -->
+<div class="team-modal" id="studioModal" role="dialog" aria-modal="true" aria-labelledby="studioModalTitle" hidden>
+  <div class="team-modal-backdrop"></div>
+  <div class="team-modal-card">
+    <button type="button" class="team-modal-close" aria-label="关闭">
+      <span class="material-symbols-outlined" style="font-size:20px">close</span>
+    </button>
+    <div class="team-modal-scroll">
+    <div class="team-modal-head">
+      <div class="team-modal-avatar" style="background:#fff;display:flex;align-items:center;justify-content:center">
+        <img src="../assets/image/Slati%20logo.png" alt="SlatiStudio logo" style="width:80%;height:80%;object-fit:contain">
+      </div>
+      <div style="min-width:0">
+        <h3 class="headline-lg" id="studioModalTitle" style="margin-bottom:4px">SlatiStudio</h3>
+        <p class="label-sm" style="color:var(--color-outline);margin:0">开发工作室 · 核心项目主体</p>
+      </div>
+    </div>
+    <div class="team-modal-body">
+      <div class="art-title">SlatiStudio 在 M.NationWorld 项目中的详细介绍</div>
+
+      <div class="art-sec">一、斯拉蒂工作室简介</div>
+      <p><b>SlatiStudio（斯拉蒂工作室）</b>是 M.NationWorld 项目的开发工作室与核心项目主体，负责 M.NationWorld 的产品构思、设计、开发以及长期发展。</p>
+      <p>斯拉蒂工作室目前属于早期阶段，M.NationWorld 是工作室现阶段最主要的核心项目。</p>
+      <p>与传统拥有多个部门和大量员工的软件公司不同，斯拉蒂工作室目前以精简的个人开发模式运行。在 M.NationWorld 项目初期，Neo 同时承担了项目负责人、产品设计者、UI/UX 设计者以及核心开发者等多个角色。</p>
+      <p>因此，现阶段的斯拉蒂工作室更接近一个由创始人主导的<b>独立软件开发工作室（Independent Software Studio）</b>。</p>
+
+      <div class="art-sec">二、与 M.NationWorld 的关系</div>
+      <p>斯拉蒂工作室与 M.NationWorld 的关系可以概括为：</p>
+      <p class="art-key"><b>SlatiStudio（斯拉蒂工作室）</b>→ 开发工作室</p>
+      <p class="art-key"><b>M.NationWorld</b>→ 核心产品</p>
+      <p>M.NationWorld 是斯拉蒂工作室目前最重要的产品项目。斯拉蒂工作室负责 M.NationWorld 的整体建设，包括产品定位、功能设计、UI/UX、技术开发、AI 应用、平台治理以及未来的发展规划。</p>
+      <p>因此，M.NationWorld 并不是一个单纯的个人网页项目，而是由斯拉蒂工作室持续开发和规划的长期软件项目。</p>
+
+      <div class="art-sec">三、核心职责</div>
+      <p>斯拉蒂工作室在 M.NationWorld 项目中的职责并不是单纯「写代码」。它负责从一个产品概念开始，将其逐渐转化为完整的软件平台。主要职责包括：</p>
+      <div class="art-sub">产品规划</div>
+      <p>负责确定 M.NationWorld 的：</p>
+      <ul class="art-list">
+        <li>产品定位</li>
+        <li>用户群体</li>
+        <li>核心功能</li>
+        <li>产品架构</li>
+        <li>用户体验</li>
+        <li>商业模式</li>
+        <li>国际化方向</li>
+        <li>长期发展路线</li>
+      </ul>
+      <p>M.NationWorld 最初主要围绕架空国家 Wiki 展开，后来逐渐转向更加广泛的<b>世界观创建平台（Worldbuilding Platform）</b>。</p>
+      <p>这一定位调整也是斯拉蒂工作室对项目长期方向进行重新规划的结果。</p>
+
+      <div class="art-sec">四、世界观创建平台建设</div>
+      <p>斯拉蒂工作室负责构建 M.NationWorld 最核心的 Worldbuilding 系统。其目标并不是简单提供一个 Wiki，而是让用户能够自由创建、组织、展示和持续维护自己的世界观。未来能够支持的内容类型包括：</p>
+      <ul class="art-list">
+        <li>架空国家</li>
+        <li>架空历史</li>
+        <li>虚构城市</li>
+        <li>虚构组织</li>
+        <li>政治体系</li>
+        <li>游戏世界观</li>
+        <li>小说世界观</li>
+        <li>OC</li>
+        <li>二次元世界观</li>
+        <li>团队原创世界</li>
+      </ul>
+      <p>因此，斯拉蒂工作室希望 M.NationWorld 最终形成一个更加开放的世界观创作环境。核心理念可以概括为：</p>
+      <blockquote class="art-quote">让用户拥有尽可能高的创作自由度，同时降低创建复杂世界观的门槛。</blockquote>
+
+      <div class="art-sec">五、产品与功能设计</div>
+      <p>斯拉蒂工作室负责 M.NationWorld 的整体产品结构与功能设计。目前规划的核心系统包括：</p>
+      <ul class="art-list">
+        <li>Worldbuilding</li>
+        <li>Wiki</li>
+        <li>WYSIWYG 内容编辑</li>
+        <li>Card UI</li>
+        <li>社区</li>
+        <li>帖子</li>
+        <li>私信</li>
+        <li>Team</li>
+        <li>Channel</li>
+        <li>创作者主页</li>
+        <li>数据统计</li>
+        <li>收藏</li>
+        <li>点赞</li>
+        <li>浏览量</li>
+        <li>内容管理</li>
+        <li>AI 服务</li>
+        <li>平台治理</li>
+        <li>用户订阅</li>
+        <li>团队订阅</li>
+      </ul>
+      <p>这些功能并不是彼此独立存在，而是围绕「世界观创建」这一核心进行组合。目标是形成<b>创建 → 编辑 → 发布 → 展示 → 交流 → 协作 → 管理</b>的完整使用流程。</p>
+
+      <div class="art-sec">六、UI/UX 设计</div>
+      <p>斯拉蒂工作室负责 M.NationWorld 的整体视觉设计与交互体系。其中包括：</p>
+      <ul class="art-list">
+        <li>Card UI</li>
+        <li>模块化页面</li>
+        <li>Wiki 页面</li>
+        <li>动态 Wiki 背景</li>
+        <li>自定义内容模块</li>
+        <li>WYSIWYG 编辑体验</li>
+        <li>FluidCanvas</li>
+        <li>社区界面</li>
+        <li>Team 与 Channel 界面</li>
+        <li>数据管理界面</li>
+        <li>多语言界面</li>
+      </ul>
+      <p>斯拉蒂工作室尤其重视<b>自定义体验</b>。传统 Wiki 往往要求用户按照固定结构创建内容，而 M.NationWorld 希望让用户能够更自由地决定自己的世界应该如何展示。</p>
+      <p>因此，UI/UX 的设计目标并不只是「好看」，而是：</p>
+      <blockquote class="art-quote">让用户能够真正控制自己的内容。</blockquote>
+
+      <div class="art-sec">七、FluidCanvas</div>
+      <p><b>FluidCanvas</b>是 M.NationWorld 体系中的重要创作与管理工具。斯拉蒂工作室负责 FluidCanvas 的产品设计与功能规划。它主要用于：</p>
+      <ul class="art-list">
+        <li>编辑文章</li>
+        <li>管理 Wiki 内容</li>
+        <li>管理帖子</li>
+        <li>管理其他平台内容</li>
+        <li>查看浏览量</li>
+        <li>查看点赞量</li>
+        <li>查看收藏量</li>
+        <li>查看创作者数据</li>
+        <li>管理团队数据</li>
+      </ul>
+      <p>FluidCanvas 的定位是连接普通用户界面与平台底层数据的中端控制台。其核心理念是：</p>
+      <blockquote class="art-quote">将复杂的数据和内容管理功能转化为直观的可视化工作空间。</blockquote>
+
+      <div class="art-sec">八、软件开发</div>
+      <p>斯拉蒂工作室负责 M.NationWorld 的实际软件开发。目前项目仍处于初期阶段，因此开发主要由 Neo 一人负责。开发过程中采用 <b>AI-assisted Development（AI 辅助开发）</b> 模式，并使用 DeepSeek 等 AI 工具辅助：</p>
+      <ul class="art-list">
+        <li>代码编写</li>
+        <li>代码分析</li>
+        <li>功能实现</li>
+        <li>Debug</li>
+        <li>问题排查</li>
+        <li>代码修改</li>
+        <li>技术研究</li>
+      </ul>
+      <p>但 AI 并不负责项目最终决策。产品需求、技术方向、功能逻辑、代码审查、修改、整合、测试以及最终是否采用某项实现方案，仍由 Neo 负责。因此目前斯拉蒂工作室的开发模式可以概括为：</p>
+      <p class="art-key"><b>Human-led Development + AI-assisted Development</b>也就是：人负责决策，AI 辅助开发。</p>
+
+      <div class="art-sec">九、AI 应用</div>
+      <p>斯拉蒂工作室计划让 AI 成为 M.NationWorld 平台基础设施的一部分，而不仅仅是一个聊天功能。AI 未来可以参与：</p>
+      <ul class="art-list">
+        <li>内容审核</li>
+        <li>上传审核</li>
+        <li>AI 客服</li>
+        <li>内容总结</li>
+        <li>数据整合</li>
+        <li>内容分类</li>
+        <li>创作者辅助</li>
+        <li>平台管理</li>
+      </ul>
+      <p>当 AI 无法判断某项内容是否符合平台规则时，则交由人工进行进一步审核。因此，斯拉蒂工作室希望建立<b>AI 自动化 + 人工审核</b>的混合管理机制。</p>
+
+      <div class="art-sec">十、社区与创作者生态</div>
+      <p>斯拉蒂工作室负责规划 M.NationWorld 的社区生态。平台的目标并不是让用户创建完 Wiki 后就离开，而是希望用户能够围绕自己的世界观形成长期创作与交流。因此计划建立：</p>
+      <ul class="art-list">
+        <li>帖子</li>
+        <li>私信</li>
+        <li>Channel</li>
+        <li>Team</li>
+        <li>创作者主页</li>
+        <li>点赞</li>
+        <li>收藏</li>
+        <li>浏览量</li>
+        <li>社区互动</li>
+        <li>团队协作</li>
+      </ul>
+      <p>最终形成一个围绕 Worldbuilding 的创作者社区。</p>
+
+      <div class="art-sec">十一、商业化与运营规划</div>
+      <p>斯拉蒂工作室同时负责 M.NationWorld 的商业模式设计。未来可能采用：</p>
+      <ul class="art-list">
+        <li>免费用户</li>
+        <li>Pro 订阅</li>
+        <li>高级创作功能</li>
+        <li>Team 与 Channel 订阅</li>
+        <li>企业级服务</li>
+        <li>广告</li>
+      </ul>
+      <p>等方式。商业化的目的主要是为平台持续开发提供资金支持，包括：</p>
+      <ul class="art-list">
+        <li>服务器</li>
+        <li>数据存储</li>
+        <li>AI API</li>
+        <li>软件开发</li>
+        <li>后续团队扩张</li>
+        <li>平台维护</li>
+      </ul>
+      <p>从而让 M.NationWorld 能够成为一个长期运行的产品，而不是一个短期项目。</p>
+
+      <div class="art-sec">十二、国际化</div>
+      <p>斯拉蒂工作室从项目规划阶段就考虑 M.NationWorld 的国际化发展。目前规划支持：</p>
+      <ul class="art-list">
+        <li>简体中文</li>
+        <li>繁体中文</li>
+        <li>English</li>
+        <li>日本語</li>
+        <li>한국어</li>
+        <li>Bahasa Melayu</li>
+        <li>Bahasa Indonesia</li>
+        <li>ไทย</li>
+        <li>Français</li>
+        <li>Deutsch</li>
+      </ul>
+      <p>其目标是让 M.NationWorld 不局限于单一语言或单一创作者圈，而是成为面向国际 Worldbuilding 用户的平台。</p>
+
+      <div class="art-sec">十三、长期发展方向</div>
+      <p>斯拉蒂工作室对 M.NationWorld 的定位并不局限于目前的 Web 平台。随着项目的发展，未来可能继续探索：</p>
+      <ul class="art-list">
+        <li>3D Worldbuilding</li>
+        <li>3D 模型</li>
+        <li>游戏世界观</li>
+        <li>游戏开发工具</li>
+        <li>数字资产</li>
+        <li>创作者工具</li>
+        <li>团队协作工具</li>
+        <li>Worldbuilding 与游戏开发结合</li>
+        <li>更完整的创作者生态</li>
+      </ul>
+      <p>因此，M.NationWorld 是斯拉蒂工作室目前建立 Worldbuilding 生态的核心起点。</p>
+
+      <div class="art-sec">十四、当前工作室组织形态</div>
+      <p>目前斯拉蒂工作室仍处于项目早期阶段，因此尚未形成传统公司的完整部门结构。现阶段主要由 Neo 负责 M.NationWorld 的核心工作。目前可以理解为：</p>
+      <p class="art-key"><b>Neo</b>Founder · Product Lead · UI/UX Designer · Core Developer</p>
+      <p class="art-key"><b>SlatiStudio</b>项目开发主体 · 产品设计主体 · 长期发展主体</p>
+      <p class="art-key"><b>M.NationWorld</b>当前核心产品</p>
+      <p>未来随着项目规模扩大，斯拉蒂工作室可以进一步建立开发、设计、AI、社区、运营、市场等不同职能。</p>
+
+      <div class="art-sec">十五、斯拉蒂工作室的定位</div>
+      <p>综合来看，<b>SlatiStudio（斯拉蒂工作室）</b>是一个以软件开发、数字创作工具和 Worldbuilding 为主要发展方向的独立开发工作室。目前，M.NationWorld 是斯拉蒂工作室最核心的产品。</p>
+      <p>工作室的主要目标并不是单纯开发一个 Wiki，而是通过 M.NationWorld 探索一种新的世界观创作方式：</p>
+      <blockquote class="art-quote">让任何人都能够创建属于自己的世界，并拥有决定这个世界如何被组织、展示和发展的自由。</blockquote>
+      <p>而 Neo 则是目前斯拉蒂工作室与 M.NationWorld 项目的核心负责人，在项目初期同时承担创始人、产品负责人、设计师和开发者等职责。因此，目前整个项目的关系可以概括为：</p>
+      <div class="art-chain">Neo<br>↓<br>SlatiStudio（斯拉蒂工作室）<br>↓<br>M.NationWorld<br>↓<br>Worldbuilding Platform / 世界观创建生态</div>
+      <p>斯拉蒂工作室负责构建产品，M.NationWorld 负责承载产品理念，而 Neo 则负责推动这一切从概念逐渐成为实际的软件产品。</p>
+    </div>
+    <div class="team-modal-foot">
+      想认识工作室成员的话，欢迎来官方 Discord 社区：
+      <a href="https://discord.gg/beST9TtMqq" target="_blank" rel="noopener noreferrer">discord.gg/beST9TtMqq</a>
+    </div>
+    </div>
+  </div>
+</div>
+
 <script>
-  // 创始人独立大弹窗：开/关（body 滚动锁 + 淡出 260ms 后才 hidden，避免淡出被剪断；关闭期间再点开立刻恢复）
-  var founderModal = document.getElementById('founderModal');
-  var founderModalHideTimer = null;
-  function openFounderModal() {
-    if (founderModalHideTimer) { clearTimeout(founderModalHideTimer); founderModalHideTimer = null; }
-    founderModal.hidden = false;
+  // 团队大弹窗通用开/关：founderModal（创始人）+ studioModal（SlatiStudio）共用一套生命周期
+  // body 滚动锁 + 淡出 260ms 后才 hidden，避免淡出被剪断；关闭期间再点开立刻恢复
+  var teamModalTimers = {};
+  function openTeamModal(id) {
+    var modal = document.getElementById(id);
+    if (!modal) return;
+    if (teamModalTimers[id]) { clearTimeout(teamModalTimers[id]); delete teamModalTimers[id]; }
+    modal.hidden = false;
     document.body.style.overflow = 'hidden';
     requestAnimationFrame(function () {
-      founderModal.classList.add('open');
-      founderModal.querySelector('.founder-modal-close').focus();
+      modal.classList.add('open');
+      modal.querySelector('.team-modal-close').focus();
     });
   }
-  function closeFounderModal() {
-    founderModal.classList.remove('open');
-    document.body.style.overflow = '';
-    founderModalHideTimer = setTimeout(function () { founderModal.hidden = true; founderModalHideTimer = null; }, 260);
+  function closeTeamModal(id) {
+    var modal = document.getElementById(id);
+    if (!modal) return;
+    modal.classList.remove('open');
+    // 还有其他弹窗开着的话不解除 body 滚动锁
+    if (!document.querySelector('.team-modal.open')) document.body.style.overflow = '';
+    teamModalTimers[id] = setTimeout(function () {
+      modal.hidden = true;
+      delete teamModalTimers[id];
+    }, 260);
   }
-  founderModal.querySelector('.founder-modal-backdrop').addEventListener('click', closeFounderModal);
-  founderModal.querySelector('.founder-modal-close').addEventListener('click', closeFounderModal);
+  document.querySelectorAll('.team-modal').forEach(function (modal) {
+    modal.querySelector('.team-modal-backdrop').addEventListener('click', function () { closeTeamModal(modal.id); });
+    modal.querySelector('.team-modal-close').addEventListener('click', function () { closeTeamModal(modal.id); });
+  });
 
-  // 团队卡 info 弹层：点 info 钮开/关，外点或 Esc 统一关闭；创始人卡没有小弹层 → 开大弹窗
-  function closeAllInfoPops() {
-    document.querySelectorAll('.lift-info-pop.open').forEach(function (p) { p.classList.remove('open'); });
-  }
+  // 卡上 info 钮：data-modal 指定要开的大弹窗（小弹层机制已退役，两卡都开大弹窗）
   document.querySelectorAll('.lift-info-btn').forEach(function (btn) {
     btn.addEventListener('click', function (ev) {
       ev.stopPropagation();
-      var pop = btn.parentElement.querySelector('.lift-info-pop');
-      if (!pop) { openFounderModal(); return; }
-      var wasOpen = pop.classList.contains('open');
-      closeAllInfoPops();
-      if (!wasOpen) pop.classList.add('open');
+      var target = btn.getAttribute('data-modal');
+      if (target) openTeamModal(target);
     });
   });
-  document.addEventListener('click', closeAllInfoPops);
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') { closeAllInfoPops(); closeFounderModal(); }
-  });
-  // 点弹层内部（选文字/点链接）不触发 document 外点关闭
-  document.querySelectorAll('.lift-info').forEach(function (li) {
-    li.addEventListener('click', function (ev) { ev.stopPropagation(); });
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.team-modal.open').forEach(function (m) { closeTeamModal(m.id); });
+    }
   });
 
-  // 退场 overflow 延迟钳回：滑鼠移开后挂 .lift-leaving 撑 450ms（info 收回需 .12s 延迟 + .25s 过渡），
+  // 退场 overflow 延迟钳回：滑鼠移开后挂 .lift-leaving 撑 450ms（info 钮收回需 .12s 延迟 + .25s 过渡），
   // 等按钮滑回底边外再切 hidden，避免「没滑完就被剪掉」；中途重新进入立刻解除。
   document.querySelectorAll('.team-lift').forEach(function (card) {
     card.addEventListener('mouseleave', function () {
