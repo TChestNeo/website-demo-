@@ -96,7 +96,7 @@
       max-height: 82vh;
       overflow: hidden; /* 圆角剪裁：滚动交给内层 .founder-modal-scroll */
       display: flex; flex-direction: column;
-      background: var(--card-bg);
+      background: rgba(255, 255, 255, .93); /* 亮化：浅色主题近实白——旧 var(--card-bg) 55% 半透明透出暗背景发灰 */
       backdrop-filter: blur(20px);
       border: 1px solid var(--color-outline-variant);
       border-radius: 16px;
@@ -104,6 +104,7 @@
       transform: translateY(14px) scale(.97);
       transition: transform .25s ease;
     }
+    :root[data-theme="dark"] .founder-modal-card { background: #2b2b4a; } /* 暗色主题提亮一档（原 #1e1e32） */
     .founder-modal-scroll {
       overflow-y: auto; min-height: 0;
       padding: 28px;
