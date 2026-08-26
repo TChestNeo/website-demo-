@@ -1,0 +1,134 @@
+# 2026-08-27 工作日志
+
+## 2026-08-27 — 磨砂玻璃扩展：编辑面板 + 边缘主题卡身 + 国旗/数据卡（v10.28.6.2）
+
+**背景**：用户「那个编辑卡片的背景能不能做模糊和高亮还有 背景边缘的也是 国旗卡片那边的也是检查一下是否一致」；问询钦定：编辑卡片=编辑面板、主题纹理统一玻璃感、外板保持不透明。
+
+**改动**：
+1. 编辑面板加 12px blur + saturate + 右上角高光条 + 细灰边（底色本就是 --card-bg 55% 半透）。
+2. 数据卡/国旗卡并入 v10.27 磨砂选择器——国旗卡无专属类（身份在 dataset.cardType），用 [data-card-type=flag] 属性选择器（电池抓出）。
+3. 主题卡卡身 backdrop blur + 剪影填充半透明化（tint 0.55 / 油漆 ::before 0.55）+ 高光条进填充层 background-image 列表——主题卡自身 background 被 z -1 填充层盖住，v10.27 路径（写自身背景）不可复用。
+4. 外板/环带不透明不动（v10.21 口径），油漆+外板 legacy 组合排除。
+
+**验证**：冒烟 50/50 0 console error（内容卡磨砂回归 / 国旗·数据卡 blur+55%+1px 细边 / 纸卡 tint 0.55+高光+板不透明 / 油漆 ::before 0.55+滤镜保留+内边距 live 回归 / 纸感开关回归 / 面板六项 / 版本徽章 / 草稿往返边缘恢复）。
+
+## 2026-08-27 — 资产卡族磨砂并入（v10.28.6.3）
+
+**背景**：用户「把Emblem卡片作用下」——Emblem=盾徽卡（cardType shield），无专属类。
+
+**改动**：
+1. Emblem / Governance / Economic Ledger / Constitution / Gallery 五款模板资产卡全走 createAssetCard 同一「图标+标签」构造 → 加 .asset-card 统一类一次覆盖（草稿只存 cardType，重载重建类，零存储改动）。
+2. 资产卡有 .card-label → 边缘主题 + 主题玻璃自动生效。
+3. 导出 createAssetCard 测试钩子（先例 renderStatsChart）。
+
+**验证**：冒烟 66/66 0 console error（上轮 50 断言全回归 + Emblem/Governance 磨砂四件套 + 纸 Emblem 主题玻璃六项 + 草稿往返 9 卡边缘/类重建）。
+
+**教训**：模板库拖放分流——flag/content/character/map/stats/history_edu 走专属创建函数，其余（shield/account_balance/payments/menu_book/image）全落 createAssetCard 兜底；同名 cardType（如 map）新旧两代卡并存时用类区分。
+
+## 2026-08-27 — Emblem 卡图片上传（v10.28.7）
+
+**背景**：用户「你有做吗？为什么该卡片没有办法上传图片？」——此前确未做、属疏漏如实承认。
+
+**改动**：
+1. shield 卡点击→图源弹窗同国旗卡流程（守卫 justDragged/标签/已有图，setCurrentFlagCard + openFlagSourceModal）。
+2. 弹窗文案按卡种适配（#flagSourceTitle/Desc 改文本、#flagBrowseBtn 藏平台旗帜浏览仅国徽态）。
+3. 上传走通用 setCardImage → has-bg-img + 文件名标签 + 图标 0.9 保留 + 磨砂仍在（frost 选择器 :not() 用 has-card-bg-img 不含 has-bg-img，有图卡仍玻璃）。
+4. toast 名词 Emblem/Flag 随卡切换；草稿 imgSrc/imgAlt 通用路径零存储改动。
+5. Governance 等其余资产卡点击不弹（无处理器）。
+
+**验证**：冒烟 25/25 0 console error（Emblem 点击弹窗+文案适配+藏浏览 / DataTransfer+File 真实上传全链路 / Governance 静默回归 / 国旗弹窗回归 / 内容卡磨砂回归 / 草稿往返图+标签还原 / 版本徽章）。
+
+**教训**：电池断言 src.slice(0,22) 截到逗号、期望串漏逗号——切片长度先数字符。
+
+## 2026-08-27 — 国徽卡「放大缩小不跟随鼠标」修复（v10.28.7.1）
+
+**背景**：用户问询定位=国徽卡片。
+
+**改动**：真身 = 锁定缩放投影公式分母误为 (w0²+h0²)/2——角把手以 2× 鼠标速度沿角射线甩开光标，注释原称「Exact when the mouse follows the corner ray」实为 2 倍响应。修 = 分母 w0²+h0² 标准角射线投影：沿射线拖角把手与鼠标 1:1 贴齐、偏轴拖标准投影等比、方向/最小钳制/旋转换算不变。
+
+**验证**：冒烟 15/15 0 console error（真鼠 Input.dispatchMouseEvent：射线 1:1 / 偏轴投影期望值 / 非锁定回归 / 旋转 30° 局部跟手 / 版本徽章）。
+
+**教训**：代码注释自称 exact 的公式也要拿数字验一遍——(w0²+h0²)/2 与标准投影差 2 倍，纸上一算即知。
+
+## 2026-08-27 — 数据卡背景图盖图表修复 + 「移除背景图」门禁修复（v10.28.7.2）
+
+**背景**：用户「stats cards 添加上卡片背景之后背景图像把图表直接挡住」。
+
+**改动**：
+1. 真身 = .card-bg-img 是 z 0 定位层压过一切静态流内容——标签/图标早有 z 1 提层、内容层没有 → 数据/人物/地图/时间线内容层补 position:relative + z-index:1 随 .has-card-bg-img 挂载（无背景图零影响、.stats-edit 搬浮动面板后选择器不再匹配）。
+2. 电池顺藤摸出真 bug②：removeCardBgImage 旧 .card-label 门禁让数据卡「能加不能删」（v10.28.6 三处门禁放开漏了它）→ 门禁与 setCardEdge 同款放开。
+
+**验证**：冒烟 20/20 0 console error（上传前静态/上传后提层/图表模式/编辑面板/人物/地图/时间线经典+历史标图/国旗卡药丸回归/移除背景回落/版本徽章）。
+
+**教训**：药丸断言踩 0.15s background transition 竞态——class 加上后立即读计算值是过渡起点，等过渡走完再断言；Log 404 过滤要看 entry.url 不是 entry.text（favicon 404 的 text 无 URL）。
+
+## 2026-08-27 — SNE Index 卡片（v10.28.8）
+
+**背景**：用户「减去掉 Governance 和 Economic Ledger 卡片 并且添加 SNE Index卡片（Slati National Equilibrium Index | 斯拉蒂国家平衡指数) 算法之后再做，然后卡片展示方式是 中间正上方 总分下方是 长x宽 3x2 政治 经济 军事 外交 基本信息完整度 国家系统；然后该卡片一样可以编辑边缘 一样要做一下增加边距避免超出范围 然后每个指标都是一个二级小格子 然后我希望你 在这些格子的下方再添加一个卡片给这个卡片添加阴影 然后再添加Overflow: hidden值把主要的卡片框进去或者单独的二级卡片框进去做出边缘虚化的效果」。问询钦定：算法先占位简单平均（之后换公式只改 sneComputeTotal 单函数）、完整度先手动打分（之后自动关联国家信息）。
+
+**改动**：
+1. 资产面板移除 account_balance/payments 两模板（旧草稿 createAssetCard 兜底载入）、新增 SNE Index 卡（balance 图标）。
+2. 结构 = .sne-shadow 阴影子层（z -2 inset 0 透明底 + 硬边 offset box-shadow = 垫在卡下第二张卡片，主题边缘/外板时 CSS 隐藏——板自带阴影职责）+ .sne-inner 内容区（overflow:hidden + border-radius:inherit 剪齐卡角 + 径向渐隐遮罩边缘虚化）+ .sne-head 总分上方居中 + .sne-grid 3×2 六指标二级小格（政治/经济/军事/外交/基本信息完整度/国家系统，各带 0-100 数字输入 .card-edit-field 不 arm 拖拽）。
+3. dataset.sneData additive 草稿往返（restoreSne 重建六格）。
+4. 边缘主题同国旗/数据卡口径——六处 .card-label 门禁放开 sne（setCardEdge/applyCardBg/applyOuterBg/背景菜单/移除背景/openCardBgPopover）+ 油漆边距 v10.28.6.1 同款 container-type:inline-size + cqi 四边内边距。
+5. .sne-inner 并入 v10.28.7.2 背景图提层规则。
+
+**验证**：冒烟 26/26 0 console error（面板增删/工厂结构/平均总分/sneData 序列化/paint2 边缘+阴影隐藏+cqi 边距/背景图上传提层+移除门禁/草稿存取/重载还原/legacy account_balance 兜底/sne 无数据默认/版本徽章）。
+
+**教训**：阴影子层设计——「垫在下面的卡片」不能用 inset 负值+实底色（负 z 子层画在卡自身背景之上会盖暗卡面），改 inset 0 透明底 + box-shadow 画在盒外天然不被父 overflow 裁剪且跟圆角；主卡 overflow:hidden 与阴影探出卡外不可兼得——用户给的两选一（框主卡或框二级格）选后者。
+
+## 2026-08-27 — SNE 卡默认尺寸 6×5 → 9×12（v10.28.8.1）
+
+**背景**：用户「能不能调整一下他被脱出来的时候的默认大小，现在这个大小显示不完整」。
+
+**改动**：
+1. 真身 = 运行时格宽 20px（非内联 style 的 24px，probe 实证 computed --cell-size=20）——6×5 = 130×108 装不下两行标题+总分+2 行六格，overflow:hidden 裁掉一切、nowrap+省略号截断「基本信息完整度」。
+2. 默认 9×12（196×262）留足余量 + 内容收紧（总分 36→32、格子纵向间距 3→2、网格底衬 8→12、指标名 white-space:normal 折行显示全名）。
+3. 三处默认值同步（assetSpan/createSneCard/草稿恢复 pos.colSpan||9）。
+
+**验证**：冒烟 21/21 0 console error（默认尺寸按格宽数学断言 + inner 无裁剪 + 名字/标题全显 + paint2/5 大边距下格子级无溢出 + 草稿往返 + 重载还原）。
+
+**教训**：卡默认尺寸设计要看运行时 --cell-size 而非内联 style 声明值——电池断言尺寸按 computed cell 数学算，别写死常数。
+
+## 2026-08-27 — SNE 卡字幕全部中间对齐（v10.28.8.2）
+
+**背景**：用户「SNE Index能不能把卡片内的字幕都中间对齐？」。
+
+**改动**：
+1. 标题/总分/指标名/数值 CSS 本就 text-align:center——不居中的真身 = 数值框 number 原生步进钮（Chrome 悬停/聚焦时占右侧挤窄编辑区，text-align:center 只在缩水后的编辑区内居中 → 数字视觉偏左）。
+2. 修 = .sne-val appearance:textfield（+ -moz 同款，步进钮整体消失、数字死居中）+ 总分补显式 text-align:center。
+3. ::-webkit-inner/outer-spin-button 规则留旧版兜底——Chrome 151 步进钮已非可查伪元素（probe 实证连原生默认号输入的伪元素查询都返回空），断言口径改为 input 自身 computed appearance=textfield vs 原生对照 auto。
+
+**验证**：冒烟 15/15 0 console error（标题/总分/六指标名 Range 紧包围盒中心 vs 容器中心 ≤1.5px 几何断言 + 六数值框中心 + 改值总分 + 草稿往返 + 重载还原）。
+
+---
+
+## 今日收尾总结（2026-08-27）
+
+凌晨连打 8 个版本（v10.28.6.2 → v10.28.8.2），用户反馈逐一收口，全部 commit（未 push）：
+
+| 版本 | 用户反馈 | 根因 / 改动 | 冒烟 | commit |
+|---|---|---|---|---|
+| v10.28.6.2 | 编辑卡片背景模糊高亮+国旗卡一致 | 面板/数据卡/国旗卡/主题卡玻璃四线并入，外板不透明不动 | 50/50 | 6e268f4 |
+| v10.28.6.3 | Emblem 卡片（磨砂） | 五款资产卡加 .asset-card 统一类一次覆盖 | 66/66 | dbb6a6e |
+| v10.28.7 | Emblem 不能上传图片 | shield 卡点击→图源弹窗同国旗卡流程（此前确未做） | 25/25 | 4c7a6f5 |
+| v10.28.7.1 | 国徽卡缩放不跟鼠标 | 锁定缩放投影分母 (w0²+h0²)/2 实为 2 倍响应 → 标准 w0²+h0² | 15/15 | b7ae12a |
+| v10.28.7.2 | 背景图把图表挡住 | .card-bg-img z 0 压静态内容 → 内容层提层；顺修数据卡移除背景门禁 | 20/20 | b506c0f |
+| v10.28.8 | 要 SNE Index 卡、去两张资产卡 | 阴影子层+渐隐遮罩+3×2 六格+简单平均总分+sneData 草稿 | 26/26 | 68d73bd |
+| v10.28.8.1 | SNE 默认大小显示不完整 | 运行时格宽 20px（非 24px）6×5 装不下 → 默认 9×12 | 21/21 | 124cdc7 |
+| v10.28.8.2 | SNE 字幕中间对齐 | number 步进钮挤偏数字 → appearance:textfield | 15/15 | 62c9f9e |
+
+当日版本线：FC v10.28.8.2（小更新位 7→8 SNE 卡，补丁位 1→2 字幕居中）；站点号 v0.2.1.1 不动（FC 线独立）。8 轮冒烟合计 238 断言全绿、0 console error。
+
+### 待用户复核
+
+1. SNE Index 卡：拖出默认 9×12 完整可见（标题/总分/六格/全名不截断）；悬停数值框步进钮消失、字幕全居中；边缘主题（油漆）+ 阴影卡正常。
+2. Emblem 卡点击可上传图片；国徽卡锁定缩放 1:1 跟手。
+3. 数据卡加背景图后图表仍在图上（提层）；右键可移除背景。
+
+### 遗留（下批）
+
+1. 后端实机部署 + Stripe 实机联调（等用户 sk_test，前端优先指令不变）。
+2. 截图管线修复（候选：装 Chrome for Testing 旧版，绕开 Chrome/Edge 151 GPU 进程即死 → 全黑）。
+3. SNE 正式算法（用户之后定公式，只改 sneComputeTotal 单函数）+ 基本信息完整度自动关联国家信息。
+4. 08-24 ~ 08-26 的工作日志缺失（v10.27.0.1 单击改名 → v10.28.6.1 油漆边距，约 15 轮）——待补写或用户确认不需要。
