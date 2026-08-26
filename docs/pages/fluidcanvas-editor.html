@@ -402,7 +402,7 @@
        「基本信息完整度」截断） */
     .grid-card.sne-card .sne-total {
       font-size: 32px; font-weight: 700; line-height: 1; color: var(--color-primary);
-      font-variant-numeric: tabular-nums;
+      font-variant-numeric: tabular-nums; text-align: center;
     }
     .grid-card.sne-card .sne-grid {
       flex: 1; width: 100%; min-height: 0; display: grid;
@@ -419,11 +419,20 @@
       width: 100%; font-size: 10px; line-height: 1.25; color: var(--color-outline);
       text-align: center; white-space: normal; overflow: hidden;
     }
+    /* v10.28.8.2: 隐藏 number 原生步进钮——Chrome 悬停/聚焦时步进钮占
+       右侧把编辑区挤窄，text-align:center 只在缩水后的编辑区内居中 →
+       数字视觉上偏左（用户「卡片内的字幕都中间对齐」）；隐藏后数字
+       在输入框内死居中 */
     .grid-card.sne-card .sne-val {
       width: min(100%, 58px); border: 1px solid transparent; background: transparent;
       border-radius: 6px; outline: none; text-align: center; padding: 1px 2px;
       font-size: 13px; font-weight: 600; color: var(--color-on-surface);
       font-variant-numeric: tabular-nums;
+      -moz-appearance: textfield; appearance: textfield;
+    }
+    .grid-card.sne-card .sne-val::-webkit-outer-spin-button,
+    .grid-card.sne-card .sne-val::-webkit-inner-spin-button {
+      -webkit-appearance: none; margin: 0;
     }
     .grid-card.sne-card .sne-val:hover { border-color: var(--color-outline); }
     .grid-card.sne-card .sne-val:focus { border-color: var(--color-primary); background: var(--color-surface-container-lowest); }
@@ -7253,7 +7262,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.8.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.8.2') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -7262,7 +7271,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.8.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.8.2');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
