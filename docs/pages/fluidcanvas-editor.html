@@ -323,6 +323,27 @@
     }
     /* 数据卡 */
     .grid-card.stats-card { padding: 10px; gap: 6px; justify-content: flex-start; overflow: hidden; }
+    /* v10.28.6.1 — 油漆边缘内容内边距（用户「油漆边缘那边能不能增加一下
+       边距 要不然内容容易跑出范围」）：油漆剪影异形内缩（paint2/4/6 锯齿咬
+       进 ~10-12%、paint5 全周内缩 6~10% + 噪点撕裂滤镜），而内容层（图表/
+       列表）保持完好不裁剪（v10.15 设计）——内容贴卡边会跑出油漆范围，
+       且原固定 10px 内边距不随卡缩放（卡越大越跑出）。方案：油漆数据卡
+       本身设为尺寸容器（container-type: inline-size——卡宽显式固定，尺寸
+       遏制无副作用），内容子层（.stats-chart 图表 / .stats-edit 列表，两
+       者互斥显示）内边距用 cqi 随卡宽等比缩放（剪影 objectBoundingBox
+       同比缩放），max() 保底 10px（小卡百分比可能低于原基线）。不直接给
+       卡写 % padding——% 对卡自身会解析到画布（包含块）宽度，必炸。 */
+    .grid-card.stats-card.card-edge-paint { container-type: inline-size; padding: 0; }
+    .grid-card.stats-card.card-edge-paint .stats-chart,
+    .grid-card.stats-card.card-edge-paint .stats-edit {
+      padding: max(10px, var(--paint-pad, 10cqi));
+    }
+    .grid-card.stats-card[data-card-edge="paint1"] { --paint-pad: 6cqi; }
+    .grid-card.stats-card[data-card-edge="paint2"] { --paint-pad: 10cqi; }
+    .grid-card.stats-card[data-card-edge="paint3"] { --paint-pad: 12cqi; }
+    .grid-card.stats-card[data-card-edge="paint4"] { --paint-pad: 10cqi; }
+    .grid-card.stats-card[data-card-edge="paint5"] { --paint-pad: 12cqi; }
+    .grid-card.stats-card[data-card-edge="paint6"] { --paint-pad: 10cqi; }
     .grid-card .stats-row, .stats-edit-panel .stats-row { display: flex; align-items: center; gap: 6px; width: 100%; }
     .grid-card .stats-label, .stats-edit-panel .stats-label { width: 42%; font-size: 12px; }
     .grid-card .stats-value, .stats-edit-panel .stats-value { width: 52px; font-size: 12px; text-align: right; }
@@ -6941,7 +6962,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.6') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -6950,7 +6971,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.6');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
