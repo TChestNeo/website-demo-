@@ -338,11 +338,16 @@
        display:flex，内联样式压过 chart-mode 的 display:none → 图表模式
        列表仍可见。移到这里后 chart-mode 规则（4 类选择器）自然胜出。 */
     .grid-card .stats-rows { display: flex; flex-direction: column; gap: 6px; width: 100%; }
-    /* v10.28.5: 图表模式——列表隐藏、SVG 图表占满卡身（改数值即重绘） */
+    .grid-card .stats-edit { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; min-height: 0; }
+    /* v10.28.5: 图表模式——SVG 图表占满卡身（改数值即重绘） */
     .grid-card .stats-chart { flex: 1; width: 100%; min-height: 0; display: none; align-items: center; justify-content: center; }
-    .grid-card.stats-card.chart-mode .stats-chart { display: flex; }
-    .grid-card.stats-card.chart-mode .stats-rows,
-    .grid-card.stats-card.chart-mode .row-add { display: none; }
+    /* v10.28.5.1: 图表模式 = 左右分栏（用户钦定「编辑在右」）——图表在左、
+       编辑列表在右同时可见，改数值即重绘；迷你进度条让位（图表已展示数值），
+       行多时列表侧自行滚动 */
+    .grid-card.stats-card.chart-mode { flex-direction: row; align-items: stretch; }
+    .grid-card.stats-card.chart-mode .stats-chart { display: flex; flex: 1.15; }
+    .grid-card.stats-card.chart-mode .stats-edit { flex: 1; overflow-y: auto; }
+    .grid-card.stats-card.chart-mode .stats-bar-track { display: none; }
     .stats-chart-pop { width: 340px; }
     .stats-chart-pop .sc-group { font-size: 11px; color: var(--color-outline); margin: 10px 0 6px; }
     .sc-opt {
@@ -3261,7 +3266,7 @@
     var card = createGridCard('stats', col, row, spanW || 6, spanH || 5);
     card.classList.add('stats-card');
     var rows = document.createElement('div');
-    rows.className = 'stats-rows'; // 布局在样式表 .stats-rows——内联 display 会压过 chart-mode 隐藏
+    rows.className = 'stats-rows'; // 布局在样式表 .stats-rows——内联 display 会压过 chart-mode 规则
     var chart = document.createElement('div');
     chart.className = 'stats-chart'; // v10.28.5: 图表容器（chart-mode 才显示）
     var addBtn = document.createElement('button');
@@ -3270,9 +3275,14 @@
     addBtn.addEventListener('click', function () {
       addStatsRow(card, '', '');
     });
-    card.appendChild(rows);
+    // v10.28.5.1: 编辑列表包进 .stats-edit——图表模式左右分栏（图表左、
+    // 列表右同时可见）；DOM 顺序 chart 在前 → 横排时图表自然在左
+    var editWrap = document.createElement('div');
+    editWrap.className = 'stats-edit';
+    editWrap.appendChild(rows);
+    editWrap.appendChild(addBtn);
     card.appendChild(chart);
-    card.appendChild(addBtn);
+    card.appendChild(editWrap);
     addStatsRow(card, '人口', 120);
     addStatsRow(card, '面积', 80);
     addStatsRow(card, 'GDP', 45);
@@ -6749,7 +6759,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.5') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.5.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -6758,7 +6768,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.5');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.5.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
