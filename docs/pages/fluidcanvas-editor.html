@@ -334,6 +334,27 @@
       height: 100%; width: 0%; border-radius: 4px;
       background: var(--color-primary); transition: width 0.2s;
     }
+    /* 列表布局在样式表（v10.28.5 起）——曾在 createStatsCard 写内联
+       display:flex，内联样式压过 chart-mode 的 display:none → 图表模式
+       列表仍可见。移到这里后 chart-mode 规则（4 类选择器）自然胜出。 */
+    .grid-card .stats-rows { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+    /* v10.28.5: 图表模式——列表隐藏、SVG 图表占满卡身（改数值即重绘） */
+    .grid-card .stats-chart { flex: 1; width: 100%; min-height: 0; display: none; align-items: center; justify-content: center; }
+    .grid-card.stats-card.chart-mode .stats-chart { display: flex; }
+    .grid-card.stats-card.chart-mode .stats-rows,
+    .grid-card.stats-card.chart-mode .row-add { display: none; }
+    .stats-chart-pop { width: 340px; }
+    .stats-chart-pop .sc-group { font-size: 11px; color: var(--color-outline); margin: 10px 0 6px; }
+    .sc-opt {
+      display: flex; align-items: center; gap: 6px;
+      width: 100%; padding: 6px 8px; border-radius: 8px;
+      border: 2px solid transparent; background: var(--color-surface-container-low);
+      cursor: pointer; font-size: 12px; color: var(--color-on-surface);
+    }
+    .sc-opt.active { border-color: var(--color-primary); }
+    .sc-opt .material-symbols-outlined { font-size: 16px; color: var(--color-primary); }
+    .sc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .sc-opt-rows { margin-bottom: 2px; }
     /* 时间线卡 */
     .grid-card.timeline-card { padding: 10px 10px 10px 6px; gap: 2px; justify-content: flex-start; align-items: stretch; overflow: hidden; }
     .grid-card .tl-event {
@@ -2464,6 +2485,7 @@
         entry.mapPins = c.dataset.mapPins || '[]';
       } else if (entry.type === 'stats') {
         entry.statsRows = c.dataset.statsRows || '[]';
+        if (c.dataset.statsChart) entry.statsChart = c.dataset.statsChart; // v10.28.5: 图表种类
       } else if (entry.type === 'timeline') {
         entry.tlEvents = c.dataset.tlEvents || '[]';
         if (c.dataset.tlStyle) entry.tlStyle = c.dataset.tlStyle;
@@ -3207,6 +3229,7 @@
       var v = parseFloat(r.querySelector('.stats-value').value) || 0;
       r.querySelector('.stats-bar').style.width = Math.max(0, Math.min(100, (v / max) * 100)) + '%';
     });
+    if (card.classList.contains('chart-mode')) renderStatsChart(card); // v10.28.5: 改数值即重绘图表
   }
   function addStatsRow(card, label, value) {
     var row = document.createElement('div');
@@ -3238,8 +3261,9 @@
     var card = createGridCard('stats', col, row, spanW || 6, spanH || 5);
     card.classList.add('stats-card');
     var rows = document.createElement('div');
-    rows.className = 'stats-rows';
-    rows.style.cssText = 'display:flex;flex-direction:column;gap:6px;width:100%';
+    rows.className = 'stats-rows'; // 布局在样式表 .stats-rows——内联 display 会压过 chart-mode 隐藏
+    var chart = document.createElement('div');
+    chart.className = 'stats-chart'; // v10.28.5: 图表容器（chart-mode 才显示）
     var addBtn = document.createElement('button');
     addBtn.className = 'row-add';
     addBtn.textContent = '+ 添加指标';
@@ -3247,6 +3271,7 @@
       addStatsRow(card, '', '');
     });
     card.appendChild(rows);
+    card.appendChild(chart);
     card.appendChild(addBtn);
     addStatsRow(card, '人口', 120);
     addStatsRow(card, '面积', 80);
@@ -3255,6 +3280,330 @@
     return card;
   }
   window.createStatsCard = createStatsCard;
+
+  // ── 数据卡图表 (v10.28.5) ──
+  // 11 种图表（比较/趋势/构成/分布 4 类）+ 列表模式，全部 SVG 原生渲染。
+  // 数据源 = 卡内 .stats-row 输入框（与 statsSerialize 同源）——图表模式下
+  // 列表只是隐藏不销毁，改数值实时重绘；viewBox 等比缩放，卡尺寸随意改。
+  var SC_PALETTE = ['#6366f1', '#22c55e', '#f59e0b', '#ec4899', '#06b6d4', '#8b5cf6', '#f43f5e', '#84cc16', '#eab308', '#14b8a6'];
+  function scEl(tag, attrs) {
+    var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function scRowsLive(card) {
+    var rows = [];
+    card.querySelectorAll('.stats-row').forEach(function (r, i) {
+      rows.push({
+        label: (r.querySelector('.stats-label').value || ('指标' + (i + 1))).slice(0, 6),
+        value: parseFloat(r.querySelector('.stats-value').value) || 0
+      });
+    });
+    return rows;
+  }
+  function scText(svg, x, y, str, anchor) {
+    var t = scEl('text', {
+      x: x, y: y, 'font-size': 9,
+      'text-anchor': anchor === 'mid' ? 'middle' : (anchor === 'end' ? 'end' : 'start'),
+      fill: 'var(--color-on-surface-variant)'
+    });
+    t.textContent = str;
+    svg.appendChild(t);
+  }
+  function scMax(rows) {
+    var m = 0;
+    rows.forEach(function (r) { if (r.value > m) m = r.value; });
+    return m;
+  }
+  function scNiceMax(v) {
+    if (v <= 0) return 1;
+    var p = Math.pow(10, Math.floor(Math.log(v) / Math.LN10));
+    var m = v / p;
+    var n = m <= 1 ? 1 : m <= 2 ? 2 : m <= 5 ? 5 : 10;
+    return n * p;
+  }
+  function scEmpty(svg, x, y) {
+    var t = scEl('text', { x: x, y: y, 'font-size': 11, 'text-anchor': 'middle', fill: 'var(--color-outline)' });
+    t.textContent = '无数据 — 切回「列表」添加指标';
+    svg.appendChild(t);
+  }
+  function scGrid(svg, x0, x1, y0, y1) {
+    svg.appendChild(scEl('line', { x1: x0, y1: y1, x2: x1, y2: y1, stroke: 'var(--color-outline)', 'stroke-opacity': 0.5 }));
+    [0.5, 1].forEach(function (f) {
+      var y = y0 + (1 - f) * (y1 - y0);
+      svg.appendChild(scEl('line', { x1: x0, y1: y, x2: x1, y2: y, stroke: 'var(--color-outline)', 'stroke-opacity': 0.25, 'stroke-dasharray': '3 4' }));
+    });
+  }
+  function scColumn(svg, rows) {
+    var x0 = 44, x1 = 390, y0 = 16, y1 = 206;
+    var max = scNiceMax(scMax(rows)), n = rows.length;
+    var slot = (x1 - x0) / n, bw = Math.min(46, slot * 0.6);
+    scGrid(svg, x0, x1, y0, y1);
+    rows.forEach(function (r, i) {
+      var h = (r.value / max) * (y1 - y0);
+      var cx = x0 + slot * i + slot / 2;
+      svg.appendChild(scEl('rect', { x: cx - bw / 2, y: y1 - h, width: bw, height: Math.max(h, 1), rx: 3, fill: 'var(--color-primary)' }));
+      scText(svg, cx, y1 - h - 3, String(r.value), 'mid');
+      scText(svg, cx, y1 + 12, r.label, 'mid');
+    });
+  }
+  function scBar(svg, rows) {
+    var x0 = 44, x1 = 390, y0 = 16, y1 = 206;
+    var max = scNiceMax(scMax(rows)), n = rows.length;
+    var slot = (y1 - y0) / n, bh = Math.min(16, slot * 0.6);
+    rows.forEach(function (r, i) {
+      var w = (r.value / max) * (x1 - x0 - 74);
+      var y = y0 + slot * i + slot / 2 - bh / 2;
+      svg.appendChild(scEl('rect', { x: x0, y: y, width: Math.max(w, 2), height: bh, rx: 3, fill: 'var(--color-primary)' }));
+      scText(svg, x0 + Math.max(w, 2) + 4, y + bh / 2 + 3, String(r.value));
+      scText(svg, x0 - 6, y + bh / 2 + 3, r.label, 'end');
+    });
+  }
+  function scRadar(svg, rows) {
+    var rs = rows.slice(0, 8), n = rs.length;
+    var cx = 200, cy = 120, R = 78;
+    var max = scNiceMax(scMax(rs));
+    [1, 2 / 3, 1 / 3].forEach(function (f) {
+      svg.appendChild(scEl('circle', { cx: cx, cy: cy, r: R * f, fill: 'none', stroke: 'var(--color-outline)', 'stroke-opacity': 0.35 }));
+    });
+    function pt(i, f) {
+      var a = -Math.PI / 2 + (2 * Math.PI * i) / n;
+      return [cx + Math.cos(a) * R * f, cy + Math.sin(a) * R * f];
+    }
+    rs.forEach(function (r, i) {
+      var p = pt(i, 1);
+      svg.appendChild(scEl('line', { x1: cx, y1: cy, x2: p[0], y2: p[1], stroke: 'var(--color-outline)', 'stroke-opacity': 0.35 }));
+      var lp = pt(i, 1.18);
+      scText(svg, lp[0], lp[1] + 3, r.label, 'mid');
+    });
+    var poly = rs.map(function (r, i) { return pt(i, r.value / max).join(','); }).join(' ');
+    svg.appendChild(scEl('polygon', { points: poly, fill: 'var(--color-primary)', 'fill-opacity': 0.25, stroke: 'var(--color-primary)', 'stroke-width': 1.5 }));
+    rs.forEach(function (r, i) {
+      var p = pt(i, r.value / max);
+      svg.appendChild(scEl('circle', { cx: p[0], cy: p[1], r: 2.5, fill: 'var(--color-primary)' }));
+    });
+  }
+  function scLine(svg, rows, area) {
+    var x0 = 44, x1 = 390, y0 = 16, y1 = 206;
+    var max = scNiceMax(scMax(rows)), n = rows.length;
+    function px(i) { return n <= 1 ? (x0 + x1) / 2 : x0 + (i / (n - 1)) * (x1 - x0); }
+    function py(v) { return y1 - (v / max) * (y1 - y0); }
+    var pts = rows.map(function (r, i) { return px(i) + ',' + py(r.value); });
+    scGrid(svg, x0, x1, y0, y1);
+    if (area) {
+      var d = 'M' + pts[0] + ' L' + pts.join(' L') + ' L' + px(n - 1) + ',' + y1 + ' L' + px(0) + ',' + y1 + ' Z';
+      svg.appendChild(scEl('path', { d: d, fill: 'var(--color-primary)', 'fill-opacity': 0.22 }));
+    }
+    svg.appendChild(scEl('polyline', { points: pts.join(' '), fill: 'none', stroke: 'var(--color-primary)', 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+    rows.forEach(function (r, i) {
+      svg.appendChild(scEl('circle', { cx: px(i), cy: py(r.value), r: 3, fill: 'var(--color-primary)' }));
+      scText(svg, px(i), y1 + 12, r.label, 'mid');
+    });
+  }
+  function scPie(svg, rows, donut) {
+    var cx = 200, cy = 116, R = 80;
+    var total = 0;
+    rows.forEach(function (r) { total += Math.max(r.value, 0); });
+    if (total <= 0) { scEmpty(svg, cx, cy + 4); return; }
+    var a0 = -Math.PI / 2;
+    rows.forEach(function (r, i) {
+      var frac = Math.max(r.value, 0) / total;
+      var a1 = a0 + frac * Math.PI * 2;
+      var color = SC_PALETTE[i % SC_PALETTE.length];
+      if (frac >= 0.9999) {
+        svg.appendChild(scEl('circle', { cx: cx, cy: cy, r: R, fill: color, stroke: 'var(--card-bg)', 'stroke-width': 1.5 }));
+      } else {
+        var x0 = cx + Math.cos(a0) * R, y0 = cy + Math.sin(a0) * R;
+        var x1 = cx + Math.cos(a1) * R, y1 = cy + Math.sin(a1) * R;
+        var d = 'M' + cx + ',' + cy + ' L' + x0 + ',' + y0 + ' A' + R + ',' + R + ' 0 ' + (frac > 0.5 ? 1 : 0) + ' 1 ' + x1 + ',' + y1 + ' Z';
+        svg.appendChild(scEl('path', { d: d, fill: color, stroke: 'var(--card-bg)', 'stroke-width': 1.5 }));
+      }
+      if (frac > 0.05) {
+        var am = (a0 + a1) / 2;
+        var t = scEl('text', {
+          x: cx + Math.cos(am) * R * 0.62, y: cy + Math.sin(am) * R * 0.62 + 3,
+          'font-size': 9, 'text-anchor': 'middle', fill: '#fff'
+        });
+        t.textContent = Math.round(frac * 100) + '%';
+        svg.appendChild(t);
+      }
+      a0 = a1;
+    });
+    if (donut) {
+      svg.appendChild(scEl('circle', { cx: cx, cy: cy, r: R * 0.55, fill: 'var(--card-bg)' }));
+      scText(svg, cx, cy - 2, '总计', 'mid');
+      scText(svg, cx, cy + 10, String(total), 'mid');
+    }
+  }
+  function scTreemap(svg, rows) {
+    var x0 = 20, y0 = 8, w = 360, h = 204;
+    var total = 0;
+    rows.forEach(function (r) { total += Math.max(r.value, 0); });
+    if (total <= 0) { scEmpty(svg, 200, 110); return; }
+    var items = [];
+    rows.forEach(function (r, i) {
+      if (r.value > 0) items.push({ label: r.label, value: r.value, color: SC_PALETTE[i % SC_PALETTE.length] });
+    });
+    (function lay(rect, arr, horiz) {
+      if (!arr.length) return;
+      if (arr.length === 1) {
+        svg.appendChild(scEl('rect', { x: rect.x, y: rect.y, width: rect.w, height: rect.h, fill: arr[0].color, stroke: 'var(--card-bg)', 'stroke-width': 1.5 }));
+        scText(svg, rect.x + rect.w / 2, rect.y + rect.h / 2 + 3, arr[0].label, 'mid');
+        return;
+      }
+      var subTotal = 0;
+      arr.forEach(function (it) { subTotal += it.value; });
+      var len = horiz ? rect.w : rect.h, cut = 0, acc = 0;
+      arr.forEach(function (it) {
+        acc += it.value;
+        var pos = (acc / subTotal) * len;
+        var piece = { x: rect.x, y: rect.y, w: rect.w, h: rect.h };
+        if (horiz) { piece.x = rect.x + cut; piece.w = pos - cut; }
+        else { piece.y = rect.y + cut; piece.h = pos - cut; }
+        lay(piece, [it], !horiz);
+        cut = pos;
+      });
+    })({ x: x0, y: y0, w: w, h: h }, items, true);
+  }
+  function scWaterfall(svg, rows) {
+    var x0 = 44, x1 = 390, y0 = 16, y1 = 206;
+    var n = rows.length;
+    var totals = [0];
+    rows.forEach(function (r) { totals.push(totals[totals.length - 1] + r.value); });
+    var lo = 0, hi = 0;
+    totals.forEach(function (t) { if (t < lo) lo = t; if (t > hi) hi = t; });
+    var span = (hi - lo) || 1;
+    function py(v) { return y1 - ((v - lo) / span) * (y1 - y0); }
+    var slot = (x1 - x0) / n, bw = Math.min(40, slot * 0.6);
+    svg.appendChild(scEl('line', { x1: x0, y1: py(0), x2: x1, y2: py(0), stroke: 'var(--color-outline)', 'stroke-opacity': 0.5 }));
+    rows.forEach(function (r, i) {
+      var from = totals[i], to = totals[i + 1];
+      var cx = x0 + slot * i + slot / 2;
+      var yTop = py(Math.max(from, to)), h = Math.abs(py(to) - py(from));
+      var fill = i === 0 ? 'var(--color-primary)' : (r.value >= 0 ? '#22c55e' : '#f43f5e');
+      svg.appendChild(scEl('rect', { x: cx - bw / 2, y: yTop, width: bw, height: Math.max(h, 1.5), fill: fill, rx: 2 }));
+      if (i > 0) {
+        var prevCx = x0 + slot * (i - 1) + slot / 2;
+        svg.appendChild(scEl('line', { x1: prevCx + bw / 2, y1: py(totals[i]), x2: cx - bw / 2, y2: py(totals[i]), stroke: 'var(--color-outline)', 'stroke-opacity': 0.5, 'stroke-dasharray': '3 3' }));
+      }
+      scText(svg, cx, yTop - 4, String(to), 'mid');
+      scText(svg, cx, y1 + 12, r.label, 'mid');
+    });
+  }
+  function scHistogram(svg, rows) {
+    var x0 = 44, x1 = 390, y0 = 16, y1 = 206;
+    var vals = rows.map(function (r) { return r.value; });
+    var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+    var bins = Math.max(3, Math.min(8, Math.ceil(Math.sqrt(vals.length))));
+    var range = (hi - lo) || 1;
+    var counts = [];
+    for (var b = 0; b < bins; b++) counts.push(0);
+    vals.forEach(function (v) {
+      var idx = Math.min(bins - 1, Math.floor(((v - lo) / range) * bins));
+      counts[idx]++;
+    });
+    var cmax = 0;
+    counts.forEach(function (c) { if (c > cmax) cmax = c; });
+    if (cmax <= 0) cmax = 1;
+    var slot = (x1 - x0) / bins, bw = Math.min(40, slot * 0.7);
+    counts.forEach(function (c, i) {
+      var h = (c / cmax) * (y1 - y0 - 14);
+      var cx = x0 + slot * i + slot / 2;
+      svg.appendChild(scEl('rect', { x: cx - bw / 2, y: y1 - h, width: bw, height: Math.max(h, 1), fill: 'var(--color-primary)', 'fill-opacity': 0.8 }));
+      scText(svg, cx, y1 - h - 3, String(c), 'mid');
+      scText(svg, cx, y1 + 12, String(Math.round((lo + (range / bins) * i) * 10) / 10), 'mid');
+    });
+    svg.appendChild(scEl('line', { x1: x0, y1: y1, x2: x1, y2: y1, stroke: 'var(--color-outline)', 'stroke-opacity': 0.5 }));
+  }
+  function scBox(svg, rows) {
+    var vals = rows.map(function (r) { return r.value; }).sort(function (a, b) { return a - b; });
+    var x0 = 60, x1 = 360, y = 118, boxH = 26;
+    function q(p) {
+      var idx = (vals.length - 1) * p;
+      var f = Math.floor(idx), c = Math.ceil(idx);
+      return vals[f] + (vals[c] - vals[f]) * (idx - f);
+    }
+    var vmin = vals[0], vq1 = q(0.25), vmed = q(0.5), vq3 = q(0.75), vmax = vals[vals.length - 1];
+    var span = (vmax - vmin) || 1;
+    function px(v) { return x0 + ((v - vmin) / span) * (x1 - x0); }
+    scText(svg, (x0 + x1) / 2, y - boxH / 2 - 10, 'min / Q1 / 中位数 / Q3 / max', 'mid');
+    svg.appendChild(scEl('line', { x1: px(vmin), y1: y, x2: px(vmax), y2: y, stroke: 'var(--color-on-surface-variant)' }));
+    svg.appendChild(scEl('rect', { x: px(vq1), y: y - boxH / 2, width: Math.max(px(vq3) - px(vq1), 2), height: boxH, fill: 'var(--color-primary)', 'fill-opacity': 0.25, stroke: 'var(--color-primary)' }));
+    svg.appendChild(scEl('line', { x1: px(vmed), y1: y - boxH / 2, x2: px(vmed), y2: y + boxH / 2, stroke: 'var(--color-primary)', 'stroke-width': 2 }));
+    [vmin, vmax].forEach(function (v) {
+      svg.appendChild(scEl('line', { x1: px(v), y1: y - 4, x2: px(v), y2: y + 4, stroke: 'var(--color-on-surface-variant)' }));
+    });
+    [vmin, vq1, vmed, vq3, vmax].forEach(function (v) {
+      scText(svg, px(v), y + boxH / 2 + 14, String(Math.round(v * 100) / 100), 'mid');
+    });
+  }
+  function scScatter(svg, rows) {
+    var x0 = 44, x1 = 390, y0 = 16, y1 = 206;
+    var max = scNiceMax(scMax(rows)), n = rows.length;
+    function px(i) { return n <= 1 ? (x0 + x1) / 2 : x0 + (i / (n - 1)) * (x1 - x0); }
+    scGrid(svg, x0, x1, y0, y1);
+    rows.forEach(function (r, i) {
+      svg.appendChild(scEl('circle', { cx: px(i), cy: y1 - (r.value / max) * (y1 - y0), r: 4, fill: SC_PALETTE[i % SC_PALETTE.length] }));
+      scText(svg, px(i), y1 + 12, r.label, 'mid');
+    });
+  }
+  var SC_RENDERERS = {
+    column: scColumn, bar: scBar, radar: scRadar,
+    line: function (svg, rows) { scLine(svg, rows, false); },
+    area: function (svg, rows) { scLine(svg, rows, true); },
+    pie: function (svg, rows) { scPie(svg, rows, false); },
+    donut: function (svg, rows) { scPie(svg, rows, true); },
+    treemap: scTreemap, waterfall: scWaterfall, histogram: scHistogram,
+    box: scBox, scatter: scScatter
+  };
+  function renderStatsChart(card) {
+    var holder = card.querySelector('.stats-chart');
+    if (!holder) return;
+    holder.innerHTML = '';
+    var type = card.dataset.statsChart;
+    if (!type || !SC_RENDERERS[type]) return;
+    var rows = scRowsLive(card);
+    var svg = scEl('svg', { viewBox: '0 0 400 240', width: '100%', height: '100%', preserveAspectRatio: 'xMidYMid meet' });
+    var any = false;
+    rows.forEach(function (r) { if (r.value) any = true; });
+    if (!rows.length || !any) scEmpty(svg, 200, 118);
+    else SC_RENDERERS[type](svg, rows);
+    holder.appendChild(svg);
+  }
+  function applyStatsChart(card, type) {
+    if (!card) card = selectedCard;
+    if (!card || card.dataset.cardType !== 'stats') return;
+    card.dataset.statsChart = type === 'rows' ? '' : type;
+    card.classList.toggle('chart-mode', !!card.dataset.statsChart);
+    if (card.dataset.statsChart) renderStatsChart(card);
+    onContentChange();
+    hideContextMenu();
+  }
+  window.applyStatsChart = applyStatsChart;
+  window.renderStatsChart = renderStatsChart; // test hook
+  function refreshStatsChartPopover() {
+    if (!selectedCard) return;
+    var type = selectedCard.dataset.statsChart || 'rows';
+    document.querySelectorAll('#statsChartPopover .sc-opt').forEach(function (b) {
+      b.classList.toggle('active', b.dataset.scType === type);
+    });
+  }
+  function openStatsChartPopover() {
+    if (!selectedCard || selectedCard.dataset.cardType !== 'stats') return;
+    hideContextMenu();
+    var pop = document.getElementById('statsChartPopover');
+    if (!pop) return;
+    var cardRect = selectedCard.getBoundingClientRect();
+    var x = cardRect.right + 10, y = cardRect.top;
+    if (x + 360 > window.innerWidth) x = cardRect.left - 370;
+    if (x < 8) x = 8;
+    y = Math.max(8, Math.min(y, window.innerHeight - 460));
+    pop.style.left = x + 'px';
+    pop.style.top = y + 'px';
+    pop.classList.add('active');
+    refreshStatsChartPopover();
+  }
+  window.openStatsChartPopover = openStatsChartPopover;
 
   function tlSerialize(card) {
     var evs = [];
@@ -3363,6 +3712,7 @@
     if (!arr.length) arr = [{ label: '', value: 0 }];
     arr.forEach(function (r) { addStatsRow(card, r.label, r.value); });
     statsSerialize(card); refreshStatsBars(card);
+    if (cData.statsChart) applyStatsChart(card, cData.statsChart); // v10.28.5: 图表种类往返
   }
   function restoreTimeline(card, cData) {
     var list = card.querySelector('.tl-list');
@@ -4116,7 +4466,7 @@
     var contextMenu = getContextMenu();
     if (!contextMenu) return;
     var menuW = 220;
-    var menuH = 290; // v10.28.1.1: 8 items now (时间线种类 added)
+    var menuH = 320; // v10.28.5: 9 items possible (图表种类 added)
     if (x + menuW > window.innerWidth) x = window.innerWidth - menuW - 10;
     if (y + menuH > window.innerHeight) y = window.innerHeight - menuH - 10;
     // 背景卡片性质 (opacity) is a content-card-only option
@@ -4145,6 +4495,12 @@
       tlStyleItem.style.display =
         (selectedCard && selectedCard.dataset.cardType === 'timeline') ? 'flex' : 'none';
     }
+    // v10.28.5: 图表种类 — stats cards only
+    var scItem = document.getElementById('statsChartMenuItem');
+    if (scItem) {
+      scItem.style.display =
+        (selectedCard && selectedCard.dataset.cardType === 'stats') ? 'flex' : 'none';
+    }
     contextMenu.style.left = x + 'px';
     contextMenu.style.top = y + 'px';
     contextMenu.classList.add('active');
@@ -4169,6 +4525,8 @@
     if (lp) lp.classList.remove('active');
     var tsp = document.getElementById('tlStylePopover');
     if (tsp) tsp.classList.remove('active');
+    var scp = document.getElementById('statsChartPopover');
+    if (scp) scp.classList.remove('active');
     // v10.24/26: 文字格式化工具栏 + 字体面板随统一关闭
     var tt = document.getElementById('textToolbar');
     if (tt) tt.style.display = 'none';
@@ -6391,7 +6749,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.4') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.5') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -6400,7 +6758,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.4');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.5');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -6421,6 +6779,37 @@
     </button>
   </div>
 </div>
+<!-- v10.28.5: 数据卡图表种类弹层（4 类 11 图 + 列表编辑模式） -->
+<div class="radius-popover stats-chart-pop" id="statsChartPopover">
+  <span class="label-sm" style="color:var(--color-outline);display:block;margin-bottom:8px">图表种类</span>
+  <button class="sc-opt sc-opt-rows active" data-sc-type="rows" onclick="applyStatsChart(null,'rows')">
+    <span class="material-symbols-outlined">table_rows</span>列表（编辑数据）
+  </button>
+  <div class="sc-group">比较类 · 对比差异</div>
+  <div class="sc-grid">
+    <button class="sc-opt" data-sc-type="column" onclick="applyStatsChart(null,'column')"><span class="material-symbols-outlined">bar_chart</span>柱状图</button>
+    <button class="sc-opt" data-sc-type="bar" onclick="applyStatsChart(null,'bar')"><span class="material-symbols-outlined">ssid_chart</span>条形图</button>
+    <button class="sc-opt" data-sc-type="radar" onclick="applyStatsChart(null,'radar')"><span class="material-symbols-outlined">radar</span>雷达图</button>
+  </div>
+  <div class="sc-group">趋势类 · 时间变化</div>
+  <div class="sc-grid">
+    <button class="sc-opt" data-sc-type="line" onclick="applyStatsChart(null,'line')"><span class="material-symbols-outlined">show_chart</span>折线图</button>
+    <button class="sc-opt" data-sc-type="area" onclick="applyStatsChart(null,'area')"><span class="material-symbols-outlined">area_chart</span>面积图</button>
+  </div>
+  <div class="sc-group">构成类 · 部分与整体</div>
+  <div class="sc-grid">
+    <button class="sc-opt" data-sc-type="pie" onclick="applyStatsChart(null,'pie')"><span class="material-symbols-outlined">pie_chart</span>饼图</button>
+    <button class="sc-opt" data-sc-type="donut" onclick="applyStatsChart(null,'donut')"><span class="material-symbols-outlined">donut_large</span>环形图</button>
+    <button class="sc-opt" data-sc-type="treemap" onclick="applyStatsChart(null,'treemap')"><span class="material-symbols-outlined">view_quilt</span>矩形树图</button>
+    <button class="sc-opt" data-sc-type="waterfall" onclick="applyStatsChart(null,'waterfall')"><span class="material-symbols-outlined">waterfall_chart</span>瀑布图</button>
+  </div>
+  <div class="sc-group">分布类 · 数据离散与频率</div>
+  <div class="sc-grid">
+    <button class="sc-opt" data-sc-type="histogram" onclick="applyStatsChart(null,'histogram')"><span class="material-symbols-outlined">analytics</span>直方图</button>
+    <button class="sc-opt" data-sc-type="box" onclick="applyStatsChart(null,'box')"><span class="material-symbols-outlined">candlestick_chart</span>箱线图</button>
+    <button class="sc-opt" data-sc-type="scatter" onclick="applyStatsChart(null,'scatter')"><span class="material-symbols-outlined">scatter_plot</span>散点图</button>
+  </div>
+</div>
 <div class="context-menu" id="contextMenu">
   <button class="context-menu-item" onclick="openBorderRadiusPopover()">
     <span class="material-symbols-outlined">rounded_corner</span> Adjust border radius
@@ -6430,6 +6819,9 @@
   </button>
   <button class="context-menu-item" id="cardBgMenuItem" style="display:none" onclick="openCardBgPopover()">
     <span class="material-symbols-outlined">wallpaper</span> 卡片背景
+  </button>
+  <button class="context-menu-item" id="statsChartMenuItem" style="display:none" onclick="openStatsChartPopover()">
+    <span class="material-symbols-outlined">monitoring</span> 图表种类
   </button>
   <button class="context-menu-item" id="tlStyleMenuItem" style="display:none" onclick="openTlStylePopover()">
     <span class="material-symbols-outlined">style</span> 时间线种类
