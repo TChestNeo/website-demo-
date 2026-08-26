@@ -396,24 +396,28 @@
       font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
       color: var(--color-outline); text-align: center; line-height: 1.3;
     }
+    /* v10.28.8.1: 默认 9×12（运行时格宽 20px = 196×262px）下内容完整
+       可见——总分 36→32、格子纵向间距 3→2、网格底衬 8→12（油漆大边距
+       时行内容溢出的落点）、指标名允许折行显示全名（旧 nowrap+省略号把
+       「基本信息完整度」截断） */
     .grid-card.sne-card .sne-total {
-      font-size: 36px; font-weight: 700; line-height: 1; color: var(--color-primary);
+      font-size: 32px; font-weight: 700; line-height: 1; color: var(--color-primary);
       font-variant-numeric: tabular-nums;
     }
     .grid-card.sne-card .sne-grid {
       flex: 1; width: 100%; min-height: 0; display: grid;
       grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr);
-      gap: 6px; padding: 0 0 8px;
+      gap: 6px; padding: 0 0 12px;
     }
     .grid-card.sne-card .sne-cell {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 3px; min-width: 0; min-height: 0; padding: 4px 2px;
+      gap: 2px; min-width: 0; min-height: 0; padding: 4px 2px;
       border: 1px solid var(--divider-line-strong); border-radius: 8px;
       background: var(--color-surface-container);
     }
     .grid-card.sne-card .sne-name {
-      width: 100%; font-size: 10px; color: var(--color-outline); text-align: center;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      width: 100%; font-size: 10px; line-height: 1.25; color: var(--color-outline);
+      text-align: center; white-space: normal; overflow: hidden;
     }
     .grid-card.sne-card .sne-val {
       width: min(100%, 58px); border: 1px solid transparent; background: transparent;
@@ -2440,7 +2444,7 @@
               card = createTimelineCard(pos.col, pos.row, pos.colSpan || 8, pos.rowSpan || 8);
               restoreTimeline(card, cData);
             } else if (cData.type === 'sne') { // v10.28.8: SNE 指数卡
-              card = createSneCard(pos.col, pos.row, pos.colSpan || 6, pos.rowSpan || 5);
+              card = createSneCard(pos.col, pos.row, pos.colSpan || 9, pos.rowSpan || 12);
               restoreSne(card, cData);
             } else {
               card = createAssetCard(cData.type, cData.label, pos.col, pos.row, pos.colSpan || 4, pos.rowSpan || 3);
@@ -4078,7 +4082,7 @@
     return cell;
   }
   function createSneCard(col, row, spanW, spanH) {
-    var card = createGridCard('sne', col, row, spanW || 6, spanH || 5);
+    var card = createGridCard('sne', col, row, spanW || 9, spanH || 12);
     card.classList.add('sne-card');
     // 阴影子层（用户「格子的下方再添加一个卡片给这个卡片添加阴影」）：
     // 透明底 + 硬边 offset box-shadow = 垫在卡下的第二张卡片；主题边缘/
@@ -6639,7 +6643,7 @@
     if (asset === 'map') return { w: 8, h: 6 };
     if (asset === 'stats') return { w: 6, h: 5 };
     if (asset === 'history_edu') return { w: 8, h: 8 };
-    if (asset === 'sne') return { w: 6, h: 5 };
+    if (asset === 'sne') return { w: 9, h: 12 }; // v10.28.8.1: 9×12 默认尺寸（运行时格宽 20px = 196×262）——6×5 显示不完整（用户「调整一下他被脱出来的时候的默认大小」）
     return { w: 4, h: 3 };
   }
 
@@ -7249,7 +7253,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.8') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.8.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -7258,7 +7262,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.8');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.8.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
