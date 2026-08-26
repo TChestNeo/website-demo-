@@ -1701,10 +1701,10 @@
 <div class="modal-container" id="flagSourceModal">
   <div class="modal-card" id="flagSourceCard" style="max-width:520px">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">Select Flag Source</h3>
+      <h3 class="headline-md" id="flagSourceTitle">Select Flag Source</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
     </div>
-    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-sm)">Choose how you'd like to add a flag to this article.</p>
+    <p class="body-md" id="flagSourceDesc" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-sm)">Choose how you'd like to add a flag to this article.</p>
     <div class="flag-source-options">
       <button class="flag-source-btn" id="uploadFileBtn" onclick="document.getElementById('flagFileInput').click()">
         <span class="material-symbols-outlined">upload_file</span>
@@ -1712,7 +1712,7 @@
         <span class="source-desc">Upload an image from your device</span>
       </button>
       <input type="file" id="flagFileInput" accept="image/*" style="display:none" onchange="handleFlagFileUpload(this)">
-      <button class="flag-source-btn" onclick="closeAllModals();openFlagBrowser()">
+      <button class="flag-source-btn" id="flagBrowseBtn" onclick="closeAllModals();openFlagBrowser()">
         <span class="material-symbols-outlined">travel_explore</span>
         <span class="source-title">Search within the platform</span>
         <span class="source-desc">Browse flags uploaded by the community</span>
@@ -3150,6 +3150,19 @@
     card.appendChild(iconEl);
     card.appendChild(labelEl);
     autoSizeLabel(labelEl);
+    // v10.28.7: Emblem（盾徽）卡点击 → 图源弹窗（同国旗卡流程）。上传走
+    // handleFlagFileUpload → setCardImage（任何卡通用），草稿对非国旗卡的
+    // imgSrc 保存/重载链路 v9.1 已通用——零存储改动。图片已设则点按不再弹
+    // （同国旗卡口径，防误触替换）。
+    if (asset === 'shield') {
+      card.addEventListener('click', function (e) {
+        if (card.dataset.justDragged) return;
+        if (e.target.closest('.card-label')) return;
+        if (card.querySelector('.card-stripes') || card.querySelector('.card-img-bg')) return;
+        setCurrentFlagCard(card);
+        openFlagSourceModal();
+      });
+    }
     return card;
   }
 
@@ -6598,6 +6611,22 @@
 
   // ── Flag Source Modal ──
   function openFlagSourceModal() {
+    // v10.28.7: Emblem 卡共用图源弹窗——标题/说明按卡种切换，平台浏览
+    // （国旗库）对国徽不适用则隐藏；国旗卡文案与旧版一致。
+    var card = currentFlagCard;
+    var isEmblem = card && card.dataset.cardType === 'shield';
+    var title = document.getElementById('flagSourceTitle');
+    var desc = document.getElementById('flagSourceDesc');
+    var browse = document.getElementById('flagBrowseBtn');
+    if (isEmblem) {
+      if (title) title.textContent = 'Select Emblem Image';
+      if (desc) desc.textContent = "Choose how you'd like to add an emblem to this card.";
+      if (browse) browse.style.display = 'none';
+    } else {
+      if (title) title.textContent = 'Select Flag Source';
+      if (desc) desc.textContent = "Choose how you'd like to add a flag to this article.";
+      if (browse) browse.style.display = '';
+    }
     openModal('flagSourceModal');
   }
   window.openFlagSourceModal = openFlagSourceModal;
@@ -6611,7 +6640,8 @@
       if (!currentFlagCard) return;
       setCardImage(currentFlagCard, e.target.result, file.name.replace(/\.[^.]+$/, ''));
       onContentChange();
-      showToast('Flag uploaded: ' + file.name);
+      var noun = currentFlagCard.dataset.cardType === 'shield' ? 'Emblem' : 'Flag'; // v10.28.7: 国徽卡提示语适配
+      showToast(noun + ' uploaded: ' + file.name);
     };
     reader.readAsDataURL(file);
     input.value = '';
@@ -7016,7 +7046,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.3') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.7') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -7025,7 +7055,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.3');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.7');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
