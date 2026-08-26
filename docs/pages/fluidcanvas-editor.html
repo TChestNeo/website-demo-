@@ -161,12 +161,18 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       z-index: 1;
     }
-    /* v10.27: 用户要卡片磨砂玻璃质感（推翻 08-17「100% 不透明」口径，仅普通内容卡）：
+    /* v10.27: 用户要卡片磨砂玻璃质感（推翻 08-17「100% 不透明」口径）：
        55% 半透 + backdrop blur；1px 细灰边；右上角 2px 高光条勾出 3D 感。
        高光用 background-image（卡片 ::before/::after 已被边饰主题占用，不能动）。
-       排除 .has-outer-bg（外板几何按 2px 边宽调过）/ .has-card-bg-img（图走 <img> 子层）/
-       [class*="card-edge-"]（主题卡有板+剪影层）——这些保持原貌。 */
-    .grid-card.content-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]) {
+       v10.28.6.2: 数据卡/国旗卡并入（用户「国旗卡片那边的也是…检查一下
+       是否一致」）——同样 55%+模糊+高光+细边；国旗卡有图时玻璃被图盖住
+       无观感变化，无损。国旗卡无专属类（身份在 dataset.cardType），用
+       属性选择器。仍排除 .has-outer-bg（外板几何按 2px 边宽调过）/
+       .has-card-bg-img（图走 <img> 子层）/ [class*="card-edge-"]（主题卡
+       有板+剪影层——走下方 v10.28.6.2 主题卡玻璃规则）。 */
+    .grid-card.content-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]),
+    .grid-card.stats-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]),
+    .grid-card[data-card-type="flag"]:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]) {
       --card-border-width: 1px;
       --card-border-color: rgba(125, 130, 140, 0.38);
       background-color: color-mix(in srgb, var(--card-bg-color) 55%, transparent);
@@ -374,9 +380,19 @@
     .stats-edit-panel {
       position: absolute; z-index: 100; width: 200px; display: none;
       flex-direction: column; gap: 6px; padding: 10px;
-      background: var(--card-bg); border: 1px solid var(--divider-line-strong);
+      background: var(--card-bg); border: 1px solid rgba(125, 130, 140, 0.38);
       border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
       overflow-y: auto;
+      /* v10.28.6.2: 编辑面板磨砂玻璃（用户「那个编辑卡片的背景做模糊和
+         高亮」——编辑卡片=编辑面板，问询钦定）——与内容卡同款：12px 模糊+
+         饱和、右上角 2px 高光条、1px 细灰边；底色本就 --card-bg（55% 半透
+         共享 token），不动 */
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
+      background-size: 45% 2px;
+      background-position: top right;
+      background-repeat: no-repeat;
     }
     .stats-edit-panel.active { display: flex; }
     .stats-edit-panel .stats-bar-track { display: none; } /* 面板里迷你条让位给图表 */
@@ -802,9 +818,41 @@
       z-index: -1;
       inset: 0;
       background-color: var(--card-tint-base, var(--card-bg-color));
-      background-image: var(--card-layers, none);
+      /* v10.28.6.2: 高光条进填充层 background-image 列表（主题卡自身
+         background 透明且被本层 z -1 盖住，v10.27 内容卡「高光画卡自身」
+         路径不可复用）+ 填充半透明化（卡身玻璃感）。--card-layers 为纯
+         渐变无位置语法，longhand 合法（带位置语法的是 ::after 的
+         --card-overlay，须 shorthand，见上）。 */
+      background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0)), var(--card-layers, none);
+      background-size: 45% 2px, auto;
+      background-position: top right, 0 0;
+      background-repeat: no-repeat, repeat;
       clip-path: var(--card-clip, none);
       pointer-events: none;
+      opacity: 0.55;
+    }
+    /* v10.28.6.2 — 主题卡卡身玻璃感（用户「背景边缘的也是…检查一下是否
+       一致」+ 问询钦定「统一玻璃感、外板保持不透明」）：卡身 backdrop 模糊
+       （与内容卡同款 12px blur + saturate），剪影填充层半透明化——tint
+       （纸/藏宝/科技，上方规则 opacity 0.55）+ 油漆 ::before 0.55（油漆
+       无板无 tint，填充即上上方规则 678 画的剪影）；高光条进填充层
+       background-image 列表。外板（.card-outer-band 与板 ::before）不
+       透明不动（v10.21 口径）。legacy 油漆+外板组合除外板不透明也除外
+       （:not(.has-outer-bg)，油漆填充规则 721 优先级平本规则但本规则
+       更晚——不排除会连板一起半透明）。 */
+    .grid-card.card-edge-paper,
+    .grid-card.card-edge-treasure,
+    .grid-card.card-edge-tech,
+    .grid-card.card-edge-paint {
+      backdrop-filter: blur(12px) saturate(1.4);
+      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    }
+    .grid-card.card-edge-paint:not(.has-outer-bg)::before {
+      opacity: 0.55;
+      background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0)), var(--card-layers, none);
+      background-size: 45% 2px, auto;
+      background-position: top right, 0 0;
+      background-repeat: no-repeat, repeat;
     }
     /* v10.28.6 — 数据卡「透明背景（纸感）」（右键菜单勾选项，有外板边缘
        时显示、默认关）：卡身完全透明、画布透出，只剩边缘装饰。外板样式
@@ -6962,7 +7010,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.2') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -6971,7 +7019,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.2');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
