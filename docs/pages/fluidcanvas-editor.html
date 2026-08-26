@@ -354,6 +354,85 @@
     .grid-card.stats-card[data-card-edge="paint4"] { --paint-pad: 10cqi; }
     .grid-card.stats-card[data-card-edge="paint5"] { --paint-pad: 12cqi; }
     .grid-card.stats-card[data-card-edge="paint6"] { --paint-pad: 10cqi; }
+    /* ── SNE Index 卡 (v10.28.8) ──
+       斯拉蒂国家平衡指数（用户「SNE Index…中间正上方总分，下方长x宽 3x2
+       政治/经济/军事/外交/基本信息完整度/国家系统，每个指标都是一个二级
+       小格子」）。
+       · .sne-shadow 阴影子层——「这些格子的下方再添加一个卡片给这个卡片
+         添加阴影」：主卡不设 overflow:hidden（阴影必须能探出卡外），阴影
+         用卡内 z -2 子层 inset:0 透明底 + 硬边 offset box-shadow（垫在卡
+         下面的第二张卡片感）+ 软阴影延展。box-shadow 画在元素盒外、不受
+         父 overflow 裁剪、跟随圆角；透明底不盖卡面。主题边缘自带外板+
+         光晕时隐藏（板已承担阴影职责，避免从板透明中段透出——v10.19/20
+         教训）。
+       · .sne-inner 内容区 overflow:hidden + border-radius:inherit 把二级
+         小格边缘剪齐卡角（用户「Overflow:hidden 把主要的卡片框进去或者
+         单独的二级卡片框进去」——选后者：框内容区而非主卡，阴影才出得
+         去）+ 径向渐隐遮罩做「边缘虚化」（近卡边内容柔和淡出，v10.4
+         图片淡边同款 mask 机制；遮罩只管绘制、不挡点击）。
+       · 油漆边距（v10.28.6.1 同款）：油漆卡 container-type:inline-size，
+         .sne-inner 内边距 cqi 随卡宽等比 + max() 保底——内容不跑出油漆
+         异形剪影。 */
+    .grid-card.sne-card { padding: 0; gap: 0; justify-content: flex-start; }
+    .grid-card.sne-card .sne-shadow {
+      position: absolute; inset: 0; z-index: -2; border-radius: inherit;
+      background: transparent; pointer-events: none;
+      box-shadow: 3px 5px 0 0 rgba(18, 18, 42, 0.28), 9px 14px 18px -3px rgba(18, 18, 42, 0.22);
+    }
+    .grid-card.sne-card[class*="card-edge-"] .sne-shadow,
+    .grid-card.sne-card.has-outer-bg .sne-shadow { display: none; }
+    .grid-card.sne-card .sne-inner {
+      position: relative; z-index: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center;
+      overflow: hidden; border-radius: inherit; padding: 8px 8px 10px;
+      -webkit-mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, #000 72%, transparent 96%);
+      mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, #000 72%, transparent 96%);
+    }
+    .grid-card.sne-card .sne-head {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      width: 100%; padding: 2px 4px 6px; flex-shrink: 0;
+    }
+    .grid-card.sne-card .sne-title {
+      font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--color-outline); text-align: center; line-height: 1.3;
+    }
+    .grid-card.sne-card .sne-total {
+      font-size: 36px; font-weight: 700; line-height: 1; color: var(--color-primary);
+      font-variant-numeric: tabular-nums;
+    }
+    .grid-card.sne-card .sne-grid {
+      flex: 1; width: 100%; min-height: 0; display: grid;
+      grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr);
+      gap: 6px; padding: 0 0 8px;
+    }
+    .grid-card.sne-card .sne-cell {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px; min-width: 0; min-height: 0; padding: 4px 2px;
+      border: 1px solid var(--divider-line-strong); border-radius: 8px;
+      background: var(--color-surface-container);
+    }
+    .grid-card.sne-card .sne-name {
+      width: 100%; font-size: 10px; color: var(--color-outline); text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .grid-card.sne-card .sne-val {
+      width: min(100%, 58px); border: 1px solid transparent; background: transparent;
+      border-radius: 6px; outline: none; text-align: center; padding: 1px 2px;
+      font-size: 13px; font-weight: 600; color: var(--color-on-surface);
+      font-variant-numeric: tabular-nums;
+    }
+    .grid-card.sne-card .sne-val:hover { border-color: var(--color-outline); }
+    .grid-card.sne-card .sne-val:focus { border-color: var(--color-primary); background: var(--color-surface-container-lowest); }
+    .grid-card.sne-card.card-edge-paint { container-type: inline-size; }
+    .grid-card.sne-card.card-edge-paint .sne-inner {
+      padding: max(8px, var(--paint-pad, 10cqi));
+    }
+    .grid-card.sne-card[data-card-edge="paint1"] { --paint-pad: 6cqi; }
+    .grid-card.sne-card[data-card-edge="paint2"] { --paint-pad: 10cqi; }
+    .grid-card.sne-card[data-card-edge="paint3"] { --paint-pad: 12cqi; }
+    .grid-card.sne-card[data-card-edge="paint4"] { --paint-pad: 10cqi; }
+    .grid-card.sne-card[data-card-edge="paint5"] { --paint-pad: 12cqi; }
+    .grid-card.sne-card[data-card-edge="paint6"] { --paint-pad: 10cqi; }
     .grid-card .stats-row, .stats-edit-panel .stats-row { display: flex; align-items: center; gap: 6px; width: 100%; }
     .grid-card .stats-label, .stats-edit-panel .stats-label { width: 42%; font-size: 12px; }
     .grid-card .stats-value, .stats-edit-panel .stats-value { width: 52px; font-size: 12px; text-align: right; }
@@ -595,7 +674,8 @@
     .grid-card.has-card-bg-img .map-canvas,
     .grid-card.has-card-bg-img .tl-list,
     .grid-card.has-card-bg-img .tl-chart,
-    .grid-card.has-card-bg-img .tc-edit-row {
+    .grid-card.has-card-bg-img .tc-edit-row,
+    .grid-card.has-card-bg-img .sne-inner {
       position: relative; z-index: 1;
     }
 
@@ -1570,8 +1650,9 @@
     <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">Geography</div>
     <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="map" data-label="Territorial Map"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">map</span><span class="label-md">Territorial Map</span></div></div>
     <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">Politics & Economy</div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="account_balance" data-label="Governance"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">account_balance</span><span class="label-md">Governance</span></div></div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="payments" data-label="Economic Ledger"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">payments</span><span class="label-md">Economic Ledger</span></div></div>
+    <!-- v10.28.8: Governance / Economic Ledger 模板移除（用户指令）——旧草稿
+         里的这两类卡仍走 createAssetCard 兜底正常载入，只从库里拿掉入口 -->
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="sne" data-label="SNE Index"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">balance</span><span class="label-md">SNE Index</span></div></div>
     <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">People & Data</div>
     <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="character" data-label="Character Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">person</span><span class="label-md">Character Card</span></div></div>
     <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="stats" data-label="Stats Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">monitoring</span><span class="label-md">Stats Card</span></div></div>
@@ -2358,6 +2439,9 @@
             } else if (cData.type === 'timeline') { // v10.28: 时间线卡
               card = createTimelineCard(pos.col, pos.row, pos.colSpan || 8, pos.rowSpan || 8);
               restoreTimeline(card, cData);
+            } else if (cData.type === 'sne') { // v10.28.8: SNE 指数卡
+              card = createSneCard(pos.col, pos.row, pos.colSpan || 6, pos.rowSpan || 5);
+              restoreSne(card, cData);
             } else {
               card = createAssetCard(cData.type, cData.label, pos.col, pos.row, pos.colSpan || 4, pos.rowSpan || 3);
             }
@@ -2634,6 +2718,8 @@
         entry.tlEvents = c.dataset.tlEvents || '[]';
         if (c.dataset.tlStyle) entry.tlStyle = c.dataset.tlStyle;
         if (c.dataset.tlChart) entry.tlChart = c.dataset.tlChart;
+      } else if (entry.type === 'sne') { // v10.28.8: SNE 指数卡
+        entry.sneData = c.dataset.sneData || '[]';
       }
       if (entry.type === 'flag') {
         var stripes = c.querySelector('.card-stripes');
@@ -2665,7 +2751,7 @@
     // Save current card positions to active preset before persisting
     saveCurrentPresetCards();
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -3946,6 +4032,92 @@
     if (cData.tlStyle) applyTlStyle(card, cData.tlStyle);
   }
 
+  // ── SNE Index 卡 (v10.28.8) ──
+  // 斯拉蒂国家平衡指数（用户「SNE Index | 斯拉蒂国家平衡指数」）：总分
+  // 上方居中 + 3×2 六指标二级小格。总分算法先占位简单平均（用户「先做
+  // 卡片，公式之后定」——之后换公式只改 sneComputeTotal 一处）；「基本
+  // 信息完整度」当前手动打分（用户「之后自动关联国家信息」）。
+  var SNE_METRICS = ['政治', '经济', '军事', '外交', '基本信息完整度', '国家系统'];
+  function sneComputeTotal(rows) {
+    var nums = [];
+    rows.forEach(function (r) {
+      var v = parseFloat(r.value);
+      if (isFinite(v)) nums.push(Math.max(0, Math.min(100, v)));
+    });
+    if (!nums.length) return 0;
+    var sum = 0; nums.forEach(function (v) { sum += v; });
+    return sum / nums.length;
+  }
+  function sneSerialize(card) {
+    var out = [];
+    card.querySelectorAll('.sne-cell').forEach(function (cell) {
+      out.push({
+        name: cell.querySelector('.sne-name').textContent,
+        value: parseFloat(cell.querySelector('.sne-val').value) || 0
+      });
+    });
+    card.dataset.sneData = JSON.stringify(out);
+  }
+  function sneRerender(card) {
+    var arr = [];
+    try { arr = JSON.parse(card.dataset.sneData || '[]'); } catch (e) {}
+    var t = card.querySelector('.sne-total');
+    if (t) t.textContent = String(Math.round(sneComputeTotal(arr) * 10) / 10);
+  }
+  function sneAddCell(card, name, value) {
+    var cell = document.createElement('div');
+    cell.className = 'sne-cell';
+    var n = document.createElement('span');
+    n.className = 'sne-name'; n.textContent = name;
+    var v = document.createElement('input');
+    v.type = 'number'; v.className = 'sne-val card-edit-field';
+    v.min = '0'; v.max = '100'; v.step = '1'; v.value = String(value);
+    var sync = function () { sneSerialize(card); sneRerender(card); onContentChange(); };
+    v.addEventListener('input', sync);
+    cell.appendChild(n); cell.appendChild(v);
+    return cell;
+  }
+  function createSneCard(col, row, spanW, spanH) {
+    var card = createGridCard('sne', col, row, spanW || 6, spanH || 5);
+    card.classList.add('sne-card');
+    // 阴影子层（用户「格子的下方再添加一个卡片给这个卡片添加阴影」）：
+    // 透明底 + 硬边 offset box-shadow = 垫在卡下的第二张卡片；主题边缘/
+    // 外板时 CSS 隐藏（板自带阴影职责）
+    var shadow = document.createElement('div');
+    shadow.className = 'sne-shadow';
+    card.insertBefore(shadow, card.firstChild);
+    var inner = document.createElement('div');
+    inner.className = 'sne-inner';
+    var head = document.createElement('div');
+    head.className = 'sne-head';
+    var title = document.createElement('div');
+    title.className = 'sne-title';
+    title.textContent = 'SNE Index · 斯拉蒂国家平衡指数';
+    var total = document.createElement('div');
+    total.className = 'sne-total'; total.textContent = '0';
+    head.appendChild(title); head.appendChild(total);
+    inner.appendChild(head);
+    var grid = document.createElement('div');
+    grid.className = 'sne-grid';
+    SNE_METRICS.forEach(function (name) { grid.appendChild(sneAddCell(card, name, 0)); });
+    inner.appendChild(grid);
+    card.appendChild(inner);
+    sneSerialize(card); sneRerender(card);
+    return card;
+  }
+  window.createSneCard = createSneCard;
+  function restoreSne(card, cData) {
+    var grid = card.querySelector('.sne-grid');
+    grid.innerHTML = '';
+    var arr = [];
+    try { arr = JSON.parse(cData.sneData || '[]'); } catch (e) {}
+    SNE_METRICS.forEach(function (name, i) {
+      var v = (arr[i] && arr[i].value != null) ? arr[i].value : 0;
+      grid.appendChild(sneAddCell(card, name, v));
+    });
+    sneSerialize(card); sneRerender(card);
+  }
+
   // ── Flag stripe/image setters (for grid cards) ──
   function setCardStripes(card, stripesHtml, flagName) {
     card.classList.add('has-stripes');
@@ -4710,10 +4882,11 @@
     }
     // v10.1: 卡片背景 (card background + outer plate) — same gate as 名称位置
     // v10.28.6: + 数据卡（无 .card-label，但与国旗卡同款边缘主题）
+    // v10.28.8: + SNE 指数卡（同数据卡口径）
     var cardBgItem = document.getElementById('cardBgMenuItem');
     if (cardBgItem) {
       cardBgItem.style.display =
-        (selectedCard && (selectedCard.querySelector('.card-label') || selectedCard.dataset.cardType === 'stats')) ? 'flex' : 'none';
+        (selectedCard && (selectedCard.querySelector('.card-label') || selectedCard.dataset.cardType === 'stats' || selectedCard.dataset.cardType === 'sne')) ? 'flex' : 'none';
     }
     // v10.28.6: 透明背景（纸感）— 数据卡 + 外板式边缘（纸/藏宝图/科技）
     // 才显示（油漆剪影填充即边缘本体、无独立背景可透明；无边缘时无边缘可留）
@@ -5813,8 +5986,8 @@
     if (!card) return;
     var color = card.dataset.cardBgColor || '';
     // v10.28.6: 数据卡无 .card-label 但走完整边缘主题路径（同国旗卡）；
-    // 其余无标签卡（content/text）维持防御分支
-    if (!card.querySelector('.card-label') && card.dataset.cardType !== 'stats') {
+    // v10.28.8: SNE 指数卡同口径；其余无标签卡（content/text）维持防御分支
+    if (!card.querySelector('.card-label') && card.dataset.cardType !== 'stats' && card.dataset.cardType !== 'sne') {
       // defensive: content/text cards never carry the dataset (setCardBgColor
       // writes them plain) — this branch only replays a hand-edited draft
       if (color) card.style.background = color;
@@ -5928,8 +6101,9 @@
 
   function applyOuterBg(card) {
     // v10.28.6: 数据卡无 .card-label 但走完整外板路径（同国旗卡）
+    // v10.28.8: SNE 指数卡同口径
     if (!card) return;
-    if (!card.querySelector('.card-label') && card.dataset.cardType !== 'stats') return;
+    if (!card.querySelector('.card-label') && card.dataset.cardType !== 'stats' && card.dataset.cardType !== 'sne') return;
     var color = card.dataset.outerBgColor || '';
     var edge = EDGE_STYLES[card.dataset.outerEdge || ''] || null;
     var hasOuter = !!(color || edge);
@@ -6076,8 +6250,9 @@
 
   function openCardBgPopover() {
     // v10.28.6: 数据卡同样可开（边缘主题入口）
+    // v10.28.8: SNE 指数卡同口径
     if (!selectedCard) return;
-    if (!selectedCard.querySelector('.card-label') && selectedCard.dataset.cardType !== 'stats') return;
+    if (!selectedCard.querySelector('.card-label') && selectedCard.dataset.cardType !== 'stats' && selectedCard.dataset.cardType !== 'sne') return;
     hideContextMenu();
     var pop = document.getElementById('cardBgPopover');
     if (!pop) return;
@@ -6238,9 +6413,9 @@
   function removeCardBgImage() {
     // v10.28.7.2: 门禁与 setCardEdge 同款放开——数据卡无 .card-label
     // 但 v10.28.6 起可设卡片背景，旧门禁让数据卡「移除背景图」静默
-    // 失效（能加不能删，电池复现）。
+    // 失效（能加不能删，电池复现）。v10.28.8: SNE 指数卡同口径。
     if (!selectedCard) return;
-    if (!selectedCard.querySelector('.card-label') && selectedCard.dataset.cardType !== 'stats') return;
+    if (!selectedCard.querySelector('.card-label') && selectedCard.dataset.cardType !== 'stats' && selectedCard.dataset.cardType !== 'sne') return;
     // v10.4: 只删背景图层——卡片图片（国旗/相册图）与条纹是内容不是
     // 背景，移除背景时原样保留。
     var img = selectedCard.querySelector('.card-bg-img');
@@ -6253,9 +6428,10 @@
 
   function setCardEdge(name) {
     // v10.28.6: 数据卡无 .card-label 但可设边缘主题（用户「给这个表添加
-    // 和国旗卡片一样的边缘」）
+    // 和国旗卡片一样的边缘」）；v10.28.8: SNE 指数卡同口径（用户「该卡片
+    // 一样可以编辑边缘」）
     if (!selectedCard) return;
-    if (!selectedCard.querySelector('.card-label') && selectedCard.dataset.cardType !== 'stats') return;
+    if (!selectedCard.querySelector('.card-label') && selectedCard.dataset.cardType !== 'stats' && selectedCard.dataset.cardType !== 'sne') return;
     if (!name || name === 'none') {
       delete selectedCard.dataset.cardEdge;
       // v10.8: the plate is owned by the theme — removing the theme removes
@@ -6463,6 +6639,7 @@
     if (asset === 'map') return { w: 8, h: 6 };
     if (asset === 'stats') return { w: 6, h: 5 };
     if (asset === 'history_edu') return { w: 8, h: 8 };
+    if (asset === 'sne') return { w: 6, h: 5 };
     return { w: 4, h: 3 };
   }
 
@@ -6533,6 +6710,8 @@
           createStatsCard(cc, cr, spanW, spanH);
         } else if (data.asset === 'history_edu') { // v10.28: 时间线卡（原通用资产卡升级）
           createTimelineCard(cc, cr, spanW, spanH);
+        } else if (data.asset === 'sne') { // v10.28.8: SNE 指数卡
+          createSneCard(cc, cr, spanW, spanH);
         } else {
           createAssetCard(data.asset, data.label, cc, cr, spanW, spanH);
         }
@@ -7070,7 +7249,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.7.2') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.8') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -7079,7 +7258,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.7.2');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.8');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
