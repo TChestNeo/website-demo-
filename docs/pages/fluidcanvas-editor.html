@@ -323,9 +323,9 @@
     }
     /* 数据卡 */
     .grid-card.stats-card { padding: 10px; gap: 6px; justify-content: flex-start; overflow: hidden; }
-    .grid-card .stats-row { display: flex; align-items: center; gap: 6px; width: 100%; }
-    .grid-card .stats-label { width: 42%; font-size: 12px; }
-    .grid-card .stats-value { width: 52px; font-size: 12px; text-align: right; }
+    .grid-card .stats-row, .stats-edit-panel .stats-row { display: flex; align-items: center; gap: 6px; width: 100%; }
+    .grid-card .stats-label, .stats-edit-panel .stats-label { width: 42%; font-size: 12px; }
+    .grid-card .stats-value, .stats-edit-panel .stats-value { width: 52px; font-size: 12px; text-align: right; }
     .grid-card .stats-bar-track {
       flex: 1; height: 8px; border-radius: 4px; overflow: hidden;
       background: var(--color-surface-container);
@@ -339,15 +339,27 @@
        列表仍可见。移到这里后 chart-mode 规则（4 类选择器）自然胜出。 */
     .grid-card .stats-rows { display: flex; flex-direction: column; gap: 6px; width: 100%; }
     .grid-card .stats-edit { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; min-height: 0; }
+    /* v10.28.5.2: 编辑列表搬进浮动面板后布局保持——行/标签/数值/列表容器
+       的规则原来 .grid-card 限定，面板子树会失去布局，这里一并覆盖 */
+    .stats-edit-panel .stats-rows { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+    .stats-edit-panel .stats-edit { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
     /* v10.28.5: 图表模式——SVG 图表占满卡身（改数值即重绘） */
     .grid-card .stats-chart { flex: 1; width: 100%; min-height: 0; display: none; align-items: center; justify-content: center; }
-    /* v10.28.5.1: 图表模式 = 左右分栏（用户钦定「编辑在右」）——图表在左、
-       编辑列表在右同时可见，改数值即重绘；迷你进度条让位（图表已展示数值），
-       行多时列表侧自行滚动 */
-    .grid-card.stats-card.chart-mode { flex-direction: row; align-items: stretch; }
-    .grid-card.stats-card.chart-mode .stats-chart { display: flex; flex: 1.15; }
-    .grid-card.stats-card.chart-mode .stats-edit { flex: 1; overflow-y: auto; }
-    .grid-card.stats-card.chart-mode .stats-bar-track { display: none; }
+    /* v10.28.5.2: 图表模式 = 纯图表卡；编辑列表独立成浮动小卡片——
+       选中图表卡才出现、取消选中/切回列表即隐藏（.stats-edit 元素在选中
+       期间搬进面板，卡内样式上 display:none） */
+    .grid-card.stats-card.chart-mode .stats-chart { display: flex; flex: 1; }
+    .grid-card.stats-card.chart-mode .stats-edit { display: none; }
+    .stats-edit-panel {
+      position: absolute; z-index: 100; width: 200px; display: none;
+      flex-direction: column; gap: 6px; padding: 10px;
+      background: var(--card-bg); border: 1px solid var(--divider-line-strong);
+      border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+      overflow-y: auto;
+    }
+    .stats-edit-panel.active { display: flex; }
+    .stats-edit-panel .stats-bar-track { display: none; } /* 面板里迷你条让位给图表 */
+    .stats-edit-panel .row-add { width: 100%; }
     .stats-chart-pop { width: 340px; }
     .stats-chart-pop .sc-group { font-size: 11px; color: var(--color-outline); margin: 10px 0 6px; }
     .sc-opt {
@@ -1936,6 +1948,7 @@
     card.dataset.col = Math.max(1, Math.round(fx / (cs + gap)) + 1);
     card.dataset.row = Math.max(1, Math.round(fy / (cs + gap)) + 1);
     refreshResizeHandles();
+    syncStatsEditPanel(); // v10.28.5.2: 编辑面板跟随几何提交点
   }
 
   function positionCardSilent(card, col, row, spanW, spanH) {
@@ -1963,6 +1976,7 @@
     card.dataset.x = parseFloat(card.style.left) || 0;
     card.dataset.y = parseFloat(card.style.top) || 0;
     refreshResizeHandles();
+    syncStatsEditPanel();
   }
 
   // ── Aspect-locked bitmap cards (v9.1) ──
@@ -2884,6 +2898,7 @@
           }
           st.card.style.left = nx + 'px';
           st.card.style.top = ny + 'px';
+          syncStatsEditPanel(); // v10.28.5.2: 拖拽中面板实时跟随（拖拽不经 moveCardPx，mouseup 才提交）
           // Boundary reference (v9.4): touching/crossing the page edge
           // lights up the blue boundary lines. Follows the align toggle,
           // display-only — never blocks.
@@ -3214,7 +3229,7 @@
 
   function statsSerialize(card) {
     var rows = [];
-    card.querySelectorAll('.stats-row').forEach(function (r) {
+    statsRootOf(card).querySelectorAll('.stats-row').forEach(function (r) {
       rows.push({
         label: r.querySelector('.stats-label').value,
         value: parseFloat(r.querySelector('.stats-value').value) || 0
@@ -3223,7 +3238,7 @@
     card.dataset.statsRows = JSON.stringify(rows);
   }
   function refreshStatsBars(card) {
-    var rows = card.querySelectorAll('.stats-row');
+    var rows = statsRootOf(card).querySelectorAll('.stats-row');
     var max = 0;
     rows.forEach(function (r) {
       var v = parseFloat(r.querySelector('.stats-value').value) || 0;
@@ -3252,11 +3267,11 @@
     del.className = 'row-del'; del.textContent = '✕'; del.title = '删除此行';
     del.addEventListener('click', function () {
       row.remove();
-      if (!card.querySelector('.stats-row')) addStatsRow(card, '', '');
+      if (!statsRootOf(card).querySelector('.stats-row')) addStatsRow(card, '', '');
       statsSerialize(card); refreshStatsBars(card); onContentChange();
     });
     row.appendChild(l); row.appendChild(v); row.appendChild(track); row.appendChild(del);
-    card.querySelector('.stats-rows').appendChild(row);
+    statsRootOf(card).querySelector('.stats-rows').appendChild(row);
     var sync = function () { statsSerialize(card); refreshStatsBars(card); onContentChange(); };
     l.addEventListener('input', sync);
     v.addEventListener('input', sync);
@@ -3275,8 +3290,8 @@
     addBtn.addEventListener('click', function () {
       addStatsRow(card, '', '');
     });
-    // v10.28.5.1: 编辑列表包进 .stats-edit——图表模式左右分栏（图表左、
-    // 列表右同时可见）；DOM 顺序 chart 在前 → 横排时图表自然在左
+    // v10.28.5.2: 编辑列表包进 .stats-edit——图表模式选中卡时整体搬进
+    // 独立浮动面板（取消选中搬回卡内）；列表模式在卡内直排
     var editWrap = document.createElement('div');
     editWrap.className = 'stats-edit';
     editWrap.appendChild(rows);
@@ -3291,6 +3306,61 @@
   }
   window.createStatsCard = createStatsCard;
 
+  // ── 独立编辑面板 (v10.28.5.2) ──
+  // 图表模式的编辑列表不挤在卡里（用户口径修正：编辑是独立卡片，选中才
+  // 出现、取消选中就隐藏）——选中图表卡时 .stats-edit 整体搬进浮动面板
+  // （事件闭包引用原卡，搬动无损），取消选中/切回列表搬回卡内。面板是
+  // gridCanvas 子元素：与卡同坐标系，画布滚动天然跟随、无需监听；几何
+  // 提交点（moveCardPx/positionCardSilent/rotateCard/拖拽实时）重算位置。
+  var statsEditPanel = null;
+  // 编辑列表此刻在哪（卡内或面板）——所有 .stats-row 查询统一走这里，
+  // 列表搬进面板后 statsSerialize/scRowsLive/addStatsRow 不失联
+  function statsRootOf(card) {
+    var inCard = card.querySelector('.stats-edit');
+    if (inCard) return inCard;
+    if (statsEditPanel && statsEditPanel._owner === card) {
+      var inPanel = statsEditPanel.querySelector('.stats-edit');
+      if (inPanel) return inPanel;
+    }
+    return card;
+  }
+  function syncStatsEditPanel() {
+    if (!statsEditPanel) {
+      statsEditPanel = document.createElement('div');
+      statsEditPanel.className = 'stats-edit-panel';
+      statsEditPanel.id = 'statsEditPanel';
+      gridCanvas.appendChild(statsEditPanel);
+    }
+    var card = selectedCard;
+    var active = !!(card && card.dataset.cardType === 'stats' && card.classList.contains('chart-mode'));
+    if (!active) {
+      if (statsEditPanel.classList.contains('active')) statsEditPanel.classList.remove('active');
+      var edit = statsEditPanel.querySelector('.stats-edit');
+      if (edit) {
+        var owner = statsEditPanel._owner;
+        if (owner && owner.isConnected && !owner.querySelector('.stats-edit')) owner.appendChild(edit);
+        else edit.remove(); // 卡已删：面板里的孤儿列表一并清掉
+      }
+      statsEditPanel._owner = null;
+      return;
+    }
+    var ed = card.querySelector('.stats-edit');
+    if (ed && ed.parentNode !== statsEditPanel) statsEditPanel.appendChild(ed);
+    statsEditPanel._owner = card;
+    var cRect = card.getBoundingClientRect();
+    var gRect = gridCanvas.getBoundingClientRect();
+    var x = cRect.right - gRect.left + 12;
+    var pw = 200;
+    if (x + pw > gridCanvas.offsetWidth - 8) x = cRect.left - gRect.left - pw - 12; // 右侧放不下 → 翻到卡左侧
+    x = Math.max(8, x);
+    var y = cRect.top - gRect.top;
+    y = Math.max(8, Math.min(y, Math.max(8, gridCanvas.offsetHeight - Math.max(160, cRect.height) - 12)));
+    statsEditPanel.style.left = x + 'px';
+    statsEditPanel.style.top = y + 'px';
+    statsEditPanel.style.maxHeight = Math.max(160, cRect.height) + 'px';
+    if (!statsEditPanel.classList.contains('active')) statsEditPanel.classList.add('active');
+  }
+
   // ── 数据卡图表 (v10.28.5) ──
   // 11 种图表（比较/趋势/构成/分布 4 类）+ 列表模式，全部 SVG 原生渲染。
   // 数据源 = 卡内 .stats-row 输入框（与 statsSerialize 同源）——图表模式下
@@ -3303,7 +3373,7 @@
   }
   function scRowsLive(card) {
     var rows = [];
-    card.querySelectorAll('.stats-row').forEach(function (r, i) {
+    statsRootOf(card).querySelectorAll('.stats-row').forEach(function (r, i) {
       rows.push({
         label: (r.querySelector('.stats-label').value || ('指标' + (i + 1))).slice(0, 6),
         value: parseFloat(r.querySelector('.stats-value').value) || 0
@@ -3588,6 +3658,7 @@
     if (card.dataset.statsChart) renderStatsChart(card);
     onContentChange();
     hideContextMenu();
+    syncStatsEditPanel(); // 选中中切换图表种类 → 面板保持；切回列表 → 列表搬回卡内、面板隐藏
   }
   window.applyStatsChart = applyStatsChart;
   window.renderStatsChart = renderStatsChart; // test hook
@@ -3715,7 +3786,7 @@
     mapRenderPins(card, canvas);
   }
   function restoreStats(card, cData) {
-    var rows = card.querySelector('.stats-rows');
+    var rows = statsRootOf(card).querySelector('.stats-rows');
     rows.innerHTML = '';
     var arr = [];
     try { arr = JSON.parse(cData.statsRows || '[]'); } catch (e) {}
@@ -3858,6 +3929,7 @@
     selectedCard = card;
     refreshResizeHandles();
     renderLayersList(); // v10.27.1: 图层面板行高亮跟随选中
+    syncStatsEditPanel(); // v10.28.5.2: 选中图表卡 → 独立编辑面板出现
   }
   window.selectCard = selectCard;
 
@@ -3865,6 +3937,7 @@
     getAllCards().forEach(function (c) { c.classList.remove('selected'); });
     selectedCard = null;
     refreshResizeHandles();
+    syncStatsEditPanel(); // v10.28.5.2: 取消选中 → 编辑面板隐藏、列表搬回卡内
   }
 
   // ── Layers (v10.27.1, Canva 式分层) ──
@@ -4804,6 +4877,7 @@
     document.getElementById('rotateValue').textContent = deg + '°';
     refreshResizeHandles();
     onContentChange();
+    syncStatsEditPanel(); // 旋转只改 transform 不走 moveCardPx，面板按旋转后 bbox 重排
   }
   window.rotateCard = rotateCard;
 
@@ -6156,6 +6230,7 @@
     selectedCard.remove();
     selectedCard = null;
     refreshResizeHandles(); // hide the now-orphaned handle cluster
+    syncStatsEditPanel(); // v10.28.5.2: 卡删了 → 面板隐藏、面板里的孤儿列表清掉
     onContentChange();
   }
   window.deleteSelectedCard = deleteSelectedCard;
@@ -6759,7 +6834,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.5.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.5.2') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -6768,7 +6843,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.5.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.5.2');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
