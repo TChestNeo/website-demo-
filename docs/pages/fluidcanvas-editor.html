@@ -167,12 +167,16 @@
        v10.28.6.2: 数据卡/国旗卡并入（用户「国旗卡片那边的也是…检查一下
        是否一致」）——同样 55%+模糊+高光+细边；国旗卡有图时玻璃被图盖住
        无观感变化，无损。国旗卡无专属类（身份在 dataset.cardType），用
-       属性选择器。仍排除 .has-outer-bg（外板几何按 2px 边宽调过）/
+       属性选择器。v10.28.6.3: 资产卡族并入（用户「把Emblem卡片作用下」——
+       Emblem/Governance/Economic Ledger/Constitution/Gallery 全走
+       createAssetCard 同一构造，加 .asset-card 类一次覆盖，不留同构造
+       不一致卡）。仍排除 .has-outer-bg（外板几何按 2px 边宽调过）/
        .has-card-bg-img（图走 <img> 子层）/ [class*="card-edge-"]（主题卡
        有板+剪影层——走下方 v10.28.6.2 主题卡玻璃规则）。 */
     .grid-card.content-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]),
     .grid-card.stats-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]),
-    .grid-card[data-card-type="flag"]:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]) {
+    .grid-card[data-card-type="flag"]:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]),
+    .grid-card.asset-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]) {
       --card-border-width: 1px;
       --card-border-color: rgba(125, 130, 140, 0.38);
       background-color: color-mix(in srgb, var(--card-bg-color) 55%, transparent);
@@ -3133,6 +3137,7 @@
 
   function createAssetCard(asset, label, col, row, spanW, spanH) {
     var card = createGridCard(asset, col, row, spanW, spanH);
+    card.classList.add('asset-card'); // v10.28.6.3: 资产卡族统一类（磨砂选择器用；草稿只存 cardType，重载重建）
     card.dataset.label = label;
     var icon = asset === 'emblem' ? 'shield' : asset;
     var iconEl = document.createElement('span');
@@ -6949,6 +6954,7 @@
   window.createFlagCard = createFlagCard;
   window.createAssetCard = createAssetCard;
   window.createContentCard = createContentCard;
+  window.createAssetCard = createAssetCard; // test hook (v10.28.6.3)
   window.rotateCard = rotateCard;
   window.toggleAlign = toggleAlign;
   // v9.1 test hooks (no-op in production)
@@ -7010,7 +7016,7 @@
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.2') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.3') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -7019,7 +7025,7 @@
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.2');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.6.3');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
