@@ -1,7 +1,8 @@
 'use strict';
 // 入口：node:http 服务器 + 路由装配 + /api/health。
 // 依赖注入 createServer(deps)：deps = { db, router, config }（测试注入临时 SQLite）。
-// W0 注册：health + 公网 auth + staff auth；W1+ 按波追加 routes/public/*、routes/staff/*。
+// W0 注册：health + 公网 auth + staff auth；W1 注册 routes/public/* 全部 + moderation 共享件 + cron。
+// W2+ 按波追加 routes/staff/*。
 
 const http = require('node:http');
 const config = require('./config');
@@ -13,6 +14,17 @@ const { createMailer } = require('./email');
 const { maintenanceGuard } = require('./middleware/maintenance');
 const { register: registerAuth } = require('./routes/public/auth');
 const { register: registerStaffAuth } = require('./routes/staff/auth');
+const { register: registerSocial } = require('./routes/public/social');
+const { register: registerMessages } = require('./routes/public/messages');
+const { register: registerTickets } = require('./routes/public/tickets');
+const { register: registerSubscriptions } = require('./routes/public/subscriptions');
+const { register: registerBadge } = require('./routes/public/badge');
+const { register: registerDrafts } = require('./routes/public/drafts');
+const { register: registerArticles } = require('./routes/public/articles');
+const { register: registerReports } = require('./routes/public/reports');
+const { register: registerChat } = require('./routes/public/chat');
+const { createBudget } = require('./moderation/budget');
+const blocklist = require('../data/blocklist.json');
 
 const VERSION = '2.0.0';
 
@@ -38,12 +50,31 @@ function createServer(deps = {}) {
     });
   });
 
-  // 依赖上下文（各 routes/* 共享；W1 起追加 moderation/ai/stripe 等）
+  // 依赖上下文（各 routes/* 共享）
+  // moderation：审核管线共享件——budget（月度硬上限）、fetchImpl（测试注入桩）、L0 词表
+  // 顶层 budget = moderation.budget 同一实例——budget-alert 依赖 ctx.budget（v1 缺此键，
+  // 每日 10:30 告警会 TypeError 被 cron 静默吞掉；v2 显式补齐）
+  const budget = createBudget(db, cfg);
   const ctx = {
-    db, config: cfg, limiter, mailer
+    db, config: cfg, limiter, mailer,
+    budget,
+    moderation: {
+      budget,
+      fetchImpl: deps.fetchImpl || global.fetch,
+      blocklist
+    }
   };
   registerAuth(router, ctx);
   registerStaffAuth(router, ctx);
+  registerSocial(router, ctx);
+  registerMessages(router, ctx);
+  registerTickets(router, ctx);
+  registerSubscriptions(router, ctx);
+  registerBadge(router, ctx);
+  registerDrafts(router, ctx);
+  registerArticles(router, ctx);
+  registerReports(router, ctx);
+  registerChat(router, ctx);
 
   const server = http.createServer((req, res) => {
     (async () => {
@@ -89,7 +120,9 @@ if (require.main === module) {
   server.listen(config.port, config.host, () => {
     console.log(`MN backend v2 (${VERSION}) listening on http://${config.host}:${config.port}`);
   });
-  // W1：审核三班 cron（仅 main 进程；测试进程不启动）
+  // 审核三班 + 图像滞留兜底 + 预算日结告警 cron（仅 main 进程；测试进程不启动）
+  const { startCron } = require('./cron');
+  startCron(server.ctx);
 }
 
 module.exports = { createServer, VERSION };

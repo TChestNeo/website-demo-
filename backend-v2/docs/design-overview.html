@@ -1,0 +1,305 @@
+<title>SlatiControl 后端 v2 · 设计总览</title>
+<style>
+  :root{
+    --bg:#f4f2fb; --card:#ffffff; --ink:#23233a; --sub:#6b6b85; --line:#e6e2f5;
+    --accent:#4648d4; --accent-soft:#eef0ff; --chip:#f3f1fc; --good:#1e9e6a; --warn:#d97a12;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14142a; --card:#1e1e38; --ink:#eceaff; --sub:#9a97c0; --line:#34345a;
+      --accent:#8b8df5; --accent-soft:#26264a; --chip:#26264a; --good:#4fd0a0; --warn:#f0a64a;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;line-height:1.65}
+  .wrap{max-width:1080px;margin:0 auto;padding:40px 24px 80px}
+  header.hero{background:linear-gradient(135deg,var(--accent-soft),var(--bg) 70%);
+    border:1px solid var(--line);border-radius:20px;padding:36px 40px;margin-bottom:28px}
+  h1{margin:0 0 8px;font-size:30px;letter-spacing:.5px}
+  .hero p{margin:4px 0;color:var(--sub)}
+  .meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:var(--chip);
+    border:1px solid var(--line);border-radius:999px;padding:4px 14px;font-size:13px;color:var(--sub)}
+  .pill b{color:var(--accent)}
+  h2{font-size:21px;margin:44px 0 6px;display:flex;align-items:baseline;gap:10px}
+  h2 .no{color:var(--accent);font-size:15px;font-weight:600}
+  h2+p.desc{margin:0 0 18px;color:var(--sub);font-size:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:22px 26px;margin-bottom:16px;box-shadow:0 1px 3px rgba(30,30,80,.05)}
+  .principle{border:1px solid var(--accent);border-left:5px solid var(--accent);
+    background:var(--accent-soft);font-size:17px;font-weight:600;border-radius:14px;
+    padding:20px 26px;margin:18px 0}
+  .principle small{display:block;font-weight:400;color:var(--sub);margin-top:8px;font-size:13px}
+  .grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .dec{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .dec b{color:var(--accent)}
+  .dec p{margin:6px 0 0;font-size:13px;color:var(--sub)}
+  .mig{border:1px solid var(--line);border-radius:14px;padding:18px 20px 12px;margin-bottom:14px;background:var(--card)}
+  .mig h3{margin:0 0 4px;font-size:16px}
+  .mig .sub{font-size:12px;color:var(--sub);margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--sub);font-weight:600;font-size:12px}
+  tr:last-child td{border-bottom:none}
+  td.name{font-weight:600;white-space:nowrap;font-family:Consolas,monospace;font-size:12.5px;color:var(--accent)}
+  td small{color:var(--sub)}
+  .scroll{overflow-x:auto}
+  .ok{color:var(--good);font-weight:700}
+  .half{color:var(--warn);font-weight:700}
+  .no2{color:var(--sub)}
+  .count{background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:1px 7px;
+    font-size:12px;font-weight:700;white-space:nowrap}
+  code.key{font-family:Consolas,monospace;font-size:12px;background:var(--chip);
+    padding:2px 8px;border-radius:6px;border:1px solid var(--line);display:inline-block;margin:2px 3px 2px 0}
+  .keys{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+  .grouptitle{font-weight:600;font-size:14px;margin:18px 0 8px;color:var(--accent)}
+  .grouptitle:first-child{margin-top:0}
+  ul.api{margin:0;padding-left:0;list-style:none}
+  ul.api li{padding:5px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+  ul.api li:last-child{border-bottom:none}
+  ul.api code{font-family:Consolas,monospace;font-size:12.5px;background:var(--chip);
+    padding:1px 6px;border-radius:5px}
+  .tag{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--sub);margin-left:6px}
+  .tag.new{color:var(--good);border-color:var(--good)}
+  .note{font-size:13px;color:var(--sub);border-left:3px solid var(--line);
+    padding:2px 0 2px 12px;margin:10px 0}
+  .note b{color:var(--warn)}
+  footer{margin-top:48px;color:var(--sub);font-size:12.5px;text-align:center}
+  .dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+  .di{border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--card);font-size:13px}
+  .di b{color:var(--accent)}
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <h1>🔮 SlatiControl 后端 v2 · 设计总览</h1>
+  <p>M.NationWorld 内部管理与运营控制中心 + 公网 API 对等重建 — 这是「先设计好」的设计稿，请过目</p>
+  <div class="meta">
+    <span class="pill">版本 <b>backend v2.0.0</b></span>
+    <span class="pill">16 张表</span>
+    <span class="pill">7 角色 × <b>42</b> 权限键</span>
+    <span class="pill">W0 测试 <b>49/49</b> 全绿</span>
+    <span class="pill">2026-08-27 · commit 9081c8f（未 push）</span>
+  </div>
+</header>
+
+<div class="principle">
+  「AI 是辅助工具，不是管理员。AI 可以阅读、分析、解释和建议，但没有直接管理权；
+  任何改变平台状态的操作必须由具有相应权限的人类执行。」
+  <small>— 代码与文档中原样保留的最高原则；下方 §4 的 AI 红线就是它在代码里的落地方式</small>
+</div>
+
+<h2><span class="no">§0</span> 你拍板的四个决定</h2>
+<div class="grid4">
+  <div class="dec"><b>1 · 从零重写 v2</b><p>全新代码库 backend-v2/，旧 backend/ 只读留作母本，切换完成后归档。</p></div>
+  <div class="dec"><b>2 · 全量替代</b><p>公网 API（登录/聊天/社交/私信/订阅/徽章/文章/审核）全部重建；站点 docs/ 一行代码不改，路径保持 /api 不变。</p></div>
+  <div class="dec"><b>3 · AI 先做架构</b><p>界面 + API + 权限 + 知识库检索做真；LLM 走 provider 接口，密钥没配时优雅返回「未配置」，配好即通。</p></div>
+  <div class="dec"><b>4 · 第一波全选</b><p>地基 + 用户中心 + 客服升级 + 财务扩展 + Dashboard 分析，分 5 波交付（W0 ✅ → W5）。</p></div>
+</div>
+
+<h2><span class="no">§1</span> 数据库 · 16 张表</h2>
+<p class="desc">4 个迁移文件一次设计到位（无旧版式的先建后重建）；主键带前缀编号（USR-/STAFF-/AUD-…），金额分两个平面（机器事件存整数微元、人工记账存 2 位小数+币种）。</p>
+
+<div class="mig">
+  <h3>001 · 用户认证与账户安全 <span class="count">7 张表</span></h3>
+  <div class="sub">公网登录全链路 + 安全信号 —— 旧版 users 全列保留，新增登录史与风险等级</div>
+  <div class="scroll"><table>
+    <tr><th>表</th><th>用途</th><th>关键点</th></tr>
+    <tr><td class="name">users</td><td>公网用户</td><td>role 恒为 'user'（管理员只存在于 staff 表）；tier 四档 free/basic/premium/ultra；status 四态 active/banned/删号后悔期/已删除；新增 risk_level（低/中/高）、last_login_at、login_count</td></tr>
+    <tr><td class="name">user_sessions</td><td>公网会话</td><td>cookie = mn_session（与旧版一致，站点零登出）</td></tr>
+    <tr><td class="name">email_codes</td><td>邮箱验证码</td><td>公网登录 / 删号确认 / 工作人员登录 三种用途共用，actor_type 区分</td></tr>
+    <tr><td class="name">login_history</td><td>登录历史</td><td>五种结果（成功/失败/封禁/已删/无此账号）+ IP/设备/浏览器/系统 + 风险标记</td></tr>
+    <tr><td class="name">security_events</td><td>安全事件</td><td>新设备/异地可疑登录等 8 类事件，带风险等级</td></tr>
+    <tr><td class="name">notifications</td><td>站内通知</td><td>旧版原样</td></tr>
+    <tr><td class="name">rate_limits</td><td>限流窗口</td><td>SQLite 持久化 —— 修掉旧版「重启清零」的债</td></tr>
+  </table></div>
+</div>
+
+<div class="mig">
+  <h3>002 · 工作人员与权限（RBAC） <span class="count">6 张表</span></h3>
+  <div class="sub">staff 独立于 users；一人可多角色；角色矩阵在数据库里、每请求现查</div>
+  <div class="scroll"><table>
+    <tr><th>表</th><th>用途</th><th>关键点</th></tr>
+    <tr><td class="name">staff</td><td>工作人员</td><td><b>real_name（真名）内部字段——结构上永不序列化出接口</b>；alias 公开化名；is_active 停用开关；工时/时区/语言</td></tr>
+    <tr><td class="name">staff_sessions</td><td>工作人员会话</td><td>独立 cookie = sc_session，与公网会话互不相通</td></tr>
+    <tr><td class="name">roles</td><td>角色</td><td>7 个内置角色，builtin 不可删</td></tr>
+    <tr><td class="name">permissions</td><td>权限键</td><td>42 个点分键（见 §2）</td></tr>
+    <tr><td class="name">role_permissions</td><td>角色↔权限矩阵</td><td>基线 77 行种子</td></tr>
+    <tr><td class="name">staff_roles</td><td>人↔角色</td><td>多对多（例：Daniel = 财务 + 客服）</td></tr>
+  </table></div>
+</div>
+
+<div class="mig">
+  <h3>003 · 审计日志 <span class="count">1 张表</span></h3>
+  <div class="sub">哈希链 + 数据库触发器强制「只准追加，不准改、不准删」</div>
+  <div class="scroll"><table>
+    <tr><th>表</th><th>用途</th><th>关键点</th></tr>
+    <tr><td class="name">audit_log</td><td>一切状态变更的不可篡改记录</td><td>每一行 hash = 上一行 hash + 本行内容的指纹，整链可验证；记录谁（工作人员/系统/Stripe/定时任务）、做了什么、改前改后、原因、IP；<b>被拒绝的操作也记录</b>（result = denied）</td></tr>
+  </table></div>
+</div>
+
+<div class="mig">
+  <h3>004 · 平台设置 <span class="count">2 张表</span></h3>
+  <div class="sub">强类型设置表 + 运行时键值表 —— 预算红线就住在这里</div>
+  <div class="scroll"><table>
+    <tr><th>表</th><th>用途</th><th>关键点</th></tr>
+    <tr><td class="name">platform_settings</td><td>平台设置（强类型）</td><td>预算红线 30/20/10/60 元 + Copilot 子额度 10；汇率/税率/维护模式开关/客服工时/语言</td></tr>
+    <tr><td class="name">kv</td><td>运行时键值</td><td>只放 cron 上次运行时间之类，不进界面</td></tr>
+  </table></div>
+</div>
+
+<h2><span class="no">§2</span> 权限体系 · 7 角色 × 42 键</h2>
+<p class="desc">点分命名（模块.动作）。<b>总监 = 全部权限</b>（代码层判定，不落数据库矩阵行，谁也无法在数据库里把它改掉）。所有写操作走「登录 → 权限检查 → 字段掩码」三件套，拒绝尝试必落审计。</p>
+
+<div class="card">
+<div class="scroll"><table>
+  <tr>
+    <th>角色</th><th>Dashboard<br>分析</th><th>用户</th><th>安全</th><th>内容<br>社区</th><th>财务<br>账本·工资·捐赠</th><th>订阅<br>定价</th><th>退款</th><th>工单<br>6 键</th><th>人工对话</th><th>客服<br>档案·分析·日志</th><th>AI<br>Copilot·配置</th><th>知识库</th><th>工作人员</th><th>审计</th><th>平台<br>设置</th><th>徽章</th>
+  </tr>
+  <tr>
+    <td class="name">project_director<br><small>项目总监</small></td>
+    <td colspan="15" class="ok">★★★★ 全部 42 键（代码层，不可编辑）</td>
+  </tr>
+  <tr>
+    <td class="name">customer_support<br><small>客户支持 · Alex</small></td>
+    <td class="ok">✓</td><td class="half">查</td><td class="no2">—</td><td class="no2">—</td><td class="no2">—</td><td class="no2">—</td><td class="no2">—</td>
+    <td class="ok">全 6</td><td class="ok">全 2</td><td class="ok">全 3</td><td class="half">Copilot</td><td class="half">查</td><td class="half">绩效</td><td class="no2">—</td><td class="no2">—</td><td class="no2">—</td>
+  </tr>
+  <tr>
+    <td class="name">finance<br><small>财务 · Daniel</small></td>
+    <td class="ok">✓</td><td class="no2">—</td><td class="no2">—</td><td class="no2">—</td><td class="ok">全 5</td><td class="ok">全 3</td><td class="ok">全 2</td>
+    <td class="no2">—</td><td class="no2">—</td><td class="no2">—</td><td class="no2">—</td><td class="no2">—</td><td class="half">查+绩效</td><td class="no2">—</td><td class="half">财务键</td><td class="no2">—</td>
+  </tr>
+  <tr>
+    <td class="name">moderation<br><small>内容审核</small></td>
+    <td class="ok">✓</td><td class="ok">查+管</td><td class="half">看事件</td><td class="ok">全 4</td><td class="no2">—</td><td class="no2">—</td><td class="no2">—</td>
+    <td class="half">查</td><td class="no2">—</td><td class="no2">—</td><td class="no2">—</td><td class="no2">—</td><td class="half">查</td><td class="no2">—</td><td class="no2">—</td><td class="ok">✓</td>
+  </tr>
+  <tr>
+    <td class="name">security<br><small>安全</small></td>
+    <td class="ok">✓</td><td class="ok">查+管</td><td class="ok">全 2</td><td class="no2">—</td><td class="no2">—</td><td class="half">查</td><td class="no2">—</td>
+    <td class="no2">—</td><td class="no2">—</td><td class="no2">—</td><td class="half">配置</td><td class="no2">—</td><td class="half">查</td><td class="ok">✓</td><td class="no2">—</td><td class="no2">—</td>
+  </tr>
+  <tr>
+    <td class="name">technical<br><small>技术</small></td>
+    <td class="ok">✓</td><td class="half">查</td><td class="no2">—</td><td class="no2">—</td><td class="half">查</td><td class="no2">—</td><td class="no2">—</td>
+    <td class="no2">—</td><td class="no2">—</td><td class="no2">—</td><td class="no2">—</td><td class="ok">查+管</td><td class="half">查</td><td class="ok">✓</td><td class="ok">✓</td><td class="no2">—</td>
+  </tr>
+  <tr>
+    <td class="name">management<br><small>管理层（只读监督）</small></td>
+    <td class="ok">✓</td><td class="half">查</td><td class="half">看事件</td><td class="half">查</td><td class="no2">—</td><td class="half">查</td><td class="half">查</td>
+    <td class="half">查+升级</td><td class="no2">—</td><td class="half">分析</td><td class="no2">—</td><td class="half">查</td><td class="half">绩效</td><td class="ok">✓</td><td class="no2">—</td><td class="no2">—</td>
+  </tr>
+</table></div>
+<div class="note">✓ = 全部该组权限 · 「查/管」= 该组查看/管理键 · 「全 N」= 该组全部 N 个键。客服的数据权限另有<b>字段掩码</b>：看不到完整 IP（前两段+最近 10 条）、看不到支付数据、看不到私信。</div>
+</div>
+
+<div class="card">
+<div class="grouptitle">全部 42 个权限键（按模块）</div>
+<div class="grouptitle">Dashboard / 分析 / 用户 / 安全</div>
+<div class="keys">
+<code class="key">dashboard.view</code><code class="key">analytics.view</code><code class="key">users.view</code><code class="key">users.manage</code><code class="key">security.view_all</code><code class="key">security.manage</code>
+</div>
+<div class="grouptitle">内容 / 社区</div>
+<div class="keys">
+<code class="key">content.view</code><code class="key">content.manage</code><code class="key">community.view</code><code class="key">community.moderate</code>
+</div>
+<div class="grouptitle">财务</div>
+<div class="keys">
+<code class="key">finance.view</code><code class="key">finance.ledger</code><code class="key">finance.payroll</code><code class="key">finance.donations</code><code class="key">finance.settings</code>
+</div>
+<div class="grouptitle">订阅 / 定价 / 退款</div>
+<div class="keys">
+<code class="key">subscriptions.view</code><code class="key">subscriptions.manage</code><code class="key">pricing.manage</code><code class="key">refunds.view</code><code class="key">refunds.approve</code>
+</div>
+<div class="grouptitle">客服 · 工单（6）/ 人工对话（2）/ 档案·分析·日志（3）</div>
+<div class="keys">
+<code class="key">cs.tickets.view</code><code class="key">cs.tickets.reply</code><code class="key">cs.tickets.assign</code><code class="key">cs.tickets.close</code><code class="key">cs.tickets.escalate</code><code class="key">cs.tickets.contact_user</code>
+<code class="key">cs.conversations.view</code><code class="key">cs.conversations.reply</code>
+<code class="key">cs.agents.view</code><code class="key">cs.analytics.view</code><code class="key">cs.logs.view</code>
+</div>
+<div class="grouptitle">AI / 知识库</div>
+<div class="keys">
+<code class="key">ai.copilot</code><code class="key">ai.settings</code><code class="key">kb.view</code><code class="key">kb.manage</code>
+</div>
+<div class="grouptitle">工作人员（4）/ 审计 / 平台 / 徽章</div>
+<div class="keys">
+<code class="key">staff.view</code><code class="key">staff.manage</code><code class="key">staff.rbac</code><code class="key">staff.performance.view</code>
+<code class="key">audit.view</code><code class="key">platform.settings</code><code class="key">badges.manage</code>
+</div>
+</div>
+
+<h2><span class="no">§3</span> API 面</h2>
+<p class="desc">公网路径与旧版<b>逐字一致</b>（站点零改动）；管理 API 全新前缀 /api/staff/*（旧 /api/admin/* 随旧界面退役）。</p>
+
+<div class="card">
+<div class="grouptitle">公网 API（对等重建，v1 契约不变）</div>
+<ul class="api">
+<li><code>/api/health</code> 健康检查</li>
+<li><code>/api/auth/*</code> 发码 · 验证登录 · 登出 · 我的资料 · 删号</li>
+<li><code>/api/social/*</code> 国家 / 话题 / 团队 / 关注 / 帖子</li>
+<li><code>/api/conversations*</code> 私信</li>
+<li><code>/api/tickets</code> 提交工单 <span class="tag new">新增 GET /api/tickets/:id 查进度 + 评价</span></li>
+<li><code>/api/subscription/*</code> 订阅状态 · 结账 · 门户</li>
+<li><code>/api/webhooks/stripe</code> Stripe 回调</li>
+<li><code>/api/badge/verify</code> 徽章 · <code>/api/drafts/*</code> 草稿 · <code>/api/articles*</code> 文章 · <code>/api/reports</code> 举报 · <code>/api/chat</code> AI 客服</li>
+<li><span class="tag new">新增</span><code>/api/support/agents</code> 客服公开档案（真名结构上永不外发）· <code>/api/help/kb</code> 帮助知识库</li>
+</ul>
+</div>
+
+<div class="card">
+<div class="grouptitle">管理 API（全部 /api/staff/*，写操作必审计）</div>
+<ul class="api">
+<li><code>/api/staff/auth/*</code> 工作人员登录（独立会话 sc_session）· 自改档案</li>
+<li><code>/api/staff/dashboard</code> 总览六组统计卡</li>
+<li><code>/api/staff/analytics</code> 分析（日/7天/30天/90天/1年）</li>
+<li><code>/api/staff/users*</code> 用户列表/详情（按角色掩码）· <code>/api/staff/security/*</code> 登录史/安全事件</li>
+<li><code>/api/staff/content|community|moderation</code> 内容处置 / 社区 / 处罚</li>
+<li><code>/api/staff/finance/*</code> 总览 · 收入 · 成本 · 利润 · 流水账 CRUD+月结 · 报表导出</li>
+<li><code>/api/staff/subscriptions|promos|refunds|donations</code> 订阅发放/取消 · 促销 · 退款（审批链）· 捐赠</li>
+<li><code>/api/staff/tickets*</code> 工单列表/详情/回复/关闭/升级/分配 · <b>发起人工对话</b></li>
+<li><code>/api/staff/agents|staff|payroll</code> 客服档案 · 工作人员 · 工资单</li>
+<li><code>/api/staff/ai/*</code> AI Copilot（分析/总结/草稿建议）+ 日志 + 预算</li>
+<li><code>/api/staff/kb*</code> 知识库 · <code>/api/staff/platform/settings</code> 平台设置 · <code>/api/staff/audit*</code> 审计日志+整链校验</li>
+</ul>
+</div>
+
+<h2><span class="no">§4</span> 关键决策 + AI 红线</h2>
+<div class="dgrid">
+  <div class="di"><b>D1 金额双平面</b> — 机器事件存整数微元（无浮点误差）；人工记账存 2 位小数 + 显式币种，统一走 money.js。</div>
+  <div class="di"><b>D2 双会话</b> — 公网 mn_session 与工作人员 sc_session 完全分离，互不相通。</div>
+  <div class="di"><b>D3 路径</b> — 管理 API 全部 /api/staff/*；公网 /api/* 与 v1 逐字一致。</div>
+  <div class="di"><b>D4 管理员只在 staff 表</b> — users.role 数据库层面锁死只能 'user'，不可能再出现「普通用户成管理员」。</div>
+  <div class="di"><b>D5 AI 客服日志记问答内容</b> — 规格 §14 硬性要求；查看此日志的权限（cs.logs.view）单独收紧。</div>
+  <div class="di"><b>D6 新增社区表</b> — 评论/百科/点赞/收藏/分享/访问统计（v1 没有，公网新端点全部是加法）。</div>
+  <div class="di"><b>D7 限流持久化</b> — SQLite 滑动窗口，重启不清零。</div>
+  <div class="di"><b>D8 预算进设置表</b> — 红线 30/20/10/60 元不变；≥80% 预警邮件、≥100% 降级（绝不硬下线）。</div>
+  <div class="di"><b>D9 分析读时聚合</b> — SQL 现算，不养一张会过期的汇总表。</div>
+  <div class="di"><b>D10 IP 地理可选</b> — 2 秒超时失败跳过；IP 只作风险信号，不单独判盗号。</div>
+  <div class="di"><b>D11 套餐沿用</b> — basic/premium/ultra + 两款包价 SKU；区域定价各定各的价，禁止汇率换算。</div>
+  <div class="di"><b>D12 审计哈希链</b> — 每行链上一行指纹 + 触发器强制 append-only。</div>
+</div>
+
+<div class="card">
+<div class="grouptitle">AI 红线（§20 禁止清单的代码落地）</div>
+<ul class="api">
+<li>① AI 没有认证主体 —— 数据库/接口层它就不是一个「账号」，天然做不了管理操作</li>
+<li>② /staff/ai/* 端点只返回数据；源码测试断言 AI 模块里没有任何写库语句</li>
+<li>③ 封禁/删用户、改权限、批准退款、改价格/财务/规则、分配管理员、关闭工单、发人工回复 —— 全部只有持权限的<b>人类</b>能做</li>
+<li>④ AI 的回复草稿必须先经人类点「发送」+ 过权限检查，才进工单</li>
+<li>⑤ 退款审批键（refunds.approve）从设计上就没有任何 AI 旁路</li>
+</ul>
+</div>
+
+<div class="note">
+  <b>审阅提示：</b>现在改表结构/权限/路径最便宜 —— W1 开始往上盖公网模块的代码之后，改动成本会变大。
+  特别说明一处与计划书的差异：<b>权限键实际是 42 个，计划书 §4 写的是 41</b>——以迁移文件里的 42 为准，测试已锁定，偏差已记入日志。
+  看完觉得哪张表、哪个角色、哪条路径要改，直接跟我说就行 (｡•̀ᴗ-)✧
+</div>
+
+<footer>W0 验证：npm test 49/49 全绿 · curl 实测四连通过（health / 发码 / 真码建号 / 开发码登录 / 工作人员登录总监权限）<br>
+SlatiControl 后端 v2 · 设计总览 · 2026-08-27</footer>
+
+</div>

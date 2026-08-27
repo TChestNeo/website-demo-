@@ -1,5 +1,5 @@
 'use strict';
-// 迁移 001-004：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
+// 迁移 001-009：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
 
 const test = require('node:test');
 const assert = require('node:assert');
@@ -13,12 +13,12 @@ function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'mn2-mig-'));
 }
 
-test('迁移：user_version=4、16 表、角色/权限/平台种子齐整', () => {
+test('迁移：user_version=9、55 表、角色/权限/平台种子齐整', () => {
   const db = openDb(path.join(tmpDir(), 'a.sqlite'));
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 4);
-  // 表数：001 七表 + 002 六表 + 003 一表 + 004 两表 = 16（触发器不算表）
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 9);
+  // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 = 55（触发器不算表）
   const n = db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().n;
-  assert.strictEqual(n, 16);
+  assert.strictEqual(n, 55);
   // 角色 7、权限 42、矩阵基线（每角色授权数逐一断言 = 设计契约锁定）
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM roles').get().n, 7);
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM permissions').get().n, 42);
@@ -42,7 +42,26 @@ test('迁移：重复打开同库幂等（版本不再推进、无重复执行�
   const p = path.join(tmpDir(), 'b.sqlite');
   openDb(p);
   const db = openDb(p);
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 4);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 9);
+});
+
+test('迁移 005-009：社交/工单/知识库/审核/财务关键表与扩展列就位（D5/D6 口径）', () => {
+  const db = openDb(path.join(tmpDir(), 'd.sqlite'));
+  const has = (name) => db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name = ?").get(name).n === 1;
+  for (const t of ['comments', 'wikis', 'content_likes', 'favorites', 'shares',
+    'tickets', 'ticket_replies', 'ticket_escalations', 'ticket_feedback',
+    'kb_categories', 'kb_articles', 'chat_logs',
+    'refunds', 'subscriptions', 'donations', 'pricing_plans', 'pricing_regions', 'promos', 'checkout_events', 'payroll', 'staff_rates']) {
+    assert.ok(has(t), '缺表 ' + t);
+  }
+  const col = (t, c) => db.prepare(`PRAGMA table_info(${t})`).all().some(x => x.name === c);
+  // D5：chat_logs 记问答内容；conversations 加 support 通道；消息/成员多态
+  assert.ok(col('chat_logs', 'question') && col('chat_logs', 'answer') && col('chat_logs', 'answer_source'));
+  assert.ok(col('conversations', 'kind') && col('conversations', 'ticket_id'));
+  assert.ok(col('conversation_members', 'actor_type') && col('messages', 'sender_type'));
+  // D4/D6：staff 只在 staff 表；audit 哈希链列
+  assert.ok(col('staff', 'alias') && col('staff', 'real_name'));
+  assert.ok(col('audit_log', 'prev_hash') && col('audit_log', 'hash'));
 });
 
 test('迁移：重复版本号启动即报错（防静默跳过）', () => {
