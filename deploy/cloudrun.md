@@ -1,8 +1,9 @@
 # Cloud Run 部署（backend-v2）——发布底子加固版
 
-**线上地址（2026-08-27/28 已部署）**：https://mn-backend-v2-641398703651.asia-southeast1.run.app
+**线上地址（2026-08-27/28 已部署；服务名 08-28 由用户改名 mn-backend-v2 → mnationworld-web）**：https://mnationworld-web-641398703651.asia-southeast1.run.app
 - 公网站点：`/` ｜ 管理后台：`/admin/`（staff 邮箱 + 登录码 **691032**）｜ API：`/api/*`
 - 项目 `project-02d050ab-8105-448e-bac`（唯一挂了计费 016AE6-868F19-B356BA）；镜像 `asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend/mn-backend-v2:latest`
+- **改名教训**：Cloud Run 服务名决定 URL；用户在控制台改名 = 建了一个空配置新服务（只有镜像，env/卷全没）——发现后已把加固配置全套搬过去并线上 4/4 复验。控制台手建服务不会继承任何配置，必须用 deploy 命令带齐 env + 卷。
 - **数据持久化**：GCS 桶 `gs://mn-backend-data-641398703651`（FUSE 挂载 `/mnt/data`）+ 快照机制，实例重启/缩容/换版本数据不丢（详见下方「快照持久化」）。
 - **安全口径（加固后）**：登录码随机（691032，不再用 888888）；演示 staff（Alex/Daniel）已下线，只有 director Neo。仍免认证公开——知道地址和码的人能进后台；**SMTP 未配之前 NODE_ENV=development 是唯一后台登录路径**（config.js 强制 production 下 DEV_LOGIN_CODE 失效）。还是别放真数据（账号/支付/内容都是试用数据），正式发布会整体迁移。
 
@@ -49,7 +50,7 @@ token 约 1 小时过期——push 要在窗口内完成；过期重跑 login �
 ## 部署
 
 ```bash
-gcloud run deploy mn-backend-v2 \
+gcloud run deploy mnationworld-web \
   --image asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend/mn-backend-v2:latest \
   --region asia-southeast1 --allow-unauthenticated --port 8080 \
   --memory 512Mi --min-instances 0 --max-instances 1 --execution-environment gen2 \
@@ -64,14 +65,15 @@ gcloud run deploy mn-backend-v2 \
 - GCS FUSE 卷要求 gen2 执行环境 + 同项目桶 + 计算服务账号 storage.objectAdmin（已配：`641398703651-compute@developer.gserviceaccount.com`）。
 - 区域 asia-southeast1（新加坡，离马来西亚最近）；已开的 API：run.googleapis.com、artifactregistry.googleapis.com（仓库 mn-backend）。
 - 验证：`/api/health` 应回 `{status:ok, tables:57, version:2.0.0}`；`/admin/` 用 staff 邮箱 + 691032 登录。
-- 扩容：`gcloud run services update mn-backend-v2 --region asia-southeast1 --max-instances N`（N>1 时活库随实例分裂——快照只保证「存续」不保证「一致」，正式发布前用 Cloud SQL）。
+- 扩容：`gcloud run services update mnationworld-web --region asia-southeast1 --max-instances N`（N>1 时活库随实例分裂——快照只保证「存续」不保证「一致」，正式发布前用 Cloud SQL）。
+- 控制台改名会丢失配置（实测教训）——重命名服务后必须重跑上面完整 deploy 命令补 env + 卷，别在控制台裸建。
 
 ## 运维速查
 
 | 操作 | 命令 |
 |---|---|
 | 查快照桶 | `gcloud storage ls -l gs://mn-backend-data-641398703651` |
-| 看启动/快照日志 | `gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="mn-backend-v2"' --format='value(timestamp,textPayload)'` |
+| 看启动/快照日志 | `gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="mnationworld-web"' --format='value(timestamp,textPayload)'` |
 | 换登录码 | 改 `--set-env-vars` 里 `DEV_LOGIN_CODE` 重部署 |
 | 手动全量备份 | `gcloud storage cp gs://mn-backend-data-641398703651/<最新snap> ./backup.sqlite`（mtime 最大那个） |
 | 试运行重置（清数据重来） | 删桶里全部 snap 文件 + 重部署（冷启动无快照 → 全新库 + seed） |
