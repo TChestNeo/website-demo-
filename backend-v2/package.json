@@ -1,0 +1,20 @@
+{
+  "name": "mn-backend-v2",
+  "version": "2.0.0",
+  "private": true,
+  "description": "M.NationWorld 后端 v2（SlatiControl 管理端 + 公网 API，node:http + SQLite，零框架）",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "test": "node --test",
+    "seed": "node --env-file-if-exists=.env scripts/seed.js",
+    "backup": "bash scripts/backup.sh",
+    "report": "node --env-file-if-exists=.env scripts/weekly-report.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "nodemailer": "^9.0.5"
+  }
+}

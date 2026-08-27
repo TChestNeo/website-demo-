@@ -103,6 +103,30 @@
 
 ---
 
+## 2026-08-27 — 后端 v2 重写 W0 地基交付（SlatiControl 第一波：backend-v2 全新代码库）
+
+**背景**：用户带 ChatGPT 30 节需求规格要求「重新开发后端」（SlatiControl = SlatiWorld 内部管理与运营控制中心），UI 风格跟现有前端一致。问询钦定四决定：从零重写 v2（backend/ 只读参考）、全量替代旧后端（公网 API 对等重建，站点代码零改动）、AI 先做架构留接口（provider 接口 + key 未配优雅返回）、第一波全选（地基 + 用户中心 + 客服升级 + 财务扩展 + Dashboard 分析）。最高原则原样保留：「AI 是辅助工具，不是管理员。AI 可以阅读、分析、解释和建议，但没有直接管理权；任何改变平台状态的操作必须由具有相应权限的人类执行。」
+
+**改动**（按批准计划 §2 设计稿）：
+1. **migrations 001-004 = 16 表**（user_version=4，一次设计到位无重建）：001 users（+ role CHECK('user') 仅 user D4 / reg_source / risk_level / last_login_at / login_count）+ user_sessions + email_codes（+ actor_type user|staff、purpose 加 staff_login）+ login_history（§5 五态 result）+ security_events + notifications + rate_limits（D7 持久化滑动窗口）；002 staff（real_name 内部字段）+ staff_sessions + 7 内置角色 + **42 权限键**（计划书 §4 写 41，实际键表 42 个——以迁移种子 42 为准落地并锁定测试，偏差记入日志）+ 77 行矩阵种子 + staff_roles 多对多；003 audit_log 哈希链（sha256(prev_hash‖canonical_row_json)）+ **append-only 触发器**（UPDATE/DELETE 一律 ABORT，唯一例外 = 插入后 id 回写的结构性 UPDATE——WHEN NOT 逐字段相等守卫）；004 platform_settings 强类型 + 预算红线种子（30/20/10/60 + copilot 10）。
+2. **core 七件套**：db/router/http/ids 从 v1 原样移植；config/email 改造（staffCookie sc_session、budgets.copilot、purpose staff_login 邮件）；**money.js**（D1 双平面：微元整数机器事件 vs REAL 2dp 人工记账统一工具）；audit.js（canonical 键排序 JSON + 整链 verify）。
+3. **middleware 全套**：auth.js（mn_session 用户会话，v1 对等）；staff-auth.js（sc_session 双会话 D2 / requireStaff→requirePerm 链 / director 代码层全键 / 拒绝审计 denied / publicStaff 结构上永不含 real_name §17）；ratelimit.js（SQLite 桶滑动窗口）；mask.js（§28 字段掩码纯函数）；activity.js；maintenance.js（/api/staff/* 与 health 放行）。
+4. **路由**：公网 auth 对等（email-code 防枚举/verify 建号登录+登录史+风险信号/tier 惰性降级+审计/PATCH me 审计 prev-next diff/delete 30 天后悔期）；staff auth（防枚举恒 ok/verify 停用 403/no_user 如实记录/DEV_LOGIN_CODE 双剥离）。server.js DI 装配（maintenanceGuard→CORS→路由）。
+5. seed.js（Neo director + Alex cs + Daniel finance+cs 演示 staff，幂等）。
+
+**验证**：**npm test 49/49 0 fail**（审计链验证+篡改检测/限流跨实例持久化/掩码三态矩阵/42 键种子+矩阵每角色精确计数/RBAC 拒绝 403+denied 审计/DEV_LOGIN_CODE dev-prod 双剥离/real_name 永不序列化/登录史五态/删除-恢复全流程）+ **curl 四连实测**：health {16 表, v2.0.0} / email-code / verify 真码建号 USR-000001 / dev 码 888888 登录 / staff verify director permissions:["*"]。
+
+**教训**：
+1. append-only 触发器与「INSERT 后回写 id」自相矛盾（audit() 每次调用都炸 SQLITE_CONSTRAINT_TRIGGER，波及 7 个测试）——修复 = WHEN NOT (OLD.id IS NULL AND NEW.id 非空 且 其余字段逐一相等) 结构例外，内容篡改仍全拒。
+2. **Node 24 assert.rejects 对同步 throw 逃逸**（node -e 实证：同步 throw 不被转成 rejection，测试裸崩）——handler 调用必须 async 包装。
+3. rate_limits 桶按邮箱跨 purpose 共用（delete_confirm 码吃掉 login 码 60s 重发窗口）——测试清桶模拟时间流逝，生产行为不动（防刷保持）。
+4. Git Bash `taskkill /T` 被 MSYS 路径转换吃掉成 T:/、`$!` 拿到的还是包装 PID——Windows 下杀进程走 PowerShell：netstat 找 3000 端口真实 PID 再 taskkill /T /F /PID（仍严守 per-PID 纪律）。
+5. staff 表与 users 表分离的边界：dev 码只认 users 行——neo@slatiworld.local 是 staff 不是公网用户，verify 拒绝是正确行为不是 bug。
+
+**遗留**：W1 公网对等（social/messages/tickets/subscription/stripe/badge/drafts/articles/reports/chat + moderation 全移植 + cron，~135 测试）；**schema 审阅点——用户拍板前 001-004 可改（「先设计好」兑现点）**；计划书 41 vs 实际 42 权限键偏差待下波计划修订处一并更正。
+
+---
+
 ## 今日收尾总结（2026-08-27）
 
 凌晨连打 8 个版本（v10.28.6.2 → v10.28.8.2），用户反馈逐一收口，全部 commit（未 push）：
