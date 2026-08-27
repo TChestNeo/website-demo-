@@ -75,7 +75,8 @@ function publicStaff(row) {
     timezone: row.timezone,
     workingHours: row.working_hours ? JSON.parse(row.working_hours) : null,
     nationality: row.nationality || null,
-    languages: row.languages ? JSON.parse(row.languages) : []
+    languages: row.languages ? JSON.parse(row.languages) : [],
+    hasPassword: !!row.password_hash // W6：前端据此判断是否需引导设密（additive）
   };
 }
 
@@ -97,15 +98,15 @@ function staffCookie(token, cfg, maxAgeSec) {
   return parts.join('; ');
 }
 
-// createStaff（seed 与测试共用）：返回完整 staff 行
+// createStaff（seed 与测试共用）：返回完整 staff 行。W6：passwordHash 默认 null（旧账号口径）
 const { pad6, insertWithId } = require('../ids');
 
-function createStaff(db, { email, displayName, alias = null, position = '', timezone = 'UTC+8', workingHours = '{"start":"09:00","end":"18:00"}', nationality = null, languages = '["zh"]', realName = null }) {
+function createStaff(db, { email, displayName, alias = null, position = '', timezone = 'UTC+8', workingHours = '{"start":"09:00","end":"18:00"}', nationality = null, languages = '["zh"]', realName = null, passwordHash = null }) {
   const iso = new Date().toISOString();
   const { id } = insertWithId(
     db, 'staff',
-    ['email', 'display_name', 'alias', 'position', 'timezone', 'working_hours', 'nationality', 'languages', 'real_name', 'created_at', 'updated_at'],
-    [String(email).trim().toLowerCase(), displayName, alias, position, timezone, workingHours, nationality, languages, realName, iso, iso],
+    ['email', 'display_name', 'alias', 'position', 'timezone', 'working_hours', 'nationality', 'languages', 'real_name', 'password_hash', 'created_at', 'updated_at'],
+    [String(email).trim().toLowerCase(), displayName, alias, position, timezone, workingHours, nationality, languages, realName, passwordHash, iso, iso],
     (s) => 'STAFF-' + pad6(s)
   );
   return db.prepare('SELECT * FROM staff WHERE id = ?').get(id);

@@ -1,7 +1,10 @@
 'use strict';
 // Staff 登录（D2 独立会话 cookie sc_session；/api/staff/* 前缀，D3）：
 //   POST /api/staff/auth/email-code { email }    → { ok, ttlMs, resendMs }（防枚举恒 ok）
-//   POST /api/staff/auth/verify   { email, code } → { staff, roles, permissions } + Set-Cookie sc_session
+//   POST /api/staff/auth/verify   { email, code, password? } → { staff, roles, permissions, passwordSetupRequired? } + Set-Cookie sc_session
+//        （W6：有密码 staff = 密码+码；旧 staff 仅码登录 + passwordSetupRequired 引导设密）
+//   POST /api/staff/auth/password       （会话）{ newPassword } → { ok, staff, roles, permissions }（首登设密/改密；清其他会话保当前）
+//   POST /api/staff/auth/password-reset （无会话）{ email, code, newPassword } → { ok }（复用 staff_login 码；清全部会话）
 //   POST /api/staff/auth/logout                   → { ok }
 //   GET  /api/staff/auth/me                       → { staff, roles, permissions }
 //   PATCH /api/staff/auth/me                      → 自改公开档案（审计）
@@ -18,11 +21,14 @@ const {
 const { readToken, hashToken } = require('../../middleware/auth');
 const { ipOf } = require('../../middleware/ratelimit');
 const { audit } = require('../../audit');
-const { recordLogin } = require('../../security');
+const { recordLogin, insertSecurityEvent } = require('../../security');
+const { hashPassword, verifyPassword } = require('../../password');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODE_ATTEMPTS_MAX = 5;
 const RESEND_MS = 60 * 1000;
+const PASSWORD_MIN = 8;   // W6 密码策略（路由层校验，策略是 HTTP 契约）
+const PASSWORD_MAX = 72;
 
 function hashCode(code) {
   return crypto.createHash('sha256').update(String(code).trim()).digest('hex');
@@ -81,7 +87,7 @@ function register(router, deps) {
     const staffRow = db.prepare('SELECT * FROM staff WHERE email = ?').get(email);
 
     if (config.devLoginCode && config.nodeEnv !== 'production' && code === config.devLoginCode) {
-      // 开发模式固定登录码：仅已有 staff 行（不存在与普通错码响应一致）
+      // 开发模式固定登录码：仅已有 staff 行（不存在与普通错码响应一致）；本地开发跳过密码校验
       if (!staffRow) throw new HttpError('VALIDATION', '验证码无效或已过期');
     } else {
       const recent = db.prepare(
@@ -92,6 +98,16 @@ function register(router, deps) {
         if (recent && recent.attempts < CODE_ATTEMPTS_MAX)
           db.prepare('UPDATE email_codes SET attempts = attempts + 1 WHERE code_hash = ?').run(recent.code_hash);
         throw new HttpError('VALIDATION', '验证码无效或已过期');
+      }
+      // 码通过 → 密码校验（W6）：有密码的 staff 在此验密码。错密码与码错共用 attempts 计数、
+      // 不消费码（可同码改对重试）；旧 staff（password_hash NULL）忽略密码参数放行。
+      if (staffRow && staffRow.password_hash) {
+        if (!(await verifyPassword(String(body.password || ''), staffRow.password_hash))) {
+          db.prepare('UPDATE email_codes SET attempts = attempts + 1 WHERE code_hash = ?').run(row.code_hash);
+          if (row.attempts + 1 >= CODE_ATTEMPTS_MAX)
+            recordLogin(db, req, { actorType: 'staff', actorId: staffRow.id, email, result: 'failed' });
+          throw new HttpError('VALIDATION', '密码或验证码错误');
+        }
       }
       db.prepare('UPDATE email_codes SET consumed_at = ? WHERE code_hash = ?')
         .run(new Date(now).toISOString(), row.code_hash);
@@ -110,7 +126,10 @@ function register(router, deps) {
     const token = createStaffSession(db, staffRow.id, config.sessionTtlMs);
     recordLogin(db, req, { actorType: 'staff', actorId: staffRow.id, email, result: 'success', sessionId: token });
     res.setHeader('Set-Cookie', staffCookie(token, config, Math.floor(config.sessionTtlMs / 1000)));
-    sendJson(res, 200, meShape(db, staffRow));
+    sendJson(res, 200, {
+      ...meShape(db, staffRow),
+      ...(!staffRow.password_hash ? { passwordSetupRequired: true } : {}) // W6：旧 staff 引导设密
+    });
   });
 
   // ── 登出（幂等）──
@@ -118,6 +137,71 @@ function register(router, deps) {
     const token = readToken(req, ctx.config.staffCookie);
     if (token) destroyStaffSession(ctx.db, token);
     res.setHeader('Set-Cookie', staffCookie('', ctx.config, 0));
+    sendJson(res, 200, { ok: true });
+  });
+
+  // ── 首登设密 / 改密（W6：会话内；旧 staff passwordSetupRequired 引导落点）──
+  router.add('POST', '/api/staff/auth/password', requireStaff(async (req, res, ctx) => {
+    const body = await readJson(req);
+    const pw = String(body.newPassword || '');
+    if (pw.length < PASSWORD_MIN || pw.length > PASSWORD_MAX)
+      throw new HttpError('VALIDATION', '密码长度需 8-72 字符');
+    ctx.db.prepare('UPDATE staff SET password_hash = ?, updated_at = ? WHERE id = ?')
+      .run(await hashPassword(pw), new Date().toISOString(), ctx.staff.id);
+    // 其他会话全部失效（当前会话保留，无缝继续）
+    const token = readToken(req, ctx.config.staffCookie);
+    if (token) ctx.db.prepare('DELETE FROM staff_sessions WHERE staff_id = ? AND token_hash != ?')
+      .run(ctx.staff.id, hashToken(token));
+    insertSecurityEvent(ctx.db, 'staff', ctx.staff.id, 'password_change', { method: 'set' }, ipOf(req), 'medium');
+    audit(ctx.db, req, ctx, {
+      action: 'staff_password_change',
+      targetType: 'staff',
+      targetId: ctx.staff.id
+    });
+    const next = ctx.db.prepare('SELECT * FROM staff WHERE id = ?').get(ctx.staff.id);
+    sendJson(res, 200, { ok: true, ...meShape(ctx.db, next) });
+  }));
+
+  // ── 忘记密码重置（W6：无会话；复用 staff_login 码——邮箱所有权即权威）──
+  router.add('POST', '/api/staff/auth/password-reset', async (req, res, ctx) => {
+    const body = await readJson(req);
+    const email = normalizeEmail(body.email);
+    const code = String(body.code || '').trim();
+    const pw = String(body.newPassword || '');
+    // 密码策略失败与码无关（不泄漏 staff 行存在性），且不消费码
+    if (pw.length < PASSWORD_MIN || pw.length > PASSWORD_MAX)
+      throw new HttpError('VALIDATION', '密码长度需 8-72 字符');
+    if (!EMAIL_RE.test(email) || !/^\d{6}$/.test(code))
+      throw new HttpError('VALIDATION', '请输入 6 位验证码');
+    if (!limit('vf:staff:ip:' + ipOf(req), 10, 60 * 1000))
+      throw new HttpError('RATE_LIMITED', '尝试过于频繁，请稍后再试');
+
+    const now = Date.now();
+    const recent = db.prepare(
+      "SELECT * FROM email_codes WHERE email = ? AND purpose = 'staff_login' AND actor_type = 'staff' AND consumed_at IS NULL AND expires_at > ? ORDER BY created_at DESC LIMIT 1"
+    ).get(email, new Date(now).toISOString());
+    const row = recent && recent.code_hash === hashCode(code) ? recent : null;
+    if (!row || recent.attempts >= CODE_ATTEMPTS_MAX) {
+      if (recent && recent.attempts < CODE_ATTEMPTS_MAX)
+        db.prepare('UPDATE email_codes SET attempts = attempts + 1 WHERE code_hash = ?').run(recent.code_hash);
+      throw new HttpError('VALIDATION', '验证码无效或已过期');
+    }
+    const staffRow = db.prepare('SELECT * FROM staff WHERE email = ?').get(email);
+    if (!staffRow) throw new HttpError('VALIDATION', '验证码无效或已过期'); // 防枚举：不存在/停用同款响应（不消费码）
+    db.prepare('UPDATE email_codes SET consumed_at = ? WHERE code_hash = ?')
+      .run(new Date(now).toISOString(), row.code_hash);
+    db.prepare('UPDATE staff SET password_hash = ?, updated_at = ? WHERE id = ?')
+      .run(await hashPassword(pw), new Date(now).toISOString(), staffRow.id);
+    // 全部会话失效：改密后强制重登
+    db.prepare('DELETE FROM staff_sessions WHERE staff_id = ?').run(staffRow.id);
+    insertSecurityEvent(db, 'staff', staffRow.id, 'account_recovery', { method: 'reset' }, ipOf(req), 'medium');
+    audit(db, req, ctx, {
+      actorType: 'system', // 重置发生在会话外，无 staff 认证主体
+      actorId: staffRow.id,
+      action: 'staff_password_reset',
+      targetType: 'staff',
+      targetId: staffRow.id
+    });
     sendJson(res, 200, { ok: true });
   });
 
