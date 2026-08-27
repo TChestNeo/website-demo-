@@ -337,3 +337,5 @@ SlatiControl v2 第二波：公网 API 与 v1 逐字对等。**波次偏差（�
 **教训**：①**切 production 前管理员邮箱必须能收信**——旧 ADMIN_EMAIL 是 .local 假域名，不改就切=验证码发黑洞=后台锁死；②Gmail 应用密码去空格存 env（避免 shell 引号歧义）；③MAIL_FROM 带空格+尖括号在 PowerShell 双引号内安全，但必须整个 --set-env-vars 用引号包起来。
 
 **遗留**：用户实测 /admin/ 邮箱登录；品牌邮箱（发件人用 mnationworld.com 域）等用户开 SES/Mailgun 账号再换（只改 env）。
+
+**补记（同轮）**：用户「为啥是用我的 gmail？不是可以开 service@mnationworld.com 吗」→ 调研 2026 现状：**Zoho 免费版无 SMTP**（webmail only，发不了码——坑）；Workspace/Zoho Lite 付费绑卡；**免费可发 = Brevo（300 封/天、永久免费、不绑卡，域名验证走我们的 Cloud DNS）**。用户实际路径：**新建站务 Gmail slati.official@gmail.com** + 应用密码（首个发来的 16 位码在 microcountry2677 上 535 认证失败——归属是新建账号，先验归属再动手）。部署切换 SMTP_USER/MAIL_FROM → slati.official（revision 00004-5c6），ADMIN_EMAIL 不变（发信人站务号、管理员收码主号，两账号分开）。线上验证：health 200 + 双邮箱发码 ok:true ✅。**教训：Gmail 应用密码 535 时先问归属账号；发信人与管理员收码邮箱分开设计，用户不用切号登录**。真正 service@mnationworld.com 待用户拍板走 Brevo（只改 env，DNS 记录我来加）。

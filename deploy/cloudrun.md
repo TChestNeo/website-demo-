@@ -5,7 +5,7 @@
 - 项目 `project-02d050ab-8105-448e-bac`（唯一挂了计费 016AE6-868F19-B356BA）；镜像 `asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend/mn-backend-v2:latest`
 - **改名教训**：Cloud Run 服务名决定 URL；用户在控制台改名 = 建了一个空配置新服务（只有镜像，env/卷全没）——发现后已把加固配置全套搬过去并线上 4/4 复验。控制台手建服务不会继承任何配置，必须用 deploy 命令带齐 env + 卷。
 - **数据持久化**：GCS 桶 `gs://mn-backend-data-641398703651`（FUSE 挂载 `/mnt/data`）+ 快照机制，实例重启/缩容/换版本数据不丢（详见下方「快照持久化」）。
-- **安全口径（08-28 SMTP+production 切换后）**：NODE_ENV=production + Gmail SMTP——登录码走邮件，DEV 码 691032 已作废（config.js 强制 production 下失效，实测 400）。管理员 = director Neo，登录邮箱 **microcountry2677@gmail.com** + 邮件验证码（10 分钟有效、60s 重发冷却）。演示 staff（Alex/Daniel）已下线。**教训：旧 ADMIN_EMAIL=admin@slatiworld.local 是假域名收不到码——切 production 前必须把管理员邮箱换成真实邮箱，否则锁死**。仍免认证公开（公网站点本来就该公开，后台安全靠登录不靠挡门）。还是别放真数据（账号/支付/内容都是试用数据），正式发布会整体迁移。
+- **安全口径（08-28 SMTP+production 切换后）**：NODE_ENV=production + Gmail SMTP——登录码走邮件，DEV 码 691032 已作废（config.js 强制 production 下失效，实测 400）。管理员 = director Neo，登录邮箱 **microcountry2677@gmail.com** + 邮件验证码（10 分钟有效、60s 重发冷却）。**发信账号 = slati.official@gmail.com**（用户新建的站务 Gmail；发信人与管理员收码邮箱分开——用户不切号，发件人也不暴露私人号）。演示 staff（Alex/Daniel）已下线。**教训：旧 ADMIN_EMAIL=admin@slatiworld.local 是假域名收不到码——切 production 前必须把管理员邮箱换成真实邮箱，否则锁死**。仍免认证公开（公网站点本来就该公开，后台安全靠登录不靠挡门）。还是别放真数据（账号/支付/内容都是试用数据），正式发布会整体迁移。
 
 ## 架构（一个 URL 全链路）
 
@@ -56,12 +56,12 @@ gcloud run deploy mnationworld-web \
   --memory 512Mi --min-instances 0 --max-instances 1 --execution-environment gen2 \
   --add-volume=name=mn-data,type=cloud-storage,bucket=mn-backend-data-641398703651 \
   --add-volume-mount=volume=mn-data,mount-path=/mnt/data \
-  --set-env-vars "NODE_ENV=production,ADMIN_EMAIL=microcountry2677@gmail.com,SEED_ON_BOOT=1,SEED_DEMO_STAFF=false,DEV_LOGIN_CODE=691032,SNAPSHOT_PATH=/mnt/data/mn-v2.sqlite.snap,SNAPSHOT_INTERVAL_MS=60000,SMTP_HOST=smtp.gmail.com,SMTP_PORT=465,SMTP_SECURE=true,SMTP_USER=microcountry2677@gmail.com,SMTP_PASS=<Gmail 应用专用密码 16 位无空格>,MAIL_FROM=M.NationWorld <microcountry2677@gmail.com>"
+  --set-env-vars "NODE_ENV=production,ADMIN_EMAIL=microcountry2677@gmail.com,SEED_ON_BOOT=1,SEED_DEMO_STAFF=false,DEV_LOGIN_CODE=691032,SNAPSHOT_PATH=/mnt/data/mn-v2.sqlite.snap,SNAPSHOT_INTERVAL_MS=60000,SMTP_HOST=smtp.gmail.com,SMTP_PORT=465,SMTP_SECURE=true,SMTP_USER=slati.official@gmail.com,SMTP_PASS=<Gmail 应用专用密码 16 位无空格>,MAIL_FROM=M.NationWorld <slati.official@gmail.com>"
 ```
 
 - `ADMIN_EMAIL`：seed 据此建 project_director（Neo）；改邮箱 + 重跑 seed = 再建一行（按邮箱幂等）。**必须是能收信的真实邮箱**（production 下登录码发到它，假域名=锁死）。
 - `DEV_LOGIN_CODE`：production 下 config.js 强制失效（留着当回退开关——出问题把 NODE_ENV 改回 development 即可用固定码救急）。
-- **SMTP 四件套 + MAIL_FROM**：Gmail 应用专用密码（myaccount.google.com → 安全性 → 两步验证 → 应用专用密码；16 位不带空格）。发件人显示为 Gmail 地址（Gmail 会重写 From）；以后品牌邮箱换 SES/Mailgun 只改这几个 env。
+- **SMTP 四件套 + MAIL_FROM**：Gmail 应用专用密码（myaccount.google.com → 安全性 → 两步验证 → 应用专用密码；16 位不带空格）。**发信人 = slati.official@gmail.com（站务号）；管理员收码 = ADMIN_EMAIL（主号）——两账号分开**。品牌域名邮箱（service@mnationworld.com）路线：Zoho 免费版无 SMTP 不可用（webmail only）、Workspace/Zoho Lite 付费绑卡；免费可发 = Brevo（300 封/天、不绑卡，域名验证走 Cloud DNS）——用户要真正自有域名发件人时再走 Brevo，只改这几个 env。
 - 邮箱每天发送上限 ~500 封（Gmail 常规账号），试用期绰绰有余。
 - `SEED_DEMO_STAFF=false`：只 seed director Neo，不建演示 staff。
 - GCS FUSE 卷要求 gen2 执行环境 + 同项目桶 + 计算服务账号 storage.objectAdmin（已配：`641398703651-compute@developer.gserviceaccount.com`）。
