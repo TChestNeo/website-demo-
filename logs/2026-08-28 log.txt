@@ -36,4 +36,16 @@
 
 **部署教训**：PS 5.1 对 native 命令重定向 stderr（含 2>$null）会把 $? 打成 $false——第一次 deploy 实际成功但报 DEPLOY_FAIL，重跑一遍创建了重复 revision（00006 幽灵 revision，无害）；判 deploy 成败要看 gcloud 输出「Done./revision … deployed」而不是 $?。
 
+## 切页闪白修复（2026-08-28 晚）
+
+**背景**：用户「为什么切换页面的时候会闪一下？」——线上切页白闪。
+
+**真身（两层）**：① 静态服务全量 `Cache-Control: no-cache` 且**无 ETag** → 浏览器每次切页把所有资源**完整重下**（没有 304 可能），每个资源都打往返新加坡；② 防白闪主题脚本 theme-init.js 是**外链**（应在 CSS 前同步执行）——网络晚到 → 页面先按默认主题画一帧再跳（暗色主题=白闪）。
+
+**改动（commit 98faef9，已部署 revision 00008-wh5）**：① theme-init.js **内联进 30 个引用页 <head>**（CSS 前同步执行，外链文件保留）；② entrypoint.js 静态服务加 **ETag**——HTML/JS/CSS 保持 no-cache（部署后立即可见新版）+ 304 快速校验、图片/字体等静态资源 `public, max-age=300` 免重复请求。
+
+**验证**：本地起 entrypoint curl 端到端（HTML 200+ETag / If-None-Match 304 / PNG max-age=300 / CSS no-cache+ETag / 页面含内联脚本）+ 线上同款 5 连全过（health 200 + 304 + 内联脚本存在）。
+
+**教训**：① `git add docs` 会把用户未跟踪的个人素材（Screenshot/wand_shine）卷进提交——已 amend 剔除 + 三条精确路径入 .gitignore（**gitignore 不支持引号**：带空格路径要裸写，加引号 = 引号成了模式的一部分不生效）；② entrypoint.js 源码里 `'SQLite format 3\0'` 字面量带真实 NUL 字节 → git/ripgrep 当二进制（历史如此，无害）；③ 闪白类问题先查「缓存头 + 关键脚本是否外链」，再查主题。
+
 **教训**：① 「空的地球」= 无 favicon 的浏览器默认图标，不是页面里的元素；② PS 逐字节读 PNG 维度别用 BitConverter 重载（UInt32 被提升到 Int64 版 NetworkToHostOrder 得到 8 字节翻转值），直接字节乘加；③ Chrome 直接打开 PNG 失败时返回 chrome-error://chromewebdata 页且自带 data:URI 插图（1233×100）——探针断言必须连 location.href 一起看，naturalWidth 非 0 也可能是错误页插图。
