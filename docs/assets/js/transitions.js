@@ -48,6 +48,8 @@
 
   // --- Staggered card entrance with direction ---
   function initStagger() {
+    // 切页防双重绘制（08-28）：解除 CSS 预隐藏——同 tick 内下面即写内联 opacity，中间无绘制帧
+    if (document.body) document.body.classList.remove('pre-stagger');
     var cards = document.querySelectorAll(CARD_SELECTOR);
     if (cards.length === 0) return;
 

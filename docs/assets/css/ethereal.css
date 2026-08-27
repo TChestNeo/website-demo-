@@ -747,6 +747,18 @@ textarea.input-glass {
   to   { opacity: 0; transform: translateY(-12px); }
 }
 
+/* ----- 切页防双重绘制（08-28）：淡入编排开始前卡片保持隐藏——若浏览器在 DOMContentLoaded
+   前先画一帧，内容会「闪一下再消失」；transitions.js 的 initStagger 一开始就移除 body 上的
+   pre-stagger 类（HTML 内 1.6s 兜底脚本防脚本失效永久隐藏）。选择器与 transitions.js
+   CARD_SELECTOR 逐字对齐；这里不设 transform——入场位移由 initStagger 内联给定。 ----- */
+body.pre-stagger .card,
+body.pre-stagger .app-main h1,
+body.pre-stagger .app-main h1 + p,
+body.pre-stagger .app-main h2,
+body.pre-stagger .app-main .search-capsule,
+body.pre-stagger .app-main header,
+body.pre-stagger .auth-card { opacity: 0; }
+
 /* ----- Spinner ----- */
 .spinner {
   width: 24px; height: 24px;
