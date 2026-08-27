@@ -320,3 +320,20 @@ SlatiControl v2 第二波：公网 API 与 v1 逐字对等。**波次偏差（�
 **验证（08-28 实测通过）**：DNS 加记录 → Ready=True 全程 ~12 分钟（期间两轮后台探针 18 分钟全灭属正常——签发完成前 HTTPS 本来就该失败）；Ready 后 `https://mnationworld.com/api/health` → WebFetch 独立视角 200 `{status:ok, tables:57, version:2.0.0}` ✅，本机再过 ~3 分钟也 200（run.app 对照 200 + WebFetch 200 → 排除站点问题，本机不通 = GFE 边缘线路传播延迟，等即可）。**教训：映射 Ready=True ≠ 用户网络立刻能连——边缘 pop 传播还要几分钟，验证要双视角（独立网络 + 本机）**。
 
 **遗留**：www.mnationworld.com（若要：另建映射 + CNAME ghs.googlehosted.com）。
+
+---
+
+## SMTP + production 切换轮（2026-08-28）——验证码邮箱 + 固定码退役
+
+**背景**：用户「那个验证码邮箱你也弄一下」+ 给 Gmail 应用专用密码；另问「网站开发中设置为开放对吗」——已答：开放是正确且永久的（公网站点本来就公开，后台安全靠登录不靠 Cloud Run 挡门；发布后依然开放）。
+
+**改动**：
+1. 本地 SMTP 实测：nodemailer → smtp.gmail.com:465，microcountry2677@gmail.com + 应用密码（去空格）试发 SMTP-OK（tmp 脚本跑完即删）。
+2. **ADMIN_EMAIL admin@slatiworld.local → microcountry2677@gmail.com**（seed 幂等建新 director 行，旧行留着无害）。
+3. deploy 一次打齐：NODE_ENV=production（691032 作废）+ SMTP 四件套 + MAIL_FROM（revision 00003-pxc）。
+
+**验证（线上实测）**：health 200 57 表 ✅；`staff/auth/verify` 用 691032 → 400 已作废 ✅；`staff/auth/email-code` → `{ok:true}`（sendMail 被 await，ok = Gmail 已接受邮件）✅ → 用户收码登录闭环。
+
+**教训**：①**切 production 前管理员邮箱必须能收信**——旧 ADMIN_EMAIL 是 .local 假域名，不改就切=验证码发黑洞=后台锁死；②Gmail 应用密码去空格存 env（避免 shell 引号歧义）；③MAIL_FROM 带空格+尖括号在 PowerShell 双引号内安全，但必须整个 --set-env-vars 用引号包起来。
+
+**遗留**：用户实测 /admin/ 邮箱登录；品牌邮箱（发件人用 mnationworld.com 域）等用户开 SES/Mailgun 账号再换（只改 env）。
