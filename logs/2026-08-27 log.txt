@@ -302,3 +302,19 @@ SlatiControl v2 第二波：公网 API 与 v1 逐字对等。**波次偏差（�
 遗留：旧服务 mn-backend-v2 仍在（空占一个服务、同桶快照互相接棒不坏但乱）——等用户拍板删除。
 
 补记：用户「你就看着办吧」授权处置 → 旧服务 mn-backend-v2 已删（gcloud run services delete --quiet）。删后 services list 仅剩 mnationworld-web；新 URL health 57 表 ✅；快照桶两文件完好（数据在桶不在服务，删服务零数据损失；桶内多实例旧文件会随下次冷启动自动修剪）。
+
+---
+
+## 自定义域名接线轮（2026-08-28）——mnationworld.com → mnationworld-web
+
+用户「为什么链接的后面会包含其他信息？为什么不是 mnationworld.com?」→「域名我注册了啊」→「在google cloud 就是mnationworld.com」。接线三步全通：
+
+1. **查注册与区**：Cloud Domains 有两个 ACTIVE 域名（medankahwin.com + mnationworld.com），Cloud DNS 两个同名公共区。medankahwin.com 另有用途未动。
+2. **建域名映射（REST API 绕行）**：GA `gcloud run domain-mappings` 是 Anthos-only（拒绝 --region）；`gcloud beta` 组件本机未装且非交互环境装不上（bundled Python 拒绝非交互更新）→ 用 REST API `POST run.googleapis.com/v1/.../domainmappings`（body apiVersion domains.cloudrun.com/v1, spec.routeName=mnationworld-web）建成功。初查 transient「mapping not found」→ 系统 4s 自重试后 status.resourceRecords 出现。
+3. **DNS**：映射给出 4 A（216.239.32/34/36/38.21）+ 4 AAAA（2001:4860:4802:32/34/36/38::15）→ transaction 加入 mnationworld-com 区（change 1，TTL 300；区原本只有 NS/SOA，域名未指向任何地方——与「刚注册」吻合）。加后 DomainRoutable=True。
+
+证书：DNS 生效后 Google 托管证书自动签发（CertificatePending → 待验证 HTTPS）。REST 建映射的响应 JSON 里 conditions 数组是关键状态来源。
+
+**教训**：①gcloud beta 组件在非交互终端装不上时，Cloud Run API 就是正路——domainmappings 是标准 REST 资源，比找 beta gcloud 稳；②Cloud Run 域名映射的 resourceRecords 不会立刻出现，Retry 条件自报「System will retry after 00:04」——等一个重试周期再 GET；③域名注册（Cloud Domains）与 DNS 区（Cloud DNS）在 Google 同项目时 NS 自动一致，只需往里加记录，无需去注册商改 NS。
+
+**遗留**：www.mnationworld.com（若要：另建映射 + CNAME ghs.googlehosted.com）；证书签发后跑 https://mnationworld.com/api/health 实测。

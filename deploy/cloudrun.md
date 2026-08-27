@@ -1,6 +1,6 @@
 # Cloud Run 部署（backend-v2）——发布底子加固版
 
-**线上地址（2026-08-27/28 已部署；服务名 08-28 由用户改名 mn-backend-v2 → mnationworld-web）**：https://mnationworld-web-641398703651.asia-southeast1.run.app
+**线上地址（2026-08-27/28 已部署；服务名 08-28 由用户改名 mn-backend-v2 → mnationworld-web）**：https://mnationworld.com（自定义域名，08-28 接线；run.app 原址 https://mnationworld-web-641398703651.asia-southeast1.run.app 仍可用）
 - 公网站点：`/` ｜ 管理后台：`/admin/`（staff 邮箱 + 登录码 **691032**）｜ API：`/api/*`
 - 项目 `project-02d050ab-8105-448e-bac`（唯一挂了计费 016AE6-868F19-B356BA）；镜像 `asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend/mn-backend-v2:latest`
 - **改名教训**：Cloud Run 服务名决定 URL；用户在控制台改名 = 建了一个空配置新服务（只有镜像，env/卷全没）——发现后已把加固配置全套搬过去并线上 4/4 复验。控制台手建服务不会继承任何配置，必须用 deploy 命令带齐 env + 卷。
@@ -68,6 +68,13 @@ gcloud run deploy mnationworld-web \
 - 扩容：`gcloud run services update mnationworld-web --region asia-southeast1 --max-instances N`（N>1 时活库随实例分裂——快照只保证「存续」不保证「一致」，正式发布前用 Cloud SQL）。
 - 控制台改名会丢失配置（实测教训）——重命名服务后必须重跑上面完整 deploy 命令补 env + 卷，别在控制台裸建。
 
+## 自定义域名 mnationworld.com（2026-08-28 接线）
+
+- **域名映射**：Cloud Run 托管版的 `gcloud run domain-mappings` 是 Anthos-only（GA 命令拒绝 `--region`），beta 组件本机未装（非交互环境装不上）——**用 REST API 建**：`POST https://run.googleapis.com/v1/projects/<项目>/locations/<区域>/domainmappings`，body `{"apiVersion":"domains.cloudrun.com/v1","kind":"DomainMapping","metadata":{"name":"mnationworld.com"},"spec":{"routeName":"mnationworld-web"}}`。查状态 `GET …/domainmappings/mnationworld.com`。
+- **DNS**：映射创建后 `status.resourceRecords` 给出 4 A（216.239.32/34/36/38.21）+ 4 AAAA（2001:4860:4802:32/34/36/38::15），已加入 Cloud DNS 区 `mnationworld-com`（change 1，TTL 300，apex 根记录）。区 NS = ns-cloud-a1~a4.googledomains.com，域名注册处已指向它们（Google Domains 注册 + 同项目 Cloud DNS 区，NS 自动一致）。
+- **证书**：Google 托管证书在 DNS 生效后自动签发（DomainRoutable=True → CertificateProvisioned=True → Ready=True），全程无需人工。签发期间 HTTPS 连不上属正常（5–15 分钟）。
+- 域名在 Cloud Domains 注册（另一个域名 medankahwin.com 另有用途，勿动）。若以后要 www.mnationworld.com：另建一条 mapping（name=www.mnationworld.com）+ CNAME 到 `ghs.googlehosted.com`。
+
 ## 运维速查
 
 | 操作 | 命令 |
@@ -86,4 +93,4 @@ gcloud run deploy mnationworld-web \
 | cron | 不启动（scale-to-zero 杀进程内定时） | Cloud Scheduler + 独立 worker |
 | 登录 | NODE_ENV=development + 691032 | production 剥离 DEV 码 + SMTP 发码 |
 | 邮件 | SMTP 未配 → 验证码打容器日志 | 腾讯云 SES / Mailgun（等用户开账号） |
-| 域名 | *.run.app（Google 域） | 自有域名 + Caddy/COS 拓扑（cos-deploy.md） |
+| 域名 | ✅ 自有域名 mnationworld.com 已接线（08-28，证书自动签发） | www 子域（可选） |
