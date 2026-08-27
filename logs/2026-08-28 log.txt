@@ -32,6 +32,8 @@
 
 **改动**：43 个 HTML（docs/index.html + 41 pages + admin）`<meta charset>` 后统一插 `<link rel="icon" type="image/png" href="…M.NationWorld logo circle_.png">`（根页 assets/ 相对、子页 ../assets/；PowerShell 批量插、保留原换行风格、无 BOM）；logo circle 图入库（用户钦定使用，仅此图——Screenshot/wand_shine 等其余未跟踪文件照旧不提交）。
 
-**验证**：图片探针（headless Chrome naturalWidth）——512×512 RGBA 解码 ✓（先踩坑：file:// 手拼 encodeURI 把反斜杠编成 %5C → chrome-error 页，改 node:url pathToFileURL）；43/43 文件各恰好 +1 行。截图管线死 → 用户肉眼复核标签页图标（favicon 缓存重，需 Ctrl+F5 硬刷新）。
+**验证**：图片探针（headless Chrome naturalWidth）——512×512 RGBA 解码 ✓（先踩坑：file:// 手拼 encodeURI 把反斜杠编成 %5C → chrome-error 页，改 node:url pathToFileURL）；43/43 文件各恰好 +1 行。**已部署线上**（用户确认线上没图标后钦定立刻部署，revision mnationworld-web-00007-k5z 100% 流量）：/api/health 200 57 表 v2.0.0 + 首页/子页 favicon link 已上线 + 图标 URL 200 image/png。截图管线死 → 用户肉眼复核标签页图标（favicon 缓存重，需 Ctrl+F5 硬刷新）。
+
+**部署教训**：PS 5.1 对 native 命令重定向 stderr（含 2>$null）会把 $? 打成 $false——第一次 deploy 实际成功但报 DEPLOY_FAIL，重跑一遍创建了重复 revision（00006 幽灵 revision，无害）；判 deploy 成败要看 gcloud 输出「Done./revision … deployed」而不是 $?。
 
 **教训**：① 「空的地球」= 无 favicon 的浏览器默认图标，不是页面里的元素；② PS 逐字节读 PNG 维度别用 BitConverter 重载（UInt32 被提升到 Int64 版 NetworkToHostOrder 得到 8 字节翻转值），直接字节乘加；③ Chrome 直接打开 PNG 失败时返回 chrome-error://chromewebdata 页且自带 data:URI 插图（1233×100）——探针断言必须连 location.href 一起看，naturalWidth 非 0 也可能是错误页插图。
