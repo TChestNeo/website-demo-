@@ -156,3 +156,65 @@
 2. 截图管线修复（候选：装 Chrome for Testing 旧版，绕开 Chrome/Edge 151 GPU 进程即死 → 全黑）。
 3. SNE 正式算法（用户之后定公式，只改 sneComputeTotal 单函数）+ 基本信息完整度自动关联国家信息。
 4. 08-24 ~ 08-26 的工作日志缺失（v10.27.0.1 单击改名 → v10.28.6.1 油漆边距，约 15 轮）——待补写或用户确认不需要。
+
+## 后端 v2 W1 公网对等重建（commit 6c4b147，不 push）
+
+### 背景与口径
+
+SlatiControl v2 第二波：公网 API 与 v1 逐字对等。**波次偏差（记录在案）**：计划 §8 原定 005-007 迁移在 W3、008-009 在 W4，但 W1「routes/public/* 全部」要用到这些表——迁移 005-009 提前落 W1，user_version 4→9、表数 16→55。W3/W4 只剩 010_analytics（activity_daily/page_views 在 W2）与新路由。
+
+### 本轮改动
+
+1. 迁移 005-009（8 文件）：005 社交内容（comments/wikis/content_likes/favorites/shares 新表 + conversations kind/ticket_id + 成员/消息多态）；006 工单（8 类/6 态/4 级 + escalation 历史 + 草稿回复）；007 知识库+chat_logs（D5 记问答）；008 审核内容（decisions actor_type 枚举）；009 财务（refunds/subscriptions/donations/定价/促销/payroll 十一表）。
+2. routes/public 九件套：social/messages/tickets/badge/drafts/articles/reports/chat/subscriptions。路径与 v1 逐字一致；messages 删 /api/admin/* 调阅（推迟 W3 staff conversations 模块）。
+3. moderation 全移植（blocklist 原样复制）+ stripe/budget-alert/cron；server.js ctx 顶层加 budget。
+4. **v1 潜在 bug 修复**：budget-alert.js 解构 ctx.budget，但 v1 server.ctx 只有 moderation.budget——生产每日 10:30 告警会 TypeError 且被 cron 静默吞掉；v2 修。
+5. 测试：142/142 全绿（13 文件 v1 对等重写 + migrations/server 期望更新：55 表/9 版）。
+6. 冒烟：tmp 脚本 17 连绿后即删（health/verify 建号/订阅降级/发帖先发后审/私信建会话/chat 规则降级+chat_logs/工单/徽章/文章/草稿/举报/零成本记账/登录史）。
+
+### 教训（电池）
+
+- 冒烟脚本必须注入断网 fetchImpl——本机 .env 有真 DeepSeek key，首跑真实出网 401；测试/冒烟一律不允许真实 AI 请求。
+- email_codes 只存 code_hash（v2 安全升级），明文码经 mailer 管道拿——冒烟捕获 mailer。
+- Windows 删临时库目录先 db.close() 再 rmSync（文件锁 EPERM）。
+- tickets 响应是扁平 {id,status,position} 不是 {ticket:{...}}——冒烟断言别想当然。
+- chat 预算耗尽测试改走 t.app.ctx.budget.setLimit upsert（004 已种子 budget.chat，裸 INSERT 撞 UNIQUE）。
+- v1 moderation_decisions.actor → v2 actor_type 枚举，测试断言逐列核对。
+
+### 遗留
+
+- design-overview.html 设计总览已入版，schema 审阅点待用户拍板（可改）。
+- W2 开始 SlatiControl 壳 + Dashboard/Analytics/Users/Security（+ 迁移 010）。
+- 后端实机部署 + Stripe 联调仍等用户 sk_test；前端优先指令不变。
+
+## 后端 v2 W2 SlatiControl 壳 + Dashboard/Analytics/Users/Security（不 push）
+
+### 背景与口径
+
+第三波：管理端首秀。迁移 010（activity_daily/page_views + security_events 标记列，user_version 9→10、57 表）；routes/staff 五件套（auth/dashboard/analytics/users/security）；analytics/* 五域读时聚合（D9）；docs/admin 原地重建（壳 + 四页，旧 admin.js 退役）；smoke-admin.js 常驻 CDP 冒烟入库。
+
+### 本轮改动
+
+1. 迁移 010 + src/analytics/ 五域构造器（users/content/community/traffic/finance × 六档窗口，日序列补零、留存嵌套路径、finance 微元折算）。
+2. routes/staff：auth（防枚举恒 ok/DEV 码仅已有 staff 行/meShape 无 real_name）；dashboard（六组 24 卡单次聚合）；analytics（五域 + 非法 range 回退 30d + 非法 domain 400）；users（q/filter/sort/分页 + 详情活动聚合 + §28 掩码）；security（单用户档案 + 全局 logins/events + flag 写操作审计）。
+3. 前端 docs/admin：index.html 壳（登录三态/§30 十二组导航/#hash 深链/budget banner）、js/ 八件（api-helper/ui/charts/app/pages-dashboard/analytics/users/security）；旧 admin.js 退役。
+4. smoke-admin.js 常驻 CDP 冒烟（41 断言：登录两段式→四页 DOM→director 全量/客服掩码双链路→控制台零错误）。
+5. 测试 164/164（staff-auth/rbac 矩阵/mask 纯函数/users 列表与详情掩码/security 掩码与 flag 审计/dashboard 种子反推/analytics 五域）。
+
+### 冒烟抓出的 3 个真实产品 bug（电池价值）
+
+- **登录按钮死锁**：verify 成功路径不复位 loginBtn → 退出后再登录永远卡「登录中…」——showLogin() 补复位。
+- **pages-security.js 解构漏 chip** → 事件列表整表 ReferenceError 崩溃（logins 表不用 chip，单测登录史时一直没暴露）。
+- **跨登录状态残留**：Users 页模块级 state.view='detail' 跨 A/B 登录残留（B 登录直接看到 A 最后看的详情）+ logout 先 hash 复位后 showLogin → route() 用死会话请求 dashboard 产生 401 噪音——authed 标志守卫 route() + showPanel 按「新页面加载」口径 reset 各页状态。
+
+### 教训（电池）
+
+- Chrome 把预期 4xx fetch 也记 Log.entryAdded error：boot 401 me / W3 未上线 404 budget / cs 拒权断言自身的 403 logins·events 全部按 URL 入噪声过滤（语义由 DOM 断言覆盖，过滤不遮真 bug）。
+- 「事件列表 ≥2 行」等待曾锚定「可疑登录」文本 → 提前匹配下拉选项文案假绿，改锚表格行数；cs 用户列表等待必须锚列表独有元素（搜索框），防残留详情页的表格行假绿。
+- 页面模块状态是跨登录的全局——「退出再登录」是真实产品路径，冒烟必须覆盖双角色链路（director→cs）而非只测单登录。
+
+### 遗留
+
+- W3：客服升级（tickets/conversations/agents/ai/kb + ai/* 全套 + kb-seed.js + 前端 tickets/agents/ai 页 + 公网 Help 页 Human Support 入口）。
+- design-overview.html schema 审阅点待用户拍板。
+- 后端实机部署 + Stripe 实机联调仍等用户 sk_test（前端优先指令不变）。

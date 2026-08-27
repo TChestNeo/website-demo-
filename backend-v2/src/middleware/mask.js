@@ -61,9 +61,12 @@ function maskUserRow(c, u) {
 }
 
 // 登录历史掩码：partialIp（无 fullIp）→ 仅近 10 条 + IP 前两段；无任何 IP 权限 → ip=null
+// 调用方一律按 created_at DESC（最新在前）传行——slice(0,10) 取最新 10 条
+// （曾误写 slice(-10) 取最旧 10 条，把客服眼前的最新登录藏掉了；W0 mask.test 断言
+//   只断 '175.143.*.*'，掩码抹掉了区分度，方向错误全绿漏过——顺序断言要看 seq 而不是掩码后的 ip）
 function maskLoginHistory(c, rows) {
   let out = rows;
-  if (c.partialIp && !c.fullIp) out = rows.slice(-10);
+  if (c.partialIp && !c.fullIp) out = rows.slice(0, 10);
   return out.map((r) => ({ ...r, ip: maskIp(c, r.ip) }));
 }
 

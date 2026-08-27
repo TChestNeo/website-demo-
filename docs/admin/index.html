@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>管理后台 | M.NationWorld</title>
+  <title>SlatiControl | M.NationWorld</title>
   <meta name="robots" content="noindex,nofollow">
 
   <script src="../assets/js/theme-init.js"></script>
@@ -11,17 +11,28 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   <style>
-    /* 管理后台专用样式（内联中文文案，未走 i18n 机制——见 commit 说明）。
-       独立站点 admin.<域名>：自带登录页、无公网站点侧栏。 */
-    .adm-shell { padding: var(--space-lg); } /* 全屏铺开（用户要求覆盖整个屏幕），去掉 1280 上限 */
-    /* 左侧卡片菜单（与公网站点侧栏同款 .sidebar-module 卡片视觉） */
+    /* SlatiControl 专用样式：独立站点 admin.<域名>，自带 staff 登录页、无公网站点侧栏。
+       v2 重建（v1 admin.js 退役）：12 顶级导航组（英文菜单 + 中文副标题）、页面内容中文。 */
+    .adm-shell { padding: var(--space-lg); }
     .adm-layout { display: flex; gap: var(--space-lg); align-items: flex-start; }
     .adm-side { width: 232px; flex-shrink: 0; position: sticky; top: var(--space-md);
       display: flex; flex-direction: column; gap: var(--space-sm); }
-    .adm-side .sidebar-module { margin-top: 0; } /* ethereal 自带 margin-top，改用 gap 控制 */
+    .adm-side .sidebar-module { margin-top: 0; }
     .adm-side .nav-item { width: 100%; }
     .adm-main { flex: 1; min-width: 0; }
     @media (max-width: 760px) { .adm-layout { flex-direction: column; } .adm-side { width: 100%; position: static; } }
+
+    /* 两级导航：组头（英文 + 中文副标题）+ 组内条目 */
+    .nav-group-title { display: flex; flex-direction: column; gap: 1px; padding: 6px 10px 4px;
+      font-weight: 700; font-size: 12.5px; letter-spacing: 0.02em; color: var(--color-outline); }
+    .nav-group-title .zh { font-weight: 500; font-size: 11px; color: var(--color-outline); opacity: 0.85; }
+    .nav-group-items { display: flex; flex-direction: column; gap: 2px; padding: 2px 8px 6px; }
+    .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: var(--radius-md);
+      cursor: pointer; font-size: 13px; color: var(--color-on-surface-variant); text-decoration: none; }
+    .nav-item .material-symbols-outlined { font-size: 18px; }
+    .nav-item:hover { background: var(--color-surface-variant, rgba(128,128,128,0.08)); color: var(--color-on-surface); }
+    .nav-item.active { background: rgba(59,130,246,0.12); color: var(--color-primary); font-weight: 700; }
+    .nav-item .soon { margin-left: auto; font-size: 10px; color: var(--color-outline); font-weight: 500; }
 
     .adm-login { max-width: 520px; margin: var(--space-xl) auto; padding: var(--space-lg); }
     .adm-login .headline-md { margin-bottom: var(--space-xs); }
@@ -29,16 +40,18 @@
     #loginMsg { min-height: 18px; margin-top: var(--space-xs); }
     #loginMsg.err { color: #dc2626; }
 
-    .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-lg); }
-    .stat-card { background: var(--color-surface); border: 1px solid var(--adm-border); border-radius: var(--radius-lg); padding: var(--space-md); }
+    /* 页面头部：英文标题 + 中文副标题 */
+    .page-head { margin-bottom: var(--space-md); }
+    .page-head h2 { margin: 0; font-size: 20px; font-weight: 800; }
+    .page-head .page-sub { color: var(--color-on-surface-variant); font-size: 13px; margin-top: 2px; }
+
+    .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-sm); margin-bottom: var(--space-md); }
+    .stat-card { background: var(--adm-card-bg); border: 1px solid var(--adm-border); border-radius: var(--radius-lg); padding: var(--space-md); }
     .stat-num { font-size: 22px; font-weight: 800; color: var(--color-on-surface); font-variant-numeric: tabular-nums; }
     .stat-label { font-size: 12px; color: var(--color-outline); margin-top: 2px; }
     .stat-sub { font-size: 11px; color: var(--color-outline); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md); }
     .dash-grid .adm-card { margin-bottom: 0; }
-    .dash-card-title { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-sm); }
-    .feed-item { padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-outline-variant); }
-    .feed-item:last-child { border-bottom: none; }
 
     .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: var(--radius-full);
       font-size: 12px; font-weight: 700; white-space: nowrap; }
@@ -47,25 +60,21 @@
     .chip.warn { background: rgba(234,179,8,0.15); color: #b45309; }
     .chip.neutral { background: var(--color-surface-variant, rgba(128,128,128,0.15)); color: var(--color-on-surface-variant); }
 
-    .adm-card { background: var(--color-surface); border: 1px solid var(--adm-border); border-radius: var(--radius-lg);
+    .adm-card { background: var(--adm-card-bg); border: 1px solid var(--adm-border); border-radius: var(--radius-lg);
       padding: var(--space-md); margin-bottom: var(--space-md); }
     .adm-card .row { display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap; }
-    .adm-card .preview { margin: var(--space-sm) 0; padding: var(--space-sm) var(--space-md); background: var(--color-surface-variant, rgba(128,128,128,0.08));
-      border-radius: var(--radius-md); font-size: 13.5px; color: var(--color-on-surface-variant); white-space: pre-wrap; word-break: break-word; }
-    .adm-card .actions, .tk-modal .actions { display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-top: var(--space-sm); }
+    .adm-card-title { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); margin-bottom: var(--space-sm); flex-wrap: wrap; }
+    .adm-card-title h3 { margin: 0; font-size: 15px; font-weight: 700; }
+    .adm-card-title .sub { font-size: 12px; color: var(--color-outline); margin-top: 2px; }
     .adm-meta { font-size: 12px; color: var(--color-outline); }
-    .adm-sla { color: #dc2626; font-weight: 700; }
-
-    .bar-track { height: 8px; border-radius: var(--radius-full); background: var(--color-surface-variant, rgba(128,128,128,0.15)); overflow: hidden; }
-    .bar-fill { height: 100%; border-radius: var(--radius-full); background: #16a34a; }
-    .bar-fill.warn { background: #eab308; }
-    .bar-fill.bad { background: #dc2626; }
 
     .adm-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
     .adm-table th, .adm-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--color-outline-variant); }
     .adm-table th { font-size: 12px; color: var(--color-outline); font-weight: 600; }
     .adm-table code { font-family: ui-monospace, monospace; font-size: 12.5px; }
     .mono { font-family: ui-monospace, monospace; font-size: 12.5px; letter-spacing: 0.03em; }
+    .cursor-row { cursor: pointer; }
+    .cursor-row:hover { background: var(--color-surface-variant, rgba(128,128,128,0.08)); }
 
     .adm-select, .adm-input, .adm-textarea { padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--color-outline-variant);
       background: var(--color-surface); color: var(--color-on-surface); font-size: 13.5px; font-family: inherit; }
@@ -73,63 +82,35 @@
     .adm-textarea { width: 100%; min-height: 64px; resize: vertical; }
     .adm-form { display: flex; gap: var(--space-sm); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-sm); }
 
-    .badge-code-box { font-family: ui-monospace, monospace; font-size: 26px; font-weight: 800; letter-spacing: 0.15em;
-      padding: var(--space-md) var(--space-lg); border-radius: var(--radius-lg); background: var(--color-surface-variant, rgba(128,128,128,0.1));
-      border: 1px dashed var(--color-primary); display: inline-block; margin: var(--space-sm) 0; }
+    /* 分段胶囊（时间范围 / 域切换 / 页面内 tabs） */
+    .seg { display: inline-flex; gap: 2px; padding: 3px; background: var(--color-surface-variant, rgba(128,128,128,0.12));
+      border-radius: var(--radius-full); }
+    .seg-btn { border: none; background: transparent; color: var(--color-on-surface-variant); font-size: 13px; font-weight: 600;
+      padding: 5px 14px; border-radius: var(--radius-full); cursor: pointer; white-space: nowrap; }
+    .seg-btn.active { background: var(--color-surface); color: var(--color-primary); box-shadow: 0 1px 3px rgba(16,24,40,0.12); }
 
-    #userDetail { display: none; }
-    .timeline-item { padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-outline-variant); font-size: 13.5px; }
-    .timeline-item:last-child { border-bottom: none; }
+    .chart-box { background: var(--color-surface-variant, rgba(128,128,128,0.08)); border-radius: var(--radius-md); padding: var(--space-xs); }
+    .chart-box canvas { width: 100%; height: 240px; display: block; }
+    .kv-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 6px var(--space-md); }
+    .kv-list .kv { display: flex; justify-content: space-between; gap: var(--space-sm); font-size: 13.5px;
+      padding: 6px 0; border-bottom: 1px dashed var(--color-outline-variant); }
+    .kv-list .kv .k { color: var(--color-on-surface-variant); }
+    .kv-list .kv .v { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+    .pager { display: flex; align-items: center; gap: var(--space-sm); margin-top: var(--space-sm); flex-wrap: wrap; }
+    .pager .btn { padding: 4px 12px; font-size: 13px; }
 
     #admToast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--color-on-surface); color: var(--color-surface);
       padding: 10px 20px; border-radius: var(--radius-full); font-size: 13.5px; font-weight: 600; z-index: 100; display: none; max-width: 80vw; }
     #admBanner { display: none; margin-bottom: var(--space-md); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md);
       background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.4); color: #b45309; font-size: 13.5px; font-weight: 600; }
-    .cursor-row { cursor: pointer; }
-    .cursor-row:hover { background: var(--color-surface-variant, rgba(128,128,128,0.08)); }
 
-    /* 回复模板弹窗：左侧模板菜单（左上角 + 添加）→ 右侧所选模板预览（语言切换 + 使用） */
-    .tk-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 90; display: flex;
-      align-items: center; justify-content: center; padding: var(--space-md); }
-    .tk-modal { background: var(--color-surface); border: 1px solid var(--adm-border); border-radius: var(--radius-lg);
-      width: 100%; padding: var(--space-lg); }
-    .tk-shell { display: grid; grid-template-columns: 250px 1fr; gap: var(--space-md); }
-    .tk-menu { border-right: 1px solid var(--color-outline-variant); padding-right: var(--space-sm);
-      overflow-y: auto; max-height: 52vh; }
-    .tk-menu-item { padding: 8px 10px; border-radius: var(--radius-md); cursor: pointer; font-size: 13.5px;
-      display: flex; align-items: center; justify-content: space-between; gap: var(--space-xs); }
-    .tk-menu-item:hover { background: var(--color-surface-variant, rgba(128,128,128,0.08)); }
-    .tk-menu-item.active { background: rgba(59,130,246,0.12); color: var(--color-primary); font-weight: 700; }
-    .tk-del { color: var(--color-outline); cursor: pointer; font-size: 12px; }
-    .tk-del:hover { color: #dc2626; }
-    .tk-preview-box { margin-top: var(--space-sm); padding: var(--space-md); min-height: 140px;
-      background: var(--color-surface-variant, rgba(128,128,128,0.08)); border-radius: var(--radius-md);
-      font-size: 13.5px; color: var(--color-on-surface-variant); white-space: pre-wrap; word-break: break-word; }
-    .tk-opt { border: 1px solid var(--color-outline-variant); border-radius: var(--radius-md);
-      padding: var(--space-sm) var(--space-md); margin-bottom: var(--space-sm); cursor: pointer; }
-    .tk-opt:hover { background: var(--color-surface-variant, rgba(128,128,128,0.08)); border-color: var(--color-primary); }
-    /* 财务曲线卡：右侧迷你曲线 + 点击弹详情（右上角时间范围） */
-    .fin-curve-card { display: flex; flex-direction: column; align-items: stretch; gap: 6px; cursor: pointer; } /* 标题在上，数字+曲线在下 */
-    .fin-curve-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .fin-curve-row > div { flex: 1; min-width: 0; } /* 数字占剩余宽度，曲线始终贴右 */
-    .fin-strip { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } /* 财务顶部卡加宽（x 轴），曲线右侧留足空间 */
-    /* 财务总览顶部子菜单：总览 / 成本（分段胶囊） */
-    .fin-tabs { display: inline-flex; gap: 2px; padding: 3px; background: var(--color-surface-variant, rgba(128,128,128,0.12));
-      border-radius: var(--radius-full); margin-bottom: var(--space-sm); }
-    .fin-tab-btn { border: none; background: transparent; color: var(--color-on-surface-variant); font-size: 13.5px; font-weight: 600;
-      padding: 6px 16px; border-radius: var(--radius-full); cursor: pointer; }
-    .fin-tab-btn.active { background: var(--color-surface); color: var(--color-primary); box-shadow: 0 1px 3px rgba(16,24,40,0.12); }
-    /* 财报打印：只留报表卡片（隐藏侧栏/顶栏/选项卡/控制条/公告横幅，去阴影边框） */
-    @media print {
-      body.rpt-printing #admTabs, body.rpt-printing .fin-tabs, body.rpt-printing #admBanner,
-      body.rpt-printing #admToast, body.rpt-printing #fin-report-sec > .adm-card:first-child { display: none !important; }
-      body.rpt-printing #finReportCard { border: none; box-shadow: none; }
-    }
-    .fin-curve-card:hover { border-color: var(--color-primary); }
-    .fin-spark { flex: none; }
-    .fin-range-btn.active { border-color: var(--color-primary); color: var(--color-primary); font-weight: 700; }
-    .fin-chart-box { background: var(--color-surface-variant, rgba(128,128,128,0.08)); border-radius: var(--radius-md); padding: var(--space-xs); }
-    /* 立体阴影（明暗两套）：多层柔和投影 + 顶部高光内缘（凸起斜面）+ 卡片微渐变 + 悬停浮起 */
+    .gate-card { max-width: 640px; margin: var(--space-xl) auto; padding: var(--space-lg); text-align: center; }
+    .gate-card .material-symbols-outlined { font-size: 40px; color: var(--color-outline); }
+    .gate-card h3 { margin: var(--space-sm) 0 var(--space-xs); }
+    .empty { padding: var(--space-lg); text-align: center; color: var(--color-outline); font-size: 13.5px; }
+
+    /* 立体阴影 tokens（v1 保留 + 明暗两套） */
     :root {
       --adm-shadow-card: 0 1px 2px rgba(16,24,40,0.04), 0 3px 10px rgba(16,24,40,0.06);
       --adm-shadow-hover: 0 2px 4px rgba(16,24,40,0.05), 0 6px 16px rgba(16,24,40,0.09);
@@ -146,24 +127,22 @@
       --adm-card-bg: linear-gradient(180deg, #26263c 0%, #1e1e30 100%);
       --adm-border: rgba(255,255,255,0.10);
     }
-    .adm-card, .stat-card { background: var(--adm-card-bg); box-shadow: var(--adm-shadow-card), var(--adm-highlight);
+    .adm-card, .stat-card { box-shadow: var(--adm-shadow-card), var(--adm-highlight);
       transition: box-shadow .2s ease, transform .2s ease; }
     .adm-card:hover, .stat-card:hover { box-shadow: var(--adm-shadow-hover), var(--adm-highlight); transform: translateY(-2px); }
     .adm-side .sidebar-module { box-shadow: var(--adm-shadow-card), var(--adm-highlight); }
-    .tk-modal { box-shadow: var(--adm-shadow-modal), var(--adm-highlight); }
-    @media (max-width: 620px) { .tk-shell { grid-template-columns: 1fr; } .tk-menu { border-right: none; max-height: none; } }
   </style>
 </head>
 <body>
 
 <div class="adm-shell">
 
-  <!-- 独立登录页（邮箱验证码两段式；管理端无 demo/离线回退） -->
+  <!-- staff 登录页（邮箱验证码两段式；管理端无 demo/离线回退） -->
   <div id="adminLogin" class="card adm-login" style="display:none">
-    <h3 class="headline-md">管理员登录</h3>
-    <p class="body-md" style="color:var(--color-on-surface-variant)">仅管理员账号可进入。验证码发送至邮箱，10 分钟内有效。</p>
+    <h3 class="headline-md">SlatiControl 登录</h3>
+    <p class="body-md" style="color:var(--color-on-surface-variant)">仅工作人员账号可进入。验证码发送至邮箱，10 分钟内有效。</p>
     <div class="adm-form">
-      <input class="adm-input" id="loginEmail" type="email" placeholder="管理员邮箱" autocomplete="email" style="flex:1;min-width:220px">
+      <input class="adm-input" id="loginEmail" type="email" placeholder="工作人员邮箱" autocomplete="email" style="flex:1;min-width:220px">
       <button class="btn btn-primary" id="sendCodeBtn">发送验证码</button>
     </div>
     <div class="adm-form" id="codeRow" style="display:none">
@@ -188,344 +167,24 @@
 
   <div id="adminRoot" style="display:none">
     <div class="adm-layout">
-
-      <!-- 左侧卡片菜单（与公网站点侧栏同款卡片视觉，一项一卡） -->
       <aside id="admTabs" class="adm-side">
         <div class="sidebar-module">
-          <div style="font-weight:700;font-size:14px">管理后台</div>
+          <div style="font-weight:700;font-size:14px">SlatiControl</div>
           <span id="admWho" class="adm-meta mono" style="display:none;word-break:break-all"></span>
+          <span id="admRoles" class="adm-meta" style="display:none"></span>
           <button class="btn" id="logoutBtn" style="display:none;width:100%;margin-top:var(--space-sm)">退出登录</button>
         </div>
-        <div class="sidebar-module">
-          <a class="nav-item active" data-tab="dash"><span class="material-symbols-outlined">dashboard</span>总览</a>
-          <a class="nav-item" data-tab="mod"><span class="material-symbols-outlined">fact_check</span>审核队列</a>
-          <a class="nav-item" data-tab="ticket"><span class="material-symbols-outlined">support_agent</span>工单</a>
-          <a class="nav-item" data-tab="badge"><span class="material-symbols-outlined">verified</span>徽章码</a>
-          <a class="nav-item" data-tab="user"><span class="material-symbols-outlined">group</span>用户</a>
-          <a class="nav-item" data-tab="sub"><span class="material-symbols-outlined">payments</span>财务总览</a>
-        </div>
+        <div class="sidebar-module" id="navGroups"></div>
       </aside>
 
       <main class="adm-main">
         <div id="admBanner"></div>
 
-        <!-- 总览（管理首页）：全站统计 + 队列快照 + 预算 + 最近动态 -->
-        <div id="pane-dash">
-          <div class="stat-strip">
-            <div class="stat-card"><div class="stat-num" id="dUsers">—</div><div class="stat-label">用户</div><div class="stat-sub" id="dUsersSub"></div></div>
-            <div class="stat-card"><div class="stat-num" id="dPosts">—</div><div class="stat-label">帖子</div><div class="stat-sub" id="dPostsSub"></div></div>
-            <div class="stat-card"><div class="stat-num" id="dNations">—</div><div class="stat-label">国家</div></div>
-            <div class="stat-card"><div class="stat-num" id="dTopics">—</div><div class="stat-label">话题</div></div>
-            <div class="stat-card"><div class="stat-num" id="dArticles">—</div><div class="stat-label">文章</div></div>
-            <div class="stat-card"><div class="stat-num" id="dMod">—</div><div class="stat-label">待办审核</div><div class="stat-sub" id="dModSub"></div></div>
-            <div class="stat-card"><div class="stat-num" id="dTickets">—</div><div class="stat-label">未完工单</div></div>
-            <div class="stat-card"><div class="stat-num" id="dReports">—</div><div class="stat-label">开放举报</div></div>
-            <div class="stat-card"><div class="stat-num" id="dBadges">—</div><div class="stat-label">有效徽章码</div></div>
-            <div class="stat-card"><div class="stat-num" id="dSessions">—</div><div class="stat-label">活跃会话</div></div>
-            <div class="stat-card"><div class="stat-num" id="dCost">—</div><div class="stat-label">本月成本</div></div>
-            <div class="stat-card"><div class="stat-num" id="dBudget">—</div><div class="stat-label">预算状态</div></div>
-          </div>
-
-          <div class="dash-grid">
-            <div class="adm-card">
-              <div class="dash-card-title"><h3 class="headline-sm">审核队列</h3><button class="btn" id="dashGoMod">前往处理 →</button></div>
-              <div id="dashQueue"></div>
-            </div>
-            <div class="adm-card">
-              <div class="dash-card-title"><h3 class="headline-sm">本月预算</h3><button class="btn" id="dashGoUsage">成本看板 →</button></div>
-              <div id="dashBudget"></div>
-            </div>
-          </div>
-
-          <div class="adm-card">
-            <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">最近动态</h3>
-            <div id="dashFeed"></div>
-          </div>
-        </div>
-
-        <!-- 审核队列 -->
-        <div id="pane-mod" style="display:none">
-      <div class="adm-form">
-        <button class="btn btn-primary" data-mod-filter="open">待处理</button>
-        <button class="btn" data-mod-filter="l0_hold">L0 拦截</button>
-        <button class="btn" data-mod-filter="queued">排队</button>
-        <button class="btn" data-mod-filter="needs_human">需人工</button>
-        <button class="btn" data-mod-filter="ai_rejected">AI 拒绝</button>
-        <button class="btn" data-mod-filter="all">全部</button>
-        <span class="adm-meta" id="modFilterLabel">open</span>
-      </div>
-      <div id="modList"></div>
-    </div>
-
-    <!-- 工单 -->
-    <div id="pane-ticket" style="display:none">
-      <div id="ticketListWrap">
-        <div class="adm-form">
-          <button class="btn btn-primary" data-tk-filter="queued">待处理</button>
-          <button class="btn" data-tk-filter="in_progress">已回复</button>
-          <button class="btn" data-tk-filter="closed">已关闭</button>
-          <button class="btn" data-tk-filter="all">全部</button>
-          <span class="adm-meta" id="tkFilterLabel">queued</span>
-        </div>
-        <div id="ticketList"></div>
-      </div>
-      <!-- 专属回复页（点击工单卡进入；#ticket:<id> 深链，刷新可恢复） -->
-      <div id="ticketDetail" style="display:none">
-        <div class="adm-form"><button class="btn" id="tkBackBtn">← 返回工单列表</button></div>
-        <div id="ticketDetailBody"></div>
-      </div>
-    </div>
-
-    <!-- 徽章码 -->
-    <div id="pane-badge" style="display:none">
-      <div class="adm-card">
-        <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">签发官方验证码</h3>
-        <div class="adm-form">
-          <input class="adm-input" id="bgAlias" placeholder="工作人员化名（如 客服小雨）">
-          <input class="adm-input" id="bgRole" placeholder="职位（如 客服）">
-          <input class="adm-input" id="bgDuties" placeholder="负责事项（如 账号安全核查）">
-          <input class="adm-input" id="bgTtl" type="number" min="1" max="72" value="12" style="width:80px" title="有效小时数">
-          <button class="btn btn-primary" id="bgIssueBtn">签发</button>
-        </div>
-        <div id="bgIssued" style="display:none">
-          <p class="body-md" style="margin-bottom:var(--space-xs)">验证码只显示这一次，请立即复制给对方：</p>
-          <div class="badge-code-box" id="bgCode">—</div>
-          <div class="row">
-            <button class="btn" id="bgCopyBtn">复制</button>
-            <span class="adm-meta" id="bgExpires"></span>
-          </div>
-        </div>
-      </div>
-      <div class="adm-card">
-        <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">有效验证码列表</h3>
-        <div id="badgeList"></div>
-      </div>
-    </div>
-
-    <!-- 用户 -->
-    <div id="pane-user" style="display:none">
-      <div class="adm-form">
-        <input class="adm-input" id="usrQ" placeholder="搜索邮箱 / 昵称 / 公民 ID" style="flex:1;min-width:220px">
-        <button class="btn btn-primary" id="usrSearchBtn">搜索</button>
-      </div>
-      <div class="adm-card" style="overflow-x:auto">
-        <table class="adm-table" id="usrTable">
-          <thead><tr>
-            <th>用户</th><th>邮箱</th><th>tier</th><th>状态</th><th>警告</th><th>注册时间</th>
-          </tr></thead>
-          <tbody id="usrRows"></tbody>
-        </table>
-      </div>
-      <div class="adm-card" id="userDetail">
-        <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">用户详情 <span class="mono" id="udId"></span></h3>
-        <div class="row" style="margin-bottom:var(--space-sm)">
-          <select class="adm-select" id="udTier">
-            <option value="free">free</option><option value="basic">basic</option><option value="premium">premium</option><option value="ultra">ultra</option>
-          </select>
-          <button class="btn btn-primary" id="udTierBtn">保存 tier</button>
-          <span class="adm-meta" id="udTierNote"></span>
-        </div>
-        <div class="row" style="margin-bottom:var(--space-sm)">
-          <select class="adm-select" id="udPenAction">
-            <option value="warn">warn（警告，3 次自动禁言）</option>
-            <option value="rate_limit">rate_limit（24h 限发）</option>
-            <option value="mute">mute（禁言 72h）</option>
-            <option value="ban">ban（封禁，清会话）</option>
-            <option value="restore">restore（撤销处罚）</option>
-          </select>
-          <input class="adm-input" id="udPenReason" placeholder="原因码（可选，如 abuse）">
-          <button class="btn" id="udPenBtn" style="border-color:#dc2626;color:#dc2626">执行处罚</button>
-        </div>
-        <h4 class="headline-sm" style="margin:var(--space-md) 0 var(--space-xs)">处罚时间线</h4>
-        <div id="udTimeline"></div>
-      </div>
-    </div>
-
-    <!-- 财务总览（一期无支付：收入 = tier 定价估算、成本 = AI 实账 + 固定成本、税费 = 收入 × 税率估算） -->
-    <div id="pane-sub" style="display:none">
-      <!-- 顶部子菜单：总览 / 成本 / 流水 / 财报（成本看板已并入财务总览；流水 = 财报实账；财报 = 一键生成季度报表） -->
-      <div class="fin-tabs" id="finTabs">
-        <button class="fin-tab-btn active" data-fin-tab="overview">总览</button>
-        <button class="fin-tab-btn" data-fin-tab="cost">成本</button>
-        <button class="fin-tab-btn" data-fin-tab="ledger">流水</button>
-        <button class="fin-tab-btn" data-fin-tab="report">财报</button>
-      </div>
-      <div id="fin-overview-sec">
-      <div class="adm-card" id="finHealth" style="margin-bottom:var(--space-sm);border-left:4px solid #64748b">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-sm);flex-wrap:wrap">
-          <div>
-            <h3 class="headline-sm" style="margin:0">收入健康推测：<span id="dFinHealth">—</span> <span class="adm-meta" id="dFinQuarter"></span></h3>
-            <p class="adm-meta" id="dFinReason" style="margin:4px 0 0"></p>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;flex:none">
-            <span class="adm-meta">时间范围</span>
-            <select class="adm-select" id="finRangeSel" title="曲线时间范围">
-              <option value="5y">近 5 年（1825 天）</option>
-              <option value="1y">近 365 天（分四季度）</option>
-              <option value="quarter">本季度</option>
-              <option value="month" selected>本月</option>
-              <option value="week">近 7 天</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="stat-strip fin-strip">
-        <div class="stat-card fin-curve-card" data-fin-key="rev" title="点击查看收入曲线">
-          <div class="stat-label">预计月收入（RM）</div>
-          <div class="fin-curve-row"><div class="stat-num" id="dSubRevenue">—</div><canvas class="fin-spark" width="76" height="30"></canvas></div>
-        </div>
-        <div class="stat-card fin-curve-card" data-fin-key="paid" title="点击查看收款曲线">
-          <div class="stat-label">实际收款（RM）</div>
-          <div class="fin-curve-row"><div class="stat-num" id="dSubPaid">—</div><canvas class="fin-spark" width="76" height="30"></canvas></div>
-        </div>
-        <div class="stat-card fin-curve-card" data-fin-key="tax" title="点击查看税费曲线">
-          <div class="stat-label">预计税费（RM/月）</div>
-          <div class="fin-curve-row"><div class="stat-num" id="dFinTax">—</div><canvas class="fin-spark" width="76" height="30"></canvas></div>
-        </div>
-        <div class="stat-card fin-curve-card" data-fin-key="cost" title="点击查看成本曲线">
-          <div class="stat-label">总成本（RM/月）</div>
-          <div class="fin-curve-row"><div class="stat-num" id="dFinCost">—</div><canvas class="fin-spark" width="76" height="30"></canvas></div>
-        </div>
-        <div class="stat-card fin-curve-card" data-fin-key="net" title="点击查看净利润曲线">
-          <div class="stat-label">净利润（RM/月）</div>
-          <div class="fin-curve-row"><div class="stat-num" id="dFinProfit">—</div><canvas class="fin-spark" width="76" height="30"></canvas></div>
-        </div>
-        <div class="stat-card"><div class="stat-num" id="dFinCoverage">—</div><div class="stat-label">成本覆盖率</div></div>
-      </div>
-      <div class="dash-grid">
-        <div class="adm-card">
-          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">订阅与收入结构</h3>
-          <div class="stat-strip">
-            <div class="stat-card"><div class="stat-num" id="dSubTotal">—</div><div class="stat-label">订阅用户</div><div class="stat-sub">basic + premium + ultra</div></div>
-            <div class="stat-card"><div class="stat-num" id="dSubFree">—</div><div class="stat-label">free（普通用户）</div></div>
-            <div class="stat-card"><div class="stat-num" id="dSubBasic">—</div><div class="stat-label">basic（RM12/月）</div></div>
-            <div class="stat-card"><div class="stat-num" id="dSubPremium">—</div><div class="stat-label">premium</div></div>
-            <div class="stat-card"><div class="stat-num" id="dSubUltra">—</div><div class="stat-label">ultra</div></div>
-            <div class="stat-card"><div class="stat-num" id="dSubGrowth">—</div><div class="stat-label">订阅 7 天净增</div></div>
-          </div>
-        </div>
-        <div class="adm-card">
-          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">成本结构（RM/月）</h3>
-          <div id="dFinCosts"></div>
-        </div>
-      </div>
-      <div class="dash-grid">
-        <div class="adm-card">
-          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">季度预期</h3>
-          <div id="dFinQuarterCard"></div>
-        </div>
-        <div class="adm-card">
-          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">财务参数（保存写入审计）</h3>
-          <div class="adm-form" id="finForm">
-            <label class="adm-meta">汇率 ¥→RM <input class="adm-input" id="finFx" type="number" min="0.01" max="100" step="0.01" style="width:90px"></label>
-            <label class="adm-meta">税率 <input class="adm-input" id="finTaxRate" type="number" min="0" max="1" step="0.01" style="width:90px"></label>
-            <label class="adm-meta">固定月成本（RM） <input class="adm-input" id="finFixed" type="number" min="0" step="1" style="width:90px"></label>
-            <label class="adm-meta">季度目标（RM） <input class="adm-input" id="finQuarter" type="number" min="0" step="1" style="width:110px"></label>
-            <button class="btn btn-primary" id="finSaveBtn">保存</button>
-          </div>
-          <p class="adm-meta">口径：收入 = tier 月价 × 数量估算（ms-MY 定价 RM23.50/RM45.50）；成本 = AI 用量实账（人民币账单按汇率折算）+ 固定成本（服务器/域名/CDN 估算，默认 RM50）；税费 = 收入 × 税率估算，上线前请以税务顾问意见为准。</p>
-        </div>
-      </div>
-      <div class="adm-card">
-        <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">tier 调整记录（set_tier 审计，最近 20 条）</h3>
-        <div id="dSubTimeline"></div>
-      </div>
-      </div>
-      <!-- 成本（并入财务总览的子视图：用量条 + 最近记录 + 预算额度） -->
-      <div id="fin-cost-sec" style="display:none">
-        <div id="usageBars"></div>
-        <div class="adm-card" style="overflow-x:auto">
-          <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">最近 50 条用量记录</h3>
-          <table class="adm-table">
-            <thead><tr><th>时间</th><th>功能</th><th>入</th><th>出</th><th>缓存</th><th>成本</th><th>批次</th></tr></thead>
-            <tbody id="usageRows"></tbody>
-          </table>
-        </div>
-        <div class="adm-card">
-          <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">月度预算额度（元，写入审计）</h3>
-          <div class="adm-form" id="budgetForm">
-            <label class="adm-meta">文字审核 <input class="adm-input" id="bgText" type="number" min="0" step="0.5" style="width:90px"></label>
-            <label class="adm-meta">AI 客服 <input class="adm-input" id="bgChat" type="number" min="0" step="0.5" style="width:90px"></label>
-            <label class="adm-meta">图像审核 <input class="adm-input" id="bgImage" type="number" min="0" step="0.5" style="width:90px"></label>
-            <label class="adm-meta">总预算 <input class="adm-input" id="bgTotal" type="number" min="0" step="0.5" style="width:90px"></label>
-            <button class="btn btn-primary" id="budgetSaveBtn">保存</button>
-          </div>
-        </div>
-      </div>
-      <!-- 流水（财报实账：收款/退款/支出/调整 + 月结锁定 + CSV 导出；写操作全落审计） -->
-      <div id="fin-ledger-sec" style="display:none">
-        <div class="adm-card" style="margin-bottom:var(--space-sm)">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-sm);flex-wrap:wrap">
-            <div>
-              <h3 class="headline-sm" style="margin:0">流水账（财报实账）</h3>
-              <p class="adm-meta" style="margin:4px 0 0">口径：权责发生制——金额为正数，方向由类型决定（退款冲减收款；提现 = 资金转出他用，不计入支出与净利，财报单列）；¥ 按汇率折 RM 入账；月结锁定后，该月及更早流水不可改动。</p>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;flex:none;flex-wrap:wrap">
-              <span class="adm-meta" id="ledLockedLabel">月结：未锁定</span>
-              <input class="adm-input" id="ledMonth" type="month" style="width:150px">
-              <button class="btn" id="ledCloseBtn">月结锁定至该月</button>
-              <a class="btn" href="/api/admin/ledger/export">导出 CSV</a>
-            </div>
-          </div>
-        </div>
-        <div class="adm-card" style="margin-bottom:var(--space-sm)">
-          <h3 class="headline-sm" style="margin-bottom:var(--space-xs)">记录流水（<span id="ledFormTitle">新增</span>）</h3>
-          <div class="adm-form" id="ledForm" style="align-items:flex-end;flex-wrap:wrap">
-            <label class="adm-meta">类型 <select class="adm-select" id="ledKind">
-              <option value="income">收款</option><option value="refund">退款</option>
-              <option value="expense">支出</option><option value="withdrawal">提现（转出他用）</option><option value="adjustment">调整</option>
-            </select></label>
-            <label class="adm-meta">分类 <select class="adm-select" id="ledCat">
-              <option value="server">服务器</option><option value="domain">域名</option>
-              <option value="saas">SaaS 订阅</option><option value="legal">法务</option>
-              <option value="marketing">推广</option><option value="tax">税费</option>
-              <option value="subscription">订阅收款</option><option value="other">其他</option>
-            </select></label>
-            <label class="adm-meta">金额 <input class="adm-input" id="ledAmount" type="number" min="0.01" step="0.01" style="width:90px"></label>
-            <label class="adm-meta">币种 <select class="adm-select" id="ledCurrency">
-              <option value="RM">RM</option><option value="CNY">CNY（¥）</option>
-            </select></label>
-            <label class="adm-meta">日期 <input class="adm-input" id="ledDate" type="date" style="width:140px"></label>
-            <label class="adm-meta">对方 <input class="adm-input" id="ledCounter" style="width:150px" placeholder="客户邮箱/供应商"></label>
-            <label class="adm-meta">发票号 <input class="adm-input" id="ledInvoice" style="width:110px"></label>
-            <label class="adm-meta">备注 <input class="adm-input" id="ledNote" style="width:170px"></label>
-            <button class="btn btn-primary" id="ledSaveBtn">保存</button>
-            <button class="btn" id="ledNewBtn">取消 / 新增</button>
-          </div>
-        </div>
-        <div class="adm-card" style="overflow-x:auto">
-          <h3 class="headline-sm" style="margin-bottom:var(--space-sm)">流水明细（最近 200 条）</h3>
-          <table class="adm-table">
-            <thead><tr><th>流水号</th><th>日期</th><th>类型</th><th>分类</th><th>金额</th><th>币种</th><th>对方</th><th>发票号</th><th>备注</th><th>录入人</th><th>操作</th></tr></thead>
-            <tbody id="ledRows"></tbody>
-          </table>
-        </div>
-      </div>
-      <div id="fin-report-sec" style="display:none">
-        <div class="adm-card" style="margin-bottom:var(--space-sm)">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:var(--space-sm);flex-wrap:wrap">
-            <div>
-              <h3 class="headline-sm" style="margin:0">季度财报（一键生成）</h3>
-              <p class="adm-meta" style="margin:4px 0 0">口径：权责发生制（按经济事件日期归属期间）；¥ 按月末汇率折 RM；税费 = 预计收入 × 税率（估算）；固定成本为估算；提现转出单列（不计支出/净利），留存 = 净利 − 提现。未月结月份为草稿口径，月结后重新生成即定格。</p>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;flex:none;flex-wrap:wrap">
-              <select class="adm-select" id="rptYear" style="width:auto"></select>
-              <select class="adm-select" id="rptQuarter" style="width:auto">
-                <option value="1">Q1（1-3 月）</option>
-                <option value="2">Q2（4-6 月）</option>
-                <option value="3">Q3（7-9 月）</option>
-                <option value="4">Q4（10-12 月）</option>
-              </select>
-              <button class="btn btn-primary" id="rptGenBtn">生成报表</button>
-              <a class="btn" id="rptCsvLink" href="#" style="display:none">导出 CSV</a>
-              <button class="btn" id="rptPrintBtn" style="display:none">打印 / 存 PDF</button>
-            </div>
-          </div>
-        </div>
-        <div class="adm-card" id="finReportCard" style="display:none"></div>
-      </div>
-    </div>
-
+        <div id="pane-dashboard" class="pane" style="display:none"></div>
+        <div id="pane-analytics" class="pane" style="display:none"></div>
+        <div id="pane-users" class="pane" style="display:none"></div>
+        <div id="pane-security" class="pane" style="display:none"></div>
+        <div id="pane-todo" class="pane" style="display:none"></div>
       </main>
     </div>
   </div>
@@ -534,92 +193,15 @@
 
 <div id="admToast"></div>
 
-<!-- 回复模板弹窗：左侧模板菜单（左上角 + 添加）→ 右侧所选模板预览（语言切换 + 使用此模板） -->
-<div class="tk-overlay" id="tkTplModal" style="display:none">
-  <div class="tk-modal" style="max-width:760px">
-    <div class="dash-card-title">
-      <h3 class="headline-md">回复模板</h3>
-      <button class="btn btn-ghost btn-icon" id="tkTplCloseBtn"><span class="material-symbols-outlined">close</span></button>
-    </div>
-    <div class="tk-shell">
-      <div>
-        <div class="row" style="margin-bottom:var(--space-xs)">
-          <button class="btn btn-primary btn-icon" id="tkTplAddBtn" title="添加模板" style="width:32px;height:32px;padding:0">
-            <span class="material-symbols-outlined" style="font-size:18px">add</span>
-          </button>
-          <span class="adm-meta">模板列表</span>
-        </div>
-        <div class="tk-menu" id="tkTplMenu"></div>
-      </div>
-      <div>
-        <div class="dash-card-title" style="margin-bottom:var(--space-xs)">
-          <span id="tkTplPreviewName" style="font-weight:700">—</span>
-          <select class="adm-select" id="tkTplLangSel" style="width:auto" title="模板语言"></select>
-        </div>
-        <div class="tk-preview-box" id="tkTplPreviewText">从左侧选择一个模板</div>
-        <div class="actions"><button class="btn btn-primary" id="tkTplUseBtn">使用此模板</button></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 添加模板弹窗：名称 + 十语内容（至少填一种语言） -->
-<div class="tk-overlay" id="tkTplAddModal" style="display:none">
-  <div class="tk-modal" style="max-width:720px">
-    <div class="dash-card-title">
-      <h3 class="headline-md">添加模板</h3>
-      <button class="btn btn-ghost btn-icon" id="tkTplAddCloseBtn"><span class="material-symbols-outlined">close</span></button>
-    </div>
-    <input class="adm-input" id="tkTplAddName" placeholder="模板名称（必填）" style="width:100%;margin-bottom:var(--space-sm)">
-    <div id="tkTplAddLangs" style="max-height:46vh;overflow-y:auto;display:grid;gap:var(--space-sm)"></div>
-    <div class="actions">
-      <button class="btn btn-primary" id="tkTplAddSave">保存</button>
-      <button class="btn" id="tkTplAddCancel">取消</button>
-    </div>
-  </div>
-</div>
-
-<!-- 发送回复弹窗：选择回复后工单的状态（回复都会进入「已回复」队列） -->
-<div class="tk-overlay" id="tkReplyModal" style="display:none">
-  <div class="tk-modal" style="max-width:440px">
-    <div class="dash-card-title">
-      <h3 class="headline-md">发送回复</h3>
-      <button class="btn btn-ghost btn-icon" id="tkReplyCloseBtn"><span class="material-symbols-outlined">close</span></button>
-    </div>
-    <p class="adm-meta" style="margin-bottom:var(--space-sm)">回复将发送给用户，请选择回复后工单的状态：</p>
-    <div class="tk-opt" id="tkReplyWait">
-      <div style="font-weight:700">等待下一步</div>
-      <div class="adm-meta">工单进入「已回复」队列，等待用户后续回复</div>
-    </div>
-    <div class="tk-opt" id="tkReplyDone">
-      <div style="font-weight:700">已完成</div>
-      <div class="adm-meta">回复并关闭工单（进入已关闭队列）</div>
-    </div>
-    <div class="actions"><button class="btn" id="tkReplyCancel">取消</button></div>
-  </div>
-</div>
-
-<!-- 收入曲线详情弹窗：中央曲线（时间范围由页面顶部下拉统一控制） -->
-<div class="tk-overlay" id="finChartModal" style="display:none">
-  <div class="tk-modal" style="max-width:760px">
-    <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:var(--space-sm)">
-      <h3 class="headline-md" id="finChartTitle" style="margin:0">收入曲线</h3>
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <button class="btn btn-ghost btn-icon" id="finChartCloseBtn" title="关闭"><span class="material-symbols-outlined">close</span></button>
-      </div>
-    </div>
-    <div class="fin-chart-box"><canvas id="finChart" style="width:100%;height:320px;display:block"></canvas></div>
-    <div class="row" style="justify-content:space-between;margin-top:var(--space-xs)">
-      <span class="adm-meta" id="finChartMeta">—</span>
-      <span class="mono" id="finChartVal">—</span>
-    </div>
-    <p class="adm-meta" id="finChartNote" style="margin-top:var(--space-xs)"></p>
-    <div class="actions"><button class="btn btn-primary" id="finChartClose">关闭</button></div>
-  </div>
-</div>
-
 <script src="../assets/js/site-config.js"></script>
 <script src="../assets/js/api.js"></script>
-<script src="admin.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/api-helper.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/pages-dashboard.js"></script>
+<script src="js/pages-analytics.js"></script>
+<script src="js/pages-users.js"></script>
+<script src="js/pages-security.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

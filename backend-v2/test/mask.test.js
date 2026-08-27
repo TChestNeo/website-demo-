@@ -53,9 +53,11 @@ test('maskUserRow：客服见基础档案+riskLevel、不见内部字段；inter
 });
 
 test('maskLoginHistory：客服仅近 10 条 + IP 前两段；finance 无 IP 全 null', () => {
+  // 行序约定 = created_at DESC（最新在前）——slice(0,10) 必须留最新 10 条
   const rows = Array.from({ length: 15 }, (_, i) => ({ seq: i, ip: `175.143.10.${i}` }));
   const cs = maskLoginHistory(capabilities(['customer_support']), rows);
   assert.strictEqual(cs.length, 10);
+  assert.deepStrictEqual(cs.map((r) => r.seq), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], '最新在前 → 保留最新 10 条（不是最旧 10 条）');
   assert.strictEqual(cs[0].ip, '175.143.*.*');
   const fin = maskLoginHistory(capabilities(['finance']), rows);
   assert.strictEqual(fin.length, 15);
