@@ -6,7 +6,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create World | M.NationWorld</title>
 
-  <script src="../assets/js/theme-init.js"></script>
+  <script>
+  /* 防主题白闪：原 theme-init.js 内联——必须 CSS 之前同步执行（外链脚本走网络晚到 → 页面先按默认主题画一帧再跳 = 切页闪白） */
+  (function () {
+    var theme = 'light';
+    try {
+      var raw = localStorage.getItem('slati_settings');
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (s.theme) theme = s.theme;
+      }
+    } catch (e) {}
+    if (theme === 'auto') {
+      var h = new Date().getHours();
+      theme = (h >= 20 || h < 5) ? 'dark' : 'light';
+    } else if (theme === 'system') {
+      theme = 'light';
+    }
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  })();
+  </script>
   <link rel="stylesheet" href="../assets/css/ethereal.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
