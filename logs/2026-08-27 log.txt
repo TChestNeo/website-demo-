@@ -218,3 +218,35 @@ SlatiControl v2 第二波：公网 API 与 v1 逐字对等。**波次偏差（�
 - W3：客服升级（tickets/conversations/agents/ai/kb + ai/* 全套 + kb-seed.js + 前端 tickets/agents/ai 页 + 公网 Help 页 Human Support 入口）。
 - design-overview.html schema 审阅点待用户拍板。
 - 后端实机部署 + Stripe 实机联调仍等用户 sk_test（前端优先指令不变）。
+
+## 2026-08-27 — Cloud Run 试用部署（用户「部署Docker…部署在Google Cloud Run上」）
+
+### 背景与口径
+
+用户四问询钦定：真上 Cloud Run（试用）/ SQLite 数据先不管（接受重启即丢）/ 人在马来西亚无墙问题（*.run.app 可达）/ 有 GCP 账号直接上。口径：NODE_ENV=development + DEV_LOGIN_CODE=888888（明确非生产姿态）、免认证公开、asia-southeast1（新加坡）、SEED_ON_BOOT=1 冷启动自动重建 staff。
+
+### 本轮改动（4 个新文件）
+
+1. Dockerfile（仓库根）：两阶段 node:24-slim（deps 带 python3/make/g++ 兜底编译 better-sqlite3）+ 运行时非 root（USER node）+ STATIC_DIR=/app/docs。
+2. .dockerignore（仓库根）：排除 node_modules/.env/test/backend(v1)/本地 sqlite（blocklist.json 例外）/smoke-admin.js。
+3. backend-v2/scripts/entrypoint.js（部署专用，不参与测试）：SEED_ON_BOOT=1 先 seed → API 内网 127.0.0.1:8081 → 对外 PORT 静态 docs/ + /api 反代（dev-serve 同款拓扑，一个 URL = 站点+管理后台+API）；路径穿越守卫（normalize + startsWith(DOCS+sep)，%2f 变体实测 403）；SIGTERM 优雅关 API。
+4. deploy/cloudrun.md：线上地址/构建推送/部署/env/试用限制表（数据丢/cron 停/888888/无 SMTP/*.run.app 域名）——推送认证踩坑已记入文档。
+
+### 踩坑（实机）
+
+- **非 root 写库**：COPY 进来的 /app/data 是 root 属主，USER node 建 SQLite 报 SQLITE_CANTOPEN——RUN mkdir + chown node:node（第一版镜像本地一跑即崩，好在本地 build+run 实测流程拦住，没带到线上）。
+- **STATIC_DIR 越界**：容器把 backend-v2/ 拍平成 /app，入口 '../..' 相对路径越级到 /docs 全部 404——Dockerfile ENV STATIC_DIR=/app/docs 显式声明（入口本地跑默认路径仍对）。
+- **docker-credential-gcloud 不在 PATH**：gcloud auth configure-docker 写 credHelpers 后 push 报 exec not found——删 config.json 里该条目，改 access token 直登（token ~1h 过期，push 要在窗口内）。
+- **gcloud --no-launch-browser 需要 stdin**（后台任务 stdin 是空设备 → EOFError 崩）；默认浏览器流走 localhost 回调零输入。
+- **billing projects list 需 --billing-account 参数**；三个项目里只有 project-02d050ab-8105-448e-bac（My First Project）挂了计费 → 直接选它。
+
+### 验证
+
+- 本地 docker run 电池 11 项全绿（health 57 表 v2.0.0/静态首页+admin 壳/CSS JS MIME/穿越 403/staff verify 888888→director ['*']/me/dashboard 六组/无会话 401/防枚举恒 ok/公网 me 401）。
+- 线上 8/8 全绿（同款电池 + Alex cs 账号 verify + 静态两页）；服务 URL：https://mn-backend-v2-641398703651.asia-southeast1.run.app。
+
+### 遗留
+
+- 试用安全提示已告知用户：地址+888888 可登录总监，别放真数据。
+- W5 正式部署：生产姿态（NODE_ENV=production 剥离 DEV 码）+ 持久盘/云 SQL + Cloud Scheduler 替代进程内 cron + SMTP + 自有域名。
+- 本地 Docker Desktop 保持运行、镜像 mn-backend-v2:cloudrun 留在本地。
