@@ -250,3 +250,41 @@ SlatiControl v2 第二波：公网 API 与 v1 逐字对等。**波次偏差（�
 - 试用安全提示已告知用户：地址+888888 可登录总监，别放真数据。
 - W5 正式部署：生产姿态（NODE_ENV=production 剥离 DEV 码）+ 持久盘/云 SQL + Cloud Scheduler 替代进程内 cron + SMTP + 自有域名。
 - 本地 Docker Desktop 保持运行、镜像 mn-backend-v2:cloudrun 留在本地。
+
+---
+
+## Cloud Run 加固轮（2026-08-27 深夜 → 08-28 凌晨）——「这个部署是为了之后发布使用的」
+
+### 背景与口径
+
+用户点破「我这个部署是为了之后发布使用的」→ 试用部署按发布底子加固。问询钦定「全部加固（推荐）」= GCS 快照持久化（重启不丢数据）+ 换随机登录码 + 下线演示 staff，一次重部署搞定。
+
+### 本轮改动
+
+1. **entrypoint.js 快照持久化**（部署专用脚本）：
+   - 活库留容器盘（gcsfuse 对随机写数据库不安全），只写整文件快照到挂载路径（gcsfuse 对整文件安全）。
+   - 恢复：冷启动且目标库不存在 → 取同基名快照 mtime 最新者（.tmp 中途文件排除；头校验 `SQLite format 3` 失败依次试下一份）；恢复后修剪只留被恢复份。同实例进程重启不恢复（防旧快照回滚）。
+   - 落盘：boot + 每 SNAPSHOT_INTERVAL_MS 一次 + SIGTERM 一次（better-sqlite3 在线备份 → tmp 写后 rename 原子替换）。
+2. **GCS 桶 mn-backend-data-641398703651**（asia-southeast1）+ 计算服务账号 storage.objectAdmin IAM；部署加 gen2 + --add-volume（GCS FUSE 卷要求 gen2）。
+3. **随机登录码 691032**（替 888888）+ SEED_DEMO_STAFF=false（只 seed director Neo）。
+
+### 踩坑（线上实机抓出的真 bug）
+
+- **单快照文件被实例互踩（部署换版本瞬间丢会话）**：第一次换实例实测 401。日志还原真身：16:08:28 旧实例 boot 快照（登录前）→ 16:09:34 登录 → 16:10:06 新实例冷启动恢复旧快照（无会话）→ 16:10:12 旧实例才 SIGTERM 临终快照（含会话，晚 6 秒）→ 16:15:08 新实例定时快照把自己的「无会话」旧数据盖回桶 → 会话永久丢失。**修 = 每实例独立快照文件 `snap.<bootId>`（互不覆盖）+ 恢复取 mtime 最新 + 间隔 10min→60s**。已知窗口（接受）：部署瞬间最多丢最后 ≤60s 写入；普通缩容/扩容无窗口；正式发布换 Cloud SQL 归零。
+- **docker build 静默失败**：Bash cwd 停在 backend-v2 时 `docker build .` 报 Dockerfile not found，tail 只看到「View build details」没看到 ERROR → 旧镜像被本地测试误跑（行为全部对不上才发现）。修 = `docker build -f ../Dockerfile ..`。教训：build 输出别只看 tail，看 exit code。
+- 恢复逻辑加固：最新快照损坏时不整体放弃（依次试下一份）；修剪只留被恢复份（桶里那份 = 最新兜底）。
+- MSYS 路径转换：node -e 里嵌 /c/... POSIX 路径被 Windows 解析成 C:\c\...（node 部分用 C:/ 风格路径）。
+
+### 验证
+
+- **本地容器伪造测试**：真实 57 表 seed 过的旧快照（mtime 旧 1h）+ 损坏最新文件 + 遗留 .tmp → 启动日志「跳过损坏 → 恢复旧快照 → staff 已存在（seed 幂等证真恢复）→ boot 快照 mn.snap.<新id>」；垃圾被修剪、tmp 按设计保留、health 57 表 ✅。
+- **线上 4/4**：health ✅ / 旧码 888888 被拒 400 ✅ / 新码 691032 登录 Neo director ✅ / 登录后 me 会话 ✅。
+- **线上换实例存活（终极）**：登录（16:21:58）→ 60s 间隔快照捕获会话（桶 9f6104fb @16:23:24）→ services update 强制换实例 → 新实例日志「快照已恢复: …9f6104fb」（16:23:45）→ **旧 cookie 打新实例 200 director ✅**。桶残留 old-format 单文件已删，现只留两实例文件。
+- 部署命令：max-instances=1 + gen2 + volume + 新 env（DEV_LOGIN_CODE=691032、SEED_DEMO_STAFF=false、SNAPSHOT_PATH、SNAPSHOT_INTERVAL_MS=60000）。
+
+### 遗留（发布前置，已告知用户）
+
+- SMTP 服务商账号（腾讯 SES/Mailgun）——到位前 NODE_ENV=development + 691032 是唯一后台登录路径（config.js 强制 production 下 DEV_LOGIN_CODE 失效）。
+- 自有域名 + Stripe sk_test + DeepSeek key。
+- W5 正式：Cloud SQL 换快照方案（零窗口 + 多实例一致）、Cloud Scheduler、production 姿态。
+- 线上仍免认证公开 + 别放真数据。
