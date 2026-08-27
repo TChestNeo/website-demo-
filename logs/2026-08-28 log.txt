@@ -1,0 +1,37 @@
+# 2026-08-28 工作日志
+
+## W6 插入波：密码 + 每次邮箱验证码双因素登录（2026-08-28 全天）
+
+**背景**：用户问「为什么前端登录是使用验证码能不能是密码加验证码的组合？」→ 问询钦定：公网登录 + 管理后台登录都改成**密码 + 每次登录都发邮箱验证码**（银行级）；注册时设密码。旧账号（含生产管理员 Neo）首登引导设密。Plan 已批准（8-tidy-rossum.md §12）。
+
+**改动（6 批 commit + 2 部署随附，均不 push）**：
+
+1. **9242d82** ① `src/password.js`：scrypt 哈希（N=16384/r=8/p=1 显式固化，16B 盐+64B key，单列 'hexSalt:hexHash'，timingSafeEqual，畸形串返回 false 不抛）+ `test/password.test.js`（格式/盐唯一/验证/72 字符）。
+2. **6520600** ② 迁移 011：users/staff 各一行 `ALTER TABLE ADD COLUMN password_hash TEXT`（NULL=旧账号，不重建表）；migrations.test.js user_version 10→11。
+3. **f0ee0fa** ③ 公网 auth：verify 三段重组（码校验 → 密码校验 → 消费码）——密码错**不消费码**、与码错共用 5 次 attempts；新注册服务端强制密码 ≥8（裸 API 不带密码对不存在用户 400，防架空钦定）；旧账号 password_hash NULL 仅码登录 + `passwordSetupRequired:true`；新端点 POST /auth/password（会话内设密，清其他会话保当前）+ /auth/password-reset（无会话，复用 login 码，成功清全部会话）；publicUser + hasPassword；security_events password_change/account_recovery + 审计；auth.test.js 18/18 + health.test.js 版本修正。
+4. **c8aae3b** ④ staff 同款（staff/auth.js + publicStaff hasPassword + staff-auth.test.js 16/16）。
+5. **c971bba** ⑤ 公网登录页（docs/index.html）：密码框组成双因素（API 模式）、发码前 8-72 校验、passwordSetupRequired → showSetup、#setupForm/#resetForm 隐藏块零新样式、忘记密码链接、demo 模式回归零变化。tmp CDP 电池 17/17（跑完即删）。
+6. **16ce7c6** ⑥ 后台（admin 前端 + smoke-admin + v0.2.2.0 + cloudrun.md）：登录卡加密码框+「忘记密码？」+设密/重置两隐藏块；app.js verify 带密码 + passwordSetupRequired 分支（旧 staff 仅码登录 → 设密 → boot 直达面板）+ startCountdown 泛化；api-helper.js verify(email,code,password)+setPassword/resetPassword；smoke-admin.js 撤 DEV_LOGIN_CODE 直登改 mailer 桩记码真实码驱动（Neo 种密码/Alex 保持 NULL 走首登设密），新增密码空拦截/设密引导/错密码不消费码同码改对/忘记密码两步重置→新密码重登断言；site-config v0.2.1.1→**v0.2.2.0**；cloudrun.md 登录口径更新。
+7. **7603fc5** 部署随附：cloudrun.md 认证段补坑 + 部署后验证结果。
+
+**验证**：npm test **182/182 0 fail**（新增 password 6 + auth 新 case + staff 新 case + 迁移 11）；smoke-admin **49/49 0 console error**（真码驱动全链路：密码空拦截 → Neo 密码+码直登 → 四页 → Alex 旧账号设密引导 → 掩码链路 → 错密码不消费码 → 忘记密码重置 → 新密码重登）。**线上已部署**（revision mnationworld-web-00005-rqv 100% 流量）：/api/health 200 57 表 v2.0.0、admin 登录卡/设密/重置块已上线、site-config v0.2.2.0 已上线。
+
+**教训**：
+- **密码错不消费码是设计核心**——若先消费再验密，「5 次锁」被架空；错密码与码错共用 attempts，前端文案统一「密码或验证码错误」不泄漏哪部分错。
+- 新注册密码策略必须放在**码比对通过后、消费前**——先消费则「短密码 400 后同码改对重试」必挂（测试先抓出）。
+- 旧账号前端仍要求 8-72 密码才发码（防枚举下前端无法预知 hasPassword）→ 旧用户首登随便输一个 ≥8 密码（后端忽略）→ 设密引导。可接受的迁移摩擦，已实测闭环。
+- 生产 Neo 是旧账号：部署后**第一次登录会走设密引导**（seed 不种密码，011 加列后 NULL）。
+- **docker login 三连坑（PowerShell）**：① config.json 该 registry 的**空 auths 条目**盖过 credsStore 登录态 → login 成功 push 401（删 auths 块）；② PS5.1 Set-Content 带 BOM → docker 配置解析报错（WriteAllText + UTF8Encoding($false)）；③ 管道喂 --password-stdin 带换行 → Basic 401（改 -p 直传，token 1 小时过期可接受）。
+- smoke-admin 真码驱动时 rate 桶必清（ec:staff:<email> 60s 重发窗口跨轮次残留）——冒烟内三次 `DELETE FROM rate_limits`。
+
+**遗留（待用户实测）**：Neo 首登（https://mnationworld.com/admin/ 收码 → 设密 → 再登密码+码）；公网注册/登录/忘记密码人工走一遍（用户肉眼复核）。其余 standing：W3-W5 波、Stripe sk_test、DeepSeek key、品牌邮箱 Brevo。
+
+## 站点 favicon：logo circle 图（2026-08-28 下午）
+
+**背景**：用户「把 M.NationWorld logo circle 图片设定为页面顶部的 page 的 logo 那边现在还是空的一个地球」——空的地球 = 全站零 favicon 时浏览器标签页的默认灰色地球图标（grep 证实 docs/ 无任何 favicon 引用）。
+
+**改动**：43 个 HTML（docs/index.html + 41 pages + admin）`<meta charset>` 后统一插 `<link rel="icon" type="image/png" href="…M.NationWorld logo circle_.png">`（根页 assets/ 相对、子页 ../assets/；PowerShell 批量插、保留原换行风格、无 BOM）；logo circle 图入库（用户钦定使用，仅此图——Screenshot/wand_shine 等其余未跟踪文件照旧不提交）。
+
+**验证**：图片探针（headless Chrome naturalWidth）——512×512 RGBA 解码 ✓（先踩坑：file:// 手拼 encodeURI 把反斜杠编成 %5C → chrome-error 页，改 node:url pathToFileURL）；43/43 文件各恰好 +1 行。截图管线死 → 用户肉眼复核标签页图标（favicon 缓存重，需 Ctrl+F5 硬刷新）。
+
+**教训**：① 「空的地球」= 无 favicon 的浏览器默认图标，不是页面里的元素；② PS 逐字节读 PNG 维度别用 BitConverter 重载（UInt32 被提升到 Int64 版 NetworkToHostOrder 得到 8 字节翻转值），直接字节乘加；③ Chrome 直接打开 PNG 失败时返回 chrome-error://chromewebdata 页且自带 data:URI 插图（1233×100）——探针断言必须连 location.href 一起看，naturalWidth 非 0 也可能是错误页插图。
