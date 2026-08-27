@@ -1,11 +1,11 @@
 # Cloud Run 部署（backend-v2）——发布底子加固版
 
 **线上地址（2026-08-27/28 已部署；服务名 08-28 由用户改名 mn-backend-v2 → mnationworld-web）**：https://mnationworld.com（自定义域名，08-28 接线；run.app 原址 https://mnationworld-web-641398703651.asia-southeast1.run.app 仍可用）
-- 公网站点：`/` ｜ 管理后台：`/admin/`（staff 邮箱 + **邮件验证码**，production 姿态）｜ API：`/api/*`
+- 公网站点：`/` ｜ 管理后台：`/admin/`（staff 邮箱 + **密码 + 邮件验证码**双因素，production 姿态）｜ API：`/api/*`
 - 项目 `project-02d050ab-8105-448e-bac`（唯一挂了计费 016AE6-868F19-B356BA）；镜像 `asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend/mn-backend-v2:latest`
 - **改名教训**：Cloud Run 服务名决定 URL；用户在控制台改名 = 建了一个空配置新服务（只有镜像，env/卷全没）——发现后已把加固配置全套搬过去并线上 4/4 复验。控制台手建服务不会继承任何配置，必须用 deploy 命令带齐 env + 卷。
 - **数据持久化**：GCS 桶 `gs://mn-backend-data-641398703651`（FUSE 挂载 `/mnt/data`）+ 快照机制，实例重启/缩容/换版本数据不丢（详见下方「快照持久化」）。
-- **安全口径（08-28 SMTP+production 切换后）**：NODE_ENV=production + Gmail SMTP——登录码走邮件，DEV 码 691032 已作废（config.js 强制 production 下失效，实测 400）。管理员 = director Neo，登录邮箱 **microcountry2677@gmail.com** + 邮件验证码（10 分钟有效、60s 重发冷却）。**发信账号 = slati.official@gmail.com**（用户新建的站务 Gmail；发信人与管理员收码邮箱分开——用户不切号，发件人也不暴露私人号）。演示 staff（Alex/Daniel）已下线。**教训：旧 ADMIN_EMAIL=admin@slatiworld.local 是假域名收不到码——切 production 前必须把管理员邮箱换成真实邮箱，否则锁死**。仍免认证公开（公网站点本来就该公开，后台安全靠登录不靠挡门）。还是别放真数据（账号/支付/内容都是试用数据），正式发布会整体迁移。
+- **安全口径（08-28 SMTP+production 切换后）**：NODE_ENV=production + Gmail SMTP——登录码走邮件，DEV 码 691032 已作废（config.js 强制 production 下失效，实测 400）。**W6（08-28）：登录 = 密码 + 每次邮件验证码**（银行级双因素；码 10 分钟有效、60s 重发冷却、5 次锁）；**旧账号首登仅码登录 → 强制设密引导 → 此后每次密码+码**（Neo 部署后第一次登录会走设密引导）。忘记密码：登录卡「忘记密码？」→ 邮箱收码 → 设新密码 → 全部会话失效强制重登。管理员 = director Neo，登录邮箱 **microcountry2677@gmail.com**。**发信账号 = slati.official@gmail.com**（用户新建的站务 Gmail；发信人与管理员收码邮箱分开——用户不切号，发件人也不暴露私人号）。演示 staff（Alex/Daniel）已下线。**教训：旧 ADMIN_EMAIL=admin@slatiworld.local 是假域名收不到码——切 production 前必须把管理员邮箱换成真实邮箱，否则锁死**。仍免认证公开（公网站点本来就该公开，后台安全靠登录不靠挡门）。还是别放真数据（账号/支付/内容都是试用数据），正式发布会整体迁移。
 
 ## 架构（一个 URL 全链路）
 
@@ -59,14 +59,14 @@ gcloud run deploy mnationworld-web \
   --set-env-vars "NODE_ENV=production,ADMIN_EMAIL=microcountry2677@gmail.com,SEED_ON_BOOT=1,SEED_DEMO_STAFF=false,DEV_LOGIN_CODE=691032,SNAPSHOT_PATH=/mnt/data/mn-v2.sqlite.snap,SNAPSHOT_INTERVAL_MS=60000,SMTP_HOST=smtp.gmail.com,SMTP_PORT=465,SMTP_SECURE=true,SMTP_USER=slati.official@gmail.com,SMTP_PASS=<Gmail 应用专用密码 16 位无空格>,MAIL_FROM=M.NationWorld <slati.official@gmail.com>"
 ```
 
-- `ADMIN_EMAIL`：seed 据此建 project_director（Neo）；改邮箱 + 重跑 seed = 再建一行（按邮箱幂等）。**必须是能收信的真实邮箱**（production 下登录码发到它，假域名=锁死）。
-- `DEV_LOGIN_CODE`：production 下 config.js 强制失效（留着当回退开关——出问题把 NODE_ENV 改回 development 即可用固定码救急）。
+- `ADMIN_EMAIL`：seed 据此建 project_director（Neo）；改邮箱 + 重跑 seed = 再建一行（按邮箱幂等）。**必须是能收信的真实邮箱**（production 下登录码发到它，假域名=锁死）。W6：seed 不种密码（011 加列后 password_hash NULL）→ **首登走仅码登录 + 设密引导**，设密后每次密码+码。
+- `DEV_LOGIN_CODE`：production 下 config.js 强制失效（留着当回退开关——出问题把 NODE_ENV 改回 development 即可用固定码救急；dev 模式固定码直登且跳过密码校验）。
 - **SMTP 四件套 + MAIL_FROM**：Gmail 应用专用密码（myaccount.google.com → 安全性 → 两步验证 → 应用专用密码；16 位不带空格）。**发信人 = slati.official@gmail.com（站务号）；管理员收码 = ADMIN_EMAIL（主号）——两账号分开**。品牌域名邮箱（service@mnationworld.com）路线：Zoho 免费版无 SMTP 不可用（webmail only）、Workspace/Zoho Lite 付费绑卡；免费可发 = Brevo（300 封/天、不绑卡，域名验证走 Cloud DNS）——用户要真正自有域名发件人时再走 Brevo，只改这几个 env。
 - 邮箱每天发送上限 ~500 封（Gmail 常规账号），试用期绰绰有余。
 - `SEED_DEMO_STAFF=false`：只 seed director Neo，不建演示 staff。
 - GCS FUSE 卷要求 gen2 执行环境 + 同项目桶 + 计算服务账号 storage.objectAdmin（已配：`641398703651-compute@developer.gserviceaccount.com`）。
 - 区域 asia-southeast1（新加坡，离马来西亚最近）；已开的 API：run.googleapis.com、artifactregistry.googleapis.com（仓库 mn-backend）。
-- 验证：`/api/health` 应回 `{status:ok, tables:57, version:2.0.0}`；`/admin/` 用 staff 邮箱 + 691032 登录。
+- 验证：`/api/health` 应回 `{status:ok, tables:57, version:2.0.0}`；`/admin/` 用 staff 邮箱登录——**W6 双因素：密码 + 邮件验证码**（Neo 首登仅码 → 设密引导 → 此后密码+码）。
 - 扩容：`gcloud run services update mnationworld-web --region asia-southeast1 --max-instances N`（N>1 时活库随实例分裂——快照只保证「存续」不保证「一致」，正式发布前用 Cloud SQL）。
 - 控制台改名会丢失配置（实测教训）——重命名服务后必须重跑上面完整 deploy 命令补 env + 卷，别在控制台裸建。
 
@@ -84,7 +84,8 @@ gcloud run deploy mnationworld-web \
 | 查快照桶 | `gcloud storage ls -l gs://mn-backend-data-641398703651` |
 | 看启动/快照日志 | `gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="mnationworld-web"' --format='value(timestamp,textPayload)'` |
 | 换发信邮箱/密码 | 改 `--set-env-vars` 里 `SMTP_USER`/`SMTP_PASS` 重部署（应用密码可随时在 Google 账号页删除作废） |
-| 救急回退固定码 | `NODE_ENV` 改回 `development` 重部署 → 691032 复活（production 下恒失效） |
+| 救急回退固定码 | `NODE_ENV` 改回 `development` 重部署 → 691032 复活（production 下恒失效；dev 码直登跳过密码） |
+| 忘记密码（管理员） | `/admin/` 登录卡「忘记密码？」→ 邮箱收码 → 设新密码（全部会话失效）；不依赖 staff 会话 |
 | 手动全量备份 | `gcloud storage cp gs://mn-backend-data-641398703651/<最新snap> ./backup.sqlite`（mtime 最大那个） |
 | 试运行重置（清数据重来） | 删桶里全部 snap 文件 + 重部署（冷启动无快照 → 全新库 + seed） |
 
@@ -94,6 +95,6 @@ gcloud run deploy mnationworld-web \
 |---|---|---|
 | 数据 | GCS 快照持久化（60s 间隔 + 临终快照；部署瞬间 ≤60s 写入窗口） | Cloud SQL（零窗口、多实例一致） |
 | cron | 不启动（scale-to-zero 杀进程内定时） | Cloud Scheduler + 独立 worker |
-| 登录 | ✅ production + Gmail SMTP（08-28）：邮箱收码登录，691032 已作废 | 品牌邮箱收码（同一 SMTP 切换） |
+| 登录 | ✅ production + Gmail SMTP（08-28）：**密码 + 邮件验证码双因素**（W6；旧账号首登设密引导；忘记密码邮箱重置），691032 已作废 | 品牌邮箱收码（同一 SMTP 切换） |
 | 邮件 | ✅ Gmail SMTP（08-28 应用专用密码；每天 ~500 封上限够试用） | 品牌邮箱发信（SES/Mailgun，等用户开账号） |
 | 域名 | ✅ 自有域名 mnationworld.com 已接线（08-28，证书自动签发） | www 子域（可选） |

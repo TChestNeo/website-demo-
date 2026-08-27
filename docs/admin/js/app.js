@@ -1,6 +1,7 @@
-/* SlatiControl 壳（v2）：boot（/staff/auth/me 三态）→ staff 登录（email-code → verify 两段式）
+/* SlatiControl 壳（v2）：boot（/staff/auth/me 三态）→ staff 登录（W6：密码 + email-code 双因素）
    → 导航壳（§30 十二组）→ #hash 深链路由 → 页面渲染。
-   登录态三态：adminLogin（登录）/ adminGate（无权限或后端不可达）/ adminRoot（面板）。
+   登录态三态：adminLogin（登录）/ adminGate（无权限或后端不可达）/ adminRoot（面板）；
+   W6 附属：adminSetPassword（旧 staff 首登设密引导）/ adminResetPassword（忘记密码两步重置）。
    W2 只交付 Dashboard/Analytics/Users/Security 四页；其余导航组渲染「建设中」占位。 */
 (function () {
   'use strict';
@@ -43,8 +44,11 @@
   let cdTimer = null;
   let authed = false; // 会话有效标志：route() 仅在登录态渲染——logout 的 hash 复位不再发死会话请求
 
-  // ── 三态切换 ──
-  function hideAll() { $('adminLogin').style.display = 'none'; $('adminGate').style.display = 'none'; $('adminRoot').style.display = 'none'; }
+  // ── 三态切换（W6 附属块同收同放）──
+  function hideAll() {
+    ['adminLogin', 'adminGate', 'adminRoot', 'adminSetPassword', 'adminResetPassword']
+      .forEach((id) => { $(id).style.display = 'none'; });
+  }
   function showLogin() {
     authed = false;
     hideAll();
@@ -98,19 +102,29 @@
     route();
   }
 
-  // ── 登录两段式（email-code → verify；防枚举：发码恒 ok，成败在 verify）──
+  // ── 登录（W6 双因素：密码 + email-code → verify；防枚举：发码恒 ok，成败在 verify）──
   function setLoginMsg(text, isErr) {
     const m = $('loginMsg');
     m.textContent = text;
     m.className = 'adm-meta' + (isErr ? ' err' : '');
   }
-  function startCountdown(secs = 60) {
-    const btn = $('sendCodeBtn');
+  function setPwMsg(text, isErr) {
+    const m = $('setPwMsg');
+    m.textContent = text;
+    m.className = 'adm-meta' + (isErr ? ' err' : '');
+  }
+  function setResetMsg(text, isErr) {
+    const m = $('resetMsg');
+    m.textContent = text;
+    m.className = 'adm-meta' + (isErr ? ' err' : '');
+  }
+  function startCountdown(secs = 60, btnId = 'sendCodeBtn', idleLabel = '重新发送') {
+    const btn = $(btnId);
     clearInterval(cdTimer);
     btn.disabled = true;
     const tick = () => {
-      btn.textContent = `重新发送（${secs}s）`;
-      if (--secs < 0) { clearInterval(cdTimer); btn.disabled = false; btn.textContent = '重新发送'; }
+      btn.textContent = `${idleLabel}（${secs}s）`;
+      if (--secs < 0) { clearInterval(cdTimer); btn.disabled = false; btn.textContent = idleLabel; }
     };
     tick();
     cdTimer = setInterval(tick, 1000);
@@ -118,6 +132,9 @@
   $('sendCodeBtn').addEventListener('click', () => {
     const email = $('loginEmail').value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setLoginMsg('请输入有效邮箱', true);
+    // W6：发码前先过密码策略（8-72），避免等 60s 重发窗口才发现密码不合格
+    const pw = $('loginPassword').value;
+    if (!pw || pw.length < 8 || pw.length > 72) return setLoginMsg('请输入密码（8-72 字符）', true);
     const btn = $('sendCodeBtn');
     btn.disabled = true; btn.textContent = '发送中…';
     SC.sendCode(email).then((r) => {
@@ -138,19 +155,110 @@
   $('loginBtn').addEventListener('click', () => {
     const email = $('loginEmail').value.trim();
     const code = $('loginCode').value.trim();
+    const password = $('loginPassword').value;
     if (!/^\d{6}$/.test(code)) return setLoginMsg('请输入 6 位数字验证码', true);
     const btn = $('loginBtn');
     btn.disabled = true; btn.textContent = '登录中…';
-    SC.verify(email, code).then((r) => {
-      if (r.ok) { setLoginMsg('', false); boot(); return; }
+    SC.verify(email, code, password).then((r) => {
+      if (r.ok) {
+        setLoginMsg('', false);
+        // W6：旧 staff（无密码）仅码登录 → 引导设密（会话已建立，设完直达面板）
+        if (r.data && r.data.passwordSetupRequired) { showSetPassword(); return; }
+        boot();
+        return;
+      }
       btn.disabled = false; btn.textContent = '登录';
       if (r.networkError) return setLoginMsg('无法连接后端，请稍后重试', true);
       setLoginMsg((r.data && r.data.error && r.data.error.message) || '登录失败，请重试', true);
     });
   });
   $('loginEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('sendCodeBtn').click(); });
+  $('loginPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('sendCodeBtn').click(); });
   $('loginCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('loginBtn').click(); });
+  $('forgotAdminPw').addEventListener('click', showReset);
   $('logoutBtn').addEventListener('click', () => { SC.logout().then(() => { showLogin(); location.hash = ''; }); }); // showLogin 先置 authed=false → hash 复位触发的 route() 早退
+
+  // ── W6 首登设密（旧 staff 验证码登录后引导；会话无缝保留 → 设完 boot 直入面板）──
+  function showSetPassword() {
+    authed = false;
+    hideAll();
+    clearInterval(cdTimer);
+    const btn = $('setPwBtn');
+    btn.disabled = false; btn.textContent = '设置密码并进入';
+    $('setPassword').value = '';
+    $('setPwMsg').textContent = '';
+    $('setPwMsg').className = 'adm-meta';
+    $('adminSetPassword').style.display = 'block';
+    $('setPassword').focus();
+  }
+  $('setPwBtn').addEventListener('click', () => {
+    const pw = $('setPassword').value;
+    if (!pw || pw.length < 8 || pw.length > 72) return setPwMsg('密码需 8-72 字符', true);
+    const btn = $('setPwBtn');
+    btn.disabled = true; btn.textContent = '设置中…';
+    SC.setPassword(pw).then((r) => {
+      if (r.ok) { boot(); return; }
+      btn.disabled = false; btn.textContent = '设置密码并进入';
+      if (r.networkError) return setPwMsg('无法连接后端，请稍后重试', true);
+      setPwMsg((r.data && r.data.error && r.data.error.message) || '设置失败，请重试', true);
+    });
+  });
+  $('setPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('setPwBtn').click(); });
+
+  // ── W6 忘记密码（两步：发码 → 码 + 新密码重置；成功后回登录预填邮箱）──
+  function showReset() {
+    authed = false;
+    hideAll();
+    clearInterval(cdTimer);
+    const btn = $('resetSendBtn');
+    btn.disabled = false; btn.textContent = '发送验证码';
+    $('resetEmail').value = $('loginEmail').value.trim();
+    $('resetCode').value = '';
+    $('resetPassword').value = '';
+    $('resetMsg').textContent = '';
+    $('resetMsg').className = 'adm-meta';
+    $('adminResetPassword').style.display = 'block';
+    $('resetEmail').focus();
+  }
+  $('resetSendBtn').addEventListener('click', () => {
+    const email = $('resetEmail').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setResetMsg('请输入有效邮箱', true);
+    const btn = $('resetSendBtn');
+    btn.disabled = true; btn.textContent = '发送中…';
+    SC.sendCode(email).then((r) => {
+      if (r.networkError) {
+        btn.disabled = false; btn.textContent = '发送验证码';
+        return setResetMsg('无法连接后端，请稍后重试', true);
+      }
+      if (!r.ok) {
+        btn.disabled = false; btn.textContent = '发送验证码';
+        return setResetMsg((r.data && r.data.error && r.data.error.message) || '发送失败', true);
+      }
+      setResetMsg('验证码已发送（若该邮箱是工作人员账号，将收到 6 位验证码）。', false);
+      startCountdown(60, 'resetSendBtn', '重新发送');
+    });
+  });
+  $('resetBtn').addEventListener('click', () => {
+    const email = $('resetEmail').value.trim();
+    const code = $('resetCode').value.trim();
+    const pw = $('resetPassword').value;
+    if (!pw || pw.length < 8 || pw.length > 72) return setResetMsg('密码需 8-72 字符', true);
+    if (!/^\d{6}$/.test(code)) return setResetMsg('请输入 6 位数字验证码', true);
+    const btn = $('resetBtn');
+    btn.disabled = true; btn.textContent = '重置中…';
+    SC.resetPassword(email, code, pw).then((r) => {
+      btn.disabled = false; btn.textContent = '重置密码';
+      if (r.networkError) return setResetMsg('无法连接后端，请稍后重试', true);
+      if (!r.ok) return setResetMsg((r.data && r.data.error && r.data.error.message) || '重置失败，请重试', true);
+      // 重置成功：回登录页，预填邮箱 + 提示用新密码登录（旧密码已失效）
+      showLogin();
+      $('loginEmail').value = email;
+      setLoginMsg('密码已重置——请用新密码 + 验证码登录', false);
+    });
+  });
+  $('resetCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('resetBtn').click(); });
+  $('resetPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('resetBtn').click(); });
+  $('resetBackBtn').addEventListener('click', showLogin);
 
   // 会话过期（任意请求 401 派发 mn:unauthorized）→ 回登录
   window.addEventListener('mn:unauthorized', () => {

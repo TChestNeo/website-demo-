@@ -18,10 +18,13 @@
         .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
     },
 
-    // staff 认证四件套（v2 契约：email-code 防枚举恒 ok；verify 落 sc_session cookie）
+    // staff 认证（v2 契约：email-code 防枚举恒 ok；verify 落 sc_session cookie）
+    // W6：verify 带 password（有密码 staff = 密码+码）；setPassword/resetPassword = 首登设密 / 忘记密码
     me: () => MN_API.get('/staff/auth/me'),
     sendCode: (email) => MN_API.post('/staff/auth/email-code', { email }),
-    verify: (email, code) => MN_API.post('/staff/auth/verify', { email, code }),
+    verify: (email, code, password) => MN_API.post('/staff/auth/verify', { email, code, password }),
+    setPassword: (newPassword) => MN_API.post('/staff/auth/password', { newPassword }),
+    resetPassword: (email, code, newPassword) => MN_API.post('/staff/auth/password-reset', { email, code, newPassword }),
     logout: () => MN_API.post('/staff/auth/logout', {}),
 
     get: (p) => MN_API.get(p),

@@ -137,13 +137,16 @@
 
 <div class="adm-shell">
 
-  <!-- staff 登录页（邮箱验证码两段式；管理端无 demo/离线回退） -->
+  <!-- staff 登录页（W6：密码 + 邮箱验证码双因素；管理端无 demo/离线回退） -->
   <div id="adminLogin" class="card adm-login" style="display:none">
     <h3 class="headline-md">SlatiControl 登录</h3>
-    <p class="body-md" style="color:var(--color-on-surface-variant)">仅工作人员账号可进入。验证码发送至邮箱，10 分钟内有效。</p>
+    <p class="body-md" style="color:var(--color-on-surface-variant)">仅工作人员账号可进入。密码 + 邮箱验证码双因素登录，验证码发送至邮箱，10 分钟内有效。</p>
     <div class="adm-form">
       <input class="adm-input" id="loginEmail" type="email" placeholder="工作人员邮箱" autocomplete="email" style="flex:1;min-width:220px">
       <button class="btn btn-primary" id="sendCodeBtn">发送验证码</button>
+    </div>
+    <div class="adm-form">
+      <input class="adm-input" id="loginPassword" type="password" placeholder="密码（8-72 字符）" autocomplete="current-password" style="flex:1">
     </div>
     <div class="adm-form" id="codeRow" style="display:none">
       <input class="adm-input" id="loginCode" placeholder="6 位验证码" maxlength="6" inputmode="numeric"
@@ -151,6 +154,36 @@
       <button class="btn btn-primary" id="loginBtn">登录</button>
     </div>
     <p class="adm-meta" id="loginMsg"></p>
+    <p class="adm-meta" style="text-align:center"><a href="javascript:void(0)" id="forgotAdminPw" style="color:var(--color-primary)">忘记密码？</a></p>
+  </div>
+
+  <!-- W6：首登设密（旧 staff 仅码登录后引导；设完直达面板） -->
+  <div id="adminSetPassword" class="card adm-login" style="display:none">
+    <h3 class="headline-md">设置您的密码</h3>
+    <p class="body-md" style="color:var(--color-on-surface-variant)">旧账号首次登录：设置密码后，下次登录需要密码 + 验证码。</p>
+    <div class="adm-form">
+      <input class="adm-input" id="setPassword" type="password" placeholder="新密码（8-72 字符）" autocomplete="new-password" style="flex:1">
+      <button class="btn btn-primary" id="setPwBtn">设置密码并进入</button>
+    </div>
+    <p class="adm-meta" id="setPwMsg"></p>
+  </div>
+
+  <!-- W6：忘记密码（两步：发码 → 码 + 新密码重置） -->
+  <div id="adminResetPassword" class="card adm-login" style="display:none">
+    <h3 class="headline-md">重置密码</h3>
+    <p class="body-md" style="color:var(--color-on-surface-variant)">验证码发送至工作人员邮箱，10 分钟内有效。</p>
+    <div class="adm-form">
+      <input class="adm-input" id="resetEmail" type="email" placeholder="工作人员邮箱" autocomplete="email" style="flex:1;min-width:220px">
+      <button class="btn btn-primary" id="resetSendBtn">发送验证码</button>
+    </div>
+    <div class="adm-form">
+      <input class="adm-input" id="resetCode" placeholder="6 位验证码" maxlength="6" inputmode="numeric"
+        style="width:150px;letter-spacing:0.3em;text-align:center">
+      <input class="adm-input" id="resetPassword" type="password" placeholder="新密码（8-72 字符）" autocomplete="new-password" style="flex:1">
+    </div>
+    <button class="btn btn-primary" id="resetBtn" style="width:100%">重置密码</button>
+    <p class="adm-meta" id="resetMsg"></p>
+    <p class="adm-meta" style="text-align:center"><a href="javascript:void(0)" id="resetBackBtn" style="color:var(--color-primary)">返回登录</a></p>
   </div>
 
   <!-- 无权限 / 后端不可达 -->

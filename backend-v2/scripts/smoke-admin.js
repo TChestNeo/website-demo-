@@ -3,9 +3,11 @@
 // 自举：临时库（openDb 自动跑迁移）+ 种子（director/cs 两 staff + 用户/支付/登录史/事件/内容流水）
 // → createServer({db, config, mailer 桩}) → 静态壳（docs/ 静态 + /api 代理到后端，部署同源拓扑）
 // → headless Chrome CDP → DOM computed-style/文本断言（截图管线死 → 既定方法：Runtime.evaluate 返回值）。
-// 断言口径：登录两段式（防枚举恒 ok + DEV_LOGIN_CODE 本地直登）→ 四页渲染（Dashboard 六组 /
-//   Analytics 域切换 + canvas / Users 列表→详情 / Security 登录史→事件）
-// → cs（Alex）掩码链路：全局安全 403 / 支付区块无权限 / 近 10 条登录 / IP 前两段 / 无内部字段。
+// 断言口径：W6 双因素登录（密码 + 邮箱验证码；mailer 桩记码真实码驱动，DEV_LOGIN_CODE 不参与）：
+//   Neo 有密码（密码空拦截 → 密码+真实码直登）→ 四页渲染（Dashboard 六组 / Analytics 域切换 + canvas /
+//   Users 列表→详情 / Security 登录史→事件）→ cs（Alex，旧账号无密码）链路：仅码登录 → 首登设密 →
+//   掩码断言（全局安全 403 / 支付区块无权限 / 近 10 条登录 / IP 前两段 / 无内部字段）→
+//   错密码不消费码同码改对 / 忘记密码两步重置 → 新密码重登。
 // 进程清理只杀本工具 spawn 的 chrome PID（taskkill /T /F /PID，绝不按镜像名）。
 //
 // 用法：node scripts/smoke-admin.js [--chrome <chrome.exe 路径>]
@@ -20,6 +22,7 @@ const { openDb } = require('../src/db');
 const { createServer } = require('../src/server');
 const config = require('../src/config');
 const { createStaff, assignRole } = require('../src/middleware/staff-auth');
+const { hashPassword } = require('../src/password');
 
 const ROOT = path.join(__dirname, '..', '..');
 const DOCS = path.join(ROOT, 'docs');
@@ -39,14 +42,15 @@ function findChrome() {
   throw new Error('未找到 Chrome/Edge，请用 --chrome <路径> 指定');
 }
 
-// ── 种子（列契约 = migrations 001/005/006/008/009/010；W2 测试同口径）──
-function seed(db) {
+// ── 种子（列契约 = migrations 001/005/006/008/009/010；W2 测试同口径。
+//    W6：Neo 种密码走密码+码登录；Alex 保持 password_hash NULL 走旧账号首登设密链路）──
+async function seed(db) {
   const now = Date.now();
   const iso = (msAgo) => new Date(now - msAgo).toISOString();
   const DAY = 86400e3;
   const ins = (sql, ...args) => db.prepare(sql).run(...args);
 
-  const neo = createStaff(db, { email: 'neo@smoke.local', displayName: 'Neo', position: '项目总监', timezone: 'UTC+8' });
+  const neo = createStaff(db, { email: 'neo@smoke.local', displayName: 'Neo', position: '项目总监', timezone: 'UTC+8', passwordHash: await hashPassword('neo-pass-123') });
   assignRole(db, neo.id, 'project_director');
   const alex = createStaff(db, { email: 'alex@smoke.local', displayName: 'Alex', position: '客户支持', timezone: 'UTC+8' });
   assignRole(db, alex.id, 'customer_support');
@@ -222,12 +226,14 @@ const secOf = (sel, text) => `(() => { const s = [...document.querySelectorAll('
 async function main() {
   console.log('smoke-admin：启动中…');
 
-  // 1. 临时库 + 种子 + 后端（DEV_LOGIN_CODE 仅本地口径：nodeEnv=development）
+  // 1. 临时库 + 种子 + 后端（W6 双因素真实路径：mailer 桩记码驱动登录/设密/重置，DEV_LOGIN_CODE 不参与）
   const dbPath = path.join(os.tmpdir(), `smoke-admin-${process.pid}.db`);
   const db = openDb(dbPath);
-  seed(db);
-  const cfg = { ...config, databasePath: dbPath, devLoginCode: '888888', nodeEnv: 'development' };
-  const backend = createServer({ db, config: cfg, mailer: { sendCode: async () => {} } });
+  await seed(db);
+  const mails = [];
+  const codeOf = (email) => mails.filter((m) => m.email === email && m.opts && m.opts.purpose === 'staff_login').at(-1).code;
+  const cfg = { ...config, databasePath: dbPath, nodeEnv: 'development' };
+  const backend = createServer({ db, config: cfg, mailer: { sendCode: async (email, code, opts) => { mails.push({ email, code, opts }); } } });
   const backendPort = await new Promise((res) => backend.listen(0, '127.0.0.1', () => res(backend.address().port)));
 
   // 2. 静态壳（docs/ + /api 代理）
@@ -256,10 +262,17 @@ async function main() {
       (() => { const g = (id) => document.getElementById(id).style.display;
         return g('adminLogin') === 'block' && g('adminGate') === 'none' && g('adminRoot') === 'none'; })()`));
 
-    // ── 登录两段式：email-code（防枚举恒 ok）→ verify ──
+    // ── W6 双因素登录（Neo 有密码）：密码空拦截 → 密码 + mailer 桩真实码直登 ──
     await client.evalJs(`
       (() => { const e = document.getElementById('loginEmail');
         e.value = 'neo@smoke.local';
+        document.getElementById('sendCodeBtn').click(); })()`);
+    ok('密码空 → 发码拦截（提示 8-72 + 码行不出）', await client.evalJs(`
+      (() => document.getElementById('loginMsg').textContent.includes('8-72') &&
+        document.getElementById('codeRow').style.display === 'none')()`));
+
+    await client.evalJs(`
+      (() => { document.getElementById('loginPassword').value = 'neo-pass-123';
         document.getElementById('sendCodeBtn').click(); })()`);
     await client.waitFor(`document.getElementById('codeRow').style.display === 'flex'`, 6000, '验证码行出现');
     ok('发码后验证码行出现', true);
@@ -267,10 +280,9 @@ async function main() {
     ok('重发倒计时锁定按钮', await client.evalJs(`document.getElementById('sendCodeBtn').disabled === true`));
 
     await client.evalJs(`
-      (() => { const c = document.getElementById('loginCode');
-        c.value = '888888';
+      (() => { document.getElementById('loginCode').value = '${codeOf('neo@smoke.local')}';
         document.getElementById('loginBtn').click(); })()`);
-    await client.waitFor(`document.getElementById('adminRoot').style.display === 'block'`, 8000, '面板可见（DEV_LOGIN_CODE 本地直登）');
+    await client.waitFor(`document.getElementById('adminRoot').style.display === 'block'`, 8000, '面板可见（密码+真实码）');
     ok('director 登录 → 面板', true);
     ok('身份栏 = Neo · 项目总监', await client.evalJs(`document.getElementById('admWho').textContent === 'Neo · 项目总监'`));
     ok('角色栏 = 项目总监', await client.evalJs(`document.getElementById('admRoles').textContent === '项目总监'`));
@@ -350,21 +362,27 @@ async function main() {
       document.getElementById('pane-todo').textContent.includes('W3') &&
       document.getElementById('pane-todo').textContent.includes('建设中')`));
 
-    // ── 退出 → cs（Alex）登录 → 掩码链路 ──
+    // ── 退出 → cs（Alex，旧账号无密码）：仅码登录 → 首登设密引导 → 面板 → 掩码链路 ──
     await client.evalJs(`document.getElementById('logoutBtn').click()`);
     await client.waitFor(`document.getElementById('adminLogin').style.display === 'block'`, 6000, '退出回登录');
     ok('退出 → 回登录页', true);
     await client.evalJs(`
       (() => { const e = document.getElementById('loginEmail');
         e.value = 'alex@smoke.local';
+        document.getElementById('loginPassword').value = 'legacy-any-1'; // 旧账号后端忽略密码参数
         document.getElementById('sendCodeBtn').click(); })()`);
     await client.waitFor(`document.getElementById('codeRow').style.display === 'flex'`, 6000, 'cs 发码');
     await client.evalJs(`
-      (() => { const c = document.getElementById('loginCode');
-        c.value = '888888';
+      (() => { document.getElementById('loginCode').value = '${codeOf('alex@smoke.local')}';
         document.getElementById('loginBtn').click(); })()`);
-    await client.waitFor(`document.getElementById('adminRoot').style.display === 'block'`, 8000, 'cs 登录');
-    ok('cs（Alex）登录 → 角色栏 客服', await client.evalJs(`document.getElementById('admRoles').textContent === '客服'`));
+    await client.waitFor(`document.getElementById('adminSetPassword').style.display === 'block'`, 8000, '旧账号设密引导');
+    ok('旧账号仅码登录 → 设密引导（面板未进）', await client.evalJs(`
+      document.getElementById('adminRoot').style.display === 'none'`));
+    await client.evalJs(`
+      (() => { document.getElementById('setPassword').value = 'alex-new-pass';
+        document.getElementById('setPwBtn').click(); })()`);
+    await client.waitFor(`document.getElementById('adminRoot').style.display === 'block'`, 8000, '设密后直达面板');
+    ok('cs（Alex）设密 → 面板 → 角色栏 客服', await client.evalJs(`document.getElementById('admRoles').textContent === '客服'`));
 
     await client.evalJs(`document.querySelector('#navGroups a[href="#/security"]').click()`);
     await client.waitFor(`document.querySelector('#pane-security').textContent.includes('无权限')`, 8000, 'cs 全局安全 403');
@@ -394,13 +412,66 @@ async function main() {
     ok('cs 详情：无标记按钮（无 security.manage）', await client.evalJs(`
       ![...document.querySelectorAll('#pane-users button')].some((b) => b.textContent === '标记')`));
 
+    // ── W6：有密码 staff 错密码不消费码（同码改对重试）──
+    await client.evalJs(`document.getElementById('logoutBtn').click()`);
+    await client.waitFor(`document.getElementById('adminLogin').style.display === 'block'`, 6000, '退出回登录');
+    db.prepare("DELETE FROM rate_limits WHERE bucket = 'ec:staff:alex@smoke.local'").run(); // 清 60s 重发桶
+    await client.evalJs(`
+      (() => { const e = document.getElementById('loginEmail');
+        e.value = 'alex@smoke.local';
+        document.getElementById('loginPassword').value = 'alex-new-pass';
+        document.getElementById('sendCodeBtn').click(); })()`);
+    await client.waitFor(`document.getElementById('codeRow').style.display === 'flex'`, 6000, 'alex 再发码');
+    await client.evalJs(`
+      (() => { document.getElementById('loginPassword').value = 'wrong-pass-1';
+        document.getElementById('loginCode').value = '${codeOf('alex@smoke.local')}';
+        document.getElementById('loginBtn').click(); })()`);
+    await client.waitFor(`document.getElementById('loginMsg').textContent.includes('密码或验证码错误')`, 6000, '错密码提示');
+    ok('错密码 → 提示 + 留在登录页', await client.evalJs(`document.getElementById('adminLogin').style.display === 'block'`));
+    await client.evalJs(`
+      (() => { document.getElementById('loginPassword').value = 'alex-new-pass';
+        document.getElementById('loginBtn').click(); })()`);
+    await client.waitFor(`document.getElementById('adminRoot').style.display === 'block'`, 8000, '同码改对登录');
+    ok('同码改对密码 → 登录成功（码未消费）', true);
+
+    // ── W6：忘记密码两步重置 → 新密码重登 ──
+    await client.evalJs(`document.getElementById('logoutBtn').click()`);
+    await client.waitFor(`document.getElementById('adminLogin').style.display === 'block'`, 6000, '退出回登录');
+    await client.evalJs(`document.getElementById('forgotAdminPw').click()`);
+    ok('忘记密码 → 重置页（邮箱预填）', await client.evalJs(`
+      (() => document.getElementById('adminResetPassword').style.display === 'block' &&
+        document.getElementById('resetEmail').value === 'alex@smoke.local')()`));
+    db.prepare("DELETE FROM rate_limits WHERE bucket = 'ec:staff:alex@smoke.local'").run();
+    await client.evalJs(`document.getElementById('resetSendBtn').click()`);
+    await client.waitFor(`document.getElementById('resetSendBtn').textContent.includes('重新发送')`, 6000, '重置发码倒计时');
+    ok('重置发码 → 倒计时锁定', await client.evalJs(`document.getElementById('resetSendBtn').disabled === true`));
+    await client.evalJs(`
+      (() => { document.getElementById('resetCode').value = '${codeOf('alex@smoke.local')}';
+        document.getElementById('resetPassword').value = 'alex-reset-pass';
+        document.getElementById('resetBtn').click(); })()`);
+    await client.waitFor(`document.getElementById('adminLogin').style.display === 'block'`, 8000, '重置后回登录页');
+    ok('重置成功 → 回登录页 + 提示', await client.evalJs(`
+      (() => document.getElementById('loginMsg').textContent.includes('密码已重置') &&
+        document.getElementById('loginEmail').value === 'alex@smoke.local')()`));
+    db.prepare("DELETE FROM rate_limits WHERE bucket = 'ec:staff:alex@smoke.local'").run();
+    await client.evalJs(`
+      (() => { document.getElementById('loginPassword').value = 'alex-reset-pass';
+        document.getElementById('sendCodeBtn').click(); })()`);
+    await client.waitFor(`document.getElementById('codeRow').style.display === 'flex'`, 6000, '重置后发码');
+    await client.evalJs(`
+      (() => { document.getElementById('loginCode').value = '${codeOf('alex@smoke.local')}';
+        document.getElementById('loginBtn').click(); })()`);
+    await client.waitFor(`document.getElementById('adminRoot').style.display === 'block'`, 8000, '新密码登录');
+    ok('新密码 + 码 → 登录成功（旧密码已失效）', await client.evalJs(`document.getElementById('admRoles').textContent === '客服'`));
+
     // ── banner：budget 端点未上线（W3）→ 404 → 静默隐藏 ──
     ok('预算 banner 静默隐藏（W3 端点 404）', await client.evalJs(`
       getComputedStyle(document.getElementById('admBanner')).display === 'none'`));
 
-    // ── 控制台零错误（过滤环境性噪声：favicon / Google Fonts / boot 预期 401 me / W3 未上线 404 budget / cs 拒权断言自身的 403 logins·events）──
+    // ── 控制台零错误（过滤环境性噪声：favicon / Google Fonts / boot 预期 401 me / W3 未上线 404 budget /
+    //   cs 拒权断言自身的 403 logins·events / W6 错密码断言自身的 400 verify）──
     await new Promise((r) => setTimeout(r, 800));
-    const isNoise = (url = '') => /favicon|fonts\.googleapis|fonts\.gstatic|\/api\/staff\/auth\/me|\/api\/staff\/ai\/budget|\/api\/staff\/security\/(logins|events)/.test(url);
+    const isNoise = (url = '') => /favicon|fonts\.googleapis|fonts\.gstatic|\/api\/staff\/auth\/me|\/api\/staff\/auth\/verify|\/api\/staff\/ai\/budget|\/api\/staff\/security\/(logins|events)/.test(url);
     const errs = client.events.consoleErrors.filter((e) => !isNoise(e.url))
       .concat(client.events.exceptions.map((e) => ({ url: e.url || '', text: (e.exception && e.exception.description) || e.text })));
     ok(`控制台零错误（实际 ${errs.length} 条）`, errs.length === 0,
@@ -411,7 +482,7 @@ async function main() {
     failures.push('执行异常: ' + err.message);
     console.log(`\n冒烟中断：${err.message}`);
     // 失败诊断快照：页面 console error / 异常（环境性噪声过滤同最终断言）
-    const noise = (u = '') => /favicon|fonts\.googleapis|fonts\.gstatic|\/api\/staff\/auth\/me|\/api\/staff\/ai\/budget|\/api\/staff\/security\/(logins|events)/.test(u);
+    const noise = (u = '') => /favicon|fonts\.googleapis|fonts\.gstatic|\/api\/staff\/auth\/me|\/api\/staff\/auth\/verify|\/api\/staff\/ai\/budget|\/api\/staff\/security\/(logins|events)/.test(u);
     const cs = (client.events.consoleErrors || []).filter((e) => !noise(e.url));
     if (cs.length) console.log('页面 console error 快照：\n' +
       cs.slice(0, 5).map((e) => `  [${e.url || ''}:${e.lineNumber || '?'}] ${e.text}`).join('\n'));
