@@ -300,3 +300,5 @@ SlatiControl v2 第二波：公网 API 与 v1 逐字对等。**波次偏差（�
 处理：deploy 命令全套（gen2 + GCS 卷 + env 六件）打到 mnationworld-web → revision mnationworld-web-00002-fsf 100% 流量。新 URL 线上 4/4 ✅（health 57 表 / 旧码 888888 拒 400 / 新码 691032 登录 Neo / me 会话 director）；快照落桶 ✅（新实例 boot 快照 ba16a3c0，恢复取 mtime 最新 dac18bdf + 修剪旧文件——每实例独立文件机制下两服务共桶自动收敛不互踩）。cloudrun.md/记忆服务名已更新。
 
 遗留：旧服务 mn-backend-v2 仍在（空占一个服务、同桶快照互相接棒不坏但乱）——等用户拍板删除。
+
+补记：用户「你就看着办吧」授权处置 → 旧服务 mn-backend-v2 已删（gcloud run services delete --quiet）。删后 services list 仅剩 mnationworld-web；新 URL health 57 表 ✅；快照桶两文件完好（数据在桶不在服务，删服务零数据损失；桶内多实例旧文件会随下次冷启动自动修剪）。
