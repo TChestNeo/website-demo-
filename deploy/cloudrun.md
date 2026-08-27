@@ -72,7 +72,7 @@ gcloud run deploy mnationworld-web \
 
 - **域名映射**：Cloud Run 托管版的 `gcloud run domain-mappings` 是 Anthos-only（GA 命令拒绝 `--region`），beta 组件本机未装（非交互环境装不上）——**用 REST API 建**：`POST https://run.googleapis.com/v1/projects/<项目>/locations/<区域>/domainmappings`，body `{"apiVersion":"domains.cloudrun.com/v1","kind":"DomainMapping","metadata":{"name":"mnationworld.com"},"spec":{"routeName":"mnationworld-web"}}`。查状态 `GET …/domainmappings/mnationworld.com`。
 - **DNS**：映射创建后 `status.resourceRecords` 给出 4 A（216.239.32/34/36/38.21）+ 4 AAAA（2001:4860:4802:32/34/36/38::15），已加入 Cloud DNS 区 `mnationworld-com`（change 1，TTL 300，apex 根记录）。区 NS = ns-cloud-a1~a4.googledomains.com，域名注册处已指向它们（Google Domains 注册 + 同项目 Cloud DNS 区，NS 自动一致）。
-- **证书**：Google 托管证书在 DNS 生效后自动签发（DomainRoutable=True → CertificateProvisioned=True → Ready=True），全程无需人工。签发期间 HTTPS 连不上属正常（5–15 分钟）。
+- **证书**：Google 托管证书在 DNS 生效后自动签发（DomainRoutable=True → CertificateProvisioned=True → Ready=True），全程无需人工。签发期间 HTTPS 连不上属正常（5–15 分钟）。**已实测（08-28）**：`https://mnationworld.com/api/health` 200（57 表 v2.0.0）；DNS 加记录 → Ready 全程 ~12 分钟，Ready 后本机网络还要再传播几分钟（run.app 对照 200 + WebFetch 独立视角 200 → 排除站点问题，纯边缘线路延迟，等几分钟重试即可）。
 - 域名在 Cloud Domains 注册（另一个域名 medankahwin.com 另有用途，勿动）。若以后要 www.mnationworld.com：另建一条 mapping（name=www.mnationworld.com）+ CNAME 到 `ghs.googlehosted.com`。
 
 ## 运维速查

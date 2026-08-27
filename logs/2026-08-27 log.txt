@@ -317,4 +317,6 @@ SlatiControl v2 第二波：公网 API 与 v1 逐字对等。**波次偏差（�
 
 **教训**：①gcloud beta 组件在非交互终端装不上时，Cloud Run API 就是正路——domainmappings 是标准 REST 资源，比找 beta gcloud 稳；②Cloud Run 域名映射的 resourceRecords 不会立刻出现，Retry 条件自报「System will retry after 00:04」——等一个重试周期再 GET；③域名注册（Cloud Domains）与 DNS 区（Cloud DNS）在 Google 同项目时 NS 自动一致，只需往里加记录，无需去注册商改 NS。
 
-**遗留**：www.mnationworld.com（若要：另建映射 + CNAME ghs.googlehosted.com）；证书签发后跑 https://mnationworld.com/api/health 实测。
+**验证（08-28 实测通过）**：DNS 加记录 → Ready=True 全程 ~12 分钟（期间两轮后台探针 18 分钟全灭属正常——签发完成前 HTTPS 本来就该失败）；Ready 后 `https://mnationworld.com/api/health` → WebFetch 独立视角 200 `{status:ok, tables:57, version:2.0.0}` ✅，本机再过 ~3 分钟也 200（run.app 对照 200 + WebFetch 200 → 排除站点问题，本机不通 = GFE 边缘线路传播延迟，等即可）。**教训：映射 Ready=True ≠ 用户网络立刻能连——边缘 pop 传播还要几分钟，验证要双视角（独立网络 + 本机）**。
+
+**遗留**：www.mnationworld.com（若要：另建映射 + CNAME ghs.googlehosted.com）。
