@@ -49,3 +49,20 @@
 **教训**：① `git add docs` 会把用户未跟踪的个人素材（Screenshot/wand_shine）卷进提交——已 amend 剔除 + 三条精确路径入 .gitignore（**gitignore 不支持引号**：带空格路径要裸写，加引号 = 引号成了模式的一部分不生效）；② entrypoint.js 源码里 `'SQLite format 3\0'` 字面量带真实 NUL 字节 → git/ripgrep 当二进制（历史如此，无害）；③ 闪白类问题先查「缓存头 + 关键脚本是否外链」，再查主题。
 
 **教训**：① 「空的地球」= 无 favicon 的浏览器默认图标，不是页面里的元素；② PS 逐字节读 PNG 维度别用 BitConverter 重载（UInt32 被提升到 Int64 版 NetworkToHostOrder 得到 8 字节翻转值），直接字节乘加；③ Chrome 直接打开 PNG 失败时返回 chrome-error://chromewebdata 页且自带 data:URI 插图（1233×100）——探针断言必须连 location.href 一起看，naturalWidth 非 0 也可能是错误页插图。
+
+## 切页闪白修复第 2 层：CSS 内联 + 防双重绘制（2026-08-28 深夜）
+
+**背景**：用户「还是会闪一下 我感觉这个闪是html和css没有同时加载导致的」——**用户诊断正确**，第 1 层（theme-init 内联 + ETag/304）后闪仍在，真身在样式表。
+
+**真身（探针实测线上时序证实，两层）**：① 冷缓存首帧 FCP 304ms = TTFB 101ms + 浏览器**等 3 个外部样式表往返**（渲染阻塞 `<link>`）才画第一帧——CSS 与 HTML 确实不同时到达，每次部署后 ETag 失效的页面全是冷缓存；② **双重绘制**：DOMContentLoaded（transitions.js 藏起卡片开始淡入编排）之前浏览器先画完整内容一帧 → JS 藏起 → 逐个淡入 = 用户看到的「闪一下又消失」。暖缓存 DCL 74–93ms。
+
+**改动（commit 9cfb169，43 文件，已部署 revision 00009-bkh）**：
+- ① **ethereal.css（36KB）+ Google Fonts CSS2 @font-face 内联**进 40 个引用页 `<head>`（原位替换 `<link>` → `<style>`，级联顺序不变）——首帧零渲染阻塞外部请求；热缓存 HTML 走 304 无 body、内联零体积代价；fonts.gstatic.com woff2 仍外部（非渲染阻塞、带缓存、font-display:swap 由 Google CSS 自带）。ethereal.css 无 url()/@import/`</style>`，无路径重写风险。
+- ② **pre-stagger CSS 预隐藏**：transitions.js 页面 `<body>` 加类，CSS 让卡片在 DCL 前保持 opacity 0（选择器与 CARD_SELECTOR 逐字对齐）——initStagger 第一行同 tick 移除类并写内联 opacity，**中间无绘制帧**；HTML 内 1.6s 兜底脚本防脚本失效永久空白。不做 transform（入场位移由 initStagger 内联给）。
+- ③ **inline-css.js 常驻幂等构建脚本**（backend-v2/scripts/）：ethereal.css 改动后必须重跑再部署；三处改动均可重复运行。
+
+**验证**：本地公网 CDP 电池 17/17 0 console error（浅/深色 bg、Inter 解析、pre-stagger 已移除、opacity→1、privacy 未受影响、零外部样式表）+ smoke-admin 49/49 全绿（后端未变更 npm test 跳过）。线上：health 200 57 表 / 服务页含内联标记+pre-stagger+兜底脚本+零残留外链 / ETag 304 ✓。**探针部署前后对比**：冷 FCP 304→288ms 且白屏结束后是平滑淡入（双重绘制消除）；热 FCP 64/60ms（基线暖 DCL 74–93ms）——用户实际切页场景空白 ~100ms 后直接编排淡入。
+
+**教训**：① **transitions.js 页面检测必须用脚本标签正则**——内联的 ethereal.css 注释里有「transitions.js」字样，`includes` 误判全站 40 页（含无转场的 admin）加 pre-stagger → admin 内容被兜底脚本藏 1.6s（首跑污染，git checkout 恢复 + 重跑）；② 字体抓取缓存只写不读（fetch 落在被删的空代码里）首次运行炸；③ stat 计数用 addedStagger flag 别 includes（内联 CSS 规则内的 pre-stagger 字串污染）；④ 探针 timeline 模板定义在 cdp() 内、main() 引用 → 作用域错，以返回值 timelineExpr 暴露；⑤ PS 下 curl 捕获 `$html.Length` 是**行数**不是字符数（输出为行数组），判大小用 `-join` 后取长。
+
+**遗留（待用户实测）**：用户切页实测——热缓存 FCP ~64ms 后卡片编排淡入（淡出 240–280ms + stagger 是设计转场）；若仍感觉闪可调编排节奏（STAGGER_DELAY/时长）。其余 standing：Neo 首登、W3-W5、Stripe、DeepSeek、Brevo。
