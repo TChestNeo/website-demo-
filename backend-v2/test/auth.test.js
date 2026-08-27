@@ -5,6 +5,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { testApp } = require('./helpers');
+const { hashPassword } = require('../src/password');
+const { createSession } = require('../src/middleware/auth');
 
 async function getCode(a, email, purpose) {
   await a.request('POST', '/api/auth/email-code', { email, purpose });
@@ -39,15 +41,17 @@ test('verify：新邮箱建号 status=new + user 形状（camel）+ Set-Cookie m
   const a = await testApp();
   t.after(() => a.close());
   const code = await getCode(a, 'new@example.com');
-  const res = await a.request('POST', '/api/auth/verify', { email: 'new@example.com', code, displayName: 'Neo' });
+  const res = await a.request('POST', '/api/auth/verify', { email: 'new@example.com', code, displayName: 'Neo', password: 'password123' });
   assert.strictEqual(res.status, 200);
   const body = await res.json();
   assert.strictEqual(body.status, 'new');
   assert.deepStrictEqual(Object.keys(body.user).sort(), [
-    'avatarUrl', 'citizenId', 'createdAt', 'displayName', 'email', 'id', 'role', 'status', 'tier', 'tierExpiresAt'
+    'avatarUrl', 'citizenId', 'createdAt', 'displayName', 'email', 'hasPassword', 'id', 'role', 'status', 'tier', 'tierExpiresAt'
   ].sort());
   assert.strictEqual(body.user.displayName, 'Neo');
   assert.strictEqual(body.user.role, 'user'); // D4：role 恒 user
+  assert.strictEqual(body.user.hasPassword, true); // W6：新注册强制带密码，无设密过渡
+  assert.ok(!('passwordSetupRequired' in body));
   assert.ok(body.user.id.startsWith('USR-'));
   assert.ok(body.user.citizenId.startsWith('CIT-'));
   assert.match(res.headers.get('set-cookie'), /^mn_session=.+; HttpOnly/);
@@ -55,10 +59,11 @@ test('verify：新邮箱建号 status=new + user 形状（camel）+ Set-Cookie m
   const lh = a.db.prepare("SELECT * FROM login_history WHERE email = 'new@example.com' AND result = 'success'").get();
   assert.ok(lh, '登录史应有 success 行');
   assert.strictEqual(lh.actor_type, 'user');
-  // 用户行 last_login_at/login_count 回写
+  // 用户行 last_login_at/login_count 回写；password_hash 已落库
   const u = a.db.prepare("SELECT * FROM users WHERE email = 'new@example.com'").get();
   assert.strictEqual(u.login_count, 1);
   assert.ok(u.last_login_at);
+  assert.ok(u.password_hash);
 });
 
 test('verify：已有账号 status=login', async (t) => {
@@ -69,6 +74,58 @@ test('verify：已有账号 status=login', async (t) => {
   const res = await a.request('POST', '/api/auth/verify', { email: 'old@example.com', code });
   const body = await res.json();
   assert.strictEqual(body.status, 'login');
+  // W6：旧账号（password_hash NULL）仅码登录 + passwordSetupRequired 引导设密
+  assert.strictEqual(body.passwordSetupRequired, true);
+  assert.strictEqual(body.user.hasPassword, false);
+});
+
+test('verify：新号无密码/短密码 400（裸 API 不能造无密码号）', async (t) => {
+  const a = await testApp();
+  t.after(() => a.close());
+  const code = await getCode(a, 'nopw@example.com');
+  let res = await a.request('POST', '/api/auth/verify', { email: 'nopw@example.com', code, displayName: 'X' });
+  assert.strictEqual(res.status, 400);
+  assert.strictEqual((await res.json()).error.code, 'VALIDATION');
+  res = await a.request('POST', '/api/auth/verify', { email: 'nopw@example.com', code, displayName: 'X', password: 'short' });
+  assert.strictEqual(res.status, 400);
+  // 两次 400 均未消费码、未建号：同码补合格密码成功
+  res = await a.request('POST', '/api/auth/verify', { email: 'nopw@example.com', code, displayName: 'X', password: 'password123' });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual((await res.json()).status, 'new');
+});
+
+test('verify：密码错不消费码，同码改对重试成功', async (t) => {
+  const a = await testApp();
+  t.after(() => a.close());
+  a.seedUser({ email: 'pw@example.com', passwordHash: await hashPassword('password123') });
+  const code = await getCode(a, 'pw@example.com');
+  let res = await a.request('POST', '/api/auth/verify', { email: 'pw@example.com', code, password: 'wrongpass1' });
+  assert.strictEqual(res.status, 400);
+  assert.strictEqual((await res.json()).error.message, '密码或验证码错误');
+  // 码未消费、attempts +1
+  const row = a.db.prepare("SELECT * FROM email_codes WHERE email = 'pw@example.com'").get();
+  assert.strictEqual(row.consumed_at, null);
+  assert.strictEqual(row.attempts, 1);
+  res = await a.request('POST', '/api/auth/verify', { email: 'pw@example.com', code, password: 'password123' });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual((await res.json()).user.hasPassword, true);
+});
+
+test('verify：密码连错 5 次锁码 + 登录失败史（错密码与错码共用计数器）', async (t) => {
+  const a = await testApp();
+  t.after(() => a.close());
+  a.seedUser({ email: 'pwlock@example.com', passwordHash: await hashPassword('password123') });
+  const code = await getCode(a, 'pwlock@example.com');
+  for (let i = 0; i < 4; i++) {
+    const r = await a.request('POST', '/api/auth/verify', { email: 'pwlock@example.com', code, password: 'wrongpass1' });
+    assert.strictEqual(r.status, 400);
+  }
+  const r5 = await a.request('POST', '/api/auth/verify', { email: 'pwlock@example.com', code, password: 'wrongpass1' });
+  assert.strictEqual(r5.status, 400);
+  assert.ok(a.db.prepare("SELECT 1 FROM login_history WHERE email = 'pwlock@example.com' AND result = 'failed'").get());
+  // 锁后即使密码正确也 400（码已锁）
+  const r6 = await a.request('POST', '/api/auth/verify', { email: 'pwlock@example.com', code, password: 'password123' });
+  assert.strictEqual(r6.status, 400);
 });
 
 test('verify：错码 400 VALIDATION；连错 5 次锁定并记登录失败史', async (t) => {
@@ -141,6 +198,73 @@ test('delete：delete_confirm 需会话；删号 30 天后悔期；再登录恢�
   res = await a.request('POST', '/api/auth/verify', { email: 'bye@example.com', code: code2 });
   assert.strictEqual(res.status, 200);
   assert.strictEqual((await res.json()).restored, true);
+});
+
+test('password：设密清其他会话保当前；此后登录必须密码+码；password_change 事件+审计', async (t) => {
+  const a = await testApp();
+  t.after(() => a.close());
+  const { user, cookie } = a.loginAs('set@example.com');
+  const otherToken = createSession(a.db, user.id, 30 * 24 * 3600 * 1000);
+  // 策略：短密码 400（路由层）
+  let res = await a.request('POST', '/api/auth/password', { newPassword: 'short' }, { cookie });
+  assert.strictEqual(res.status, 400);
+  res = await a.request('POST', '/api/auth/password', { newPassword: 'password123' }, { cookie });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual((await res.json()).user.hasPassword, true);
+  // 其他会话失效、当前会话无缝保留
+  assert.strictEqual((await a.request('GET', '/api/auth/me', undefined, { cookie: 'mn_session=' + otherToken })).status, 401);
+  assert.strictEqual((await a.request('GET', '/api/auth/me', undefined, { cookie })).status, 200);
+  // security_events password_change + 审计
+  assert.ok(a.db.prepare("SELECT 1 FROM security_events WHERE event_type = 'password_change' AND actor_id = ?").get(user.id));
+  assert.ok(a.db.prepare("SELECT 1 FROM audit_log WHERE action = 'user_password_change'").get());
+  // 此后无密码 400、密码+码 200（旧账号过渡期结束）
+  const code = await getCode(a, 'set@example.com');
+  assert.strictEqual((await a.request('POST', '/api/auth/verify', { email: 'set@example.com', code })).status, 400);
+  assert.strictEqual((await a.request('POST', '/api/auth/verify', { email: 'set@example.com', code, password: 'password123' })).status, 200);
+});
+
+test('password-reset：成功重置 → 清全部会话、旧密码失效、新密码可登、account_recovery 事件', async (t) => {
+  const a = await testApp();
+  t.after(() => a.close());
+  const { user, cookie } = a.loginAs('reset@example.com', { passwordHash: await hashPassword('oldpass123') });
+  const code = await getCode(a, 'reset@example.com');
+  const res = await a.request('POST', '/api/auth/password-reset', { email: 'reset@example.com', code, newPassword: 'newpass123' });
+  assert.strictEqual(res.status, 200);
+  // 全部会话失效（强制重登）
+  assert.strictEqual(a.db.prepare('SELECT count(*) AS n FROM user_sessions WHERE user_id = ?').get(user.id).n, 0);
+  assert.strictEqual((await a.request('GET', '/api/auth/me', undefined, { cookie })).status, 401);
+  // 事件 + 审计
+  assert.ok(a.db.prepare("SELECT 1 FROM security_events WHERE event_type = 'account_recovery' AND actor_id = ?").get(user.id));
+  assert.ok(a.db.prepare("SELECT 1 FROM audit_log WHERE action = 'user_password_reset'").get());
+  // 旧密码失效、新密码可登（清桶模拟 60s 重发窗口）
+  a.db.prepare("DELETE FROM rate_limits WHERE bucket = 'ec:email:reset@example.com'").run();
+  const code2 = await getCode(a, 'reset@example.com');
+  assert.strictEqual((await a.request('POST', '/api/auth/verify', { email: 'reset@example.com', code: code2, password: 'oldpass123' })).status, 400);
+  assert.strictEqual((await a.request('POST', '/api/auth/verify', { email: 'reset@example.com', code: code2, password: 'newpass123' })).status, 200);
+});
+
+test('password-reset：策略失败不消费码 + 防枚举（不存在/错码同款 400）', async (t) => {
+  const a = await testApp();
+  t.after(() => a.close());
+  a.seedUser({ email: 'rz@example.com', passwordHash: await hashPassword('oldpass123') });
+  const code = await getCode(a, 'rz@example.com');
+  // 短密码 → 400 且码不消费
+  let res = await a.request('POST', '/api/auth/password-reset', { email: 'rz@example.com', code, newPassword: 'short' });
+  assert.strictEqual(res.status, 400);
+  const row = a.db.prepare("SELECT * FROM email_codes WHERE email = 'rz@example.com'").get();
+  assert.strictEqual(row.consumed_at, null);
+  // 同码合格密码成功（证明未消费）
+  res = await a.request('POST', '/api/auth/password-reset', { email: 'rz@example.com', code, newPassword: 'newpass123' });
+  assert.strictEqual(res.status, 200);
+  // 防枚举：不存在的邮箱——重置与错码同款 400、码不消费
+  const ghostCode = await getCode(a, 'ghost-rz@example.com');
+  let bad = await a.request('POST', '/api/auth/password-reset', { email: 'ghost-rz@example.com', code: '000000', newPassword: 'newpass123' });
+  assert.strictEqual(bad.status, 400);
+  assert.strictEqual((await bad.json()).error.message, '验证码无效或已过期');
+  bad = await a.request('POST', '/api/auth/password-reset', { email: 'ghost-rz@example.com', code: ghostCode, newPassword: 'newpass123' });
+  assert.strictEqual(bad.status, 400);
+  assert.strictEqual((await bad.json()).error.message, '验证码无效或已过期');
+  assert.strictEqual(a.db.prepare("SELECT consumed_at FROM email_codes WHERE email = 'ghost-rz@example.com'").get().consumed_at, null);
 });
 
 test('me：无会话 401；有会话返回 user（含订阅降级惰性检查）', async (t) => {
