@@ -55,7 +55,7 @@
     <!-- Right form panel -->
     <div class="auth-right">
       <!-- Tab toggle -->
-      <div class="segmented-control" style="margin-bottom:var(--space-lg);max-width:240px">
+      <div class="segmented-control" id="tabSwitch" style="margin-bottom:var(--space-lg);max-width:240px">
         <button class="segmented-option active" id="tabSignup" onclick="switchTab('signup')">Sign up</button>
         <button class="segmented-option" id="tabLogin" onclick="switchTab('login')">Log in</button>
       </div>
@@ -76,9 +76,9 @@
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
-          <input type="password" class="input-glass" id="signupPassword" placeholder="Min. 6 characters" autocomplete="new-password">
+          <input type="password" class="input-glass" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password">
         </div>
-        <!-- 邮箱验证码（后端可达时显示，替代密码框） -->
+        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素） -->
         <div class="form-group" id="signupCodeGroup" style="display:none">
           <label class="form-label">Verification Code</label>
           <input type="text" class="input-glass" id="signupCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
@@ -105,7 +105,7 @@
           <label class="form-label">Password</label>
           <input type="password" class="input-glass" id="loginPassword" placeholder="Your password" autocomplete="current-password">
         </div>
-        <!-- 邮箱验证码（后端可达时显示，替代密码框） -->
+        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素） -->
         <div class="form-group" id="loginCodeGroup" style="display:none">
           <label class="form-label">Verification Code</label>
           <input type="text" class="input-glass" id="loginCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
@@ -116,6 +116,55 @@
           <span class="material-symbols-outlined">arrow_forward</span>
         </button>
         <p id="loginError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+        <p id="forgotLink" style="display:none;text-align:center;margin-top:var(--space-sm)">
+          <a href="javascript:void(0)" onclick="showReset()" style="color:var(--color-primary);font-size:var(--fs-label-sm)">Forgot your password?</a>
+        </p>
+      </div>
+
+      <!-- 首登设密（api 模式：旧账号验证码登录后引导） -->
+      <div id="setupForm" style="display:none">
+        <h2 class="headline-md" style="margin-bottom:4px">Set your password</h2>
+        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+          You're in! Set a password so your account is fully protected
+        </p>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input type="password" class="input-glass" id="setupPassword" placeholder="Min. 8 characters" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleSetup()">
+          Set Password &amp; Continue
+          <span class="material-symbols-outlined" style="float:right">arrow_forward</span>
+        </button>
+        <p id="setupError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+      </div>
+
+      <!-- 忘记密码（api 模式显示；两步：发码 → 码+新密码重置） -->
+      <div id="resetForm" style="display:none">
+        <h2 class="headline-md" style="margin-bottom:4px">Reset your password</h2>
+        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+          We'll send a 6-digit code to your email
+        </p>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="input-glass" id="resetEmail" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Verification Code</label>
+          <input type="text" class="input-glass" id="resetCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+          <p id="resetCodeHint" style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:4px"></p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input type="password" class="input-glass" id="resetPassword" placeholder="Min. 8 characters" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleReset()">
+          <span id="resetBtnLabel">Reset Password</span>
+          <span class="material-symbols-outlined" style="float:right">arrow_forward</span>
+        </button>
+        <p id="resetError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+        <p style="text-align:center;margin-top:var(--space-sm)">
+          <a href="javascript:void(0)" onclick="hideReset()" style="color:var(--color-primary);font-size:var(--fs-label-sm)">Back to login</a>
+        </p>
       </div>
 
       <!-- Demo hint -->
@@ -139,9 +188,9 @@
 <script src="assets/js/api.js"></script>
 <script>
   var currentTab = 'signup';
-  var AUTH_API = false;              // 后端可达 → 邮箱验证码登录；否则 demo 模式
-  var codeSent = { signup: false, login: false };
-  var countdown = { signup: 0, login: 0 };
+  var AUTH_API = false;              // 后端可达 → 密码+邮箱验证码双因素；否则 demo 模式
+  var codeSent = { signup: false, login: false, reset: false };
+  var countdown = { signup: 0, login: 0, reset: 0 };
 
   function switchTab(tab) {
     currentTab = tab;
@@ -215,7 +264,8 @@
   }
 
   function startCountdown(tab) {
-    var label = document.getElementById(tab === 'signup' ? 'signupBtnLabel' : 'loginBtnLabel');
+    var labelId = tab === 'signup' ? 'signupBtnLabel' : (tab === 'reset' ? 'resetBtnLabel' : 'loginBtnLabel');
+    var label = document.getElementById(labelId);
     codeSent[tab] = true;
     countdown[tab] = 60;
     label.textContent = 'Resend in ' + countdown[tab] + 's';
@@ -223,7 +273,7 @@
       countdown[tab]--;
       if (countdown[tab] <= 0) {
         clearInterval(timer);
-        label.textContent = 'Resend Code';
+        label.textContent = tab === 'reset' ? 'Reset Password' : 'Resend Code';
         codeSent[tab] = false; // 允许重新发码
         return;
       }
@@ -246,10 +296,16 @@
   function apiSignup() {
     var name = document.getElementById('signupName').value.trim();
     var email = document.getElementById('signupEmail').value.trim();
+    var password = document.getElementById('signupPassword').value;
     var code = document.getElementById('signupCode').value.trim();
 
     if (!name) { showError('signupError', 'Please enter a display name'); return; }
     if (!email) { showError('signupError', 'Please enter an email address'); return; }
+    // W6：发码前先过密码策略（8-72），避免等 60s 重发窗口才发现密码不合格
+    if (!password || password.length < 8 || password.length > 72) {
+      showError('signupError', 'Password must be 8-72 characters');
+      return;
+    }
 
     if (!codeSent.signup) {
       MN_API.post('/auth/email-code', { email: email }).then(function (r) {
@@ -265,7 +321,7 @@
       return;
     }
     if (!code) { showError('signupError', 'Enter the 6-digit code from your email'); return; }
-    MN_API.post('/auth/verify', { email: email, code: code, displayName: name }).then(function (r) {
+    MN_API.post('/auth/verify', { email: email, code: code, displayName: name, password: password }).then(function (r) {
       if (!r.ok) { showError('signupError', 'Invalid or expired code'); return; }
       SlatiDB.saveUser(r.data.user);
       if (r.data.status === 'new') SlatiDB.setOnboardingStep(1);
@@ -275,9 +331,15 @@
 
   function apiLogin() {
     var email = document.getElementById('loginEmail').value.trim();
+    var password = document.getElementById('loginPassword').value;
     var code = document.getElementById('loginCode').value.trim();
 
     if (!email) { showError('loginError', 'Please enter your email'); return; }
+    // W6：发码前先过密码策略，避免等 60s 重发窗口才发现密码不合格
+    if (!password || password.length < 8 || password.length > 72) {
+      showError('loginError', 'Password must be 8-72 characters');
+      return;
+    }
 
     if (!codeSent.login) {
       MN_API.post('/auth/email-code', { email: email }).then(function (r) {
@@ -293,12 +355,98 @@
       return;
     }
     if (!code) { showError('loginError', 'Enter the 6-digit code from your email'); return; }
-    MN_API.post('/auth/verify', { email: email, code: code }).then(function (r) {
-      if (!r.ok) { showError('loginError', 'Invalid or expired code'); return; }
+    MN_API.post('/auth/verify', { email: email, code: code, password: password }).then(function (r) {
+      if (!r.ok) { showError('loginError', 'Invalid code or password'); return; }
       SlatiDB.saveUser(r.data.user);
+      if (r.data.passwordSetupRequired) {
+        // W6：旧账号（此前无密码）→ 引导设密后继续
+        showSetup();
+        return;
+      }
       if (r.data.status === 'new') SlatiDB.setOnboardingStep(1);
       window.location.href = 'pages/dashboard.html';
     }).catch(demoLogin);
+  }
+
+  // ── 首登设密（api 模式：旧账号验证码登录后引导；设完直达控制台）──
+  function showSetup() {
+    document.getElementById('tabSwitch').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('resetForm').style.display = 'none';
+    document.getElementById('setupForm').style.display = '';
+  }
+
+  function handleSetup() {
+    var password = document.getElementById('setupPassword').value;
+    if (!password || password.length < 8 || password.length > 72) {
+      showError('setupError', 'Password must be 8-72 characters');
+      return;
+    }
+    MN_API.post('/auth/password', { newPassword: password }).then(function (r) {
+      if (!r.ok) { showError('setupError', 'Could not set password — please try again'); return; }
+      SlatiDB.saveUser(r.data.user);
+      window.location.href = 'pages/dashboard.html';
+    }).catch(function () {
+      showError('setupError', 'Could not set password — please try again');
+    });
+  }
+
+  // ── 忘记密码（api 模式：两步——发码 → 码+新密码重置）──
+  function showReset() {
+    document.getElementById('tabSwitch').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('setupForm').style.display = 'none';
+    document.getElementById('resetForm').style.display = '';
+    document.getElementById('resetEmail').value = document.getElementById('loginEmail').value.trim();
+  }
+
+  function hideReset() {
+    document.getElementById('resetForm').style.display = 'none';
+    document.getElementById('setupForm').style.display = 'none';
+    document.getElementById('tabSwitch').style.display = '';
+    document.getElementById('loginForm').style.display = '';
+  }
+
+  function handleReset() {
+    var email = document.getElementById('resetEmail').value.trim();
+    var code = document.getElementById('resetCode').value.trim();
+    var password = document.getElementById('resetPassword').value;
+
+    if (!email) { showError('resetError', 'Please enter your email'); return; }
+    if (!password || password.length < 8 || password.length > 72) {
+      showError('resetError', 'Password must be 8-72 characters');
+      return;
+    }
+
+    if (!codeSent.reset) {
+      MN_API.post('/auth/email-code', { email: email }).then(function (r) {
+        if (r.ok) {
+          document.getElementById('resetCodeHint').textContent = 'Verification code sent to ' + email + ' — valid for 10 minutes';
+          startCountdown('reset');
+        } else if (r.status === 429) {
+          showError('resetError', 'Please wait before requesting another code');
+        } else {
+          showError('resetError', 'Could not send code — please try again');
+        }
+      }).catch(function () {
+        showError('resetError', 'Could not send code — please try again');
+      });
+      return;
+    }
+    if (!code) { showError('resetError', 'Enter the 6-digit code from your email'); return; }
+    MN_API.post('/auth/password-reset', { email: email, code: code, newPassword: password }).then(function (r) {
+      if (!r.ok) { showError('resetError', 'Invalid or expired code'); return; }
+      // 重置成功：回到登录页，预填邮箱 + 提示用新密码登录
+      codeSent.reset = false;
+      document.getElementById('resetForm').style.display = 'none';
+      document.getElementById('tabSwitch').style.display = '';
+      document.getElementById('loginForm').style.display = '';
+      document.getElementById('loginEmail').value = email;
+      document.getElementById('loginPassword').value = '';
+      setCodeHint('login', 'Password reset — log in with your new password');
+    }).catch(function () {
+      showError('resetError', 'Could not reset password — please try again');
+    });
   }
 
   function showError(id, msg) {
@@ -308,16 +456,15 @@
     setTimeout(function () { el.style.display = 'none'; }, 3000);
   }
 
-  // 后端探测：可达 → api 模式（隐藏密码框、显示验证码框）；
+  // 后端探测：可达 → api 模式（密码+验证码双因素：显示验证码框与忘记密码入口）；
   // cookie 会话仍有效 → 免登录直达控制台；不可达 → 保持 demo 模式原样。
   MN_API.probe().then(function (up) {
     if (!up) return;
     AUTH_API = true;
-    document.getElementById('signupPassword').closest('.form-group').style.display = 'none';
-    document.getElementById('loginPassword').closest('.form-group').style.display = 'none';
     document.getElementById('signupCodeGroup').style.display = '';
     document.getElementById('loginCodeGroup').style.display = '';
-    document.getElementById('demoHint').textContent = 'Secure email-code login — no password needed';
+    document.getElementById('forgotLink').style.display = '';
+    document.getElementById('demoHint').textContent = 'Secure login — password + email verification code';
     MN_API.get('/auth/me').then(function (r) {
       if (r.ok && r.data && r.data.user) {
         SlatiDB.saveUser(r.data.user);
