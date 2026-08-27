@@ -40,8 +40,12 @@
 docker build -t mn-backend-v2:cloudrun .            # 仓库根
 docker tag mn-backend-v2:cloudrun asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend/mn-backend-v2:latest
 # 认证：gcloud auth configure-docker 写的 credHelper 在 Docker Desktop 上找不到 docker-credential-gcloud，
-# 改用 access token 直登（先把 ~/.docker/config.json 里该 registry 的 credHelpers 条目删掉）：
-gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin asia-southeast1-docker.pkg.dev
+# 改用 access token 直登。PowerShell 下两坑（08-28 实测）：① config.json 里该 registry 的**空 auths 条目**
+# 会盖过 credsStore 里的登录态 → 表现为 login 成功但 push 401，删掉 auths 块即可（Set-Content 重写必须
+# [System.IO.File]::WriteAllText + UTF8Encoding($false)——PS5.1 默认带 BOM，docker 解析 config 直接报错）；
+# ② 管道喂 --password-stdin 会带换行 → Basic 401，用 -p 直传（token 1 小时过期，本地命令行可接受）：
+#   $token = (& "…\gcloud.cmd" auth print-access-token).Trim()
+#   docker login -u oauth2accesstoken -p "$token" asia-southeast1-docker.pkg.dev
 docker push asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend/mn-backend-v2:latest
 ```
 
