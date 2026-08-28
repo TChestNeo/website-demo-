@@ -128,6 +128,11 @@ function serveStatic(backendPort) {
     }
     let fp = path.join(DOCS, decodeURIComponent(url.pathname));
     if (url.pathname === '/' || !path.extname(fp)) fp = path.join(DOCS, url.pathname, 'index.html');
+    // URL 重构（08-29）：与 entrypoint.js 保持一致——无扩展名路径无同名文件时试 .html 回退
+    if (!fs.existsSync(fp) && !path.extname(url.pathname)) {
+      const alt = path.join(DOCS, decodeURIComponent(url.pathname) + '.html');
+      if (alt.startsWith(DOCS) && fs.existsSync(alt)) fp = alt;
+    }
     if (!fp.startsWith(DOCS)) { res.writeHead(403); return res.end(); }
     fs.readFile(fp, (err, buf) => {
       if (err) { res.writeHead(404); return res.end('not found'); }

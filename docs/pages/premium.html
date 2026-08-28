@@ -2161,14 +2161,14 @@ document.head.appendChild(bgStyle);
     var b = $('subStatus');
     b.style.display = 'flex';
     b.innerHTML = '<span>登录后即可订阅会员方案（注册默认「普通用户」免费；Basic 学生价 RM12/月）</span>'
-      + '<a class="btn btn-primary btn-sm" href="../index.html" style="margin:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:#fff;text-decoration:none">登录 / 注册</a>';
+      + '<a class="btn btn-primary btn-sm" href="../signin-and-login" style="margin:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:#fff;text-decoration:none">登录 / 注册</a>';
     document.querySelectorAll('[data-plan-card]').forEach(function (card) {
       var btn = card.querySelector('[data-plan-cta]');
       if (!btn) return;
-      setCta(btn, '登录后订阅', false, '../index.html');
+      setCta(btn, '登录后订阅', false, '../signin-and-login');
     });
     document.querySelectorAll('[data-addon-cta]').forEach(function (btn) {
-      setCta(btn, '登录后购买', false, '../index.html');
+      setCta(btn, '登录后购买', false, '../signin-and-login');
     });
     document.querySelectorAll('[data-plan-once]').forEach(function (x) { x.style.display = 'none'; });
     document.querySelectorAll('[data-once-hint]').forEach(function (x) { x.style.display = 'none'; });

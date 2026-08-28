@@ -268,11 +268,11 @@
           icon('delete_forever', 18) + ' Delete Account'),
       ]),
       el('div', '', { style: { marginTop: 'var(--space-md)', fontSize: '12px', display: 'flex', gap: '14px' } }, [
-        el('a', '', { href: 'terms.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '服务条款'),
-        el('a', '', { href: 'financial-terms.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '财务与支付'),
-        el('a', '', { href: 'platform-responsibility.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '平台责任'),
-        el('a', '', { href: 'community-rules.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '社区规则'),
-        el('a', '', { href: 'privacy.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '隐私政策'),
+        el('a', '', { href: '../pages/terms.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '服务条款'),
+        el('a', '', { href: '../pages/financial-terms.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '财务与支付'),
+        el('a', '', { href: '../pages/platform-responsibility.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '平台责任'),
+        el('a', '', { href: '../pages/community-rules.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '社区规则'),
+        el('a', '', { href: '../pages/privacy.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '隐私政策'),
       ]),
     ]);
 
@@ -403,7 +403,7 @@
     if (logoutBtn) {
       logoutBtn.addEventListener('click', function () {
         if (window.SlatiDB) SlatiDB.logout();
-        window.location.href = '../index.html';
+        window.location.href = '../signin-and-login';
       });
     }
 
@@ -416,7 +416,7 @@
             SlatiDB.remove('slati_user');
             SlatiDB.remove('slati_session');
           }
-          window.location.href = '../index.html';
+          window.location.href = '../signin-and-login';
         }
       });
     }

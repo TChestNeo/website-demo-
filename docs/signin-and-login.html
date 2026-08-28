@@ -2,32 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <link rel="icon" type="image/png" href="../assets/image/M.NationWorld logo circle_.png">
+  <link rel="icon" type="image/png" href="assets/image/M.NationWorld logo circle_.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>M.NationWorld | Home Dashboard</title>
-  
-  <script>
-  /* 防主题白闪：原 theme-init.js 内联——必须 CSS 之前同步执行（外链脚本走网络晚到 → 页面先按默认主题画一帧再跳 = 切页闪白） */
-  (function () {
-    var theme = 'light';
-    try {
-      var raw = localStorage.getItem('slati_settings');
-      if (raw) {
-        var s = JSON.parse(raw);
-        if (s.theme) theme = s.theme;
-      }
-    } catch (e) {}
-    if (theme === 'auto') {
-      var h = new Date().getHours();
-      theme = (h >= 20 || h < 5) ? 'dark' : 'light';
-    } else if (theme === 'system') {
-      theme = 'light';
-    }
-    if (theme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
-  })();
-  </script>
+  <title>M.NationWorld — Sign In / Log In</title>
   <style>
 /* ethereal.css 内联（切页闪修复 08-28：样式与 HTML 同包到达——浏览器画第一帧不再等样式表往返）*/
 /* ============================================================
@@ -1601,6 +1578,69 @@ body.pre-stagger .auth-card { opacity: 0; }
   src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2JL7SUc.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa0ZL7SUc.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2ZL7SUc.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1pL7SUc.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa2pL7SUc.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7SUc.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 </style>
   <style>
@@ -1631,300 +1671,475 @@ body.pre-stagger .auth-card { opacity: 0; }
 }
 
 </style>
+  <style>
+    .auth-bg {
+      background: radial-gradient(ellipse at 30% 20%, rgba(70,72,212,0.06) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 80%, rgba(129,39,207,0.04) 0%, transparent 60%),
+                  var(--color-background);
+    }
+  </style>
 </head>
-<body class="pre-stagger">
+<body class="auth-bg pre-stagger">
 
-<div class="app-layout">
-  <aside class="app-sidebar" id="slati-sidebar"></aside>
-  <main class="app-main">
-    <header class="flex-between" style="margin-bottom:var(--space-md)">
-      <div class="search-capsule">
-        <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search worlds, topics...">
-        <span style="width:1px;height:20px;background:var(--divider-line);flex-shrink:0;border-radius:1px"></span>
-        <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);cursor:pointer">notifications</span>
-      </div>
-    </header>
+<div class="auth-layout">
+  <div class="auth-card tilt-container" id="authCard">
 
-    <div class="card tilt-container animate-fade-in-up" style="padding:var(--space-lg);margin-bottom:var(--space-md);background:linear-gradient(135deg,rgba(70,72,212,0.06),rgba(129,39,207,0.04)),var(--card-bg)">
-      <div class="flex-between" style="flex-wrap:wrap;gap:var(--space-md)">
-        <div>
-          <span class="badge badge-primary" style="margin-bottom:8px">Knowledge Base</span>
-          <h1 class="headline-lg" style="margin-bottom:4px" id="welcomeBanner">Welcome back, Creator</h1>
-          <p class="body-md" style="color:var(--color-on-surface-variant)">Your worldbuilding console is fully operational.</p>
+    <!-- Left branding panel -->
+    <div class="auth-left">
+      <div style="position:relative;z-index:1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:var(--space-lg)">
+          <img src="assets/image/M.NationWorld logo.png" alt="M.NationWorld" style="height:36px;width:auto">
+          <span style="font-size:24px;font-weight:700">M.NationWorld</span>
         </div>
-        <div style="display:flex;gap:var(--space-sm)">
-          <a href="create-world.html" class="btn btn-primary">Create World</a>
-          <a href="explore.html" class="btn btn-outline">View Archive</a>
+        <h1 class="display-lg" style="margin-bottom:var(--space-sm)">Build Your<br>World</h1>
+        <p class="body-lg" style="opacity:0.85;margin-bottom:var(--space-lg)">
+          Design constitutions. Forge alliances. Shape worlds.
+        </p>
+
+        <!-- Step indicator -->
+        <div id="stepIndicator" style="margin-top:var(--space-xl)">
+          <div class="progress-steps" style="flex-direction:column;align-items:flex-start;gap:16px">
+            <div class="progress-step completed" id="step1indicator">
+              <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>
+              <span style="color:rgba(255,255,255,0.9)">Create account</span>
+            </div>
+            <div class="progress-step" id="step2indicator" style="opacity:0.5">
+              <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">2</span>
+              <span style="color:rgba(255,255,255,0.6)">Identity Setup</span>
+            </div>
+            <div class="progress-step" id="step3indicator" style="opacity:0.5">
+              <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">3</span>
+              <span style="color:rgba(255,255,255,0.6)">Complete</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 340px;gap:var(--space-md)">
-      <div>
-        <h2 class="headline-md" style="margin-bottom:var(--space-sm)">Recent Activity</h2>
-        <div id="activityFeed" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
-
-        <h2 class="headline-md" style="margin:var(--space-lg) 0 var(--space-sm)">Announcements</h2>
-        <div id="dashAnnouncements" style="display:flex;flex-direction:column;gap:2px"></div>
-        <a href="messages.html?tab=announcements" style="display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-label-sm);color:var(--color-primary);margin-top:var(--space-sm);text-decoration:none">
-          View all announcements
-          <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
-        </a>
+    <!-- Right form panel -->
+    <div class="auth-right">
+      <!-- Tab toggle -->
+      <div class="segmented-control" id="tabSwitch" style="margin-bottom:var(--space-lg);max-width:240px">
+        <button class="segmented-option active" id="tabSignup" onclick="switchTab('signup')">Sign up</button>
+        <button class="segmented-option" id="tabLogin" onclick="switchTab('login')">Log in</button>
       </div>
-      <div style="display:flex;flex-direction:column;gap:var(--space-md)">
-        <!-- Premium Subscription Card -->
-        <div class="tilt-container" style="border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:white;padding:var(--space-md);position:relative">
-          <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,0.03);border-radius:50%;pointer-events:none"></div>
-          <div style="position:absolute;bottom:-30px;left:-30px;width:100px;height:100px;background:rgba(255,255,255,0.02);border-radius:50%;pointer-events:none"></div>
-          <div style="position:relative;z-index:1">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
-              <span class="material-symbols-outlined" style="font-size:22px;color:#eab308">verified</span>
-              <span style="font-weight:700;font-size:var(--fs-label-md)">M.NationWorld Premium</span>
-            </div>
-            <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px;line-height:1.5">Unlock advanced analytics, custom nation themes, priority support, and exclusive worldbuilding tools.</p>
-            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
-              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
-                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Advanced Analytics
-              </div>
-              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
-                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Custom Nation Themes
-              </div>
-              <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
-                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Priority Support
-              </div>
-            </div>
-            <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700" onclick="window.location.href='premium.html'">
-              <span class="material-symbols-outlined" style="font-size:16px">rocket_launch</span>
-              Subscribe — <span data-slati-price>$11.99</span>/mo
-            </button>
-            <p style="text-align:center;font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px">Coming Q4 2026 · Cancel anytime</p>
-            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.6);font-size:11px;margin-top:4px" onclick="window.location.href='premium.html'">
-              View all plans
-              <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
-            </button>
-          </div>
-        </div>
 
-        <div class="card">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">Quick Workbench</h3>
-          <div style="display:flex;flex-direction:column;gap:4px">
-            <a href="create-world.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">add_circle</span> New World Registration</a>
-            <a href="create-topic-step-1.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">edit_note</span> Create Topic</a>
-            <a href="messages.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">chat</span> Open Messages</a>
-            <a href="fluidcanvas.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">draw</span> FluidCanvas</a>
-          </div>
+      <!-- Signup form -->
+      <div id="signupForm">
+        <h2 class="headline-md" style="margin-bottom:4px">Create your account</h2>
+        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+          Join the global community of worldbuilders
+        </p>
+        <div class="form-group">
+          <label class="form-label">Display Name</label>
+          <input type="text" class="input-glass" id="signupName" placeholder="e.g. Alex Rivera" autocomplete="name">
         </div>
-        <div class="card">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">Network Metrics</h3>
-          <div id="metricsCards"></div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="input-glass" id="signupEmail" placeholder="you@example.com" autocomplete="email">
         </div>
-        <div class="card">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">My Worlds</h3>
-          <div id="myWorlds"></div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="input-glass" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password">
         </div>
+        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素） -->
+        <div class="form-group" id="signupCodeGroup" style="display:none">
+          <label class="form-label">Verification Code</label>
+          <input type="text" class="input-glass" id="signupCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+          <p id="signupCodeHint" style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:4px"></p>
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleSignup()">
+          <span id="signupBtnLabel">Create Account</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+        <p id="signupError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
       </div>
+
+      <!-- Login form (hidden by default) -->
+      <div id="loginForm" style="display:none">
+        <h2 class="headline-md" style="margin-bottom:4px">Welcome back, Sovereign</h2>
+        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+          Ready to make your mark today?
+        </p>
+        <div class="form-group">
+          <label class="form-label">Email or Username</label>
+          <input type="text" class="input-glass" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="input-glass" id="loginPassword" placeholder="Your password" autocomplete="current-password">
+        </div>
+        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素） -->
+        <div class="form-group" id="loginCodeGroup" style="display:none">
+          <label class="form-label">Verification Code</label>
+          <input type="text" class="input-glass" id="loginCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+          <p id="loginCodeHint" style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:4px"></p>
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleLogin()">
+          <span id="loginBtnLabel">Enter Console</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+        <p id="loginError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+        <p id="forgotLink" style="display:none;text-align:center;margin-top:var(--space-sm)">
+          <a href="javascript:void(0)" onclick="showReset()" style="color:var(--color-primary);font-size:var(--fs-label-sm)">Forgot your password?</a>
+        </p>
+      </div>
+
+      <!-- 首登设密（api 模式：旧账号验证码登录后引导） -->
+      <div id="setupForm" style="display:none">
+        <h2 class="headline-md" style="margin-bottom:4px">Set your password</h2>
+        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+          You're in! Set a password so your account is fully protected
+        </p>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input type="password" class="input-glass" id="setupPassword" placeholder="Min. 8 characters" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleSetup()">
+          Set Password &amp; Continue
+          <span class="material-symbols-outlined" style="float:right">arrow_forward</span>
+        </button>
+        <p id="setupError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+      </div>
+
+      <!-- 忘记密码（api 模式显示；两步：发码 → 码+新密码重置） -->
+      <div id="resetForm" style="display:none">
+        <h2 class="headline-md" style="margin-bottom:4px">Reset your password</h2>
+        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+          We'll send a 6-digit code to your email
+        </p>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="input-glass" id="resetEmail" placeholder="you@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Verification Code</label>
+          <input type="text" class="input-glass" id="resetCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+          <p id="resetCodeHint" style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:4px"></p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input type="password" class="input-glass" id="resetPassword" placeholder="Min. 8 characters" autocomplete="new-password">
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleReset()">
+          <span id="resetBtnLabel">Reset Password</span>
+          <span class="material-symbols-outlined" style="float:right">arrow_forward</span>
+        </button>
+        <p id="resetError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
+        <p style="text-align:center;margin-top:var(--space-sm)">
+          <a href="javascript:void(0)" onclick="hideReset()" style="color:var(--color-primary);font-size:var(--fs-label-sm)">Back to login</a>
+        </p>
+      </div>
+
+      <!-- Demo hint -->
+      <p id="demoHint" style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
+        Demo mode — any credentials work
+      </p>
+      <!-- Legal links -->
+      <p style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
+        By continuing, you agree to our
+        <a href="pages/terms.html" style="color:var(--color-primary)">服务条款</a> and
+        <a href="pages/privacy.html" style="color:var(--color-primary)">隐私政策</a>
+      </p>
     </div>
-  </main>
+  </div>
 </div>
 
-<script src="../assets/js/tilt.js"></script>
-<script src="../assets/js/site-config.js"></script>
-<script src="../assets/js/storage.js"></script>
-<script src="../assets/js/sidebar.js"></script>
-<script src="../assets/js/pricing.js"></script>
-<script src="../assets/js/transitions.js"></script>
-<script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
-setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
-</script>
-<script src="../assets/js/settings-modal.js"></script>
+<!-- Shared JS -->
+<script src="assets/js/tilt.js"></script>
+<script src="assets/js/site-config.js"></script>
+<script src="assets/js/storage.js"></script>
+<script src="assets/js/api.js"></script>
 <script>
-  var user = SlatiDB.getUser();
-  if (user && user.displayName) {
-    document.getElementById('welcomeBanner').textContent = 'Welcome back, ' + user.displayName;
-  }
-  var nations = SlatiDB.getNations();
-  var worlds = SlatiDB.getWorlds();
+  var currentTab = 'signup';
+  var AUTH_API = false;              // 后端可达 → 密码+邮箱验证码双因素；否则 demo 模式
+  var codeSent = { signup: false, login: false, reset: false };
+  var countdown = { signup: 0, login: 0, reset: 0 };
 
-  var activityItems = [
-    { icon: 'language', badge: 'Nation', badgeClass: 'badge-primary', title: 'Republic of Etheria', desc: 'Updated territorial claims and governance charter.', time: '2 hours ago' },
-    { icon: 'groups', badge: 'Topic', badgeClass: 'badge-secondary', title: 'Governance Design Lab', desc: 'New discussion: Direct democracy in micronations.', time: '4 hours ago' },
-    { icon: 'edit_note', badge: 'Wiki', badgeClass: 'badge-success', title: 'Neo-Venice Archive', desc: 'Lore revision: Founding of Aqua Centro.', time: '6 hours ago' },
-    { icon: 'person', badge: 'Citizen', badgeClass: 'badge-warning', title: 'Marcus Vane', desc: 'Published a sovereign log on floating district plans.', time: '8 hours ago' },
-  ];
-
-  document.getElementById('activityFeed').innerHTML = activityItems.map(function(item) {
-    return '<div class="card card-hover tilt-container">' +
-      '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
-        '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:24px">' + item.icon + '</span>' +
-        '<span class="badge ' + item.badgeClass + '">' + item.badge + '</span>' +
-        '<span style="flex:1;font-weight:600;color:var(--color-on-surface)">' + item.title + '</span>' +
-        '<span class="label-sm" style="color:var(--color-outline)">' + item.time + '</span>' +
-      '</div>' +
-      '<p style="margin-top:8px;color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + item.desc + '</p>' +
-    '</div>';
-  }).join('');
-
-  // ── Dashboard Announcements ──
-  var dashAnnouncements = [
-    { id:'a1', cat:'official', icon:'campaign', title:'M.NationWorld Beta Launch — Welcome All Worldbuilders', date:'2026-08-05', summary:'The platform officially enters public beta. All registered creators now have full access.' },
-    { id:'a2', cat:'official', icon:'event', title:'Governance Summit 2026 — Registration Open', date:'2026-08-03', summary:'Theme: "Digital Sovereignty in the Modern Age." Early registration now open.' },
-    { id:'a3', cat:'community', icon:'map', title:'Cartography Guild — Monthly Map Contest', date:'2026-08-02', summary:'Theme: "Uncharted Territories." Prizes include Premium subscriptions.' },
-    { id:'a4', cat:'system', icon:'draw', title:'FluidCanvas Studio Now Live', date:'2026-08-01', summary:'Collaborative content studio available to all users.' },
-    { id:'a5', cat:'community', icon:'emoji_flags', title:'Nation Spotlight: Republic of Etheria', date:'2026-07-30', summary:'Floating city-state with direct democracy & AI-assisted administration.' },
-    { id:'a6', cat:'system', icon:'update', title:'Platform Update v1.2 — Sidebar & Navigation', date:'2026-07-28', summary:'Collapsible sidebar, smoother transitions, responsive improvements.' },
-    { id:'a7', cat:'community', icon:'volunteer_activism', title:'Call for Moderators — Join the Community Team', date:'2026-07-25', summary:'Help maintain a welcoming environment. Apply today.' },
-    { id:'a8', cat:'official', icon:'rocket_launch', title:'Premium Ultra Early Adopter Pricing Extended', date:'2026-07-20', summary:'Lock in reduced pricing through August.' },
-    { id:'a9', cat:'system', icon:'security', title:'Security Audit Complete — Platform Certification', date:'2026-07-15', summary:'Independent audit confirms platform meets all security standards.' },
-    { id:'a10', cat:'official', icon:'gavel', title:'Sovereign Council Charter Ratified', date:'2026-07-10', summary:'Founding document establishing the council\'s governance framework.' },
-  ];
-
-  var dashCatStyle = {
-    official: { bg: 'rgba(70,72,212,0.1)', color: '#4648d4' },
-    community: { bg: 'rgba(22,163,74,0.1)', color: '#16a34a' },
-    system: { bg: 'rgba(234,88,12,0.1)', color: '#ea580c' },
-  };
-
-  document.getElementById('dashAnnouncements').innerHTML = dashAnnouncements.map(function(a) {
-    var cs = dashCatStyle[a.cat] || dashCatStyle.system;
-    return '<a href="messages.html" class="card card-hover" style="display:flex;align-items:center;gap:10px;padding:8px 12px;text-decoration:none;cursor:pointer">' +
-      '<span class="material-symbols-outlined" style="font-size:18px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +
-      '<span class="label-sm" style="background:' + cs.bg + ';color:' + cs.color + ';padding:1px 7px;border-radius:var(--radius-full);font-weight:600;font-size:9px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.03em">' + a.cat + '</span>' +
-      '<span style="flex:1;font-weight:500;font-size:var(--fs-label-sm);color:var(--color-on-surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.title + '</span>' +
-      '<span class="label-sm" style="color:var(--color-outline);flex-shrink:0;font-size:10px">' + a.date + '</span>' +
-    '</a>';
-  }).join('');
-
-  // ── Network Metrics ──
-  var onlineNow = 12847;
-  var dailyPeak = 15420;
-  var featuredArticles = 347;
-  var totalArticles = 12840;
-  var activeNations = Math.max(nations.length, 892);
-  var totalUsers = 128400;
-
-  // Generate exponential-growth bar chart (20-day daily online peak)
-  var barDays = 20;
-  var barPoints = [];
-  for (var d = 0; d < barDays; d++) {
-    var t = d / (barDays - 1);
-    var base = 8000 + 7000 * Math.pow(t, 1.6);
-    var noise = (Math.sin(d * 1.7) * 300 + Math.sin(d * 3.1) * 180 + Math.sin(d * 7.3) * 80) * (1 - t * 0.3);
-    barPoints.push(Math.round(base + noise));
-  }
-  var barMax = Math.max.apply(null, barPoints);
-  var barMin = Math.min.apply(null, barPoints);
-  var barRange = barMax - barMin || 1;
-  var barW = 260, barH = 56, barPad = 2;
-  var barCount = barPoints.length;
-  var barGap = 2;
-  var barWidth = (barW - barPad * 2 - barGap * (barCount - 1)) / barCount;
-  var todayIdx = barCount - 1;
-
-  // Day labels: "Jul 18" through "Aug 6" going backward from today
-  var todayDate = new Date();
-  var dayLabels = [];
-  for (var dl = 0; dl < barCount; dl++) {
-    var dd = new Date(todayDate);
-    dd.setDate(dd.getDate() - (barCount - 1 - dl));
-    dayLabels.push(dd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+    document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+    document.getElementById('signupForm').style.display = tab === 'signup' ? '' : 'none';
+    document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+    document.getElementById('signupError').style.display = 'none';
+    document.getElementById('loginError').style.display = 'none';
+    // Update step indicator
+    document.getElementById('step1indicator').className = 'progress-step ' + (tab === 'signup' ? 'completed' : '');
+    document.getElementById('step2indicator').style.opacity = tab === 'signup' ? '0.5' : '1';
+    document.getElementById('step1indicator').querySelector('.dot').innerHTML = tab === 'signup'
+      ? '<span class="material-symbols-outlined" style="font-size:14px">check</span>'
+      : '<span class="material-symbols-outlined" style="font-size:14px">login</span>';
   }
 
-  var barRects = barPoints.map(function(v, i) {
-    var h = Math.max(2, ((v - barMin) / barRange) * (barH - barPad * 2 - 2));
-    var x = barPad + i * (barWidth + barGap);
-    var y = barPad + (barH - barPad * 2 - h);
-    var isToday = i === todayIdx;
-    var fill = isToday ? '#4648d4' : 'rgba(70,72,212,0.45)';
-    var rx = Math.min(barWidth / 2, 2);
-    return '<rect class="metric-bar" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barWidth.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="' + rx + '" fill="' + fill + '" data-day="' + dayLabels[i] + '" data-val="' + v.toLocaleString() + '" data-idx="' + i + '"/>';
-  }).join('');
+  function handleSignup() {
+    if (AUTH_API) return apiSignup();
 
-  document.getElementById('metricsCards').innerHTML =
-    // ── Online Now hero section ──
-    '<div style="text-align:center;padding:var(--space-sm) 0 var(--space-md);border-bottom:1px solid rgba(118,117,134,0.08);margin-bottom:var(--space-md)">' +
-      '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px">' +
-        '<span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;box-shadow:0 0 6px rgba(34,197,94,0.5)"></span>' +
-        '<span style="font-size:11px;color:var(--color-outline);font-weight:500;text-transform:uppercase;letter-spacing:0.05em">Online Now</span>' +
-      '</div>' +
-      '<div style="font-size:36px;font-weight:800;color:var(--color-on-surface);line-height:1.1;letter-spacing:-0.02em;margin-bottom:2px">' + onlineNow.toLocaleString() + '</div>' +
-      '<p class="label-sm" style="color:var(--color-outline);margin-bottom:8px">Daily peak <strong style="color:var(--color-on-surface)">' + dailyPeak.toLocaleString() + '</strong> · 20-day trend</p>' +
-      // Bar chart
-      '<svg viewBox="0 0 ' + barW + ' ' + barH + '" style="width:100%;height:56px;display:block;overflow:visible">' +
-        barRects +
-      '</svg>' +
-    '</div>' +
-    // ── 2×2 stat grid ──
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm)">' +
-      '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
-        '<span class="material-symbols-outlined" style="font-size:20px;color:#eab308">star</span>' +
-        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + featuredArticles.toLocaleString() + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline)">Featured Articles</div>' +
-      '</div>' +
-      '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
-        '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">article</span>' +
-        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + totalArticles.toLocaleString() + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline)">Total Articles</div>' +
-      '</div>' +
-      '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
-        '<span class="material-symbols-outlined" style="font-size:20px;color:#22c55e">public</span>' +
-        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + activeNations.toLocaleString() + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline)">Active Nations</div>' +
-      '</div>' +
-      '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
-        '<span class="material-symbols-outlined" style="font-size:20px;color:#ea580c">group</span>' +
-        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + totalUsers.toLocaleString() + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline)">Total Users</div>' +
-      '</div>' +
-    '</div>';
+    var name = document.getElementById('signupName').value.trim();
+    var email = document.getElementById('signupEmail').value.trim();
+    var password = document.getElementById('signupPassword').value;
 
-  // ── Bar chart tooltip ──
-  var tooltip = document.createElement('div');
-  tooltip.id = 'metricTooltip';
-  tooltip.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;background:var(--card-bg);color:var(--color-on-surface);padding:8px 14px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.1),0 1px 3px rgba(0,0,0,0.06);font-size:13px;font-weight:600;white-space:nowrap;opacity:0;transform:translate(-50%,-120%);transition:opacity 0.12s ease;line-height:1.4';
-  tooltip.innerHTML = '<span id="metricTooltipDay"></span><br><span style="font-weight:400;color:#767586;font-size:11px" id="metricTooltipVal"></span>';
-  document.body.appendChild(tooltip);
+    if (!name) { showError('signupError', 'Please enter a display name'); return; }
+    if (!email) { showError('signupError', 'Please enter an email address'); return; }
+    if (!password || password.length < 3) { showError('signupError', 'Password must be at least 3 characters'); return; }
 
-  var metricBars = document.querySelectorAll('.metric-bar');
-  var tooltipDay = document.getElementById('metricTooltipDay');
-  var tooltipVal = document.getElementById('metricTooltipVal');
-
-  metricBars.forEach(function(bar) {
-    bar.addEventListener('mouseenter', function() {
-      tooltipDay.textContent = bar.dataset.day;
-      tooltipVal.textContent = bar.dataset.val + ' online';
-      var rect = bar.getBoundingClientRect();
-      tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-      tooltip.style.top = (rect.top - 8) + 'px';
-      tooltip.style.opacity = '1';
-      bar.style.opacity = '0.7';
+    SlatiDB.saveUser({
+      displayName: name,
+      email: email,
+      citizenId: 'CIT-' + Math.floor(Math.random() * 10000),
+      avatarUrl: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=4648d4&color=fff&size=80',
+      createdAt: new Date().toISOString()
     });
-    bar.addEventListener('mouseleave', function() {
-      tooltip.style.opacity = '0';
-      bar.style.opacity = '1';
+    SlatiDB.setOnboardingStep(1);
+    window.location.href = 'pages/onboarding-identity.html';
+  }
+
+  function handleLogin() {
+    if (AUTH_API) return apiLogin();
+
+    var email = document.getElementById('loginEmail').value.trim();
+    var password = document.getElementById('loginPassword').value;
+
+    if (!email) { showError('loginError', 'Please enter your email or username'); return; }
+    if (!password || password.length < 3) { showError('loginError', 'Invalid credentials'); return; }
+
+    // In demo mode, accept any credentials. If a previous user exists, restore them.
+    var existingUser = SlatiDB.getUser();
+    if (!existingUser) {
+      SlatiDB.saveUser({
+        displayName: email.split('@')[0] || 'Sovereign',
+        email: email,
+        citizenId: 'CIT-' + Math.floor(Math.random() * 10000),
+        avatarUrl: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(email.split('@')[0]) + '&background=4648d4&color=fff&size=80',
+        createdAt: new Date().toISOString()
+      });
+    } else {
+      // Re-set session
+      SlatiDB.set(SlatiDB.KEYS.SESSION, { loggedIn: true, at: new Date().toISOString() });
+    }
+    window.location.href = 'index.html';
+  }
+
+  // ── 邮箱验证码两段式（api 模式）──
+  // 第一步点击发码（60s 倒计时），码到达后第二步同按钮提交验证。
+  // 任何网络失败 → 回退原 demo 分支（已填内容不丢失）。
+  function setCodeHint(tab, text) {
+    document.getElementById(tab + 'CodeHint').textContent = text;
+  }
+
+  function startCountdown(tab) {
+    var labelId = tab === 'signup' ? 'signupBtnLabel' : (tab === 'reset' ? 'resetBtnLabel' : 'loginBtnLabel');
+    var label = document.getElementById(labelId);
+    codeSent[tab] = true;
+    countdown[tab] = 60;
+    label.textContent = 'Resend in ' + countdown[tab] + 's';
+    var timer = setInterval(function () {
+      countdown[tab]--;
+      if (countdown[tab] <= 0) {
+        clearInterval(timer);
+        label.textContent = tab === 'reset' ? 'Reset Password' : 'Resend Code';
+        codeSent[tab] = false; // 允许重新发码
+        return;
+      }
+      label.textContent = 'Resend in ' + countdown[tab] + 's';
+    }, 1000);
+  }
+
+  function demoSignup() {
+    if (!document.getElementById('signupPassword').value)
+      document.getElementById('signupPassword').value = 'demo';
+    handleSignup();
+  }
+
+  function demoLogin() {
+    if (!document.getElementById('loginPassword').value)
+      document.getElementById('loginPassword').value = 'demo';
+    handleLogin();
+  }
+
+  function apiSignup() {
+    var name = document.getElementById('signupName').value.trim();
+    var email = document.getElementById('signupEmail').value.trim();
+    var password = document.getElementById('signupPassword').value;
+    var code = document.getElementById('signupCode').value.trim();
+
+    if (!name) { showError('signupError', 'Please enter a display name'); return; }
+    if (!email) { showError('signupError', 'Please enter an email address'); return; }
+    // W6：发码前先过密码策略（8-72），避免等 60s 重发窗口才发现密码不合格
+    if (!password || password.length < 8 || password.length > 72) {
+      showError('signupError', 'Password must be 8-72 characters');
+      return;
+    }
+
+    if (!codeSent.signup) {
+      MN_API.post('/auth/email-code', { email: email }).then(function (r) {
+        if (r.ok) {
+          setCodeHint('signup', 'Verification code sent to ' + email + ' — valid for 10 minutes');
+          startCountdown('signup');
+        } else if (r.status === 429) {
+          showError('signupError', 'Please wait before requesting another code');
+        } else {
+          demoSignup();
+        }
+      }).catch(demoSignup);
+      return;
+    }
+    if (!code) { showError('signupError', 'Enter the 6-digit code from your email'); return; }
+    MN_API.post('/auth/verify', { email: email, code: code, displayName: name, password: password }).then(function (r) {
+      if (!r.ok) { showError('signupError', 'Invalid or expired code'); return; }
+      SlatiDB.saveUser(r.data.user);
+      if (r.data.status === 'new') SlatiDB.setOnboardingStep(1);
+      window.location.href = 'pages/onboarding-identity.html';
+    }).catch(demoSignup);
+  }
+
+  function apiLogin() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var password = document.getElementById('loginPassword').value;
+    var code = document.getElementById('loginCode').value.trim();
+
+    if (!email) { showError('loginError', 'Please enter your email'); return; }
+    // W6：发码前先过密码策略，避免等 60s 重发窗口才发现密码不合格
+    if (!password || password.length < 8 || password.length > 72) {
+      showError('loginError', 'Password must be 8-72 characters');
+      return;
+    }
+
+    if (!codeSent.login) {
+      MN_API.post('/auth/email-code', { email: email }).then(function (r) {
+        if (r.ok) {
+          setCodeHint('login', 'Verification code sent to ' + email + ' — valid for 10 minutes');
+          startCountdown('login');
+        } else if (r.status === 429) {
+          showError('loginError', 'Please wait before requesting another code');
+        } else {
+          demoLogin();
+        }
+      }).catch(demoLogin);
+      return;
+    }
+    if (!code) { showError('loginError', 'Enter the 6-digit code from your email'); return; }
+    MN_API.post('/auth/verify', { email: email, code: code, password: password }).then(function (r) {
+      if (!r.ok) { showError('loginError', 'Invalid code or password'); return; }
+      SlatiDB.saveUser(r.data.user);
+      if (r.data.passwordSetupRequired) {
+        // W6：旧账号（此前无密码）→ 引导设密后继续
+        showSetup();
+        return;
+      }
+      if (r.data.status === 'new') SlatiDB.setOnboardingStep(1);
+      window.location.href = 'index.html';
+    }).catch(demoLogin);
+  }
+
+  // ── 首登设密（api 模式：旧账号验证码登录后引导；设完直达控制台）──
+  function showSetup() {
+    document.getElementById('tabSwitch').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('resetForm').style.display = 'none';
+    document.getElementById('setupForm').style.display = '';
+  }
+
+  function handleSetup() {
+    var password = document.getElementById('setupPassword').value;
+    if (!password || password.length < 8 || password.length > 72) {
+      showError('setupError', 'Password must be 8-72 characters');
+      return;
+    }
+    MN_API.post('/auth/password', { newPassword: password }).then(function (r) {
+      if (!r.ok) { showError('setupError', 'Could not set password — please try again'); return; }
+      SlatiDB.saveUser(r.data.user);
+      window.location.href = 'index.html';
+    }).catch(function () {
+      showError('setupError', 'Could not set password — please try again');
+    });
+  }
+
+  // ── 忘记密码（api 模式：两步——发码 → 码+新密码重置）──
+  function showReset() {
+    document.getElementById('tabSwitch').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('setupForm').style.display = 'none';
+    document.getElementById('resetForm').style.display = '';
+    document.getElementById('resetEmail').value = document.getElementById('loginEmail').value.trim();
+  }
+
+  function hideReset() {
+    document.getElementById('resetForm').style.display = 'none';
+    document.getElementById('setupForm').style.display = 'none';
+    document.getElementById('tabSwitch').style.display = '';
+    document.getElementById('loginForm').style.display = '';
+  }
+
+  function handleReset() {
+    var email = document.getElementById('resetEmail').value.trim();
+    var code = document.getElementById('resetCode').value.trim();
+    var password = document.getElementById('resetPassword').value;
+
+    if (!email) { showError('resetError', 'Please enter your email'); return; }
+    if (!password || password.length < 8 || password.length > 72) {
+      showError('resetError', 'Password must be 8-72 characters');
+      return;
+    }
+
+    if (!codeSent.reset) {
+      MN_API.post('/auth/email-code', { email: email }).then(function (r) {
+        if (r.ok) {
+          document.getElementById('resetCodeHint').textContent = 'Verification code sent to ' + email + ' — valid for 10 minutes';
+          startCountdown('reset');
+        } else if (r.status === 429) {
+          showError('resetError', 'Please wait before requesting another code');
+        } else {
+          showError('resetError', 'Could not send code — please try again');
+        }
+      }).catch(function () {
+        showError('resetError', 'Could not send code — please try again');
+      });
+      return;
+    }
+    if (!code) { showError('resetError', 'Enter the 6-digit code from your email'); return; }
+    MN_API.post('/auth/password-reset', { email: email, code: code, newPassword: password }).then(function (r) {
+      if (!r.ok) { showError('resetError', 'Invalid or expired code'); return; }
+      // 重置成功：回到登录页，预填邮箱 + 提示用新密码登录
+      codeSent.reset = false;
+      document.getElementById('resetForm').style.display = 'none';
+      document.getElementById('tabSwitch').style.display = '';
+      document.getElementById('loginForm').style.display = '';
+      document.getElementById('loginEmail').value = email;
+      document.getElementById('loginPassword').value = '';
+      setCodeHint('login', 'Password reset — log in with your new password');
+    }).catch(function () {
+      showError('resetError', 'Could not reset password — please try again');
+    });
+  }
+
+  function showError(id, msg) {
+    var el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = '';
+    setTimeout(function () { el.style.display = 'none'; }, 3000);
+  }
+
+  // 后端探测：可达 → api 模式（密码+验证码双因素：显示验证码框与忘记密码入口）；
+  // cookie 会话仍有效 → 免登录直达控制台；不可达 → 保持 demo 模式原样。
+  MN_API.probe().then(function (up) {
+    if (!up) return;
+    AUTH_API = true;
+    document.getElementById('signupCodeGroup').style.display = '';
+    document.getElementById('loginCodeGroup').style.display = '';
+    document.getElementById('forgotLink').style.display = '';
+    document.getElementById('demoHint').textContent = 'Secure login — password + email verification code';
+    MN_API.get('/auth/me').then(function (r) {
+      if (r.ok && r.data && r.data.user) {
+        SlatiDB.saveUser(r.data.user);
+        window.location.href = 'index.html';
+      }
     });
   });
-
-  // My Worlds = 国家（既有流程）+ 世界（22 类型向导）合并，按创建时间新→旧
-  var myWorldsList = nations.map(function (n) {
-    return { name: n.name, subtitle: n.classification, createdAt: n.createdAt || '' };
-  }).concat(worlds.map(function (w) {
-    return { name: w.name, subtitle: (w.emoji ? w.emoji + ' ' : '') + w.typeLabel, createdAt: w.createdAt || '' };
-  })).sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
-
-  var myWorldsHtml;
-  if (myWorldsList.length === 0) {
-    myWorldsHtml = '<p style="color:var(--color-outline);font-size:var(--fs-label-md);text-align:center;padding:var(--space-sm)">No worlds yet.<br><a href="create-world.html">Create your first world →</a></p>';
-  } else {
-    myWorldsHtml = myWorldsList.slice(0, 3).map(function (n) {
-      return '<div style="padding:8px 0;display:flex;align-items:center;gap:8px">' +
-        '<div style="width:32px;height:32px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + n.name.charAt(0) + '</div>' +
-        '<div style="min-width:0"><div style="font-weight:600;font-size:var(--fs-label-md)">' + n.name + '</div><div class="label-sm" style="color:var(--color-outline)">' + n.subtitle + '</div></div>' +
-      '</div>';
-    }).join('');
-  }
-  document.getElementById('myWorlds').innerHTML = myWorldsHtml;
-  if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+</script>
+<script src="assets/js/transitions.js"></script>
+<script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
+setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
 </body>
 </html>

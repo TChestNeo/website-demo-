@@ -13,7 +13,7 @@
   var CARD_SELECTOR = '.card, .app-main h1, .app-main h1 + p, .app-main h2, .app-main .search-capsule, .app-main header, .auth-card';
 
   var NAV_ORDER = {
-    'dashboard.html': 0,
+    'index.html': 0,
     'overview.html': 1, 'explore.html': 1, 'guidelines.html': 1,
     'community-hub.html': 2,
     'construction.html': 3, 'create-topic-step-1.html': 3, 'create-topic-step-2.html': 3, 'create-topic-step-3.html': 3,
@@ -22,7 +22,8 @@
     'editor.html': 5,
     'workspace.html': 8,
     'help.html': 9,
-    'index.html': -1, 'onboarding-identity.html': -1, 'onboarding-complete.html': -1,
+    'signin-and-login.html': -1, 'signin-and-login': -1,
+    'onboarding-identity.html': -1, 'onboarding-complete.html': -1,
     'transitioning.html': -1, 'sovereignty-ratified.html': -1,
   };
 
@@ -32,7 +33,7 @@
 
   function getFilename(path) {
     var parts = path.split('/');
-    return parts[parts.length - 1] || 'dashboard.html';
+    return parts[parts.length - 1] || 'index.html';
   }
   function getNavIndex(path) {
     var f = getFilename(path);
@@ -98,6 +99,9 @@
       a.href = href;
       var targetPath = a.pathname.replace(/\/+$/, '');
       var currentPath = window.location.pathname.replace(/\/+$/, '');
+      // 根页双形态归一（08-29 URL 重构：/ 与 /index.html 是同一页）
+      if (targetPath === '/index.html') targetPath = '/';
+      if (currentPath === '/index.html') currentPath = '/';
       if (!targetPath) targetPath = currentPath;
       return targetPath === currentPath;
     } catch(e) { return false; }

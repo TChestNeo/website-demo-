@@ -8,8 +8,8 @@
 window.MN_SITE = window.MN_SITE || {};
 
 // 站点版本号唯一来源（口径：大版本.小版本.小改动.补丁）——侧栏品牌模块显示
-// v0.2.2.0 = W6 密码+邮件验证码双因素登录（小版本位；2026-08-28）
-window.MN_SITE_VERSION = 'v0.2.2.0';
+// v0.2.3.0 = URL 重构：根 / = dashboard、/signin-and-login = 登录+注册合页（小改动位；2026-08-29）
+window.MN_SITE_VERSION = 'v0.2.3.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 window.FLUIDCANVAS_VERSION = 'v10.28.8.2';
