@@ -238,3 +238,20 @@
 ② 电池探针每段 IIFE 必须自带 $ 定义——3 段漏写 ReferenceError 假红（产品无恙，纯电池 bug）
 ③ 断言前确认元素基础 display 值——.auth-pane 是 flex 不是 block，3 条断言写错全 FAIL
 ④ CDP exceptionDetails.text 只有 'Uncaught'，真消息在 exception.description——evalJS 错误输出必须打 description + 表达式片段
+
+────────────────────────────────────────
+2026-08-30 v0.2.3.12 — auth 条款同意迁蓝板 + 注册第一步必勾（rev 00022-tdd）
+
+真身（用户）：
+「把服务条款和隐私条款放在 Login 的蓝色卡片那边，第一个步骤就需要打勾」——① 服务条款+隐私政策链接从页脚迁到蓝板（默认 signup 激活时蓝板停在 Login 半，用户叫它「Login 的蓝色卡片」）；② 注册（第一个步骤=Create account）必须勾选同意才能继续
+
+改动：
+- signin-and-login.html：蓝板 .auth-panel-body 加 .auth-terms 同意块（原生 checkbox #termsAgree + 「I agree to the 服务条款 and 隐私政策」链接，href pages/terms.html、pages/privacy.html 不变，label 整块可点勾选、链接点击不受 label 激活行为影响）；页脚条款行移除（页脚仅剩 demo 提示）；handleSignup 开头加未勾拦截（showError 提示，demo/api 双模式生效——拦在 AUTH_API 分支之前）
+- ethereal.css：.auth-terms 样式（白字小号、flex 行、z-index 1 压装饰圆 ::before/::after、checkbox accent-color 白勾）+ 随状态类 cross-fade 镜像字幕模式——signup 激活（板停 Login 半）显示（incoming delay 0.3s）、login 激活淡出（delay 0s + pointer-events none，登录不需勾）
+- site-config.js v0.2.3.11 → v0.2.3.12（补丁位 11→12·修复轮）
+- inline-css.js 重跑 40 页
+
+验证：本地 docker CDP 电池 31/31（条款块在蓝板内+初始未勾+链接精确/两态 opacity+pointer-events/淡入 delay 0.3s 动画钟自洽（延迟期 op=0→钟 300~600ms 进行中→computed op=缓动后进度 ±0.05→完成过渡结束）/未勾拦截错误+不跳转/勾后跳 onboarding-identity/demo 登录不拦/页脚无条款+保留 demo 提示/字幕回归/卡片无溢出/移动端 4 项/0 console error）+ smoke-admin 49/49 + 线上同款 31/31 + health 57 表 v2.0.0；部署 rev 00022-tdd（100% 流量）
+
+教训（电池）：
+① 字幕 incoming delay 0.3s+0.25s=550ms 才落定——500ms 采样断言 capS===1 落进过渡末段（实测 0.96）假红；采样时机先纸上算清过渡完成时刻（delay+fade 全和）再定 sleep

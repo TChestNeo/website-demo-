@@ -999,6 +999,36 @@ body.pre-stagger .auth-card { opacity: 0; }
 .auth-card.auth-tab-login  .auth-caption-signup { opacity: 1; transition-delay: 0.3s; }
 .auth-card.auth-tab-login  .auth-caption-login  { opacity: 0; transition-delay: 0s; }
 
+/* 条款同意块（v2.3.12 用户「把服务条款和隐私条款放在 Login 的蓝色卡片那边，第一个步骤就需要打勾」）：
+   蓝板上随状态类 cross-fade——signup 激活（蓝板停 Login 半）显示、login 激活淡出（登录不需勾）；
+   未勾点 Create Account 由 handleSignup 拦截（demo/api 双模式）；z-index 1 压装饰圆 ::before/::after */
+.auth-terms {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: var(--space-lg);
+  font-size: var(--fs-label-sm);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+.auth-terms input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  accent-color: #ffffff;
+  cursor: pointer;
+}
+.auth-terms a {
+  color: #ffffff;
+  text-decoration: underline;
+}
+.auth-card.auth-tab-signup .auth-terms { opacity: 1; transition-delay: 0.3s; }
+.auth-card.auth-tab-login .auth-terms { opacity: 0; pointer-events: none; transition-delay: 0s; }
+
 /* 右缘内凹圆角角补丁退役（v2.3.10）：内凹圆角整体移除（卡四角对称普通圆角），角补丁不再需要 */
 
 /* ----- Dashboard layout ----- */

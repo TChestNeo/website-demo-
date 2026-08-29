@@ -1008,6 +1008,36 @@ body.pre-stagger .auth-card { opacity: 0; }
 .auth-card.auth-tab-login  .auth-caption-signup { opacity: 1; transition-delay: 0.3s; }
 .auth-card.auth-tab-login  .auth-caption-login  { opacity: 0; transition-delay: 0s; }
 
+/* 条款同意块（v2.3.12 用户「把服务条款和隐私条款放在 Login 的蓝色卡片那边，第一个步骤就需要打勾」）：
+   蓝板上随状态类 cross-fade——signup 激活（蓝板停 Login 半）显示、login 激活淡出（登录不需勾）；
+   未勾点 Create Account 由 handleSignup 拦截（demo/api 双模式）；z-index 1 压装饰圆 ::before/::after */
+.auth-terms {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: var(--space-lg);
+  font-size: var(--fs-label-sm);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+.auth-terms input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  accent-color: #ffffff;
+  cursor: pointer;
+}
+.auth-terms a {
+  color: #ffffff;
+  text-decoration: underline;
+}
+.auth-card.auth-tab-signup .auth-terms { opacity: 1; transition-delay: 0.3s; }
+.auth-card.auth-tab-login .auth-terms { opacity: 0; pointer-events: none; transition-delay: 0s; }
+
 /* 右缘内凹圆角角补丁退役（v2.3.10）：内凹圆角整体移除（卡四角对称普通圆角），角补丁不再需要 */
 
 /* ----- Dashboard layout ----- */
@@ -1846,6 +1876,13 @@ body.pre-stagger .auth-card { opacity: 0; }
               </div>
             </div>
           </div>
+          <!-- v2.3.12 条款同意（用户「把服务条款和隐私条款放在 Login 的蓝色卡片那边，第一个步骤就需要打勾」）：
+               随状态类 cross-fade——signup 激活（蓝板停 Login 半）显示、login 激活淡出 pointer-events none（登录不需勾）；
+               未勾点 Create Account 由 handleSignup 拦截（demo/api 双模式） -->
+          <label class="auth-terms" id="authTermsBlock">
+            <input type="checkbox" id="termsAgree">
+            <span>I agree to the <a href="pages/terms.html">服务条款</a> and <a href="pages/privacy.html">隐私政策</a></span>
+          </label>
         </div>
       </div>
 
@@ -1965,17 +2002,11 @@ body.pre-stagger .auth-card { opacity: 0; }
 
     </div>
 
-    <!-- 表单下方页脚（两 tab 共用；v2.3.9 反向滑浮层，与标签栏同向跟蓝板跷跷板） -->
+    <!-- 表单下方页脚（两 tab 共用；v2.3.9 反向滑浮层，与标签栏同向跟蓝板跷跷板；v2.3.12 条款行迁蓝板，此处仅剩 demo 提示） -->
     <div class="auth-footer">
       <!-- Demo hint -->
       <p id="demoHint" style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
         Demo mode — any credentials work
-      </p>
-      <!-- Legal links -->
-      <p style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
-        By continuing, you agree to our
-        <a href="pages/terms.html" style="color:var(--color-primary)">服务条款</a> and
-        <a href="pages/privacy.html" style="color:var(--color-primary)">隐私政策</a>
       </p>
     </div>
   </div>
@@ -2012,6 +2043,11 @@ body.pre-stagger .auth-card { opacity: 0; }
   // 非激活半 display:none，同一状态类驱动。旧版扫出 keyframes/双板轮换/拖影/表单显隐逻辑全部移除。
 
   function handleSignup() {
+    // v2.3.12 条款必勾（用户「第一个步骤就需要打勾」）：未勾拦截 Create Account（demo/api 双模式生效）
+    if (!document.getElementById('termsAgree').checked) {
+      showError('signupError', 'Please agree to the Terms of Service and Privacy Policy to continue');
+      return;
+    }
     if (AUTH_API) return apiSignup();
 
     var name = document.getElementById('signupName').value.trim();
