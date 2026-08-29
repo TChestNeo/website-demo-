@@ -884,6 +884,11 @@ body.pre-stagger .auth-trail { opacity: 0; }
   box-shadow: var(--shadow-lg);
   position: relative;
   z-index: 2;
+  /* 整卡磨砂白底（08-29 修复）：原底只在右板——蓝板扫过让出的区域透出卡后拖影蓝色，
+     底色上移整卡后扫动时空缺处也是一体白色磨砂 */
+  background: var(--card-bg);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
 }
 .auth-left {
   width: 42%;
@@ -920,9 +925,7 @@ body.pre-stagger .auth-trail { opacity: 0; }
 }
 .auth-right {
   flex: 1;
-  background: var(--card-bg);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
+  /* 底色已上移整卡（.auth-card），此处不再重复磨砂——避免双倍叠加变不透明 */
   padding: var(--space-xl) var(--space-lg);
   display: flex;
   flex-direction: column;
