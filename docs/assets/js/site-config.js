@@ -21,7 +21,8 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.3.10 = auth 内凹圆角移除 + 蓝板层级置顶（用户「为什么右侧的角落是凹进去的？然后底部和顶部的层级能不能是蓝色卡片在最上方他们在蓝色卡片的下方」）：内凹=旧版滑出设计遗产（v0.2.3.4 钦定「右缘换内凹圆角（只右侧）」），问询钦定改普通圆角（卡四角对称、蓝板右停靠 0 lg lg 0 同程过渡、角补丁退役）；层级=蓝板 z 4 置顶、tabs/页脚 z 2 垫底（跷跷板滑行中从蓝板下穿过）（补丁位·口径修正轮；2026-08-30）
 // v0.2.3.11 = auth 标签折行修复 + 表单随蓝板方向淡出淡入（用户「Sign up 的 up 在 Sign 下方，能不能和 Log in 一样是一行的」+「切换时输入根据蓝色卡片移动方向淡出淡入」）：segmented-option 加 white-space:nowrap（active 加粗后最小内容宽塌缩致折行，控件改按整词自适宽）+ auth 标签控件钉 240px 宽（14px 加粗整词 57px 距自适宽差 4px 的保险）；auth-pane 加 opacity 0.6s cubic-bezier(0.4,0,0.2,1) 过渡——与蓝板同缓动同程无延迟，被盖半淡出/露出半淡入，每瞬值=蓝板缓动后进度，状态类翻转驱动（auth-tab-login 下 signup 0/login 1）；移动端 display:none 半切换即时显示无淡入（display:none 不启动 transition，电池实证），板字幕 cross-fade 仍在（补丁位·修复轮；2026-08-30）
 // v0.2.3.12 = auth 条款同意迁蓝板 + 注册第一步必勾（用户「把服务条款和隐私条款放在 Login 的蓝色卡片那边，第一个步骤就需要打勾」）：页脚条款行移除（页脚仅剩 demo 提示）；蓝板加 .auth-terms 同意块（原生 checkbox accent-color 白勾 + 服务条款/隐私政策链接，z-index 1 压装饰圆）随状态类 cross-fade——signup 激活（蓝板停 Login 半）显示（incoming delay 0.3s）、login 激活淡出（delay 0s + pointer-events none，登录不需勾）；handleSignup 未勾拦截 Create Account（showError 提示，demo/api 双模式生效）（补丁位·修复轮；2026-08-30）
-window.MN_SITE_VERSION = 'v0.2.3.12';
+// v0.2.3.13 = auth 条款同意挂 Login 蓝板 + 登录第一步必勾（用户「不是你把打勾放在sign up 干什么」）：v0.2.3.12 挂反——真身=勾选在 login 激活态蓝板显示（蓝板停 Signup 半、紧挨登录表单）+ 未勾拦截 Log in，Sign up 不拦；状态类规则翻转（auth-tab-login 显示 incoming delay 0.3s / auth-tab-signup 淡出 delay 0s+pointer-events none）、handleSignup 拦截撤除、handleLogin 加拦截（demo/api 双模式生效）（补丁位·口径修正轮；2026-08-30）
+window.MN_SITE_VERSION = 'v0.2.3.13';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 window.FLUIDCANVAS_VERSION = 'v10.28.8.2';

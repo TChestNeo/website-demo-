@@ -255,3 +255,20 @@
 
 教训（电池）：
 ① 字幕 incoming delay 0.3s+0.25s=550ms 才落定——500ms 采样断言 capS===1 落进过渡末段（实测 0.96）假红；采样时机先纸上算清过渡完成时刻（delay+fade 全和）再定 sleep
+
+────────────────────────────────────────
+2026-08-30 v0.2.3.13 — auth 条款同意挂 Login 蓝板 + 登录第一步必勾（rev 00023-mfp）
+
+真身（用户）：
+「不是你把打勾放在sign up 干什么」——v0.2.3.12 挂反：勾选出现在 signup 激活态蓝板、注册必勾；用户要的是 Login 侧的蓝卡显示条款+勾选、登录（进站第一步）必勾
+
+改动：
+- ethereal.css：.auth-terms 状态类规则翻转——auth-tab-login 显示（incoming delay 0.3s）、auth-tab-signup 淡出（delay 0s + pointer-events none，注册不拦）
+- signin-and-login.html：handleSignup 拦截撤除、handleLogin 开头加未勾拦截（showError loginError，demo/api 双模式生效——拦在 AUTH_API 分支前）；两处注释同步
+- site-config.js v0.2.3.12 → v0.2.3.13（补丁位 12→13·口径修正轮）
+- inline-css.js 重跑 40 页
+
+验证：本地 docker CDP 电池 29/29（signup 态隐藏 opacity 0+pointer-events none/切 login 淡入 delay 0.3s 动画钟自洽/未勾登录拦截错误+不跳转/勾后登录跳根/未勾注册直接跳 onboarding/页脚无条款/字幕回归/移动端 4 项/0 console error）+ smoke-admin 49/49 + 线上同款 29/29 + health 57 表 v2.0.0；部署 rev 00023-mfp（100% 流量）
+
+教训（电池）：
+② 固定 sleep 采样对线上往返延迟敏感（线上首跑 29 断言 1 FAIL：中段采样落进过渡尾巴钟 550~600ms、progress 已 1）——进行中断言改轮询动画钟抓 (300,550) 窗口再断言自洽（窗口外采样不判，产品无恙纯测量问题）；延迟期断言=click 后立即采样（往返即延迟量）
