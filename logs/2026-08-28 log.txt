@@ -79,3 +79,11 @@
 1. **关键 CSS 拆分**：只内联 above-the-fold 关键 CSS（背景/布局/卡片壳 ~8KB），其余样式外链 + **文件名哈希 + immutable 长缓存**——部署后 CSS 未变则命中缓存（304 都不需要），变了也只冷一次；HTML 回到 ~20KB 冷下载快。标准静态站架构。
 2. **转场妥协**：淡出 240–280ms 或缩短或去掉——「闪」> 动画优先级。
 3. **量化用户网络**：多页面冷 FCP 矩阵 + 用户侧网络差异。
+
+**08-29 凌晨 — URL 重构（用户「登录和注册统一成一个页面，dashboard 变成直接 .com，登录注册变 .com/signin-and-login」；口径问询确认保留 Sign up/Log in tab 切换）**（commit 222bf7d，部署 rev 00010-hmd，不 push）
+
+**改动**：auth 页 docs/index.html → 根级 docs/signin-and-login.html（**根级而非 pages/——canonical URL 无扩展名 base 是 /，根级放则 assets/、pages/terms.html 等相对链接全部原样正确，零前缀改写**；4 处 dashboard 跳转→index.html + title）；docs/pages/dashboard.html → docs/index.html（8 处 ../assets/→assets/ + 11 处裸同目录链加 pages/ 前缀）；transitions.js（NAV_ORDER dashboard→index、signin-and-login 双 key 覆盖无扩展名 URL、getFilename 兜底、isSamePage /index.html ≡ / 归一）；sidebar.js（Home href/logo→../index.html、active 判定加 / 与 /index.html）；settings-modal.js（5 法律裸链→../pages/*.html 双上下文通用、登出/删号→../signin-and-login）；15 处 pages/ 内 dashboard 链接→../index.html；help/premium 入口→../signin-and-login；**entrypoint.js 无扩展名回退规则（规范化+403 检查后：无 extname 且文件不存在→试 p+'.html'）** + smoke-admin.js 同步；site-config v0.2.2.0→v0.2.3.0（小改动位）。inline-css.js 重跑 43/43 跳过（两文件搬移保留内联 CSS+pre-stagger，无漂移）。
+
+**验证**：本地 docker curl 11/11（/ 与 /index.html 均 200 含 dashboard、/signin-and-login 无扩展名 200、/pages/dashboard.html 404、/admin/ 与 /api/health 200）+ npm test 182/182 + smoke-admin 49/49 + 部署 rev 00010-hmd + 线上 curl 5/5（自定义域名 + run.app 对照）+ **公网 CDP 电池 20/20 0 console error**（auth api 模式激活/无会话直访停留不跳/根页 title+侧栏 Home 高亮+logo→index.html+v0.2.3.0 徽章/explore 点 Home 转场落地 /index.html/editor Back to Dashboard 落地根页/Settings 5 法律链接+Logout→/signin-and-login/help 前往注册+premium 登录注册锚点）。
+
+**教训**：① git status 重命名配对按相似度——dashboard 与 signin-and-login 共享 36KB 内联 CSS 被显示配成一对（伪影），验证看文件内容 title 不看 status；② 「Home Dashboard」只在 <title> 不在 body——curl 关键字命中 title、CDP body.textContent 断言必错，body 断言用 welcomeBanner id；③ settings 齿轮由 wireSidebarBtns 300ms 轮询挂钩——电池等 _settingsWired 标志再点，否则点击落在未挂钩按钮静默无效；④ 无会话直访 /signin-and-login 的 /auth/me 401 是设计内负探测，浏览器仍记 console error——过滤环境性条目看 entry.url；⑤ api 模式探测异步（scale-to-zero 冷启动慢）——断言 waitFor 别立即读。
