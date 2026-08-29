@@ -95,3 +95,13 @@
 **验证**：inline-css 重跑 40/43 页刷新；本地 docker 容器 CDP 电池 24/24 0 console error（结构/offset/色相递减 spread 0.174→0.094→0.039/pointer-events/z 层级/pre-stagger 解除/1280+375 无横向溢出/滑出 tx>0→瞬移左 tx<-50 向右行进→复位/反向/连点守卫/版本徽章）+ smoke-admin 49/49（/admin/ 内联刷新回归）+ 线上同款电池 24/24 0 console error。
 
 **教训**：① color-mix 计算值 Chrome 序列化为 color(srgb r g b / a) 而非 rgba()——电池解析色值要兼容两种格式；② 断言过渡中途值先算贝塞尔进度——cubic-bezier(0.22,0.61,0.36,1) 起速快，滑入 90ms 已走大半程，写死 tx<-200 必红，断言「tx<0 且向右行进」与缓动无关；③ 过渡第 1 帧前立即读 computed transform = 起点 0——先 sleep ~120ms；④ PS5.1 原生命令 stderr 重定向（2>$null）把 $? 翻成 false 即使 exit 0——判断用 $LASTEXITCODE；⑤ gcloud --add-volume 逗号字典参数在 PS5.1 会被拆词（type key 丢失）——双引号包起来；⑥ 拖影偏移不用 transform 用 inset——initStagger 入场写内联 transform 会清掉偏移（且偏移 ≤ --space-md 24px = 任何视口无横向溢出）。
+
+== auth 切 tab 动画口径修正（2026-08-29 晚，commit 301a368，部署 rev 00012-8fg，站点号 v0.2.3.2）==
+
+【用户纠正】「不是这样我是希望卡片向右滑去然后这个覆盖过去的时候把输入的部分擦掉，然后左侧再滑出一个蓝色把信息补上，再滑出信息的蓝色」——上一轮（68c893d）交付的「蓝板滑出右缘→瞬移→从左侧滑回」被否：用户要的是蓝板向右扫过表单时把输入「擦掉」（内容在盖满瞬间切换）、新蓝板带着新信息从左侧滑入补位。口径问询 3 选项（扫过擦掉+新蓝板补位 推荐 / 双扫 / 盖满退回往返），用户钦定推荐项。
+
+【改动】① switchTab 拆两半：点击只记 currentTab+启动画，applyAuthTab（表单显示/错误/步骤指示点）延迟到蓝板盖满表单瞬间执行——扫动时旧表单还在被擦、滑出右缘时露出的已是新表单（trailing edge 渐进揭开新内容 = 擦除效果）；② 连点：authSlideBusy 时只记 authPendingTab，盖满时刻按最新目标切、滑入完成后有残余再补一轮；③ ethereal.css 过渡 0.45s fast-start bezier → 0.6s cubic-bezier(0.45,0,0.55,1)（对称 ease-in-out）：蓝板宽 42% 卡，全盖表单需 translateX≥138%（自身宽 240%=整卡宽），盖满 ≈345ms、切换安排 400ms（盖满窗口 345-600ms 内）；④ 拖影 3 层不动（用户未提）；⑤ inline-css.js 重跑 40 页同步；⑥ site-config v0.2.3.1→v0.2.3.2（补丁位·口径修正轮）。
+
+【验证】本地 docker CDP 电池 18/18 + smoke-admin 49/49 + 线上同款 18/18 全绿 0 console error（电池要点：扫动早期 ~150ms 旧表单还在且蓝板右移中 / ~500ms 内容已切且蓝板仍全盖 / ~700ms 已瞬移到左侧滑入 / ~1400ms 复位 busy 释放 / 反向 / 连点 200ms 内反向点最终内容=最新目标 / 375 无横向溢出 / 拖影偏移与掺量回归）。
+
+【教训】① 电池时序断言用绝对时刻（performance.now - __t0）再 sleep 补差，别逐项 sleep 累加——eval 往返延迟会让「300ms 检查」实际落在 400ms 切换之后，断言假阴性（本轮实测踩到）；② 检查函数返回 DOM 元素会序列化成 {} 被判 FAIL——断言链最后要 !! 归一成布尔；③ 口径修正轮惯例：动画类需求第 2 次撞就停下来问，用选项预览（ASCII 时间线）让用户钦定，比再猜一版省一个部署轮；④ 本地 docker 运行要带 ADMIN_EMAIL，否则 seed project_director 失败容器直接退出（exit 1，非容器化环境无 .env 兜底）；SNAPSHOT_PATH 用 /app/data/（镜像内已 chown）别用 /tmp（Docker Desktop 下解析到 Windows 临时目录 scandir 失败——非致命但报警）。
