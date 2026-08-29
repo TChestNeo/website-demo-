@@ -834,6 +834,7 @@ body.pre-stagger .auth-card { opacity: 0; }
   transition: all 0.2s;
   border: none;
   background: transparent;
+  white-space: nowrap; /* v0.2.3.11 标签折行修复（用户「Sign up 的 up 在 Sign 下方，能不能和 Log in 一样一行」）：active 加粗 font-weight 600 后按钮最小内容宽塌缩（min-content=最长单词），flex:1 均分下「Sign up」折成两行——nowrap 使 min-content=完整文字，控件按整词自适宽 */
 }
 .segmented-option.active {
   background: var(--color-surface);
@@ -916,7 +917,14 @@ body.pre-stagger .auth-card { opacity: 0; }
   flex-direction: column;
   justify-content: safe center; /* 内容超高时顶部不被裁（api 模式验证码组/报错变高兜底） */
   overflow-y: auto;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1); /* v0.2.3.11 表单随蓝板方向淡出淡入（用户「切换时输入根据蓝色卡片移动方向淡出淡入」）：与板同缓动同程无延迟——被盖半淡出、露出半淡入，每瞬值=蓝板缓动后进度（opacity 动画钟与 transform 钟可互相断言）；opacity 不影响 hit-test，露出半半透明时点击仍有效 */
 }
+/* v0.2.3.11：默认 signup 激活（蓝板盖右半 login）→ login 半 opacity 0；切 tab 状态类翻转驱动。
+   移动端（≤768）非激活半 display:none——display:none 元素不启动 transition（电池实证 opLi 直接=1），切换即时显示无淡入；板字幕 cross-fade 仍在 */
+.auth-pane-signup { opacity: 1; }
+.auth-pane-login { opacity: 0; }
+.auth-card.auth-tab-login .auth-pane-signup { opacity: 0; }
+.auth-card.auth-tab-login .auth-pane-login { opacity: 1; }
 .auth-footer {
   position: absolute; /* v2.3.9 反向滑：与标签栏同理，不占文档流底部行，浮层随可见半滑动；v2.3.10 层级降 z 2 垫蓝板下 */
   bottom: var(--space-sm);
@@ -1787,7 +1795,7 @@ body.pre-stagger .auth-card { opacity: 0; }
 
     <!-- Tab toggle（v2.3.9 反向滑浮层：与蓝板跷跷板，活跃标签悬可见半上方；v2.3.10 角补丁退役（内凹移除）、tabs/页脚 z 2 垫蓝板下） -->
     <div class="auth-tabs">
-      <div class="segmented-control" id="tabSwitch" style="max-width:240px">
+      <div class="segmented-control" id="tabSwitch" style="width:240px;max-width:240px">
         <button class="segmented-option active" id="tabSignup" onclick="switchTab('signup')">Sign up</button>
         <button class="segmented-option" id="tabLogin" onclick="switchTab('login')">Log in</button>
       </div>

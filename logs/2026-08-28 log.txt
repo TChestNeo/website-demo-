@@ -217,3 +217,24 @@
 ② custom property getPropertyValue('--radius-lg') 返回原始 token '1rem' 不解析——断言参照改「卡自身 computed 圆角」互相比较
 ③ demoHint 文本前有 HTML 换行空白 → 断言先 trim()
 ④ 部署命令 --add-volume 逗号参数未加引号 → gcloud 报 Key [type] required（PS5.1 拆逗号参数）——老坑再犯（记忆 backend-build-state 里早有「逗号参数必加引号」），执行部署前重读 cloudrun.md 命令段逐参核对
+
+────────────────────────────────────────
+2026-08-30 v0.2.3.11 — auth 标签折行修复 + 表单随蓝板方向淡出淡入（rev 00021-jdr）
+
+真身（用户两问）：
+① 「Sign up 的 up 是在 Sign 的下方能不能变成和 Log in 一样是一行的」——「Sign up」标签折成两行。根因：active 标签加粗（font-weight 600）后 .segmented-option（flex:1）最小内容宽塌缩为最长单词，控件自适宽只放得下单词——「Sign up」折两行，轻字重「Log in」刚好一行，加粗/不加粗就一行/两行不对称
+② 「左右切换的时候输入根据蓝色卡片移动方向淡出和淡入」——表单随蓝板扫动方向淡出淡入
+
+改动：
+- ethereal.css：.segmented-option 加 white-space:nowrap（min-content=完整文字，控件按整词自适宽）；.auth-pane 加 transition opacity 0.6s cubic-bezier(0.4,0,0.2,1)（与蓝板同缓动同程无延迟——被盖半淡出、露出半淡入，每瞬值=蓝板缓动后进度）+ 4 条状态类规则（默认 signup 半 1/login 半 0；auth-tab-login 翻转）
+- signin-and-login.html：tabSwitch 内联钉 width:240px（14px 加粗整词 57px 距自适宽内容区 53px 差 4px 的保险）
+- site-config.js v0.2.3.10 → v0.2.3.11（补丁位 10→11·修复轮）
+- inline-css.js 重跑 40 页
+
+验证：本地 docker CDP 电池 47/47（标签单行×4 含 active 加粗态、opacity 钟与 transform 钟同进度 ±0.02 正反双向、op=1−p/p 映射 ±0.03、跷跷板守恒/圆角插值/中缝 efp=panel/字幕方向/150ms 连点/demo 登录/手机 8 项/0 console error）+ smoke-admin 49/49 + 线上同款 47/47 + health 57 表 v2.0.0；部署 rev 00021-jdr（100% 流量）
+
+教训（电池）：
+① display:none 元素不启动 transition——手机端切换 opLi 直接=1 无淡入（电池实证），先写进 CSS 注释「移动端同样淡入」再被电池推翻；注释里声称的行为也要实证（老教训「注释自称 exact 的公式也要验」的注释版）
+② 电池探针每段 IIFE 必须自带 $ 定义——3 段漏写 ReferenceError 假红（产品无恙，纯电池 bug）
+③ 断言前确认元素基础 display 值——.auth-pane 是 flex 不是 block，3 条断言写错全 FAIL
+④ CDP exceptionDetails.text 只有 'Uncaught'，真消息在 exception.description——evalJS 错误输出必须打 description + 表达式片段
