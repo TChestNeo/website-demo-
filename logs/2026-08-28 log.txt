@@ -185,3 +185,14 @@
 **验证**：本地 docker CDP 电池 **108/108 0 console error**（C1 静态结构：960×800、双半各 480、板 tx=480 盖右半、字幕 0/1、角补丁 16×16 z4 压板、elementsFromPoint 三层命中、双表单常驻、版本徽章；C2/C3 正反滑动：7 时点 tx 对 Node 侧贝塞尔预测 + 字幕 cross-fade 含 0.3s delay + 动画钟单调无停顿 + 墙钟同步无起步延迟 + 终点圆角 16px↔0px；C4 连点以最后目标收束；C5 375 移动端横幅/纵排/显隐互换/无横向溢出；C6 demo 流阻断 api 注册→onboarding、登录→根；C7 api 模式验证码组+忘记密码流 show/hide；0 console error）+ smoke-admin 49/49 + 线上同款 108/108 + health 57 表 v2.0.0。部署 rev 00018-47x（当前线上，v0.2.3.8）。
 
 **教训（本轮电池测量法升级）**：① 时序采样改用**过渡自身动画钟**（CSSTransition.currentTime + effect.getComputedTiming()）替代纯墙钟预测——CDP eval 往返 20–40ms 在高速段（1.4px/ms）造成 49px 假偏差，动画钟自洽断言对采样延迟免疫，墙钟仅做粗同步断言（±60ms 断无起步延迟）；② **getComputedTiming().progress 是缓动后进度**（probe 实证：opacity 直接等于它，fade-out = 1−progress；currentTime 含 transition-delay 相位）——按线性输入进度写预测会双缓动全错，首版「钟跑快 110ms」是双缓动误读非产品 bug；③ headless Chrome 默认窗口可触发 ≤768 媒体查询（首跑全部断言落进移动端规则：pane display:none rect 全零、板变横幅）——起 Chrome 必带 --window-size 钉桌面视口；④ Runtime.evaluate returnByValue 返回裸对象时 JSON.parse(obj) 直接炸——探针 IIFE 一律包 JSON.stringify；⑤ 定高布局轮改结构必重算预算（实测 tabs/footer/内边距），旧估 82 vs 实 162 的教训同上上轮「高度定档要实测重算」。
+---
+
+## 2026-08-30 —— auth 反向滑跷跷板（用户「那个顶部导航能不能是蓝色卡片向右移动他就向左移动，就不需要占用顶部空间底部也是同理」）
+
+**真身（口径）**：问询确认（三选一预览）＝ **标签栏跟着蓝板反向滑**：切换时蓝板向右滑、顶部 Sign up/Log in 标签栏同步向左滑（跷跷板），活跃标签始终悬在可见那半表单上方；底部页脚同理反向。且「不占顶部空间」＝ 标签栏/页脚不再占文档流行（改浮层），表单半独占 800 定高。
+
+**改动**：① ethereal.css：.auth-tabs/.auth-footer 改 position:absolute（top:var(--space-md) / bottom:var(--space-sm)，left:0，width:50%，z-index:4 压蓝板），transform translateX(0↔100%) 与蓝板同缓动同程（0.6s cubic-bezier(0.4,0,0.2,1)）——signup 激活（板右）时标签栏+页脚停左半，login 激活（板左）时滑右半，三元素动画钟同步；.auth-panes 独占卡体（800 定高全给表单：表单 542 居中净空 129 ≥ 浮层区 tabs 58/footer 82，不压表单）；≤768 媒体查询内 tabs/footer 回流入文档流（position:static/width:100%/transform:none，横幅布局不变）；② signin-and-login.html 仅注释+tabSwitch 死内联 margin 清理；③ inline-css.js 重跑 40 页；④ site-config v0.2.3.8→v0.2.3.9（补丁位·口径修正轮）。JS 零改动（同一 auth-tab-* 状态类驱动，切换仍零计时器）。
+
+**验证**：本地 docker CDP 电池 **236/236 0 console error**（C1 静态：板 tx=480 盖右、标签栏/页脚居中左半、浮层不压表单（tabs 底 58 < 标题 129、页脚顶 > 表单底）、中点 elementsFromPoint 分层、双表单常驻；C2/C3 正反跷跷板：12 时点×6 断言——板 tx=480(1∓p)/标签栏·页脚 tx=480p（缓动后进度，8px 容差）+ 跷跷板守恒 板+标签栏=480、板+页脚=480（10px）+ 三元素动画钟同步（40ms）+ 无起步延迟（100ms）+ 交叉中标签栏在蓝板之上（z4）+ 字幕方向化进度断言（incoming=p/outgoing=1−p，delay 相位成立）；C4 连点以最后目标收束；C5 375 移动端浮层回流入流+tabs 铺满居中+横幅次序+非激活半隐藏+无横向溢出；C6 demo 流阻断 api 注册→onboarding、登录→根（接受 / 与 /index.html）；C7 api 模式验证码组+忘记密码流+health 57 表；0 console error）+ smoke-admin 49/49 + 线上同款 236/236 + health 57 表 v2.0.0。部署 rev 00019-m9g（当前线上，v0.2.3.9）。
+
+**教训**：① elementsFromPoint 命中蓝板**子元素**（h1/p）不是板本体——分层断言先 closest('#authPanel'/'#tabSwitch') 归一再判；② 字幕断言要方向化：incoming 值=p、outgoing 值=1−p（delay 相位 p=0 → 值=起始值，公式两种方向恒成立）——硬编码一种方向会在反向用例全红；③ demo 登录落 /index.html 是 URL 重构轮既定行为（canonical 根 / 与 /index.html 同页），电池断言两者都接受；④ api 模式 demoHint 不隐藏只换文案（'Secure login — …'），照实现断文案别臆断隐藏。
