@@ -305,3 +305,20 @@
 
 教训（电池）：
 ④ 电池脚本 bug 三连，产品均无辜——(1) 探针返回对象未 JSON.stringify → JSON.parse('[object Object]') 抛错（evalJS 统一 typeof v==='string' 才 parse，字符串探针须 JSON.stringify 包裹、对象/布尔直通）；(2) 解构别名返回原始 matrix 字符串（应 return {v} 而非 {a}，断言取 v[0]/v[3] 判 a=d=0）；(3) 路径断言比对 JSON 引号字符串（evalJS 已 parse 过、应比裸字符串）+ demo 登录必须预填凭据否则被 handleLogin 空值拦截（产品行为正确，电池自身漏步）
+
+────────────────────────────────────────
+2026-08-30 v0.2.4.1 — auth 条款勾选挪进登录表单（rev 00026-wck）
+
+真身（用户）：
+「为什么打勾右跑去login那了？」——v0.2.4.0 全部互换后条款块仍挂蓝板，蓝板在登录态停右半（盖注册半），勾选被带着「右跑去」右半紧挨注册表单，登录表单却空无一勾。问询钦定「挪进登录表单（左半）」。
+
+改动：
+- ethereal.css：.auth-terms 从蓝板迁至登录表单适配——display:flex 行内块（不再 absolute 白字）随登录半淡入淡出；配色反相适配白卡：未勾底 rgba(70,72,212,0.06)/描边 0.45 品牌蓝半透、hover 0.12、勾选品牌蓝底 #4648d4+白对勾（::after border #ffffff）、focus-visible 蓝环、链接品牌蓝、文字墨色；原 v0.2.3.13/14 蓝板白字配色+状态类 cross-fade 规则（auth-tab-login 显示 delay 0.3s / auth-tab-signup 淡出 pointer-events none）整体退役——登录半 opacity 天然覆盖可见性、signup 态蓝板 z4 压盖拦截点击；注释记录三代历史；移动端 22px/14px/padding 10px 0 规格保留
+- signup-and-login.html：.auth-terms label 从 .auth-panel-body（蓝板）挪进 #loginForm（验证码组下方、Enter Console 按钮上方）；语义不变——未勾点 Log in 由 handleLogin 拦截（demo/api 双模式），Sign up 不拦
+- site-config.js v0.2.4.0 → v0.2.4.1（补丁位·口径修正轮）
+- inline-css.js 重跑 40 页同步
+
+验证：本地 docker CDP 电池 43/43（条款在登录表单内+按钮上方/登录态可见可点 efp 命中/未勾白卡配色 0.06+0.45/未勾对勾隐藏 a=d=0/忘记密码在登录表单/页脚仅 demo 提示无条款回归/结构干净蓝板无勾选块/未勾登录被拦截错误提示+不跳转/勾选品牌蓝底白勾 a≈0.707/勾后登录跳根页/切注册后条款被蓝板压盖 efp 命中蓝板系/注册不拦跳 onboarding/动画钟中段自洽/移动端 22px+14px+display:none 条款随登录半隐藏/0 console error）+ smoke-admin 49/49 + 线上同款 43/43 + curl /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0；部署 rev 00026-wck（100% 流量）
+
+教训（电池）：
+⑤ 恢复旧电池的 waitLoad 探针 evalJS(document.readyState) 在 JSON.parse 裸字符串 'complete' 时抛错无限重试 → 拆 rawEval（返回未解析 value）专供 waitLoad；evalJS 统一 typeof v==='string' 才 parse——教训④的 (1) 已在恢复脚本时落地，本轮线上复跑 43/43 一次通过

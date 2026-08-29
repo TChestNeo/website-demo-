@@ -27,7 +27,8 @@ window.MN_SITE = window.MN_SITE || {};
 //   ①全部互换——login 表单左半/signup 表单右半（双表单 DOM 互换）、标签栏 [Log in | Sign up]（登录在前）、默认登录态（auth-tab-login 初始类 + currentTab='login'）、蓝板字幕改配对活跃半（登录态蓝卡=Welcome back/Your world is waiting.、注册态蓝卡=Build Your World+步骤——旧版显示被盖半文案挨着对面表单观感「倒反」）；tabs/页脚/板/表单淡入的状态选择器全部互换；
 //   ②URL 更名 /signin-and-login → /signup-and-login（signin 与 login 同义冗余，「注册+登录」合页 URL 应叫 signup；文件 git mv、settings-modal/transitions/help/premium 引用同步，旧 URL 404）
 //   （小改动位·口径修正轮；2026-08-30）
-window.MN_SITE_VERSION = 'v0.2.4.0';
+// v0.2.4.1 = auth 条款勾选挪进登录表单（用户「为什么打勾右跑去login那了」→问询钦定「挪进登录表单（左半）」）：勾选框从蓝板挪进左半登录表单 Enter Console 按钮上方——随登录半淡入淡出（蓝板字幕不再带条款，注册不拦）；配色反相适配白卡（描边品牌蓝半透 0.45、未勾底 0.06、勾选品牌蓝底白勾、hover 0.12、focus 蓝环），原蓝板白字配色+状态类 cross-fade 规则退役（登录半 opacity 天然覆盖可见性）；（补丁位·口径修正轮；2026-08-30）
+window.MN_SITE_VERSION = 'v0.2.4.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 window.FLUIDCANVAS_VERSION = 'v10.28.8.2';
