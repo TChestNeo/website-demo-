@@ -903,11 +903,12 @@ body.pre-stagger .auth-trail { opacity: 0; }
   z-index: 3; /* 切 tab 滑动时压过右板 */
   transition: transform 0.8s cubic-bezier(0.45, 0, 0.55, 1); /* 仅滑入用（扫出走 keyframes 动画）：新蓝板从左缘滑入复位 0.8s（08-29 切换时机修复：扫出尾部改快甩后，入板稍快于扫出——到达不拖到 1.9s） */
 }
-/* auth 切 tab 扫动动画（08-29 口径修正 v2；08-29 切换时机修复）：active 蓝板向右扫出（拖影挂板上=板动影随），
-   盖满输入位置瞬间切内容 + incoming 蓝板同时从左缘滑入；240% = 自身宽 42% 卡的 2.4 倍 ≈ 整卡宽。
-   两段 keyframes：前 71% 慢速滑过表单（ease-in-out，盖满瞬间 = 前沿扫过表单右缘 920px = translateX 128.2%），
-   后 29% ease-out 快速甩出——旧版整段 ease-in-out 尾部拖慢：盖满 600ms 后新表单要等蓝板拖到 1058ms 才露全
-   （用户「切换迟了半秒」）；分两段后盖满 781ms、新表单 ~1013ms 露全（时差 ≈230ms，回到 0.6s 版手感） */
+/* auth 切 tab 扫动动画（08-29 口径修正 v2；08-29 切换时机修复；08-29 无停顿修复）：active 蓝板向右扫出
+   （拖影挂板上=板动影随），盖满输入位置瞬间切内容 + incoming 蓝板同时从左缘滑入；240% = 自身宽 42% 卡的 2.4 倍 ≈ 整卡宽。
+   两段 keyframes 缓动速差衔接：段一 cubic-bezier(0.45,0,0.55,0.85) 末输出斜率 dp/du = (1−0.85)/(1−0.55) = 1/3 ≠ 0（盖满处仍在滑行）；
+   段二 cubic-bezier(0.25,0.04,0.58,1) 起步 dp/du = 0.04/0.25 = 0.16 与段一末速等速接续（1/3×516.9/781 ≈ 0.16×450.8/319 px/ms）
+   ——旧版段一 ease-in-out 末速爬向 0（盖满前 ~50ms 几乎不动）+ 段二 ease-out 起步即猛甩（dp/du 0/0 极限 = 1.724 突跳）= 停一下再甩出去
+   （用户「滑过去会停一下」）。 */
 .auth-left.auth-slide-out {
   transform: translateX(240%);
   animation: auth-sweep-out 1.1s forwards;
@@ -915,11 +916,11 @@ body.pre-stagger .auth-trail { opacity: 0; }
 @keyframes auth-sweep-out {
   0% {
     transform: translateX(0);
-    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); /* 段一：慢速扫过表单 */
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 0.85); /* 段一：慢速扫过表单，尾速不减为零 */
   }
   71% {
     transform: translateX(128.2%); /* 盖满输入位置（前沿 = 表单右缘 920px）——JS AUTH_SWAP_MS 与此刻对齐切内容 */
-    animation-timing-function: cubic-bezier(0, 0, 0.58, 1); /* 段二：ease-out 快速甩出，新表单紧随露出 */
+    animation-timing-function: cubic-bezier(0.25, 0.04, 0.58, 1); /* 段二：与段一末速无缝衔接，加速甩出（尾段减速在卡外不可见） */
   }
   100% { transform: translateX(240%); }
 }
@@ -964,8 +965,9 @@ body.pre-stagger .auth-trail { opacity: 0; }
   justify-content: center;
 }
 
-/* auth 蓝板拖影（08-29 修正）：挂蓝板本体——板动影随、拖在后方，不再挂背景卡片；
+/* auth 蓝板拖影（08-29 修正；08-29 提亮）：挂蓝板本体——板动影随、拖在后方，不再挂背景卡片；
    band 从板左缘向左伸出 8/16/24px、越靠外越接近白（DOM 序 3→2→1 让最近层最蓝压顶）；
+   掺量 40/22/10%（旧 20/10/4% 在白磨砂卡上色差仅 2-9% 几乎不可见——用户「我的移动缠影呢」）；
    板停靠时伸出部分被卡片 overflow 裁掉不可见 */
 .auth-card-wrap {
   position: relative;
@@ -980,11 +982,11 @@ body.pre-stagger .auth-trail { opacity: 0; }
   pointer-events: none;
 }
 .auth-trail-1 { left: -8px;
-  background: color-mix(in srgb, var(--color-primary) 20%, var(--card-bg)); }
+  background: color-mix(in srgb, var(--color-primary) 40%, var(--card-bg)); }
 .auth-trail-2 { left: -16px;
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg)); }
+  background: color-mix(in srgb, var(--color-primary) 22%, var(--card-bg)); }
 .auth-trail-3 { left: -24px;
-  background: color-mix(in srgb, var(--color-primary) 4%, var(--card-bg)); }
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg)); }
 
 /* ----- Dashboard layout ----- */
 .app-layout {
@@ -1167,6 +1169,7 @@ body.pre-stagger .auth-trail { opacity: 0; }
   .auth-card { flex-direction: column; height: auto; min-height: 560px; }
   .auth-left { position: static; width: 100%; height: auto; } /* column 下回流入文档流（absolute 会叠在表单上） */
   .auth-right { margin-left: 0; }
+  .auth-trail { display: none; } /* column 下板脱流后拖影的包含块变 wrap=整卡宽 3 条色带盖全卡（提亮 40% 后更明显）——移动端无扫动语义，整体隐藏 */
   .auth-left-body { position: static; border-radius: var(--radius-lg) var(--radius-lg) 0 0; } /* 顶部两角同半径凸圆角，与卡片右缘内凹洞曲线重合——蓝板不填进凹洞 */
   .display-lg { font-size: var(--fs-display-lg); line-height: 1.2; }
 }
