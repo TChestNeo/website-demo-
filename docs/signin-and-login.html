@@ -896,9 +896,10 @@ body.pre-stagger .auth-trail { opacity: 0; }
   position: relative;
   overflow: hidden;
   z-index: 3; /* 切 tab 滑动时压过右板 */
-  transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: transform 0.6s cubic-bezier(0.45, 0, 0.55, 1);
 }
-/* auth 切 tab 动画（08-29）：蓝板向右滑出卡外，再从左侧滑入；240% = 自身宽 42% 卡的 2.4 倍 ≈ 整卡宽 */
+/* auth 切 tab 扫动动画（08-29 口径修正）：蓝板向右扫过表单——盖满瞬间 JS 切换内容（旧输入被擦掉），
+   继续滑出右缘，瞬移到左缘外后带着新信息滑入复位；240% = 自身宽 42% 卡的 2.4 倍 ≈ 整卡宽 */
 .auth-left.auth-slide-out { transform: translateX(240%); }
 .auth-left.auth-slide-in { transform: translateX(-240%); }
 .auth-left::before {
@@ -1891,6 +1892,17 @@ body.pre-stagger .auth-trail { opacity: 0; }
 
   function switchTab(tab) {
     currentTab = tab;
+    playAuthSlide(tab);
+  }
+
+  // 切 tab 蓝板扫动动画（08-29 口径修正）：蓝板向右扫过表单，盖满瞬间把输入的部分
+  // 「擦掉」（切换内容），继续滑出右缘；新蓝板带着新信息从左侧滑入复位。
+  // authSlideBusy 防连点叠加；连点时记最新目标 tab，盖满时刻按它切换、滑入完成后补轮。
+  var authSlideBusy = false;
+  var authPendingTab = null;
+  var AUTH_SWEEP_MS = 600; // 扫出时长；ease-in-out 下盖满表单 ≈ 350ms，切换安排在盖满后
+
+  function applyAuthTab(tab) {
     document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
     document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
     document.getElementById('signupForm').style.display = tab === 'signup' ? '' : 'none';
@@ -1903,26 +1915,36 @@ body.pre-stagger .auth-trail { opacity: 0; }
     document.getElementById('step1indicator').querySelector('.dot').innerHTML = tab === 'signup'
       ? '<span class="material-symbols-outlined" style="font-size:14px">check</span>'
       : '<span class="material-symbols-outlined" style="font-size:14px">login</span>';
-    playAuthSlide();
   }
 
-  // 切 tab 蓝板动画（08-29）：向右滑出卡外 → 瞬移到左侧起点 → 滑入复位；
-  // authSlideBusy 防连点中断（快速点击时 tab 照常切换、动画不叠加）
-  var authSlideBusy = false;
-  function playAuthSlide() {
+  function playAuthSlide(tab) {
     var left = document.querySelector('.auth-left');
-    if (!left || authSlideBusy) return;
+    if (!left) return;
+    if (authSlideBusy) { authPendingTab = tab; return; } // 连点：只记最新目标
     authSlideBusy = true;
-    left.classList.add('auth-slide-out'); // → translateX(240%) 滑出
+    left.classList.add('auth-slide-out'); // → translateX(240%) 向右扫过表单
     setTimeout(function () {
-      left.style.transition = 'none'; // 关过渡：从右侧瞬移到左侧起点（无横穿画面帧）
+      // 盖满瞬间：蓝板右缘已扫过表单（蓝板宽 42%，translateX≈138% 起全盖），
+      // 旧输入被擦掉——切成最新目标 tab（连点取 pending）
+      applyAuthTab(authPendingTab || tab);
+      authPendingTab = null;
+    }, 400);
+    setTimeout(function () {
+      left.style.transition = 'none'; // 关过渡：从右缘外瞬移到左缘外（无横穿画面帧）
       left.classList.remove('auth-slide-out');
       left.classList.add('auth-slide-in');
       void left.offsetWidth; // 强制重排，提交 -240% 起点
       left.style.transition = ''; // 恢复过渡
-      left.classList.remove('auth-slide-in'); // -240% → 0 滑入
-      setTimeout(function () { authSlideBusy = false; }, 460);
-    }, 460);
+      left.classList.remove('auth-slide-in'); // 新蓝板（已带新信息）从左缘滑入复位
+      setTimeout(function () {
+        authSlideBusy = false;
+        if (authPendingTab) { // 连点残余：滑入完成后补一轮
+          var t = authPendingTab;
+          authPendingTab = null;
+          playAuthSlide(t);
+        }
+      }, AUTH_SWEEP_MS + 20);
+    }, AUTH_SWEEP_MS);
   }
 
   function handleSignup() {
