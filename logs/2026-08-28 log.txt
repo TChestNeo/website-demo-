@@ -196,3 +196,24 @@
 **验证**：本地 docker CDP 电池 **236/236 0 console error**（C1 静态：板 tx=480 盖右、标签栏/页脚居中左半、浮层不压表单（tabs 底 58 < 标题 129、页脚顶 > 表单底）、中点 elementsFromPoint 分层、双表单常驻；C2/C3 正反跷跷板：12 时点×6 断言——板 tx=480(1∓p)/标签栏·页脚 tx=480p（缓动后进度，8px 容差）+ 跷跷板守恒 板+标签栏=480、板+页脚=480（10px）+ 三元素动画钟同步（40ms）+ 无起步延迟（100ms）+ 交叉中标签栏在蓝板之上（z4）+ 字幕方向化进度断言（incoming=p/outgoing=1−p，delay 相位成立）；C4 连点以最后目标收束；C5 375 移动端浮层回流入流+tabs 铺满居中+横幅次序+非激活半隐藏+无横向溢出；C6 demo 流阻断 api 注册→onboarding、登录→根（接受 / 与 /index.html）；C7 api 模式验证码组+忘记密码流+health 57 表；0 console error）+ smoke-admin 49/49 + 线上同款 236/236 + health 57 表 v2.0.0。部署 rev 00019-m9g（当前线上，v0.2.3.9）。
 
 **教训**：① elementsFromPoint 命中蓝板**子元素**（h1/p）不是板本体——分层断言先 closest('#authPanel'/'#tabSwitch') 归一再判；② 字幕断言要方向化：incoming 值=p、outgoing 值=1−p（delay 相位 p=0 → 值=起始值，公式两种方向恒成立）——硬编码一种方向会在反向用例全红；③ demo 登录落 /index.html 是 URL 重构轮既定行为（canonical 根 / 与 /index.html 同页），电池断言两者都接受；④ api 模式 demoHint 不隐藏只换文案（'Secure login — …'），照实现断文案别臆断隐藏。
+
+────────────────────────────────────────
+2026-08-30 v0.2.3.10 — auth 内凹圆角移除 + 蓝板层级置顶（rev 00020-sxc）
+
+真身（用户两问）：
+① 「为什么右侧的角落是凹进去的？」——内凹 = 2026-08-29 v0.2.3.4 钦定「右缘换内凹圆角（只右侧）」的旧版滑出设计遗产，v2 重设计时我带过来的；问询钦定「去掉内凹，改普通圆角」
+② 「底部和顶部的层级能不能是蓝色卡片在最上方他们在蓝色卡片的下方」——层级反转：蓝板置顶、tabs/页脚垫蓝板下（跷跷板滑行中从蓝板下穿过）
+
+改动：
+- ethereal.css：卡 border-radius 四角对称 var(--radius-lg)（原左两角圆角 + 右侧两枚径向渐变透明洞）；洞形背景退为纯 var(--card-bg)；蓝板右停靠圆角 0 lg lg 0（原方形 + 角补丁还原内凹）；.auth-corner-punch 两枚角补丁整体退役（CSS + HTML div）；层级 .auth-panel z3→4 置顶、.auth-tabs/.auth-footer z4→2 垫底；≤768 注释同步（顶部两角由卡 overflow+圆角裁剪）
+- signin-and-login.html：角补丁两 div + 注释移除
+- site-config.js v0.2.3.9 → v0.2.3.10（补丁位 9→10·口径修正轮）
+- inline-css.js 重跑 40 页
+
+验证：本地 docker CDP 电池 43/43 + smoke-admin 49/49 + 线上同款 43/43 + health 57 表 v2.0.0，全程 0 console error；部署 rev 00020-sxc
+
+教训（电池）：
+① 坐标假阳性：卡在 1280 视口居中，中缝 x=629 ≠ 480——静止/中段 efp 与重叠判断必须用 live 矩形（card.seam = l+w/2、标签栏真实中心），固定坐标全错；另 elementsFromPoint 戳到 .auth-tabs 容器本体时 closest('#tabSwitch') 是后代不是祖先 → 归一改 closest('.auth-tabs')
+② custom property getPropertyValue('--radius-lg') 返回原始 token '1rem' 不解析——断言参照改「卡自身 computed 圆角」互相比较
+③ demoHint 文本前有 HTML 换行空白 → 断言先 trim()
+④ 部署命令 --add-volume 逗号参数未加引号 → gcloud 报 Key [type] required（PS5.1 拆逗号参数）——老坑再犯（记忆 backend-build-state 里早有「逗号参数必加引号」），执行部署前重读 cloudrun.md 命令段逐参核对

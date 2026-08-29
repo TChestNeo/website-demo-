@@ -870,30 +870,24 @@ body.pre-stagger .auth-card { opacity: 0; }
   max-width: 960px;
   width: 100%;
   height: 800px; /* 定高：tabs/footer 浮层化后表单半独占 800，居中净空上/下各约 129px ≥ 浮层区（tabs 约 58 / footer 约 82）（电池实测 signup 542）；≤768 恢复 auto */
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg); /* 右缘内凹圆角：背景两层径向渐变在右上/右下角打透明洞；左缘普通圆角 */
+  border-radius: var(--radius-lg); /* v2.3.10 内凹移除（用户「为什么右侧的角落是凹进去的」→ 问询钦定普通圆角）：四角对称 */
   overflow: hidden;
   box-shadow: var(--shadow-lg);
   position: relative;
   z-index: 2;
-  /* 整卡磨砂白底：底色上移整卡，蓝板覆盖半与表单半一体白色磨砂；两半 50.1% 叠 0.1% 防接缝 */
-  background-color: transparent;
-  background-image:
-    radial-gradient(circle at 100% 0, transparent var(--radius-lg), var(--card-bg) calc(var(--radius-lg) + 1px)),
-    radial-gradient(circle at 100% 100%, transparent var(--radius-lg), var(--card-bg) calc(var(--radius-lg) + 1px));
-  background-position: right top, right bottom;
-  background-size: 100% 50.1%, 100% 50.1%;
-  background-repeat: no-repeat;
+  /* 整卡磨砂白底：蓝板覆盖半与表单半一体白色磨砂（v2.3.10 内凹移除后：洞形背景退为纯底色） */
+  background-color: var(--card-bg);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
 }
 .auth-tabs {
-  position: absolute; /* v2.3.9 反向滑：不再占文档流顶部行，浮层盖在表单半上方（z 4 压蓝板） */
+  position: absolute; /* v2.3.9 反向滑：不再占文档流顶部行，浮层盖在表单半上方；v2.3.10 层级降 z 2 垫蓝板下（用户「蓝色卡片在最上方，他们在蓝色卡片的下方」） */
   top: var(--space-md);
   left: 0;
   width: 50%;
   display: flex;
   justify-content: center; /* 标签栏居停靠半内，活跃标签悬可见表单上方 */
-  z-index: 4;
+  z-index: 2;
   transform: translateX(0); /* 默认 signup 激活（蓝板在右）→ 标签栏停左半，与蓝板反向 */
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); /* 与蓝板同缓动同程=跷跷板同步 */
 }
@@ -915,12 +909,12 @@ body.pre-stagger .auth-card { opacity: 0; }
   overflow-y: auto;
 }
 .auth-footer {
-  position: absolute; /* v2.3.9 反向滑：与标签栏同理，不占文档流底部行，浮层随可见半滑动 */
+  position: absolute; /* v2.3.9 反向滑：与标签栏同理，不占文档流底部行，浮层随可见半滑动；v2.3.10 层级降 z 2 垫蓝板下 */
   bottom: var(--space-sm);
   left: 0;
   width: 50%;
   padding: 0 var(--space-lg);
-  z-index: 4;
+  z-index: 2;
   transform: translateX(0); /* signup 激活 → 页脚停左半（与蓝板反向） */
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -930,15 +924,17 @@ body.pre-stagger .auth-card { opacity: 0; }
 
 /* 蓝板覆盖滑动（08-29 v2 重设计，用户「sign in 输入放左侧 login 放右侧 + 切换只是蓝色卡片左右移动
    + 字幕淡出淡入」）：双表单左右各半并排常驻，板盖住非激活半（默认 signup → 板在右半盖 login）；
-   切 tab = transform 100%↔0 左右滑 0.6s；左停靠时左圆角对齐卡左缘（右停靠方形贴中缝）——
-   border-radius 与 transform 同程过渡，快速反向由 CSS 过渡自然接管；右停靠时方形右角由角补丁还原内凹洞。 */
+   切 tab = transform 100%↔0 左右滑 0.6s；停靠侧两角圆角对齐卡缘、贴中缝侧方形——
+   border-radius 与 transform 同程过渡，快速反向由 CSS 过渡自然接管；
+   v2.3.10：z 4 置顶压过 tabs/页脚（跷跷板滑行中它们从蓝板下穿过，用户钦定「蓝色卡片在最上方」）
+   + 右停靠 0 lg lg 0（内凹移除后右缘普通圆角，与卡四角对称圆角对齐）。 */
 .auth-panel {
   position: absolute;
   top: 0; bottom: 0; left: 0;
   width: 50%;
-  z-index: 3; /* 压过表单半 */
+  z-index: 4; /* v2.3.10 置顶：压过表单半与 tabs/页脚 */
   transform: translateX(100%); /* 默认盖右半（login 表单视觉隐藏） */
-  border-radius: 0;
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0; /* 右停靠：右缘两角对齐卡圆角 */
   overflow: hidden; /* 随 border-radius 动画裁剪板体 */
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
               border-radius 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -995,23 +991,7 @@ body.pre-stagger .auth-card { opacity: 0; }
 .auth-card.auth-tab-login  .auth-caption-signup { opacity: 1; transition-delay: 0.3s; }
 .auth-card.auth-tab-login  .auth-caption-login  { opacity: 0; transition-delay: 0s; }
 
-/* 右缘内凹圆角角补丁（08-29 v2 重设计）：卡背景用径向渐变打洞（透磨砂页底），蓝板盖右半时
-   方形右角会把洞涂成蓝色——两枚角补丁以页面底色重画四分之一圆压过蓝板（z 4）还原内凹圆角；
-   蓝板在左半时角补丁与卡自身的洞视觉一致（同为页面底色） */
-.auth-corner-punch {
-  position: absolute;
-  width: var(--radius-lg);
-  height: var(--radius-lg);
-  z-index: 4;
-}
-.auth-punch-tr {
-  top: 0; right: 0;
-  background: radial-gradient(circle at 100% 0, var(--color-background) 0, var(--color-background) calc(100% - 1px), transparent 100%);
-}
-.auth-punch-br {
-  bottom: 0; right: 0;
-  background: radial-gradient(circle at 100% 100%, var(--color-background) 0, var(--color-background) calc(100% - 1px), transparent 100%);
-}
+/* 右缘内凹圆角角补丁退役（v2.3.10）：内凹圆角整体移除（卡四角对称普通圆角），角补丁不再需要 */
 
 /* ----- Dashboard layout ----- */
 .app-layout {
@@ -1196,7 +1176,7 @@ body.pre-stagger .auth-card { opacity: 0; }
   .auth-card.auth-tab-signup .auth-panel,
   .auth-card.auth-tab-login .auth-panel {
     position: static; width: 100%; height: auto; transform: none; border-radius: 0;
-  } /* column 下蓝板回流入文档流变顶部横幅（absolute 会叠在表单上）；顶部两角由卡 overflow+圆角裁剪与角补丁处理 */
+  } /* column 下蓝板回流入文档流变顶部横幅（absolute 会叠在表单上）；顶部两角由卡 overflow+圆角裁剪（v2.3.10 内凹已移除） */
   .auth-panel-body { position: relative; }
   .auth-tabs,
   .auth-card.auth-tab-signup .auth-tabs,
