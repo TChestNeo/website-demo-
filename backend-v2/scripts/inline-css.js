@@ -55,8 +55,19 @@ async function main() {
     const rel = path.relative(DOCS, file).replace(/\\/g, '/');
 
     // ① ethereal.css → <style>（两种属性顺序都认）
-    text = text.replace(/<link rel="stylesheet" href="[^"]*ethereal\.css">/g, () => `<style>${eol}${CSS_MARK}${eol}${css}${eol}</style>`);
-    text = text.replace(/<link href="[^"]*ethereal\.css" rel="stylesheet">/g, () => `<style>${eol}${CSS_MARK}${eol}${css}${eol}</style>`);
+    // 已内联页（无 <link>）：按 CSS_MARK 定位内联块原位刷新为最新 ethereal.css——否则改动后重跑
+    // 旧内联永不更新（08-29 教训：重跑只在 <link> 态页面生效）。块尾 = 标记后第一个 </style>。
+    const markIdx = text.indexOf(CSS_MARK);
+    if (markIdx !== -1) {
+      const start = text.lastIndexOf('<style>', markIdx);
+      const end = text.indexOf('</style>', markIdx) + '</style>'.length;
+      if (start !== -1) {
+        text = text.slice(0, start) + `<style>${eol}${CSS_MARK}${eol}${css}${eol}</style>` + text.slice(end);
+      }
+    } else {
+      text = text.replace(/<link rel="stylesheet" href="[^"]*ethereal\.css">/g, () => `<style>${eol}${CSS_MARK}${eol}${css}${eol}</style>`);
+      text = text.replace(/<link href="[^"]*ethereal\.css" rel="stylesheet">/g, () => `<style>${eol}${CSS_MARK}${eol}${css}${eol}</style>`);
+    }
 
     // ② Google Fonts <link> → <style>（按 URL 抓取缓存）
     const fontLink = /<link href="(https:\/\/fonts\.googleapis\.com\/css2[^"]*)" rel="stylesheet">/g;

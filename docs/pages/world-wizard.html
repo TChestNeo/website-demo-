@@ -789,7 +789,8 @@ body.pre-stagger .app-main h1 + p,
 body.pre-stagger .app-main h2,
 body.pre-stagger .app-main .search-capsule,
 body.pre-stagger .app-main header,
-body.pre-stagger .auth-card { opacity: 0; }
+body.pre-stagger .auth-card,
+body.pre-stagger .auth-trail { opacity: 0; }
 
 /* ----- Spinner ----- */
 .spinner {
@@ -904,6 +905,8 @@ body.pre-stagger .auth-card { opacity: 0; }
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 2;
 }
 .auth-left {
   width: 42%;
@@ -915,7 +918,12 @@ body.pre-stagger .auth-card { opacity: 0; }
   justify-content: center;
   position: relative;
   overflow: hidden;
+  z-index: 3; /* 切 tab 滑动时压过右板 */
+  transition: transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
+/* auth 切 tab 动画（08-29）：蓝板向右滑出卡外，再从左侧滑入；240% = 自身宽 42% 卡的 2.4 倍 ≈ 整卡宽 */
+.auth-left.auth-slide-out { transform: translateX(240%); }
+.auth-left.auth-slide-in { transform: translateX(-240%); }
 .auth-left::before {
   content: '';
   position: absolute;
@@ -942,6 +950,25 @@ body.pre-stagger .auth-card { opacity: 0; }
   flex-direction: column;
   justify-content: center;
 }
+
+/* auth 卡后 3 层拖影（08-29）：越靠后越接近白色（primary 掺量递减 → 逼近 card-bg/白），
+   offset 用 inset 不用 transform——initStagger 入场会写内联 transform 清掉偏移 */
+.auth-card-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+}
+.auth-trail {
+  position: absolute;
+  border-radius: var(--radius-lg);
+  pointer-events: none;
+}
+.auth-trail-1 { top: 8px; left: 8px; right: -8px; bottom: -8px;
+  background: color-mix(in srgb, var(--color-primary) 20%, var(--card-bg)); }
+.auth-trail-2 { top: 16px; left: 16px; right: -16px; bottom: -16px;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg)); }
+.auth-trail-3 { top: 24px; left: 24px; right: -24px; bottom: -24px;
+  background: color-mix(in srgb, var(--color-primary) 4%, var(--card-bg)); }
 
 /* ----- Dashboard layout ----- */
 .app-layout {
