@@ -322,3 +322,19 @@
 
 教训（电池）：
 ⑤ 恢复旧电池的 waitLoad 探针 evalJS(document.readyState) 在 JSON.parse 裸字符串 'complete' 时抛错无限重试 → 拆 rawEval（返回未解析 value）专供 waitLoad；evalJS 统一 typeof v==='string' 才 parse——教训④的 (1) 已在恢复脚本时落地，本轮线上复跑 43/43 一次通过
+────────────────────────────────────────
+2026-08-30 v0.2.4.2 — auth 条款勾选挪进注册表单（rev 00027-mq7）
+
+真身（用户）：
+「不是我是希望用户在注册的时候同意就可以了不需要在登录的时候同意因为都同意过了」——同意是注册时的一次性动作，登录不该再问；v0.2.4.1 挪进登录表单+登录拦截的口径整个反了。
+
+改动：
+- signup-and-login.html：.auth-terms 从登录表单挪进右半注册表单（Create Account 按钮上方，随注册半淡入淡出）；handleSignup 顶部加未勾拦截（showError signupError，demo/api 双模式生效）、handleLogin 拦截撤除（v2.3.13 起挂登录端的检查移除）
+- ethereal.css：.auth-terms 注释链补 v2.4.2 三代迁移史，配色/尺寸零改动（同为白卡）；移动端注释同步
+- site-config.js v0.2.4.1 → v0.2.4.2（补丁位 1→2·口径修正轮）
+- inline-css.js 重跑 40 页同步
+
+验证：本地 docker CDP 电池 45/45（条款在注册表单内+按钮上方/登录态被蓝板压盖 efp 命中蓝板系/未勾登录不拦跳根页/未勾注册拦截错误提示+不跳转/拦截报错后注册半仍不溢出/勾选后注册跳 onboarding/两半纵向不溢出/动画钟中段自洽/移动端条款随注册半显隐/0 console error）+ smoke-admin 49/49 + 线上同款 45/45 + curl /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0；部署 rev 00027-mq7（100% 流量）
+
+教训（电池）：
+⑥ 电池恢复新招——基版 Read tool_result 在转录里自带全文（行号前缀可剥），后续 Edit 依序重放即可精确还原最终版（14 处 Edit 0 遗漏）；比凭记忆重写可靠。删 tmp 前转录就是备份。
