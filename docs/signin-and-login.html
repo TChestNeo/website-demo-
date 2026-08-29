@@ -766,8 +766,7 @@ body.pre-stagger .app-main h1 + p,
 body.pre-stagger .app-main h2,
 body.pre-stagger .app-main .search-capsule,
 body.pre-stagger .app-main header,
-body.pre-stagger .auth-card,
-body.pre-stagger .auth-trail { opacity: 0; }
+body.pre-stagger .auth-card { opacity: 0; }
 
 /* ----- Spinner ----- */
 .spinner {
@@ -876,16 +875,16 @@ body.pre-stagger .auth-trail { opacity: 0; }
 }
 .auth-card {
   display: flex;
+  flex-direction: column; /* tabs / 双表单横排 / 页脚 三段式（08-29 v2 重设计） */
   max-width: 960px;
   width: 100%;
-  height: 800px; /* 08-29 用户「登录和注册卡片大小一致」：定高 = 注册 tab 内容高 752（form 542+tab 82+内边距 128）+ 报错余量 48，两 tab 同尺寸（实测 880 底部空洞 128px 比例失衡）；≤768 恢复 auto */
+  height: 800px; /* 定高 = signup 表单 542 + tabs 94 + 半内边距 24 + footer 98 + 报错余量 42（电池实测）；≤768 恢复 auto */
   border-radius: var(--radius-lg) 0 0 var(--radius-lg); /* 右缘内凹圆角：背景两层径向渐变在右上/右下角打透明洞；左缘普通圆角 */
   overflow: hidden;
   box-shadow: var(--shadow-lg);
   position: relative;
   z-index: 2;
-  /* 整卡磨砂白底（08-29 修复）：原底只在右板——蓝板扫过让出的区域透出卡后拖影蓝色，
-     底色上移整卡后扫动时空缺处也是一体白色磨砂；两半 50.1% 叠 0.1% 防接缝 */
+  /* 整卡磨砂白底：底色上移整卡，蓝板覆盖半与表单半一体白色磨砂；两半 50.1% 叠 0.1% 防接缝 */
   background-color: transparent;
   background-image:
     radial-gradient(circle at 100% 0, transparent var(--radius-lg), var(--card-bg) calc(var(--radius-lg) + 1px)),
@@ -896,38 +895,49 @@ body.pre-stagger .auth-trail { opacity: 0; }
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
 }
-.auth-left {
-  width: 42%;
-  position: absolute; /* 两块蓝板都脱流叠在同一槽位（08-29 修复：B 板若留 flex 流内，即使视觉移走布局槽位仍占着，把表单挤到最小内容宽——蓝板 332px/表单 297px/中间 331px 空洞） */
+.auth-tabs {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-md) var(--space-lg) 0; /* v2 溢出让位：上距 64→24（电池实测 tabs 实高 162 ≠ 旧估 82） */
+}
+.auth-panes {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  position: relative;
+}
+.auth-pane {
+  width: 50%;
+  padding: var(--space-sm) var(--space-lg); /* 垂直 64→12：800 定高下两半表单无滚动（电池实测 signup 542/login 482，预算 584） */
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center; /* 内容超高时顶部不被裁（api 模式验证码组/报错变高兜底） */
+  overflow-y: auto;
+}
+.auth-footer {
+  padding: 0 var(--space-lg) var(--space-sm); /* 底距 40→12：让位双半表单 */
+}
+
+/* 蓝板覆盖滑动（08-29 v2 重设计，用户「sign in 输入放左侧 login 放右侧 + 切换只是蓝色卡片左右移动
+   + 字幕淡出淡入」）：双表单左右各半并排常驻，板盖住非激活半（默认 signup → 板在右半盖 login）；
+   切 tab = transform 100%↔0 左右滑 0.6s；左停靠时左圆角对齐卡左缘（右停靠方形贴中缝）——
+   border-radius 与 transform 同程过渡，快速反向由 CSS 过渡自然接管；右停靠时方形右角由角补丁还原内凹洞。 */
+.auth-panel {
+  position: absolute;
   top: 0; bottom: 0; left: 0;
-  z-index: 3; /* 切 tab 滑动时压过右板 */
-  transition: transform 0.8s cubic-bezier(0.45, 0, 0.55, 1); /* 仅滑入用（扫出走 keyframes 动画）：新蓝板从左缘滑入复位 0.8s（08-29 切换时机修复：扫出尾部改快甩后，入板稍快于扫出——到达不拖到 1.9s） */
+  width: 50%;
+  z-index: 3; /* 压过表单半 */
+  transform: translateX(100%); /* 默认盖右半（login 表单视觉隐藏） */
+  border-radius: 0;
+  overflow: hidden; /* 随 border-radius 动画裁剪板体 */
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              border-radius 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
-/* auth 切 tab 扫动动画（08-29 口径修正 v2；08-29 切换时机修复；08-29 无停顿修复）：active 蓝板向右扫出
-   （拖影挂板上=板动影随），盖满输入位置瞬间切内容 + incoming 蓝板同时从左缘滑入；240% = 自身宽 42% 卡的 2.4 倍 ≈ 整卡宽。
-   两段 keyframes 缓动速差衔接：段一 cubic-bezier(0.45,0,0.55,0.85) 末输出斜率 dp/du = (1−0.85)/(1−0.55) = 1/3 ≠ 0（盖满处仍在滑行）；
-   段二 cubic-bezier(0.25,0.04,0.58,1) 起步 dp/du = 0.04/0.25 = 0.16 与段一末速等速接续（1/3×516.9/781 ≈ 0.16×450.8/319 px/ms）
-   ——旧版段一 ease-in-out 末速爬向 0（盖满前 ~50ms 几乎不动）+ 段二 ease-out 起步即猛甩（dp/du 0/0 极限 = 1.724 突跳）= 停一下再甩出去
-   （用户「滑过去会停一下」）。 */
-.auth-left.auth-slide-out {
-  transform: translateX(240%);
-  animation: auth-sweep-out 1.1s forwards;
+.auth-card.auth-tab-login .auth-panel {
+  transform: translateX(0);
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
 }
-@keyframes auth-sweep-out {
-  0% {
-    transform: translateX(0);
-    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 0.85); /* 段一：慢速扫过表单，尾速不减为零 */
-  }
-  71% {
-    transform: translateX(128.2%); /* 盖满输入位置（前沿 = 表单右缘 920px）——JS AUTH_SWAP_MS 与此刻对齐切内容 */
-    animation-timing-function: cubic-bezier(0.25, 0.04, 0.58, 1); /* 段二：与段一末速无缝衔接，加速甩出（尾段减速在卡外不可见） */
-  }
-  100% { transform: translateX(240%); }
-}
-.auth-left.auth-slide-in { transform: translateX(-240%); }
-.auth-left.auth-parked { visibility: hidden; pointer-events: none; } /* 左缘外备用板 */
-.auth-left.auth-no-anim { transition: none !important; } /* 摆位/复位瞬间不动画 */
-.auth-left-body {
+.auth-panel-body {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, var(--color-primary), #3b3dc4);
@@ -935,11 +945,10 @@ body.pre-stagger .auth-trail { opacity: 0; }
   padding: var(--space-xl) var(--space-lg);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: safe center;
   overflow: hidden;
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg); /* 左缘与卡片同圆角 */
 }
-.auth-left-body::before {
+.auth-panel-body::before {
   content: '';
   position: absolute;
   width: 300px; height: 300px;
@@ -947,7 +956,7 @@ body.pre-stagger .auth-trail { opacity: 0; }
   border-radius: 50%;
   top: -80px; right: -80px;
 }
-.auth-left-body::after {
+.auth-panel-body::after {
   content: '';
   position: absolute;
   width: 200px; height: 200px;
@@ -955,38 +964,44 @@ body.pre-stagger .auth-trail { opacity: 0; }
   border-radius: 50%;
   bottom: -40px; left: -60px;
 }
-.auth-right {
-  flex: 1;
-  margin-left: 42%; /* 双蓝板脱流后为表单让出左侧槽位（与 .auth-left width 一致） */
-  /* 底色已上移整卡（.auth-card），此处不再重复磨砂——避免双倍叠加变不透明 */
-  padding: var(--space-xl) var(--space-lg);
+.auth-panel-brand {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--space-lg);
 }
+/* 字幕淡出淡入：两块字幕 grid 叠同格，随卡片 auth-tab-* 状态类 cross-fade——
+   outgoing 立即淡出 0.25s，incoming 延迟 0.3s 淡入（板 0.6s 滑到前完成）；零 JS 计时器 */
+.auth-panel-captions {
+  display: grid;
+  align-items: center;
+}
+.auth-caption {
+  grid-area: 1 / 1;
+  transition: opacity 0.25s ease;
+}
+.auth-card.auth-tab-signup .auth-caption-signup { opacity: 0; transition-delay: 0s; }
+.auth-card.auth-tab-signup .auth-caption-login  { opacity: 1; transition-delay: 0.3s; }
+.auth-card.auth-tab-login  .auth-caption-signup { opacity: 1; transition-delay: 0.3s; }
+.auth-card.auth-tab-login  .auth-caption-login  { opacity: 0; transition-delay: 0s; }
 
-/* auth 蓝板拖影（08-29 修正；08-29 提亮）：挂蓝板本体——板动影随、拖在后方，不再挂背景卡片；
-   band 从板左缘向左伸出 8/16/24px、越靠外越接近白（DOM 序 3→2→1 让最近层最蓝压顶）；
-   掺量 40/22/10%（旧 20/10/4% 在白磨砂卡上色差仅 2-9% 几乎不可见——用户「我的移动缠影呢」）；
-   板停靠时伸出部分被卡片 overflow 裁掉不可见 */
-.auth-card-wrap {
-  position: relative;
-  width: 100%;
-  max-width: 960px;
-}
-.auth-trail {
+/* 右缘内凹圆角角补丁（08-29 v2 重设计）：卡背景用径向渐变打洞（透磨砂页底），蓝板盖右半时
+   方形右角会把洞涂成蓝色——两枚角补丁以页面底色重画四分之一圆压过蓝板（z 4）还原内凹圆角；
+   蓝板在左半时角补丁与卡自身的洞视觉一致（同为页面底色） */
+.auth-corner-punch {
   position: absolute;
-  top: 0; bottom: 0;
-  width: 100%;
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-  pointer-events: none;
+  width: var(--radius-lg);
+  height: var(--radius-lg);
+  z-index: 4;
 }
-.auth-trail-1 { left: -8px;
-  background: color-mix(in srgb, var(--color-primary) 40%, var(--card-bg)); }
-.auth-trail-2 { left: -16px;
-  background: color-mix(in srgb, var(--color-primary) 22%, var(--card-bg)); }
-.auth-trail-3 { left: -24px;
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg)); }
+.auth-punch-tr {
+  top: 0; right: 0;
+  background: radial-gradient(circle at 100% 0, var(--color-background) 0, var(--color-background) calc(100% - 1px), transparent 100%);
+}
+.auth-punch-br {
+  bottom: 0; right: 0;
+  background: radial-gradient(circle at 100% 100%, var(--color-background) 0, var(--color-background) calc(100% - 1px), transparent 100%);
+}
 
 /* ----- Dashboard layout ----- */
 .app-layout {
@@ -1166,11 +1181,17 @@ body.pre-stagger .auth-trail { opacity: 0; }
   :root {
     --fs-display-lg: 32px;
   }
-  .auth-card { flex-direction: column; height: auto; min-height: 560px; }
-  .auth-left { position: static; width: 100%; height: auto; } /* column 下回流入文档流（absolute 会叠在表单上） */
-  .auth-right { margin-left: 0; }
-  .auth-trail { display: none; } /* column 下板脱流后拖影的包含块变 wrap=整卡宽 3 条色带盖全卡（提亮 40% 后更明显）——移动端无扫动语义，整体隐藏 */
-  .auth-left-body { position: static; border-radius: var(--radius-lg) var(--radius-lg) 0 0; } /* 顶部两角同半径凸圆角，与卡片右缘内凹洞曲线重合——蓝板不填进凹洞 */
+  .auth-card { height: auto; min-height: 560px; }
+  .auth-panel,
+  .auth-card.auth-tab-signup .auth-panel,
+  .auth-card.auth-tab-login .auth-panel {
+    position: static; width: 100%; height: auto; transform: none; border-radius: 0;
+  } /* column 下蓝板回流入文档流变顶部横幅（absolute 会叠在表单上）；顶部两角由卡 overflow+圆角裁剪与角补丁处理 */
+  .auth-panel-body { position: relative; }
+  .auth-panes { flex-direction: column; }
+  .auth-pane { width: 100%; }
+  .auth-card.auth-tab-signup .auth-pane-login { display: none; } /* 非激活半表单隐藏（与桌面同一状态类驱动，零 JS 分支） */
+  .auth-card.auth-tab-login .auth-pane-signup { display: none; }
   .display-lg { font-size: var(--fs-display-lg); line-height: 1.2; }
 }
 
@@ -1753,91 +1774,71 @@ body.pre-stagger .auth-trail { opacity: 0; }
 <body class="auth-bg pre-stagger">
 
 <div class="auth-layout">
-  <div class="auth-card-wrap">
-  <div class="auth-card tilt-container" id="authCard">
+  <div class="auth-card tilt-container auth-tab-signup" id="authCard">
 
-    <!-- Left branding panel ×2（08-29 口径修正 v2）：A 停靠显示、B 停在左缘外备用——
-         切 tab 时 A 扫出、盖满输入瞬间切内容 + B 同时从左缘滑入，两板轮换；
-         拖影挂在蓝板本体上（板动影随拖在后方），不再挂背景卡片 -->
-    <div class="auth-left" id="authLeftA">
-      <div class="auth-trail auth-trail-3"></div>
-      <div class="auth-trail auth-trail-2"></div>
-      <div class="auth-trail auth-trail-1"></div>
-      <div class="auth-left-body">
-        <div style="position:relative;z-index:1">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:var(--space-lg)">
-            <img src="assets/image/M.NationWorld logo.png" alt="M.NationWorld" style="height:36px;width:auto">
-            <span style="font-size:24px;font-weight:700">M.NationWorld</span>
-          </div>
-          <h1 class="display-lg" style="margin-bottom:var(--space-sm)">Build Your<br>World</h1>
-          <p class="body-lg" style="opacity:0.85;margin-bottom:var(--space-lg)">
-            Design constitutions. Forge alliances. Shape worlds.
-          </p>
+    <!-- 右缘内凹圆角补丁（08-29 v2 重设计）：蓝板盖右半时方形右角会涂掉卡背景的内凹洞，
+         两枚角补丁以页面底色重画四分之一圆压过蓝板（z 4）还原内凹圆角 -->
+    <div class="auth-corner-punch auth-punch-tr"></div>
+    <div class="auth-corner-punch auth-punch-br"></div>
 
-          <!-- Step indicator -->
-          <div class="step-indicator" style="margin-top:var(--space-xl)">
-            <div class="progress-steps" style="flex-direction:column;align-items:flex-start;gap:16px">
-              <div class="progress-step completed step1indicator">
-                <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>
-                <span style="color:rgba(255,255,255,0.9)">Create account</span>
-              </div>
-              <div class="progress-step step2indicator" style="opacity:0.5">
-                <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">2</span>
-                <span style="color:rgba(255,255,255,0.6)">Identity Setup</span>
-              </div>
-              <div class="progress-step step3indicator" style="opacity:0.5">
-                <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">3</span>
-                <span style="color:rgba(255,255,255,0.6)">Complete</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="auth-left" id="authLeftB">
-      <div class="auth-trail auth-trail-3"></div>
-      <div class="auth-trail auth-trail-2"></div>
-      <div class="auth-trail auth-trail-1"></div>
-      <div class="auth-left-body">
-        <div style="position:relative;z-index:1">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:var(--space-lg)">
-            <img src="assets/image/M.NationWorld logo.png" alt="M.NationWorld" style="height:36px;width:auto">
-            <span style="font-size:24px;font-weight:700">M.NationWorld</span>
-          </div>
-          <h1 class="display-lg" style="margin-bottom:var(--space-sm)">Build Your<br>World</h1>
-          <p class="body-lg" style="opacity:0.85;margin-bottom:var(--space-lg)">
-            Design constitutions. Forge alliances. Shape worlds.
-          </p>
-
-          <!-- Step indicator -->
-          <div class="step-indicator" style="margin-top:var(--space-xl)">
-            <div class="progress-steps" style="flex-direction:column;align-items:flex-start;gap:16px">
-              <div class="progress-step completed step1indicator">
-                <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>
-                <span style="color:rgba(255,255,255,0.9)">Create account</span>
-              </div>
-              <div class="progress-step step2indicator" style="opacity:0.5">
-                <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">2</span>
-                <span style="color:rgba(255,255,255,0.6)">Identity Setup</span>
-              </div>
-              <div class="progress-step step3indicator" style="opacity:0.5">
-                <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">3</span>
-                <span style="color:rgba(255,255,255,0.6)">Complete</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right form panel -->
-    <div class="auth-right">
-      <!-- Tab toggle -->
-      <div class="segmented-control" id="tabSwitch" style="margin-bottom:var(--space-lg);max-width:240px">
+    <!-- Tab toggle -->
+    <div class="auth-tabs">
+      <div class="segmented-control" id="tabSwitch" style="margin-bottom:var(--space-sm);max-width:240px">
         <button class="segmented-option active" id="tabSignup" onclick="switchTab('signup')">Sign up</button>
         <button class="segmented-option" id="tabLogin" onclick="switchTab('login')">Log in</button>
       </div>
+    </div>
 
+    <div class="auth-panes">
+      <!-- Blue overlay panel（08-29 v2 重设计）：盖住非激活半，切 tab 时 transform 100%↔0 左右滑 0.6s；
+           字幕 = 被盖半的品牌文案，滑动中淡出淡入（cross-fade，CSS transition-delay 驱动） -->
+      <div class="auth-panel" id="authPanel">
+        <div class="auth-panel-body">
+          <div class="auth-panel-brand">
+            <img src="assets/image/M.NationWorld logo.png" alt="M.NationWorld" style="height:36px;width:auto">
+            <span style="font-size:24px;font-weight:700">M.NationWorld</span>
+          </div>
+          <div class="auth-panel-captions">
+            <div class="auth-caption auth-caption-signup">
+              <div style="position:relative;z-index:1">
+          <h1 class="display-lg" style="margin-bottom:var(--space-sm)">Build Your<br>World</h1>
+          <p class="body-lg" style="opacity:0.85;margin-bottom:var(--space-lg)">
+            Design constitutions. Forge alliances. Shape worlds.
+          </p>
+
+          <!-- Step indicator -->
+          <div class="step-indicator" style="margin-top:var(--space-xl)">
+            <div class="progress-steps" style="flex-direction:column;align-items:flex-start;gap:16px">
+              <div class="progress-step completed step1indicator">
+                <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>
+                <span style="color:rgba(255,255,255,0.9)">Create account</span>
+              </div>
+              <div class="progress-step step2indicator" style="opacity:0.5">
+                <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">2</span>
+                <span style="color:rgba(255,255,255,0.6)">Identity Setup</span>
+              </div>
+              <div class="progress-step step3indicator" style="opacity:0.5">
+                <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">3</span>
+                <span style="color:rgba(255,255,255,0.6)">Complete</span>
+              </div>
+            </div>
+          </div>
+              </div>
+            </div>
+            <div class="auth-caption auth-caption-login">
+              <div style="position:relative;z-index:1">
+                <h1 class="display-lg" style="margin-bottom:var(--space-sm)">Welcome back,<br>Sovereign</h1>
+                <p class="body-lg" style="opacity:0.85;margin-bottom:0">
+                  Ready to make your mark today?
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Signup form（左半） -->
+      <div class="auth-pane auth-pane-signup">
       <!-- Signup form -->
       <div id="signupForm">
         <h2 class="headline-md" style="margin-bottom:4px">Create your account</h2>
@@ -1869,8 +1870,11 @@ body.pre-stagger .auth-trail { opacity: 0; }
         <p id="signupError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
       </div>
 
-      <!-- Login form (hidden by default) -->
-      <div id="loginForm" style="display:none">
+      </div>
+
+      <!-- Login form（右半；被蓝板盖住 = 视觉隐藏，无需 display 切换） -->
+      <div class="auth-pane auth-pane-login">
+      <div id="loginForm">
         <h2 class="headline-md" style="margin-bottom:4px">Welcome back, Sovereign</h2>
         <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
           Ready to make your mark today?
@@ -1945,6 +1949,12 @@ body.pre-stagger .auth-trail { opacity: 0; }
         </p>
       </div>
 
+      </div>
+
+    </div>
+
+    <!-- 表单下方页脚（两 tab 共用） -->
+    <div class="auth-footer">
       <!-- Demo hint -->
       <p id="demoHint" style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
         Demo mode — any credentials work
@@ -1956,7 +1966,6 @@ body.pre-stagger .auth-trail { opacity: 0; }
         <a href="pages/privacy.html" style="color:var(--color-primary)">隐私政策</a>
       </p>
     </div>
-  </div>
   </div>
 </div>
 
@@ -1972,101 +1981,23 @@ body.pre-stagger .auth-trail { opacity: 0; }
   var countdown = { signup: 0, login: 0, reset: 0 };
 
   function switchTab(tab) {
+    if (tab === currentTab) return;
     currentTab = tab;
-    playAuthSlide(tab);
-  }
-
-  // 切 tab 蓝板扫动动画（08-29 口径修正 v2，用户「慢一些 + 盖满输入位置直接切内容 +
-  // 同时从左侧滑出蓝色卡片 + 拖影挂蓝板不是挂背景卡」）：两块蓝板轮换——active 向右扫出
-  // （拖影挂在板本体上、板动影随拖在后方），盖满输入位置瞬间直接切内容，incoming 同时
-  // 从左缘滑入补位。扫出 = 两段 keyframes（ethereal.css auth-sweep-out）：前 71% 慢速滑过
-  // 表单、71% 处前沿正好扫过表单右缘（translateX 128.2%）= 盖满时刻，后 29% 加速甩出。
-  // 08-29 切换时机修复（两段拆分：盖满即切、新表单紧露）；08-29 无停顿修复：两段缓动
-  // 末/起步输出斜率 dp/du = 1/3 / 0.16 速差等速接续（旧版段一末速爬向 0 + 段二起步猛甩 = 停一下再甩，用户「我不要停的」）。
-  // authSlideBusy 防连点叠加；连点时记最新目标 tab，盖满时刻按它切换、滑入完成后补轮。
-  var authSlideBusy = false;
-  var authPendingTab = null;
-  var authActive = null;      // 当前停靠的蓝板
-  var AUTH_SWEEP_MS = 1100;   // 扫出总时长（两段 keyframes 1.1s；用户：慢一些，0.6s → 1.1s）
-  var AUTH_SWAP_MS = 780;     // 盖满输入位置时刻（keyframes 71% × 1.1s）：切内容 + 新蓝板同时滑入
-
-  function initAuthPanels() {
-    var a = document.getElementById('authLeftA');
-    var b = document.getElementById('authLeftB');
-    authActive = a;
-    b.classList.add('auth-slide-in', 'auth-parked', 'auth-no-anim'); // B 停在左缘外备用
-    void b.offsetWidth;
-    b.classList.remove('auth-no-anim');
-  }
-  initAuthPanels();
-
-  function applyAuthTabForm(tab) {
-    // 全局（仅盖满时刻调用）：tab 钮高亮 + 表单显隐 + 报错复位——扫动中不切，旧输入在盖满前仍可见
+    var card = document.getElementById('authCard');
+    card.classList.toggle('auth-tab-signup', tab === 'signup');
+    card.classList.toggle('auth-tab-login', tab === 'login');
     document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
     document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
-    document.getElementById('signupForm').style.display = tab === 'signup' ? '' : 'none';
-    document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
     document.getElementById('signupError').style.display = 'none';
     document.getElementById('loginError').style.display = 'none';
   }
 
-  function applyAuthTabIndicators(tab, panel) {
-    // 面板局部（蓝板各自一套步骤指示器）：扫出开始时对新板预置（板在卡外不可见），盖满时刻若目标变更再同步
-    var s1 = panel.querySelector('.step1indicator');
-    var s2 = panel.querySelector('.step2indicator');
-    s1.classList.toggle('completed', tab === 'signup'); // 保留 step1indicator 类（后续轮次还要按它定位）
-    s2.style.opacity = tab === 'signup' ? '0.5' : '1';
-    s1.querySelector('.dot').innerHTML = tab === 'signup'
-      ? '<span class="material-symbols-outlined" style="font-size:14px">check</span>'
-      : '<span class="material-symbols-outlined" style="font-size:14px">login</span>';
-  }
-
-  function playAuthSlide(tab) {
-    var a = document.getElementById('authLeftA');
-    var b = document.getElementById('authLeftB');
-    if (!a || !b) return;
-    if (authSlideBusy) { authPendingTab = tab; return; } // 连点：只记最新目标
-    authSlideBusy = true;
-    var outgoing = authActive;
-    var incoming = (outgoing === a) ? b : a;
-    // 两板 absolute 叠同一槽位：新板压旧板（反向时旧板 B 树序在后会盖住新板 A，z 序轮换保证入板永远在上层）
-    incoming.style.zIndex = '4';
-    outgoing.style.zIndex = '3';
-    // incoming 摆位：指示器 = 目标 tab，停在 -240% 左缘外（禁过渡防从旧位置动画过去）
-    incoming.classList.add('auth-no-anim');
-    applyAuthTabIndicators(tab, incoming);
-    incoming.classList.remove('auth-parked');
-    incoming.classList.add('auth-slide-in');
-    void incoming.offsetWidth; // 提交 -240% 起点
-    incoming.classList.remove('auth-no-anim');
-    // outgoing 扫出（拖影挂在板上跟随）
-    outgoing.classList.add('auth-slide-out');
-    setTimeout(function () {
-      // 盖满输入位置：直接切内容（旧输入被擦掉）+ 新蓝板同时从左缘滑入补位
-      var finalTab = authPendingTab || tab;
-      applyAuthTabForm(finalTab);
-      applyAuthTabIndicators(finalTab, incoming); // 连点中途改目标：指示器同步最新
-      incoming.classList.remove('auth-slide-in'); // → translateX(0) 滑入
-      authPendingTab = null;
-    }, AUTH_SWAP_MS);
-    setTimeout(function () {
-      // outgoing 已滑出右缘：复位并停进左缘外备用
-      outgoing.classList.add('auth-no-anim');
-      outgoing.classList.remove('auth-slide-out');
-      outgoing.classList.add('auth-slide-in', 'auth-parked');
-      void outgoing.offsetWidth;
-      outgoing.classList.remove('auth-no-anim');
-      authActive = incoming;
-    }, AUTH_SWEEP_MS);
-    setTimeout(function () {
-      authSlideBusy = false;
-      if (authPendingTab) { // 连点残余：滑入完成后补一轮
-        var t = authPendingTab;
-        authPendingTab = null;
-        playAuthSlide(t);
-      }
-    }, AUTH_SWEEP_MS + AUTH_SWAP_MS + 20);
-  }
+  // 切 tab 蓝板覆盖滑动（08-29 v2 重设计，用户「算了还是这样……sign in 的输入放左侧 login 放右侧，
+  // 切换的时候只是蓝色卡片左右移动然后字幕淡出淡入」）：双表单左右各半并排常驻，蓝板盖住非激活半
+  // （默认 signup → 板在右半盖 login）；切换 = 板 transform 100%↔0 左右滑 0.6s + 板字幕（被盖半的
+  // 品牌文案）淡出淡入 cross-fade——全部由卡片 auth-tab-signup/login 状态类驱动（ethereal.css），
+  // 零 JS 计时器，连点/中途反向由 CSS 过渡自然接管；移动端（≤768）板变顶部横幅、表单纵排、
+  // 非激活半 display:none，同一状态类驱动。旧版扫出 keyframes/双板轮换/拖影/表单显隐逻辑全部移除。
 
   function handleSignup() {
     if (AUTH_API) return apiSignup();
