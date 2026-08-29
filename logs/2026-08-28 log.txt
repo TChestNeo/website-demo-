@@ -272,3 +272,19 @@
 
 教训（电池）：
 ② 固定 sleep 采样对线上往返延迟敏感（线上首跑 29 断言 1 FAIL：中段采样落进过渡尾巴钟 550~600ms、progress 已 1）——进行中断言改轮询动画钟抓 (300,550) 窗口再断言自洽（窗口外采样不判，产品无恙纯测量问题）；延迟期断言=click 后立即采样（往返即延迟量）
+
+────────────────────────────────────────
+2026-08-30 v0.2.3.14 — auth 条款勾选定制样式 + 手机触控适配（rev 00024-tb7）
+
+真身（用户）：
+「能不能给那个打勾的Ui做适配」——问询钦定「定制样式+手机适配」：勾选框替代浏览器默认方框（跨端观感统一）+ 手机端加大触控
+
+改动：
+- ethereal.css：.auth-terms input[type='checkbox'] appearance:none 定制——20px 圆角 6px 玻璃白描边（半透明白底 rgba(255,255,255,0.16) + 白边 0.75）、hover 提亮 0.28、active 缩放 0.92、勾选白底白边 + 品牌蓝对勾（::after 边框两画旋转 45°、scale 0→1 回弹 cubic-bezier(0.34,1.56,0.64,1) 0.18s）、focus-visible 白描环；accent-color 移除；≤768 触控适配——勾选框 22px、字号 14px、gap 10px、整行 padding 10px 0（点击区加大）
+- site-config.js v0.2.3.13 → v0.2.3.14（补丁位 13→14·观感微调轮）
+- inline-css.js 重跑 40 页
+
+验证：本地 docker CDP 电池 34/34（定制外观 appearance none/圆角 6px/20px/未勾玻璃白描边/未勾 ::after scale 0 隐藏/勾选白底白边+蓝勾出现（矩阵 scale 分量断言）/原 29 断言全回归/手机 22px+14px+padding 10px+gap 10px/0 console error）+ smoke-admin 49/49 + 线上同款 34/34 + health 57 表 v2.0.0；部署 rev 00024-tb7（100% 流量）
+
+教训（电池）：
+③ ::after 带 translate(-50%,-55%) 时 scale(0) 的 computed transform 是 matrix(0,0,0,0,-3,-5.5) 不是全零矩阵——隐藏断言要解析矩阵取 a/d 分量（scale 分量），不能全等比较

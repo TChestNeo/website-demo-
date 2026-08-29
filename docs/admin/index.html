@@ -1032,7 +1032,8 @@ body.pre-stagger .auth-card { opacity: 0; }
 .auth-card.auth-tab-login  .auth-caption-signup { opacity: 1; transition-delay: 0.3s; }
 .auth-card.auth-tab-login  .auth-caption-login  { opacity: 0; transition-delay: 0s; }
 
-/* 条款同意块（v2.3.13 用户「把服务条款和隐私条款放在 Login 的蓝色卡片那边，第一个步骤就需要打勾」+「不是你把打勾放在sign up 干什么」）：
+/* 条款同意块（v2.3.13 用户「把服务条款和隐私条款放在 Login 的蓝色卡片那边，第一个步骤就需要打勾」+「不是你把打勾放在sign up 干什么」；
+   v2.3.14 用户「能不能给那个打勾的Ui做适配」→问询钦定「定制样式+手机适配」：勾选框 appearance:none 定制玻璃勾选框）：
    蓝板上随状态类 cross-fade——login 激活（蓝板停 Signup 半、紧挨登录表单）显示、signup 激活淡出（注册不拦）；
    未勾点 Log in 由 handleLogin 拦截（demo/api 双模式）；z-index 1 压装饰圆 ::before/::after */
 .auth-terms {
@@ -1049,11 +1050,38 @@ body.pre-stagger .auth-card { opacity: 0; }
 }
 .auth-terms input[type='checkbox'] {
   flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-  margin-top: 1px;
-  accent-color: #ffffff;
+  width: 20px;
+  height: 20px;
+  margin-top: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  border-radius: 6px;
   cursor: pointer;
+  position: relative;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.auth-terms input[type='checkbox']:hover { background: rgba(255, 255, 255, 0.28); }
+.auth-terms input[type='checkbox']:active { transform: scale(0.92); }
+.auth-terms input[type='checkbox']:checked { background: #ffffff; border-color: #ffffff; }
+/* 勾选对勾：::after 边框两画旋转 45°，scale 0→1 回弹动效 */
+.auth-terms input[type='checkbox']::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 6px; height: 10px;
+  border: solid #4648d4;
+  border-width: 0 2.5px 2.5px 0;
+  transform: translate(-50%, -55%) rotate(45deg) scale(0);
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.auth-terms input[type='checkbox']:checked::after {
+  transform: translate(-50%, -55%) rotate(45deg) scale(1);
+}
+.auth-terms input[type='checkbox']:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
 }
 .auth-terms a {
   color: #ffffff;
@@ -1264,6 +1292,20 @@ body.pre-stagger .auth-card { opacity: 0; }
   .auth-card.auth-tab-signup .auth-pane-login { display: none; } /* 非激活半表单隐藏（与桌面同一状态类驱动，零 JS 分支） */
   .auth-card.auth-tab-login .auth-pane-signup { display: none; }
   .display-lg { font-size: var(--fs-display-lg); line-height: 1.2; }
+  /* v2.3.14 手机触控适配（用户「能不能给那个打勾的Ui做适配」）：勾选框 22px、字号 14px、整行上下 padding 加大触控区 */
+  .auth-terms {
+    gap: 10px;
+    padding: 10px 0;
+    font-size: 14px;
+  }
+  .auth-terms input[type='checkbox'] {
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
+  }
+  .auth-terms input[type='checkbox']::after {
+    width: 7px; height: 11px;
+  }
 }
 
 /* ================================================================
