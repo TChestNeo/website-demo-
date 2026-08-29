@@ -22,7 +22,7 @@
     'editor.html': 5,
     'workspace.html': 8,
     'help.html': 9,
-    'signin-and-login.html': -1, 'signin-and-login': -1,
+    'signup-and-login.html': -1, 'signup-and-login': -1,
     'onboarding-identity.html': -1, 'onboarding-complete.html': -1,
     'transitioning.html': -1, 'sovereignty-ratified.html': -1,
   };

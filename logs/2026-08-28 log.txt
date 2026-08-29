@@ -288,3 +288,20 @@
 
 教训（电池）：
 ③ ::after 带 translate(-50%,-55%) 时 scale(0) 的 computed transform 是 matrix(0,0,0,0,-3,-5.5) 不是全零矩阵——隐藏断言要解析矩阵取 a/d 分量（scale 分量），不能全等比较
+────────────────────────────────────────
+2026-08-30 v0.2.4.0 — auth 全部互换 + URL 更名 /signin-and-login → /signup-and-login（rev 00025-2rw）
+
+真身（用户）：
+「那么sign up 和 login倒反了啊」——蓝板字幕显示被盖半文案（登录态蓝卡却写着注册的 Build Your World+步骤），挨着对面表单观感倒反；问询钦定「全部互换」。「还有把链接上的sign-in 改成 sign-up」——/signin-and-login 的 signin 与 login 同义冗余（「登录和登录」），注册+登录合页 URL 应叫 signup。
+
+改动：
+- ethereal.css：全部互换——login 表单左半/signup 表单右半（双表单 DOM 互换）、标签栏 [Log in | Sign up]（登录在前+默认高亮）、默认登录态（auth-tab-login 初始类 + currentTab='login'）、tabs/页脚/蓝板/表单淡入的状态选择器全部互换（蓝板默认 translateX(100%) 盖右半）、字幕改配对活跃半（登录态蓝卡 Welcome back/Your world is waiting.、注册态蓝卡 Build Your World+步骤）；登录字幕与表单标题去重
+- signin-and-login.html → git mv signup-and-login.html：URL 更名 + DOM 结构互换 + title → Sign Up / Log In（与 URL 配对）
+- 引用同步 4 文件：settings-modal.js 登出/删号、transitions.js 页映射、help.html 前往注册、premium.html 3 处 → ../signup-and-login；旧 URL 无占位直接 404
+- site-config.js v0.2.3.14 → v0.2.4.0（小改动位 14→0·口径修正轮）
+- inline-css.js 重跑 43 页（全部无改动跳过，signup-and-login.html 新文件名识别正常）
+
+验证：本地 docker CDP 电池 39/39（默认登录态/标签顺序登录在前/登录左半注册右半/蓝板停右 tx=cardW/2/字幕配对活跃半双文案/条款登录态可见+未勾拦截+勾选后登录跳根页/忘记密码在左半登录表单/动画钟中段自洽 tx=cardW/2*(1-p)/切注册蓝板停左+跷跷板标签右移/注册态条款隐藏+未勾不拦/移动端静态横幅+display:none+22px 触控/0 console error）+ smoke-admin 49/49 + 线上同款 39/39 + curl /signup-and-login 200（标题+authCard）+ /signin-and-login 404 + health 57 表 v2.0.0；部署 rev 00025-2rw（100% 流量）
+
+教训（电池）：
+④ 电池脚本 bug 三连，产品均无辜——(1) 探针返回对象未 JSON.stringify → JSON.parse('[object Object]') 抛错（evalJS 统一 typeof v==='string' 才 parse，字符串探针须 JSON.stringify 包裹、对象/布尔直通）；(2) 解构别名返回原始 matrix 字符串（应 return {v} 而非 {a}，断言取 v[0]/v[3] 判 a=d=0）；(3) 路径断言比对 JSON 引号字符串（evalJS 已 parse 过、应比裸字符串）+ demo 登录必须预填凭据否则被 handleLogin 空值拦截（产品行为正确，电池自身漏步）

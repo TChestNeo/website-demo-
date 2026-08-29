@@ -403,7 +403,7 @@
     if (logoutBtn) {
       logoutBtn.addEventListener('click', function () {
         if (window.SlatiDB) SlatiDB.logout();
-        window.location.href = '../signin-and-login';
+        window.location.href = '../signup-and-login';
       });
     }
 
@@ -416,7 +416,7 @@
             SlatiDB.remove('slati_user');
             SlatiDB.remove('slati_session');
           }
-          window.location.href = '../signin-and-login';
+          window.location.href = '../signup-and-login';
         }
       });
     }

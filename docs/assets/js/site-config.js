@@ -23,7 +23,11 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.3.12 = auth 条款同意迁蓝板 + 注册第一步必勾（用户「把服务条款和隐私条款放在 Login 的蓝色卡片那边，第一个步骤就需要打勾」）：页脚条款行移除（页脚仅剩 demo 提示）；蓝板加 .auth-terms 同意块（原生 checkbox accent-color 白勾 + 服务条款/隐私政策链接，z-index 1 压装饰圆）随状态类 cross-fade——signup 激活（蓝板停 Login 半）显示（incoming delay 0.3s）、login 激活淡出（delay 0s + pointer-events none，登录不需勾）；handleSignup 未勾拦截 Create Account（showError 提示，demo/api 双模式生效）（补丁位·修复轮；2026-08-30）
 // v0.2.3.13 = auth 条款同意挂 Login 蓝板 + 登录第一步必勾（用户「不是你把打勾放在sign up 干什么」）：v0.2.3.12 挂反——真身=勾选在 login 激活态蓝板显示（蓝板停 Signup 半、紧挨登录表单）+ 未勾拦截 Log in，Sign up 不拦；状态类规则翻转（auth-tab-login 显示 incoming delay 0.3s / auth-tab-signup 淡出 delay 0s+pointer-events none）、handleSignup 拦截撤除、handleLogin 加拦截（demo/api 双模式生效）（补丁位·口径修正轮；2026-08-30）
 // v0.2.3.14 = auth 条款勾选定制样式 + 手机触控适配（用户「能不能给那个打勾的Ui做适配」→问询钦定「定制样式+手机适配」）：勾选框 appearance:none 定制——圆角 6px 玻璃白描边（rgba 0.16/0.75）、hover 提亮、active 缩放 0.92、勾选白底+品牌蓝对勾（::after 边框两画旋转 45°、scale 0→1 回弹 cubic-bezier(0.34,1.56,0.64,1)）、focus-visible 白描环，跨浏览器/设备观感统一；≤768 触控适配——勾选框 22px、字号 14px、gap 10px、整行 padding 10px 0 加大点击区（补丁位·观感微调轮；2026-08-30）
-window.MN_SITE_VERSION = 'v0.2.3.14';
+// v0.2.4.0 = auth 全部互换 + URL 更名（用户「那么sign up 和 login倒反了啊」→问询钦定「全部互换」+「还有把链接上的sign-in 改成 sign-up」）：
+//   ①全部互换——login 表单左半/signup 表单右半（双表单 DOM 互换）、标签栏 [Log in | Sign up]（登录在前）、默认登录态（auth-tab-login 初始类 + currentTab='login'）、蓝板字幕改配对活跃半（登录态蓝卡=Welcome back/Your world is waiting.、注册态蓝卡=Build Your World+步骤——旧版显示被盖半文案挨着对面表单观感「倒反」）；tabs/页脚/板/表单淡入的状态选择器全部互换；
+//   ②URL 更名 /signin-and-login → /signup-and-login（signin 与 login 同义冗余，「注册+登录」合页 URL 应叫 signup；文件 git mv、settings-modal/transitions/help/premium 引用同步，旧 URL 404）
+//   （小改动位·口径修正轮；2026-08-30）
+window.MN_SITE_VERSION = 'v0.2.4.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 window.FLUIDCANVAS_VERSION = 'v10.28.8.2';
