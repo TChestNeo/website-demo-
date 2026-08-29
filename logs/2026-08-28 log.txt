@@ -105,3 +105,35 @@
 【验证】本地 docker CDP 电池 18/18 + smoke-admin 49/49 + 线上同款 18/18 全绿 0 console error（电池要点：扫动早期 ~150ms 旧表单还在且蓝板右移中 / ~500ms 内容已切且蓝板仍全盖 / ~700ms 已瞬移到左侧滑入 / ~1400ms 复位 busy 释放 / 反向 / 连点 200ms 内反向点最终内容=最新目标 / 375 无横向溢出 / 拖影偏移与掺量回归）。
 
 【教训】① 电池时序断言用绝对时刻（performance.now - __t0）再 sleep 补差，别逐项 sleep 累加——eval 往返延迟会让「300ms 检查」实际落在 400ms 切换之后，断言假阴性（本轮实测踩到）；② 检查函数返回 DOM 元素会序列化成 {} 被判 FAIL——断言链最后要 !! 归一成布尔；③ 口径修正轮惯例：动画类需求第 2 次撞就停下来问，用选项预览（ASCII 时间线）让用户钦定，比再猜一版省一个部署轮；④ 本地 docker 运行要带 ADMIN_EMAIL，否则 seed project_director 失败容器直接退出（exit 1，非容器化环境无 .env 兜底）；SNAPSHOT_PATH 用 /app/data/（镜像内已 chown）别用 /tmp（Docker Desktop 下解析到 Windows 临时目录 scandir 失败——非致命但报警）。
+
+---
+
+## 2026-08-29 下午 —— auth 卡一体白底修复（用户第 3 问「为什么那个右侧蓝色信息栏的背面是蓝色的而不是一体的白色？」）
+
+**真身**：卡片本体没有底色——白色磨砂（rgba(255,255,255,0.55)+blur(32px)）只刷在右侧表单板（.auth-right）上，.auth-card 本身透明。蓝板向右扫过、让出自己原来的位置时，空出来的区域直接透出卡后面的 3 层淡蓝拖影（掺量 20%/10%/4%）+ 页面背景 → 观感=蓝色板扫过去的「背面」是蓝色的，与整卡一体白色不符。
+
+**改动**：① ethereal.css .auth-card 补 `background: var(--card-bg); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px)`（--card-bg 浅色=rgba(255,255,255,0.55) 白磨砂 / 深色=#1e1e32 实底，双主题自带）；② .auth-right 删掉原 3 行磨砂（注释「底色已上移整卡，避免双倍叠加变不透明」）——静止观感完全不变（同一块 0.55 白霜），扫动时让出区域也是同款白霜；③ inline-css.js 重跑 43 页内联 40（**修过的 inliner 正常刷新已内联页**，40 页 HTML 全更新）；④ site-config v0.2.3.2 → v0.2.3.3（补丁位·修复轮）。
+
+**验证**：本地 docker CDP 电池 20/20 0 console error（新增两断言：.auth-card computed bg=rgba(255,255,255,0.55)+backdropFilter 含 blur(32px)；扫动中 ~350ms elementsFromPoint 卡左 20% 宽处顶层=卡片本体——旧版此处顶层会是拖影/页面背景）+ smoke-admin 49/49 + 线上同款电池 20/20 + health 57 表 v2.0.0。部署 rev 00013-txb（当前线上，v0.2.3.3）。
+
+**教训**：① PS5.1 给 docker build 加 `2>$null` 静音进度 → stderr 行被包成 ErrorRecord，`$?` 恒 false，构建成功也报 BUILD FAIL——静音 docker 用 `--quiet` 或直接接受进度输出，别重定向 stderr；② 「扫动让出区域显示什么」的断言别猜——elementsFromPoint 取顶层元素直接问渲染器；③ 背景/底色类观感问题先查「底色属于哪个盒子」（本轮第 2 次此类问题：上次 v10.19 白画布同理，见记忆），别先动动画本身。
+
+---
+
+## 2026-08-29 晚 —— auth 页口径修正 v2（用户 5 连击「登录和注册卡片大小一致 + 动画慢一些 + 盖满直接切内容且同时从左滑出蓝色卡片 + 右缘换内凹圆角 + 拖影要挂在蓝板动的时候拖在后方」）
+
+**需求拆解**：① 登录/注册两 tab 卡片尺寸一致；② 蓝板动画减速（0.6s → 1.1s）；③ 蓝板盖住输入位置的瞬间直接切内容，同时新蓝板从左侧滑入（= 出板 + 入板**两板并存**，上一轮「扫出右缘→瞬移回左侧滑入」的单板方案容不下同时滑入）；④ 卡片**右缘两角改内凹圆角**（左缘保持普通凸圆角）——「我们倒反就是圆角是内凹的，但只是右侧」；⑤ 拖影三层渐白要挂在**动的蓝板本身**（板动影随），不是像上轮挂在背景卡片上——用户明确指出我上一轮做错了位置。
+
+**改动**：
+1. **定高 880px**：先线上 CDP 探针实测三表单高（api 模式：注册 542 / 登录 482 / 设密 247），定 .auth-card height 880px（=最高表单+tab+内边距+报错余量），两 tab 同尺寸；≤768 恢复 auto。
+2. **右缘内凹**：border-radius 只留左 `var(--radius-lg) 0 0 var(--radius-lg)` + background-image 两层 `radial-gradient(circle at 100% 0 / 100% 100%, transparent 16px, card-bg 17px)` 在右上/右下角打透明洞、各占半高 50.1% 叠 0.1% 防接缝（mask-composite 不可用——v10.13 教训：Chromium 非 add composite 不渲染）。
+3. **双蓝板轮换**：#authLeftA（停靠）+ #authLeftB（parked：visibility hidden + 停 -240% 左缘外）。切 tab 时 outgoing 扫出（translateX 240%）、盖满时刻（600ms = 55%×1.1s，ease-in-out 下 ≈ 1.36bw 全盖输入）**切全局表单 + incoming 同时解除 slide-in 从左侧滑入**；outgoing 滑出后瞬移回 -240% 备用（全程被卡 overflow 裁剪不可见）。1.1s cubic-bezier(0.45,0,0.55,1) 慢速。
+4. **拖影挂蓝板**：3 条 .auth-trail 改成蓝板**子元素**（带宽 100%、left −8/−16/−24、左缘圆角右缘直角、板动随板平移），入板滑入时拖影在其左侧卡外被裁剪不可见、出板扫出时穗带自然拖在板后 = 用户要的「颜色跟在动板后方」；蓝板渐变底从 .auth-left 挪进 .auth-left-body 子层（负 z 子层会盖父背景的坑）。
+5. 移动端 ≤768：column 布局、卡高 auto、.auth-left-body 改 position:static + 顶部两凸圆角与卡片凹洞曲线重合（蓝板不填进凹洞）。
+6. inline-css.js 重跑 40 页 + site-config v0.2.3.3 → v0.2.3.4（补丁位·口径修正轮）。
+
+**验证**：本地 docker CDP 电池 **24/24 0 console error**（定高 880 两 tab 一致 / 凹角结构双层径向渐变+底色透明 / 拖影 parent=蓝板序 3→2→1+rect 随板平移偏移 −8/−16/−24 / 1.1s 慢速 / 时序：~300ms 旧表单还在+B 卡外、~450ms 拖影随板、~550ms 未盖满、~700ms 已切+B 滑入中+A 全盖、~980ms A 尾声未 park+B 蓄势、~1900ms 复位 / 反向角色互换 / 连点按最新目标 / 375 column / 0 Runtime exception）+ smoke-admin 49/49 + 线上同款 24/24 + health 57 表 v2.0.0。部署 rev 00014-tpw（当前线上，v0.2.3.4）。
+
+**电池交付前抓出 2 个真 bug**：① applyAuthTab 里 `s1.className = 'progress-step ' + ...` 把 step1indicator 类剥掉 → 下一轮 querySelector('.step1indicator') 返 null → 盖满回调抛异常（3 条 Uncaught）、新蓝板永远不滑入——改 classList.toggle('completed') 保留定位类；② applyAuthTab 在扫动**开始**就对 incoming 板预置时连同全局表单显隐一起切了 → 内容在 t≈0 就换掉（300ms 断言当场抓住 signupShown=false 而蓝板才移 131px）——拆成 applyAuthTabForm（全局，仅盖满时刻调）+ applyAuthTabIndicators（面板局部，扫动开始预置、盖满时按最新目标同步）。
+
+**教训**：① elementsFromPoint 检测不了「画的洞」——元素几何占满角落（背景透明不等于命中穿透），内凹断言走结构式（backgroundImage 层+backgroundSize+透明底色）；同理拖影 pointer-events:none 被 elementsFromPoint 跳过（v10.13 已知），跟随断言改 rect 几何随板平移；② 预置 incoming 内容时要分清「全局表单」与「面板局部指示器」——前者动了扫动中可见、后者板在卡外不可见，混在一个函数里就被 300ms 断言抓；③ 电池断言窗口按动画公式重算：B 起点 -2.4bw、入板 130ms 时 txB≈-2.35bw，下界写 -2.3bw 必假阴性；④ 出板 park 发生在 1.1s 不是滑入结束 1.7s——「尾声」断言窗口取 ~980ms。
