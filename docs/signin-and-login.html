@@ -901,11 +901,28 @@ body.pre-stagger .auth-trail { opacity: 0; }
   position: absolute; /* 两块蓝板都脱流叠在同一槽位（08-29 修复：B 板若留 flex 流内，即使视觉移走布局槽位仍占着，把表单挤到最小内容宽——蓝板 332px/表单 297px/中间 331px 空洞） */
   top: 0; bottom: 0; left: 0;
   z-index: 3; /* 切 tab 滑动时压过右板 */
-  transition: transform 1.1s cubic-bezier(0.45, 0, 0.55, 1); /* 08-29 用户「慢一些」：0.6s → 1.1s */
+  transition: transform 0.8s cubic-bezier(0.45, 0, 0.55, 1); /* 仅滑入用（扫出走 keyframes 动画）：新蓝板从左缘滑入复位 0.8s（08-29 切换时机修复：扫出尾部改快甩后，入板稍快于扫出——到达不拖到 1.9s） */
 }
-/* auth 切 tab 扫动动画（08-29 口径修正 v2）：active 蓝板向右扫出（拖影挂板上=板动影随），
-   盖满输入位置瞬间切内容 + incoming 蓝板同时从左缘滑入；240% = 自身宽 42% 卡的 2.4 倍 ≈ 整卡宽 */
-.auth-left.auth-slide-out { transform: translateX(240%); }
+/* auth 切 tab 扫动动画（08-29 口径修正 v2；08-29 切换时机修复）：active 蓝板向右扫出（拖影挂板上=板动影随），
+   盖满输入位置瞬间切内容 + incoming 蓝板同时从左缘滑入；240% = 自身宽 42% 卡的 2.4 倍 ≈ 整卡宽。
+   两段 keyframes：前 71% 慢速滑过表单（ease-in-out，盖满瞬间 = 前沿扫过表单右缘 920px = translateX 128.2%），
+   后 29% ease-out 快速甩出——旧版整段 ease-in-out 尾部拖慢：盖满 600ms 后新表单要等蓝板拖到 1058ms 才露全
+   （用户「切换迟了半秒」）；分两段后盖满 781ms、新表单 ~1013ms 露全（时差 ≈230ms，回到 0.6s 版手感） */
+.auth-left.auth-slide-out {
+  transform: translateX(240%);
+  animation: auth-sweep-out 1.1s forwards;
+}
+@keyframes auth-sweep-out {
+  0% {
+    transform: translateX(0);
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); /* 段一：慢速扫过表单 */
+  }
+  71% {
+    transform: translateX(128.2%); /* 盖满输入位置（前沿 = 表单右缘 920px）——JS AUTH_SWAP_MS 与此刻对齐切内容 */
+    animation-timing-function: cubic-bezier(0, 0, 0.58, 1); /* 段二：ease-out 快速甩出，新表单紧随露出 */
+  }
+  100% { transform: translateX(240%); }
+}
 .auth-left.auth-slide-in { transform: translateX(-240%); }
 .auth-left.auth-parked { visibility: hidden; pointer-events: none; } /* 左缘外备用板 */
 .auth-left.auth-no-anim { transition: none !important; } /* 摆位/复位瞬间不动画 */
@@ -1959,13 +1976,16 @@ body.pre-stagger .auth-trail { opacity: 0; }
   // 切 tab 蓝板扫动动画（08-29 口径修正 v2，用户「慢一些 + 盖满输入位置直接切内容 +
   // 同时从左侧滑出蓝色卡片 + 拖影挂蓝板不是挂背景卡」）：两块蓝板轮换——active 向右扫出
   // （拖影挂在板本体上、板动影随拖在后方），盖满输入位置瞬间直接切内容，incoming 同时
-  // 从左缘滑入补位；扫出 1.1s 慢速，ease-in-out 下盖满 ≈ 55% 时刻（translateX≈138% 全盖）。
+  // 从左缘滑入补位。扫出 = 两段 keyframes（ethereal.css auth-sweep-out）：前 71% ease-in-out
+  // 慢速滑过表单、71% 处前沿正好扫过表单右缘（translateX 128.2%）= 盖满时刻，后 29% ease-out
+  // 快速甩出（08-29 切换时机修复：旧版整段 ease-in-out 盖满后还拖 46% 路程慢慢退出，新表单
+  // 1058ms 才露全——用户「切换迟了半秒」；分两段后新表单 ~1013ms 露全）。
   // authSlideBusy 防连点叠加；连点时记最新目标 tab，盖满时刻按它切换、滑入完成后补轮。
   var authSlideBusy = false;
   var authPendingTab = null;
   var authActive = null;      // 当前停靠的蓝板
-  var AUTH_SWEEP_MS = 1100;   // 扫出/滑入时长（用户：慢一些，0.6s → 1.1s）
-  var AUTH_SWAP_MS = 600;     // 盖满输入位置时刻（55% × 1.1s）：切内容 + 新蓝板同时滑入
+  var AUTH_SWEEP_MS = 1100;   // 扫出总时长（两段 keyframes 1.1s；用户：慢一些，0.6s → 1.1s）
+  var AUTH_SWAP_MS = 780;     // 盖满输入位置时刻（keyframes 71% × 1.1s）：切内容 + 新蓝板同时滑入
 
   function initAuthPanels() {
     var a = document.getElementById('authLeftA');

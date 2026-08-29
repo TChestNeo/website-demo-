@@ -149,3 +149,14 @@
 **验证**：本地 docker CDP 电池 **25/25 0 console error**（新增比例回归断言：蓝板 403±2/表单 557±2/板右缘与表单左缘无缝 ≤1px；新增 z 序断言：反向盖满时入板 A computed zIndex=4 压出板 B=3）+ smoke-admin 49/49 + 线上同款 25/25 + health 57 表 v2.0.0。部署 rev 00015-7rk（当前线上，v0.2.3.5）。
 
 **教训**：① transform 移走 ≠ 脱流——flex 布局槽位照样占着，视觉隐藏与布局占位是两码事；双板/双面板结构一律 absolute 叠槽位；② 上一轮电池 24/24 全绿却漏了比例——断言只验「存在/时序/rect 相对关系」，没验「绝对几何 = 设计值」（板宽=卡宽×42%）。以后布局结构改动轮的电池必须加**绝对尺寸回归断言**（对设计稿数字），相对断言挡不住「整体挤扁」；③ 高度定档要用修复后布局实测的 form 高重新算，别沿用旧布局的测量；④ inliner 约束：ethereal.css 任何改动 → 重跑 inline-css.js → 再 build，漏一步就是旧 CSS 上线（本轮探针连续两次量出旧几何才想起来）。
+---
+
+## 2026-08-29 深夜 —— auth 切换时机修复（用户「那个输入的切换并没有在蓝色卡片覆盖的时候就切换大概迟了半秒」）
+
+**真身**：扫出动画整段一条 ease-in-out 缓动（1.1s）——盖满时刻（~595ms）切内容没错，但缓动尾巴拖得很慢：新表单要等蓝板后缘滑出表单右缘（~1058ms）才露全。内容切了但看不见 = 观感「迟了半秒」（盖满→露全时差 463ms；rev 00012 版只有 ~227ms——上轮按用户要求放慢到 1.1s 时把切换手感也拖垮了）。
+
+**改动**：① ethereal.css 扫出改**两段 keyframes**（`@keyframes auth-sweep-out` 1.1s forwards，逐段 animation-timing-function）：前 71%（781ms）cubic-bezier(0.45,0,0.55,1) 慢速滑过表单到 translateX(128.2%)（板右缘 = 表单右缘 920px = 盖满）→ 后 29%（319ms）cubic-bezier(0,0,0.58,1) 快速甩出到 240%；② signin-and-login.html AUTH_SWAP_MS 600→780（内容切换对齐盖满时刻）、新蓝板滑入 1.1s→0.8s（盖满即补位，不再被慢滑入拖累）；③ inline-css.js 重跑 43 页内联 40；④ site-config v0.2.3.5→v0.2.3.6（补丁位·修复轮）。修后：盖满 781ms 即切、新表单 ~1013ms 露全（时差 ~230ms = rev 00012 手感），1.1s 慢速扫过要求保留。
+
+**验证**：本地 docker CDP 电池 **31/31 0 console error**（两段缓动逐帧对 Node 侧贝塞尔预测曲线：t<781 走 ease-in-out×516.9px / 781–1100 走 ease-out×450.8px / ≥1100 parked；切换 780ms 窗口内容已换；新蓝板滑入隐含起点一致性 ∈[785,825]；双击块、反向角色互换、375 无溢出、0 console error）+ smoke-admin 49/49 + 线上同款 31/31 + health 57 表 v2.0.0。部署 rev 00016-lh9（当前线上，v0.2.3.6）。
+
+**教训（时序电池测量陷阱——本轮核心）**：① 轮询式 atTime 采样天然迟 ~120ms（CDP 往返 100ms 粒度）——首版电池 t=350 断出 tx 309 vs 期望 237 是**测量假阳性**，探针实证动画本身分毫不差，产品无 bug；② 逐项 sleep 链累积漂移 20–30ms/轮 → 绝对时刻调度（remain = t − (now − __t0)）；③ getComputedStyle 返回**上一渲染帧**的值（16.7ms × 2.4px/ms ≈ 40px 误差）→ rAF 帧对齐读值；④ 动画启动晚 __t0 约 1 帧（~23ms）→ CSSAnimation.startTime 校准；⑤ CSSTransition.startTime 查找会抓错后代过渡 → 滑入断言改隐含起点一致性；⑥ Node 侧贝塞尔预测用 bezierY 二分（60 轮）反解缓动进度；⑦ Runtime.evaluate 忘 awaitPromise → async IIFE 序列化成 {} 判 FAIL；⑧ 线上机器比本地慢 → 早期采样容差 25→60（仅限 780ms 前的两档，其后保持 25 防串档）。
