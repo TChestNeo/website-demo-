@@ -137,3 +137,15 @@
 **电池交付前抓出 2 个真 bug**：① applyAuthTab 里 `s1.className = 'progress-step ' + ...` 把 step1indicator 类剥掉 → 下一轮 querySelector('.step1indicator') 返 null → 盖满回调抛异常（3 条 Uncaught）、新蓝板永远不滑入——改 classList.toggle('completed') 保留定位类；② applyAuthTab 在扫动**开始**就对 incoming 板预置时连同全局表单显隐一起切了 → 内容在 t≈0 就换掉（300ms 断言当场抓住 signupShown=false 而蓝板才移 131px）——拆成 applyAuthTabForm（全局，仅盖满时刻调）+ applyAuthTabIndicators（面板局部，扫动开始预置、盖满时按最新目标同步）。
 
 **教训**：① elementsFromPoint 检测不了「画的洞」——元素几何占满角落（背景透明不等于命中穿透），内凹断言走结构式（backgroundImage 层+backgroundSize+透明底色）；同理拖影 pointer-events:none 被 elementsFromPoint 跳过（v10.13 已知），跟随断言改 rect 几何随板平移；② 预置 incoming 内容时要分清「全局表单」与「面板局部指示器」——前者动了扫动中可见、后者板在卡外不可见，混在一个函数里就被 300ms 断言抓；③ 电池断言窗口按动画公式重算：B 起点 -2.4bw、入板 130ms 时 txB≈-2.35bw，下界写 -2.3bw 必假阴性；④ 出板 park 发生在 1.1s 不是滑入结束 1.7s——「尾声」断言窗口取 ~980ms。
+
+---
+
+## 2026-08-29 深夜 —— auth 页比例修复（用户「不是现在更糟糕了你检查一下代码比例完全不对」）
+
+**真身**：双蓝板方案的 flex 布局灾难——#authLeftB 停车后 translateX(-240%) 视觉移走，但**布局槽位仍占着**（transform 不影响布局）。卡片 flex 行里三块抢 960px：A 板、B 板、表单板全部被压到最小内容宽——线上实测（CDP 几何探针）：蓝板 332px（本应 42%=403）、**表单只剩 297px（比蓝板还窄！）**、卡片中间 331px 空洞（B 板槽位）。这就是「比例完全不对」：表单挤扁+大片空白。
+
+**改动**：① 双蓝板改 **position: absolute**（top/bottom/left 0 + width 42%）完全脱流、叠同一槽位；.auth-right 补 margin-left 42% 让出表单位——flex 行只剩表单一项，宽度回到 557px；② z 序轮换：两板叠同槽位后树序 A 前 B 后，反向时入板 A 会被出板 B 盖住 → playAuthSlide 里 incoming.style.zIndex='4' / outgoing='3'（新板永远压旧板）；③ 定高 880→800：修复后重测注册内容 752（form 542+tab 82+内边距 128）+ 报错余量 48；880 的 128px 底部空洞是比例失衡第二来源；④ ≤768 媒体查询 .auth-left 回 position:static、.auth-right margin-left 0（absolute 会叠表单上）；⑤ inline-css.js 重跑（**踩坑：改完 ethereal.css 忘重跑 inliner，容器里跑的仍是内联旧 CSS，探针两次都量出旧几何——工作流约束再次应验**）；⑥ site-config v0.2.3.4→v0.2.3.5（补丁位·修复轮）。
+
+**验证**：本地 docker CDP 电池 **25/25 0 console error**（新增比例回归断言：蓝板 403±2/表单 557±2/板右缘与表单左缘无缝 ≤1px；新增 z 序断言：反向盖满时入板 A computed zIndex=4 压出板 B=3）+ smoke-admin 49/49 + 线上同款 25/25 + health 57 表 v2.0.0。部署 rev 00015-7rk（当前线上，v0.2.3.5）。
+
+**教训**：① transform 移走 ≠ 脱流——flex 布局槽位照样占着，视觉隐藏与布局占位是两码事；双板/双面板结构一律 absolute 叠槽位；② 上一轮电池 24/24 全绿却漏了比例——断言只验「存在/时序/rect 相对关系」，没验「绝对几何 = 设计值」（板宽=卡宽×42%）。以后布局结构改动轮的电池必须加**绝对尺寸回归断言**（对设计稿数字），相对断言挡不住「整体挤扁」；③ 高度定档要用修复后布局实测的 form 高重新算，别沿用旧布局的测量；④ inliner 约束：ethereal.css 任何改动 → 重跑 inline-css.js → 再 build，漏一步就是旧 CSS 上线（本轮探针连续两次量出旧几何才想起来）。

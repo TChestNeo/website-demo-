@@ -869,7 +869,7 @@ body.pre-stagger .auth-trail { opacity: 0; }
   display: flex;
   max-width: 960px;
   width: 100%;
-  height: 880px; /* 08-29 用户「登录和注册卡片大小一致」：定高 = 最高表单（api 模式注册 542px + tab 82 + 内边距 128 + 报错余量），两 tab 同尺寸；≤768 恢复 auto */
+  height: 800px; /* 08-29 用户「登录和注册卡片大小一致」：定高 = 注册 tab 内容高 752（form 542+tab 82+内边距 128）+ 报错余量 48，两 tab 同尺寸（实测 880 底部空洞 128px 比例失衡）；≤768 恢复 auto */
   border-radius: var(--radius-lg) 0 0 var(--radius-lg); /* 右缘内凹圆角：背景两层径向渐变在右上/右下角打透明洞；左缘普通圆角 */
   overflow: hidden;
   box-shadow: var(--shadow-lg);
@@ -889,7 +889,8 @@ body.pre-stagger .auth-trail { opacity: 0; }
 }
 .auth-left {
   width: 42%;
-  position: relative;
+  position: absolute; /* 两块蓝板都脱流叠在同一槽位（08-29 修复：B 板若留 flex 流内，即使视觉移走布局槽位仍占着，把表单挤到最小内容宽——蓝板 332px/表单 297px/中间 331px 空洞） */
+  top: 0; bottom: 0; left: 0;
   z-index: 3; /* 切 tab 滑动时压过右板 */
   transition: transform 1.1s cubic-bezier(0.45, 0, 0.55, 1); /* 08-29 用户「慢一些」：0.6s → 1.1s */
 }
@@ -929,6 +930,7 @@ body.pre-stagger .auth-trail { opacity: 0; }
 }
 .auth-right {
   flex: 1;
+  margin-left: 42%; /* 双蓝板脱流后为表单让出左侧槽位（与 .auth-left width 一致） */
   /* 底色已上移整卡（.auth-card），此处不再重复磨砂——避免双倍叠加变不透明 */
   padding: var(--space-xl) var(--space-lg);
   display: flex;
@@ -1137,7 +1139,8 @@ body.pre-stagger .auth-trail { opacity: 0; }
     --fs-display-lg: 32px;
   }
   .auth-card { flex-direction: column; height: auto; min-height: 560px; }
-  .auth-left { width: 100%; height: auto; }
+  .auth-left { position: static; width: 100%; height: auto; } /* column 下回流入文档流（absolute 会叠在表单上） */
+  .auth-right { margin-left: 0; }
   .auth-left-body { position: static; border-radius: var(--radius-lg) var(--radius-lg) 0 0; } /* 顶部两角同半径凸圆角，与卡片右缘内凹洞曲线重合——蓝板不填进凹洞 */
   .display-lg { font-size: var(--fs-display-lg); line-height: 1.2; }
 }
