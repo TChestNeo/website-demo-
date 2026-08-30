@@ -43,4 +43,5 @@ window.MN_SITE = window.MN_SITE || {};
 window.MN_SITE_VERSION = 'v0.2.5.3';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
-window.FLUIDCANVAS_VERSION = 'v10.28.9';
+// v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
+window.FLUIDCANVAS_VERSION = 'v10.28.9.1';

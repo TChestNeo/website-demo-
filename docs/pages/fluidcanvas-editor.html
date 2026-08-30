@@ -2221,8 +2221,10 @@ body.pre-stagger .auth-card { opacity: 0; }
        左舞台：地图 img（object-fit cover——与卡面 background-size cover
        同裁切，落点坐标卡面/弹层严格一致）+ SVG 区域层 + 落点标记 +
        提示语；右侧栏：区域列表 + 「画区域」按钮；信息面板从屏幕右缘滑
-       出盖住侧栏（闭合后自动滑出/点列表项重开，用户「框完后再次点击右
-       侧就会滑出一个信息设定」）。Google Earth 式画法：点击落点连折线，
+       出盖住侧栏（v10.28.9.1 起不再闭合后自动滑出——用户「去除那个点击一
+       下就设置名称的功能」问询钦定，改回原钦定「框完后再次点击右侧才会
+       滑出一个信息设定」：点区域多边形/列表项滑出）。Google Earth 式画
+       法：点击落点连折线，
        头尾连接（点回第一点）即闭合（用户钦定「只要头和尾连接就结束」），
        双击同效；右键撤销上一点、Esc 取消；无自动面积显示（用户钦定）。 */
     #mapRegionOverlay { position: fixed; inset: 0; z-index: 300; display: none; }
@@ -3895,7 +3897,7 @@ body.pre-stagger .auth-card { opacity: 0; }
         <button class="btn btn-primary btn-sm" id="mreDrawBtn" onclick="startMapRegionDraw()"><span class="material-symbols-outlined">add</span>画区域</button>
       </div>
       <div class="mre-list" id="mreList"></div>
-      <!-- 信息设定面板：区域闭合/点列表项时从屏幕右缘滑出 -->
+      <!-- 信息设定面板：点区域/列表项时从屏幕右缘滑出（v10.28.9.1 起不再闭合自动滑出） -->
       <div class="mre-panel" id="mrePanel">
         <div class="flex-between" style="gap:8px">
           <h4 class="headline-sm" id="mrePanelTitle">区域信息</h4>
@@ -5555,6 +5557,16 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     pts.forEach(function (p) { cx += p[0]; cy += p[1]; });
     return [cx / pts.length, cy / pts.length];
   }
+  // 上缘中点（v10.28.9.1 名称标签锚点）：横 = 包围盒水平中心，纵 = 最高点
+  function mapRegionTopCenter(pts) {
+    var minX = Infinity, maxX = -Infinity, minY = Infinity;
+    pts.forEach(function (p) {
+      if (p[0] < minX) minX = p[0];
+      if (p[0] > maxX) maxX = p[0];
+      if (p[1] < minY) minY = p[1];
+    });
+    return [(minX + maxX) / 2, minY];
+  }
   // 卡面渲染：SVG 100×100 视盒随卡伸缩（与弹层 cover 同裁切，坐标一致）；
   // 名称标签 HTML 绝对定位（map-pin 同款，避免非等比视盒拉变形文字）。
   function mapRenderRegions(card, canvas) {
@@ -5655,8 +5667,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     mreRerender();
     mreUpdateTip();
     mreSyncToCard();
-    openMapRegionPanel(region.id);
-    showToast('区域已框好 · 填个名字吧');
+    // v10.28.9.1: 不再自动滑出名称面板（用户「去除那个点击一下就设置名
+    // 称的功能」问询钦定）——改回原钦定「框完后再次点击右侧才会滑出一个
+    // 信息设定」：点区域多边形或右侧列表项开面板。
+    showToast('区域已框好 · 点区域或右侧列表设置名称');
   }
   function mreCurrentRegion() {
     var st = mapRegionState;
@@ -5697,14 +5711,24 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function mreRenderLabels() {
     var box = document.getElementById('mreLabels');
     box.innerHTML = '';
+    // v10.28.9.1: 名称标签上缘居中（用户钦定「每个区域就上方就会显示名
+    // 称」）——横 = 区域包围盒中心、纵 = 区域最高点，标签底边悬在区域上
+    // 边缘正上方；区域顶离画布顶 <26px 放不下时退回区域内贴顶。
+    var canvasH = document.getElementById('mreCanvas').getBoundingClientRect().height || 1;
     mapRegionState.regions.forEach(function (r) {
       if (!r.name) return;
-      var c = mapRegionCentroid(r.pts);
+      var t = mapRegionTopCenter(r.pts);
       var lbl = document.createElement('div');
       lbl.className = 'map-region-label';
       lbl.textContent = r.name;
-      lbl.style.left = c[0] + '%';
-      lbl.style.top = c[1] + '%';
+      lbl.style.left = t[0] + '%';
+      if ((t[1] / 100) * canvasH >= 26) {
+        lbl.style.top = 'calc(' + t[1] + '% - 3px)';
+        lbl.style.transform = 'translate(-50%, -100%)';
+      } else {
+        lbl.style.top = t[1] + '%';
+        lbl.style.transform = 'translate(-50%, 0)';
+      }
       box.appendChild(lbl);
     });
   }
@@ -9693,7 +9717,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.9') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.9.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -9702,7 +9726,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.9');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.9.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';

@@ -438,3 +438,23 @@
 ㉒ 主脚本单一大 IIFE、内部状态对页面 eval 不可见 → 电池需探针的内部状态在页面显式挂 window 测试钩子（mreDebugState），探针统一经钩子读
 ㉓ 草稿 dataset 值以 JSON 字符串入草稿是惯例（mapPins/mapImg 同款）→ 电池断言草稿条目先 JSON.parse 再比；新功能沿用 additive+缺省空数组约定
 ㉔ % 坐标 FP 噪声（0.2*w/w 换算 19.9 vs 20）→ 坐标/多边形断言带 per-point 容差 0.15；编辑器 badge 无类名 → 全 div 扫描 textContent 前缀断言
+────────────────────────────
+2026-08-30 v10.28.9.1 — FluidCanvas 区域编辑器口径修正：去框完自动弹面板 + 名称上缘居中（rev 00033-96m）
+
+真身（用户）：
+「然后能不能去除那个点击一下就设置域名的功能，把他转移成需要打开地图每个区域就上方就会显示名称」——问询钦定：要移除的点击 = 框完自动弹名称面板（回归 v10.28.9 原始钦定「框完后再次点击右侧才会滑出一个信息设定」：点区域多边形或右侧列表项才滑出；钉子单击加标注点功能保留不动）；名称位置 = 上缘居中（横 = 包围盒水平中心、纵 = 区域最高点，标签底悬上缘上方 3px；顶离画布顶 <26px 放不下时退回区域内贴顶）。
+
+改动（docs/pages/fluidcanvas-editor.html）：
+- closeMapRegionDraw 去掉 openMapRegionPanel 自动调用 + toast 改「区域已框好 · 点区域或右侧列表设置名称」（原 v10.28.9 闭合即弹面板正是用户要除去的「点击一下就设置名称」）
+- 新 helper mapRegionTopCenter(pts)：横 = 包围盒水平中心、纵 = 最高点
+- mreRenderLabels 重写：名称标签上缘居中——left = 包围盒中心%、top = calc(最高点% - 3px)、transform translate(-50%,-100%)（标签底悬上缘上方 3px）；区域顶离画布顶 <26px 放不下 → top = 最高点%、translate(-50%,0) 退回区域内贴顶
+- 卡面标签不动（质心居中）——用户钦定范围是「打开地图」（编辑器视图），小卡上缘标签会贴边裁切
+- site-config FLUIDCANVAS_VERSION v10.28.9 → v10.28.9.1（补丁位 0→1·口径修正轮）+ fluidcanvas.html 首页 badge + 编辑器双字面量
+
+验证：本地 docker CDP 电池 52/52（badge/钉子右键回归/无图双击不开/有图双击开/闭合不自动弹面板+currentId 空+toast 引导/点多边形开面板/名称上缘居中 3px+transform(-50%,-100%)/颜色/双击闭合去重/区域2 顶贴画布顶退回区域内贴顶/区域1 标签不受影响/列表/删除/卡面质心标签回归/草稿往返/移动端/0 console error + 0 Runtime.exceptionThrown）+ smoke-admin 49/49 + 线上同款 52/52 + curl 编辑器页 200（v10.28.9.1+mapRegionOverlay）/FC 首页 200 + / 200 + /signup-and-login 200 + health 57 表 v2.0.0；部署 rev 00033-96m（100% 流量）
+
+教训：
+㉕ CDP 右键（Input.dispatchMouseEvent button:right）点不掉钉子：pin 元素 translate(-50%,-100%) 底缘恰在点击点、右键落在外白 → 改对 pin 元素 dispatchEvent contextmenu（bubbles）触发
+㉖ 草稿结构是 {cards:[...]} 不是 {entries:[...]}（buildDraft 产 cards）→ 电池探草稿 d.cards.find(type==='map')；断言草稿条目先 JSON.parse（dataset 值 JSON 字符串惯例）
+㉗ 电池放 backend-v2/ 根时 ROOT = path.join(__dirname,'..')（'..','..' 是 smoke-admin 在 scripts/ 子目录的路径）——放错 → 静态服务 404 编辑器页、页面探针全空
+㉘ transform 断言比对 -宽高/2（-lw/2,-lh）别比自造表达式；上缘居中标签底 = 最高点%-3px，需捕获 label 自身宽高（getBoundingClientRect）再容差比对
