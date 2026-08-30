@@ -3239,7 +3239,7 @@ body.pre-stagger .auth-card { opacity: 0; }
 
     /* ── v10.27 Text Format Toolbar (Canva 式悬浮细长横杆：字体 ▾｜字号 ▾｜8 色点+取色器｜B I U S) ── */
     .text-toolbar {
-      position: fixed; z-index: 202;
+      position: fixed; z-index: 301; /* v10.28.10: 202→301 压过地图区域编辑器 overlay(z300) */
       display: none; align-items: center; gap: 6px;
       min-width: 400px;
       background: var(--modal-bg, var(--card-bg));
@@ -3270,7 +3270,7 @@ body.pre-stagger .auth-card { opacity: 0; }
     }
     .tt-sizebtn:hover { background: var(--color-surface-container-high, var(--color-surface-container-low)); }
     .tt-sizebtn::after { content: '▾'; margin-left: 4px; font-size: 10px; opacity: 0.7; }
-    .radius-popover.tt-size-pop { z-index: 203; width: 208px; padding: 10px; }
+    .radius-popover.tt-size-pop { z-index: 302; /* v10.28.10: 203→302 */ width: 208px; padding: 10px; }
     .tsz-custom-row { display: flex; gap: 6px; margin-bottom: 8px; }
     .tsz-input {
       flex: 1; min-width: 0; height: 26px; padding: 0 8px;
@@ -3309,7 +3309,7 @@ body.pre-stagger .auth-card { opacity: 0; }
     }
     /* ── v10.25 Font Panel：横版宽矩形（680px），语言组吸顶 + 3 列字体网格，行以自身字体渲染（滚动懒加载） ── */
     .font-panel {
-      position: fixed; z-index: 203;
+      position: fixed; z-index: 302; /* v10.28.10: 203→302 */
       width: 680px; max-width: calc(100vw - 16px);
       background: var(--modal-bg, var(--card-bg));
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
@@ -5121,7 +5121,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       // v10.24: 文字内按下不 arm 拖拽——mousemove 的 preventDefault 会打断
       // 原生文字选区（选中文字浮动工具栏依赖它）。卡片选中/菜单关闭照旧。
       // v10.28: 新卡片族行内编辑框同理（打字/点按钮不拖卡）。
-      var inText = e.target.closest('.card-text-content, .card-edit-field');
+      // v10.28.10: .card-label 一并排除——资产/国旗卡标签没有 .card-edit-field，
+      // 不排除 mousedown 会 arm 拖拽、mousemove preventDefault 打断原生框选
+      var inText = e.target.closest('.card-text-content, .card-edit-field, .card-label');
 
       try { selectCard(card); } catch (err) {}
       try { hideContextMenu(); } catch (err) {}
@@ -5290,7 +5292,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     card.classList.add('editing-label');
     editingLabelCard = card;
     var l = card.querySelector('.card-label');
-    setTimeout(function () { l.focus(); l.select(); }, 0);
+    setTimeout(function () { l.focus(); l.select(); if (window.refreshTextToolbar) window.refreshTextToolbar(); }, 0); // v10.28.10: 全选即弹工具篮（与卡文字「选择即弹」体验一致）
   }
   function setupCardLabelInput(card, labelEl) {
     labelEl.onclick = function (e) {
@@ -7349,13 +7351,22 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       // v10.28.3.2: 框选文字松手点常在文字区外（卡空白/画布）——click 目标
       // 不匹配上面任何排除项，但选区还活着，工具栏不该被这个 click 收掉。
       // 点画布/非编辑区时原生行为会先折叠选区（textSelInCard 空）→ 照常收。
-      if (window.textSelInCard()) return;
+      // v10.28.10: 输入框选区同理——框选后松手 click 落在输入框内（非任何
+      // 排除项），但输入框选区还活着，工具栏不该被这个 click 收掉。
+      if (window.textSelInCard() || window.textSelInInput()) return;
       hideContextMenu();
     }
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       hideContextMenu();
+      // v10.28.10: 输入框框选弹出的工具栏随 Escape 收起——折叠活选区（原生
+      // 浏览器 Escape 本就折叠输入框选区，显式兜底防 keyup refresh 回弹）
+      var ae = document.activeElement;
+      if (ae && (ae.nodeName === 'INPUT' || ae.nodeName === 'TEXTAREA') &&
+          typeof ae.selectionStart === 'number' && ae.selectionStart !== ae.selectionEnd) {
+        ae.setSelectionRange(ae.selectionStart, ae.selectionStart);
+      }
       deselectAll();
       hideAlignGuides();
       // Cancel an in-flight resize — otherwise resizeState stays live and
@@ -9634,7 +9645,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.9.3') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.10') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -9643,7 +9654,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.9.3');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.10');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -10097,8 +10108,45 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!textEl) return null;
     var card = textEl.closest('.grid-card');
     if (!card || card.dataset.cardType !== 'content') return null;
-    return { sel: sel, range: range, textEl: textEl, card: card };
+    // v10.28.10: fromCaret 标记——refresh 里的焦点守卫只对卡内光标态生效
+    return { sel: sel, range: range, textEl: textEl, card: card, fromCaret: true };
   }
+
+  // ── v10.28.10: 输入框选区检查——任意 input/textarea 里框选文字（用户「输入框框选
+  // 文字工具篮就弹出」）。selectionchange 不覆盖输入框（那是 contenteditable 的
+  // 事件），靠 document 捕获阶段 'select' + mouseup/keyup 触发；只认非空选区
+  // （框选口径，光标态不弹）。焦点临时落在工具栏/弹层按钮上时（Tab 键盘导航）
+  // 输入框选区仍在——用最后活选区兜底，工具栏不闪没。
+  var LAST_INPUT_SEL = null;
+  function textSelInInput() {
+    var el = document.activeElement;
+    if (!el) return null;
+    if (el.closest && el.closest('.text-toolbar, .font-panel, .tt-size-pop')) {
+      // 焦点在工具栏/弹层自家控件（Tab 导航到的按钮 or 取色器/自定义字号
+      // 输入框）——用户意图仍是给框选文字上样式：回用最后活选区，工具栏
+      // 不闪没、自定义字号/颜色照常作用到输入框
+      var cached = LAST_INPUT_SEL;
+      if (cached && cached.el && cached.el.isConnected &&
+          typeof cached.el.selectionStart === 'number' &&
+          cached.el.selectionStart !== cached.el.selectionEnd) {
+        LAST_INPUT_SEL = { el: cached.el, start: cached.el.selectionStart, end: cached.el.selectionEnd };
+        return { inputEl: cached.el, fromInput: true };
+      }
+      LAST_INPUT_SEL = null;
+      return null;
+    }
+    if (el.nodeName !== 'INPUT' && el.nodeName !== 'TEXTAREA') { LAST_INPUT_SEL = null; return null; }
+    var t = (el.type || 'text').toLowerCase();
+    if (t === 'file' || t === 'color' || t === 'range' || t === 'checkbox' ||
+        t === 'radio' || t === 'button' || t === 'submit' || t === 'reset') { LAST_INPUT_SEL = null; return null; }
+    // 数字/日期类 selectionStart 为 null（typeof 挡掉）——type=number 框选不了
+    if (typeof el.selectionStart !== 'number' || typeof el.selectionEnd !== 'number') { LAST_INPUT_SEL = null; return null; }
+    if (el.selectionStart === el.selectionEnd) { LAST_INPUT_SEL = null; return null; }
+    if (!el.isConnected) return null; // 卡删/弹层关 → 元素离体，rect 全 0 防残影
+    LAST_INPUT_SEL = { el: el, start: el.selectionStart, end: el.selectionEnd };
+    return { inputEl: el, fromInput: true };
+  }
+  window.textSelInInput = textSelInInput;
 
   function hideTextToolbar() {
     if (TOOLBAR) TOOLBAR.style.display = 'none';
@@ -10107,13 +10155,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
 
   function positionToolbar() {
-    var info = textSelInCard() || textCaretInCard(); // v10.28.3.1: 光标态也定位（折叠选区 rect = 光标位置）
+    var info = textSelInCard() || textCaretInCard() || textSelInInput(); // v10.28.3.1: 光标态也定位（折叠选区 rect = 光标位置）；v10.28.10: 输入框选区也定位
     if (!info) { hideTextToolbar(); return; }
     // 必须 flex：inline style 覆盖 class 的 display:none，写 block 会退化成
     // 普通流（分隔条 div 强制断行）→ 横杆竖着堆叠（v10.24/25 的观感事故根因）
     TOOLBAR.style.display = 'flex';
     TOOLBAR.style.visibility = 'hidden';
-    var rect = info.range.getBoundingClientRect();
+    var rect = info.inputEl ? info.inputEl.getBoundingClientRect() : info.range.getBoundingClientRect(); // v10.28.10: 输入框态取元素矩形（viewport 系，fixed 定位天然对齐）
     var w = TOOLBAR.offsetWidth, h = TOOLBAR.offsetHeight;
     var x = rect.left + rect.width / 2 - w / 2;
     var y = rect.top - h - 8;
@@ -10127,13 +10175,36 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // ── 状态同步：B/I/U/S 激活态 + 字号回显 + 字体名回显 ──
   function syncToolbarState() {
     if (TOOLBAR.style.display === 'none') return;
+    var info = textSelInCard() || textCaretInCard() || textSelInInput();
+    if (info && info.inputEl) {
+      // v10.28.10: 输入框态——queryCommandState 只认 contenteditable 文档选区，
+      // 输入框激活态/字号/字体一律从元素计算样式读
+      var ics = getComputedStyle(info.inputEl);
+      var ideco = (ics.textDecorationLine || '').split(' ').filter(function (d) { return d && d !== 'none'; });
+      var ist = {
+        bold: (parseInt(ics.fontWeight, 10) || 400) >= 600,
+        italic: (ics.fontStyle || '').indexOf('italic') !== -1,
+        underline: ideco.indexOf('underline') !== -1,
+        strike: ideco.indexOf('line-through') !== -1
+      };
+      Object.keys(FMT_CMD).forEach(function (k) {
+        var btn = TOOLBAR.querySelector('[data-fmt="' + k + '"]');
+        if (btn) btn.classList.toggle('active', !!ist[k]);
+      });
+      var isize = parseInt(ics.fontSize) || 0;
+      var isizeBtn = document.getElementById('ttSizeBtn');
+      if (isizeBtn) isizeBtn.textContent = (isize || 13) + '';
+      var ifam = (ics.fontFamily || '').split(',')[0].trim().replace(/^['"]|['"]$/g, '');
+      var ifontBtn = document.getElementById('ttFontBtn');
+      if (ifontBtn) ifontBtn.textContent = ifam || 'Font';
+      return;
+    }
     Object.keys(FMT_CMD).forEach(function (k) {
       var on = false;
       try { on = document.queryCommandState(FMT_CMD[k]); } catch (e) {}
       var btn = TOOLBAR.querySelector('[data-fmt="' + k + '"]');
       if (btn) btn.classList.toggle('active', !!on);
     });
-    var info = textSelInCard() || textCaretInCard();
     if (!info) return;
     var el = info.range.commonAncestorContainer;
     if (el.nodeType === 3) el = el.parentNode;
@@ -10155,7 +10226,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     FONT_PANEL = document.getElementById('fontPanel');
     FONT_LIST = document.getElementById('fpList');
     if (!TOOLBAR) return;
-    var info = textSelInCard() || textCaretInCard();
+    var info = textSelInCard() || textCaretInCard() || textSelInInput(); // v10.28.10: 输入框框选也弹
     if (!info) {
       // v10.28.4: 字号弹层开着且焦点在其自定义输入框 → 选区被输入框接管是预期
       // 状态（用户在输入数值），不能收工具栏/弹层——否则输入框一点就整个消失
@@ -10167,7 +10238,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // v10.28.4: 光标态（无选区）但焦点已离开文字（点到画布/空白 → 焦点回 body）
     // ——折叠的 caret 范围还留在 DOM 里，旧判定会一直让工具栏赖着不散；
     // 点工具栏/弹层/字体面板都有 mousedown preventDefault 不抢焦点，不受影响
-    if (!textSelInCard()) {
+    // v10.28.10: 守卫只对卡内光标态（fromCaret）生效——输入框态焦点判定在
+    // textSelInInput 内部（activeElement 即输入框），不能套卡判定否则误收
+    if (info.fromCaret) {
       var ae = document.activeElement;
       var inCard = !!(ae && ae.closest && ae.closest('.grid-card'));
       if (!inCard) { hideTextToolbar(); return; }
@@ -10184,9 +10257,37 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   // ── 执行 B/I/U/S/颜色（styleWithCSS 只为颜色开——保持 <b>/<i> 标签） ──
   function execFmt(cmd, val) {
+    // v10.28.10: 输入框选区 → 元素级样式切换（execCommand 只作用于 contenteditable）
+    var inp = textSelInInput();
+    if (inp) { applyInputFmt(inp.inputEl, cmd, val); return; }
     document.execCommand('styleWithCSS', false, cmd === 'foreColor');
     document.execCommand(cmd, false, val);
     refreshTextToolbar();
+  }
+
+  // v10.28.10: 输入框格式化——输入框无富文本，整框元素级样式生效：
+  // 颜色直写 style.color；B/I 二态翻转；下划线/删除线在 textDecorationLine
+  // 列表里增删（兼容 'none' 与 'underline line-through' 组合值）
+  function applyInputFmt(el, cmd, val) {
+    var cs = getComputedStyle(el);
+    // 'none' 与其他线种并存是非法组合（整条声明被丢弃）——先滤掉再增删
+    var deco = (cs.textDecorationLine || '').split(' ').filter(function (d) { return d && d !== 'none'; });
+    switch (cmd) {
+      case 'foreColor': el.style.color = val; break;
+      case 'bold': el.style.fontWeight = (parseInt(cs.fontWeight, 10) >= 600) ? '400' : '700'; break;
+      case 'italic': el.style.fontStyle = (cs.fontStyle || '').indexOf('italic') !== -1 ? 'normal' : 'italic'; break;
+      case 'underline':
+      case 'strikeThrough': {
+        var key = cmd === 'underline' ? 'underline' : 'line-through';
+        var i = deco.indexOf(key);
+        if (i !== -1) deco.splice(i, 1); else deco.push(key);
+        el.style.textDecorationLine = deco.join(' ') || 'none';
+        break;
+      }
+    }
+    if (el.classList && el.classList.contains('card-label') && window.autoSizeLabel) window.autoSizeLabel(el);
+    refreshTextToolbar();
+    if (window.onContentChange) window.onContentChange();
   }
 
   // ── 包 span：字号/字体族（px 精确；选区整包既有 span 时合并属性） ──
@@ -10244,6 +10345,25 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
 
   function setFontSize(px) {
+    // v10.28.10: 输入框选区 → 整框字号（输入框无富文本，元素级样式即可；
+    // 置于快照还原之前——快照链路只服务文档选区，输入框焦点下文档选区已失效）
+    var inp = textSelInInput();
+    if (inp) {
+      inp.inputEl.style.fontSize = px + 'px';
+      if (inp.inputEl.classList && inp.inputEl.classList.contains('card-label') && window.autoSizeLabel) window.autoSizeLabel(inp.inputEl);
+      // v10.28.10: 自定义字号路径弹层收起时 ttSizeCustom 仍聚焦 → 焦点落 body，
+      // 后续格式按钮 activeElement 离体全部失效——应用后把焦点还给输入框
+      // （预设路径 mousedown preventDefault 焦点本就在输入框，此步为无害幂等）
+      try {
+        inp.inputEl.focus();
+        if (typeof inp.inputEl.setSelectionRange === 'function') {
+          inp.inputEl.setSelectionRange(inp.inputEl.selectionStart, inp.inputEl.selectionEnd);
+        }
+      } catch (e) {}
+      refreshTextToolbar();
+      if (window.onContentChange) window.onContentChange();
+      return;
+    }
     // v10.28.4: 焦点进过自定义输入框 → 文档选区已被输入框选区替换（textSelInCard
     // 判空）。先用开弹层时保存的快照把选区还回原位，预设/自定义路径共用此还原；
     // 选区仍活着（点预设没碰过输入框）则快照不动，按当前选区应用。
@@ -10267,6 +10387,17 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   function setFontFamily(font) {
     ensureFont(font.name, font.axes);
+    // v10.28.10: 输入框选区 → 整框字体族
+    var inp = textSelInInput();
+    if (inp) {
+      inp.inputEl.style.fontFamily = font.cssFamily;
+      var fbtn = document.getElementById('ttFontBtn');
+      if (fbtn) fbtn.textContent = font.name;
+      if (inp.inputEl.classList && inp.inputEl.classList.contains('card-label') && window.autoSizeLabel) window.autoSizeLabel(inp.inputEl);
+      refreshTextToolbar();
+      if (window.onContentChange) window.onContentChange();
+      return;
+    }
     applySpanStyle('font-family: ' + font.cssFamily, 'font-family', font.cssFamily);
     var btn = document.getElementById('ttFontBtn');
     if (btn) btn.textContent = font.name;
@@ -10382,6 +10513,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   // ── 事件绑定 ──
   document.addEventListener('selectionchange', refreshTextToolbar);
+  // v10.28.10: 输入框框选——'select' 不冒泡，document 捕获阶段接（input/textarea
+  // 选区不触发 selectionchange）
+  document.addEventListener('select', refreshTextToolbar, true);
   document.addEventListener('mouseup', refreshTextToolbar);
   document.addEventListener('keyup', refreshTextToolbar);
   document.addEventListener('scroll', refreshTextToolbar, true);

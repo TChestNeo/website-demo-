@@ -496,3 +496,29 @@
 ㉞ 电池画新区域点位要避开既有区域多边形：多边形 click 处理 stopPropagation + 开面板，落在老区域内的点永远到不了画布绘制监听（探针场景 B FATAL 一次）；测试点位按区域互斥规划
 ㉟ 「全文无残留」断言用 innerText 后也要防同轮新增文案自撞：旧注释文本已从 innerText 排除，但断言目标文案（如 toast）若与残留检查词重复要先理清语义归属
 ㊱ 面板自动滑出类断言 = classList.contains('active') + currentId + activeElement 三连（滑出视觉态/选中态/聚焦态分开验，缺一即假绿）
+────────────────────────────────────────
+2026-08-31 v10.28.10 — 任意输入框框选文字弹出工具篮（rev 00036-jtx）
+
+真身（用户）：
+「我希望所有只要是输入框用户框选文字工具篮就会弹出」——格式化工具栏（#textToolbar：B/I/U/S/字号/颜色/字体）此前只在内容卡文字（contenteditable）选区/光标态自动弹出，全页其余 input/textarea（.card-label、.char-title/.char-bio、#titleInput、#tagModalInput、#mreName/#mreDesc 等）完全不触发。技术前提：输入框选区不在 document.getSelection() 体系——selectionchange 不触发、execCommand/queryCommandState 只认 contenteditable → 按钮语义 = 元素级样式整框生效（B=fontWeight 翻转、I=fontStyle、U/S=textDecorationLine 增删、字号/颜色/字体直写 style）。触发口径按用户原话：只有框选文字（非空选区）才弹、光标态不弹；type=number 等无 selectionStart 输入框天然排除。
+
+改动（docs/pages/fluidcanvas-editor.html）：
+- 新 textSelInInput()：activeElement 为 INPUT/TEXTAREA + selectionStart≠selectionEnd + 排除工具栏自家控件与 file/color/range 等无选区类型；isConnected 兜底（卡删/弹层关 → 元素离体 rect 全 0 防残影）
+- LAST_INPUT_SEL 缓存兜键盘 Tab 焦点洞：焦点临时落工具栏按钮/弹层自家输入框（#ttCustomColor 取色器/#ttSizeCustom 自定义字号）时回用最后活选区——工具栏不闪没、自定义字号/颜色照常作用到输入框
+- document 捕获阶段 'select' 监听（select 事件不冒泡）+ 输入框态定位用 el.getBoundingClientRect()（viewport 系 + fixed 定位）
+- syncToolbarState 输入框分支：B/I/U/S 激活态从 getComputedStyle 读（fontWeight≥600/fontStyle/textDecorationLine 含线种）、字号/字体回显同源；非输入框走原 queryCommandState 路径
+- execFmt 输入框分支 → 新 applyInputFmt（元素级样式切换）；setFontSize/setFontFamily 加输入框分支（直写 style + 应用后把焦点还给输入框）；.card-label 顺带 autoSizeLabel
+- Escape 收起兜底：keydown 显式折叠活选区（原生本就会折叠，兜底防 keyup refresh 回弹）
+- 外点守卫加 || window.textSelInInput()；拖拽 arm 排除名单加 .card-label（资产/国旗卡标签无 .card-edit-field，mousedown 会 arm 拖卡、preventDefault 打断原生框选）；enterLabelEdit 末尾 refresh（单击标签全选即弹，与卡文字「选择即弹」体验一致）
+- z-index：#textToolbar 202→301、#ttSizePop/#fontPanel 203→302——压过地图区域编辑器 overlay(z300)，#mreName/#mreDesc 框选弹出的工具栏不被盖住
+- site-config FLUIDCANVAS_VERSION v10.28.9.3 → v10.28.10（小更新位 9→10·小功能轮）+ fluidcanvas.html 首页 badge + 编辑器双字面量；ethereal.css 零改动 → 无需重跑 inline-css.js
+
+验证：本地静态壳 CDP 电池 45/45（badge v10.28.10/内容卡 B/I 回归/旗帜标签框选弹出+定位不重叠/标签 B 翻转/I/U/S 增删/字号 24 与自定义 28/色板 #e02424 生效/字体行生效+按钮回显/光标态不弹/点画布收起/Escape 收起/char-title/char-bio/#titleInput/#tagModalInput/数字框 selectionStart null 不弹/地图区域编辑器 overlay 下工具栏 z301 可见/缓存 Tab 洞/自定义字号焦点洞回归/卡删无左上角残影/移动端 390×844 弹出+视口钳位/0 console error + 0 Runtime.exceptionThrown）+ smoke-admin 49/49 + 线上同款 45/45 + curl 五连（/ 200 + 编辑器页含 v10.28.10 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00036-jtx（100% 流量）
+
+已知限制（接受）：输入框样式是元素级整框生效（输入框无富文本，不能只加粗框选段）；草稿只存文本 → 输入框样式不随草稿重载恢复；.tc-name 每次时间线渲染重建样式丢失。
+
+教训：
+㊲ textDecorationLine 非法组合整条声明被丢弃：computed 'none' 被 filter(Boolean) 保留 → join 出 'none underline'（none 必须独行）→ 浏览器整条丢弃 → U/S 永远不生效（JS 拼接写入看似成功实际不生效）——增删式样式切换先滤 'none' 再 join；「写法式」断言预期按 computed 实际回落值算
+㊳ 自定义字号路径弹层收起时 #ttSizeCustom 仍聚焦 → 焦点落 body → 后续格式按钮（色板/字体）activeElement 离体全部失效（按钮回显在但样式不作用——回显写在共享尾段，aeTag:"BODY#" 一眼锁定）——输入框分支应用后把焦点还给输入框（focus + setSelectionRange 还原选区）
+㊴ Escape keyup 回弹：原生 Escape 折叠输入框选区发生在 keydown 默认行为，页面先收 toolbar、keyup refresh 再跑会二次弹出——keydown 显式 setSelectionRange(start,start) 折叠兜底
+㊵ 合成事件不移动焦点/不清空 document selection（eval 的 focus() 不派发原生焦点链）→ 电池每用例 focus+setSelectionRange 后显式 blur 旧框 + removeAllRanges（原生「点进输入框」会折叠 contenteditable 选区，合成不模拟）；程序化 setSelectionRange 不发 'select' 事件 → 电池补 dispatchEvent；contenteditable 光标态测试 focus 目标须是卡本体（内层 div 不可聚焦 → activeElement 落 body 假红）
