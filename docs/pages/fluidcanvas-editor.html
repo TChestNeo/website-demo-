@@ -5530,7 +5530,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     mapRegionState = {
       card: card,
       regions: mapRegionsFromDataset(card).map(function (r) {
-        return { id: r.id, name: r.name || '', desc: r.desc || '', color: r.color, pts: r.pts.slice() };
+        // v10.28.10.1: 每区域字体家族/字号（用户「更改了字体 区域中间的字体没有
+        // 同步」问询钦定「字体+大小一起同步」「每个区域各自」）——旧草稿缺省空串
+        // 走标签 CSS 默认 10px
+        return { id: r.id, name: r.name || '', desc: r.desc || '', color: r.color,
+                 pts: r.pts.slice(), fontFamily: r.fontFamily || '', fontSize: r.fontSize || '' };
       }),
       drawing: null,
       currentId: null
@@ -5558,6 +5562,19 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   window.closeMapRegionEditor = closeMapRegionEditor;
   window.mreDebugState = function () { return mapRegionState; }; // test hook（电池探针）
+  // v10.28.10.1: 名称面板改字体/字号 → 当前区域同步 + 标签重渲染（用户「更改了
+  // 字体 区域中间的字体没有同步」钦定「字体+大小一起同步」「每个区域各自」）。
+  // 工具栏 setFontSize/setFontFamily 在第二个 script 块，看不到本块的
+  // mapRegionState/mreRenderLabels/mreSyncToCard —— 挂 window 钩子供其调用
+  // （与 openMapRegionEditor/mreDebugState 同口径）
+  window.mreApplyRegionFont = function (patch) {
+    var r = mreCurrentRegion();
+    if (!r) return;
+    if (patch.fontFamily !== undefined) r.fontFamily = patch.fontFamily;
+    if (patch.fontSize !== undefined) r.fontSize = patch.fontSize;
+    mreRenderLabels();
+    mreSyncToCard();
+  };
   function startMapRegionDraw() {
     var st = mapRegionState;
     if (!st || st.drawing) return;
@@ -5650,6 +5667,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       lbl.textContent = r.name;
       lbl.style.left = c[0] + '%';
       lbl.style.top = c[1] + '%';
+      // v10.28.10.1: 名称标签带每区域字体家族/字号（.mre-canvas CSS 10px 是缺省，
+      // 区域对象有字体才覆盖——旧草稿无字段自动走缺省）
+      if (r.fontFamily) lbl.style.fontFamily = r.fontFamily;
+      if (r.fontSize) lbl.style.fontSize = r.fontSize + 'px';
       box.appendChild(lbl);
     });
   }
@@ -5720,7 +5741,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!region) return;
     st.currentId = rid;
     document.getElementById('mrePanelTitle').textContent = region.name ? '区域信息 · ' + region.name : '区域信息';
-    document.getElementById('mreName').value = region.name;
+    var nm = document.getElementById('mreName');
+    nm.value = region.name;
+    // v10.28.10.1: 名称框回显该区域字体家族/字号（工具栏同步态从 computed 读，
+    // 无字体区域清空回 CSS 默认）
+    nm.style.fontFamily = region.fontFamily || '';
+    nm.style.fontSize = region.fontSize ? region.fontSize + 'px' : '';
     document.getElementById('mreDesc').value = region.desc;
     mreRenderColors(region.color);
     document.getElementById('mrePanel').classList.add('active');
@@ -9645,7 +9671,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.10') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.10.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -9654,7 +9680,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.10');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.10.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -10360,6 +10386,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           inp.inputEl.setSelectionRange(inp.inputEl.selectionStart, inp.inputEl.selectionEnd);
         }
       } catch (e) {}
+      // v10.28.10.1: #mreName 改字号 → 当前区域字号同步 + 标签重渲染（用户
+      // 「更改了字体 区域中间的字体没有同步」钦定「字体+大小一起同步」「每个
+      // 区域各自」——只改当前区域，别的区域标签不动）。区域态在第一个 script
+      // 块的闭包里——走 window.mreApplyRegionFont 钩子（本块看不到 mapRegionState）
+      if (inp.inputEl.id === 'mreName' && window.mreApplyRegionFont) window.mreApplyRegionFont({ fontSize: px });
       refreshTextToolbar();
       if (window.onContentChange) window.onContentChange();
       return;
@@ -10394,6 +10425,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var fbtn = document.getElementById('ttFontBtn');
       if (fbtn) fbtn.textContent = font.name;
       if (inp.inputEl.classList && inp.inputEl.classList.contains('card-label') && window.autoSizeLabel) window.autoSizeLabel(inp.inputEl);
+      // v10.28.10.1: #mreName 改字体 → 当前区域字体家族同步 + 标签重渲染（同
+      // 字号同步口径：只改当前区域）。区域态在第一个 script 块的闭包里——
+      // 走 window.mreApplyRegionFont 钩子（本块看不到 mapRegionState）
+      if (inp.inputEl.id === 'mreName' && window.mreApplyRegionFont) window.mreApplyRegionFont({ fontFamily: font.cssFamily });
       refreshTextToolbar();
       if (window.onContentChange) window.onContentChange();
       return;

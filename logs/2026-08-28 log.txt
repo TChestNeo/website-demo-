@@ -522,3 +522,23 @@
 ㊳ 自定义字号路径弹层收起时 #ttSizeCustom 仍聚焦 → 焦点落 body → 后续格式按钮（色板/字体）activeElement 离体全部失效（按钮回显在但样式不作用——回显写在共享尾段，aeTag:"BODY#" 一眼锁定）——输入框分支应用后把焦点还给输入框（focus + setSelectionRange 还原选区）
 ㊴ Escape keyup 回弹：原生 Escape 折叠输入框选区发生在 keydown 默认行为，页面先收 toolbar、keyup refresh 再跑会二次弹出——keydown 显式 setSelectionRange(start,start) 折叠兜底
 ㊵ 合成事件不移动焦点/不清空 document selection（eval 的 focus() 不派发原生焦点链）→ 电池每用例 focus+setSelectionRange 后显式 blur 旧框 + removeAllRanges（原生「点进输入框」会折叠 contenteditable 选区，合成不模拟）；程序化 setSelectionRange 不发 'select' 事件 → 电池补 dispatchEvent；contenteditable 光标态测试 focus 目标须是卡本体（内层 div 不可聚焦 → activeElement 落 body 假红）
+────────────────────────────────────────
+2026-08-31 v10.28.10.1 — 区域名称标签字体同步（rev 00037-xnt）
+
+真身（用户）：
+「为什么更改了字体 区域中间的字体没有同步？」——地图区域编辑器名称面板 #mreName 是普通 input（v10.28.10 起工具篮对它生效：改字体只写输入框自身 style），但区域中间的名称标签是 mreRenderLabels 每次 innerHTML 清空重建的 div、字体从不来自输入框——改字体只改输入框自己，标签永远走 CSS 默认 10px。问询钦定两处：①「字体+大小一起同步」（不只是字体）；②「每个区域各自」（区域 A 的字体不影响区域 B），并随草稿持久化。
+
+改动（docs/pages/fluidcanvas-editor.html）：
+- 区域对象携带 fontFamily/fontSize（空串缺省）——标签 DOM 每次重建，字体必须住在状态里：openMapRegionEditor 映射进区域对象（旧草稿无字段 → 空串 → 走标签 CSS 默认 10px）；mreRenderLabels 按区域套字体（if (r.fontFamily/fontSize) 覆盖 inline）；草稿 dataset.mapRegions 走 JSON.stringify(st.regions) 自动携带（additive，restoreMap 原样往返）
+- openMapRegionPanel 打开回显该区域字体/字号到 #mreName inline style（工具栏同步态从 computed 读，无字体区域清空回默认）
+- 新 window.mreApplyRegionFont(patch) 钩子：名称面板改字体/字号 → mreCurrentRegion() 当前区域 → 写字段 → mreRenderLabels() 重渲染 + mreSyncToCard() 落草稿（只动当前区域，别的区域标签不动）
+- setFontSize/setFontFamily 输入框分支：id==='mreName' 时调钩子（{fontSize:px} / {fontFamily:cssFamily}）
+- 版本 v10.28.10 → v10.28.10.1（补丁位 0→1·纯修复轮）：site-config 注释链+值、fluidcanvas.html 首页 badge、编辑器 ready log + badge 双字面量；ethereal.css 零改动 → 无需重跑 inline-css.js
+
+验证：本地静态壳 CDP 电池 35/35（badge v10.28.10.1/标签工具篮全链路回归（框选弹出/B 翻转/I/U+S 并存/U 移除无 none 污染/字号预设 24+自定义 28 焦点洞/色板生效/字体行生效+地图未开无区域副作用）/区域 1 框好+面板滑出+mreName 聚焦/mreName 框选弹工具篮（z301 压 overlay）/改字体→标签 fontFamily 同步+区域对象落库+computed 真生效/改字号→标签 24px+对象 fontSize 24 落库/区域 2 默认字体（各自口径：区域 1 保留自定义、区域 2 无内联+对象无字段）/面板回显区域 1 字体字号+区域 2 清空回默认/草稿 dataset 含字体字段+区域 2 无字段（旧草稿同形）/重开编辑器字体保留/旧草稿（无字体字段）→ CSS 默认 10px/数字框不弹/Escape 收起/移动端 390×844 弹出+左缘钳位/0 console error + 0 Runtime.exceptionThrown）+ smoke-admin 49/49 + 线上同款 35/35 + curl 五连（/ 200 + 编辑器页含 v10.28.10.1 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00037-xnt（100% 流量）
+
+教训：
+㊶ 电池框选后不能 removeAllRanges：document 级清选区会连带塌掉聚焦输入框的选区（探针实证 selectionStart/End 归 0），且触发 selectionchange → refresh → textSelInInput 判空选区 → 工具栏刚弹出就被收起（「标签框选弹工具篮」等待超时假红）——清理只放在下一个探针开头（focus 之前清无副作用）
+㊷ CSSOM 序列化引号不一致：style.fontFamily = "'Abhaya Libre', sans-serif" 后读回是双引号 "Abhaya Libre", sans-serif——DOM 侧字体断言与 dataset.family 全等必假红，两边去引号归一再比；JS 状态字符串（区域对象/草稿 JSON）不经 CSSOM、原样单引号，可与 dataset.family 全等
+㊸ 模板字面量占位符不能当 replace 标记：`...(${null})` 在定义时即被插值成 (null)，之后 .replace('${null}', …) 无物可换 → 电池侧 points 恒为 null、forEach 炸（报错行号恰指 forEach 那一行，误导查应用侧）；占位符改用非模板语法标记（__PTS__）
+㊹ 跨 script 块闭包：编辑器分两个 IIFE script 块（地图区域编辑器在第一个、工具栏 setFontSize/setFontFamily 在第二个）——第二块直接引用第一块私有的 mapRegionState 是 ReferenceError（电池 Runtime.exceptionThrown 抓出，报错行号指在 setFontFamily 内）；跨块通信必须走 window 钩子（本轮 mreApplyRegionFont，与 openMapRegionEditor/mreDebugState 既有暴露口径一致）——同一文件内函数互调前先确认是否同块
