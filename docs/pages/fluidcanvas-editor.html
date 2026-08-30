@@ -2199,6 +2199,140 @@ body.pre-stagger .auth-card { opacity: 0; }
       display: block; width: 72px; font-size: 10px; text-align: center;
       background: var(--color-surface-container-lowest);
     }
+    /* v10.28.9 — 地图卡区域（用户「FluidCanva的那个地图卡片…框起来…设定每个
+       区域的信息」）。卡面：SVG 100×100 视盒 + preserveAspectRatio none 随卡
+       伸缩（卡背景 cover 与编辑器弹层 cover 同裁切，0-100 坐标两处一致）；
+       名称标签用 HTML 绝对定位（与 map-pin 同款），避免非等比视盒把 SVG 文
+       字拉变形。区域层 pointer-events none 不挡单击加标注点；z 1 在标注点
+       z 2 之下。 */
+    .grid-card .map-region-layer {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      z-index: 1; pointer-events: none;
+    }
+    .grid-card .map-region-label, .mre-canvas .map-region-label {
+      position: absolute; transform: translate(-50%, -50%);
+      z-index: 2; pointer-events: none;
+      font-size: 10px; font-weight: 600; color: #fff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+      white-space: nowrap; max-width: 96px; overflow: hidden; text-overflow: ellipsis;
+    }
+    /* ── 区域编辑器弹层 (v10.28.9) ──
+       全屏级大弹窗（画区域需要整张地图在眼前，modal-card 560px 不够）。
+       左舞台：地图 img（object-fit cover——与卡面 background-size cover
+       同裁切，落点坐标卡面/弹层严格一致）+ SVG 区域层 + 落点标记 +
+       提示语；右侧栏：区域列表 + 「画区域」按钮；信息面板从屏幕右缘滑
+       出盖住侧栏（闭合后自动滑出/点列表项重开，用户「框完后再次点击右
+       侧就会滑出一个信息设定」）。Google Earth 式画法：点击落点连折线，
+       头尾连接（点回第一点）即闭合（用户钦定「只要头和尾连接就结束」），
+       双击同效；右键撤销上一点、Esc 取消；无自动面积显示（用户钦定）。 */
+    #mapRegionOverlay { position: fixed; inset: 0; z-index: 300; display: none; }
+    #mapRegionOverlay.active { display: block; }
+    #mapRegionOverlay .mre-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      opacity: 0; transition: opacity 0.25s ease;
+    }
+    #mapRegionOverlay.active .mre-backdrop { opacity: 1; }
+    .mre-shell {
+      position: absolute; inset: 24px;
+      display: flex; gap: 12px;
+      opacity: 0; transform: scale(0.97);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    #mapRegionOverlay.active .mre-shell { opacity: 1; transform: scale(1); }
+    .mre-stage {
+      flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px;
+      background: var(--modal-bg); border: var(--modal-border); border-radius: var(--radius-lg);
+      padding: 14px; box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+    }
+    .mre-head { display: flex; align-items: center; gap: 10px; }
+    .mre-head > .material-symbols-outlined { color: var(--color-primary); }
+    .mre-head-txt { flex: 1; min-width: 0; }
+    .mre-head-txt h3 { margin: 0; }
+    .mre-canvas {
+      position: relative; flex: 1; min-height: 0;
+      border-radius: var(--radius-md); overflow: hidden;
+      background: var(--color-surface-container-lowest);
+      cursor: crosshair;
+    }
+    .mre-canvas img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .mre-canvas svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .mre-canvas polygon, .mre-canvas polyline { vector-effect: non-scaling-stroke; }
+    .mre-canvas polygon { stroke-width: 2px; } /* non-scaling-stroke 下=屏幕像素，视盒缩放不影响描边粗细 */
+    .mre-canvas polygon.mre-poly { cursor: pointer; }
+    .mre-pt {
+      position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px;
+      border-radius: 50%; background: var(--color-primary);
+      border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      pointer-events: none; z-index: 3;
+    }
+    .mre-pt.head { background: #fff; border-color: var(--color-primary); width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px; }
+    .mre-tip {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      max-width: 86%; padding: 9px 16px; border-radius: 20px; font-size: 12px;
+      background: rgba(0, 0, 0, 0.55); color: #fff; text-align: center;
+      pointer-events: none; z-index: 4;
+      transition: opacity 0.2s ease;
+    }
+    .mre-tip.hidden { opacity: 0; }
+    .mre-side {
+      width: 240px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;
+      background: var(--modal-bg); border: var(--modal-border); border-radius: var(--radius-lg);
+      padding: 12px; box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+    }
+    .mre-side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .mre-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+    .mre-item {
+      display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+      border-radius: var(--radius-md); cursor: pointer;
+      background: var(--color-surface-container-low);
+      border: 2px solid transparent;
+      font-size: 12px; color: var(--color-on-surface);
+    }
+    .mre-item:hover { border-color: var(--color-outline); }
+    .mre-item.active { border-color: var(--color-primary); }
+    .mre-item .mre-swatch { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+    .mre-item .mre-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mre-empty { padding: 18px 8px; text-align: center; font-size: 12px; color: var(--color-outline); }
+    /* 信息设定面板：屏幕右缘滑出（top/bottom 对齐 .mre-shell 的 24px），
+       常态 translateX(100%+24px) 完全移出屏幕外 */
+    .mre-panel {
+      position: absolute; right: 0; top: 24px; bottom: 24px;
+      width: min(300px, 84vw);
+      transform: translateX(calc(100% + 24px));
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex; flex-direction: column; gap: 10px; z-index: 5;
+      background: var(--modal-bg); border: var(--modal-border); border-radius: var(--radius-lg);
+      border-top-right-radius: 0; border-bottom-right-radius: 0;
+      padding: 14px; box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+    }
+    .mre-panel.active { transform: translateX(0); }
+    .mre-panel .headline-sm { margin: 0; }
+    .mre-field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: var(--color-on-surface-variant); }
+    .mre-field textarea { resize: vertical; min-height: 60px; }
+    .mre-colors { display: flex; flex-wrap: wrap; gap: 7px; }
+    .mre-color {
+      width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; padding: 0;
+    }
+    .mre-color.active { border-color: #fff; box-shadow: 0 0 0 2px var(--color-primary); }
+    .mre-del { color: #e5484d; }
+    /* ≤768：纵排——舞台在上、侧栏收成横向条（列表限高滚动），面板贴屏边 */
+    @media (max-width: 768px) {
+      .mre-shell { flex-direction: column; inset: 10px; gap: 8px; }
+      .mre-side { width: auto; max-height: 34vh; }
+      .mre-list { max-height: 22vh; }
+      .mre-panel { top: 10px; bottom: 10px; width: min(300px, 92vw); }
+      .mre-head-txt p { display: none; } /* 手机屏幕窄，提示语让位给台面提示 */
+    }
     /* 数据卡 */
     .grid-card.stats-card { padding: 10px; gap: 6px; justify-content: flex-start; overflow: hidden; }
     /* v10.28.6.1 — 油漆边缘内容内边距（用户「油漆边缘那边能不能增加一下
@@ -3728,6 +3862,63 @@ body.pre-stagger .auth-card { opacity: 0; }
   </div>
 </div>
 
+<!-- Map Region Editor (v10.28.9) — 地图卡区域编辑器：双击已上传地图的地图卡
+     打开。Google Earth 式逐个点框多边形（点回第一点头尾连接或双击闭合，
+     右键撤销上一点、Esc 取消），闭合后右侧信息面板滑出（名称+描述+颜色），
+     卡面同步半透明填充+名称标签。 -->
+<div id="mapRegionOverlay" aria-hidden="true">
+  <div class="mre-backdrop" onclick="closeMapRegionEditor()"></div>
+  <div class="mre-shell">
+    <div class="mre-stage">
+      <div class="mre-head">
+        <span class="material-symbols-outlined">polyline</span>
+        <div class="mre-head-txt">
+          <h3 class="headline-md">区域编辑器</h3>
+          <p class="label-sm" style="color:var(--color-outline);margin:0">点击落点框区域 · 点回第一个点闭合（双击同效）· 右键撤销上一点 · Esc 取消</p>
+        </div>
+        <button class="btn btn-ghost btn-icon btn-sm" onclick="closeMapRegionEditor()"><span class="material-symbols-outlined">close</span></button>
+      </div>
+      <div class="mre-canvas" id="mreCanvas">
+        <img id="mreImg" alt="地图" draggable="false">
+        <svg id="mreSvg" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <g id="mreRegionG"></g>
+          <polyline id="mrePreview" fill="none" stroke-width="1.5" stroke-dasharray="4 2"></polyline>
+        </svg>
+        <div id="mrePts"></div>
+        <div id="mreLabels"></div>
+        <div class="mre-tip hidden" id="mreTip"></div>
+      </div>
+    </div>
+    <aside class="mre-side">
+      <div class="mre-side-head">
+        <span class="label-md" style="font-weight:600">区域</span>
+        <button class="btn btn-primary btn-sm" id="mreDrawBtn" onclick="startMapRegionDraw()"><span class="material-symbols-outlined">add</span>画区域</button>
+      </div>
+      <div class="mre-list" id="mreList"></div>
+      <!-- 信息设定面板：区域闭合/点列表项时从屏幕右缘滑出 -->
+      <div class="mre-panel" id="mrePanel">
+        <div class="flex-between" style="gap:8px">
+          <h4 class="headline-sm" id="mrePanelTitle">区域信息</h4>
+          <button class="btn btn-ghost btn-icon btn-sm" onclick="hideMapRegionPanel()"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <label class="mre-field">名称
+          <input type="text" id="mreName" class="input-glass" placeholder="区域名" maxlength="24">
+        </label>
+        <label class="mre-field">描述
+          <textarea id="mreDesc" class="input-glass" rows="3" placeholder="这个区域的说明…"></textarea>
+        </label>
+        <div class="mre-field">颜色
+          <div class="mre-colors" id="mreColors"></div>
+        </div>
+        <div class="flex-between" style="margin-top:auto;gap:8px">
+          <button class="btn btn-ghost btn-sm mre-del" id="mreDeleteBtn" onclick="deleteMapRegionCurrent()"><span class="material-symbols-outlined">delete</span>删除区域</button>
+          <button class="btn btn-primary btn-sm" style="flex:1" onclick="hideMapRegionPanel()">完成</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
 <!-- ═══ SCRIPTS ═══ -->
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/transitions.js"></script>
@@ -4595,6 +4786,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       } else if (entry.type === 'map') {
         if (c.dataset.mapImg) entry.mapImg = c.dataset.mapImg;
         entry.mapPins = c.dataset.mapPins || '[]';
+        entry.mapRegions = c.dataset.mapRegions || '[]'; // v10.28.9: 区域（additive——旧草稿缺省空数组）
       } else if (entry.type === 'stats') {
         entry.statsRows = c.dataset.statsRows || '[]';
         if (c.dataset.statsChart) entry.statsChart = c.dataset.statsChart; // v10.28.5: 图表种类
@@ -5305,7 +5497,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         canvas.classList.remove('map-empty');
         canvas.textContent = '';
         onContentChange();
-        showToast('地图已上传');
+        showToast('地图已上传 · 再双击地图可框区域'); // v10.28.9: 提示第二击开区域编辑器
       };
       reader.readAsDataURL(file);
       fi.value = '';
@@ -5327,7 +5519,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     canvas.addEventListener('dblclick', function (e) {
       clearTimeout(clickTimer);
       if (e.target.closest('.map-pin')) return;
-      fi.click();
+      // v10.28.9: 有图 → 打开区域编辑器；无图 → 上传（用户「双击上传地图，
+      // 再次双击打开地图」）
+      if (card.dataset.mapImg) { openMapRegionEditor(card); }
+      else { fi.click(); }
     });
     card.appendChild(fi);
     card.appendChild(canvas);
@@ -5335,6 +5530,369 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     return card;
   }
   window.createMapCard = createMapCard;
+
+  // ═══ 地图卡区域编辑器 (v10.28.9) ═══
+  // 用户「FluidCanva的那个地图卡片能不能是双击上传地图，再次双击打开地图…
+  // 设定每个区域的信息」：双击已上传地图的地图卡 → 全屏区域编辑器。
+  // Google Earth 式多边形（用户钦定「我说的几何形是类似google earth的测量
+  // 距离尾端连接头就会显示面积的那种」）：点击落点连折线，头尾连接（点回
+  // 第一点）即闭合结束（用户钦定「只要头和尾连接就结束」），双击同效；不
+  // 显示面积（用户钦定）。闭合后右侧信息面板自动滑出（名称+描述+颜色，用
+  // 户钦定），点右侧列表项可随时重开。卡面=半透明填充+名称标签（用户钦
+  // 定）。区域数据走 dataset.mapRegions（additive，与 mapPins 同口径），
+  // buildDraft/restoreMap 往返、编辑过程中实时同步卡面。
+  var MRE_COLORS = ['#5b7cfa', '#ff6b6b', '#ffd166', '#06d6a0', '#ef476f', '#118ab2', '#9b5de5', '#f4a261'];
+  var mapRegionState = null; // { card, regions:[{id,name,desc,color,pts:[[x,y]…]}], drawing:{pts} | null, currentId }
+
+  function mapRegionsFromDataset(card) {
+    try { return JSON.parse(card.dataset.mapRegions || '[]'); } catch (e) { return []; }
+  }
+  function mapRegionPolyPoints(r) {
+    return r.pts.map(function (p) { return p[0] + ',' + p[1]; }).join(' ');
+  }
+  function mapRegionCentroid(pts) {
+    var cx = 0, cy = 0;
+    pts.forEach(function (p) { cx += p[0]; cy += p[1]; });
+    return [cx / pts.length, cy / pts.length];
+  }
+  // 卡面渲染：SVG 100×100 视盒随卡伸缩（与弹层 cover 同裁切，坐标一致）；
+  // 名称标签 HTML 绝对定位（map-pin 同款，避免非等比视盒拉变形文字）。
+  function mapRenderRegions(card, canvas) {
+    var oldLayers = canvas.querySelectorAll('.map-region-layer, .map-region-label');
+    for (var i = 0; i < oldLayers.length; i++) oldLayers[i].remove();
+    var regions = mapRegionsFromDataset(card);
+    if (!regions.length) return;
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'map-region-layer');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    regions.forEach(function (r) {
+      var poly = document.createElementNS(NS, 'polygon');
+      poly.setAttribute('points', mapRegionPolyPoints(r));
+      poly.setAttribute('fill', r.color);
+      poly.setAttribute('fill-opacity', '0.35');
+      poly.setAttribute('stroke', r.color);
+      poly.setAttribute('stroke-opacity', '0.9');
+      poly.setAttribute('stroke-width', '0.5');
+      svg.appendChild(poly);
+      if (r.name) {
+        var c = mapRegionCentroid(r.pts);
+        var lbl = document.createElement('div');
+        lbl.className = 'map-region-label';
+        lbl.textContent = r.name;
+        lbl.style.left = c[0] + '%';
+        lbl.style.top = c[1] + '%';
+        canvas.appendChild(lbl);
+      }
+    });
+    canvas.appendChild(svg);
+  }
+  function openMapRegionEditor(card) {
+    mapRegionState = {
+      card: card,
+      regions: mapRegionsFromDataset(card).map(function (r) {
+        return { id: r.id, name: r.name || '', desc: r.desc || '', color: r.color, pts: r.pts.slice() };
+      }),
+      drawing: null,
+      currentId: null
+    };
+    document.getElementById('mreImg').src = card.dataset.mapImg || '';
+    hideMapRegionPanel(true);
+    mreRerender();
+    mreUpdateTip();
+    document.getElementById('mapRegionOverlay').classList.add('active');
+    document.getElementById('mapRegionOverlay').setAttribute('aria-hidden', 'false');
+  }
+  window.openMapRegionEditor = openMapRegionEditor;
+  function closeMapRegionEditor() {
+    var ov = document.getElementById('mapRegionOverlay');
+    if (!ov.classList.contains('active')) return;
+    var st = mapRegionState;
+    if (st) {
+      st.drawing = null; // 未闭合折线丢弃
+      mreSyncToCard();
+      if (st.regions.length) showToast('区域已保存到地图卡');
+    }
+    ov.classList.remove('active');
+    ov.setAttribute('aria-hidden', 'true');
+    mapRegionState = null;
+  }
+  window.closeMapRegionEditor = closeMapRegionEditor;
+  window.mreDebugState = function () { return mapRegionState; }; // test hook（电池探针）
+  function startMapRegionDraw() {
+    var st = mapRegionState;
+    if (!st || st.drawing) return;
+    hideMapRegionPanel();
+    st.drawing = { pts: [] };
+    mreRenderPts();
+    mreUpdateTip();
+  }
+  window.startMapRegionDraw = startMapRegionDraw;
+  function closeMapRegionDraw() {
+    var st = mapRegionState;
+    if (!st || !st.drawing) return;
+    var pts = st.drawing.pts;
+    // 双击闭合：同一点的两枚 click 落在末尾，去重（0.5% 视同同点）
+    if (pts.length >= 2) {
+      var a = pts[pts.length - 2], b = pts[pts.length - 1];
+      if (Math.abs(a[0] - b[0]) < 0.5 && Math.abs(a[1] - b[1]) < 0.5) pts.pop();
+    }
+    if (pts.length < 3) {
+      st.drawing = null;
+      mreRenderPts(); mreRenderPreview(); mreUpdateTip();
+      showToast('至少 3 个点才能围成区域');
+      return;
+    }
+    var region = {
+      id: 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name: '', desc: '',
+      color: MRE_COLORS[st.regions.length % MRE_COLORS.length],
+      pts: pts
+    };
+    st.regions.push(region);
+    st.drawing = null;
+    mreRerender();
+    mreUpdateTip();
+    mreSyncToCard();
+    openMapRegionPanel(region.id);
+    showToast('区域已框好 · 填个名字吧');
+  }
+  function mreCurrentRegion() {
+    var st = mapRegionState;
+    if (!st || !st.currentId) return null;
+    for (var i = 0; i < st.regions.length; i++) if (st.regions[i].id === st.currentId) return st.regions[i];
+    return null;
+  }
+  function mreSyncToCard() {
+    var st = mapRegionState;
+    if (!st) return;
+    st.card.dataset.mapRegions = JSON.stringify(st.regions);
+    mapRenderRegions(st.card, st.card.querySelector('.map-canvas'));
+    onContentChange();
+  }
+  function mreRerender() {
+    var st = mapRegionState;
+    if (!st) return;
+    var NS = 'http://www.w3.org/2000/svg';
+    var g = document.getElementById('mreRegionG');
+    g.innerHTML = '';
+    st.regions.forEach(function (r) {
+      var poly = document.createElementNS(NS, 'polygon');
+      poly.setAttribute('class', 'mre-poly');
+      poly.setAttribute('data-rid', r.id);
+      poly.setAttribute('points', mapRegionPolyPoints(r));
+      poly.setAttribute('fill', r.color);
+      poly.setAttribute('fill-opacity', '0.35');
+      poly.setAttribute('stroke', r.color);
+      poly.setAttribute('stroke-opacity', '0.9');
+      poly.addEventListener('click', function (e) { e.stopPropagation(); openMapRegionPanel(r.id); });
+      g.appendChild(poly);
+    });
+    mreRenderLabels();
+    mreRenderPts();
+    mreRenderPreview();
+    mreRenderList();
+  }
+  function mreRenderLabels() {
+    var box = document.getElementById('mreLabels');
+    box.innerHTML = '';
+    mapRegionState.regions.forEach(function (r) {
+      if (!r.name) return;
+      var c = mapRegionCentroid(r.pts);
+      var lbl = document.createElement('div');
+      lbl.className = 'map-region-label';
+      lbl.textContent = r.name;
+      lbl.style.left = c[0] + '%';
+      lbl.style.top = c[1] + '%';
+      box.appendChild(lbl);
+    });
+  }
+  function mreRenderPts() {
+    var box = document.getElementById('mrePts');
+    box.innerHTML = '';
+    var pts = mapRegionState.drawing ? mapRegionState.drawing.pts : [];
+    pts.forEach(function (p, i) {
+      var d = document.createElement('div');
+      d.className = 'mre-pt' + (i === 0 ? ' head' : '');
+      d.style.left = p[0] + '%';
+      d.style.top = p[1] + '%';
+      box.appendChild(d);
+    });
+  }
+  function mreRenderPreview() {
+    var pv = document.getElementById('mrePreview');
+    var st = mapRegionState;
+    if (!st || !st.drawing || !st.drawing.pts.length) { pv.setAttribute('points', ''); return; }
+    pv.setAttribute('stroke', MRE_COLORS[st.regions.length % MRE_COLORS.length]);
+    pv.setAttribute('points', st.drawing.pts.map(function (p) { return p[0] + ',' + p[1]; }).join(' '));
+  }
+  function mreRenderList() {
+    var list = document.getElementById('mreList');
+    var st = mapRegionState;
+    list.innerHTML = '';
+    if (!st.regions.length) {
+      var empty = document.createElement('div');
+      empty.className = 'mre-empty';
+      empty.textContent = '还没有区域 · 点「画区域」开始框';
+      list.appendChild(empty);
+      return;
+    }
+    st.regions.forEach(function (r) {
+      var item = document.createElement('div');
+      item.className = 'mre-item' + (r.id === st.currentId ? ' active' : '');
+      var sw = document.createElement('span');
+      sw.className = 'mre-swatch';
+      sw.style.background = r.color;
+      var nm = document.createElement('span');
+      nm.className = 'mre-item-name';
+      nm.textContent = r.name || '未命名区域';
+      item.appendChild(sw);
+      item.appendChild(nm);
+      item.addEventListener('click', function () { openMapRegionPanel(r.id); });
+      list.appendChild(item);
+    });
+  }
+  function mreUpdateTip() {
+    var tip = document.getElementById('mreTip');
+    var st = mapRegionState;
+    if (!st) { tip.classList.add('hidden'); return; }
+    if (st.drawing) {
+      tip.textContent = '逐个点击落点 · 点回第一个点闭合区域 · 右键撤销 · Esc 取消';
+      tip.classList.remove('hidden');
+    } else if (!st.regions.length) {
+      tip.textContent = '点击右侧「＋ 画区域」开始框区域';
+      tip.classList.remove('hidden');
+    } else {
+      tip.classList.add('hidden');
+    }
+  }
+  function openMapRegionPanel(rid) {
+    var st = mapRegionState;
+    if (!st) return;
+    var region = null;
+    for (var i = 0; i < st.regions.length; i++) if (st.regions[i].id === rid) region = st.regions[i];
+    if (!region) return;
+    st.currentId = rid;
+    document.getElementById('mrePanelTitle').textContent = region.name ? '区域信息 · ' + region.name : '区域信息';
+    document.getElementById('mreName').value = region.name;
+    document.getElementById('mreDesc').value = region.desc;
+    mreRenderColors(region.color);
+    document.getElementById('mrePanel').classList.add('active');
+    mreRenderList();
+    setTimeout(function () {
+      if (mapRegionState && mapRegionState.currentId === rid && document.getElementById('mrePanel').classList.contains('active')) {
+        document.getElementById('mreName').focus();
+      }
+    }, 320);
+  }
+  window.openMapRegionPanel = openMapRegionPanel;
+  function hideMapRegionPanel(instant) {
+    var panel = document.getElementById('mrePanel');
+    if (instant) panel.style.transition = 'none';
+    panel.classList.remove('active');
+    if (mapRegionState) { mapRegionState.currentId = null; mreRenderList(); }
+    if (instant) {
+      requestAnimationFrame(function () { panel.style.transition = ''; });
+    }
+  }
+  window.hideMapRegionPanel = hideMapRegionPanel;
+  function mreRenderColors(active) {
+    var box = document.getElementById('mreColors');
+    box.innerHTML = '';
+    MRE_COLORS.forEach(function (c) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'mre-color' + (c === active ? ' active' : '');
+      b.style.background = c;
+      b.title = c;
+      b.addEventListener('click', function () {
+        var region = mreCurrentRegion();
+        if (!region) return;
+        region.color = c;
+        mreRenderColors(c);
+        mreRerender();
+        mreSyncToCard();
+      });
+      box.appendChild(b);
+    });
+  }
+  function deleteMapRegionCurrent() {
+    var st = mapRegionState;
+    if (!st || !st.currentId) return;
+    for (var i = st.regions.length - 1; i >= 0; i--) {
+      if (st.regions[i].id === st.currentId) st.regions.splice(i, 1);
+    }
+    hideMapRegionPanel();
+    mreRerender();
+    mreUpdateTip();
+    mreSyncToCard();
+    showToast('区域已删除');
+  }
+  window.deleteMapRegionCurrent = deleteMapRegionCurrent;
+
+  // 弹层事件接线（DOM 已就绪——弹层标记在脚本之前）
+  (function () {
+    var cv = document.getElementById('mreCanvas');
+    if (!cv) return;
+    cv.addEventListener('click', function (e) {
+      var st = mapRegionState;
+      if (!st || !st.drawing) return;
+      var rect = cv.getBoundingClientRect();
+      var x = Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10;
+      var y = Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10;
+      var pts = st.drawing.pts;
+      if (pts.length >= 3) {
+        // 头尾连接：点回第一个点（屏幕距 14px 内）即闭合——用户钦定「只要头和尾连接就结束」
+        var dx = (x - pts[0][0]) * rect.width / 100;
+        var dy = (y - pts[0][1]) * rect.height / 100;
+        if (dx * dx + dy * dy <= 196) { closeMapRegionDraw(); return; }
+      }
+      pts.push([x, y]);
+      mreRenderPts();
+      mreRenderPreview();
+    });
+    cv.addEventListener('dblclick', function () {
+      if (mapRegionState && mapRegionState.drawing) closeMapRegionDraw();
+    });
+    cv.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      var st = mapRegionState;
+      if (st && st.drawing && st.drawing.pts.length) {
+        st.drawing.pts.pop();
+        mreRenderPts();
+        mreRenderPreview();
+      }
+    });
+    document.getElementById('mreName').addEventListener('input', function () {
+      var region = mreCurrentRegion();
+      if (!region) return;
+      region.name = this.value;
+      document.getElementById('mrePanelTitle').textContent = region.name ? '区域信息 · ' + region.name : '区域信息';
+      mreRenderLabels();
+      mreRenderList();
+      mreSyncToCard();
+    });
+    document.getElementById('mreDesc').addEventListener('input', function () {
+      var region = mreCurrentRegion();
+      if (!region) return;
+      region.desc = this.value;
+      mreSyncToCard();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var st = mapRegionState;
+      if (!st) return;
+      if (!document.getElementById('mapRegionOverlay').classList.contains('active')) return;
+      if (st.drawing) {
+        st.drawing = null;
+        mreRenderPts(); mreRenderPreview(); mreUpdateTip();
+        showToast('已取消绘制');
+      } else {
+        closeMapRegionEditor();
+      }
+    });
+  })();
 
   function statsSerialize(card) {
     var rows = [];
@@ -5892,7 +6450,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       canvas.textContent = '';
     }
     card.dataset.mapPins = cData.mapPins || '[]';
+    card.dataset.mapRegions = cData.mapRegions || '[]'; // v10.28.9: 区域
     mapRenderPins(card, canvas);
+    mapRenderRegions(card, canvas);
   }
   function restoreStats(card, cData) {
     var rows = statsRootOf(card).querySelector('.stats-rows');
@@ -9133,7 +9693,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.8.2') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.9') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -9142,7 +9702,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.8.2');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.9');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';

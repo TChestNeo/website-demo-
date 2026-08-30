@@ -417,3 +417,24 @@
 教训：
 ⑲ 新增枚举值必须同步查 DB CHECK 约束（email_codes.purpose 白名单在 001 建表写死）——路由级测试（POST 落库断言）能抓，纯单测（email.js 文案）抓不到；两处查询写死 purpose='login' 同样只有全链路电池抓得到：**改动跨越「发码-存码-查码」链路时，电池必须走完整条链路**
 ⑳ SQLite 放宽 CHECK 只能重建表（rename-建新-拷贝-删旧），email_codes 无外键引用安全；生产库重建在迁移启动时做，存量未过期码全保留
+────────────────────────────
+2026-08-30 v10.28.9 — FluidCanvas 地图卡区域编辑器（rev 00032-6n4）
+
+真身（用户）：
+「FluidCanva的那个地图卡片能不能是双击上传地图，再次双击打开地图（弹出一个窗口，然后设定区域是使用那种几合图一个一个框起来这样的，框完后再次点击右侧就会滑出一个信息设定这样就可以设定每个区域的信息了」——问询钦定：几何形 = Google Earth 测量式点对点连线（不自动显示面积）；结束手势 = 头尾连接（点回首点）即结束（双击同效）；信息 = 名称+描述+颜色；卡面 = 半透明填充+名称标签。
+
+改动（docs/pages/fluidcanvas-editor.html 单文件 CSS+HTML+JS 全套）：
+- 双击语义分流：地图卡无图 → 文件上传（原行为，toast 改「地图已上传 · 再双击地图可框区域」）、有图 → 打开 #mapRegionOverlay 区域编辑器（磨砂全屏弹层：左大舞台 + 右 240px 侧栏）
+- 框区域：点对点连框（canvas click 取 % 坐标；SVG viewBox 0 0 100 100 + preserveAspectRatio none 与卡 background-size:cover 同坐标系映射一致；多边形半透明填充+白描边 vector-effect 防拉伸），头尾连接（≥3 点且点回首点 14px 屏幕距离内）或双击结束（同点双击 0.5% 距离去重）、右键撤销最后一点、Esc 退出；预览虚线+端点标记
+- 区域信息：列表点区域或直接点多边形 → 右侧面板从右缘滑入（0.3s 同全站缓动；名称+描述+8 色选择+删除）；关闭面板自动滑回（少一步，笨蛋测试）；输入实时同步卡面
+- 卡面渲染：地图卡 .map-region-layer SVG 常驻（区域多边形+名称标签）——标签用绝对定位 HTML 而非 SVG text，避免 viewBox 非等比压缩文字变形
+- 草稿：dataset.mapRegions JSON 字符串（mapPins 同款惯例，additive 旧草稿缺省空数组），restoreMap 往返+重建 SVG
+- site-config FLUIDCANVAS_VERSION v10.28.8.2 → v10.28.9（小更新位·新功能轮）+ fluidcanvas.html 首页 badge
+
+验证：本地 docker CDP 电池 63/63（双击上传/再双击开编辑器/画 3 点+头尾连接闭合/双击结束/右键撤销/Esc/面板滑入滑出/名称描述颜色改卡面/删除/多区域/草稿往返 restore/移动端 3 项/0 console error）+ smoke-admin 49/49 + 线上同款 63/63 + curl 编辑器页 200（mapRegionOverlay+v10.28.9）/FC 首页 200 + health 57 表 v2.0.0；部署 rev 00032-6n4（100% 流量）
+
+教训：
+㉑ SVGElement 无 .click() 方法（Chrome SVG 元素不继承 HTMLElement.click）→ 电池模拟点击 SVG 一律 dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})）
+㉒ 主脚本单一大 IIFE、内部状态对页面 eval 不可见 → 电池需探针的内部状态在页面显式挂 window 测试钩子（mreDebugState），探针统一经钩子读
+㉓ 草稿 dataset 值以 JSON 字符串入草稿是惯例（mapPins/mapImg 同款）→ 电池断言草稿条目先 JSON.parse 再比；新功能沿用 additive+缺省空数组约定
+㉔ % 坐标 FP 噪声（0.2*w/w 换算 19.9 vs 20）→ 坐标/多边形断言带 per-point 容差 0.15；编辑器 badge 无类名 → 全 div 扫描 textContent 前缀断言
