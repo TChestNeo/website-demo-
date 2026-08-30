@@ -2250,8 +2250,9 @@ body.pre-stagger .auth-card { opacity: 0; }
       position: relative; flex: 1; min-height: 0;
       border-radius: var(--radius-md); overflow: hidden;
       background: var(--color-surface-container-lowest);
-      cursor: crosshair;
+      cursor: default; /* v10.28.11: 默认鼠标，十字只在画区域期间（.drawing） */
     }
+    .mre-canvas.drawing { cursor: crosshair; }
     .mre-canvas img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .mre-canvas svg { position: absolute; inset: 0; width: 100%; height: 100%; }
     .mre-canvas polygon, .mre-canvas polyline { vector-effect: non-scaling-stroke; }
@@ -2264,6 +2265,17 @@ body.pre-stagger .auth-card { opacity: 0; }
       pointer-events: none; z-index: 3;
     }
     .mre-pt.head { background: #fff; border-color: var(--color-primary); width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px; }
+    /* v10.28.11: 顶点编辑手柄（选中区域且非绘制态渲染）——容器不接事件，手柄自接 */
+    .mre-handles { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+    .mre-h {
+      position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px;
+      border-radius: 50%; background: var(--color-primary);
+      border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      pointer-events: auto; cursor: grab;
+    }
+    .mre-h.head { background: #fff; border-color: var(--color-primary); }
+    .mre-h:hover { transform: scale(1.15); }
+    .mre-canvas.mre-ptdrag, .mre-canvas.mre-ptdrag .mre-h { cursor: grabbing; }
     .mre-tip {
       position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
       max-width: 86%; padding: 9px 16px; border-radius: 20px; font-size: 12px;
@@ -2297,7 +2309,7 @@ body.pre-stagger .auth-card { opacity: 0; }
        常态 translateX(100%+24px) 完全移出屏幕外 */
     .mre-panel {
       position: absolute; right: 0; top: 24px; bottom: 24px;
-      width: min(300px, 84vw);
+      width: min(480px, 94vw); /* v10.28.11: 两栏（左列表｜右信息）加宽 */
       transform: translateX(calc(100% + 24px));
       transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
       display: flex; flex-direction: column; gap: 10px; z-index: 5;
@@ -2318,12 +2330,37 @@ body.pre-stagger .auth-card { opacity: 0; }
     }
     .mre-color.active { border-color: #fff; box-shadow: 0 0 0 2px var(--color-primary); }
     .mre-del { color: #e5484d; }
+    /* v10.28.11: 面板两栏（左区域列表｜竖分割线｜右区域信息）+ 输入框悬停☰外观钮 */
+    .mre-columns { display: flex; flex: 1; min-height: 0; }
+    .mre-col-left { flex: 0 0 38%; min-width: 0; display: flex; flex-direction: column; }
+    .mre-col-left .mre-list { flex: 1; min-height: 0; overflow-y: auto; }
+    .mre-col-divider { width: 1px; background: var(--divider-line); margin: 0 10px; flex-shrink: 0; }
+    .mre-col-right { flex: 1; min-width: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
+    .mre-info-block { display: flex; flex-direction: column; gap: 5px; }
+    .mre-info-head { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--color-on-surface-variant); }
+    .mre-input-wrap { position: relative; }
+    .mre-input-wrap .mre-cfg-btn {
+      position: absolute; top: 6px; right: 6px; width: 22px; height: 22px;
+      display: none; align-items: center; justify-content: center;
+      border: none; border-radius: 6px; background: rgba(0,0,0,0.25);
+      color: #fff; cursor: pointer; padding: 0; z-index: 2;
+    }
+    .mre-input-wrap:hover .mre-cfg-btn,
+    .mre-input-wrap:focus-within .mre-cfg-btn { display: inline-flex; }
+    .mre-custom.active { box-shadow: 0 0 0 2px var(--color-primary); border-radius: 50%; }
+    .context-menu-item:disabled { opacity: 0.4; cursor: default; }
+    .mre-del-block { color: var(--color-outline); width: 20px; height: 20px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .mre-del-block:hover { background: var(--color-surface-container-low); color: #e5484d; }
+    .mre-del-block .material-symbols-outlined { font-size: 15px; }
     /* ≤768：纵排——舞台在上、侧栏收成横向条（列表限高滚动），面板贴屏边 */
     @media (max-width: 768px) {
       .mre-shell { flex-direction: column; inset: 10px; gap: 8px; }
       .mre-side { width: auto; max-height: 34vh; }
       .mre-list { max-height: 22vh; }
-      .mre-panel { top: 10px; bottom: 10px; width: min(300px, 92vw); }
+      .mre-panel { top: 10px; bottom: 10px; width: min(480px, 92vw); }
+      .mre-columns { flex-direction: column; } /* v10.28.11: 窄屏两栏纵排 */
+      .mre-col-left { flex: none; max-height: 26vh; }
+      .mre-col-divider { width: auto; height: 1px; margin: 6px 0; }
       .mre-head-txt p { display: none; } /* 手机屏幕窄，提示语让位给台面提示 */
     }
     /* 数据卡 */
@@ -3878,6 +3915,7 @@ body.pre-stagger .auth-card { opacity: 0; }
           <polyline id="mrePreview" fill="none" stroke-width="1.5" stroke-dasharray="4 2"></polyline>
         </svg>
         <div id="mrePts"></div>
+        <div id="mreHandles"></div>
         <div id="mreLabels"></div>
         <div class="mre-tip hidden" id="mreTip"></div>
       </div>
@@ -3887,21 +3925,33 @@ body.pre-stagger .auth-card { opacity: 0; }
         <span class="label-md" style="font-weight:600">区域</span>
         <button class="btn btn-primary btn-sm" id="mreDrawBtn" onclick="startMapRegionDraw()"><span class="material-symbols-outlined">add</span>画区域</button>
       </div>
-      <div class="mre-list" id="mreList"></div>
+      <!-- v10.28.11: 区域列表迁入信息面板左栏（钦定「左右列表中间夹竖分割线」） -->
+      <p class="label-sm" style="color:var(--color-outline);margin:0">点区域多边形查看信息 · 列表在信息面板左栏</p>
       <!-- 信息设定面板：点区域/列表项时从屏幕右缘滑出（v10.28.9.1 起不再闭合自动滑出） -->
       <div class="mre-panel" id="mrePanel">
         <div class="flex-between" style="gap:8px">
           <h4 class="headline-sm" id="mrePanelTitle">区域信息</h4>
-          <button class="btn btn-ghost btn-icon btn-sm" onclick="hideMapRegionPanel()"><span class="material-symbols-outlined">close</span></button>
+          <div style="display:flex;gap:4px;align-items:center">
+            <!-- v10.28.11: ＋ 在 ✕ 左侧（钦定「打叉的左侧添加一个加」） -->
+            <button class="btn btn-ghost btn-icon btn-sm" id="mreAddBtn" onclick="mreOpenAddMenu(event)" title="添加内容"><span class="material-symbols-outlined">add</span></button>
+            <button class="btn btn-ghost btn-icon btn-sm" onclick="hideMapRegionPanel()"><span class="material-symbols-outlined">close</span></button>
+          </div>
         </div>
-        <label class="mre-field">名称
-          <input type="text" id="mreName" class="input-glass" placeholder="区域名" maxlength="24">
-        </label>
-        <label class="mre-field">描述
-          <textarea id="mreDesc" class="input-glass" rows="3" placeholder="这个区域的说明…"></textarea>
-        </label>
         <div class="mre-field">颜色
-          <div class="mre-colors" id="mreColors"></div>
+          <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+            <div class="mre-colors" id="mreColors"></div>
+            <!-- v10.28.11: 自定义色钮（钦定「色块可以自定义颜色」） -->
+            <input type="color" id="mreCustomColor" class="tt-custom mre-custom" title="自定义颜色" value="#5b7cfa">
+          </div>
+          <!-- v10.28.11: 中心填充/边缘描边两条独立透明度滑杆（钦定「单独调整边缘和中心颜色的透明度」） -->
+          <div class="caption-slider-row"><label>中心</label><input type="range" id="mreFillSlider" min="0" max="100" value="35" step="1" oninput="mreUpdateFillOpacity(this.value)"><output id="mreFillValue">35%</output></div>
+          <div class="caption-slider-row"><label>边缘</label><input type="range" id="mreStrokeSlider" min="0" max="100" value="90" step="1" oninput="mreUpdateStrokeOpacity(this.value)"><output id="mreStrokeValue">90%</output></div>
+        </div>
+        <!-- v10.28.11: 下方左右列表夹竖分割线——左区域列表｜右区域信息（钦定） -->
+        <div class="mre-columns">
+          <div class="mre-col-left"><div class="mre-list" id="mreList"></div></div>
+          <div class="mre-col-divider"></div>
+          <div class="mre-col-right" id="mreInfoCol"></div>
         </div>
         <div class="flex-between" style="margin-top:auto;gap:8px">
           <button class="btn btn-ghost btn-sm mre-del" id="mreDeleteBtn" onclick="deleteMapRegionCurrent()"><span class="material-symbols-outlined">delete</span>删除区域</button>
@@ -3909,6 +3959,21 @@ body.pre-stagger .auth-card { opacity: 0; }
         </div>
       </div>
     </aside>
+    <!-- v10.28.11: ＋添加菜单 / ☰输入框外观弹层——必须放 #mapRegionOverlay 内但 .mre-shell 外
+         （.mre-shell 带 transform:scale(0.97)，fixed 定位会锚缩放盒；overlay z300 > radius-popover z201，放外面会被盖） -->
+    <div class="radius-popover" id="mreAddPopover" style="min-width:200px;padding:4px 0">
+      <button class="context-menu-item" id="mreAddDescOpt" onclick="mreAddDesc()"><span class="material-symbols-outlined">notes</span>添加描述</button>
+      <button class="context-menu-item" id="mreAddInfoOpt" onclick="mreAddInfo()"><span class="material-symbols-outlined">view_list</span>添加两排信息</button>
+    </div>
+    <div class="radius-popover" id="mreStylePop" style="width:270px">
+      <span class="label-sm" style="color:var(--color-outline);display:block;margin-bottom:8px">输入框外观</span>
+      <div class="caption-slider-row"><label>背景</label><input type="color" id="mreStyleBgColor" class="tt-custom" value="#ffffff" onchange="mreStyleLive()"><output id="mreStyleBgColorV"></output></div>
+      <div class="caption-slider-row"><label>透明度</label><input type="range" id="mreStyleBgAlpha" min="0" max="100" value="100" step="1" oninput="mreStyleLive()"><output id="mreStyleBgAlphaV">100%</output></div>
+      <div class="caption-slider-row"><label>边缘色</label><input type="color" id="mreStyleEdgeColor" class="tt-custom" value="#cccccc" onchange="mreStyleLive()"><output id="mreStyleEdgeColorV"></output></div>
+      <div class="caption-slider-row"><label>粗细</label><input type="range" id="mreStyleEdgeW" min="0" max="8" value="1" step="1" oninput="mreStyleLive()"><output id="mreStyleEdgeWV">1px</output></div>
+      <div class="caption-slider-row"><label>圆角</label><input type="range" id="mreStyleRadius" min="0" max="20" value="8" step="1" oninput="mreStyleLive()"><output id="mreStyleRadiusV">8px</output></div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px" onclick="mreStyleReset()">恢复默认</button>
+    </div>
   </div>
 </div>
 
@@ -4778,7 +4843,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         if (c.dataset.charAvatar) entry.charAvatar = c.dataset.charAvatar;
       } else if (entry.type === 'map') {
         if (c.dataset.mapImg) entry.mapImg = c.dataset.mapImg;
-        entry.mapRegions = c.dataset.mapRegions || '[]'; // v10.28.9: 区域（additive——旧草稿缺省空数组）；v10.28.9.2: mapPins 字段不再写入（钉子移除）
+        entry.mapRegions = c.dataset.mapRegions || '[]'; // v10.28.9: 区域（additive——旧草稿缺省空数组）；v10.28.9.2: mapPins 字段不再写入（钉子移除）；v10.28.11: 区域内对象字段 fillOpacity/strokeOpacity/info/inputStyles 随行（旧草稿缺省 35/90/[]/{}；desc 缺键＝无描述块）
       } else if (entry.type === 'stats') {
         entry.statsRows = c.dataset.statsRows || '[]';
         if (c.dataset.statsChart) entry.statsChart = c.dataset.statsChart; // v10.28.5: 图表种类
@@ -5488,6 +5553,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // buildDraft/restoreMap 往返、编辑过程中实时同步卡面。
   var MRE_COLORS = ['#5b7cfa', '#ff6b6b', '#ffd166', '#06d6a0', '#ef476f', '#118ab2', '#9b5de5', '#f4a261'];
   var mapRegionState = null; // { card, regions:[{id,name,desc,color,pts:[[x,y]…]}], drawing:{pts} | null, currentId }
+  // v10.28.11: 顶点编辑手势/弹层状态（同块私有）
+  var mreDrag = null;            // { idx, startX, startY, movedFar } 顶点拖拽手势
+  var mreSuppressClick = 0;      // 手势后 click 抑制时刻戳（0=不抑制；>600ms 过期自动失效——mouseup 落在画布外时不会有 click 来消费旗标，防误吞下一次点击）
+  var mreStyleTarget = null;     // { key, el } ☰ 外观弹层当前目标
 
   function mapRegionsFromDataset(card) {
     try { return JSON.parse(card.dataset.mapRegions || '[]'); } catch (e) { return []; }
@@ -5500,6 +5569,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     pts.forEach(function (p) { cx += p[0]; cy += p[1]; });
     return [cx / pts.length, cy / pts.length];
   }
+  // v10.28.11: 区域对象新增可选字段 fillOpacity/strokeOpacity（0-100 整数）、
+  // info（[{uid,title,content}]）、inputStyles（按输入框键存外观）。旧草稿缺
+  // 字段走缺省 35/90——本文件 ES5 风格，显式三元不写 ??。
+  function mreFillOpacityOf(r) { return (r.fillOpacity !== undefined ? r.fillOpacity : 35) / 100; }
+  function mreStrokeOpacityOf(r) { return (r.strokeOpacity !== undefined ? r.strokeOpacity : 90) / 100; }
+  function mreUid() { return 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
   // 卡面渲染：SVG 100×100 视盒随卡伸缩（与弹层 cover 同裁切，坐标一致）。
   // v10.28.9.2: 卡面只画区域多边形，名称标签只在编辑器舞台渲染（用户
   // 「显示名称是只有在打开地图的情况下才会出现，没有打开地图就只是展示
@@ -5518,9 +5593,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var poly = document.createElementNS(NS, 'polygon');
       poly.setAttribute('points', mapRegionPolyPoints(r));
       poly.setAttribute('fill', r.color);
-      poly.setAttribute('fill-opacity', '0.35');
+      poly.setAttribute('fill-opacity', String(mreFillOpacityOf(r))); /* v10.28.11: 每区域透明度字段 */
       poly.setAttribute('stroke', r.color);
-      poly.setAttribute('stroke-opacity', '0.9');
+      poly.setAttribute('stroke-opacity', String(mreStrokeOpacityOf(r)));
       poly.setAttribute('stroke-width', '0.5');
       svg.appendChild(poly);
     });
@@ -5533,8 +5608,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         // v10.28.10.1: 每区域字体家族/字号（用户「更改了字体 区域中间的字体没有
         // 同步」问询钦定「字体+大小一起同步」「每个区域各自」）——旧草稿缺省空串
         // 走标签 CSS 默认 10px
-        return { id: r.id, name: r.name || '', desc: r.desc || '', color: r.color,
-                 pts: r.pts.slice(), fontFamily: r.fontFamily || '', fontSize: r.fontSize || '' };
+        // v10.28.11: 透明度/两排信息/输入框外观随区域对象往返；desc 保留键存在
+        // 性（缺键＝无描述块；旧草稿必有 desc:'' 或有值，自然迁移）
+        return { id: r.id, name: r.name || '', desc: r.desc, color: r.color,
+                 pts: r.pts.slice(), fontFamily: r.fontFamily || '', fontSize: r.fontSize || '',
+                 fillOpacity: r.fillOpacity, strokeOpacity: r.strokeOpacity,
+                 info: Array.isArray(r.info) ? r.info.slice() : [],
+                 inputStyles: (r.inputStyles && typeof r.inputStyles === 'object') ? r.inputStyles : {} };
       }),
       drawing: null,
       currentId: null
@@ -5553,6 +5633,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var st = mapRegionState;
     if (st) {
       st.drawing = null; // 未闭合折线丢弃
+      document.getElementById('mreCanvas').classList.remove('drawing');
+      mreCancelDrag();      // v10.28.11: 拖拽中关编辑器只取消手势
+      hideContextMenu();    // v10.28.11: ＋/☰ 弹层状态清零
       mreSyncToCard();
       if (st.regions.length) showToast('区域已保存到地图卡');
     }
@@ -5562,6 +5645,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   window.closeMapRegionEditor = closeMapRegionEditor;
   window.mreDebugState = function () { return mapRegionState; }; // test hook（电池探针）
+  window.mreRerender = mreRerender; // test hook（电池探针——播种 mapRegionState 后重渲染，不走路画图流）
   // v10.28.10.1: 名称面板改字体/字号 → 当前区域同步 + 标签重渲染（用户「更改了
   // 字体 区域中间的字体没有同步」钦定「字体+大小一起同步」「每个区域各自」）。
   // 工具栏 setFontSize/setFontFamily 在第二个 script 块，看不到本块的
@@ -5580,6 +5664,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!st || st.drawing) return;
     hideMapRegionPanel();
     st.drawing = { pts: [] };
+    document.getElementById('mreCanvas').classList.add('drawing'); // v10.28.11: 画区域才十字
     mreRenderPts();
     mreUpdateTip();
   }
@@ -5587,6 +5672,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function closeMapRegionDraw() {
     var st = mapRegionState;
     if (!st || !st.drawing) return;
+    document.getElementById('mreCanvas').classList.remove('drawing');
     var pts = st.drawing.pts;
     // 双击闭合：同一点的两枚 click 落在末尾，去重（0.5% 视同同点）
     if (pts.length >= 2) {
@@ -5601,7 +5687,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     }
     var region = {
       id: 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-      name: '', desc: '',
+      // v10.28.11: 不落 desc 键——描述块走 ＋ 菜单添加（存在性语义）
+      name: '',
       color: MRE_COLORS[st.regions.length % MRE_COLORS.length],
       pts: pts
     };
@@ -5641,14 +5728,15 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       poly.setAttribute('data-rid', r.id);
       poly.setAttribute('points', mapRegionPolyPoints(r));
       poly.setAttribute('fill', r.color);
-      poly.setAttribute('fill-opacity', '0.35');
+      poly.setAttribute('fill-opacity', String(mreFillOpacityOf(r))); /* v10.28.11: 每区域透明度字段 */
       poly.setAttribute('stroke', r.color);
-      poly.setAttribute('stroke-opacity', '0.9');
+      poly.setAttribute('stroke-opacity', String(mreStrokeOpacityOf(r)));
       poly.addEventListener('click', function (e) { e.stopPropagation(); openMapRegionPanel(r.id); });
       g.appendChild(poly);
     });
     mreRenderLabels();
     mreRenderPts();
+    mreRenderHandles(); /* v10.28.11: 顶点编辑手柄随重渲染 */
     mreRenderPreview();
     mreRenderList();
   }
@@ -5692,6 +5780,77 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!st || !st.drawing || !st.drawing.pts.length) { pv.setAttribute('points', ''); return; }
     pv.setAttribute('stroke', MRE_COLORS[st.regions.length % MRE_COLORS.length]);
     pv.setAttribute('points', st.drawing.pts.map(function (p) { return p[0] + ',' + p[1]; }).join(' '));
+  }
+  // ── v10.28.11 顶点编辑 ──
+  // 手柄只渲染「选中区域且非绘制态」（钦定「当我选中画好的区域时」）；绘制态
+  // 手柄清空、画布 mousedown 早退，全部编辑手势因此天然禁用。单击＝删点
+  // （≤3 点禁删）、按住拖动＝移动、按住两点间线段＝插点并随拖移动。
+  // mousemove/mouseup 挂 window（合成事件可驱动）。
+  function mreRenderHandles() {
+    var box = document.getElementById('mreHandles');
+    box.innerHTML = '';
+    var r = mreCurrentRegion();
+    if (!r || !mapRegionState || mapRegionState.drawing) return;
+    r.pts.forEach(function (p, i) {
+      var d = document.createElement('div');
+      d.className = 'mre-h' + (i === 0 ? ' head' : '');
+      d.setAttribute('data-idx', i);
+      d.style.left = p[0] + '%';
+      d.style.top = p[1] + '%';
+      box.appendChild(d);
+    });
+  }
+  function mreStartDrag(idx, e) {
+    var cv = document.getElementById('mreCanvas');
+    cv.classList.add('mre-ptdrag');
+    mreDrag = { idx: idx, startX: e.clientX, startY: e.clientY, movedFar: false };
+    window.addEventListener('mousemove', mreDragMove);
+    window.addEventListener('mouseup', mreDragEnd);
+    window.addEventListener('blur', mreDragBlur);
+  }
+  function mreDragMove(e) {
+    if (!mreDrag) return;
+    var r = mreCurrentRegion();
+    if (!r || !mapRegionState || mapRegionState.drawing) { mreCancelDrag(); return; }
+    var cv = document.getElementById('mreCanvas');
+    var rect = cv.getBoundingClientRect();
+    var x = Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10;
+    var y = Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10;
+    x = Math.max(0, Math.min(100, x)); y = Math.max(0, Math.min(100, y));
+    var dx = e.clientX - mreDrag.startX, dy = e.clientY - mreDrag.startY;
+    if (dx * dx + dy * dy > 16) mreDrag.movedFar = true;
+    r.pts[mreDrag.idx] = [x, y];
+    mreRerender(); // 多边形/手柄/标签/列表一并跟随；松手才 mreSyncToCard
+  }
+  function mreDragEnd() {
+    var d = mreDrag;
+    window.removeEventListener('mousemove', mreDragMove);
+    window.removeEventListener('mouseup', mreDragEnd);
+    window.removeEventListener('blur', mreDragBlur);
+    mreDrag = null;
+    document.getElementById('mreCanvas').classList.remove('mre-ptdrag');
+    if (!d) return;
+    var r = mreCurrentRegion();
+    if (!r) return;
+    if (d.movedFar) { mreSyncToCard(); return; }
+    // 单击＝删除该点（钦定「单点删除该点」；至少 3 个点才能围成区域）
+    if (r.pts.length <= 3) { showToast('至少 3 个点才能围成区域'); mreRerender(); return; }
+    r.pts.splice(d.idx, 1);
+    mreRerender();
+    mreSyncToCard();
+  }
+  function mreDragBlur() { // 拖出窗口松开：移动过的落库，没动过的不删点（安全向）
+    if (mreDrag && mreDrag.movedFar) mreSyncToCard();
+    mreDragEnd();
+  }
+  function mreCancelDrag() {
+    if (!mreDrag) return;
+    window.removeEventListener('mousemove', mreDragMove);
+    window.removeEventListener('mouseup', mreDragEnd);
+    window.removeEventListener('blur', mreDragBlur);
+    mreDrag = null;
+    mreSuppressClick = 0;
+    document.getElementById('mreCanvas').classList.remove('mre-ptdrag');
   }
   function mreRenderList() {
     var list = document.getElementById('mreList');
@@ -5740,15 +5899,19 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     for (var i = 0; i < st.regions.length; i++) if (st.regions[i].id === rid) region = st.regions[i];
     if (!region) return;
     st.currentId = rid;
+    st.forceDesc = null;
+    hideContextMenu();
     document.getElementById('mrePanelTitle').textContent = region.name ? '区域信息 · ' + region.name : '区域信息';
-    var nm = document.getElementById('mreName');
-    nm.value = region.name;
-    // v10.28.10.1: 名称框回显该区域字体家族/字号（工具栏同步态从 computed 读，
-    // 无字体区域清空回 CSS 默认）
-    nm.style.fontFamily = region.fontFamily || '';
-    nm.style.fontSize = region.fontSize ? region.fontSize + 'px' : '';
-    document.getElementById('mreDesc').value = region.desc;
+    // v10.28.11: 透明度滑杆按区域字段回显（旧草稿缺省 35/90）
+    var fill = region.fillOpacity !== undefined ? region.fillOpacity : 35;
+    var stroke = region.strokeOpacity !== undefined ? region.strokeOpacity : 90;
+    document.getElementById('mreFillSlider').value = fill;
+    document.getElementById('mreFillValue').textContent = fill + '%';
+    document.getElementById('mreStrokeSlider').value = stroke;
+    document.getElementById('mreStrokeValue').textContent = stroke + '%';
     mreRenderColors(region.color);
+    mreRenderInfoCol();
+    mreRenderHandles();
     document.getElementById('mrePanel').classList.add('active');
     mreRenderList();
     setTimeout(function () {
@@ -5762,12 +5925,105 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var panel = document.getElementById('mrePanel');
     if (instant) panel.style.transition = 'none';
     panel.classList.remove('active');
-    if (mapRegionState) { mapRegionState.currentId = null; mreRenderList(); }
+    if (mapRegionState) { mapRegionState.currentId = null; mreRenderList(); mreRenderHandles(); }
     if (instant) {
       requestAnimationFrame(function () { panel.style.transition = ''; });
     }
   }
   window.hideMapRegionPanel = hideMapRegionPanel;
+  // ── v10.28.11: 面板右栏信息区渲染 ──
+  // 名称恒在（保留 id=mreName 供文字工具栏字体钩子用）；描述块可见性：desc 有值
+  // 或本会话 forceDesc 强制显示（＋添加描述后空框可输入）；两排信息块按 uid 键
+  // 输入框样式，块删时连带清 inputStyles。所有右栏输入框默认粗体（钦定），
+  // 工具栏 B 按 computed ≥600 可翻回 400。
+  function mreRenderInfoCol() {
+    var col = document.getElementById('mreInfoCol');
+    col.innerHTML = '';
+    var st = mapRegionState;
+    var r = mreCurrentRegion();
+    if (!st || !r) return;
+    // 名称
+    var block = document.createElement('div'); block.className = 'mre-info-block';
+    var lab = document.createElement('span'); lab.className = 'label-sm';
+    lab.style.color = 'var(--color-on-surface-variant)'; lab.textContent = '名称';
+    var wrap = document.createElement('div'); wrap.className = 'mre-input-wrap';
+    var nm = document.createElement('input');
+    nm.type = 'text'; nm.id = 'mreName'; nm.className = 'input-glass';
+    nm.placeholder = '区域名'; nm.maxLength = 24; nm.value = r.name || '';
+    nm.style.fontWeight = '700';
+    // v10.28.10.1: 名称框回显该区域字体家族/字号（工具栏同步态从 computed 读，
+    // 无字体区域清空回 CSS 默认）
+    if (r.fontFamily) nm.style.fontFamily = r.fontFamily;
+    if (r.fontSize) nm.style.fontSize = r.fontSize + 'px';
+    nm.oninput = function () { mreNameInput(nm); };
+    wrap.appendChild(nm); wrap.appendChild(mreCfgBtn('name'));
+    mreApplyInputStyle(nm, 'name');
+    block.appendChild(lab); block.appendChild(wrap); col.appendChild(block);
+    // 描述（每区域至多一个；旧草稿 desc 有值自然显示）
+    if (r.desc || st.forceDesc === r.id) {
+      var dblock = document.createElement('div'); dblock.className = 'mre-info-block';
+      var dhead = document.createElement('div'); dhead.className = 'mre-info-head';
+      var dlab = document.createElement('span'); dlab.textContent = '描述';
+      dhead.appendChild(dlab); dhead.appendChild(mreBlockDelBtn('mreDeleteDesc()'));
+      var dwrap = document.createElement('div'); dwrap.className = 'mre-input-wrap';
+      var dta = document.createElement('textarea');
+      dta.id = 'mreDesc'; dta.className = 'input-glass'; dta.rows = 3;
+      dta.placeholder = '这个区域的说明…'; dta.value = r.desc || '';
+      dta.style.fontWeight = '700';
+      dta.oninput = function () { r.desc = dta.value; mreSyncToCard(); };
+      dwrap.appendChild(dta); dwrap.appendChild(mreCfgBtn('desc'));
+      mreApplyInputStyle(dta, 'desc');
+      dblock.appendChild(dhead); dblock.appendChild(dwrap); col.appendChild(dblock);
+    }
+    // 两排信息块（可多个）
+    (r.info || []).forEach(function (it) {
+      var iblock = document.createElement('div'); iblock.className = 'mre-info-block';
+      var ihead = document.createElement('div'); ihead.className = 'mre-info-head';
+      var ilab = document.createElement('span'); ilab.textContent = '两排信息';
+      ihead.appendChild(ilab); ihead.appendChild(mreBlockDelBtn('mreDeleteInfo(\'' + it.uid + '\')'));
+      var twrap = document.createElement('div'); twrap.className = 'mre-input-wrap';
+      var ti = document.createElement('input');
+      ti.type = 'text'; ti.id = 'mreInfoTitle_' + it.uid; ti.className = 'input-glass';
+      ti.placeholder = '标题'; ti.value = it.title || ''; ti.style.fontWeight = '700';
+      ti.oninput = function () { mreInfoInput(it.uid, 'title', ti); };
+      twrap.appendChild(ti); twrap.appendChild(mreCfgBtn('info:' + it.uid + ':title'));
+      mreApplyInputStyle(ti, 'info:' + it.uid + ':title');
+      var cwrap = document.createElement('div'); cwrap.className = 'mre-input-wrap';
+      var ci = document.createElement('input');
+      ci.type = 'text'; ci.id = 'mreInfoContent_' + it.uid; ci.className = 'input-glass';
+      ci.placeholder = '内容'; ci.value = it.content || ''; ci.style.fontWeight = '700';
+      ci.oninput = function () { mreInfoInput(it.uid, 'content', ci); };
+      cwrap.appendChild(ci); cwrap.appendChild(mreCfgBtn('info:' + it.uid + ':content'));
+      mreApplyInputStyle(ci, 'info:' + it.uid + ':content');
+      iblock.appendChild(ihead); iblock.appendChild(twrap); iblock.appendChild(cwrap);
+      col.appendChild(iblock);
+    });
+  }
+  function mreCfgBtn(key) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'mre-cfg-btn'; b.title = '自定义外观';
+    b.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">menu</span>';
+    b.onclick = function (e) { mreOpenStylePop(e, key); };
+    return b;
+  }
+  function mreBlockDelBtn(onclick) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'mre-del-block'; b.title = '删除';
+    b.innerHTML = '<span class="material-symbols-outlined">close</span>';
+    b.setAttribute('onclick', onclick);
+    return b;
+  }
+  function mreNameInput(el) {
+    var r = mreCurrentRegion(); if (!r) return;
+    r.name = el.value;
+    document.getElementById('mrePanelTitle').textContent = r.name ? '区域信息 · ' + r.name : '区域信息';
+    mreRenderLabels(); mreRenderList(); mreSyncToCard();
+  }
+  function mreInfoInput(uid, which, el) {
+    var r = mreCurrentRegion(); if (!r) return;
+    for (var i = 0; i < (r.info || []).length; i++) if (r.info[i].uid === uid) r.info[i][which] = el.value;
+    mreSyncToCard();
+  }
   function mreRenderColors(active) {
     var box = document.getElementById('mreColors');
     box.innerHTML = '';
@@ -5787,6 +6043,167 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       });
       box.appendChild(b);
     });
+    // v10.28.11: 自定义色钮回显 + 非预设色亮环（预设组无命中即自定义色态）
+    var custom = document.getElementById('mreCustomColor');
+    if (custom) {
+      custom.value = /^#[0-9a-fA-F]{6}$/.test(active) ? active : '#5b7cfa';
+      custom.classList.toggle('active', MRE_COLORS.indexOf(active) === -1);
+    }
+  }
+  // ── v10.28.11: 区域中心/边缘透明度分开（0-100 整数存区域对象；旧草稿缺省 35/90） ──
+  function mreUpdateFillOpacity(v) {
+    var r = mreCurrentRegion(); if (!r) return;
+    r.fillOpacity = parseInt(v, 10) || 0;
+    document.getElementById('mreFillValue').textContent = v + '%';
+    mreRerender(); mreSyncToCard();
+  }
+  window.mreUpdateFillOpacity = mreUpdateFillOpacity;
+  function mreUpdateStrokeOpacity(v) {
+    var r = mreCurrentRegion(); if (!r) return;
+    r.strokeOpacity = parseInt(v, 10) || 0;
+    document.getElementById('mreStrokeValue').textContent = v + '%';
+    mreRerender(); mreSyncToCard();
+  }
+  window.mreUpdateStrokeOpacity = mreUpdateStrokeOpacity;
+  // ── v10.28.11: 面板头部 ＋ 菜单（添加描述至多一 / 添加两排信息可多个） ──
+  function mreOpenAddMenu(e) {
+    if (e) e.stopPropagation(); // 防 document click 立即关掉弹层（#viewportBtn 同口径）
+    hideContextMenu();
+    var btn = document.getElementById('mreAddBtn');
+    var pop = document.getElementById('mreAddPopover');
+    if (!btn || !pop) return;
+    var r = mreCurrentRegion();
+    var descOpt = document.getElementById('mreAddDescOpt');
+    if (descOpt) descOpt.disabled = !!(r && r.desc); // 描述每区域至多一个
+    var rect = btn.getBoundingClientRect();
+    pop.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 220)) + 'px';
+    pop.style.top = Math.min(rect.bottom + 6, window.innerHeight - 120) + 'px';
+    pop.classList.add('active');
+  }
+  window.mreOpenAddMenu = mreOpenAddMenu;
+  function mreAddDesc() {
+    var st = mapRegionState, r = mreCurrentRegion();
+    hideContextMenu();
+    if (!st || !r) return;
+    if (r.desc) { showToast('该区域已有描述'); return; }
+    r.desc = '';
+    st.forceDesc = r.id; // 空框也保持可见，可立即输入
+    mreRenderInfoCol();
+    mreSyncToCard();
+    var d = document.getElementById('mreDesc');
+    if (d) d.focus();
+  }
+  window.mreAddDesc = mreAddDesc;
+  function mreAddInfo() {
+    var r = mreCurrentRegion();
+    hideContextMenu();
+    if (!r) return;
+    r.info = r.info || [];
+    var uid = mreUid();
+    r.info.push({ uid: uid, title: '', content: '' });
+    mreRenderInfoCol();
+    mreSyncToCard();
+    var t = document.getElementById('mreInfoTitle_' + uid);
+    if (t) t.focus();
+  }
+  window.mreAddInfo = mreAddInfo;
+  function mreDeleteDesc() {
+    var st = mapRegionState, r = mreCurrentRegion();
+    if (!st || !r) return;
+    r.desc = undefined; // JSON.stringify 时键自动消失 → 草稿与旧版本一致
+    st.forceDesc = null;
+    mreRenderInfoCol();
+    mreSyncToCard();
+  }
+  window.mreDeleteDesc = mreDeleteDesc;
+  function mreDeleteInfo(uid) {
+    var r = mreCurrentRegion(); if (!r) return;
+    r.info = (r.info || []).filter(function (it) { return it.uid !== uid; });
+    if (r.inputStyles) { // 块删连带清样式键（uid 键不随删除/重排过期）
+      delete r.inputStyles['info:' + uid + ':title'];
+      delete r.inputStyles['info:' + uid + ':content'];
+    }
+    mreRenderInfoCol();
+    mreSyncToCard();
+  }
+  window.mreDeleteInfo = mreDeleteInfo;
+  // ── v10.28.11: ☰ 输入框外观 ──
+  // 键：'name' / 'desc' / 'info:<uid>:title' / 'info:<uid>:content'——按区域+输入框
+  // 键持久化（region.inputStyles），重开面板回放。钦定「悬停输入框右上角三条
+  // 横」——:hover/:focus-within 双触发（电池走 focus-within，合成事件触不了 :hover）。
+  function mreOpenStylePop(e, key) {
+    if (e) e.stopPropagation();
+    var wrap = e && e.currentTarget ? e.currentTarget.closest('.mre-input-wrap') : null;
+    var el = wrap ? wrap.querySelector('input, textarea') : null;
+    if (!wrap || !el) return;
+    hideContextMenu();
+    var r = mreCurrentRegion();
+    if (!r) return;
+    mreStyleTarget = { key: key, el: el };
+    var st = (r.inputStyles && r.inputStyles[key]) || {};
+    document.getElementById('mreStyleBgColor').value = st.bg || '#ffffff';
+    document.getElementById('mreStyleBgAlpha').value = st.bgA !== undefined ? st.bgA : 100;
+    document.getElementById('mreStyleBgAlphaV').textContent = (st.bgA !== undefined ? st.bgA : 100) + '%';
+    document.getElementById('mreStyleEdgeColor').value = st.edge || '#cccccc';
+    document.getElementById('mreStyleEdgeW').value = st.edgeW !== undefined ? st.edgeW : 1;
+    document.getElementById('mreStyleEdgeWV').textContent = (st.edgeW !== undefined ? st.edgeW : 1) + 'px';
+    document.getElementById('mreStyleRadius').value = st.radius !== undefined ? st.radius : 8;
+    document.getElementById('mreStyleRadiusV').textContent = (st.radius !== undefined ? st.radius : 8) + 'px';
+    var rect = wrap.getBoundingClientRect();
+    var pop = document.getElementById('mreStylePop');
+    pop.style.left = Math.max(8, Math.min(rect.right - 278, window.innerWidth - 286)) + 'px';
+    pop.style.top = Math.min(rect.bottom + 4, window.innerHeight - 320) + 'px';
+    pop.classList.add('active');
+  }
+  function mreStyleLive() { // 任一控件变化即时生效 + 随草稿持久化（updateBgOpacity 同口径）
+    var t = mreStyleTarget;
+    var r = mreCurrentRegion();
+    if (!t || !r) return;
+    var bgA = parseInt(document.getElementById('mreStyleBgAlpha').value, 10) || 0;
+    var edgeW = parseInt(document.getElementById('mreStyleEdgeW').value, 10) || 0;
+    var radius = parseInt(document.getElementById('mreStyleRadius').value, 10) || 0;
+    document.getElementById('mreStyleBgAlphaV').textContent = bgA + '%';
+    document.getElementById('mreStyleEdgeWV').textContent = edgeW + 'px';
+    document.getElementById('mreStyleRadiusV').textContent = radius + 'px';
+    r.inputStyles = r.inputStyles || {};
+    r.inputStyles[t.key] = {
+      bg: document.getElementById('mreStyleBgColor').value,
+      bgA: bgA,
+      edge: document.getElementById('mreStyleEdgeColor').value,
+      edgeW: edgeW,
+      radius: radius
+    };
+    mreApplyInputStyle(t.el, t.key);
+    mreSyncToCard();
+  }
+  window.mreStyleLive = mreStyleLive;
+  function mreStyleReset() {
+    var t = mreStyleTarget;
+    var r = mreCurrentRegion();
+    if (!t || !r) return;
+    if (r.inputStyles) delete r.inputStyles[t.key];
+    t.el.style.background = '';
+    t.el.style.border = '';
+    t.el.style.borderRadius = '';
+    mreSyncToCard();
+    // 控件回默认
+    document.getElementById('mreStyleBgColor').value = '#ffffff';
+    document.getElementById('mreStyleBgAlpha').value = 100;
+    document.getElementById('mreStyleBgAlphaV').textContent = '100%';
+    document.getElementById('mreStyleEdgeColor').value = '#cccccc';
+    document.getElementById('mreStyleEdgeW').value = 1;
+    document.getElementById('mreStyleEdgeWV').textContent = '1px';
+    document.getElementById('mreStyleRadius').value = 8;
+    document.getElementById('mreStyleRadiusV').textContent = '8px';
+  }
+  window.mreStyleReset = mreStyleReset;
+  function mreApplyInputStyle(el, key) {
+    var r = mreCurrentRegion();
+    var st = r && r.inputStyles ? r.inputStyles[key] : null;
+    if (!st) return; // 无样式＝input-glass 缺省；不碰 fontFamily/fontSize 等其他 inline
+    el.style.background = hexToRgba(st.bg || '#ffffff', (st.bgA !== undefined ? st.bgA : 100) / 100);
+    el.style.border = (st.edgeW > 0) ? st.edgeW + 'px solid ' + (st.edge || '#cccccc') : 'none';
+    el.style.borderRadius = (st.radius !== undefined ? st.radius : 8) + 'px';
   }
   function deleteMapRegionCurrent() {
     var st = mapRegionState;
@@ -5806,6 +6223,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   (function () {
     var cv = document.getElementById('mreCanvas');
     if (!cv) return;
+    // v10.28.11: 捕获相 click 抑制器——顶点手势（拖点/删点/插点）之后的 click
+    // 既不落到 poly select（防重开面板+320ms 抢焦点）也不落到画图 click
+    cv.addEventListener('click', function (e) {
+      if (mreSuppressClick) {
+        if (Date.now() - mreSuppressClick < 600) { e.stopPropagation(); e.preventDefault(); }
+        mreSuppressClick = 0;
+      }
+    }, true);
     cv.addEventListener('click', function (e) {
       var st = mapRegionState;
       if (!st || !st.drawing) return;
@@ -5835,28 +6260,79 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         mreRenderPreview();
       }
     });
-    document.getElementById('mreName').addEventListener('input', function () {
-      var region = mreCurrentRegion();
-      if (!region) return;
-      region.name = this.value;
-      document.getElementById('mrePanelTitle').textContent = region.name ? '区域信息 · ' + region.name : '区域信息';
-      mreRenderLabels();
-      mreRenderList();
-      mreSyncToCard();
+    // v10.28.11: 顶点编辑 mousedown——命中手柄/点(≤10px)＝拖点，命中线段(≤8px)＝
+    // 按下即插点随拖；绘制态整段禁用；点到别的区域多边形让位给它自己的 select click
+    cv.addEventListener('mousedown', function (e) {
+      var st = mapRegionState;
+      if (!st || st.drawing || !st.currentId) return;
+      if (e.target && e.target.classList && e.target.classList.contains('mre-poly') &&
+          e.target.getAttribute('data-rid') !== st.currentId) return;
+      var r = mreCurrentRegion();
+      if (!r) return;
+      var rect = cv.getBoundingClientRect();
+      var px = e.clientX - rect.left, py = e.clientY - rect.top;
+      var h = e.target && e.target.closest ? e.target.closest('.mre-h') : null;
+      if (h) {
+        e.preventDefault(); mreSuppressClick = Date.now();
+        mreStartDrag(parseInt(h.getAttribute('data-idx'), 10), e); return;
+      }
+      var hit = -1, best = 100;
+      r.pts.forEach(function (p, i) {
+        var dx = p[0] / 100 * rect.width - px, dy = p[1] / 100 * rect.height - py;
+        var d2 = dx * dx + dy * dy;
+        if (d2 < best) { best = d2; hit = i; }
+      });
+      if (hit !== -1 && best <= 100) { // 手柄未接住的点点击兜底（10px 屏距）
+        e.preventDefault(); mreSuppressClick = Date.now(); mreStartDrag(hit, e); return;
+      }
+      for (var i = 0; i < r.pts.length; i++) {
+        var j = (i + 1) % r.pts.length;
+        var ax = r.pts[i][0] / 100 * rect.width, ay = r.pts[i][1] / 100 * rect.height;
+        var bx = r.pts[j][0] / 100 * rect.width, by = r.pts[j][1] / 100 * rect.height;
+        var vx = bx - ax, vy = by - ay, len2 = vx * vx + vy * vy;
+        if (len2 < 1) continue; // 退化线段（重合点）不插
+        var t = ((px - ax) * vx + (py - ay) * vy) / len2;
+        t = Math.max(0, Math.min(1, t));
+        var qx = ax + vx * t, qy = ay + vy * t;
+        var ddx = qx - px, ddy = qy - py;
+        if (ddx * ddx + ddy * ddy <= 64) {
+          var nx = Math.round(qx / rect.width * 1000) / 10;
+          var ny = Math.round(qy / rect.height * 1000) / 10;
+          r.pts.splice(j, 0, [nx, ny]); // 闭合边 j=0 插到首位＝环上 last→first 之间
+          e.preventDefault(); mreSuppressClick = Date.now();
+          mreStartDrag(j, e); // 新点随拖继续移动（原地松手即留点）
+          break;
+        }
+      }
     });
-    document.getElementById('mreDesc').addEventListener('input', function () {
-      var region = mreCurrentRegion();
-      if (!region) return;
-      region.desc = this.value;
-      mreSyncToCard();
-    });
+    // v10.28.11: 自定义色钮（静态元素接线；#mreName/#mreDesc 已改由
+    // mreRenderInfoCol 动态创建，输入逻辑以 oninput 形式在创建时挂）
+    var mreCc = document.getElementById('mreCustomColor');
+    if (mreCc) {
+      mreCc.addEventListener('change', function () {
+        var region = mreCurrentRegion();
+        if (!region) return;
+        region.color = mreCc.value;
+        mreRenderColors(mreCc.value);
+        mreRerender();
+        mreSyncToCard();
+      });
+      mreCc.addEventListener('click', function (e) { e.stopPropagation(); });
+    }
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
+      if (mreDrag) { mreCancelDrag(); return; } // v10.28.11: 拖动中 Esc 只取消手势
       var st = mapRegionState;
       if (!st) return;
+      // v10.28.11: ☰/＋弹层开着时让位给统一 hideContextMenu（注册在本监听之后，弹层仍开着可见）
+      var msty = document.getElementById('mreStylePop');
+      if (msty && msty.classList.contains('active')) return;
+      var madd = document.getElementById('mreAddPopover');
+      if (madd && madd.classList.contains('active')) return;
       if (!document.getElementById('mapRegionOverlay').classList.contains('active')) return;
       if (st.drawing) {
         st.drawing = null;
+        document.getElementById('mreCanvas').classList.remove('drawing'); // v10.28.11: 退十字
         mreRenderPts(); mreRenderPreview(); mreUpdateTip();
         showToast('已取消绘制');
       } else {
@@ -7353,6 +7829,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (tsp) tsp.classList.remove('active');
     var scp = document.getElementById('statsChartPopover');
     if (scp) scp.classList.remove('active');
+    var madd = document.getElementById('mreAddPopover'); /* v10.28.11: ＋菜单 */
+    if (madd) madd.classList.remove('active');
+    var msty = document.getElementById('mreStylePop'); /* v10.28.11: ☰外观弹层 */
+    if (msty) msty.classList.remove('active');
     // v10.24/26: 文字格式化工具栏 + 字体面板随统一关闭
     var tt = document.getElementById('textToolbar');
     if (tt) tt.style.display = 'none';
@@ -9671,7 +10151,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.10.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.11') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -9680,7 +10160,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.10.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.11');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';

@@ -542,3 +542,26 @@
 ㊷ CSSOM 序列化引号不一致：style.fontFamily = "'Abhaya Libre', sans-serif" 后读回是双引号 "Abhaya Libre", sans-serif——DOM 侧字体断言与 dataset.family 全等必假红，两边去引号归一再比；JS 状态字符串（区域对象/草稿 JSON）不经 CSSOM、原样单引号，可与 dataset.family 全等
 ㊸ 模板字面量占位符不能当 replace 标记：`...(${null})` 在定义时即被插值成 (null)，之后 .replace('${null}', …) 无物可换 → 电池侧 points 恒为 null、forEach 炸（报错行号恰指 forEach 那一行，误导查应用侧）；占位符改用非模板语法标记（__PTS__）
 ㊹ 跨 script 块闭包：编辑器分两个 IIFE script 块（地图区域编辑器在第一个、工具栏 setFontSize/setFontFamily 在第二个）——第二块直接引用第一块私有的 mapRegionState 是 ReferenceError（电池 Runtime.exceptionThrown 抓出，报错行号指在 setFontFamily 内）；跨块通信必须走 window 钩子（本轮 mreApplyRegionFont，与 openMapRegionEditor/mreDebugState 既有暴露口径一致）——同一文件内函数互调前先确认是否同块
+────────────────────────────────────────
+2026-08-31 v10.28.11 — 地图区域编辑器升级包（rev 00038-jj7）
+
+真身（用户）：
+「打开地图时我希望默认是鼠标而不是十字 十字只有在画区域时才会出现，然后当我选中画好的区域时是可以长按每个点之间的线增加点改变形状的，单点删除该点，长按更改移动点的位置或增加；然后卡片的色块可以自定义颜色和单独调整边缘和中心颜色的透明度，然后下方再添加一个左右列表中间夹着一个竖着的分割线，然后右侧的信息默认是粗体的，然后右侧滑出编辑卡片上方打叉的左侧添加一个加 可以选择添加描述还是两排的信息，然后滑鼠在输入框的范围内时右上角会出现三条横的icon点击后会出现弹窗可以自定义输入框外观 自定义背景 和边缘」——问询钦定：①点编辑手势「单击删点/按住拖点/按住线加点」（按住线=按下即插点随拖，无停住计时）②左右列表「左区域列表·右区域信息」③色块「自定义色+边缘/中心透明度分开」④三条横「面板内所有输入框」。
+
+改动（docs/pages/fluidcanvas-editor.html）：
+- 光标：.mre-canvas cursor:default、.drawing 态类 crosshair（画区域期间），退类三处（画完/取消/Esc/关编辑器）
+- 点线编辑：新 #mreHandles 手柄层（首点 .head 反色）；画布 mousedown 三重命中——手柄（按住拖点）→点 ≤10px 兜底→线段 ≤8px 按下即插点随拖；位移 >4px 才算拖、松手才 sync；单击语义=删点（≤3 点 toast 拦）；捕获相 click 抑制器时间戳版（mreSuppressClick=Date.now()、600ms 内抑制手势后 click 防重开面板+320ms 抢焦点，松手落画布外也不吞下一次真点击）；别区域多边形 mousedown 早退让位
+- 色块：区域对象 fillOpacity/strokeOpacity 整数百分比 0-100（缺省 35/90），卡面+编辑器双渲染读辅助函数；自定义色钮 + 两条滑杆（oninput 即时生效 + output 百分比回显）
+- 面板重构：宽 min(480px,94vw)；#mreName/#mreDesc 从静态 HTML 改 mreRenderInfoCol 动态创建（静态 input 绑定删除——元素没了绑定还在会 ReferenceError 杀接线块）；左区域列表｜1px 竖分割线｜右信息（名称/描述/两排键值块，创建时 fontWeight 700 钦定默认粗体）
+- ＋菜单（✕ 左侧）：添加描述（desc 存在性语义=新区域不落键、块可见 ⇔ desc 真值或 forceDesc 会话旗标、至多一个、块 ✕ 删除=undefined 自动丢键）／添加两排信息（uid 键 'i'+ts36 保证样式键不随增删漂移、可多可删、块删连清两条样式键）
+- ☰：.mre-input-wrap 包装 + :hover/:focus-within 显隐角标；#mreStylePop（背景色+透明度/边缘色+粗细+圆角，全 oninput 即时生效）；样式存 region.inputStyles 按键（'name'|'desc'|'info:<uid>:title|content'）随草稿往返、重开回放、恢复默认清键+清 inline
+- 弹层插在 overlay 内 shell 外（.mre-shell transform:scale(0.97) 会锚坏 position:fixed）；注册进 hideContextMenu 拿外点关闭；Escape 顺序=弹层开着先关弹层（hideContextMenu 注册在 MRE keydown 之后自然让位）
+- site-config FLUIDCANVAS_VERSION v10.28.10.1 → v10.28.11（小更新位 10→11·小功能轮）+ fluidcanvas.html 首页 badge + 编辑器双字面量；ethereal.css 零改动 → 无需重跑 inline-css.js
+
+验证：本地静态壳 CDP 电池 59/59（F1 光标三态/F2 点线编辑全手势（删点·拖点·线插点·绘制态禁用·别区让位）/F3 色块四连+回显/F4 两栏结构+分割线+粗体/F5 ＋菜单两种添加+删/F6 ☰ 全链+草稿往返+恢复默认/F7 旧草稿兼容+回归 10/10.1 链（工具篮/字体同步）/0 console error）+ smoke-admin 49/49 + 线上同款 59/59 + curl 五连（/ 200 + 编辑器页含 v10.28.11 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00038-jj7（100% 流量）
+
+教训：
+㊺ SVGElement 不继承 HTMLElement.click()：polygon.click 是 undefined——合成点击 SVG 元素必须 dispatchEvent(new MouseEvent('click', {bubbles:true, cancelable:true}))（HTML 按钮 .click() 照旧可用）
+㊻ backend-v2 根级一次性电池 ROOT 只需上一级 path.join(__dirname,'..')（smoke-admin 在 scripts/ 才是两级）——错两级 ROOT 指到 Downloads，DOCS 全 404、页面空壳、createMapCard undefined 全红
+㊼ MouseEvent clientX/clientY 是 WebIDL long：构造器把小数截断成整数（CDP 实测 264.59→264），页面 handler 收到的本来就是整数——电池期望计算必须同截断（Math.trunc）或派发前 Math.round，拿派发前小数算期望必差 0.1 假红
+㊽ CSS 过渡竞态 + display 块化：.input-glass transition all 0.2s——设 inline 样式后同步读 computed 拿到过渡起点值（白 0.6），等 400ms 过渡落定再断言；绝对定位元素 display:inline-flex 计算值被块化为 flex——可见性断言用 != 'none' 而不是 === 'inline-flex'
