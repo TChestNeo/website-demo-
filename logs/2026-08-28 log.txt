@@ -477,3 +477,22 @@
 ㉚ 新区域颜色按索引轮换 MRE_COLORS[st.regions.length % MRE_COLORS.length]（不是继承最后选色）→ 断言预期色先读创建代码再写期望值；删中间区域后剩余区域颜色不变
 ㉛ 标签水平居中断言必须含平移量：left = 包围盒中心 − 标签宽/2（translate(-50%) 已把标签左移半宽）——教训 ㉘ 变体再犯，几何断言一律「目标 = 定位点 + transform 偏移」两步算
 ㉜ 本地静态壳无后端 → 页面 api.js 健康检查 /api/health 404 污染 console error；电池侧过滤 /api/ 前缀（线上真后端 200 不出现）——环境噪声与产品 bug 分开，先看 entry.url
+────────────────────────────────────────
+2026-08-30 v10.28.9.3 — 区域名称标签区域正中间 + 框完自动弹名称面板（rev 00035-9k9）
+
+真身（用户）：
+「为什么我打开地图区域中间没有显示啊？」——问询确认「没有显示的东西」= 区域名称；线上 CDP 探针抓出真身 bug：openMapRegionEditor 在 classList.add('active') 之前先 mreRerender()，此时 overlay 尚在 display:none、mreCanvas 高度为 0，v10.28.9.1 上缘居中算法量 canvasH=0 → 全部落回退分支（top:30%; translate(-50%,0) 贴顶），标签不在区域中间/上缘任何正确位置。问询钦定两处：①名称位置=区域正中间（质心）；②命名方式=框完自动弹面板（均翻回 v10.28.9 原口径，撤销 v10.28.9.1）。
+
+改动（docs/pages/fluidcanvas-editor.html）：
+- mreRenderLabels 重写：质心居中——left/top = mapRegionCentroid(pts)（顶点平均，非包围盒中心）%，transform 只用基类 translate(-50%,-50%)（translate 不进 inline style）；质心算法不量画布高，display:none 量高 bug 整个类别根除；mapRegionTopCenter 死代码删除（mapRegionCentroid 保留）
+- closeMapRegionDraw 闭合后恢复自动滑出名称面板：openMapRegionPanel(region.id) + showToast('区域已框好 · 填个名字吧')（v10.28.9 原钦定，mreName 随面板聚焦直接输名字）；v10.28.9.1「点区域/列表才滑出」口径翻回
+- 卡面口径不动（v10.28.9.2：只画多边形不显示名称、无钉子）；注释块 JS/CSS 同步三代迁移史
+- site-config FLUIDCANVAS_VERSION v10.28.9.2 → v10.28.9.3（补丁位 2→3·口径修正轮）+ fluidcanvas.html 首页 badge + 编辑器双字面量
+
+验证：本地静态壳 CDP 电池 53/53（badge v10.28.9.3/v10.28.9.2 全回归（单点无钉子/无图双击不开/卡面无标签无钉子/草稿无 mapPins/旧草稿 mapPins 忽略）/闭合后【面板自动滑出 + currentId 新区域 + mreName 聚焦 + toast】/标签质心几何（40%−w/2、50%−h/2、translate 数值）/颜色 #ff6b6b 索引轮换/区域 2 双击闭合 pts=5 去重后同样自动弹面板/区域 2 质心 (50,8.5)/区域 1 标签不受影响/列表点开面板回归/删除后面板滑回/重开编辑器标签即质心渲染（真身 bug 回归断言）+ 面板不弹/移动端闭合后自动弹面板/0 console error + 0 Runtime.exceptionThrown）+ smoke-admin 49/49 + 线上同款 53/53 + curl 五连（/ 200 + 编辑器页含 v10.28.9.3 + /signup-and-login 200 + /pages/dashboard.html 404 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00035-9k9（100% 流量）
+
+教训：
+㉝ display:none 阶段量高必为 0：编辑器开盒瞬间渲染（类激活前）量任何几何都是废值——要么把测量挪到激活后，要么算法根本不量（本轮质心 % 定位不量高，顺带根除）；排查「打开后位置不对」先查渲染时刻元素是否已可见
+㉞ 电池画新区域点位要避开既有区域多边形：多边形 click 处理 stopPropagation + 开面板，落在老区域内的点永远到不了画布绘制监听（探针场景 B FATAL 一次）；测试点位按区域互斥规划
+㉟ 「全文无残留」断言用 innerText 后也要防同轮新增文案自撞：旧注释文本已从 innerText 排除，但断言目标文案（如 toast）若与残留检查词重复要先理清语义归属
+㊱ 面板自动滑出类断言 = classList.contains('active') + currentId + activeElement 三连（滑出视觉态/选中态/聚焦态分开验，缺一即假绿）
