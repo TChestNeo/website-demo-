@@ -458,3 +458,22 @@
 ㉖ 草稿结构是 {cards:[...]} 不是 {entries:[...]}（buildDraft 产 cards）→ 电池探草稿 d.cards.find(type==='map')；断言草稿条目先 JSON.parse（dataset 值 JSON 字符串惯例）
 ㉗ 电池放 backend-v2/ 根时 ROOT = path.join(__dirname,'..')（'..','..' 是 smoke-admin 在 scripts/ 子目录的路径）——放错 → 静态服务 404 编辑器页、页面探针全空
 ㉘ transform 断言比对 -宽高/2（-lw/2,-lh）别比自造表达式；上缘居中标签底 = 最高点%-3px，需捕获 label 自身宽高（getBoundingClientRect）再容差比对
+────────────────────────────────────────
+2026-08-30 v10.28.9.2 — FluidCanvas 卡面钉子移除 + 名称只在编辑器显示（rev 00034-d9s）
+
+真身（用户）：
+「现在是我在外面没有打开地图的情况下单点可以设置地名请把这个功能移除，然后显示名称是只有在打开地图的情况下才会出现没有打开地图就只是展示区域」——「单点可以设置地名」= 卡面单击加标注点（钉子带「地点名」输入框，v10.28.9 钦定保留的功能）整体移除；「显示名称只有在打开地图才出现」= 卡面只展示区域多边形、名称标签只在编辑器舞台渲染（v10.28.9.1 上缘居中标签不动）。
+
+改动（docs/pages/fluidcanvas-editor.html）：
+- 钉子整体移除：click 260ms 定时监听 + mapPinsFromDataset/mapSerialize/mapRenderPins/addMapPin 四函数 + .map-pin CSS 整块（pin-dot/pin-label）+ 画布 cursor:crosshair + 草稿 mapPins 字段停写 + restoreMap 恢复调用全删——卡面单击不再有任何动作（双击上传/开编辑器不受影响）
+- 卡面只画区域：mapRenderRegions 删质心名称标签段（.grid-card .map-region-label 选择器退役），卡面 SVG 只留 .map-region-layer 多边形；编辑器 mreRenderLabels 上缘居中标签原样不动
+- 空卡提示改「双击上传地图图片 · 再双击地图可框区域」；草稿 v:9 历史链注明 mapPins 停写、旧草稿 mapPins 恢复时忽略不渲染（字段退役）
+- site-config FLUIDCANVAS_VERSION v10.28.9.1 → v10.28.9.2（补丁位 1→2·口径修正轮）+ fluidcanvas.html 首页 badge + 编辑器双字面量
+
+验证：本地静态壳 CDP 电池 52/52（badge v10.28.9.2/空卡提示新文案/全文无「单击加标注点」（innerText）/单点画布 700ms 无钉子/无图双击不开/有图双击开/上缘居中标签几何（含 -w/2 平移）回归/颜色索引轮换/删除/卡面无标签无钉子/草稿无 mapPins 字段/旧草稿注入 mapPins 忽略不渲染/移动端/0 console error + 0 exception）+ smoke-admin 49/49 + 线上同款 52/52 + curl 五连（/ 200 + 编辑器页 200 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00034-d9s（100% 流量）
+
+教训：
+㉙ document.body.textContent 包含 script/style 元素文本——JS 注释里的「单击加标注点」被当页面残留假红；「全文无残留」类断言用 innerText（布局可见文本，天然排除 script/style）
+㉚ 新区域颜色按索引轮换 MRE_COLORS[st.regions.length % MRE_COLORS.length]（不是继承最后选色）→ 断言预期色先读创建代码再写期望值；删中间区域后剩余区域颜色不变
+㉛ 标签水平居中断言必须含平移量：left = 包围盒中心 − 标签宽/2（translate(-50%) 已把标签左移半宽）——教训 ㉘ 变体再犯，几何断言一律「目标 = 定位点 + transform 偏移」两步算
+㉜ 本地静态壳无后端 → 页面 api.js 健康检查 /api/health 404 污染 console error；电池侧过滤 /api/ 前缀（线上真后端 200 不出现）——环境噪声与产品 bug 分开，先看 entry.url
