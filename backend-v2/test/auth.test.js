@@ -267,6 +267,45 @@ test('password-reset：策略失败不消费码 + 防枚举（不存在/错码�
   assert.strictEqual(a.db.prepare("SELECT consumed_at FROM email_codes WHERE email = 'ghost-rz@example.com'").get().consumed_at, null);
 });
 
+test('verify-code：正确码 200 且不消费码（同码 password-reset 仍可走通）；无码邮箱同款 400', async (t) => {
+  const a = await testApp();
+  t.after(() => a.close());
+  a.seedUser({ email: 'vz@example.com', passwordHash: await hashPassword('oldpass123') });
+  const code = await getCode(a, 'vz@example.com');
+  // 正确码 → 200 且码不消费
+  let res = await a.request('POST', '/api/auth/verify-code', { email: 'vz@example.com', code });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual((await res.json()).ok, true);
+  assert.strictEqual(a.db.prepare("SELECT consumed_at FROM email_codes WHERE email = 'vz@example.com'").get().consumed_at, null);
+  // 同码最终 password-reset 仍可走通（验码不占码）
+  res = await a.request('POST', '/api/auth/password-reset', { email: 'vz@example.com', code, newPassword: 'newpass123' });
+  assert.strictEqual(res.status, 200);
+  // 防枚举：从未发码的邮箱 → 同款 400
+  res = await a.request('POST', '/api/auth/verify-code', { email: 'never-vz@example.com', code: '000000' });
+  assert.strictEqual(res.status, 400);
+  assert.strictEqual((await res.json()).error.message, '验证码无效或已过期');
+});
+
+test('verify-code：错码计入共享 5 次锁（锁满后正确码 verify-code/password-reset 同拒）', async (t) => {
+  const a = await testApp();
+  t.after(() => a.close());
+  a.seedUser({ email: 'vl@example.com', passwordHash: await hashPassword('oldpass123') });
+  const code = await getCode(a, 'vl@example.com');
+  for (let i = 0; i < 5; i++) {
+    const r = await a.request('POST', '/api/auth/verify-code', { email: 'vl@example.com', code: '000000' });
+    assert.strictEqual(r.status, 400);
+    assert.strictEqual((await r.json()).error.message, '验证码无效或已过期');
+  }
+  // 锁满：正确码 verify-code 也拒（共享锁，输入段错码消耗预算）
+  let r = await a.request('POST', '/api/auth/verify-code', { email: 'vl@example.com', code });
+  assert.strictEqual(r.status, 400);
+  // password-reset 同步拒（同一锁）
+  r = await a.request('POST', '/api/auth/password-reset', { email: 'vl@example.com', code, newPassword: 'newpass123' });
+  assert.strictEqual(r.status, 400);
+  // 码仍未被消费（锁满不消费）
+  assert.strictEqual(a.db.prepare("SELECT consumed_at FROM email_codes WHERE email = 'vl@example.com'").get().consumed_at, null);
+});
+
 test('me：无会话 401；有会话返回 user（含订阅降级惰性检查）', async (t) => {
   const a = await testApp();
   t.after(() => a.close());

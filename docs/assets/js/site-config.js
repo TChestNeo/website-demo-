@@ -35,7 +35,9 @@ window.MN_SITE = window.MN_SITE || {};
 //   auth 页：忘记密码链接改跳新页（带已输邮箱，链接常显）、旧内嵌 resetForm/showReset/hideReset/handleReset 整体移除（小改动位·新功能轮；2026-08-30）
 // v0.2.5.1 = 忘记密码滑卡重叠修复（用户「现在是当输入新密码滑出时会和前面的6格重叠」）：新密码卡滑入时六格半透明残影（opacity 0.35）透过磨砂卡仍可见=重叠观感——
 //   六格段淡出改彻底消失（opacity 0）+ 淡出单独提速 0.3s ease-out（卡片滑到六格上方时六格已隐形）；滑卡节奏/回滑行为不变（补丁位·纯修复轮；2026-08-30）
-window.MN_SITE_VERSION = 'v0.2.5.1';
+// v0.2.5.2 = 忘记密码输满即验码（用户「为什么那个验证码随便打一个都可以啊」）：v0.2.5.0 滑卡只是视觉步骤、码从未被验过（最终提交才一次合验）——输满六位先验码：
+//   api 模式 POST /auth/verify-code（新端点：只验码不消费码、与 password-reset 共享 5 次错码锁）→ 码对滑卡/码错清格报错重输；demo 模式照旧任意六位直滑（补丁位·修复轮；2026-08-30）
+window.MN_SITE_VERSION = 'v0.2.5.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 window.FLUIDCANVAS_VERSION = 'v10.28.8.2';

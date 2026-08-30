@@ -5,6 +5,7 @@
 //        （有密码账号 = 密码+码；新注册强制密码 ≥8；旧账号仅码登录 + passwordSetupRequired 引导设密）
 //   POST /api/auth/password       （会话）{ newPassword }       → { ok, user }（首登设密/改密；清其他会话保当前）
 //   POST /api/auth/password-reset （无会话）{ email, code, newPassword } → { ok }（复用 login 码；清全部会话强制重登）
+//   POST /api/auth/verify-code （无会话）{ email, code } → { ok }（忘记密码输满先验：只验码不消费码，与 password-reset 共享 5 次锁）
 //   POST /api/auth/logout      （无会话也 200）                  → { ok }
 //   GET  /api/auth/me          （会话）                          → { user }
 //   PATCH /api/auth/me         （会话）{ displayName?, avatarUrl?, language?, country?, dob?, bio? } → { user }
@@ -339,6 +340,30 @@ function register(router, deps) {
     const next = ctx.db.prepare('SELECT * FROM users WHERE id = ?').get(ctx.user.id);
     sendJson(res, 200, { ok: true, user: publicUser(next) });
   }));
+
+  // ── 忘记密码验码（W6 增量：无会话；只验码不消费码——前端输满六位先验，最终 password-reset 再合验消费）──
+  // 与 password-reset 共享 attempts 计数（同一码同一爆破预算：输入段错码同样计入 5 次锁，锁满后两端同拒）
+  router.add('POST', '/api/auth/verify-code', async (req, res, ctx) => {
+    const body = await readJson(req);
+    const email = normalizeEmail(body.email);
+    const code = String(body.code || '').trim();
+    if (!EMAIL_RE.test(email) || !/^\d{6}$/.test(code))
+      throw new HttpError('VALIDATION', '请输入 6 位验证码');
+    if (!limit('verifyIp', 'vf:ip:' + ipOf(req), { max: 10, windowMs: 60 * 1000 }))
+      throw new HttpError('RATE_LIMITED', '尝试过于频繁，请稍后再试');
+
+    const now = Date.now();
+    const recent = db.prepare(
+      "SELECT * FROM email_codes WHERE email = ? AND purpose = 'login' AND actor_type = 'user' AND consumed_at IS NULL AND expires_at > ? ORDER BY created_at DESC LIMIT 1"
+    ).get(email, new Date(now).toISOString());
+    const row = recent && recent.code_hash === hashCode(code) ? recent : null;
+    if (!row || recent.attempts >= CODE_ATTEMPTS_MAX) {
+      if (recent && recent.attempts < CODE_ATTEMPTS_MAX)
+        db.prepare('UPDATE email_codes SET attempts = attempts + 1 WHERE code_hash = ?').run(recent.code_hash);
+      throw new HttpError('VALIDATION', '验证码无效或已过期'); // 防枚举：不存在/错码/过期/锁满同款响应
+    }
+    sendJson(res, 200, { ok: true }); // 不消费码：最终 password-reset 仍验码+消费，一次流程只收一次码
+  });
 
   // ── 忘记密码重置（W6：无会话；复用 login 码——邮箱所有权即权威，登录码/重置码安全等价）──
   router.add('POST', '/api/auth/password-reset', async (req, res, ctx) => {

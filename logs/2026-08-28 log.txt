@@ -381,3 +381,20 @@
 ⑭ 双段时长不同（六格淡程 0.3s vs 卡片滑程 0.6s）同刻采样必踩假红——落定断言逐属性分开 poll（opacity 先落定，tx 单独 poll 到 0 再测）
 ⑮ efp 取点六格元素 rect 中心戳出卡外（六格左移 -22% 后中心已出卡缘）命中「other」假红 → 取点改舞台（.rp-stages）rect 中心；此假红顺藤发现真缺陷：舞台无 overflow:hidden，滑程六格戳出卡左缘+停靠 110% 的新密码卡伸出卡右缘（横向滚动风险）→ 补 overflow:hidden（产品真修复）
 ⑯ Git Bash (MSYS) 把 / 开头命令行参数转成 Windows 路径（'/forgot-password' → 'C:/Program Files/Git/forgot-password'）→ BASE+PAGE 拼出垃圾 URL → Chrome 秒进 chrome-error://chromewebdata 错误页；且错误页 readyState 也是 'complete'——只判 readyState 的等待循环在错误页上照样通过、30s 静默超时后探针打 null 才炸（双重陷阱，本地跑不传参用默认值从未踩过）→ 线上电池只收一个完整 URL 参数（https:// 开头不被转换）；等待循环必须断言页面真身（已知元素出生），不能只信 readyState；排障靠采样 location.href 一眼锁定错误页
+────────────────────────────────────────
+2026-08-30 v0.2.5.2 — 忘记密码输满即验码：新端点 /api/auth/verify-code（rev 00030-lzk）
+
+真身（用户）：
+「为什么那个验证码随便打一个都可以啊」——v0.2.5.0 滑卡只是视觉步骤：输满六位任意码都会滑出密码卡，码从未被验过（只在最终提交时一次合验）。问询钦定「输满立即验码」。
+
+改动：
+- 后端 auth.js：新增 POST /api/auth/verify-code（无会话）{email, code} → {ok:true}——只验码**不消费码**（最终 password-reset 仍验码+消费，一次流程只收一次码）；与 password-reset 共享 attempts 计数（同一码同一爆破预算：输入段错码同样计入 5 次锁，锁满后两端同拒）；共享 vf:ip 限流 10/min；防枚举：不存在/错码/过期/锁满同款 400「验证码无效或已过期」；不认 devLoginCode
+- 前端 forgot-password.html：afterCodeChange/Enter 输满六位 → verifyThenSlide()——api 模式 POST /auth/verify-code：码对 250ms 后滑卡（留一拍让最后一格描边先亮）/码错清格+报错重输/429 提示稍后再试/网络失败提示重试；验码在途 codeVerifying 防连点、验码途中改格则本次结果作废；demo 模式照旧任意六位直滑
+- auth.test.js +2（正确码 200 且不消费码同码 password-reset 仍走通、错码计入共享 5 次锁锁满后正确码两端同拒）→ 184/184
+- site-config.js v0.2.5.1 → v0.2.5.2（补丁位 1→2·修复轮）
+
+验证：本地 docker CDP 双模式电池 15/15（demo 直滑回归 3 项/api 真码 407033 从 dev-mail 日志取/错码不滑+清格+报错/真码滑卡/回滑/最终 password-reset 合验通过回跳 reset=1（验码未消费码）/0 console error）+ smoke-admin 49/49 + npm test 184/184 + 线上同款 9/9（demo 3 项 + 生产 verify-code 假邮箱错码不滑+清格+报错+0 console error）+ curl /forgot-password 200 + /forgot-password.html 200 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0；部署 rev 00030-lzk（100% 流量）
+
+教训：
+⑰ 电池最终 password-reset 断言假红：测试邮箱必须是**已注册用户**——password-reset 防枚举对不存在账号同款 400 且不消费码（产品正确行为，电池选错了邮箱）；seed 只建 staff 不建公网用户 → 电池先 docker exec 直插用户行（createUser 唯一邮箱幂等键）再走页面流程
+⑱ PowerShell 逗号参数再犯（memory 已有「08-30 再犯」教训仍踩）：--add-volume=…,type=…,bucket=… 逗号被 PowerShell 拆成多参数 → gcloud 报 Key [type] required；两处卷参数整体双引号包裹才通过——cloudrun.md 命令段是 bash 语法，PowerShell 下逗号参数必加引号
