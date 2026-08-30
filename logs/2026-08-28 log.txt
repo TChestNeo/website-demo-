@@ -398,3 +398,22 @@
 教训：
 ⑰ 电池最终 password-reset 断言假红：测试邮箱必须是**已注册用户**——password-reset 防枚举对不存在账号同款 400 且不消费码（产品正确行为，电池选错了邮箱）；seed 只建 staff 不建公网用户 → 电池先 docker exec 直插用户行（createUser 唯一邮箱幂等键）再走页面流程
 ⑱ PowerShell 逗号参数再犯（memory 已有「08-30 再犯」教训仍踩）：--add-volume=…,type=…,bucket=… 逗号被 PowerShell 拆成多参数 → gcloud 报 Key [type] required；两处卷参数整体双引号包裹才通过——cloudrun.md 命令段是 bash 语法，PowerShell 下逗号参数必加引号
+────────────────────────────────────────
+2026-08-30 v0.2.5.3 — 忘记密码发码中性提示：purpose=password_reset + 迁移 012（rev 00031-frs）
+
+真身（用户）：
+「我填写了我的另外一个电子邮件为什么没有收到验证码」——排查：邮件其实发了（服务端 200、Gmail 已接件、快照里有码行），但收件邮箱未注册 → 收到的是「欢迎加入 M.NationWorld」注册文案（主题与忘记密码场景对不上，容易被当广告/进垃圾箱）；且该流程最终 password-reset 对不存在账号同款 400（防枚举）。用户原话要求「点击时检查有没有注册过、没注册就提示」——问询钦定「中性提示，不泄露注册状态」（直接查注册状态=枚举泄露，防枚举设计作废）。
+
+改动：
+- 后端 email-code 认 purpose='password_reset'；email.js 该目的注册与否**同款中性文案**（subject「M.NationWorld 验证码 / M.NationWorld verification code」，不含欢迎字样；接口响应形状不变，外部试不出注册状态）；login 目的文案不动（注册流程照旧）
+- **迁移 012：重建 email_codes 放宽 purpose CHECK**（001 建表约束 IN ('login','delete_confirm','staff_login') 拒新值——SQLite 不能改 CHECK，rename-建新-拷贝-删旧+重建索引；电池 pre-delivery 抓 SQLITE_CONSTRAINT_CHECK 真后端 bug）
+- **verify-code/password-reset 查码放宽 purpose IN ('login','password_reset')**（电池抓第二处真 bug：忘记密码发的码两处查询写死 purpose='login' 查不到）
+- 前端 forgot-password：发码带 purpose + 字幕改中性提示「If an account exists for … the code is on its way — If nothing arrives, this email isn't registered — sign up first」
+- 测试 +3（中性文案注册与否同款/login 目的欢迎文案不动、password_reset 码落库、password_reset 码可验可消费）+ 迁移数断言 11→12 → 187/187
+- site-config v0.2.5.2 → v0.2.5.3（补丁位 2→3·修复轮）
+
+验证：本地 docker CDP 双模式电池 17/17（demo 直滑回归/未注册邮箱发码→中性字幕+嵌入邮箱+邮箱行隐藏/dev-mail 日志 purpose=password_reset/注册邮箱全链路：错码不滑+清格+报错/真码滑卡/最终 password-reset 回跳 reset=1/0 console error）+ smoke-admin 49/49 + npm test 187/187 + 线上同款 10/10（demo 3 项 + 假邮箱发码中性字幕+倒计时+0 console error）+ **生产库快照实证：password_reset 目的码行落库 + user_version=12（迁移 012 生效）** + curl /forgot-password 200 + /forgot-password.html 200 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0；部署 rev 00031-frs（100% 流量）
+
+教训：
+⑲ 新增枚举值必须同步查 DB CHECK 约束（email_codes.purpose 白名单在 001 建表写死）——路由级测试（POST 落库断言）能抓，纯单测（email.js 文案）抓不到；两处查询写死 purpose='login' 同样只有全链路电池抓得到：**改动跨越「发码-存码-查码」链路时，电池必须走完整条链路**
+⑳ SQLite 放宽 CHECK 只能重建表（rename-建新-拷贝-删旧），email_codes 无外键引用安全；生产库重建在迁移启动时做，存量未过期码全保留

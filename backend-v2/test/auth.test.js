@@ -28,6 +28,53 @@ test('email-code：防枚举恒 ok + 邮件桩记录（新邮箱 registered=fals
   assert.strictEqual(a.mails[0].opts.purpose, 'login');
 });
 
+test('email-code password_reset 目的：注册与否同款中性文案（防枚举不泄露、不误导）', async (t) => {
+  // createMailer 的文案分支在 sendMail 前拼好 → 桩住 nodemailer.createTransport 捕获 mail 对象（测完还原）
+  const nodemailer = require('nodemailer');
+  const origCreateTransport = nodemailer.createTransport;
+  const sent = [];
+  nodemailer.createTransport = () => ({ sendMail: async (opts) => { sent.push(opts); return {}; } });
+  t.after(() => { nodemailer.createTransport = origCreateTransport; });
+
+  const { createMailer } = require('../src/email');
+  const mailer = createMailer({
+    mail: { smtp: { host: 'smtp.test', port: 465, secure: true, user: 'u', pass: 'p' }, from: 'M.NationWorld <test@gmail.com>' },
+    adminEmail: 'a@b.c'
+  });
+  await mailer.sendCode('x@y.z', '123456', { purpose: 'password_reset', registered: true });
+  await mailer.sendCode('x@y.z', '123456', { purpose: 'password_reset', registered: false });
+  assert.strictEqual(sent.length, 2);
+  assert.strictEqual(sent[0].subject, sent[1].subject); // 注册与否同款
+  assert.strictEqual(sent[0].text, sent[1].text);
+  assert.ok(!sent[0].subject.includes('欢迎'), '中性文案不含欢迎字样');
+  assert.ok(!sent[0].text.includes('Welcome to M.NationWorld'), '中性文案不含注册欢迎句');
+  assert.ok(sent[0].text.includes('123456'), '中性文案仍含验证码');
+  // login 目的 registered=false 仍是欢迎文案（注册流程不受影响）
+  await mailer.sendCode('x@y.z', '123456', { purpose: 'login', registered: false });
+  assert.ok(sent[2].subject.includes('欢迎加入'), 'login 目的未注册仍欢迎文案');
+});
+
+test('email-code password_reset 目的：200 + 码行落库（012 放宽 CHECK 后）', async (t) => {
+  const a = await testApp();
+  t.after(() => a.close());
+  const res = await a.request('POST', '/api/auth/email-code', { email: 'rp@example.com', purpose: 'password_reset' });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(a.mails.at(-1).opts.purpose, 'password_reset');
+  const row = a.db.prepare("SELECT purpose FROM email_codes WHERE email = 'rp@example.com'").get();
+  assert.strictEqual(row.purpose, 'password_reset'); // INSERT 落库不被 CHECK 约束拒
+});
+
+test('verify-code/password-reset：password_reset 目的的码同样可验可消费', async (t) => {
+  const a = await testApp();
+  t.after(() => a.close());
+  a.seedUser({ email: 'pr@example.com' });
+  const code = await getCode(a, 'pr@example.com', 'password_reset');
+  let res = await a.request('POST', '/api/auth/verify-code', { email: 'pr@example.com', code });
+  assert.strictEqual(res.status, 200);
+  res = await a.request('POST', '/api/auth/password-reset', { email: 'pr@example.com', code, newPassword: 'newpass123' });
+  assert.strictEqual(res.status, 200);
+});
+
 test('email-code：60s 内重发 429', async (t) => {
   const a = await testApp();
   t.after(() => a.close());

@@ -37,7 +37,10 @@ window.MN_SITE = window.MN_SITE || {};
 //   六格段淡出改彻底消失（opacity 0）+ 淡出单独提速 0.3s ease-out（卡片滑到六格上方时六格已隐形）；滑卡节奏/回滑行为不变（补丁位·纯修复轮；2026-08-30）
 // v0.2.5.2 = 忘记密码输满即验码（用户「为什么那个验证码随便打一个都可以啊」）：v0.2.5.0 滑卡只是视觉步骤、码从未被验过（最终提交才一次合验）——输满六位先验码：
 //   api 模式 POST /auth/verify-code（新端点：只验码不消费码、与 password-reset 共享 5 次错码锁）→ 码对滑卡/码错清格报错重输；demo 模式照旧任意六位直滑（补丁位·修复轮；2026-08-30）
-window.MN_SITE_VERSION = 'v0.2.5.2';
+// v0.2.5.3 = 忘记密码发码中性提示（用户「我填写了我的另外一个电子邮件为什么没有收到验证码」→问询钦定「中性提示，不泄露注册状态」）：
+//   未注册邮箱点击发码不再收到「欢迎加入 M.NationWorld」误导邮件——新 purpose=password_reset 注册与否同款中性验证码文案（防枚举：接口响应形状不变、外部试不出注册状态）；
+//   页面字幕改中性提示「If an account exists for … the code is on its way — If nothing arrives, this email isn't registered — sign up first」（补丁位·修复轮；2026-08-30）
+window.MN_SITE_VERSION = 'v0.2.5.3';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 window.FLUIDCANVAS_VERSION = 'v10.28.8.2';

@@ -17,23 +17,29 @@ function createMailer(cfg) {
       })
     : null;
 
-  // 防枚举：未注册/已注册邮件文案不同，但接口响应一致
+  // 防枚举：未注册/已注册邮件文案不同，但接口响应一致（password_reset 目的例外——注册与否同款中性文案，
+  // 「欢迎加入」在忘记密码语境会误导收件人；接口响应形状仍不变，外部试不出注册状态）
   function sendCode(email, code, opts = {}) {
     const registered = opts.registered !== false;
     const purpose = opts.purpose || 'login';
     const staff = purpose === 'staff_login';
+    const neutral = purpose === 'password_reset';
 
     const subject = staff
       ? 'SlatiControl 管理后台登录验证码 / SlatiControl sign-in code'
-      : registered
-        ? 'M.NationWorld 登录验证码 / Sign-in code'
-        : '欢迎加入 M.NationWorld / Welcome to M.NationWorld';
+      : neutral
+        ? 'M.NationWorld 验证码 / M.NationWorld verification code'
+        : registered
+          ? 'M.NationWorld 登录验证码 / Sign-in code'
+          : '欢迎加入 M.NationWorld / Welcome to M.NationWorld';
     const text =
       (staff
         ? '您的 SlatiControl 管理后台登录验证码是：' + code + '\n10 分钟内有效。若非本人操作请立即报告。\n\n'
-        : registered
-          ? '您的登录验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n'
-          : '感谢注册 M.NationWorld！您的验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n') +
+        : neutral
+          ? '您的 M.NationWorld 验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n'
+          : registered
+            ? '您的登录验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n'
+            : '感谢注册 M.NationWorld！您的验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n') +
       (staff
         ? 'Your SlatiControl verification code: ' + code +
           '\nValid for 10 minutes. If this was not you, report it immediately.'

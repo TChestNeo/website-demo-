@@ -91,7 +91,9 @@ function register(router, deps) {
   // ── 发码 ──
   router.add('POST', '/api/auth/email-code', async (req, res, ctx) => {
     const body = await readJson(req);
-    const purpose = body.purpose === 'delete_confirm' ? 'delete_confirm' : 'login';
+    // password_reset：忘记密码发码（注册与否同款中性文案——不泄露注册状态；其余目的默认 login）
+    const purpose = body.purpose === 'delete_confirm' ? 'delete_confirm'
+      : body.purpose === 'password_reset' ? 'password_reset' : 'login';
     let email = normalizeEmail(body.email);
     if (purpose === 'delete_confirm') {
       email = authenticate(ctx.db, req, res, ctx).email; // 需会话，邮箱强制取当前用户
@@ -354,7 +356,8 @@ function register(router, deps) {
 
     const now = Date.now();
     const recent = db.prepare(
-      "SELECT * FROM email_codes WHERE email = ? AND purpose = 'login' AND actor_type = 'user' AND consumed_at IS NULL AND expires_at > ? ORDER BY created_at DESC LIMIT 1"
+      // v0.2.5.3：忘记密码发码 purpose 已是 password_reset——与历史 login 码同验（取最新一枚）
+      "SELECT * FROM email_codes WHERE email = ? AND purpose IN ('login','password_reset') AND actor_type = 'user' AND consumed_at IS NULL AND expires_at > ? ORDER BY created_at DESC LIMIT 1"
     ).get(email, new Date(now).toISOString());
     const row = recent && recent.code_hash === hashCode(code) ? recent : null;
     if (!row || recent.attempts >= CODE_ATTEMPTS_MAX) {
@@ -365,7 +368,7 @@ function register(router, deps) {
     sendJson(res, 200, { ok: true }); // 不消费码：最终 password-reset 仍验码+消费，一次流程只收一次码
   });
 
-  // ── 忘记密码重置（W6：无会话；复用 login 码——邮箱所有权即权威，登录码/重置码安全等价）──
+  // ── 忘记密码重置（W6：无会话；login/password_reset 码同验——邮箱所有权即权威，两类码安全等价）──
   router.add('POST', '/api/auth/password-reset', async (req, res, ctx) => {
     const body = await readJson(req);
     const email = normalizeEmail(body.email);
@@ -381,7 +384,8 @@ function register(router, deps) {
 
     const now = Date.now();
     const recent = db.prepare(
-      "SELECT * FROM email_codes WHERE email = ? AND purpose = 'login' AND actor_type = 'user' AND consumed_at IS NULL AND expires_at > ? ORDER BY created_at DESC LIMIT 1"
+      // v0.2.5.3：忘记密码发码 purpose 已是 password_reset——与历史 login 码同验（取最新一枚）
+      "SELECT * FROM email_codes WHERE email = ? AND purpose IN ('login','password_reset') AND actor_type = 'user' AND consumed_at IS NULL AND expires_at > ? ORDER BY created_at DESC LIMIT 1"
     ).get(email, new Date(now).toISOString());
     const row = recent && recent.code_hash === hashCode(code) ? recent : null;
     if (!row || recent.attempts >= CODE_ATTEMPTS_MAX) {
