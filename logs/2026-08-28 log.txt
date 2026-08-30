@@ -337,4 +337,30 @@
 验证：本地 docker CDP 电池 45/45（条款在注册表单内+按钮上方/登录态被蓝板压盖 efp 命中蓝板系/未勾登录不拦跳根页/未勾注册拦截错误提示+不跳转/拦截报错后注册半仍不溢出/勾选后注册跳 onboarding/两半纵向不溢出/动画钟中段自洽/移动端条款随注册半显隐/0 console error）+ smoke-admin 49/49 + 线上同款 45/45 + curl /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0；部署 rev 00027-mq7（100% 流量）
 
 教训（电池）：
-⑥ 电池恢复新招——基版 Read tool_result 在转录里自带全文（行号前缀可剥），后续 Edit 依序重放即可精确还原最终版（14 处 Edit 0 遗漏）；比凭记忆重写可靠。删 tmp 前转录就是备份。
+⑥ 电池恢复新招——基版 Read tool_result 在转录里自带全文（行号前缀可剥），后续 Edit 依序重放即可精确还原最终版（14 处 Edit 0 遗漏）；比凭记忆重写可靠。删 tmp 前转录就是备份。────────────────────────────────────────
+2026-08-30 v0.2.5.0 — Forgot Password 独立页：六格验证码 → 滑出新密码卡（rev 00028-dzf）
+
+真身（用户）：
+「把Forgot Passwords 变成一个单独的链接页面 然后用户刚打开时只有一个六格验证码输入框 输入完后 输入新密码的卡片才滑出 需要输入一个新密码和一个再次确认」——auth 页 Forgot password 链接变成独立页，打开只有六格验证码，输满后新密码卡滑出（新密码 + 再次确认两框）。
+
+改动：
+- docs/forgot-password.html（新页，根级 → canonical /forgot-password 走 entrypoint .html 回退）：打开只有六格验证码（rpC0–5，52×60、移动端 44×52，inputmode numeric；逐格自动跳格、空格退格清上一格回焦、粘贴按位分发）；输满六位 250ms 后 .rp-step2 → 新密码卡滑入：rpPassStage absolute inset 0 初始 translateX(110%) 停右外侧，0.6s cubic-bezier(0.4,0,0.2,1) 滑到 0 + opacity 0→1、验证码段同步 translateX(-22%) + opacity 0.35 + pointer-events none；新密码卡 = 新密码 + 再次确认 + Reset Password + Back to code（回滑，与 auth 页同动画语言）；品牌行 + 页脚在滑动区外两段常显
+- 后端无独立验码端点 → 输满即滑是 UI 步骤，最终一次 POST /api/auth/password-reset {email, code, newPassword}（后端单端点合验：密码 8-72 → 两次一致 → code ^\d{6}$ → 换码消费）；错码/过期 → 新密码卡报错 + Back to code 回滑；429 → 「Too many attempts — please wait a minute」
+- api 模式进页自动发码（?email= 直达跳过邮箱输入 / 无邮箱先输邮箱 + Send Code；60s 倒计时 Resend code；429 如实提示请稍候）；demo 模式任意六位（rpDemoHint）
+- 成功 → 回跳 /signup-and-login?reset=1&email=…（auth 页预填邮箱 + 清空密码框 + 提示「Password reset — log in with your new password」，demo/api 双模式）
+- signup-and-login.html：forgot 链接常显（原 inline 弹窗式 #resetForm 整体删除——旧 resetForm 在 auth 页内滑出的方案退役）；goForgot() 带已输邮箱跳转；codeSent/countdown 拆 signup/login 两路、showReset/hideReset/handleReset 删除
+- site-config.js v0.2.4.2 → v0.2.5.0（小改动位 4→5·新功能轮）
+- inline-css.js 重跑 44 页同步（全量 HTML 已内联幂等；新页两枚 Fonts link + ethereal link 已内联，transitions 脚本不在 → 无 pre-stagger）
+
+验证：本地 docker CDP 电池 48/48（①打开仅六格+新密码卡停右外侧 opacity 0 ②空格退格拦截 defaultPrevented+清上一格回焦 ③粘贴分发+输满滑卡动画钟中段自洽 progress∈(0.2,0.95)+终点 tx=0+验证码段左移淡出不可点+新密码框获焦 ④8-72+两次一致拦截+报错态卡不溢出+拦截不跳转 ⑤Back to code 回滑+错误行复位 ⑥五位数不滑卡 ⑦补满滑卡+成功回跳 reset=1 ⑧auth 页预填+提示+forgot 常显+登录半不溢出 ⑨forgot 带已输邮箱跳转（%40 编码）⑩移动端 375 格宽 44+无横溢+滑卡不溢出 ⑪0 console error）+ smoke-admin 49/49 + 本地 api 模式 8/8（自动发码+字幕含邮箱+demo 提示隐藏+60s 倒计时+邮箱行隐藏+输满滑卡+0 error，dev-mail console 兜底）+ 线上同款 48/48 + curl /forgot-password 200 + /forgot-password.html 200 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0；部署 rev 00028-dzf（100% 流量）
+
+线上 api 实调：POST /api/auth/email-code → 200 {ok, ttlMs:600000, resendMs:60000}（真实验证码邮件已发管理员邮箱 microcountry2677@gmail.com 一封）；此前两轮 429 真身 = 后端同邮箱 60s 冷却（ec:email 1 次/60s）——连测撞上冷却窗口，非 IP 限额非页面 bug（页面 429 提示本来就正确）。**后端批候选**：ec:ip 5 次/时/共享家宽——家人共用 IP 测登录流（每次登录=一封验证码）可能撞 5/时上限，候选放宽 IP 预算。
+
+教训（电池）：
+⑦ Chrome 151 getAnimations() 返回的 CSSTransition 包装对象无 getComputedTiming（instanceof Animation false、原型空壳、仅 transitionProperty 可读）→ 动画钟断言改取 x.effect（KeyframeEffect）.getComputedTiming().progress（实测 currentTime 233ms / progress 0.5906 / computed tx 207 三者自洽）
+⑧ 合成 KeyboardEvent 不触发浏览器默认动作（退格不删字）→ 有值格退格测试须手动 value='' + dispatch input 模拟默认行为链；空格退格拦截断言读 defaultPrevented
+⑨ 类隐藏元素 showError：style.display='' 会落回样式表 none → 必须显式 'block'（.rp-error 由类隐藏）
+⑩ 报错态高度实测：新密码卡 min-height 430 装不下报错行（实测 436px）溢出 6px → 460 留余量；电池带 scrollHeight≤clientHeight+1 断言
+⑪ slideBack 回滑断言必须 poll（立即读在转场中途 tx<300 假 FAIL）
+⑫ inline node -e 双反斜杠 Windows 路径再坏（ENOENT "C:Program Files..."）→ 一律写 tmp .js 文件跑
+⑬ Bash 工具里误用 PowerShell here-string @'...'@ 提交（bash 把 @ 当字面字符拼进 message 头尾）+ git commit --amend -F file 配 --no-edit 时 --no-edit 会覆盖 -F（message 原样不动）→ 修正链：git log -1 --format=%B | sed '/^@$/d' | sed '/^$/d' > tmp && git commit --amend -F tmp；教训：commit message 一律 -F 临时文件传参，绝不内联多行引号
