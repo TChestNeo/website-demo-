@@ -565,3 +565,25 @@
 ㊻ backend-v2 根级一次性电池 ROOT 只需上一级 path.join(__dirname,'..')（smoke-admin 在 scripts/ 才是两级）——错两级 ROOT 指到 Downloads，DOCS 全 404、页面空壳、createMapCard undefined 全红
 ㊼ MouseEvent clientX/clientY 是 WebIDL long：构造器把小数截断成整数（CDP 实测 264.59→264），页面 handler 收到的本来就是整数——电池期望计算必须同截断（Math.trunc）或派发前 Math.round，拿派发前小数算期望必差 0.1 假红
 ㊽ CSS 过渡竞态 + display 块化：.input-glass transition all 0.2s——设 inline 样式后同步读 computed 拿到过渡起点值（白 0.6），等 400ms 过渡落定再断言；绝对定位元素 display:inline-flex 计算值被块化为 flex——可见性断言用 != 'none' 而不是 === 'inline-flex'
+────────────────────────────────────────
+2026-08-31 v10.28.12 — 地图缩放平移+两排信息左右+☰拖动手柄（代码完成·rev 00039 待部署）
+
+真身（用户）：
+「为什么两排信息不是左右的？而是上下的？然后你放在右上角的那三条横线是要做什么？也没办法拖动啊，还有增加一下地图放大缩小功能和拖动功能」——三问：①v10.28.11 的两排信息块标题/内容其实是上下堆叠（块只有纵向 append，无横排规则）；②☰ 角标只有点击开外观弹窗一个功能，用户以为是拖动手柄；③地图编辑器无缩放/平移。问询钦定四项：①三条横「改成拖动手柄」——按住拖动整个信息面板（点击开外观弹窗原功能保留→双手势）②缩放「只要鼠标滚轮」（不加 +/− 按钮）③拖动「空格/中键拖」④触屏「本轮只做电脑端」（手机保持现状点选/画区域，捏合下轮）。
+
+改动（docs/pages/fluidcanvas-editor.html）：
+- 两排信息左右：twrap+cwrap 包进新 .mre-info-row 横排（标题 flex:0 0 40%、内容弹性；≤768 回纵排 + flex:none 清高度基准）
+- 缩放/平移（wrapper 变换方案）：#mreCanvas 内加 #mreView 包装层（img/svg/pts/handles/labels 移入、#mreTip 留外不缩放），position:absolute+inset:0+transform-origin:0 0 承载 translate(tx,ty) scale(s)——渲染器全 % 定位零改动，只有 5 处 client↔% 数学过 mreScreenToPct/mrePctToScreen 辅助（mreDragMove/画图 click/头尾闭合阈值补 ×s/顶点三命中/wheel 锚定）；视图状态 mreView {s∈[1,4],tx,ty} 不进草稿、开编辑器复位；滚轮光标锚定 f=1.15、deltaMode===1 归一 ×16、tx/ty clamp [W−W·s,0]、s=1 归零锁平移（整图可见无平移空间）
+- 平移：画布 mousedown e.button===1（中键）或 button===0 且 mreSpaceDown（空格+左键）→ mreStartPan（window 三监听、每次从 base 重算防漂移）；松手 movedFar 且 viaLeft 才置 mreSuppressClick（中键无 click、置了会误吞真点击）；Space keydown 只拦 overlay active + 非 INPUT/TEXTAREA/SELECT/BUTTON/A/contenteditable（BUTTON 必须入列防断键盘激活）；Escape/blur 清平移态
+- ☰ 双手势：mousedown 记起点，位移 >4px 转 mrePanelFreefloat（面板换 inline left/top/width/height 漂浮 + transform:none 压 .active translateX + transition:none）+ 视口 clamp；松手 movedFar → mrePanelDragSuppress 600ms 时间戳消费式抑制补发 click（布尔旗标会误吞）；位移 ≤4px 松手照旧 onclick → 外观弹窗（原链完好）；hideMapRegionPanel 复位漂浮回 dock
+- 提示语副标题 + 绘制态 tip 追加「滚轮缩放 · 空格或中键拖动」；window.mreViewState() 测试钩子
+- 版本 v10.28.11 → v10.28.12（小更新位 11→12·小功能轮）：site-config + fluidcanvas.html badge + 编辑器双字面量；ethereal.css 零改动 → 无需重跑 inline-css.js
+
+验证：本地静态壳 CDP 电池 97/97（三轮收敛 82→95→97：F1 两排左右含 375px 回纵排/F2 滚轮锚定公式+锚定不变量+clamp 区间/F3 中键+空格平移+viaLeft 门控/F4 缩放后坐标全链（头尾 ×s 红绿判定点）/F5 ☰ 双手势（位移·clamp·抑制·亚阈值·dock 复位·Escape 冻结）/F6 v10.28.11 全回归（光标三态/点线编辑/色块/两栏/＋菜单/☰ 纯点击链/旧草稿）+ 0 console error）+ smoke-admin 49/49；部署留待下轮（rev 00039 未发，线上仍 00038-jj7）
+
+教训：
+㊾ 面板包含块是 .mre-side 不是 .mre-shell——backdrop-filter: blur(32px) 建立包含块（CSS 规格与 filter/transform 同族），面板是 side 的子元素，absolute 坐标相对 side 的 padding box 而非 shell；float/clamp 用 shell rect 减坐标 → style.left=729 渲染在 971px 外、clamp 上限失效右缘 2229 越屏。修法：float/clamp 改用 offsetParent 实测锚（Chrome 会把这种 static 包含块如实报进 offsetParent）+ clientLeft/clientTop 修正到 padding box；症状特征=style 值正确但渲染位置恒偏移一个常数、clamp 断言越界——凡「style 对而渲染错」先查包含块
+㊿ 电池期望鼠标位移要从「上一事件端点」算起：float 触发的那步 +8 移动也是真实起点，第二步派发 (bx−32) 的真实增量是 (bx−32)−(bx+8)=−48 不是 −40——真实鼠标事件是增量链，期望不能按「相对按下点」算；同理平移断言累计多段会撞 clamp 下限（W−W·s），滚轮锚点放画布角落而不是中心（中心锚点一次吃掉一半预算，后续平移必被截断成神秘小数）
+⑤① 页面监听事件类型必须查实际代码不能凭语义猜：工具篮外点收起走 document click（不是 mousedown）——派 mousedown 无 handler、after='flex' 假红；另合成事件不真聚焦，先 blur() 清选区再派 click 才过 textSelInCard/textSelInInput 守卫
+⑤② window.mreViewState() 返回活引用：电池 var v0 = view() 后 v−v0 恒 0（同一对象）——断言前必须取原语快照（v0x = view().tx）
+⑤③ 行内 flex 容器层级：输入框 parentElement 是 .mre-input-wrap（不是行）——布局断言取 parentElement.parentElement（行），fd/宽度/同父断言全挂错层会假红

@@ -2276,6 +2276,11 @@ body.pre-stagger .auth-card { opacity: 0; }
     .mre-h.head { background: #fff; border-color: var(--color-primary); }
     .mre-h:hover { transform: scale(1.15); }
     .mre-canvas.mre-ptdrag, .mre-canvas.mre-ptdrag .mre-h { cursor: grabbing; }
+    /* v10.28.12: 视图包装层（滚轮缩放 + 空格/中键平移只变换本层） */
+    #mreView { position: absolute; inset: 0; transform-origin: 0 0; will-change: transform; }
+    /* v10.28.12: 平移光标——空格按住未拖 grab、拖动中 grabbing（压过 .mre-poly pointer 与 .mre-h grab） */
+    .mre-canvas.space-pan, .mre-canvas.space-pan .mre-poly { cursor: grab; }
+    .mre-canvas.mre-pan, .mre-canvas.mre-pan .mre-h, .mre-canvas.mre-pan .mre-poly { cursor: grabbing; }
     .mre-tip {
       position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
       max-width: 86%; padding: 9px 16px; border-radius: 20px; font-size: 12px;
@@ -2347,6 +2352,9 @@ body.pre-stagger .auth-card { opacity: 0; }
     }
     .mre-input-wrap:hover .mre-cfg-btn,
     .mre-input-wrap:focus-within .mre-cfg-btn { display: inline-flex; }
+    /* v10.28.12: 两排信息标题/内容左右并排（标题定宽 40%，内容弹性） */
+    .mre-info-row { display: flex; gap: 5px; align-items: flex-start; }
+    .mre-info-row > .mre-input-wrap:first-child { flex: 0 0 40%; min-width: 0; }
     .mre-custom.active { box-shadow: 0 0 0 2px var(--color-primary); border-radius: 50%; }
     .context-menu-item:disabled { opacity: 0.4; cursor: default; }
     .mre-del-block { color: var(--color-outline); width: 20px; height: 20px; padding: 0; border: none; border-radius: 4px; background: transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
@@ -2359,6 +2367,8 @@ body.pre-stagger .auth-card { opacity: 0; }
       .mre-list { max-height: 22vh; }
       .mre-panel { top: 10px; bottom: 10px; width: min(480px, 92vw); }
       .mre-columns { flex-direction: column; } /* v10.28.11: 窄屏两栏纵排 */
+      .mre-info-row { flex-direction: column; } /* v10.28.12: 窄屏两排信息回纵排 */
+      .mre-info-row > .mre-input-wrap:first-child { flex: none; } /* 纵排清 40% 高度基准 */
       .mre-col-left { flex: none; max-height: 26vh; }
       .mre-col-divider { width: auto; height: 1px; margin: 6px 0; }
       .mre-head-txt p { display: none; } /* 手机屏幕窄，提示语让位给台面提示 */
@@ -3904,19 +3914,23 @@ body.pre-stagger .auth-card { opacity: 0; }
         <span class="material-symbols-outlined">polyline</span>
         <div class="mre-head-txt">
           <h3 class="headline-md">区域编辑器</h3>
-          <p class="label-sm" style="color:var(--color-outline);margin:0">点击落点框区域 · 点回第一个点闭合（双击同效）· 右键撤销上一点 · Esc 取消</p>
+          <p class="label-sm" style="color:var(--color-outline);margin:0">点击落点框区域 · 点回第一个点闭合（双击同效）· 右键撤销上一点 · Esc 取消 · 滚轮缩放 · 空格或中键拖动</p>
         </div>
         <button class="btn btn-ghost btn-icon btn-sm" onclick="closeMapRegionEditor()"><span class="material-symbols-outlined">close</span></button>
       </div>
       <div class="mre-canvas" id="mreCanvas">
-        <img id="mreImg" alt="地图" draggable="false">
-        <svg id="mreSvg" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <g id="mreRegionG"></g>
-          <polyline id="mrePreview" fill="none" stroke-width="1.5" stroke-dasharray="4 2"></polyline>
-        </svg>
-        <div id="mrePts"></div>
-        <div id="mreHandles"></div>
-        <div id="mreLabels"></div>
+        <!-- v10.28.12: 视图包装层——滚轮缩放/平移只变换本层；子层继续 % 定位
+             （渲染器零改动）；#mreTip 在外不缩放 -->
+        <div id="mreView">
+          <img id="mreImg" alt="地图" draggable="false">
+          <svg id="mreSvg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <g id="mreRegionG"></g>
+            <polyline id="mrePreview" fill="none" stroke-width="1.5" stroke-dasharray="4 2"></polyline>
+          </svg>
+          <div id="mrePts"></div>
+          <div id="mreHandles" class="mre-handles"></div>
+          <div id="mreLabels"></div>
+        </div>
         <div class="mre-tip hidden" id="mreTip"></div>
       </div>
     </div>
@@ -5557,6 +5571,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var mreDrag = null;            // { idx, startX, startY, movedFar } 顶点拖拽手势
   var mreSuppressClick = 0;      // 手势后 click 抑制时刻戳（0=不抑制；>600ms 过期自动失效——mouseup 落在画布外时不会有 click 来消费旗标，防误吞下一次点击）
   var mreStyleTarget = null;     // { key, el } ☰ 外观弹层当前目标
+  // v10.28.12: 视图/平移/面板拖拽状态（同块私有）
+  var mreView = { s: 1, tx: 0, ty: 0 }; // 视图变换：s 缩放(1-4)、tx/ty 平移(px，画布盒坐标)
+  var mrePan = null;                    // { ox, oy, baseTx, baseTy, movedFar, viaLeft } 平移手势
+  var mreSpaceDown = false;             // 空格按住（进入平移模式）
+  var mrePanelDrag = null;              // { startX, startY, lastX, lastY, movedFar } 面板拖拽手势
+  var mrePanelDragSuppress = 0;         // 面板拖动后 click 抑制时刻戳（同 mreSuppressClick 口径）
 
   function mapRegionsFromDataset(card) {
     try { return JSON.parse(card.dataset.mapRegions || '[]'); } catch (e) { return []; }
@@ -5619,6 +5639,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       drawing: null,
       currentId: null
     };
+    mreViewReset(); // v10.28.12: 开编辑器复位视图（s=1/tx=0/ty=0 + 清 transform）
     document.getElementById('mreImg').src = card.dataset.mapImg || '';
     hideMapRegionPanel(true);
     mreRerender();
@@ -5635,6 +5656,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       st.drawing = null; // 未闭合折线丢弃
       document.getElementById('mreCanvas').classList.remove('drawing');
       mreCancelDrag();      // v10.28.11: 拖拽中关编辑器只取消手势
+      mreCancelPan();       // v10.28.12: 平移手势同取消
+      mreCancelPanelDrag(); // v10.28.12: 面板拖拽手势同取消
       hideContextMenu();    // v10.28.11: ＋/☰ 弹层状态清零
       mreSyncToCard();
       if (st.regions.length) showToast('区域已保存到地图卡');
@@ -5646,6 +5669,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   window.closeMapRegionEditor = closeMapRegionEditor;
   window.mreDebugState = function () { return mapRegionState; }; // test hook（电池探针）
   window.mreRerender = mreRerender; // test hook（电池探针——播种 mapRegionState 后重渲染，不走路画图流）
+  window.mreViewState = function () { return mreView; }; // v10.28.12 test hook（电池断言缩放/平移数值）
   // v10.28.10.1: 名称面板改字体/字号 → 当前区域同步 + 标签重渲染（用户「更改了
   // 字体 区域中间的字体没有同步」钦定「字体+大小一起同步」「每个区域各自」）。
   // 工具栏 setFontSize/setFontFamily 在第二个 script 块，看不到本块的
@@ -5812,10 +5836,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!mreDrag) return;
     var r = mreCurrentRegion();
     if (!r || !mapRegionState || mapRegionState.drawing) { mreCancelDrag(); return; }
-    var cv = document.getElementById('mreCanvas');
-    var rect = cv.getBoundingClientRect();
-    var x = Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10;
-    var y = Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10;
+    var rect = mreCanvasRect();
+    var pct = mreScreenToPct(e.clientX - rect.left, e.clientY - rect.top, rect); // v10.28.12: 过视图变换
+    var x = pct[0], y = pct[1];
     x = Math.max(0, Math.min(100, x)); y = Math.max(0, Math.min(100, y));
     var dx = e.clientX - mreDrag.startX, dy = e.clientY - mreDrag.startY;
     if (dx * dx + dy * dy > 16) mreDrag.movedFar = true;
@@ -5852,6 +5875,76 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     mreSuppressClick = 0;
     document.getElementById('mreCanvas').classList.remove('mre-ptdrag');
   }
+  // ── v10.28.12 视图变换（滚轮缩放 + 空格/中键平移） ──
+  // 全部点位换算集中两个辅助函数（% ↔ 屏幕 px）。改造点只有画布 mousedown /
+  // 画图 click / mreDragMove 三处 client→% 换算；渲染器全 % 定位零改动。
+  function mreCanvasRect() { return document.getElementById('mreCanvas').getBoundingClientRect(); }
+  function mreScreenToPct(x, y, rect) { // 画布盒内屏幕 px → %（0.1 精度，同旧算法口径）
+    return [
+      Math.round(((x - mreView.tx) / mreView.s / rect.width * 100) * 10) / 10,
+      Math.round(((y - mreView.ty) / mreView.s / rect.height * 100) * 10) / 10
+    ];
+  }
+  function mrePctToScreen(p, rect) { // % → 画布盒内屏幕 px（含视图变换）
+    return [mreView.tx + (p[0] / 100 * rect.width) * mreView.s,
+            mreView.ty + (p[1] / 100 * rect.height) * mreView.s];
+  }
+  function mreApplyView() {
+    var v = document.getElementById('mreView');
+    if (!v) return;
+    v.style.transform = (mreView.s === 1 && mreView.tx === 0 && mreView.ty === 0)
+      ? '' : 'translate(' + mreView.tx + 'px,' + mreView.ty + 'px) scale(' + mreView.s + ')';
+  }
+  function mreClampView(rect) {
+    var s = mreView.s;
+    var maxTx = rect.width - rect.width * s, maxTy = rect.height - rect.height * s; // 均 ≤0
+    mreView.tx = Math.max(maxTx, Math.min(0, mreView.tx));
+    mreView.ty = Math.max(maxTy, Math.min(0, mreView.ty));
+    if (s === 1) { mreView.tx = 0; mreView.ty = 0; }
+  }
+  function mreViewReset() { mreView.s = 1; mreView.tx = 0; mreView.ty = 0; mreApplyView(); }
+  function mreStartPan(e) {
+    document.getElementById('mreCanvas').classList.add('mre-pan');
+    mrePan = { ox: e.clientX, oy: e.clientY, baseTx: mreView.tx, baseTy: mreView.ty,
+               movedFar: false, viaLeft: e.button === 0 };
+    window.addEventListener('mousemove', mrePanMove);
+    window.addEventListener('mouseup', mrePanEnd);
+    window.addEventListener('blur', mrePanBlur);
+  }
+  function mrePanMove(e) {
+    if (!mrePan) return;
+    var dx = e.clientX - mrePan.ox, dy = e.clientY - mrePan.oy;
+    if (dx * dx + dy * dy > 16) mrePan.movedFar = true;
+    mreView.tx = mrePan.baseTx + dx; mreView.ty = mrePan.baseTy + dy;
+    mreClampView(mreCanvasRect()); // 每次从基准重算，clamp 不累积漂移
+    mreApplyView();
+  }
+  function mrePanEnd() {
+    var p = mrePan;
+    window.removeEventListener('mousemove', mrePanMove);
+    window.removeEventListener('mouseup', mrePanEnd);
+    window.removeEventListener('blur', mrePanBlur);
+    mrePan = null;
+    document.getElementById('mreCanvas').classList.remove('mre-pan');
+    // 空格+左键平移松手会补一发 click 落在 poly 上（防重开面板/误加点）：
+    // 复用捕获相 click 抑制器。中键不产生 click（只有 auxclick，已 preventDefault），
+    // 不置旗标——否则 600ms 内下一次真点击会被误吞。
+    if (p && p.movedFar && p.viaLeft) mreSuppressClick = Date.now();
+  }
+  function mrePanBlur() { mrePanEnd(); }
+  function mreCancelPan() {
+    if (!mrePan) return;
+    window.removeEventListener('mousemove', mrePanMove);
+    window.removeEventListener('mouseup', mrePanEnd);
+    window.removeEventListener('blur', mrePanBlur);
+    mrePan = null;
+    document.getElementById('mreCanvas').classList.remove('mre-pan');
+  }
+  function mreSpaceClear() {
+    mreSpaceDown = false;
+    var cv = document.getElementById('mreCanvas');
+    if (cv) cv.classList.remove('space-pan');
+  }
   function mreRenderList() {
     var list = document.getElementById('mreList');
     var st = mapRegionState;
@@ -5883,7 +5976,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var st = mapRegionState;
     if (!st) { tip.classList.add('hidden'); return; }
     if (st.drawing) {
-      tip.textContent = '逐个点击落点 · 点回第一个点闭合区域 · 右键撤销 · Esc 取消';
+      tip.textContent = '逐个点击落点 · 点回第一个点闭合区域 · 右键撤销 · Esc 取消 · 滚轮缩放 · 空格/中键拖动';
       tip.classList.remove('hidden');
     } else if (!st.regions.length) {
       tip.textContent = '点击右侧「＋ 画区域」开始框区域';
@@ -5923,7 +6016,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   window.openMapRegionPanel = openMapRegionPanel;
   function hideMapRegionPanel(instant) {
     var panel = document.getElementById('mrePanel');
+    // v10.28.12: 漂浮态复位瞬时完成——位置回 dock 与 translateX 出屏双动画叠加会跳变
+    if (panel.classList.contains('floated')) instant = true;
     if (instant) panel.style.transition = 'none';
+    mreResetPanelPos(); // v10.28.12: 清拖拽定位（left/top/transform inline）回 dock 位
     panel.classList.remove('active');
     if (mapRegionState) { mapRegionState.currentId = null; mreRenderList(); mreRenderHandles(); }
     if (instant) {
@@ -5995,16 +6091,117 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       ci.oninput = function () { mreInfoInput(it.uid, 'content', ci); };
       cwrap.appendChild(ci); cwrap.appendChild(mreCfgBtn('info:' + it.uid + ':content'));
       mreApplyInputStyle(ci, 'info:' + it.uid + ':content');
-      iblock.appendChild(ihead); iblock.appendChild(twrap); iblock.appendChild(cwrap);
+      var irow = document.createElement('div'); irow.className = 'mre-info-row'; // v10.28.12: 标题/内容左右并排
+      irow.appendChild(twrap); irow.appendChild(cwrap);
+      iblock.appendChild(ihead); iblock.appendChild(irow);
       col.appendChild(iblock);
     });
   }
   function mreCfgBtn(key) {
     var b = document.createElement('button');
-    b.type = 'button'; b.className = 'mre-cfg-btn'; b.title = '自定义外观';
+    b.type = 'button'; b.className = 'mre-cfg-btn'; b.title = '点击自定义外观 · 按住拖动信息面板'; // v10.28.12: 双手势
     b.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">menu</span>';
-    b.onclick = function (e) { mreOpenStylePop(e, key); };
+    b.onclick = function (e) {
+      // v10.28.12: 拖动松手补发的 click 抑制（600ms 时间戳消费式——mouseup 落在
+      // 按钮外时 click 不会来，布尔旗标会误吞下一次真点击；同画布抑制器口径）
+      if (mrePanelDragSuppress) {
+        if (Date.now() - mrePanelDragSuppress < 600) { mrePanelDragSuppress = 0; return; }
+        mrePanelDragSuppress = 0;
+      }
+      mreOpenStylePop(e, key);
+    };
+    b.addEventListener('mousedown', function (e) { mrePanelDragStart(e); }); // v10.28.12: 双手势
     return b;
+  }
+  // ── v10.28.12: ☰ 双手势（点击=外观弹窗；按住拖动>4px=拖整个信息面板） ──
+  function mrePanelOrigin() { // 面板真实包含块原点（viewport 系）：backdrop-filter 使 .mre-side
+    // 成为 absolute 后代包含块（非 .mre-shell——08-31 电池抓偏移 971px 真 bug）
+    var p = document.getElementById('mrePanel');
+    var cb = p.offsetParent;
+    if (!cb) return { x: 0, y: 0 };
+    var r = cb.getBoundingClientRect();
+    return { x: r.left + cb.clientLeft, y: r.top + cb.clientTop }; // padding box 原点
+  }
+  function mrePanelFreefloat(e) { // 拖动起始：面板换绝对定位固定当前几何，脱离 dock 动画
+    var p = document.getElementById('mrePanel');
+    hideContextMenu();
+    var r = p.getBoundingClientRect();
+    var o = mrePanelOrigin();
+    p.classList.add('floated');
+    p.style.transition = 'none';
+    p.style.left = (r.left - o.x) + 'px';
+    p.style.top = (r.top - o.y) + 'px';
+    p.style.width = r.width + 'px';
+    p.style.height = r.height + 'px';
+    p.style.right = 'auto';
+    p.style.bottom = 'auto';
+    p.style.transform = 'none'; // 压过 .mre-panel.active 的 translateX(0)
+    mrePanelDrag.lastX = e.clientX;
+    mrePanelDrag.lastY = e.clientY;
+  }
+  function mrePanelClamp() { // 视口内 clamp（面板可拖到舞台上方，shell 无裁剪）
+    var p = document.getElementById('mrePanel');
+    var o = mrePanelOrigin();
+    var l = parseFloat(p.style.left) || 0, t = parseFloat(p.style.top) || 0;
+    var vl = Math.max(0, Math.min(o.x + l, window.innerWidth - p.offsetWidth));
+    var vt = Math.max(0, Math.min(o.y + t, window.innerHeight - p.offsetHeight));
+    p.style.left = (vl - o.x) + 'px';
+    p.style.top = (vt - o.y) + 'px';
+  }
+  function mrePanelDragStart(e) {
+    if (e.button !== 0) return;
+    e.stopPropagation(); e.preventDefault(); // 不进按钮默认/表单逻辑
+    mrePanelDrag = { startX: e.clientX, startY: e.clientY, lastX: e.clientX, lastY: e.clientY, movedFar: false };
+    window.addEventListener('mousemove', mrePanelDragMove);
+    window.addEventListener('mouseup', mrePanelDragEnd);
+    window.addEventListener('blur', mrePanelDragBlur);
+  }
+  function mrePanelDragMove(e) {
+    if (!mrePanelDrag) return;
+    var dx = e.clientX - mrePanelDrag.startX, dy = e.clientY - mrePanelDrag.startY;
+    if (dx * dx + dy * dy > 16 && !mrePanelDrag.movedFar) {
+      mrePanelDrag.movedFar = true;
+      mrePanelFreefloat(e);
+      return;
+    }
+    if (!mrePanelDrag.movedFar) return;
+    var p = document.getElementById('mrePanel');
+    var l = parseFloat(p.style.left) || 0, t = parseFloat(p.style.top) || 0;
+    p.style.left = (l + e.clientX - mrePanelDrag.lastX) + 'px';
+    p.style.top = (t + e.clientY - mrePanelDrag.lastY) + 'px';
+    mrePanelDrag.lastX = e.clientX; mrePanelDrag.lastY = e.clientY;
+    mrePanelClamp();
+  }
+  function mrePanelDragEnd() {
+    var d = mrePanelDrag;
+    window.removeEventListener('mousemove', mrePanelDragMove);
+    window.removeEventListener('mouseup', mrePanelDragEnd);
+    window.removeEventListener('blur', mrePanelDragBlur);
+    mrePanelDrag = null;
+    if (!d) return;
+    if (d.movedFar) {
+      mrePanelDragSuppress = Date.now(); // 松手落在按钮上会补 click → 抑制弹外观窗
+      var p = document.getElementById('mrePanel');
+      requestAnimationFrame(function () { p.style.transition = ''; }); // 恢复默认过渡（同 hideMapRegionPanel instant 口径）
+    }
+  }
+  function mrePanelDragBlur() { mrePanelDragEnd(); }
+  function mreCancelPanelDrag() {
+    if (!mrePanelDrag) return;
+    window.removeEventListener('mousemove', mrePanelDragMove);
+    window.removeEventListener('mouseup', mrePanelDragEnd);
+    window.removeEventListener('blur', mrePanelDragBlur);
+    mrePanelDrag = null;
+    var p = document.getElementById('mrePanel');
+    if (p) requestAnimationFrame(function () { p.style.transition = ''; });
+  }
+  function mreResetPanelPos() { // 清漂浮定位回 dock 位（下次打开从右侧滑入）
+    var p = document.getElementById('mrePanel');
+    if (!p) return;
+    p.classList.remove('floated');
+    p.style.left = ''; p.style.top = ''; p.style.width = ''; p.style.height = '';
+    p.style.right = ''; p.style.bottom = '';
+    p.style.transform = '';
   }
   function mreBlockDelBtn(onclick) {
     var b = document.createElement('button');
@@ -6223,6 +6420,33 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   (function () {
     var cv = document.getElementById('mreCanvas');
     if (!cv) return;
+    // v10.28.12: 滚轮缩放（光标锚定 1×-4×；passive:false 才能 preventDefault 防页面滚动）
+    cv.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      if (!mapRegionState) return;
+      var dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY; // Firefox 行模式归一
+      if (dy === 0) return;
+      var f = dy < 0 ? 1.15 : 1 / 1.15;
+      var ns = Math.max(1, Math.min(4, mreView.s * f));
+      if (ns === mreView.s) return; // 已到边界，别写 transform
+      var rect = mreCanvasRect();
+      var cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+      var mx = (cx - mreView.tx) / mreView.s, my = (cy - mreView.ty) / mreView.s; // 光标下地图点（画布坐标）
+      mreView.s = ns;
+      mreView.tx = cx - mx * ns;
+      mreView.ty = cy - my * ns;
+      mreClampView(rect);
+      mreApplyView();
+    }, { passive: false });
+    // v10.28.12: 平移优先判定——中键 或 空格按住+左键；必须注册在顶点 mousedown 之前
+    // （pan 监听先跑同步置 mrePan，顶点 handler 守卫双保险）
+    cv.addEventListener('mousedown', function (e) {
+      if (e.button === 1 || (e.button === 0 && mreSpaceDown)) {
+        e.preventDefault(); // 中键防 autoscroll；左键防文本选择/原生拖
+        mreStartPan(e);
+      }
+    });
+    cv.addEventListener('auxclick', function (e) { e.preventDefault(); }); // v10.28.12: 中键防 autoscroll/粘贴
     // v10.28.11: 捕获相 click 抑制器——顶点手势（拖点/删点/插点）之后的 click
     // 既不落到 poly select（防重开面板+320ms 抢焦点）也不落到画图 click
     cv.addEventListener('click', function (e) {
@@ -6234,14 +6458,16 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     cv.addEventListener('click', function (e) {
       var st = mapRegionState;
       if (!st || !st.drawing) return;
-      var rect = cv.getBoundingClientRect();
-      var x = Math.round(((e.clientX - rect.left) / rect.width) * 1000) / 10;
-      var y = Math.round(((e.clientY - rect.top) / rect.height) * 1000) / 10;
+      if (mreSpaceDown) return; // v10.28.12: 空格按住时左键属平移手势，防误加点（兜底）
+      var rect = mreCanvasRect();
+      var pct = mreScreenToPct(e.clientX - rect.left, e.clientY - rect.top, rect); // v10.28.12: 过视图变换
+      var x = pct[0], y = pct[1];
       var pts = st.drawing.pts;
       if (pts.length >= 3) {
         // 头尾连接：点回第一个点（屏幕距 14px 内）即闭合——用户钦定「只要头和尾连接就结束」
-        var dx = (x - pts[0][0]) * rect.width / 100;
-        var dy = (y - pts[0][1]) * rect.height / 100;
+        // v10.28.12: 缩放下两 % 点的屏幕距要乘 s（漏乘会让 14px 阈值随缩放缩水）
+        var dx = (x - pts[0][0]) * rect.width * mreView.s / 100;
+        var dy = (y - pts[0][1]) * rect.height * mreView.s / 100;
         if (dx * dx + dy * dy <= 196) { closeMapRegionDraw(); return; }
       }
       pts.push([x, y]);
@@ -6265,12 +6491,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     cv.addEventListener('mousedown', function (e) {
       var st = mapRegionState;
       if (!st || st.drawing || !st.currentId) return;
+      if (e.button !== 0 || mrePan) return; // v10.28.12: 平移手势先到先赢；顶点编辑只认左键（顺带修右键误拖潜伏 bug）
       if (e.target && e.target.classList && e.target.classList.contains('mre-poly') &&
           e.target.getAttribute('data-rid') !== st.currentId) return;
       var r = mreCurrentRegion();
       if (!r) return;
-      var rect = cv.getBoundingClientRect();
-      var px = e.clientX - rect.left, py = e.clientY - rect.top;
+      var rect = mreCanvasRect();
+      var px = e.clientX - rect.left, py = e.clientY - rect.top; // 屏幕 px（10px/8px 阈值保持屏幕语义）
       var h = e.target && e.target.closest ? e.target.closest('.mre-h') : null;
       if (h) {
         e.preventDefault(); mreSuppressClick = Date.now();
@@ -6278,7 +6505,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       }
       var hit = -1, best = 100;
       r.pts.forEach(function (p, i) {
-        var dx = p[0] / 100 * rect.width - px, dy = p[1] / 100 * rect.height - py;
+        var sp = mrePctToScreen(p, rect); // v10.28.12: % → 屏幕 px 过视图变换
+        var dx = sp[0] - px, dy = sp[1] - py;
         var d2 = dx * dx + dy * dy;
         if (d2 < best) { best = d2; hit = i; }
       });
@@ -6287,8 +6515,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       }
       for (var i = 0; i < r.pts.length; i++) {
         var j = (i + 1) % r.pts.length;
-        var ax = r.pts[i][0] / 100 * rect.width, ay = r.pts[i][1] / 100 * rect.height;
-        var bx = r.pts[j][0] / 100 * rect.width, by = r.pts[j][1] / 100 * rect.height;
+        var a = mrePctToScreen(r.pts[i], rect), b = mrePctToScreen(r.pts[j], rect); // v10.28.12: 过视图变换
+        var ax = a[0], ay = a[1], bx = b[0], by = b[1];
         var vx = bx - ax, vy = by - ay, len2 = vx * vx + vy * vy;
         if (len2 < 1) continue; // 退化线段（重合点）不插
         var t = ((px - ax) * vx + (py - ay) * vy) / len2;
@@ -6296,8 +6524,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         var qx = ax + vx * t, qy = ay + vy * t;
         var ddx = qx - px, ddy = qy - py;
         if (ddx * ddx + ddy * ddy <= 64) {
-          var nx = Math.round(qx / rect.width * 1000) / 10;
-          var ny = Math.round(qy / rect.height * 1000) / 10;
+          var q = mreScreenToPct(qx, qy, rect); // v10.28.12: 屏幕 px → % 过视图变换
+          var nx = q[0], ny = q[1];
           r.pts.splice(j, 0, [nx, ny]); // 闭合边 j=0 插到首位＝环上 last→first 之间
           e.preventDefault(); mreSuppressClick = Date.now();
           mreStartDrag(j, e); // 新点随拖继续移动（原地松手即留点）
@@ -6322,6 +6550,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
       if (mreDrag) { mreCancelDrag(); return; } // v10.28.11: 拖动中 Esc 只取消手势
+      if (mrePan) { mreCancelPan(); return; }             // v10.28.12: 平移中 Esc 只取消手势（视图留原地）
+      if (mrePanelDrag) { mreCancelPanelDrag(); return; } // v10.28.12: 面板拖动中 Esc 只取消手势
       var st = mapRegionState;
       if (!st) return;
       // v10.28.11: ☰/＋弹层开着时让位给统一 hideContextMenu（注册在本监听之后，弹层仍开着可见）
@@ -6339,6 +6569,27 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         closeMapRegionEditor();
       }
     });
+    // v10.28.12: 空格平移模式——仅编辑器开着时生效；输入框/按钮/链接等交互元素忽略
+    // （防断空格输入与按钮键盘激活：Space 在 button 上 keyup 触发 click，keydown
+    // 一 preventDefault 就断了）
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== ' ' && e.key !== 'Spacebar' && e.keyCode !== 32) return;
+      var t = e.target;
+      var tag = t && t.tagName ? t.tagName : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON' ||
+          tag === 'A' || (t && t.isContentEditable)) return;
+      var ov = document.getElementById('mapRegionOverlay');
+      if (!ov || !ov.classList.contains('active')) return;
+      if (mreSpaceDown) return; // 自动重复
+      mreSpaceDown = true;
+      if (cv) cv.classList.add('space-pan');
+      e.preventDefault(); // 防页面滚动（仅编辑器开着时——别处空格滚动不受影响）
+    });
+    document.addEventListener('keyup', function (e) {
+      if (e.key !== ' ' && e.key !== 'Spacebar' && e.keyCode !== 32) return;
+      mreSpaceClear();
+    });
+    window.addEventListener('blur', function () { mreSpaceClear(); }); // v10.28.12: 失焦清空格态（keyup 收不到）
   })();
 
   function statsSerialize(card) {
@@ -10151,7 +10402,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.11') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.12') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -10160,7 +10411,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.11');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.12');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
