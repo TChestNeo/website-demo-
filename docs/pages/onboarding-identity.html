@@ -1972,8 +1972,9 @@ html.fc-guest .fc-locked-hero {
         Tell us a bit about yourself, Sovereign.
       </p>
 
+      <!-- 2026-09-01 用户「第二页要求一定要选择生日，国家位置，和语言」：四必填字段标签加 * 红标（校验见 handleNext） -->
       <div class="form-group">
-        <label class="form-label">Display Name</label>
+        <label class="form-label">Display Name <span style="color:var(--color-error)">*</span></label>
         <div class="input-icon">
           <span class="material-symbols-outlined">person</span>
           <input type="text" class="input-glass" id="displayName" placeholder="Your name in the M.NationWorld">
@@ -1981,7 +1982,7 @@ html.fc-guest .fc-locked-hero {
       </div>
 
       <div class="form-group">
-        <label class="form-label">Primary Language</label>
+        <label class="form-label">Primary Language <span style="color:var(--color-error)">*</span></label>
         <div style="position:relative" id="langDropdown">
           <div class="input-glass flex-between" onclick="toggleLangDropdown()" style="cursor:pointer" id="langSelector">
             <span style="display:flex;align-items:center;gap:10px">
@@ -2002,7 +2003,7 @@ html.fc-guest .fc-locked-hero {
       </div>
 
       <div class="form-group">
-        <label class="form-label">Country of Origin</label>
+        <label class="form-label">Country of Origin <span style="color:var(--color-error)">*</span></label>
         <div style="position:relative" id="countryDropdown">
           <div class="input-glass flex-between" onclick="toggleDropdown()" style="cursor:pointer" id="countrySelector">
             <span id="selectedCountry" style="color:var(--color-outline)">Select country</span>
@@ -2018,7 +2019,7 @@ html.fc-guest .fc-locked-hero {
       </div>
 
       <div class="form-group">
-        <label class="form-label">Date of Birth</label>
+        <label class="form-label">Date of Birth <span style="color:var(--color-error)">*</span></label>
         <input type="date" class="input-glass" id="dob">
       </div>
 
@@ -2038,6 +2039,8 @@ html.fc-guest .fc-locked-hero {
   // Load existing user data
   var user = SlatiDB.getUser() || {};
   document.getElementById('displayName').value = user.displayName || '';
+  // 2026-09-01 电池抓真 bug：生日此前只存不回显（handleNext 存了 dob 但加载不写回输入框，回头再看生日框是空的）→ 补回显
+  document.getElementById('dob').value = user.dob || '';
 
   // Language dropdown
   var selectedLang = user.language || '';
@@ -2153,6 +2156,8 @@ html.fc-guest .fc-locked-hero {
     if (!name) { showError('Please enter your display name'); return; }
     if (!selectedLang) { showError('Please select your primary language'); return; }
     if (!selectedCountry) { showError('Please select your country'); return; }
+    // 2026-09-01 用户「第二页要求一定要选择生日，国家位置，和语言」：生日此前不校验可空过 → 补必填（语言/国家已有校验）
+    if (!document.getElementById('dob').value) { showError('Please select your date of birth'); return; }
 
     SlatiDB.saveUser({
       displayName: name,

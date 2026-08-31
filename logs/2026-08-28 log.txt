@@ -638,3 +638,12 @@
 ⑥⑤ gcloud deploy 别在 Git Bash 跑：MSYS 把 --add-volume-mount 的 mount-path=/mnt/data 转成 Windows 路径 → gcloud 拒「should be a valid unix absolute path」——deploy 命令一律走 PowerShell（= 号并参 + 逗号参数加引号；08-30 曾犯漏引号、本轮犯 Bash 路径转换，同一条命令两个坑）
 ⑥⑥ 噪声过滤器改签名要同步全部调用点：isNoise 从 (url) 字符串改成 (e)=>e.url||'' 入口对象后，filter((e)=>!isNoise(e.url)) 传字符串进去 e.url=undefined 恒不过滤——改箭头函数参数形态时 grep 全部调用点
 ⑥⑦ Chrome Log.entryAdded 对探测型 404 有时以页面 URL 上报（非失败资源 URL）——url 匹配 /api/ 会漏；按文本 Failed to load resource.*404 兜底一并列为环境噪声
+
+【2026-09-01 v0.2.6.2】Identity Setup 必填口径补齐（用户「然后第二页要求一定要选择生日，国家位置，和语言」→ 注册第二页 Identity Setup 三字段必填）
+- 改动：onboarding-identity.html handleNext 补生日必填（此前生日不校验可空过——语言/国家已有校验，用户点名三字段实际缺口只有生日）；四必填字段（显示名/语言/国家/生日）标签加 * 红标（--color-error #ba1a1a 内联，不碰 ethereal.css 免重跑 inliner）；电池抓真 bug=生日只存不回显（handleNext 存 dob 但页面加载只回显显示名，语言/国家各有 init 块、生日没有——回头重看生日框必空）→ 补回显；site-config v0.2.6.1→v0.2.6.2（补丁位 1→2·修复轮）
+- 验证：tmp 电池 18/18（空表单顺序报错 名→语言→国家→生日→填齐跳终页→落库四字段；预填用户四字段回显直通；0 console error 0 异常）+ smoke-admin 49/49 + 线上同款 18/18 + curl 五连（/ 200 + site-config 含 v0.2.6.2 + 编辑器页 v10.28.13 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00041-t7m（100% 流量）
+
+教训：
+⑥⑧ 表单「存了但加载不回显」= save-only-no-replay 类 bug：必填校验补上后此类字段回头重看必空——本页三字段只有生日漏了加载写回（显示名/语言/国家各有 init 块）。电池的「预填用户全字段回显」断言是常态回归项，凡是「保存后再进页面」的字段都要断言回显
+⑥⑨ gcloud 实际路径 = LOCALAPPDATA\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.ps1（SDK 根下还有一层 google-cloud-sdk 目录）——直猜根路径 gcloud.cmd 是 CommandNotFound，token 拿不到 → docker login 空密码 401（unauthorized: incorrect username or password 是空 token 的假象，先查 token 非空再查凭证）
+⑥⑩ 电池断言写死颜色值前先查 token 真值：* 红标断言写 rgb(211,47,47)（凭印象 Material red）实际 --color-error=#ba1a1a → rgb(186,26,26)——CSS 变量断言先 grep 源值再写进电池
