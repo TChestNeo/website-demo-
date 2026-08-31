@@ -587,3 +587,28 @@
 ⑤① 页面监听事件类型必须查实际代码不能凭语义猜：工具篮外点收起走 document click（不是 mousedown）——派 mousedown 无 handler、after='flex' 假红；另合成事件不真聚焦，先 blur() 清选区再派 click 才过 textSelInCard/textSelInInput 守卫
 ⑤② window.mreViewState() 返回活引用：电池 var v0 = view() 后 v−v0 恒 0（同一对象）——断言前必须取原语快照（v0x = view().tx）
 ⑤③ 行内 flex 容器层级：输入框 parentElement 是 .mre-input-wrap（不是行）——布局断言取 parentElement.parentElement（行），fd/宽度/同父断言全挂错层会假红
+────────────────────────────────────────
+2026-08-31 v10.28.13 + v0.2.6.0 — 未登录界面（平台访客引导页 / FC 登录门禁 / 侧栏注册按钮）·部署 rev 00039-xh6（合并携带 v10.28.12）
+
+真身（用户）：
+「把平台和FluidCanvas的未登录的界面做一下，然后平台左侧的用户卡片直接变成一个注册/登录的按钮」——现状：登录状态机制早已存在（SlatiDB.isLoggedIn() 查 slati_session.loggedIn）但从未用于门禁，19 个带侧栏页全渲染写死的假用户「Alex Rivera / CIT-8842」卡片。问询钦定两项：①平台首页未登录=访客引导页（hero+平台介绍+注册 CTA，登录后自动回工作台）②FluidCanvas=先登录才能用（未登录点进编辑器→跳 FC 引导页🔒「登录后开始创作」+注册/登录按钮）。
+
+改动：
+- sidebar.js：用户模块分支——isLoggedIn() 真→现状卡片（getUser() 真名）；假→访客模块（品牌渐变 banner+「加入 M.NationWorld」+全宽 btn-primary「注册 / 登录」→ ../signup-and-login）。Alex Rivera 假卡片对访客退役（就是用户点名的卡片）。零新增 CSS 复用既有类，18 个侧栏页共享自动生效
+- index.html：head 内联（原生读 slati_session、未登录挂 html.mn-guest、同步防闪）+ .app-main 首子元素 guest-hero 段（badge/h1「打造属于你的架空国家」/①层口径副题/功能格 4 枚/CTA「免费开始创作」+「浏览社区」）；工作台零改动，CSS 互斥
+- fluidcanvas.html：head 内联挂 html.fc-guest；#openEditorCta id + .studio-main class；fc-locked-hero 锁定卡（🔒「登录后开始创作」+ 带 ?next 回跳的注册/登录 CTA）
+- fluidcanvas-editor.html：head 内联未登录 → location.replace('fluidcanvas.html?locked=1')（body 渲染前执行，编辑器零闪现；登录用户一次 JSON.parse 零影响）
+- signup-and-login.html：NEXT IIFE 捕获 ?next（/ 开头且无 // 与 :// 防开放跳转）；登录成功回跳四处 NEXT||'index.html'（demo/apiLogin/handleSetup/静默重登）；注册流程不走 next 保持 onboarding 首登链
+- ethereal.css：.guest-hero/.fc-locked-hero 新类+互斥规则（mn-guest 隐藏 .app-main 非 hero 子元素；fc-guest 隐藏 studio-main/accountBar/openEditorCta）→ 重跑 inline-css.js（44 页内联 41）；版本 site-config v0.2.5.3→v0.2.6.0（小改动位 5→6 新功能轮）+ v10.28.12→v10.28.13（小更新位 12→13 小功能轮·登录门禁）+ fluidcanvas.html badge + 编辑器双字面量
+
+真 bug（电池实抓）：index.html 网格包装器（Recent Activity 列）带内联 style="display:grid"——内联样式压过样式表门禁规则，访客态网格整块漏出（children[1]/[2] 正常隐藏、children[3] display:grid 存活）。修法=互斥规则 display:none !important（fc 三选器同步加固）。
+
+验证：本地静态壳 CDP 电池 40/40（F1 访客引导页互斥+侧栏按钮+无假卡片/F2 FC 锁定态+next 回跳 href/F3 编辑器重定向 locked=1/F4 demo 登录 next 落回 FC→点进编辑器 Draft/F5 登录态工作台+真名问候/F6 logout 回访客态/F7 premium 访客横幅回归/F8 0 console error 0 异常）+ smoke-admin 49/49 + 线上同款 19/19（只读门禁断言：真实后端登录交互段跳过）+ curl 五连（/ 200 + 编辑器页含 v10.28.13 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00039-xh6（100% 流量；合并携带 v10.28.12 缩放平移轮）
+
+教训：
+⑤④ 门禁判定以 slati_session 为准：logout() 只删 session、slati_user 记录残留——查 user 存在性会把已登出用户误判登录态；isLoggedIn() 查 session.loggedIn
+⑤⑤ 访客门禁用 head 内联同步读 localStorage（原生 JSON.parse+try/catch）+ documentElement 类名 CSS 互斥——不依赖 storage.js 加载顺序、首帧前完成防闪；editor 页同法 location.replace 送返（body 渲染前执行，编辑器零闪现）
+⑤⑥ 样式表门禁规则压不过内联 display：index.html 网格包装器 style="display:grid" 让 mn-guest 互斥规则失效、访客态 Recent Activity 整块漏出——互斥规则必须 display:none !important（症状特征=同批子元素有的隐藏有的存活）
+⑤⑦ 静态壳无扩展名回退规则：电池 /signup-and-login 404（demoHint 永不出现、loginEmail null 报 TypeError）——本地电池 URL 必须带 .html；线上入口有回退，两处行为不同属正常
+⑤⑧ ?next 回跳参数必须防开放跳转：只认 / 开头且不含 // 与 ://；注册流程不走 next 保持 onboarding 首登链
+⑤⑨ textContent 文案断言别夹首尾空格：replace(/\s+/g,' ') 不 trim，期望值带首尾空格必假红——写 trim() 后比较
