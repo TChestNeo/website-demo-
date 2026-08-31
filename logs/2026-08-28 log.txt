@@ -612,3 +612,29 @@
 ⑤⑦ 静态壳无扩展名回退规则：电池 /signup-and-login 404（demoHint 永不出现、loginEmail null 报 TypeError）——本地电池 URL 必须带 .html；线上入口有回退，两处行为不同属正常
 ⑤⑧ ?next 回跳参数必须防开放跳转：只认 / 开头且不含 // 与 ://；注册流程不走 next 保持 onboarding 首登链
 ⑤⑨ textContent 文案断言别夹首尾空格：replace(/\s+/g,' ') 不 trim，期望值带首尾空格必假红——写 trim() 后比较
+────────────────────────────────────────
+2026-09-01 v0.2.6.1 — 注册步骤指示器修正（首步误打勾→active 数字 1 + completed 勾绿改品牌蓝）·部署 rev 00040-cnq
+
+真身（用户）：
+「然后注册的第一个页面为什么明明还没有完成就已经打勾了？然后那个打勾能不能改成蓝色的」——注册页蓝板步骤指示器首步「Create account」在用户刚打开注册页（什么都还没填）时就显示绿勾=假完成态。
+
+改动：
+- signup-and-login.html：首步 completed → active 数字 1（白底蓝字在蓝板上反相高亮；completed 只留给真正完成的步）；步 2/3 保持半透明数字 2/3
+- ethereal.css：.progress-step.completed .dot 绿 #22c55e → var(--color-primary) 品牌蓝（与白卡上自选条款勾选框「品牌蓝底白勾」同款视觉语言）→ 重跑 inline-css.js（44 页内联 41）
+- 全站内联绿清理（grep 全站 class="dot" 内联 22c55e 实抓 7 处遗漏）：上轮只清 create-topic 两页——本轮清 onboarding-identity（1）、onboarding-complete（3，且终页 step 3 active 误标 → completed——终页三步皆已完成，勾是挣来的）、registry-step-2（1）、registry-step-3（2）、world-wizard JS 生成模板 2 处（dot = '<span class="dot" ...> 字符串）——内联样式压过共享类规则，不清则类规则改色永不生效
+- create-topic-step-3.html 顺手修复：直开无草稿重定向后脚本仍续跑 → draft.name.replace 抛 TypeError——if(!draft.name) redirect 之外全部渲染包进 else 阻断；location.href → location.replace
+- site-config.js：v0.2.6.0 → v0.2.6.1（补丁位 0→1 修复轮；注释链新条目）
+
+真 bug（电池实抓）：create-topic-step-3 无草稿直开 → TypeError: Cannot read properties of undefined (reading 'replace')（重定向赋值后脚本继续执行）——用户书签直开 step-3 会在 console 炸一条再被送回 step-1。
+
+验证：本地静态壳 CDP 电池 29/29（注册页首步 active/"1"/无勾/白底蓝字反相/步 2-3 干净 + create-topic-2/3·onboarding-identity·onboarding-complete·registry-2/3 completed 全蓝勾白字含勾无内联绿 + world-wizard 种草稿 currentStep=2 重建生成模板蓝勾 + 全站静态 grep 44 页无步点内联绿 + 0 console error 0 异常）+ smoke-admin 49/49 + 线上同款 16/16（rev 00040-cnq 真站）+ curl 五连（/ 200 + 编辑器页含 v10.28.13 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00040-cnq（100% 流量）
+
+教训：
+⑥⓪ 静态写死的状态类=假状态：注册页首步 completed 是纯 HTML 写死（无 JS 触碰）——「还没做就打勾」的真身。写/审状态指示器时每个 completed 都要问「这一步此刻真的完成了吗」；active=当前步用数字（当前步还没完成）、completed 只留给真正走过的步
+⑥① 共享组件改色先 grep 全站内联覆盖：改 .progress-step.completed 类规则时 7 处内联 style="background:#22c55e" 压过类规则（上轮只清 create-topic 两页仍漏 5 页 + world-wizard 生成模板 2 处）——内联 > 样式表，改共享类必须 grep 全站该组件的内联残留（含 JS 模板字符串里的内联样式），否则「CSS 改了但渲染没变」
+⑥② 电池脚本放 backend-v2/ 下时 ROOT = path.join(__dirname,'..')（一级）：照抄 smoke-admin（scripts/ 下两级）的 '../..' 会解析到仓库外——静态壳全 404、页面 rs=complete 但 body 空、favicon.ico 404 伴生（只有 404 空文档才会请求默认 favicon）——症状特征=「页面加载了但什么都没有」先查服务器路径解析
+⑥③ 电池 waitFor 条件必须适配页面真实行为：demo 模式下 demoHint 留空（仅 api 模式/?reset=1 才填文案）——按旧电池口径等 demoHint 非空必超时；带草稿/状态门禁的页面（create-topic-3 无草稿重定向 step-1、world-wizard 无 type 参数重定向选型页）直开测不到真 DOM——先在低门禁页 evalJs 种 localStorage 再导航；同 URL 重载断言用 window 标记（__tmpSeed）防旧文档竞态
+⑥④ 重定向赋值不阻断脚本执行：location.href/location.replace 之后脚本继续跑完当前语句流——「重定向了就没事」是错的，后续语句引用缺失字段必抛 TypeError；直开无状态页要先判再渲染（else 阻断整个渲染段）
+⑥⑤ gcloud deploy 别在 Git Bash 跑：MSYS 把 --add-volume-mount 的 mount-path=/mnt/data 转成 Windows 路径 → gcloud 拒「should be a valid unix absolute path」——deploy 命令一律走 PowerShell（= 号并参 + 逗号参数加引号；08-30 曾犯漏引号、本轮犯 Bash 路径转换，同一条命令两个坑）
+⑥⑥ 噪声过滤器改签名要同步全部调用点：isNoise 从 (url) 字符串改成 (e)=>e.url||'' 入口对象后，filter((e)=>!isNoise(e.url)) 传字符串进去 e.url=undefined 恒不过滤——改箭头函数参数形态时 grep 全部调用点
+⑥⑦ Chrome Log.entryAdded 对探测型 404 有时以页面 URL 上报（非失败资源 URL）——url 匹配 /api/ 会漏；按文本 Failed to load resource.*404 兜底一并列为环境噪声

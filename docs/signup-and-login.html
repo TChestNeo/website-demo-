@@ -567,7 +567,8 @@ textarea.input-glass {
   flex-shrink: 0;
 }
 .progress-step.active .dot { background: var(--color-primary); color: white; }
-.progress-step.completed .dot { background: #22c55e; color: white; }
+/* 2026-09-01 用户「打勾能不能改成蓝色的」：完成勾绿 #22c55e → 品牌蓝（与白卡上自选条款勾选框「品牌蓝底白勾」同款视觉语言） */
+.progress-step.completed .dot { background: var(--color-primary); color: white; }
 .progress-step.pending .dot { background: var(--color-outline-variant); color: var(--color-outline); }
 .progress-connector {
   width: 24px; height: 1px;
@@ -1954,8 +1955,10 @@ html.fc-guest .fc-locked-hero {
           <!-- Step indicator -->
           <div class="step-indicator" style="margin-top:var(--space-xl)">
             <div class="progress-steps" style="flex-direction:column;align-items:flex-start;gap:16px">
-              <div class="progress-step completed step1indicator">
-                <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>
+              <!-- 2026-09-01 用户「为什么明明还没有完成就已经打勾了」：首步误标 completed 已改为 active（当前步=数字 1，
+                   白底蓝字在白底蓝板上反相高亮；completed 只在真正完成后的向导页出现） -->
+              <div class="progress-step active step1indicator">
+                <span class="dot" style="background:#ffffff;color:var(--color-primary)">1</span>
                 <span style="color:rgba(255,255,255,0.9)">Create account</span>
               </div>
               <div class="progress-step step2indicator" style="opacity:0.5">

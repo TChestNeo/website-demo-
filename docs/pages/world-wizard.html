@@ -590,7 +590,8 @@ textarea.input-glass {
   flex-shrink: 0;
 }
 .progress-step.active .dot { background: var(--color-primary); color: white; }
-.progress-step.completed .dot { background: #22c55e; color: white; }
+/* 2026-09-01 用户「打勾能不能改成蓝色的」：完成勾绿 #22c55e → 品牌蓝（与白卡上自选条款勾选框「品牌蓝底白勾」同款视觉语言） */
+.progress-step.completed .dot { background: var(--color-primary); color: white; }
 .progress-step.pending .dot { background: var(--color-outline-variant); color: var(--color-outline); }
 .progress-connector {
   width: 24px; height: 1px;
@@ -2427,7 +2428,7 @@ html.fc-guest .fc-locked-hero {
     config.steps.forEach(function (st, idx) {
       var cls = idx === state.step ? 'active' : (idx < state.step ? 'completed' : 'pending');
       var dot;
-      if (idx < state.step) dot = '<span class="dot" style="background:#22c55e"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>';
+      if (idx < state.step) dot = '<span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>';
       else dot = '<span class="dot"' + (cls === 'pending' ? ' style="background:var(--color-outline-variant);color:var(--color-outline)"' : '') + '>' + (idx + 1) + '</span>';
       var labelStyle = cls === 'pending' ? ' style="color:var(--color-outline)"' : '';
       bar += '<div class="progress-step ' + cls + '">' + dot + '<span' + labelStyle + '>' + st.title + '</span></div>';
@@ -2472,7 +2473,7 @@ html.fc-guest .fc-locked-hero {
       steps.forEach(function (st, i2) {
         var cls = i2 === idx ? 'active' : (i2 < idx ? 'completed' : 'pending');
         var dot;
-        if (i2 < idx) dot = '<span class="dot" style="background:#22c55e"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>';
+        if (i2 < idx) dot = '<span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>';
         else dot = '<span class="dot"' + (cls === 'pending' ? ' style="background:var(--color-outline-variant);color:var(--color-outline)"' : '') + '>' + (i2 + 1) + '</span>';
         var labelStyle = cls === 'pending' ? ' style="color:var(--color-outline)"' : '';
         bar2 += '<div class="progress-step ' + cls + '">' + dot + '<span' + labelStyle + '>' + st.title + '</span></div>';

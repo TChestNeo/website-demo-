@@ -590,7 +590,8 @@ textarea.input-glass {
   flex-shrink: 0;
 }
 .progress-step.active .dot { background: var(--color-primary); color: white; }
-.progress-step.completed .dot { background: #22c55e; color: white; }
+/* 2026-09-01 用户「打勾能不能改成蓝色的」：完成勾绿 #22c55e → 品牌蓝（与白卡上自选条款勾选框「品牌蓝底白勾」同款视觉语言） */
+.progress-step.completed .dot { background: var(--color-primary); color: white; }
 .progress-step.pending .dot { background: var(--color-outline-variant); color: var(--color-outline); }
 .progress-connector {
   width: 24px; height: 1px;
