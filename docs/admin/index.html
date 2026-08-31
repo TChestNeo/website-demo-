@@ -1530,6 +1530,65 @@ body.pre-stagger .auth-card { opacity: 0; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ── 未登录门禁（2026-08-31：平台访客引导页 + FluidCanvas 登录门禁）── */
+/* html.mn-guest / html.fc-guest 由页面 head 内联脚本同步挂上（会话同源读取，防闪）；
+   访客态互斥显示引导页/隐藏工作台——登录态下引导页 display:none 零影响 */
+.guest-hero { display: none; }
+/* !important：门禁必须压过工作台元素的内联 display（如 index.html 网格包装器 style="display:grid"——
+   2026-08-31 电池实抓：无 !important 时访客态 Recent Activity 网格整块漏出） */
+html.mn-guest .app-main > *:not(.guest-hero) { display: none !important; }
+html.mn-guest .guest-hero {
+  display: flex; align-items: center; justify-content: center;
+  min-height: calc(100vh - 96px);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(70,72,212,0.06), rgba(129,39,207,0.04)), var(--card-bg);
+  border: var(--card-border);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-md);
+}
+.guest-hero-inner { text-align: center; max-width: 640px; }
+.guest-hero-title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--color-on-surface);
+  margin: 0 0 var(--space-md);
+}
+.guest-hero-sub { color: var(--color-on-surface-variant); font-size: 15px; line-height: 1.7; margin-bottom: var(--space-lg); }
+.guest-hero-cta { display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; margin-bottom: var(--space-xl); }
+.guest-features {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-sm); text-align: left;
+}
+.guest-feature {
+  display: flex; align-items: center; gap: 12px;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--card-bg-hover);
+  border: var(--card-border);
+}
+.guest-feature > .material-symbols-outlined { font-size: 24px; color: var(--color-primary); }
+.guest-feature strong { display: block; font-size: 13px; color: var(--color-on-surface); }
+.guest-feature span { display: block; font-size: 11px; color: var(--color-outline); margin-top: 2px; }
+@media (max-width: 600px) {
+  .guest-hero { min-height: auto; }
+  html.mn-guest .guest-hero { padding: var(--space-lg) var(--space-md); }
+  .guest-features { grid-template-columns: 1fr 1fr; }
+}
+
+/* FluidCanvas 登录门禁：访客隐藏工作台/账号栏/Open Editor，显示登录引导卡（?locked=1 由编辑器 head 门禁送回） */
+.fc-locked-hero { display: none; }
+html.fc-guest .studio-main,
+html.fc-guest #accountBar,
+html.fc-guest #openEditorCta { display: none !important; }
+html.fc-guest .fc-locked-hero {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: calc(100vh - 96px);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+}
+
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/

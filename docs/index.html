@@ -28,6 +28,18 @@
     }
   })();
   </script>
+  <script>
+  /* 未登录门禁（2026-08-31 访客引导页）：会话同源读取（与 storage.js 语义一致、不依赖脚本加载顺序），
+     未登录挂 html.mn-guest——CSS 互斥显示访客引导页 / 隐藏工作台（同步执行防闪） */
+  (function () {
+    var loggedIn = false;
+    try {
+      var raw = localStorage.getItem('slati_session');
+      if (raw) loggedIn = !!(JSON.parse(raw) || {}).loggedIn;
+    } catch (e) {}
+    if (!loggedIn) document.documentElement.classList.add('mn-guest');
+  })();
+  </script>
   <style>
 /* ethereal.css 内联（切页闪修复 08-28：样式与 HTML 同包到达——浏览器画第一帧不再等样式表往返）*/
 /* ============================================================
@@ -1529,6 +1541,65 @@ body.pre-stagger .auth-card { opacity: 0; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ── 未登录门禁（2026-08-31：平台访客引导页 + FluidCanvas 登录门禁）── */
+/* html.mn-guest / html.fc-guest 由页面 head 内联脚本同步挂上（会话同源读取，防闪）；
+   访客态互斥显示引导页/隐藏工作台——登录态下引导页 display:none 零影响 */
+.guest-hero { display: none; }
+/* !important：门禁必须压过工作台元素的内联 display（如 index.html 网格包装器 style="display:grid"——
+   2026-08-31 电池实抓：无 !important 时访客态 Recent Activity 网格整块漏出） */
+html.mn-guest .app-main > *:not(.guest-hero) { display: none !important; }
+html.mn-guest .guest-hero {
+  display: flex; align-items: center; justify-content: center;
+  min-height: calc(100vh - 96px);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(70,72,212,0.06), rgba(129,39,207,0.04)), var(--card-bg);
+  border: var(--card-border);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-md);
+}
+.guest-hero-inner { text-align: center; max-width: 640px; }
+.guest-hero-title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--color-on-surface);
+  margin: 0 0 var(--space-md);
+}
+.guest-hero-sub { color: var(--color-on-surface-variant); font-size: 15px; line-height: 1.7; margin-bottom: var(--space-lg); }
+.guest-hero-cta { display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; margin-bottom: var(--space-xl); }
+.guest-features {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-sm); text-align: left;
+}
+.guest-feature {
+  display: flex; align-items: center; gap: 12px;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--card-bg-hover);
+  border: var(--card-border);
+}
+.guest-feature > .material-symbols-outlined { font-size: 24px; color: var(--color-primary); }
+.guest-feature strong { display: block; font-size: 13px; color: var(--color-on-surface); }
+.guest-feature span { display: block; font-size: 11px; color: var(--color-outline); margin-top: 2px; }
+@media (max-width: 600px) {
+  .guest-hero { min-height: auto; }
+  html.mn-guest .guest-hero { padding: var(--space-lg) var(--space-md); }
+  .guest-features { grid-template-columns: 1fr 1fr; }
+}
+
+/* FluidCanvas 登录门禁：访客隐藏工作台/账号栏/Open Editor，显示登录引导卡（?locked=1 由编辑器 head 门禁送回） */
+.fc-locked-hero { display: none; }
+html.fc-guest .studio-main,
+html.fc-guest #accountBar,
+html.fc-guest #openEditorCta { display: none !important; }
+html.fc-guest .fc-locked-hero {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: calc(100vh - 96px);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+}
+
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -1820,6 +1891,25 @@ body.pre-stagger .auth-card { opacity: 0; }
 <div class="app-layout">
   <aside class="app-sidebar" id="slati-sidebar"></aside>
   <main class="app-main">
+    <!-- 访客引导页（未登录时 CSS 互斥显示；登录后由工作台内容替换） -->
+    <section class="guest-hero">
+      <div class="guest-hero-inner">
+        <span class="badge badge-primary" style="margin-bottom:12px">M.NationWorld · BETA</span>
+        <h1 class="guest-hero-title">打造属于你的<br>架空国家</h1>
+        <p class="guest-hero-sub">硬核架空国家创作平台——共和、社会主义、民主主义……<br>从一张地图、一部宪法开始，建立你梦想中的国度。</p>
+        <div class="guest-hero-cta">
+          <a href="signup-and-login" class="btn btn-primary btn-lg"><span class="material-symbols-outlined">rocket_launch</span> 免费开始创作</a>
+          <a href="pages/explore.html" class="btn btn-outline btn-lg">浏览社区</a>
+        </div>
+        <div class="guest-features">
+          <div class="guest-feature"><span class="material-symbols-outlined">draw</span><div><strong>FluidCanvas</strong><span>无限画布卡片式创作</span></div></div>
+          <div class="guest-feature"><span class="material-symbols-outlined">map</span><div><strong>地图区域编辑器</strong><span>Google Earth 式框区域</span></div></div>
+          <div class="guest-feature"><span class="material-symbols-outlined">public</span><div><strong>22 种世界类型</strong><span>选型页 + 单向导引擎</span></div></div>
+          <div class="guest-feature"><span class="material-symbols-outlined">groups</span><div><strong>社区共创</strong><span>话题、档案与交流</span></div></div>
+        </div>
+      </div>
+    </section>
+
     <header class="flex-between" style="margin-bottom:var(--space-md)">
       <div class="search-capsule">
         <span class="material-symbols-outlined">search</span>

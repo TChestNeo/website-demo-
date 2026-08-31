@@ -28,6 +28,18 @@
     }
   })();
   </script>
+  <script>
+  /* 未登录门禁（2026-08-31 FluidCanvas 先登录才能用）：会话同源读取，未登录挂 html.fc-guest——
+     CSS 隐藏工作台内容与 Open Editor、显示登录引导卡；编辑器页另有 head 重定向送回本页 */
+  (function () {
+    var loggedIn = false;
+    try {
+      var raw = localStorage.getItem('slati_session');
+      if (raw) loggedIn = !!(JSON.parse(raw) || {}).loggedIn;
+    } catch (e) {}
+    if (!loggedIn) document.documentElement.classList.add('fc-guest');
+  })();
+  </script>
   <style>
 /* ethereal.css 内联（切页闪修复 08-28：样式与 HTML 同包到达——浏览器画第一帧不再等样式表往返）*/
 /* ============================================================
@@ -1529,6 +1541,65 @@ body.pre-stagger .auth-card { opacity: 0; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ── 未登录门禁（2026-08-31：平台访客引导页 + FluidCanvas 登录门禁）── */
+/* html.mn-guest / html.fc-guest 由页面 head 内联脚本同步挂上（会话同源读取，防闪）；
+   访客态互斥显示引导页/隐藏工作台——登录态下引导页 display:none 零影响 */
+.guest-hero { display: none; }
+/* !important：门禁必须压过工作台元素的内联 display（如 index.html 网格包装器 style="display:grid"——
+   2026-08-31 电池实抓：无 !important 时访客态 Recent Activity 网格整块漏出） */
+html.mn-guest .app-main > *:not(.guest-hero) { display: none !important; }
+html.mn-guest .guest-hero {
+  display: flex; align-items: center; justify-content: center;
+  min-height: calc(100vh - 96px);
+  padding: var(--space-lg);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(70,72,212,0.06), rgba(129,39,207,0.04)), var(--card-bg);
+  border: var(--card-border);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-md);
+}
+.guest-hero-inner { text-align: center; max-width: 640px; }
+.guest-hero-title {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--color-on-surface);
+  margin: 0 0 var(--space-md);
+}
+.guest-hero-sub { color: var(--color-on-surface-variant); font-size: 15px; line-height: 1.7; margin-bottom: var(--space-lg); }
+.guest-hero-cta { display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; margin-bottom: var(--space-xl); }
+.guest-features {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-sm); text-align: left;
+}
+.guest-feature {
+  display: flex; align-items: center; gap: 12px;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  background: var(--card-bg-hover);
+  border: var(--card-border);
+}
+.guest-feature > .material-symbols-outlined { font-size: 24px; color: var(--color-primary); }
+.guest-feature strong { display: block; font-size: 13px; color: var(--color-on-surface); }
+.guest-feature span { display: block; font-size: 11px; color: var(--color-outline); margin-top: 2px; }
+@media (max-width: 600px) {
+  .guest-hero { min-height: auto; }
+  html.mn-guest .guest-hero { padding: var(--space-lg) var(--space-md); }
+  .guest-features { grid-template-columns: 1fr 1fr; }
+}
+
+/* FluidCanvas 登录门禁：访客隐藏工作台/账号栏/Open Editor，显示登录引导卡（?locked=1 由编辑器 head 门禁送回） */
+.fc-locked-hero { display: none; }
+html.fc-guest .studio-main,
+html.fc-guest #accountBar,
+html.fc-guest #openEditorCta { display: none !important; }
+html.fc-guest .fc-locked-hero {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: calc(100vh - 96px);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+}
+
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -2073,13 +2144,21 @@ body.pre-stagger .auth-card { opacity: 0; }
       <span class="badge badge-success">Studio</span>
       <span style="font-size:11px;color:var(--color-outline);opacity:0.75;font-weight:500;letter-spacing:0.02em">by M.NationWorld</span>
     </div>
-    <span id="fcVersion" style="font-size:10px;color:var(--color-outline);opacity:0.45;letter-spacing:0.03em;line-height:1.2">v10.28.12</span>
+    <span id="fcVersion" style="font-size:10px;color:var(--color-outline);opacity:0.45;letter-spacing:0.03em;line-height:1.2">v10.28.13</span>
   </div>
   <span style="flex:1"></span>
-  <a href="fluidcanvas-editor.html" class="btn btn-primary"><span class="material-symbols-outlined">edit</span> Open Editor</a>
+  <a href="fluidcanvas-editor.html" id="openEditorCta" class="btn btn-primary"><span class="material-symbols-outlined">edit</span> Open Editor</a>
 </div>
 
-<div style="padding:var(--space-lg)">
+<!-- 登录引导卡（未登录时 CSS 互斥显示；编辑器 head 门禁也送回本页 ?locked=1） -->
+<section class="fc-locked-hero">
+  <span class="material-symbols-outlined" style="font-size:64px;color:var(--color-primary);opacity:0.9">lock</span>
+  <h1 style="font-weight:700;font-size:26px;color:var(--color-on-surface);margin:8px 0">登录后开始创作</h1>
+  <p style="color:var(--color-on-surface-variant);font-size:14px;line-height:1.6;margin-bottom:20px;text-align:center">FluidCanvas 是 M.NationWorld 的无限画布工作室——<br>地图、国旗、数据卡、时间线……登录后免费使用。</p>
+  <a href="../signup-and-login?next=%2Fpages%2Ffluidcanvas.html" class="btn btn-primary btn-lg" style="min-width:200px;justify-content:center"><span class="material-symbols-outlined">rocket_launch</span> 注册 / 登录</a>
+</section>
+
+<div style="padding:var(--space-lg)" class="studio-main">
   <div style="display:flex;gap:var(--space-md);align-items:flex-start">
 
   <!-- Left: 3D menu card -->

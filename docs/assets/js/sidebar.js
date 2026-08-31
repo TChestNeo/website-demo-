@@ -52,11 +52,52 @@
   }
 
   function renderSidebar() {
+    var loggedIn = !!(window.SlatiDB && SlatiDB.isLoggedIn());
     var user = (window.SlatiDB && SlatiDB.getUser()) || {
       displayName: 'Alex Rivera',
       citizenId: 'CIT-8842',
       avatarUrl: 'https://ui-avatars.com/api/?name=Alex+Rivera&background=4648d4&color=fff&size=80',
     };
+
+    // 未登录门禁（2026-08-31 用户「平台左侧的用户卡片直接变成一个注册/登录的按钮」）：
+    // 访客不显示假用户卡片（Alex Rivera 只兜 loggedIn 但无用户记录的边缘情况），
+    // 用户模块换成「注册 / 登录」CTA（../ 前缀是侧栏全站惯例，根页/子页均可解析；无设置齿轮，
+    // settings-modal.js 的齿轮轮询找不到元素空转无害）。
+    var userModuleHTML = loggedIn
+      ? '<!-- User Module -->' +
+        '<div class="sidebar-module user-module" style="padding:0;overflow:hidden">' +
+          '<!-- Banner -->' +
+          '<div class="user-banner" style="height:60px;background:linear-gradient(135deg,' +
+            'var(--color-primary),#3b3dc4);position:relative">' +
+            '<button class="btn btn-ghost btn-icon btn-sm" style="position:absolute;top:4px;right:4px;color:rgba(255,255,255,0.7)" title="Settings">' +
+              '<span class="material-symbols-outlined" style="font-size:16px">settings</span>' +
+            '</button>' +
+          '</div>' +
+          '<!-- User info -->' +
+          '<div class="user-info-bar" style="padding:0 var(--space-md) var(--space-sm);position:relative">' +
+            '<div style="position:relative;margin-top:-20px;margin-bottom:8px">' +
+              '<img src="' + user.avatarUrl + '" alt="" class="avatar" style="width:40px;height:40px;border:3px solid white" />' +
+              '<span class="status-dot status-dot-green" style="position:absolute;bottom:2px;right:-2px;border:2px solid white"></span>' +
+            '</div>' +
+            '<div class="user-name" style="font-weight:700;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + user.displayName + '</div>' +
+            '<div class="user-citizen-id label-sm" style="color:var(--color-outline)">' + user.citizenId + '</div>' +
+            '<button class="settings-btn-collapsed" style="display:none" title="Settings">' +
+              '<span class="material-symbols-outlined" style="font-size:18px">settings</span>' +
+            '</button>' +
+          '</div>' +
+        '</div>'
+      : '<!-- Guest Module（未登录） -->' +
+        '<div class="sidebar-module user-module guest-module" style="padding:0;overflow:hidden">' +
+          '<div class="user-banner" style="height:60px;background:linear-gradient(135deg,' +
+            'var(--color-primary),#3b3dc4);position:relative;display:flex;align-items:center;justify-content:center">' +
+            '<span class="material-symbols-outlined" style="font-size:22px;color:rgba(255,255,255,0.9)">rocket_launch</span>' +
+          '</div>' +
+          '<div class="user-info-bar" style="padding:var(--space-md);display:flex;flex-direction:column;gap:6px">' +
+            '<div class="user-name" style="font-weight:700;font-size:var(--fs-label-md);color:var(--color-on-surface)">加入 M.NationWorld</div>' +
+            '<div class="label-sm" style="color:var(--color-outline)">创建属于你的架空国家</div>' +
+            '<a href="../signup-and-login" class="btn btn-primary" style="width:100%;justify-content:center">注册 / 登录</a>' +
+          '</div>' +
+        '</div>';
 
     var activeId = getActiveId();
 
@@ -91,28 +132,7 @@
         '</div>' +
       '</div>' +
 
-      '<!-- User Module -->' +
-      '<div class="sidebar-module user-module" style="padding:0;overflow:hidden">' +
-        '<!-- Banner -->' +
-        '<div class="user-banner" style="height:60px;background:linear-gradient(135deg,' +
-          'var(--color-primary),#3b3dc4);position:relative">' +
-          '<button class="btn btn-ghost btn-icon btn-sm" style="position:absolute;top:4px;right:4px;color:rgba(255,255,255,0.7)" title="Settings">' +
-            '<span class="material-symbols-outlined" style="font-size:16px">settings</span>' +
-          '</button>' +
-        '</div>' +
-        '<!-- User info -->' +
-        '<div class="user-info-bar" style="padding:0 var(--space-md) var(--space-sm);position:relative">' +
-          '<div style="position:relative;margin-top:-20px;margin-bottom:8px">' +
-            '<img src="' + user.avatarUrl + '" alt="" class="avatar" style="width:40px;height:40px;border:3px solid white" />' +
-            '<span class="status-dot status-dot-green" style="position:absolute;bottom:2px;right:-2px;border:2px solid white"></span>' +
-          '</div>' +
-          '<div class="user-name" style="font-weight:700;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + user.displayName + '</div>' +
-          '<div class="user-citizen-id label-sm" style="color:var(--color-outline)">' + user.citizenId + '</div>' +
-          '<button class="settings-btn-collapsed" style="display:none" title="Settings">' +
-            '<span class="material-symbols-outlined" style="font-size:18px">settings</span>' +
-          '</button>' +
-        '</div>' +
-      '</div>' +
+      userModuleHTML +
 
       '<!-- Nav Module -->' +
       '<div class="sidebar-module nav-module custom-scrollbar" style="flex:1;overflow-y:auto;padding:var(--space-sm)">' +

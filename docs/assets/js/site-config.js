@@ -40,7 +40,10 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.5.3 = 忘记密码发码中性提示（用户「我填写了我的另外一个电子邮件为什么没有收到验证码」→问询钦定「中性提示，不泄露注册状态」）：
 //   未注册邮箱点击发码不再收到「欢迎加入 M.NationWorld」误导邮件——新 purpose=password_reset 注册与否同款中性验证码文案（防枚举：接口响应形状不变、外部试不出注册状态）；
 //   页面字幕改中性提示「If an account exists for … the code is on its way — If nothing arrives, this email isn't registered — sign up first」（补丁位·修复轮；2026-08-30）
-window.MN_SITE_VERSION = 'v0.2.5.3';
+// v0.2.6.0 = 未登录访客界面（用户「把平台和FluidCanvas的未登录的界面做一下，然后平台左侧的用户卡片直接变成一个注册/登录的按钮」→问询钦定：①平台首页未登录=访客引导页（hero+平台介绍+注册 CTA，登录后=工作台）②FluidCanvas 先登录才能用）：
+//   侧栏用户卡片按会话门禁——未登录显示「注册 / 登录」按钮（写死的 Alex Rivera 假卡片对访客退役）；首页访客态互斥显示 .guest-hero 引导页；
+//   FluidCanvas 登录门禁——编辑器 head 同步重定向回 FC 引导页（零闪现）、FC 首页访客态显示 🔒 登录引导卡；登录页支持 ?next= 回跳（只认站内绝对路径防开放跳转）（小改动位 5→6·新功能轮；2026-08-31）
+window.MN_SITE_VERSION = 'v0.2.6.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -56,4 +59,5 @@ window.MN_SITE_VERSION = 'v0.2.5.3';
 //   两排信息块标题/内容左右并排（.mre-info-row 标题定宽 40% 内容弹性，≤768 回纵排）；☰ 双手势——点击仍弹输入框外观窗、按住拖动>4px 拖整个信息面板（漂浮定位+视口 clamp，隐藏/关闭复位 dock、600ms 时间戳抑制拖动后 click）；
 //   画布滚轮缩放（1×-4× 光标锚定、passive:false 防页面滚动）+ 空格按住左键/中键拖动平移（Escape 取消手势、>4px 松手复用捕获相 click 抑制器防误开面板/误加点、中键不置旗标防误吞真点击）：
 //   #mreView 包装层承载 transform——渲染器全 % 定位零改动，client↔% 换算集中 mreScreenToPct/mrePctToScreen（改造仅 mreDragMove/画图 click 含头尾阈值×s/顶点三命中三处）（小更新位 11→12·小功能轮；2026-08-31）
-window.FLUIDCANVAS_VERSION = 'v10.28.12';
+// v10.28.13 = 登录门禁（平台未登录界面同轮——用户「先登录才能用」）：FC 首页访客态 🔒 登录引导卡（.fc-locked-hero 互斥显示、Open Editor 隐藏）+ 编辑器 head 同步重定向送回 FC 引导页（会话同源读取、零闪现、登录用户零影响）；登录页 ?next=%2Fpages%2Ffluidcanvas.html 登录后自动回 FC（小更新位 12→13·小功能轮；2026-08-31）
+window.FLUIDCANVAS_VERSION = 'v10.28.13';
