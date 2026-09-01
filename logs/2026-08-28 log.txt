@@ -750,3 +750,14 @@ FC v10.28.17.1（rev 00048-9dt）合拼三连修复轮：用户「为什么高�
 ⑥㉜ 电池合成拖拽落点必须避开卡中心：卡中心是 .card-label 输入框——label 按下不 arm 拖拽（v10.24 mousedown 守卫）且 label onclick 吃掉点击切换 → 手势电池中心点拖「没反应」、真 bug 全绿漏过；落点改上缘图片区（rt+6）+ 防御性 elementFromPoint 断言链不含 card-label
 ⑥㉝ 编辑器加载后有 ~800ms 定位 settle——rectOf 必须 settle 后重读且手势前逐次重读不缓存，否则 elementFromPoint 落在 editor-header 假红一轮
 ⑥㉞ 状态机交互 bug 从「用户第一次操作」视角推：合并后自动选中对内部逻辑没毛病，但把用户第一次点击变成「第二次点击」——单击切换计数语义起点错了；交互轮电池必须从合并动作刚结束的瞬时状态开始测
+
+FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中的时候他那边的第一个框是单独卡片的框而不是整个框起来？？然后为什么他们还是一样拥有独立的白色背景？然后我希望那个一样长度的是默认合并时但是如果是合并完后用户要单独调整是可以的但最顶部的部分的高度永远一致行不行？中间部分要怎么调就怎么调但是图片的大小永远是等比例」——三点钦定全落：
+- ①整组选中=单框：refreshResizeHandles/refreshRotateGrip wholeGroup 守卫（selectedCard 带 groupId 且非单卡选中 → 8 手柄+旋转钮全隐）；.grid-group-bg.selected = 卡式选中环（primary 边框+3px 光晕）——视觉上一个框把整组框起来，不是框单卡
+- ②成员卡面隐藏：.grid-card[data-group-id] 非空且非 .group-single → border/box-shadow/background-color/background-image/backdrop-filter 全 !important 隐藏 + ::before/::after + .card-outer-band/.card-outer-band-wrap/.card-tint/.card-bg-img/.card-stripes display:none（.card-img-bg 旗帜内容保留）；组背景升级卡面玻璃配方（一张整卡外观）；.group-single 类 = 单卡选中时该卡完整外观回归（selectCard 单卡加、deselectAll/拆分清）
+- ③顶部永远一致+调整不反弹：alignGroupTops(g)——调整类提交点（onResizeUp/Escape 中途提交/commitRotate 三处）按 groupColumns 取最小 top 对齐、每列 dy 平移（只动 style.top+dataset.y，不碰尺寸/x）；reflowGroup（填满+列顶对齐）只留结构事件（mergeCards/splitCardFromGroup/deleteSelectedCard/reflowAllGroups 草稿恢复）→ 合并后用户单独调整不再被重排吞掉；中间部分随意调、图片等比由 aspect 锁既有机制保证
+- 真 bug（B8，电池实抓）：--card-bg-color: var(--color-surface-container) 定义在 .grid-card——自定义属性只向下继承，兄弟 .grid-group-bg 取不到 → color-mix 在计算值期解析失败整条声明作废 → 组背景 transparent（rgba(0,0,0,0)）→ 同款 var 定义补到 .grid-group-bg（修复后 color(srgb 0.92549 0.933333 0.941176 / 0.55) 与卡面一致）
+- 版本：FLUIDCANVAS_VERSION v10.28.17.1→v10.28.17.2（补丁位 1→2 口径修正轮）+ 4 处字面量（site-config+fc 首页+编辑器 ready log/badge 兜底）；站点号 v0.2.6.2 不变；草稿零新字段（列顶对齐不落草稿——每次从当前几何重推）
+验证：本地静态壳真实手势电池 56/56（A-G 七相：A 默认合并 512×320 填满+底缘齐平 520/520 B 整组选中单框=8 手柄+旋转钮全隐+组背景环+成员卡面无边框/透明背景/组背景=卡面玻璃 C 再击单卡 .group-single 独立外观回归+四角手柄+三击回组 D 缩放 605×378 等比 1.6005+列顶 200/200 保持+600ms 不反弹+邻卡分毫不动 E 旋转不触碰尺寸+列顶仍齐 F 拆分链 G 合并默认+草稿往返+重载重放；修复前同电池实抓 B8 组背景透明）+ group-click 回归 28/28 + group-fill 回归 48/48 + smoke-admin 49/49 + 线上同款 51/51+25/25+46/46（重载类按陷阱 84 跳过）+ curl 五连（/ 200 + 编辑器页含 v10.28.17.2（3 处 v10.28.17.1 为链注释前身记录属合法）+ /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00049-nws（100% 流量）
+教训：
+⑥㉟ 画布溢出边框盒外不可点击：1280 窗下 gridCanvas 实宽 944px（43 列×22−2）——Chrome 命中测试不下钻父边框盒，卡/手柄超出 canvas 盒右缘的部分 elementFromPoint 直接跳过 gridCanvas，press 落在 .editor-body 滚动容器 → 原生选区拖拽 → 渐进 auto-scroll（实测 65→2580 一次拖拽）→ 后续手势全落 HTML 负坐标假红一片。电池约束：手势点必须同时在画布盒内+视口内（种子/断言全量换位）；真产品限制（v9 起既有边界案例，1280 窗画布 944px）本轮不修——范围纪律
+⑥㊱ 自定义属性只向下继承：--card-bg-color 定义在 .grid-card，兄弟节点 .grid-group-bg 里 var() 取不到 → color-mix 整条声明在计算值期作废 → background-color 透明（电池抓 rgba(0,0,0,0) 才见）。同族背景配方共用 var 的类必须各自定义或移到共同祖先定义——「注释自称 exact 的公式也要验」同族：类选择器写在 .grid-card 上不等于它的兄弟也拿到变量
