@@ -772,3 +772,5 @@ FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中�
 教训：
 ⑥㊲ CSS.forcePseudoState 强制 :hover：悬停态断言不必算真实鼠标坐标（headless 里命中区/画布位移都是坑）——DOM.getDocument+DOM.querySelector 拿 nodeId → CSS.forcePseudoState {nodeId, forcedPseudoClasses:['hover']} 直达伪类链（--active:1 → overlay/光环/transform 全链生效）；注意 forcePseudoState 只造伪类不造事件，点击行为链仍要用 click()/真实手势
 ⑥㊳ 过渡中段采样假红：transition 0.3s 的 computed 属性（药丸 ::before 背景）切主题后必须 sleep >300ms 再探——120ms 采样踩进中段 rgb(52,52,53) 假红；同族三连：box-shadow 序列化带 px（'0px 0px 0px 6px' 不是 '0 0 0 6px'）、手算 hsl→rgb 连错两次（hsl(240 14% 14%) = rgb(31,31,41)：C=(1-|2L-1|)×S=0.0392 不是 0.1008）、期望色值一律拿 Chrome 实测值兜底再写断言
+
+同轮修正（2026-09-02 当日）：用户补发原版 HTML「抱歉少给html的部分」——星芒 SVG 由自绘四角星换成 Uiverse 原版三条 path（viewBox 24、大星偏右上/中星/小星左下、stroke/fill black 属性保留，CSS fill/stroke:currentColor 优先级盖过呈现属性故主题链不变）；CSS 零改动、版本号不变（同轮修正）；tmp 电池 25/25 重跑全绿 + 线上 25/25 + curl 五连；commit a70f58a，重新部署 rev 00051-lfv（00050-vgv 携带自绘版已下线）
