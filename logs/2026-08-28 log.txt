@@ -774,3 +774,15 @@ FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中�
 ⑥㊳ 过渡中段采样假红：transition 0.3s 的 computed 属性（药丸 ::before 背景）切主题后必须 sleep >300ms 再探——120ms 采样踩进中段 rgb(52,52,53) 假红；同族三连：box-shadow 序列化带 px（'0px 0px 0px 6px' 不是 '0 0 0 6px'）、手算 hsl→rgb 连错两次（hsl(240 14% 14%) = rgb(31,31,41)：C=(1-|2L-1|)×S=0.0392 不是 0.1008）、期望色值一律拿 Chrome 实测值兜底再写断言
 
 同轮修正（2026-09-02 当日）：用户补发原版 HTML「抱歉少给html的部分」——星芒 SVG 由自绘四角星换成 Uiverse 原版三条 path（viewBox 24、大星偏右上/中星/小星左下、stroke/fill black 属性保留，CSS fill/stroke:currentColor 优先级盖过呈现属性故主题链不变）；CSS 零改动、版本号不变（同轮修正）；tmp 电池 25/25 重跑全绿 + 线上 25/25 + curl 五连；commit a70f58a，重新部署 rev 00051-lfv（00050-vgv 携带自绘版已下线）
+
+2026-09-02 FC v10.28.17.4 Migrate to Cards 按钮再换 cssbuttons-io 设计（观感微调轮）
+用户：「再把Migrate按钮的Ui 改成这个」（给了 cssbuttons-io 紫渐变代码按钮 CSS：linear-gradient(to right,#8e2de2,#4a00e0) 底+ghostwhite 字+</> 代码图标+悬停黑色斜面板 skew(30deg) 左→右横扫+按下 scale(0.95)）
+- .migrate-btn 作用域再改写（v10.28.17.3 Uiverse 药丸 CSS 整块替换）：按钮本体紫渐变底+18px/500/letter-spacing 0.05em/radius 0.8em/padding 0（内边距移到 span 上）；span（position relative+z 10+transition color 0.4s）承载 0.8em 1.2em 0.8em 1.05em+svg 图标+「Migrate to Cards」文案；::before 黑面板 width 120%/left -10%/skew(30deg)+transition transform 0.4s cubic-bezier(0.3,1,0.8,1)；:hover::before translate3d(100%,0,0)（黑面板左→右横扫、% 相对面板自身盒=1.2×钮宽）；:active scale(0.95)
+- 图标 SVG=用户原版两条 path（fill-none 盒 M0 0h24v24H0z + </> 双箭头 fill="currentColor" path）；currentColor 解析为 ghostwhite；aria-hidden 补上
+- 亮/暗主题共用同一套零覆写（紫渐变两主题都成立——电池 E 项暗主题断言同款渐变+ghostwhite；v10.28.17.3 的 --mb-pill/--mb-text-c/星芒/药丸/dots_border CSS 全清 grep 零残留）
+- 按钮 HTML 重写：btn 内层 span+svg（2 path）+文案；onclick 仍绑 runMigration 迁移逻辑零改动（空文本 toast 拦截/填文本建卡关弹窗回归）
+- 版本：FLUIDCANVAS_VERSION v10.28.17.3→v10.28.17.4（补丁位 3→4 观感微调轮）+ 5 处字面量（site-config+fc 首页+编辑器 ready log/badge 兜底）+ 2 条注释链；站点号 v0.2.6.2 不变；草稿零新字段
+验证：tmp 电池 22/22（A 结构+版本 4 项 B 静息 7 项——紫渐变 rgb(142,45,226)→rgb(74,0,224)/ghostwhite rgb(248,248,255)/span 上内边距 14.4px/黑面板 skew matrix c 位 0.57735/纯黑/图标 fill ghostwhite/无缩放 'none' C 悬停强制 :hover+500ms sleep 3 项——tx=1.2×钮宽实测 275.375 vs 275.4/skew 消失纯平移/底纹不变 D 强制 :active scale 0.95 E 暗主题 2 项 F 点击链 3 项 G 0 异常 0 error）+ group-click 28/28 + group-fill 48/48 + smoke-admin 49/49 + 线上同款 22/22 + curl 五连（/ 200 + 编辑器页含 v10.28.17.4 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00052-pc4（100% 流量）
+教训：
+⑥㊴ CSS matrix 六元组位置别背错：skewX(30deg)=matrix(1,0,0.57735,1,0,0)——skew 值在 c 位（index 2）不是 b 位（b 位是 skewY）；translate3d(100%,0,0) 的 % 相对 ::before 自身盒（width 120% 的面板）→ 期望 tx=1.2×钮宽，拿实时 getBoundingClientRect 算不要写死
+⑥㊵ 静息无 transform 的 computed 是 'none' 不是 identity matrix——断言写 'none' || 'matrix(1,0,0,1,0,0)' 双兼容；旧教训重申：PowerShell 与 Bash 工具共享 cwd，docker build 前必显式 cd 仓库根（本轮部署前显式 cd 一次过、上轮在共享 cwd 上踩过）
