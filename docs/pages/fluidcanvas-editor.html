@@ -1603,12 +1603,15 @@ html.fc-guest .fc-locked-hero {
 
 /* ── 顶部 Migrate 按钮：cssbuttons-io 设计（v10.28.17.4 紫色渐变+黑面板横扫）──
    原设计 = 紫渐变底 + ghostwhite 字 + 代码图标；悬停黑色斜面板从左向右扫过整钮、
-   按下缩小 0.95。亮/暗主题共用同一套（紫渐变两主题都成立，无需主题覆写）。 */
+   按下缩小 0.95。亮/暗主题共用同一套（紫渐变两主题都成立，无需主题覆写）。
+   尺寸：同轮修正用户「那个大小调一下这有点太大了」→ 对齐页头兄弟钮 .btn-sm
+   （12px 字），字号 18px→12px、span 竖向内边距 0.8em→0.5em、图标 1.2em→2em
+   （兄弟钮图标 24px 撑起 38px 高，图标同高才对齐），其余比例不变。 */
 .migrate-btn {
   position: relative;
   font-family: inherit;
   font-weight: 500;
-  font-size: 18px;
+  font-size: 12px;
   letter-spacing: 0.05em;
   border-radius: 0.8em;
   cursor: pointer;
@@ -1619,8 +1622,8 @@ html.fc-guest .fc-locked-hero {
   padding: 0;   /* 内边距在 span 上（原设计） */
 }
 .migrate-btn svg {
-  width: 1.2em;
-  height: 1.2em;
+  width: 2em;    /* 1.2em→2em（兄弟钮 24px 图标撑高，图标同高才对齐） */
+  height: 2em;
   margin-right: 0.5em;
 }
 .migrate-btn span {
@@ -1629,7 +1632,7 @@ html.fc-guest .fc-locked-hero {
   transition: color 0.4s;
   display: inline-flex;
   align-items: center;
-  padding: 0.8em 1.2em 0.8em 1.05em;
+  padding: 0.5em 1.2em 0.5em 1.05em;   /* 竖向内边距 0.8em→0.5em（对齐 .btn-sm 6px） */
 }
 .migrate-btn::before,
 .migrate-btn::after {
