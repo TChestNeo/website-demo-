@@ -4634,6 +4634,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // 草稿应用与来源解耦（P6）：loadDraft 读 localStorage；云端草稿经 applyDraft 直接入画布
   function applyDraft(draft) {
     try {
+      // v10.28.15.2: 先清空画布再应用——loadDraft 之外，云端同步/409 冲突
+      // 「加载云端版本」也会走到这里；不清空就在已恢复的画布上叠一份
+      // → 刷新后卡片翻倍（真 bug，2026-09-01 用户报）。
+      getAllCards().forEach(function (c) { if (c.parentNode) c.parentNode.removeChild(c); });
+      gridCanvas.querySelectorAll('.grid-group-bg, .grid-group-divider').forEach(function (b) { b.remove(); });
+      deselectAll();
       if (draft) {
         if (draft.title) titleInput.value = draft.title;
         if (draft.tags) renderModalTags(draft.tags);
@@ -5105,7 +5111,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         var serverVersion = server ? server.version : cloudDraftVersion;
         if (confirm('云端草稿有更新版本（可能在其他设备保存过）。\n「确定」加载云端版本；「取消」用本地版本覆盖云端。')) {
           if (server) {
-            try { localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(server.data)); } catch (e) {}
+            // v10.28.15.2: 采纳云端版重戳 lastSaved——否则本地仍旧于云端
+            // updatedAt，下次保存又 409 再弹窗（弹窗循环）
+            try { server.data.lastSaved = Date.now(); localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(server.data)); } catch (e) {}
             applyDraft(server.data);
           }
           cloudDraftVersion = serverVersion;
@@ -5133,11 +5141,16 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var localTs = (local && local.lastSaved) ? local.lastSaved : 0;
       var cloudTs = Date.parse(server.updatedAt) || 0;
       if (!local) {
+        // v10.28.15.2: 本地无草稿 → 采纳云端并落库（重戳 lastSaved，
+        // 刷新后本地即最新不再弹窗）
+        try { server.data.lastSaved = Date.now(); localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(server.data)); } catch (e) {}
         applyDraft(server.data);
         showToast('已从云端恢复草稿');
       } else if (cloudTs > localTs) {
         if (confirm('云端有更新的草稿（可能在其他设备保存过）。是否加载云端版本？\n「取消」保留本地草稿。')) {
-          try { localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(server.data)); } catch (e) {}
+          // v10.28.15.2: 重戳 lastSaved 断开弹窗循环（采纳前本地旧于云端，
+          // 不重戳则每次刷新都比云端旧 → 再弹再叠）
+          try { server.data.lastSaved = Date.now(); localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(server.data)); } catch (e) {}
           applyDraft(server.data);
         }
       }
@@ -10947,7 +10960,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.15.1') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.15.2') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -10956,7 +10969,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.15.1');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.15.2');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';

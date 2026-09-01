@@ -698,3 +698,15 @@ site v0.2.6.2 不变 / FC v10.28.15.1（rev 00044-d4m）单击切换选中轮：
 ⑥⑳ MutationObserver 回调是异步微任务：同一 evalJs 脚本里同步读观察器日志恒空（自测误判 observer 坏了）。读日志要 setTimeout 延迟读或等下一轮 evalJs
 ⑥㉑ dataset 访问器在 HTMLElement.prototype 上，不在 Element.prototype——getOwnPropertyDescriptor(Element.prototype,'dataset') 返回 undefined；装 dataset 读写 Proxy 要挂 HTMLElement.prototype
 ⑥㉒ 卡 label onclick 先 stopPropagation：点中标签的 click 永不抵达卡片自身 click 监听器（切换/justDragged 抑制全在监听器内）——排查「点了没反应」先看点击目标是否被标签吞掉（cl:0 计数器异常即此解）
+
+FC v10.28.15.2（rev 00045-frw）刷新翻倍修复轮：用户「为什么在刷新页面后卡片数量和翻倍？」
+- 真身：applyDraft 应用草稿前不清空画布——loadDraft（画布空，安全）之外的三个调用点：syncCloudDraft 无本地草稿分支、syncCloudDraft 云端更新确认分支、putCloudDraft 409 冲突确认分支，都会在「已恢复好本地草稿的画布」上再叠一份 → 翻倍；且采纳云端版后本地 lastSaved 仍旧于云端 updatedAt → 每次刷新弹窗条件恒真 → 再弹再叠（2×→4×→…复合）。电池端到端实证（假后端 + fetch/confirm 包装）：修复前 syncCloudDraft 路径首载即 3→6 卡（B DIAG cards:6 实抓）。
+- 修复：① applyDraft 开头先清空（getAllCards 移除 + .grid-group-bg/.grid-group-divider 清 + deselectAll）——所有重应用路径幂等；② 三处采纳云端分支重戳 server.data.lastSaved=Date.now() 再落库（409 确认 / sync 无本地草稿补落库 / sync 确认）断开弹窗循环。
+- 顺带真 bug：侧栏/设置头像 img src=user.avatarUrl 无兜底——真实账号未传头像时 src 是 undefined → /undefined 404（每个登录用户每次刷新一条 console error）→ window._slatiFallbackAvatar 内联 SVG 人形兜底（sidebar.js + settings-modal.js 两处渲染点）。
+- 版本：FLUIDCANVAS_VERSION v10.28.15.1→v10.28.15.2（补丁位 2→3 修复轮）+ 4 处字面量；站点号 v0.2.6.2 不变
+验证：本地静态壳 CDP 电池 11/11（A 二次 loadDraft 幂等 3 卡 / B0 页内 MN_API.get 链路 / B1 云端同步确认 confirms=1 / B2 采纳云端后仍 3 卡 / B3 lastSaved 重戳 / C 重载 3 卡+无新确认+0 console error 0 异常——云端路径用假后端 + fetch/confirm 包装端到端）+ smoke-admin 49/49 + 线上同款 4/4（rev 00045-frw 真站：A 相幂等 + 已服务代码含修复）+ curl 五连（/ 200 + 编辑器页含 v10.28.15.2 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00045-frw（100% 流量）
+教训：
+⑥㉓ api.js 的 request 包装 = fetch 后调 res.json() 再包 {ok,status,data}：电池假 fetch 的返回对象必须带 json() 方法——丢了它 TypeError 未捕获 promise 拒绝、.then 链静默断，Runtime.exceptionThrown 听不见 unhandled rejection，表现就是「confirm 计数恒 0 但零异常」；且假后端要返回「原始后端 JSON」（{draft:{...}}），返回 api.js 形状 {ok,status,data:{draft}} 会被再包一层成 res.data.draft=undefined 静默早退
+⑥㉔ addScriptToEvaluateOnNewDocument 注入的窗口级计数器随每次导航重跑重置：跨导航断言不能用累计值（C 阶段「无新确认」期望新文档内计数 0，不是累计仍 1）
+⑥㉕ 假云端 updatedAt 不能按请求重算：真实后端只在 PUT 时前进——按请求重算（stale 时 now+60s）会让客户端重戳 lastSaved 后仍比云端旧 → C 阶段电池侧制造假弹窗；固定时间锚点（云端=CLOUD_NOW-30s、本地种子=CLOUD_NOW-300s）才贴近真实语义
+⑥㉖ 排查「哪来的 /undefined 404」：fetch 包装先推全量 __fetches（不在列表=不是 fetch）→ 服务器侧打 sec-fetch-dest 头（dest=image 秒判元素型资源）+ referer 定位发起页；真凶=sidebar 用户卡 img src=user.avatarUrl 无兜底，异步渲染时序（storage.js whenUp 链在种子 session 之后才完成）让它只出现在给异步链留了活口的跑法里——A 阶段赶在异步完成前就导航则永远看不到这个真 bug，电池跑法必须给页面异步链留时间

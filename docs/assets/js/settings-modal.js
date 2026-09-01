@@ -154,7 +154,7 @@
       el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' } }, 'Profile'),
       el('div', '', { style: { display: 'flex', alignItems: 'center', gap: 'var(--space-md)', marginBottom: 'var(--space-md)' } }, [
         el('div', '', { style: { position: 'relative', flexShrink: '0' } },
-          '<img src="' + user.avatarUrl + '" alt="" style="width:64px;height:64px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.08)">' +
+          '<img src="' + (user.avatarUrl || window._slatiFallbackAvatar) + '" alt="" style="width:64px;height:64px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.08)">' +
           '<button class="btn btn-ghost btn-icon btn-sm" style="position:absolute;bottom:-4px;right:-4px;width:28px;height:28px;border-radius:50%;background:var(--color-primary);color:white" title="Change avatar">' +
             '<span class="material-symbols-outlined" style="font-size:14px">photo_camera</span>' +
           '</button>'

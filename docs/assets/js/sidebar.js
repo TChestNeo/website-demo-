@@ -13,6 +13,12 @@
     return '../assets/image/' + name + '_24dp_' + color + '_FILL0_wght400_GRAD0_opsz24.svg';
   };
 
+  // 兜底头像（2026-09-01）：真实账号未传头像时 img src 曾是 undefined
+  // → /undefined 404 每次刷新一条 console error；内联 SVG 人形零网络零 404
+  window._slatiFallbackAvatar = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    "<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><circle cx='40' cy='40' r='40' fill='#4648d4'/><circle cx='40' cy='31' r='14' fill='#fff'/><path d='M13 74c4-16 14-24 27-24s23 8 27 24z' fill='#fff'/></svg>"
+  );
+
   var NAV_ITEMS = [
     { id: 'home', icon: 'home', label: 'Home', href: '../index.html' },
     { id: 'micronationary', icon: 'language', label: 'MicroNationary', href: '../pages/overview.html' },
@@ -76,7 +82,7 @@
           '<!-- User info -->' +
           '<div class="user-info-bar" style="padding:0 var(--space-md) var(--space-sm);position:relative">' +
             '<div style="position:relative;margin-top:-20px;margin-bottom:8px">' +
-              '<img src="' + user.avatarUrl + '" alt="" class="avatar" style="width:40px;height:40px;border:3px solid white" />' +
+              '<img src="' + (user.avatarUrl || window._slatiFallbackAvatar) + '" alt="" class="avatar" style="width:40px;height:40px;border:3px solid white" />' +
               '<span class="status-dot status-dot-green" style="position:absolute;bottom:2px;right:-2px;border:2px solid white"></span>' +
             '</div>' +
             '<div class="user-name" style="font-weight:700;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + user.displayName + '</div>' +
