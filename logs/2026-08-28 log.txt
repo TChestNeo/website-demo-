@@ -725,3 +725,17 @@ FC v10.28.16.0（rev 00046-xrg）分组主题化轮：用户「好，我希望�
 ⑥㉗ 线上电池跑重载往返踩假会话清会话链：真后端 probe 成功 → fcCloudMode 真 → 假会话 syncCloudDraft 401 → api.js 派发 mn:unauthorized → storage.js 清 slati_session → 重载被 head 登录门禁 location.replace 送回 locked 页 → 卡数 0 waitFor 超时。这是产品正确行为（失效会话 401 清会话），电池设计缺陷——本地壳 /api 全 404 走 demo 零请求所以本地重载无碍；线上模式必须跳过重载类断言（if (!LIVE) 包 A9-A12b），线上保留首载全链路 + 精简 L 相
 ⑥㉘ waitFor 超时 crash 丢线索：崩溃路径不打印已收集的 aExc/aErr 数组（401 清会话链只得读代码推——api.js:33 实证），修复后重跑才闭环。电池崩溃出口应先吐已收集异常/错误再抛，或 waitFor 超时 detail 附当前 location.href + readyState + 目标元素计数探针
 ⑥㉙ Bash 多行反斜杠续行调 gcloud.cmd 部署炸「The syntax of the command is incorrect.」：.cmd 批处理包装器经 cmd.exe 解析、Git Bash 反斜杠续行把整串喂给 cmd 时被咬断；部署改 PowerShell 单行 & 调用（过去多轮部署皆 PowerShell 成功——本次同款一次过）
+
+FC v10.28.17（rev 00047-h2f）矮列放大填满轮：用户「为什么当合拼一体时左右两列的高度不一致？」
+- 解释口径：v10.28.15 合拼只统一宽度（等宽以较宽者为准），高度天然不等——图卡 h=w/ratio 等比锁、内容卡文字驱动，列高=成员高度之和 → 左右两列几乎必然不等高，是设计非 bug
+- 问询钦定：「矮列的卡片放大填满」——列高取最高列 H，矮列按 f=H/colH 放大补齐：图卡宽高同比例（aspectRatio 不变）、内容卡只加高；卡片大小会改变（钦定选项自带）
+- 实现（reflowGroup 重写）：
+  - 列高 = 成员 offsetHeight 之和；H = 最高列；矮列（H-colH ≥ 0.5px）卡片乘 f：isAspectLocked → w2/h2=round(w·f/h·f) + fitW/fitH/colSpan/rowSpan 同步（step=getCellSize()+2）；content/text → style.height=round(h·f) 只加高
+  - 定位：列内按实际高度堆叠、列间 x 推进改用 fill 后实际列宽（colW=列内最宽）——列划分与贴齐跨重排稳定（groupColumns 0.5px 容差仍能复现同一分列）
+  - 两条防翻倍稳定性约束（v10.28.15.2 翻倍 bug 同族警觉）：① 全组等宽归一从 reflowGroup 移除，职责只在 mergeCards 并入入口（草稿恢复的放大尺寸若再归一会成为新「最宽基准」每轮再放大）② 重排对已填满几何幂等——f 每次从当前几何重推，已等高列 f=1 空转，反复重排/重载不累积
+  - 草稿零新字段：图卡 fitW/fitH 既有字段精确往返（重载同步恢复 px → reflow f=1）、content/text 高度不落草稿（重载回自然高 → reflow 补填）；buildDraft v:9 链注释追加
+- 版本：FLUIDCANVAS_VERSION v10.28.16.0→v10.28.17（小更新位 16→17 观感轮，补丁归零）+ 4 处字面量（site-config+fc 首页+编辑器 ready log/badge 兜底）；站点号 v0.2.6.2 不变
+验证：本地静态壳 CDP 电池 48/48 双跑（A 图卡+内容卡=内容只加高 320 宽不变/幂等/草稿重载补填不翻倍/二次重载稳定 B 双图卡 320×200→640×400 等比+aspectRatio 1.6 保持+fitW/fitH+colSpan/rowSpan 格同步/重排幂等/草稿往返不翻倍 C 第三卡并入挤组宽 640+三列重配平 640/1024/640 底缘齐平+拆分塌合空转+往返 D 单列空转尺寸不动贴齐堆叠 0 异常 0 报错）+ smoke-admin 49/49 + 线上 46/46（A-D 非重载断言真站实跑+L1-L5：版本字面量/合并填满/幂等/草稿 JSON/底缘齐平/零异常零报错；重载类断言按陷阱 84 跳过）+ curl 五连（/ 200 + site-config 与编辑器页含 v10.28.17 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00047-h2f（100% 流量）
+教训：
+⑥㉚ 电池格步期望别硬编码：colSpan/rowSpan 期望按实测 --cell-size 推——画布预设 '169' 的 cellSize 是 20px（CSS 默认 24px），电池硬编码 26 步算期望 25/15 假红一轮（实为 29/18），改 CELL 探针实测 cell-size 再算期望即绿
+⑥㉛ 线上电池根页种子竞态：根页自身 auth 探测对假会话 401 → mn:unauthorized 清会话，可能先于编辑器 head 门禁读取种子（同批四相 A 赢 B 输随机翻车）；线上相改 Page.addScriptToEvaluateOnNewDocument 文档级注入（先于任何页内脚本含门禁 head 执行，try/catch 包住防 about:blank 抛错）零竞态
