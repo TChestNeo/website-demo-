@@ -2150,8 +2150,9 @@ html.fc-guest .fc-locked-hero {
     .grid-group-bg.selected { border-color: var(--color-primary); }
     /* v10.28.15 — 分组「一体」外观（钦定「边框+主题边缘全隐藏」）：组内卡
        自身边框/阴影/外板/环带/剪影填充/焦边全部藏起，外框只剩组背景一条
-       线，成员间以 .grid-group-divider 分割线区隔（列间竖线仅当任一侧有
-       content 卡——钦定「content card 就自动在左右中间加上一个分割线」）。
+       线。v10.28.16：成员间 .grid-group-divider 分割线已移除（钦定「组整体
+       像一张大卡」——组背景本身可套边缘主题，见下方 .grid-group-bg.card-edge-*
+       同族规则），卡与卡之间直接贴齐。
        !important 压过卡内联 border 与主题规则（拆分组后类即消失全部还原）。 */
     .grid-card[data-group-id]:not([data-group-id='']) {
       border: none !important;
@@ -2166,14 +2167,6 @@ html.fc-guest .fc-locked-hero {
     .grid-card[data-group-id]:not([data-group-id='']) .card-tint {
       display: none !important;
     }
-    .grid-group-divider {
-      position: absolute;
-      z-index: 2; /* 压在卡上（卡常态 z 1+）盖住贴齐接缝；拖拽 z 50 仍在其上 */
-      pointer-events: none;
-      background: var(--divider-line-strong);
-    }
-    .grid-group-divider.divider-h { height: 1px; }
-    .grid-group-divider.divider-v { width: 1px; }
     .grid-card.merge-target { outline: 2px dashed var(--color-primary); outline-offset: 4px; }
     .grid-card.cell-highlight::after {
       content: ''; position: absolute; inset: 0;
@@ -2898,7 +2891,13 @@ html.fc-guest .fc-locked-hero {
     .grid-card.card-edge-paper,
     .grid-card.card-edge-treasure,
     .grid-card.card-edge-tech,
-    .grid-card.card-edge-paint {
+    .grid-card.card-edge-paint,
+    /* v10.28.16: 组背景同族（钦定「组整体像一张大卡」）——组背景套主题时
+       卡身透明、边框/阴影让位给主题剪影；下方主题各规则同款扩展 */
+    .grid-group-bg.card-edge-paper,
+    .grid-group-bg.card-edge-treasure,
+    .grid-group-bg.card-edge-tech,
+    .grid-group-bg.card-edge-paint {
       background: transparent;
       border: 1px solid transparent;
       border-color: transparent; /* beats :hover/.selected border-color (0,2,0 > 0,1,1) */
@@ -2964,7 +2963,11 @@ html.fc-guest .fc-locked-hero {
     .grid-card.card-edge-paper::before,
     .grid-card.card-edge-treasure::before,
     .grid-card.card-edge-tech::before,
-    .grid-card.card-edge-paint::before {
+    .grid-card.card-edge-paint::before,
+    .grid-group-bg.card-edge-paper::before,
+    .grid-group-bg.card-edge-treasure::before,
+    .grid-group-bg.card-edge-tech::before,
+    .grid-group-bg.card-edge-paint::before {
       content: '';
       position: absolute;
       z-index: -1;
@@ -2980,7 +2983,11 @@ html.fc-guest .fc-locked-hero {
     .grid-card.card-edge-paper::after,
     .grid-card.card-edge-treasure::after,
     .grid-card.card-edge-tech::after,
-    .grid-card.card-edge-paint::after {
+    .grid-card.card-edge-paint::after,
+    .grid-group-bg.card-edge-paper::after,
+    .grid-group-bg.card-edge-treasure::after,
+    .grid-group-bg.card-edge-tech::after,
+    .grid-group-bg.card-edge-paint::after {
       content: '';
       position: absolute;
       z-index: 2;
@@ -3007,7 +3014,11 @@ html.fc-guest .fc-locked-hero {
     .grid-card.card-edge-paper.has-outer-bg::before,
     .grid-card.card-edge-treasure.has-outer-bg::before,
     .grid-card.card-edge-tech.has-outer-bg::before,
-    .grid-card.card-edge-paint.has-outer-bg::before {
+    .grid-card.card-edge-paint.has-outer-bg::before,
+    .grid-group-bg.card-edge-paper.has-outer-bg::before,
+    .grid-group-bg.card-edge-treasure.has-outer-bg::before,
+    .grid-group-bg.card-edge-tech.has-outer-bg::before,
+    .grid-group-bg.card-edge-paint.has-outer-bg::before {
       /* v10.10: gap pushes the themed plate out too (same formula as legacy).
          v10.16b: border 环带（同 legacy 板规则）+ 剪影始终生效 ——
          --card-clip 把 border 环带裁成主题形状，gap>0 也保持 HUD 外框/
@@ -3054,7 +3065,8 @@ html.fc-guest .fc-locked-hero {
        取样，取样位置不同 → 接缝跳色）；板 ::before 只剩 box-shadow
        （glow + 1px 边线）勾外轮廓。有背景图的卡隐藏本层（v10.13 图片
        环带照旧是外背景本体）。gap 0 时同样创建（环带即本层）。 */
-    .grid-card .card-outer-band {
+    .grid-card .card-outer-band,
+    .grid-group-bg .card-outer-band {
       position: absolute;
       inset: calc(-1 * (var(--outer-extent, 16px) + var(--outer-gap, 0px)));
       border-radius: var(--outer-radius, 20px);
@@ -3066,7 +3078,8 @@ html.fc-guest .fc-locked-hero {
     }
     .grid-card.has-card-bg-img .card-outer-band { display: none; }
     /* 油漆板同 v10.17：填充层免剪影（油漆剪影内缩异形会咬填充层） */
-    .grid-card.card-edge-paint .card-outer-band { clip-path: none; }
+    .grid-card.card-edge-paint .card-outer-band,
+    .grid-group-bg.card-edge-paint .card-outer-band { clip-path: none; }
     /* v10.8 — the silhouette layer when the plate coexists. applyCardBg
        creates/removes the div. z-index:-1 + later tree order than ::before
        (generated first) paints it ABOVE the plate ::before and below
@@ -3083,7 +3096,8 @@ html.fc-guest .fc-locked-hero {
        and the canvas grid shows through; no plate clip var involved.
        Tree order plate ::before → tint (applyCardBg inserts the tint
        first — no hole to order around any more). */
-    .grid-card .card-tint {
+    .grid-card .card-tint,
+    .grid-group-bg .card-tint {
       position: absolute;
       z-index: -1;
       inset: 0;
@@ -3113,11 +3127,16 @@ html.fc-guest .fc-locked-hero {
     .grid-card.card-edge-paper,
     .grid-card.card-edge-treasure,
     .grid-card.card-edge-tech,
-    .grid-card.card-edge-paint {
+    .grid-card.card-edge-paint,
+    .grid-group-bg.card-edge-paper,
+    .grid-group-bg.card-edge-treasure,
+    .grid-group-bg.card-edge-tech,
+    .grid-group-bg.card-edge-paint {
       backdrop-filter: blur(12px) saturate(1.4);
       -webkit-backdrop-filter: blur(12px) saturate(1.4);
     }
-    .grid-card.card-edge-paint:not(.has-outer-bg)::before {
+    .grid-card.card-edge-paint:not(.has-outer-bg)::before,
+    .grid-group-bg.card-edge-paint:not(.has-outer-bg)::before {
       opacity: 0.55;
       background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0)), var(--card-layers, none);
       background-size: 45% 2px, auto;
@@ -3178,22 +3197,28 @@ html.fc-guest .fc-locked-hero {
        same behavior as the old box-shadow. Outside-positioned captions
        are unclipped children, so they join the drop-shadow silhouette
        (accepted: the label reads as floating with the card). */
-    .grid-card.card-edge-paper, .grid-card.card-edge-treasure {
+    .grid-card.card-edge-paper, .grid-card.card-edge-treasure,
+    .grid-group-bg.card-edge-paper, .grid-group-bg.card-edge-treasure {
       filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
     }
-    .grid-card.card-edge-paper:hover, .grid-card.card-edge-treasure:hover {
+    .grid-card.card-edge-paper:hover, .grid-card.card-edge-treasure:hover,
+    .grid-group-bg.card-edge-paper:hover, .grid-group-bg.card-edge-treasure:hover {
       filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
     }
-    .grid-card.card-edge-paper.selected, .grid-card.card-edge-treasure.selected {
+    .grid-card.card-edge-paper.selected, .grid-card.card-edge-treasure.selected,
+    .grid-group-bg.card-edge-paper.selected, .grid-group-bg.card-edge-treasure.selected {
       filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(-2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 -2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 0 8px var(--color-primary-fixed-dim));
     }
-    .grid-card.card-edge-tech {
+    .grid-card.card-edge-tech,
+    .grid-group-bg.card-edge-tech {
       filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.40)) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
     }
-    .grid-card.card-edge-tech:hover {
+    .grid-card.card-edge-tech:hover,
+    .grid-group-bg.card-edge-tech:hover {
       filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.55)) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.40));
     }
-    .grid-card.card-edge-tech.selected {
+    .grid-card.card-edge-tech.selected,
+    .grid-group-bg.card-edge-tech.selected {
       filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.85)) drop-shadow(0 0 14px rgba(34, 211, 238, 0.45)) drop-shadow(2px 0 0 var(--color-primary-fixed-dim)) drop-shadow(-2px 0 0 var(--color-primary-fixed-dim)) drop-shadow(0 2px 0 var(--color-primary-fixed-dim)) drop-shadow(0 -2px 0 var(--color-primary-fixed-dim)) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.35));
     }
     /* v10.15 — 油漆1~6 笔刷/墨迹/水彩异形边缘（背景边缘主题体系：
@@ -3202,22 +3227,28 @@ html.fc-guest .fc-locked-hero {
        撕裂滤镜必须在卡级（filter 链首）：父级 filter 合成的是子层
        clip 之后的结果，卡级位移才能把剪影边缘撕成墨雾、且影子
        跟着雾边跑；子层级 filter 会被自身 clip-path 裁回干净边缘。 */
-    .grid-card.card-edge-paint {
+    .grid-card.card-edge-paint,
+    .grid-group-bg.card-edge-paint {
       filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
     }
-    .grid-card.card-edge-paint[data-card-edge="paint5"] {
+    .grid-card.card-edge-paint[data-card-edge="paint5"],
+    .grid-group-bg.card-edge-paint[data-card-edge="paint5"] {
       filter: url(#mn-paint-filter-5) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
     }
-    .grid-card.card-edge-paint:hover {
+    .grid-card.card-edge-paint:hover,
+    .grid-group-bg.card-edge-paint:hover {
       filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
     }
-    .grid-card.card-edge-paint[data-card-edge="paint5"]:hover {
+    .grid-card.card-edge-paint[data-card-edge="paint5"]:hover,
+    .grid-group-bg.card-edge-paint[data-card-edge="paint5"]:hover {
       filter: url(#mn-paint-filter-5) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
     }
-    .grid-card.card-edge-paint.selected {
+    .grid-card.card-edge-paint.selected,
+    .grid-group-bg.card-edge-paint.selected {
       filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(-2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 -2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 0 8px var(--color-primary-fixed-dim));
     }
-    .grid-card.card-edge-paint[data-card-edge="paint5"].selected {
+    .grid-card.card-edge-paint[data-card-edge="paint5"].selected,
+    .grid-group-bg.card-edge-paint[data-card-edge="paint5"].selected {
       filter: url(#mn-paint-filter-5) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(-2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 -2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 0 8px var(--color-primary-fixed-dim));
     }
     .grid-card.card-edge-paint.dragging {
@@ -4638,9 +4669,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       // 「加载云端版本」也会走到这里；不清空就在已恢复的画布上叠一份
       // → 刷新后卡片翻倍（真 bug，2026-09-01 用户报）。
       getAllCards().forEach(function (c) { if (c.parentNode) c.parentNode.removeChild(c); });
-      gridCanvas.querySelectorAll('.grid-group-bg, .grid-group-divider').forEach(function (b) { b.remove(); });
+      gridCanvas.querySelectorAll('.grid-group-bg').forEach(function (b) { b.remove(); });
       deselectAll();
       if (draft) {
+        // v10.28.16: 组样式表随草稿往返（分组主题化——组背景套边缘主题）
+        groupStyles = (draft.groupStyles && typeof draft.groupStyles === 'object') ? draft.groupStyles : {};
+        selectedGroupId = null;
         if (draft.title) titleInput.value = draft.title;
         if (draft.tags) renderModalTags(draft.tags);
         if (draft.presets) {
@@ -4764,7 +4798,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
               if (card.dataset.captionVertical === '1') applyCaptionLayout(card);
             }
           });
-          reflowAllGroups(); // v10.28.15: 恢复后组背景+分割线+规整布局（按几何算，与恢复顺序无关）
+          reflowAllGroups(); // v10.28.15: 恢复后组背景+规整布局（按几何算，与恢复顺序无关）；v10.28.16 组背景重放边缘主题
         }
 
         // Legacy paragraph restore → migration (v1–v7 drafts). v6/v7 stored
@@ -5041,14 +5075,21 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
     // Save current card positions to active preset before persisting
     saveCurrentPresetCards();
+    // v10.28.16: 组样式表只带边缘主题的组才序列化（additive——legacy
+    // drafts omit → 空表；空条目无意义且会随组解散堆积）
+    var gsOut = {};
+    Object.keys(groupStyles).forEach(function (g) {
+      if (groupStyles[g] && groupStyles[g].cardEdge) gsOut[g] = groupStyles[g];
+    });
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景)
       title: titleInput.value,
       tags: tags,
       cards: cards,
       settings: { snapOn: snapOn, alignOn: alignOn },
       activePreset: currentPreset,
       presets: presetData,
+      groupStyles: gsOut,
       lastSaved: Date.now()
     };
     return draft;
@@ -7639,6 +7680,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     targets.forEach(function (c) { c.classList.add('selected'); });
     selectedCard = card;
     selectionIsSingle = !!single && !!card.dataset.groupId;
+    // v10.28.16: 整组选中时记录组——外观弹层走分组模式（主题作用于组背景）
+    selectedGroupId = (!single && card.dataset.groupId) ? card.dataset.groupId : null;
     if (!single && card.dataset.groupId) {
       var g = card.dataset.groupId;
       gridCanvas.querySelectorAll('.grid-group-bg').forEach(function (b) {
@@ -7656,6 +7699,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     gridCanvas.querySelectorAll('.grid-group-bg').forEach(function (b) { b.classList.remove('selected'); });
     selectedCard = null;
     selectionIsSingle = false;
+    selectedGroupId = null; // v10.28.16: 取消选中即退出分组外观模式
     refreshResizeHandles();
     syncStatsEditPanel(); // v10.28.5.2: 取消选中 → 编辑面板隐藏、列表搬回卡内
   }
@@ -7835,8 +7879,74 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     showToast('已从分组拆出');
   }
 
+  // v10.28.16 — 组整体主题化（钦定「组整体像一张大卡」）：组样式表
+  // { groupId: { cardEdge, outerBgGap } } 随草稿往返（buildDraft/applyDraft），
+  // 组背景重建时重放；selectedGroupId = 整组选中时指向该组（外观弹层走
+  // 分组模式，主题作用于组背景而非成员卡）。
+  var groupStyles = {};
+  var selectedGroupId = null;
+
+  // 把主题重放到组背景上（复用卡片主题的 CSS 变量/子层体系：::before 板、
+  // .card-tint 剪影填充、.card-outer-band 环带一体渐变，CSS 规则已扩展
+  // .grid-group-bg.card-edge-* 同族选择器）。幂等——重建背景时反复调用。
+  function applyGroupBgTheme(bg, st) {
+    if (!bg || !st) return;
+    var name = st.cardEdge || '';
+    var edge = EDGE_STYLES[name] || null;
+    // 清旧态（幂等重放）
+    bg.classList.remove('card-edge-paper', 'card-edge-treasure', 'card-edge-tech', 'card-edge-paint', 'has-outer-bg');
+    var oldTint = bg.querySelector('.card-tint');
+    if (oldTint) oldTint.remove();
+    var oldBand = bg.querySelector('.card-outer-band');
+    if (oldBand) oldBand.remove();
+    ['--card-clip', '--card-layers', '--card-overlay', '--outer-extent', '--outer-gap',
+     '--outer-radius', '--outer-tint', '--outer-glow', '--outer-border-line'].forEach(function (p) {
+      bg.style.removeProperty(p);
+    });
+    if (!edge) {
+      delete bg.dataset.cardEdge;
+      delete bg.dataset.outerBgGap;
+      return; // 无主题 → .grid-group-bg 基础外观（普通不透明底，v10.28.14 钦定）
+    }
+    bg.dataset.cardEdge = name;
+    var gap = st.outerBgGap != null ? snapOuterGap(st.outerBgGap) : 16;
+    bg.dataset.outerBgGap = gap;
+    // 油漆无外板（同 setCardEdge 卡片口径）——剪影填充留在 ::before；
+    // gap 0 = 外板整个消失（v10.27.1.1 口径）
+    var isPaint = name.indexOf('paint') === 0;
+    var plateOn = !isPaint && gap > 0;
+    if (plateOn) bg.classList.add('has-outer-bg');
+    var edgeCls = name;
+    if (edgeCls.indexOf('tech') === 0) edgeCls = 'tech';
+    else if (edgeCls.indexOf('paint') === 0) edgeCls = 'paint';
+    bg.classList.add('card-edge-' + edgeCls);
+    bg.style.setProperty('--card-clip', edge.clip);
+    bg.style.setProperty('--card-layers', edge.cardLayers.join(', '));
+    bg.style.setProperty('--card-overlay', edge.cardOverlay.join(', '));
+    if (plateOn) {
+      var extent = 16;
+      var cardR = parseFloat(getComputedStyle(bg).borderRadius) || 14;
+      bg.style.setProperty('--outer-extent', extent + 'px');
+      bg.style.setProperty('--outer-gap', gap + 'px');
+      bg.style.setProperty('--outer-radius', (cardR + extent + gap) + 'px');
+      bg.style.setProperty('--outer-tint', stripTintAlpha(edge.tint)); // v10.21: 板不透明
+      bg.style.setProperty('--outer-glow', edge.glow);
+      if (edge.border) {
+        var t = document.createElement('i');
+        t.style.border = edge.border;
+        bg.style.setProperty('--outer-border-line', t.style.borderColor || 'transparent');
+      }
+      var band = document.createElement('div');
+      band.className = 'card-outer-band';
+      bg.insertBefore(band, bg.firstChild);
+    }
+    var tintEl = document.createElement('div');
+    tintEl.className = 'card-tint';
+    bg.insertBefore(tintEl, bg.firstChild);
+  }
+
   function updateGroupBgs() {
-    gridCanvas.querySelectorAll('.grid-group-bg, .grid-group-divider').forEach(function (b) { b.remove(); });
+    gridCanvas.querySelectorAll('.grid-group-bg').forEach(function (b) { b.remove(); });
     var groups = {};
     getAllCards().forEach(function (c) {
       var g = c.dataset.groupId;
@@ -7845,7 +7955,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     });
     Object.keys(groups).forEach(function (g) {
       var mems = groups[g];
-      if (mems.length < 2) { mems.forEach(function (c) { delete c.dataset.groupId; }); return; }
+      if (mems.length < 2) {
+        mems.forEach(function (c) { delete c.dataset.groupId; });
+        // v10.28.16: 解散即清样式与选中（组键不复用）
+        delete groupStyles[g];
+        if (selectedGroupId === g) selectedGroupId = null;
+        return;
+      }
       var vis = mems.filter(function (c) { return !c.classList.contains('layer-hidden'); });
       if (vis.length < 2) return; // 可见成员不足两张 → 暂不画背景（组保留，取消隐藏后恢复）
       var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -7870,68 +7986,21 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         ev.stopPropagation();
         selectCard(mems[0]);
       });
-      gridCanvas.appendChild(bg);
-      // v10.28.15 — 分割线：列内贴齐相邻对之间画横线；相邻列之间若任一侧
-      // 有 content 卡画竖线（钦定「content card 就自动在左右中间加上一个
-      // 分割线」，左右加入=分成左右两列）。
-      var cols = groupColumns(mems);
-      cols.forEach(function (col) {
-        var cards = col.cards.slice().sort(function (a, b) {
-          return (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0);
-        });
-        for (var i = 0; i < cards.length - 1; i++) {
-          var a = cards[i], b = cards[i + 1];
-          if (a.classList.contains('layer-hidden') || b.classList.contains('layer-hidden')) continue;
-          var gap = (parseFloat(b.style.top) || 0) - ((parseFloat(a.style.top) || 0) + (a.offsetHeight || 0));
-          if (Math.abs(gap) > 2) continue; // 只有贴齐接缝才画分割线
-          var dh = document.createElement('div');
-          dh.className = 'grid-group-divider divider-h';
-          dh.style.left = col.left + 'px';
-          dh.style.top = ((parseFloat(b.style.top) || 0) - 0.5) + 'px';
-          dh.style.width = (col.right - col.left) + 'px';
-          gridCanvas.appendChild(dh);
-        }
+      // v10.28.16: 右键组背景 = 选中整组并弹菜单（「分组外观」走分组模式弹层）
+      bg.addEventListener('contextmenu', function (ev) {
+        ev.preventDefault();
+        selectCard(mems[0]);
+        showContextMenu(ev.clientX, ev.clientY);
       });
-      for (var ci = 0; ci < cols.length - 1; ci++) {
-        var L = cols[ci], R = cols[ci + 1];
-        var gap = R.left - L.right;
-        if (Math.abs(gap) > 2) continue;
-        var hasContent = L.cards.concat(R.cards).some(function (c) {
-          return !c.classList.contains('layer-hidden') &&
-            (c.dataset.cardType === 'content' || c.dataset.cardType === 'text');
-        });
-        if (!hasContent) continue;
-        var topOf = function (col) {
-          var t = Infinity;
-          col.cards.forEach(function (c) {
-            if (c.classList.contains('layer-hidden')) return;
-            var y = parseFloat(c.style.top) || 0;
-            if (y < t) t = y;
-          });
-          return t;
-        };
-        var botOf = function (col) {
-          var b = -Infinity;
-          col.cards.forEach(function (c) {
-            if (c.classList.contains('layer-hidden')) return;
-            var y = parseFloat(c.style.top) || 0;
-            if (y + (c.offsetHeight || 0) > b) b = y + (c.offsetHeight || 0);
-          });
-          return b;
-        };
-        var vTop = Math.max(topOf(L), topOf(R));
-        var vBot = Math.min(botOf(L), botOf(R));
-        if (vBot - vTop < 4) continue; // 两列纵向无交集不画
-        var dv = document.createElement('div');
-        dv.className = 'grid-group-divider divider-v';
-        dv.style.left = (L.right - 0.5) + 'px';
-        dv.style.top = vTop + 'px';
-        dv.style.height = (vBot - vTop) + 'px';
-        gridCanvas.appendChild(dv);
-      }
+      // v10.28.16: 组主题重放（groupStyles[g] 有边缘主题时组背景成一张大卡）
+      if (groupStyles[g] && groupStyles[g].cardEdge) applyGroupBgTheme(bg, groupStyles[g]);
+      gridCanvas.appendChild(bg);
     });
   }
   window.groupMembers = groupMembers;   // v10.28.14 测试钩子
+  // v10.28.16: 组样式表只读快照（电池用；直接改对象不经 setCardEdge 会
+  // 绕过订阅门禁与刷新链，勿当 API 用）
+  window.getGroupStyles = function () { return JSON.parse(JSON.stringify(groupStyles)); };
   window.findMergeSnap = findMergeSnap;
   window.mergeCards = mergeCards;
   window.splitCardFromGroup = splitCardFromGroup;
@@ -8572,16 +8641,22 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // v10.1: 卡片背景 (card background + outer plate) — same gate as 名称位置
     // v10.28.6: + 数据卡（无 .card-label，但与国旗卡同款边缘主题）
     // v10.28.8: + SNE 指数卡（同数据卡口径）
+    // v10.28.16: 整组选中（selectedGroupId 置位且成员 ≥2）→ 菜单项改名
+    // 「分组外观」，主题作用于组背景（组整体像一张大卡）；纸感是数据卡
+    // 专属，分组模式下不显示。
+    var groupMenu = !!(selectedGroupId && selectedCard && groupMembers(selectedCard).length >= 2);
     var cardBgItem = document.getElementById('cardBgMenuItem');
     if (cardBgItem) {
-      cardBgItem.style.display =
-        (selectedCard && (selectedCard.querySelector('.card-label') || selectedCard.dataset.cardType === 'stats' || selectedCard.dataset.cardType === 'sne')) ? 'flex' : 'none';
+      cardBgItem.style.display = (groupMenu ||
+        (selectedCard && (selectedCard.querySelector('.card-label') || selectedCard.dataset.cardType === 'stats' || selectedCard.dataset.cardType === 'sne'))) ? 'flex' : 'none';
+      var cbgLabel = document.getElementById('cardBgMenuLabel');
+      if (cbgLabel) cbgLabel.textContent = groupMenu ? '分组外观' : '卡片背景';
     }
     // v10.28.6: 透明背景（纸感）— 数据卡 + 外板式边缘（纸/藏宝图/科技）
     // 才显示（油漆剪影填充即边缘本体、无独立背景可透明；无边缘时无边缘可留）
     var ecItem = document.getElementById('edgeClearMenuItem');
     if (ecItem) {
-      var plateEdge = selectedCard && selectedCard.dataset.cardType === 'stats' && selectedCard.dataset.cardEdge &&
+      var plateEdge = !groupMenu && selectedCard && selectedCard.dataset.cardType === 'stats' && selectedCard.dataset.cardEdge &&
         selectedCard.dataset.cardEdge.indexOf('paint') !== 0;
       ecItem.style.display = plateEdge ? 'flex' : 'none';
       if (plateEdge) {
@@ -9941,6 +10016,17 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // 无布局 JS。select 只发档位值，这里再吸附一次兜底（防旧代码/控制台
   // 直调任意值）。
   function updateOuterGap(v) {
+    // v10.28.16: 分组模式——边距写组样式表并整组重放（组背景重建即生效）
+    if (selectedGroupId) {
+      var gst = groupStyles[selectedGroupId];
+      if (!gst || !gst.cardEdge) return;
+      gst.outerBgGap = snapOuterGap(v);
+      var gval = document.getElementById('outerGapValue');
+      if (gval) gval.textContent = gst.outerBgGap + 'px';
+      updateGroupBgs();
+      onContentChange();
+      return;
+    }
     if (!selectedCard || !selectedCard.querySelector('.card-label')) return;
     // v10.27.1.1: 判定改 dataset——gap 0 时 has-outer-bg 已摘除，用 class 判
     // 会自锁（0→8 永远回不来）；有主题/外板色配置即有意义
@@ -9956,17 +10042,23 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function openCardBgPopover() {
     // v10.28.6: 数据卡同样可开（边缘主题入口）
     // v10.28.8: SNE 指数卡同口径
+    // v10.28.16: 分组模式（selectedGroupId 置位 = 整组选中）——锚定组背景，
+    // 面板标 data-mode="group"，主题作用于组背景（「组整体像一张大卡」）
+    var groupMode = !!selectedGroupId;
     if (!selectedCard) return;
-    if (!selectedCard.querySelector('.card-label') && selectedCard.dataset.cardType !== 'stats' && selectedCard.dataset.cardType !== 'sne') return;
+    if (!groupMode && !selectedCard.querySelector('.card-label') && selectedCard.dataset.cardType !== 'stats' && selectedCard.dataset.cardType !== 'sne') return;
     hideContextMenu();
     var pop = document.getElementById('cardBgPopover');
     if (!pop) return;
-    var cardRect = selectedCard.getBoundingClientRect();
+    var bgEl = groupMode ? gridCanvas.querySelector('.grid-group-bg[data-group-id="' + selectedGroupId + '"]') : null;
+    var anchor = bgEl || selectedCard;
+    var cardRect = anchor.getBoundingClientRect();
     var x = cardRect.right + 10, y = cardRect.top;
     if (x + 312 > window.innerWidth) x = cardRect.left - 322; // 300px panel + margins
     y = Math.max(8, Math.min(y, window.innerHeight - 430)); // panel height budget — keep it fully on-screen
     pop.style.left = x + 'px';
     pop.style.top = y + 'px';
+    pop.setAttribute('data-mode', groupMode ? 'group' : 'card');
     pop.classList.add('active');
     refreshCardBgPopoverState();
   }
@@ -9984,6 +10076,19 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!pop || !pop.classList.contains('active')) return;
     var card = selectedCard;
     if (!card) return;
+    // v10.28.16: 分组模式——组没有内底/阴影/背景图，只留边缘主题 + 外板边距
+    var groupMode = pop.getAttribute('data-mode') === 'group';
+    var gst = (groupMode && selectedGroupId) ? (groupStyles[selectedGroupId] || null) : null;
+    var gTitle = document.getElementById('cardBgGroupTitle');
+    if (gTitle) gTitle.style.display = groupMode ? 'flex' : 'none';
+    var colorRow = document.getElementById('cardBgColorRow');
+    if (colorRow) colorRow.style.display = groupMode ? 'none' : '';
+    var opacityRow = document.getElementById('cardBgOpacityRow');
+    if (opacityRow) opacityRow.style.display = groupMode ? 'none' : '';
+    var shadowBlock = document.getElementById('cardBgShadowBlock');
+    if (shadowBlock) shadowBlock.style.display = groupMode ? 'none' : '';
+    var uploadBlock = document.getElementById('cardBgUploadBlock');
+    if (uploadBlock) uploadBlock.style.display = groupMode ? 'none' : '';
     var sub = isSubscriberUser();
     var color = card.dataset.cardBgColor || '';
     var wheel = document.getElementById('cardColorPicker');
@@ -10006,10 +10111,19 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // 外板随边缘主题自动携带，legacy 纯色外板也计入）；无值默认 16
     var gapSlider = document.getElementById('outerGapSlider');
     if (gapSlider) {
-      var hasPlate = !!(card.dataset.outerEdge || card.dataset.outerBgColor);
-      gapSlider.value = card.dataset.outerBgGap != null ? card.dataset.outerBgGap : 16;
-      gapSlider.disabled = !hasPlate;
-      document.getElementById('outerGapValue').textContent = gapSlider.value + 'px';
+      if (groupMode) {
+        // 组外板：油漆无外板（同 setCardEdge 卡片口径），有主题即有意义
+        var gEdge = gst ? (gst.cardEdge || '') : '';
+        var gPlate = gEdge && gEdge.indexOf('paint') !== 0;
+        gapSlider.value = (gst && gst.outerBgGap != null) ? gst.outerBgGap : 16;
+        gapSlider.disabled = !gPlate;
+        document.getElementById('outerGapValue').textContent = gapSlider.value + 'px';
+      } else {
+        var hasPlate = !!(card.dataset.outerEdge || card.dataset.outerBgColor);
+        gapSlider.value = card.dataset.outerBgGap != null ? card.dataset.outerBgGap : 16;
+        gapSlider.disabled = !hasPlate;
+        document.getElementById('outerGapValue').textContent = gapSlider.value + 'px';
+      }
     }
     // edge buttons — rebuilt per refresh (subscription state + active edge)
     function buildEdgeButtons(wrapId, curEdge, setter, linkId, edges, icons) {
@@ -10029,7 +10143,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (link) link.style.display = sub ? 'none' : '';
     }
     // legacy 'tech' dataset (pre-normalization race) highlights the tech4 button
-    buildEdgeButtons('cardEdgeButtons', card.dataset.cardEdge === 'tech' ? 'tech4' : (card.dataset.cardEdge || ''), setCardEdge, 'cardEdgeUpgradeLink',
+    // v10.28.16: 分组模式高亮读组样式表（组边缘主题独立于成员卡）
+    buildEdgeButtons('cardEdgeButtons', groupMode ? (gst ? (gst.cardEdge || '') : '') : (card.dataset.cardEdge === 'tech' ? 'tech4' : (card.dataset.cardEdge || '')), setCardEdge, 'cardEdgeUpgradeLink',
       CARD_EDGE_BUTTONS, ['block', 'description', 'map', 'memory', 'memory', 'memory', 'memory', 'memory', 'memory', 'brush', 'brush', 'brush', 'brush', 'brush', 'brush']);
   }
 
@@ -10137,6 +10252,34 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // 一样可以编辑边缘」）
     if (!selectedCard) return;
     if (!selectedCard.querySelector('.card-label') && selectedCard.dataset.cardType !== 'stats' && selectedCard.dataset.cardType !== 'sne') return;
+    // v10.28.16: 分组模式——主题写组样式表（组背景成一张大卡），成员卡不动
+    if (selectedGroupId) {
+      var g = selectedGroupId;
+      if (!name || name === 'none') {
+        delete groupStyles[g];
+        updateGroupBgs();
+        refreshCardBgPopoverState();
+        onContentChange();
+        return;
+      }
+      if (!EDGE_STYLES[name]) return;
+      if (!isSubscriberUser()) { // UI-only gate — renderer never checks subscription
+        showToast('背景边缘为订阅用户专属功能');
+        return;
+      }
+      if (!groupStyles[g]) groupStyles[g] = {};
+      groupStyles[g].cardEdge = name;
+      // 外板随主题自动携带（同卡片口径 v10.8）；paint 无外板（v10.15）
+      if (name.indexOf('paint') !== 0) {
+        if (groupStyles[g].outerBgGap == null) groupStyles[g].outerBgGap = 16;
+      } else {
+        delete groupStyles[g].outerBgGap;
+      }
+      updateGroupBgs();
+      refreshCardBgPopoverState();
+      onContentChange();
+      return;
+    }
     if (!name || name === 'none') {
       delete selectedCard.dataset.cardEdge;
       // v10.8: the plate is owned by the theme — removing the theme removes
@@ -10204,6 +10347,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function resetCardBg() {
     if (!selectedCard) return;
+    // v10.28.16: 分组模式——组只有边缘主题可清（无内底/阴影/背景图）
+    if (selectedGroupId) {
+      delete groupStyles[selectedGroupId];
+      updateGroupBgs();
+      refreshCardBgPopoverState();
+      onContentChange();
+      return;
+    }
     // v10.4: 「恢复默认」只清背景相关——背景图层、颜色、阴影、边缘主题。
     // 卡片图片（国旗图）、条纹、比例锁定、图标是卡片内容，全部保留
     // （旧行为会连同国旗一起删掉，用户反馈后拆分）。
@@ -10960,7 +11111,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.15.2') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.16.0') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -10969,7 +11120,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.15.2');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.16.0');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
@@ -11029,7 +11180,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     <span class="material-symbols-outlined">palette</span> Custom card background
   </button>
   <button class="context-menu-item" id="cardBgMenuItem" style="display:none" onclick="openCardBgPopover()">
-    <span class="material-symbols-outlined">wallpaper</span> 卡片背景
+    <span class="material-symbols-outlined">wallpaper</span><span id="cardBgMenuLabel">卡片背景</span>
   </button>
   <button class="context-menu-item" id="edgeClearMenuItem" style="display:none" onclick="toggleStatsEdgeClear()">
     <span class="material-symbols-outlined" id="edgeClearCheck">check_box_outline_blank</span> 透明背景（纸感）
@@ -11210,43 +11361,53 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <!-- ═══ CARD BACKGROUND POPOVER (v10.1, flag/asset cards) ═══
      v10.8: the 外背景 tab is gone — an edge theme auto-carries its 16px
      outer plate, so there is nothing independent left to configure. -->
-<div class="radius-popover" id="cardBgPopover">
+<div class="radius-popover" id="cardBgPopover" data-mode="card">
   <div id="cardBgPanel">
+    <!-- v10.28.16: 分组模式标题（整组选中时弹出「分组外观」——组背景套边缘
+         主题，组整体像一张大卡；卡片模式隐藏） -->
+    <div id="cardBgGroupTitle" style="display:none;align-items:center;gap:8px;margin-bottom:10px">
+      <span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)">dashboard_customize</span>
+      <span class="label-md">分组外观</span>
+    </div>
     <!-- v10.3 — 预设色块已按用户要求删除（用户将自行提供预设背景）。
          将来加预设背景时在此处放一个容器，由 refreshCardBgPopoverState 填充。 -->
-    <div style="display:flex;align-items:center;gap:8px">
+    <div id="cardBgColorRow" style="display:flex;align-items:center;gap:8px">
       <span class="label-sm" style="color:var(--color-on-surface-variant)">色盘:</span>
       <input type="color" id="cardColorPicker" onchange="setCardBgColor(this.value)" style="width:32px;height:32px;border:none;cursor:pointer;border-radius:50%;padding:0;background:none">
     </div>
-    <div class="caption-slider-row">
+    <div id="cardBgOpacityRow" class="caption-slider-row">
       <label>透明度</label>
       <input type="range" id="cardBgOpacitySlider" min="0" max="100" value="100" step="1" oninput="updateCardBgOpacity(this.value)">
       <output id="cardBgOpacityValue">100%</output>
     </div>
-    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">阴影</span>
-    <div class="caption-slider-row">
-      <label>大小</label>
-      <input type="range" id="cardShadowBlurSlider" min="0" max="30" value="0" step="1" oninput="updateCardShadowBlur(this.value)">
-      <output id="cardShadowBlurValue">0px</output>
+    <div id="cardBgShadowBlock">
+      <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">阴影</span>
+      <div class="caption-slider-row">
+        <label>大小</label>
+        <input type="range" id="cardShadowBlurSlider" min="0" max="30" value="0" step="1" oninput="updateCardShadowBlur(this.value)">
+        <output id="cardShadowBlurValue">0px</output>
+      </div>
+      <div class="caption-slider-row">
+        <label>范围</label>
+        <input type="range" id="cardShadowSpreadSlider" min="-10" max="20" value="0" step="1" oninput="updateCardShadowSpread(this.value)">
+        <output id="cardShadowSpreadValue">0px</output>
+      </div>
+      <div class="caption-slider-row">
+        <label>透明度</label>
+        <input type="range" id="cardShadowOpacitySlider" min="0" max="100" value="0" step="1" oninput="updateCardShadowOpacity(this.value)">
+        <output id="cardShadowOpacityValue">0%</output>
+      </div>
     </div>
-    <div class="caption-slider-row">
-      <label>范围</label>
-      <input type="range" id="cardShadowSpreadSlider" min="-10" max="20" value="0" step="1" oninput="updateCardShadowSpread(this.value)">
-      <output id="cardShadowSpreadValue">0px</output>
+    <div id="cardBgUploadBlock">
+      <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">自定义卡片背景</span>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('cardBgFileInput').click()">
+          <span class="material-symbols-outlined" style="font-size:16px">upload_file</span> 上传图片
+        </button>
+        <button class="btn btn-ghost btn-sm" id="cardBgRemoveBtn" style="display:none" onclick="removeCardBgImage()">移除</button>
+      </div>
+      <input type="file" id="cardBgFileInput" accept="image/*" style="display:none" onchange="handleCardBgUpload(this)">
     </div>
-    <div class="caption-slider-row">
-      <label>透明度</label>
-      <input type="range" id="cardShadowOpacitySlider" min="0" max="100" value="0" step="1" oninput="updateCardShadowOpacity(this.value)">
-      <output id="cardShadowOpacityValue">0%</output>
-    </div>
-    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">自定义卡片背景</span>
-    <div style="display:flex;gap:6px;margin-top:6px">
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('cardBgFileInput').click()">
-        <span class="material-symbols-outlined" style="font-size:16px">upload_file</span> 上传图片
-      </button>
-      <button class="btn btn-ghost btn-sm" id="cardBgRemoveBtn" style="display:none" onclick="removeCardBgImage()">移除</button>
-    </div>
-    <input type="file" id="cardBgFileInput" accept="image/*" style="display:none" onchange="handleCardBgUpload(this)">
     <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">背景边缘</span>
     <div id="cardEdgeButtons" style="display:flex;flex-direction:column"></div>
     <a href="premium.html" id="cardEdgeUpgradeLink" style="display:none;font-size:12px;color:var(--color-primary);text-decoration:none;margin-top:6px">订阅后解锁背景边缘 →</a>
