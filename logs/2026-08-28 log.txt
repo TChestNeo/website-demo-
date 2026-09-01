@@ -647,3 +647,22 @@
 ⑥⑧ 表单「存了但加载不回显」= save-only-no-replay 类 bug：必填校验补上后此类字段回头重看必空——本页三字段只有生日漏了加载写回（显示名/语言/国家各有 init 块）。电池的「预填用户全字段回显」断言是常态回归项，凡是「保存后再进页面」的字段都要断言回显
 ⑥⑨ gcloud 实际路径 = LOCALAPPDATA\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.ps1（SDK 根下还有一层 google-cloud-sdk 目录）——直猜根路径 gcloud.cmd 是 CommandNotFound，token 拿不到 → docker login 空密码 401（unauthorized: incorrect username or password 是空 token 的假象，先查 token 非空再查凭证）
 ⑥⑩ 电池断言写死颜色值前先查 token 真值：* 红标断言写 rgb(211,47,47)（凭印象 Material red）实际 --color-error=#ba1a1a → rgb(186,26,26)——CSS 变量断言先 grep 源值再写进电池
+────────────────────────────────────────
+2026-09-01 FC v10.28.14 — wiki 吸合分组 · 部署 rev 00042-bzz
+
+真身（用户）：「现在是我希望可以把两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」——问询钦定：①合并方式=自动吸合分组（拖近自动吸合贴齐成组+共享背景、组整体移动）②外背景样式=就普通的不透明 ③拆分方式=长按拖动，双击单独选中，再长按拆分 ④适用范围=所有卡片
+
+改动（docs/pages/fluidcanvas-editor.html 为主）：
+- 吸合：未分组卡拖近目标 ≤12px 贴齐（findMergeSnap 四边配对 right→left/left→right/bottom→top/top→bottom 取最小 |d|；**吸合优先于网格/对齐吸附**——贴齐位不是网格点，混用会在吸合点来回振荡）；拖拽中目标卡（整组）点亮 merge-target 虚线提示；mouseup 复查仍在贴齐位（≤2px）→ mergeCards 成组（groupId 复用目标组或新建 makeGroupId）
+- 组背景：.grid-group-bg div 恒在卡下（z 0 + pointer-events none + 普通不透明 var(--color-surface-container-low) + 圆角 14px + 细边）；updateGroupBgs 按可见成员旋转感知包围盒并集 + 14px 垫重建全部组背景；<2 总成员自动解散（删 groupId）、<2 可见成员（图层隐藏）不画背景但保留组
+- 组交互：起拖越过 3px 阈值时懒取成员+初位快照、主卡吸附后位移统一应用 → 组整体移动（背景实时跟随）；组内双击单独选中（selectCard(card, single=true)）、单击整组选中（组背景 .selected 环亮起）；长按 ≥600ms 未移动拆分（移动 >3px 或松手取消计时；拆分发生在起拖前 → 随后拖动自然就是单卡拖）；全组成员选中时删除=整组删
+- 草稿往返：groupId additive 字段（buildDraft/applyDraft/getCardFingerprint；legacy 草稿缺省无组）；旋转提交/缩放提交/Escape 缩放提交点补 updateGroupBgs
+- 版本：FLUIDCANVAS_VERSION v10.28.13→v10.28.14（小更新位 13→14·小功能轮）+ fluidcanvas.html #fcVersion + 编辑器 ready/badge 字面量（4 处）；站点号 v0.2.6.2 不变
+
+验证：本地静态壳 CDP 电池 30/30（编辑器门禁回归→种子两旗卡→拖近 merge-target 点亮→吸合贴齐成组→背景几何/z 0/不透明实色→组整体移动+背景跟随→双击单独选中→单击整组选中+背景环→长按拆分组解散背景消失→拆分后拖动只动本卡→再次合并贴齐→自动保存草稿 groupId 往返→重载恢复组背景重建→0 console error 0 异常）+ smoke-admin 49/49 + 线上同款 30/30（rev 00042-bzz 真站）+ curl 五连（/ 200 + 编辑器页含 v10.28.14 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00042-bzz（100% 流量）
+
+教训：
+⑥⑪ 电池鼠标落点先 elementFromPoint 实证，别想当然「卡中心在卡上」：旗卡 .card-label 名字输入框垂直居中于卡片中央——mousedown 落进 label 命中 v10.28.10「文字内不 arm 拖拽」排除分支（防打断原生框选）→ _activeDrag 保持 null → 点击/选择一切正常、唯独拖拽静默失效。拖拽点改为中心上移 50px（label 带高约 20px），并把落点验证固化为正式断言（命中链含 grid-card 且不含 card-label/card-text-content/card-edit-field）
+⑥⑫ 旗卡尺寸=图片自然尺寸（fitCardToImage 1:1 受页宽钳制）：种子图用 1×1 PNG → 卡片 1px 级、且 onload 晚到在拖拽中途改尺寸把坐标搅乱（吸合半成、位置全漂）。种子图必须真实尺寸（页面内 canvas 生成 240×135 实色 data URI——尺寸可预测、断言可像素级）；几何断言前先等卡宽高恰等于图尺寸（页宽钳制/未 fit 完成第一时间显形，不级联失败）
+⑥⑬ 电池草稿 settings snapOn/alignOn=false 双关吸附：吸合贴齐位不是网格点，网格/对齐吸附开着会与吸合互相拉扯、坐标断言全漂——草稿 settings 恢复路径（applyDraft）比点开关按钮稳；验证「吸合优先于对齐吸附」用同 x 拖拽（不触发对齐轴）
+⑥⑭ 事件捕获日志一眼分诊拖拽失效：mousedown/mousemove/mouseup/dragstart 文档级 capture 日志，「事件没到页面」=输入管线问题（原生拖拽拦截类），「事件到了但卡没动」=handler arm 失败（落点排除/守卫类）——本轮实抓后者（mousemove 到达、_activeDrag null），省下瞎猜时间

@@ -65,4 +65,5 @@ window.MN_SITE_VERSION = 'v0.2.6.2';
 //   画布滚轮缩放（1×-4× 光标锚定、passive:false 防页面滚动）+ 空格按住左键/中键拖动平移（Escape 取消手势、>4px 松手复用捕获相 click 抑制器防误开面板/误加点、中键不置旗标防误吞真点击）：
 //   #mreView 包装层承载 transform——渲染器全 % 定位零改动，client↔% 换算集中 mreScreenToPct/mrePctToScreen（改造仅 mreDragMove/画图 click 含头尾阈值×s/顶点三命中三处）（小更新位 11→12·小功能轮；2026-08-31）
 // v10.28.13 = 登录门禁（平台未登录界面同轮——用户「先登录才能用」）：FC 首页访客态 🔒 登录引导卡（.fc-locked-hero 互斥显示、Open Editor 隐藏）+ 编辑器 head 同步重定向送回 FC 引导页（会话同源读取、零闪现、登录用户零影响）；登录页 ?next=%2Fpages%2Ffluidcanvas.html 登录后自动回 FC（小更新位 12→13·小功能轮；2026-08-31）
-window.FLUIDCANVAS_VERSION = 'v10.28.13';
+// v10.28.14 = wiki 吸合分组（用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」；钦定：自动吸合分组/外背景就普通的不透明/长按拖动+双击单独选中+再长按拆分/所有卡片）：未分组卡拖近目标 ≤12px 贴齐成组（吸合优先于网格/对齐吸附）、.grid-group-bg 不透明组背景恒在卡下、组整体移动（成员初位快照+主卡位移）、组内双击单独选中、长按 ≥600ms 拆分（移动即取消）、<2 成员自动解散、groupId 随草稿往返（小更新位 13→14·小功能轮；2026-09-01）
+window.FLUIDCANVAS_VERSION = 'v10.28.14';
