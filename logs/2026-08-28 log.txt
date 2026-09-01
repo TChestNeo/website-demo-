@@ -710,3 +710,18 @@ FC v10.28.15.2（rev 00045-frw）刷新翻倍修复轮：用户「为什么在�
 ⑥㉔ addScriptToEvaluateOnNewDocument 注入的窗口级计数器随每次导航重跑重置：跨导航断言不能用累计值（C 阶段「无新确认」期望新文档内计数 0，不是累计仍 1）
 ⑥㉕ 假云端 updatedAt 不能按请求重算：真实后端只在 PUT 时前进——按请求重算（stale 时 now+60s）会让客户端重戳 lastSaved 后仍比云端旧 → C 阶段电池侧制造假弹窗；固定时间锚点（云端=CLOUD_NOW-30s、本地种子=CLOUD_NOW-300s）才贴近真实语义
 ⑥㉖ 排查「哪来的 /undefined 404」：fetch 包装先推全量 __fetches（不在列表=不是 fetch）→ 服务器侧打 sec-fetch-dest 头（dest=image 秒判元素型资源）+ referer 定位发起页；真凶=sidebar 用户卡 img src=user.avatarUrl 无兜底，异步渲染时序（storage.js whenUp 链在种子 session 之后才完成）让它只出现在给异步链留了活口的跑法里——A 阶段赶在异步完成前就导航则永远看不到这个真 bug，电池跑法必须给页面异步链留时间
+
+FC v10.28.16.0（rev 00046-xrg）分组主题化轮：用户「好，我希望他们合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」
+- 问询钦定：①组整体像一张大卡——组背景 .grid-group-bg 本身可套边缘主题（纸/宝藏/科技/油漆 15 钮全套），整组=一张大卡；组内卡片保持一体外观不变 ②组内分割线彻底去掉（v10.28.15 引入，本轮 DOM+CSS 全移除）
+- 实现：
+  - CSS 主题选择器扩展 .grid-group-bg.card-edge-*/has-outer-bg（与卡片共用同一套 ::before 板/::after 覆盖层/.card-tint 剪影填充/.card-outer-band 环带一体/drop-shadow 阶梯/backdrop-filter；基础态透明背景无边框无阴影）；分割线 .grid-group-divider 规则与 updateGroupBgs 绘制循环全删
+  - applyGroupBgTheme(bg, st) 独立镜像写器：applyCardBg 不能直接调（防御分支 !card.querySelector('.card-label') 且非 stats/sne 会早退吞掉组背景）——幂等重放（剥旧类/删旧子层/清 --card-* 变量 → 写 dataset + 板变量 + 环带）
+  - 状态：groupStyles = {groupId: {cardEdge, outerBgGap}} + selectedGroupId（点背景/右键成员/右键背景=整组选中 → 外观弹层指向组背景）；草稿 additive 往返：buildDraft 修剪空值（gsOut）+ applyDraft 恢复 groupStyles 先于建卡（reflowAllGroups 重放主题）；解散（<2 成员）即清样式
+  - 弹层分组模式 data-mode=group：「分组外观」标题 + 色盘/透明度/阴影/背景图四块隐藏（组没有这些）+ 边距滑块直写组样式表；右键菜单「卡片背景」→「分组外观」；「无」还原普通不透明
+  - 卡片口径镜像：paint 无外板（板=剪影填充于 ::before）、gap=0 板整体消失、订阅门禁 toast 同款
+- 版本：FLUIDCANVAS_VERSION v10.28.15.2→v10.28.16.0（小更新位 15→16 新功能/观感轮，补丁归零）+ 3 处字面量；站点号 v0.2.6.2 不变
+验证：本地静态壳 CDP 电池 22/22 双跑（A1 合并成组 / A2 无主题=普通不透明 / A3 分割线 DOM 0 / A4 成员卡一体边框全藏 / A5 弹层分组模式（15 钮+4 块隐藏+边距禁用）/ A6 纸主题板+剪影+环带+clip / A7 边距 32 / A8 草稿 groupStyles 往返 / A9-A12b 重载重放+无还原+paint 无外板+解散清样式）+ smoke-admin 49/49 + 线上 18/18（A1-A8 真站实跑+L1-L5 精简版：版本字面量/分割线 0/纸主题/零异常零报错）+ curl 五连（/ 200 + site-config 与编辑器页含 v10.28.16.0 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00046-xrg（100% 流量）
+教训：
+⑥㉗ 线上电池跑重载往返踩假会话清会话链：真后端 probe 成功 → fcCloudMode 真 → 假会话 syncCloudDraft 401 → api.js 派发 mn:unauthorized → storage.js 清 slati_session → 重载被 head 登录门禁 location.replace 送回 locked 页 → 卡数 0 waitFor 超时。这是产品正确行为（失效会话 401 清会话），电池设计缺陷——本地壳 /api 全 404 走 demo 零请求所以本地重载无碍；线上模式必须跳过重载类断言（if (!LIVE) 包 A9-A12b），线上保留首载全链路 + 精简 L 相
+⑥㉘ waitFor 超时 crash 丢线索：崩溃路径不打印已收集的 aExc/aErr 数组（401 清会话链只得读代码推——api.js:33 实证），修复后重跑才闭环。电池崩溃出口应先吐已收集异常/错误再抛，或 waitFor 超时 detail 附当前 location.href + readyState + 目标元素计数探针
+⑥㉙ Bash 多行反斜杠续行调 gcloud.cmd 部署炸「The syntax of the command is incorrect.」：.cmd 批处理包装器经 cmd.exe 解析、Git Bash 反斜杠续行把整串喂给 cmd 时被咬断；部署改 PowerShell 单行 & 调用（过去多轮部署皆 PowerShell 成功——本次同款一次过）
