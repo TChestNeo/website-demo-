@@ -761,3 +761,14 @@ FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中�
 教训：
 ⑥㉟ 画布溢出边框盒外不可点击：1280 窗下 gridCanvas 实宽 944px（43 列×22−2）——Chrome 命中测试不下钻父边框盒，卡/手柄超出 canvas 盒右缘的部分 elementFromPoint 直接跳过 gridCanvas，press 落在 .editor-body 滚动容器 → 原生选区拖拽 → 渐进 auto-scroll（实测 65→2580 一次拖拽）→ 后续手势全落 HTML 负坐标假红一片。电池约束：手势点必须同时在画布盒内+视口内（种子/断言全量换位）；真产品限制（v9 起既有边界案例，1280 窗画布 944px）本轮不修——范围纪律
 ⑥㊱ 自定义属性只向下继承：--card-bg-color 定义在 .grid-card，兄弟节点 .grid-group-bg 里 var() 取不到 → color-mix 整条声明在计算值期作废 → background-color 透明（电池抓 rgba(0,0,0,0) 才见）。同族背景配方共用 var 的类必须各自定义或移到共同祖先定义——「注释自称 exact 的公式也要验」同族：类选择器写在 .grid-card 上不等于它的兄弟也拿到变量
+
+2026-09-02 FC v10.28.17.3 Migrate to Cards 按钮换 Uiverse 设计（观感微调轮）
+用户：「把Migrate Content的Migrate to Cards 的按钮的Ui 改成这个代码但是亮色和深色主题你需要适配一下」（给了 Uiverse.io by MuhammadHasann 药丸按钮 CSS：近黑药丸+白字+星芒 SVG+悬停紫色渐变/光环/放大 1.1）
+- .migrate-btn 作用域改写（原 CSS 全局 .button 全部收进 .migrate-btn 命名空间，编辑器页 head style 尾部）：药丸 ::before 近黑 hsla(0 0% 12%/1)+内缘高光+悬停紫色描边环 0 0 0 6px（--active=1 驱动）；::after 紫色渐变 overlay opacity var(--active)；:is(:hover,:focus-visible) 置 --active:1 → 放大 scale(1.1)、:active 回 1；.dots_border 滚动光束（mask 渐变+rotate 2s）；.sparkle 三枚四角星 path（自绘 28px 主星+右上小星+左下迷你星，对应原 CSS --scale_path_1/2/3 闪烁序列）+ 悬停 path 动画 1.5s 起播；.text_button 渐变裁切文字（background-clip:text）
+- 亮/暗双主题走自定义属性：亮=药丸近黑+白字白星；暗 :root[data-theme="dark"] .migrate-btn 药丸翻浅 #f2f1fb+文字翻深 hsl(240 14% 14%)（hsl(var(--mb-text-c)/<alpha>) 技巧——属性只带 H/S/L 三元组、透明度在每段上算）+星芒换深紫 hsl(260 55% 42%)（白星在浅药丸上不可见）；紫色悬停身份两主题共用
+- 按钮 HTML 重写（btn-primary 退役）：<button class="migrate-btn" onclick="runMigration()"> 内层 dots_border+sparkle svg（3 path）+text_button；迁移逻辑零改动（runMigration 原样保留、空文本 toast 拦截/填文本建卡关弹窗回归）
+- 版本：FLUIDCANVAS_VERSION v10.28.17.2→v10.28.17.3（补丁位 2→3 观感微调轮）+ 4 处字面量（site-config+fc 首页+编辑器 ready log/badge 兜底）；站点号 v0.2.6.2 不变；草稿零新字段
+验证：tmp 电池 25/25（A 结构 4 项 B 亮主题静息 7 项——药丸 rgb(31,31,31)/白渐变尾端渐隐/无放大 C 悬停 CSS.forcePseudoState 5 项——overlay 1/紫环 0px 0px 0px 6px/matrix(1.1)/path 动画/文字尾端变实 D 暗主题 4 项——药丸 rgb(242,241,251)/文字 rgb(31,31,41)/星芒 rgb(87,48,166)/悬停仍生效 E 点击链 3 项 F 0 异常 0 error）+ group-click 28/28 + group-fill 48/48 + smoke-admin 49/49 + 线上同款 25/25+25/25+46/46 + curl 五连（/ 200 + 编辑器页含 v10.28.17.3 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00050-vgv（100% 流量）
+教训：
+⑥㊲ CSS.forcePseudoState 强制 :hover：悬停态断言不必算真实鼠标坐标（headless 里命中区/画布位移都是坑）——DOM.getDocument+DOM.querySelector 拿 nodeId → CSS.forcePseudoState {nodeId, forcedPseudoClasses:['hover']} 直达伪类链（--active:1 → overlay/光环/transform 全链生效）；注意 forcePseudoState 只造伪类不造事件，点击行为链仍要用 click()/真实手势
+⑥㊳ 过渡中段采样假红：transition 0.3s 的 computed 属性（药丸 ::before 背景）切主题后必须 sleep >300ms 再探——120ms 采样踩进中段 rgb(52,52,53) 假红；同族三连：box-shadow 序列化带 px（'0px 0px 0px 6px' 不是 '0 0 0 6px'）、手算 hsl→rgb 连错两次（hsl(240 14% 14%) = rgb(31,31,41)：C=(1-|2L-1|)×S=0.0392 不是 0.1008）、期望色值一律拿 Chrome 实测值兜底再写断言

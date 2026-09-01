@@ -1601,6 +1601,131 @@ html.fc-guest .fc-locked-hero {
   text-align: center;
 }
 
+/* ── Migrate to Cards 按钮：Uiverse.io by MuhammadHasann 设计（v10.28.17.3 亮/暗双主题适配）──
+   原设计 = 近黑药丸 + 白字 + 悬停紫色渐变/光环；暗色主题下药丸翻浅色、文字翻深色，
+   紫色悬停层两主题共用（浅药丸上更亮眼）。 */
+.migrate-btn {
+  --mb-pill: hsla(0 0% 12% / 1);   /* 药丸底色（亮主题=近黑） */
+  --mb-text-c: 0 0% 100%;           /* 文字色相组（亮主题=白） */
+  --border_radius: 9999px;
+  --transtion: 0.3s ease-in-out;
+
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transform-origin: center;
+  padding: 1rem 2rem;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border_radius);
+  transform: scale(calc(1 + (var(--active, 0) * 0.1)));
+  transition: transform var(--transtion);
+}
+.migrate-btn::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%; height: 100%;
+  background-color: var(--mb-pill);
+  border-radius: var(--border_radius);
+  box-shadow: inset 0 0.5px hsl(0, 0%, 100%), inset 0 -1px 2px 0 hsl(0, 0%, 0%),
+    0px 4px 10px -4px hsla(0 0% 0% / calc(1 - var(--active, 0))),
+    0 0 0 calc(var(--active, 0) * 0.375rem) hsl(260 97% 50% / 0.75);
+  transition: all var(--transtion);
+  z-index: 0;
+}
+.migrate-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%; height: 100%;
+  background-color: hsla(260 97% 61% / 0.75);
+  background-image: radial-gradient(
+      at 51% 89%,
+      hsla(266, 45%, 74%, 1) 0px,
+      transparent 50%
+    ),
+    radial-gradient(at 100% 100%, hsla(266, 36%, 60%, 1) 0px, transparent 50%),
+    radial-gradient(at 22% 91%, hsla(266, 36%, 60%, 1) 0px, transparent 50%);
+  background-position: top;
+  opacity: var(--active, 0);
+  border-radius: var(--border_radius);
+  transition: opacity var(--transtion);
+  z-index: 2;
+}
+.migrate-btn:is(:hover, :focus-visible) { --active: 1; }
+.migrate-btn:active { transform: scale(1); }
+.migrate-btn .dots_border {
+  --size_border: calc(100% + 2px);
+  overflow: hidden;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--size_border); height: var(--size_border);
+  background-color: transparent;
+  border-radius: var(--border_radius);
+  z-index: -10;
+}
+.migrate-btn .dots_border::before {
+  content: "";
+  position: absolute;
+  top: 30%; left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: left;
+  transform: rotate(0deg);
+  width: 100%; height: 2rem;
+  background-color: white;
+  mask: linear-gradient(transparent 0%, white 120%);
+  animation: rotate 2s linear infinite;
+}
+@keyframes rotate { to { transform: rotate(360deg); } }
+.migrate-btn .sparkle {
+  position: relative;
+  z-index: 10;
+  width: 1.75rem;
+}
+.migrate-btn .sparkle .path {
+  fill: currentColor;
+  stroke: currentColor;
+  transform-origin: center;
+  color: hsl(0, 0%, 100%);
+}
+.migrate-btn:is(:hover, :focus) .sparkle .path {
+  animation: path 1.5s linear 0.5s infinite;
+}
+.migrate-btn .sparkle .path:nth-child(1) { --scale_path_1: 1.2; }
+.migrate-btn .sparkle .path:nth-child(2) { --scale_path_2: 1.2; }
+.migrate-btn .sparkle .path:nth-child(3) { --scale_path_3: 1.2; }
+@keyframes path {
+  0%, 34%, 71%, 100% { transform: scale(1); }
+  17% { transform: scale(var(--scale_path_1, 1)); }
+  49% { transform: scale(var(--scale_path_2, 1)); }
+  83% { transform: scale(var(--scale_path_3, 1)); }
+}
+.migrate-btn .text_button {
+  position: relative;
+  z-index: 10;
+  background-image: linear-gradient(
+    90deg,
+    hsl(var(--mb-text-c) / 1) 0%,
+    hsl(var(--mb-text-c) / var(--active, 0)) 120%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  font-size: 1rem;
+  color: transparent;
+}
+/* 暗色主题：药丸翻浅色、文字翻深色、星芒换深紫（浅药丸上白星不可见） */
+:root[data-theme="dark"] .migrate-btn {
+  --mb-pill: #f2f1fb;
+  --mb-text-c: 240 14% 14%;
+}
+:root[data-theme="dark"] .migrate-btn .sparkle .path { color: hsl(260 55% 42%); }
+
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -4019,8 +4144,14 @@ html.fc-guest .fc-locked-hero {
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('migrateFileInput').click()">
         <span class="material-symbols-outlined">upload_file</span> Upload .txt / .md
       </button>
-      <button class="btn btn-primary btn-sm" onclick="runMigration()">
-        <span class="material-symbols-outlined">bolt</span> Migrate to Cards
+      <button class="migrate-btn" onclick="runMigration()">
+        <div class="dots_border"></div>
+        <svg class="sparkle" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" aria-hidden="true">
+          <path class="path" d="M14 1 C18.5 9.5 27 9.5 27 14 C27 18.5 18.5 18.5 14 27 C9.5 18.5 1 18.5 1 14 C1 9.5 9.5 9.5 14 1 Z"/>
+          <path class="path" d="M23.5 0 C25.1 2.9 28 2.9 28 4.5 C28 6.1 25.1 6.1 23.5 9 C21.9 6.1 19 6.1 19 4.5 C19 2.9 21.9 2.9 23.5 0 Z"/>
+          <path class="path" d="M4 20.5 C5.2 23.3 7.5 23.3 7.5 24 C7.5 24.7 5.2 24.7 4 27.5 C2.8 24.7 0.5 24.7 0.5 24 C0.5 23.3 2.8 23.3 4 20.5 Z"/>
+        </svg>
+        <span class="text_button">Migrate to Cards</span>
       </button>
     </div>
     <p class="label-sm" style="color:var(--color-outline);margin-top:var(--space-sm)" id="migrateHint">Headings start new cards; paragraphs fill the current card. Max 24 cards per run.</p>
@@ -5114,7 +5245,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (groupStyles[g] && groupStyles[g].cardEdge) gsOut[g] = groupStyles[g];
     });
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸); v10.28.17.3 adds NO new fields (Migrate to Cards 按钮 Uiverse 换肤：纯样式+按钮内层 DOM，迁移逻辑零改动)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -11246,7 +11377,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.17.2') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.17.3') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -11255,7 +11386,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.17.2');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.17.3');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';

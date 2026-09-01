@@ -76,4 +76,5 @@ window.MN_SITE_VERSION = 'v0.2.6.2';
 //   ①整组选中=单框——整组选中（有 groupId 且非单独选中）时 8 手柄+旋转钮全隐藏（refreshResizeHandles/refreshRotateGrip 加 wholeGroup 守卫），组背景 .grid-group-bg.selected 升级卡片同款选中环（主色边框+外发光环）——选中看到的就是一条整组框不再是点中那张卡的框；
 //   ②成员独立卡面隐藏——组成员（:not(.group-single)）白色磨砂卡面（背景色/高光渐变/backdrop-filter）+背景图 .card-bg-img+装饰纹 .card-stripes 全藏（!important），组背景升级卡面玻璃配方（color-mix 55% 卡底色+白渐变+blur(12px) saturate(1.4)）＝那一张「整卡」的卡面，组内不再有独立白色背景；单独选中（.group-single 生命周期 selectCard/deselectAll/splitCardFromGroup）时该卡完整独立外观全回归；
 //   ③合并后单独调整不反弹——缩放（onResizeUp/Escape 中途取消）/旋转（commitRotate）提交点 reflowGroup→alignGroupTops 新函数（只对齐各列顶=最上卡顶，零缩放零等宽零 x 位移）——用户手调尺寸生效不被填满抢回去（默认合并仍填满等宽齐顶齐底）；reflowGroup 只在结构事件（合并/拆分/删除/草稿恢复）保留；图卡尺寸任何路径只等比（aspectRatio 不变）；草稿仍无新字段（全状态类驱动+alignGroupTops 不落草稿）（补丁位 1→2 口径修正轮；2026-09-02）
-window.FLUIDCANVAS_VERSION = 'v10.28.17.2';
+// v10.28.17.3 = Migrate to Cards 按钮换 Uiverse 设计（用户给 CSS「把 Migrate to Cards 的按钮的 UI 改成这个代码，亮色和深色主题适配一下」）：.migrate-btn 药丸按钮（近黑药丸+白字渐变裁剪+星芒 SVG 三路径+悬停紫色渐变层/光环+旋转光束+放大回弹），亮/暗双主题走自定义属性——暗色主题药丸翻浅 #f2f1fb、文字翻深色、星芒换深紫（白星浅药丸不可见）（补丁位 2→3·观感微调轮；2026-09-02）
+window.FLUIDCANVAS_VERSION = 'v10.28.17.3';
