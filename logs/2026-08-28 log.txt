@@ -786,3 +786,7 @@ FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中�
 教训：
 ⑥㊴ CSS matrix 六元组位置别背错：skewX(30deg)=matrix(1,0,0.57735,1,0,0)——skew 值在 c 位（index 2）不是 b 位（b 位是 skewY）；translate3d(100%,0,0) 的 % 相对 ::before 自身盒（width 120% 的面板）→ 期望 tx=1.2×钮宽，拿实时 getBoundingClientRect 算不要写死
 ⑥㊵ 静息无 transform 的 computed 是 'none' 不是 identity matrix——断言写 'none' || 'matrix(1,0,0,1,0,0)' 双兼容；旧教训重申：PowerShell 与 Bash 工具共享 cwd，docker build 前必显式 cd 仓库根（本轮部署前显式 cd 一次过、上轮在共享 cwd 上踩过）
+
+同轮修正（2026-09-02 当日）：用户纠正「不是啊我是说顶部的那个Migrate 不是Migrate to Cards 啊」——cssbuttons-io 设计换到顶部 editor-header 的 Migrate 按钮（原 btn-outline wand_shine 钮退役），弹窗内 Migrate to Cards 还原 v10.28.17.3 Uiverse 药丸（独立类 .migrate-pill：近黑药丸/白字渐变裁切/星芒三路径/悬停紫渐变层光环放大 1.1/暗主题翻浅+星芒深紫，亮暗双主题全链还原）；两钮 onclick 各自绑定零改动（顶部开弹窗/弹窗 runMigration）；版本号不变（同轮修正）；tmp 电池重写 36/36（顶部钮 A-D 结构静息悬停按下+E 暗主题零覆写+F0 点击开弹窗；药丸 A5-A7 结构+P 静息 4 项+Q 悬停紫环放大 3 项+R 暗主题 3 项+S 迁移链 3 项+G 0 异常 0 error）+group-click 28/28+group-fill 48/48+冒烟 49/49+线上 36/36+curl 五连；commit df70a76，重新部署 rev 00053-9np（00052-pc4 携带误改版已下线）
+教训：
+⑥㊶ 平台有两个「Migrate」按钮（页头顶部 Migrate + 弹窗内 Migrate to Cards）——用户说「Migrate 按钮」改 UI 时不能默认是同款/上次那个，同名按钮目标歧义先定位再改（本轮首轮误改弹窗钮被用户一句「不是啊」纠正）；「改成这个代码」= 用户给的图标/结构逐字节用（</> 双 path 原版），文案才按功能适配
