@@ -2138,13 +2138,42 @@ html.fc-guest .fc-locked-hero {
     .grid-group-bg {
       position: absolute;
       z-index: 0;
-      pointer-events: none;
+      /* v10.28.15: 点击组背景 = 选中整组（此前 pointer-events none 点击
+         穿过背景落到画布 → 只会取消选中，选不中组也就没法长按拆分） */
+      pointer-events: auto;
+      cursor: pointer;
       background: var(--color-surface-container-low);
       border: 1px solid var(--divider-line-strong);
       border-radius: 14px;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.10);
     }
     .grid-group-bg.selected { border-color: var(--color-primary); }
+    /* v10.28.15 — 分组「一体」外观（钦定「边框+主题边缘全隐藏」）：组内卡
+       自身边框/阴影/外板/环带/剪影填充/焦边全部藏起，外框只剩组背景一条
+       线，成员间以 .grid-group-divider 分割线区隔（列间竖线仅当任一侧有
+       content 卡——钦定「content card 就自动在左右中间加上一个分割线」）。
+       !important 压过卡内联 border 与主题规则（拆分组后类即消失全部还原）。 */
+    .grid-card[data-group-id]:not([data-group-id='']) {
+      border: none !important;
+      box-shadow: none !important;
+    }
+    .grid-card[data-group-id]:not([data-group-id=''])::before,
+    .grid-card[data-group-id]:not([data-group-id=''])::after {
+      display: none !important;
+    }
+    .grid-card[data-group-id]:not([data-group-id='']) .card-outer-band,
+    .grid-card[data-group-id]:not([data-group-id='']) .card-outer-band-wrap,
+    .grid-card[data-group-id]:not([data-group-id='']) .card-tint {
+      display: none !important;
+    }
+    .grid-group-divider {
+      position: absolute;
+      z-index: 2; /* 压在卡上（卡常态 z 1+）盖住贴齐接缝；拖拽 z 50 仍在其上 */
+      pointer-events: none;
+      background: var(--divider-line-strong);
+    }
+    .grid-group-divider.divider-h { height: 1px; }
+    .grid-group-divider.divider-v { width: 1px; }
     .grid-card.merge-target { outline: 2px dashed var(--color-primary); outline-offset: 4px; }
     .grid-card.cell-highlight::after {
       content: ''; position: absolute; inset: 0;
@@ -4706,6 +4735,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
                 card.style.width = card.dataset.fitW + 'px';
                 card.style.height = card.dataset.fitH + 'px';
               }
+              // v10.28.15: content/text 精确像素宽优先（等宽挤压草稿往返），
+              // 无 w 的旧草稿保持 colSpan 恢复
+              if (cData.w && (cData.type === 'content' || cData.type === 'text')) {
+                card.style.width = parseFloat(cData.w) + 'px';
+              }
               if (cData.rotate) { card.dataset.rotate = cData.rotate; card.style.transform = 'rotate(' + cData.rotate + 'deg)'; }
               // v10.27.1: 图层 — 显式 z（混合堆叠）+ 眼睛隐藏态
               if (cData.z) card.style.zIndex = String(parseInt(cData.z) || 0);
@@ -4717,7 +4751,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
               if (card.dataset.captionVertical === '1') applyCaptionLayout(card);
             }
           });
-          updateGroupBgs(); // v10.28.14: 草稿恢复后按 groupId 重建组背景（按几何算，与恢复顺序无关）
+          reflowAllGroups(); // v10.28.15: 恢复后组背景+分割线+规整布局（按几何算，与恢复顺序无关）
         }
 
         // Legacy paragraph restore → migration (v1–v7 drafts). v6/v7 stored
@@ -4906,6 +4940,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         entry.aspectRatio = c.dataset.aspectRatio || '';
         entry.fitW = parseFloat(c.dataset.fitW) || 0;
         entry.fitH = parseFloat(c.dataset.fitH) || 0;
+      }
+      // v10.28.15: content/text 精确像素宽——等宽挤压后 colSpan 整格舍入
+      // 还原不回 320（20px 格：15 格=328、14 格=306），存精确 w 兜底；
+      // 旧草稿无 w 走 colSpan 恢复（向后兼容）。
+      if ((c.dataset.cardType === 'content' || c.dataset.cardType === 'text') && c.style.width) {
+        entry.w = parseFloat(c.style.width);
       }
       var lbl = c.querySelector('.card-label');
       entry.label = lbl ? lbl.value : (c.dataset.label || '');
@@ -7620,24 +7660,129 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     getAllCards().forEach(function (c) { c.classList.remove('merge-target'); });
   }
 
+  // v10.28.15 — 等宽归一：等比锁卡宽变高等比缩放（fitW/fitH/aspectRatio
+  // 同步），其余卡只改宽度（内容卡高度随文字自然生长）。钦定「以较宽的
+  // 那张为准」=首次合并双方同宽取 max；并入既有组=挤到组宽（不会擅自
+  // 增加宽度，「下方的卡片就只是挤压」）。
+  function normalizeCardWidth(card, W) {
+    var w = card.offsetWidth, h = card.offsetHeight;
+    if (Math.abs(w - W) < 0.5) return;
+    card.style.width = W + 'px';
+    if (isAspectLocked(card) && w > 0) {
+      var ratio = parseFloat(card.dataset.aspectRatio) || (w / h);
+      var nh = Math.max(1, Math.round(W / ratio));
+      card.style.height = nh + 'px';
+      card.dataset.fitW = W;
+      card.dataset.fitH = nh;
+      var step = getCellSize() + 2;
+      card.dataset.colSpan = Math.max(1, Math.round((W + 2) / step));
+      card.dataset.rowSpan = Math.max(1, Math.round((nh + 2) / step));
+    } else {
+      // content/text：尺寸只走 colSpan 草稿往返（style.width 不入草稿）——
+      // 等宽挤压必须落到 colSpan，否则重载退回旧宽
+      var step2 = getCellSize() + 2;
+      card.dataset.colSpan = Math.max(1, Math.round((W + 2) / step2));
+    }
+  }
+  window.normalizeCardWidth = normalizeCardWidth;
+
+  // v10.28.15 — 规整布局模型：组 = 若干列，列 = 贴齐的竖堆。列按成员
+  // x 排序（左缘越过当前列右缘的成员归入该列，贴齐右缘起新列）；列间
+  // flush 贴齐（首列锚定最左，后续列贴前列右缘），列内按 y 排序 flush
+  // 堆叠（首卡锚定，其余贴前卡底缘）——左右加入=新开一列，下方加入=
+  // 挤进本列，全部宽度一致、不会擅自增加宽度。移动只写 style+dataset.x/y
+  // （与 moveCardPx 同口径，草稿往返不依赖重算）。
+  function groupColumns(mems) {
+    var sorted = mems.slice().sort(function (a, b) {
+      var ax = parseFloat(a.style.left) || 0, bx = parseFloat(b.style.left) || 0;
+      return (ax - bx) || ((parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0));
+    });
+    var cols = [];
+    sorted.forEach(function (c) {
+      var left = parseFloat(c.style.left) || 0;
+      var right = left + (c.offsetWidth || 0);
+      var col = cols[cols.length - 1];
+      if (col && left < col.right - 0.5) {
+        col.cards.push(c);
+        if (right > col.right) col.right = right;
+      } else {
+        cols.push({ cards: [c], left: left, right: right });
+      }
+    });
+    return cols;
+  }
+  window.groupColumns = groupColumns;
+
+  function reflowGroup(g) {
+    var mems = getAllCards().filter(function (c) { return c.dataset.groupId === g; });
+    // <2 张：交给 updateGroupBgs 解散（清掉孤卡上的残留 groupId——不清会
+    // 永久藏边框）
+    if (mems.length < 2) { updateGroupBgs(); return; }
+    // v10.28.15 — 组内全等宽（钦定「全部宽度是一样的」）：每次重排都把
+    // 全体成员归一为组内最宽者。content/text 卡尺寸只走 colSpan 草稿往返，
+    // 重载恢复的宽度有整格舍入误差——此处重归一让视觉宽度跨草稿往返收敛，
+    // 也把 v10.28.14 旧组自动升级到等宽口径。
+    var G = 0;
+    mems.forEach(function (m) { if (m.offsetWidth > G) G = m.offsetWidth; });
+    mems.forEach(function (m) { normalizeCardWidth(m, G); });
+    var cols = groupColumns(mems);
+    var x = cols[0].left;
+    cols.forEach(function (col) {
+      var cards = col.cards.slice().sort(function (a, b) {
+        return (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0);
+      });
+      var y = parseFloat(cards[0].style.top) || 0;
+      cards.forEach(function (c) {
+        c.style.left = x + 'px';
+        c.style.top = y + 'px';
+        c.dataset.x = x;
+        c.dataset.y = y;
+        y += c.offsetHeight || 0;
+      });
+      x += (col.right - col.left);
+    });
+    updateGroupBgs();
+    refreshResizeHandles();
+  }
+  window.reflowGroup = reflowGroup;
+
+  function reflowAllGroups() {
+    var seen = {};
+    getAllCards().forEach(function (c) {
+      var g = c.dataset.groupId;
+      if (g && !seen[g]) { seen[g] = 1; reflowGroup(g); }
+    });
+  }
+
   function mergeCards(card, target) {
     var g = target.dataset.groupId || makeGroupId();
+    // v10.28.15 — 合并等宽（钦定「以较宽的那张为准」）：首次合并双方
+    // 同宽=较宽者；并入既有组=挤到组宽（组宽不变）。先归一后 reflow——
+    // 高度变了贴齐位由 reflow 重排。
+    var W = target.offsetWidth;
+    if (!target.dataset.groupId) W = Math.max(W, card.offsetWidth);
+    normalizeCardWidth(card, W);
+    if (!target.dataset.groupId) normalizeCardWidth(target, W);
     card.dataset.groupId = g;
     if (!target.dataset.groupId) target.dataset.groupId = g;
-    updateGroupBgs();
+    reflowGroup(g);
     selectCard(card); // 合并后整组选中（与单击口径一致）
+    onContentChange();
     showToast('卡片已合并成一组');
   }
 
   function splitCardFromGroup(card) {
-    if (!card.dataset.groupId) return;
+    var g = card.dataset.groupId;
+    if (!g) return;
     delete card.dataset.groupId;
-    updateGroupBgs(); // 剩余 <2 张自动解散（清 groupId、背景消失）
+    // v10.28.15: 拆出后剩余组 reflow 塌合（不留洞，规整）；<2 张自动解散
+    reflowGroup(g);
+    onContentChange();
     showToast('已从分组拆出');
   }
 
   function updateGroupBgs() {
-    gridCanvas.querySelectorAll('.grid-group-bg').forEach(function (b) { b.remove(); });
+    gridCanvas.querySelectorAll('.grid-group-bg, .grid-group-divider').forEach(function (b) { b.remove(); });
     var groups = {};
     getAllCards().forEach(function (c) {
       var g = c.dataset.groupId;
@@ -7665,7 +7810,71 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       bg.style.width = (maxX - minX + GROUP_BG_PAD * 2) + 'px';
       bg.style.height = (maxY - minY + GROUP_BG_PAD * 2) + 'px';
       if (mems.some(function (c) { return c.classList.contains('selected'); })) bg.classList.add('selected');
+      // v10.28.15: 点击组背景 → 选中整组（此后长按成员卡即可拆分）。
+      // stopPropagation 防落到画布取消选中；点卡本体照旧走卡事件。
+      bg.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        selectCard(mems[0]);
+      });
       gridCanvas.appendChild(bg);
+      // v10.28.15 — 分割线：列内贴齐相邻对之间画横线；相邻列之间若任一侧
+      // 有 content 卡画竖线（钦定「content card 就自动在左右中间加上一个
+      // 分割线」，左右加入=分成左右两列）。
+      var cols = groupColumns(mems);
+      cols.forEach(function (col) {
+        var cards = col.cards.slice().sort(function (a, b) {
+          return (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0);
+        });
+        for (var i = 0; i < cards.length - 1; i++) {
+          var a = cards[i], b = cards[i + 1];
+          if (a.classList.contains('layer-hidden') || b.classList.contains('layer-hidden')) continue;
+          var gap = (parseFloat(b.style.top) || 0) - ((parseFloat(a.style.top) || 0) + (a.offsetHeight || 0));
+          if (Math.abs(gap) > 2) continue; // 只有贴齐接缝才画分割线
+          var dh = document.createElement('div');
+          dh.className = 'grid-group-divider divider-h';
+          dh.style.left = col.left + 'px';
+          dh.style.top = ((parseFloat(b.style.top) || 0) - 0.5) + 'px';
+          dh.style.width = (col.right - col.left) + 'px';
+          gridCanvas.appendChild(dh);
+        }
+      });
+      for (var ci = 0; ci < cols.length - 1; ci++) {
+        var L = cols[ci], R = cols[ci + 1];
+        var gap = R.left - L.right;
+        if (Math.abs(gap) > 2) continue;
+        var hasContent = L.cards.concat(R.cards).some(function (c) {
+          return !c.classList.contains('layer-hidden') &&
+            (c.dataset.cardType === 'content' || c.dataset.cardType === 'text');
+        });
+        if (!hasContent) continue;
+        var topOf = function (col) {
+          var t = Infinity;
+          col.cards.forEach(function (c) {
+            if (c.classList.contains('layer-hidden')) return;
+            var y = parseFloat(c.style.top) || 0;
+            if (y < t) t = y;
+          });
+          return t;
+        };
+        var botOf = function (col) {
+          var b = -Infinity;
+          col.cards.forEach(function (c) {
+            if (c.classList.contains('layer-hidden')) return;
+            var y = parseFloat(c.style.top) || 0;
+            if (y + (c.offsetHeight || 0) > b) b = y + (c.offsetHeight || 0);
+          });
+          return b;
+        };
+        var vTop = Math.max(topOf(L), topOf(R));
+        var vBot = Math.min(botOf(L), botOf(R));
+        if (vBot - vTop < 4) continue; // 两列纵向无交集不画
+        var dv = document.createElement('div');
+        dv.className = 'grid-group-divider divider-v';
+        dv.style.left = (L.right - 0.5) + 'px';
+        dv.style.top = vTop + 'px';
+        dv.style.height = (vBot - vTop) + 'px';
+        gridCanvas.appendChild(dv);
+      }
     });
   }
   window.groupMembers = groupMembers;   // v10.28.14 测试钩子
@@ -8117,7 +8326,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         // and (via its hook) refreshes the handles.
         moveCardPx(st.card, parseFloat(st.card.style.left) || 0,
                    parseFloat(st.card.style.top) || 0);
-        updateGroupBgs(); // v10.28.14: 缩放改变包围盒 → 组背景重算
+        // v10.28.15: 组内卡缩放 → 组重排（列内塌合/列间重贴齐）；非组卡空转无害
+        if (st.card.dataset.groupId) reflowGroup(st.card.dataset.groupId); else updateGroupBgs();
         onContentChange();
       }
       // Suppress click-triggered modals after a resize (mirrors drag mouseup)
@@ -8428,7 +8638,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           moveCardPx(resizeState.card,
             parseFloat(resizeState.card.style.left) || 0,
             parseFloat(resizeState.card.style.top) || 0);
-          updateGroupBgs(); // v10.28.14: Escape 中途提交缩放同样重算组背景
+          // v10.28.15: Escape 中途提交缩放同样重排组布局
+          if (resizeState.card.dataset.groupId) reflowGroup(resizeState.card.dataset.groupId);
+          else updateGroupBgs();
           onContentChange();
         }
         resizeState = null;
@@ -10063,7 +10275,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var g = selectedCard.dataset.groupId;
     var whole = g && groupMembers(selectedCard).every(function (c) { return c.classList.contains('selected'); });
     (whole ? groupMembers(selectedCard) : [selectedCard]).forEach(function (c) { c.remove(); });
-    updateGroupBgs(); // v10.28.14: 组缩水自动解散 / 背景重算或移除
+    // v10.28.15: 删单卡 → 剩余组 reflow 塌合；删整组 → 背景自动移除（空转无害）
+    if (g && !whole) reflowGroup(g); else updateGroupBgs();
     selectedCard = null;
     refreshResizeHandles(); // hide the now-orphaned handle cluster
     syncStatsEditPanel(); // v10.28.5.2: 卡删了 → 面板隐藏、面板里的孤儿列表清掉
@@ -10692,7 +10905,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.14') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.15') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -10701,7 +10914,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.14');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.15');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';
