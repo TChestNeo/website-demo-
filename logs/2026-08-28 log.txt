@@ -794,3 +794,6 @@ FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中�
 同轮二修（2026-09-02 当日）：用户「那个大小调一下这有点太大了」——顶部 cssbuttons-io Migrate 钮尺寸对齐页头兄弟钮 .btn-sm：字号 18px→12px、span 竖向内边距 0.8em→0.5em、图标 1.2em→2em；版本号不变（同轮修正）；tmp 电池 B3 字号断言 12px、B5 新增高度对齐兄弟钮断言（探针加 sibH）；电池 38/38（两轮迭代：27 vs 40 假红=探针 .btn-sm 先匹配到带 btn-sm 类的 40px 后退钮→改 .btn-outline.btn-sm；27 vs 38 真矮=兄弟钮内容 24px 图标+6×2+2px 边=38px 而本钮 12px 字+1.2em 图标只 27px→图标改 2em 撑到 36 差 2）+group-click 28/28+group-fill 48/48+冒烟 49/49+线上 38/38+curl 五连；commit 53b714c，重新部署 rev 00054-r57
 教训：
 ⑥㊷ 换肤钮放进既有按钮行必须对齐行内兄弟钮的高度——兄弟钮高度是内容（图标）撑出来的不是 padding 约定：.btn-sm 12px 字+24px material 图标=38px，换肤钮只有 14.4px 图标时同 padding 反矮 11px；探针选兄弟钮防选中带同类的异形钮（.btn-sm 匹配到后退钮 40px 假红）；另外两条电池并行跑会撞 CDP 调试端口（一条报 Unexpected end of JSON input），电池回归串行跑
+同轮三修（2026-09-02 当日）：用户「能不能改成一样是药丸形的？改一下就行了不要做其他事情」——顶部 Migrate 钮圆角 0.8em→9999px 药丸形（与弹窗 Migrate to Cards 药丸钮同款圆角），其余零改动（紫渐变/ghostwhite 字/代码图标/黑面板横扫/12px 字号/图标 2em 全保留）；版本号不变（同轮修正）；tmp 电池 B10 新增药丸圆角断言（computed border-radius 钳到半高 18px，断言双兼容 '18px'||'9999px'）；电池 39/39+group-click 28/28+group-fill 48/48+冒烟 49/49+线上 39/39+curl 五连；commit 921f9a8，重新部署 rev 00055-ksk
+教训：
+⑥㊸ getComputedStyle().borderRadius 返回钳制后的 used value（9999px 在 36px 高按钮上=18px 半高），断言写双兼容或直接断言钳制值；同轮同钮多轮微调（修正→二修→三修）每次只动用户点名的那一处，其余设计元素保持不动
