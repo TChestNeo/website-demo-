@@ -4189,6 +4189,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var lastSavedContent = '';
   var autoSaveTimer = null;
   var selectedCard = null;
+  // v10.28.15.1: 当前选中是否为「单卡」——组卡单独选中（再点一次该卡或
+  // 拖出即拆）为 true；整组选中 / 普通选中为 false。
+  var selectionIsSingle = false;
+  // v10.28.15.1: 最近一次卡上 mousedown 时该卡是否已选中（按下前快照）。
+  // click 切换靠它区分「第一次点击」与「再次点击」——mousedown 里的
+  // selectCard 会先重置选中态，click 时再读就永远是「刚选中」。
+  var mousedownAlreadySelected = false;
   var cardIdCounter = 0;
 
   // ── Grid snap (v8) ──
@@ -5335,7 +5342,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       // 不排除 mousedown 会 arm 拖拽、mousemove preventDefault 打断原生框选
       var inText = e.target.closest('.card-text-content, .card-edit-field, .card-label');
 
-      try { selectCard(card); } catch (err) {}
+      // v10.28.15.1: 按下前快照选中态（供 click 切换与单卡拖判定）——
+      // 单独选中的组成员再按下 = 保持单卡选中不重置回整组，起拖即单卡拖、
+      // 松手拆出；按下其他卡照旧整组选中
+      mousedownAlreadySelected = !!(selectedCard === card && card.classList.contains('selected'));
+      var wasSingle = !!(selectionIsSingle && selectedCard === card && card.dataset.groupId);
+      if (!wasSingle) { try { selectCard(card); } catch (err) {} }
       try { hideContextMenu(); } catch (err) {}
       if (inText) return;
 
@@ -5352,7 +5364,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         splitFired: false,
         members: null,     // 越过 3px 起拖时按当前 groupId 懒取（长按先拆 → 只剩本卡）
         memberOrig: null,
-        mergeTarget: null
+        mergeTarget: null,
+        singleDrag: false  // v10.28.15.1: 单独选中的组成员起拖 = 单卡拖，松手拆出
       };
       // v10.28.14: 组内长按 ≥600ms 且未移动 → 拆出该卡（钦定「长按拆分」）；
       // 拆后继续拖动就是单卡拖。移动 >3px 或松手都会取消计时（共享
@@ -5364,6 +5377,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
             splitCardFromGroup(card);
           }
         }, 600);
+      }
+      // v10.28.15.1: 单独选中的组成员起拖 = 单卡拖，松手拆出该卡（钦定
+      // 「再次点击才是单独选中卡片这样就可以拖动拆分」）
+      if (wasSingle) {
+        dragState.singleDrag = true;
       }
     });
 
@@ -5385,7 +5403,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
             st.dragging = true;
             // v10.28.14: 组成员整组高亮提层 + 起拖时按当前 groupId 懒取成员
             //（长按先拆出的卡 groupId 已清 → 成员只剩本卡，即单卡拖）
-            st.members = groupMembers(st.card);
+            st.members = st.singleDrag ? [st.card] : groupMembers(st.card);
             st.memberOrig = st.members.map(function (m) {
               return { card: m, x: parseFloat(m.style.left) || 0, y: parseFloat(m.style.top) || 0 };
             });
@@ -5482,6 +5500,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
                 mergeCards(st.card, st.mergeTarget.target);
               }
             }
+            // v10.28.15.1: 单独选中的组成员拖动松手 = 拆出（剩余组 reflow 塌合、
+            // 组背景/分割线由 reflowGroup 内 updateGroupBgs 重建）
+            if (st.singleDrag && st.card.dataset.groupId) {
+              splitCardFromGroup(st.card);
+            }
             updateGroupBgs(); // 组拖结束重算背景（单卡拖空转无害）
             onContentChange();
             // Suppress click-triggered modals after a real drag — stamped only
@@ -5507,7 +5530,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (e.button !== 0) return;
       // v10.24: 文字内按下不共享拖拽状态（第一个 handler 已早退，
       // 此处 dragState 是上一次按下的旧值——不守卫会连卡一起拖走）
-      if (e.target.closest('.card-text-content')) return;
+      // v10.28.15.1: 守卫扩展到 .card-label/.card-edit-field（v10.28 与
+      // v10.28.10 新增的 inText 成员）。旧守卫漏掉它们：点标签按下时第一个
+      // handler 早退、arm 的是上一轮真实拖拽的旧 dragState（moved=true），
+      // 松手即重放整套提交路径——moveCardPx/updateGroupBgs/onContentChange/
+      // justDragged 误戳（点一下名字草稿就重写一遍，且 300ms 内卡上任何
+      // click 被 justDragged 吞掉、label onclick 的 stopPropagation 又吃掉
+      // 切换——「再点一下选中单卡」在点名字时永远失灵）。
+      if (e.target.closest('.card-text-content, .card-edit-field, .card-label')) return;
       addCardDrag._activeDrag = dragState;
     });
   }
@@ -5524,14 +5554,23 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
     // Click → select; double-click → edit label（v10.27.0.1：走 enterLabelEdit
     // 统一路径——旧实现内容卡双击也加 editing-label 且无标签可 blur 摘类 →
-    // 类卡死、该卡拖拽/点选永久失效）
+    // 类卡卡死、该卡拖拽/点选永久失效）
     card.addEventListener('click', function (e) {
       if (card.classList.contains('editing-label')) return;
+      if (card.dataset.justDragged) return; // v10.28.15.1: 拖拽松手的 click 不参与切换
+      // v10.28.15.1: 组内第一次点击 = 整组选中，再次点击同一张卡 = 单独选中
+      //（钦定「第一次点击合并卡片时是选中整个，然后再次点击才是单独选中卡片
+      // 这样就可以拖动拆分」）；单选中再点同一张 = 回到整组。
+      // mousedownAlreadySelected = 按下前已选中 → 本次点击是「再次点击」
+      if (card.dataset.groupId && mousedownAlreadySelected) {
+        selectCard(card, selectionIsSingle ? false : true);
+        return;
+      }
       selectCard(card);
     });
     card.addEventListener('dblclick', function (e) {
-      // v10.28.14: 组内双击 = 单独选中该卡（钦定「双击单独选中」）；非组卡
-      // 维持 enterLabelEdit 改名路径（v10.27.0.1 统一路径）
+      // v10.28.14→v10.28.15.1: 组内双击 = 单独选中该卡（快速路径，与单击
+      // 切换同口径）；非组卡维持 enterLabelEdit 改名路径（v10.27.0.1 统一路径）
       if (card.dataset.groupId) { selectCard(card, true); return; }
       enterLabelEdit(card);
     });
@@ -7581,11 +7620,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function selectCard(card, single) {
     getAllCards().forEach(function (c) { c.classList.remove('selected'); });
     gridCanvas.querySelectorAll('.grid-group-bg').forEach(function (b) { b.classList.remove('selected'); });
-    // v10.28.14: 组内单击 = 整组选中（组背景环亮起）；双击等单独选中走
-    // single 只选该卡（钦定「双击单独选中」）
+    // v10.28.14→v10.28.15.1: 组内单击 = 整组选中（组背景环亮起）；single
+    // 只选该卡（v10.28.15.1 单击切换单独选中；双击旧路径保留兼容）
     var targets = (!single && card.dataset.groupId) ? groupMembers(card) : [card];
     targets.forEach(function (c) { c.classList.add('selected'); });
     selectedCard = card;
+    selectionIsSingle = !!single && !!card.dataset.groupId;
     if (!single && card.dataset.groupId) {
       var g = card.dataset.groupId;
       gridCanvas.querySelectorAll('.grid-group-bg').forEach(function (b) {
@@ -7602,6 +7642,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     getAllCards().forEach(function (c) { c.classList.remove('selected'); });
     gridCanvas.querySelectorAll('.grid-group-bg').forEach(function (b) { b.classList.remove('selected'); });
     selectedCard = null;
+    selectionIsSingle = false;
     refreshResizeHandles();
     syncStatsEditPanel(); // v10.28.5.2: 取消选中 → 编辑面板隐藏、列表搬回卡内
   }
@@ -7810,8 +7851,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       bg.style.width = (maxX - minX + GROUP_BG_PAD * 2) + 'px';
       bg.style.height = (maxY - minY + GROUP_BG_PAD * 2) + 'px';
       if (mems.some(function (c) { return c.classList.contains('selected'); })) bg.classList.add('selected');
-      // v10.28.15: 点击组背景 → 选中整组（此后长按成员卡即可拆分）。
-      // stopPropagation 防落到画布取消选中；点卡本体照旧走卡事件。
+      // v10.28.15.1: 点击组背景 → 选中整组（此后点成员卡两次=单独选中再拖出
+      // 拆分，长按亦保留）。stopPropagation 防落到画布取消选中；点卡本体照旧走卡事件。
       bg.addEventListener('click', function (ev) {
         ev.stopPropagation();
         selectCard(mems[0]);
@@ -10278,6 +10319,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // v10.28.15: 删单卡 → 剩余组 reflow 塌合；删整组 → 背景自动移除（空转无害）
     if (g && !whole) reflowGroup(g); else updateGroupBgs();
     selectedCard = null;
+    selectionIsSingle = false;
     refreshResizeHandles(); // hide the now-orphaned handle cluster
     syncStatsEditPanel(); // v10.28.5.2: 卡删了 → 面板隐藏、面板里的孤儿列表清掉
     onContentChange();
@@ -10905,7 +10947,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var contentCount = getAllCards().filter(function (c) {
     return c.dataset.cardType === 'content';
   }).length;
-  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.15') + ') — cards: ' + cardCount +
+  console.log('[FluidCanvas] ready (' + (window.FLUIDCANVAS_VERSION || 'v10.28.15.1') + ') — cards: ' + cardCount +
     ' (content: ' + contentCount + ')' +
     ', snap: ' + (snapOn ? 'on' : 'off') +
     ', align: ' + (alignOn ? 'on' : 'off'));
@@ -10914,7 +10956,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // build when reporting issues. Remove once stabilized.
   (function () {
     var b = document.createElement('div');
-    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.15');
+    b.textContent = 'FC ' + (window.FLUIDCANVAS_VERSION || 'v10.28.15.1');
     b.style.cssText = 'position:fixed;right:8px;bottom:8px;z-index:9999;font-size:10px;' +
       'padding:2px 6px;border-radius:4px;background:rgba(128,128,128,.18);' +
       'color:var(--color-on-surface);pointer-events:none;opacity:.75;';

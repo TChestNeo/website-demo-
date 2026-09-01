@@ -687,3 +687,14 @@
 ⑥⑯ CDP 画布坐标≠视口坐标，且有窗口高度上限：gridCanvas 被资产面板+顶栏偏移（本电池 (284,219)），画布 y 740 的点换算视口 959 > 窗口高 900 → elementFromPoint 返回 null、落点守卫全崩。修：每次交互前先把画布点滚进视口（gridCanvas.parentElement 滚动容器按目标点居中 scrollTop/scrollLeft），canvas 坐标不变、offset 每次交互前重测（滚动改变偏移）
 ⑥⑰ content/text 卡尺寸只走 colSpan 草稿往返（fitW 只随 aspectLock 分支入草稿）：等宽挤压 320px 在 20px 格下 colSpan=15 还原 328、14 还原 306——整数舍入回不来精确值；且 328 驱动 reflowGroup 全体归一 328 → 列1右缘 428 涨过 C 的 x=420 → C 被 overlap 规则吸进列1（布局塌方，A.h=185/D.h=164 全是 328 等比再归一的结果）。修：buildDraft 给 content/text 存 additive w（精确像素宽）、applyDraft 有 w 走 w 旧草稿无 w 走 colSpan；reflowGroup 重排先全体归一组内最宽者（此后视觉宽度与 colSpan 舍入脱钩、跨草稿往返收敛）
 ⑥⑱ 电池 waitFor 的满足条件别写成「早一步的状态也满足」：4 卡 4 同组在步骤 7 落草稿后即满足，navigate 会赶在步骤 8 拖动落草稿前杀掉待存 autosave（3s debounce）——断言改盯最新轮次才独有的状态（本例直接断言 reload 后几何，draft 内容用 dump 探针实测再锁期望）
+
+site v0.2.6.2 不变 / FC v10.28.15.1（rev 00044-d4m）单击切换选中轮：用户「我希望第一次点击合并卡片时是选中整个，然后再次点击才是单独选中卡片这样就可以拖动拆分」
+- 产品口径：首击整组选中 → 再击同一张卡单独选中（每卡各自计数、再击回整组循环；点别的卡重新开始计数）→ 单选中拖出 = 拆分（拆出卡保持选中）；双击单独选中、长按 ≥600ms 拆分两条旧路径保留兼容
+- 实现：selectionIsSingle 模块旗 + mousedownAlreadySelected（mousedown 在 selectCard 前快照——selectCard 会重置选中状态）+ wasSingle（单选中拖起时跳过 selectCard 保状态存活进拖拽）+ dragState.singleDrag（st.members=[card] 只拖单卡、不动整组）+ mouseup 单拖且仍在组 → splitCardFromGroup；click 内 toggle（同组已选中卡再点 → selectCard(card, !selectionIsSingle) 整组/单选互切）
+- 版本：FLUIDCANVAS_VERSION v10.28.15→v10.28.15.1（补丁位 0→1 修复轮——单击切换轮）+ 4 处字面量；站点号 v0.2.6.2 不变
+验证：本地静态壳 CDP 电池 58/58 双跑（合并 B→A 吸合 + C 挤列 + 首击 A 整组/再击单/三击回组 + 点 B 各自计数 + 双击 C 旧路径兼容 + 单选中拖出拆分 + 组背景重建 B+C + 草稿落库 + 回组规整 + 整组平移背景跟随 + 重载几何全恢复 + 只删 C 组保留 + 长按拆出解散 + 再合并幂等 + 0 console error 0 异常）+ smoke-admin 49/49 + 线上同款 58/58（rev 00044-d4m 真站）+ curl 五连（/ 200 + 编辑器页含 v10.28.15.1 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00044-d4m（100% 流量）
+教训：
+⑥⑲ justDragged 300ms 抑制窗口（电池陷阱 70）：拖拽松手在卡片上戳 data-justDragged 并 setTimeout 300ms 删除——抑制 300ms 内的 click 切换是产品口径（防拖后误点）。真实用户不可能 300ms 内拖完再点下一张卡，CDP 却快到踩进窗口；电池所有「拖拽之后立刻点卡断言切换」之前必须 waitFor 等属性清除，否则切换被吞、断言假红。本次三轮假红追查整整一轮（setTimeout 包装/dataset Proxy/元素身份/MutationObserver 四层排查全无果），唯一变量：加了 sleep(120) 的跑法 58/58 全绿 → 纯电池时序。教训：电池不绿先自查时序竞态，再怀疑产品码
+⑥⑳ MutationObserver 回调是异步微任务：同一 evalJs 脚本里同步读观察器日志恒空（自测误判 observer 坏了）。读日志要 setTimeout 延迟读或等下一轮 evalJs
+⑥㉑ dataset 访问器在 HTMLElement.prototype 上，不在 Element.prototype——getOwnPropertyDescriptor(Element.prototype,'dataset') 返回 undefined；装 dataset 读写 Proxy 要挂 HTMLElement.prototype
+⑥㉒ 卡 label onclick 先 stopPropagation：点中标签的 click 永不抵达卡片自身 click 监听器（切换/justDragged 抑制全在监听器内）——排查「点了没反应」先看点击目标是否被标签吞掉（cl:0 计数器异常即此解）
