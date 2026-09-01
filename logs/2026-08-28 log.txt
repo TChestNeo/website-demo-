@@ -666,3 +666,24 @@
 ⑥⑫ 旗卡尺寸=图片自然尺寸（fitCardToImage 1:1 受页宽钳制）：种子图用 1×1 PNG → 卡片 1px 级、且 onload 晚到在拖拽中途改尺寸把坐标搅乱（吸合半成、位置全漂）。种子图必须真实尺寸（页面内 canvas 生成 240×135 实色 data URI——尺寸可预测、断言可像素级）；几何断言前先等卡宽高恰等于图尺寸（页宽钳制/未 fit 完成第一时间显形，不级联失败）
 ⑥⑬ 电池草稿 settings snapOn/alignOn=false 双关吸附：吸合贴齐位不是网格点，网格/对齐吸附开着会与吸合互相拉扯、坐标断言全漂——草稿 settings 恢复路径（applyDraft）比点开关按钮稳；验证「吸合优先于对齐吸附」用同 x 拖拽（不触发对齐轴）
 ⑥⑭ 事件捕获日志一眼分诊拖拽失效：mousedown/mousemove/mouseup/dragstart 文档级 capture 日志，「事件没到页面」=输入管线问题（原生拖拽拦截类），「事件到了但卡没动」=handler arm 失败（落点排除/守卫类）——本轮实抓后者（mousemove 到达、_activeDrag null），省下瞎猜时间
+────────────────────────────────────────
+2026-09-01 FC v10.28.15 — wiki 分组规整轮（等宽/分列/挤压/分割线/一体外观）· 部署 rev 00043-zqn
+
+真身（用户）：「呃为什么吸上去就没办法通过点击外背景再选中卡片进行拆分了？然后我希望当合拼时卡片的宽度会变成一样图片的话就是等比例这样，然后我希望合拼时整个卡片看上去是一体的就是去除他们自己原有的边缘统一使用分割线这样，然后我希望他们合并时是能规整些不会擅自增加宽度，就是如果有新卡片从左右加入除非他是最上方的如果只是下方的卡片就只是挤压，然后卡片的比例就是一样是等比例的宽的 全部宽度是一样的」——问询钦定：①等宽基准=「以较宽的那张为准」②左右方向加入=分成左右两列，卡片属于 content card 就在左右中间加分割线 ③一体外观=边框+主题边缘全隐藏
+
+改动（docs/pages/fluidcanvas-editor.html 为主）：
+- 背景点击选组：.grid-group-bg pointer-events none→auto + click → selectCard(首成员)（selectCard 组选口径=整组选中）；gridCanvas 空点取消选中仅在 e.target===gridCanvas（背景点击不会先触发取消）
+- 合并等宽：mergeCards 首次合并 W=max(双方)（较宽者胜），并入既有组=挤到组宽（组宽不变）；normalizeCardWidth 等比锁定卡 h=W/ratio 同步 fitW/fitH/colSpan/rowSpan，content/text 只改宽 + colSpan
+- 规整布局引擎：groupColumns（x 排序，左缘越过当前列右缘的成员归入该列，贴齐右缘起新列）/ reflowGroup（列间 flush 贴齐、列内 y 排序 flush 堆叠——左右加入=新开一列、下方加入=挤进本列，组宽不擅自增加；<2 成员交 updateGroupBgs 解散清残留 groupId 防永久藏边框）；每次重排全体成员归一组内最宽者（全等宽口径 + 旧组自动升级 + 视觉宽度跨草稿往返收敛）
+- 分割线 .grid-group-divider（z 2 恒在卡上、拖拽卡 z 50 之下）：列内相邻可见成员贴齐处横分割线（gap ≤2）；相邻列间竖分割线=任一侧有可见 content/text 卡（钦定规则），跨两列可见 y 交集 ≥4px
+- 一体外观：组内卡（[data-group-id] 非空）border/box-shadow/::before/::after 全 none !important + .card-outer-band/.card-outer-band-wrap/.card-tint display:none（卡伪元素只承载边饰主题——2106 注释：高光走 background-image 正因伪元素被边饰占用）；拆分/解散即还原
+- 草稿往返：content/text 新增 additive w 字段存精确像素宽（见教训 ⑥⑰），applyDraft 有 w 走 w、旧草稿无 w 走 colSpan；applyDraft 尾部 reflowAllGroups 恢复背景/分割线/规整布局；拖拽中 updateGroupBgs 实时跟随（不 reflow）
+- 版本：FLUIDCANVAS_VERSION v10.28.14→v10.28.15（补丁位 0→1 口径修正轮——v10.28.14 吸合分组首轮后用户四处修正口径）+ fluidcanvas.html #fcVersion + 编辑器 ready/badge 字面量（4 处）；站点号 v0.2.6.2 不变
+
+验证：本地静态壳 CDP 电池 46/46（合并较宽者胜等比 320×180→拆分还原边框→重合并幂等→content 卡右侧加入分两列+竖分割线+背景右缘扩→更宽 D 下方加入挤压 320×160 组宽不变+横分割线→背景点击整组选中→双击单独选中→长按拆分→四卡组整体平移背景/分割线跟随→草稿往返 4 卡 4 同组几何全恢复（含 C 精确 320 宽）→0 console error 0 异常）+ smoke-admin 49/49 + 线上同款 46/46（rev 00043-zqn 真站）+ curl 五连（/ 200 + 编辑器页含 v10.28.15 + /signup-and-login 200 + /signin-and-login 404 + health 57 表 v2.0.0）；部署 rev 00043-zqn（100% 流量）
+
+教训：
+⑥⑮ 电池几何断言在「重载后」错得最凶的地方=草稿字段口径与运行时状态的缺口：本轮的「重载后 C 独立」期望是上一轮设计迭代的残留（左右加入的 C 运行时明明入组、随组平移——步骤 6/8 断言已实证），纸算期望要对着最新行为核，别沿用旧设计稿
+⑥⑯ CDP 画布坐标≠视口坐标，且有窗口高度上限：gridCanvas 被资产面板+顶栏偏移（本电池 (284,219)），画布 y 740 的点换算视口 959 > 窗口高 900 → elementFromPoint 返回 null、落点守卫全崩。修：每次交互前先把画布点滚进视口（gridCanvas.parentElement 滚动容器按目标点居中 scrollTop/scrollLeft），canvas 坐标不变、offset 每次交互前重测（滚动改变偏移）
+⑥⑰ content/text 卡尺寸只走 colSpan 草稿往返（fitW 只随 aspectLock 分支入草稿）：等宽挤压 320px 在 20px 格下 colSpan=15 还原 328、14 还原 306——整数舍入回不来精确值；且 328 驱动 reflowGroup 全体归一 328 → 列1右缘 428 涨过 C 的 x=420 → C 被 overlap 规则吸进列1（布局塌方，A.h=185/D.h=164 全是 328 等比再归一的结果）。修：buildDraft 给 content/text 存 additive w（精确像素宽）、applyDraft 有 w 走 w 旧草稿无 w 走 colSpan；reflowGroup 重排先全体归一组内最宽者（此后视觉宽度与 colSpan 舍入脱钩、跨草稿往返收敛）
+⑥⑱ 电池 waitFor 的满足条件别写成「早一步的状态也满足」：4 卡 4 同组在步骤 7 落草稿后即满足，navigate 会赶在步骤 8 拖动落草稿前杀掉待存 autosave（3s debounce）——断言改盯最新轮次才独有的状态（本例直接断言 reload 后几何，draft 内容用 dump 探针实测再锁期望）
