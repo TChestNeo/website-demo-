@@ -156,7 +156,7 @@
   --card-border: 1px solid rgba(255, 255, 255, 0.4);
   --input-bg: rgba(255, 255, 255, 0.6);
   --input-bg-focus: rgba(255, 255, 255, 0.85);
-  --modal-bg: rgba(255, 255, 255, 0.85);
+  --modal-bg: rgba(255, 255, 255, 0.72); /* v2 液态玻璃：0.85→0.72 折射要可见 */
   --modal-border: 1px solid rgba(255, 255, 255, 0.4);
   --subnav-bg: #f2f4f6;
   --subnav-border: 1px solid rgba(255, 255, 255, 0.4);
@@ -221,12 +221,12 @@
   --glass-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.25);
 
   /* Component surfaces → dark (solid colors, no white overlay) */
-  --card-bg: #1e1e32;
-  --card-bg-hover: #262640;
+  --card-bg: rgba(30, 30, 50, 0.55); /* v2 液态玻璃：暗色实心是假玻璃，改半透明 */
+  --card-bg-hover: rgba(38, 38, 64, 0.72);
   --card-border: 1px solid rgba(255, 255, 255, 0.08);
   --input-bg: #1a1a2c;
   --input-bg-focus: #222238;
-  --modal-bg: rgba(30, 30, 55, 0.96);
+  --modal-bg: rgba(30, 30, 55, 0.75); /* v2 液态玻璃：0.96→0.75 */
   --modal-border: 1px solid rgba(255, 255, 255, 0.10);
   --subnav-bg: #1e1e32;
   --subnav-border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1601,29 +1601,108 @@ html.fc-guest .fc-locked-hero {
   text-align: center;
 }
 
-/* ── 液态玻璃（2026-09-02 v0.2.8.0：rdev/liquid-glass-react 移植，纯 CSS+JS）── */
-/* .lg-active 由 liquid-glass.js 在滤镜注入成功后挂上——无 JS/滤镜缺失时卡片保持原样（优雅降级）。
-   折射层与高光层 pointer-events:none，永不挡点击；内容层 z-index:1 压在上面保持文字清晰 */
+/* ── 液态玻璃 v2（2026-09-02 v0.2.9.0：全站玻璃面统一 rdev 液态玻璃引擎）
+   liquid-glass.js 注入 .lg-backdrop（背层模糊+SVG 折射色散）与 .lg-specular
+   （镜面高光）两层，挂 z:-1 垫在父半透明底之上、内容之下（父建层叠上下文）。
+   卡片弹性（JS 逐帧写 inline transform+6 CSS 变量）、大面板静态（零 rAF）。
+   无 JS/滤镜缺失：类不挂、面保持原样（优雅降级）。 ── */
+
+/* 挂载态：父建层叠上下文（负 z 层不上逃）+ 定位锚；父面旧模糊移交背层（防双层叠加）。
+   !important：压过主样式体与页内同款 backdrop-filter（侧栏折叠/编辑器组内成员等 0,3,0 规则） */
+.lg-active, .lg-static {
+  position: relative;
+  z-index: 0;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* auth-card 原 z:2（主样式体 0,1,0 早于本块被压）补回 */
+.auth-card.lg-static { z-index: 2; }
+
+/* 旧 v0.2.8.0 的 .liquid-glass > * 提层规则删除：层已挂 z:-1 内容自然画其上；
+   提层会破坏 auth-card 绝对定位 tabs 与编辑器负 z 板/染层 */
+
+/* 弹性 hero 亮环（rdev 静环：mask-composite Chrome 不渲染 → inset box-shadow；
+   transform 由 JS 写 inline，类规则不碰） */
 .liquid-glass.lg-active {
-  position: relative; /* 子折射层绝对定位的锚（hero 本身 display:flex 未定位） */
-  transform: translate3d(var(--lg-tx, 0px), var(--lg-ty, 0px), 0) scaleX(var(--lg-sx, 1)) scaleY(var(--lg-sy, 1));
   box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 :root[data-theme="dark"] .liquid-glass.lg-active {
   box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
 }
-.liquid-glass > *:not(.lg-backdrop):not(.lg-specular) { position: relative; z-index: 1; }
+
+/* 层：负 z 垫底、永不挡点击；圆角继承。默认配方 = rdev 卡片（blur 6 + sat 140%） */
 .lg-backdrop {
-  position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0;
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1;
   border-radius: inherit; pointer-events: none;
   -webkit-backdrop-filter: blur(6px) saturate(140%);
   backdrop-filter: blur(6px) saturate(140%);
-  filter: url(#lg-glass-filter); /* SVG 置换折射 + 三通道色散 */
+  filter: url(#lg-glass-filter); /* SVG 置换折射+三通道色散；小卡由 JS 内联覆写 sm 实例 */
 }
 .lg-specular {
-  position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0;
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1;
   border-radius: inherit; pointer-events: none;
   background: radial-gradient(circle at var(--lg-px, 50%) var(--lg-py, 50%), rgba(255, 255, 255, 0.16), transparent 60%);
+}
+
+/* 各面配方：父面旧模糊值平移+饱和到层 */
+.modal-card .lg-backdrop, .auth-card .lg-backdrop,
+.context-menu .lg-backdrop, .text-toolbar .lg-backdrop,
+.font-panel .lg-backdrop, .plan-card .lg-backdrop {
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(24px) saturate(1.4);
+}
+.rp-card .lg-backdrop, .mre-stage .lg-backdrop,
+.mre-side .lg-backdrop, .mre-panel .lg-backdrop {
+  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(32px);
+}
+.team-modal-card .lg-backdrop,
+.account-personal .lg-backdrop, .account-team-wrap .lg-backdrop {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+.sidebar-module .lg-backdrop {
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+}
+.editor-header .lg-backdrop, .studio-header .lg-backdrop {
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+.grid-card .lg-backdrop, .stats-edit-panel .lg-backdrop, .grid-group-bg .lg-backdrop {
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+}
+.glass-container .lg-backdrop {
+  -webkit-backdrop-filter: blur(40px);
+  backdrop-filter: blur(40px);
+}
+
+/* 编辑器门控：玻璃族之外的卡 / 主题卡（card-edge）/ 外板 / 图底 → 层藏起
+   （apply 时早退态与后到主题态同一条规则一网打尽）；组内成员卡面由组背景
+   接管（v10.28.17.2 口径：成员自身 backdrop-filter:none 管不到注入层，
+   漏门即回归用户 9-02「独立背景」投诉） */
+.grid-card.lg-active:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-backdrop,
+.grid-card.lg-active:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-specular,
+.grid-card.lg-active.has-outer-bg > .lg-backdrop, .grid-card.lg-active.has-outer-bg > .lg-specular,
+.grid-card.lg-active.has-card-bg-img > .lg-backdrop, .grid-card.lg-active.has-card-bg-img > .lg-specular,
+.grid-card.lg-active[class*="card-edge-"] > .lg-backdrop, .grid-card.lg-active[class*="card-edge-"] > .lg-specular,
+.lg-active[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-backdrop,
+.lg-active[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-specular {
+  display: none !important;
+}
+
+/* 侧栏导航模块内滚：层改 sticky 钉滚动视口（负偏移补 padding；% 高按模块
+   内容盒解析），不滚时退化为盖满=absolute 等价；brand/user 模块普通 absolute */
+.nav-module.lg-static > .lg-backdrop,
+.nav-module.lg-static > .lg-specular {
+  position: sticky;
+  top: calc(-1 * var(--space-sm));
+  left: calc(-1 * var(--space-sm));
+  right: auto;
+  bottom: auto;
+  width: calc(100% + 2 * var(--space-sm));
+  height: calc(100% + 2 * var(--space-sm));
 }
 
 </style>
@@ -2170,7 +2249,7 @@ html.fc-guest .fc-locked-hero {
       <span class="badge badge-success">Studio</span>
       <span style="font-size:11px;color:var(--color-outline);opacity:0.75;font-weight:500;letter-spacing:0.02em">by M.NationWorld</span>
     </div>
-    <span id="fcVersion" style="font-size:10px;color:var(--color-outline);opacity:0.45;letter-spacing:0.03em;line-height:1.2">v10.28.17.4</span>
+    <span id="fcVersion" style="font-size:10px;color:var(--color-outline);opacity:0.45;letter-spacing:0.03em;line-height:1.2">v10.28.18</span>
   </div>
   <span style="flex:1"></span>
   <a href="fluidcanvas-editor.html" id="openEditorCta" class="btn btn-primary"><span class="material-symbols-outlined">edit</span> Open Editor</a>
@@ -2349,6 +2428,7 @@ html.fc-guest .fc-locked-hero {
 
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/site-config.js"></script>
+<script src="../assets/js/liquid-glass.js"></script>
 <script>try { var _fcv = document.getElementById('fcVersion'); if (window.FLUIDCANVAS_VERSION && _fcv) _fcv.textContent = window.FLUIDCANVAS_VERSION; } catch (e) {}</script>
 <script src="../assets/js/storage.js"></script>
 <script src="../assets/js/subnav.js"></script>
@@ -2587,6 +2667,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + (isPersonal ? '3,842' : (activeTeam ? activeTeam.members * 510 : '0')) + '</div><div class="metric-label">Bookmarks</div><div class="metric-change" style="color:#22c55e">↑ ' + (isPersonal ? '8.1' : '5.2') + '%</div></div>' +
       '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + (isPersonal ? '1,256' : (activeTeam ? activeTeam.members * 170 : '0')) + '</div><div class="metric-label">Shares</div><div class="metric-change" style="color:#22c55e">↑ 21.7%</div></div>' +
       '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + (isPersonal ? '892' : (activeTeam ? activeTeam.members * 120 : '0')) + '</div><div class="metric-label">New Followers</div><div class="metric-change" style="color:#dc2626">↓ 3.2%</div></div>';
+    if (window.LG) LG.scan(document); // v0.2.9.0：动态 metric-card 挂液态玻璃
 
     // Content lists
     renderContentTables();
@@ -2636,6 +2717,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     track.style.transform = 'translateX(0)';
 
     if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+    if (window.LG) LG.scan(document); // v0.2.9.0：动态面板卡挂液态玻璃
   }
 
   // --- Tab switching ---
@@ -2982,6 +3064,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       '<div class="card metric-card"><div class="metric-value" style="color:#4648d4">' + articles + '</div><div class="metric-label">Articles</div></div>' +
       '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + sovereigns + '</div><div class="metric-label">Sovereign Logs</div></div>' +
       '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + communities + '</div><div class="metric-label">Community Posts</div></div>';
+    if (window.LG) LG.scan(document); // v0.2.9.0：动态 metric-card 挂液态玻璃
   }
 
   function renderCLList() {
@@ -3107,6 +3190,5 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   renderTeamSection();
   renderContent();
 </script>
-<script src="../assets/js/liquid-glass.js"></script>
 </body>
 </html>

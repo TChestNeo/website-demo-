@@ -301,6 +301,9 @@
     card.appendChild(cardBody);
     container.appendChild(card);
 
+    // 液态玻璃 v0.2.9.0：弹窗是 open() 时动态 build，初始 scan 扫不到 → 建完即挂静态面
+    if (window.LG) LG.apply(card, { mode: 'static' });
+
     return { backdrop: backdrop, container: container };
   }
 

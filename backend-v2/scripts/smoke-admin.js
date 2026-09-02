@@ -474,9 +474,10 @@ async function main() {
       getComputedStyle(document.getElementById('admBanner')).display === 'none'`));
 
     // ── 控制台零错误（过滤环境性噪声：favicon / Google Fonts / boot 预期 401 me / W3 未上线 404 budget /
-    //   cs 拒权断言自身的 403 logins·events / W6 错密码断言自身的 400 verify）──
+    //   cs 拒权断言自身的 403 logins·events / W6 错密码断言自身的 400 verify /
+    //   液态玻璃 feImage 的 data URI 加载日志）──
     await new Promise((r) => setTimeout(r, 800));
-    const isNoise = (url = '') => /favicon|fonts\.googleapis|fonts\.gstatic|\/api\/staff\/auth\/me|\/api\/staff\/auth\/verify|\/api\/staff\/ai\/budget|\/api\/staff\/security\/(logins|events)/.test(url);
+    const isNoise = (url = '') => /favicon|fonts\.googleapis|fonts\.gstatic|^data:|\/api\/staff\/auth\/me|\/api\/staff\/auth\/verify|\/api\/staff\/ai\/budget|\/api\/staff\/security\/(logins|events)/.test(url);
     const errs = client.events.consoleErrors.filter((e) => !isNoise(e.url))
       .concat(client.events.exceptions.map((e) => ({ url: e.url || '', text: (e.exception && e.exception.description) || e.text })));
     ok(`控制台零错误（实际 ${errs.length} 条）`, errs.length === 0,
@@ -487,7 +488,7 @@ async function main() {
     failures.push('执行异常: ' + err.message);
     console.log(`\n冒烟中断：${err.message}`);
     // 失败诊断快照：页面 console error / 异常（环境性噪声过滤同最终断言）
-    const noise = (u = '') => /favicon|fonts\.googleapis|fonts\.gstatic|\/api\/staff\/auth\/me|\/api\/staff\/auth\/verify|\/api\/staff\/ai\/budget|\/api\/staff\/security\/(logins|events)/.test(u);
+    const noise = (u = '') => /favicon|fonts\.googleapis|fonts\.gstatic|^data:|\/api\/staff\/auth\/me|\/api\/staff\/auth\/verify|\/api\/staff\/ai\/budget|\/api\/staff\/security\/(logins|events)/.test(u);
     const cs = (client.events.consoleErrors || []).filter((e) => !noise(e.url));
     if (cs.length) console.log('页面 console error 快照：\n' +
       cs.slice(0, 5).map((e) => `  [${e.url || ''}:${e.lineNumber || '?'}] ${e.text}`).join('\n'));
