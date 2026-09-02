@@ -1,21 +1,19 @@
 /* ================================================================
-   liquid-glass.js v2 — 全站液态玻璃（2026-09-02，站点 v0.2.9.0）
+   liquid-glass.js v2 — 全站液态玻璃（2026-09-03，站点 v0.2.9.1）
    ----------------------------------------------------------------
    移植自 rdev/liquid-glass-react 的 Apple Liquid Glass 效果，纯 CSS+JS（ES5），
    站点零 React。v2 扩展为全站玻璃面统一引擎：
      · 双 SVG 滤镜：#lg-glass-filter（大面，scale 70）、#lg-glass-filter-sm
        （编辑器小卡，scale 35——feDisplacementMap scale 是 px 单位，-70 在
        194px 卡上≈35% 宽会暴烈）
-     · 弹性模式（卡片）：鼠标靠近拉伸回弹+高光跟随，rAF lerp 逐帧写 6 个 CSS
-       变量 + inline transform（与外部旋转 base 组合，不覆盖编辑器 rotate）
-     · 静态模式（大面板）：只注入折射层+高光层，零 rAF 零 transform 写——
-       面板自身动画（modal scale/plan hover/mre 滑入）原样保留
-     · 层挂 z:-1：垫在父半透明底之上、内容之下（父须建层叠上下文，见 CSS）
-   CSS 变量（弹性帧写）：--lg-tx/--lg-ty（px）、--lg-sx/--lg-sy、--lg-px/--lg-py（%）。
+     · v0.2.9.1 撤销轮（用户 2026-09-03：「Q弹很丑」+「除液态玻璃外全部还原」）：
+       弹性/鼠标跟手全部下线——所有面一律静态玻璃（折射+背层模糊+镜面高光），
+       零 transform 写、零鼠标监听；面自身定位/层级/模糊保持原本 CSS 规则。
+     · 层挂 z:-1：垫在父半透明底之上、内容之下（玻璃面自带 backdrop-filter/
+       定位即层叠上下文，负 z 层不上逃；本脚本不再改面自身样式）
    公开 API：window.LG = { apply, remove, scan, version, _els }——动态内容（编辑器
    卡片/动态面板）用 LG.apply/LG.scan 挂载。
-   优雅降级：滤镜缺失时 .lg-active/.lg-static 不挂、面保持原样；
-   prefers-reduced-motion：全部按静态玻璃处理，不跟踪鼠标。
+   优雅降级：滤镜缺失时 .lg-static 不挂、面保持原样。
    ================================================================ */
 (function () {
   'use strict';
@@ -114,11 +112,14 @@
     return true;
   }
 
-  /* ---------- 每面初始化（幂等；静态不入 els 零 rAF） ---------- */
+  /* ---------- 每面初始化（幂等；v0.2.9.1 起全站只有静态模式） ---------- */
   function applyOn(el, opts) {
     if (el._lg || el._lgStatic) return false;
     var o = opts || {};
-    var mode = reduced ? 'static' : (o.mode || 'elastic');
+    /* v0.2.9.1 撤销轮（用户：「Q弹很丑」+「除液态玻璃外全部还原」）：
+       弹性/跟手全部下线，所有面一律静态玻璃——零 transform 写、零鼠标监听，
+       面自身定位/层级/模糊保持原本规则，本脚本不再碰。 */
+    var mode = 'static';
     var bd = document.createElement('div');
     bd.className = 'lg-backdrop';
     bd.setAttribute('aria-hidden', 'true');
@@ -312,23 +313,16 @@
   function onResize() { onScroll(); }
 
   function init() {
-    reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     scan(document);
-    wake(); /* 首帧把静止值写进 CSS 变量/transform（电池可断言确定初值） */
-    if (!reduced) {
-      window.addEventListener('mousemove', onMove, { passive: true });
-      document.addEventListener('mouseleave', onLeave);
-      document.addEventListener('click', onClick, true);
-      window.addEventListener('scroll', onScroll, { capture: true, passive: true });
-      window.addEventListener('resize', onResize);
-    }
+    /* v0.2.9.1：弹性下线后不再注册任何鼠标/滚动监听——els[] 恒空，
+       零 rAF 零 transform 写（弹性物理代码保留未删，只是永不被挂载） */
   }
 
   window.LG = {
     apply: applyOn,
     remove: remove,
     scan: scan,
-    version: 'v0.2.9.0',
+    version: 'v0.2.9.1',
     _els: function () { return els.length; } /* 电池断言用 */
   };
 

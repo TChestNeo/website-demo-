@@ -1557,32 +1557,25 @@ html.fc-guest .fc-locked-hero {
   text-align: center;
 }
 
-/* ── 液态玻璃 v2（2026-09-02 v0.2.9.0：全站玻璃面统一 rdev 液态玻璃引擎）
+/* ── 液态玻璃 v2.1（2026-09-03 v0.2.9.1 撤销轮：弹性下线、面自身样式全还原）
    liquid-glass.js 注入 .lg-backdrop（背层模糊+SVG 折射色散）与 .lg-specular
-   （镜面高光）两层，挂 z:-1 垫在父半透明底之上、内容之下（父建层叠上下文）。
-   卡片弹性（JS 逐帧写 inline transform+6 CSS 变量）、大面板静态（零 rAF）。
-   无 JS/滤镜缺失：类不挂、面保持原样（优雅降级）。 ── */
+   （镜面高光）两层，挂 z:-1 垫在父半透明底之上、内容之下。v0.2.9.0 的
+   「挂载态 blanket」（position:relative / z-index:0 / backdrop-filter:none）
+   已整体删除——用户 2026-09-03：「除液态玻璃外全部还原」：面自身定位/层级/
+   模糊保持原本 CSS 规则（玻璃面自带 backdrop-filter/定位即层叠上下文，负 z
+   层不上逃），不再有位置被改的副作用。 ── */
 
-/* 挂载态：父建层叠上下文（负 z 层不上逃）+ 定位锚；父面旧模糊移交背层（防双层叠加）。
-   !important：压过主样式体与页内同款 backdrop-filter（侧栏折叠/编辑器组内成员等 0,3,0 规则） */
-.lg-active, .lg-static {
-  position: relative;
-  z-index: 0;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-/* auth-card 原 z:2（主样式体 0,1,0 早于本块被压）补回 */
-.auth-card.lg-static { z-index: 2; }
+/* v0.2.9.0 blanket 与 auth-card z 补回规则已删（面原本 z:2 规则原样生效） */
 
-/* 旧 v0.2.8.0 的 .liquid-glass > * 提层规则删除：层已挂 z:-1 内容自然画其上；
-   提层会破坏 auth-card 绝对定位 tabs 与编辑器负 z 板/染层 */
-
-/* 弹性 hero 亮环（rdev 静环：mask-composite Chrome 不渲染 → inset box-shadow；
-   transform 由 JS 写 inline，类规则不碰） */
-.liquid-glass.lg-active {
+/* hero 亮环（rdev 静环：mask-composite Chrome 不渲染 → inset box-shadow；
+   全静态后无 transform 写，环恒静）。访客 hero 增特异性：
+   html.mn-guest .guest-hero 的 box-shadow:var(--shadow-md)（0,2,1）会压过本环（0,2,0） */
+.liquid-glass.lg-static,
+html.mn-guest .guest-hero.liquid-glass.lg-static {
   box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
-:root[data-theme="dark"] .liquid-glass.lg-active {
+:root[data-theme="dark"] .liquid-glass.lg-static,
+:root[data-theme="dark"] html.mn-guest .guest-hero.liquid-glass.lg-static {
   box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
 }
 
@@ -1635,16 +1628,16 @@ html.fc-guest .fc-locked-hero {
 }
 
 /* 编辑器门控：玻璃族之外的卡 / 主题卡（card-edge）/ 外板 / 图底 → 层藏起
-   （apply 时早退态与后到主题态同一条规则一网打尽）；组内成员卡面由组背景
-   接管（v10.28.17.2 口径：成员自身 backdrop-filter:none 管不到注入层，
+   （v0.2.9.1 弹性下线后全部是 .lg-static，门控选择器同步换类）；组内成员卡面
+   由组背景接管（v10.28.17.2 口径：成员自身 backdrop-filter:none 管不到注入层，
    漏门即回归用户 9-02「独立背景」投诉） */
-.grid-card.lg-active:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-backdrop,
-.grid-card.lg-active:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-specular,
-.grid-card.lg-active.has-outer-bg > .lg-backdrop, .grid-card.lg-active.has-outer-bg > .lg-specular,
-.grid-card.lg-active.has-card-bg-img > .lg-backdrop, .grid-card.lg-active.has-card-bg-img > .lg-specular,
-.grid-card.lg-active[class*="card-edge-"] > .lg-backdrop, .grid-card.lg-active[class*="card-edge-"] > .lg-specular,
-.lg-active[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-backdrop,
-.lg-active[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-specular {
+.grid-card.lg-static:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-backdrop,
+.grid-card.lg-static:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-specular,
+.grid-card.lg-static.has-outer-bg > .lg-backdrop, .grid-card.lg-static.has-outer-bg > .lg-specular,
+.grid-card.lg-static.has-card-bg-img > .lg-backdrop, .grid-card.lg-static.has-card-bg-img > .lg-specular,
+.grid-card.lg-static[class*="card-edge-"] > .lg-backdrop, .grid-card.lg-static[class*="card-edge-"] > .lg-specular,
+.lg-static[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-backdrop,
+.lg-static[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-specular {
   display: none !important;
 }
 

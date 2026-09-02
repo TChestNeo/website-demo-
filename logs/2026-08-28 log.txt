@@ -819,3 +819,11 @@ FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中�
 ⑦编辑器 boot 零卡是正常态（preset 169 空+loadDraft 空草稿）——电池用暴露钩子 window.createContentCard/createFlagCard/createAssetCard 建卡；rotateCard(deg) 只认全局 selectedCard——真实路径必须先点击选中卡再调。
 ⑧smoke-admin 的 console error 收集器要过滤 data: URI（液态玻璃 feImage 的 data:image/jpeg 加载日志会被 Log.entryAdded 报成 error，LG 电池同款过滤）。
 ⑨PS5.1 重定向 native stderr（2>$null）时 $? 会误报 false 即使 exit 0（NativeCommandError 包装）——docker build 成败只看 $LASTEXITCODE，08-28 教训再证一次。
+
+
+
+── 2026-09-03（rev 00060-h5d，v0.2.9.1 撤销轮，commit 待打）──
+用户（09-03）：「根菜单跑到下方」+「Q弹很丑」+「把刚才除了液态玻璃以外的东西都变回原本的样子」。
+改动：liquid-glass.js 全站仅静态模式（弹性物理保留为死代码：零 rAF/零 transform 写/零鼠标监听/_els()=0）；ethereal.css v0.2.9.0 blanket（position:relative/z-index:0/backdrop-filter:none!important）整体删除——面自身定位/层级/模糊全回原本 CSS；auth-card z 补回规则同删；门控/亮环选择器 .lg-active→.lg-static；访客 hero 亮环增特异性（html.mn-guest .guest-hero 的 box-shadow 0,2,1 曾压过环 0,2,0）。
+验证：新电池 tmp-battery-liquid-glass-static.js 17/17 本地+线上；smoke-admin 49/49；curl 七连 200+health 57 表。
+教训 ⑩：编辑器 setCardEdge(name) 只吃一个参数且带订阅门槛——电池门控用合成卡（mk('content-card card-edge-none')+lg-static 类）绕过，同 v2 电池口径。
