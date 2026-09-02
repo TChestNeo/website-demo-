@@ -1650,6 +1650,14 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   display: none !important;
 }
 
+/* 侧栏导航滚动条隐藏（用户 2026-09-03「把左侧根菜单的上下滑轨隐藏」）——滚动功能保留，
+   只藏滑轨；nav-module 带 .custom-scrollbar 类，此规则置后压过 */
+.nav-module {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* 旧 Edge/IE */
+}
+.nav-module::-webkit-scrollbar { display: none; }
+
 /* 侧栏导航模块层：absolute 出流（2026-09-03 用户「左侧菜单空出很多空位要下滑才看见」——
    sticky 在流内占整段高度，两张层把菜单顶到卡片下方 2 倍高度处；实测菜单项 t=1277 vs 卡片顶 t=258）；
    模块需建包含块（负偏移补 padding；% 高按模块内容盒解析）；brand/user 模块普通 absolute */

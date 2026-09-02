@@ -834,3 +834,8 @@ FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中�
 修：层改 absolute 出流 + .nav-module.lg-static 补 position:relative 建包含块（零视觉位移）；电池新增 A6 回归断言。
 验证：电池 18/18 本地+线上、smoke-admin 49/49、curl 七连 200、health 57 表。
 教训 ⑪：sticky 在流内占位——覆盖层想「钉滚动视口」必须出流；CDP 几何探针（rect+子序+scrollHeight）比计算样式更能抓布局位移。
+
+── 2026-09-03（rev 00062-8dq，v0.2.9.3 侧栏滚动条隐藏，commit 待打）──
+用户：「把左侧根菜单的上下滑轨隐藏」。
+改：.nav-module scrollbar-width:none + -ms-overflow-style:none + ::-webkit-scrollbar display:none（滚动功能保留只藏滑轨；置后压过 custom-scrollbar 类 6px 细轨）；电池新增 A7 断言。
+验证：电池 19/19 本地+线上、smoke-admin 49/49、curl 七连 200、health 57 表。
