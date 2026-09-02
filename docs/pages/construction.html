@@ -1673,11 +1673,13 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   display: none !important;
 }
 
-/* 侧栏导航模块内滚：层改 sticky 钉滚动视口（负偏移补 padding；% 高按模块
-   内容盒解析），不滚时退化为盖满=absolute 等价；brand/user 模块普通 absolute */
+/* 侧栏导航模块层：absolute 出流（2026-09-03 用户「左侧菜单空出很多空位要下滑才看见」——
+   sticky 在流内占整段高度，两张层把菜单顶到卡片下方 2 倍高度处；实测菜单项 t=1277 vs 卡片顶 t=258）；
+   模块需建包含块（负偏移补 padding；% 高按模块内容盒解析）；brand/user 模块普通 absolute */
+.nav-module.lg-static { position: relative; }
 .nav-module.lg-static > .lg-backdrop,
 .nav-module.lg-static > .lg-specular {
-  position: sticky;
+  position: absolute;
   top: calc(-1 * var(--space-sm));
   left: calc(-1 * var(--space-sm));
   right: auto;

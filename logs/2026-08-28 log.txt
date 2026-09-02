@@ -827,3 +827,10 @@ FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中�
 改动：liquid-glass.js 全站仅静态模式（弹性物理保留为死代码：零 rAF/零 transform 写/零鼠标监听/_els()=0）；ethereal.css v0.2.9.0 blanket（position:relative/z-index:0/backdrop-filter:none!important）整体删除——面自身定位/层级/模糊全回原本 CSS；auth-card z 补回规则同删；门控/亮环选择器 .lg-active→.lg-static；访客 hero 亮环增特异性（html.mn-guest .guest-hero 的 box-shadow 0,2,1 曾压过环 0,2,0）。
 验证：新电池 tmp-battery-liquid-glass-static.js 17/17 本地+线上；smoke-admin 49/49；curl 七连 200+health 57 表。
 教训 ⑩：编辑器 setCardEdge(name) 只吃一个参数且带订阅门槛——电池门控用合成卡（mk('content-card card-edge-none')+lg-static 类）绕过，同 v2 电池口径。
+
+── 2026-09-03（rev 00061-5dm，v0.2.9.2 左侧菜单空位修复，commit 待打）──
+用户：「左侧根菜单位置不是在他的卡片的上方…空出很多空位要向下滑才能看见菜单」。
+真身：nav-module 玻璃层 position:sticky 在流内各占整段高（实测菜单项 t=1277 vs 卡片顶 258）——v0.2.9.0 玻璃轮带入，昨日「根菜单跑到下方」同源。
+修：层改 absolute 出流 + .nav-module.lg-static 补 position:relative 建包含块（零视觉位移）；电池新增 A6 回归断言。
+验证：电池 18/18 本地+线上、smoke-admin 49/49、curl 七连 200、health 57 表。
+教训 ⑪：sticky 在流内占位——覆盖层想「钉滚动视口」必须出流；CDP 几何探针（rect+子序+scrollHeight）比计算样式更能抓布局位移。
