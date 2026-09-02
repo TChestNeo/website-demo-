@@ -1926,6 +1926,62 @@ html.fc-guest .fc-locked-hero {
       font-size: 20px; color: var(--color-outline); pointer-events: none;
     }
     .input-icon input { padding-left: 44px; }
+    /* 2026-09-02 注册第二页 UI bug 修复（教训 ⑥㊹）：
+       08-29 auth v2 重构后 ethereal.css 的 .auth-card 改竖排定高 800px+overflow:hidden、
+       .auth-left/.auth-right 样式被移除——本页仍用旧双栏标记：竖排堆叠、左栏白字无蓝底
+       （步骤卡隐形）、表单底部被裁（电池实测 Next Step 底 1037 > 卡底 824）。
+       页内自愈恢复旧双栏基线（只作用于本页，不动共享 ethereal.css）；
+       overflow 改 visible（国家下拉菜单新增于重构后，hidden 会裁掉菜单）；
+       左/右栏补 border-radius 补齐失去的卡片圆角裁切。 */
+    .auth-card {
+      flex-direction: row;
+      height: auto;
+      overflow: visible;
+    }
+    .auth-left {
+      width: 42%;
+      background: linear-gradient(135deg, var(--color-primary), #3b3dc4);
+      color: white;
+      padding: var(--space-xl) var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    }
+    .auth-left::before {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+      top: -80px; right: -80px;
+    }
+    .auth-left::after {
+      content: '';
+      position: absolute;
+      width: 200px; height: 200px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+      bottom: -40px; left: -60px;
+    }
+    .auth-right {
+      flex: 1;
+      background: var(--card-bg);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      padding: var(--space-xl) var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    }
+    @media (max-width: 768px) {
+      .auth-card { flex-direction: column; }
+      .auth-left { width: 100%; padding: var(--space-lg); border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+      .auth-right { border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+    }
   </style>
 </head>
 <body class="onboarding-bg pre-stagger">

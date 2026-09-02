@@ -48,7 +48,8 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.6.1 = 注册步骤指示器修正（用户「注册的第一个页面为什么明明还没有完成就已经打勾了？然后那个打勾能不能改成蓝色的」）：
 //   注册页蓝板步骤指示器首步「Create account」误标 completed（还没注册就打勾）→ 改 active 显示数字 1（白底蓝字在蓝板上反相高亮）；
 //   completed 勾全站改品牌蓝（.progress-step.completed .dot 绿 #22c55e → var(--color-primary)，create-topic 两页内联绿一并清）（补丁位 0→1·修复轮；2026-09-01）
-window.MN_SITE_VERSION = 'v0.2.6.2';
+// v0.2.6.3 = 注册第二页 UI 修复（用户「那个注册手续的第二页的Ui 有bug」）：08-29 auth v2 重构后 ethereal.css 的 .auth-card 改竖排定高 800px+overflow:hidden、.auth-left/.auth-right 样式被移除——本页仍用旧双栏标记：竖排堆叠、左栏白字无蓝底（步骤卡隐形）、表单底部被裁（电池实测 Next Step 底 1037 > 卡底 824）；页内自愈恢复旧双栏基线（row/height auto/overflow visible——国家下拉菜单新增于重构后 hidden 会裁菜单，左/右栏补 border-radius 补齐失去的卡圆角裁切），不动共享 ethereal.css（补丁位 2→3·修复轮；2026-09-02）
+window.MN_SITE_VERSION = 'v0.2.6.3';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
