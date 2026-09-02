@@ -2037,6 +2037,25 @@ html.fc-guest .fc-locked-hero {
         </div>
       </div>
 
+      <!-- 2026-09-02 用户「在第二项那边添加一个性别选择栏，包含男/女/其他」：显示名后第二项，同语言下拉模式（Male/Female/Other，站点英文口径） -->
+      <div class="form-group">
+        <label class="form-label">Gender <span style="color:var(--color-error)">*</span></label>
+        <div style="position:relative" id="genderDropdown">
+          <div class="input-glass flex-between" onclick="toggleGenderDropdown()" style="cursor:pointer" id="genderSelector">
+            <span style="display:flex;align-items:center;gap:10px">
+              <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline)">wc</span>
+              <span id="selectedGender" style="color:var(--color-outline)">Select gender</span>
+            </span>
+            <span class="material-symbols-outlined" id="genderArrow" style="font-size:20px;color:var(--color-outline);transition:transform 0.2s">expand_more</span>
+          </div>
+          <div class="dropdown-menu" id="genderMenu">
+            <div class="dropdown-option" onclick="selectGender('Male')">Male</div>
+            <div class="dropdown-option" onclick="selectGender('Female')">Female</div>
+            <div class="dropdown-option" onclick="selectGender('Other')">Other</div>
+          </div>
+        </div>
+      </div>
+
       <div class="form-group">
         <label class="form-label">Primary Language <span style="color:var(--color-error)">*</span></label>
         <div style="position:relative" id="langDropdown">
@@ -2123,6 +2142,31 @@ html.fc-guest .fc-locked-hero {
     document.getElementById('selectedLang').style.color = '';
   }
 
+  // Gender dropdown（2026-09-02 第二项：同语言下拉模式；回显=user.gender——只存不回显是 v0.2.6.2 生日同款坑，先补上）
+  var selectedGender = user.gender || '';
+  var genderOpen = false;
+
+  function toggleGenderDropdown() {
+    genderOpen = !genderOpen;
+    document.getElementById('genderMenu').classList.toggle('open', genderOpen);
+    document.getElementById('genderArrow').style.transform = genderOpen ? 'rotate(180deg)' : '';
+  }
+
+  function selectGender(g) {
+    selectedGender = g;
+    document.getElementById('selectedGender').textContent = g;
+    document.getElementById('selectedGender').style.color = '';
+    genderOpen = false;
+    document.getElementById('genderMenu').classList.remove('open');
+    document.getElementById('genderArrow').style.transform = '';
+  }
+
+  // Init gender selection
+  if (selectedGender) {
+    document.getElementById('selectedGender').textContent = selectedGender;
+    document.getElementById('selectedGender').style.color = '';
+  }
+
   // Country list
   var countries = [
     'Afghanistan','Albania','Algeria','Andorra','Angola','Antigua and Barbuda','Argentina','Armenia','Australia','Austria','Azerbaijan',
@@ -2198,6 +2242,11 @@ html.fc-guest .fc-locked-hero {
       document.getElementById('langMenu').classList.remove('open');
       document.getElementById('langArrow').style.transform = '';
     }
+    if (genderOpen && !document.getElementById('genderDropdown').contains(e.target)) {
+      genderOpen = false;
+      document.getElementById('genderMenu').classList.remove('open');
+      document.getElementById('genderArrow').style.transform = '';
+    }
   });
 
   // Init country selection
@@ -2210,6 +2259,8 @@ html.fc-guest .fc-locked-hero {
   function handleNext() {
     var name = document.getElementById('displayName').value.trim();
     if (!name) { showError('Please enter your display name'); return; }
+    // 2026-09-02 用户「在第二项那边添加一个性别选择栏」：性别必填同四字段口径（* 红标+拦截）
+    if (!selectedGender) { showError('Please select your gender'); return; }
     if (!selectedLang) { showError('Please select your primary language'); return; }
     if (!selectedCountry) { showError('Please select your country'); return; }
     // 2026-09-01 用户「第二页要求一定要选择生日，国家位置，和语言」：生日此前不校验可空过 → 补必填（语言/国家已有校验）
@@ -2218,6 +2269,7 @@ html.fc-guest .fc-locked-hero {
     SlatiDB.saveUser({
       displayName: name,
       email: user.email || '',
+      gender: selectedGender,
       language: selectedLang,
       country: selectedCountry,
       dob: document.getElementById('dob').value,
