@@ -1589,6 +1589,31 @@ html.fc-guest .fc-locked-hero {
   text-align: center;
 }
 
+/* ── 液态玻璃（2026-09-02 v0.2.8.0：rdev/liquid-glass-react 移植，纯 CSS+JS）── */
+/* .lg-active 由 liquid-glass.js 在滤镜注入成功后挂上——无 JS/滤镜缺失时卡片保持原样（优雅降级）。
+   折射层与高光层 pointer-events:none，永不挡点击；内容层 z-index:1 压在上面保持文字清晰 */
+.liquid-glass.lg-active {
+  position: relative; /* 子折射层绝对定位的锚（hero 本身 display:flex 未定位） */
+  transform: translate3d(var(--lg-tx, 0px), var(--lg-ty, 0px), 0) scaleX(var(--lg-sx, 1)) scaleY(var(--lg-sy, 1));
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+:root[data-theme="dark"] .liquid-glass.lg-active {
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+.liquid-glass > *:not(.lg-backdrop):not(.lg-specular) { position: relative; z-index: 1; }
+.lg-backdrop {
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0;
+  border-radius: inherit; pointer-events: none;
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  backdrop-filter: blur(6px) saturate(140%);
+  filter: url(#lg-glass-filter); /* SVG 置换折射 + 三通道色散 */
+}
+.lg-specular {
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0;
+  border-radius: inherit; pointer-events: none;
+  background: radial-gradient(circle at var(--lg-px, 50%) var(--lg-py, 50%), rgba(255, 255, 255, 0.16), transparent 60%);
+}
+
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/

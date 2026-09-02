@@ -50,7 +50,8 @@ window.MN_SITE = window.MN_SITE || {};
 //   completed 勾全站改品牌蓝（.progress-step.completed .dot 绿 #22c55e → var(--color-primary)，create-topic 两页内联绿一并清）（补丁位 0→1·修复轮；2026-09-01）
 // v0.2.6.3 = 注册第二页 UI 修复（用户「那个注册手续的第二页的Ui 有bug」）：08-29 auth v2 重构后 ethereal.css 的 .auth-card 改竖排定高 800px+overflow:hidden、.auth-left/.auth-right 样式被移除——本页仍用旧双栏标记：竖排堆叠、左栏白字无蓝底（步骤卡隐形）、表单底部被裁（电池实测 Next Step 底 1037 > 卡底 824）；页内自愈恢复旧双栏基线（row/height auto/overflow visible——国家下拉菜单新增于重构后 hidden 会裁菜单，左/右栏补 border-radius 补齐失去的卡圆角裁切），不动共享 ethereal.css（补丁位 2→3·修复轮；2026-09-02）
 // v0.2.7.0 = 注册第二页性别选择栏（用户「在第二项那边添加一个 性别选择栏，包含男/女/其他」）：显示名后第二项 Gender 下拉（Male/Female/Other 站点英文口径，同语言下拉模式：selector+menu+wc 图标+箭头翻转+外点收起），必填同四字段口径（* 红标+handleNext 拦截）；gender 存 saveUser 并回显（只存不回显是 v0.2.6.2 生日同款坑，一步到位）（小改动位 6→7·新功能轮·补丁清零；2026-09-02）
-window.MN_SITE_VERSION = 'v0.2.7.0';
+// v0.2.8.0 = 液态玻璃效果（用户「https://github.com/rdev/liquid-glass-react 这个react也安装一下」→问询钦定「移植效果到站点」）：rdev/liquid-glass-react 是 React 组件库、站点零 React——手译成纯 CSS+JS：liquid-glass.js 注入共享 SVG 滤镜 #lg-glass-filter（置换图折射+三通道色散 -70/-77/-84+边缘掩膜）+ .lg-backdrop 折射层/.lg-specular 高光层（均 pointer-events:none 不挡点击），rAF 逐帧 lerp 弹性跟随（rdev 公式：激活区 200px/弹性 0.15/方向缩放下限 0.8/高光阻尼 0.6），挂首页访客引导卡+FC 登录引导卡；prefers-reduced-motion 只留静态玻璃、无 JS 不挂 .lg-active 优雅降级（小改动位 7→8·新功能轮·补丁清零；2026-09-02）
+window.MN_SITE_VERSION = 'v0.2.8.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
