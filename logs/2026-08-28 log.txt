@@ -844,3 +844,28 @@ FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中�
 实现：首页公告列表每项按与光标距离上浮——左侧列内 mousemove 时 ≤240px 范围内 translateY 上浮（最近项 10px、二次缓降 t²），范围外归零、移出列重置、rect 缓存 TTL 500ms（入场动画漂移自愈）、滚动/缩放失效、reduced-motion 跳过；页内样式块 #dashAnnouncements .card transition !important 压过 transitions.js 入场 inline 0.4s（橡皮筋坑——否则上浮拖 0.4s 成 Q弹）+opacity 0.4s 保入场淡入；零共享文件改动（不动 ethereal.css、不重跑 inline-css）
 电池：tmp-battery-announce-hover.js 10 项断言（CDP Input 真鼠标 + 读 inline transform 目标值防 0.18s transition 竞态 + 等入场 stagger 落定再动鼠）；本地 10/10 + 线上 10/10 + smoke-admin 49/49 + curl 七连 200 + health 57 表
 部署 revision mnationworld-web-00063-f42
+
+──────────── v0.2.11.0 后端用户性别记录轮（2026-09-03，rev 00064-wgt）
+用户：「在后端做一下用户性别的记录，然后在用户资料里也单独显示」+ 追加口径「不要把信息只做localStorage」。
+排查：性别此前只存前端 localStorage（v0.2.7.0 注册第二页 Gender 下拉），handleNext 零 API 调用。
+后端：migration 013 users 加 gender 列（Male/Female/Other，路由层校验同 dob 模式；旧用户 NULL=未填写）；
+  PATCH /me 接受 gender（非法值 400）+ publicUser 返回 gender（/me 权威回读不丢）+ profile_update 审计 next 含 gender；
+  staff 详情 maskUserRow 返回 gender。
+前端：storage.js mirrorProfile 同步列表加 gender（saveUser 自动镜像后端）；
+  settings Profile 区新增 Gender 单独一行只读展示（未填写显示 —）；
+  admin 用户详情基本信息加「性别」行。
+测试：188/188（migrations 版本 12→13 + 013 列断言 + PATCH gender 合法/非法/审计断言；health.test 版本断言同步）；
+  冒烟 49/49；电池 tmp-battery-gender-profile.js 4/4 本地+线上（版本/Gender 行回显 Female/未填写 —/0 error）；
+  部署后 curl 七连 + health 57 表 + /api/auth/me 无会话 401。
+版本：站点 v0.2.10.0 → v0.2.11.0（小改动位 10→11·新功能轮·补丁清零）；FC 线不动（v10.28.18.1）。
+──────────── v0.2.11.1 Community 搜索胶囊 UI 适配轮（2026-09-03，rev 00065-7zw）
+用户：「Community 页顶部的输入框的Ui能不能做适配」→ 问询钦定「就只是Ui适配 和手机无关」。
+改（docs/pages/community-hub.html 页内 CSS，零共享文件、不动 ethereal.css 不重跑 inline-css）：
+  .search-capsule 按站点 .input-glass 语言适配——常态底 --input-bg（修复此前常驻 focus 底观感）、描边 --color-outline-variant；
+  悬停品牌蓝描边 rgba(70,72,212,0.45)+底提亮；聚焦品牌蓝实描边+0.1 蓝环+底提亮+放大镜图标转品牌蓝（带 color 0.2s）；
+  transition all 0.2s 与 .input-glass 同款；胶囊形状/宽度不动。
+版本：站点 v0.2.11.0 → v0.2.11.1（补丁位 0→1·观感微调轮）；FC 线不动（v10.28.18.1）。
+电池：tmp-battery-community-search-ui.js 6 项（版本/常态/真鼠标悬停/真点击聚焦+失焦还原/0 error；读 computed 等 300ms 过 0.2s 过渡）；
+  本地 6/6 + 线上 6/6 + smoke-admin 49/49 + curl 七连 200 + health 57 表。
+教训 ⑫：社区页线上 canonical URL 是 /pages/community-hub（entrypoint 按 docs/ 布局直服务，无 pages/ 回退）——
+  本地壳的 pages/ 回退掩盖了电池导航 URL 写错（/community-hub 线上 404）；电池导航必须用与线上一致的路径。

@@ -414,6 +414,9 @@ textarea.input-glass {
 }
 
 /* ----- Search Capsule ----- */
+/* 2026-09-03 用户「Community 页顶部的输入框的Ui能不能做适配」→「就只是Ui适配 和手机无关」：
+   按站点 .input-glass 语言适配——常态底 --input-bg（此前常驻 focus 底）、描边 --color-outline-variant；
+   悬停品牌蓝描边+底提亮；聚焦品牌蓝描边+0.1 蓝环+底提亮+放大镜图标转品牌蓝。胶囊形状不动。 */
 .search-capsule {
   display: flex;
   align-items: center;
@@ -421,12 +424,23 @@ textarea.input-glass {
   width: 320px;
   height: 40px;
   padding: 0 16px;
-  background: var(--input-bg-focus);
+  background: var(--input-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: var(--card-border);
+  border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-full);
+  transition: all 0.2s ease;
 }
+.search-capsule:hover {
+  border-color: rgba(70, 72, 212, 0.45);
+  background: var(--input-bg-focus);
+}
+.search-capsule:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(70, 72, 212, 0.1);
+  background: var(--input-bg-focus);
+}
+.search-capsule:focus-within .material-symbols-outlined { color: var(--color-primary); }
 .search-capsule input {
   flex: 1;
   border: none;
@@ -440,6 +454,7 @@ textarea.input-glass {
 .search-capsule .material-symbols-outlined {
   font-size: 20px;
   color: var(--color-outline);
+  transition: color 0.2s ease;
 }
 
 /* ----- Form Label ----- */
