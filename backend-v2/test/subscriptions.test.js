@@ -65,7 +65,7 @@ function paidSession(o) {
   return sessionEvent('checkout.session.completed', {
     evt: o.evt, id: o.id, payment_status: o.payment_status || 'paid',
     subscription: o.subscription, customer: o.customer, amount_total: o.amount_total ?? 2350,
-    currency: 'myr', mode: o.mode || 'subscription'
+    currency: o.currency || 'myr', mode: o.mode || 'subscription'
   });
 }
 
@@ -195,6 +195,86 @@ test('checkout once：mode 非法 400 / 缺一次性 Price ID → 409（回退�
     const alice = t.loginAs('alice@x.com');
     assert.strictEqual((await t.request('POST', '/api/subscription/checkout', { tierKey: 'premium', mode: 'bogus' }, { cookie: alice.cookie })).status, 400);
     assert.strictEqual((await t.request('POST', '/api/subscription/checkout', { tierKey: 'premium', mode: 'once' }, { cookie: alice.cookie })).status, 409);
+  } finally { await t.close(); }
+});
+
+// ── 多币种（v0.2.12.0）：STRIPE_CATALOG_B64 目录（usd+14 币，myr 仍走 legacy env）──
+function mkCatalog(cur) {
+  const c = {};
+  for (const k of Object.keys(PRICES)) c[k] = { sub: 'price_' + cur + '_' + k, once: 'price_' + cur + '_' + k + '_once' };
+  return c;
+}
+const CATALOG = { usd: mkCatalog('usd'), eur: mkCatalog('eur') };
+
+test('status：?currency=usd/eur 命中 catalog（hasPrice/hasOnce + onceMethods 纯卡）；myr 缺省仍走 legacy env', async () => {
+  const t = await testApp({ config: stripeConfig({ catalog: CATALOG }), fetchImpl: stripeStub().fetchImpl });
+  try {
+    const usd = await (await t.request('GET', '/api/subscription/status?currency=usd')).json();
+    assert.strictEqual(usd.enabled, true);
+    assert.strictEqual(usd.currency, 'usd');
+    assert.strictEqual(usd.prices.basic.hasPrice, true);
+    assert.strictEqual(usd.prices.premium.hasPrice, true);
+    assert.strictEqual(usd.prices.premium.hasOnce, true);
+    assert.strictEqual(usd.prices['pkg-ultra'].hasPrice, true); // 目录全 5 SKU
+    assert.deepStrictEqual(usd.onceMethods, ['card']);           // 非 myr 只挂卡
+
+    const eur = await (await t.request('GET', '/api/subscription/status?currency=eur')).json();
+    assert.strictEqual(eur.currency, 'eur');
+    assert.strictEqual(eur.prices.ultra.hasPrice, true);
+
+    const myr = await (await t.request('GET', '/api/subscription/status')).json();
+    assert.strictEqual(myr.currency, 'myr');                     // 缺省 = myr（legacy env 回归）
+    assert.strictEqual(myr.prices.premium.hasPrice, true);
+    assert.deepStrictEqual(myr.onceMethods, ['card', 'fpx', 'alipay', 'grabpay']);
+
+    const nope = await (await t.request('GET', '/api/subscription/status?currency=krw')).json(); // 目录外币：全假（不会崩）
+    assert.strictEqual(nope.prices.premium.hasPrice, false);
+    assert.strictEqual(nope.prices.premium.hasOnce, false);
+  } finally { await t.close(); }
+});
+
+test('checkout：currency=eur 用 catalog Price + 纯卡 + pending 行记 eur；目录外币 400', async () => {
+  const stub = stripeStub();
+  const t = await testApp({ config: stripeConfig({ catalog: CATALOG }), fetchImpl: stub.fetchImpl });
+  try {
+    const alice = t.loginAs('alice@x.com');
+    assert.strictEqual((await t.request('POST', '/api/subscription/checkout', { tierKey: 'krw', currency: 'premium' }, { cookie: alice.cookie })).status, 400); // tierKey 校验先行
+    assert.strictEqual((await t.request('POST', '/api/subscription/checkout', { tierKey: 'premium', currency: 'krw' }, { cookie: alice.cookie })).status, 400); // 目录外币拒绝
+
+    const d = await (await t.request('POST', '/api/subscription/checkout', { tierKey: 'premium', currency: 'eur' }, { cookie: alice.cookie })).json();
+    assert.match(d.url, /^https:\/\/checkout\.stripe\.com\//);
+    const row = t.db.prepare('SELECT * FROM payments WHERE user_id = ?').get(alice.user.id);
+    assert.strictEqual(row.currency, 'eur');                     // 结算币随行记录（webhook 对账用）
+    const form = Object.fromEntries(new URLSearchParams(stub.calls[0].opts.body).entries());
+    assert.strictEqual(form['line_items[0][price]'], 'price_eur_premium'); // 服务端解析 Price，前端给不了 id
+    assert.strictEqual(form['payment_method_types[0]'], 'card');
+    assert.strictEqual(form['payment_method_types[1]'], undefined); // 无 fpx/alipay/grabpay
+
+    // 全额 webhook（session 带真实 currency=eur）→ 照常开通
+    await postWebhook(t, paidSession({ evt: 'evt_eur_1', id: 'cs_test_1', subscription: 'sub_eur_1', customer: 'cus_eur_1', amount_total: 1199, currency: 'eur' }));
+    const paid = t.db.prepare('SELECT * FROM payments WHERE stripe_session_id = ?').get('cs_test_1');
+    assert.strictEqual(paid.status, 'paid');
+    assert.strictEqual(paid.currency, 'eur');
+    const me = t.db.prepare('SELECT tier FROM users WHERE id = ?').get(alice.user.id);
+    assert.strictEqual(me.tier, 'premium');
+  } finally { await t.close(); }
+});
+
+test('checkout once：currency=usd → 一次性 Price 来自目录 + 纯卡（无马区方式）', async () => {
+  const stub = stripeStub();
+  const t = await testApp({ config: stripeConfig({ catalog: CATALOG }), fetchImpl: stub.fetchImpl });
+  try {
+    const alice = t.loginAs('alice@x.com');
+    const d = await (await t.request('POST', '/api/subscription/checkout', { tierKey: 'ultra', mode: 'once', currency: 'usd' }, { cookie: alice.cookie })).json();
+    assert.match(d.url, /^https:\/\/checkout\.stripe\.com\//);
+    const row = t.db.prepare('SELECT * FROM payments WHERE user_id = ?').get(alice.user.id);
+    assert.strictEqual(row.currency, 'usd');
+    const form = Object.fromEntries(new URLSearchParams(stub.calls[0].opts.body).entries());
+    assert.strictEqual(form.mode, 'payment');
+    assert.strictEqual(form['line_items[0][price]'], 'price_usd_ultra_once');
+    assert.strictEqual(form['payment_method_types[0]'], 'card');
+    assert.strictEqual(form['payment_method_types[1]'], undefined);
+    assert.strictEqual(form['subscription_data[metadata][user_id]'], undefined);
   } finally { await t.close(); }
 });
 

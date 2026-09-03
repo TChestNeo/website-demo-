@@ -869,3 +869,12 @@ FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中�
   本地 6/6 + 线上 6/6 + smoke-admin 49/49 + curl 七连 200 + health 57 表。
 教训 ⑫：社区页线上 canonical URL 是 /pages/community-hub（entrypoint 按 docs/ 布局直服务，无 pages/ 回退）——
   本地壳的 pages/ 回退掩盖了电池导航 URL 写错（/community-hub 线上 404）；电池导航必须用与线上一致的路径。
+
+──────────── v0.2.12.0 Stripe 多币种轮（2026-09-04，rev 00066-c3t）
+用户：「能不能提供更多货币？网页有多少种就添加多少种」→ AskUserQuestion 两轮钦定：①15 主流币 usd/eur/gbp/sgd/aud/cad/jpy/hkd/twd/thb/idr/vnd/php/krw/inr（金额=页面现 USD 价目换算，马来西亚本地价 RM12 学生等不动）②「汇率低于马币的货币价格以马币为准，高于美金就以美金为准，所有价格的尾要么是X.99 要么是00」——弱币 {thb,idr,vnd,php,inr}（1 USD 换得比 MYR 多）按 MYR 价档换算、其余按 USD 价档；尾数 X.99/.00（jpy/krw/vnd 零小数整百/整千、idr 2dp 千位整 Rp 口径）。
+后端：Price 一律服务端解析（前端传的 price id 可伪造）——myr = legacy env 10 个 STRIPE_PRICE_* 原样（FPX/支付宝/GrabPay 马区方式保留）；usd+14 币 = STRIPE_CATALOG_B64 单 env（base64url 编码 JSON {currency:{tierKey:{sub,once}}}——9302 字符一个 env、免 gcloud 逗号拆参），config.js 启动解析、status?currency= 逐币回 prices/onceMethods（非 myr only card）、checkout 收 currency（未知币无价拒付）、payments 行记真实 currency、applyPaid/webhook 幂等不变；已建 150 Price（15 币×5 SKU×sub/once，金额单一来源 tmp-price-gen.js calc()，unit_amount 回显全验、重跑幂等只补缺）。
+前端同币同文：premium.html 100 行 locale 摆设表 → 16 行真实扣款币价目 literal（myr/usd 两行逐字保留原 ms-MY/en-US 值）；pricing.js 100 行装饰串表 → 16 币 premium 列 + data-slati-price 横幅显示实扣币；locale→币 chain（~370 行原样保留）+ 补 en-SG/en-PH 漏检（Singapore 分支置于 ms* 前——ms* 会撞 ms-SG）+ 欧元区主时区兜底（原链漏西/意/荷等 → 误落 usd，EU_TZ 数组 fallback）；非 16 币 locale → usd 显示+扣款自洽。
+premium 页静态 RM12 硬编码（matrix/plan-note/renderGuest）全部动态化 p.basic；startCheckout POST {tierKey, mode, currency}；status fetch 带 ?currency= 且回写 planNote 单次方式（真实 onceMethods：myr=card/fpx/alipay/grabpay、其余 card-only）。
+测试 191/191（+3 多币种：status 逐币 hasPrice / checkout eur 行 currency / 未知币 400）；电池 tmp-battery-premium-multi.js 33/33 线上（10 locale 场景 en-US/ms-MY/en-GB/en-SG/en-PH/de-DE/ja-JP/ko-KR/en-NZ→usd 兜底/th-TH 弱币：Emulation.setLocaleOverride+setTimezoneOverride 后真导航断言 SlatiPrice.currency+方案价 innerText 命中期望串+异币 sentinel 缺席；+ hub [data-slati-price] 角标 en-GB=£9.99 / ms-MY=RM23.50；+全程 0 脚本异常）；curl：status 16 币全覆盖（myr 四方式、其余 13 币 spot check card-only）+ eur/thb/zzz 不崩 + health 57 表 + premium.html 线上含 v0.2.12.0 多币 literal。
+版本：站点 v0.2.11.1 → v0.2.12.0（小改动位 11→12·新功能轮·补丁清零）；FC 线不动（v10.28.18.1）。
+教训 ⑬：CDP Emulation.setLocaleOverride + setTimezoneOverride 必须在导航前设——pricing.js 是加载期 IIFE，改完要重新导航才按新 locale 重算；断言「渲染的就是扣款币」用 innerText 命中期望串 + 异币 sentinel 缺席（页面脚本里的 literal 表不进 innerText，不会误伤）；线上 canonical URL 口径延续教训 ⑫（premium.html 电池导航直接 /pages/premium.html）。

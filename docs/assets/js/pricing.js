@@ -1,107 +1,26 @@
-// M.NationWorld — region-aware pricing detection
-// Shared across all pages with subscription cards
+// M.NationWorld — region-aware pricing detection（v0.2.12.0 多币种）
+// 16 币 = premium.html 同一价目（premium 列在此；label+premium 供 data-slati-price 横幅）；
+// 展示 locale → 币代码（CC 映射）→ 该币真实扣款价；非 16 币 locale → usd（显示 $ + 扣 USD，自洽）。
+// 金额生成见 tmp-price-gen.js（弱币 = MYR 档 / 其余 = USD 档换算，尾 X.99/.00）。
 (function(){
-  var prices = {
-    'ms-MY':  'RM23.50',
-    'zh-TW':  'NT$182.99',
-    'zh-HK':  'HK$44.99',
-    'zh-MO':  'MOP$45.99',
-    'id-ID':  'Rp 103,000',
-    'vi-VN':  '₫299,000',
-    'th-TH':  '฿399',
-    'my-MM':  'K 25,000',
-    'hi-IN':  '₹899',
-    'ur-PK':  '₨3,300',
-    'bn-BD':  '৳1,350',
-    'si-LK':  'රු3,600',
-    'ne-NP':  'रू1,600',
-    'dz-BT':  'Nu. 1,000',
-    'dv-MV':  'ރ185',
-    'fa-AF':  '؋870',
-    'kk-KZ':  '₸5,500',
-    'uz-UZ':  'so\'m 145,000',
-    'tk-TM':  'm 209',
-    'ky-KG':  'с 1,050',
-    'tg-TJ':  'с 130',
-    'en-AU':  'A$17.99',
-    'en-NZ':  'NZ$19.99',
-    'en-FJ':  'FJ$27.00',
-    'en-PG':  'K 47.00',
-    'en-WS':  'T 33',
-    'en-TO':  'T$28',
-    'en-ZA':  'R 219',
-    'en-NG':  '₦18,500',
-    'en-KE':  'KSh 1,550',
-    'en-GH':  'GH₵185',
-    'am-ET':  'Br 1,500',
-    'sw-TZ':  'TSh 31,000',
-    'en-UG':  'USh 44,000',
-    'ar-MA':  'MAD 120',
-    'ar-TN':  'DT 37',
-    'ar-DZ':  'DA 1,580',
-    'fr-SN':  '7,800 F',
-    'fr-CI':  '7,800 F',
-    'fr-CM':  '7,800 F',
-    'pt-AO':  'Kz 10,000',
-    'pt-MZ':  'MT 770',
-    'en-MU':  '₨ 545',
-    'en-BW':  'P 165',
-    'en-NA':  'N$219',
-    'en-ZM':  'ZK 320',
-    'ar-SD':  'SDG 7,500',
-    'rw-RW':  'FRw 15,500',
-    'en-GB':  '£9.99',
-    'nb-NO':  'kr 129',
-    'de-CH':  'CHF 11.00',
-    'de-LI':  'CHF 11.00',
-    'is-IS':  'kr 1,699',
-    'sq-AL':  'L 1,100',
-    'bs-BA':  'KM 22.00',
-    'sr-RS':  'RSD 1,300',
-    'sr-ME':  '€11.99',
-    'mk-MK':  'ден 690',
-    'ro-MD':  'MDL 215',
-    'uk-UA':  '₴450',
-    'be-BY':  'Br 39.00',
-    'ru-RU':  '₽1,090',
-    'fr-MC':  '€11.99',
-    'it-SM':  '€11.99',
-    'ca-AD':  '€11.99',
-    'de-DE':  '€11.99',
-    'fr-FR':  '€11.99',
-    'ja-JP':  '¥1,800',
-    'ko-KR':  '₩15,000',
-    'zh-CN':  '$11.99',
-    'en-CA':  'C$15.99',
-    'es-MX':  'MXN$230',
-    'ar-SA':  'SAR 44.99',
-    'ar-AE':  'AED 44.00',
-    'ar-QA':  'QAR 43.50',
-    'ar-KW':  'KWD 3.600',
-    'ar-BH':  'BHD 4.500',
-    'ar-OM':  'OMR 4.600',
-    'ar-JO':  'JOD 8.500',
-    'he-IL':  '₪45.00',
-    'ar-LB':  'LBP 1,070,000',
-    'ar-IQ':  'IQD 15,700',
-    'fa-IR':  'IRR 500,000',
-    'ar-EG':  'EGP 599',
-    'tr-TR':  'TRY 429',
-    'pt-BR':  'R$59.90',
-    'es-AR':  'ARS$12,000',
-    'es-CL':  'CLP$10,990',
-    'es-CO':  'COP$46,900',
-    'es-PE':  'S/45.90',
-    'es-UY':  '$U479',
-    'es-PY':  '₲87,000',
-    'es-BO':  'Bs 83',
-    'es-EC':  '$11.99',
-    'es-VE':  '$11.99',
-    'en-GY':  'G$2,500',
-    'nl-SR':  'SRD$439',
-    'fr-GF':  '€11.99',
-    'en-US':  '$11.99',
-    'default': '$11.99'
+  // {币: {label, premium}}——逐字同 premium.html 价目 premium 列
+  var PREM = {
+    'myr':{label:'MYR (RM)',premium:'RM23.50'},
+    'usd':{label:'USD ($)',premium:'$11.99'},
+    'eur':{label:'EUR (€)',premium:'€11.00'},
+    'gbp':{label:'GBP (£)',premium:'£9.99'},
+    'sgd':{label:'SGD (S$)',premium:'S$15.99'},
+    'aud':{label:'AUD (A$)',premium:'A$18.99'},
+    'cad':{label:'CAD (C$)',premium:'C$16.00'},
+    'jpy':{label:'JPY (¥)',premium:'¥1,800'},
+    'hkd':{label:'HKD (HK$)',premium:'HK$93.99'},
+    'twd':{label:'TWD (NT$)',premium:'NT$387.00'},
+    'thb':{label:'THB (฿)',premium:'฿186.99'},
+    'idr':{label:'IDR (Rp)',premium:'Rp 87,000'},
+    'vnd':{label:'VND (₫)',premium:'₫137,000'},
+    'php':{label:'PHP (₱)',premium:'₱311.99'},
+    'krw':{label:'KRW (₩)',premium:'₩16,000'},
+    'inr':{label:'INR (₹)',premium:'₹459.00'}
   };
 
   var loc = (navigator.language || 'en-US').toLowerCase();
@@ -111,7 +30,16 @@
   var key = 'default';
 
   // ── Timezone + language prefix detection (most accurate first) ──
+  // v0.2.12.0 新增 en-SG/en-PH（此前漏检 → 误落 default 美元）；须在 ms* 之前（ms-SG 语言前缀会撞马来自检）
 
+  // Singapore
+  if (tz.startsWith('Asia/Singapore') || loc === 'en-sg' || loc === 'zh-sg' || loc === 'ms-sg') {
+    key = 'en-SG';
+  }
+  // Philippines
+  else if (tz.startsWith('Asia/Manila') || loc === 'en-ph' || loc.startsWith('fil') || loc.startsWith('tl')) {
+    key = 'en-PH';
+  }
   // Malaysia: MY timezones, Malay language, or en-MY locale
   if (tz.startsWith('Asia/Kuala_Lumpur') || tz.startsWith('Asia/Kuching') || loc.startsWith('ms') || loc === 'en-my') {
     key = 'ms-MY';
@@ -373,17 +301,34 @@
     key = 'en-CA';
   }
 
-  // Expose for use on pricing page
+  // ── 展示 locale → 结算币（非 16 币一律 usd；欧元区多国共用 eur 一行）──
+  var CC = { 'ms-MY':'myr','zh-TW':'twd','zh-HK':'hkd','id-ID':'idr','vi-VN':'vnd','th-TH':'thb','hi-IN':'inr',
+    'en-SG':'sgd','en-PH':'php','en-AU':'aud','en-CA':'cad','en-GB':'gbp','ja-JP':'jpy','ko-KR':'krw',
+    'de-DE':'eur','fr-FR':'eur','fr-MC':'eur','it-SM':'eur','ca-AD':'eur','sr-ME':'eur','fr-GF':'eur' };
+  // 欧元区主时区兜底：原链只列 de/fr 语言 + 摩纳哥等小国，西/意/荷/葡等大欧元区漏检 → 误落 usd；
+  // 命中则借任一 eur 映射行（de-DE）定币。（非欧元区的欧洲国家时区已在上方各自分支捕获 → 走其 CC/默认 usd。）
+  var EU_TZ = ['Europe/Lisbon','Europe/Madrid','Europe/Paris','Europe/Berlin','Europe/Rome','Europe/Amsterdam',
+    'Europe/Brussels','Europe/Vienna','Europe/Warsaw','Europe/Prague','Europe/Budapest','Europe/Bucharest',
+    'Europe/Athens','Europe/Helsinki','Europe/Dublin','Europe/Luxembourg','Europe/Malta','Europe/Nicosia',
+    'Europe/Bratislava','Europe/Ljubljana','Europe/Zagreb','Europe/Sofia','Europe/Vilnius','Europe/Riga',
+    'Europe/Tallinn','Europe/Stockholm','Europe/Copenhagen'];
+  if (key === 'default' && EU_TZ.some(function (t) { return tz.startsWith(t); })) key = 'de-DE';
+  var currency = CC[key] || 'usd';
+  var row = PREM[currency] || PREM.usd;
+
+  // Expose for use on pricing page（currency = 实扣币；label/price = 该币显示值）
   window.SlatiPrice = {
     key: key,
-    price: prices[key] || prices['default'],
-    all: prices,
+    currency: currency,
+    label: row.label,
+    price: row.premium,
+    all: PREM,
     loc: loc,
     tz: tz
   };
 
   // Auto-apply to any element with [data-slati-price] attribute
   document.querySelectorAll('[data-slati-price]').forEach(function(el) {
-    el.textContent = prices[key] || prices['default'];
+    el.textContent = row.premium;
   });
 })();

@@ -2187,7 +2187,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   <!-- Feature Matrix -->
   <div class="card reveal reveal-d5" style="max-width:1050px;margin:0 auto var(--space-xl);padding:var(--space-lg)">
     <h2 class="headline-md" style="text-align:center;margin-bottom:var(--space-md)">Complete Feature Matrix</h2>
-    <p style="text-align:center;font-size:13px;color:#767586;margin-bottom:var(--space-lg)">注册默认免费「普通用户」层；Basic 为学生价方案（RM12/月），Premium / Ultra 提供更高能力</p>
+    <p id="basicNoteMatrix" style="text-align:center;font-size:13px;color:#767586;margin-bottom:var(--space-lg)">注册默认免费「普通用户」层；Basic 为学生价方案（RM12/月），Premium / Ultra 提供更高能力</p>
     <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse;font-size:14px">
       <thead>
@@ -2267,118 +2267,33 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
 <script>
-// P11 定价修复：包价 pkg* 不得镜像 tier 价。Overview.txt 只权威确定 MY/US 包价
-// （RM29.90/$12.99、RM60.90/$19.99）；其余 locale 按 USD 比价推导：pkgPremium=premium×12.99/11.99、pkgUltra=ultra×19.99/15.99。
+// v0.2.12.0 多币种价目：key = 结算币代码（SlatiPrice.currency 由 pricing.js 按 locale 解析）。
+// 金额按用户钦定 FX 口径生成（tmp-price-gen.js 2026-09-04）：弱币（idr/vnd/thb/php/inr，1 USD 换得比
+// MYR 多）→ MYR 本地价档换算（RM12/23.50/45.50/29.90/60.90 等）；其余 10 币 → USD 价档换算；
+// 尾数一律 X.99 / X.00（零小数币整百/整千）。myr/usd 两行 = 页面原 ms-MY/en-US 行逐字保留（锚本身）。
+// 显示与扣款同币（显示行仅供前端；实扣 Price ID 由后端按 currency 服务端解析）。
 var pricing = {
-  'zh-TW':{label:'TWD (NT$)',basic:'NT$92.99',premium:'NT$182.99',ultra:'NT$356.20',pkgPremium:'NT$198.99',pkgUltra:'NT$445.99',verify:'NT$123.99',boost:'NT$66.99',addonBasic:'NT$92.99',addonPlus:'NT$129.99',addonPremium:'NT$182.99',addonUltra:'NT$220.99'},
-  'zh-MO':{label:'MOP (MOP$)',basic:'MOP$22.99',premium:'MOP$45.99',ultra:'MOP$89.99',pkgPremium:'MOP$49.99',pkgUltra:'MOP$112.99',verify:'MOP$30.99',boost:'MOP$16.99',addonBasic:'MOP$22.99',addonPlus:'MOP$32.99',addonPremium:'MOP$45.99',addonUltra:'MOP$55.99'},
-  'zh-HK':{label:'HKD (HK$)',basic:'HK$22.99',premium:'HK$44.99',ultra:'HK$86.99',pkgPremium:'HK$48.99',pkgUltra:'HK$109.99',verify:'HK$30.99',boost:'HK$15.99',addonBasic:'HK$22.99',addonPlus:'HK$32.99',addonPremium:'HK$44.99',addonUltra:'HK$55.99'},
-  'id-ID':{label:'IDR (Rp)',basic:'Rp 52,600',premium:'Rp 103,000',ultra:'Rp 199,500',pkgPremium:'Rp 112,000',pkgUltra:'Rp 249,500',verify:'Rp 70,150',boost:'Rp 37,700',addonBasic:'Rp 52,600',addonPlus:'Rp 75,000',addonPremium:'Rp 103,000',addonUltra:'Rp 125,000'},
-  'ms-MY':{label:'MYR (RM)',basic:'RM12',premium:'RM23.50',ultra:'RM45.50',pkgPremium:'RM29.90',pkgUltra:'RM60.90',verify:'RM32.00',boost:'RM8.60',addonBasic:'RM10',addonPlus:'RM14',addonPremium:'RM20',addonUltra:'RM24'},
-  'en-US':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'},
-  'en-CA':{label:'CAD (C$)',basic:'C$7.99',premium:'C$15.99',ultra:'C$21.99',pkgPremium:'C$17.99',pkgUltra:'C$26.99',verify:'C$10.99',boost:'C$6.99',addonBasic:'C$7.50',addonPlus:'C$8.99',addonPremium:'C$10.99',addonUltra:'C$12.50'},
-  'es-MX':{label:'MXN ($)',basic:'MXN$115',premium:'MXN$230',ultra:'MXN$310',pkgPremium:'MXN$250',pkgUltra:'MXN$385',verify:'MXN$153',boost:'MXN$99',addonBasic:'MXN$105',addonPlus:'MXN$125',addonPremium:'MXN$155',addonUltra:'MXN$175'},
-  // ── South & Central Asia ──
-  'hi-IN':{label:'INR (₹)',basic:'₹449',premium:'₹899',ultra:'₹1,199',pkgPremium:'₹975',pkgUltra:'₹1,499',verify:'₹599',boost:'₹383',addonBasic:'₹413',addonPlus:'₹485',addonPremium:'₹599',addonUltra:'₹674'},
-  'ur-PK':{label:'PKR (₨)',basic:'₨1,650',premium:'₨3,300',ultra:'₨4,400',pkgPremium:'₨3,600',pkgUltra:'₨5,500',verify:'₨2,200',boost:'₨1,400',addonBasic:'₨1,500',addonPlus:'₨1,800',addonPremium:'₨2,200',addonUltra:'₨2,475'},
-  'bn-BD':{label:'BDT (৳)',basic:'৳675',premium:'৳1,350',ultra:'৳1,800',pkgPremium:'৳1,460',pkgUltra:'৳2,250',verify:'৳900',boost:'৳575',addonBasic:'৳620',addonPlus:'৳730',addonPremium:'৳900',addonUltra:'৳1,010'},
-  'si-LK':{label:'LKR (රු)',basic:'රු1,800',premium:'රු3,600',ultra:'රු4,800',pkgPremium:'රු3,900',pkgUltra:'රු6,000',verify:'රු2,400',boost:'රු1,530',addonBasic:'රු1,650',addonPlus:'රු1,950',addonPremium:'රු2,400',addonUltra:'රු2,700'},
-  'ne-NP':{label:'NPR (रू)',basic:'रू800',premium:'रू1,600',ultra:'रू2,150',pkgPremium:'रू1,740',pkgUltra:'रू2,660',verify:'रू1,050',boost:'रू685',addonBasic:'रू735',addonPlus:'रू865',addonPremium:'रू1,070',addonUltra:'रू1,200'},
-  'dz-BT':{label:'BTN (Nu.)',basic:'Nu. 500',premium:'Nu. 1,000',ultra:'Nu. 1,340',pkgPremium:'Nu. 1,085',pkgUltra:'Nu. 1,665',verify:'Nu. 667',boost:'Nu. 425',addonBasic:'Nu. 460',addonPlus:'Nu. 540',addonPremium:'Nu. 670',addonUltra:'Nu. 750'},
-  'dv-MV':{label:'MVR (ރ)',basic:'ރ92',premium:'ރ185',ultra:'ރ248',pkgPremium:'ރ200',pkgUltra:'ރ308',verify:'ރ123',boost:'ރ79',addonBasic:'ރ85',addonPlus:'ރ100',addonPremium:'ރ124',addonUltra:'ރ139'},
-  'fa-AF':{label:'AFN (؋)',basic:'؋435',premium:'؋870',ultra:'؋1,160',pkgPremium:'؋945',pkgUltra:'؋1,450',verify:'؋580',boost:'؋370',addonBasic:'؋400',addonPlus:'؋470',addonPremium:'؋580',addonUltra:'؋652'},
-  'kk-KZ':{label:'KZT (₸)',basic:'₸2,750',premium:'₸5,500',ultra:'₸7,350',pkgPremium:'₸5,975',pkgUltra:'₸9,150',verify:'₸3,650',boost:'₸2,350',addonBasic:'₸2,500',addonPlus:'₸2,975',addonPremium:'₸3,675',addonUltra:'₸4,125'},
-  'uz-UZ':{label:'UZS (so\'m)',basic:'so\'m 72,500',premium:'so\'m 145,000',ultra:'so\'m 194,000',pkgPremium:'so\'m 157,500',pkgUltra:'so\'m 241,000',verify:'so\'m 96,700',boost:'so\'m 62,000',addonBasic:'so\'m 66,500',addonPlus:'so\'m 78,500',addonPremium:'so\'m 97,000',addonUltra:'so\'m 109,000'},
-  'tk-TM':{label:'TMT (m)',basic:'m 105',premium:'m 209',ultra:'m 279',pkgPremium:'m 227',pkgUltra:'m 348',verify:'m 140',boost:'m 89',addonBasic:'m 96',addonPlus:'m 113',addonPremium:'m 140',addonUltra:'m 157'},
-  'ky-KG':{label:'KGS (с)',basic:'с 525',premium:'с 1,050',ultra:'с 1,400',pkgPremium:'с 1,140',pkgUltra:'с 1,750',verify:'с 700',boost:'с 448',addonBasic:'с 483',addonPlus:'с 567',addonPremium:'с 700',addonUltra:'с 788'},
-  'tg-TJ':{label:'TJS (с)',basic:'с 65',premium:'с 130',ultra:'с 174',pkgPremium:'с 141',pkgUltra:'с 216',verify:'с 87',boost:'с 55',addonBasic:'с 60',addonPlus:'с 70',addonPremium:'с 87',addonUltra:'с 98'},
-  // ── Oceania ──
-  'en-AU':{label:'AUD (A$)',basic:'A$8.99',premium:'A$17.99',ultra:'A$23.99',pkgPremium:'A$19.49',pkgUltra:'A$29.99',verify:'A$11.99',boost:'A$7.65',addonBasic:'A$8.25',addonPlus:'A$9.70',addonPremium:'A$11.99',addonUltra:'A$13.49'},
-  'en-NZ':{label:'NZD (NZ$)',basic:'NZ$9.99',premium:'NZ$19.99',ultra:'NZ$26.99',pkgPremium:'NZ$21.99',pkgUltra:'NZ$33.99',verify:'NZ$12.99',boost:'NZ$8.50',addonBasic:'NZ$9.20',addonPlus:'NZ$10.80',addonPremium:'NZ$13.40',addonUltra:'NZ$14.99'},
-  'en-FJ':{label:'FJD (FJ$)',basic:'FJ$13.50',premium:'FJ$27.00',ultra:'FJ$36.00',pkgPremium:'FJ$29.50',pkgUltra:'FJ$45.00',verify:'FJ$17.99',boost:'FJ$11.50',addonBasic:'FJ$12.40',addonPlus:'FJ$14.60',addonPremium:'FJ$18.00',addonUltra:'FJ$20.25'},
-  'en-PG':{label:'PGK (K)',basic:'K 23.50',premium:'K 47.00',ultra:'K 63.00',pkgPremium:'K 51.00',pkgUltra:'K 78.00',verify:'K 30.99',boost:'K 20.00',addonBasic:'K 21.50',addonPlus:'K 25.50',addonPremium:'K 31.50',addonUltra:'K 35.25'},
-  'en-WS':{label:'WST (T)',basic:'T 16.50',premium:'T 33',ultra:'T 44',pkgPremium:'T 36',pkgUltra:'T 55',verify:'T 21.99',boost:'T 14',addonBasic:'T 15',addonPlus:'T 18',addonPremium:'T 22',addonUltra:'T 25'},
-  'en-TO':{label:'TOP (T$)',basic:'T$14',premium:'T$28',ultra:'T$37',pkgPremium:'T$30',pkgUltra:'T$46',verify:'T$19',boost:'T$12',addonBasic:'T$13',addonPlus:'T$15',addonPremium:'T$19',addonUltra:'T$21'},
-  // ── Africa ──
-  'en-ZA':{label:'ZAR (R)',basic:'R 110',premium:'R 219',ultra:'R 293',pkgPremium:'R 238',pkgUltra:'R 365',verify:'R 147',boost:'R 93',addonBasic:'R 101',addonPlus:'R 118',addonPremium:'R 146',addonUltra:'R 164'},
-  'en-NG':{label:'NGN (₦)',basic:'₦9,250',premium:'₦18,500',ultra:'₦24,800',pkgPremium:'₦20,100',pkgUltra:'₦30,800',verify:'₦12,350',boost:'₦7,880',addonBasic:'₦8,500',addonPlus:'₦10,000',addonPremium:'₦12,350',addonUltra:'₦13,875'},
-  'en-KE':{label:'KES (KSh)',basic:'KSh 775',premium:'KSh 1,550',ultra:'KSh 2,070',pkgPremium:'KSh 1,680',pkgUltra:'KSh 2,580',verify:'KSh 1,050',boost:'KSh 660',addonBasic:'KSh 713',addonPlus:'KSh 837',addonPremium:'KSh 1,035',addonUltra:'KSh 1,163'},
-  'en-GH':{label:'GHS (GH₵)',basic:'GH₵92',premium:'GH₵185',ultra:'GH₵247',pkgPremium:'GH₵200',pkgUltra:'GH₵308',verify:'GH₵123',boost:'GH₵79',addonBasic:'GH₵85',addonPlus:'GH₵100',addonPremium:'GH₵124',addonUltra:'GH₵139'},
-  'am-ET':{label:'ETB (Br)',basic:'Br 750',premium:'Br 1,500',ultra:'Br 2,000',pkgPremium:'Br 1,630',pkgUltra:'Br 2,500',verify:'Br 1,000',boost:'Br 640',addonBasic:'Br 690',addonPlus:'Br 810',addonPremium:'Br 1,000',addonUltra:'Br 1,125'},
-  'sw-TZ':{label:'TZS (TSh)',basic:'TSh 15,500',premium:'TSh 31,000',ultra:'TSh 41,500',pkgPremium:'TSh 33,600',pkgUltra:'TSh 51,500',verify:'TSh 20,700',boost:'TSh 13,200',addonBasic:'TSh 14,300',addonPlus:'TSh 16,800',addonPremium:'TSh 20,700',addonUltra:'TSh 23,250'},
-  'en-UG':{label:'UGX (USh)',basic:'USh 22,000',premium:'USh 44,000',ultra:'USh 59,000',pkgPremium:'USh 48,000',pkgUltra:'USh 73,000',verify:'USh 29,350',boost:'USh 18,700',addonBasic:'USh 20,200',addonPlus:'USh 23,800',addonPremium:'USh 29,400',addonUltra:'USh 33,000'},
-  'ar-MA':{label:'MAD (MAD)',basic:'MAD 60',premium:'MAD 120',ultra:'MAD 160',pkgPremium:'MAD 130',pkgUltra:'MAD 200',verify:'MAD 80',boost:'MAD 51',addonBasic:'MAD 55',addonPlus:'MAD 65',addonPremium:'MAD 80',addonUltra:'MAD 90'},
-  'ar-TN':{label:'TND (DT)',basic:'DT 18.50',premium:'DT 37',ultra:'DT 49.50',pkgPremium:'DT 40',pkgUltra:'DT 61.50',verify:'DT 24.99',boost:'DT 15.80',addonBasic:'DT 17',addonPlus:'DT 20',addonPremium:'DT 24.70',addonUltra:'DT 27.75'},
-  'ar-DZ':{label:'DZD (DA)',basic:'DA 790',premium:'DA 1,580',ultra:'DA 2,110',pkgPremium:'DA 1,715',pkgUltra:'DA 2,630',verify:'DA 1,050',boost:'DA 675',addonBasic:'DA 725',addonPlus:'DA 855',addonPremium:'DA 1,055',addonUltra:'DA 1,185'},
-  'fr-SN':{label:'XOF (F)',basic:'3,900 F',premium:'7,800 F',ultra:'10,400 F',pkgPremium:'8,500 F',pkgUltra:'13,000 F',verify:'5,200 F',boost:'3,300 F',addonBasic:'3,600 F',addonPlus:'4,200 F',addonPremium:'5,200 F',addonUltra:'5,850 F'},
-  'fr-CI':{label:'XOF (F)',basic:'3,900 F',premium:'7,800 F',ultra:'10,400 F',pkgPremium:'8,500 F',pkgUltra:'13,000 F',verify:'5,200 F',boost:'3,300 F',addonBasic:'3,600 F',addonPlus:'4,200 F',addonPremium:'5,200 F',addonUltra:'5,850 F'},
-  'fr-CM':{label:'XAF (F)',basic:'3,900 F',premium:'7,800 F',ultra:'10,400 F',pkgPremium:'8,500 F',pkgUltra:'13,000 F',verify:'5,200 F',boost:'3,300 F',addonBasic:'3,600 F',addonPlus:'4,200 F',addonPremium:'5,200 F',addonUltra:'5,850 F'},
-  'pt-AO':{label:'AOA (Kz)',basic:'Kz 5,000',premium:'Kz 10,000',ultra:'Kz 13,400',pkgPremium:'Kz 10,850',pkgUltra:'Kz 16,650',verify:'Kz 6,650',boost:'Kz 4,260',addonBasic:'Kz 4,600',addonPlus:'Kz 5,400',addonPremium:'Kz 6,680',addonUltra:'Kz 7,500'},
-  'pt-MZ':{label:'MZN (MT)',basic:'MT 385',premium:'MT 770',ultra:'MT 1,030',pkgPremium:'MT 835',pkgUltra:'MT 1,280',verify:'MT 514',boost:'MT 328',addonBasic:'MT 354',addonPlus:'MT 416',addonPremium:'MT 515',addonUltra:'MT 578'},
-  'en-MU':{label:'MUR (₨)',basic:'₨ 273',premium:'₨ 545',ultra:'₨ 728',pkgPremium:'₨ 592',pkgUltra:'₨ 908',verify:'₨ 364',boost:'₨ 232',addonBasic:'₨ 251',addonPlus:'₨ 295',addonPremium:'₨ 364',addonUltra:'₨ 409'},
-  'en-BW':{label:'BWP (P)',basic:'P 82',premium:'P 165',ultra:'P 220',pkgPremium:'P 179',pkgUltra:'P 275',verify:'P 109',boost:'P 70',addonBasic:'P 76',addonPlus:'P 89',addonPremium:'P 110',addonUltra:'P 124'},
-  'en-NA':{label:'NAD (N$)',basic:'N$110',premium:'N$219',ultra:'N$293',pkgPremium:'N$238',pkgUltra:'N$365',verify:'N$147',boost:'N$93',addonBasic:'N$101',addonPlus:'N$118',addonPremium:'N$146',addonUltra:'N$164'},
-  'en-ZM':{label:'ZMW (ZK)',basic:'ZK 160',premium:'ZK 320',ultra:'ZK 428',pkgPremium:'ZK 348',pkgUltra:'ZK 533',verify:'ZK 213',boost:'ZK 136',addonBasic:'ZK 147',addonPlus:'ZK 173',addonPremium:'ZK 214',addonUltra:'ZK 240'},
-  'en-ZW':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'},
-  'ar-SD':{label:'SDG (SDG)',basic:'SDG 3,750',premium:'SDG 7,500',ultra:'SDG 10,000',pkgPremium:'SDG 8,150',pkgUltra:'SDG 12,500',verify:'SDG 5,000',boost:'SDG 3,200',addonBasic:'SDG 3,450',addonPlus:'SDG 4,050',addonPremium:'SDG 5,000',addonUltra:'SDG 5,625'},
-  'rw-RW':{label:'RWF (FRw)',basic:'FRw 7,750',premium:'FRw 15,500',ultra:'FRw 20,700',pkgPremium:'FRw 16,800',pkgUltra:'FRw 25,800',verify:'FRw 10,350',boost:'FRw 6,600',addonBasic:'FRw 7,100',addonPlus:'FRw 8,400',addonPremium:'FRw 10,350',addonUltra:'FRw 11,625'},
-  // ── Middle East ──
-  'ar-SA':{label:'SAR (﷼)',basic:'SAR 22.99',premium:'SAR 44.99',ultra:'SAR 59.99',pkgPremium:'SAR 48.99',pkgUltra:'SAR 74.99',verify:'SAR 30.99',boost:'SAR 19.00',addonBasic:'SAR 20.50',addonPlus:'SAR 24.50',addonPremium:'SAR 29.99',addonUltra:'SAR 33.99'},
-  'ar-AE':{label:'AED (د.إ)',basic:'AED 22.00',premium:'AED 44.00',ultra:'AED 59.00',pkgPremium:'AED 48.00',pkgUltra:'AED 73.00',verify:'AED 28.99',boost:'AED 18.50',addonBasic:'AED 20.00',addonPlus:'AED 24.00',addonPremium:'AED 29.50',addonUltra:'AED 33.00'},
-  'ar-QA':{label:'QAR (ر.ق)',basic:'QAR 22.00',premium:'QAR 43.50',ultra:'QAR 58.00',pkgPremium:'QAR 47.00',pkgUltra:'QAR 72.00',verify:'QAR 28.99',boost:'QAR 18.50',addonBasic:'QAR 20.00',addonPlus:'QAR 23.50',addonPremium:'QAR 29.00',addonUltra:'QAR 32.50'},
-  'ar-KW':{label:'KWD (د.ك)',basic:'KWD 1.800',premium:'KWD 3.600',ultra:'KWD 4.800',pkgPremium:'KWD 3.900',pkgUltra:'KWD 6.000',verify:'KWD 2.400',boost:'KWD 1.550',addonBasic:'KWD 1.650',addonPlus:'KWD 1.950',addonPremium:'KWD 2.400',addonUltra:'KWD 2.700'},
-  'ar-BH':{label:'BHD (د.ب)',basic:'BHD 2.250',premium:'BHD 4.500',ultra:'BHD 6.000',pkgPremium:'BHD 4.900',pkgUltra:'BHD 7.500',verify:'BHD 3.000',boost:'BHD 1.920',addonBasic:'BHD 2.070',addonPlus:'BHD 2.430',addonPremium:'BHD 3.000',addonUltra:'BHD 3.370'},
-  'ar-OM':{label:'OMR (ر.ع)',basic:'OMR 2.300',premium:'OMR 4.600',ultra:'OMR 6.150',pkgPremium:'OMR 5.000',pkgUltra:'OMR 7.650',verify:'OMR 3.050',boost:'OMR 1.960',addonBasic:'OMR 2.120',addonPlus:'OMR 2.480',addonPremium:'OMR 3.070',addonUltra:'OMR 3.450'},
-  'ar-JO':{label:'JOD (د.ا)',basic:'JOD 4.250',premium:'JOD 8.500',ultra:'JOD 11.350',pkgPremium:'JOD 9.200',pkgUltra:'JOD 14.150',verify:'JOD 5.650',boost:'JOD 3.620',addonBasic:'JOD 3.900',addonPlus:'JOD 4.600',addonPremium:'JOD 5.700',addonUltra:'JOD 6.400'},
-  'he-IL':{label:'ILS (₪)',basic:'₪22.50',premium:'₪45.00',ultra:'₪60.00',pkgPremium:'₪48.50',pkgUltra:'₪74.50',verify:'₪29.99',boost:'₪19.00',addonBasic:'₪20.50',addonPlus:'₪24.00',addonPremium:'₪30.00',addonUltra:'₪33.50'},
-  'ar-LB':{label:'LBP (ل.ل)',basic:'LBP 535,000',premium:'LBP 1,070,000',ultra:'LBP 1,430,000',pkgPremium:'LBP 1,160,000',pkgUltra:'LBP 1,780,000',verify:'LBP 713,650',boost:'LBP 455,000',addonBasic:'LBP 490,000',addonPlus:'LBP 580,000',addonPremium:'LBP 715,000',addonUltra:'LBP 800,000'},
-  'ar-IQ':{label:'IQD (ع.د)',basic:'IQD 7,850',premium:'IQD 15,700',ultra:'IQD 20,950',pkgPremium:'IQD 17,000',pkgUltra:'IQD 26,100',verify:'IQD 10,450',boost:'IQD 6,680',addonBasic:'IQD 7,200',addonPlus:'IQD 8,500',addonPremium:'IQD 10,500',addonUltra:'IQD 11,800'},
-  'fa-IR':{label:'IRR (﷼)',basic:'IRR 250,000',premium:'IRR 500,000',ultra:'IRR 670,000',pkgPremium:'IRR 540,000',pkgUltra:'IRR 830,000',verify:'IRR 333,450',boost:'IRR 213,000',addonBasic:'IRR 230,000',addonPlus:'IRR 270,000',addonPremium:'IRR 335,000',addonUltra:'IRR 375,000'},
-  'ar-EG':{label:'EGP (ج.م)',basic:'EGP 300',premium:'EGP 599',ultra:'EGP 800',pkgPremium:'EGP 649',pkgUltra:'EGP 999',verify:'EGP 400',boost:'EGP 255',addonBasic:'EGP 275',addonPlus:'EGP 325',addonPremium:'EGP 400',addonUltra:'EGP 450'},
-  'tr-TR':{label:'TRY (₺)',basic:'TRY 215',premium:'TRY 429',ultra:'TRY 575',pkgPremium:'TRY 465',pkgUltra:'TRY 715',verify:'TRY 287',boost:'TRY 183',addonBasic:'TRY 197',addonPlus:'TRY 232',addonPremium:'TRY 287',addonUltra:'TRY 322'},
-  // ── Non-EU Europe ──
-  'en-GB':{label:'GBP (£)',basic:'£4.99',premium:'£9.99',ultra:'£13.99',pkgPremium:'£10.99',pkgUltra:'£16.99',verify:'£6.99',boost:'£4.25',addonBasic:'£4.60',addonPlus:'£5.50',addonPremium:'£6.70',addonUltra:'£7.50'},
-  'ru-RU':{label:'RUB (₽)',basic:'₽545',premium:'₽1,090',ultra:'₽1,460',pkgPremium:'₽1,190',pkgUltra:'₽1,820',verify:'₽727',boost:'₽465',addonBasic:'₽500',addonPlus:'₽590',addonPremium:'₽730',addonUltra:'₽820'},
-  'uk-UA':{label:'UAH (₴)',basic:'₴225',premium:'₴450',ultra:'₴600',pkgPremium:'₴489',pkgUltra:'₴749',verify:'₴300',boost:'₴192',addonBasic:'₴207',addonPlus:'₴243',addonPremium:'₴300',addonUltra:'₴338'},
-  'be-BY':{label:'BYN (Br)',basic:'Br 19.50',premium:'Br 39.00',ultra:'Br 52.00',pkgPremium:'Br 42.00',pkgUltra:'Br 65.00',verify:'Br 25.99',boost:'Br 16.60',addonBasic:'Br 17.90',addonPlus:'Br 21.00',addonPremium:'Br 26.00',addonUltra:'Br 29.00'},
-  'sr-RS':{label:'RSD (дин)',basic:'RSD 650',premium:'RSD 1,300',ultra:'RSD 1,740',pkgPremium:'RSD 1,410',pkgUltra:'RSD 2,160',verify:'RSD 867',boost:'RSD 555',addonBasic:'RSD 600',addonPlus:'RSD 700',addonPremium:'RSD 870',addonUltra:'RSD 975'},
-  'sr-ME':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€12.99',pkgUltra:'€19.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
-  'nb-NO':{label:'NOK (kr)',basic:'kr 65',premium:'kr 129',ultra:'kr 175',pkgPremium:'kr 140',pkgUltra:'kr 215',verify:'kr 87',boost:'kr 55',addonBasic:'kr 60',addonPlus:'kr 70',addonPremium:'kr 87',addonUltra:'kr 97'},
-  'de-CH':{label:'CHF (CHF)',basic:'CHF 5.50',premium:'CHF 11.00',ultra:'CHF 14.50',pkgPremium:'CHF 12.00',pkgUltra:'CHF 18.00',verify:'CHF 6.99',boost:'CHF 4.70',addonBasic:'CHF 5.00',addonPlus:'CHF 6.00',addonPremium:'CHF 7.30',addonUltra:'CHF 8.20'},
-  'de-LI':{label:'CHF (CHF)',basic:'CHF 5.50',premium:'CHF 11.00',ultra:'CHF 14.50',pkgPremium:'CHF 12.00',pkgUltra:'CHF 18.00',verify:'CHF 6.99',boost:'CHF 4.70',addonBasic:'CHF 5.00',addonPlus:'CHF 6.00',addonPremium:'CHF 7.30',addonUltra:'CHF 8.20'},
-  'is-IS':{label:'ISK (kr)',basic:'kr 849',premium:'kr 1,699',ultra:'kr 2,299',pkgPremium:'kr 1,849',pkgUltra:'kr 2,799',verify:'kr 1,150',boost:'kr 725',addonBasic:'kr 780',addonPlus:'kr 920',addonPremium:'kr 1,140',addonUltra:'kr 1,275'},
-  'sq-AL':{label:'ALL (L)',basic:'L 550',premium:'L 1,100',ultra:'L 1,470',pkgPremium:'L 1,190',pkgUltra:'L 1,830',verify:'L 734',boost:'L 470',addonBasic:'L 505',addonPlus:'L 595',addonPremium:'L 735',addonUltra:'L 825'},
-  'bs-BA':{label:'BAM (KM)',basic:'KM 11.00',premium:'KM 22.00',ultra:'KM 29.50',pkgPremium:'KM 24.00',pkgUltra:'KM 36.50',verify:'KM 14.99',boost:'KM 9.40',addonBasic:'KM 10.00',addonPlus:'KM 12.00',addonPremium:'KM 14.70',addonUltra:'KM 16.50'},
-  'mk-MK':{label:'MKD (ден)',basic:'ден 345',premium:'ден 690',ultra:'ден 920',pkgPremium:'ден 750',pkgUltra:'ден 1,150',verify:'ден 460',boost:'ден 295',addonBasic:'ден 315',addonPlus:'ден 375',addonPremium:'ден 460',addonUltra:'ден 520'},
-  'ro-MD':{label:'MDL (L)',basic:'MDL 108',premium:'MDL 215',ultra:'MDL 289',pkgPremium:'MDL 233',pkgUltra:'MDL 358',verify:'MDL 144',boost:'MDL 92',addonBasic:'MDL 99',addonPlus:'MDL 116',addonPremium:'MDL 144',addonUltra:'MDL 161'},
-  'fr-MC':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€12.99',pkgUltra:'€19.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
-  'it-SM':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€12.99',pkgUltra:'€19.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
-  'ca-AD':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€12.99',pkgUltra:'€19.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
-  'de-DE':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€12.99',pkgUltra:'€19.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
-  'fr-FR':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€12.99',pkgUltra:'€19.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
-  'vi-VN':{label:'VND (₫)',basic:'₫149,000',premium:'₫299,000',ultra:'₫399,000',pkgPremium:'₫329,000',pkgUltra:'₫499,000',verify:'₫198,750',boost:'₫129,000',addonBasic:'₫139,000',addonPlus:'₫165,000',addonPremium:'₫199,000',addonUltra:'₫225,000'},
-  'th-TH':{label:'THB (฿)',basic:'฿199',premium:'฿399',ultra:'฿549',pkgPremium:'฿449',pkgUltra:'฿699',verify:'฿265',boost:'฿179',addonBasic:'฿189',addonPlus:'฿225',addonPremium:'฿279',addonUltra:'฿319'},
-  'my-MM':{label:'MMK (K)',basic:'K 12,500',premium:'K 25,000',ultra:'K 33,500',pkgPremium:'K 27,500',pkgUltra:'K 42,000',verify:'K 16,650',boost:'K 10,500',addonBasic:'K 11,500',addonPlus:'K 13,500',addonPremium:'K 16,500',addonUltra:'K 18,500'},
-  'ja-JP':{label:'JPY (¥)',basic:'¥900',premium:'¥1,800',ultra:'¥2,400',pkgPremium:'¥2,000',pkgUltra:'¥3,000',verify:'¥1,200',boost:'¥770',addonBasic:'¥830',addonPlus:'¥980',addonPremium:'¥1,200',addonUltra:'¥1,350'},
-  'ko-KR':{label:'KRW (₩)',basic:'₩8,000',premium:'₩15,000',ultra:'₩21,000',pkgPremium:'₩17,000',pkgUltra:'₩26,000',verify:'₩10,650',boost:'₩6,800',addonBasic:'₩7,400',addonPlus:'₩8,700',addonPremium:'₩10,700',addonUltra:'₩12,000'},
-  // ── South America ──
-  'pt-BR':{label:'BRL (R$)',basic:'R$29.90',premium:'R$59.90',ultra:'R$79.90',pkgPremium:'R$64.90',pkgUltra:'R$99.90',verify:'R$39.99',boost:'R$25.50',addonBasic:'R$27.50',addonPlus:'R$32.50',addonPremium:'R$39.90',addonUltra:'R$44.90'},
-  'es-AR':{label:'ARS ($)',basic:'ARS$6,000',premium:'ARS$12,000',ultra:'ARS$16,000',pkgPremium:'ARS$13,000',pkgUltra:'ARS$20,000',verify:'ARS$8,000',boost:'ARS$5,100',addonBasic:'ARS$5,500',addonPlus:'ARS$6,500',addonPremium:'ARS$8,000',addonUltra:'ARS$9,000'},
-  'es-CL':{label:'CLP ($)',basic:'CLP$5,490',premium:'CLP$10,990',ultra:'CLP$14,990',pkgPremium:'CLP$11,990',pkgUltra:'CLP$17,990',verify:'CLP$7,300',boost:'CLP$4,690',addonBasic:'CLP$5,000',addonPlus:'CLP$5,900',addonPremium:'CLP$7,300',addonUltra:'CLP$8,200'},
-  'es-CO':{label:'COP ($)',basic:'COP$23,500',premium:'COP$46,900',ultra:'COP$62,900',pkgPremium:'COP$50,900',pkgUltra:'COP$77,900',verify:'COP$31,350',boost:'COP$20,000',addonBasic:'COP$21,500',addonPlus:'COP$25,500',addonPremium:'COP$31,500',addonUltra:'COP$35,000'},
-  'es-PE':{label:'PEN (S/)',basic:'S/22.90',premium:'S/45.90',ultra:'S/61.90',pkgPremium:'S/49.90',pkgUltra:'S/75.90',verify:'S/30.99',boost:'S/19.50',addonBasic:'S/21.00',addonPlus:'S/24.90',addonPremium:'S/30.90',addonUltra:'S/34.50'},
-  'es-UY':{label:'UYU ($U)',basic:'$U239',premium:'$U479',ultra:'$U639',pkgPremium:'$U519',pkgUltra:'$U799',verify:'$U319',boost:'$U204',addonBasic:'$U220',addonPlus:'$U259',addonPremium:'$U320',addonUltra:'$U359'},
-  'es-PY':{label:'PYG (₲)',basic:'₲43,000',premium:'₲87,000',ultra:'₲116,000',pkgPremium:'₲94,000',pkgUltra:'₲145,000',verify:'₲57,350',boost:'₲37,000',addonBasic:'₲40,000',addonPlus:'₲47,000',addonPremium:'₲58,000',addonUltra:'₲65,000'},
-  'es-BO':{label:'BOB (Bs)',basic:'Bs 41',premium:'Bs 83',ultra:'Bs 111',pkgPremium:'Bs 90',pkgUltra:'Bs 138',verify:'Bs 55',boost:'Bs 35',addonBasic:'Bs 38',addonPlus:'Bs 45',addonPremium:'Bs 55',addonUltra:'Bs 62'},
-  'es-EC':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'},
-  'es-VE':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'},
-  'en-GY':{label:'GYD (G$)',basic:'G$1,250',premium:'G$2,500',ultra:'G$3,350',pkgPremium:'G$2,720',pkgUltra:'G$4,180',verify:'G$1,650',boost:'G$1,070',addonBasic:'G$1,150',addonPlus:'G$1,360',addonPremium:'G$1,670',addonUltra:'G$1,880'},
-  'nl-SR':{label:'SRD ($)',basic:'SRD$220',premium:'SRD$439',ultra:'SRD$585',pkgPremium:'SRD$475',pkgUltra:'SRD$730',verify:'SRD$293',boost:'SRD$187',addonBasic:'SRD$202',addonPlus:'SRD$238',addonPremium:'SRD$294',addonUltra:'SRD$329'},
-  'fr-GF':{label:'EUR (€)',basic:'€5.99',premium:'€11.99',ultra:'€15.99',pkgPremium:'€12.99',pkgUltra:'€19.99',verify:'€6.99',boost:'€4.99',addonBasic:'€5.20',addonPlus:'€5.99',addonPremium:'€7.50',addonUltra:'€8.20'},
-  'default':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'}
+  'myr':{label:'MYR (RM)',basic:'RM12',premium:'RM23.50',ultra:'RM45.50',pkgPremium:'RM29.90',pkgUltra:'RM60.90',verify:'RM32.00',boost:'RM8.60',addonBasic:'RM10',addonPlus:'RM14',addonPremium:'RM20',addonUltra:'RM24'},
+  'usd':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'},
+  'eur':{label:'EUR (€)',basic:'€5.99',premium:'€11.00',ultra:'€14.99',pkgPremium:'€11.99',pkgUltra:'€18.00',verify:'€7.00',boost:'€4.99',addonBasic:'€5.00',addonPlus:'€5.99',addonPremium:'€7.00',addonUltra:'€8.00'},
+  'gbp':{label:'GBP (£)',basic:'£4.99',premium:'£9.99',ultra:'£12.99',pkgPremium:'£10.00',pkgUltra:'£15.99',verify:'£6.00',boost:'£4.00',addonBasic:'£4.00',addonPlus:'£5.00',addonPremium:'£6.00',addonUltra:'£7.00'},
+  'sgd':{label:'SGD (S$)',basic:'S$7.99',premium:'S$15.99',ultra:'S$21.00',pkgPremium:'S$17.00',pkgUltra:'S$26.00',verify:'S$10.99',boost:'S$6.99',addonBasic:'S$7.00',addonPlus:'S$8.99',addonPremium:'S$10.99',addonUltra:'S$11.99'},
+  'aud':{label:'AUD (A$)',basic:'A$9.00',premium:'A$18.99',ultra:'A$24.99',pkgPremium:'A$20.00',pkgUltra:'A$30.99',verify:'A$12.00',boost:'A$7.99',addonBasic:'A$8.99',addonPlus:'A$10.00',addonPremium:'A$12.00',addonUltra:'A$13.99'},
+  'cad':{label:'CAD (C$)',basic:'C$8.00',premium:'C$16.00',ultra:'C$21.99',pkgPremium:'C$17.99',pkgUltra:'C$27.00',verify:'C$10.99',boost:'C$6.99',addonBasic:'C$7.99',addonPlus:'C$8.99',addonPremium:'C$10.99',addonUltra:'C$12.00'},
+  'jpy':{label:'JPY (¥)',basic:'¥900',premium:'¥1,800',ultra:'¥2,400',pkgPremium:'¥1,900',pkgUltra:'¥3,000',verify:'¥1,200',boost:'¥800',addonBasic:'¥800',addonPlus:'¥1,000',addonPremium:'¥1,200',addonUltra:'¥1,300'},
+  'hkd':{label:'HKD (HK$)',basic:'HK$46.99',premium:'HK$93.99',ultra:'HK$124.99',pkgPremium:'HK$101.00',pkgUltra:'HK$155.99',verify:'HK$62.00',boost:'HK$39.99',addonBasic:'HK$42.99',addonPlus:'HK$50.99',addonPremium:'HK$62.00',addonUltra:'HK$70.00'},
+  'twd':{label:'TWD (NT$)',basic:'NT$193.00',premium:'NT$387.00',ultra:'NT$516.00',pkgPremium:'NT$419.99',pkgUltra:'NT$645.99',verify:'NT$258.00',boost:'NT$164.99',addonBasic:'NT$177.99',addonPlus:'NT$209.99',addonPremium:'NT$258.00',addonUltra:'NT$290.00'},
+  'thb':{label:'THB (฿)',basic:'฿95.00',premium:'฿186.99',ultra:'฿361.99',pkgPremium:'฿237.99',pkgUltra:'฿484.00',verify:'฿254.99',boost:'฿68.00',addonBasic:'฿79.99',addonPlus:'฿111.00',addonPremium:'฿159.00',addonUltra:'฿190.99'},
+  'idr':{label:'IDR (Rp)',basic:'Rp 45,000',premium:'Rp 87,000',ultra:'Rp 169,000',pkgPremium:'Rp 111,000',pkgUltra:'Rp 227,000',verify:'Rp 119,000',boost:'Rp 32,000',addonBasic:'Rp 37,000',addonPlus:'Rp 52,000',addonPremium:'Rp 74,000',addonUltra:'Rp 89,000'},
+  'vnd':{label:'VND (₫)',basic:'₫70,000',premium:'₫137,000',ultra:'₫265,000',pkgPremium:'₫174,000',pkgUltra:'₫354,000',verify:'₫186,000',boost:'₫50,000',addonBasic:'₫58,000',addonPlus:'₫81,000',addonPremium:'₫116,000',addonUltra:'₫140,000'},
+  'php':{label:'PHP (₱)',basic:'₱159.00',premium:'₱311.99',ultra:'₱603.00',pkgPremium:'₱396.00',pkgUltra:'₱807.00',verify:'₱424.00',boost:'₱114.00',addonBasic:'₱132.99',addonPlus:'₱185.99',addonPremium:'₱265.00',addonUltra:'₱318.00'},
+  'krw':{label:'KRW (₩)',basic:'₩8,000',premium:'₩16,000',ultra:'₩21,000',pkgPremium:'₩17,000',pkgUltra:'₩27,000',verify:'₩11,000',boost:'₩7,000',addonBasic:'₩7,000',addonPlus:'₩9,000',addonPremium:'₩11,000',addonUltra:'₩12,000'},
+  'inr':{label:'INR (₹)',basic:'₹234.00',premium:'₹459.00',ultra:'₹888.99',pkgPremium:'₹584.00',pkgUltra:'₹1,189.99',verify:'₹625.00',boost:'₹168.00',addonBasic:'₹195.00',addonPlus:'₹273.00',addonPremium:'₹390.99',addonUltra:'₹468.99'}
 };
 
-var p = pricing[SlatiPrice.key] || pricing['default'];
+// v0.2.12.0 多币种：literal key = 结算币（pricing.js 把 locale → 币代码）；行不存在/未知 → 兜 usd 行
+var MN_CUR = (window.SlatiPrice && SlatiPrice.currency) || 'usd';
+var p = pricing[MN_CUR] || pricing.usd;
 document.getElementById('currencyLabel').textContent = p.label;
 document.getElementById('basicPrice').textContent = p.basic;
 document.getElementById('premiumPrice').textContent = p.premium;
@@ -2389,6 +2304,10 @@ document.getElementById('addonVerify').textContent = p.verify;
 document.getElementById('addonBoost').textContent = p.boost;
 var ab=document.getElementById('addonBasic'),ap=document.getElementById('addonPlus'),ap2=document.getElementById('addonPremium'),au=document.getElementById('addonUltra');
 if(ab)ab.textContent=p.addonBasic;if(ap)ap.textContent=p.addonPlus;if(ap2)ap2.textContent=p.addonPremium;if(au)au.textContent=p.addonUltra;
+
+// v0.2.12.0：上方特性区静态文案里的 RM12 → 当前币 Basic 价（元素在本文档前面，直接可写）
+var nmNote = document.getElementById('basicNoteMatrix');
+if (nmNote) nmNote.textContent = '注册默认免费「普通用户」层；Basic 为学生价方案（' + p.basic + '/月），Premium / Ultra 提供更高能力';
 
 // ── Cyberfall Background ──
 (function(){
@@ -2464,7 +2383,7 @@ bgStyle.textContent='@keyframes floatCubeBG{0%{transform:translateY(0) rotate(0d
 document.head.appendChild(bgStyle);
 </script>
 
-<div class="plan-note">注册默认「普通用户」（免费）；Basic 为学生价方案（RM12/月）。会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay，可随时在「管理订阅」取消）或单次购买 1 个月（FPX 网银 / 支付宝 / GrabPay，不自动续费）。</div>
+<div class="plan-note" id="planNote">注册默认「普通用户」（免费）；Basic 为学生价方案（RM12/月）。会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay，可随时在「管理订阅」取消）或单次购买 1 个月（FPX 网银 / 支付宝 / GrabPay，不自动续费）。</div>
 
 <!-- 全屏倒数跳转遮罩（点击订阅/单次购买 → checkout 成功后 3-2-1 → 跳 Stripe 结账页） -->
 <div id="cdOverlay" class="cd-overlay">
@@ -2511,7 +2430,7 @@ document.head.appendChild(bgStyle);
   function renderGuest() {
     var b = $('subStatus');
     b.style.display = 'flex';
-    b.innerHTML = '<span>登录后即可订阅会员方案（注册默认「普通用户」免费；Basic 学生价 RM12/月）</span>'
+    b.innerHTML = '<span>登录后即可订阅会员方案（注册默认「普通用户」免费；Basic 学生价 ' + p.basic + '/月）</span>'
       + '<a class="btn btn-primary btn-sm" href="../signup-and-login" style="margin:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:#fff;text-decoration:none">登录 / 注册</a>';
     document.querySelectorAll('[data-plan-card]').forEach(function (card) {
       var btn = card.querySelector('[data-plan-cta]');
@@ -2534,6 +2453,18 @@ document.head.appendChild(bgStyle);
   function cardPrice(card) {
     return (((card.querySelector('[data-plan-price]') || {}).textContent) || '?').trim();
   }
+
+  // 页底 plan-note（:2380）：Basic 价按当前币；单次支付方式按 status 实际返回（非 myr 只卡，myr 未回时先按默认清单）
+  function refreshPlanNote() {
+    var nb = document.getElementById('planNote');
+    if (!nb || !p) return;
+    var list = ((sub && sub.onceMethods) || (MN_CUR === 'myr' ? ['card', 'fpx', 'alipay', 'grabpay'] : ['card']))
+      .map(function (m) { return METHOD_ZH[m] || m; }).join(' / ');
+    nb.innerHTML = '注册默认「普通用户」（免费）；Basic 为学生价方案（' + p.basic + '/月，' + p.label + '）。'
+      + '会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay，可随时在「管理订阅」取消）'
+      + '或单次购买 1 个月（' + list + '，不自动续费）。';
+  }
+  refreshPlanNote();
 
   function renderUser() {
     var rank = TIER_RANK[me.tier] != null ? TIER_RANK[me.tier] : 0; // 未知 tier 按 free（普通用户）处理：Basic 不是自带默认
@@ -2633,7 +2564,7 @@ document.head.appendChild(bgStyle);
     var label = btn.textContent;
     btn.disabled = true;
     btn.textContent = '跳转到支付页…';
-    MN_API.post('/subscription/checkout', { tierKey: key, mode: mode || 'subscription' }).then(function (r) {
+    MN_API.post('/subscription/checkout', { tierKey: key, mode: mode || 'subscription', currency: MN_CUR }).then(function (r) {
       if (r.ok && r.data && r.data.url) { countdownJump(btn, r.data.url); return; }
       btn.disabled = false;
       btn.textContent = label;
@@ -2755,9 +2686,10 @@ document.head.appendChild(bgStyle);
     }
     syncState();
   });
-  MN_API.get('/subscription/status').then(function (r) {
+  MN_API.get('/subscription/status?currency=' + encodeURIComponent(MN_CUR)).then(function (r) {
     if (r.ok && r.data) sub = r.data;
     if (me) renderUser(); // status 到齐后 CTA 才能定 pay 态
+    refreshPlanNote(); // 该币真实单次方式到齐，重写页底注
     handleReturn();
     syncState();
   });
