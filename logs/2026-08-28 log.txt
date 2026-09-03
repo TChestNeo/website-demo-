@@ -839,3 +839,8 @@ FC v10.28.17.2（rev 00049-nws）口径修正轮：用户「为什么我选中�
 用户：「把左侧根菜单的上下滑轨隐藏」。
 改：.nav-module scrollbar-width:none + -ms-overflow-style:none + ::-webkit-scrollbar display:none（滚动功能保留只藏滑轨；置后压过 custom-scrollbar 类 6px 细轨）；电池新增 A7 断言。
 验证：电池 19/19 本地+线上、smoke-admin 49/49、curl 七连 200、health 57 表。
+── 2026-09-03（rev 00063-f42，v0.2.10.0 Announcements 邻近上浮轮，commit 待打）──
+用户：「平台首页下方的那个Announcements 的每一项增加一个特性就是当鼠标靠近时在范围内的都会上浮」
+实现：首页公告列表每项按与光标距离上浮——左侧列内 mousemove 时 ≤240px 范围内 translateY 上浮（最近项 10px、二次缓降 t²），范围外归零、移出列重置、rect 缓存 TTL 500ms（入场动画漂移自愈）、滚动/缩放失效、reduced-motion 跳过；页内样式块 #dashAnnouncements .card transition !important 压过 transitions.js 入场 inline 0.4s（橡皮筋坑——否则上浮拖 0.4s 成 Q弹）+opacity 0.4s 保入场淡入；零共享文件改动（不动 ethereal.css、不重跑 inline-css）
+电池：tmp-battery-announce-hover.js 10 项断言（CDP Input 真鼠标 + 读 inline transform 目标值防 0.18s transition 竞态 + 等入场 stagger 落定再动鼠）；本地 10/10 + 线上 10/10 + smoke-admin 49/49 + curl 七连 200 + health 57 表
+部署 revision mnationworld-web-00063-f42

@@ -1993,6 +1993,16 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 }
 
 </style>
+<style>
+/* Announcements 邻近上浮（2026-09-03 用户「鼠标靠近时在范围内的都会上浮」）：
+   常驻 transform 过渡——.card-hover:hover 的 transition 只悬停时存在，邻近项不悬停会瞬移；
+   !important 压过 transitions.js 入场动画留下的 inline transition 0.4s（否则上浮拖 0.4s 橡皮筋）；
+   opacity 0.4s 保留入场淡入时长（transition 整属性覆写会把 opacity 从列表挤掉变瞬现） */
+#dashAnnouncements .card {
+  transition: transform 0.18s ease, box-shadow 0.2s ease, opacity 0.4s ease !important;
+  will-change: transform;
+}
+</style>
 </head>
 <body class="pre-stagger">
 
@@ -2176,6 +2186,47 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       '<span class="label-sm" style="color:var(--color-outline);flex-shrink:0;font-size:10px">' + a.date + '</span>' +
     '</a>';
   }).join('');
+
+  // ── Announcements 邻近上浮（2026-09-03 用户「鼠标靠近时在范围内的都会上浮」）──
+  // 光标在左侧列内移动：每项按与光标的距离算上浮量（≤240px 越近越高，最高 10px、二次缓降），范围外归零；移出列重置。
+  (function () {
+    var wrap = document.getElementById('dashAnnouncements');
+    if (!wrap || !wrap.children.length) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var zone = wrap.parentElement;              // 左侧整列（活动流+公告），仅列内触发——右列/侧栏悬停不误浮
+    var items = Array.prototype.slice.call(wrap.children);
+    var R = 240, MAX = 10;                      // 作用半径 / 最近项上浮高度 px
+    var rects = null, rectsAt = 0, last = [], lastPos = null, i;
+    for (i = 0; i < items.length; i++) last.push('');
+    function getRects() {
+      var out = [], j, r;
+      for (j = 0; j < items.length; j++) {
+        r = items[j].getBoundingClientRect();
+        out.push({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+      }
+      rectsAt = Date.now();
+      return out;
+    }
+    function setLift(cx, cy) {
+      var j, dx, dy, d, t, v;
+      for (j = 0; j < items.length; j++) {
+        dx = cx - rects[j].x; dy = cy - rects[j].y;
+        d = Math.sqrt(dx * dx + dy * dy);
+        v = '';
+        if (d < R) { t = 1 - d / R; v = 'translateY(' + (-MAX * t * t).toFixed(2) + 'px)'; }
+        if (v !== last[j]) { items[j].style.transform = v; last[j] = v; }
+      }
+    }
+    function refresh() { if (!lastPos) return; rects = getRects(); setLift(lastPos.x, lastPos.y); }
+    zone.addEventListener('mousemove', function (e) {
+      lastPos = { x: e.clientX, y: e.clientY };
+      if (!rects || Date.now() - rectsAt > 500) rects = getRects();  // TTL 500ms：入场动画期间 rects 漂移自愈
+      setLift(lastPos.x, lastPos.y);
+    });
+    zone.addEventListener('mouseleave', function () { setLift(-1e6, -1e6); });
+    window.addEventListener('scroll', refresh, { passive: true });
+    window.addEventListener('resize', refresh);
+  })();
 
   // ── Network Metrics ──
   var onlineNow = 12847;
