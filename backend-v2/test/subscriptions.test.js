@@ -31,7 +31,8 @@ function stripeConfig(over = {}) {
   return {
     stripe: {
       enabled: true, secretKey: 'sk_test_x', webhookSecret: 'whsec_test',
-      paymentMethods: ['card', 'fpx'], oncePaymentMethods: ['card', 'fpx', 'alipay', 'grabpay'],
+      // v0.2.13.1：fpx/alipay 实证账户层不可用（available:false）→ 只留真可用（card/grabpay；钱包随卡自动出现）
+      paymentMethods: ['card'], oncePaymentMethods: ['card', 'grabpay'],
       returnOrigin: '', prices: { ...PRICES }, pricesOnce: { ...PRICES_ONCE },
       ...over
     }
@@ -77,7 +78,7 @@ test('订阅状态：未配置 → enabled:false，匿名只有配置态无会�
     const d = await r.json();
     assert.strictEqual(d.enabled, false);
     assert.strictEqual(d.mode, 'hybrid');
-    assert.deepStrictEqual(d.onceMethods, ['card', 'fpx', 'alipay', 'grabpay']); // 未配置时仍回默认清单（前端文案用）
+    assert.deepStrictEqual(d.onceMethods, ['card', 'grabpay']); // v0.2.13.1：默认清单已去账户不可用的 fpx/alipay
     assert.strictEqual(d.prices.premium.hasPrice, false);
     assert.strictEqual(d.prices.premium.hasOnce, false);
     assert.strictEqual(d.prices['pkg-ultra'].hasPrice, false);
@@ -150,8 +151,7 @@ test('checkout：pending 行 + url + Stripe 请求形状（subscription 模式/p
     assert.strictEqual(form.client_reference_id, alice.user.id);
     assert.strictEqual(form.customer_email, 'alice@x.com');
     assert.strictEqual(form['payment_method_types[0]'], 'card');
-    assert.strictEqual(form['payment_method_types[1]'], 'fpx');
-    assert.strictEqual(form['payment_method_types[2]'], undefined); // 不再有固定 2 槽假字段
+    assert.strictEqual(form['payment_method_types[1]'], undefined); // 订阅只卡（钱包随卡自动，不列清单）
     assert.strictEqual(form['subscription_data[metadata][user_id]'], alice.user.id);
     assert.strictEqual(form['subscription_data[metadata][tier_key]'], 'ultra');
     assert.strictEqual(form['metadata[tier_key]'], 'ultra');
@@ -161,7 +161,7 @@ test('checkout：pending 行 + url + Stripe 请求形状（subscription 模式/p
   } finally { await t.close(); }
 });
 
-test('checkout once：每年支付请求形状（mode=payment/年付 Price/4 槽方法/无 subscription_data）+ pending 行 months=12', async () => {
+test('checkout once：每年支付请求形状（mode=payment/年付 Price/可用方法清单/无 subscription_data）+ pending 行 months=12', async () => {
   const stub = stripeStub();
   const t = await testApp({ config: stripeConfig({ returnOrigin: 'https://mn.world' }), fetchImpl: stub.fetchImpl });
   try {
@@ -178,10 +178,8 @@ test('checkout once：每年支付请求形状（mode=payment/年付 Price/4 槽
     assert.strictEqual(form['line_items[0][price]'], 'price_premium_once');
     assert.strictEqual(form.client_reference_id, alice.user.id);
     assert.strictEqual(form['payment_method_types[0]'], 'card');
-    assert.strictEqual(form['payment_method_types[1]'], 'fpx');
-    assert.strictEqual(form['payment_method_types[2]'], 'alipay');
-    assert.strictEqual(form['payment_method_types[3]'], 'grabpay');
-    assert.strictEqual(form['payment_method_types[4]'], undefined);
+    assert.strictEqual(form['payment_method_types[1]'], 'grabpay'); // v0.2.13.1：fpx/alipay 账户不可用已去
+    assert.strictEqual(form['payment_method_types[2]'], undefined);
     assert.strictEqual(form['subscription_data[metadata][user_id]'], undefined); // payment 模式禁带 subscription_data
     assert.strictEqual(form['metadata[tier_key]'], 'premium');
     assert.strictEqual(form['metadata[months]'], '12');
@@ -225,7 +223,7 @@ test('status：?currency=usd/eur 命中 catalog（hasPrice/hasOnce + onceMethods
     const myr = await (await t.request('GET', '/api/subscription/status')).json();
     assert.strictEqual(myr.currency, 'myr');                     // 缺省 = myr（legacy env 回归）
     assert.strictEqual(myr.prices.premium.hasPrice, true);
-    assert.deepStrictEqual(myr.onceMethods, ['card', 'fpx', 'alipay', 'grabpay']);
+    assert.deepStrictEqual(myr.onceMethods, ['card', 'grabpay']); // v0.2.13.1：只留账户真可用方式
 
     const nope = await (await t.request('GET', '/api/subscription/status?currency=krw')).json(); // 目录外币：全假（不会崩）
     assert.strictEqual(nope.prices.premium.hasPrice, false);

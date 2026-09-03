@@ -2426,7 +2426,7 @@ bgStyle.textContent='@keyframes floatCubeBG{0%{transform:translateY(0) rotate(0d
 document.head.appendChild(bgStyle);
 </script>
 
-<div class="plan-note" id="planNote">注册默认「普通用户」（免费）；Basic 为学生价方案（RM12/月）。会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay，可随时在「管理订阅」取消）或每年支付（一次付清 1 年 · 送 2 个月，FPX 网银 / 支付宝 / GrabPay，不自动续费）。</div>
+<div class="plan-note" id="planNote">注册默认「普通用户」（免费）；Basic 为学生价方案（RM12/月）。会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay / Google Pay，可随时在「管理订阅」取消）或每年支付（一次付清 1 年 · 送 2 个月，银行卡 / GrabPay，不自动续费）。</div>
 
 <!-- 全屏倒数跳转遮罩（点击订阅/每年支付 → checkout 成功后 3-2-1 → 跳 Stripe 结账页） -->
 <div id="cdOverlay" class="cd-overlay">
@@ -2439,9 +2439,11 @@ document.head.appendChild(bgStyle);
 // ── 订阅流程：等级感知 + 在线支付（Stripe 混合模式）──
 // 口径：tier 以服务端为准（GET /api/auth/me）。付费页恒为最终支付态：登录用户的卡片 CTA 始终是
 // 「订阅 · RMxx/月」（自动续费，卡类）与「每年支付 · RMyy/年」（一次付清 1 年 · 月价×10 送 2 个月，
-// FPX 网银/支付宝/GrabPay，不自动续费），点击 POST /subscription/checkout → 3-2-1 倒数跳 Stripe 结账页；
-// 后端 Stripe 未配置时按钮不变、点击后如实 toast「即将上线」。2026-08-20：一期「申请开通」工单回退与
-// ?payDemo 预览模式已整体移除。v0.2.13.0：once 语义 = 每年支付（不再是「单次购买 1 个月」，全站无单次口吻）。
+// 银行卡/GrabPay，不自动续费；Apple/Google Pay 随卡自动出现在结账页），点击 POST /subscription/checkout
+// → 3-2-1 倒数跳 Stripe 结账页；后端 Stripe 未配置时按钮不变、点击后如实 toast「即将上线」。2026-08-20：
+// 一期「申请开通」工单回退与 ?payDemo 预览模式已整体移除。v0.2.13.0：once 语义 = 每年支付（不再是
+// 「单次购买 1 个月」，全站无单次口吻）。v0.2.13.1：实证 fpx/alipay 账户不可用（available:false）→ 清单去之。
+// 结账页可用：卡 + GrabPay（马区）+ Apple/Google Pay/Link（钱包随卡，买家合格即自动出现，无需列清单）。
 (function () {
   var TIER_RANK = { free: 0, basic: 1, premium: 2, ultra: 3 }; // free=普通用户（注册默认，不再直接拥有 Basic）
   var TIER_ZH = { free: '普通用户', basic: 'Basic', premium: 'Premium', ultra: 'Premium Ultra' };
@@ -2504,10 +2506,10 @@ document.head.appendChild(bgStyle);
   function refreshPlanNote() {
     var nb = document.getElementById('planNote');
     if (!nb || !p) return;
-    var list = ((sub && sub.onceMethods) || (MN_CUR === 'myr' ? ['card', 'fpx', 'alipay', 'grabpay'] : ['card']))
+    var list = ((sub && sub.onceMethods) || (MN_CUR === 'myr' ? ['card', 'grabpay'] : ['card']))
       .map(function (m) { return METHOD_ZH[m] || m; }).join(' / ');
     nb.innerHTML = '注册默认「普通用户」（免费）；Basic 为学生价方案（' + p.basic + '/月，' + p.label + '）。'
-      + '会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay，可随时在「管理订阅」取消）'
+      + '会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay / Google Pay，可随时在「管理订阅」取消）'
       + '或每年支付 1 年（一次付清 · 送 2 个月，' + list + '，不自动续费）。';
   }
   refreshPlanNote();
@@ -2653,7 +2655,7 @@ document.head.appendChild(bgStyle);
     } catch (e) { return null; }
   }
 
-  // 支付回跳（?paid=1 / ?canceled=1）：paid → 轮询 /auth/me 直到 tier 生效（FPX 银行到账可能延迟几分钟）
+  // 支付回跳（?paid=1 / ?canceled=1）：paid → 轮询 /auth/me 直到 tier 生效（本地方式到账可能延迟几分钟）
   function handleReturn() {
     var n = $('payNotice');
     if (!n) return;

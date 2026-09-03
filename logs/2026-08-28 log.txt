@@ -886,3 +886,25 @@ premium 页静态 RM12 硬编码（matrix/plan-note/renderGuest）全部动态�
 验证：测试 191/191（once checkout 断言 months=12、webhook 断言顺延 ~355-370 天窗口）；电池 tmp-battery-premium-multi.js 扩年付段 104/104 本地 + 104/104 线上（10 locale：yearPrice/yearPerMonth 函数值=yP/ymP 字面量双校验、innerText 无「单次」无「1 个月」、5 按钮静态标签=每年支付、折合每月提示模板、hub [data-slati-price] 角标回归、0 脚本异常）；smoke-admin 49/49；curl 16 币 status 全 enabled+hasPrice+hasOnce（myr onceMethods=card+fpx+alipay+grabpay、15 非 myr card-only）；health 57 表；部署 revision mnationworld-web-00068-wpn 100% 流量。
 版本：站点 v0.2.12.0 → v0.2.13.0（小改动位 12→13·新功能轮·补丁清零）；FC 线不动（v10.28.18.1）。
 教训 ⑭：重建含真实 Price ID 的 catalog 绝不能自己算金额拼结构——首稿 tmp-catalog-v013 落入「数字 minor」假结构；必须只读 Stripe metadata 现网重建（tmp-year-catalog.js）——金额计算（provision）与 ID 重建（catalog）两职责分开。
+──── v0.2.13.1 支付方式实证修正轮（2026-09-04，rev 00069-cbh）
+用户：「那个Stripe 的支付方式没办法增加其他的方式了吗」→「例如 tng, samsung pay, google pay, 之类的电子钱包」→ AskUserQuestion 钦定：
+  ① 自答「支持这16个货币当地通用的电子钱包服务」——MY 单账户做不到（Stripe 方式绑定商家注册国：TnG/Samsung Pay 是本地 PSP 产品、
+  GCash/UPI/PayNow 是别国产品，Stripe MY 一个都无）→ 摆实证后选 ②「先做 Stripe 全开（推荐）」= 开 Google Pay + 修开 FPX/Alipay/GrabPay 账户态。
+账户侧（零代码）——PaymentMethodConfigurations API 探活（tmp-pm-probe.js 只读 /v1/account + /payment_method_configurations，默认 config pmc_1UBcRc…）：
+  MY 账户（acct_1UBcR5…）逐方式 available = card/apple_pay/google_pay/grabpay/link 🟢、fpx/alipay available:false——display_preference=on 后仍 400
+  「activated in your dashboard」（配置层显示开关 ≠ 账户层可用性，两码事）；grabpay/google_pay 原 ⚪off → POST display_preference=on 真开
+  （回读 persisted + grabpay 年付会话 200 实证；google_pay available:true 随卡自动上结账页无需列清单）；usd×alipay 400 币种绑定实证
+  （fpx/alipay/grabpay 仅 myr 会话）。TnG/Samsung Pay 不在 Stripe MY 产品表，要接须另轮本地 PSP（如 Payment Gateway MY / 直接商户）。
+活线 bug（v0.2.13.0 年付轮漏网，两层各一）——①后端默认 oncePaymentMethods='card,fpx,alipay,grabpay' 含两死方式 → MYR 每年支付 checkout
+  全 400 建不了会话（马区旗舰流程实际从没建成过；v0.2.13.0 电池/curl 只验页面文案与 hasOnce，从不建真会话所以全绿漏过）；
+  ②premium/help/terms/privacy 全站向用户声称 FPX 可用（页面 method 小字 FPX 网银/支付宝/GrabPay）。
+  修复——config.js 默认去 fpx/alipay → 'card,grabpay'（订阅本就只 card；钱包随卡自动不列清单），注释留实证警告勿加回；premium.html 静态/
+  动态 plan-note、myr 回退清单、页内注释同口径（银行卡 / GrabPay，订阅行补 Google Pay）；文案清扫 tmp-sweep-fpx-copy.js 14 处精确替换全命中
+  （help FAQ 支付方式/货币——推荐 GrabPay 替 FPX 网银、financial-terms 支付渠道与手续费、platform-responsibility 第三方、terms 依赖、
+  privacy 两处、site-config 注释链；残留仅 premium METHOD_ZH 字典键）；测试同步（fixture 订阅只卡/once card+grabpay、默认清单断言）191/191。
+版本：站点 v0.2.13.0 → v0.2.13.1（补丁位 0→1·修复轮）；FC 线不动（v10.28.18.1）。
+验证：docker build exit 0 → tag/login(token 直登 -p)/push → gcloud run deploy（env 全量照 live describe 拼串、值含逗号检测拦截、volume 两参带引号），
+  revision mnationworld-web-00069-cbh 100% 流量；curl：status myr onceMethods=['card','grabpay']、usd/eur/vnd 纯 card、health 57 表；
+  电池 tmp-battery-premium-multi.js 106/106 线上（104 原有 + 2 新回归：myr plan-note 含 银行卡/GrabPay、无 FPX/支付宝 口吻）+ 全程 0 脚本异常。
+教训 ⑯：PaymentMethodConfiguration display_preference=on 只是显示层——逐方法 available 字段 + 真建会话（checkout/sessions 200）才是唯一实证；
+  单元测试/页面电池/curl 全都探不到 Stripe 400（从不建真会话）——前端宣称的支付方式必须周期性与账户实况对账，默认方法清单含死方式可静默杀死整条通道。

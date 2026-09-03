@@ -62,7 +62,7 @@ window.MN_I18N.add('zh', {
   'sec4.li2.label': '避风港原则：',
   'sec4.li2.body': '平台无法保证百分之百即时发现所有违规内容；对未及时发现的违规内容，平台在接到通知后及时处置的，不承担由此产生的责任。',
   'sec4.li3.label': '第三方服务：',
-  'sec4.li3.body': '因第三方服务（Discord、Stripe / FPX、Google Cloud、Google Gemini）中断或故障造成的损失，平台仅在自身责任范围内负责（详见服务条款第 11 条）。',
+  'sec4.li3.body': '因第三方服务（Discord、Stripe、Google Cloud、Google Gemini）中断或故障造成的损失，平台仅在自身责任范围内负责（详见服务条款第 11 条）。',
   'sec4.li4.label': 'AI 功能边界：',
   'sec4.li4.body': '平台提供的 AI 功能（AI 搜索、AI 文章优化、AI 总结、AI 客服等）由第三方 AI 服务生成，仅供辅助参考，不构成平台的专业意见、处理结果或承诺（详见服务条款第 6 条及本条款第 2 条第 10 项）。',
   'sec4.li5.label': '不可抗力：',
