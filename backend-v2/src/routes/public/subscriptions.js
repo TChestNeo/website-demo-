@@ -8,8 +8,8 @@
 //   POST /api/subscription/portal   （会话）→ { url }（Customer Portal：取消/换卡/账单；仅订阅用户）
 //   POST /api/webhooks/stripe       （Stripe 服务器→服务器，HMAC 验签）
 // 混合通道：subscription = 自动续费订阅（仅卡类支撑反复扣款，Apple Pay 随卡自动出现）；
-// once = 单次购买 1 个月（FPX 网银/支付宝/GrabPay 等一次性支付方式，到期不自动续，webhook 以
-// session.mode=payment 区分，审计 via=stripe_once）。
+// once = 每年支付 1 年（v0.2.13.0：月价 ×10 送 2 个月，一次付清不自动续费；FPX 网银/支付宝/GrabPay
+// 等一次性支付方式，webhook 以 session.mode=payment 区分，审计 via=stripe_once，到期顺延 +12 个月）。
 // 口径：支付/续费 = tier 提升 + 到期顺延（tier_expires_at，NULL=管理员永久授予）；
 // 取消（customer.subscription.deleted）= 立即降 free；到期惰性降级兜底（/auth/me 等读取路径）。
 // 等级阶梯：free(普通用户，注册默认) < basic(学生价 RM12/月) < premium < ultra；降级一律落 free。
@@ -30,7 +30,8 @@ const { audit } = require('../../audit');
 const TIER_OF = { basic: 'basic', premium: 'premium', ultra: 'ultra', 'pkg-premium': 'premium', 'pkg-ultra': 'ultra' };
 const TIER_KEYS = Object.keys(TIER_OF);
 const TIER_RANK = { free: 0, basic: 1, premium: 2, ultra: 3 };
-const MONTHS = 1; // 全部 SKU 月付
+const MONTHS = 1; // 订阅：月付（自动续费）
+const ONCE_MONTHS = 12; // once（每年支付）= 一次付清 1 年；row.months 落 12 → applyPaid 到期顺延 12 个月
 
 // ── 多币种解析（v0.2.12.0）──
 // 空/缺省 → myr（legacy env Price，向后兼容）。其余币必须出现在 catalog 才给会话；
@@ -128,7 +129,7 @@ function handleSession(db, cfg, event) {
       .run(s.customer, row.user_id);
   }
   if (s.payment_status !== 'paid') return;
-  // 单次购买（mode=payment）无 subscription，审计 via=stripe_once 与订阅区分（财报口径可追溯）
+  // 年付 once（mode=payment）无 subscription，审计 via=stripe_once 与订阅区分（财报口径可追溯）
   applyPaid(db, cfg, row, {
     eventId: event.id, subscriptionId: s.subscription || null, customerId: s.customer || null,
     amountMicro: s.amount_total || 0, currency: (s.currency || 'myr').toLowerCase(),
@@ -199,11 +200,11 @@ function register(router, ctx) {
     const prices = {};
     for (const k of TIER_KEYS) prices[k] = {
       hasPrice: !!priceIdFor(cfg, k, currency, 'subscription'), // 订阅通道（自动续费，卡类）
-      hasOnce: !!priceIdFor(cfg, k, currency, 'once')           // 单次购买通道（一次性方式）
+      hasOnce: !!priceIdFor(cfg, k, currency, 'once')           // 每年支付通道（一次性方式）
     };
     const out = {
       enabled: !!(cfg.stripe.enabled && cfg.stripe.secretKey),
-      mode: 'hybrid', // subscription（自动续费，卡类）+ once（单次购买 1 个月）
+      mode: 'hybrid', // subscription（自动续费，卡类）+ once（每年支付 1 年，一次付清）
       currency,
       prices,
       onceMethods: paymentMethodsFor(cfg, currency, 'once')
@@ -214,7 +215,7 @@ function register(router, ctx) {
       user = enforceTierExpiry(ctx.db, cfg, user);
       out.tier = user.tier;
       out.tierExpiresAt = user.tier_expires_at || null;
-      // portal 只管订阅（取消/换卡/账单）；单次购买用户有 customer id 但无订阅，不给 portal
+      // portal 只管订阅（取消/换卡/账单）；年付 once 用户有 customer id 但无订阅，不给 portal
       out.hasPortal = !!db.prepare(
         "SELECT 1 FROM payments WHERE user_id = ? AND status = 'paid' AND stripe_subscription_id IS NOT NULL LIMIT 1"
       ).get(user.id);
@@ -223,7 +224,7 @@ function register(router, ctx) {
   });
 
   // 创建 Checkout Session（前端拿 url 跳转；对应通道 Price ID 未配 → PAYMENTS_DISABLED，前端回退申请流）
-  // mode：subscription（默认，自动续费订阅，卡类）/ once（单次购买 1 个月，一次性支付方式）
+  // mode：subscription（默认，自动续费订阅，卡类）/ once（每年支付 1 年，一次性支付方式，月价×10）
   // currency：缺省 myr；非 myr 必须命中 catalog（Price ID 服务端解析，防伪造）
   router.add('POST', '/api/subscription/checkout', requireSession(async (req, res) => {
     const w = (cfg.rateLimits || {}).checkout || { max: 5, windowMs: 60000 };
@@ -242,13 +243,13 @@ function register(router, ctx) {
     }
     const session = await createCheckoutSession(ctx.moderation.fetchImpl, cfg, {
       priceId, userId: ctx.user.id, email: ctx.user.email,
-      origin: returnOrigin(ctx, req), tierKey, months: MONTHS,
+      origin: returnOrigin(ctx, req), tierKey, months: mode === 'once' ? ONCE_MONTHS : MONTHS,
       mode: mode === 'once' ? 'payment' : 'subscription',
       paymentMethods: paymentMethodsFor(cfg, currency, mode)
     });
     insertWithId(db, 'payments',
       ['user_id', 'stripe_session_id', 'tier_key', 'amount_micro', 'currency', 'months', 'status', 'created_at'],
-      [ctx.user.id, session.id, tierKey, 0, currency, MONTHS, 'pending', new Date().toISOString()],
+      [ctx.user.id, session.id, tierKey, 0, currency, mode === 'once' ? ONCE_MONTHS : MONTHS, 'pending', new Date().toISOString()],
       (s) => 'PAY-' + pad6(s));
     sendJson(res, 200, { url: session.url });
   }));

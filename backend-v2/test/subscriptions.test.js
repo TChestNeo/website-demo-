@@ -161,7 +161,7 @@ test('checkout：pending 行 + url + Stripe 请求形状（subscription 模式/p
   } finally { await t.close(); }
 });
 
-test('checkout once：单次购买请求形状（mode=payment/一次性 Price/4 槽方法/无 subscription_data）+ pending 行', async () => {
+test('checkout once：每年支付请求形状（mode=payment/年付 Price/4 槽方法/无 subscription_data）+ pending 行 months=12', async () => {
   const stub = stripeStub();
   const t = await testApp({ config: stripeConfig({ returnOrigin: 'https://mn.world' }), fetchImpl: stub.fetchImpl });
   try {
@@ -171,7 +171,7 @@ test('checkout once：单次购买请求形状（mode=payment/一次性 Price/4 
     const row = t.db.prepare('SELECT * FROM payments WHERE user_id = ?').get(alice.user.id);
     assert.strictEqual(row.status, 'pending');
     assert.strictEqual(row.tier_key, 'premium');
-    assert.strictEqual(row.months, 1);
+    assert.strictEqual(row.months, 12); // v0.2.13.0：once = 年付 1 年（一次付清，月价×10）
 
     const form = Object.fromEntries(new URLSearchParams(stub.calls[0].opts.body).entries());
     assert.strictEqual(form.mode, 'payment');
@@ -184,7 +184,7 @@ test('checkout once：单次购买请求形状（mode=payment/一次性 Price/4 
     assert.strictEqual(form['payment_method_types[4]'], undefined);
     assert.strictEqual(form['subscription_data[metadata][user_id]'], undefined); // payment 模式禁带 subscription_data
     assert.strictEqual(form['metadata[tier_key]'], 'premium');
-    assert.strictEqual(form['metadata[months]'], '1');
+    assert.strictEqual(form['metadata[months]'], '12');
     assert.strictEqual(form.success_url, 'https://mn.world/pages/premium.html?paid=1');
   } finally { await t.close(); }
 });
@@ -376,7 +376,7 @@ test('FPX 异步：completed(unpaid) 只存 id 不开通；async_payment_succeed
   } finally { await t.close(); }
 });
 
-test('单次购买 webhook：mode=payment completed(paid) → 开通 + via=stripe_once 审计 + 无订阅 id + 无 portal', async () => {
+test('每年支付 webhook：mode=payment completed(paid) → 开通顺延 12 个月 + via=stripe_once 审计 + 无订阅 id + 无 portal', async () => {
   const stub = stripeStub();
   const t = await testApp({ config: stripeConfig(), fetchImpl: stub.fetchImpl });
   try {
@@ -388,13 +388,13 @@ test('单次购买 webhook：mode=payment completed(paid) → 开通 + via=strip
 
     const row = t.db.prepare('SELECT * FROM payments WHERE stripe_session_id = ?').get('cs_test_1');
     assert.strictEqual(row.status, 'paid');
-    assert.strictEqual(row.stripe_subscription_id, null); // 单次购买无订阅
+    assert.strictEqual(row.stripe_subscription_id, null); // 每年支付无订阅（一次付清不自动续费）
     const u = t.db.prepare('SELECT * FROM users WHERE id = ?').get(alice.user.id);
     assert.strictEqual(u.tier, 'premium');
     assert.strictEqual(u.stripe_customer_id, 'cus_test_1');
     const exp = new Date(u.tier_expires_at).getTime();
-    assert.ok(exp > before + 27 * 86400000);
-    assert.ok(exp < before + 33 * 86400000);
+    assert.ok(exp > before + 355 * 86400000, '到期至少顺延近 1 年（months=12 落库生效）');
+    assert.ok(exp < before + 370 * 86400000, '到期不超过 1 年 + 余量');
     const aud = t.db.prepare("SELECT * FROM audit_log WHERE action = 'set_tier'").all();
     assert.strictEqual(aud.length, 1);
     assert.deepStrictEqual(JSON.parse(aud[0].prev_value), { from: 'free', via: 'stripe_once' });

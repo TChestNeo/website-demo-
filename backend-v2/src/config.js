@@ -74,15 +74,17 @@ const config = {
 
   // Stripe 在线支付（真实扣款；零前端密钥——前端只拿后端返回的跳转 URL）。混合模式：
   //   subscription = 自动续费订阅（仅卡类支撑反复扣款；Apple Pay/Google Pay 随卡自动出现）
-  //   once         = 单次购买 1 个月（FPX 网银/支付宝/GrabPay 等一次性支付方式，到期不自动续）
+  //   once         = 每年支付 1 年（v0.2.13.0：月价×10 送 2 个月，一次付清；FPX 网银/支付宝/GrabPay
+  //                  等一次性支付方式，到期不自动续，webhook 顺延 12 个月）
   // STRIPE_ENABLED 未开 / 密钥未配 → 付费页回退「申请开通」工单流程（降级路径）。
   // prices：5 个主 SKU（basic/premium/ultra/pkg-premium/pkg-ultra）的 recurring Price ID；
-  // pricesOnce：同 SKU 的一次性（one_time）Price ID。Basic = 学生价 RM12/月（付费层，新用户默认 free 普通用户）。
+  // pricesOnce：同 SKU 的年付（one_time）Price ID。Basic = 学生价 RM12/月（付费层，新用户默认 free 普通用户）。
   // 缺哪个，哪个 SKU 的对应通道就不走支付、回退申请流。
   // paymentMethods（订阅）：只放卡类——FPX/支付宝等一次性方式不支撑订阅，放进订阅清单 Checkout 建会话会失败。
-  // oncePaymentMethods（单次）：默认 card,fpx,alipay,grabpay；微信支付等需先在 Dashboard 确认马区可用再加 wechat_pay。
+  // oncePaymentMethods（每年支付）：默认 card,fpx,alipay,grabpay；微信支付等需先在 Dashboard 确认马区可用再加 wechat_pay。
   // 多币种（v0.2.12.0）：myr（马来西亚本地价，默认）走上方 legacy env Price；usd + 14 币走 STRIPE_CATALOG_B64
-  // （base64url JSON {currency:{tierKey:{sub,once}}}，unit_amount 整数；单 env 单值避免 gcloud 逗号拆参）。
+  // （base64url JSON {currency:{tierKey:{sub,once}}}；v0.2.13.0 起 once = 年付 Price ID，月付金额×10 后重吸
+  // .99/.00 尾）；单 env 单值避免 gcloud 逗号拆参）。
   //   弱币（idr/vnd/thb/php/inr，1 USD 换得比 MYR 多）→ 按 MYR 价档换算；其余 → 按 USD 价档换算；尾 X.99/.00。
   // 非 myr 会话支付方式只允许 card（FPX/支付宝/GrabPay 为马区方式）。缺失/解析失败 → catalog={}（纯 legacy 兼容）。
   stripe: {
