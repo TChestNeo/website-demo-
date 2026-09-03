@@ -98,7 +98,7 @@
             h('div', { class: 'sub', text: 'Basic Info' }))),
         kvList([
           ['昵称', u.displayName], ['公民号', u.citizenId], ['国家/地区', u.country], ['语言', u.language],
-          ['个人简介', u.bio], ['层级到期', fmtDateTime(u.tierExpiresAt)], ['注册时间', fmtDateTime(u.createdAt)],
+          ['性别', u.gender], ['个人简介', u.bio], ['层级到期', fmtDateTime(u.tierExpiresAt)], ['注册时间', fmtDateTime(u.createdAt)],
           ['最后活跃', fmtDateTime(u.lastActiveAt)], ['最后登录', fmtDateTime(u.lastLoginAt)],
           ['风险理由', Array.isArray(u.riskReasons) && u.riskReasons.length ? u.riskReasons.join('、') : null],
           ['警告次数', u.warningCount], ['禁言至', fmtDateTime(u.mutedUntil)], ['出生日期', u.dob ? fmtDate(u.dob) : null]

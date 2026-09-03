@@ -1,5 +1,5 @@
 'use strict';
-// 迁移 001-012：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
+// 迁移 001-013：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
 
 const test = require('node:test');
 const assert = require('node:assert');
@@ -13,9 +13,9 @@ function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'mn2-mig-'));
 }
 
-test('迁移：user_version=12、57 表、角色/权限/平台种子齐整', () => {
+test('迁移：user_version=13、57 表、角色/权限/平台种子齐整', () => {
   const db = openDb(path.join(tmpDir(), 'a.sqlite'));
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 12);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 13);
   // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 + 010 两 = 57（触发器不算表）
   const n = db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().n;
   assert.strictEqual(n, 57);
@@ -42,7 +42,7 @@ test('迁移：重复打开同库幂等（版本不再推进、无重复执行�
   const p = path.join(tmpDir(), 'b.sqlite');
   openDb(p);
   const db = openDb(p);
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 12);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 13);
 });
 
 test('迁移 005-009：社交/工单/知识库/审核/财务关键表与扩展列就位（D5/D6 口径）', () => {
@@ -84,6 +84,13 @@ test('迁移 011：users/staff password_hash 加列（W6 密码双因素；旧�
   const dflt = (t) => db.prepare(`PRAGMA table_info(${t})`).all().find(x => x.name === 'password_hash').dflt_value;
   assert.strictEqual(dflt('users'), null);
   assert.strictEqual(dflt('staff'), null);
+});
+
+test('迁移 013：users.gender 加列（v0.2.11.0 用户性别记录；旧用户默认 NULL）', () => {
+  const db = openDb(path.join(tmpDir(), 'g.sqlite'));
+  const col = db.prepare("PRAGMA table_info(users)").all().find(x => x.name === 'gender');
+  assert.ok(col, '013 列缺');
+  assert.strictEqual(col.dflt_value, null);
 });
 
 test('迁移：重复版本号启动即报错（防静默跳过）', () => {

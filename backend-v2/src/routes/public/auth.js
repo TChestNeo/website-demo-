@@ -8,7 +8,7 @@
 //   POST /api/auth/verify-code （无会话）{ email, code } → { ok }（忘记密码输满先验：只验码不消费码，与 password-reset 共享 5 次锁）
 //   POST /api/auth/logout      （无会话也 200）                  → { ok }
 //   GET  /api/auth/me          （会话）                          → { user }
-//   PATCH /api/auth/me         （会话）{ displayName?, avatarUrl?, language?, country?, dob?, bio? } → { user }
+//   PATCH /api/auth/me         （会话）{ displayName?, avatarUrl?, language?, country?, dob?, bio?, gender? } → { user }
 //   POST /api/auth/delete      （会话 + delete_confirm 码）      → { ok, restoreBy }（30 天后悔期；再登录即恢复）
 // user 形状与前端 slati_user 逐字段一致（displayName/email/citizenId/avatarUrl/…），零适配。
 // v2 增量：login_history/风险信号（§5）、PATCH/delete 审计（§5）、user_sessions、role 固定 'user'（D4）。
@@ -59,6 +59,7 @@ function publicUser(row) {
     role: row.role,
     status: row.status,
     hasPassword: !!row.password_hash, // W6：前端据此判断是否需引导设密（additive）
+    gender: row.gender || null, // 013：Male/Female/Other（注册第二页下拉），NULL = 未填写
     createdAt: row.created_at
   };
 }
@@ -260,6 +261,12 @@ function register(router, deps) {
       push('dob = ?', dob);
       prev.dob = ctx.user.dob;
     }
+    if (body.gender !== undefined) {
+      const gender = String(body.gender).trim();
+      if (!['Male', 'Female', 'Other'].includes(gender)) throw new HttpError('VALIDATION', '性别需为 Male / Female / Other');
+      push('gender = ?', gender);
+      prev.gender = ctx.user.gender;
+    }
     if (sets.length) {
       push('updated_at = ?', new Date().toISOString());
       ctx.db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).run(...vals, ctx.user.id);
@@ -274,7 +281,7 @@ function register(router, deps) {
         prev,
         next: {
           displayName: next.display_name, avatarUrl: next.avatar_url, language: next.language,
-          country: next.country, bio: next.bio, dob: next.dob
+          country: next.country, bio: next.bio, dob: next.dob, gender: next.gender
         }
       });
       sendJson(res, 200, { user: publicUser(next) });

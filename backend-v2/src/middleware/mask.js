@@ -43,6 +43,7 @@ function maskUserRow(c, u) {
     language: u.language,
     country: u.country,
     bio: u.bio,
+    gender: u.gender, // 013：Male/Female/Other（注册第二页），NULL = 未填写
     tier: u.tier,
     tierExpiresAt: u.tier_expires_at,
     status: u.status,

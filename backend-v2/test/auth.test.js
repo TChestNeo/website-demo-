@@ -93,8 +93,9 @@ test('verify：新邮箱建号 status=new + user 形状（camel）+ Set-Cookie m
   const body = await res.json();
   assert.strictEqual(body.status, 'new');
   assert.deepStrictEqual(Object.keys(body.user).sort(), [
-    'avatarUrl', 'citizenId', 'createdAt', 'displayName', 'email', 'hasPassword', 'id', 'role', 'status', 'tier', 'tierExpiresAt'
+    'avatarUrl', 'citizenId', 'createdAt', 'displayName', 'email', 'gender', 'hasPassword', 'id', 'role', 'status', 'tier', 'tierExpiresAt'
   ].sort());
+  assert.strictEqual(body.user.gender, null); // 013：未填写 NULL
   assert.strictEqual(body.user.displayName, 'Neo');
   assert.strictEqual(body.user.role, 'user'); // D4：role 恒 user
   assert.strictEqual(body.user.hasPassword, true); // W6：新注册强制带密码，无设密过渡
@@ -392,6 +393,15 @@ test('PATCH me：更新资料 + profile_update 审计（prev/next 差异）', as
   // dob 年龄校验
   const bad = await a.request('PATCH', '/api/auth/me', { dob: '2020-01-01' }, { cookie });
   assert.strictEqual(bad.status, 400);
+  // gender（013）：合法值入库 + 审计 next 含 gender；非法值 400
+  const g = await a.request('PATCH', '/api/auth/me', { gender: 'Female' }, { cookie });
+  assert.strictEqual(g.status, 200);
+  assert.strictEqual((await g.json()).user.gender, 'Female');
+  assert.strictEqual(a.db.prepare("SELECT gender FROM users WHERE email = 'patch@example.com'").get().gender, 'Female');
+  const gAudit = a.db.prepare("SELECT * FROM audit_log WHERE action = 'profile_update' ORDER BY seq DESC LIMIT 1").get();
+  assert.strictEqual(JSON.parse(gAudit.new_value).gender, 'Female');
+  const badG = await a.request('PATCH', '/api/auth/me', { gender: 'Helicopter' }, { cookie });
+  assert.strictEqual(badG.status, 400);
 });
 
 test('logout：清 cookie + 幂等（无会话也 200）', async (t) => {

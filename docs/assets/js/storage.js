@@ -370,7 +370,7 @@ var SlatiDB = (function () {
     if (!hasCloudUser()) return;
     whenUp(function (api) {
       var body = {};
-      ['displayName', 'avatarUrl', 'language', 'country', 'dob', 'bio'].forEach(function (k) {
+      ['displayName', 'avatarUrl', 'language', 'country', 'dob', 'bio', 'gender'].forEach(function (k) {
         if (user[k] != null) body[k] = user[k];
       });
       api.patch('/auth/me', body);

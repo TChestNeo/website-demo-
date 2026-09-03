@@ -172,6 +172,12 @@
         el('label', 'form-label', {}, 'Citizen ID'),
         el('input', 'input-glass', { type: 'text', value: user.citizenId, readonly: '', style: { opacity: '0.6', cursor: 'not-allowed' } }),
       ]),
+      // 2026-09-03 用户「在后端做一下用户性别的记录，然后在用户资料里也单独显示」：Profile 区单独一行展示
+      //（注册第二页下拉填写的值，镜像到后端 /me 后权威回读；未填写显示 —）
+      el('div', 'form-group', {}, [
+        el('label', 'form-label', {}, 'Gender'),
+        el('input', 'input-glass', { type: 'text', value: user.gender || '—', readonly: '', style: { opacity: '0.6', cursor: 'not-allowed' } }),
+      ]),
     ]);
 
     // ── Section: Appearance ──
