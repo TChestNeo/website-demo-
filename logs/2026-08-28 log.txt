@@ -1016,3 +1016,15 @@ premium 页静态 RM12 硬编码（matrix/plan-note/renderGuest）全部动态�
 踩坑：电池默认 BASE=线上（argv[2] 未传时回退 https://mnationworld.com）——本轮首跑忘了传 --base 打到旧线上全绿中 4 挂，
   探针 tmp-probe-stale.js 实锤本地壳与 Chrome 都是新鲜内容，罪魁是自己没传 --base（本地须 --base http://127.0.0.1:8000）；
   同轮顺手修扫描器 bug：媒体块内规则无 .media 属性，须按递归 inMedia 标志判媒体归属。
+
+════ v0.2.15.5 Community 发帖工具 icon 悬停放大保粗修复（2026-09-04，rev 00078-ch6）════
+用户：为什么放大icon就从粗体变成细的了
+根因——v0.2.15.4 用 transform:scale(1.25) 放大：transform 缩放禁用字体像素网格对齐（hinting），24px 字形原样放大 1.25 倍
+  而不重新排版，光栅化无网格对齐 → 笔画视觉变细。
+实现——改动画 font-size 24→30px（同为 1.25 倍，每帧重新排版+对齐保粗壮，可变字体 opsz 自动适配）
+  + 上浮改 margin-top -2px（flex 项位移，不碰 transform）；reduced-motion 关动画不变；零共享文件改动。
+版本：站点 v0.2.15.4 → v0.2.15.5（补丁位 4→5·修复轮）；FC 线不动（v10.28.18.1）。
+验证：电池 40→41（悬停规则改 font-size 30px/margin-top -2px、reduced-motion 媒体规则 font-size 24px、
+  真悬停 font-size 30px+无 transform、移开回 24px/0）本地+线上 41/41；冒烟 49/49；docker build exit 0 →
+  tag/login/push → gcloud.ps1 run deploy revision mnationworld-web-00078-ch6 100% 流量；curl 七连全 200 + health 57 表。
+备注：粗细差异属浏览器渲染机制（hinting）非 bug 代码——电池已加「无 transform」断言防回归。
