@@ -473,42 +473,9 @@ textarea.input-glass {
 }
 #postComposer::placeholder { color: rgba(118, 117, 134, 0.4); }
 
-/* 2026-09-05 用户「输入框显示的文字的切换只有在刷新页面时会随机变化」（v0.2.15.7 修复轮）：
-   轮播从 JS setInterval 改纯 CSS 动画——浏览器省电/后台节流会冻 JS 计时器（走一段就停、刷新又随机重来），
-   CSS 动画由合成器驱动不受节流影响。四句叠同格，phSpin 14s 一轮每句 3.5s（窗口边缘 0.3s 交叉淡入淡出），
-   正 delay 分窗保证插入即从句 1 开始；框内有内容时整层隐藏（placeholder 反正不可见）。 */
-.ph-rotator {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  right: 10px;
-  pointer-events: none;
-  display: grid;
-  color: rgba(118, 117, 134, 0.4);
-}
-.ph-rotator span {
-  grid-area: 1 / 1;
-  opacity: 0;
-  white-space: pre-wrap;
-  animation: phSpin 14s linear infinite;
-  animation-fill-mode: backwards;
-}
-.ph-rotator span:nth-child(1) { animation-delay: 0s; }
-.ph-rotator span:nth-child(2) { animation-delay: 3.5s; }
-.ph-rotator span:nth-child(3) { animation-delay: 7s; }
-.ph-rotator span:nth-child(4) { animation-delay: 10.5s; }
-@keyframes phSpin {
-  0% { opacity: 0; }
-  2.14% { opacity: 1; }
-  22.86% { opacity: 1; }
-  25% { opacity: 0; }
-  100% { opacity: 0; }
-}
-.composer-ph-wrap.has-text .ph-rotator { display: none; }
-@media (prefers-reduced-motion: reduce) {
-  .ph-rotator span { animation: none; }
-  .ph-rotator span:nth-child(1) { opacity: 1; }
-}
+/* v0.2.15.8 用户「算了你把他改成每隔30分钟切换一次文本」：撤销 v0.2.15.7 的纯 CSS 轮播（.ph-rotator/phSpin 全删）——
+   placeholder 改原生属性 + 30 分钟一档按墙钟取句（floor(Date.now()/30min)%4，整点/半点对齐），
+   由 renderFeed 现算 + 边界定时器正点切换 + visibilitychange 兜底，无需任何动画。 */
 
 /* ----- Composer Toolbar ----- */
 /* 2026-09-04 用户「在Post按钮的同一行上添加 上传图片，GIF，投票，表情符号和创办活动，全部采用icon显示只有滑鼠停留在icon上才显示名称」：
@@ -2257,18 +2224,32 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   }
 
   // v0.2.15.3 用户「输入框默认显示（有什么好事？/有什么新消息？/同志有什么新消息要分享分享？/贵国有什么新闻吗？）」：
-  // placeholder 四句轮播（每句 3.5s）。v0.2.15.7 用户「切换只在刷新页面时随机变化」——JS setInterval 会被浏览器
-  // 省电/后台节流冻住（走一段就停、刷新随机重来），改纯 CSS 动画驱动（.ph-rotator 四句叠同格 phSpin 14s 一轮、
-  // 正 delay 分窗插入即从句 1 开始，合成器驱动不受节流影响）；框内有内容时 has-text 隐藏整层。
+  // placeholder 四句。v0.2.15.8 用户「算了你把他改成每隔30分钟切换一次文本」：撤销 v0.2.15.7 纯 CSS 轮播——改
+  // 30 分钟一档按墙钟取句（floor(Date.now()/30min)%4，整点/半点对齐全球同档），renderFeed 每次重渲染现算
+  // （60s 云刷新自动推进）+ 边界定时器正点免刷新切换 + visibilitychange 回前台兜底，不依赖任何动画/高频计时。
   var placeholderTips = ['有什么好事？', '有什么新消息？', '同志有什么新消息要分享分享？', '贵国有什么新闻吗？'];
+  var PH_SLOT_MS = 30 * 60 * 1000;
+  function phIdxNow() { return Math.floor(Date.now() / PH_SLOT_MS) % placeholderTips.length; }
+  var phBoundaryTimer = null;
+  function armPhBoundary() {
+    if (phBoundaryTimer) clearTimeout(phBoundaryTimer);
+    var next = (Math.floor(Date.now() / PH_SLOT_MS) + 1) * PH_SLOT_MS;
+    phBoundaryTimer = setTimeout(function () {
+      var b = document.getElementById('postComposer');
+      if (b) b.placeholder = placeholderTips[phIdxNow()]; // 正点换句（免刷新）
+      armPhBoundary();
+    }, next - Date.now() + 500);
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') {
+      var b = document.getElementById('postComposer');
+      if (b) b.placeholder = placeholderTips[phIdxNow()]; // 回前台兜底（节流环境下定时器可能迟触发）
+    }
+  });
 
   function composerHtml() {
-    var phSpans = placeholderTips.map(function (t) { return '<span>' + t + '</span>'; }).join('');
     return '<div class="card">' +
-      '<div class="composer-ph-wrap" style="position:relative">' +
       '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="" aria-label="有什么好事？" style="width:100%;border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:none;overflow-y:auto;max-height:240px;margin-bottom:8px"></textarea>' +
-      '<div class="ph-rotator" aria-hidden="true">' + phSpans + '</div>' +
-      '</div>' +
       '<div class="composer-actions">' +
       '<div class="composer-tools">' +
       '<button type="button" class="composer-tool" data-tip="上传图片" aria-label="上传图片"><span class="material-symbols-outlined">image</span></button>' +
@@ -2354,11 +2335,10 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     // 输入栏自适长（v0.2.14.0）：不可手拽（resize:none）、随文字长高、max-height 封顶后滚轮内滑；基线=rows=3 高度，只长不缩
     var composer = document.getElementById('postComposer');
     if (composer) {
-      var phWrap = composer.closest('.composer-ph-wrap');
-      if (phWrap) phWrap.classList.toggle('has-text', !!composer.value);
+      composer.placeholder = placeholderTips[phIdxNow()]; // v0.2.15.8 30 分钟一档按墙钟取句（重渲染现算+边界定时器正点换）
+      armPhBoundary();
       var baseH = composer.offsetHeight;
       composer.addEventListener('input', function () {
-        if (phWrap) phWrap.classList.toggle('has-text', !!this.value); // 有内容藏轮播层（placeholder 反正不可见）
         var maxH = parseInt(getComputedStyle(this).maxHeight, 10) || 240;
         this.style.height = 'auto';
         // v0.2.15.3 去边框后 scrollHeight 已含全部内容高（含 padding，textarea scrollHeight ≥ clientHeight），

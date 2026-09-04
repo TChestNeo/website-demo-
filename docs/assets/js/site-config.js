@@ -82,7 +82,8 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.15.5 = Community 发帖工具 icon 悬停放大保粗修复（用户「为什么放大icon就从粗体变成细的了」）：v0.2.15.4 的 transform:scale(1.25) 禁用像素网格对齐（hinting）致字形变细——改动画 font-size 24→30px（同为 1.25 倍，每帧重新排版+对齐保粗壮）+上浮改 margin-top -2px（不碰 transform）；零共享文件改动（补丁位 4→5·修复轮；2026-09-04）
 // v0.2.15.6 = Community 发帖工具 icon 名称气泡 5 秒延迟+白底黑字（用户「那个icon的名称能不能是鼠标停留5秒后才显示啊？还有配色能不能是白底黑字啊」）：气泡基础规则 .composer-tool::after（content:attr(data-tip)+白底 #fff 黑字 #000+细边框+pointer-events:none+默认透明隐藏），hover 只覆盖 opacity/visibility + transition-delay 5s（停留满 5 秒淡入、移开 0.15s 淡出后立刻 hidden 防挡点击）；零共享文件改动（补丁位 5→6·观感微调轮；2026-09-05）
 // v0.2.15.7 = Community 发帖输入框 placeholder 轮播改纯 CSS 动画（用户「那个输入框显示的文字的切换只有在刷新页面时会随机变化」）：探针实证 JS setInterval 轮播在线真实路径（真帖+60s 自动刷新+打字清空+切 tab）照常 3.5s 走动——用户症状=浏览器省电/后台节流冻 JS 计时器（走一段就停、刷新又随机重来）；改 .ph-rotator 覆盖层四句叠格 + phSpin 14s 每句 3.5s（正 delay 0/3.5/7/10.5s 分窗插入即从句 1 开始、窗口边缘 0.3s 交叉淡入淡出、pointer-events:none）+ 原生 placeholder 清空防双层字 + 打字 has-text 藏层清空复显 + reduced-motion 静态句 1（合成器驱动不受节流）；零共享文件改动（补丁位 6→7·修复轮；2026-09-05）
-window.MN_SITE_VERSION = 'v0.2.15.7';
+// v0.2.15.8 = Community 发帖输入框 placeholder 改 30 分钟一档切换（用户「算了你把他改成每隔30分钟切换一次文本」）：撤销 v0.2.15.7 纯 CSS 轮播（.ph-rotator/phSpin 全删）——改原生 placeholder 属性 + 30 分钟一档按墙钟取句（floor(Date.now()/30min)%4，整点/半点对齐全球同档），renderFeed 每次重渲染现算（60s 云刷新自动推进）+ 边界定时器正点免刷新切换 + visibilitychange 回前台兜底，不依赖任何动画/高频计时；零共享文件改动（补丁位 7→8·观感微调轮；2026-09-05）
+window.MN_SITE_VERSION = 'v0.2.15.8';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
