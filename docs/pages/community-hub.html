@@ -458,7 +458,7 @@ textarea.input-glass {
 }
 
 /* ----- Composer Input ----- */
-/* 2026-09-14 用户「那个输入框的边缘颜色能不能调一下…他和平台主题不相干啊」：
+/* 2026-09-04 用户「那个输入框的边缘颜色能不能调一下…他和平台主题不相干啊」：
    按站点 .input-glass 语言适配——常态底 --input-bg、描边 --color-outline-variant；
    悬停品牌蓝描边+底提亮；聚焦品牌蓝描边+0.1 蓝环+底提亮（同 .search-capsule 口径）。
    形状（radius-md/自适长 240 封顶）不动；transition 不含 height（自适长由 JS 逐字驱动，动画化会拖泥带水）。 */
@@ -478,6 +478,52 @@ textarea.input-glass {
   background: var(--input-bg-focus);
 }
 #postComposer::placeholder { color: rgba(118, 117, 134, 0.4); }
+
+/* ----- Composer Toolbar ----- */
+/* 2026-09-04 用户「在Post按钮的同一行上添加 上传图片，GIF，投票，表情符号和创办活动，全部采用icon显示只有滑鼠停留在icon上才显示名称」：
+   五工具 icon 与 Post 同排（左工具右发布）；纯图标显示，名称只在悬停时气泡出现（data-tip → ::after，零 JS）；
+   点击如实 toast「功能即将上线」（house 口径：未上线功能不装死）。 */
+.composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.composer-tools { display: flex; align-items: center; gap: 2px; }
+.composer-tool {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-outline);
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+.composer-tool:hover { color: var(--color-primary); background: rgba(70, 72, 212, 0.08); }
+.composer-tool .material-symbols-outlined { font-size: 20px; }
+.composer-tool:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  background: var(--color-on-surface);
+  color: var(--color-surface);
+  font-family: var(--font-family);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  z-index: 30;
+}
 
 /* ----- Form Label ----- */
 .form-label {
@@ -2144,7 +2190,14 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   function composerHtml() {
     return '<div class="card">' +
       '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="Share an update with your fellow citizens… (max 2000 chars)" style="width:100%;border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:none;overflow-y:auto;max-height:240px;margin-bottom:8px"></textarea>' +
-      '<div style="display:flex;justify-content:flex-end">' +
+      '<div class="composer-actions">' +
+      '<div class="composer-tools">' +
+      '<button type="button" class="composer-tool" data-tip="上传图片" aria-label="上传图片"><span class="material-symbols-outlined">image</span></button>' +
+      '<button type="button" class="composer-tool" data-tip="GIF" aria-label="GIF"><span class="material-symbols-outlined">gif</span></button>' +
+      '<button type="button" class="composer-tool" data-tip="投票" aria-label="投票"><span class="material-symbols-outlined">poll</span></button>' +
+      '<button type="button" class="composer-tool" data-tip="表情符号" aria-label="表情符号"><span class="material-symbols-outlined">sentiment_satisfied</span></button>' +
+      '<button type="button" class="composer-tool" data-tip="创办活动" aria-label="创办活动"><span class="material-symbols-outlined">event</span></button>' +
+      '</div>' +
       '<button class="btn btn-primary btn-sm" id="postSubmit">Post</button>' +
       '</div></div>';
   }
@@ -2227,6 +2280,13 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
         var maxH = parseInt(getComputedStyle(this).maxHeight, 10) || 240;
         this.style.height = 'auto';
         this.style.height = Math.max(baseH, Math.min(this.scrollHeight + 2, maxH)) + 'px';
+      });
+    }
+    // 工具条 icon：点击如实提示（功能未上线，不装死）
+    var tools = document.querySelectorAll('.composer-tool');
+    for (var i = 0; i < tools.length; i++) {
+      tools[i].addEventListener('click', function () {
+        toastMsg((this.getAttribute('data-tip') || '该') + '功能即将上线');
       });
     }
     if (cloudMode) {
