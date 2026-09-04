@@ -63,6 +63,7 @@ gcloud run deploy mnationworld-web \
   --set-env-vars "NODE_ENV=production,ADMIN_EMAIL=microcountry2677@gmail.com,SEED_ON_BOOT=1,SEED_DEMO_STAFF=false,DEV_LOGIN_CODE=691032,SNAPSHOT_PATH=/mnt/data/mn-v2.sqlite.snap,SNAPSHOT_INTERVAL_MS=60000,SMTP_HOST=smtp.gmail.com,SMTP_PORT=465,SMTP_SECURE=true,SMTP_USER=slati.official@gmail.com,SMTP_PASS=<Gmail 应用专用密码 16 位无空格>,MAIL_FROM=M.NationWorld <slati.official@gmail.com>"
 ```
 
+- ⚠ **2026-09-14 起一律用 `gcloud.ps1` 而不是 `gcloud.cmd`**：cmd 是批处理，PowerShell 调它走 cmd.exe /c——Windows 命令行 8191 字符上限，STRIPE_CATALOG_B64 单值 9.3KB 的 28 env 拼串必然报「The command line is too long」（rev 00071-qjb 实测）。gcloud.ps1 在进程内用 $args 数组直调 python（CreateProcess 32K 足够）：`& "…\google-cloud-sdk\bin\gcloud.ps1" run deploy … "--set-env-vars=$envArg"`。其余不变。
 - `ADMIN_EMAIL`：seed 据此建 project_director（Neo）；改邮箱 + 重跑 seed = 再建一行（按邮箱幂等）。**必须是能收信的真实邮箱**（production 下登录码发到它，假域名=锁死）。W6：seed 不种密码（011 加列后 password_hash NULL）→ **首登走仅码登录 + 设密引导**，设密后每次密码+码。
 - `DEV_LOGIN_CODE`：production 下 config.js 强制失效（留着当回退开关——出问题把 NODE_ENV 改回 development 即可用固定码救急；dev 模式固定码直登且跳过密码校验）。
 - **SMTP 四件套 + MAIL_FROM**：Gmail 应用专用密码（myaccount.google.com → 安全性 → 两步验证 → 应用专用密码；16 位不带空格）。**发信人 = slati.official@gmail.com（站务号）；管理员收码 = ADMIN_EMAIL（主号）——两账号分开**。品牌域名邮箱（service@mnationworld.com）路线：Zoho 免费版无 SMTP 不可用（webmail only）、Workspace/Zoho Lite 付费绑卡；免费可发 = Brevo（300 封/天、不绑卡，域名验证走 Cloud DNS）——用户要真正自有域名发件人时再走 Brevo，只改这几个 env。
