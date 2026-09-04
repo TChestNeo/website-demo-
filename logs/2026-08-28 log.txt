@@ -908,3 +908,18 @@ premium 页静态 RM12 硬编码（matrix/plan-note/renderGuest）全部动态�
   电池 tmp-battery-premium-multi.js 106/106 线上（104 原有 + 2 新回归：myr plan-note 含 银行卡/GrabPay、无 FPX/支付宝 口吻）+ 全程 0 脚本异常。
 教训 ⑯：PaymentMethodConfiguration display_preference=on 只是显示层——逐方法 available 字段 + 真建会话（checkout/sessions 200）才是唯一实证；
   单元测试/页面电池/curl 全都探不到 Stripe 400（从不建真会话）——前端宣称的支付方式必须周期性与账户实况对账，默认方法清单含死方式可静默杀死整条通道。
+
+
+════════════════════════════════════════════════
+2026-09-14 v0.2.14.0 Community 发帖输入栏自适长（rev 00070-5f6）
+用户：「Recommend 顶部的输入栏不可以手动调整长度，它只会根据字幕长度慢慢变长，然后要设定一个 Max 值让它长到那边就停止不会再变长，用户只能通过滚轮上下滑动」
+实现——postComposer 从 resize:vertical（右下角可手拽拉长）改 resize:none 不可手拽 + overflow-y:auto + max-height:240px；
+  renderFeed 重渲染后挂 input 监听自适长：height:auto → max(基线, min(scrollHeight+2, 240))——基线=rows=3 高度保证「只长不缩」（清空/短文字不缩得比初始矮），
+  max 单一来源读 computed max-height（改 CSS 即改封顶，JS 不存魔数）；封顶 240 后 overflow-y:auto 滚轮在框内上下滑（scrollHeight>clientHeight 实测 4115>238）；
+  发布成功立即 height:auto 回缩（innerHTML 重渲染前防闪高框）；零共享文件改动（页面内联脚本 + 页内字符串内联样式）。
+版本：站点 v0.2.13.1 → v0.2.14.0（小改动位 13→14·观感微调轮·补丁清零）；FC 线不动（v10.28.18.1）。
+验证：npm test 191/191；新电池 tmp-battery-composer-autogrow.js 本地 10/10 + 线上 10/10（强制 cloudMode 走真实 renderFeed 渲染路径——
+  composer 仅登录态渲染、fresh profile 无会话直接断言不到，置 window.cloudMode=true 后调用全局 renderFeed() 为真实代码路径；
+  断言：版本/resize=none/overflow-y=auto/短文字基线不变/6 行变长<240/80 行封顶=240+内容溢出/清空回缩/0 脚本异常）；
+  docker build exit 0 → tag/login/push → gcloud run deploy（env 28 个全量照 live describe 拼串、逗号/空格/尖括号值检测加引号、volume 两参带引号）
+  revision mnationworld-web-00070-5f6 100% 流量；curl 六连（/、community-hub、premium、fluidcanvas、signup-and-login、admin）全 200 + health 57 表。

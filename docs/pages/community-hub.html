@@ -2121,7 +2121,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 
   function composerHtml() {
     return '<div class="card">' +
-      '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="Share an update with your fellow citizens… (max 2000 chars)" style="width:100%;background:transparent;border:1px solid var(--color-outline);border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:vertical;margin-bottom:8px"></textarea>' +
+      '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="Share an update with your fellow citizens… (max 2000 chars)" style="width:100%;background:transparent;border:1px solid var(--color-outline);border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:none;overflow-y:auto;max-height:240px;margin-bottom:8px"></textarea>' +
       '<div style="display:flex;justify-content:flex-end">' +
       '<button class="btn btn-primary btn-sm" id="postSubmit">Publish</button>' +
       '</div></div>';
@@ -2141,6 +2141,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
         if (p.status === 'removed') { toastMsg('内容违反社区规则，已被拦截', true); return; }
         toastMsg(r.data.moderation && r.data.moderation.verdict === 'hold' ? '已发布，内容待审核' : '发布成功');
         el.value = '';
+        el.style.height = 'auto'; // 自适长框立刻回缩（重渲染前防闪高框）
         refreshCloudFeed();
       } else if (r.status === 429) { toastMsg('发布过于频繁，请稍后再试', true); }
       else if (r.status === 401) { toastMsg('登录已过期，请重新登录', true); }
@@ -2196,6 +2197,16 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     // 发帖 + 举报绑定（每次重渲染后重新挂）
     var submitBtn = document.getElementById('postSubmit');
     if (submitBtn) submitBtn.addEventListener('click', submitCloudPost);
+    // 输入栏自适长（v0.2.14.0）：不可手拽（resize:none）、随文字长高、max-height 封顶后滚轮内滑；基线=rows=3 高度，只长不缩
+    var composer = document.getElementById('postComposer');
+    if (composer) {
+      var baseH = composer.offsetHeight;
+      composer.addEventListener('input', function () {
+        var maxH = parseInt(getComputedStyle(this).maxHeight, 10) || 240;
+        this.style.height = 'auto';
+        this.style.height = Math.max(baseH, Math.min(this.scrollHeight + 2, maxH)) + 'px';
+      });
+    }
     if (cloudMode) {
       document.querySelectorAll('[data-cloud-post]').forEach(function (el) {
         MN_Report.mount(el, { targetType: 'post', targetId: el.getAttribute('data-cloud-post') });
