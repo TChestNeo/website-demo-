@@ -80,7 +80,8 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.15.3 = Community 发帖输入框去边框+中文轮播（用户「把输入框的边缘移除」+「输入框默认显示（有什么好事？/有什么新消息？/同志有什么新消息要分享分享？/贵国有什么新闻吗？）」）：页内 #postComposer 撤销 v0.2.14.1 主题描边——去描边去蓝环只留底（常态 --input-bg、悬停/聚焦底提亮）；placeholder 四句中文轮播 3.5s 一换（重渲染按 id 现取元素不断档、已有内容不动）；零共享文件改动（补丁位 2→3·观感微调轮；2026-09-04）
 // v0.2.15.4 = Community 发帖工具 icon 悬停变大浮出动画（用户「icon 在滑鼠停留的时候有一个变大浮出的动画」）：.composer-tool 悬停只放大 icon（scale 1.25 + 上浮 2px、0.2s 过渡；钮本身不动——气泡 ::after 挂在钮上，钮缩放会把气泡文字一起放大）+ reduced-motion 关动画；零共享文件改动（补丁位 3→4·观感微调轮；2026-09-04）
 // v0.2.15.5 = Community 发帖工具 icon 悬停放大保粗修复（用户「为什么放大icon就从粗体变成细的了」）：v0.2.15.4 的 transform:scale(1.25) 禁用像素网格对齐（hinting）致字形变细——改动画 font-size 24→30px（同为 1.25 倍，每帧重新排版+对齐保粗壮）+上浮改 margin-top -2px（不碰 transform）；零共享文件改动（补丁位 4→5·修复轮；2026-09-04）
-window.MN_SITE_VERSION = 'v0.2.15.5';
+// v0.2.15.6 = Community 发帖工具 icon 名称气泡 5 秒延迟+白底黑字（用户「那个icon的名称能不能是鼠标停留5秒后才显示啊？还有配色能不能是白底黑字啊」）：气泡基础规则 .composer-tool::after（content:attr(data-tip)+白底 #fff 黑字 #000+细边框+pointer-events:none+默认透明隐藏），hover 只覆盖 opacity/visibility + transition-delay 5s（停留满 5 秒淡入、移开 0.15s 淡出后立刻 hidden 防挡点击）；零共享文件改动（补丁位 5→6·观感微调轮；2026-09-05）
+window.MN_SITE_VERSION = 'v0.2.15.6';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

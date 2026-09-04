@@ -525,7 +525,11 @@ textarea.input-glass {
   line-height: 1;
   padding: 12px 20px;
 }
-.composer-tool:hover::after {
+/* 2026-09-05 用户「icon 的名称能不能是鼠标停留5秒后才显示啊？还有配色能不能是白底黑字啊」：
+   气泡基础规则放 .composer-tool::after（内容+几何+白底黑字+细边框+pointer-events:none 永不挡点击+默认透明隐藏），
+   hover 只覆盖 opacity/visibility + transition-delay 5s——停留满 5 秒才淡入；移开 0.15s 淡出后立刻 hidden
+   （visibility 0.15s 后翻转——比 opacity 快的淡出不留残影） */
+.composer-tool::after {
   content: attr(data-tip);
   position: absolute;
   bottom: calc(100% + 6px);
@@ -533,14 +537,24 @@ textarea.input-glass {
   transform: translateX(-50%);
   padding: 4px 10px;
   border-radius: var(--radius-md);
-  background: var(--color-on-surface);
-  color: var(--color-surface);
+  background: #ffffff;
+  color: #000000;
+  border: 1px solid rgba(0, 0, 0, 0.08);
   font-family: var(--font-family);
   font-size: var(--fs-label-sm);
   font-weight: 500;
   white-space: nowrap;
   box-shadow: var(--shadow-sm);
   z-index: 30;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0s linear 0.15s;
+}
+.composer-tool:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.15s ease 5s, visibility 0s linear 5s;
 }
 
 /* ----- Form Label ----- */
