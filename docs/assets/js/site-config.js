@@ -73,7 +73,8 @@ window.MN_SITE = window.MN_SITE || {};
 //   文案清扫——help FAQ「支付方式/货币」、financial-terms 支付渠道与手续费、platform-responsibility 第三方服务、terms 依赖、privacy 两处「Stripe / FPX」→ 一律 Stripe（不再声称可用 FPX）；GrabPay 推荐替代 FPX 网银（补丁位 0→1·修复轮；2026-09-04）
 // v0.2.14.0 = Community 发帖输入栏自适长（用户「Recommend 顶部的输入栏不可以手动调整长度，只会根据文字长度慢慢变长，设一个 Max 值长到那边就停止，之后只能滚轮上下滑动」）：postComposer 从 resize:vertical（右下角可手拽）改 resize:none 不可手拽 + overflow-y:auto + max-height:240px；input 监听自适长——height:auto 后取 scrollHeight+2 与 240 取小（max 单一来源读 computed max-height，改 CSS 即改封顶），封顶后滚轮在框内滑；发布成功立即 height:auto 回缩（重渲染前防闪高框）；renderFeed 每次重渲染后重挂监听（innerHTML 换新框）；零共享文件改动（小改动位 13→14·观感微调轮·补丁清零；2026-09-14）
 // v0.2.14.1 = Community 发帖输入栏边框主题适配（用户「那个输入框的边缘颜色能不能调一下啊，他和平台主题不相干啊」）：postComposer 原 border:1px solid var(--color-outline)（强灰 #767586）+透明底 与平台输入语言无关 → 页内 #postComposer 规则按 .input-glass/.search-capsule 口径适配——常态底 --input-bg、描边 --color-outline-variant；悬停品牌蓝描边 rgba(70,72,212,0.45)+底提亮；聚焦品牌蓝描边+0.1 蓝环+底提亮；placeholder 同款淡灰；形状（radius-md/自适长 240 封顶）不动；transition 不含 height（自适长逐字驱动，动画化会拖泥带水）；零共享文件改动（补丁位 0→1·观感微调轮；2026-09-14）
-window.MN_SITE_VERSION = 'v0.2.14.1';
+// v0.2.14.2 = Community 发帖按钮文案（用户「然后把Publish 改成 Post」）：composerHtml 的 postSubmit 按钮 Publish → Post；零共享文件改动（补丁位 1→2·口吻微调轮；2026-09-14）
+window.MN_SITE_VERSION = 'v0.2.14.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

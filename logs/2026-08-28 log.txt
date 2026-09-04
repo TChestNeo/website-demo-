@@ -941,3 +941,12 @@ premium 页静态 RM12 硬编码（matrix/plan-note/renderGuest）全部动态�
 教训 ⑱：Chrome headless 窗口无系统焦点时 document.hasFocus()=false——脚本 el.focus() 只设 activeElement 不点亮 :focus 伪类
   （:focus-within 按 activeElement 祖先算不受影响，本地电池 12/15 三连挂根因）；电池里 Emulation.setFocusEmulationEnabled 开焦点仿真即修复，
   真实浏览器窗口有焦点不受影响。
+
+════════════════════════════════════════════════
+2026-09-14 v0.2.14.2 Community 发帖按钮文案（rev 00072-cd6）
+用户：「然后把Publish 改成 Post」
+实现——composerHtml 的 postSubmit 按钮文案 Publish → Post；零共享文件改动。
+版本：站点 v0.2.14.1 → v0.2.14.2（补丁位 1→2·口吻微调轮）；FC 线不动（v10.28.18.1）。
+验证：电池 tmp-battery-composer-autogrow.js 本地 16/16 + 线上 16/16（+1 新断言：postSubmit 按钮 innerText=Post）；
+  冒烟 smoke-admin 49/49；docker build exit 0 → tag/login/push → gcloud.ps1 run deploy（env 28 个沿用本会话 describe 拼串）
+  revision mnationworld-web-00072-cd6 100% 流量；curl 七连全 200 + health 57 表。
