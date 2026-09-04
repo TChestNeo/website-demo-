@@ -482,7 +482,8 @@ textarea.input-glass {
 /* ----- Composer Toolbar ----- */
 /* 2026-09-04 用户「在Post按钮的同一行上添加 上传图片，GIF，投票，表情符号和创办活动，全部采用icon显示只有滑鼠停留在icon上才显示名称」：
    五工具 icon 与 Post 同排（左工具右发布）；纯图标显示，名称只在悬停时气泡出现（data-tip → ::after，零 JS）；
-   点击如实 toast「功能即将上线」（house 口径：未上线功能不装死）。 */
+   点击如实 toast「功能即将上线」（house 口径：未上线功能不装死）。
+   2026-09-04 用户「这个icon能不能大一些」：钮 34→38px（24px 图标标准触控尺寸；Post 钮实高 27px，两钮 flex 中心对齐）、图标 20→24px。 */
 .composer-actions {
   display: flex;
   align-items: center;
@@ -495,8 +496,8 @@ textarea.input-glass {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   padding: 0;
   border: none;
   border-radius: var(--radius-full);
@@ -506,7 +507,7 @@ textarea.input-glass {
   transition: color 0.2s ease, background-color 0.2s ease;
 }
 .composer-tool:hover { color: var(--color-primary); background: rgba(70, 72, 212, 0.08); }
-.composer-tool .material-symbols-outlined { font-size: 20px; }
+.composer-tool .material-symbols-outlined { font-size: 24px; }
 .composer-tool:hover::after {
   content: attr(data-tip);
   position: absolute;

@@ -75,7 +75,8 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.14.1 = Community 发帖输入栏边框主题适配（用户「那个输入框的边缘颜色能不能调一下啊，他和平台主题不相干啊」）：postComposer 原 border:1px solid var(--color-outline)（强灰 #767586）+透明底 与平台输入语言无关 → 页内 #postComposer 规则按 .input-glass/.search-capsule 口径适配——常态底 --input-bg、描边 --color-outline-variant；悬停品牌蓝描边 rgba(70,72,212,0.45)+底提亮；聚焦品牌蓝描边+0.1 蓝环+底提亮；placeholder 同款淡灰；形状（radius-md/自适长 240 封顶）不动；transition 不含 height（自适长逐字驱动，动画化会拖泥带水）；零共享文件改动（补丁位 0→1·观感微调轮；2026-09-04）
 // v0.2.14.2 = Community 发帖按钮文案（用户「然后把Publish 改成 Post」）：composerHtml 的 postSubmit 按钮 Publish → Post；零共享文件改动（补丁位 1→2·口吻微调轮；2026-09-04）
 // v0.2.15.0 = Community 发帖工具条五按钮（用户「在Post按钮的同一行上添加 上传图片，GIF，投票，表情符号和创办活动，全部采用icon显示只有滑鼠停留在icon上才显示名称」）：composer 底行改 .composer-actions（space-between）——左 .composer-tools 五工具 icon 按钮（上传图片 image/GIF gif/投票 poll/表情符号 sentiment_satisfied/创办活动 event，material-symbols-outlined 图标），右 Post 不动；纯图标显示（名称不入行内文字），名称只在鼠标悬停 icon 时气泡显示（data-tip → .composer-tool:hover::after content:attr(data-tip)，零 JS，倒置配色 on-surface 底/surface 字 + shadow-sm + z30，悬停气泡悬停不断——::after 是按钮后代，悬停其上按钮 :hover 依旧）；点击如实 toast「XX功能即将上线」（house 口径：未上线功能不装死）；工具绑定随 renderFeed 重渲染重挂；零共享文件改动（小改动位 14→15·新功能轮·补丁清零；2026-09-04）
-window.MN_SITE_VERSION = 'v0.2.15.0';
+// v0.2.15.1 = Community 发帖工具条 icon 放大（用户「这个icon能不能大一些」）：.composer-tool 钮 34→38px（24px 图标标准触控尺寸；探针实测 Post 钮高 27px 非 38，两钮 flex 中心对齐）+ 图标 20→24px；零共享文件改动（补丁位 0→1·观感微调轮；2026-09-04）
+window.MN_SITE_VERSION = 'v0.2.15.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

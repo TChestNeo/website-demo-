@@ -968,3 +968,14 @@ premium 页静态 RM12 硬编码（matrix/plan-note/renderGuest）全部动态�
 备注：①部署时 --add-volume 逗号参数漏引号又踩一次（gcloud「Key [type] required」——老教训重申：逗号参数必加引号）；
   ②上三轮注释里的 2026-09-14 是错日期（实际 2026-09-04），本轮已把仓库内三文件日期改回 09-04；线上已部署版本
   注释仍带旧日期——仅注释文案非用户可见行为，不再为此重部署。
+
+════ v0.2.15.1 Community 发帖工具条 icon 放大（2026-09-04，rev 00074-5bn）════
+用户：这个icon能不能大一些
+实现——.composer-tool 钮 34→38px（24px 图标标准触控尺寸）+ 图标 20→24px；零共享文件改动。
+备注：初版注释/断言按「Post 钮 38px 等高」写，探针 tmp-probe-tool-size.js 实测 Post 实高 27px
+  （12px 字+6×2 padding）——等高断言撤除，两钮 flex 中心对齐由同一行断言覆盖；
+  顺带效果：上一轮遗留的线上注释错日期（09-14）随本轮重部署自然修正为 09-04。
+版本：站点 v0.2.15.0 → v0.2.15.1（补丁位 0→1·观感微调轮）；FC 线不动（v10.28.18.1）。
+验证：电池 29/29 本地+线上（+2 新断言：钮 38×38、图标 24px）；冒烟 49/49；docker build exit 0 →
+  tag/login/push → gcloud.ps1 run deploy（逗号参数加引号）revision mnationworld-web-00074-5bn 100% 流量；
+  curl 七连全 200 + health 57 表。
