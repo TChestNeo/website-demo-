@@ -457,6 +457,28 @@ textarea.input-glass {
   transition: color 0.2s ease;
 }
 
+/* ----- Composer Input ----- */
+/* 2026-09-14 用户「那个输入框的边缘颜色能不能调一下…他和平台主题不相干啊」：
+   按站点 .input-glass 语言适配——常态底 --input-bg、描边 --color-outline-variant；
+   悬停品牌蓝描边+底提亮；聚焦品牌蓝描边+0.1 蓝环+底提亮（同 .search-capsule 口径）。
+   形状（radius-md/自适长 240 封顶）不动；transition 不含 height（自适长由 JS 逐字驱动，动画化会拖泥带水）。 */
+#postComposer {
+  background: var(--input-bg);
+  border: 1px solid var(--color-outline-variant);
+  outline: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+#postComposer:hover {
+  border-color: rgba(70, 72, 212, 0.45);
+  background: var(--input-bg-focus);
+}
+#postComposer:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(70, 72, 212, 0.1);
+  background: var(--input-bg-focus);
+}
+#postComposer::placeholder { color: rgba(118, 117, 134, 0.4); }
+
 /* ----- Form Label ----- */
 .form-label {
   display: block;
@@ -2121,7 +2143,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 
   function composerHtml() {
     return '<div class="card">' +
-      '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="Share an update with your fellow citizens… (max 2000 chars)" style="width:100%;background:transparent;border:1px solid var(--color-outline);border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:none;overflow-y:auto;max-height:240px;margin-bottom:8px"></textarea>' +
+      '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="Share an update with your fellow citizens… (max 2000 chars)" style="width:100%;border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:none;overflow-y:auto;max-height:240px;margin-bottom:8px"></textarea>' +
       '<div style="display:flex;justify-content:flex-end">' +
       '<button class="btn btn-primary btn-sm" id="postSubmit">Publish</button>' +
       '</div></div>';
