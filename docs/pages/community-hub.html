@@ -458,23 +458,17 @@ textarea.input-glass {
 }
 
 /* ----- Composer Input ----- */
-/* 2026-09-04 用户「那个输入框的边缘颜色能不能调一下…他和平台主题不相干啊」：
-   按站点 .input-glass 语言适配——常态底 --input-bg、描边 --color-outline-variant；
-   悬停品牌蓝描边+底提亮；聚焦品牌蓝描边+0.1 蓝环+底提亮（同 .search-capsule 口径）。
+/* 2026-09-04 用户「把输入框的边缘移除」（v0.2.14.1 曾加过主题描边，本轮整体撤销）：
+   去描边去蓝环，只留底——常态底 --input-bg、悬停/聚焦底提亮 --input-bg-focus（无边框语言）。
    形状（radius-md/自适长 240 封顶）不动；transition 不含 height（自适长由 JS 逐字驱动，动画化会拖泥带水）。 */
 #postComposer {
   background: var(--input-bg);
-  border: 1px solid var(--color-outline-variant);
+  border: none;
   outline: none;
-  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 0.2s ease;
 }
-#postComposer:hover {
-  border-color: rgba(70, 72, 212, 0.45);
-  background: var(--input-bg-focus);
-}
+#postComposer:hover,
 #postComposer:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(70, 72, 212, 0.1);
   background: var(--input-bg-focus);
 }
 #postComposer::placeholder { color: rgba(118, 117, 134, 0.4); }
@@ -2195,9 +2189,24 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     };
   }
 
+  // v0.2.15.3 用户「输入框默认显示（有什么好事？/有什么新消息？/同志有什么新消息要分享分享？/贵国有什么新闻吗？）」：
+  // placeholder 四句轮播（3.5s 一换）。composer 每次 renderFeed 重渲染，计时器按 id 现取元素（不因重渲染断档）；
+  // 输入框已有内容时不动（placeholder 反正不可见，保持静态）
+  var placeholderTips = ['有什么好事？', '有什么新消息？', '同志有什么新消息要分享分享？', '贵国有什么新闻吗？'];
+  var placeholderIdx = 0;
+  var placeholderTimer = null;
+  function startPlaceholderCycle() {
+    if (placeholderTimer) return;
+    placeholderTimer = setInterval(function () {
+      placeholderIdx = (placeholderIdx + 1) % placeholderTips.length;
+      var box = document.getElementById('postComposer');
+      if (box && !box.value) box.placeholder = placeholderTips[placeholderIdx];
+    }, 3500);
+  }
+
   function composerHtml() {
     return '<div class="card">' +
-      '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="Share an update with your fellow citizens… (max 2000 chars)" style="width:100%;border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:none;overflow-y:auto;max-height:240px;margin-bottom:8px"></textarea>' +
+      '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="有什么好事？" style="width:100%;border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:none;overflow-y:auto;max-height:240px;margin-bottom:8px"></textarea>' +
       '<div class="composer-actions">' +
       '<div class="composer-tools">' +
       '<button type="button" class="composer-tool" data-tip="上传图片" aria-label="上传图片"><span class="material-symbols-outlined">image</span></button>' +
@@ -2283,11 +2292,15 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     // 输入栏自适长（v0.2.14.0）：不可手拽（resize:none）、随文字长高、max-height 封顶后滚轮内滑；基线=rows=3 高度，只长不缩
     var composer = document.getElementById('postComposer');
     if (composer) {
+      composer.placeholder = placeholderTips[placeholderIdx]; // 重渲染立即补回当前句（HTML 默认句=句 1）
+      startPlaceholderCycle();
       var baseH = composer.offsetHeight;
       composer.addEventListener('input', function () {
         var maxH = parseInt(getComputedStyle(this).maxHeight, 10) || 240;
         this.style.height = 'auto';
-        this.style.height = Math.max(baseH, Math.min(this.scrollHeight + 2, maxH)) + 'px';
+        // v0.2.15.3 去边框后 scrollHeight 已含全部内容高（含 padding，textarea scrollHeight ≥ clientHeight），
+        // v0.2.14.0 的 +2 边框补偿随边框移除一并去掉（保留会让短文字也 +2px 高于基线）
+        this.style.height = Math.max(baseH, Math.min(this.scrollHeight, maxH)) + 'px';
       });
     }
     // 工具条 icon：点击如实提示（功能未上线，不装死）

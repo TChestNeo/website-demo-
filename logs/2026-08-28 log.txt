@@ -991,3 +991,15 @@ premium 页静态 RM12 硬编码（matrix/plan-note/renderGuest）全部动态�
 踩坑：push 按旧记忆推到 asia-southeast2/mnationworld-641398703651/mn-repo——旧项目已死（403 CONSUMER_INVALID）；
   正确路径 = asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend（deploy/cloudrun.md 为准）；
   docker config 空 auths 条目盖过登录态坑复现一次，清空 auths 块后 -p 直登即通。
+
+════ v0.2.15.3 Community 发帖输入框去边框+中文 placeholder 轮播（2026-09-04，rev 00076-m87）════
+用户：算了你把输入框的边缘移除，然后输入框默认显示（有什么好事？、有什么新消息？、同志有什么新消息要分享分享？、贵国有什么新闻吗？）
+实现——页内 #postComposer 撤销 v0.2.14.1 主题描边：去描边去蓝环只留底（常态 --input-bg、悬停/聚焦底提亮 --input-bg-focus）；
+  placeholder 四句中文 3.5s 轮播（计时器按 id 现取元素——renderFeed 重渲染不断档、重渲染立即补回当前句、框内有内容不动）；
+  自适长 +2 边框补偿随去边框一并去掉（v0.2.14.0 遗留：去边框后 scrollHeight 已含全部高度，+2 会让短文字也高 2px——
+  探针 tmp-probe-composer-h.js 实测输入 hi 高度 97→99 实证后才改）。零共享文件改动。
+版本：站点 v0.2.15.2 → v0.2.15.3（补丁位 2→3·观感微调轮）；FC 线不动（v10.28.18.1）。
+验证：电池 36/36 本地+线上（-5 旧边框断言 +5 去边框断言 +4 轮播断言——轮播段先杀计时器重锚 idx=0 再按 3.5s 步进等点，防慢网络竞态）；
+  冒烟 49/49；docker build exit 0 → tag/login/push（清空 config 空 auths 后 -p 直登）→ gcloud.ps1 run deploy（逗号参数加引号）
+  revision mnationworld-web-00076-m87 100% 流量；curl 七连全 200（/admin/ 带斜杠）+ health 57 表。
+备注：上一轮截图仿制（Screenshot 2026-09-04 223620.png）用户中途放弃（「算了」）→ 转本轮去边框+轮播需求。
