@@ -1003,3 +1003,16 @@ premium 页静态 RM12 硬编码（matrix/plan-note/renderGuest）全部动态�
   冒烟 49/49；docker build exit 0 → tag/login/push（清空 config 空 auths 后 -p 直登）→ gcloud.ps1 run deploy（逗号参数加引号）
   revision mnationworld-web-00076-m87 100% 流量；curl 七连全 200（/admin/ 带斜杠）+ health 57 表。
 备注：上一轮截图仿制（Screenshot 2026-09-04 223620.png）用户中途放弃（「算了」）→ 转本轮去边框+轮播需求。
+
+════ v0.2.15.4 Community 发帖工具 icon 悬停变大浮出动画（2026-09-04，rev 00077-5gn）════
+用户：能不能让那些icon在滑鼠停留的时候会有一个变大浮出的动画
+实现——.composer-tool 悬停只放大 icon（scale 1.25 + 上浮 2px、0.2s 过渡；钮本身不动——悬停气泡 ::after 挂在钮上，
+  钮缩放会把气泡文字也一起放大）+ prefers-reduced-motion 关动画；零共享文件改动。
+版本：站点 v0.2.15.3 → v0.2.15.4（补丁位 3→4·观感微调轮）；FC 线不动（v10.28.18.1）。
+验证：电池 36→40（+4：悬停放大规则 scale(1.25) translateY(-2px) 存在、reduced-motion 媒体规则 transform:none 存在、
+  真悬停 icon 矩阵 = matrix(1.25, 0, 0, 1.25, 0, -2)、移开回 none）本地 40/40+线上 40/40；冒烟 49/49；
+  docker build exit 0 → tag/login/push（空 auths 清空后 -p 直登）→ gcloud.ps1 run deploy（逗号参数加引号）
+  revision mnationworld-web-00077-5gn 100% 流量；curl 七连全 200 + health 57 表。
+踩坑：电池默认 BASE=线上（argv[2] 未传时回退 https://mnationworld.com）——本轮首跑忘了传 --base 打到旧线上全绿中 4 挂，
+  探针 tmp-probe-stale.js 实锤本地壳与 Chrome 都是新鲜内容，罪魁是自己没传 --base（本地须 --base http://127.0.0.1:8000）；
+  同轮顺手修扫描器 bug：媒体块内规则无 .media 属性，须按递归 inMedia 标志判媒体归属。

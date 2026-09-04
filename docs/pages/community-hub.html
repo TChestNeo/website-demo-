@@ -501,7 +501,19 @@ textarea.input-glass {
   transition: color 0.2s ease, background-color 0.2s ease;
 }
 .composer-tool:hover { color: var(--color-primary); background: rgba(70, 72, 212, 0.08); }
-.composer-tool .material-symbols-outlined { font-size: 24px; }
+.composer-tool .material-symbols-outlined {
+  font-size: 24px;
+  transition: transform 0.2s ease;
+}
+/* 2026-09-04 用户「icon 在滑鼠停留的时候有一个变大浮出的动画」：只放大 icon（scale 1.25 + 上浮 2px），
+   钮本身不动——悬停气泡 ::after 挂在钮上，钮缩放会把气泡文字也一起放大；reduced-motion 关动画 */
+.composer-tool:hover .material-symbols-outlined {
+  transform: scale(1.25) translateY(-2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .composer-tool .material-symbols-outlined { transition: none; }
+  .composer-tool:hover .material-symbols-outlined { transform: none; }
+}
 /* 2026-09-04 用户「post 按钮也放大一些」：Post 钮对齐放大后的工具钮（38px 高）——
    字号 12→14px、纵向 padding 6→12px、line-height 1（单行标签安全），高 14+24=38px 与工具钮等高 */
 #postSubmit {
