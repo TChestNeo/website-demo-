@@ -76,7 +76,8 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.14.2 = Community 发帖按钮文案（用户「然后把Publish 改成 Post」）：composerHtml 的 postSubmit 按钮 Publish → Post；零共享文件改动（补丁位 1→2·口吻微调轮；2026-09-04）
 // v0.2.15.0 = Community 发帖工具条五按钮（用户「在Post按钮的同一行上添加 上传图片，GIF，投票，表情符号和创办活动，全部采用icon显示只有滑鼠停留在icon上才显示名称」）：composer 底行改 .composer-actions（space-between）——左 .composer-tools 五工具 icon 按钮（上传图片 image/GIF gif/投票 poll/表情符号 sentiment_satisfied/创办活动 event，material-symbols-outlined 图标），右 Post 不动；纯图标显示（名称不入行内文字），名称只在鼠标悬停 icon 时气泡显示（data-tip → .composer-tool:hover::after content:attr(data-tip)，零 JS，倒置配色 on-surface 底/surface 字 + shadow-sm + z30，悬停气泡悬停不断——::after 是按钮后代，悬停其上按钮 :hover 依旧）；点击如实 toast「XX功能即将上线」（house 口径：未上线功能不装死）；工具绑定随 renderFeed 重渲染重挂；零共享文件改动（小改动位 14→15·新功能轮·补丁清零；2026-09-04）
 // v0.2.15.1 = Community 发帖工具条 icon 放大（用户「这个icon能不能大一些」）：.composer-tool 钮 34→38px（24px 图标标准触控尺寸；探针实测 Post 钮高 27px 非 38，两钮 flex 中心对齐）+ 图标 20→24px；零共享文件改动（补丁位 0→1·观感微调轮；2026-09-04）
-window.MN_SITE_VERSION = 'v0.2.15.1';
+// v0.2.15.2 = Community 发帖 Post 钮放大（用户「post 按钮也放大一些」）：页内 #postSubmit 字号 12→14px + 纵向 padding 6→12px + line-height 1（单行标签安全）＝ 38px 与放大后的工具钮等高（不动共享 .btn-sm——全站其它页钮不受影响）；零共享文件改动（补丁位 1→2·观感微调轮；2026-09-04）
+window.MN_SITE_VERSION = 'v0.2.15.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

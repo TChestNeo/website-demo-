@@ -508,6 +508,13 @@ textarea.input-glass {
 }
 .composer-tool:hover { color: var(--color-primary); background: rgba(70, 72, 212, 0.08); }
 .composer-tool .material-symbols-outlined { font-size: 24px; }
+/* 2026-09-04 用户「post 按钮也放大一些」：Post 钮对齐放大后的工具钮（38px 高）——
+   字号 12→14px、纵向 padding 6→12px、line-height 1（单行标签安全），高 14+24=38px 与工具钮等高 */
+#postSubmit {
+  font-size: 14px;
+  line-height: 1;
+  padding: 12px 20px;
+}
 .composer-tool:hover::after {
   content: attr(data-tip);
   position: absolute;
