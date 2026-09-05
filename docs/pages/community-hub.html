@@ -2616,7 +2616,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 
   function renderFeed() {
     var items = feedData[currentTab] || [];
-    if (currentTab === 'recommend' && cloudMode) items = cloudPosts.map(cloudPostItem).concat(items);
+    if (currentTab === 'recommend' && cloudMode) items = cloudPosts.map(cloudPostItem); // v0.2.18.2 云模式推荐流只显真帖——演示卡混排误导用户点假爱心
     var html = (currentTab === 'recommend' && cloudMode) ? composerHtml() : '';
     items.forEach(function(item) {
       html +=
@@ -2635,11 +2635,13 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
             (item.cloudId
               ? '<button type="button" class="post-action-btn' + (item.liked ? ' liked' : '') + '" data-like-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.liked ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">' + (item.liked ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"></span> <span data-like-count>' + item.likes + '</span></button>'
-              : '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">favorite</span> ' + item.likes + '</span>') +
+              : '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-like style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">favorite</span> ' + item.likes + '</button>') +
             '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">chat_bubble</span> ' + item.comments + '</span>' +
           '</div>' +
         '</div>';
     });
+    // v0.2.18.2 云模式推荐流空态提示（演示卡已不再混排）
+    if (currentTab === 'recommend' && cloudMode && !items.length) html += '<div class="card" style="text-align:center;color:var(--color-outline);padding:24px">这里还没有帖子，来发第一帖吧 ✨</div>';
     document.getElementById('feedContent').innerHTML = html;
     if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
     closeLightbox(); // v0.2.16.0 重渲染清掉卡片 DOM，先关灯箱防悬空
@@ -2707,6 +2709,10 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
         });
       });
     }
+    // v0.2.18.2 演示卡爱心 = 引导登录（与帖页访客口径一致，不再装死）——挂在云模式块外，未登录 demo 模式也生效
+    document.querySelectorAll('[data-guest-like]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) { e.stopPropagation(); toastMsg('登录后才能点赞'); });
+    });
   }
 
   // v0.2.17.0 点赞开关：乐观更新按钮/计数，不重渲染 feed（防滚动跳动），失败回滚

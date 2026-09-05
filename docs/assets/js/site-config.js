@@ -98,7 +98,9 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.18.1 = Community 点赞实心+动画（用户「那个点赞后能不能变成实心和有一个动画」（附了 like/dislike 参考代码）→「只是要动画而已 一样是用爱心不要换」——爱心图标不换，只要实心+动画）：
 //   hub + 帖页点赞钮（同构改动）——点赞瞬间：爱心 favorite_border→favorite 实心（原有）+ 图标弹跳动画 like-pop-icon（scale 0.2 旋转 -35° → 弹到 1 带回弹，0.45s springy 缓动）+ 心形配色粒子迸发 like-burst-fly（单个 6px 圆点 + 24 条 box-shadow 彩点 pinks/reds/purple/gold 径向炸开 0.6s 淡出——参考代码 fireworks 技法的按钮尺寸缩小版，零额外节点）；动画挂一次性类 like-pop（JS 点赞瞬间加、animationend/950ms 兜底定时器摘）——60s 重渲染/已点赞卡片默认渲染不带类不重播；取消点赞/失败回滚同步摘类；reduced-motion 关动画只换实心；
 //   零共享文件改动（CSS 进 hub 无标记块经 shared head 自动流入重建后的帖页；帖页 tail 改+重建）（补丁位 0→1·观感微调轮；2026-09-05）
-window.MN_SITE_VERSION = 'v0.2.18.1';
+// v0.2.18.2 = Community hub 假爱心修复（用户「没有变实心啊」——线上探针实锤：登录态推荐流 = 真帖+演示卡混排（5 卡 = 1 真 + 3 假），演示卡爱心是 span 摆设点了没反应）：
+//   hub renderFeed——云模式推荐流只显真帖（cloudPosts 不再 concat 演示项，空态补「这里还没有帖子」提示卡）；演示卡爱心 span→button + data-guest-like 点击 toast「登录后才能点赞」（与帖页访客口径一致，不再装死；绑定挂云模式块外未登录 demo 模式也生效）；零共享文件零后端零新 CSS（补丁位 1→2·修复轮；2026-09-05）
+window.MN_SITE_VERSION = 'v0.2.18.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
