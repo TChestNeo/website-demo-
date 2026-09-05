@@ -1130,3 +1130,42 @@ premium 页静态 RM12 硬编码（matrix/plan-note/renderGuest）全部动态�
   mnationworld-web-00083-jgk 100% 流量（env 从 describe 快照重建 28 变量，零改动）；curl 七连：
   / 200、hub 含 post-action-btn、community-post.html 含 commentComposerBox、signup-and-login 200、
   signin-and-login 404、/api/social/posts 含 likeCount/commentCount/likedByMe/avatar、health 58 表 v2.0.0。
+【2026-09-05 晚上轮】v0.2.18.0 Community 转发 + 分享（rev 00084-rnh）
+用户：「能不能在帖子的评论后面那边再添加转发按钮和分享按钮？」
+问询钦定：真转发（Twitter 式）——转发即发帖；分享 = 复制帖子链接（移动端调系统分享面板）。
+后端（social.js + 迁移 015，零共享文件）：
+  015_reposts.sql——posts.repost_of 加列 + idx_posts_repost_of 索引（无新表 health 58 不变；user_version 14→15，
+  测试断言同步 4 处 + 测试名 2 处）；postRow 加 repostCount/repostedByMe（任意状态 EXISTS——removed 行点按=撤销，
+  与点赞开关同感；visible-only 会造「L0 拒了残留行→按钮显示未转发→再点 409」死胡同）/repostOfId/repostOf
+  （原帖 visible 才浅嵌一层不递归，否则 null→前端「原帖已删除或不可见」占位）；
+  POST /posts/:id/repost——requireSession + postsWrite 同预算同 key（转发即发帖，429「转发过于频繁」）+ 转发语
+  0-2000（空串=裸转发）+ 新号频控同发帖 + 原帖非 visible 404 + 同帖一次守卫（repost_of+author_id，CONFLICT=409
+  「你已经转发过这条帖子」）+ 跳过 sha1 去重（空串/短转发语哈希撞车）+ L0 仅非空转发语（reject→removed+
+  zero_tolerance 封号；hold→visible+l0_hold normal；pass→visible+queued；裸转零审核项）+ topic_id 随原帖 +
+  响应 {post, moderation, repostCount}；DELETE /posts/:id/repost——writeLimit + 幂等 no-op + 删后重数。测试 212→227/227
+  （social-reposts 14 条全矩阵：裸转/带语/400/404/401/409/DELETE 幂等/限流/零容忍/警告/转发的转发浅嵌/原帖
+  下架后仍 200/自转/详情+点赞；migrations 新增 015 一测）。
+前端 hub：cloudPostItem 转发四字段；转发卡「转发了」绿徽章 + .repost-embedded 内嵌盒（原帖头像/作者/相对
+  时间/正文截 200/媒体网格；null→.repost-embedded-gone 占位）；h4 条件渲染（裸转无空标题）；计数行零改动
+  （点赞/评论天然作用于转发帖）；零新绑定（灯箱按 .post-media 全量查询自动覆盖内嵌盒）；CSS 进无标记块
+  （经 shared head 自动流入重建后的帖页）。
+前端帖页（tail 改 + 重建，绝不手改成品）：转发者行 .repost-line + 转发语（非空才渲染）+ 原帖内嵌盒（结构
+  同 hub）；操作行评论数后加转发钮（repeat 图标+计数+reposted 绿）+ 分享钮（ios_share）；toggleRepost 镜像
+  点赞（访客 toast 登录后才能转发/乐观取消+回滚/成功取 repostCount）；转发对话框灯箱模态（转发语 textarea
+  autogrow 2000、自己的 Escape 监听不误关灯箱、backdrop 点按关；提交 removed→拦截 toast 不置位、hold→待审核
+  toast、409 同步置位、401/429/失败各 toast）；sharePost——location.origin+pathname+?id 自拼（绝不硬编码）+
+  navigator.share→clipboard→execCommand 三级兜底链（访客可用无门禁）。
+版本：站点 v0.2.17.0 → v0.2.18.0（小改动位 17→18·新功能轮·补丁清零）；FC 线不动（v10.28.18.1）。
+验证：后端 npm test 227/227；电池 tmp-battery-community-repost.js（本地罐头 26/26：hub 转发卡三种形态/裸转
+  无空 h4/占位/正常卡；帖页转发者行/对话框 3 路关闭/转发语 payload 捕获+乐观置位/撤销 DELETE 捕获/分享
+  URL+clipboard+execCommand 三级链/409 同步/访客拦截+访客分享/404；线上 8/8：真帖双按钮+计数、真实 401
+  回滚链、访客拦截 toast、分享 toast 必达（headless 无 share/clipboard 权限落 execCommand 兜底 toast）、404）；
+  冒烟 49/49；docker build exit 0 → tag/login/push → gcloud.ps1 run deploy revision
+  mnationworld-web-00084-rnh 100% 流量（env 从 describe 快照重建 28 变量，零改动；--add-volume-mount 漏引号
+  踩 09-05 教训一次，加引号重跑即过）；curl 七连：
+  / 200、hub 含 repost-embedded、community-post.html 含 data-repost-post/data-share-post、signup-and-login 200、
+  signin-and-login 404、/api/social/posts 含 repostOfId/repostOf/repostCount/repostedByMe、health 58 表 v2.0.0。
+
+【2026-09-05 晚上轮】v0.2.18.1 Community 点赞实心+动画（rev 00085-vf4）——用户「那个点赞后能不能变成实心和有一个动画」（附 like/dislike 参考代码：checkbox 实心切换+弹跳+box-shadow 烟花）→「只是要动画而已 一样是用爱心不要换」——爱心图标不换，只取实心+动画。零后端零共享文件（纯前端观感微调）：hub+帖页点赞钮加 .like-burst 单粒子 span（6px 圆点+24 条 box-shadow 彩点四向迸发，零额外节点）；点击 JS 加一次性类 like-pop（armLikePop：animationend{once}+950ms 兜底摘类——reduced-motion 无 animationend）→图标 like-pop-icon 0.45s 弹性弹跳（scale 0.2→1+rotate -35°→0）+粒子 like-burst-fly 0.6s ease-out 迸发；like-pop 不进默认渲染——60s feed 重渲染/初始已点赞卡不重播动画；取消/401 回滚同步摘类；reduced-motion 关动画只换实心。帖页改 tail 重建 100686 chars 自检过（like-burst×6/armLikePop×3/script 14=14）。版本：补丁位 0→1 观感微调轮。验证：测试 227/227（后端零改）+电池 21/21 本地+7/7 线上+冒烟 49/49+curl 十连+health 58（tables 58 v2.0.0）。部署：docker build/tag/token 直登/push → gcloud.ps1 deploy（env 从 describe 取 28 条零改动；逗号参数本轮全带引号零踩坑）→ rev 00085-vf4 100% 流量。commit 99a4f09（未 push）。
+
+【2026-09-05 深夜轮】v0.2.18.2 Community hub 假爱心修复（rev 00086-tcf）——用户「为什么只有在独立帖子页面内有而已？」→「没有变实心啊」：先误诊缓存（用户 Ctrl+F5 后仍报），探针实锤登录态推荐流真帖+演示卡混排（5 卡 = 1 真 + 3 假），演示卡爱心是 span 摆设点了没反应——用户点的正是假卡。零后端零共享文件（纯前端修复）：renderFeed 云模式推荐流只显真帖（cloudPosts 不再 concat 演示项）+空态提示卡「这里还没有帖子，来发第一帖吧 ✨」；演示卡爱心 span→button + data-guest-like，点击 toast「登录后才能点赞」（与帖页访客口径一致，绑定挂云模式块外未登录 demo 模式也生效）。版本：补丁位 1→2 修复轮。验证：测试 227/227（后端零改）+电池 26/26 本地（新增 H9 云模式零死爱心/H10 空 feed 空态卡/G 访客演示卡爱心 toast；空态经 localStorage __mn_empty_feed 开关进罐头）+9/9 线上（L4 乐观态断言改同步快照——真 401 回程 <120ms 时异步读被竞速吞掉，click 后同一任务内读必现）+冒烟 49/49+curl 七连（hub 页 data-guest-like×2+空态句×1）+health 58（tables 58 v2.0.0）。部署：docker build/tag/token 直登/push → gcloud.ps1 deploy（env 从 describe 取 28 条零改动；逗号参数全带引号零踩坑）→ rev 00086-tcf 100% 流量。commit 1d77efc（未 push）。

@@ -1898,29 +1898,36 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 .repost-embedded-gone { color: var(--color-outline); font-size: var(--fs-label-sm); }
 .post-action-btn.reposted { color: #16a34a; }
 
-/* ----- v0.2.18.1 点赞动画：爱心弹跳 + 粒子迸发（经 shared head 自动流入重建后的帖页）-----
-   like-pop = 点赞瞬间的一次性类（JS 加，animationend/兜底定时器摘）——重渲染/已点赞卡片不重播；
-   粒子=单个 6px 圆点 + 24 条 box-shadow 彩色圆点迸发（零额外节点）；reduced-motion 关动画只换实心 */
+/* ----- v0.2.18.3 点赞粒子特效完整照搬参考代码（用户「粒子效果别改颜色啊」「只是把完整的粒子特效搬出来」）-----
+   61 粒子 + 色环逐字照搬 + 三动画链照参考原版时长：1.25s bang ease-out 迸发 → 1.25s gravity ease-in 下落 → 6.25s position linear 游走；
+   粒子=单个 10px 圆点 + 64 条 box-shadow（零额外节点）；like-pop 一次性类由 JS 加、最后一档动画完（mn-fireworks-position）或 6.8s 兜底摘；
+   重渲染/已点赞卡片不重播；reduced-motion 关动画只换实心（经 shared head 自动流入重建后的帖页）*/
 .like-burst {
-  position: absolute; left: 17px; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px;
-  border-radius: 50%; background: none; display: none; pointer-events: none;
+  position: absolute; right: 40px; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px;
+  border-radius: 50%; display: none; pointer-events: none; transform: scale(0.4);
+  box-shadow: 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff;
 }
-.post-action-btn.like-pop .like-burst { display: block; animation: like-burst-fly 0.6s ease-out forwards; }
-.post-action-btn.like-pop .material-symbols-outlined { animation: like-pop-icon 0.45s cubic-bezier(0.2, 1.6, 0.4, 1); }
+.post-action-btn.like-pop .like-burst {
+  display: block;
+  animation: 1.25s mn-fireworks-bang ease-out forwards, 1.25s mn-fireworks-gravity ease-in forwards, 6.25s mn-fireworks-position linear forwards;
+}
+.post-action-btn.like-pop .material-symbols-outlined { animation: like-pop-icon 0.5s ease-out; }
 @keyframes like-pop-icon {
-  0% { transform: scale(0.2) rotate(-35deg); opacity: 0; }
-  60% { opacity: 1; }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2) rotate(-10deg); }
 }
-@keyframes like-burst-fly {
-  0% {
-    box-shadow: 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e;
-    transform: scale(0.45); opacity: 1;
-  }
-  100% {
-    box-shadow: 16px 0 #e0245e, 11px 11px #ff6b8b, 0 16px #ff3040, -11px 11px #a855f7, -16px 0 #ffd166, -11px -11px #e0245e, 0 -16px #ff6b8b, 11px -11px #ff3040, 24px 6px #a855f7, 20px 16px #ffd166, 8px 22px #e0245e, -8px 22px #ff6b8b, -20px 16px #ff3040, -24px 6px #a855f7, -24px -6px #ffd166, -20px -16px #e0245e, -8px -22px #ff6b8b, 8px -22px #ff3040, 20px -16px #a855f7, 24px -6px #ffd166, 4px 4px #e0245e, -4px -4px #ff6b8b, 30px 0 #ff3040, -30px 0 #a855f7;
-    transform: scale(1); opacity: 0;
-  }
+@keyframes mn-fireworks-bang {
+  to { box-shadow: 114px -107.3333333333px #8800ff, 212px -166.3333333333px #a600ff, 197px -6.3333333333px #ff006a, 179px -329.3333333333px #3300ff, -167px -262.3333333333px #ff0062, 233px 65.6666666667px #ff008c, 81px 42.6666666667px #0051ff, -13px 54.6666666667px #00ff2b, -60px -183.3333333333px #0900ff, 127px -259.3333333333px #ff00e6, 117px -122.3333333333px #00b7ff, 95px 20.6666666667px #ff8000, 115px 1.6666666667px #0004ff, -160px -328.3333333333px #00ff40, 69px -242.3333333333px #000dff, -208px -230.3333333333px #ff0400, 30px -15.3333333333px #e6ff00, 235px -15.3333333333px #fb00ff, 80px -232.3333333333px #d5ff00, 175px -173.3333333333px #00ff3c, -187px -176.3333333333px #aaff00, 4px 26.6666666667px #ff6f00, 227px -106.3333333333px #ff0099, 119px 17.6666666667px #00ffd5, -102px 4.6666666667px #ff0088, -16px -4.3333333333px #00fff7, -201px -310.3333333333px #00ffdd, 64px -181.3333333333px #f700ff, -234px -15.3333333333px #00fffb, -184px -263.3333333333px #aa00ff, 96px -303.3333333333px #0037ff, -139px 10.6666666667px #0026ff, 25px -205.3333333333px #00ff2b, -129px -322.3333333333px #40ff00, -235px -187.3333333333px #26ff00, -136px -237.3333333333px #0091ff, -82px -321.3333333333px #6a00ff, 7px -267.3333333333px #ff00c8, -155px 30.6666666667px #0059ff, -85px -73.3333333333px #6a00ff, 60px -199.3333333333px #55ff00, -9px -289.3333333333px #00ffaa, -208px -167.3333333333px #00ff80, -13px -299.3333333333px #ff0004, 179px -164.3333333333px #ff0044, -112px 12.6666666667px #0051ff, -209px -125.3333333333px #ff00bb, 14px -101.3333333333px #00ff95, -184px -292.3333333333px #ff0099, -26px -168.3333333333px #09ff00, 129px -67.3333333333px #0084ff, -17px -23.3333333333px #0059ff, 129px 34.6666666667px #7300ff, 35px -24.3333333333px #ffd900, -12px -297.3333333333px #ff8400, 129px -156.3333333333px #0dff00, 157px -29.3333333333px #1a00ff, -221px 6.6666666667px #ff0062, 0px -311.3333333333px #ff006a, 155px 50.6666666667px #00ffaa, -71px -318.3333333333px #0073ff; }
+}
+@keyframes mn-fireworks-gravity {
+  to { transform: translateY(200px) scale(0.4); opacity: 0; }
+}
+@keyframes mn-fireworks-position {
+  0%, 19.9% { margin-top: 10%; margin-left: 40%; }
+  20%, 39.9% { margin-top: 40%; margin-left: 30%; }
+  40%, 59.9% { margin-top: 20%; margin-left: 70%; }
+  60%, 79.9% { margin-top: 30%; margin-left: 20%; }
+  80%, 99.9% { margin-top: 30%; margin-left: 80%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .post-action-btn.like-pop .material-symbols-outlined { animation: none; }
@@ -2738,14 +2745,18 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     });
   }
 
-  // v0.2.18.1 点赞动画一次性类：点赞瞬间加 like-pop（爱心弹跳+粒子迸发），动画结束/兜底定时器后摘——
-  // 类挂在按钮上而非默认渲染里，60s 重渲染/已点赞卡片不重播动画
+  // v0.2.18.3 粒子链最后一档（mn-fireworks-position 6.25s）动画完才摘 like-pop——粒子照参考完整飞完再收；
+  // 6.8s 兜底（reduced-motion 无 animationend）；类挂在按钮上而非默认渲染里，重渲染/已点赞卡片不重播
   function armLikePop(btn) {
     btn.classList.add('like-pop');
     var burst = btn.querySelector('.like-burst');
-    var done = function () { btn.classList.remove('like-pop'); };
-    if (burst) burst.addEventListener('animationend', done, { once: true });
-    setTimeout(done, 950); // reduced-motion 关动画无 animationend 的兜底
+    var onEnd = function (e) {
+      if (!e || e.animationName !== 'mn-fireworks-position') return;
+      burst.removeEventListener('animationend', onEnd);
+      btn.classList.remove('like-pop');
+    };
+    if (burst) burst.addEventListener('animationend', onEnd);
+    setTimeout(function () { btn.classList.remove('like-pop'); }, 6800);
   }
 
   function renderDiscovery() {

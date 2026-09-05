@@ -100,7 +100,10 @@ window.MN_SITE = window.MN_SITE || {};
 //   零共享文件改动（CSS 进 hub 无标记块经 shared head 自动流入重建后的帖页；帖页 tail 改+重建）（补丁位 0→1·观感微调轮；2026-09-05）
 // v0.2.18.2 = Community hub 假爱心修复（用户「没有变实心啊」——线上探针实锤：登录态推荐流 = 真帖+演示卡混排（5 卡 = 1 真 + 3 假），演示卡爱心是 span 摆设点了没反应）：
 //   hub renderFeed——云模式推荐流只显真帖（cloudPosts 不再 concat 演示项，空态补「这里还没有帖子」提示卡）；演示卡爱心 span→button + data-guest-like 点击 toast「登录后才能点赞」（与帖页访客口径一致，不再装死；绑定挂云模式块外未登录 demo 模式也生效）；零共享文件零后端零新 CSS（补丁位 1→2·修复轮；2026-09-05）
-window.MN_SITE_VERSION = 'v0.2.18.2';
+// v0.2.18.3 = Community 点赞粒子特效完整照搬参考代码（用户「而且你特效也没超好啊，而且粒子效果别改颜色啊还有能不能照着搬啊，只是把完整的粒子特效搬出来」——v0.2.18.1 自创的 24 粒子小改版不合格，要参考代码的完整原版粒子）：
+//   hub CSS（经 shared head 自动流入重建后的帖页）——粒子改参考原版：单个 10px 圆点 + 61 条 box-shadow 彩点（色环逐字照搬参考代码不改一色）+ 三动画链照参考原版时长（1.25s mn-fireworks-bang ease-out 迸发 → 1.25s mn-fireworks-gravity ease-in 下落 translateY(200px) → 6.25s mn-fireworks-position linear 游走 5 档 margin 窗口）；scale(0.4) 并入 gravity 终点（单元素免 wrapper，与参考 .fireworks 外壳视觉效果一致）；like-pop-icon 改参考值（0.5s ease-out、0% scale(0) 50% scale(1.2) rotate(-10deg)）；
+//   armLikePop（hub + 帖页 tail 同改）——like-pop 摘类改等最后一档动画（mn-fireworks-position 6.25s）animationend 才摘 + 6.8s 兜底（旧版 950ms 摘类粒子没飞完就没了）；零共享文件零后端（补丁位 2→3·口径修正轮；2026-09-05）
+window.MN_SITE_VERSION = 'v0.2.18.3';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
