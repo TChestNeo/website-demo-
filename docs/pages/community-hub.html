@@ -1875,6 +1875,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   border: none; background: transparent; color: var(--color-outline); cursor: pointer;
   padding: 4px 10px; font-size: var(--fs-label-sm); font-family: inherit;
   display: inline-flex; align-items: center; gap: 4px; border-radius: 9999px;
+  position: relative; /* v0.2.18.1 粒子迸发定位锚 */
   transition: background 0.15s ease, color 0.15s ease;
 }
 .post-action-btn:hover { color: var(--color-primary); background: rgba(70,72,212,0.08); }
@@ -1896,6 +1897,35 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 }
 .repost-embedded-gone { color: var(--color-outline); font-size: var(--fs-label-sm); }
 .post-action-btn.reposted { color: #16a34a; }
+
+/* ----- v0.2.18.1 点赞动画：爱心弹跳 + 粒子迸发（经 shared head 自动流入重建后的帖页）-----
+   like-pop = 点赞瞬间的一次性类（JS 加，animationend/兜底定时器摘）——重渲染/已点赞卡片不重播；
+   粒子=单个 6px 圆点 + 24 条 box-shadow 彩色圆点迸发（零额外节点）；reduced-motion 关动画只换实心 */
+.like-burst {
+  position: absolute; left: 17px; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px;
+  border-radius: 50%; background: none; display: none; pointer-events: none;
+}
+.post-action-btn.like-pop .like-burst { display: block; animation: like-burst-fly 0.6s ease-out forwards; }
+.post-action-btn.like-pop .material-symbols-outlined { animation: like-pop-icon 0.45s cubic-bezier(0.2, 1.6, 0.4, 1); }
+@keyframes like-pop-icon {
+  0% { transform: scale(0.2) rotate(-35deg); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes like-burst-fly {
+  0% {
+    box-shadow: 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e, 0 0 #e0245e;
+    transform: scale(0.45); opacity: 1;
+  }
+  100% {
+    box-shadow: 16px 0 #e0245e, 11px 11px #ff6b8b, 0 16px #ff3040, -11px 11px #a855f7, -16px 0 #ffd166, -11px -11px #e0245e, 0 -16px #ff6b8b, 11px -11px #ff3040, 24px 6px #a855f7, 20px 16px #ffd166, 8px 22px #e0245e, -8px 22px #ff6b8b, -20px 16px #ff3040, -24px 6px #a855f7, -24px -6px #ffd166, -20px -16px #e0245e, -8px -22px #ff6b8b, 8px -22px #ff3040, 20px -16px #a855f7, 24px -6px #ffd166, 4px 4px #e0245e, -4px -4px #ff6b8b, 30px 0 #ff3040, -30px 0 #a855f7;
+    transform: scale(1); opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-action-btn.like-pop .material-symbols-outlined { animation: none; }
+  .post-action-btn.like-pop .like-burst { display: none; }
+}
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -2604,7 +2634,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           (item.media && item.media.length ? mediaGridHtml(item.media) : '') +
           '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
             (item.cloudId
-              ? '<button type="button" class="post-action-btn' + (item.liked ? ' liked' : '') + '" data-like-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.liked ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">' + (item.liked ? 'favorite' : 'favorite_border') + '</span> <span data-like-count>' + item.likes + '</span></button>'
+              ? '<button type="button" class="post-action-btn' + (item.liked ? ' liked' : '') + '" data-like-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.liked ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">' + (item.liked ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"></span> <span data-like-count>' + item.likes + '</span></button>'
               : '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">favorite</span> ' + item.likes + '</span>') +
             '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">chat_bubble</span> ' + item.comments + '</span>' +
           '</div>' +
@@ -2688,18 +2718,28 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     var iconEl = btn.querySelector('.material-symbols-outlined');
     var before = parseInt(countEl.textContent, 10) || 0;
     btn.setAttribute('aria-pressed', next ? 'true' : 'false');
-    if (next) btn.classList.add('liked'); else btn.classList.remove('liked');
+    if (next) { btn.classList.add('liked'); armLikePop(btn); } else btn.classList.remove('liked', 'like-pop');
     if (iconEl) iconEl.textContent = next ? 'favorite' : 'favorite_border';
     countEl.textContent = before + (next ? 1 : -1);
     MN_API[next ? 'post' : 'del']('/social/posts/' + encodeURIComponent(id) + '/like').then(function (r) {
       if (r.ok && r.data) { countEl.textContent = r.data.likeCount; return; } // 服务端真值
       btn.setAttribute('aria-pressed', wasLiked ? 'true' : 'false');
-      if (wasLiked) btn.classList.add('liked'); else btn.classList.remove('liked');
+      if (wasLiked) btn.classList.add('liked'); else btn.classList.remove('liked', 'like-pop');
       if (iconEl) iconEl.textContent = wasLiked ? 'favorite' : 'favorite_border';
       countEl.textContent = before;
       if (r.status === 401) toastMsg('登录已过期，请重新登录', true);
       else toastMsg('操作失败，请稍后再试', true);
     });
+  }
+
+  // v0.2.18.1 点赞动画一次性类：点赞瞬间加 like-pop（爱心弹跳+粒子迸发），动画结束/兜底定时器后摘——
+  // 类挂在按钮上而非默认渲染里，60s 重渲染/已点赞卡片不重播动画
+  function armLikePop(btn) {
+    btn.classList.add('like-pop');
+    var burst = btn.querySelector('.like-burst');
+    var done = function () { btn.classList.remove('like-pop'); };
+    if (burst) burst.addEventListener('animationend', done, { once: true });
+    setTimeout(done, 950); // reduced-motion 关动画无 animationend 的兜底
   }
 
   function renderDiscovery() {

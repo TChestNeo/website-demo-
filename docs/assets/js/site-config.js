@@ -95,7 +95,10 @@ window.MN_SITE = window.MN_SITE || {};
 //   后端（social.js 单文件 + 迁移 015）——posts.repost_of 加列+索引（无新表 health 58 不变，user_version 14→15）；postRow 加 repostOfId/repostOf（浅嵌一层不递归：原帖存在且 visible 才嵌否则 null）/repostCount/repostedByMe（任意状态 EXISTS——removed 行点按=撤销与点赞开关同感，避免「L0 拒了的转发行残留→按钮显示未转发→再点 409」死胡同）；POST/DELETE /posts/:id/repost（转发即发帖：共享发帖配额 pw:user: 同预算同 key、新号频控同发帖、同帖一次 (repost_of,author_id) 守卫 409 CONFLICT、转发语可选 0-2000 空串=裸转发、刻意跳过 sha1 去重——空串哈希撞车+短转发语高频误伤、原帖 visible 门控 404、L0 仅非空转发语同帖口径）；测试 212→227/227；
 //   前端 hub——cloudPostItem 带 repostOfId 徽章换「转发了」（复用 badge-success 绿徽章零新 CSS）+ 卡片转发语 title 条件渲染（裸转发无空 h4）+ .repost-embedded 嵌入原帖盒（头像/作者/相对时间/正文截 200 字/媒体网格，原帖不可见→「原帖已删除或不可见」占位）+ repostEmbeddedHtml 与帖页同构；灯箱绑定按 .post-media 全量查询自动覆盖内嵌媒体、整卡点击走既有 data-cloud-id 零新绑定；
 //   帖页（tail 改+重建）——renderPost 转发分支（.repost-line repeat 图标+头像+「XX 转发了」+转发语+嵌入盒）+ 操作行追加转发钮（repeat 图标+计数、reposted 高亮绿 #16a34a、乐观切换+失败回滚、再点=撤销）+ 分享钮（ios_share）；转发对话框（灯箱模态+自己的 Escape 监听不复用 lbEscape 防误关灯箱+textarea autogrow+removed 拦截/hold 待审核/409 同步置位/401/429 分支 toast）；分享链 navigator.share→clipboard.writeText→textarea+execCommand 三级兜底（访客可用无门禁、URL 从 location 自身拼绝不硬编码）（小改动位 17→18·新功能轮·补丁清零；2026-09-05）
-window.MN_SITE_VERSION = 'v0.2.18.0';
+// v0.2.18.1 = Community 点赞实心+动画（用户「那个点赞后能不能变成实心和有一个动画」（附了 like/dislike 参考代码）→「只是要动画而已 一样是用爱心不要换」——爱心图标不换，只要实心+动画）：
+//   hub + 帖页点赞钮（同构改动）——点赞瞬间：爱心 favorite_border→favorite 实心（原有）+ 图标弹跳动画 like-pop-icon（scale 0.2 旋转 -35° → 弹到 1 带回弹，0.45s springy 缓动）+ 心形配色粒子迸发 like-burst-fly（单个 6px 圆点 + 24 条 box-shadow 彩点 pinks/reds/purple/gold 径向炸开 0.6s 淡出——参考代码 fireworks 技法的按钮尺寸缩小版，零额外节点）；动画挂一次性类 like-pop（JS 点赞瞬间加、animationend/950ms 兜底定时器摘）——60s 重渲染/已点赞卡片默认渲染不带类不重播；取消点赞/失败回滚同步摘类；reduced-motion 关动画只换实心；
+//   零共享文件改动（CSS 进 hub 无标记块经 shared head 自动流入重建后的帖页；帖页 tail 改+重建）（补丁位 0→1·观感微调轮；2026-09-05）
+window.MN_SITE_VERSION = 'v0.2.18.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
