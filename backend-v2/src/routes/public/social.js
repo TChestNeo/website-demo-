@@ -151,6 +151,34 @@ function register(router, ctx) {
     const likedByMe = viewerId
       ? !!db.prepare("SELECT 1 FROM content_likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?").get(viewerId, row.id)
       : false;
+    // v0.2.18.0 转发随行（索引 idx_posts_repost_of 命中，微秒级）：
+    // repostedByMe 任意状态都算已转发——removed 行点按 = 撤销（与点赞开关同感）；
+    // repostOf 浅嵌一层不递归：原帖存在且 visible 才嵌，否则 null（前端渲染「原帖已删除或不可见」占位）。
+    // 查询预算：每行 +2 索引查询、转发行再 +3（原帖/原帖作者/双计数）——LIMIT 100 微秒级可接受；
+    // feed 变大时首候选优化 = GROUP BY repost_of 批量计数。
+    const repostCount = db.prepare('SELECT count(*) AS n FROM posts WHERE repost_of = ?').get(row.id).n;
+    const repostedByMe = viewerId
+      ? !!db.prepare('SELECT 1 FROM posts WHERE repost_of = ? AND author_id = ?').get(row.id, viewerId)
+      : false;
+    const repostOfId = row.repost_of || null;
+    let repostOf = null;
+    if (repostOfId) {
+      const orig = db.prepare("SELECT * FROM posts WHERE id = ? AND status = 'visible'").get(repostOfId);
+      if (orig) {
+        const oa = db.prepare('SELECT id, display_name, avatar_url FROM users WHERE id = ?').get(orig.author_id);
+        repostOf = {
+          id: orig.id,
+          authorId: orig.author_id,
+          authorName: oa ? oa.display_name : 'Anonymous',
+          avatarUrl: oa ? oa.avatar_url : null,
+          content: orig.content,
+          media: parseJson(orig.media) || [],
+          createdAt: orig.created_at,
+          likeCount: db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'post' AND target_id = ?").get(orig.id).n,
+          commentCount: db.prepare("SELECT count(*) AS n FROM comments WHERE post_id = ? AND status = 'visible'").get(orig.id).n
+        };
+      }
+    }
     return {
       id: row.id,
       authorId: row.author_id,
@@ -161,7 +189,8 @@ function register(router, ctx) {
       topicId: row.topic_id,
       status: row.status,
       createdAt: row.created_at,
-      likeCount, commentCount, likedByMe
+      likeCount, commentCount, likedByMe,
+      repostOfId, repostOf, repostCount, repostedByMe
     };
   }
 
@@ -290,6 +319,83 @@ function register(router, ctx) {
       .run(c.user.id, req.params.id);
     const likeCount = c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'post' AND target_id = ?").get(req.params.id).n;
     sendJson(res, 200, { liked: false, likeCount });
+  }));
+
+  // ── 转发（v0.2.18.0：真转发——转发即发帖，同帖一次，转发语可选 0-2000；先发后审同帖口径）──
+  router.add('POST', '/api/social/posts/:id/repost', requireSession(async (req, res, c) => {
+    // 转发即发帖：共享发帖配额（pw:user: 同预算同 key）——转发也是内容发布，堵刷屏
+    const w = (ctx.config.rateLimits || {}).postsWrite || { max: 10, windowMs: 600000 };
+    if (!ctx.limiter('pw:user:' + c.user.id, w.max, w.windowMs)) throw new HttpError('RATE_LIMITED', '转发过于频繁');
+    const body = await readJson(req, 64 * 1024);
+    const content = String(body.content || '').trim();
+    if (content.length > MAX_POST_LEN) throw new HttpError('VALIDATION', `转发语需 0-${MAX_POST_LEN} 字符`);
+
+    const iso = new Date().toISOString();
+    // 处罚生效：禁言 / 发布受限
+    if (c.user.muted_until && c.user.muted_until > iso) throw new HttpError('RESTRICTED', '你已被禁言，暂时无法转发');
+    if (c.user.rate_limited_until && c.user.rate_limited_until > iso) throw new HttpError('RESTRICTED', '发布频率受限，请稍后再试');
+    // 新号频控同发帖（转发即发帖，堵 <7 天号裸转发刷屏向量）
+    const mc = (ctx.config.moderation || {});
+    const newSince = new Date(new Date(iso).getTime() - (mc.newAccountDays || 7) * 86400 * 1000).toISOString();
+    if (c.user.created_at > newSince && newAccountOverLimit(c.db, c.user.id, mc.newAccountDailyPosts || 5, iso)) {
+      throw new HttpError('RESTRICTED', '新账号每日最多发 5 帖，请明天再来');
+    }
+    // 原帖必须可见
+    const original = c.db.prepare("SELECT * FROM posts WHERE id = ? AND status = 'visible'").get(req.params.id);
+    if (!original) throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
+    // 同帖一次守卫：(repost_of, author_id) 唯一——重复转发 409 而不是静默吞掉
+    if (c.db.prepare('SELECT 1 FROM posts WHERE repost_of = ? AND author_id = ?').get(original.id, c.user.id)) {
+      throw new HttpError('CONFLICT', '你已经转发过这条帖子');
+    }
+
+    // 刻意跳过 sha1 去重：裸转发 content=''（全空串哈希撞车）+ 短转发语（「+1」「好」类高频短句）
+    // 会把正常转发误伤为「重复发布」；同帖一次已由上方 (repost_of, author_id) 守卫兜底。
+    // 转发语 L0（仅非空时）——reject 插 removed 并封号；hold 先发后审；pass 排队；
+    // 裸转发（content=''）= 无审核项直接 visible。
+    let l0 = null;
+    if (content) {
+      l0 = l0Screen(content, ctx.moderation.blocklist);
+    }
+    const postStatus = l0 && l0.verdict === 'reject' ? 'removed' : 'visible';
+    const { id } = insertWithId(c.db, 'posts', ['author_id', 'topic_id', 'content', 'media', 'repost_of', 'status', 'created_at', 'updated_at'],
+      [c.user.id, original.topic_id || null, content, '[]', original.id, postStatus, iso, iso], (s) => 'PST-' + pad6(s));
+
+    if (l0) {
+      const hash = hashOf(content);
+      if (l0.verdict === 'reject') {
+        const itemId = createModerationItem(c.db, {
+          kind: 'text', targetType: 'post', targetId: id, contentHash: hash,
+          status: 'l0_hold', priority: 'high', ruleHits: l0.hits
+        });
+        applyDecision(c.db, ctx.config, { itemId, action: 'ban', actor: 'system', reasonCode: 'zero_tolerance', userId: c.user.id });
+      } else if (l0.verdict === 'hold') {
+        createModerationItem(c.db, {
+          kind: 'text', targetType: 'post', targetId: id, contentHash: hash,
+          status: 'l0_hold', priority: 'normal', ruleHits: l0.hits
+        });
+      } else {
+        createModerationItem(c.db, {
+          kind: 'text', targetType: 'post', targetId: id, contentHash: hash,
+          status: 'queued', priority: 'normal', ruleHits: null
+        });
+      }
+    }
+    const row = c.db.prepare('SELECT * FROM posts WHERE id = ?').get(id);
+    const repostCount = c.db.prepare('SELECT count(*) AS n FROM posts WHERE repost_of = ?').get(original.id).n;
+    sendJson(res, 200, {
+      post: postRow(c.db, row, c.user.id),
+      moderation: { verdict: l0 ? l0.verdict : 'pass', reasonCode: l0 ? l0.reasonCode : null },
+      repostCount
+    });
+  }));
+
+  router.add('DELETE', '/api/social/posts/:id/repost', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    // 不校验帖子存在：对已下架帖撤销转发 = 无害 no-op（幂等，与取消点赞同口径）
+    c.db.prepare('DELETE FROM posts WHERE repost_of = ? AND author_id = ?')
+      .run(req.params.id, c.user.id);
+    const repostCount = c.db.prepare('SELECT count(*) AS n FROM posts WHERE repost_of = ?').get(req.params.id).n;
+    sendJson(res, 200, { reposted: false, repostCount });
   }));
 
   // ── 评论（v0.2.17.0：一层回复，先发后审同帖口径）──

@@ -1880,6 +1880,22 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 .post-action-btn:hover { color: var(--color-primary); background: rgba(70,72,212,0.08); }
 .post-action-btn.liked { color: #e0245e; }
 .post-action-btn-static { cursor: default; }
+
+/* ----- v0.2.18.0 转发卡：嵌入原帖盒 + 转发按钮高亮（经 shared head 自动流入重建后的帖页）----- */
+.repost-embedded {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-container-low);
+  margin-bottom: 8px;
+}
+.repost-embedded-text {
+  white-space: pre-wrap; word-break: break-word;
+  font-size: var(--fs-label-md); color: var(--color-on-surface-variant);
+  margin: 4px 0 8px;
+}
+.repost-embedded-gone { color: var(--color-outline); font-size: var(--fs-label-sm); }
+.post-action-btn.reposted { color: #16a34a; }
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -2291,16 +2307,41 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   var pendingMedia = []; // composer 已上传、待随帖发布的媒体 URL（最多 3 个）
 
   function cloudPostItem(p) {
+    // v0.2.18.0 转发卡：repostOfId 有值时徽章换「转发了」（复用既有 badge-success 绿徽章，零新 CSS）
     return {
-      icon: 'person', badge: 'Citizen Post', badgeClass: 'badge-primary', author: p.authorName || 'Citizen',
+      icon: 'person', badge: p.repostOfId ? '转发了' : 'Citizen Post',
+      badgeClass: p.repostOfId ? 'badge-success' : 'badge-primary',
+      author: p.authorName || 'Citizen',
       avatarUrl: p.avatarUrl || null,
       title: p.content.length > 90 ? p.content.slice(0, 90) + '…' : p.content,
       desc: p.content.length > 90 ? p.content.slice(90, 240) : '',
       time: relativeTime(p.createdAt),
       likes: p.likeCount || 0, comments: p.commentCount || 0, liked: !!p.likedByMe, // v0.2.17.0 真实计数 + 我的点赞态
       cloudId: p.id,
-      media: (p.media || []).filter(function (m) { return MEDIA_URL_RE.test(m); })
+      media: (p.media || []).filter(function (m) { return MEDIA_URL_RE.test(m); }),
+      repostOfId: p.repostOfId || null,
+      repostOf: p.repostOf || null,
+      repostCount: p.repostCount || 0,
+      repostedByMe: !!p.repostedByMe
     };
+  }
+
+  // v0.2.18.0 嵌入原帖盒（hub 卡 + 帖页共用形状）：头像/作者/时间/正文截 200 字/媒体网格；
+  // o=null → 原帖已删除或不可见占位。全量 escapeHtml。
+  function repostEmbeddedHtml(o) {
+    if (!o) return '<div class="repost-embedded-gone">原帖已删除或不可见</div>';
+    var m = (o.media || []).filter(function (x) { return MEDIA_URL_RE.test(x); });
+    var text = String(o.content || '');
+    var shown = text.length > 200 ? text.slice(0, 200) + '…' : text;
+    return '<div class="repost-embedded">' +
+      '<div class="flex-center" style="justify-content:flex-start;gap:6px">' +
+        (o.avatarUrl ? '<img src="' + escapeHtml(o.avatarUrl) + '" alt="" class="avatar avatar-sm">' : '') +
+        '<span style="font-weight:600;font-size:var(--fs-label-md)">' + escapeHtml(o.authorName || 'Citizen') + '</span>' +
+        '<span class="label-sm" style="color:var(--color-outline)">' + escapeHtml(o.createdAt ? relativeTime(o.createdAt) : '') + '</span>' +
+      '</div>' +
+      (shown ? '<p class="repost-embedded-text">' + escapeHtml(shown) + '</p>' : '') +
+      (m.length ? mediaGridHtml(m) : '') +
+      '</div>';
   }
 
   // v0.2.15.3 用户「输入框默认显示（有什么好事？/有什么新消息？/同志有什么新消息要分享分享？/贵国有什么新闻吗？）」：
@@ -2557,8 +2598,9 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
             '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + escapeHtml(item.time) + '</span>' +
             (item.cloudId ? '<button data-cloud-post="' + escapeHtml(item.cloudId) + '" title="Report" style="border:none;background:transparent;color:var(--color-outline);cursor:pointer;padding:2px;margin-left:4px"><span class="material-symbols-outlined" style="font-size:16px">flag</span></button>' : '') +
           '</div>' +
-          '<h4 style="font-weight:600;font-size:var(--fs-body-md);margin-bottom:4px">' + escapeHtml(item.title) + '</h4>' +
+          (item.title ? '<h4 style="font-weight:600;font-size:var(--fs-body-md);margin-bottom:4px">' + escapeHtml(item.title) + '</h4>' : '') +
           (item.desc ? '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + escapeHtml(item.desc) + '</p>' : '') +
+          (item.repostOfId ? repostEmbeddedHtml(item.repostOf) : '') +
           (item.media && item.media.length ? mediaGridHtml(item.media) : '') +
           '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
             (item.cloudId

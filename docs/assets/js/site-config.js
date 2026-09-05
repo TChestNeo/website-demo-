@@ -91,7 +91,11 @@ window.MN_SITE = window.MN_SITE || {};
 //   后端（social.js 单文件）——postRow 加 likeCount/commentCount/likedByMe + 可选鉴权 optionalViewer（裸查 user_sessions JOIN users，绝不复用 authenticate——那会抛 401 还记 activity 污染 DAU，测试钉死零 activity 行）；GET /posts/:id（404 门控）；POST/DELETE /posts/:id/like（INSERT OR IGNORE 自然主键幂等开关）；GET /posts/:id/comments（仅 visible、ASC、LIMIT 200、本轮不分页）；POST /posts/:id/comments（1-2000 校验、一层回复校验、禁言/限频/去重换表自写 SQL 同帖口径、L0 先发后审同帖口径、CMT- id）；无新迁移 health 58 不变；
 //   前端 hub——拆地雷：v0.2.16.0 媒体/灯箱样式段移出 ethereal 内联标记块（原在块内 inline-css.js 刷新会整块替换洗掉，已实锤）另开无标记块；帖子卡真头像 + 点赞胶囊钮（乐观更新/失败回滚，不重渲染 feed 防滚动跳动）+ 整卡点击跳独立帖页（按钮内/文字选区不跳）+ 瓦片 stopPropagation；评论数点按冒泡进帖页；
 //   新页 docs/pages/community-post.html（自包含，头部复用 hub 同源：主题防闪+纯 ethereal 标记块+字体块；帖页样式另开无标记块）——返回链/404 态/全文不截断/头像/媒体网格+灯箱/点赞/评论区（顶层+缩进回复+回复钮+replyChip）/评论提交（removed 拦截 toast、hold 待审核 toast、成功追加）/访客门控（藏 composer 显 guestPrompt，next=帖页自身回跳）；测试 200→212/212（小改动位 16→17·新功能轮·补丁清零；2026-09-05）
-window.MN_SITE_VERSION = 'v0.2.17.0';
+// v0.2.18.0 = Community 转发 + 分享（用户「能不能在帖子的评论后面那边再添加转发按钮和分享按钮？」→问询钦定「真转发」Twitter 式——转发创建新帖引用原帖、上信息流带「转发了」徽章、可附转发语、他人可点赞/评论转发帖；分享=复制帖子链接，移动端调系统分享面板）：
+//   后端（social.js 单文件 + 迁移 015）——posts.repost_of 加列+索引（无新表 health 58 不变，user_version 14→15）；postRow 加 repostOfId/repostOf（浅嵌一层不递归：原帖存在且 visible 才嵌否则 null）/repostCount/repostedByMe（任意状态 EXISTS——removed 行点按=撤销与点赞开关同感，避免「L0 拒了的转发行残留→按钮显示未转发→再点 409」死胡同）；POST/DELETE /posts/:id/repost（转发即发帖：共享发帖配额 pw:user: 同预算同 key、新号频控同发帖、同帖一次 (repost_of,author_id) 守卫 409 CONFLICT、转发语可选 0-2000 空串=裸转发、刻意跳过 sha1 去重——空串哈希撞车+短转发语高频误伤、原帖 visible 门控 404、L0 仅非空转发语同帖口径）；测试 212→227/227；
+//   前端 hub——cloudPostItem 带 repostOfId 徽章换「转发了」（复用 badge-success 绿徽章零新 CSS）+ 卡片转发语 title 条件渲染（裸转发无空 h4）+ .repost-embedded 嵌入原帖盒（头像/作者/相对时间/正文截 200 字/媒体网格，原帖不可见→「原帖已删除或不可见」占位）+ repostEmbeddedHtml 与帖页同构；灯箱绑定按 .post-media 全量查询自动覆盖内嵌媒体、整卡点击走既有 data-cloud-id 零新绑定；
+//   帖页（tail 改+重建）——renderPost 转发分支（.repost-line repeat 图标+头像+「XX 转发了」+转发语+嵌入盒）+ 操作行追加转发钮（repeat 图标+计数、reposted 高亮绿 #16a34a、乐观切换+失败回滚、再点=撤销）+ 分享钮（ios_share）；转发对话框（灯箱模态+自己的 Escape 监听不复用 lbEscape 防误关灯箱+textarea autogrow+removed 拦截/hold 待审核/409 同步置位/401/429 分支 toast）；分享链 navigator.share→clipboard.writeText→textarea+execCommand 三级兜底（访客可用无门禁、URL 从 location 自身拼绝不硬编码）（小改动位 17→18·新功能轮·补丁清零；2026-09-05）
+window.MN_SITE_VERSION = 'v0.2.18.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

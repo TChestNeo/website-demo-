@@ -1880,6 +1880,22 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 .post-action-btn:hover { color: var(--color-primary); background: rgba(70,72,212,0.08); }
 .post-action-btn.liked { color: #e0245e; }
 .post-action-btn-static { cursor: default; }
+
+/* ----- v0.2.18.0 转发卡：嵌入原帖盒 + 转发按钮高亮（经 shared head 自动流入重建后的帖页）----- */
+.repost-embedded {
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-container-low);
+  margin-bottom: 8px;
+}
+.repost-embedded-text {
+  white-space: pre-wrap; word-break: break-word;
+  font-size: var(--fs-label-md); color: var(--color-on-surface-variant);
+  margin: 4px 0 8px;
+}
+.repost-embedded-gone { color: var(--color-outline); font-size: var(--fs-label-sm); }
+.post-action-btn.reposted { color: #16a34a; }
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -2187,6 +2203,10 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 @media (max-width: 900px) {
   .post-page-wrap { padding-left: var(--space-sm); padding-right: var(--space-sm); }
 }
+/* v0.2.18.0 转发头（.repost-embedded 嵌入盒样式走 shared head 的 hub 无标记块，这里只补转发者行） */
+.repost-line { display: flex; align-items: center; gap: 6px; font-size: var(--fs-label-md); color: var(--color-outline); margin-bottom: 8px; }
+.repost-line .material-symbols-outlined { font-size: 16px; }
+.repost-line img { margin: 0; }
 </style>
 </head>
 <body class="pre-stagger">
@@ -2265,6 +2285,23 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
         '</button>';
     });
     return html + '</div>';
+  }
+
+  // v0.2.18.0 嵌入原帖盒（与 hub 同构；o=null → 原帖已删除或不可见占位）。全量 escapeHtml。
+  function repostEmbeddedHtml(o) {
+    if (!o) return '<div class="repost-embedded-gone">原帖已删除或不可见</div>';
+    var m = (o.media || []).filter(function (x) { return MEDIA_URL_RE.test(x); });
+    var text = String(o.content || '');
+    var shown = text.length > 200 ? text.slice(0, 200) + '…' : text;
+    return '<div class="repost-embedded">' +
+      '<div class="flex-center" style="justify-content:flex-start;gap:6px">' +
+        (o.avatarUrl ? '<img src="' + escapeHtml(o.avatarUrl) + '" alt="" class="avatar avatar-sm">' : '') +
+        '<span style="font-weight:600;font-size:var(--fs-label-md)">' + escapeHtml(o.authorName || 'Citizen') + '</span>' +
+        '<span class="label-sm" style="color:var(--color-outline)">' + escapeHtml(o.createdAt ? relativeTime(o.createdAt) : '') + '</span>' +
+      '</div>' +
+      (shown ? '<p class="repost-embedded-text">' + escapeHtml(shown) + '</p>' : '') +
+      (m.length ? mediaGridHtml(m) : '') +
+      '</div>';
   }
 
   // ── 灯箱（从 hub 逐字复制）──
@@ -2382,6 +2419,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 
   function renderPost(p) {
     var media = (p.media || []).filter(function (m) { return MEDIA_URL_RE.test(m); });
+    // v0.2.18.0 转发帖：转发者行 + 转发语（可为空=裸转发）+ 嵌入原帖盒；普通帖零变化
     document.getElementById('postCardWrap').innerHTML =
       '<div class="card">' +
         '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:8px">' +
@@ -2392,11 +2430,17 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           '</div>' +
           '<button data-cloud-post="' + escapeHtml(p.id) + '" title="Report" style="margin-left:auto;border:none;background:transparent;color:var(--color-outline);cursor:pointer;padding:2px"><span class="material-symbols-outlined" style="font-size:16px">flag</span></button>' +
         '</div>' +
-        '<p class="post-content">' + escapeHtml(p.content) + '</p>' +
+        (p.repostOfId
+          ? '<div class="repost-line"><span class="material-symbols-outlined">repeat</span><img src="' + escapeHtml(p.avatarUrl || window._slatiFallbackAvatar) + '" alt="" class="avatar avatar-sm">' + escapeHtml(p.authorName || 'Citizen') + ' 转发了</div>'
+          : '') +
+        (p.content ? '<p class="post-content">' + escapeHtml(p.content) + '</p>' : '') +
+        (p.repostOfId ? repostEmbeddedHtml(p.repostOf) : '') +
         (media.length ? mediaGridHtml(media) : '') +
         '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-top:4px">' +
           '<button type="button" class="post-action-btn' + (p.likedByMe ? ' liked' : '') + '" data-like-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.likedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">' + (p.likedByMe ? 'favorite' : 'favorite_border') + '</span> <span data-like-count>' + (p.likeCount || 0) + '</span></button>' +
           '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">chat_bubble</span> ' + (p.commentCount || 0) + '</span>' +
+          '<button type="button" class="post-action-btn' + (p.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (p.repostCount || 0) + '</span></button>' +
+          '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(p.id) + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">ios_share</span> 分享</button>' +
         '</div>' +
       '</div>';
     document.getElementById('postDetail').style.display = 'flex';
@@ -2405,6 +2449,10 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     bindLightbox();
     var likeBtn = document.querySelector('#postCardWrap [data-like-post]');
     if (likeBtn) likeBtn.addEventListener('click', function () { toggleLikeBtn(likeBtn); });
+    var repostBtn = document.querySelector('#postCardWrap [data-repost-post]');
+    if (repostBtn) repostBtn.addEventListener('click', function () { toggleRepost(repostBtn); });
+    var shareBtn = document.querySelector('#postCardWrap [data-share-post]');
+    if (shareBtn) shareBtn.addEventListener('click', function () { sharePost(p.id); });
     var rep = document.querySelector('#postCardWrap [data-cloud-post]');
     if (rep) MN_Report.mount(rep, { targetType: 'post', targetId: p.id });
   }
@@ -2463,6 +2511,133 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       if (r.status === 401) toastMsg('登录已过期，请重新登录', true);
       else toastMsg('操作失败，请稍后再试', true);
     });
+  }
+
+  // ── v0.2.18.0 转发开关（镜像点赞：乐观更新 + 失败回滚）──
+  function toggleRepost(btn) {
+    if (!btn) return;
+    if (isGuest()) { toastMsg('登录后才能转发', true); return; }
+    var id = btn.getAttribute('data-repost-post');
+    var wasReposted = btn.getAttribute('aria-pressed') === 'true';
+    if (wasReposted) {
+      var countEl = btn.querySelector('[data-repost-count]');
+      var before = parseInt(countEl.textContent, 10) || 0;
+      btn.setAttribute('aria-pressed', 'false');
+      btn.classList.remove('reposted');
+      countEl.textContent = Math.max(before - 1, 0);
+      MN_API.del('/social/posts/' + encodeURIComponent(id) + '/repost').then(function (r) {
+        if (r.ok && r.data) { countEl.textContent = r.data.repostCount; return; }
+        btn.setAttribute('aria-pressed', 'true');
+        btn.classList.add('reposted');
+        countEl.textContent = before;
+        if (r.status === 401) toastMsg('登录已过期，请重新登录', true);
+        else toastMsg('操作失败，请稍后再试', true);
+      });
+    } else {
+      openRepostDialog(id, btn);
+    }
+  }
+
+  // 转发对话框：灯箱模态模板（自己的 Escape 监听，不复用 lbEscape 防误关灯箱）
+  function openRepostDialog(id, btn) {
+    var backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    var cont = document.createElement('div');
+    cont.className = 'modal-container';
+    var card = document.createElement('div');
+    card.className = 'modal-card';
+    card.innerHTML =
+      '<h3 style="font-weight:600;font-size:var(--fs-body-lg);margin:0 0 var(--space-sm)">转发帖子</h3>' +
+      '<textarea id="repostInput" maxlength="2000" rows="3" placeholder="说点什么…（可选）" style="resize:none;width:100%;padding:10px 12px;border:var(--card-border);border-radius:var(--radius-md);background:var(--color-surface);color:inherit;font-family:inherit;font-size:var(--fs-label-md)"></textarea>' +
+      '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:var(--space-sm)">' +
+        '<button type="button" class="btn btn-sm" id="repostCancel">取消</button>' +
+        '<button type="button" class="btn btn-primary btn-sm" id="repostSubmit">转发</button>' +
+      '</div>';
+    cont.appendChild(card);
+    backdrop.appendChild(cont);
+    document.body.appendChild(backdrop);
+    function close() {
+      document.removeEventListener('keydown', onEsc);
+      backdrop.remove();
+    }
+    function onEsc(e) { if (e.key === 'Escape') close(); }
+    document.addEventListener('keydown', onEsc);
+    backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
+    void card.offsetWidth;
+    backdrop.classList.add('active');
+    var ta = card.querySelector('#repostInput');
+    // autogrow（照抄评论框模式）：随文字长高，max-height 240px 封顶后滚轮内滑
+    var baseH = ta.offsetHeight;
+    ta.addEventListener('input', function () {
+      var maxH = 240;
+      this.style.height = 'auto';
+      this.style.height = Math.max(baseH, Math.min(this.scrollHeight, maxH)) + 'px';
+    });
+    ta.focus();
+    card.querySelector('#repostCancel').addEventListener('click', close);
+    card.querySelector('#repostSubmit').addEventListener('click', function () {
+      var sub = card.querySelector('#repostSubmit');
+      sub.disabled = true;
+      MN_API.post('/social/posts/' + encodeURIComponent(id) + '/repost', { content: ta.value.trim() }).then(function (r) {
+        sub.disabled = false;
+        if (r.ok && r.data) {
+          var status = r.data.post && r.data.post.status;
+          if (status === 'removed') { close(); toastMsg('内容违反社区规则，已被拦截', true); return; }
+          setReposted(btn, true, r.data.repostCount);
+          close();
+          var verdict = r.data.moderation && r.data.moderation.verdict;
+          toastMsg(verdict === 'hold' ? '已转发，内容待审核' : '转发成功');
+        } else if (r.status === 409) {
+          setReposted(btn, true, null); // 服务端未返计数——已在别处转发过，按钮同步置位
+          close();
+          toastMsg('你已经转发过这条帖子');
+        } else if (r.status === 401) { close(); toastMsg('登录已过期，请重新登录', true); }
+        else if (r.status === 429) toastMsg('转发过于频繁，请稍后再试', true);
+        else toastMsg('转发失败，请稍后再试', true);
+      });
+    });
+  }
+
+  function setReposted(btn, on, count) {
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (on) btn.classList.add('reposted'); else btn.classList.remove('reposted');
+    if (count != null) btn.querySelector('[data-repost-count]').textContent = count;
+  }
+
+  // ── v0.2.18.0 分享：复制帖子链接（移动端优先系统分享面板；访客可用，无门禁）──
+  function sharePost(id) {
+    // 从本页自身拼链接（绝不硬编码路径）：同页同 id 恒为规范 URL
+    var url = window.location.origin + window.location.pathname + '?id=' + encodeURIComponent(id);
+    if (navigator.share) {
+      navigator.share({ title: document.title, url: url }).catch(function () { copyLink(url); });
+    } else {
+      copyLink(url);
+    }
+  }
+
+  function copyLink(url) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(
+        function () { toastMsg('链接已复制'); },
+        function () { legacyCopy(url); } // 非安全上下文/权限拒绝 → 降级
+      );
+    } else {
+      legacyCopy(url);
+    }
+  }
+
+  function legacyCopy(url) {
+    var ta = document.createElement('textarea');
+    ta.value = url;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    ta.remove();
+    toastMsg(ok ? '链接已复制' : '复制失败，请手动复制链接', !ok);
   }
 
   function setReply(id, name) {
