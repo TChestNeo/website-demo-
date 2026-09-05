@@ -9,7 +9,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { HttpError, sendJson, readJson, readRawBuffer } = require('../../http');
-const { requireSession } = require('../../middleware/auth');
+const { requireSession, hashToken, readToken } = require('../../middleware/auth');
 const { insertWithId, pad6 } = require('../../ids');
 const {
   createModerationItem, l0Screen, screenTextTarget, newAccountOverLimit, isDuplicate, applyDecision
@@ -18,6 +18,7 @@ const { hashOf } = require('../../moderation/rules');
 const queue = require('../../moderation/queue');
 
 const MAX_POST_LEN = 2000;
+const MAX_COMMENT_LEN = 2000; // comments.content ≤2000（写入层校验，同 005 注释）
 const MAX_MEDIA = 3;
 
 // ── v0.2.16.0 帖子媒体上传（社区多图/视频）──
@@ -142,8 +143,14 @@ function register(router, ctx) {
   //   其余（IMS 未配置 / 首图为视频——视频 base64 必超 IMS 10MB）→ visible + queued 先发后审
   //   （queued 滞留无害：cron 生产不跑，仅当 IMS+cron 启用后才被处理）。
   // 处罚生效：禁言/发布受限用户 POST 直接 403。
-  function postRow(db, row) {
+  function postRow(db, row, viewerId) {
     const author = db.prepare('SELECT id, display_name, avatar_url FROM users WHERE id = ?').get(row.author_id);
+    // v0.2.17.0：计数随行（索引 idx_likes_target / idx_comments_post 命中，微秒级）
+    const likeCount = db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'post' AND target_id = ?").get(row.id).n;
+    const commentCount = db.prepare("SELECT count(*) AS n FROM comments WHERE post_id = ? AND status = 'visible'").get(row.id).n;
+    const likedByMe = viewerId
+      ? !!db.prepare("SELECT 1 FROM content_likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?").get(viewerId, row.id)
+      : false;
     return {
       id: row.id,
       authorId: row.author_id,
@@ -153,13 +160,44 @@ function register(router, ctx) {
       media: parseJson(row.media) || [],
       topicId: row.topic_id,
       status: row.status,
+      createdAt: row.created_at,
+      likeCount, commentCount, likedByMe
+    };
+  }
+
+  // 评论行映射（头像随行，前端零适配）
+  function commentRow(db, row) {
+    const author = db.prepare('SELECT id, display_name, avatar_url FROM users WHERE id = ?').get(row.author_id);
+    return {
+      id: row.id,
+      postId: row.post_id,
+      parentId: row.parent_id || null,
+      authorName: author ? author.display_name : 'Anonymous',
+      avatarUrl: author ? author.avatar_url : null,
+      content: row.content,
+      status: row.status, // 前端据此提示「内容违反社区规则，已被拦截」
       createdAt: row.created_at
     };
   }
 
+  // v0.2.17.0 可选鉴权：公共 GET 只读识别登录态（不调 authenticate——那会抛 401 且 recordActivity 污染 DAU）。
+  // cookie 缺失/坏/过期、账号 banned/deleted → 一律匿名；只返回 user id 供 likedByMe 用。
+  function optionalViewer(req, c) {
+    const token = readToken(req, c.config.sessionCookie);
+    if (!token) return null;
+    try {
+      const row = c.db.prepare(`
+        SELECT u.id FROM user_sessions s JOIN users u ON u.id = s.user_id
+        WHERE s.token_hash = ? AND s.expires_at > ? AND u.status NOT IN ('banned','deleted')
+      `).get(hashToken(token), new Date().toISOString());
+      return row ? row.id : null;
+    } catch { return null; }
+  }
+
   router.add('GET', '/api/social/posts', (req, res, c) => {
+    const viewerId = optionalViewer(req, c);
     const rows = c.db.prepare("SELECT * FROM posts WHERE status = 'visible' ORDER BY seq DESC LIMIT 100").all();
-    sendJson(res, 200, { posts: rows.map(r => postRow(c.db, r)) });
+    sendJson(res, 200, { posts: rows.map(r => postRow(c.db, r, viewerId)) });
   });
 
   router.add('POST', '/api/social/posts', requireSession(async (req, res, c) => {
@@ -225,6 +263,95 @@ function register(router, ctx) {
     }
     const row = c.db.prepare('SELECT * FROM posts WHERE id = ?').get(id);
     sendJson(res, 200, { post: postRow(c.db, row), moderation: { verdict: l0.verdict, reasonCode: l0.reasonCode } });
+  }));
+
+  // ── 单帖详情（v0.2.17.0：Twitter 式点帖看评论，独立帖页数据源）──
+  router.add('GET', '/api/social/posts/:id', (req, res, c) => {
+    const row = c.db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
+    if (!row || row.status !== 'visible') throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
+    sendJson(res, 200, { post: postRow(c.db, row, optionalViewer(req, c)) });
+  });
+
+  // ── 点赞（v0.2.17.0：幂等开关；content_likes 自然主键去重）──
+  router.add('POST', '/api/social/posts/:id/like', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    const post = c.db.prepare('SELECT id, status FROM posts WHERE id = ?').get(req.params.id);
+    if (!post || post.status !== 'visible') throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
+    c.db.prepare("INSERT OR IGNORE INTO content_likes (user_id, target_type, target_id, created_at) VALUES (?, 'post', ?, ?)")
+      .run(c.user.id, post.id, new Date().toISOString());
+    const likeCount = c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'post' AND target_id = ?").get(post.id).n;
+    sendJson(res, 200, { liked: true, likeCount });
+  }));
+
+  router.add('DELETE', '/api/social/posts/:id/like', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    // 不校验帖子存在：对已下架帖取消点赞 = 无害 no-op（幂等）
+    c.db.prepare("DELETE FROM content_likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?")
+      .run(c.user.id, req.params.id);
+    const likeCount = c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'post' AND target_id = ?").get(req.params.id).n;
+    sendJson(res, 200, { liked: false, likeCount });
+  }));
+
+  // ── 评论（v0.2.17.0：一层回复，先发后审同帖口径）──
+  router.add('GET', '/api/social/posts/:id/comments', (req, res, c) => {
+    const post = c.db.prepare('SELECT id, status FROM posts WHERE id = ?').get(req.params.id);
+    if (!post || post.status !== 'visible') throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
+    // 分页本轮不做（LIMIT 200 兜底）
+    const rows = c.db.prepare("SELECT * FROM comments WHERE post_id = ? AND status = 'visible' ORDER BY created_at ASC, seq ASC LIMIT 200").all(post.id);
+    sendJson(res, 200, { comments: rows.map(r => commentRow(c.db, r)) });
+  });
+
+  router.add('POST', '/api/social/posts/:id/comments', requireSession(async (req, res, c) => {
+    const w = (ctx.config.rateLimits || {}).commentWrite || { max: 20, windowMs: 60000 };
+    if (!ctx.limiter('cw:user:' + c.user.id, w.max, w.windowMs)) throw new HttpError('RATE_LIMITED', '评论过于频繁');
+    const body = await readJson(req, 64 * 1024);
+    const content = String(body.content || '').trim();
+    if (!content || content.length > MAX_COMMENT_LEN) throw new HttpError('VALIDATION', `内容需 1-${MAX_COMMENT_LEN} 字符`);
+    const post = c.db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
+    if (!post || post.status !== 'visible') throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
+    // 一层回复：parentId 必须属于本帖且自身无 parent（杜绝深链）
+    let parentId = null;
+    if (body.parentId) {
+      const parent = c.db.prepare('SELECT id, post_id, parent_id FROM comments WHERE id = ?').get(String(body.parentId));
+      if (!parent || parent.post_id !== post.id) throw new HttpError('VALIDATION', '回复的评论不存在');
+      if (parent.parent_id) throw new HttpError('VALIDATION', '仅支持一级回复');
+      parentId = parent.id;
+    }
+    const iso = new Date().toISOString();
+    // 处罚生效：禁言 / 发布受限（与发帖同口径）
+    if (c.user.muted_until && c.user.muted_until > iso) throw new HttpError('RESTRICTED', '你已被禁言，暂时无法评论');
+    if (c.user.rate_limited_until && c.user.rate_limited_until > iso) throw new HttpError('RESTRICTED', '发布频率受限，请稍后再试');
+    // sha1 精确去重（24h 同作者同内容）——pipeline.isDuplicate 硬编码 posts 子查询，
+    // 评论必须换表自写（复用会静默错查为帖重复）
+    const hash = hashOf(content);
+    const since = new Date(new Date(iso).getTime() - 24 * 3600 * 1000).toISOString();
+    const dupN = c.db.prepare("SELECT count(*) AS n FROM moderation_items WHERE kind = 'text' AND content_hash = ? AND created_at > ? "
+      + "AND target_id IN (SELECT id FROM comments WHERE author_id = ?)").get(hash, since, c.user.id).n;
+    if (dupN > 0) throw new HttpError('RESTRICTED', '请勿重复发布相同内容');
+    // L0 门禁同帖纯文字口径：reject → removed+封号；hold → visible+l0_hold；pass → visible+queued 先发后审
+    const l0 = l0Screen(content, ctx.moderation.blocklist);
+    const commentStatus = l0.verdict === 'reject' ? 'removed' : 'visible';
+    const { id } = insertWithId(c.db, 'comments', ['post_id', 'author_id', 'parent_id', 'content', 'status', 'created_at'],
+      [post.id, c.user.id, parentId, content, commentStatus, iso], (s) => 'CMT-' + pad6(s));
+    if (l0.verdict === 'reject') {
+      const itemId = createModerationItem(c.db, {
+        kind: 'text', targetType: 'comment', targetId: id, contentHash: hash,
+        status: 'l0_hold', priority: 'high', ruleHits: l0.hits
+      });
+      applyDecision(c.db, ctx.config, { itemId, action: 'ban', actor: 'system', reasonCode: 'zero_tolerance', userId: c.user.id });
+    } else if (l0.verdict === 'hold') {
+      createModerationItem(c.db, {
+        kind: 'text', targetType: 'comment', targetId: id, contentHash: hash,
+        status: 'l0_hold', priority: 'normal', ruleHits: l0.hits
+      });
+    } else {
+      createModerationItem(c.db, {
+        kind: 'text', targetType: 'comment', targetId: id, contentHash: hash,
+        status: 'queued', priority: 'normal', ruleHits: null
+      });
+    }
+    const row = c.db.prepare('SELECT * FROM comments WHERE id = ?').get(id);
+    sendJson(res, 200, { comment: commentRow(c.db, row), moderation: { verdict: l0.verdict, reasonCode: l0.reasonCode } });
   }));
 
   // ── 媒体上传（v0.2.16.0：社区帖子多图/视频）──

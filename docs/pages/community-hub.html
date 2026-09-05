@@ -686,57 +686,6 @@ textarea.input-glass {
 }
 .modal-card.active { transform: scale(1); opacity: 1; pointer-events: auto; }
 
-/* ----- v0.2.16.0 Community 帖子媒体：画廊 + 灯箱 + composer 待传缩略图 ----- */
-.post-media { display: grid; gap: 6px; margin-bottom: 8px; }
-.pm-1 { grid-template-columns: 1fr; }
-.pm-2 { grid-template-columns: 1fr 1fr; }
-.pm-3 { grid-template-columns: 1fr 1fr 1fr; }
-.post-media .pm-tile {
-  border: none; padding: 0; margin: 0; cursor: pointer;
-  background: rgba(0,0,0,0.05); border-radius: var(--radius-md);
-  overflow: hidden; display: block; line-height: 0;
-}
-.post-media .pm-tile img, .post-media .pm-tile video {
-  width: 100%; height: 200px; object-fit: cover; display: block;
-  transition: transform 0.2s ease;
-}
-.post-media .pm-1 img, .post-media .pm-1 video { height: 260px; }
-.post-media .pm-tile:hover img, .post-media .pm-tile:hover video { transform: scale(1.03); }
-.pm-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
-.pm-list:empty { display: none; }
-.pm-thumb {
-  position: relative; width: 64px; height: 64px; border-radius: var(--radius-md);
-  overflow: hidden; border: var(--card-border);
-}
-.pm-thumb img, .pm-thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
-.pm-thumb .pm-rm {
-  position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%;
-  border: none; background: rgba(0,0,0,0.55); color: #fff; font-size: 12px; line-height: 1;
-  cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;
-}
-.lb-card { position: relative; max-width: min(920px, 94vw); padding: 12px; width: auto; overflow: visible; }
-.lb-media { max-width: 100%; max-height: 76vh; border-radius: var(--radius-md); display: block; }
-.lb-media.video { width: min(880px, 92vw); }
-.lb-close {
-  position: absolute; top: 10px; right: 14px; border: none; background: transparent;
-  color: var(--color-on-surface-variant); cursor: pointer; padding: 4px; z-index: 2;
-}
-.lb-arrow {
-  position: absolute; top: 50%; transform: translateY(-50%); border: none; cursor: pointer;
-  background: rgba(0,0,0,0.35); color: #fff; border-radius: 50%; width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center; z-index: 2;
-}
-.lb-arrow.lb-prev { left: 10px; }
-.lb-arrow.lb-next { right: 10px; }
-.lb-arrow:disabled { opacity: 0.35; cursor: default; }
-@media (max-width: 600px) {
-  .pm-3 { grid-template-columns: 1fr 1fr; }
-  .post-media .pm-tile img, .post-media .pm-tile video { height: 140px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .post-media .pm-tile img, .post-media .pm-tile video { transition: none; }
-}
-
 /* ----- Progress Steps ----- */
 .progress-steps {
   display: flex;
@@ -1868,6 +1817,71 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 
 </style>
   <style>
+/* ===== v0.2.16.0 本地段（已移出 ethereal 内联标记块——防 inline-css.js 刷新整块替换时抹掉）===== */
+/* ----- v0.2.16.0 Community 帖子媒体：画廊 + 灯箱 + composer 待传缩略图 ----- */
+.post-media { display: grid; gap: 6px; margin-bottom: 8px; }
+.pm-1 { grid-template-columns: 1fr; }
+.pm-2 { grid-template-columns: 1fr 1fr; }
+.pm-3 { grid-template-columns: 1fr 1fr 1fr; }
+.post-media .pm-tile {
+  border: none; padding: 0; margin: 0; cursor: pointer;
+  background: rgba(0,0,0,0.05); border-radius: var(--radius-md);
+  overflow: hidden; display: block; line-height: 0;
+}
+.post-media .pm-tile img, .post-media .pm-tile video {
+  width: 100%; height: 200px; object-fit: cover; display: block;
+  transition: transform 0.2s ease;
+}
+.post-media .pm-1 img, .post-media .pm-1 video { height: 260px; }
+.post-media .pm-tile:hover img, .post-media .pm-tile:hover video { transform: scale(1.03); }
+.pm-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.pm-list:empty { display: none; }
+.pm-thumb {
+  position: relative; width: 64px; height: 64px; border-radius: var(--radius-md);
+  overflow: hidden; border: var(--card-border);
+}
+.pm-thumb img, .pm-thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pm-thumb .pm-rm {
+  position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%;
+  border: none; background: rgba(0,0,0,0.55); color: #fff; font-size: 12px; line-height: 1;
+  cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;
+}
+.lb-card { position: relative; max-width: min(920px, 94vw); padding: 12px; width: auto; overflow: visible; }
+.lb-media { max-width: 100%; max-height: 76vh; border-radius: var(--radius-md); display: block; }
+.lb-media.video { width: min(880px, 92vw); }
+.lb-close {
+  position: absolute; top: 10px; right: 14px; border: none; background: transparent;
+  color: var(--color-on-surface-variant); cursor: pointer; padding: 4px; z-index: 2;
+}
+.lb-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); border: none; cursor: pointer;
+  background: rgba(0,0,0,0.35); color: #fff; border-radius: 50%; width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center; z-index: 2;
+}
+.lb-arrow.lb-prev { left: 10px; }
+.lb-arrow.lb-next { right: 10px; }
+.lb-arrow:disabled { opacity: 0.35; cursor: default; }
+@media (max-width: 600px) {
+  .pm-3 { grid-template-columns: 1fr 1fr; }
+  .post-media .pm-tile img, .post-media .pm-tile video { height: 140px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-media .pm-tile img, .post-media .pm-tile video { transition: none; }
+}
+
+/* ----- v0.2.17.0 帖子卡交互：点赞按钮 + 整卡进详情 ----- */
+.post-card-click { cursor: pointer; }
+.post-action-btn {
+  border: none; background: transparent; color: var(--color-outline); cursor: pointer;
+  padding: 4px 10px; font-size: var(--fs-label-sm); font-family: inherit;
+  display: inline-flex; align-items: center; gap: 4px; border-radius: 9999px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.post-action-btn:hover { color: var(--color-primary); background: rgba(70,72,212,0.08); }
+.post-action-btn.liked { color: #e0245e; }
+.post-action-btn-static { cursor: default; }
+</style>
+  <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
 /* cyrillic-ext */
 @font-face {
@@ -2279,9 +2293,12 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   function cloudPostItem(p) {
     return {
       icon: 'person', badge: 'Citizen Post', badgeClass: 'badge-primary', author: p.authorName || 'Citizen',
+      avatarUrl: p.avatarUrl || null,
       title: p.content.length > 90 ? p.content.slice(0, 90) + '…' : p.content,
       desc: p.content.length > 90 ? p.content.slice(90, 240) : '',
-      time: relativeTime(p.createdAt), likes: 0, comments: 0, cloudId: p.id,
+      time: relativeTime(p.createdAt),
+      likes: p.likeCount || 0, comments: p.commentCount || 0, liked: !!p.likedByMe, // v0.2.17.0 真实计数 + 我的点赞态
+      cloudId: p.id,
       media: (p.media || []).filter(function (m) { return MEDIA_URL_RE.test(m); })
     };
   }
@@ -2532,9 +2549,9 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     var html = (currentTab === 'recommend' && cloudMode) ? composerHtml() : '';
     items.forEach(function(item) {
       html +=
-        '<div class="card card-hover tilt-container">' +
+        '<div class="card card-hover tilt-container' + (item.cloudId ? ' post-card-click' : '') + '"' + (item.cloudId ? ' data-cloud-id="' + escapeHtml(item.cloudId) + '"' : '') + '>' +
           '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:8px">' +
-            '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + escapeHtml(item.icon) + '</span>' +
+            (item.avatarUrl ? '<img src="' + escapeHtml(item.avatarUrl) + '" alt="" class="avatar avatar-sm" style="margin-right:6px">' : '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + escapeHtml(item.icon) + '</span>') +
             '<span class="badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.badge) + '</span>' +
             (item.author ? '<span style="font-weight:600;font-size:var(--fs-label-md)">' + escapeHtml(item.author) + '</span>' : '') +
             '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + escapeHtml(item.time) + '</span>' +
@@ -2544,7 +2561,9 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           (item.desc ? '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + escapeHtml(item.desc) + '</p>' : '') +
           (item.media && item.media.length ? mediaGridHtml(item.media) : '') +
           '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
-            '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">favorite</span> ' + item.likes + '</span>' +
+            (item.cloudId
+              ? '<button type="button" class="post-action-btn' + (item.liked ? ' liked' : '') + '" data-like-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.liked ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">' + (item.liked ? 'favorite' : 'favorite_border') + '</span> <span data-like-count>' + item.likes + '</span></button>'
+              : '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">favorite</span> ' + item.likes + '</span>') +
             '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">chat_bubble</span> ' + item.comments + '</span>' +
           '</div>' +
         '</div>';
@@ -2560,7 +2579,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
         if (el) urls.push(el.getAttribute('src'));
       });
       grid.querySelectorAll('.pm-tile').forEach(function (tile, i) {
-        tile.addEventListener('click', function () { openLightbox(urls, i); });
+        tile.addEventListener('click', function (e) { e.stopPropagation(); openLightbox(urls, i); }); // v0.2.17.0 挡整卡跳转
       });
     });
     // 发帖 + 举报绑定（每次重渲染后重新挂）
@@ -2603,7 +2622,42 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       document.querySelectorAll('[data-cloud-post]').forEach(function (el) {
         MN_Report.mount(el, { targetType: 'post', targetId: el.getAttribute('data-cloud-post') });
       });
+      // v0.2.17.0 点赞（乐观更新，60s 云刷新回真值）
+      document.querySelectorAll('[data-like-post]').forEach(function (btn) {
+        btn.addEventListener('click', function (e) { e.stopPropagation(); toggleLike(btn); });
+      });
+      // v0.2.17.0 整卡点击 → 独立帖页（按钮内/文字选区不跳）
+      document.querySelectorAll('[data-cloud-id]').forEach(function (card) {
+        card.addEventListener('click', function (e) {
+          if (e.target.closest('button')) return;
+          if (window.getSelection && String(window.getSelection()).length) return;
+          window.location.href = 'community-post.html?id=' + encodeURIComponent(card.getAttribute('data-cloud-id'));
+        });
+      });
     }
+  }
+
+  // v0.2.17.0 点赞开关：乐观更新按钮/计数，不重渲染 feed（防滚动跳动），失败回滚
+  function toggleLike(btn) {
+    var id = btn.getAttribute('data-like-post');
+    var wasLiked = btn.getAttribute('aria-pressed') === 'true';
+    var next = !wasLiked;
+    var countEl = btn.querySelector('[data-like-count]');
+    var iconEl = btn.querySelector('.material-symbols-outlined');
+    var before = parseInt(countEl.textContent, 10) || 0;
+    btn.setAttribute('aria-pressed', next ? 'true' : 'false');
+    if (next) btn.classList.add('liked'); else btn.classList.remove('liked');
+    if (iconEl) iconEl.textContent = next ? 'favorite' : 'favorite_border';
+    countEl.textContent = before + (next ? 1 : -1);
+    MN_API[next ? 'post' : 'del']('/social/posts/' + encodeURIComponent(id) + '/like').then(function (r) {
+      if (r.ok && r.data) { countEl.textContent = r.data.likeCount; return; } // 服务端真值
+      btn.setAttribute('aria-pressed', wasLiked ? 'true' : 'false');
+      if (wasLiked) btn.classList.add('liked'); else btn.classList.remove('liked');
+      if (iconEl) iconEl.textContent = wasLiked ? 'favorite' : 'favorite_border';
+      countEl.textContent = before;
+      if (r.status === 401) toastMsg('登录已过期，请重新登录', true);
+      else toastMsg('操作失败，请稍后再试', true);
+    });
   }
 
   function renderDiscovery() {

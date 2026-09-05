@@ -1101,3 +1101,32 @@ premium 页静态 RM12 硬编码（matrix/plan-note/renderGuest）全部动态�
   mnationworld-web-00082-bpx 100% 流量；curl 七连全 200；/uploads 实测：GCS 放探针 PNG → GET 200
   (image/png + ETag + immutable + Accept-Ranges) + Range 0-7 → 206 (bytes 0-7/33) + 404 干净 + 探针清理；
   boot 日志零 [uploads] 错误；health 58 表（v2.0.0）。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+【2026-09-05 下午轮】v0.2.17.0 Community 头像/点赞/评论 + 独立帖子页（rev 00083-jgk）
+用户：「那个为什么没有头像，然后点赞按钮没有功能，评论也是，然后我希望做成点击帖子查看评论就是和Twitter一样的那种」
+问询钦定：独立帖子页（非弹窗，Twitter 网页版式）。
+后端（social.js 单文件，无新迁移 health 58 不变）：
+  可选鉴权 optionalViewer——裸查 user_sessions JOIN users（authenticate 会抛 401 + recordActivity 污染 DAU，
+  不能复用；测试钉死零 activity 行）；postRow 加 likeCount/commentCount/likedByMe；
+  GET /posts/:id（非 visible 404）；POST/DELETE /posts/:id/like（INSERT OR IGNORE 自然主键幂等开关）；
+  GET /posts/:id/comments（仅 visible、ASC、LIMIT 200 本轮不分页）；
+  POST /posts/:id/comments（1-2000、一层回复校验、禁言/限频/去重换表自写 SQL——pipeline.isDuplicate 硬编码
+  posts 子查询复用会静默错查、L0 先发后审同帖口径、CMT- id）。测试 200→212/212。
+前端 hub（零共享文件）：拆地雷——v0.2.16.0 媒体/灯箱样式段原插在 ethereal 内联标记块里（inline-css.js 刷新
+  按标记整块替换会洗掉，已实锤），本轮移出另开无标记块；帖子卡真头像 + 点赞胶囊钮（乐观更新/失败回滚、
+  不重渲染 feed 防滚动跳动）+ 整卡点击跳独立帖页（按钮内/文字选区不跳）+ 瓦片 stopPropagation；评论数点按
+  冒泡进帖页。
+新页 docs/pages/community-post.html（自包含；head 复用 hub 同源——主题防闪 + 纯 ethereal 标记块 + 字体块；
+  帖页样式另开无标记块）：返回链/404 态/全文不截断/头像/媒体网格+灯箱/点赞/评论区（顶层+缩进回复+回复钮+
+  replyChip）/评论提交（removed 拦截 toast、hold 待审核 toast、成功追加）/访客门控（藏 composer 显
+  guestPrompt，next 回跳帖页自身）。电池踩坑实录：空列表检测 querySelector('p') 误中评论正文 <p> 清空整列
+  → 改专用 .comment-empty 类。
+版本：站点 v0.2.16.0 → v0.2.17.0（小改动位 16→17·新功能轮·补丁清零）；FC 线不动（v10.28.18.1）。
+验证：后端 npm test 212/212；电池 tmp-battery-community-post.js（本地罐头 31/31：hub 头像/计数/点赞
+  POST+DELETE 捕获/举报旗与瓦片 stopPropagation/整卡真导航；帖页渲染/评论缩进/回复链 payload parentId/
+  访客/404/灯箱 Escape；线上 11/11：真帖 PST-000001 渲染 + 点赞/评论 401 回滚 toast 实测 + 访客 + 404）；
+  冒烟 49/49；docker build exit 0 → tag/login/push → gcloud.ps1 run deploy revision
+  mnationworld-web-00083-jgk 100% 流量（env 从 describe 快照重建 28 变量，零改动）；curl 七连：
+  / 200、hub 含 post-action-btn、community-post.html 含 commentComposerBox、signup-and-login 200、
+  signin-and-login 404、/api/social/posts 含 likeCount/commentCount/likedByMe/avatar、health 58 表 v2.0.0。

@@ -87,7 +87,11 @@ window.MN_SITE = window.MN_SITE || {};
 //   后端——迁移 014 uploads 表；POST /api/social/uploads 二进制上传端点（ext 白名单 jpg/jpeg/png/gif/webp/mp4/webm/mov + 魔数嗅探防伪装 + 图片 ≤10MB/视频 ≤30MB + 限流 20/10min + GCS FUSE /mnt/data/uploads 落盘）；posts.media 收紧为本站 /uploads/ 白名单正则；
 //   媒体帖状态反转——只有「IMS 已配置且首图为图片」才 pending 先审后发，否则（IMS 未配置/首图为视频）visible 先发后审 + queued（旧版媒体帖永远 pending 不上线 = 功能等于没做，本轮修复）；image.js 加本地文件分支；entrypoint.js /uploads/ 静态分支（单段 Range/ETag/immutable + mp4/webm/mov MIME）；
 //   前端——帖子卡媒体网格 .pm-1/.pm-2/.pm-3（img/video 混排，object-fit:cover）+ 灯箱（createElement 构建，×/backdrop/Escape 关、多张左右箭头翻页）+ composer 上传图片/GIF 钮接真上传（隐藏 file input + 客户端预检 + 待传缩略图 × 可移除 + 发布随帖携带）+ 卡片用户内容全量 escapeHtml（顺手修存量存储型 XSS）（小改动位 15→16·新功能轮·补丁清零；2026-09-05）
-window.MN_SITE_VERSION = 'v0.2.16.0';
+// v0.2.17.0 = Community 头像/点赞/评论 + 独立帖子页（用户「那个为什么没有头像，然后点赞按钮没有功能，评论也是，然后我希望做成点击帖子查看评论就是和Twitter一样的那种」→问询钦定「独立帖子页」非弹窗）：
+//   后端（social.js 单文件）——postRow 加 likeCount/commentCount/likedByMe + 可选鉴权 optionalViewer（裸查 user_sessions JOIN users，绝不复用 authenticate——那会抛 401 还记 activity 污染 DAU，测试钉死零 activity 行）；GET /posts/:id（404 门控）；POST/DELETE /posts/:id/like（INSERT OR IGNORE 自然主键幂等开关）；GET /posts/:id/comments（仅 visible、ASC、LIMIT 200、本轮不分页）；POST /posts/:id/comments（1-2000 校验、一层回复校验、禁言/限频/去重换表自写 SQL 同帖口径、L0 先发后审同帖口径、CMT- id）；无新迁移 health 58 不变；
+//   前端 hub——拆地雷：v0.2.16.0 媒体/灯箱样式段移出 ethereal 内联标记块（原在块内 inline-css.js 刷新会整块替换洗掉，已实锤）另开无标记块；帖子卡真头像 + 点赞胶囊钮（乐观更新/失败回滚，不重渲染 feed 防滚动跳动）+ 整卡点击跳独立帖页（按钮内/文字选区不跳）+ 瓦片 stopPropagation；评论数点按冒泡进帖页；
+//   新页 docs/pages/community-post.html（自包含，头部复用 hub 同源：主题防闪+纯 ethereal 标记块+字体块；帖页样式另开无标记块）——返回链/404 态/全文不截断/头像/媒体网格+灯箱/点赞/评论区（顶层+缩进回复+回复钮+replyChip）/评论提交（removed 拦截 toast、hold 待审核 toast、成功追加）/访客门控（藏 composer 显 guestPrompt，next=帖页自身回跳）；测试 200→212/212（小改动位 16→17·新功能轮·补丁清零；2026-09-05）
+window.MN_SITE_VERSION = 'v0.2.17.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
