@@ -6,7 +6,9 @@
 // 说明：following.users 一期按显示名原文存储——计划原为「显示名 → user_id 转换」，
 // 但 v1 无用户主页、本地种子是演示名，转换会静默丢数据；用户主页上线时再迁移为 id 引用。
 
-const { HttpError, sendJson, readJson } = require('../../http');
+const fs = require('node:fs');
+const path = require('node:path');
+const { HttpError, sendJson, readJson, readRawBuffer } = require('../../http');
 const { requireSession } = require('../../middleware/auth');
 const { insertWithId, pad6 } = require('../../ids');
 const {
@@ -17,6 +19,32 @@ const queue = require('../../moderation/queue');
 
 const MAX_POST_LEN = 2000;
 const MAX_MEDIA = 3;
+
+// ── v0.2.16.0 帖子媒体上传（社区多图/视频）──
+// 大小上限：图片 10MB（腾讯 IMS base64 上限）；视频 30MB（Cloud Run 请求 32MiB 硬顶留边距）。
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 30 * 1024 * 1024;
+// posts.media 只收本站上传路径（历史任意字符串 URL 是洞，且无客户端在用，收紧无回归）
+const MEDIA_URL_RE = /^\/uploads\/UPL-[A-Za-z0-9]+\.(jpg|jpeg|png|gif|webp|mp4|webm|mov)$/;
+const EXT_MIME = {
+  jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
+  webp: 'image/webp', mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime'
+};
+const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+// 魔数嗅探防伪装（扩展名白名单之外再验真实内容头）
+function checkMagic(ext, buf) {
+  if (buf.length < 12) return false;
+  switch (ext) {
+    case 'jpg': case 'jpeg': return buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF;
+    case 'png': return buf.readUInt32BE(0) === 0x89504E47;
+    case 'gif': return buf.toString('ascii', 0, 4) === 'GIF8';
+    case 'webp': return buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP';
+    case 'mp4': case 'mov': return buf.toString('ascii', 4, 8) === 'ftyp' || buf.toString('ascii', 4, 8) === 'moov';
+    case 'webm': return buf[0] === 0x1A && buf[1] === 0x45 && buf[2] === 0xDF && buf[3] === 0xA3;
+    default: return false;
+  }
+}
 
 const TEAM_SEED = [
   { id: 'team-1', name: 'Etheria Editorial Board', avatar: 'EE', color: '#4648d4', role: 'Admin', members: 8, nations: ['Republic of Etheria'] },
@@ -109,7 +137,10 @@ function register(router, ctx) {
 
   // ── posts（P7：先发后审）──
   // L0 门禁同步：零容忍 → status removed + 直接封号（跳过阶梯）；warning/spam → visible + l0_hold 人工；
-  // pass 纯文字 → visible + queued（夜间批处理）；pass 带图 → pending + IMS 即时（过审才 visible）。
+  // pass 纯文字 → visible + queued（夜间批处理）。
+  // pass 带媒体（v0.2.16.0 收紧为本站 /uploads/ 上传）：IMS 已配置且首图为图片 → pending + IMS 即时（过审才 visible）；
+  //   其余（IMS 未配置 / 首图为视频——视频 base64 必超 IMS 10MB）→ visible + queued 先发后审
+  //   （queued 滞留无害：cron 生产不跑，仅当 IMS+cron 启用后才被处理）。
   // 处罚生效：禁言/发布受限用户 POST 直接 403。
   function postRow(db, row) {
     const author = db.prepare('SELECT id, display_name, avatar_url FROM users WHERE id = ?').get(row.author_id);
@@ -139,6 +170,8 @@ function register(router, ctx) {
     if (!content || content.length > MAX_POST_LEN) throw new HttpError('VALIDATION', `内容需 1-${MAX_POST_LEN} 字符`);
     const media = Array.isArray(body.media)
       ? body.media.filter(m => typeof m === 'string' && m.length > 0).slice(0, MAX_MEDIA) : [];
+    // v0.2.16.0：media 只收本站 /uploads/ 白名单路径（防任意 URL/穿越注入卡片 HTML）
+    if (media.some(m => !MEDIA_URL_RE.test(m))) throw new HttpError('VALIDATION', '媒体地址无效');
     const topicId = body.topicId ? String(body.topicId).slice(0, 64) : null;
 
     const iso = new Date().toISOString();
@@ -156,7 +189,11 @@ function register(router, ctx) {
     if (isDuplicate(c.db, c.user.id, hash, iso)) throw new HttpError('RESTRICTED', '请勿重复发布相同内容');
 
     const l0 = l0Screen(content, ctx.moderation.blocklist);
-    const postStatus = l0.verdict === 'reject' ? 'removed' : (media.length ? 'pending' : 'visible');
+    // v0.2.16.0：只有「IMS 已配置且首图为图片」才 pending 先审后发；其余先发后审（见上方注释）
+    const imsOn = Boolean(c.config.tencent && c.config.tencent.secretId && c.config.tencent.secretKey);
+    const firstIsImage = media.length > 0 && /\.(jpg|jpeg|png|gif|webp)$/i.test(media[0]);
+    const mediaNeedsIms = media.length > 0 && firstIsImage && imsOn;
+    const postStatus = l0.verdict === 'reject' ? 'removed' : (mediaNeedsIms ? 'pending' : 'visible');
     const { id } = insertWithId(c.db, 'posts', ['author_id', 'topic_id', 'content', 'media', 'status', 'created_at', 'updated_at'],
       [c.user.id, topicId, content, JSON.stringify(media), postStatus, iso, iso], (s) => 'PST-' + pad6(s));
 
@@ -176,8 +213,10 @@ function register(router, ctx) {
         kind: 'image', targetType: 'post', targetId: id, contentHash: hash,
         status: 'queued', priority: 'normal', ruleHits: null
       });
-      const item = c.db.prepare('SELECT * FROM moderation_items WHERE id = ?').get(itemId);
-      await queue.processImageItem(c, item); // IMS 即时（未配置/失败 → needs_human，快速返回）
+      if (mediaNeedsIms) {
+        const item = c.db.prepare('SELECT * FROM moderation_items WHERE id = ?').get(itemId);
+        await queue.processImageItem(c, item); // IMS 即时（过审才 visible；未配置/失败 → needs_human）
+      }
     } else {
       createModerationItem(c.db, {
         kind: 'text', targetType: 'post', targetId: id, contentHash: hash,
@@ -186,6 +225,34 @@ function register(router, ctx) {
     }
     const row = c.db.prepare('SELECT * FROM posts WHERE id = ?').get(id);
     sendJson(res, 200, { post: postRow(c.db, row), moderation: { verdict: l0.verdict, reasonCode: l0.reasonCode } });
+  }));
+
+  // ── 媒体上传（v0.2.16.0：社区帖子多图/视频）──
+  // 二进制 body（fetch/XMLHttpRequest 直传文件字节），?ext= 指定扩展名（白名单 + 魔数双校验）；
+  // 文件写 UPLOADS_DIR（生产 = GCS FUSE 挂载盘，跨实例持久），posts.media 只存 '/uploads/UPL-xxxxxx.<ext>' 字符串。
+  router.add('POST', '/api/social/uploads', requireSession(async (req, res, c) => {
+    const u = (ctx.config.rateLimits || {}).uploads || { max: 20, windowMs: 600000 };
+    if (!ctx.limiter('up:user:' + c.user.id, u.max, u.windowMs)) throw new HttpError('RATE_LIMITED', '上传过于频繁');
+    const ext = String(req.query.ext || '').toLowerCase().replace(/^\./, '');
+    const mime = EXT_MIME[ext];
+    if (!mime) throw new HttpError('VALIDATION', '不支持的媒体格式');
+    const cap = IMAGE_EXTS.includes(ext) ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
+    const buf = await readRawBuffer(req, cap);
+    if (!buf.length) throw new HttpError('VALIDATION', '文件为空');
+    if (!checkMagic(ext, buf)) throw new HttpError('VALIDATION', '文件内容与扩展名不符');
+    const iso = new Date().toISOString();
+    const { id } = insertWithId(c.db, 'uploads', ['owner_id', 'ext', 'mime', 'bytes', 'created_at'],
+      [c.user.id, ext, mime, buf.length, iso], (s) => 'UPL-' + pad6(s));
+    const dir = c.config.uploadDir || '/mnt/data/uploads';
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, id + '.' + ext), buf);
+    } catch (err) {
+      c.db.prepare('DELETE FROM uploads WHERE id = ?').run(id); // 落盘失败回滚记录，不悬空
+      console.error('[uploads] 文件保存失败:', err.message);
+      throw new HttpError('INTERNAL', '文件保存失败');
+    }
+    sendJson(res, 200, { url: '/uploads/' + id + '.' + ext });
   }));
 
   // ── following（整对象替换，与 saveFollowing 语义一致）──

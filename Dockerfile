@@ -20,7 +20,8 @@ ENV NODE_ENV=development \
     HOST=0.0.0.0 \
     PORT=8080 \
     DATABASE_PATH=/app/data/mn-v2.sqlite \
-    STATIC_DIR=/app/docs
+    STATIC_DIR=/app/docs \
+    UPLOADS_DIR=/mnt/data/uploads
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY backend-v2/package.json ./

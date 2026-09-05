@@ -17,6 +17,8 @@ const config = {
   host: process.env.HOST || '127.0.0.1',
   databasePath: process.env.DATABASE_PATH || './data/mn-v2.sqlite',
   adminEmail: (process.env.ADMIN_EMAIL || '').toLowerCase(),
+  // v0.2.16.0 帖子媒体文件目录（GCS FUSE 挂载盘，整文件写安全；测试覆盖为临时目录）
+  uploadDir: process.env.UPLOADS_DIR || '/mnt/data/uploads',
 
   mail: {
     from: process.env.MAIL_FROM || 'M.NationWorld <no-reply@example.com>',

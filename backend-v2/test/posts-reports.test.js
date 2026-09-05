@@ -81,20 +81,22 @@ test('posts：warning 词 → 先发后审 visible + l0_hold 人工', async () =
   } finally { await t.close(); }
 });
 
-test('posts：外链刷屏 → spam hold；媒体帖 → pending + 图像 IMS 未配置 → needs_human（默认不上线）', async () => {
+test('posts：外链刷屏 → spam hold；媒体帖 IMS 未配置 → visible 先发后审 + queued（v0.2.16.0）', async () => {
   const t = await testApp();
   try {
     const alice = t.loginAs('alice@x.com', { displayName: 'Alice' });
     const s = await t.request('POST', '/api/social/posts', { content: '看 http://a.com http://b.co http://c.org' }, { cookie: alice.cookie });
     assert.strictEqual((await s.json()).moderation.reasonCode, 'spam');
-    const m = await t.request('POST', '/api/social/posts', { content: '国旗发布！', media: ['data:image/png;base64,AAAA'] }, { cookie: alice.cookie });
+    const m = await t.request('POST', '/api/social/posts', { content: '国旗发布！', media: ['/uploads/UPL-000001.jpg'] }, { cookie: alice.cookie });
     const mb = await m.json();
-    assert.strictEqual(mb.post.status, 'pending'); // 图像不先发后审
+    assert.strictEqual(mb.post.status, 'visible'); // v0.2.16.0：IMS 未配置 → 媒体帖先发后审（不再永久 pending）
     const item = t.db.prepare("SELECT * FROM moderation_items WHERE target_id = ? AND kind = 'image'").get(mb.post.id);
-    assert.strictEqual(item.status, 'needs_human'); // 未配置 IMS → 人工兜底
-    // usage_log 有降级记录但零成本（未真正调用 IMS）
-    const usage = t.db.prepare("SELECT * FROM usage_log WHERE feature = 'moderation_image'").get();
-    assert.strictEqual(usage.cost_micro, 0);
+    assert.strictEqual(item.status, 'queued'); // 审核项入队留人工；不调 IMS → 无 usage_log 行
+    assert.strictEqual(t.db.prepare("SELECT count(*) AS n FROM usage_log WHERE feature = 'moderation_image'").get().n, 0);
+    // 非法媒体地址（外部 URL / data:）→ 400
+    const bad = await t.request('POST', '/api/social/posts', { content: '非法媒体', media: ['https://evil.example/x.jpg'] }, { cookie: alice.cookie });
+    assert.strictEqual(bad.status, 400);
+    assert.strictEqual((await bad.json()).error.code, 'VALIDATION');
   } finally { await t.close(); }
 });
 

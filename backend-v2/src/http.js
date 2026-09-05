@@ -69,4 +69,16 @@ async function readRaw(req, limit = 512 * 1024) {
   return Buffer.concat(chunks).toString('utf8');
 }
 
-module.exports = { CODES, HttpError, sendJson, sendError, readJson, readRaw };
+// 二进制版 readRaw（v0.2.16.0 帖子媒体上传）：返回 Buffer 原字节，空体返回空 Buffer（调用方自查长度）
+async function readRawBuffer(req, limit) {
+  const chunks = [];
+  let size = 0;
+  for await (const c of req) {
+    size += c.length;
+    if (size > limit) throw new HttpError('VALIDATION', '请求体过大');
+    chunks.push(c);
+  }
+  return Buffer.concat(chunks);
+}
+
+module.exports = { CODES, HttpError, sendJson, sendError, readJson, readRaw, readRawBuffer };

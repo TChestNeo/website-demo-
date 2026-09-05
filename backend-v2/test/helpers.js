@@ -55,6 +55,13 @@ function testApp(overrides = {}) {
             },
             body: body === undefined ? undefined : JSON.stringify(body)
           }),
+        // 二进制上传（v0.2.16.0 媒体附件）：body 直传 Buffer，不套 JSON 包装
+        upload: (p, buf, opts = {}) =>
+          fetch(`${base}${p}`, {
+            method: 'POST',
+            headers: { ...(opts.cookie ? { Cookie: opts.cookie } : {}), ...(opts.headers || {}) },
+            body: buf
+          }),
         // 直接建号 + 会话（跳过邮件流程的快捷路径）
         seedUser: (over = {}) => createUser(db, { email: over.email || 'seed@example.com', ...over }),
         loginAs: (email, over = {}) => {

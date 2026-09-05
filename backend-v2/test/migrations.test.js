@@ -13,12 +13,12 @@ function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'mn2-mig-'));
 }
 
-test('迁移：user_version=13、57 表、角色/权限/平台种子齐整', () => {
+test('迁移：user_version=14、58 表、角色/权限/平台种子齐整', () => {
   const db = openDb(path.join(tmpDir(), 'a.sqlite'));
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 13);
-  // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 + 010 两 = 57（触发器不算表）
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 14);
+  // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 + 010 两 + 014 一 = 58（触发器不算表）
   const n = db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().n;
-  assert.strictEqual(n, 57);
+  assert.strictEqual(n, 58);
   // 角色 7、权限 42、矩阵基线（每角色授权数逐一断言 = 设计契约锁定）
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM roles').get().n, 7);
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM permissions').get().n, 42);
@@ -42,7 +42,7 @@ test('迁移：重复打开同库幂等（版本不再推进、无重复执行�
   const p = path.join(tmpDir(), 'b.sqlite');
   openDb(p);
   const db = openDb(p);
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 13);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 14);
 });
 
 test('迁移 005-009：社交/工单/知识库/审核/财务关键表与扩展列就位（D5/D6 口径）', () => {
@@ -91,6 +91,15 @@ test('迁移 013：users.gender 加列（v0.2.11.0 用户性别记录；旧用�
   const col = db.prepare("PRAGMA table_info(users)").all().find(x => x.name === 'gender');
   assert.ok(col, '013 列缺');
   assert.strictEqual(col.dflt_value, null);
+});
+
+test('迁移 014：uploads 表就位（v0.2.16.0 帖子媒体附件元数据）', () => {
+  const db = openDb(path.join(tmpDir(), 'h.sqlite'));
+  const has = (name) => db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name = ?").get(name).n === 1;
+  assert.ok(has('uploads'), '014 表缺');
+  const cols = db.prepare("PRAGMA table_info(uploads)").all().map(x => x.name);
+  assert.deepStrictEqual(cols, ['seq', 'id', 'owner_id', 'ext', 'mime', 'bytes', 'created_at']);
+  assert.ok(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='index' AND name = 'idx_uploads_owner'").get().n === 1);
 });
 
 test('迁移：重复版本号启动即报错（防静默跳过）', () => {

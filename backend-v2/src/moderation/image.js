@@ -2,9 +2,12 @@
 // 腾讯云 IMS 图片审核（国际站 ap-singapore）：TC3-HMAC-SHA256 签名自实现（crypto 内置，零依赖，~80 行）。
 // 判定映射：Suggestion Pass → approve / Block → reject / Review → needs_human。
 // 安全默认：未配置密钥 / 5xx / 网络错误 / 超时 → needs_human（图像不先发后审，默认不上线标人工）。
-// 媒体格式：https URL → FileUrl；data: URL → FileContent(base64) + FileType；>10MB 直接 needs_human。
+// 媒体格式：https URL → FileUrl；data: URL → FileContent(base64) + FileType；
+//   /uploads/ 本站路径（v0.2.16.0）→ 从 uploadDir 读文件转 base64 FileContent（腾讯无法访问站内相对路径）；>10MB 直接 needs_human。
 
 const crypto = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const SERVICE = 'ims';
 const VERSION = '2020-12-29';
@@ -48,11 +51,22 @@ function tc3Headers(secretId, secretKey, region, payload) {
   };
 }
 
-function buildPayload(mediaUrl) {
+const FILE_TYPE = { jpg: 'jpeg', jpeg: 'jpeg', png: 'png', gif: 'gif', webp: 'webp' };
+
+function buildPayload(mediaUrl, uploadDir) {
   if (typeof mediaUrl !== 'string' || !mediaUrl) throw new Error('空媒体地址');
   if (/^https?:\/\//i.test(mediaUrl)) return { FileUrl: mediaUrl };
+  if (/^\/uploads\//i.test(mediaUrl)) {
+    // v0.2.16.0：本站上传文件——basename 天然防穿越，读盘转 base64 送 IMS
+    const name = path.basename(mediaUrl);
+    const ext = path.extname(name).slice(1).toLowerCase();
+    if (!FILE_TYPE[ext]) throw new Error('IMS 只审图片附件');
+    const buf = fs.readFileSync(path.join(uploadDir || '/mnt/data/uploads', name));
+    if (buf.length > MAX_BYTES) throw new Error('图片超过 10MB');
+    return { FileContent: buf.toString('base64'), FileType: FILE_TYPE[ext] };
+  }
   const m = mediaUrl.match(/^data:([^;,]+);base64,(.+)$/);
-  if (!m) throw new Error('仅支持 http(s) URL 或 data: base64');
+  if (!m) throw new Error('仅支持 http(s) URL、/uploads/ 本站文件或 data: base64');
   if (m[2].length * 3 / 4 > MAX_BYTES) throw new Error('图片超过 10MB');
   return { FileContent: m[2], FileType: m[1].split('/')[1] || 'png' };
 }
@@ -66,7 +80,7 @@ async function moderateImage(cfg, mediaUrl, fetchImpl = global.fetch) {
   }
   let payload;
   try {
-    payload = buildPayload(mediaUrl);
+    payload = buildPayload(mediaUrl, cfg.uploadDir);
   } catch (err) {
     return { verdict: 'needs_human', reasonCode: err.message, labels: [], raw: null };
   }

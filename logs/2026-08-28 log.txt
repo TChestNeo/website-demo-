@@ -1028,3 +1028,76 @@ premium 页静态 RM12 硬编码（matrix/plan-note/renderGuest）全部动态�
   真悬停 font-size 30px+无 transform、移开回 24px/0）本地+线上 41/41；冒烟 49/49；docker build exit 0 →
   tag/login/push → gcloud.ps1 run deploy revision mnationworld-web-00078-ch6 100% 流量；curl 七连全 200 + health 57 表。
 备注：粗细差异属浏览器渲染机制（hinting）非 bug 代码——电池已加「无 transform」断言防回归。
+
+════ v0.2.15.6 Community 发帖工具 icon 气泡名称 5 秒延迟+白底黑字（2026-09-05，rev 00079-d9w）════
+用户：那个icon的名称能不能是鼠标停留5秒后才显示啊？还有配色能不能是白底黑字啊
+实现——气泡从 .composer-tool:hover::after 移回基础 .composer-tool::after（content:attr(data-tip)+几何+白底 #ffffff
+  黑字 #000000+细描边 rgba(0,0,0,0.08)+pointer-events:none）；显示延迟纯 CSS：常态 transition 含
+  visibility 0s linear 0.15s（快速隐藏），hover 态 transition: opacity 0.15s ease 5s, visibility 0s linear 5s
+  （悬停 5 秒后才淡入）；零共享文件改动。
+版本：站点 v0.2.15.5 → v0.2.15.6（补丁位 5→6·观感微调轮）；FC 线不动（v10.28.18.1）。
+验证：电池 41→46（+5：气泡白底黑字 #fff/#000 规则、hover 规则 5s 延迟存在、真悬停 300ms 仍未出现、
+  悬停 5s+ 出现 opacity>0.9、移开后回隐藏）本地+线上 46/46；冒烟 49/49；docker build exit 0 →
+  tag/login/push → gcloud.ps1 run deploy revision mnationworld-web-00079-pcl 100% 流量；
+  curl 七连全 200 + health 57 表（v2.0.0）。
+
+────────────────────────────────────────────────────────
+2026-09-05 — v0.2.15.7 Community 发帖输入框 placeholder 轮播改纯 CSS 动画（rev 00080-lcm，commit 待补）
+用户：「那个输入框显示的文字的切换只有在刷新页面时会随机变化」。
+定位（先证据后动手）：tmp-probe-ph-cycle.js 探针在线上真实路径（假 USR- 用户+公众 API 真帖子）
+  观察 80s——JS setInterval 轮播每 3.5s 照常走动，经 60s 自动刷新/打字清空/切 tab 全存活、0 异常。
+  用户症状（原地冻结、刷新又随机重来）= 浏览器省电模式/后台标签节流冻 JS 计时器（走一段就停）。
+修复：轮播从 JS setInterval 改纯 CSS 动画（合成器驱动，不受节流影响）——.ph-rotator 覆盖层
+  absolute 叠在 textarea 上（top/left/right 10px 对齐 10px padding、grid 四句叠同格 grid-area:1/1、
+  pointer-events:none、淡灰 rgba(118,117,134,0.4)）；phSpin 14s 一轮每句 3.5s（关键帧 0→2.14% 0.3s
+  淡入、22.86→25% 淡出），正 delay 0/3.5s/7s/10.5s 分窗（正 delay 插入即从句 1 开始；负 delay 会相位
+  倒推窗口错位）；textarea 原生 placeholder 清空防双层字；.composer-ph-wrap.has-text 打字藏层、
+  清空复显；reduced-motion 静态句 1；旧 placeholderTips/placeholderIdx/placeholderTimer/
+  startPlaceholderCycle 全部移除。零共享文件改动（仅 docs/pages/community-hub.html）。
+版本：站点 v0.2.15.6 → v0.2.15.7（补丁位 6→7·修复轮）；FC 线不动（v10.28.18.1）。
+验证：电池 46→51（旧 4 条 JS 计时器断言换 9 条 CSS 覆盖层断言：原生 placeholder 空、四句文本齐全、
+  动画规则 phSpin 14s+delay 3.5s、插入 1s 句 1、4.2s 句 2、7.8s 句 3、重渲染回到句 1（新口径——
+  动画随元素重建重启，刷新恒从句 1 开始不再随机）、打字藏层、清空复显）本地+线上 51/51；
+  冒烟 49/49；docker build exit 0 → tag/login/push → gcloud.ps1 run deploy revision
+  mnationworld-web-00080-lcm 100% 流量（--add-volume 逗号参数又漏引号报 Key [type] required——
+  加引号重跑即过）；curl 七连全 200 + health 57 表（v2.0.0）。
+
+────────────────────────────────────────────────────────
+2026-09-05 — v0.2.15.8 Community 输入框 placeholder 改 30 分钟一档切换（rev 00081-j4c，commit 待补）
+用户：「算了你把他改成每隔30分钟切换一次文本」——v0.2.15.7 纯 CSS 轮播在用户环境仍「只有刷新才换」
+（用户浏览器把动画也冻了），按用户钦定直接改慢节奏切换。
+实现：撤销 v0.2.15.7 纯 CSS 轮播（.ph-rotator/phSpin/覆盖层全删，composer 回裸 textarea）——placeholder
+  改原生属性 + 30 分钟一档按墙钟取句（floor(Date.now()/30min)%4，整点/半点对齐、全球同档）；renderFeed
+  每次重渲染现算（60s 云刷新自动推进）；边界定时器正点免刷新切换（armPhBoundary 清旧挂新）；visibilitychange
+  回前台兜底（节流环境下定时器可能迟触发）；不依赖任何动画/高频计时——即使计时器被冻，每次云刷新/切 tab
+  重渲染也按墙钟换句。零共享文件改动（仅 docs/pages/community-hub.html）。
+版本：站点 v0.2.15.7 → v0.2.15.8（补丁位 7→8·观感微调轮）；FC 线不动（v10.28.18.1）。
+验证：电池 51→49（9 条 CSS 覆盖层断言换 7 条墙钟断言：覆盖层已移除、档位与真实墙钟一致、当前档句正确、
+  边界定时器已武装、假 Date.now +31min/+61min 重渲染换下两档句——墙钟确定性零等待、恢复真实时钟回当前档）
+  本地+线上 49/49；冒烟 49/49；docker build exit 0 → tag/login/push → gcloud.ps1 run deploy revision
+  mnationworld-web-00081-j4c 100% 流量（--add-volume 逗号参数已加引号一次通过）；curl 七连全 200 +
+  health 57 表（v2.0.0）。
+────────────────────────────────────────────────────────
+2026-09-05 — v0.2.16.0 Community 帖子多图/视频：上传端点 + 画廊 + 灯箱（rev 00082-bpx，commit 待补）
+用户：「Post 会展示该post的多个图片/视频，你把功能做一下我后面再上传一个图片」——上传与展示都在本轮。
+后端：迁移 014 uploads 表（UPL- id/owner/ext/mime/bytes/created_at）；POST /api/social/uploads 二进制上传
+  （ext 白名单 jpg/jpeg/png/gif/webp/mp4/webm/mov + 魔数嗅探防伪装 + 图片 ≤10MB/视频 ≤30MB（Cloud Run
+  32MiB 请求顶留边）+ 限流 20/10min + GCS FUSE /mnt/data/uploads 落盘，写失败回滚行）；posts.media 收紧为
+  本站 /uploads/ 白名单正则（原收任意字符串 = 洞）；媒体帖状态反转——只有「IMS 已配置且首图为图片」才
+  pending 先审后发，否则（IMS 未配置/首图为视频）visible 先发后审 + queued（旧版媒体帖永远 pending 不上线
+  = 功能等于没做，本轮修复）；image.js 加本地文件分支（/uploads/ 前缀 → 读 uploadDir 文件 → base64 送 IMS）；
+  entrypoint.js /uploads/ 静态分支（decode+normalize+startsWith 防穿越、ETag + immutable + 单段 Range
+  206/416 + mp4/webm/mov MIME）+ boot mkdir uploads；Dockerfile ENV UPLOADS_DIR=/mnt/data/uploads
+  （镜像级，--set-env-vars 28 变量照旧零改动）。测试 188→200 全绿。
+前端（零共享文件）：community-hub.html 帖子卡媒体网格 .pm-1/.pm-2/.pm-3（img/video 混排 object-fit:cover、
+  600px 下 pm-3 降 2 列）+ 灯箱（createElement 构建复用 modal 样式：×/backdrop 点击/Escape 关、多张左右
+  箭头翻页、视频 controls autoplay）+ composer 上传图片/GIF 钮接真上传（隐藏 file input、客户端预检大小、
+  待传缩略图 × 可移除、发布随帖携带 media、成功后清空）+ 卡片用户内容全量 escapeHtml（顺手修存量存储型 XSS）。
+版本：站点 v0.2.15.8 → v0.2.16.0（小改动位 15→16·新功能轮·补丁清零）；FC 线不动（v10.28.18.1）。
+验证：后端 npm test 200/200；电池 tmp-battery-community-media.js（画廊形状 3/1/2/0 媒体 + 白名单过滤 +
+  escapeHtml 载荷 + 灯箱 src/箭头/Escape/backdrop + composer 上传链 setFileInputFiles/fetch 拦截/publish
+  payload/投票钮仍 toast）本地+线上 13/13；冒烟 49/49；docker build exit 0（Docker Desktop 未启拉起后重跑）
+  → tag/login/push（空 auths 条目已删防 401）→ gcloud.ps1 run deploy revision
+  mnationworld-web-00082-bpx 100% 流量；curl 七连全 200；/uploads 实测：GCS 放探针 PNG → GET 200
+  (image/png + ETag + immutable + Accept-Ranges) + Range 0-7 → 206 (bytes 0-7/33) + 404 干净 + 探针清理；
+  boot 日志零 [uploads] 错误；health 58 表（v2.0.0）。

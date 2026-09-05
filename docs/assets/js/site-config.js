@@ -83,7 +83,11 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.15.6 = Community 发帖工具 icon 名称气泡 5 秒延迟+白底黑字（用户「那个icon的名称能不能是鼠标停留5秒后才显示啊？还有配色能不能是白底黑字啊」）：气泡基础规则 .composer-tool::after（content:attr(data-tip)+白底 #fff 黑字 #000+细边框+pointer-events:none+默认透明隐藏），hover 只覆盖 opacity/visibility + transition-delay 5s（停留满 5 秒淡入、移开 0.15s 淡出后立刻 hidden 防挡点击）；零共享文件改动（补丁位 5→6·观感微调轮；2026-09-05）
 // v0.2.15.7 = Community 发帖输入框 placeholder 轮播改纯 CSS 动画（用户「那个输入框显示的文字的切换只有在刷新页面时会随机变化」）：探针实证 JS setInterval 轮播在线真实路径（真帖+60s 自动刷新+打字清空+切 tab）照常 3.5s 走动——用户症状=浏览器省电/后台节流冻 JS 计时器（走一段就停、刷新又随机重来）；改 .ph-rotator 覆盖层四句叠格 + phSpin 14s 每句 3.5s（正 delay 0/3.5/7/10.5s 分窗插入即从句 1 开始、窗口边缘 0.3s 交叉淡入淡出、pointer-events:none）+ 原生 placeholder 清空防双层字 + 打字 has-text 藏层清空复显 + reduced-motion 静态句 1（合成器驱动不受节流）；零共享文件改动（补丁位 6→7·修复轮；2026-09-05）
 // v0.2.15.8 = Community 发帖输入框 placeholder 改 30 分钟一档切换（用户「算了你把他改成每隔30分钟切换一次文本」）：撤销 v0.2.15.7 纯 CSS 轮播（.ph-rotator/phSpin 全删）——改原生 placeholder 属性 + 30 分钟一档按墙钟取句（floor(Date.now()/30min)%4，整点/半点对齐全球同档），renderFeed 每次重渲染现算（60s 云刷新自动推进）+ 边界定时器正点免刷新切换 + visibilitychange 回前台兜底，不依赖任何动画/高频计时；零共享文件改动（补丁位 7→8·观感微调轮；2026-09-05）
-window.MN_SITE_VERSION = 'v0.2.15.8';
+// v0.2.16.0 = Community 帖子多图/视频（用户「Post 会展示该post的多个图片/视频，你把功能做一下我后面再上传一个图片」）：
+//   后端——迁移 014 uploads 表；POST /api/social/uploads 二进制上传端点（ext 白名单 jpg/jpeg/png/gif/webp/mp4/webm/mov + 魔数嗅探防伪装 + 图片 ≤10MB/视频 ≤30MB + 限流 20/10min + GCS FUSE /mnt/data/uploads 落盘）；posts.media 收紧为本站 /uploads/ 白名单正则；
+//   媒体帖状态反转——只有「IMS 已配置且首图为图片」才 pending 先审后发，否则（IMS 未配置/首图为视频）visible 先发后审 + queued（旧版媒体帖永远 pending 不上线 = 功能等于没做，本轮修复）；image.js 加本地文件分支；entrypoint.js /uploads/ 静态分支（单段 Range/ETag/immutable + mp4/webm/mov MIME）；
+//   前端——帖子卡媒体网格 .pm-1/.pm-2/.pm-3（img/video 混排，object-fit:cover）+ 灯箱（createElement 构建，×/backdrop/Escape 关、多张左右箭头翻页）+ composer 上传图片/GIF 钮接真上传（隐藏 file input + 客户端预检 + 待传缩略图 × 可移除 + 发布随帖携带）+ 卡片用户内容全量 escapeHtml（顺手修存量存储型 XSS）（小改动位 15→16·新功能轮·补丁清零；2026-09-05）
+window.MN_SITE_VERSION = 'v0.2.16.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

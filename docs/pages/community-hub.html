@@ -686,6 +686,57 @@ textarea.input-glass {
 }
 .modal-card.active { transform: scale(1); opacity: 1; pointer-events: auto; }
 
+/* ----- v0.2.16.0 Community 帖子媒体：画廊 + 灯箱 + composer 待传缩略图 ----- */
+.post-media { display: grid; gap: 6px; margin-bottom: 8px; }
+.pm-1 { grid-template-columns: 1fr; }
+.pm-2 { grid-template-columns: 1fr 1fr; }
+.pm-3 { grid-template-columns: 1fr 1fr 1fr; }
+.post-media .pm-tile {
+  border: none; padding: 0; margin: 0; cursor: pointer;
+  background: rgba(0,0,0,0.05); border-radius: var(--radius-md);
+  overflow: hidden; display: block; line-height: 0;
+}
+.post-media .pm-tile img, .post-media .pm-tile video {
+  width: 100%; height: 200px; object-fit: cover; display: block;
+  transition: transform 0.2s ease;
+}
+.post-media .pm-1 img, .post-media .pm-1 video { height: 260px; }
+.post-media .pm-tile:hover img, .post-media .pm-tile:hover video { transform: scale(1.03); }
+.pm-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.pm-list:empty { display: none; }
+.pm-thumb {
+  position: relative; width: 64px; height: 64px; border-radius: var(--radius-md);
+  overflow: hidden; border: var(--card-border);
+}
+.pm-thumb img, .pm-thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pm-thumb .pm-rm {
+  position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%;
+  border: none; background: rgba(0,0,0,0.55); color: #fff; font-size: 12px; line-height: 1;
+  cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;
+}
+.lb-card { position: relative; max-width: min(920px, 94vw); padding: 12px; width: auto; overflow: visible; }
+.lb-media { max-width: 100%; max-height: 76vh; border-radius: var(--radius-md); display: block; }
+.lb-media.video { width: min(880px, 92vw); }
+.lb-close {
+  position: absolute; top: 10px; right: 14px; border: none; background: transparent;
+  color: var(--color-on-surface-variant); cursor: pointer; padding: 4px; z-index: 2;
+}
+.lb-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); border: none; cursor: pointer;
+  background: rgba(0,0,0,0.35); color: #fff; border-radius: 50%; width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center; z-index: 2;
+}
+.lb-arrow.lb-prev { left: 10px; }
+.lb-arrow.lb-next { right: 10px; }
+.lb-arrow:disabled { opacity: 0.35; cursor: default; }
+@media (max-width: 600px) {
+  .pm-3 { grid-template-columns: 1fr 1fr; }
+  .post-media .pm-tile img, .post-media .pm-tile video { height: 140px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-media .pm-tile img, .post-media .pm-tile video { transition: none; }
+}
+
 /* ----- Progress Steps ----- */
 .progress-steps {
   display: flex;
@@ -2214,12 +2265,24 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     if (window.MN_Report && MN_Report.toast) MN_Report.toast(msg, isError);
   }
 
+  // v0.2.16.0：卡片文本统一转义（用户内容裸插 innerHTML 的存量 XSS 一并修掉）
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  // v0.2.16.0 帖子媒体：只渲染本站 /uploads/ 白名单路径（与服务端校验同款正则），视频按扩展名识别
+  var MEDIA_URL_RE = /^\/uploads\/UPL-[A-Za-z0-9]+\.(jpg|jpeg|png|gif|webp|mp4|webm|mov)$/;
+  function isVideoUrl(u) { return /\.(mp4|webm|mov)$/i.test(u); }
+  var pendingMedia = []; // composer 已上传、待随帖发布的媒体 URL（最多 3 个）
+
   function cloudPostItem(p) {
     return {
       icon: 'person', badge: 'Citizen Post', badgeClass: 'badge-primary', author: p.authorName || 'Citizen',
       title: p.content.length > 90 ? p.content.slice(0, 90) + '…' : p.content,
       desc: p.content.length > 90 ? p.content.slice(90, 240) : '',
-      time: relativeTime(p.createdAt), likes: 0, comments: 0, cloudId: p.id
+      time: relativeTime(p.createdAt), likes: 0, comments: 0, cloudId: p.id,
+      media: (p.media || []).filter(function (m) { return MEDIA_URL_RE.test(m); })
     };
   }
 
@@ -2250,10 +2313,13 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   function composerHtml() {
     return '<div class="card">' +
       '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="" aria-label="有什么好事？" style="width:100%;border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:none;overflow-y:auto;max-height:240px;margin-bottom:8px"></textarea>' +
+      '<input type="file" id="postImgInput" accept="image/*,video/*" multiple style="display:none">' +
+      '<input type="file" id="postGifInput" accept="image/gif" multiple style="display:none">' +
+      '<div class="pm-list" id="pendingMedia"></div>' +
       '<div class="composer-actions">' +
       '<div class="composer-tools">' +
-      '<button type="button" class="composer-tool" data-tip="上传图片" aria-label="上传图片"><span class="material-symbols-outlined">image</span></button>' +
-      '<button type="button" class="composer-tool" data-tip="GIF" aria-label="GIF"><span class="material-symbols-outlined">gif</span></button>' +
+      '<button type="button" class="composer-tool" data-action="upload" data-tip="上传图片" aria-label="上传图片"><span class="material-symbols-outlined">image</span></button>' +
+      '<button type="button" class="composer-tool" data-action="gif" data-tip="GIF" aria-label="GIF"><span class="material-symbols-outlined">gif</span></button>' +
       '<button type="button" class="composer-tool" data-tip="投票" aria-label="投票"><span class="material-symbols-outlined">poll</span></button>' +
       '<button type="button" class="composer-tool" data-tip="表情符号" aria-label="表情符号"><span class="material-symbols-outlined">sentiment_satisfied</span></button>' +
       '<button type="button" class="composer-tool" data-tip="创办活动" aria-label="创办活动"><span class="material-symbols-outlined">event</span></button>' +
@@ -2269,19 +2335,174 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     var content = el.value.trim();
     if (!content) { toastMsg('写点内容再发布'); return; }
     btn.disabled = true;
-    MN_API.post('/social/posts', { content: content, media: [] }).then(function (r) {
-      btn.disabled = false;
+    MN_API.post('/social/posts', { content: content, media: pendingMedia.slice() }).then(function (r) {
+      btn.disabled = uploadingCount > 0; // 附件上传进行中保持禁用
       if (r.ok && r.data && r.data.post) {
         var p = r.data.post;
         if (p.status === 'removed') { toastMsg('内容违反社区规则，已被拦截', true); return; }
         toastMsg(r.data.moderation && r.data.moderation.verdict === 'hold' ? '已发布，内容待审核' : '发布成功');
         el.value = '';
         el.style.height = 'auto'; // 自适长框立刻回缩（重渲染前防闪高框）
+        pendingMedia = []; // 发布成功清空待传附件
+        renderPendingMedia();
         refreshCloudFeed();
       } else if (r.status === 429) { toastMsg('发布过于频繁，请稍后再试', true); }
       else if (r.status === 401) { toastMsg('登录已过期，请重新登录', true); }
       else { toastMsg((r.data && r.data.error && r.data.error.message) || '发布失败，请稍后再试', true); }
     });
+  }
+
+  // ── v0.2.16.0 媒体上传 + 画廊 + 灯箱 ──
+  var MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+  var MAX_VIDEO_BYTES = 30 * 1024 * 1024;
+  var IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+  var uploadingCount = 0;
+
+  function renderPendingMedia() {
+    var box = document.getElementById('pendingMedia');
+    if (!box) return;
+    var html = '';
+    pendingMedia.forEach(function (url, i) {
+      html += '<div class="pm-thumb">' +
+        (isVideoUrl(url)
+          ? '<video src="' + escapeHtml(url) + '" muted></video>'
+          : '<img src="' + escapeHtml(url) + '" alt="">') +
+        '<button type="button" class="pm-rm" data-pm-rm="' + i + '" title="移除">×</button>' +
+        '</div>';
+    });
+    box.innerHTML = html;
+    var rms = box.querySelectorAll('[data-pm-rm]');
+    for (var r = 0; r < rms.length; r++) {
+      rms[r].addEventListener('click', function () {
+        pendingMedia.splice(Number(this.getAttribute('data-pm-rm')), 1);
+        renderPendingMedia();
+      });
+    }
+  }
+
+  function updatePostSubmitState() {
+    var btn = document.getElementById('postSubmit');
+    if (btn) btn.disabled = uploadingCount > 0;
+  }
+
+  // 选中文件逐个上传：客户端预检（扩展名白名单 + 大小）→ POST /social/uploads → pendingMedia
+  function handleFilePick(files) {
+    if (!files || !files.length) return;
+    var list = Array.prototype.slice.call(files);
+    list.forEach(function (file) {
+      var ext = (file.name.split('.').pop() || '').toLowerCase();
+      var isImage = IMAGE_EXTS.indexOf(ext) !== -1;
+      if (!isImage && ['mp4', 'webm', 'mov'].indexOf(ext) === -1) {
+        toastMsg('不支持的格式：' + file.name, true);
+        return;
+      }
+      if (pendingMedia.length >= 3) { toastMsg('最多 3 个附件'); return; }
+      var cap = isImage ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
+      if (file.size > cap) { toastMsg(isImage ? '图片超过 10MB' : '视频超过 30MB', true); return; }
+      uploadingCount++;
+      updatePostSubmitState();
+      fetch(MN_API.BASE + '/social/uploads?ext=.' + ext, { method: 'POST', body: file, credentials: 'include' })
+        .then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          return r.json();
+        })
+        .then(function (data) {
+          if (data && data.url) { pendingMedia.push(data.url); renderPendingMedia(); }
+          else toastMsg('上传失败，请稍后再试', true);
+        })
+        .catch(function () { toastMsg('上传失败，请稍后再试', true); })
+        .finally(function () { uploadingCount--; updatePostSubmitState(); });
+    });
+  }
+
+  // 灯箱：createElement 一次性建 DOM（复用 .modal-backdrop/.modal-card 样式），
+  // 多张时左右箭头翻页；×/backdrop 点击/Escape 关闭。
+  var lbBackdrop = null, lbCard = null, lbMedia = null, lbClose = null, lbPrev = null, lbNext = null;
+  var lbList = [], lbIdx = 0;
+
+  function lbEscape(e) { if (e.key === 'Escape') closeLightbox(); }
+
+  function lbRenderMedia() {
+    if (lbMedia) { if (lbMedia.pause) lbMedia.pause(); lbMedia.remove(); }
+    var url = lbList[lbIdx];
+    var isVideo = isVideoUrl(url);
+    lbMedia = isVideo ? document.createElement('video') : document.createElement('img');
+    lbMedia.className = 'lb-media' + (isVideo ? ' video' : '');
+    if (isVideo) { lbMedia.controls = true; lbMedia.autoplay = true; }
+    lbMedia.src = url;
+    lbCard.insertBefore(lbMedia, lbClose);
+  }
+
+  function lbShowArrows() {
+    lbPrev.disabled = lbIdx <= 0;
+    lbNext.disabled = lbIdx >= lbList.length - 1;
+    lbPrev.style.display = lbList.length > 1 ? '' : 'none';
+    lbNext.style.display = lbList.length > 1 ? '' : 'none';
+  }
+
+  function openLightbox(list, idx) {
+    lbList = list || [];
+    lbIdx = Math.max(0, Math.min(idx || 0, lbList.length - 1));
+    if (!lbList.length) return;
+    if (!lbBackdrop) {
+      lbBackdrop = document.createElement('div');
+      lbBackdrop.className = 'modal-backdrop';
+      lbBackdrop.addEventListener('click', closeLightbox);
+      var cont = document.createElement('div');
+      cont.className = 'modal-container';
+      lbCard = document.createElement('div');
+      lbCard.className = 'modal-card lb-card';
+      lbClose = document.createElement('button');
+      lbClose.type = 'button';
+      lbClose.className = 'lb-close';
+      lbClose.setAttribute('aria-label', '关闭');
+      lbClose.innerHTML = '<span class="material-symbols-outlined" style="font-size:28px">close</span>';
+      lbClose.addEventListener('click', function (e) { e.stopPropagation(); closeLightbox(); });
+      lbPrev = document.createElement('button');
+      lbPrev.type = 'button';
+      lbPrev.className = 'lb-arrow lb-prev';
+      lbPrev.setAttribute('aria-label', '上一张');
+      lbPrev.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px">chevron_left</span>';
+      lbPrev.addEventListener('click', function (e) { e.stopPropagation(); if (lbIdx > 0) { lbIdx--; lbRenderMedia(); lbShowArrows(); } });
+      lbNext = document.createElement('button');
+      lbNext.type = 'button';
+      lbNext.className = 'lb-arrow lb-next';
+      lbNext.setAttribute('aria-label', '下一张');
+      lbNext.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px">chevron_right</span>';
+      lbNext.addEventListener('click', function (e) { e.stopPropagation(); if (lbIdx < lbList.length - 1) { lbIdx++; lbRenderMedia(); lbShowArrows(); } });
+      lbCard.appendChild(lbPrev);
+      lbCard.appendChild(lbNext);
+      lbCard.appendChild(lbClose);
+      cont.appendChild(lbCard);
+      document.body.appendChild(lbBackdrop);
+      document.body.appendChild(cont);
+      document.addEventListener('keydown', lbEscape);
+    }
+    lbRenderMedia();
+    lbShowArrows();
+    void lbCard.offsetWidth; // reflow 后再激活才有过渡动画
+    lbBackdrop.classList.add('active');
+    lbCard.classList.add('active');
+  }
+
+  function closeLightbox() {
+    if (!lbBackdrop) return;
+    lbBackdrop.classList.remove('active');
+    lbCard.classList.remove('active');
+    if (lbMedia) { if (lbMedia.pause) lbMedia.pause(); lbMedia.remove(); lbMedia = null; }
+    lbList = [];
+  }
+
+  function mediaGridHtml(media) {
+    var html = '<div class="post-media pm-' + media.length + '">';
+    media.forEach(function (url, i) {
+      html += '<button type="button" class="pm-tile" data-media="' + i + '" aria-label="查看大图">' +
+        (isVideoUrl(url)
+          ? '<video controls preload="metadata" src="' + escapeHtml(url) + '"></video>'
+          : '<img loading="lazy" src="' + escapeHtml(url) + '" alt="">') +
+        '</button>';
+    });
+    return html + '</div>';
   }
 
   function refreshCloudFeed() {
@@ -2313,14 +2534,15 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       html +=
         '<div class="card card-hover tilt-container">' +
           '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:8px">' +
-            '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + item.icon + '</span>' +
-            '<span class="badge ' + item.badgeClass + '">' + item.badge + '</span>' +
-            (item.author ? '<span style="font-weight:600;font-size:var(--fs-label-md)">' + item.author + '</span>' : '') +
-            '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + item.time + '</span>' +
-            (item.cloudId ? '<button data-cloud-post="' + item.cloudId + '" title="Report" style="border:none;background:transparent;color:var(--color-outline);cursor:pointer;padding:2px;margin-left:4px"><span class="material-symbols-outlined" style="font-size:16px">flag</span></button>' : '') +
+            '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + escapeHtml(item.icon) + '</span>' +
+            '<span class="badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.badge) + '</span>' +
+            (item.author ? '<span style="font-weight:600;font-size:var(--fs-label-md)">' + escapeHtml(item.author) + '</span>' : '') +
+            '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + escapeHtml(item.time) + '</span>' +
+            (item.cloudId ? '<button data-cloud-post="' + escapeHtml(item.cloudId) + '" title="Report" style="border:none;background:transparent;color:var(--color-outline);cursor:pointer;padding:2px;margin-left:4px"><span class="material-symbols-outlined" style="font-size:16px">flag</span></button>' : '') +
           '</div>' +
-          '<h4 style="font-weight:600;font-size:var(--fs-body-md);margin-bottom:4px">' + item.title + '</h4>' +
-          (item.desc ? '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + item.desc + '</p>' : '') +
+          '<h4 style="font-weight:600;font-size:var(--fs-body-md);margin-bottom:4px">' + escapeHtml(item.title) + '</h4>' +
+          (item.desc ? '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + escapeHtml(item.desc) + '</p>' : '') +
+          (item.media && item.media.length ? mediaGridHtml(item.media) : '') +
           '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
             '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">favorite</span> ' + item.likes + '</span>' +
             '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">chat_bubble</span> ' + item.comments + '</span>' +
@@ -2329,6 +2551,18 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     });
     document.getElementById('feedContent').innerHTML = html;
     if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+    closeLightbox(); // v0.2.16.0 重渲染清掉卡片 DOM，先关灯箱防悬空
+    // v0.2.16.0 媒体瓦片 → 灯箱（每个网格闭包持自己的 URL 列表，src 反推零耦合）
+    document.querySelectorAll('.post-media').forEach(function (grid) {
+      var urls = [];
+      grid.querySelectorAll('.pm-tile').forEach(function (tile) {
+        var el = tile.querySelector('img, video');
+        if (el) urls.push(el.getAttribute('src'));
+      });
+      grid.querySelectorAll('.pm-tile').forEach(function (tile, i) {
+        tile.addEventListener('click', function () { openLightbox(urls, i); });
+      });
+    });
     // 发帖 + 举报绑定（每次重渲染后重新挂）
     var submitBtn = document.getElementById('postSubmit');
     if (submitBtn) submitBtn.addEventListener('click', submitCloudPost);
@@ -2346,13 +2580,25 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
         this.style.height = Math.max(baseH, Math.min(this.scrollHeight, maxH)) + 'px';
       });
     }
-    // 工具条 icon：点击如实提示（功能未上线，不装死）
+    // 工具条 icon：上传图片/GIF 接真实上传（v0.2.16.0）；投票/表情/创办活动如实提示（未上线，不装死）
     var tools = document.querySelectorAll('.composer-tool');
     for (var i = 0; i < tools.length; i++) {
-      tools[i].addEventListener('click', function () {
-        toastMsg((this.getAttribute('data-tip') || '该') + '功能即将上线');
-      });
+      (function (tool) {
+        var action = tool.getAttribute('data-action');
+        tool.addEventListener('click', function () {
+          if (action === 'upload') { var inp1 = document.getElementById('postImgInput'); if (inp1) inp1.click(); }
+          else if (action === 'gif') { var inp2 = document.getElementById('postGifInput'); if (inp2) inp2.click(); }
+          else toastMsg((tool.getAttribute('data-tip') || '该') + '功能即将上线');
+        });
+      })(tools[i]);
     }
+    // v0.2.16.0 文件选择 → 逐个上传；待传预览行渲染
+    var imgInp = document.getElementById('postImgInput');
+    var gifInp = document.getElementById('postGifInput');
+    if (imgInp) imgInp.addEventListener('change', function () { handleFilePick(imgInp.files); imgInp.value = ''; });
+    if (gifInp) gifInp.addEventListener('change', function () { handleFilePick(gifInp.files); gifInp.value = ''; });
+    renderPendingMedia();
+    updatePostSubmitState();
     if (cloudMode) {
       document.querySelectorAll('[data-cloud-post]').forEach(function (el) {
         MN_Report.mount(el, { targetType: 'post', targetId: el.getAttribute('data-cloud-post') });
