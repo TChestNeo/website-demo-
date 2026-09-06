@@ -1,0 +1,3 @@
+观感微调：v0.2.20.2 Community 星+分享间距靠拢（rev 00096-8p8）——用户「这个收藏和分享两个按钮的间距可以靠近些吗」：星钮加 margin-right:-10px——星↔分享间隙从容器 gap 16px 收到 6px（margin-left:auto 保留，星组仍贴行右缘、分享右缘=行右缘不动；hub 真卡+演示卡+帖页 tail 三处同改+重建 106340 chars）；零后端零共享文件；电池 59/59 本地（A7 g5 断言改 4~10px 靠拢区间——g5=6 实测、g1-g4 仍 16、rightEdge=0 不变）+19/19 线上（L1 版本 v0.2.20.2+rightEdge=0）+冒烟 49/49+curl 六连（浏览量 7→8 真实+1+匿名收藏 401×2+三处 margin-right:-10px）+health 58
+
+commit ec85ca4（未 push）
