@@ -1945,6 +1945,12 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   .post-action-btn.like-pop .material-symbols-outlined { animation: none; }
   .post-action-btn.like-pop .like-burst { display: none; }
 }
+/* v0.2.21.0 作者头像/徽章/名字 → 个人主页入口（锚 gap 同行 gap-sm、img margin-right 保留——间距与旧版逐像素一致；时间/report 在锚外） */
+.post-author-link {
+  display: inline-flex; align-items: center; gap: var(--space-sm);
+  color: inherit; text-decoration: none;
+}
+.post-author-link:hover { text-decoration: underline; }
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -2362,6 +2368,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       badgeClass: p.repostOfId ? 'badge-success' : 'badge-primary',
       author: p.authorName || 'Citizen',
       avatarUrl: p.avatarUrl || null,
+      authorId: p.authorId || null, // v0.2.21.0 作者 id → 个人主页入口（头像/名字包锚）
       title: p.content.length > 90 ? p.content.slice(0, 90) + '…' : p.content,
       desc: p.content.length > 90 ? p.content.slice(90, 240) : '',
       time: relativeTime(p.createdAt),
@@ -2643,9 +2650,12 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       html +=
         '<div class="card card-hover tilt-container' + (item.cloudId ? ' post-card-click' : '') + '"' + (item.cloudId ? ' data-cloud-id="' + escapeHtml(item.cloudId) + '"' : '') + '>' +
           '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:8px">' +
+            // v0.2.21.0 作者头像+徽章+名字包锚 → 个人主页（时间/report 留在锚外；演示卡无 authorId 不包）
+            (item.cloudId && item.authorId ? '<a class="post-author-link" href="community-profile.html?id=' + encodeURIComponent(item.authorId) + '" title="查看主页">' : '') +
             (item.avatarUrl ? '<img src="' + escapeHtml(item.avatarUrl) + '" alt="" class="avatar avatar-sm" style="margin-right:6px">' : '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + escapeHtml(item.icon) + '</span>') +
             '<span class="badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.badge) + '</span>' +
             (item.author ? '<span style="font-weight:600;font-size:var(--fs-label-md)">' + escapeHtml(item.author) + '</span>' : '') +
+            (item.cloudId && item.authorId ? '</a>' : '') +
             '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + escapeHtml(item.time) + '</span>' +
             (item.cloudId ? '<button data-cloud-post="' + escapeHtml(item.cloudId) + '" title="Report" style="border:none;background:transparent;color:var(--color-outline);cursor:pointer;padding:2px;margin-left:4px"><span class="material-symbols-outlined" style="font-size:16px">flag</span></button>' : '') +
           '</div>' +
@@ -2749,6 +2759,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       document.querySelectorAll('[data-cloud-id]').forEach(function (card) {
         card.addEventListener('click', function (e) {
           if (e.target.closest('button')) return;
+          if (e.target.closest('a')) return; // v0.2.21.0 作者锚走自己的 href，不抢整卡跳转
           if (window.getSelection && String(window.getSelection()).length) return;
           window.location.href = 'community-post.html?id=' + encodeURIComponent(card.getAttribute('data-cloud-id'));
         });

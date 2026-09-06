@@ -240,11 +240,14 @@
     document.getElementById('postCardWrap').innerHTML =
       '<div class="card">' +
         '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:8px">' +
+          // v0.2.21.0 作者头像+名字包锚 → 个人主页（时间在名字下、report 留在锚外）
+          (p.authorId ? '<a class="post-author-link" href="community-profile.html?id=' + encodeURIComponent(p.authorId) + '" title="查看主页">' : '') +
           '<img src="' + escapeHtml(p.avatarUrl || window._slatiFallbackAvatar) + '" alt="" class="avatar">' +
           '<div>' +
             '<div style="font-weight:600;font-size:var(--fs-label-md)">' + escapeHtml(p.authorName || 'Citizen') + '</div>' +
             '<div class="label-sm" style="color:var(--color-outline)">' + relativeTime(p.createdAt) + '</div>' +
           '</div>' +
+          (p.authorId ? '</a>' : '') +
           '<button data-cloud-post="' + escapeHtml(p.id) + '" title="Report" style="margin-left:auto;border:none;background:transparent;color:var(--color-outline);cursor:pointer;padding:2px"><span class="material-symbols-outlined" style="font-size:16px">flag</span></button>' +
         '</div>' +
         (p.repostOfId

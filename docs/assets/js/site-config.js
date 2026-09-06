@@ -130,7 +130,12 @@ window.MN_SITE = window.MN_SITE || {};
 //   浏览量——后端迁移 016 posts.view_count 列 + GET /posts/:id 每开一次 +1（postRow 随行 viewCount；feed 同步带出）；前端 visibility 图标静态展示（hub 真/演示卡 + 帖页）；
 //   收藏——后端 POST/DELETE /posts/:id/favorite 真开关（005 已有 favorites 表 target_type='post' 零新表；requireSession+writeLimit+可见性 404+INSERT OR IGNORE / DELETE 幂等，postRow 随行 favoritedByMe）；前端星钮 star↔star_border 切换+金色 .favorited 高亮+FILL 轴实心（乐观更新+失败回滚+访客 toast「登录后才能收藏」）；
 //   hub+帖页同改（tail 改+重建）；测试 227→233/233（social-favorites 5 测+migrations/health user_version 15→16 五处）+电池 56/56 本地+18/18 线上+冒烟 49/49+curl 八连+health 58，rev 00094-nj9（小改动位 19→20·新功能轮·补丁清零；2026-09-06）
-window.MN_SITE_VERSION = 'v0.2.20.4';
+// v0.2.21.0 = Community 个人主页 + 关注系统（用户「先把用户的个人主页做一下吧？」——问询钦定完整版 Twitter 式主页 + 关注一起做 + 三入口）：
+//   后端——迁移 017 following.users 显示名→id 引用（一期按显示名存储，主页上线兑现 005 承诺：映射到 active 用户的替换为 id 同名取最早注册、映射不到删行、先删后改绝不落 NULL）+ idx_following_target 粉丝反查索引（无新表 health 58 不变，user_version 16→17）；social.js 四新端点——GET /users/:id（公开+optionalViewer：displayName/avatarUrl/bio/gender/citizenId/createdAt/isSelf/followedByMe/followerCount/followingCount/stats 四计数）、GET /users/:id/posts?tab=posts|reposts|likes|favorites（复用 postRow、likes/favorites 按互动时间倒序、bogus tab 400）、POST/DELETE /users/:id/follow（幂等开关、自关 400、目标必须 active 404、requireSession+writeLimit）；PUT /following users 只收 /^USR-\d{6}$/（遗留显示名静默丢弃防 storage.js mergeFollowing 回流）；commentRow 加 authorId（additive 铺路）；
+//   前端——新页 docs/pages/community-profile.html（build 脚本 tmp-build-community-profile.js + tail，head 复用 hub 同源）：头部卡（头像 72px/名字/@citizenId/性别章/简介/加入时间）+统计行（帖子/转发/点赞/收藏 点击跳 tab）+「N 粉丝 · M 关注」+4 tab 药丸+卡片列表（hub 同款全操作行+灯箱+空态文案）；isSelf →「编辑资料」钮开 SlatiSettings 弹窗（轮询 backdrop 消失后重拉）；访客点关注 toast「登录后才能关注」零请求；toggleFollow 乐观+401/429 回滚；不写 localStorage；
+//   三入口——hub renderFeed 作者行头像+名字包 .post-author-link → community-profile.html?id=（cloudPostItem 带 authorId、整卡点击守卫加 closest('a')）；帖页 tail 作者行同改（tail 改+重建）；侧栏用户模块头像+名字包锚（USR- 门控，访客/演示不动）；测试 233→252/252（social-profile 15 测+migrations 017 数据迁移测+social.test.js following 改 id 语义）；
+//   （小改动位 20→21·新功能轮·补丁清零；2026-09-07）
+window.MN_SITE_VERSION = 'v0.2.21.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

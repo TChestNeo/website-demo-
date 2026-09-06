@@ -89,13 +89,15 @@ test('following：PUT 整对象 → GET 回读一致；再次 PUT 全量替换�
   const t = await testApp();
   try {
     const { cookie } = t.loginAs('d@x.com');
+    // v0.2.21.0：users 为 id 引用（017 迁移）——遗留显示名被服务端静默过滤
+    const target = t.seedUser({ email: 'target@x.com', displayName: 'Marcus Vane' });
     const put1 = await t.request('PUT', '/api/social/following',
-      { nations: ['NAT-000001', 'NAT-000002'], topics: ['TOP-000001'], users: ['Marcus Vane'] }, { cookie });
+      { nations: ['NAT-000001', 'NAT-000002'], topics: ['TOP-000001'], users: [target.id, 'Marcus Vane'] }, { cookie });
     assert.strictEqual(put1.status, 200);
     assert.strictEqual((await put1.json()).nations.length, 2);
 
     const get1 = await t.request('GET', '/api/social/following', undefined, { cookie });
-    assert.deepStrictEqual(await get1.json(), { nations: ['NAT-000001', 'NAT-000002'], topics: ['TOP-000001'], users: ['Marcus Vane'] });
+    assert.deepStrictEqual(await get1.json(), { nations: ['NAT-000001', 'NAT-000002'], topics: ['TOP-000001'], users: [target.id] });
 
     const put2 = await t.request('PUT', '/api/social/following', { nations: ['NAT-000003'] }, { cookie });
     assert.strictEqual(put2.status, 200);

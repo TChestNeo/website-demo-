@@ -3,8 +3,8 @@
 // nations/topics 存 verbatim JSON（服务端只覆盖 id/createdAt/status/memberCount）；
 // teams 一期只读 + 服务端种子（与 storage.js 种子同数据，本地种子保留为离线兜底）；
 // following 整对象 PUT 替换（与 saveFollowing 的全量覆盖语义一致）。
-// 说明：following.users 一期按显示名原文存储——计划原为「显示名 → user_id 转换」，
-// 但 v1 无用户主页、本地种子是演示名，转换会静默丢数据；用户主页上线时再迁移为 id 引用。
+// following.users 自 v0.2.21.0 起为 users.id 引用（017 迁移显示名 → id，用户主页上线兑现 005 承诺）；
+// PUT 只收 /^USR-\d{6}$/，遗留显示名静默丢弃（storage.js mergeFollowing 会把 localStorage 旧演示名并回 PUT，防回流）。
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -206,6 +206,7 @@ function register(router, ctx) {
       id: row.id,
       postId: row.post_id,
       parentId: row.parent_id || null,
+      authorId: row.author_id, // v0.2.21.0：评论作者 id（个人主页链铺路；additive）
       authorName: author ? author.display_name : 'Anonymous',
       avatarUrl: author ? author.avatar_url : null,
       content: row.content,
@@ -345,6 +346,85 @@ function register(router, ctx) {
     c.db.prepare("DELETE FROM favorites WHERE user_id = ? AND target_type = 'post' AND target_id = ?")
       .run(c.user.id, req.params.id);
     sendJson(res, 200, { favorited: false });
+  }));
+
+  // ── 用户主页（v0.2.21.0：Twitter 式个人主页——头部+统计+4 tab；关注系统一起做）──
+  // 公共 GET 走 optionalViewer（不刷 DAU）；只认 active 用户，banned/deleted 一律 404 同口径。
+  router.add('GET', '/api/social/users/:id', (req, res, c) => {
+    const row = c.db.prepare("SELECT * FROM users WHERE id = ? AND status = 'active'").get(req.params.id);
+    if (!row) throw new HttpError('NOT_FOUND', '用户不存在或已注销');
+    const viewerId = optionalViewer(req, c);
+    const followedByMe = viewerId
+      ? !!c.db.prepare("SELECT 1 FROM following WHERE user_id = ? AND target_type = 'user' AND target_id = ?").get(viewerId, row.id)
+      : false;
+    // 粉丝数反查走 017 新索引 idx_following_target；关注数走 PK 前缀 user_id
+    const followerCount = c.db.prepare("SELECT count(*) AS n FROM following WHERE target_type = 'user' AND target_id = ?").get(row.id).n;
+    const followingCount = c.db.prepare("SELECT count(*) AS n FROM following WHERE user_id = ? AND target_type = 'user'").get(row.id).n;
+    const stats = {
+      postCount: c.db.prepare("SELECT count(*) AS n FROM posts WHERE author_id = ? AND status = 'visible' AND repost_of IS NULL").get(row.id).n,
+      repostCount: c.db.prepare("SELECT count(*) AS n FROM posts WHERE author_id = ? AND status = 'visible' AND repost_of IS NOT NULL").get(row.id).n,
+      likeCount: c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE user_id = ? AND target_type = 'post'").get(row.id).n,
+      favoriteCount: c.db.prepare("SELECT count(*) AS n FROM favorites WHERE user_id = ? AND target_type = 'post'").get(row.id).n
+    };
+    sendJson(res, 200, {
+      user: {
+        id: row.id,
+        displayName: row.display_name,
+        avatarUrl: row.avatar_url,
+        bio: row.bio || null,
+        gender: row.gender || null, // 013：Male/Female/Other，NULL = 未填写（前端隐藏）
+        citizenId: row.citizen_id,
+        createdAt: row.created_at,
+        isSelf: viewerId === row.id,
+        followedByMe,
+        followerCount,
+        followingCount,
+        stats
+      }
+    });
+  });
+
+  // 主页动态 tab（复用 postRow，N+1 预算与 feed 同口径 LIMIT 100；likes/favorites 按互动时间倒序）
+  router.add('GET', '/api/social/users/:id/posts', (req, res, c) => {
+    const profile = c.db.prepare("SELECT id FROM users WHERE id = ? AND status = 'active'").get(req.params.id);
+    if (!profile) throw new HttpError('NOT_FOUND', '用户不存在或已注销');
+    const tab = String(req.query.tab || 'posts');
+    const viewerId = optionalViewer(req, c);
+    let rows;
+    if (tab === 'posts' || tab === 'reposts') {
+      const repostClause = tab === 'reposts' ? 'AND repost_of IS NOT NULL' : 'AND repost_of IS NULL';
+      rows = c.db.prepare("SELECT * FROM posts WHERE author_id = ? AND status = 'visible' " + repostClause + ' ORDER BY seq DESC LIMIT 100')
+        .all(profile.id);
+    } else if (tab === 'likes' || tab === 'favorites') {
+      const t = tab === 'likes' ? 'content_likes' : 'favorites'; // 表名白名单常量，无注入面
+      rows = c.db.prepare('SELECT p.* FROM ' + t + ' l JOIN posts p ON p.id = l.target_id '
+        + "WHERE l.user_id = ? AND l.target_type = 'post' AND p.status = 'visible' "
+        + 'ORDER BY l.created_at DESC LIMIT 100').all(profile.id);
+    } else {
+      throw new HttpError('VALIDATION', '参数无效');
+    }
+    sendJson(res, 200, { posts: rows.map(r => postRow(c.db, r, viewerId)) });
+  });
+
+  // ── 关注（v0.2.21.0：幂等开关，同点赞口径；自关 400；目标必须 active）──
+  router.add('POST', '/api/social/users/:id/follow', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    const target = c.db.prepare('SELECT id, status FROM users WHERE id = ?').get(req.params.id);
+    if (!target || target.status !== 'active') throw new HttpError('NOT_FOUND', '用户不存在或已注销');
+    if (target.id === c.user.id) throw new HttpError('VALIDATION', '不能关注自己');
+    c.db.prepare("INSERT OR IGNORE INTO following (user_id, target_type, target_id, created_at) VALUES (?, 'user', ?, ?)")
+      .run(c.user.id, target.id, new Date().toISOString());
+    const followerCount = c.db.prepare("SELECT count(*) AS n FROM following WHERE target_type = 'user' AND target_id = ?").get(target.id).n;
+    sendJson(res, 200, { following: true, followerCount });
+  }));
+
+  router.add('DELETE', '/api/social/users/:id/follow', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    // 不校验目标存在：对不存在用户取消关注 = 无害 no-op（幂等，与取消点赞同口径）
+    c.db.prepare("DELETE FROM following WHERE user_id = ? AND target_type = 'user' AND target_id = ?")
+      .run(c.user.id, req.params.id);
+    const followerCount = c.db.prepare("SELECT count(*) AS n FROM following WHERE target_type = 'user' AND target_id = ?").get(req.params.id).n;
+    sendJson(res, 200, { following: false, followerCount });
   }));
 
   // ── 转发（v0.2.18.0：真转发——转发即发帖，同帖一次，转发语可选 0-2000；先发后审同帖口径）──
@@ -530,7 +610,10 @@ function register(router, ctx) {
     const body = await readJson(req, 16 * 1024);
     const clean = { nations: [], topics: [], users: [] };
     ['nations', 'topics', 'users'].forEach((k) => {
-      if (Array.isArray(body[k])) clean[k] = body[k].map(String).filter(Boolean).slice(0, 200);
+      if (!Array.isArray(body[k])) return;
+      const arr = body[k].map(String).filter(Boolean);
+      // v0.2.21.0：users 迁为 id 引用后只收 /^USR-\d{6}$/——遗留显示名静默丢弃（见文件头注释）
+      clean[k] = (k === 'users' ? arr.filter((v) => /^USR-\d{6}$/.test(v)) : arr).slice(0, 200);
     });
     const iso = new Date().toISOString();
     c.db.transaction(() => {

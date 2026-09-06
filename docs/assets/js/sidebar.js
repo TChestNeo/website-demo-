@@ -69,6 +69,9 @@
     // 访客不显示假用户卡片（Alex Rivera 只兜 loggedIn 但无用户记录的边缘情况），
     // 用户模块换成「注册 / 登录」CTA（../ 前缀是侧栏全站惯例，根页/子页均可解析；无设置齿轮，
     // settings-modal.js 的齿轮轮询找不到元素空转无害）。
+    // v0.2.21.0 个人主页入口：真用户（USR- id）头像+名字+公民号包锚 → 自己主页（../pages 前缀全站惯例；
+    // 设置齿轮留在锚外；访客/演示账号不包）
+    var isRealUser = loggedIn && user && String(user.id || '').indexOf('USR-') === 0;
     var userModuleHTML = loggedIn
       ? '<!-- User Module -->' +
         '<div class="sidebar-module user-module" style="padding:0;overflow:hidden">' +
@@ -81,12 +84,14 @@
           '</div>' +
           '<!-- User info -->' +
           '<div class="user-info-bar" style="padding:0 var(--space-md) var(--space-sm);position:relative">' +
+            (isRealUser ? '<a href="../pages/community-profile.html?id=' + encodeURIComponent(user.id) + '" title="查看我的主页" style="display:block;text-decoration:none;color:inherit">' : '') +
             '<div style="position:relative;margin-top:-20px;margin-bottom:8px">' +
               '<img src="' + (user.avatarUrl || window._slatiFallbackAvatar) + '" alt="" class="avatar" style="width:40px;height:40px;border:3px solid white" />' +
               '<span class="status-dot status-dot-green" style="position:absolute;bottom:2px;right:-2px;border:2px solid white"></span>' +
             '</div>' +
             '<div class="user-name" style="font-weight:700;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + user.displayName + '</div>' +
             '<div class="user-citizen-id label-sm" style="color:var(--color-outline)">' + user.citizenId + '</div>' +
+            (isRealUser ? '</a>' : '') +
             '<button class="settings-btn-collapsed" style="display:none" title="Settings">' +
               '<span class="material-symbols-outlined" style="font-size:18px">settings</span>' +
             '</button>' +
