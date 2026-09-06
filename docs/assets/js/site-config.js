@@ -110,7 +110,10 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.19.1 = Community 转发免弹窗直转 + 分享弹窗全场景（用户「为什么分享按钮点击后没有弹窗」「转发的话不需要弹窗啊，它就只是在用户主页那边转发给粉丝看这样的功能而已」）：
 //   转发——hub + 帖页删除转发对话框（openRepostDialog 整体移除），点击转发钮直接裸转发（空转发语）发到主页、再点撤销；乐观置位 + 失败回滚 + 409 同步置位 + removed 拦截回滚/hold 待审核 + 401/429 分支照旧；toast 改「已转发到你的主页（，待审核）」；撤销成功补 toast「已取消转发」；
 //   分享——演示卡（访客 demo 模式）分享从只 toast 改为也弹分享弹窗（用户实测「点击后没有弹窗」根因即此：v0.2.19.0 演示卡分享只有 toast「登录后才能分享」），复制本社区页链接 + 标题「分享社区」；openShareDialog 加 title 可选参；真卡与帖页弹窗逻辑不变；零后端零共享文件（补丁位 0→1·口径修正轮；2026-09-06）
-window.MN_SITE_VERSION = 'v0.2.19.1';
+// v0.2.19.2 = Community 分享弹窗隐形修复 + 分享钮纯图标（用户「分享按钮的icon改成 Upload的icon 然后把旁边分享的按钮去掉」+「点击后依旧只是变模糊没有出现显示链接以复制的弹窗」）：
+//   弹窗隐形根因实锤——模态系统 .modal-card 默认 opacity:0（scale(0.95)），必须同时挂 .active（transform:scale(1)+opacity:1+pointer-events:auto）；openShareDialog 只挂了 backdrop.active → 背景变模糊但卡片隐形（还盖在页面中央挡掉点赞等点击——「点赞后爱心没变实心」同源：点击被隐形卡片吞掉）；hub+帖页两处 openShareDialog 补 card.classList.add('active')；
+//   分享钮——icon ios_share → upload（用户钦定）+ 去掉「分享」文字（与点赞/转发同口径纯图标钮，title="分享" 保留）；hub 真卡+演示卡+帖页三处同改；零后端零共享文件（帖页 tail 改+重建）（补丁位 1→2·修复轮；2026-09-06）
+window.MN_SITE_VERSION = 'v0.2.19.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

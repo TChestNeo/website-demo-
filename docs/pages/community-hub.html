@@ -2655,9 +2655,10 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
             // v0.2.19.0 转发+分享按钮（与帖页操作行对齐；真卡全功能，演示卡 toast 引导登录）
             (item.cloudId
               ? '<button type="button" class="post-action-btn' + (item.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (item.repostCount || 0) + '</span></button>' +
-                '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(item.cloudId) + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">ios_share</span> 分享</button>'
+                // v0.2.19.2 分享钮：icon 改 upload + 去掉「分享」文字（与点赞/转发同口径纯图标钮）
+                '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(item.cloudId) + '" title="分享"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">upload</span></button>'
               : '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-repost style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">repeat</span></button>' +
-                '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-share style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">ios_share</span></button>') +
+                '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-share title="分享" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">upload</span></button>') +
           '</div>' +
         '</div>';
     });
@@ -2870,6 +2871,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     document.addEventListener('keydown', onEsc);
     backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
     void card.offsetWidth;
+    card.classList.add('active'); // v0.2.19.2 修复：模态系统 .modal-card 默认 opacity:0，必须同时挂 .active（旧版只挂 backdrop → 页面只变模糊、卡片隐形还挡点击）
     backdrop.classList.add('active');
     var stateEl = card.querySelector('#shareCopyState');
     function doCopy() {

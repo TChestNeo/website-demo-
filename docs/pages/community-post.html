@@ -2485,7 +2485,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           '<button type="button" class="post-action-btn' + (p.likedByMe ? ' liked' : '') + '" data-like-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.likedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">' + (p.likedByMe ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"><span class="like-fx"></span></span> <span data-like-count>' + (p.likeCount || 0) + '</span></button>' +
           '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">chat_bubble</span> ' + (p.commentCount || 0) + '</span>' +
           '<button type="button" class="post-action-btn' + (p.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (p.repostCount || 0) + '</span></button>' +
-          '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(p.id) + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">ios_share</span> 分享</button>' +
+          '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(p.id) + '" title="分享"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">upload</span></button>' +
         '</div>' +
       '</div>';
     document.getElementById('postDetail').style.display = 'flex';
@@ -2651,6 +2651,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     document.addEventListener('keydown', onEsc);
     backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
     void card.offsetWidth;
+    card.classList.add('active'); // v0.2.19.2 修复：模态系统 .modal-card 默认 opacity:0，必须同时挂 .active（旧版只挂 backdrop → 页面只变模糊、卡片隐形还挡点击）
     backdrop.classList.add('active');
     var stateEl = card.querySelector('#shareCopyState');
     function doCopy() {
