@@ -117,6 +117,11 @@ window.MN_SITE = window.MN_SITE || {};
 //   .post-action-btn padding 4×10 → 8×14 + min-height:38px + gap 4→6px；操作行容器 gap 12→16px；
 //   图标放大：真卡三钮 16→20px、演示卡/评论计数 14→18px；评论计数 span 改挂 post-action-btn-static 同尺寸口径；
 //   hub+帖页同改（tail 改+重建）；零后端零共享文件（补丁位 2→3·观感微调轮；2026-09-06）
+// v0.2.20.4 = Community 操作行星+分享再靠拢 4px + 部署丢点赞修复（用户「再靠近4px, 然后为什么每次你更新完后我之前点赞过就会消失」）：
+//   ①星钮 margin-right:-18px → -22px——星↔分享间隙 -2px → -6px（按钮盒重叠 6px、图标更贴；margin-left:auto 保留星组仍贴行右缘；真/演示卡+帖页三处同改）；
+//   ②丢点赞根因=部署瞬间新旧实例并存：新实例冷启动恢复的是旧实例上一次定时快照，旧实例 SIGTERM 临终快照晚 ~6s 落地无人再读→最后 ≤interval 的写入丢进修剪链（快照实证：旧快照 like@15:51:44 vs 新快照 like@15:54:49=用户重赞）；
+//   修复=entrypoint catch-up 追恢复：启动后 +75s/+150s 两次复查桶内其他 bootId 快照，mtime 晚于启动恢复那份且本实例零写入（写计数守卫防覆盖新操作）→ATTACH 整表并回活库（57 表除 audit_log append-only；FK 临时关+foreign_key_check 校验；合并逻辑单机验证 12/12）+定时快照 60s→15s 收窄启动恢复陈旧度；
+//   （补丁位 3→4·修复轮；2026-09-07）
 // v0.2.20.3 = Community 操作行星+分享再靠拢 8px（用户「让他更近8px」）：星钮 margin-right:-10px → -18px——星↔分享间隙 6px → -2px（按钮盒重叠 2px、图标更贴；margin-left:auto 保留星组仍贴行右缘；真/演示卡+帖页三处同改）；零后端零共享文件（tail 改+重建）（补丁位 2→3·观感微调轮；2026-09-06）
 // v0.2.20.2 = Community 操作行星+分享间距靠拢（用户「这个收藏和分享两个按钮的间距可以靠近些吗」）：星钮 margin-right:-10px 把星↔分享间隙从容器 gap 16px 收到 6px（margin-left:auto 保留星组仍贴行右缘、分享右缘=行右缘不动；真/演示卡+帖页三处同改）；零后端零共享文件（tail 改+重建）（补丁位 1→2·观感微调轮；2026-09-06）
 // v0.2.20.1 = Community 操作行星+分享顶到最右缘（用户「我是说放到最右边不是这样」）：v0.2.20.0 星/分享虽在行尾但仍左对齐挤在浏览量旁——星钮加 margin-left:auto 把星+分享推贴卡片行右缘（真/演示卡+帖页三处同改；行序不变 [赞][评][转][浏览]...[☆][⇧分享]）；零后端零共享文件（tail 改+重建）（补丁位 0→1·口径修正轮；2026-09-06）
@@ -125,7 +130,7 @@ window.MN_SITE = window.MN_SITE || {};
 //   浏览量——后端迁移 016 posts.view_count 列 + GET /posts/:id 每开一次 +1（postRow 随行 viewCount；feed 同步带出）；前端 visibility 图标静态展示（hub 真/演示卡 + 帖页）；
 //   收藏——后端 POST/DELETE /posts/:id/favorite 真开关（005 已有 favorites 表 target_type='post' 零新表；requireSession+writeLimit+可见性 404+INSERT OR IGNORE / DELETE 幂等，postRow 随行 favoritedByMe）；前端星钮 star↔star_border 切换+金色 .favorited 高亮+FILL 轴实心（乐观更新+失败回滚+访客 toast「登录后才能收藏」）；
 //   hub+帖页同改（tail 改+重建）；测试 227→233/233（social-favorites 5 测+migrations/health user_version 15→16 五处）+电池 56/56 本地+18/18 线上+冒烟 49/49+curl 八连+health 58，rev 00094-nj9（小改动位 19→20·新功能轮·补丁清零；2026-09-06）
-window.MN_SITE_VERSION = 'v0.2.20.3';
+window.MN_SITE_VERSION = 'v0.2.20.4';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
