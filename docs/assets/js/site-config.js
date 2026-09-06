@@ -113,7 +113,11 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.19.2 = Community 分享弹窗隐形修复 + 分享钮纯图标（用户「分享按钮的icon改成 Upload的icon 然后把旁边分享的按钮去掉」+「点击后依旧只是变模糊没有出现显示链接以复制的弹窗」）：
 //   弹窗隐形根因实锤——模态系统 .modal-card 默认 opacity:0（scale(0.95)），必须同时挂 .active（transform:scale(1)+opacity:1+pointer-events:auto）；openShareDialog 只挂了 backdrop.active → 背景变模糊但卡片隐形（还盖在页面中央挡掉点赞等点击——「点赞后爱心没变实心」同源：点击被隐形卡片吞掉）；hub+帖页两处 openShareDialog 补 card.classList.add('active')；
 //   分享钮——icon ios_share → upload（用户钦定）+ 去掉「分享」文字（与点赞/转发同口径纯图标钮，title="分享" 保留）；hub 真卡+演示卡+帖页三处同改；零后端零共享文件（帖页 tail 改+重建）（补丁位 1→2·修复轮；2026-09-06）
-window.MN_SITE_VERSION = 'v0.2.19.2';
+// v0.2.19.3 = Community 操作行四钮放大+间距拉开（用户「把那四个按钮的间距拉开些然后他们的大小放大些方便被点击」）：
+//   .post-action-btn padding 4×10 → 8×14 + min-height:38px + gap 4→6px；操作行容器 gap 12→16px；
+//   图标放大：真卡三钮 16→20px、演示卡/评论计数 14→18px；评论计数 span 改挂 post-action-btn-static 同尺寸口径；
+//   hub+帖页同改（tail 改+重建）；零后端零共享文件（补丁位 2→3·观感微调轮；2026-09-06）
+window.MN_SITE_VERSION = 'v0.2.19.3';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

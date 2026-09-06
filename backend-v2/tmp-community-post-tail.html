@@ -253,11 +253,12 @@
         (p.content ? '<p class="post-content">' + escapeHtml(p.content) + '</p>' : '') +
         (p.repostOfId ? repostEmbeddedHtml(p.repostOf) : '') +
         (media.length ? mediaGridHtml(media) : '') +
-        '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-top:4px">' +
-          '<button type="button" class="post-action-btn' + (p.likedByMe ? ' liked' : '') + '" data-like-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.likedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">' + (p.likedByMe ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"><span class="like-fx"></span></span> <span data-like-count>' + (p.likeCount || 0) + '</span></button>' +
-          '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">chat_bubble</span> ' + (p.commentCount || 0) + '</span>' +
-          '<button type="button" class="post-action-btn' + (p.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (p.repostCount || 0) + '</span></button>' +
-          '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(p.id) + '" title="分享"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">upload</span></button>' +
+        // v0.2.19.3 操作行：间距拉开（gap 12→16px）+ 图标放大（16→20px / 评论 14→18px）方便点击（与 hub 同口径）
+        '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-top:4px;gap:16px">' +
+          '<button type="button" class="post-action-btn' + (p.likedByMe ? ' liked' : '') + '" data-like-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.likedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">' + (p.likedByMe ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"><span class="like-fx"></span></span> <span data-like-count>' + (p.likeCount || 0) + '</span></button>' +
+          '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">chat_bubble</span> ' + (p.commentCount || 0) + '</span>' +
+          '<button type="button" class="post-action-btn' + (p.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (p.repostCount || 0) + '</span></button>' +
+          '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(p.id) + '" title="分享"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">upload</span></button>' +
         '</div>' +
       '</div>';
     document.getElementById('postDetail').style.display = 'flex';

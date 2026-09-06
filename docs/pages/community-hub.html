@@ -1873,8 +1873,9 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 .post-card-click { cursor: pointer; }
 .post-action-btn {
   border: none; background: transparent; color: var(--color-outline); cursor: pointer;
-  padding: 4px 10px; font-size: var(--fs-label-sm); font-family: inherit;
-  display: inline-flex; align-items: center; gap: 4px; border-radius: 9999px;
+  padding: 8px 14px; font-size: var(--fs-label-sm); font-family: inherit;
+  display: inline-flex; align-items: center; gap: 6px; border-radius: 9999px;
+  min-height: 38px; /* v0.2.19.3 按钮放大方便点击（旧 4×10 padding 太小） */
   position: relative; /* v0.2.18.1 粒子迸发定位锚 */
   transition: background 0.15s ease, color 0.15s ease;
 }
@@ -2647,18 +2648,19 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           (item.desc ? '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + escapeHtml(item.desc) + '</p>' : '') +
           (item.repostOfId ? repostEmbeddedHtml(item.repostOf) : '') +
           (item.media && item.media.length ? mediaGridHtml(item.media) : '') +
-          '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
+          // v0.2.19.3 操作行：间距拉开（gap 12→16px）+ 图标放大（真卡 16→20px / 演示卡与评论 14→18px）方便点击
+          '<div class="flex-center gap-sm" style="justify-content:flex-start;gap:16px">' +
             (item.cloudId
-              ? '<button type="button" class="post-action-btn' + (item.liked ? ' liked' : '') + '" data-like-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.liked ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">' + (item.liked ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"><span class="like-fx"></span></span> <span data-like-count>' + item.likes + '</span></button>'
-              : '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-like style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">favorite</span> ' + item.likes + '</button>') +
-            '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">chat_bubble</span> ' + item.comments + '</span>' +
+              ? '<button type="button" class="post-action-btn' + (item.liked ? ' liked' : '') + '" data-like-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.liked ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">' + (item.liked ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"><span class="like-fx"></span></span> <span data-like-count>' + item.likes + '</span></button>'
+              : '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-like style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">favorite</span> ' + item.likes + '</button>') +
+            '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">chat_bubble</span> ' + item.comments + '</span>' +
             // v0.2.19.0 转发+分享按钮（与帖页操作行对齐；真卡全功能，演示卡 toast 引导登录）
             (item.cloudId
-              ? '<button type="button" class="post-action-btn' + (item.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (item.repostCount || 0) + '</span></button>' +
+              ? '<button type="button" class="post-action-btn' + (item.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (item.repostCount || 0) + '</span></button>' +
                 // v0.2.19.2 分享钮：icon 改 upload + 去掉「分享」文字（与点赞/转发同口径纯图标钮）
-                '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(item.cloudId) + '" title="分享"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">upload</span></button>'
-              : '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-repost style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">repeat</span></button>' +
-                '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-share title="分享" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">upload</span></button>') +
+                '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(item.cloudId) + '" title="分享"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">upload</span></button>'
+              : '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-repost style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">repeat</span></button>' +
+                '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-share title="分享" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">upload</span></button>') +
           '</div>' +
         '</div>';
     });
