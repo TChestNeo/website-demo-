@@ -2741,12 +2741,16 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     document.querySelectorAll('[data-guest-like]').forEach(function (btn) {
       btn.addEventListener('click', function (e) { e.stopPropagation(); toastMsg('登录后才能点赞'); });
     });
-    // v0.2.19.0 演示卡转发/分享同口径：真按钮 + 引导登录 toast（演示卡无真帖可转可分享，不装死）
+    // v0.2.19.1 演示卡转发/分享：转发保持引导登录 toast（演示卡无真帖可转）；分享也弹分享弹窗（用户「为什么分享按钮点击后没有弹窗」——v0.2.19.0 只 toast）
     document.querySelectorAll('[data-guest-repost]').forEach(function (btn) {
       btn.addEventListener('click', function (e) { e.stopPropagation(); toastMsg('登录后才能转发'); });
     });
     document.querySelectorAll('[data-guest-share]').forEach(function (btn) {
-      btn.addEventListener('click', function (e) { e.stopPropagation(); toastMsg('登录后才能分享'); });
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        // 演示卡无真帖链接可复制 → 分享本社区页链接（诚实不装死，弹窗+复制逻辑与真卡同一套）
+        openShareDialog(new URL('community-hub.html', window.location.href).href, '分享社区');
+      });
     });
   }
 
@@ -2787,19 +2791,20 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     setTimeout(function () { btn.classList.remove('like-pop'); }, 6800);
   }
 
-  // ── v0.2.19.0 转发开关（照帖页 toggleRepost 同构：云卡只在登录态出现，无需访客门禁；乐观更新 + 失败回滚）──
+  // ── v0.2.19.1 转发开关：免弹窗直转（用户「转发不需要弹窗啊，它就只是在用户主页那边转发给粉丝看」）
+  //    点击 = 裸转发（空转发语）直接发到主页；再点 = 撤销。乐观更新 + 失败回滚；v0.2.19.0 的转发对话框整体删除 ──
   function toggleRepost(btn) {
     if (!btn) return;
     var id = btn.getAttribute('data-repost-post');
     var wasReposted = btn.getAttribute('aria-pressed') === 'true';
+    var countEl = btn.querySelector('[data-repost-count]');
+    var before = parseInt(countEl.textContent, 10) || 0;
     if (wasReposted) {
-      var countEl = btn.querySelector('[data-repost-count]');
-      var before = parseInt(countEl.textContent, 10) || 0;
       btn.setAttribute('aria-pressed', 'false');
       btn.classList.remove('reposted');
       countEl.textContent = Math.max(before - 1, 0);
       MN_API.del('/social/posts/' + encodeURIComponent(id) + '/repost').then(function (r) {
-        if (r.ok && r.data) { countEl.textContent = r.data.repostCount; return; }
+        if (r.ok && r.data) { countEl.textContent = r.data.repostCount; toastMsg('已取消转发'); return; }
         btn.setAttribute('aria-pressed', 'true');
         btn.classList.add('reposted');
         countEl.textContent = before;
@@ -2807,68 +2812,22 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
         else toastMsg('操作失败，请稍后再试', true);
       });
     } else {
-      openRepostDialog(id, btn);
-    }
-  }
-
-  // 转发对话框：灯箱模态模板（自己的 Escape 监听，不复用 lbEscape 防误关灯箱）——照帖页同构
-  function openRepostDialog(id, btn) {
-    var backdrop = document.createElement('div');
-    backdrop.className = 'modal-backdrop';
-    var cont = document.createElement('div');
-    cont.className = 'modal-container';
-    var card = document.createElement('div');
-    card.className = 'modal-card';
-    card.innerHTML =
-      '<h3 style="font-weight:600;font-size:var(--fs-body-lg);margin:0 0 var(--space-sm)">转发帖子</h3>' +
-      '<textarea id="repostInput" maxlength="2000" rows="3" placeholder="说点什么…（可选）" style="resize:none;width:100%;padding:10px 12px;border:var(--card-border);border-radius:var(--radius-md);background:var(--color-surface);color:inherit;font-family:inherit;font-size:var(--fs-label-md)"></textarea>' +
-      '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:var(--space-sm)">' +
-        '<button type="button" class="btn btn-sm" id="repostCancel">取消</button>' +
-        '<button type="button" class="btn btn-primary btn-sm" id="repostSubmit">转发</button>' +
-      '</div>';
-    cont.appendChild(card);
-    backdrop.appendChild(cont);
-    document.body.appendChild(backdrop);
-    function close() {
-      document.removeEventListener('keydown', onEsc);
-      backdrop.remove();
-    }
-    function onEsc(e) { if (e.key === 'Escape') close(); }
-    document.addEventListener('keydown', onEsc);
-    backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
-    void card.offsetWidth;
-    backdrop.classList.add('active');
-    var ta = card.querySelector('#repostInput');
-    // autogrow（照抄评论框模式）：随文字长高，max-height 240px 封顶后滚轮内滑
-    var baseH = ta.offsetHeight;
-    ta.addEventListener('input', function () {
-      var maxH = 240;
-      this.style.height = 'auto';
-      this.style.height = Math.max(baseH, Math.min(this.scrollHeight, maxH)) + 'px';
-    });
-    ta.focus();
-    card.querySelector('#repostCancel').addEventListener('click', close);
-    card.querySelector('#repostSubmit').addEventListener('click', function () {
-      var sub = card.querySelector('#repostSubmit');
-      sub.disabled = true;
-      MN_API.post('/social/posts/' + encodeURIComponent(id) + '/repost', { content: ta.value.trim() }).then(function (r) {
-        sub.disabled = false;
+      setReposted(btn, true, before + 1); // 乐观：先置位再等回程（与点赞同口径）
+      MN_API.post('/social/posts/' + encodeURIComponent(id) + '/repost', { content: '' }).then(function (r) {
         if (r.ok && r.data) {
           var status = r.data.post && r.data.post.status;
-          if (status === 'removed') { close(); toastMsg('内容违反社区规则，已被拦截', true); return; }
+          if (status === 'removed') { setReposted(btn, false, before); toastMsg('内容违反社区规则，已被拦截', true); return; }
           setReposted(btn, true, r.data.repostCount);
-          close();
           var verdict = r.data.moderation && r.data.moderation.verdict;
-          toastMsg(verdict === 'hold' ? '已转发，内容待审核' : '转发成功');
+          toastMsg(verdict === 'hold' ? '已转发到你的主页，待审核' : '已转发到你的主页');
         } else if (r.status === 409) {
           setReposted(btn, true, null); // 服务端未返计数——已在别处转发过，按钮同步置位
-          close();
           toastMsg('你已经转发过这条帖子');
-        } else if (r.status === 401) { close(); toastMsg('登录已过期，请重新登录', true); }
-        else if (r.status === 429) toastMsg('转发过于频繁，请稍后再试', true);
-        else toastMsg('转发失败，请稍后再试', true);
+        } else if (r.status === 401) { setReposted(btn, false, before); toastMsg('登录已过期，请重新登录', true); }
+        else if (r.status === 429) { setReposted(btn, false, before); toastMsg('转发过于频繁，请稍后再试', true); }
+        else { setReposted(btn, false, before); toastMsg('转发失败，请稍后再试', true); }
       });
-    });
+    }
   }
 
   function setReposted(btn, on, count) {
@@ -2878,13 +2837,14 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   }
 
   // ── v0.2.19.0 分享：弹窗 + 同时复制帖子链接（用户「分享按钮是弹出弹窗然后也同时复制帖子链接」；
-  //    访客可用无门禁；URL 从本页 location 相对解析出独立帖页绝对链接——与整卡点击同一条相对路径口径，绝不硬编码域名/前缀）──
+  //    访客可用无门禁；URL 从本页 location 相对解析出独立帖页绝对链接——与整卡点击同一条相对路径口径，绝不硬编码域名/前缀）；
+  //    v0.2.19.1 演示卡分享也走同一弹窗（title 可选参换标题，分享社区页链接）──
   function sharePost(id) {
     var url = new URL('community-post.html?id=' + encodeURIComponent(id), window.location.href).href;
     openShareDialog(url);
   }
 
-  function openShareDialog(url) {
+  function openShareDialog(url, title) {
     var backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
     var cont = document.createElement('div');
@@ -2892,7 +2852,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     var card = document.createElement('div');
     card.className = 'modal-card';
     card.innerHTML =
-      '<h3 style="font-weight:600;font-size:var(--fs-body-lg);margin:0 0 var(--space-sm)">分享帖子</h3>' +
+      '<h3 style="font-weight:600;font-size:var(--fs-body-lg);margin:0 0 var(--space-sm)">' + escapeHtml(title || '分享帖子') + '</h3>' +
       '<input id="shareUrlInput" type="text" readonly value="' + escapeHtml(url) + '" style="width:100%;padding:10px 12px;border:var(--card-border);border-radius:var(--radius-md);background:var(--color-surface);color:inherit;font-family:inherit;font-size:var(--fs-label-sm)">' +
       '<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:var(--space-sm)">' +
         '<span class="label-sm" id="shareCopyState" style="color:var(--color-outline);margin-right:auto">正在复制…</span>' +
