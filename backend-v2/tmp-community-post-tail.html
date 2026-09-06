@@ -253,11 +253,14 @@
         (p.content ? '<p class="post-content">' + escapeHtml(p.content) + '</p>' : '') +
         (p.repostOfId ? repostEmbeddedHtml(p.repostOf) : '') +
         (media.length ? mediaGridHtml(media) : '') +
-        // v0.2.19.3 操作行：间距拉开（gap 12→16px）+ 图标放大（16→20px / 评论 14→18px）方便点击（与 hub 同口径）
+        // v0.2.20.0 操作行：[赞][评][转][浏览][☆收藏][⇧分享]——浏览替代旧分享位、星收藏+分享置最右、两个都不显示号码（与 hub 同口径）
         '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-top:4px;gap:16px">' +
           '<button type="button" class="post-action-btn' + (p.likedByMe ? ' liked' : '') + '" data-like-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.likedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">' + (p.likedByMe ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"><span class="like-fx"></span></span> <span data-like-count>' + (p.likeCount || 0) + '</span></button>' +
           '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">chat_bubble</span> ' + (p.commentCount || 0) + '</span>' +
           '<button type="button" class="post-action-btn' + (p.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (p.repostCount || 0) + '</span></button>' +
+          // v0.2.20.0 浏览量（p.viewCount 已在本次 GET 中 +1）+ 星收藏（真功能开关，无号码）+ 分享（纯图标最右）
+          '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">visibility</span> ' + (p.viewCount || 0) + '</span>' +
+          '<button type="button" class="post-action-btn' + (p.favoritedByMe ? ' favorited' : '') + '" data-favorite-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.favoritedByMe ? 'true' : 'false') + '" title="收藏"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">' + (p.favoritedByMe ? 'star' : 'star_border') + '</span></button>' +
           '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(p.id) + '" title="分享"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">upload</span></button>' +
         '</div>' +
       '</div>';
@@ -269,6 +272,8 @@
     if (likeBtn) likeBtn.addEventListener('click', function () { toggleLikeBtn(likeBtn); });
     var repostBtn = document.querySelector('#postCardWrap [data-repost-post]');
     if (repostBtn) repostBtn.addEventListener('click', function () { toggleRepost(repostBtn); });
+    var favBtn = document.querySelector('#postCardWrap [data-favorite-post]');
+    if (favBtn) favBtn.addEventListener('click', function () { toggleFavorite(favBtn); });
     var shareBtn = document.querySelector('#postCardWrap [data-share-post]');
     if (shareBtn) shareBtn.addEventListener('click', function () { sharePost(p.id); });
     var rep = document.querySelector('#postCardWrap [data-cloud-post]');
@@ -326,6 +331,27 @@
       if (wasLiked) btn.classList.add('liked'); else btn.classList.remove('liked', 'like-pop');
       if (iconEl) iconEl.textContent = wasLiked ? 'favorite' : 'favorite_border';
       countEl.textContent = before;
+      if (r.status === 401) toastMsg('登录已过期，请重新登录', true);
+      else toastMsg('操作失败，请稍后再试', true);
+    });
+  }
+
+  // v0.2.20.0 收藏开关：star↔star_border + 金色 .favorited，无计数（用户「两个都不需要显示号码」）；乐观更新 + 失败回滚
+  function toggleFavorite(btn) {
+    if (!btn) return;
+    if (isGuest()) { toastMsg('登录后才能收藏', true); return; }
+    var id = btn.getAttribute('data-favorite-post');
+    var wasFav = btn.getAttribute('aria-pressed') === 'true';
+    var next = !wasFav;
+    var iconEl = btn.querySelector('.material-symbols-outlined');
+    btn.setAttribute('aria-pressed', next ? 'true' : 'false');
+    if (next) btn.classList.add('favorited'); else btn.classList.remove('favorited');
+    if (iconEl) iconEl.textContent = next ? 'star' : 'star_border';
+    MN_API[next ? 'post' : 'del']('/social/posts/' + encodeURIComponent(id) + '/favorite').then(function (r) {
+      if (r.ok && r.data) return; // 无计数可同步
+      btn.setAttribute('aria-pressed', wasFav ? 'true' : 'false');
+      if (wasFav) btn.classList.add('favorited'); else btn.classList.remove('favorited');
+      if (iconEl) iconEl.textContent = wasFav ? 'star' : 'star_border';
       if (r.status === 401) toastMsg('登录已过期，请重新登录', true);
       else toastMsg('操作失败，请稍后再试', true);
     });

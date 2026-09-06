@@ -190,7 +190,12 @@ function register(router, ctx) {
       status: row.status,
       createdAt: row.created_at,
       likeCount, commentCount, likedByMe,
-      repostOfId, repostOf, repostCount, repostedByMe
+      repostOfId, repostOf, repostCount, repostedByMe,
+      // v0.2.20.0 浏览/收藏随行（favorites 表 005 已有；view_count 列 016 加）
+      viewCount: row.view_count || 0,
+      favoritedByMe: viewerId
+        ? !!db.prepare("SELECT 1 FROM favorites WHERE user_id = ? AND target_type = 'post' AND target_id = ?").get(viewerId, row.id)
+        : false
     };
   }
 
@@ -295,9 +300,12 @@ function register(router, ctx) {
   }));
 
   // ── 单帖详情（v0.2.17.0：Twitter 式点帖看评论，独立帖页数据源）──
+  // v0.2.20.0：每打开一次浏览量 +1（简单累计口径；正式发布再考虑 viewer 去重）
   router.add('GET', '/api/social/posts/:id', (req, res, c) => {
-    const row = c.db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
+    let row = c.db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
     if (!row || row.status !== 'visible') throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
+    c.db.prepare('UPDATE posts SET view_count = view_count + 1 WHERE id = ?').run(row.id);
+    row = c.db.prepare('SELECT * FROM posts WHERE id = ?').get(row.id);
     sendJson(res, 200, { post: postRow(c.db, row, optionalViewer(req, c)) });
   });
 
@@ -319,6 +327,24 @@ function register(router, ctx) {
       .run(c.user.id, req.params.id);
     const likeCount = c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'post' AND target_id = ?").get(req.params.id).n;
     sendJson(res, 200, { liked: false, likeCount });
+  }));
+
+  // ── 收藏（v0.2.20.0：星标开关；favorites 表 005 已有 target_type='post'，零迁移）──
+  router.add('POST', '/api/social/posts/:id/favorite', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    const post = c.db.prepare('SELECT id, status FROM posts WHERE id = ?').get(req.params.id);
+    if (!post || post.status !== 'visible') throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
+    c.db.prepare("INSERT OR IGNORE INTO favorites (user_id, target_type, target_id, created_at) VALUES (?, 'post', ?, ?)")
+      .run(c.user.id, post.id, new Date().toISOString());
+    sendJson(res, 200, { favorited: true });
+  }));
+
+  router.add('DELETE', '/api/social/posts/:id/favorite', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    // 不校验帖子存在：对已下架帖取消收藏 = 无害 no-op（幂等，与取消点赞同口径）
+    c.db.prepare("DELETE FROM favorites WHERE user_id = ? AND target_type = 'post' AND target_id = ?")
+      .run(c.user.id, req.params.id);
+    sendJson(res, 200, { favorited: false });
   }));
 
   // ── 转发（v0.2.18.0：真转发——转发即发帖，同帖一次，转发语可选 0-2000；先发后审同帖口径）──

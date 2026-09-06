@@ -1881,6 +1881,9 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 }
 .post-action-btn:hover { color: var(--color-primary); background: rgba(70,72,212,0.08); }
 .post-action-btn.liked { color: #e0245e; }
+/* v0.2.20.0 收藏星：金色 + FILL 轴实心（可变字体；glyph star↔star_border 双保险，电池可断言 textContent） */
+.post-action-btn.favorited { color: #eab308; }
+.post-action-btn.favorited .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
 .post-action-btn-static { cursor: default; }
 
 /* ----- v0.2.18.0 转发卡：嵌入原帖盒 + 转发按钮高亮（经 shared head 自动流入重建后的帖页）----- */
@@ -2307,18 +2310,18 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   // Feed content per tab
   var feedData = {
     recommend: [
-      { icon: 'person', badge: 'Sovereign Log', badgeClass: 'badge-primary', author: 'Marcus Vane', title: 'The Floating District Plans', desc: 'A comprehensive proposal for modular aquatic urbanism in micronation territories. Phase 1 blueprints attached.', time: '3 hours ago', likes: 47, comments: 12 },
-      { icon: 'smart_display', badge: 'Video', badgeClass: 'badge-secondary', author: 'Studio Prime', title: 'Building Digital Embassies', desc: 'A visual guide to establishing virtual diplomatic missions across the M.NationWorld network.', time: '5 hours ago', likes: 128, comments: 34 },
-      { icon: 'event', badge: 'Event', badgeClass: 'badge-warning', author: 'Council Admin', title: 'Governance Summit 2026', desc: 'Annual gathering of micronation leaders. Keynote: Direct Democracy at Scale.', time: 'Starts Jul 15', likes: 256, comments: 89 },
+      { icon: 'person', badge: 'Sovereign Log', badgeClass: 'badge-primary', author: 'Marcus Vane', title: 'The Floating District Plans', desc: 'A comprehensive proposal for modular aquatic urbanism in micronation territories. Phase 1 blueprints attached.', time: '3 hours ago', likes: 47, comments: 12, views: 312 },
+      { icon: 'smart_display', badge: 'Video', badgeClass: 'badge-secondary', author: 'Studio Prime', title: 'Building Digital Embassies', desc: 'A visual guide to establishing virtual diplomatic missions across the M.NationWorld network.', time: '5 hours ago', likes: 128, comments: 34, views: 892 },
+      { icon: 'event', badge: 'Event', badgeClass: 'badge-warning', author: 'Council Admin', title: 'Governance Summit 2026', desc: 'Annual gathering of micronation leaders. Keynote: Direct Democracy at Scale.', time: 'Starts Jul 15', likes: 256, comments: 89, views: 1204 },
     ],
     following: [
-      { icon: 'shield', badge: 'Sovereign Log', badgeClass: 'badge-primary', author: 'Kingdom of Aethelgard', title: 'Royal Decree: Renewable Energy Initiative', desc: 'Mandating 80% renewable energy across all territories by 2030.', time: '1 hour ago', likes: 92, comments: 18 },
-      { icon: 'edit_note', badge: 'Wiki Revision', badgeClass: 'badge-success', author: 'Neo-Venice Archive', title: 'Lore Update: Founding of Aqua Centro', desc: 'Revised historical account with new archival documents.', time: '4 hours ago', likes: 34, comments: 7 },
+      { icon: 'shield', badge: 'Sovereign Log', badgeClass: 'badge-primary', author: 'Kingdom of Aethelgard', title: 'Royal Decree: Renewable Energy Initiative', desc: 'Mandating 80% renewable energy across all territories by 2030.', time: '1 hour ago', likes: 92, comments: 18, views: 421 },
+      { icon: 'edit_note', badge: 'Wiki Revision', badgeClass: 'badge-success', author: 'Neo-Venice Archive', title: 'Lore Update: Founding of Aqua Centro', desc: 'Revised historical account with new archival documents.', time: '4 hours ago', likes: 34, comments: 7, views: 187 },
     ],
     topic: [
-      { icon: 'forum', badge: 'r/DigitalSovereignty', badgeClass: 'badge-primary', author: '', title: 'Standards for Digital-First Micronations', desc: '1,240 members · Active discussions on blockchain governance and digital identity protocols.', time: 'Trending', likes: 1240, comments: 89 },
-      { icon: 'forum', badge: 'r/MicroNationDesign', badgeClass: 'badge-secondary', author: '', title: 'Aesthetics & Architecture for New Nations', desc: '2,100 members · Flag design, capital planning, and cultural branding.', time: 'Popular', likes: 2100, comments: 156 },
-      { icon: 'forum', badge: 'r/GovernanceDesign', badgeClass: 'badge-success', author: '', title: 'Experimental Political Systems', desc: '3,400 members · Proposing and stress-testing novel constitutions.', time: 'Hot', likes: 3400, comments: 234 },
+      { icon: 'forum', badge: 'r/DigitalSovereignty', badgeClass: 'badge-primary', author: '', title: 'Standards for Digital-First Micronations', desc: '1,240 members · Active discussions on blockchain governance and digital identity protocols.', time: 'Trending', likes: 1240, comments: 89, views: 5400 },
+      { icon: 'forum', badge: 'r/MicroNationDesign', badgeClass: 'badge-secondary', author: '', title: 'Aesthetics & Architecture for New Nations', desc: '2,100 members · Flag design, capital planning, and cultural branding.', time: 'Popular', likes: 2100, comments: 156, views: 8100 },
+      { icon: 'forum', badge: 'r/GovernanceDesign', badgeClass: 'badge-success', author: '', title: 'Experimental Political Systems', desc: '3,400 members · Proposing and stress-testing novel constitutions.', time: 'Hot', likes: 3400, comments: 234, views: 12000 },
     ]
   };
 
@@ -2368,7 +2371,9 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       repostOfId: p.repostOfId || null,
       repostOf: p.repostOf || null,
       repostCount: p.repostCount || 0,
-      repostedByMe: !!p.repostedByMe
+      repostedByMe: !!p.repostedByMe,
+      views: p.viewCount || 0, // v0.2.20.0 浏览量（帖页每开一次 +1）
+      favoritedByMe: !!p.favoritedByMe // v0.2.20.0 我的收藏态（favorites 表）
     };
   }
 
@@ -2648,18 +2653,23 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           (item.desc ? '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + escapeHtml(item.desc) + '</p>' : '') +
           (item.repostOfId ? repostEmbeddedHtml(item.repostOf) : '') +
           (item.media && item.media.length ? mediaGridHtml(item.media) : '') +
-          // v0.2.19.3 操作行：间距拉开（gap 12→16px）+ 图标放大（真卡 16→20px / 演示卡与评论 14→18px）方便点击
+          // v0.2.20.0 操作行：[赞][评][转][浏览][☆收藏][⇧分享]——浏览替代旧分享位、星收藏+分享置最右、两个都不显示号码（用户「两个都不需要显示号码」）
           '<div class="flex-center gap-sm" style="justify-content:flex-start;gap:16px">' +
             (item.cloudId
               ? '<button type="button" class="post-action-btn' + (item.liked ? ' liked' : '') + '" data-like-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.liked ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">' + (item.liked ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"><span class="like-fx"></span></span> <span data-like-count>' + item.likes + '</span></button>'
               : '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-like style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">favorite</span> ' + item.likes + '</button>') +
             '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">chat_bubble</span> ' + item.comments + '</span>' +
-            // v0.2.19.0 转发+分享按钮（与帖页操作行对齐；真卡全功能，演示卡 toast 引导登录）
+            // v0.2.19.0 转发（与帖页操作行对齐；真卡全功能，演示卡 toast 引导登录）
             (item.cloudId
               ? '<button type="button" class="post-action-btn' + (item.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (item.repostCount || 0) + '</span></button>' +
+                // v0.2.20.0 浏览量（静态展示，随帖页打开 +1）+ 星收藏（真功能开关，无号码）+ 分享（纯图标最右）
+                '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">visibility</span> ' + (item.views || 0) + '</span>' +
+                '<button type="button" class="post-action-btn' + (item.favoritedByMe ? ' favorited' : '') + '" data-favorite-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.favoritedByMe ? 'true' : 'false') + '" title="收藏"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">' + (item.favoritedByMe ? 'star' : 'star_border') + '</span></button>' +
                 // v0.2.19.2 分享钮：icon 改 upload + 去掉「分享」文字（与点赞/转发同口径纯图标钮）
                 '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(item.cloudId) + '" title="分享"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">upload</span></button>'
               : '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-repost style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">repeat</span></button>' +
+                '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">visibility</span> ' + (item.views || 0) + '</span>' +
+                '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-favorite title="收藏" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">star_border</span></button>' +
                 '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-share title="分享" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">upload</span></button>') +
           '</div>' +
         '</div>';
@@ -2731,6 +2741,10 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       document.querySelectorAll('[data-share-post]').forEach(function (btn) {
         btn.addEventListener('click', function (e) { e.stopPropagation(); sharePost(btn.getAttribute('data-share-post')); });
       });
+      // v0.2.20.0 星收藏（真功能开关，与点赞同构乐观更新）
+      document.querySelectorAll('[data-favorite-post]').forEach(function (btn) {
+        btn.addEventListener('click', function (e) { e.stopPropagation(); toggleFavorite(btn); });
+      });
       // v0.2.17.0 整卡点击 → 独立帖页（按钮内/文字选区不跳）
       document.querySelectorAll('[data-cloud-id]').forEach(function (card) {
         card.addEventListener('click', function (e) {
@@ -2755,6 +2769,10 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
         openShareDialog(new URL('community-hub.html', window.location.href).href, '分享社区');
       });
     });
+    // v0.2.20.0 演示卡星收藏 = 引导登录（与演示卡爱心同口径，不装死）
+    document.querySelectorAll('[data-guest-favorite]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) { e.stopPropagation(); toastMsg('登录后才能收藏'); });
+    });
   }
 
   // v0.2.17.0 点赞开关：乐观更新按钮/计数，不重渲染 feed（防滚动跳动），失败回滚
@@ -2775,6 +2793,25 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       if (wasLiked) btn.classList.add('liked'); else btn.classList.remove('liked', 'like-pop');
       if (iconEl) iconEl.textContent = wasLiked ? 'favorite' : 'favorite_border';
       countEl.textContent = before;
+      if (r.status === 401) toastMsg('登录已过期，请重新登录', true);
+      else toastMsg('操作失败，请稍后再试', true);
+    });
+  }
+
+  // v0.2.20.0 收藏开关：star↔star_border + 金色 .favorited，无计数（用户「两个都不需要显示号码」）；乐观更新 + 失败回滚
+  function toggleFavorite(btn) {
+    var id = btn.getAttribute('data-favorite-post');
+    var wasFav = btn.getAttribute('aria-pressed') === 'true';
+    var next = !wasFav;
+    var iconEl = btn.querySelector('.material-symbols-outlined');
+    btn.setAttribute('aria-pressed', next ? 'true' : 'false');
+    if (next) btn.classList.add('favorited'); else btn.classList.remove('favorited');
+    if (iconEl) iconEl.textContent = next ? 'star' : 'star_border';
+    MN_API[next ? 'post' : 'del']('/social/posts/' + encodeURIComponent(id) + '/favorite').then(function (r) {
+      if (r.ok && r.data) return; // 无计数可同步
+      btn.setAttribute('aria-pressed', wasFav ? 'true' : 'false');
+      if (wasFav) btn.classList.add('favorited'); else btn.classList.remove('favorited');
+      if (iconEl) iconEl.textContent = wasFav ? 'star' : 'star_border';
       if (r.status === 401) toastMsg('登录已过期，请重新登录', true);
       else toastMsg('操作失败，请稍后再试', true);
     });
