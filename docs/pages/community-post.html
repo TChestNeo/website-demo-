@@ -1900,15 +1900,23 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 
 /* ----- v0.2.18.3 点赞粒子特效完整照搬参考代码（用户「粒子效果别改颜色啊」「只是把完整的粒子特效搬出来」）-----
    61 粒子 + 色环逐字照搬 + 三动画链照参考原版时长：1.25s bang ease-out 迸发 → 1.25s gravity ease-in 下落 → 6.25s position linear 游走；
-   粒子=单个 10px 圆点 + 64 条 box-shadow（零额外节点）；like-pop 一次性类由 JS 加、最后一档动画完（mn-fireworks-position）或 6.8s 兜底摘；
-   重渲染/已点赞卡片不重播；reduced-motion 关动画只换实心（经 shared head 自动流入重建后的帖页）*/
+   like-pop 一次性类由 JS 加、最后一档动画完（mn-fireworks-position）或 6.8s 兜底摘；
+   重渲染/已点赞卡片不重播；reduced-motion 关动画只换实心（经 shared head 自动流入重建后的帖页）
+   v0.2.19.0 中心对齐修复：照参考 .fireworks 外壳结构重构——.like-burst 改 0×0 定位锚（left/top 50% = 按钮正中心，
+   旧版 right:40px 锚在计数那边就偏了）+ 常量 transform:scale(0.4)（参考外壳恒缩放，粒子整链恒定 0.4 倍不再随 gravity 从 1 缩）；
+   61 粒子搬到子元素 .like-fx，gravity 恢复参考原值 translateY(200px) 不带 scale；position 5 档 margin 窗口对 0×0 外壳
+   解析恒为 0（与参考同为惰性动画）；.like-fx 的 animationend 冒泡到 .like-burst——armLikePop 监听零改动*/
 .like-burst {
-  position: absolute; right: 40px; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px;
-  border-radius: 50%; display: none; pointer-events: none; transform: scale(0.4);
+  position: absolute; left: 50%; top: 50%; transform: scale(0.4);
+  display: none; pointer-events: none;
+}
+.post-action-btn.like-pop .like-burst { display: block; }
+.like-fx {
+  position: absolute; left: -5px; top: -5px; width: 10px; height: 10px;
+  border-radius: 50%; pointer-events: none;
   box-shadow: 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff, 0 0 #fff;
 }
-.post-action-btn.like-pop .like-burst {
-  display: block;
+.post-action-btn.like-pop .like-fx {
   animation: 1.25s mn-fireworks-bang ease-out forwards, 1.25s mn-fireworks-gravity ease-in forwards, 6.25s mn-fireworks-position linear forwards;
 }
 .post-action-btn.like-pop .material-symbols-outlined { animation: like-pop-icon 0.5s ease-out; }
@@ -1920,7 +1928,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   to { box-shadow: 114px -107.3333333333px #8800ff, 212px -166.3333333333px #a600ff, 197px -6.3333333333px #ff006a, 179px -329.3333333333px #3300ff, -167px -262.3333333333px #ff0062, 233px 65.6666666667px #ff008c, 81px 42.6666666667px #0051ff, -13px 54.6666666667px #00ff2b, -60px -183.3333333333px #0900ff, 127px -259.3333333333px #ff00e6, 117px -122.3333333333px #00b7ff, 95px 20.6666666667px #ff8000, 115px 1.6666666667px #0004ff, -160px -328.3333333333px #00ff40, 69px -242.3333333333px #000dff, -208px -230.3333333333px #ff0400, 30px -15.3333333333px #e6ff00, 235px -15.3333333333px #fb00ff, 80px -232.3333333333px #d5ff00, 175px -173.3333333333px #00ff3c, -187px -176.3333333333px #aaff00, 4px 26.6666666667px #ff6f00, 227px -106.3333333333px #ff0099, 119px 17.6666666667px #00ffd5, -102px 4.6666666667px #ff0088, -16px -4.3333333333px #00fff7, -201px -310.3333333333px #00ffdd, 64px -181.3333333333px #f700ff, -234px -15.3333333333px #00fffb, -184px -263.3333333333px #aa00ff, 96px -303.3333333333px #0037ff, -139px 10.6666666667px #0026ff, 25px -205.3333333333px #00ff2b, -129px -322.3333333333px #40ff00, -235px -187.3333333333px #26ff00, -136px -237.3333333333px #0091ff, -82px -321.3333333333px #6a00ff, 7px -267.3333333333px #ff00c8, -155px 30.6666666667px #0059ff, -85px -73.3333333333px #6a00ff, 60px -199.3333333333px #55ff00, -9px -289.3333333333px #00ffaa, -208px -167.3333333333px #00ff80, -13px -299.3333333333px #ff0004, 179px -164.3333333333px #ff0044, -112px 12.6666666667px #0051ff, -209px -125.3333333333px #ff00bb, 14px -101.3333333333px #00ff95, -184px -292.3333333333px #ff0099, -26px -168.3333333333px #09ff00, 129px -67.3333333333px #0084ff, -17px -23.3333333333px #0059ff, 129px 34.6666666667px #7300ff, 35px -24.3333333333px #ffd900, -12px -297.3333333333px #ff8400, 129px -156.3333333333px #0dff00, 157px -29.3333333333px #1a00ff, -221px 6.6666666667px #ff0062, 0px -311.3333333333px #ff006a, 155px 50.6666666667px #00ffaa, -71px -318.3333333333px #0073ff; }
 }
 @keyframes mn-fireworks-gravity {
-  to { transform: translateY(200px) scale(0.4); opacity: 0; }
+  to { transform: translateY(200px); opacity: 0; } /* v0.2.19.0 scale(0.4) 移到 .like-burst 外壳上（参考原值恒缩放） */
 }
 @keyframes mn-fireworks-position {
   0%, 19.9% { margin-top: 10%; margin-left: 40%; }
@@ -2474,7 +2482,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
         (p.repostOfId ? repostEmbeddedHtml(p.repostOf) : '') +
         (media.length ? mediaGridHtml(media) : '') +
         '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-top:4px">' +
-          '<button type="button" class="post-action-btn' + (p.likedByMe ? ' liked' : '') + '" data-like-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.likedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">' + (p.likedByMe ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"></span> <span data-like-count>' + (p.likeCount || 0) + '</span></button>' +
+          '<button type="button" class="post-action-btn' + (p.likedByMe ? ' liked' : '') + '" data-like-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.likedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">' + (p.likedByMe ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"><span class="like-fx"></span></span> <span data-like-count>' + (p.likeCount || 0) + '</span></button>' +
           '<span class="label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px;vertical-align:-3px">chat_bubble</span> ' + (p.commentCount || 0) + '</span>' +
           '<button type="button" class="post-action-btn' + (p.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(p.id) + '" aria-pressed="' + (p.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (p.repostCount || 0) + '</span></button>' +
           '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(p.id) + '"><span class="material-symbols-outlined" style="font-size:16px;vertical-align:-3px">ios_share</span> 分享</button>' +
@@ -2655,25 +2663,62 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     if (count != null) btn.querySelector('[data-repost-count]').textContent = count;
   }
 
-  // ── v0.2.18.0 分享：复制帖子链接（移动端优先系统分享面板；访客可用，无门禁）──
+  // ── v0.2.19.0 分享：弹窗 + 同时复制帖子链接（用户「分享按钮是弹出弹窗然后也同时复制帖子链接」；
+  //    访客可用无门禁；从本页自身拼链接绝不硬编码路径——同页同 id 恒为规范 URL）──
   function sharePost(id) {
-    // 从本页自身拼链接（绝不硬编码路径）：同页同 id 恒为规范 URL
     var url = window.location.origin + window.location.pathname + '?id=' + encodeURIComponent(id);
-    if (navigator.share) {
-      navigator.share({ title: document.title, url: url }).catch(function () { copyLink(url); });
-    } else {
-      copyLink(url);
-    }
+    openShareDialog(url);
   }
 
-  function copyLink(url) {
+  function openShareDialog(url) {
+    var backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    var cont = document.createElement('div');
+    cont.className = 'modal-container';
+    var card = document.createElement('div');
+    card.className = 'modal-card';
+    card.innerHTML =
+      '<h3 style="font-weight:600;font-size:var(--fs-body-lg);margin:0 0 var(--space-sm)">分享帖子</h3>' +
+      '<input id="shareUrlInput" type="text" readonly value="' + escapeHtml(url) + '" style="width:100%;padding:10px 12px;border:var(--card-border);border-radius:var(--radius-md);background:var(--color-surface);color:inherit;font-family:inherit;font-size:var(--fs-label-sm)">' +
+      '<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:var(--space-sm)">' +
+        '<span class="label-sm" id="shareCopyState" style="color:var(--color-outline);margin-right:auto">正在复制…</span>' +
+        '<button type="button" class="btn btn-sm" id="shareCopyAgain">复制链接</button>' +
+        '<button type="button" class="btn btn-primary btn-sm" id="shareClose">关闭</button>' +
+      '</div>';
+    cont.appendChild(card);
+    backdrop.appendChild(cont);
+    document.body.appendChild(backdrop);
+    function close() {
+      document.removeEventListener('keydown', onEsc);
+      backdrop.remove();
+    }
+    function onEsc(e) { if (e.key === 'Escape') close(); }
+    document.addEventListener('keydown', onEsc);
+    backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
+    void card.offsetWidth;
+    backdrop.classList.add('active');
+    var stateEl = card.querySelector('#shareCopyState');
+    function doCopy() {
+      stateEl.textContent = '正在复制…';
+      copyLink(url, function (ok) {
+        stateEl.textContent = ok ? '链接已复制，可直接粘贴' : '复制失败，请手动选择复制';
+      });
+    }
+    card.querySelector('#shareUrlInput').addEventListener('click', function () { this.select(); });
+    card.querySelector('#shareCopyAgain').addEventListener('click', doCopy);
+    card.querySelector('#shareClose').addEventListener('click', close);
+    doCopy(); // 打开弹窗同时复制（用户钦定）
+  }
+
+  function copyLink(url, done) {
+    var finish = done || function () {};
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(
-        function () { toastMsg('链接已复制'); },
-        function () { legacyCopy(url); } // 非安全上下文/权限拒绝 → 降级
+        function () { finish(true); },
+        function () { finish(legacyCopy(url)); } // 非安全上下文/权限拒绝 → 降级
       );
     } else {
-      legacyCopy(url);
+      finish(legacyCopy(url));
     }
   }
 
@@ -2688,7 +2733,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     var ok = false;
     try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
     ta.remove();
-    toastMsg(ok ? '链接已复制' : '复制失败，请手动复制链接', !ok);
+    return ok;
   }
 
   function setReply(id, name) {

@@ -103,7 +103,11 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.18.3 = Community 点赞粒子特效完整照搬参考代码（用户「而且你特效也没超好啊，而且粒子效果别改颜色啊还有能不能照着搬啊，只是把完整的粒子特效搬出来」——v0.2.18.1 自创的 24 粒子小改版不合格，要参考代码的完整原版粒子）：
 //   hub CSS（经 shared head 自动流入重建后的帖页）——粒子改参考原版：单个 10px 圆点 + 61 条 box-shadow 彩点（色环逐字照搬参考代码不改一色）+ 三动画链照参考原版时长（1.25s mn-fireworks-bang ease-out 迸发 → 1.25s mn-fireworks-gravity ease-in 下落 translateY(200px) → 6.25s mn-fireworks-position linear 游走 5 档 margin 窗口）；scale(0.4) 并入 gravity 终点（单元素免 wrapper，与参考 .fireworks 外壳视觉效果一致）；like-pop-icon 改参考值（0.5s ease-out、0% scale(0) 50% scale(1.2) rotate(-10deg)）；
 //   armLikePop（hub + 帖页 tail 同改）——like-pop 摘类改等最后一档动画（mn-fireworks-position 6.25s）animationend 才摘 + 6.8s 兜底（旧版 950ms 摘类粒子没飞完就没了）；零共享文件零后端（补丁位 2→3·口径修正轮；2026-09-05）
-window.MN_SITE_VERSION = 'v0.2.18.3';
+// v0.2.19.0 = Community hub 转发/分享按钮 + 分享弹窗 + 点赞粒子中心对齐（用户「转发啊 分享 在外面都没有」「分享按钮是弹出弹窗然后也同时复制帖子链接」「点击后它的中心和点赞按钮的中心位置不一致」）：
+//   粒子对齐——照参考 .fireworks 外壳结构重构：.like-burst 改 0×0 定位锚（left/top 50% = 按钮正中心；旧版 right:40px 锚在计数那边就偏了）+ 常量 transform:scale(0.4)（参考外壳恒缩放，粒子整链恒定 0.4 倍不再随 gravity 从 1 缩到 0.4）；61 粒子搬到子元素 .like-fx（10px 圆点 + 61 条 box-shadow 色环逐字不动），三动画链挂子元素照参考原版时长；gravity 恢复参考原值 translateY(200px) 不带 scale；position 5 档 margin 窗口对 0×0 外壳解析恒为 0（与参考同为惰性动画）；.like-fx 的 animationend 冒泡到 .like-burst——armLikePop 摘类时机零改动（最后一档 6.25s + 6.8s 兜底）；
+//   hub 卡片操作行——真卡补转发钮（repeat+计数+reposted 绿高亮、toggleRepost/openRepostDialog/setReposted 照帖页同构、乐观切换+失败回滚+409 同步置位+removed/hold/401/429 分支）+ 分享钮；演示卡补同款钮（真按钮 + toast「登录后才能转发/分享」与爱心同口径不装死）；
+//   分享——hub + 帖页同改弹窗（modal-backdrop/modal-card 模板、只读 URL 输入框点击全选、打开即自动复制「已复制，可直接粘贴」状态、复制链接重试钮、Escape/backdrop/关闭三路关、URL 从本页 location 相对解析绝不硬编码、访客可用无门禁——替代旧三级链 navigator.share→clipboard→execCommand，clipboard→execCommand 降级链保留）；爱心实心=既有 favorite/favorite_border 切换（hub+帖页两处同构，电池直验）；零后端零共享文件（CSS 经 shared head 自动流入重建后的帖页；帖页 tail 改+重建）（小改动位 18→19·新功能轮·补丁清零；2026-09-06）
+window.MN_SITE_VERSION = 'v0.2.19.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
