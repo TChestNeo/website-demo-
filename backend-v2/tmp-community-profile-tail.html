@@ -8,11 +8,9 @@
 .profile-avatar { width: 72px; height: 72px; border-radius: 9999px; object-fit: cover; border: 3px solid var(--color-surface); flex: none; }
 .profile-bio { margin: 0; color: var(--color-on-surface-variant); font-size: var(--fs-label-md); white-space: pre-wrap; word-break: break-word; }
 .profile-joined { display: inline-flex; align-items: center; gap: 6px; color: var(--color-outline); font-size: var(--fs-label-sm); }
-.profile-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: var(--space-sm); } /* v0.2.22.3 +获赞块 → 5 列 */
+.profile-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: var(--space-sm); }
 .profile-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; border: none; border-radius: var(--radius-md); background: var(--color-surface-container-low); cursor: pointer; font-family: inherit; color: inherit; }
 .profile-stat:hover { background: rgba(70,72,212,0.08); }
-.profile-stat-static { cursor: default; } /* v0.2.22.3 获赞量纯展示（无对应 tab） */
-.profile-stat-static:hover { background: var(--color-surface-container-low); }
 .profile-stat-num { font-weight: 700; font-size: var(--fs-body-md); color: var(--color-on-surface); }
 .profile-stat-label { font-size: var(--fs-label-sm); color: var(--color-outline); }
 .profile-counts { display: flex; flex: none; gap: var(--space-md); font-size: var(--fs-label-md); color: var(--color-outline); }
@@ -453,14 +451,13 @@
               (genderTxt ? '<span class="label-sm" style="padding:2px 6px;border:1px solid var(--color-outline);border-radius:9999px;color:var(--color-outline);display:inline-flex;align-items:center">' + (genderIconImg(u.gender, 16) || genderTxt) + '</span>' : '') +
             '</div>' +
           '</div>' +
-          '<div class="profile-counts"><span><b id="profileFollowerCount">' + (u.followerCount || 0) + '</b> 粉丝</span><span><b>' + (u.followingCount || 0) + '</b> 关注</span></div>' +
+          '<div class="profile-counts"><span><b id="profileFollowerCount">' + (u.followerCount || 0) + '</b> 粉丝</span><span><b>' + (u.followingCount || 0) + '</b> 关注</span><span><b>' + (u.stats.likeReceivedCount || 0) + '</b> 获赞</span></div>' +
         '</div>' +
         '<p class="profile-bio">' + escapeHtml(u.bio || '这个人很懒，还没有简介') + '</p>' +
         '<div class="profile-joined"><span class="material-symbols-outlined" style="font-size:16px">calendar_today</span> 加入于 ' + formatJoinDate(u.createdAt) + '</div>' +
         '<div class="profile-stats">' +
           statBlock('posts', '帖子', u.stats.postCount) +
           statBlock('reposts', '转发', u.stats.repostCount) +
-          '<div class="profile-stat profile-stat-static"><span class="profile-stat-num">' + (u.stats.likeReceivedCount || 0) + '</span><span class="profile-stat-label">获赞</span></div>' +
           statBlock('likes', '点赞', u.stats.likeCount) +
           statBlock('favorites', '收藏', u.stats.favoriteCount) +
         '</div>' +

@@ -158,7 +158,11 @@ window.MN_SITE = window.MN_SITE || {};
 //   （无对应 tab 不可点，.profile-stat-static）；后端 GET /api/social/users/:id stats 加 likeReceivedCount
 //   （本人可见帖收到赞的 JOIN 聚合，无迁移无新表）；social-profile 测试 stats 断言同步两处；
 //   （补丁位 2→3·观感微调轮；2026-09-07）
-window.MN_SITE_VERSION = 'v0.2.22.3';
+// v0.2.22.4 = Community 主页 获赞量 → 与粉丝/关注并排（用户「获赞是和粉丝关注并排的」）：获赞从统计区五块移出
+//   （统计区恢复四块 grid 4 列、.profile-stat-static 删除）→ 并入 .profile-counts 第三组（粉丝 关注 获赞，
+//   仍在 .profile-top 行最右）；后端 likeReceivedCount 保留不动；
+//   （补丁位 3→4·观感微调轮；2026-09-07）
+window.MN_SITE_VERSION = 'v0.2.22.4';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
