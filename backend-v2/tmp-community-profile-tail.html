@@ -4,7 +4,8 @@
 .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--color-primary); text-decoration: none; font-size: var(--fs-label-md); width: fit-content; }
 .back-link:hover { text-decoration: underline; }
 .profile-header { display: flex; flex-direction: column; gap: var(--space-sm); padding: var(--space-lg); }
-.profile-avatar { width: 72px; height: 72px; border-radius: 9999px; object-fit: cover; border: 3px solid var(--color-surface); }
+.profile-top { display: flex; align-items: center; gap: var(--space-md); } /* v0.2.22.2 名称/id/性别 → 头像右侧（Twitter 式横排） */
+.profile-avatar { width: 72px; height: 72px; border-radius: 9999px; object-fit: cover; border: 3px solid var(--color-surface); flex: none; }
 .profile-bio { margin: 0; color: var(--color-on-surface-variant); font-size: var(--fs-label-md); white-space: pre-wrap; word-break: break-word; }
 .profile-joined { display: inline-flex; align-items: center; gap: 6px; color: var(--color-outline); font-size: var(--fs-label-sm); }
 .profile-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: var(--space-sm); }
@@ -441,11 +442,15 @@
     var genderTxt = GENDER_ZH[u.gender] || null;
     document.getElementById('profileHeader').innerHTML =
       '<div class="card profile-header">' +
-        '<img src="' + escapeHtml(u.avatarUrl || window._slatiFallbackAvatar) + '" alt="" class="profile-avatar">' +
-        '<h2 style="font-weight:700;font-size:var(--fs-body-lg);margin:0">' + escapeHtml(u.displayName || 'Citizen') + '</h2>' +
-        '<div class="flex-center" style="justify-content:flex-start;gap:8px;flex-wrap:wrap">' +
-          '<span class="label-sm" style="color:var(--color-outline)">@' + escapeHtml(u.citizenId || '') + '</span>' +
-          (genderTxt ? '<span class="label-sm" style="padding:2px 6px;border:1px solid var(--color-outline);border-radius:9999px;color:var(--color-outline);display:inline-flex;align-items:center">' + (genderIconImg(u.gender, 16) || genderTxt) + '</span>' : '') +
+        '<div class="profile-top">' +
+          '<img src="' + escapeHtml(u.avatarUrl || window._slatiFallbackAvatar) + '" alt="" class="profile-avatar">' +
+          '<div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px">' +
+            '<h2 style="font-weight:700;font-size:var(--fs-body-lg);margin:0">' + escapeHtml(u.displayName || 'Citizen') + '</h2>' +
+            '<div class="flex-center" style="justify-content:flex-start;gap:8px;flex-wrap:wrap">' +
+              '<span class="label-sm" style="color:var(--color-outline)">@' + escapeHtml(u.citizenId || '') + '</span>' +
+              (genderTxt ? '<span class="label-sm" style="padding:2px 6px;border:1px solid var(--color-outline);border-radius:9999px;color:var(--color-outline);display:inline-flex;align-items:center">' + (genderIconImg(u.gender, 16) || genderTxt) + '</span>' : '') +
+            '</div>' +
+          '</div>' +
         '</div>' +
         '<p class="profile-bio">' + escapeHtml(u.bio || '这个人很懒，还没有简介') + '</p>' +
         '<div class="profile-joined"><span class="material-symbols-outlined" style="font-size:16px">calendar_today</span> 加入于 ' + formatJoinDate(u.createdAt) + '</div>' +

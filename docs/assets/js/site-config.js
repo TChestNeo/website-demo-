@@ -149,7 +149,11 @@ window.MN_SITE = window.MN_SITE || {};
 //   改用用户新加到 docs/assets/image/ 的两个 Material 图标（♂ 蓝 #7CA7D8 / ♀ 粉 #F18AFF，img 引用真文件）；Other 无图标保持文字「其他」；
 //   图标带 alt/title（男/女）兜可读性与悬停提示；药丸加弹性盒居中 + min 52×38px 点按尺寸；零后端零共享文件（tail 改+重建）；
 //   （补丁位 0→1·观感微调轮；2026-09-07）
-window.MN_SITE_VERSION = 'v0.2.22.1';
+// v0.2.22.2 = Community 主页头部横排（用户「然后我希望把名称和id和性别的位置调到头像的右侧」）：头像左 + 右侧信息列（h2 名字 +
+//   @公民号 + 性别徽章竖排）Twitter 式横排——.profile-top 弹性盒 align-items:center + gap var(--space-md)、头像 flex:none 防压缩、
+//   信息列 flex:1 竖排居中；bio/加入时间/统计仍全宽在下；零后端零共享文件（tail 改+重建）；
+//   （补丁位 1→2·观感微调轮；2026-09-07）
+window.MN_SITE_VERSION = 'v0.2.22.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
