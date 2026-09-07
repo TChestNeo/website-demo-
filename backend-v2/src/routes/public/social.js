@@ -360,13 +360,15 @@ function register(router, ctx) {
     // 粉丝数反查走 017 新索引 idx_following_target；关注数走 PK 前缀 user_id
     const followerCount = c.db.prepare("SELECT count(*) AS n FROM following WHERE target_type = 'user' AND target_id = ?").get(row.id).n;
     const followingCount = c.db.prepare("SELECT count(*) AS n FROM following WHERE user_id = ? AND target_type = 'user'").get(row.id).n;
+    const isSelf = viewerId === row.id;
     const stats = {
       postCount: c.db.prepare("SELECT count(*) AS n FROM posts WHERE author_id = ? AND status = 'visible' AND repost_of IS NULL").get(row.id).n,
       repostCount: c.db.prepare("SELECT count(*) AS n FROM posts WHERE author_id = ? AND status = 'visible' AND repost_of IS NOT NULL").get(row.id).n,
       // v0.2.22.3 获赞量（用户「再添加一个获赞量」）：本人可见帖收到的点赞总数（含转发帖收到的赞）
       likeReceivedCount: c.db.prepare("SELECT count(*) AS n FROM content_likes l JOIN posts p ON p.id = l.target_id WHERE p.author_id = ? AND l.target_type = 'post' AND p.status = 'visible'").get(row.id).n,
-      likeCount: c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE user_id = ? AND target_type = 'post'").get(row.id).n,
-      favoriteCount: c.db.prepare("SELECT count(*) AS n FROM favorites WHERE user_id = ? AND target_type = 'post'").get(row.id).n
+      // v0.2.22.6 点赞/收藏默认私人（用户「把点赞和收藏变成默认私人的就是只有你可以看见」）：非本人返回 null
+      likeCount: isSelf ? c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE user_id = ? AND target_type = 'post'").get(row.id).n : null,
+      favoriteCount: isSelf ? c.db.prepare("SELECT count(*) AS n FROM favorites WHERE user_id = ? AND target_type = 'post'").get(row.id).n : null
     };
     sendJson(res, 200, {
       user: {
@@ -377,7 +379,7 @@ function register(router, ctx) {
         gender: row.gender || null, // 013：Male/Female/Other，NULL = 未填写（前端隐藏）
         citizenId: row.citizen_id,
         createdAt: row.created_at,
-        isSelf: viewerId === row.id,
+        isSelf,
         followedByMe,
         followerCount,
         followingCount,
@@ -398,6 +400,8 @@ function register(router, ctx) {
       rows = c.db.prepare("SELECT * FROM posts WHERE author_id = ? AND status = 'visible' " + repostClause + ' ORDER BY seq DESC LIMIT 100')
         .all(profile.id);
     } else if (tab === 'likes' || tab === 'favorites') {
+      // v0.2.22.6 点赞/收藏默认私人：仅本人可见（匿名/他人一律 403）
+      if (viewerId !== profile.id) throw new HttpError('FORBIDDEN', '点赞/收藏仅本人可见');
       const t = tab === 'likes' ? 'content_likes' : 'favorites'; // 表名白名单常量，无注入面
       rows = c.db.prepare('SELECT p.* FROM ' + t + ' l JOIN posts p ON p.id = l.target_id '
         + "WHERE l.user_id = ? AND l.target_type = 'post' AND p.status = 'visible' "

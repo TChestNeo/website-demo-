@@ -32,7 +32,8 @@ test('profile：匿名 GET 200 全形状（bio/gender 随行、stats 零值、is
     assert.strictEqual(u.followedByMe, false);
     assert.strictEqual(u.followerCount, 0);
     assert.strictEqual(u.followingCount, 0);
-    assert.deepStrictEqual(u.stats, { postCount: 0, repostCount: 0, likeReceivedCount: 0, likeCount: 0, favoriteCount: 0 });
+    // v0.2.22.6 点赞/收藏默认私人：非本人 likeCount/favoriteCount 为 null
+    assert.deepStrictEqual(u.stats, { postCount: 0, repostCount: 0, likeReceivedCount: 0, likeCount: null, favoriteCount: null });
   } finally { await t.close(); }
 });
 
@@ -79,7 +80,8 @@ test('profile：stats 准确（2 帖 + 1 转发 + 2 赞 + 1 收藏）', async ()
     await t.request('POST', '/api/social/posts/' + bob2.id + '/like', undefined, { cookie: alice.cookie });
     await t.request('POST', '/api/social/posts/' + bob2.id + '/favorite', undefined, { cookie: alice.cookie });
     await t.request('POST', '/api/social/posts/' + a1.id + '/like', undefined, { cookie: bob.cookie }); // bob 赞 alice 帖 → 获赞量 1
-    const u = (await (await t.request('GET', '/api/social/users/' + alice.user.id)).json()).user;
+    // v0.2.22.6 点赞/收藏默认私人：本人视角才返回 likeCount/favoriteCount 实值
+    const u = (await (await t.request('GET', '/api/social/users/' + alice.user.id, undefined, { cookie: alice.cookie })).json()).user;
     assert.deepStrictEqual(u.stats, { postCount: 2, repostCount: 1, likeReceivedCount: 1, likeCount: 2, favoriteCount: 1 });
   } finally { await t.close(); }
 });
@@ -134,9 +136,10 @@ test('tab=likes：他人帖、按点赞时间倒序', async () => {
     // 同毫秒点赞可能 created_at 撞车——直接落库固定顺序：A 旧 B 新
     t.db.prepare("UPDATE content_likes SET created_at = '2026-01-01T00:00:00.000Z' WHERE user_id = ? AND target_id = ?").run(alice.user.id, pa.id);
     t.db.prepare("UPDATE content_likes SET created_at = '2026-01-02T00:00:00.000Z' WHERE user_id = ? AND target_id = ?").run(alice.user.id, pb.id);
-    const likes = (await (await t.request('GET', '/api/social/users/' + alice.user.id + '/posts?tab=likes')).json()).posts;
+    // v0.2.22.6 点赞/收藏默认私人：本人视角请求
+    const likes = (await (await t.request('GET', '/api/social/users/' + alice.user.id + '/posts?tab=likes', undefined, { cookie: alice.cookie })).json()).posts;
     assert.deepStrictEqual(likes.map((p) => p.id), [pb.id, pa.id], '按点赞时间倒序');
-    assert.ok(likes.every((p) => p.authorId === bob.user.id));
+    assert.ok(likes.every((p) => p.authorId === bob.user.id && p.likedByMe === true));
   } finally { await t.close(); }
 });
 
@@ -148,11 +151,28 @@ test('tab=favorites：收藏的帖子', async () => {
     const p1 = await makePost(t, bob, '收藏目标一');
     const p2 = await makePost(t, bob, '收藏目标二');
     await t.request('POST', '/api/social/posts/' + p2.id + '/favorite', undefined, { cookie: alice.cookie });
-    const favs = (await (await t.request('GET', '/api/social/users/' + alice.user.id + '/posts?tab=favorites')).json()).posts;
-    assert.deepStrictEqual(favs.map((p) => p.id), [p2.id]);
-    assert.strictEqual(favs[0].favoritedByMe, false, '匿名 viewer 视角');
+    // v0.2.22.6 点赞/收藏默认私人：本人视角请求
     const asAlice = (await (await t.request('GET', '/api/social/users/' + alice.user.id + '/posts?tab=favorites', undefined, { cookie: alice.cookie })).json()).posts;
+    assert.deepStrictEqual(asAlice.map((p) => p.id), [p2.id]);
     assert.strictEqual(asAlice[0].favoritedByMe, true);
+  } finally { await t.close(); }
+});
+
+test('v0.2.22.6 点赞/收藏默认私人：tab=likes/favorites 匿名/他人 403 + 本人 200', async () => {
+  const t = await testApp();
+  try {
+    const alice = t.loginAs('alice@x.com');
+    const bob = t.loginAs('bob@x.com');
+    const p = await makePost(t, bob, '他人帖');
+    await t.request('POST', '/api/social/posts/' + p.id + '/like', undefined, { cookie: alice.cookie });
+    const anonL = await t.request('GET', '/api/social/users/' + alice.user.id + '/posts?tab=likes');
+    assert.strictEqual(anonL.status, 403);
+    assert.strictEqual((await anonL.json()).error.code, 'FORBIDDEN');
+    const bobF = await t.request('GET', '/api/social/users/' + alice.user.id + '/posts?tab=favorites', undefined, { cookie: bob.cookie });
+    assert.strictEqual(bobF.status, 403);
+    const selfL = await t.request('GET', '/api/social/users/' + alice.user.id + '/posts?tab=likes', undefined, { cookie: alice.cookie });
+    assert.strictEqual(selfL.status, 200);
+    assert.strictEqual((await selfL.json()).posts.length, 1);
   } finally { await t.close(); }
 });
 
@@ -184,7 +204,7 @@ test('hidden/removed 帖从全部 tab 排除（含被赞帖被下架）', async 
     t.db.prepare('UPDATE posts SET status = ? WHERE id = ?').run('removed', likedGone.id);
     const base = '/api/social/users/' + alice.user.id + '/posts?tab=';
     for (const tab of ['posts', 'reposts', 'likes', 'favorites']) {
-      const ids = (await (await t.request('GET', base + tab)).json()).posts.map((p) => p.id);
+      const ids = (await (await t.request('GET', base + tab, undefined, { cookie: alice.cookie })).json()).posts.map((p) => p.id);
       assert.ok(!ids.includes(hidden.id) && !ids.includes(removed.id) && !ids.includes(likedGone.id), tab + ' 排除隐藏/下架');
       if (tab === 'posts') assert.deepStrictEqual(ids, [ok.id]);
     }

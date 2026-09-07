@@ -10,8 +10,8 @@
 .profile-avatar { width: 72px; height: 72px; border-radius: 9999px; object-fit: cover; border: 3px solid var(--color-surface); flex: none; }
 .profile-bio { margin: 0; color: var(--color-on-surface-variant); font-size: var(--fs-label-md); white-space: pre-wrap; word-break: break-word; }
 .profile-joined { display: inline-flex; align-items: center; gap: 6px; color: var(--color-outline); font-size: var(--fs-label-sm); }
-.profile-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: var(--space-sm); }
-.profile-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; border: none; border-radius: var(--radius-md); background: var(--color-surface-container-low); cursor: pointer; font-family: inherit; color: inherit; }
+.profile-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-sm); } /* v0.2.22.6 flex 平分——他人主页仅 2 块（帖子/转发）时不空列 */
+.profile-stat { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; border: none; border-radius: var(--radius-md); background: var(--color-surface-container-low); cursor: pointer; font-family: inherit; color: inherit; }
 .profile-stat:hover { background: rgba(70,72,212,0.08); }
 .profile-stat-num { font-weight: 700; font-size: var(--fs-body-md); color: var(--color-on-surface); }
 .profile-stat-label { font-size: var(--fs-label-sm); color: var(--color-outline); }
@@ -462,8 +462,8 @@
         '<div class="profile-stats">' +
           statBlock('posts', '帖子', u.stats.postCount) +
           statBlock('reposts', '转发', u.stats.repostCount) +
-          statBlock('likes', '点赞', u.stats.likeCount) +
-          statBlock('favorites', '收藏', u.stats.favoriteCount) +
+          // v0.2.22.6 点赞/收藏默认私人：非本人不渲染这两块（获赞量在 counts 仍公开）
+          (u.isSelf ? statBlock('likes', '点赞', u.stats.likeCount) + statBlock('favorites', '收藏', u.stats.favoriteCount) : '') +
         '</div>' +
         '<div class="profile-follow-row">' + followBtnHtml(u) + '</div>' +
         '</div>' +
@@ -658,8 +658,10 @@
 
   // ── 主页专属：tab + 帖子列表（卡片与 hub renderFeed 同款全操作行）──
   function renderTabs() {
+    // v0.2.22.6 点赞/收藏默认私人：非本人只渲染 帖子/转发 两 tab
+    var defs = (profileUser && profileUser.isSelf) ? TAB_DEFS : TAB_DEFS.slice(0, 2);
     document.getElementById('profileTabs').innerHTML = '<div class="card profile-tabs">' +
-      TAB_DEFS.map(function (t) {
+      defs.map(function (t) {
         return '<button type="button" class="profile-tab' + (currentTab === t[0] ? ' active' : '') + '" data-tab="' + t[0] + '">' + t[1] + '</button>';
       }).join('') + '</div>';
     document.querySelectorAll('#profileTabs [data-tab]').forEach(function (b) {

@@ -167,7 +167,12 @@ window.MN_SITE = window.MN_SITE || {};
 //   头像行随横幅下移（横幅下 space-md 间距）；.profile-top 底 border-bottom 1px 分割线横贯（简介与头像之间）；
 //   零后端零共享文件（tail 改+重建）；
 //   （补丁位 4→5·观感微调轮；2026-09-07）
-window.MN_SITE_VERSION = 'v0.2.22.5';
+// v0.2.22.6 = Community 点赞/收藏默认私人（用户「把点赞和收藏变成默认私人的就是只有你可以看见」）：他人主页
+//   只渲染 帖子/转发 两 tab + 统计两块（.profile-stats 改 flex 平分不留空列；获赞量在 counts 保持公开）；
+//   后端 GET /api/social/users/:id/posts?tab=likes|favorites 非本人 403 FORBIDDEN、profile stats 非本人
+//   likeCount/favoriteCount 返回 null；social-profile 测试同步（匿名 stats null+tab 测试改本人 cookie+新 403 测试）；
+//   （补丁位 5→6·口径修正轮；2026-09-07）
+window.MN_SITE_VERSION = 'v0.2.22.6';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
