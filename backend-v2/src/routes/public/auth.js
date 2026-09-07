@@ -33,7 +33,7 @@ const RESEND_MS = 60 * 1000;       // 发码重发间隔
 const PASSWORD_MIN = 8;            // W6 密码策略（路由层校验，策略是 HTTP 契约）
 const PASSWORD_MAX = 72;
 // v0.2.23.0 卡片背景预设白名单（迁移 018 users.card_bg；social.js 主页端点同名单校验，两处须同步）
-const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset'];
+const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear'];
 
 function hashCode(code) {
   return crypto.createHash('sha256').update(String(code).trim()).digest('hex');

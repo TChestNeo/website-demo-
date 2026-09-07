@@ -222,6 +222,11 @@ test('v0.2.24.0 独立卡片背景：cardPlate 落库 + 非法键 400 + null 恢
     assert.strictEqual(r3.status, 200, '显式 null = 无背景层');
     assert.strictEqual((await prof()).user.cardPlate, null);
     assert.strictEqual((await prof()).user.cardBg, 'glass-ocean', 'cardPlate 清空不碰 cardBg');
+    // v0.2.24.1 卡片背景只留 2 选项之一：标准液态玻璃（无色）键在白名单内可落库
+    const r4 = await t.request('PATCH', '/api/auth/me', { cardPlate: 'glass-clear' }, { cookie: alice.cookie });
+    assert.strictEqual(r4.status, 200, 'glass-clear 标准液态玻璃在白名单');
+    assert.strictEqual((await prof()).user.cardPlate, 'glass-clear');
+    assert.strictEqual((await prof()).user.cardBg, 'glass-ocean', '玻璃键写入不碰 cardBg');
   } finally { await t.close(); }
 });
 

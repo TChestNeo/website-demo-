@@ -41,6 +41,7 @@
 .profile-header.glass-bg .profile-banner { background: var(--lg-bg, var(--color-surface-container-high)); } /* 横幅=预设渐变（v0.2.24.0 预设类挂回卡上，横幅读卡上 --lg-bg） */
 .card-halo { margin: -6px; padding: 6px; border-radius: calc(var(--radius-lg) + 6px); background: var(--lg-bg, linear-gradient(135deg, #60a5fa, #a78bfa)); } /* v0.2.24.0 独立卡片背景层：包层挂背景预设类（自己的 --lg-bg），铺满整卡 + 四周阔出 6px（margin 负值抵消 padding，卡片视觉尺寸不变；兜底=参考代码蓝紫渐变） */
 .card-halo .profile-header { background: transparent; } /* v0.2.24.0 卡身纯透明——透出背景层（选中卡片背景时） */
+.card-halo.glass-clear { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.8); } /* v0.2.24.1 标准液态玻璃（无色）白边环 2px + 柔影——与用户参考代码一模一样 */
 .profile-header .lg-backdrop { -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); } /* 引擎默认 6px，主页卡给 14px 磨砂 */
 .bg-default { --lg-bg: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-frost { --lg-tint: rgba(255,255,255,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.30)), linear-gradient(135deg, rgba(96,100,230,0.50), rgba(150,120,245,0.35) 50%, rgba(96,100,230,0.50)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
@@ -49,6 +50,7 @@
 .glass-rose { --lg-tint: rgba(232,110,160,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(232,110,160,0.55), rgba(240,150,190,0.40) 50%, rgba(232,110,160,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-mint { --lg-tint: rgba(40,180,150,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(40,180,150,0.55), rgba(90,200,170,0.40) 50%, rgba(40,180,150,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-sunset { --lg-tint: rgba(240,130,60,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(240,130,60,0.55), rgba(240,80,120,0.40) 50%, rgba(240,130,60,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
+.glass-clear { --lg-tint: rgba(255,255,255,0.14); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.55), rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.38)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.25), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.10), transparent 40%); } /* v0.2.24.1 标准液态玻璃（无色）——用户「不要有颜色」：纯白色磨砂渐变，无任何色相；白边环+柔影见 .card-halo.glass-clear */
 /* 弹窗顶部 基础/自定义 导航 + 背景预设网格 */
 .edit-nav { display: flex; gap: 4px; background: var(--color-surface-container-low); border-radius: var(--radius-full); padding: 4px; margin-bottom: var(--space-md); }
 .edit-nav button { flex: 1; border: none; background: transparent; color: var(--color-outline); cursor: pointer; padding: 6px 12px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); font-weight: 600; }
@@ -57,6 +59,7 @@
    预设类+has-plate 露背景，内层透明卡 pv-card 带固定品牌小横幅条——示意背景铺满卡身+四周 6px 阔出） */
 .edit-bg-preview { margin-bottom: 10px; border-radius: var(--radius-md); }
 .edit-bg-preview.has-plate { padding: 6px; background: var(--lg-bg, linear-gradient(135deg, #60a5fa, #a78bfa)); border-radius: calc(var(--radius-sm) + 6px); } /* 卡片背景=预设渐变（兜底=参考代码蓝紫渐变），四周 6px 模拟阔出 */
+.edit-bg-preview.has-plate.glass-clear { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.8); } /* v0.2.24.1 标准液态玻璃预览：白边环+柔影与原卡一模一样 */
 .edit-bg-flat { width: 100%; height: 36px; border-radius: var(--radius-sm); background: var(--lg-bg, var(--color-surface-container-high)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.14); } /* 横幅纯渐变条 */
 .edit-bg-preview .pv-card { display: flex; flex-direction: column; height: 48px; border-radius: var(--radius-sm); overflow: hidden; background: transparent; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.45); } /* 透明卡轮廓（卡身纯透明） */
 .edit-bg-preview .pv-card .pv-banner { flex: none; height: 14px; background: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)); } /* 迷你品牌横幅条（固定示意，卡片背景组预览只表达背景层） */
@@ -244,8 +247,11 @@
   var TAB_DEFS = [['posts', '帖子'], ['reposts', '转发'], ['likes', '点赞'], ['favorites', '收藏']];
   // v0.2.23.0 卡片背景预设白名单（与后端 social.js/auth.js CARD_BG_KEYS 同步；'' = 默认）+ 中文名
   // v0.2.24.0 白名单双用途：cardBg=横幅预设、cardPlate=独立卡片背景（各选各的）
-  var CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset'];
+  // v0.2.24.1 卡片背景只留 2 选项（用户「我要的是两个选项一个是默认，一个是标准的液态玻璃不要有颜色」）：
+  //   PLATE_DEFS 独立于横幅 7 预设；glass-clear=标准液态玻璃（无色磨砂+代码白边环 2px+柔影）
+  var CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear'];
   var CARD_BG_DEFS = [['', '默认'], ['glass-frost', '磨砂'], ['glass-ocean', '深海'], ['glass-violet', '薰衣草'], ['glass-rose', '樱花'], ['glass-mint', '薄荷'], ['glass-sunset', '落日']];
+  var CARD_PLATE_DEFS = [['', '默认'], ['glass-clear', '标准液态玻璃']];
   var TAB_EMPTY = { posts: '还没有发过帖子', reposts: '还没有转发过', likes: '还没有点赞的内容', favorites: '还没有收藏的帖子' };
 
   function parseProfileId() {
@@ -633,7 +639,8 @@
           '<label class="form-label">卡片背景</label>' +
           '<div class="edit-bg-preview' + (editCardPlate ? ' has-plate ' + editCardPlate : '') + '" id="editPlatePreview"><div class="pv-card"><span class="pv-banner"></span><span class="pv-body"></span></div></div>' +
           '<div class="edit-bg-grid" id="editPlateGrid">' +
-            CARD_BG_DEFS.map(function (b) {
+            // v0.2.24.1 卡片背景只 2 选项：默认 / 标准液态玻璃（无色）
+            CARD_PLATE_DEFS.map(function (b) {
               return '<button type="button" class="edit-bg-swatch' + ((editCardPlate || '') === b[0] ? ' active' : '') + '" data-plate="' + b[0] + '" title="' + b[1] + '">' +
                 '<span class="swatch-fill' + (b[0] ? ' ' + b[0] : ' bg-default') + '"></span>' +
                 '<span class="swatch-label">' + b[1] + '</span></button>';
