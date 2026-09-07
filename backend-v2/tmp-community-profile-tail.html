@@ -29,9 +29,13 @@
    v0.2.23.1 口径修正：预设渐变铺满整张 profile-header 卡（tint 须包成线性渐变层才合法）；
    v0.2.23.2 口径修正：用户「你放在自定义内的那个叫横幅不叫背景」——横幅与背景分开：横幅保持
    v0.2.22.5 品牌渐变不动（background none 覆盖已删除），预设只作为横幅下方的卡片背景；
+   v0.2.23.3 结构重排（用户「你把现在的卡片背景改成横幅，然后下面再开一个卡片背景然后那个背景要阔出去6px」，
+   参考代码=蓝紫渐变 #60a5fa→#a78bfa 风格）：横幅=预设渐变（var(--lg-bg)），卡身回纯底色（card-bg），
+   卡片四周阔出 6px 光环背景（#profileHeader 包层 .card-halo：margin:-6px+padding:6px 不挤占卡片原尺寸）；
    液体玻璃引擎（liquid-glass.js = rdev/liquid-glass-react 移植；弹性跟手已按 v0.2.9.1 撤销口径下线——
    一律静态玻璃：折射+磨砂+镜面高光） */
-.profile-header.glass-bg { background: linear-gradient(var(--lg-tint, rgba(255,255,255,0.08)), var(--lg-tint, rgba(255,255,255,0.08))), var(--lg-bg, var(--color-surface-container-high)); } /* 卡片背景=霜面+预设渐变；tint 是颜色，须包成均匀渐变层才合法（颜色只许出现在 background 简写最后一层） */
+.profile-header.glass-bg .profile-banner { background: var(--lg-bg, var(--color-surface-container-high)); } /* 横幅=预设渐变（v0.2.23.3 预设从卡身移回横幅） */
+.card-halo { margin: -6px; padding: 6px; border-radius: calc(var(--radius-lg) + 6px); background: var(--lg-bg, linear-gradient(135deg, #60a5fa, #a78bfa)); } /* v0.2.23.3 四周阔出 6px 光环背景（margin 负值抵消 padding，卡片视觉尺寸不变；兜底=参考代码蓝紫渐变） */
 .profile-header .lg-backdrop { -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); } /* 引擎默认 6px，主页卡给 14px 磨砂 */
 .bg-default { --lg-bg: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-frost { --lg-tint: rgba(255,255,255,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.30)), linear-gradient(135deg, rgba(96,100,230,0.50), rgba(150,120,245,0.35) 50%, rgba(96,100,230,0.50)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
@@ -44,18 +48,17 @@
 .edit-nav { display: flex; gap: 4px; background: var(--color-surface-container-low); border-radius: var(--radius-full); padding: 4px; margin-bottom: var(--space-md); }
 .edit-nav button { flex: 1; border: none; background: transparent; color: var(--color-outline); cursor: pointer; padding: 6px 12px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); font-weight: 600; }
 .edit-nav button.active { background: var(--color-primary); color: #fff; }
-/* v0.2.23.2 预览改整卡模型：顶部横幅条（品牌渐变不动）+ 下方卡片背景（预设）——不再是一根横幅条 */
-.edit-bg-preview { margin-bottom: 10px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-md); overflow: hidden; }
-.edit-bg-preview .swatch-fill { width: 100%; height: 56px; display: flex; flex-direction: column; }
-.edit-bg-preview .pv-banner { flex: none; height: 20px; background: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
-.edit-bg-preview .pv-body { flex: 1; background: linear-gradient(var(--lg-tint, rgba(255,255,255,0.08)), var(--lg-tint, rgba(255,255,255,0.08))), var(--lg-bg, var(--color-surface-container-high)); }
-.edit-bg-preview .swatch-fill.bg-default .pv-body { background: var(--color-surface-container-high); } /* 默认=无背景，纯卡片底色 */
+/* v0.2.23.3 预览=真实结构缩小版：横幅（预设渐变）+ 卡身纯底色 + 四周 6px 光环（has-bg 时露出） */
+.edit-bg-preview { margin-bottom: 10px; border-radius: var(--radius-md); }
+.edit-bg-preview.has-bg { padding: 6px; background: linear-gradient(135deg, #60a5fa, #a78bfa); } /* 光环=参考代码蓝紫渐变 */
+.edit-bg-preview .swatch-fill { width: 100%; height: 56px; display: flex; flex-direction: column; border-radius: var(--radius-sm); overflow: hidden; }
+.edit-bg-preview .pv-banner { flex: none; height: 20px; background: var(--lg-bg, var(--color-surface-container-high)); } /* 横幅=预设渐变（默认=品牌渐变） */
+.edit-bg-preview .pv-body { flex: 1; background: var(--color-surface-container-high); } /* 卡身纯底色 */
 .edit-bg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .edit-bg-swatch { display: flex; flex-direction: column; gap: 4px; align-items: center; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-md); background: var(--color-surface-container-low); padding: 6px; cursor: pointer; font-family: inherit; color: inherit; }
 .edit-bg-swatch:hover { border-color: var(--color-outline); }
 .edit-bg-swatch.active { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(70,72,212,0.35); }
 .edit-bg-swatch .swatch-fill { width: 100%; height: 36px; border-radius: 6px; background: var(--lg-bg, var(--color-surface-container-high)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.14); }
-.edit-bg-swatch .swatch-fill.bg-default { background: var(--color-surface-container-high); } /* 默认=无背景，纯卡片底色 */
 .edit-bg-swatch .swatch-label { font-size: var(--fs-label-sm); color: var(--color-on-surface-variant); }
 .profile-empty { text-align: center; color: var(--color-outline); padding: var(--space-xl) var(--space-md); font-size: var(--fs-label-md); }
 #profileState404 { padding: var(--space-xl) var(--space-md); text-align: center; }
@@ -477,9 +480,12 @@
 
   function renderHeader(u) {
     var genderTxt = GENDER_ZH[u.gender] || null;
-    // v0.2.23.0 卡片背景（018 列；白名单校验——服务端已过滤，前端双保险）：玻璃预设 → liquid-glass 引擎 + 预设渐变
+    // v0.2.23.0 卡片背景（018 列；白名单校验——服务端已过滤，前端双保险）：玻璃预设 → liquid-glass 引擎 + 横幅预设渐变
+    // v0.2.23.3 结构重排：预设类同时挂外层 #profileHeader（.card-halo 光环 6px 用 var(--lg-bg)），横幅=预设、卡身纯底色
     var cardBg = CARD_BG_KEYS.indexOf(u.cardBg) !== -1 ? u.cardBg : null;
-    document.getElementById('profileHeader').innerHTML =
+    var headerWrap = document.getElementById('profileHeader');
+    headerWrap.className = cardBg ? 'card-halo ' + cardBg : '';
+    headerWrap.innerHTML =
       '<div class="card profile-header' + (cardBg ? ' liquid-glass glass-bg ' + cardBg : '') + '"' + (cardBg ? ' data-card-bg="' + cardBg + '"' : '') + '>' +
         '<div class="profile-banner"></div>' +
         '<div class="profile-body">' +
@@ -600,7 +606,7 @@
       '<div id="editTabCustom" style="display:none">' +
         '<div class="form-group">' +
           '<label class="form-label">卡片背景（液体玻璃）</label>' +
-          '<div class="edit-bg-preview"><div class="swatch-fill' + (editCardBg ? ' ' + editCardBg : ' bg-default') + '"><span class="pv-banner"></span><span class="pv-body"></span></div></div>' +
+          '<div class="edit-bg-preview' + (editCardBg ? ' has-bg' : '') + '"><div class="swatch-fill' + (editCardBg ? ' ' + editCardBg : ' bg-default') + '"><span class="pv-banner"></span><span class="pv-body"></span></div></div>' +
           '<div class="edit-bg-grid" id="editBgGrid">' +
             CARD_BG_DEFS.map(function (b) {
               return '<button type="button" class="edit-bg-swatch' + ((editCardBg || '') === b[0] ? ' active' : '') + '" data-bg="' + b[0] + '" title="' + b[1] + '">' +
@@ -648,13 +654,14 @@
       });
     });
 
-    // v0.2.23.0 卡片背景预设选择（data-bg 空串 = 默认 → editCardBg null 恢复无背景，横幅不动）
+    // v0.2.23.0 卡片背景预设选择（data-bg 空串 = 默认 → editCardBg null 恢复默认横幅+无光环）
     card.querySelectorAll('#editBgGrid [data-bg]').forEach(function (b) {
       b.addEventListener('click', function () {
         editCardBg = b.getAttribute('data-bg') || null;
         card.querySelectorAll('#editBgGrid [data-bg]').forEach(function (x) { x.classList.toggle('active', x === b); });
         var fill = card.querySelector('.edit-bg-preview .swatch-fill');
         fill.className = 'swatch-fill' + (editCardBg ? ' ' + editCardBg : ' bg-default');
+        card.querySelector('.edit-bg-preview').classList.toggle('has-bg', !!editCardBg); // v0.2.23.3 光环随预设显隐
       });
     });
 
