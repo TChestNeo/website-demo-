@@ -20,6 +20,8 @@ const queue = require('../../moderation/queue');
 const MAX_POST_LEN = 2000;
 const MAX_COMMENT_LEN = 2000; // comments.content ≤2000（写入层校验，同 005 注释）
 const MAX_MEDIA = 3;
+// v0.2.23.0 卡片背景预设白名单（迁移 018 users.card_bg；auth.js PATCH /auth/me 同名单校验，两处须同步）
+const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset'];
 
 // ── v0.2.16.0 帖子媒体上传（社区多图/视频）──
 // 大小上限：图片 10MB（腾讯 IMS base64 上限）；视频 30MB（Cloud Run 请求 32MiB 硬顶留边距）。
@@ -379,6 +381,8 @@ function register(router, ctx) {
         gender: row.gender || null, // 013：Male/Female/Other，NULL = 未填写（前端隐藏）
         citizenId: row.citizen_id,
         createdAt: row.created_at,
+        // v0.2.23.0 卡片背景（018 列；NULL=默认品牌横幅，公开——他人主页也渲染你的自定义背景）
+        cardBg: CARD_BG_KEYS.includes(row.card_bg) ? row.card_bg : null,
         isSelf,
         followedByMe,
         followerCount,

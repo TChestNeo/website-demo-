@@ -172,7 +172,15 @@ window.MN_SITE = window.MN_SITE || {};
 //   后端 GET /api/social/users/:id/posts?tab=likes|favorites 非本人 403 FORBIDDEN、profile stats 非本人
 //   likeCount/favoriteCount 返回 null；social-profile 测试同步（匿名 stats null+tab 测试改本人 cookie+新 403 测试）；
 //   （补丁位 5→6·口径修正轮；2026-09-07）
-window.MN_SITE_VERSION = 'v0.2.22.6';
+// v0.2.23.0 = Community 主页 编辑资料弹窗「基础/自定义」导航 + 卡片背景液体玻璃（用户「使用这个react的 在编辑资料弹窗的顶部添加一个导航，然后导航内有基础和自定义，自定义是可以自定义卡片背景 你先把那个react内的加入那个自定义内一下」）：
+//   编辑资料弹窗顶部加 .edit-nav 药丸导航（基础=头像/显示名/性别/简介 原有字段；自定义=卡片背景预设 7 款
+//   液体玻璃渐变——默认/磨砂/深海/薰衣草/樱花/薄荷/落日，实时预览+点保存落库）；
+//   效果引擎复用站内 liquid-glass.js v2（rdev/liquid-glass-react 的纯 JS 移植，静态模式——v0.2.9.1 用户
+//   「Q弹很丑」钦定永久停用弹性，只保留 blur+saturate+SVG 折射滤镜+inset 玻璃环）；主页卡挂 LG.apply（幂等）；
+//   后端迁移 018 users.card_bg 加列（NULL=默认品牌横幅；白名单 CARD_BG_KEYS 三处同步 social.js/auth.js/tail；
+//   PATCH /auth/me 落库 + 非法键 400 + null 恢复默认；主页公开渲染他人背景）；
+//   （小改动位 22→23·新功能轮；2026-09-07）
+window.MN_SITE_VERSION = 'v0.2.23.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

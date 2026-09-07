@@ -32,6 +32,8 @@ const CODE_ATTEMPTS_MAX = 5;       // 单码最多错 5 次
 const RESEND_MS = 60 * 1000;       // 发码重发间隔
 const PASSWORD_MIN = 8;            // W6 密码策略（路由层校验，策略是 HTTP 契约）
 const PASSWORD_MAX = 72;
+// v0.2.23.0 卡片背景预设白名单（迁移 018 users.card_bg；social.js 主页端点同名单校验，两处须同步）
+const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset'];
 
 function hashCode(code) {
   return crypto.createHash('sha256').update(String(code).trim()).digest('hex');
@@ -267,6 +269,13 @@ function register(router, deps) {
       push('gender = ?', gender);
       prev.gender = ctx.user.gender;
     }
+    // v0.2.23.0 卡片背景（018 列；null = 恢复默认品牌横幅，显式 null 合法）
+    if (body.cardBg !== undefined) {
+      const cardBg = body.cardBg === null ? null : String(body.cardBg);
+      if (cardBg !== null && !CARD_BG_KEYS.includes(cardBg)) throw new HttpError('VALIDATION', '卡片背景样式无效');
+      push('card_bg = ?', cardBg);
+      prev.cardBg = ctx.user.card_bg;
+    }
     if (sets.length) {
       push('updated_at = ?', new Date().toISOString());
       ctx.db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).run(...vals, ctx.user.id);
@@ -281,7 +290,7 @@ function register(router, deps) {
         prev,
         next: {
           displayName: next.display_name, avatarUrl: next.avatar_url, language: next.language,
-          country: next.country, bio: next.bio, dob: next.dob, gender: next.gender
+          country: next.country, bio: next.bio, dob: next.dob, gender: next.gender, cardBg: next.card_bg
         }
       });
       sendJson(res, 200, { user: publicUser(next) });

@@ -25,6 +25,31 @@
 .edit-gender-pill { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 52px; min-height: 38px; border: 1px solid var(--color-outline); background: transparent; color: var(--color-on-surface); cursor: pointer; padding: 4px 16px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); }
 .edit-gender-pill:hover { background: var(--color-surface-container-low); }
 .edit-gender-pill.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+/* v0.2.23.0 卡片背景自定义（用户「自定义是可以自定义卡片背景」+「把那个react内的加入那个自定义内」）：
+   预设玻璃背景 + 全站液体玻璃引擎（liquid-glass.js = rdev/liquid-glass-react 移植；
+   弹性跟手已按 v0.2.9.1 撤销口径下线——一律静态玻璃：折射+磨砂+镜面高光） */
+.profile-header.glass-bg { background: var(--lg-tint, transparent); } /* 半透明底让 lg-backdrop 磨砂可读 */
+.profile-header.glass-bg .profile-banner { background: var(--lg-bg, var(--color-surface-container-high)); }
+.profile-header .lg-backdrop { -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); } /* 引擎默认 6px，主页卡给 14px 磨砂 */
+.bg-default { --lg-bg: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
+.glass-frost { --lg-tint: rgba(255,255,255,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.30)), linear-gradient(135deg, rgba(96,100,230,0.50), rgba(150,120,245,0.35) 50%, rgba(96,100,230,0.50)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
+.glass-ocean { --lg-tint: rgba(30,90,200,0.10); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(30,90,200,0.55), rgba(40,140,190,0.40) 50%, rgba(30,90,200,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
+.glass-violet { --lg-tint: rgba(124,92,224,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(124,92,224,0.55), rgba(190,120,240,0.40) 50%, rgba(124,92,224,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
+.glass-rose { --lg-tint: rgba(232,110,160,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(232,110,160,0.55), rgba(240,150,190,0.40) 50%, rgba(232,110,160,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
+.glass-mint { --lg-tint: rgba(40,180,150,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(40,180,150,0.55), rgba(90,200,170,0.40) 50%, rgba(40,180,150,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
+.glass-sunset { --lg-tint: rgba(240,130,60,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(240,130,60,0.55), rgba(240,80,120,0.40) 50%, rgba(240,130,60,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
+/* 弹窗顶部 基础/自定义 导航 + 背景预设网格 */
+.edit-nav { display: flex; gap: 4px; background: var(--color-surface-container-low); border-radius: var(--radius-full); padding: 4px; margin-bottom: var(--space-md); }
+.edit-nav button { flex: 1; border: none; background: transparent; color: var(--color-outline); cursor: pointer; padding: 6px 12px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); font-weight: 600; }
+.edit-nav button.active { background: var(--color-primary); color: #fff; }
+.edit-bg-preview { margin-bottom: 10px; }
+.edit-bg-preview .swatch-fill { width: 100%; height: 48px; }
+.edit-bg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.edit-bg-swatch { display: flex; flex-direction: column; gap: 4px; align-items: center; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-md); background: var(--color-surface-container-low); padding: 6px; cursor: pointer; font-family: inherit; color: inherit; }
+.edit-bg-swatch:hover { border-color: var(--color-outline); }
+.edit-bg-swatch.active { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(70,72,212,0.35); }
+.edit-bg-swatch .swatch-fill { width: 100%; height: 36px; border-radius: 6px; background: var(--lg-bg, var(--color-surface-container-high)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.14); }
+.edit-bg-swatch .swatch-label { font-size: var(--fs-label-sm); color: var(--color-on-surface-variant); }
 .profile-empty { text-align: center; color: var(--color-outline); padding: var(--space-xl) var(--space-md); font-size: var(--fs-label-md); }
 #profileState404 { padding: var(--space-xl) var(--space-md); text-align: center; }
 @media (max-width: 900px) {
@@ -199,6 +224,9 @@
   var profileUser = null;
   var currentTab = 'posts';
   var TAB_DEFS = [['posts', '帖子'], ['reposts', '转发'], ['likes', '点赞'], ['favorites', '收藏']];
+  // v0.2.23.0 卡片背景预设白名单（与后端 social.js/auth.js CARD_BG_KEYS 同步；'' = 默认品牌横幅）+ 中文名
+  var CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset'];
+  var CARD_BG_DEFS = [['', '默认'], ['glass-frost', '磨砂'], ['glass-ocean', '深海'], ['glass-violet', '薰衣草'], ['glass-rose', '樱花'], ['glass-mint', '薄荷'], ['glass-sunset', '落日']];
   var TAB_EMPTY = { posts: '还没有发过帖子', reposts: '还没有转发过', likes: '还没有点赞的内容', favorites: '还没有收藏的帖子' };
 
   function parseProfileId() {
@@ -442,8 +470,10 @@
 
   function renderHeader(u) {
     var genderTxt = GENDER_ZH[u.gender] || null;
+    // v0.2.23.0 卡片背景（018 列；白名单校验——服务端已过滤，前端双保险）：玻璃预设 → liquid-glass 引擎 + 预设渐变
+    var cardBg = CARD_BG_KEYS.indexOf(u.cardBg) !== -1 ? u.cardBg : null;
     document.getElementById('profileHeader').innerHTML =
-      '<div class="card profile-header">' +
+      '<div class="card profile-header' + (cardBg ? ' liquid-glass glass-bg ' + cardBg : '') + '"' + (cardBg ? ' data-card-bg="' + cardBg + '"' : '') + '>' +
         '<div class="profile-banner"></div>' +
         '<div class="profile-body">' +
         '<div class="profile-top">' +
@@ -478,6 +508,8 @@
       if (followBtn.hasAttribute('data-guest-follow')) { toastMsg('登录后才能关注', true); return; } // 访客零请求
       toggleFollow();
     });
+    // v0.2.23.0 玻璃预设 → 挂全站液体玻璃引擎（静态玻璃：折射+磨砂+高光；幂等 _lgStatic 守卫）
+    if (cardBg && window.LG) window.LG.apply(document.querySelector('#profileHeader .profile-header'));
   }
 
   function toggleFollow() {
@@ -518,6 +550,8 @@
     var u = profileUser;
     if (!u) { toastMsg('资料加载中，请稍后再试', true); return; }
     editPendingAvatar = null;
+    // v0.2.23.0 卡片背景（用户「自定义是可以自定义卡片背景」）：null = 默认品牌横幅
+    var editCardBg = u.cardBg || null;
     var backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
     var cont = document.createElement('div');
@@ -526,6 +560,12 @@
     card.className = 'modal-card';
     card.innerHTML =
       '<h3 style="font-weight:600;font-size:var(--fs-body-lg);margin:0 0 var(--space-md)">编辑资料</h3>' +
+      // v0.2.23.0 顶部导航：基础（资料字段）/ 自定义（卡片背景液体玻璃）
+      '<div class="edit-nav" id="editNavBtns">' +
+        '<button type="button" data-edit-tab="basic" class="active">基础</button>' +
+        '<button type="button" data-edit-tab="custom">自定义</button>' +
+      '</div>' +
+      '<div id="editTabBasic">' +
       '<div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md)">' +
         '<div style="position:relative;flex-shrink:0">' +
           '<img id="editAvatarPreview" src="' + escapeHtml(u.avatarUrl || window._slatiFallbackAvatar) + '" alt="" style="width:64px;height:64px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.08)">' +
@@ -547,6 +587,21 @@
       '<div class="form-group">' +
         '<label class="form-label" for="editBioInput">简介</label>' +
         '<textarea id="editBioInput" class="input-glass" rows="3" maxlength="500" placeholder="介绍一下你的国家吧…">' + escapeHtml(u.bio || '') + '</textarea>' +
+      '</div>' +
+      '</div>' +
+      // v0.2.23.0 自定义 tab：卡片背景液体玻璃预设（liquid-glass-react 移植引擎挂在主页卡上）
+      '<div id="editTabCustom" style="display:none">' +
+        '<div class="form-group">' +
+          '<label class="form-label">卡片背景（液体玻璃）</label>' +
+          '<div class="edit-bg-preview"><span class="swatch-fill' + (editCardBg ? ' ' + editCardBg : ' bg-default') + '"></span></div>' +
+          '<div class="edit-bg-grid" id="editBgGrid">' +
+            CARD_BG_DEFS.map(function (b) {
+              return '<button type="button" class="edit-bg-swatch' + ((editCardBg || '') === b[0] ? ' active' : '') + '" data-bg="' + b[0] + '" title="' + b[1] + '">' +
+                '<span class="swatch-fill' + (b[0] ? ' ' + b[0] : ' bg-default') + '"></span>' +
+                '<span class="swatch-label">' + b[1] + '</span></button>';
+            }).join('') +
+          '</div>' +
+        '</div>' +
       '</div>' +
       '<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:var(--space-sm)">' +
         '<span class="label-sm" id="editSaveState" style="color:var(--color-outline);margin-right:auto"></span>' +
@@ -572,6 +627,27 @@
       b.addEventListener('click', function () {
         card.querySelectorAll('#editGenderRow [data-gender]').forEach(function (x) { x.classList.remove('active'); });
         b.classList.add('active');
+      });
+    });
+
+    // v0.2.23.0 顶部导航：基础 / 自定义 两 tab 切换（display 互斥）
+    var navBtns = card.querySelectorAll('#editNavBtns [data-edit-tab]');
+    navBtns.forEach(function (b) {
+      b.addEventListener('click', function () {
+        var tab = b.getAttribute('data-edit-tab');
+        navBtns.forEach(function (x) { x.classList.toggle('active', x === b); });
+        card.querySelector('#editTabBasic').style.display = tab === 'basic' ? '' : 'none';
+        card.querySelector('#editTabCustom').style.display = tab === 'custom' ? '' : 'none';
+      });
+    });
+
+    // v0.2.23.0 卡片背景预设选择（data-bg 空串 = 默认 → editCardBg null 恢复品牌横幅）
+    card.querySelectorAll('#editBgGrid [data-bg]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        editCardBg = b.getAttribute('data-bg') || null;
+        card.querySelectorAll('#editBgGrid [data-bg]').forEach(function (x) { x.classList.toggle('active', x === b); });
+        var fill = card.querySelector('.edit-bg-preview .swatch-fill');
+        fill.className = 'swatch-fill' + (editCardBg ? ' ' + editCardBg : ' bg-default');
       });
     });
 
@@ -619,6 +695,8 @@
       var gender = genderBtn ? genderBtn.getAttribute('data-gender') : null;
       if (gender && gender !== u.gender) body.gender = gender;
       if (editPendingAvatar) body.avatarUrl = editPendingAvatar;
+      // v0.2.23.0 卡片背景（null = 恢复默认，显式入 body）
+      if (editCardBg !== (u.cardBg || null)) body.cardBg = editCardBg;
       if (!Object.keys(body).length) { close(); return; } // 没改动直接关
       var stateEl = card.querySelector('#editSaveState');
       var saveBtn = card.querySelector('#editSaveBtn');
