@@ -2257,7 +2257,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 .profile-tab { flex: 1; border: none; background: transparent; color: var(--color-outline); cursor: pointer; padding: 8px 4px; border-radius: var(--radius-md); font-family: inherit; font-size: var(--fs-label-md); font-weight: 600; }
 .profile-tab:hover { background: var(--color-surface-container-low); }
 .profile-tab.active { background: var(--color-primary); color: #fff; }
-.edit-gender-pill { flex: none; border: 1px solid var(--color-outline); background: transparent; color: var(--color-on-surface); cursor: pointer; padding: 6px 16px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); }
+.edit-gender-pill { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 52px; min-height: 38px; border: 1px solid var(--color-outline); background: transparent; color: var(--color-on-surface); cursor: pointer; padding: 4px 16px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); }
 .edit-gender-pill:hover { background: var(--color-surface-container-low); }
 .edit-gender-pill.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
 .profile-empty { text-align: center; color: var(--color-outline); padding: var(--space-xl) var(--space-md); font-size: var(--fs-label-md); }
@@ -2663,15 +2663,27 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       : '<button type="button" class="btn btn-primary btn-sm" id="profileFollowBtn" aria-pressed="false">关注</button>';
   }
 
+  // v0.2.22.1 性别图标（用户「能不能把男女换成新添加进image文件内的那两个svg」）：
+  //   ♂ 蓝 #7CA7D8 / ♀ 粉 #F18AFF（用户新加到 docs/assets/image/ 的 Material 图标）；头部徽章 + 编辑弹窗药丸共用；
+  //   Other 无图标保持文字「其他」；图标 img 带 alt/title（男/女）兜可读性与悬停提示。
+  var GENDER_ICONS = {
+    Male: '../assets/image/male_24dp_7CA7D8_FILL0_wght400_GRAD0_opsz24.svg',
+    Female: '../assets/image/female_24dp_F18AFF_FILL0_wght400_GRAD0_opsz24.svg'
+  };
+  var GENDER_ZH = { Male: '男', Female: '女', Other: '其他' };
+  function genderIconImg(g, px) {
+    return GENDER_ICONS[g] ? '<img src="' + GENDER_ICONS[g] + '" alt="' + GENDER_ZH[g] + '" title="' + GENDER_ZH[g] + '" style="width:' + px + 'px;height:' + px + 'px;display:block">' : '';
+  }
+
   function renderHeader(u) {
-    var genderTxt = ({ Male: '男', Female: '女', Other: '其他' })[u.gender] || null;
+    var genderTxt = GENDER_ZH[u.gender] || null;
     document.getElementById('profileHeader').innerHTML =
       '<div class="card profile-header">' +
         '<img src="' + escapeHtml(u.avatarUrl || window._slatiFallbackAvatar) + '" alt="" class="profile-avatar">' +
         '<h2 style="font-weight:700;font-size:var(--fs-body-lg);margin:0">' + escapeHtml(u.displayName || 'Citizen') + '</h2>' +
         '<div class="flex-center" style="justify-content:flex-start;gap:8px;flex-wrap:wrap">' +
           '<span class="label-sm" style="color:var(--color-outline)">@' + escapeHtml(u.citizenId || '') + '</span>' +
-          (genderTxt ? '<span class="label-sm" style="padding:2px 10px;border:1px solid var(--color-outline);border-radius:9999px;color:var(--color-outline)">' + genderTxt + '</span>' : '') +
+          (genderTxt ? '<span class="label-sm" style="padding:2px 6px;border:1px solid var(--color-outline);border-radius:9999px;color:var(--color-outline);display:inline-flex;align-items:center">' + (genderIconImg(u.gender, 16) || genderTxt) + '</span>' : '') +
         '</div>' +
         '<p class="profile-bio">' + escapeHtml(u.bio || '这个人很懒，还没有简介') + '</p>' +
         '<div class="profile-joined"><span class="material-symbols-outlined" style="font-size:16px">calendar_today</span> 加入于 ' + formatJoinDate(u.createdAt) + '</div>' +
@@ -2756,7 +2768,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
         '<label class="form-label">性别</label>' +
         '<div id="editGenderRow" style="display:flex;gap:6px">' +
           [['Male', '男'], ['Female', '女'], ['Other', '其他']].map(function (g) {
-            return '<button type="button" class="edit-gender-pill' + (u.gender === g[0] ? ' active' : '') + '" data-gender="' + g[0] + '">' + g[1] + '</button>';
+            return '<button type="button" class="edit-gender-pill' + (u.gender === g[0] ? ' active' : '') + '" data-gender="' + g[0] + '" title="' + g[1] + '" aria-label="' + g[1] + '">' + (genderIconImg(g[0], 20) || g[1]) + '</button>';
           }).join('') +
         '</div>' +
       '</div>' +
