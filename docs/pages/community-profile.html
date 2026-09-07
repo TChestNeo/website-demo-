@@ -2263,11 +2263,13 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 .edit-gender-pill { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 52px; min-height: 38px; border: 1px solid var(--color-outline); background: transparent; color: var(--color-on-surface); cursor: pointer; padding: 4px 16px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); }
 .edit-gender-pill:hover { background: var(--color-surface-container-low); }
 .edit-gender-pill.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
-/* v0.2.23.0 卡片背景自定义（用户「自定义是可以自定义卡片背景」+「把那个react内的加入那个自定义内」）：
-   预设玻璃背景 + 全站液体玻璃引擎（liquid-glass.js = rdev/liquid-glass-react 移植；
-   弹性跟手已按 v0.2.9.1 撤销口径下线——一律静态玻璃：折射+磨砂+镜面高光） */
-.profile-header.glass-bg { background: var(--lg-tint, transparent); } /* 半透明底让 lg-backdrop 磨砂可读 */
-.profile-header.glass-bg .profile-banner { background: var(--lg-bg, var(--color-surface-container-high)); }
+/* v0.2.23.0 卡片背景自定义（用户「自定义是可以自定义卡片背景」+「把那个react内的加入那个自定义内」）；
+   v0.2.23.1 口径修正：用户「你那个卡片背景是横幅我要的是背景就是整个」——预设渐变铺满整张卡
+   （编辑资料按钮所在的 profile-header 整卡），横幅不再单独渐变（background none 露整卡渐变）；
+   液体玻璃引擎（liquid-glass.js = rdev/liquid-glass-react 移植；弹性跟手已按 v0.2.9.1 撤销口径下线——
+   一律静态玻璃：折射+磨砂+镜面高光） */
+.profile-header.glass-bg { background: linear-gradient(var(--lg-tint, rgba(255,255,255,0.08)), var(--lg-tint, rgba(255,255,255,0.08))), var(--lg-bg, var(--color-surface-container-high)); } /* 整卡=霜面+预设渐变；tint 是颜色，须包成均匀渐变层才合法（颜色只许出现在 background 简写最后一层） */
+.profile-header.glass-bg .profile-banner { background: none; } /* 横幅不再单独渐变——整卡同渐变全幅 */
 .profile-header .lg-backdrop { -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); } /* 引擎默认 6px，主页卡给 14px 磨砂 */
 .bg-default { --lg-bg: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-frost { --lg-tint: rgba(255,255,255,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.30)), linear-gradient(135deg, rgba(96,100,230,0.50), rgba(150,120,245,0.35) 50%, rgba(96,100,230,0.50)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }

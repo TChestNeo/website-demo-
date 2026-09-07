@@ -180,7 +180,11 @@ window.MN_SITE = window.MN_SITE || {};
 //   后端迁移 018 users.card_bg 加列（NULL=默认品牌横幅；白名单 CARD_BG_KEYS 三处同步 social.js/auth.js/tail；
 //   PATCH /auth/me 落库 + 非法键 400 + null 恢复默认；主页公开渲染他人背景）；
 //   （小改动位 22→23·新功能轮；2026-09-07）
-window.MN_SITE_VERSION = 'v0.2.23.0';
+// v0.2.23.1 = Community 卡片背景改整卡（用户「你那个卡片背景是横幅我要的是背景就是整个，编辑资料按钮所在的卡片的整个背景」）：
+//   预设渐变从只铺横幅改为铺满整张 profile-header 卡（background: 霜面 tint + --lg-bg 预设渐变）；
+//   横幅不再单独渐变（background none 露整卡渐变，140px 高度/头像位置/分割线不动）；
+//   （补丁位 0→1·口径修正轮；2026-09-07）
+window.MN_SITE_VERSION = 'v0.2.23.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
