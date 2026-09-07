@@ -39,10 +39,11 @@
    液体玻璃引擎（liquid-glass.js = rdev/liquid-glass-react 移植；弹性跟手已按 v0.2.9.1 撤销口径下线——
    一律静态玻璃：折射+磨砂+镜面高光） */
 .profile-header.glass-bg .profile-banner { background: var(--lg-bg, var(--color-surface-container-high)); } /* 横幅=预设渐变（v0.2.24.0 预设类挂回卡上，横幅读卡上 --lg-bg） */
-.card-halo { margin: -6px; padding: 6px; border-radius: calc(var(--radius-lg) + 6px); background: var(--lg-bg, linear-gradient(135deg, #60a5fa, #a78bfa)); } /* v0.2.24.0 独立卡片背景层：包层挂背景预设类（自己的 --lg-bg），铺满整卡 + 四周阔出 6px（margin 负值抵消 padding，卡片视觉尺寸不变；兜底=参考代码蓝紫渐变） */
+.card-halo { margin: -6px; padding: 6px; position: relative; z-index: 0; border-radius: calc(var(--radius-lg) + 6px); background: var(--lg-bg, linear-gradient(135deg, #60a5fa, #a78bfa)); } /* v0.2.24.0 独立卡片背景层：包层挂背景预设类（自己的 --lg-bg），铺满整卡 + 四周阔出 6px（margin 负值抵消 padding，卡片视觉尺寸不变；兜底=参考代码蓝紫渐变）。v0.2.24.3 position:relative+z-index:0=包层建层叠上下文（引擎约定：玻璃面自带定位即层叠上下文，负 z 双层垫在包层底之上、卡内容之下不上逃） */
 .card-halo .profile-header { background: transparent; } /* v0.2.24.0 卡身纯透明——透出背景层（选中卡片背景时） */
 .card-halo.glass-clear { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.8); } /* v0.2.24.1/2 标准液态玻璃白边环 2px + 柔影——与用户参考代码一模一样（v0.2.24.2 填充层改透明） */
 .profile-header .lg-backdrop { -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); } /* 引擎默认 6px，主页卡给 14px 磨砂 */
+.card-halo > .lg-backdrop { -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4); } /* v0.2.24.3 包层引擎层 24px 磨砂（modal-card 同款=rdev 配方大面值；折射 70+三通道色散+镜面高光引擎自带）；子代选择器只命中包层自己的层，卡层仍 14px（横幅组不动） */
 .bg-default { --lg-bg: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-frost { --lg-tint: rgba(255,255,255,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.30)), linear-gradient(135deg, rgba(96,100,230,0.50), rgba(150,120,245,0.35) 50%, rgba(96,100,230,0.50)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-ocean { --lg-tint: rgba(30,90,200,0.10); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(30,90,200,0.55), rgba(40,140,190,0.40) 50%, rgba(30,90,200,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
@@ -50,7 +51,7 @@
 .glass-rose { --lg-tint: rgba(232,110,160,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(232,110,160,0.55), rgba(240,150,190,0.40) 50%, rgba(232,110,160,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-mint { --lg-tint: rgba(40,180,150,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(40,180,150,0.55), rgba(90,200,170,0.40) 50%, rgba(40,180,150,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-sunset { --lg-tint: rgba(240,130,60,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(240,130,60,0.55), rgba(240,80,120,0.40) 50%, rgba(240,130,60,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
-.glass-clear { --lg-bg: transparent; } /* v0.2.24.2 标准液态玻璃=纯透明玻璃（用户「把原本除了横幅以外默认的那个白背景也去掉」——v0.2.24.1 白磨砂在亮/暗主题下都像白背景）：无填充层，只有代码白边环 2px+柔影（见 .card-halo.glass-clear），卡身直透页面背景 */
+.glass-clear { --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.10)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.10), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.06), transparent 40%), var(--color-surface-container-high); } /* v0.2.24.3 标准液态玻璃=真液态玻璃（用户「不是你液态玻璃是真的吗」+「参考 rdev/liquid-glass-react」）：包层挂全站液态玻璃引擎（折射 70+三通道色散+磨砂 24px+饱和 140%+镜面高光=rdev 同款配方，见 renderHeader）+ 无色极轻白霜（0.14/0.04/0.10 三层=v0.2.24.1 白磨砂 ~1/4 强度，亮/暗主题都呈磨砂玻璃体而非白底；配方形状与横幅组同源、零色相）+ 代码白边环 2px+柔影（见 .card-halo.glass-clear）。v0.2.24.2 纯透明并入本配方：卡身仍直透、白底不再有 */
 /* 弹窗顶部 基础/自定义 导航 + 背景预设网格 */
 .edit-nav { display: flex; gap: 4px; background: var(--color-surface-container-low); border-radius: var(--radius-full); padding: 4px; margin-bottom: var(--space-md); }
 .edit-nav button { flex: 1; border: none; background: transparent; color: var(--color-outline); cursor: pointer; padding: 6px 12px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); font-weight: 600; }
@@ -541,6 +542,10 @@
     });
     // v0.2.23.0 玻璃预设 → 挂全站液体玻璃引擎（静态玻璃：折射+磨砂+高光；幂等 _lgStatic 守卫）
     if (cardBg && window.LG) window.LG.apply(document.querySelector('#profileHeader .profile-header'));
+    // v0.2.24.3 标准液态玻璃=真引擎挂包层（先 remove 清上轮守卫标记再 apply——包层 #profileHeader 跨重渲染常驻，
+    //   innerHTML 换卡已抹掉注入层但 _lgStatic 还在，直接 apply 会空转；默认无板时 remove 兜底清干净）
+    if (window.LG) window.LG.remove(headerWrap);
+    if (cardPlate && window.LG) window.LG.apply(headerWrap);
   }
 
   function toggleFollow() {
