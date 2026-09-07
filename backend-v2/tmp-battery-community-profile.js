@@ -1,4 +1,4 @@
-// tmp-battery-community-profile.js — v0.2.21.0 Community 个人主页 + 关注系统电池（2026-09-07；v0.2.23.0 加卡片背景液体玻璃链；v0.2.23.2 横幅/背景分开；v0.2.23.3 结构重排=横幅预设+卡身纯底色+四周 6px 光环；v0.2.24.0 独立双背景=横幅组改名+卡片背景新组、卡身纯透明+包层背景阔 6px；v0.2.24.1 卡片背景只 2 选项=默认/标准液态玻璃 glass-clear 无色+代码白边环 2px+柔影）
+// tmp-battery-community-profile.js — v0.2.21.0 Community 个人主页 + 关注系统电池（2026-09-07；v0.2.23.0 加卡片背景液体玻璃链；v0.2.23.2 横幅/背景分开；v0.2.23.3 结构重排=横幅预设+卡身纯底色+四周 6px 光环；v0.2.24.0 独立双背景=横幅组改名+卡片背景新组、卡身纯透明+包层背景阔 6px；v0.2.24.1 卡片背景只 2 选项=默认/标准液态玻璃 glass-clear 无色+代码白边环 2px+柔影；v0.2.24.2 glass-clear 白磨砂改纯透明填充（用户「把默认白背景也去掉」）+色块环示意）
 // 用户：「先把用户的个人主页做一下吧？」→ 钦定完整版 Twitter 式主页（头像/名字/简介/加入时间/统计 4 块 + 帖子/转发/点赞/收藏 4 tab）+ 关注系统 + 三入口。
 // 本地：静态壳 + document-start fetch 罐头（每次导航新文档生效——MN_API 底层走 fetch，罐头统一从 fetch 层拦；
 //   profile/posts 四 tab/follow/点赞/收藏/转发全罐头；唯一真资源 = /uploads/UPL-DEMO01.jpg 1x1 PNG 供瓦片+灯箱）。
@@ -33,7 +33,7 @@ const DOC_START_SRC = `
     cardBg: null, cardPlate: null,
     stats: { postCount: 1, repostCount: 1, likeReceivedCount: 1, likeCount: 2, favoriteCount: 1 }
   };
-  // 他人（USR-000202，bio 空 → 兜底文案；Female → 女；零帖 → 空态；关注链目标；v0.2.23.0 cardBg='glass-rose' 公开渲染他人背景；v0.2.24.1 cardPlate='glass-clear' 标准液态玻璃（无色）独立背景层）
+  // 他人（USR-000202，bio 空 → 兜底文案；Female → 女；零帖 → 空态；关注链目标；v0.2.23.0 cardBg='glass-rose' 公开渲染他人背景；v0.2.24.1/2 cardPlate='glass-clear' 标准液态玻璃（纯透明）独立背景层）
   var OTHER = {
     id: 'USR-000202', displayName: '电池他人', avatarUrl: null,
     bio: null, gender: 'Female', citizenId: 'CIT-000202', createdAt: '2026-07-15T00:00:00.000Z',
@@ -284,7 +284,7 @@ async function main() {
     const ver = await t.evalJs('window.MN_SITE_VERSION');
     const s1 = await t.evalJs("(() => { var a = document.querySelector('.user-module a[href*=\"community-profile.html\"]');" +
       " return { href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && !!a.querySelector('.user-name')) : false }; })()");
-    check('S1 版本 v0.2.24.1', ver === 'v0.2.24.1', 'ver=' + ver);
+    check('S1 版本 v0.2.24.2', ver === 'v0.2.24.2', 'ver=' + ver);
     check('S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）', s1.href === '../pages/community-profile.html?id=USR-000101' && s1.wrapped, s1.href);
 
     // S2 点侧栏锚 → 真导航到自己主页
@@ -468,17 +468,20 @@ async function main() {
       " flatCls: flat.className, flatBg: getComputedStyle(flat).backgroundImage }; })()");
     check('E6 横幅组点深海：active 唯一互斥 + 横幅条同步深海渐变', e6c.activeCount === 1 && e6c.activeBg === 'glass-ocean' && e6c.flatCls === 'edit-bg-flat glass-ocean' && e6c.flatBg.indexOf('linear-gradient') !== -1 && e6c.flatBg.indexOf('rgba(30, 90, 200') !== -1, JSON.stringify(e6c));
 
-    // E6c2 v0.2.24.1 卡片背景组点标准液态玻璃（两组各选各的互不影响）：包层预览 has-plate 无色磨砂 + 代码白边环 2px + 柔影 + 透明卡身透出
+    // E6c2 v0.2.24.1/2 卡片背景组点标准液态玻璃（两组各选各的互不影响）：包层预览 has-plate 纯透明填充（v0.2.24.2 白磨砂移除）+ 代码白边环 2px + 柔影 + 透明卡身透出
     await t.evalJs("document.querySelector('#editPlateGrid [data-plate=\"glass-clear\"]').click()");
     await sleep(300);
     const e6c2 = await t.evalJs("(() => { var active = document.querySelectorAll('#editPlateGrid [data-plate].active');" +
       " var pv = document.getElementById('editPlatePreview'); var pvCard = pv.querySelector('.pv-card');" +
       " var flat = document.querySelector('#editTabCustom .edit-bg-flat');" +
+      " var sw = document.querySelector('#editPlateGrid [data-plate=\"glass-clear\"] .swatch-fill');" +
       " return { activeCount: active.length, activePlate: active[0] ? active[0].getAttribute('data-plate') : null," +
       " pvCls: pv.className, pvBg: getComputedStyle(pv).backgroundImage, pvShadow: getComputedStyle(pv).boxShadow," +
-      " pvCardBgColor: getComputedStyle(pvCard).backgroundColor, flatCls: flat.className }; })()");
-    check('E6 卡片背景组点标准液态玻璃：active 唯一互斥 + 包层预览 has-plate glass-clear 无色纯白磨砂（无任何色相）+ 透明卡身透出 + 横幅组不受影响（仍深海）', e6c2.activeCount === 1 && e6c2.activePlate === 'glass-clear' && e6c2.pvCls === 'edit-bg-preview has-plate glass-clear' && e6c2.pvBg.indexOf('linear-gradient') !== -1 && e6c2.pvBg.indexOf('rgba(255, 255, 255') !== -1 && e6c2.pvBg.indexOf('rgba(232, 110, 160') === -1 && e6c2.pvBg.indexOf('rgba(30, 90, 200') === -1 && e6c2.pvBg.indexOf('rgba(96, 100, 230') === -1 && e6c2.pvCardBgColor === 'rgba(0, 0, 0, 0)' && e6c2.flatCls === 'edit-bg-flat glass-ocean', JSON.stringify(e6c2));
+      " pvCardBgColor: getComputedStyle(pvCard).backgroundColor, flatCls: flat.className," +
+      " swShadow: getComputedStyle(sw).boxShadow }; })()");
+    check('E6 卡片背景组点标准液态玻璃：active 唯一互斥 + 包层预览 has-plate glass-clear 纯透明填充（v0.2.24.2 无任何白磨砂/色相——用户「把白背景也去掉」）+ 透明卡身透出 + 横幅组不受影响（仍深海）', e6c2.activeCount === 1 && e6c2.activePlate === 'glass-clear' && e6c2.pvCls === 'edit-bg-preview has-plate glass-clear' && e6c2.pvBg === 'none' && e6c2.pvCardBgColor === 'rgba(0, 0, 0, 0)' && e6c2.flatCls === 'edit-bg-flat glass-ocean', JSON.stringify(e6c2));
     check('E6 v0.2.24.1 标准液态玻璃预览=代码白边环 2px（rgba(255,255,255,0.8) inset）+ 柔影（0 4px 12px rgba(0,0,0,0.4)）', e6c2.pvShadow.indexOf('rgba(255, 255, 255, 0.8)') !== -1 && e6c2.pvShadow.indexOf('inset') !== -1 && e6c2.pvShadow.indexOf('rgba(0, 0, 0, 0.4)') !== -1, e6c2.pvShadow);
+    check('E6 v0.2.24.2 标准液态玻璃色块=透明填充+白边环 2px+柔影（代码同款示意）', e6c2.swShadow.indexOf('rgba(255, 255, 255, 0.8)') !== -1 && e6c2.swShadow.indexOf('inset') !== -1 && e6c2.swShadow.indexOf('rgba(0, 0, 0, 0.4)') !== -1, e6c2.swShadow);
 
     // E6d 保存 → PATCH 带 cardBg+cardPlate 双字段 + 弹窗关 → 头部双背景重拉（横幅=卡上深海、卡片背景=包层标准液态玻璃无色、卡身纯透明）
     await t.evalJs("document.getElementById('editSaveBtn').click()");
@@ -499,7 +502,7 @@ async function main() {
     check('E6 保存 → PATCH 含 cardBg 恰 1 次且 body 精确 ={"cardBg":"glass-ocean","cardPlate":"glass-clear"}+ 弹窗关 + toast', e6dCardBgCalls.length === 1 && e6dCardBgCalls[0] === '{"cardBg":"glass-ocean","cardPlate":"glass-clear"}' && e6d.cardGone && e6d.toasts.indexOf('资料已保存') !== -1, JSON.stringify(e6dCardBgCalls));
     check('E6 头部重拉挂液体玻璃：liquid-glass + glass-ocean 类 + data-card-bg + 折射/高光双层', e6d.glass && e6d.cls.indexOf('glass-ocean') !== -1 && e6d.attr === 'glass-ocean' && e6d.layer && e6d.spec, JSON.stringify({ glass: e6d.glass, cls: e6d.cls, attr: e6d.attr, layer: e6d.layer, spec: e6d.spec }));
     check('E6 玻璃层 backdrop-filter 生效（blur 14px + saturate）', e6d.layerFilter && e6d.layerFilter.indexOf('blur(14px)') !== -1 && e6d.layerFilter.indexOf('saturate') !== -1, String(e6d.layerFilter));
-    check('E6 v0.2.24.1 独立双背景：横幅=卡上深海渐变 + 卡片背景=包层 card-halo glass-clear 无色纯白磨砂（无任何色相）+ 卡身纯透明透出背景层', e6d.bannerBgImg.indexOf('linear-gradient') !== -1 && e6d.bannerBgImg.indexOf('rgba(30, 90, 200') !== -1 && e6d.wrapCls === 'card-halo glass-clear' && e6d.wrapBg.indexOf('linear-gradient') !== -1 && e6d.wrapBg.indexOf('rgba(255, 255, 255') !== -1 && e6d.wrapBg.indexOf('rgba(232, 110, 160') === -1 && e6d.wrapBg.indexOf('rgba(30, 90, 200') === -1 && e6d.wrapBg.indexOf('rgba(96, 100, 230') === -1 && e6d.cardBgColor === 'rgba(0, 0, 0, 0)', 'banner=' + e6d.bannerBgImg.slice(0, 50) + ' wrapCls=' + e6d.wrapCls + ' wrapBg=' + e6d.wrapBg.slice(0, 50) + ' card=' + e6d.cardBgColor);
+    check('E6 v0.2.24.2 独立双背景：横幅=卡上深海渐变 + 卡片背景=包层 card-halo glass-clear 纯透明填充（白磨砂已移除）+ 卡身纯透明直透页面', e6d.bannerBgImg.indexOf('linear-gradient') !== -1 && e6d.bannerBgImg.indexOf('rgba(30, 90, 200') !== -1 && e6d.wrapCls === 'card-halo glass-clear' && e6d.wrapBg === 'none' && e6d.cardBgColor === 'rgba(0, 0, 0, 0)', 'banner=' + e6d.bannerBgImg.slice(0, 50) + ' wrapCls=' + e6d.wrapCls + ' wrapBg=' + e6d.wrapBg + ' card=' + e6d.cardBgColor);
     check('E6 v0.2.24.1 标准液态玻璃包层=代码白边环 2px（rgba(255,255,255,0.8) inset）+ 柔影（0 4px 12px rgba(0,0,0,0.4)）', e6d.wrapShadow.indexOf('rgba(255, 255, 255, 0.8)') !== -1 && e6d.wrapShadow.indexOf('inset') !== -1 && e6d.wrapShadow.indexOf('rgba(0, 0, 0, 0.4)') !== -1, e6d.wrapShadow);
 
     // E6e 重开 → 自定义 tab 双组预填当前背景（横幅 glass-ocean + 卡片背景 glass-rose 各选中各预览）→ 双双选默认 → 保存 → PATCH 双 null → 头部回默认
@@ -634,8 +637,8 @@ async function main() {
     check('O1 他人主页：名字/♀svg/兜底简介/加入于 + 关注钮（未关注态）+ 无编辑资料钮 + 空态', o1.text.indexOf('电池他人') !== -1 && o1.badgeSrc && o1.badgeSrc.indexOf('female_24dp_F18AFF') !== -1 && o1.text.indexOf('这个人很懒，还没有简介') !== -1 && o1.text.indexOf('加入于 2026年7月15日') !== -1 && o1.hasFollow && o1.pressed === 'false' && o1.btnText === '关注' && !o1.hasEdit && o1.empty, o1.btnText);
     check('O1 粉丝数初始 0', o1.follower === '0', o1.follower);
     check('O1 v0.2.22.6 点赞/收藏默认私人：他人主页只 2 tab（帖子/转发）+ 无点赞/收藏统计块', o1.tabs === 2 && o1.statTabs === 'posts,reposts', 'tabs=' + o1.tabs + ' stats=' + o1.statTabs);
-    check('O1 v0.2.24.1 他人双背景公开渲染：卡=横幅预设 glass-rose（liquid-glass+data-card-bg+玻璃层）+ 包层=卡片背景 card-halo glass-clear 无色纯白磨砂 + 卡身纯透明', o1.glass && o1.bgAttr === 'glass-rose' && o1.lgLayer && o1.wrapCls.indexOf('card-halo') !== -1 && o1.wrapCls.indexOf('glass-clear') !== -1 && o1.wrapBg.indexOf('linear-gradient') !== -1 && o1.wrapBg.indexOf('rgba(255, 255, 255') !== -1 && o1.wrapBg.indexOf('rgba(30, 90, 200') === -1 && o1.wrapBg.indexOf('rgba(232, 110, 160') === -1 && o1.cardBgColor === 'rgba(0, 0, 0, 0)', JSON.stringify({ glass: o1.glass, attr: o1.bgAttr, layer: o1.lgLayer, wrapCls: o1.wrapCls, wrapBg: o1.wrapBg.slice(0, 50), cardBgColor: o1.cardBgColor }));
-    check('O1 v0.2.24.1 标准液态玻璃=代码白边环 2px + 柔影', o1.wrapShadow.indexOf('rgba(255, 255, 255, 0.8)') !== -1 && o1.wrapShadow.indexOf('inset') !== -1 && o1.wrapShadow.indexOf('rgba(0, 0, 0, 0.4)') !== -1, o1.wrapShadow);
+    check('O1 v0.2.24.2 他人双背景公开渲染：卡=横幅预设 glass-rose（liquid-glass+data-card-bg+玻璃层）+ 包层=卡片背景 card-halo glass-clear 纯透明填充（白磨砂已移除）+ 卡身纯透明', o1.glass && o1.bgAttr === 'glass-rose' && o1.lgLayer && o1.wrapCls.indexOf('card-halo') !== -1 && o1.wrapCls.indexOf('glass-clear') !== -1 && o1.wrapBg === 'none' && o1.cardBgColor === 'rgba(0, 0, 0, 0)', JSON.stringify({ glass: o1.glass, attr: o1.bgAttr, layer: o1.lgLayer, wrapCls: o1.wrapCls, wrapBg: o1.wrapBg, cardBgColor: o1.cardBgColor }));
+    check('O1 v0.2.24.1/2 标准液态玻璃=代码白边环 2px + 柔影', o1.wrapShadow.indexOf('rgba(255, 255, 255, 0.8)') !== -1 && o1.wrapShadow.indexOf('inset') !== -1 && o1.wrapShadow.indexOf('rgba(0, 0, 0, 0.4)') !== -1, o1.wrapShadow);
 
     // O2 关注链：点击 → 乐观已关注 + POST 捕获 → 罐头回程 followerCount 1 + toast；再点 → DELETE → 取消
     await t.evalJs("document.getElementById('profileFollowBtn').click()");
@@ -691,7 +694,7 @@ async function main() {
     // L1 hub 首卡作者锚 → 个人主页（href 形状断言）
     const l1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]'); var a = c ? c.querySelector('.post-author-link') : null;" +
       " return { ver: window.MN_SITE_VERSION, href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && a.textContent.length > 0) : false }; })()");
-    check('L1 版本 v0.2.24.1', l1.ver === 'v0.2.24.1', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.24.2', l1.ver === 'v0.2.24.2', 'ver=' + l1.ver);
     check('L1 云卡作者锚 → profile（id=USR- 形状 + 头像+名字在内）', l1.href && /^community-profile\.html\?id=USR-\d{6}$/.test(l1.href) && l1.wrapped, l1.href);
 
     // L2 点作者锚 → 真导航 → 头部渲染（真数据）+ 几何 + 关注钮
