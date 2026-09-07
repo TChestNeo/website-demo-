@@ -287,7 +287,7 @@ async function main() {
     const ver = await t.evalJs('window.MN_SITE_VERSION');
     const s1 = await t.evalJs("(() => { var a = document.querySelector('.user-module a[href*=\"community-profile.html\"]');" +
       " return { href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && !!a.querySelector('.user-name')) : false }; })()");
-    check('S1 版本 v0.2.25.1', ver === 'v0.2.25.1', 'ver=' + ver);
+    check('S1 版本 v0.2.25.2', ver === 'v0.2.25.2', 'ver=' + ver);
     check('S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）', s1.href === '../pages/community-profile.html?id=USR-000101' && s1.wrapped, s1.href);
 
     // S2 点侧栏锚 → 真导航到自己主页
@@ -482,12 +482,12 @@ async function main() {
       " var flat = document.querySelector('#editTabCustom .edit-bg-flat');" +
       " var sw = document.querySelector('#editPlateGrid [data-plate=\"glass-clear\"] .swatch-fill');" +
       " return { activeCount: active.length, activePlate: active[0] ? active[0].getAttribute('data-plate') : null," +
-      " pvCls: pv.className, pvBg: getComputedStyle(pv).backgroundImage, pvShadow: getComputedStyle(pv).boxShadow," +
+      " pvCls: pv.className, pvBg: getComputedStyle(pv).backgroundImage, pvBgColor: getComputedStyle(pv).backgroundColor, pvShadow: getComputedStyle(pv).boxShadow," +
       " pvCardBgColor: getComputedStyle(pvCard).backgroundColor, flatCls: flat.className," +
       " pvOrbB: getComputedStyle(pvCard, '::before').backgroundImage, pvOrbA: getComputedStyle(pvCard, '::after').backgroundImage," +
       " pvShMix: getComputedStyle(pv, '::before').mixBlendMode, pvShBg: getComputedStyle(pv, '::before').backgroundImage, pvShTop: getComputedStyle(pv, '::before').top," +
       " swShadow: getComputedStyle(sw).boxShadow }; })()");
-    check('E6 卡片背景组点标准液态玻璃：active 唯一互斥 + 包层预览 has-plate glass-clear 真液态玻璃霜体（无色极轻白霜 gradient 在 + 三色相 30,90,200/232,110,160/96,100,230 均不在）+ 透明卡身透出 + 横幅组不受影响（仍深海）', e6c2.activeCount === 1 && e6c2.activePlate === 'glass-clear' && e6c2.pvCls === 'edit-bg-preview has-plate glass-clear' && e6c2.pvBg.indexOf('linear-gradient') !== -1 && e6c2.pvBg.indexOf('rgba(255, 255, 255') !== -1 && e6c2.pvBg.indexOf('30, 90, 200') === -1 && e6c2.pvBg.indexOf('232, 110, 160') === -1 && e6c2.pvBg.indexOf('96, 100, 230') === -1 && e6c2.pvCardBgColor === 'rgba(0, 0, 0, 0)' && e6c2.flatCls === 'edit-bg-flat glass-ocean', JSON.stringify(e6c2));
+    check('E6 卡片背景组点标准液态玻璃：active 唯一互斥 + 包层预览 has-plate glass-clear 真液态玻璃霜体（无色极轻白霜 gradient 在 + 三色相 30,90,200/232,110,160/96,100,230 均不在）+ 透明卡身透出 + 横幅组不受影响（仍深海）+ v0.2.25.2 预览无默认底色', e6c2.activeCount === 1 && e6c2.activePlate === 'glass-clear' && e6c2.pvCls === 'edit-bg-preview has-plate glass-clear' && e6c2.pvBg.indexOf('linear-gradient') !== -1 && e6c2.pvBg.indexOf('rgba(255, 255, 255') !== -1 && e6c2.pvBg.indexOf('30, 90, 200') === -1 && e6c2.pvBg.indexOf('232, 110, 160') === -1 && e6c2.pvBg.indexOf('96, 100, 230') === -1 && e6c2.pvBgColor === 'rgba(0, 0, 0, 0)' && e6c2.pvCardBgColor === 'rgba(0, 0, 0, 0)' && e6c2.flatCls === 'edit-bg-flat glass-ocean', JSON.stringify(e6c2));
     check('E6 v0.2.24.1 标准液态玻璃预览=代码白边环 2px（rgba(255,255,255,0.8) inset）+ 柔影（0 4px 12px rgba(0,0,0,0.4)）', e6c2.pvShadow.indexOf('rgba(255, 255, 255, 0.8)') !== -1 && e6c2.pvShadow.indexOf('inset') !== -1 && e6c2.pvShadow.indexOf('rgba(0, 0, 0, 0.4)') !== -1, e6c2.pvShadow);
     check('E6 v0.2.24.2 标准液态玻璃色块=透明填充+白边环 2px+柔影（代码同款示意）', e6c2.swShadow.indexOf('rgba(255, 255, 255, 0.8)') !== -1 && e6c2.swShadow.indexOf('inset') !== -1 && e6c2.swShadow.indexOf('rgba(0, 0, 0, 0.4)') !== -1, e6c2.swShadow);
     check('E6 v0.2.24.4 预览玻璃光球：无色双白光球在透明卡身内（玻璃后面有光的示意；用户「为什么这个玻璃会有蓝色和紫色在背面能不能去掉」→光球去色纯白，蓝紫色值均不在）', e6c2.pvOrbB.indexOf('255, 255, 255') !== -1 && e6c2.pvOrbA.indexOf('255, 255, 255') !== -1 && e6c2.pvOrbB.indexOf('96, 165, 250') === -1 && e6c2.pvOrbA.indexOf('167, 139, 250') === -1, e6c2.pvOrbB + ' | ' + e6c2.pvOrbA);
@@ -506,7 +506,7 @@ async function main() {
       " layer: !!h.querySelector('.lg-backdrop'), spec: !!h.querySelector('.lg-specular')," +
       " layerFilter: h.querySelector('.lg-backdrop') ? (getComputedStyle(h.querySelector('.lg-backdrop')).backdropFilter || getComputedStyle(h.querySelector('.lg-backdrop')).webkitBackdropFilter) : null," +
       " cardBgColor: getComputedStyle(h).backgroundColor, bannerBgImg: getComputedStyle(h.querySelector('.profile-banner')).backgroundImage," +
-      " wrapCls: w.className, wrapBg: getComputedStyle(w).backgroundImage," +
+      " wrapCls: w.className, wrapBg: getComputedStyle(w).backgroundImage, wrapBgColor: getComputedStyle(w).backgroundColor," +
       " wrapShadow: getComputedStyle(w).boxShadow," +
       " wrapLg: w.classList.contains('lg-static'), wrapLayer: !!haloBack, wrapSpec: !!sp," +
       " haloLayerFilter: haloBack ? (getComputedStyle(haloBack).backdropFilter || getComputedStyle(haloBack).webkitBackdropFilter) : null," +
@@ -526,6 +526,7 @@ async function main() {
     check('E6 头部重拉挂液体玻璃：liquid-glass + glass-ocean 类 + data-card-bg + 折射/高光双层', e6d.glass && e6d.cls.indexOf('glass-ocean') !== -1 && e6d.attr === 'glass-ocean' && e6d.layer && e6d.spec, JSON.stringify({ glass: e6d.glass, cls: e6d.cls, attr: e6d.attr, layer: e6d.layer, spec: e6d.spec }));
     check('E6 玻璃层 backdrop-filter 生效（blur 14px + saturate）', e6d.layerFilter && e6d.layerFilter.indexOf('blur(14px)') !== -1 && e6d.layerFilter.indexOf('saturate') !== -1, String(e6d.layerFilter));
     check('E6 v0.2.24.3 独立双背景：横幅=卡上深海渐变 + 卡片背景=包层 card-halo glass-clear lg-static（引擎类在）+ 真液态玻璃霜体（无色极轻白霜 gradient 在 + 三色相均不在）+ 卡身纯透明直透页面', e6d.bannerBgImg.indexOf('linear-gradient') !== -1 && e6d.bannerBgImg.indexOf('rgba(30, 90, 200') !== -1 && e6d.wrapCls === 'card-halo glass-clear lg-static' && e6d.wrapBg.indexOf('linear-gradient') !== -1 && e6d.wrapBg.indexOf('rgba(255, 255, 255') !== -1 && e6d.wrapBg.indexOf('30, 90, 200') === -1 && e6d.wrapBg.indexOf('232, 110, 160') === -1 && e6d.wrapBg.indexOf('96, 100, 230') === -1 && e6d.cardBgColor === 'rgba(0, 0, 0, 0)', 'banner=' + e6d.bannerBgImg.slice(0, 50) + ' wrapCls=' + e6d.wrapCls + ' wrapBg=' + e6d.wrapBg.slice(0, 80) + ' card=' + e6d.cardBgColor);
+    check('E6 v0.2.25.2 默认底色移除：包层背景色透明（横幅以外彻底透到页面——用户「默认的那个背景你也没在标准液态玻璃背景的情况下除了横幅以外的移除啊」）', e6d.wrapBgColor === 'rgba(0, 0, 0, 0)', 'wrapBgColor=' + e6d.wrapBgColor);
     check('E6 v0.2.24.3 真液态玻璃引擎挂包层：lg-static 类 + 折射层 .lg-backdrop + 镜面高光 .lg-specular 双注入 + 层磨砂 24px saturate（rdev 配方）', e6d.wrapLg && e6d.wrapLayer && e6d.wrapSpec && e6d.haloLayerFilter && e6d.haloLayerFilter.indexOf('blur(24px)') !== -1 && e6d.haloLayerFilter.indexOf('saturate') !== -1, JSON.stringify({ wrapLg: e6d.wrapLg, wrapLayer: e6d.wrapLayer, wrapSpec: e6d.wrapSpec, haloLayerFilter: e6d.haloLayerFilter }));
     check('E6 v0.2.24.4 玻璃光场亮起：.lg-orb-field 在包层内 display=block + 无色双白光球（蓝紫 96,165,250/167,139,250 均不在——用户去色）+ 高光层斜向流光', e6d.orb && e6d.orbVis === 'block' && e6d.orbB.indexOf('255, 255, 255') !== -1 && e6d.orbA.indexOf('255, 255, 255') !== -1 && e6d.orbB.indexOf('96, 165, 250') === -1 && e6d.orbA.indexOf('167, 139, 250') === -1 && e6d.specBg.indexOf('linear-gradient') !== -1, JSON.stringify({ orb: e6d.orb, orbVis: e6d.orbVis, orbB: e6d.orbB, orbA: e6d.orbA, specBg: e6d.specBg.slice(0, 60) }));
     check('E6 v0.2.24.1 标准液态玻璃包层=代码白边环 2px（rgba(255,255,255,0.8) inset）+ 柔影（0 4px 12px rgba(0,0,0,0.4)）', e6d.wrapShadow.indexOf('rgba(255, 255, 255, 0.8)') !== -1 && e6d.wrapShadow.indexOf('inset') !== -1 && e6d.wrapShadow.indexOf('rgba(0, 0, 0, 0.4)') !== -1, e6d.wrapShadow);
@@ -728,7 +729,7 @@ async function main() {
       " follower: (document.getElementById('profileFollowerCount') || {}).textContent || null," +
       " tabs: document.querySelectorAll('#profileTabs [data-tab]').length, statTabs: statTabs," +
       " glass: hc.classList.contains('liquid-glass'), bgAttr: hc.getAttribute('data-card-bg'), lgLayer: !!hc.querySelector('.lg-backdrop')," +
-      " wrapCls: h.className, wrapBg: getComputedStyle(h).backgroundImage, wrapShadow: getComputedStyle(h).boxShadow," +
+      " wrapCls: h.className, wrapBg: getComputedStyle(h).backgroundImage, wrapBgColor: getComputedStyle(h).backgroundColor, wrapShadow: getComputedStyle(h).boxShadow," +
       " wrapLg: h.classList.contains('lg-static'), wrapLayer: !!h.querySelector(':scope > .lg-backdrop'), wrapSpec: !!h.querySelector(':scope > .lg-specular')," +
       " orbVis: h.querySelector(':scope > .lg-orb-field') ? getComputedStyle(h.querySelector(':scope > .lg-orb-field')).display : null," +
       " orbB: h.querySelector(':scope > .lg-orb-field') ? getComputedStyle(h.querySelector(':scope > .lg-orb-field'), '::before').backgroundImage : null," +
@@ -746,6 +747,7 @@ async function main() {
     check('O1 v0.2.24.1/2 标准液态玻璃=代码白边环 2px + 柔影', o1.wrapShadow.indexOf('rgba(255, 255, 255, 0.8)') !== -1 && o1.wrapShadow.indexOf('inset') !== -1 && o1.wrapShadow.indexOf('rgba(0, 0, 0, 0.4)') !== -1, o1.wrapShadow);
     check('O1 v0.2.25.0 整页背景公开渲染：他人主页也渲染本人设置的图（body page-bg-active + 背景含 UPL-DEMO01.jpg + 深色蒙层；计算样式把相对路径解析为绝对 URL 属正常）', o1.bodyCls.indexOf('page-bg-active') !== -1 && o1.bodyBg.indexOf('UPL-DEMO01.jpg') !== -1 && o1.bodyBg.indexOf('rgba(10, 10, 16, 0.38)') !== -1, 'cls=' + o1.bodyCls + ' bg=' + o1.bodyBg.slice(0, 150));
     check('O1 v0.2.25.1 玻璃体可见化：包层背景复刻页面背景图（含 UPL-DEMO01.jpg + attachment 含 fixed=与 body 同参数对齐，磨砂层直采样包层→demo 同款玻璃后有场景必现）+ rdev 双层环形高光（::before screen/::after overlay+135° 白渐变+1.5px 环贴卡缘 top=6px）+ 光球提亮 0.85/0.75', o1.wrapBg.indexOf('UPL-DEMO01.jpg') !== -1 && o1.wrapAttach.indexOf('fixed') !== -1 && o1.shBefMix === 'screen' && o1.shAftMix === 'overlay' && o1.shBefBg.indexOf('135deg') !== -1 && o1.shBefTop === '6px' && o1.shBefPad === '1.5px' && (o1.shMask.indexOf('xor') !== -1 || o1.shMask.indexOf('exclude') !== -1) && o1.orbB.indexOf('0.85') !== -1 && o1.orbA.indexOf('0.75') !== -1, JSON.stringify({ wrapBg: o1.wrapBg.slice(0, 120), attach: o1.wrapAttach, bMix: o1.shBefMix, aMix: o1.shAftMix, bBg: o1.shBefBg.slice(0, 60), top: o1.shBefTop, pad: o1.shBefPad, mask: o1.shMask, orbB: o1.orbB.slice(0, 60), orbA: o1.orbA.slice(0, 60) }));
+    check('O1 v0.2.25.2 默认底色移除：包层背景色透明 + 复刻层含与 body 同款深色蒙层 rgba(10,10,16,0.38)（玻璃看穿页面=页面本来样子，无接缝、白字可读）', o1.wrapBgColor === 'rgba(0, 0, 0, 0)' && o1.wrapBg.indexOf('rgba(10, 10, 16, 0.38)') !== -1, 'wrapBgColor=' + o1.wrapBgColor + ' wrapBg=' + o1.wrapBg.slice(0, 120));
 
     // O2 关注链：点击 → 乐观已关注 + POST 捕获 → 罐头回程 followerCount 1 + toast；再点 → DELETE → 取消
     await t.evalJs("document.getElementById('profileFollowBtn').click()");
@@ -801,7 +803,7 @@ async function main() {
     // L1 hub 首卡作者锚 → 个人主页（href 形状断言）
     const l1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]'); var a = c ? c.querySelector('.post-author-link') : null;" +
       " return { ver: window.MN_SITE_VERSION, href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && a.textContent.length > 0) : false }; })()");
-    check('L1 版本 v0.2.25.1', l1.ver === 'v0.2.25.1', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.25.2', l1.ver === 'v0.2.25.2', 'ver=' + l1.ver);
     check('L1 云卡作者锚 → profile（id=USR- 形状 + 头像+名字在内）', l1.href && /^community-profile\.html\?id=USR-\d{6}$/.test(l1.href) && l1.wrapped, l1.href);
 
     // L2 点作者锚 → 真导航 → 头部渲染（真数据）+ 几何 + 关注钮
@@ -825,7 +827,7 @@ async function main() {
       " glassCls: h.querySelector('.profile-header').classList.contains('liquid-glass'), cardLayer: !!h.querySelector('.profile-header > .lg-backdrop')," +
       " wrapCls: h.className, wrapLg: h.classList.contains('lg-static'), wrapLayer: !!h.querySelector(':scope > .lg-backdrop')," +
       " orbVis: h.querySelector(':scope > .lg-orb-field') ? getComputedStyle(h.querySelector(':scope > .lg-orb-field')).display : null," +
-      " cardBgColor: getComputedStyle(h.querySelector('.profile-header')).backgroundColor }; })()");
+      " cardBgColor: getComputedStyle(h.querySelector('.profile-header')).backgroundColor, wrapBgColor: getComputedStyle(h).backgroundColor }; })()");
     check('L2 主页渲染：非 404 + 头部高度 > 100 + v0.2.22.6 非本人只 2 tab（帖子/转发）+ 统计 2 块 + counts 含获赞', l2.s404 === 'none' && l2.hH > 100 && l2.tabs === 2 && l2.nums.split('/').length === 2 && l2.text.indexOf('获赞') !== -1, 'h=' + l2.hH + ' nums=' + l2.nums + ' text=' + l2.text.slice(0, 80));
     check('L2 头部真数据：名字 + @CIT- + 简介或兜底 + 加入于', l2.text.indexOf('@CIT-') !== -1 && (l2.text.indexOf('这个人很懒，还没有简介') !== -1 || l2.text.indexOf('加入于') !== -1) && l2.text.indexOf('加入于') !== -1, l2.text.slice(0, 100));
     check('L2 关注钮存在（未关注态）+ 侧栏 + 返回链', l2.hasFollow && l2.pressed === 'false' && l2.sLen > 50 && l2.backHref === 'community-hub.html', 'pressed=' + l2.pressed);
@@ -837,6 +839,7 @@ async function main() {
     check('L2 v0.2.24.3 包层引擎与 card-halo 一致（有 halo ⇔ 引擎 lg-static+折射层挂包层；无 halo ⇔ 引擎不挂）', (l2.wrapCls.indexOf('card-halo') !== -1 && l2.wrapLg && l2.wrapLayer) || (l2.wrapCls.indexOf('card-halo') === -1 && !l2.wrapLg && !l2.wrapLayer), 'wrapCls=' + l2.wrapCls + ' wrapLg=' + l2.wrapLg + ' wrapLayer=' + l2.wrapLayer);
     check('L2 v0.2.24.4 玻璃光场与卡片背景一致（有 halo ⇔ 光场 display=block；无 halo ⇔ 光场 display=none）', (l2.wrapCls.indexOf('card-halo') !== -1 && l2.orbVis === 'block') || (l2.wrapCls.indexOf('card-halo') === -1 && l2.orbVis === 'none'), 'wrapCls=' + l2.wrapCls + ' orbVis=' + l2.orbVis);
     check('L2 v0.2.24.0 卡片背景层与卡透明一致（card-halo 在 ⇔ 卡身纯透明；无 halo ⇔ 卡回实底）', (l2.wrapCls.indexOf('card-halo') !== -1 && l2.cardBgColor === 'rgba(0, 0, 0, 0)') || (l2.wrapCls.indexOf('card-halo') === -1 && l2.cardBgColor !== 'rgba(0, 0, 0, 0)'), 'wrapCls=' + l2.wrapCls + ' card=' + l2.cardBgColor);
+    check('L2 v0.2.25.2 默认底色移除：包层背景色透明（有 halo ⇔ 横幅以外无默认底色直透页面；无 halo 跳过）', (l2.wrapCls.indexOf('card-halo') !== -1 && l2.wrapBgColor === 'rgba(0, 0, 0, 0)') || l2.wrapCls.indexOf('card-halo') === -1, 'wrapCls=' + l2.wrapCls + ' wrapBgColor=' + l2.wrapBgColor);
 
     // L3 关注 401 回滚链：点击 → 服务端 401 → 乐观回滚 + toast 登录已过期
     await t.evalJs("document.getElementById('profileFollowBtn').click()");

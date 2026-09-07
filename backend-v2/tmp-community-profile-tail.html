@@ -51,7 +51,7 @@
 .glass-rose { --lg-tint: rgba(232,110,160,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(232,110,160,0.55), rgba(240,150,190,0.40) 50%, rgba(232,110,160,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-mint { --lg-tint: rgba(40,180,150,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(40,180,150,0.55), rgba(90,200,170,0.40) 50%, rgba(40,180,150,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-sunset { --lg-tint: rgba(240,130,60,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(240,130,60,0.55), rgba(240,80,120,0.40) 50%, rgba(240,130,60,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
-.glass-clear { --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.10)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.10), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.06), transparent 40%), var(--color-surface-container-high); } /* v0.2.24.3 标准液态玻璃=真液态玻璃（用户「不是你液态玻璃是真的吗」+「参考 rdev/liquid-glass-react」）：包层挂全站液态玻璃引擎（折射 70+三通道色散+磨砂 24px+饱和 140%+镜面高光=rdev 同款配方，见 renderHeader）+ 无色极轻白霜（0.14/0.04/0.10 三层=v0.2.24.1 白磨砂 ~1/4 强度，亮/暗主题都呈磨砂玻璃体而非白底；配方形状与横幅组同源、零色相）+ 代码白边环 2px+柔影（见 .card-halo.glass-clear）。v0.2.24.2 纯透明并入本配方：卡身仍直透、白底不再有 */
+.glass-clear { --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.10)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.10), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.06), transparent 40%); } /* v0.2.24.3 标准液态玻璃=真液态玻璃（用户「不是你液态玻璃是真的吗」+「参考 rdev/liquid-glass-react」）：包层挂全站液态玻璃引擎（折射 70+三通道色散+磨砂 24px+饱和 140%+镜面高光=rdev 同款配方，见 renderHeader）+ 无色极轻白霜（0.14/0.04/0.10 三层=v0.2.24.1 白磨砂 ~1/4 强度；配方形状与横幅组同源、零色相）+ 代码白边环 2px+柔影（见 .card-halo.glass-clear）。v0.2.24.2 纯透明并入本配方：卡身仍直透、白底不再有。v0.2.25.2 用户「默认的那个背景你也没在标准液态玻璃背景的情况下除了横幅以外的移除啊」——去掉垫底 var(--color-surface-container-high)：横幅以外区域彻底透到页面（无默认底色），仅留三层无色白霜+引擎光场/高光/双环各层 */
 .card-halo > .lg-orb-field { display: block; position: absolute; inset: 0; z-index: -2; border-radius: inherit; overflow: hidden; pointer-events: none; } /* v0.2.24.4 玻璃光场（用户「还是一样没有」根因=rdev demo 玻璃后有彩色场景可折，本站页面背景纯平→折射/磨砂全无对象）：包层内置无色白光球垫在引擎磨砂层之下——光先被 blur(24px) 磨开再被折射滤镜三通道色散（折射后光斑边缘仍会泛出轻微彩边=液体玻璃天然色散，不是上色；首版光球用参考代码蓝紫 #60a5fa/#a78bfa 被用户「为什么有蓝色和紫色在背面能不能去掉」驳回→改纯白） */
 .lg-orb-field { display: none; } /* 默认无板/无包层：光场不亮（卡身实底也会盖住）——只有标准液态玻璃亮光 */
 .card-halo > .lg-orb-field::before { content: ''; position: absolute; left: -70px; top: 30px; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%); }
@@ -89,12 +89,13 @@
   background: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.32) 33%, rgba(255, 255, 255, 0.6) 66%, rgba(255, 255, 255, 0) 100%);
 }
 .page-bg-active .card-halo.glass-clear {
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.10)), radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.10), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255, 255, 255, 0.06), transparent 40%), var(--page-bg-image, none);
-  background-size: auto, auto, auto, cover;
-  background-position: 0 0, 0 0, 0 0, center;
-  background-attachment: scroll, scroll, scroll, fixed;
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.10)), radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.10), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255, 255, 255, 0.06), transparent 40%), linear-gradient(rgba(10, 10, 16, 0.38), rgba(10, 10, 16, 0.38)), var(--page-bg-image, none);
+  background-size: auto, auto, auto, auto, cover;
+  background-position: 0 0, 0 0, 0 0, 0 0, center;
+  background-attachment: scroll, scroll, scroll, scroll, fixed;
   background-repeat: no-repeat;
 }
+/* v0.2.25.2 复刻层加与 body 同款深色蒙层（rgba(10,10,16,0.38) 一层铺满）=body.page-bg-active 完全同参数——玻璃看穿的页面就是页面本来样子（蒙层+图），包层区域与页周无接缝、白字可读（去默认底色后白霜薄，蒙层保对比度） */
 /* 弹窗顶部 基础/自定义 导航 + 背景预设网格 */
 .edit-nav { display: flex; gap: 4px; background: var(--color-surface-container-low); border-radius: var(--radius-full); padding: 4px; margin-bottom: var(--space-md); }
 .edit-nav button { flex: 1; border: none; background: transparent; color: var(--color-outline); cursor: pointer; padding: 6px 12px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); font-weight: 600; }
