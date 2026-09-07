@@ -162,7 +162,12 @@ window.MN_SITE = window.MN_SITE || {};
 //   （统计区恢复四块 grid 4 列、.profile-stat-static 删除）→ 并入 .profile-counts 第三组（粉丝 关注 获赞，
 //   仍在 .profile-top 行最右）；后端 likeReceivedCount 保留不动；
 //   （补丁位 3→4·观感微调轮；2026-09-07）
-window.MN_SITE_VERSION = 'v0.2.22.4';
+// v0.2.22.5 = Community 主页 横幅 + 头像下调 + 简介/头像分割线（用户「然后我希望你把从简介和头像之间画一个分割线 然后把头像的位置下调些 我希望添加一个横幅」）：
+//   头部卡顶部全宽横幅（.profile-banner 140px 品牌渐变+双径向高光；卡片 padding 移入 .profile-body、overflow hidden）；
+//   头像行随横幅下移（横幅下 space-md 间距）；.profile-top 底 border-bottom 1px 分割线横贯（简介与头像之间）；
+//   零后端零共享文件（tail 改+重建）；
+//   （补丁位 4→5·观感微调轮；2026-09-07）
+window.MN_SITE_VERSION = 'v0.2.22.5';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

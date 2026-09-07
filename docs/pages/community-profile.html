@@ -2241,8 +2241,10 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 .profile-page-wrap { max-width: 680px; margin: 0 auto; padding: var(--space-sm) 0; display: flex; flex-direction: column; gap: var(--space-md); }
 .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--color-primary); text-decoration: none; font-size: var(--fs-label-md); width: fit-content; }
 .back-link:hover { text-decoration: underline; }
-.profile-header { display: flex; flex-direction: column; gap: var(--space-sm); padding: var(--space-lg); }
-.profile-top { display: flex; align-items: center; gap: var(--space-md); } /* v0.2.22.2 名称/id/性别 → 头像右侧（Twitter 式横排） */
+.profile-header { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; } /* v0.2.22.5 padding 移入 profile-body，横幅顶满卡 */
+.profile-banner { height: 140px; flex: none; background: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); } /* v0.2.22.5 顶部横幅（用户「添加一个横幅」） */
+.profile-body { display: flex; flex-direction: column; gap: var(--space-sm); padding: var(--space-md) var(--space-lg) var(--space-lg); }
+.profile-top { display: flex; align-items: center; gap: var(--space-md); border-bottom: 1px solid var(--color-outline-variant); padding-bottom: var(--space-md); } /* v0.2.22.2 横排；v0.2.22.5 底部分割线（简介与头像之间）+ 头像随横幅下调 */
 .profile-avatar { width: 72px; height: 72px; border-radius: 9999px; object-fit: cover; border: 3px solid var(--color-surface); flex: none; }
 .profile-bio { margin: 0; color: var(--color-on-surface-variant); font-size: var(--fs-label-md); white-space: pre-wrap; word-break: break-word; }
 .profile-joined { display: inline-flex; align-items: center; gap: 6px; color: var(--color-outline); font-size: var(--fs-label-sm); }
@@ -2680,6 +2682,8 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     var genderTxt = GENDER_ZH[u.gender] || null;
     document.getElementById('profileHeader').innerHTML =
       '<div class="card profile-header">' +
+        '<div class="profile-banner"></div>' +
+        '<div class="profile-body">' +
         '<div class="profile-top">' +
           '<img src="' + escapeHtml(u.avatarUrl || window._slatiFallbackAvatar) + '" alt="" class="profile-avatar">' +
           '<div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px">' +
@@ -2700,6 +2704,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           statBlock('favorites', '收藏', u.stats.favoriteCount) +
         '</div>' +
         '<div class="profile-follow-row">' + followBtnHtml(u) + '</div>' +
+        '</div>' +
       '</div>';
     document.querySelectorAll('#profileHeader [data-goto-tab]').forEach(function (b) {
       b.addEventListener('click', function () { switchTab(b.getAttribute('data-goto-tab')); });
