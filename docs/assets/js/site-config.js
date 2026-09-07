@@ -135,7 +135,17 @@ window.MN_SITE = window.MN_SITE || {};
 //   前端——新页 docs/pages/community-profile.html（build 脚本 tmp-build-community-profile.js + tail，head 复用 hub 同源）：头部卡（头像 72px/名字/@citizenId/性别章/简介/加入时间）+统计行（帖子/转发/点赞/收藏 点击跳 tab）+「N 粉丝 · M 关注」+4 tab 药丸+卡片列表（hub 同款全操作行+灯箱+空态文案）；isSelf →「编辑资料」钮开 SlatiSettings 弹窗（轮询 backdrop 消失后重拉）；访客点关注 toast「登录后才能关注」零请求；toggleFollow 乐观+401/429 回滚；不写 localStorage；
 //   三入口——hub renderFeed 作者行头像+名字包 .post-author-link → community-profile.html?id=（cloudPostItem 带 authorId、整卡点击守卫加 closest('a')）；帖页 tail 作者行同改（tail 改+重建）；侧栏用户模块头像+名字包锚（USR- 门控，访客/演示不动）；测试 233→252/252（social-profile 15 测+migrations 017 数据迁移测+social.test.js following 改 id 语义）；
 //   （小改动位 20→21·新功能轮·补丁清零；2026-09-07）
-window.MN_SITE_VERSION = 'v0.2.21.0';
+// v0.2.22.0 = Community 个人主页「编辑资料」独立弹窗（用户「我希望那个个人页面的简介那边的编辑资料是独立的而不是使用设置的」）：
+//   主页编辑资料不再开设置弹窗——独立弹窗（头像上传+显示名+性别药丸+简介）；保存走 PATCH /api/auth/me 真后端持久化
+//   （设置弹窗资料区只写 localStorage 的历史口径，主页是公开门面必须落库）；头像直传复用 /social/uploads
+//   （二进制直传+客户端预检 jpg/png/gif/webp ≤10MB）；保存后头部真后端重拉+侧栏同页即时更新（sidebar.js 无公开重渲染 API，直接改同页 DOM）；
+//   本页零 localStorage——saveUser 会触发 storage.js mirrorProfile 二次全字段 PATCH（含语言/国家/生日陈旧值回流风险，
+//   电池 E1 双 PATCH 实证后移除），localStorage 由下页 cloudMerge 拉 /auth/me 权威覆盖；零后端零共享文件；测试 252/252
+//   +电池 39/39 本地（G3 独立弹窗 card+backdrop 计算 opacity=1+不开设置弹窗+Escape 关/E 组保存链 body 精确+头像
+//   CDP 直传+空名拦截+401 回滚+无改动直关+单次写入守卫）+14/14 线上（L2 非本人无编辑资料钮）+冒烟 49/49+
+//   curl 四连（health 58+版本 v0.2.22.0+PATCH/uploads 无 cookie 401×2）+部署一次 exit 0；
+//   （小改动位 21→22·新功能轮·补丁清零；2026-09-07）
+window.MN_SITE_VERSION = 'v0.2.22.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

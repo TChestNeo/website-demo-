@@ -19,6 +19,9 @@
 .profile-tab { flex: 1; border: none; background: transparent; color: var(--color-outline); cursor: pointer; padding: 8px 4px; border-radius: var(--radius-md); font-family: inherit; font-size: var(--fs-label-md); font-weight: 600; }
 .profile-tab:hover { background: var(--color-surface-container-low); }
 .profile-tab.active { background: var(--color-primary); color: #fff; }
+.edit-gender-pill { flex: none; border: 1px solid var(--color-outline); background: transparent; color: var(--color-on-surface); cursor: pointer; padding: 6px 16px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); }
+.edit-gender-pill:hover { background: var(--color-surface-container-low); }
+.edit-gender-pill.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
 .profile-empty { text-align: center; color: var(--color-outline); padding: var(--space-xl) var(--space-md); font-size: var(--fs-label-md); }
 #profileState404 { padding: var(--space-xl) var(--space-md); text-align: center; }
 @media (max-width: 900px) {
@@ -484,16 +487,151 @@
     btn.textContent = on ? '已关注' : '关注';
   }
 
-  // v0.2.21.0 编辑资料 → 现有设置弹窗（用户钦定三入口之一）；无关闭回调 → 轮询 backdrop 移除后重拉头部
+  // v0.2.22.0 编辑资料独立弹窗（用户「编辑资料是独立的而不是使用设置的」）：头像上传 + 显示名 + 性别 + 简介，
+  //   保存走 PATCH /api/auth/me 真后端持久化（设置弹窗的资料区只写 localStorage，主页是公开门面必须落库）；
+  //   头像直传复用 /social/uploads（hub 同款二进制直传+客户端预检），保存后侧栏同页即时更新。
+  var editPendingAvatar = null; // 上传成功未保存的新头像 URL
+
   function openProfileEditor() {
-    if (!window.SlatiSettings || !window.SlatiSettings.open) { toastMsg('设置暂不可用，请稍后再试', true); return; }
-    window.SlatiSettings.open();
-    var started = Date.now();
-    var poll = setInterval(function () {
-      var bd = document.getElementById('settingsBackdrop');
-      if (!bd || !bd.parentNode) { clearInterval(poll); loadProfile(); return; }
-      if (Date.now() - started > 120000) clearInterval(poll); // 兜底防永久轮询
-    }, 300);
+    var u = profileUser;
+    if (!u) { toastMsg('资料加载中，请稍后再试', true); return; }
+    editPendingAvatar = null;
+    var backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    var cont = document.createElement('div');
+    cont.className = 'modal-container';
+    var card = document.createElement('div');
+    card.className = 'modal-card';
+    card.innerHTML =
+      '<h3 style="font-weight:600;font-size:var(--fs-body-lg);margin:0 0 var(--space-md)">编辑资料</h3>' +
+      '<div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md)">' +
+        '<div style="position:relative;flex-shrink:0">' +
+          '<img id="editAvatarPreview" src="' + escapeHtml(u.avatarUrl || window._slatiFallbackAvatar) + '" alt="" style="width:64px;height:64px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.08)">' +
+          '<button type="button" class="btn btn-ghost btn-icon btn-sm" id="editAvatarBtn" title="更换头像" style="position:absolute;bottom:-4px;right:-4px;width:28px;height:28px;border-radius:50%;background:var(--color-primary);color:white"><span class="material-symbols-outlined" style="font-size:14px">photo_camera</span></button>' +
+        '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<label class="form-label" for="editNameInput">显示名</label>' +
+          '<input id="editNameInput" class="input-glass" type="text" maxlength="40" value="' + escapeHtml(u.displayName || '') + '">' +
+        '</div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label">性别</label>' +
+        '<div id="editGenderRow" style="display:flex;gap:6px">' +
+          [['Male', '男'], ['Female', '女'], ['Other', '其他']].map(function (g) {
+            return '<button type="button" class="edit-gender-pill' + (u.gender === g[0] ? ' active' : '') + '" data-gender="' + g[0] + '">' + g[1] + '</button>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label" for="editBioInput">简介</label>' +
+        '<textarea id="editBioInput" class="input-glass" rows="3" maxlength="500" placeholder="介绍一下你的国家吧…">' + escapeHtml(u.bio || '') + '</textarea>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:var(--space-sm)">' +
+        '<span class="label-sm" id="editSaveState" style="color:var(--color-outline);margin-right:auto"></span>' +
+        '<button type="button" class="btn btn-sm" id="editCancelBtn">取消</button>' +
+        '<button type="button" class="btn btn-primary btn-sm" id="editSaveBtn">保存</button>' +
+      '</div>';
+    cont.appendChild(card);
+    backdrop.appendChild(cont);
+    document.body.appendChild(backdrop);
+    function close() {
+      document.removeEventListener('keydown', onEsc);
+      backdrop.remove();
+    }
+    function onEsc(e) { if (e.key === 'Escape') close(); }
+    document.addEventListener('keydown', onEsc);
+    backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
+    void card.offsetWidth;
+    card.classList.add('active'); // v0.2.19.2 教训：modal-card 默认 opacity:0，必须挂 .active 才可见
+    backdrop.classList.add('active');
+
+    // 性别药丸互斥切换
+    card.querySelectorAll('#editGenderRow [data-gender]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        card.querySelectorAll('#editGenderRow [data-gender]').forEach(function (x) { x.classList.remove('active'); });
+        b.classList.add('active');
+      });
+    });
+
+    // 头像：隐藏 file input 挂卡片内（电池 DOM.setFileInputFiles 可定位）→ 预检 → 直传
+    var fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.id = 'editAvatarFile';
+    fileInput.accept = '.jpg,.jpeg,.png,.gif,.webp';
+    fileInput.style.display = 'none';
+    card.appendChild(fileInput);
+    card.querySelector('#editAvatarBtn').addEventListener('click', function () { fileInput.click(); });
+    fileInput.addEventListener('change', function () {
+      var f = fileInput.files && fileInput.files[0];
+      if (!f) return;
+      var ext = (f.name.split('.').pop() || '').toLowerCase();
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(ext) === -1) { toastMsg('只支持 jpg / png / gif / webp 图片', true); return; }
+      if (f.size > 10 * 1024 * 1024) { toastMsg('图片不能超过 10MB', true); return; }
+      var stateEl = card.querySelector('#editSaveState');
+      stateEl.textContent = '头像上传中…';
+      fetch(MN_API.BASE + '/social/uploads?ext=.' + ext, { method: 'POST', body: f, credentials: 'include' })
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (data) {
+          if (data && data.url) {
+            editPendingAvatar = data.url;
+            card.querySelector('#editAvatarPreview').src = data.url;
+            stateEl.textContent = '新头像已就绪，点保存生效';
+          } else throw new Error('no url');
+        })
+        .catch(function () {
+          stateEl.textContent = '';
+          toastMsg('头像上传失败，请稍后再试', true);
+        });
+    });
+
+    card.querySelector('#editCancelBtn').addEventListener('click', close);
+
+    card.querySelector('#editSaveBtn').addEventListener('click', function () {
+      var name = card.querySelector('#editNameInput').value.trim();
+      if (!name) { toastMsg('显示名不能为空', true); return; }
+      var body = {};
+      if (name !== u.displayName) body.displayName = name;
+      var bio = card.querySelector('#editBioInput').value;
+      if (bio !== (u.bio || '')) body.bio = bio;
+      var genderBtn = card.querySelector('#editGenderRow [data-gender].active');
+      var gender = genderBtn ? genderBtn.getAttribute('data-gender') : null;
+      if (gender && gender !== u.gender) body.gender = gender;
+      if (editPendingAvatar) body.avatarUrl = editPendingAvatar;
+      if (!Object.keys(body).length) { close(); return; } // 没改动直接关
+      var stateEl = card.querySelector('#editSaveState');
+      var saveBtn = card.querySelector('#editSaveBtn');
+      stateEl.textContent = '保存中…';
+      saveBtn.disabled = true;
+      MN_API.patch('/auth/me', body).then(function (r) {
+        saveBtn.disabled = false;
+        if (r.ok && r.data && r.data.user) {
+          toastMsg('资料已保存');
+          var nu = r.data.user;
+          // 本页零 localStorage（v0.2.21.0 口径）：不写 SlatiDB——saveUser 会触发 storage.js mirrorProfile
+          // 二次 PATCH（全字段+语言/国家/生日回流，双写冗余且可能把陈旧值推回服务端）；
+          // localStorage 由下页 cloudMerge 拉 /auth/me 权威覆盖。侧栏同页即时更新直接改同页 DOM
+          // （sidebar.js 无公开重渲染 API）。
+          var sideName = document.querySelector('#slati-sidebar .user-module .user-name');
+          if (sideName && nu.displayName !== undefined) sideName.textContent = nu.displayName;
+          if (nu.avatarUrl) {
+            var sideAvatar = document.querySelector('#slati-sidebar .user-module .user-info-bar img');
+            if (sideAvatar) sideAvatar.src = nu.avatarUrl;
+          }
+          close();
+          loadProfile(); // 头部卡/性别徽章/bio 真后端重拉
+        } else if (r.status === 401) {
+          stateEl.textContent = '';
+          toastMsg('登录已过期，请重新登录', true);
+          close();
+        } else if (r.status === 429) {
+          stateEl.textContent = '';
+          toastMsg('操作过于频繁，请稍后再试', true);
+        } else {
+          stateEl.textContent = '';
+          toastMsg((r.data && r.data.error && r.data.error.message) || '保存失败，请稍后再试', true);
+        }
+      });
+    });
   }
 
   // ── 主页专属：tab + 帖子列表（卡片与 hub renderFeed 同款全操作行）──
