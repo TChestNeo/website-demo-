@@ -33,6 +33,7 @@ test('profile：匿名 GET 200 全形状（bio/gender 随行、stats 零值、is
     assert.strictEqual(u.followerCount, 0);
     assert.strictEqual(u.followingCount, 0);
     assert.strictEqual(u.cardBg, null); // v0.2.23.0 卡片背景随行，默认 NULL
+    assert.strictEqual(u.cardPlate, null); // v0.2.24.0 独立卡片背景随行，默认 NULL
     // v0.2.22.6 点赞/收藏默认私人：非本人 likeCount/favoriteCount 为 null
     assert.deepStrictEqual(u.stats, { postCount: 0, repostCount: 0, likeReceivedCount: 0, likeCount: null, favoriteCount: null });
   } finally { await t.close(); }
@@ -195,6 +196,32 @@ test('v0.2.23.0 卡片背景：PATCH /auth/me 落库 + 非法键 400 + null 恢�
     const r3 = await t.request('PATCH', '/api/auth/me', { cardBg: null }, { cookie: alice.cookie });
     assert.strictEqual(r3.status, 200, '显式 null = 恢复默认');
     assert.strictEqual((await prof()).user.cardBg, null);
+  } finally { await t.close(); }
+});
+
+test('v0.2.24.0 独立卡片背景：cardPlate 落库 + 非法键 400 + null 恢复 + 公开渲染 + 与 cardBg 互不干扰', async () => {
+  const t = await testApp();
+  try {
+    const alice = t.loginAs('alice@x.com');
+    const prof = (cookie) => t.request('GET', '/api/social/users/' + alice.user.id, undefined, cookie ? { cookie } : undefined).then((r) => r.json());
+    assert.strictEqual((await prof()).user.cardPlate, null, '默认 NULL');
+    const r1 = await t.request('PATCH', '/api/auth/me', { cardPlate: 'glass-rose' }, { cookie: alice.cookie });
+    assert.strictEqual(r1.status, 200);
+    assert.strictEqual((await r1.json()).user.cardPlate || null, null, 'PATCH 响应经 publicUser 不含 cardPlate（主页端点权威）');
+    assert.strictEqual((await prof()).user.cardPlate, 'glass-rose', '本人主页返回落库键');
+    const anon = await t.request('GET', '/api/social/users/' + alice.user.id);
+    assert.strictEqual((await anon.json()).user.cardPlate, 'glass-rose', '他人（匿名）也看到卡片背景——公开');
+    const r2 = await t.request('PATCH', '/api/auth/me', { cardPlate: 'hack-plate' }, { cookie: alice.cookie });
+    assert.strictEqual(r2.status, 400, '白名单外键 400');
+    assert.strictEqual((await r2.json()).error.code, 'VALIDATION');
+    // 与 cardBg 互不干扰：各写各的，都保留
+    await t.request('PATCH', '/api/auth/me', { cardBg: 'glass-ocean' }, { cookie: alice.cookie });
+    assert.strictEqual((await prof()).user.cardPlate, 'glass-rose', 'cardBg 写入不碰 cardPlate');
+    assert.strictEqual((await prof()).user.cardBg, 'glass-ocean');
+    const r3 = await t.request('PATCH', '/api/auth/me', { cardPlate: null }, { cookie: alice.cookie });
+    assert.strictEqual(r3.status, 200, '显式 null = 无背景层');
+    assert.strictEqual((await prof()).user.cardPlate, null);
+    assert.strictEqual((await prof()).user.cardBg, 'glass-ocean', 'cardPlate 清空不碰 cardBg');
   } finally { await t.close(); }
 });
 

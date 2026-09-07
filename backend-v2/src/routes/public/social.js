@@ -383,6 +383,8 @@ function register(router, ctx) {
         createdAt: row.created_at,
         // v0.2.23.0 卡片背景（018 列；NULL=默认品牌横幅，公开——他人主页也渲染你的自定义背景）
         cardBg: CARD_BG_KEYS.includes(row.card_bg) ? row.card_bg : null,
+        // v0.2.24.0 独立卡片背景（019 列；NULL=无背景层，公开——卡身纯透明透出背景层+四周阔 6px）
+        cardPlate: CARD_BG_KEYS.includes(row.card_plate) ? row.card_plate : null,
         isSelf,
         followedByMe,
         followerCount,

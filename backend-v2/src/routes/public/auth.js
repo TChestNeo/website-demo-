@@ -276,6 +276,13 @@ function register(router, deps) {
       push('card_bg = ?', cardBg);
       prev.cardBg = ctx.user.card_bg;
     }
+    // v0.2.24.0 独立卡片背景（019 列；null = 无背景层，显式 null 合法；白名单与 cardBg 同）
+    if (body.cardPlate !== undefined) {
+      const cardPlate = body.cardPlate === null ? null : String(body.cardPlate);
+      if (cardPlate !== null && !CARD_BG_KEYS.includes(cardPlate)) throw new HttpError('VALIDATION', '卡片背景样式无效');
+      push('card_plate = ?', cardPlate);
+      prev.cardPlate = ctx.user.card_plate;
+    }
     if (sets.length) {
       push('updated_at = ?', new Date().toISOString());
       ctx.db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).run(...vals, ctx.user.id);
@@ -290,7 +297,8 @@ function register(router, deps) {
         prev,
         next: {
           displayName: next.display_name, avatarUrl: next.avatar_url, language: next.language,
-          country: next.country, bio: next.bio, dob: next.dob, gender: next.gender, cardBg: next.card_bg
+          country: next.country, bio: next.bio, dob: next.dob, gender: next.gender, cardBg: next.card_bg,
+          cardPlate: next.card_plate
         }
       });
       sendJson(res, 200, { user: publicUser(next) });
