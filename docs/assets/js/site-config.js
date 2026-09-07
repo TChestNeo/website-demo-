@@ -153,7 +153,12 @@ window.MN_SITE = window.MN_SITE || {};
 //   @公民号 + 性别徽章竖排）Twitter 式横排——.profile-top 弹性盒 align-items:center + gap var(--space-md)、头像 flex:none 防压缩、
 //   信息列 flex:1 竖排居中；bio/加入时间/统计仍全宽在下；零后端零共享文件（tail 改+重建）；
 //   （补丁位 1→2·观感微调轮；2026-09-07）
-window.MN_SITE_VERSION = 'v0.2.22.2';
+// v0.2.22.3 = Community 主页 粉丝/关注 → 头部最右边 + 获赞量（用户「然后把粉丝关注一样放到右侧但是是最右边，然后再添加一个获赞量」）：
+//   .profile-counts 移入 .profile-top 行最右（信息列 flex:1 推贴行右缘）；统计区四块 → 五块加「获赞」纯展示块
+//   （无对应 tab 不可点，.profile-stat-static）；后端 GET /api/social/users/:id stats 加 likeReceivedCount
+//   （本人可见帖收到赞的 JOIN 聚合，无迁移无新表）；social-profile 测试 stats 断言同步两处；
+//   （补丁位 2→3·观感微调轮；2026-09-07）
+window.MN_SITE_VERSION = 'v0.2.22.3';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

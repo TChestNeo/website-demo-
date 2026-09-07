@@ -363,6 +363,8 @@ function register(router, ctx) {
     const stats = {
       postCount: c.db.prepare("SELECT count(*) AS n FROM posts WHERE author_id = ? AND status = 'visible' AND repost_of IS NULL").get(row.id).n,
       repostCount: c.db.prepare("SELECT count(*) AS n FROM posts WHERE author_id = ? AND status = 'visible' AND repost_of IS NOT NULL").get(row.id).n,
+      // v0.2.22.3 获赞量（用户「再添加一个获赞量」）：本人可见帖收到的点赞总数（含转发帖收到的赞）
+      likeReceivedCount: c.db.prepare("SELECT count(*) AS n FROM content_likes l JOIN posts p ON p.id = l.target_id WHERE p.author_id = ? AND l.target_type = 'post' AND p.status = 'visible'").get(row.id).n,
       likeCount: c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE user_id = ? AND target_type = 'post'").get(row.id).n,
       favoriteCount: c.db.prepare("SELECT count(*) AS n FROM favorites WHERE user_id = ? AND target_type = 'post'").get(row.id).n
     };

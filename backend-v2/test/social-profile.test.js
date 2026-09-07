@@ -32,7 +32,7 @@ test('profile：匿名 GET 200 全形状（bio/gender 随行、stats 零值、is
     assert.strictEqual(u.followedByMe, false);
     assert.strictEqual(u.followerCount, 0);
     assert.strictEqual(u.followingCount, 0);
-    assert.deepStrictEqual(u.stats, { postCount: 0, repostCount: 0, likeCount: 0, favoriteCount: 0 });
+    assert.deepStrictEqual(u.stats, { postCount: 0, repostCount: 0, likeReceivedCount: 0, likeCount: 0, favoriteCount: 0 });
   } finally { await t.close(); }
 });
 
@@ -70,7 +70,7 @@ test('profile：stats 准确（2 帖 + 1 转发 + 2 赞 + 1 收藏）', async ()
   try {
     const alice = t.loginAs('alice@x.com');
     const bob = t.loginAs('bob@x.com');
-    await makePost(t, alice, '我的第一帖');
+    const a1 = await makePost(t, alice, '我的第一帖');
     await makePost(t, alice, '我的第二帖');
     const bob1 = await makePost(t, bob, 'bob 帖一');
     const bob2 = await makePost(t, bob, 'bob 帖二');
@@ -78,8 +78,9 @@ test('profile：stats 准确（2 帖 + 1 转发 + 2 赞 + 1 收藏）', async ()
     await t.request('POST', '/api/social/posts/' + bob1.id + '/like', undefined, { cookie: alice.cookie });
     await t.request('POST', '/api/social/posts/' + bob2.id + '/like', undefined, { cookie: alice.cookie });
     await t.request('POST', '/api/social/posts/' + bob2.id + '/favorite', undefined, { cookie: alice.cookie });
+    await t.request('POST', '/api/social/posts/' + a1.id + '/like', undefined, { cookie: bob.cookie }); // bob 赞 alice 帖 → 获赞量 1
     const u = (await (await t.request('GET', '/api/social/users/' + alice.user.id)).json()).user;
-    assert.deepStrictEqual(u.stats, { postCount: 2, repostCount: 1, likeCount: 2, favoriteCount: 1 });
+    assert.deepStrictEqual(u.stats, { postCount: 2, repostCount: 1, likeReceivedCount: 1, likeCount: 2, favoriteCount: 1 });
   } finally { await t.close(); }
 });
 
