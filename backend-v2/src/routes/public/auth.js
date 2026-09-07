@@ -34,6 +34,8 @@ const PASSWORD_MIN = 8;            // W6 密码策略（路由层校验，策略
 const PASSWORD_MAX = 72;
 // v0.2.23.0 卡片背景预设白名单（迁移 018 users.card_bg；social.js 主页端点同名单校验，两处须同步）
 const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear'];
+// v0.2.25.0 页面背景图片（020 列）：仅本站直传路径（/uploads/UPL-*）或 http(s) 外链——防 CSS 注入等杂值
+const PAGE_BG_IMAGE_RE = /^(\/uploads\/UPL-[A-Za-z0-9]+\.(jpg|jpeg|png|gif|webp)|https?:\/\/.)/i;
 
 function hashCode(code) {
   return crypto.createHash('sha256').update(String(code).trim()).digest('hex');
@@ -283,6 +285,15 @@ function register(router, deps) {
       push('card_plate = ?', cardPlate);
       prev.cardPlate = ctx.user.card_plate;
     }
+    // v0.2.25.0 页面背景图片（020 列；null = 无背景，显式 null 合法；仅本站上传路径或 http(s) 外链）
+    if (body.pageBgImage !== undefined) {
+      const pageBgImage = body.pageBgImage === null ? null : String(body.pageBgImage).slice(0, 2048);
+      if (pageBgImage !== null && !PAGE_BG_IMAGE_RE.test(pageBgImage)) {
+        throw new HttpError('VALIDATION', '页面背景图片需为 http(s) 链接或本站上传图片');
+      }
+      push('page_bg_image = ?', pageBgImage);
+      prev.pageBgImage = ctx.user.page_bg_image;
+    }
     if (sets.length) {
       push('updated_at = ?', new Date().toISOString());
       ctx.db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).run(...vals, ctx.user.id);
@@ -298,7 +309,7 @@ function register(router, deps) {
         next: {
           displayName: next.display_name, avatarUrl: next.avatar_url, language: next.language,
           country: next.country, bio: next.bio, dob: next.dob, gender: next.gender, cardBg: next.card_bg,
-          cardPlate: next.card_plate
+          cardPlate: next.card_plate, pageBgImage: next.page_bg_image
         }
       });
       sendJson(res, 200, { user: publicUser(next) });

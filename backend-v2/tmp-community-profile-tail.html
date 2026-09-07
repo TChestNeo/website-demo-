@@ -81,6 +81,14 @@
 .edit-bg-swatch .swatch-fill { width: 100%; height: 36px; border-radius: 6px; background: var(--lg-bg, var(--color-surface-container-high)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.14); }
 .edit-bg-swatch .swatch-fill.glass-clear { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.4); } /* v0.2.24.2 透明玻璃色块：代码白边环+柔影示意（填充透明） */
 .edit-bg-swatch .swatch-label { font-size: var(--fs-label-sm); color: var(--color-on-surface-variant); }
+/* v0.2.25.0 页面背景图片（用户「在自定义那边再加上一个背景图片 这个就是整个页面的背景的图片」）：body 整页背景=图+深色蒙层（可读性；.app-layout 无背景直接透出）；引号/反斜杠过滤由 JS 注入前处理 */
+body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), rgba(10, 10, 16, 0.38)), var(--page-bg-image, none); background-size: cover; background-position: center; background-attachment: fixed; }
+.edit-pagebg-preview { height: 64px; border-radius: var(--radius-sm); background-color: var(--color-surface-container-high); background-size: cover; background-position: center; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14); overflow: hidden; } /* 页面背景组预览=迷你整页：内层迷你卡浮在背景图上（示意背景铺满整页、卡片浮在上面） */
+.edit-pagebg-preview .pv-card { display: flex; flex-direction: column; position: relative; margin: 12px 10px; height: 40px; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-surface-container-high); box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.45); }
+.edit-pagebg-preview .pv-card .pv-banner { flex: none; height: 12px; background: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)); }
+.edit-bg-swatch .swatch-fill.pagebg-custom { background: linear-gradient(135deg, rgba(255,255,255,0.55), rgba(255,255,255,0.12) 45%, rgba(255,255,255,0.45)), radial-gradient(circle at 22% 28%, rgba(96,165,250,0.5), transparent 50%), radial-gradient(circle at 80% 72%, rgba(167,139,250,0.45), transparent 50%), var(--color-surface-container-high); } /* 色块=图片占位示意（彩色=示意「有图」，不是真上色） */
+/* v0.2.25.0 编辑资料弹窗放大 1 倍（用户「能不能把编辑资料的弹窗的大小变大1倍」）：全局 .modal-card max-width 560px → 仅资料弹窗 1120px（页级覆盖，灯箱/分享等共用 .modal-card 的弹窗不受影响） */
+.edit-profile-card { max-width: 1120px; }
 .profile-empty { text-align: center; color: var(--color-outline); padding: var(--space-xl) var(--space-md); font-size: var(--fs-label-md); }
 #profileState404 { padding: var(--space-xl) var(--space-md); text-align: center; }
 @media (max-width: 900px) {
@@ -503,8 +511,24 @@
     return GENDER_ICONS[g] ? '<img src="' + GENDER_ICONS[g] + '" alt="' + GENDER_ZH[g] + '" title="' + GENDER_ZH[g] + '" style="width:' + px + 'px;height:' + px + 'px;display:block">' : '';
   }
 
+  // v0.2.25.0 整页背景渲染（用户「这个就是整个页面的背景的图片」；020 列公开——他人主页也渲染你的图）：
+  //   CSS 变量 + body 类（.app-layout 无背景直接透出；深色蒙层护可读性）；
+  //   服务端已白名单过滤（uploads 路径或 http(s)），前端再挡引号/反斜杠/括号防注入
+  function applyPageBg(u) {
+    var img = (typeof u.pageBgImage === 'string' && u.pageBgImage) ? u.pageBgImage : null;
+    if (img && /["'()\\]/.test(img)) img = null;
+    if (img) {
+      document.body.style.setProperty('--page-bg-image', 'url("' + img + '")');
+      document.body.classList.add('page-bg-active');
+    } else {
+      document.body.style.removeProperty('--page-bg-image');
+      document.body.classList.remove('page-bg-active');
+    }
+  }
+
   function renderHeader(u) {
     var genderTxt = GENDER_ZH[u.gender] || null;
+    applyPageBg(u);
     // v0.2.23.0 卡片背景（018 列；白名单校验——服务端已过滤，前端双保险）：玻璃预设 → liquid-glass 引擎 + 横幅预设渐变
     // v0.2.24.0 独立背景：cardBg=横幅预设（预设类挂卡上，横幅读卡上 --lg-bg）；cardPlate=卡片背景预设（挂外层包层 .card-halo，
     //   自己的 --lg-bg 与横幅互不干扰），卡身纯透明透出背景层 + 四周阔 6px（margin:-6px+padding:6px）
@@ -599,12 +623,14 @@
     var editCardBg = u.cardBg || null;
     // v0.2.24.0 独立卡片背景（019 列；null = 无背景层，与横幅分开各选各的）
     var editCardPlate = u.cardPlate || null;
+    // v0.2.25.0 页面背景图片（020 列；null = 无整页背景；自定义 = 上传路径或外链，公开渲染于整页 body）
+    var editPageBgImage = u.pageBgImage || null;
     var backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
     var cont = document.createElement('div');
     cont.className = 'modal-container';
     var card = document.createElement('div');
-    card.className = 'modal-card';
+    card.className = 'modal-card edit-profile-card'; // v0.2.25.0 弹窗放大 1 倍（560px → 1120px，页级类）
     card.innerHTML =
       '<h3 style="font-weight:600;font-size:var(--fs-body-lg);margin:0 0 var(--space-md)">编辑资料</h3>' +
       // v0.2.23.0 顶部导航：基础（资料字段）/ 自定义（卡片背景液体玻璃）
@@ -660,6 +686,23 @@
                 '<span class="swatch-fill' + (b[0] ? ' ' + b[0] : ' bg-default') + '"></span>' +
                 '<span class="swatch-label">' + b[1] + '</span></button>';
             }).join('') +
+          '</div>' +
+        '</div>' +
+        // v0.2.25.0 页面背景（用户「在自定义那边再加上一个背景图片 这个就是整个页面的背景的图片」）：
+        //   默认 = 无整页背景；自定义图片 = 上传（复用头像同款直传）或 http(s) 网址；预览 = 迷你整页（迷你卡浮在背景图上）
+        '<div class="form-group">' +
+          '<label class="form-label">页面背景</label>' +
+          '<div class="edit-bg-preview"><div class="edit-pagebg-preview" id="editPageBgInner"><div class="pv-card"><span class="pv-banner"></span><span class="pv-body"></span></div></div></div>' +
+          '<div class="edit-bg-grid" id="editPageBgGrid">' +
+            '<button type="button" class="edit-bg-swatch' + (editPageBgImage ? '' : ' active') + '" data-pagebg="" title="默认"><span class="swatch-fill bg-default"></span><span class="swatch-label">默认</span></button>' +
+            '<button type="button" class="edit-bg-swatch' + (editPageBgImage ? ' active' : '') + '" data-pagebg="custom" title="自定义图片"><span class="swatch-fill pagebg-custom"></span><span class="swatch-label">自定义图片</span></button>' +
+          '</div>' +
+          '<div id="editPageBgRow" style="margin-top:8px;' + (editPageBgImage ? '' : 'display:none;') + '">' +
+            '<div style="display:flex;gap:6px;align-items:center">' +
+              '<button type="button" class="btn btn-sm" id="editPageBgUploadBtn">上传图片</button>' +
+              '<input id="editPageBgUrlInput" class="input-glass" type="text" placeholder="或粘贴图片网址 https://…" value="' + escapeHtml(/^https?:\/\//i.test(editPageBgImage || '') ? editPageBgImage : '') + '" style="flex:1">' +
+            '</div>' +
+            '<span class="label-sm" id="editPageBgState" style="display:block;margin-top:6px;color:var(--color-outline)"></span>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -721,6 +764,78 @@
       });
     });
 
+    // v0.2.25.0 页面背景图片（data-pagebg 空串 = 默认无背景；custom = 上传或网址）
+    function updatePageBgPreview() {
+      var inner = card.querySelector('#editPageBgInner');
+      if (editPageBgImage) {
+        // 引号/反斜杠/括号已在 URL 输入侧过滤（仅 http(s) 通过），上传路径为本站生成恒安全
+        inner.style.backgroundImage = 'url("' + editPageBgImage + '")';
+      } else {
+        inner.style.backgroundImage = '';
+      }
+      var stateEl = card.querySelector('#editPageBgState');
+      stateEl.textContent = editPageBgImage ? '背景图片已就绪，点保存生效' : '';
+    }
+    updatePageBgPreview();
+    card.querySelectorAll('#editPageBgGrid [data-pagebg]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var val = b.getAttribute('data-pagebg');
+        card.querySelectorAll('#editPageBgGrid [data-pagebg]').forEach(function (x) { x.classList.toggle('active', x === b); });
+        if (!val) {
+          editPageBgImage = null;
+          card.querySelector('#editPageBgRow').style.display = 'none';
+        } else {
+          card.querySelector('#editPageBgRow').style.display = '';
+        }
+        updatePageBgPreview();
+        if (val && !editPageBgImage) card.querySelector('#editPageBgState').textContent = '上传图片或粘贴网址，点保存生效';
+      });
+    });
+    // 页面背景上传：隐藏 file input 挂卡片内（与头像同款直传 /social/uploads；电池 DOM.setFileInputFiles 可定位）
+    var pgFileInput = document.createElement('input');
+    pgFileInput.type = 'file';
+    pgFileInput.id = 'editPageBgFile';
+    pgFileInput.accept = '.jpg,.jpeg,.png,.gif,.webp';
+    pgFileInput.style.display = 'none';
+    card.appendChild(pgFileInput);
+    card.querySelector('#editPageBgUploadBtn').addEventListener('click', function () { pgFileInput.click(); });
+    pgFileInput.addEventListener('change', function () {
+      var f = pgFileInput.files && pgFileInput.files[0];
+      if (!f) return;
+      var ext = (f.name.split('.').pop() || '').toLowerCase();
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(ext) === -1) { toastMsg('只支持 jpg / png / gif / webp 图片', true); return; }
+      if (f.size > 10 * 1024 * 1024) { toastMsg('图片不能超过 10MB', true); return; }
+      var stateEl = card.querySelector('#editPageBgState');
+      stateEl.textContent = '背景图片上传中…';
+      fetch(MN_API.BASE + '/social/uploads?ext=.' + ext, { method: 'POST', body: f, credentials: 'include' })
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (data) {
+          if (data && data.url) {
+            editPageBgImage = data.url;
+            card.querySelector('#editPageBgUrlInput').value = '';
+            updatePageBgPreview();
+          } else throw new Error('no url');
+        })
+        .catch(function () {
+          stateEl.textContent = '';
+          toastMsg('背景图片上传失败，请稍后再试', true);
+        });
+    });
+    // 网址输入：仅合法 http(s) 生效（与后端 PAGE_BG_IMAGE_RE 同口径；引号/括号进不了值）
+    card.querySelector('#editPageBgUrlInput').addEventListener('input', function () {
+      var v = this.value.trim();
+      if (/^https?:\/\//i.test(v)) {
+        editPageBgImage = v;
+        updatePageBgPreview();
+      } else if (!v) {
+        editPageBgImage = null;
+        updatePageBgPreview();
+        card.querySelector('#editPageBgState').textContent = '';
+      } else {
+        card.querySelector('#editPageBgState').textContent = '网址需以 http:// 或 https:// 开头';
+      }
+    });
+
     // 头像：隐藏 file input 挂卡片内（电池 DOM.setFileInputFiles 可定位）→ 预检 → 直传
     var fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -769,6 +884,8 @@
       if (editCardBg !== (u.cardBg || null)) body.cardBg = editCardBg;
       // v0.2.24.0 独立卡片背景（null = 无背景层，显式入 body；与 cardBg 分开各发各的）
       if (editCardPlate !== (u.cardPlate || null)) body.cardPlate = editCardPlate;
+      // v0.2.25.0 页面背景图片（null = 恢复默认无背景，显式入 body）
+      if (editPageBgImage !== (u.pageBgImage || null)) body.pageBgImage = editPageBgImage;
       if (!Object.keys(body).length) { close(); return; } // 没改动直接关
       var stateEl = card.querySelector('#editSaveState');
       var saveBtn = card.querySelector('#editSaveBtn');

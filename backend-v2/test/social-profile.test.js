@@ -34,6 +34,7 @@ test('profile：匿名 GET 200 全形状（bio/gender 随行、stats 零值、is
     assert.strictEqual(u.followingCount, 0);
     assert.strictEqual(u.cardBg, null); // v0.2.23.0 卡片背景随行，默认 NULL
     assert.strictEqual(u.cardPlate, null); // v0.2.24.0 独立卡片背景随行，默认 NULL
+    assert.strictEqual(u.pageBgImage, null); // v0.2.25.0 页面背景图片随行，默认 NULL
     // v0.2.22.6 点赞/收藏默认私人：非本人 likeCount/favoriteCount 为 null
     assert.deepStrictEqual(u.stats, { postCount: 0, repostCount: 0, likeReceivedCount: 0, likeCount: null, favoriteCount: null });
   } finally { await t.close(); }
@@ -227,6 +228,30 @@ test('v0.2.24.0 独立卡片背景：cardPlate 落库 + 非法键 400 + null 恢
     assert.strictEqual(r4.status, 200, 'glass-clear 标准液态玻璃在白名单');
     assert.strictEqual((await prof()).user.cardPlate, 'glass-clear');
     assert.strictEqual((await prof()).user.cardBg, 'glass-ocean', '玻璃键写入不碰 cardBg');
+  } finally { await t.close(); }
+});
+
+test('v0.2.25.0 页面背景图片：pageBgImage 落库 + 非法值 400 + null 恢复 + 公开渲染', async () => {
+  const t = await testApp();
+  try {
+    const alice = t.loginAs('alice@x.com');
+    const prof = (cookie) => t.request('GET', '/api/social/users/' + alice.user.id, undefined, cookie ? { cookie } : undefined).then((r) => r.json());
+    assert.strictEqual((await prof()).user.pageBgImage, null, '默认 NULL');
+    const r1 = await t.request('PATCH', '/api/auth/me', { pageBgImage: '/uploads/UPL-X0001.jpg' }, { cookie: alice.cookie });
+    assert.strictEqual(r1.status, 200, '本站上传路径合法');
+    assert.strictEqual((await prof()).user.pageBgImage, '/uploads/UPL-X0001.jpg', '本人主页返回落库值');
+    const anon = await t.request('GET', '/api/social/users/' + alice.user.id);
+    assert.strictEqual((await anon.json()).user.pageBgImage, '/uploads/UPL-X0001.jpg', '他人（匿名）也看到整页背景——公开');
+    const r2 = await t.request('PATCH', '/api/auth/me', { pageBgImage: 'https://img.example.com/bg.jpg' }, { cookie: alice.cookie });
+    assert.strictEqual(r2.status, 200, 'https 外链合法');
+    assert.strictEqual((await prof()).user.pageBgImage, 'https://img.example.com/bg.jpg');
+    const r3 = await t.request('PATCH', '/api/auth/me', { pageBgImage: 'javascript:alert(1)' }, { cookie: alice.cookie });
+    assert.strictEqual(r3.status, 400, 'javascript: 伪协议 400');
+    assert.strictEqual((await r3.json()).error.code, 'VALIDATION');
+    assert.strictEqual((await prof()).user.pageBgImage, 'https://img.example.com/bg.jpg', '非法值不落库');
+    const r4 = await t.request('PATCH', '/api/auth/me', { pageBgImage: null }, { cookie: alice.cookie });
+    assert.strictEqual(r4.status, 200, '显式 null = 无整页背景');
+    assert.strictEqual((await prof()).user.pageBgImage, null);
   } finally { await t.close(); }
 });
 

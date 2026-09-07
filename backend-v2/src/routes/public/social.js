@@ -22,6 +22,8 @@ const MAX_COMMENT_LEN = 2000; // comments.content ≤2000（写入层校验，�
 const MAX_MEDIA = 3;
 // v0.2.23.0 卡片背景预设白名单（迁移 018 users.card_bg；auth.js PATCH /auth/me 同名单校验，两处须同步）
 const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear'];
+// v0.2.25.0 页面背景图片（020 列）校验口径：仅本站直传路径或 http(s) 外链（与 auth.js 同）
+const PAGE_BG_IMAGE_RE = /^(\/uploads\/UPL-[A-Za-z0-9]+\.(jpg|jpeg|png|gif|webp)|https?:\/\/.)/i;
 
 // ── v0.2.16.0 帖子媒体上传（社区多图/视频）──
 // 大小上限：图片 10MB（腾讯 IMS base64 上限）；视频 30MB（Cloud Run 请求 32MiB 硬顶留边距）。
@@ -385,6 +387,8 @@ function register(router, ctx) {
         cardBg: CARD_BG_KEYS.includes(row.card_bg) ? row.card_bg : null,
         // v0.2.24.0 独立卡片背景（019 列；NULL=无背景层，公开——卡身纯透明透出背景层+四周阔 6px）
         cardPlate: CARD_BG_KEYS.includes(row.card_plate) ? row.card_plate : null,
+        // v0.2.25.0 页面背景图片（020 列；NULL=无背景，公开——他人主页也渲染你的整页背景图；口径与 PATCH 校验同）
+        pageBgImage: (typeof row.page_bg_image === 'string' && PAGE_BG_IMAGE_RE.test(row.page_bg_image)) ? row.page_bg_image : null,
         isSelf,
         followedByMe,
         followerCount,

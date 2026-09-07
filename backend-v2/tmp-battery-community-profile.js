@@ -30,7 +30,7 @@ const DOC_START_SRC = `
     id: 'USR-000101', displayName: '电池用户', avatarUrl: ${JSON.stringify(AVATAR_URI)},
     bio: '电池用户简介', gender: 'Male', citizenId: 'CIT-000101', createdAt: '2026-08-01T00:00:00.000Z',
     isSelf: true, followedByMe: false, followerCount: 2, followingCount: 3,
-    cardBg: null, cardPlate: null,
+    cardBg: null, cardPlate: null, pageBgImage: null, // v0.2.25.0 页面背景图片（null = 无整页背景）
     stats: { postCount: 1, repostCount: 1, likeReceivedCount: 1, likeCount: 2, favoriteCount: 1 }
   };
   // 他人（USR-000202，bio 空 → 兜底文案；Female → 女；零帖 → 空态；关注链目标；v0.2.23.0 cardBg='glass-rose' 公开渲染他人背景；v0.2.24.1/2 cardPlate='glass-clear' 标准液态玻璃（纯透明）独立背景层）
@@ -39,6 +39,7 @@ const DOC_START_SRC = `
     bio: null, gender: 'Female', citizenId: 'CIT-000202', createdAt: '2026-07-15T00:00:00.000Z',
     isSelf: false, followedByMe: false, followerCount: 0, followingCount: 5,
     cardBg: 'glass-rose', cardPlate: 'glass-clear',
+    pageBgImage: '/uploads/UPL-DEMO01.jpg', // v0.2.25.0 他人主页公开渲染整页背景（访客也看到本人设置的图）
     stats: { postCount: 0, repostCount: 0, likeReceivedCount: 0, likeCount: null, favoriteCount: null }
   };
   var BASE_POST = {
@@ -115,6 +116,8 @@ const DOC_START_SRC = `
         if (pb.cardBg !== undefined) ME.cardBg = pb.cardBg;
         // v0.2.24.0 独立卡片背景（null 显式入 body → 无背景层）
         if (pb.cardPlate !== undefined) ME.cardPlate = pb.cardPlate;
+        // v0.2.25.0 页面背景图片（null 显式入 body → 恢复无整页背景）
+        if (pb.pageBgImage !== undefined) ME.pageBgImage = pb.pageBgImage;
         return Promise.resolve(res(200, { user: { id: ME.id, displayName: ME.displayName, avatarUrl: ME.avatarUrl, citizenId: ME.citizenId, bio: ME.bio, gender: ME.gender, createdAt: ME.createdAt } }));
       }
       // 头像直传罐头 → /uploads/UPL-DEMO01.jpg（静态壳已有真图防 404 图片日志）
@@ -284,7 +287,7 @@ async function main() {
     const ver = await t.evalJs('window.MN_SITE_VERSION');
     const s1 = await t.evalJs("(() => { var a = document.querySelector('.user-module a[href*=\"community-profile.html\"]');" +
       " return { href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && !!a.querySelector('.user-name')) : false }; })()");
-    check('S1 版本 v0.2.24.4', ver === 'v0.2.24.4', 'ver=' + ver);
+    check('S1 版本 v0.2.25.0', ver === 'v0.2.25.0', 'ver=' + ver);
     check('S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）', s1.href === '../pages/community-profile.html?id=USR-000101' && s1.wrapped, s1.href);
 
     // S2 点侧栏锚 → 真导航到自己主页
@@ -447,6 +450,7 @@ async function main() {
     const e6b = await t.evalJs("(() => { var basic = document.getElementById('editTabBasic'); var custom = document.getElementById('editTabCustom');" +
       " var labels = Array.prototype.map.call(custom.querySelectorAll('.form-label'), function (x) { return x.textContent; }).join('|');" +
       " var bgSw = document.querySelectorAll('#editBgGrid [data-bg]'); var plSw = document.querySelectorAll('#editPlateGrid [data-plate]');" +
+      " var pgSw = document.querySelectorAll('#editPageBgGrid [data-pagebg]');" +
       " var flat = document.querySelector('#editTabCustom .edit-bg-flat'); var pv = document.getElementById('editPlatePreview');" +
       " var pvCard = pv.querySelector('.pv-card');" +
       " return { active: document.querySelector('#editNavBtns [data-edit-tab].active').getAttribute('data-edit-tab')," +
@@ -455,8 +459,10 @@ async function main() {
       " bgFirstActive: bgSw[0].classList.contains('active'), flatCls: flat.className, flatBg: getComputedStyle(flat).backgroundImage," +
       " plN: plSw.length, plLabels: Array.prototype.map.call(plSw, function (x) { return x.querySelector('.swatch-label').textContent; }).join('|')," +
       " plFirstActive: plSw[0].classList.contains('active'), pvCls: pv.className, pvBg: getComputedStyle(pv).backgroundImage," +
-      " pvCardBgColor: getComputedStyle(pvCard).backgroundColor }; })()");
-    check('E6 切自定义：互斥显示 + 双组改名（横幅（液体玻璃）|卡片背景）+ 横幅 7 预设 + v0.2.24.1 卡片背景只 2 选项（默认|标准液态玻璃）默认选中', e6b.active === 'custom' && e6b.basicVis === 'none' && e6b.customVis !== 'none' && e6b.labels === '横幅（液体玻璃）|卡片背景' && e6b.bgN === 7 && e6b.bgLabels === '默认|磨砂|深海|薰衣草|樱花|薄荷|落日' && e6b.bgFirstActive && e6b.plN === 2 && e6b.plLabels === '默认|标准液态玻璃' && e6b.plFirstActive, JSON.stringify(e6b));
+      " pvCardBgColor: getComputedStyle(pvCard).backgroundColor," +
+      " pgN: pgSw.length, pgLabels: Array.prototype.map.call(pgSw, function (x) { return x.querySelector('.swatch-label').textContent; }).join('|')," +
+      " pgFirstActive: pgSw[0].classList.contains('active') }; })()");
+    check('E6 切自定义：互斥显示 + 三组（横幅（液体玻璃）|卡片背景|页面背景）+ 横幅 7 预设 + v0.2.24.1 卡片背景只 2 选项（默认|标准液态玻璃）默认选中 + v0.2.25.0 页面背景 2 选项（默认|自定义图片）默认选中', e6b.active === 'custom' && e6b.basicVis === 'none' && e6b.customVis !== 'none' && e6b.labels === '横幅（液体玻璃）|卡片背景|页面背景' && e6b.bgN === 7 && e6b.bgLabels === '默认|磨砂|深海|薰衣草|樱花|薄荷|落日' && e6b.bgFirstActive && e6b.plN === 2 && e6b.plLabels === '默认|标准液态玻璃' && e6b.plFirstActive && e6b.pgN === 2 && e6b.pgLabels === '默认|自定义图片' && e6b.pgFirstActive, JSON.stringify(e6b));
     check('E6 v0.2.24.0 预览默认：横幅条=品牌渐变 + 卡片背景预览无 has-plate 无背景 + 迷你透明卡身', e6b.flatCls === 'edit-bg-flat bg-default' && e6b.flatBg.indexOf('linear-gradient') !== -1 && e6b.pvCls === 'edit-bg-preview' && e6b.pvBg === 'none' && e6b.pvCardBgColor === 'rgba(0, 0, 0, 0)', 'flat=' + e6b.flatCls + ' pvCls=' + e6b.pvCls + ' pvBg=' + e6b.pvBg + ' pvCard=' + e6b.pvCardBgColor);
 
     // E6c 横幅组点深海：active 唯一互斥 + 横幅条换类换渐变
@@ -544,6 +550,74 @@ async function main() {
     const e6fCardBgCalls = e6f.rawCalls.filter(function (b) { return b.indexOf('cardBg') !== -1; });
     check('E6 双双选默认 → 保存 → 最后 PATCH body 精确 ={"cardBg":null,"cardPlate":null} + 头部回默认（无 liquid-glass/无 data-card-bg/无预设类）', e6fCardBgCalls.length === 2 && e6fCardBgCalls[e6fCardBgCalls.length - 1] === '{"cardBg":null,"cardPlate":null}' && !e6f.glass && !e6f.attr && e6f.cls.indexOf('glass-') === -1, JSON.stringify(e6fCardBgCalls));
     check('E6 v0.2.24.0 回默认 → 包层类清空（无 card-halo）+ 卡身回实底（非透明）+ 横幅回品牌渐变 + v0.2.24.3 引擎层已卸载（无 lg-static/无 .lg-backdrop）+ v0.2.24.4 光场灭（orb display=none）', e6f.wrapCls === '' && !e6f.wrapLg && !e6f.wrapLayer && e6f.orbVis === 'none' && e6f.cardBgColor !== 'rgba(0, 0, 0, 0)' && e6f.bannerBgImg !== 'none' && e6f.bannerBgImg.indexOf('linear-gradient') !== -1, 'wrapCls=' + e6f.wrapCls + ' wrapLg=' + e6f.wrapLg + ' wrapLayer=' + e6f.wrapLayer + ' orbVis=' + e6f.orbVis + ' card=' + e6f.cardBgColor + ' banner=' + e6f.bannerBgImg.slice(0, 60));
+
+    // E6g v0.2.25.0 页面背景组（独立弹窗会话——E6d/E6f 的 cardBg PATCH 精确断言不受 pageBgImage 污染）：
+    //   弹窗放大 1 倍 → 默认选中 → 点自定义 → 网址非法警告 → 合法网址预览 → 保存 → body 整页背景 → 重开预填 → 默认 → 保存恢复
+    await t.evalJs("window.__patchedMe = null; document.getElementById('profileEditBtn').click()");
+    await sleep(500);
+    await t.evalJs("document.querySelector('#editNavBtns [data-edit-tab=\"custom\"]').click()");
+    await sleep(300);
+    const e6g = await t.evalJs("(() => { var card = document.querySelector('.modal-card');" +
+      " return { modalMw: getComputedStyle(card).maxWidth, modalCls: card.className," +
+      " rowVis: getComputedStyle(document.getElementById('editPageBgRow')).display," +
+      " innerBg: document.getElementById('editPageBgInner').style.backgroundImage," +
+      " hasUploadBtn: !!document.getElementById('editPageBgUploadBtn'), hasUrlInput: !!document.getElementById('editPageBgUrlInput')," +
+      " hasFile: !!document.getElementById('editPageBgFile')," +
+      " pvHasCard: !!document.getElementById('editPageBgInner').querySelector('.pv-card') }; })()");
+    check('E6 v0.2.25.0 编辑资料弹窗放大 1 倍：modal-card max-width=1120px（560→1120；页级类 edit-profile-card 不污染灯箱/分享弹窗）', e6g.modalMw === '1120px' && e6g.modalCls.indexOf('edit-profile-card') !== -1, 'mw=' + e6g.modalMw + ' cls=' + e6g.modalCls);
+    check('E6 v0.2.25.0 页面背景组默认态：上传按钮/网址框/隐藏 file input/迷你整页预览就位 + 无图时行隐藏预览空', e6g.hasUploadBtn && e6g.hasUrlInput && e6g.hasFile && e6g.pvHasCard && e6g.rowVis === 'none' && e6g.innerBg === '', JSON.stringify(e6g));
+    // 点自定义图片 → 行亮起 + 提示
+    await t.evalJs("document.querySelector('#editPageBgGrid [data-pagebg=\"custom\"]').click()");
+    await sleep(300);
+    const e6g1 = await t.evalJs("(() => { var row = document.getElementById('editPageBgRow');" +
+      " return { rowVis: getComputedStyle(row).display, hint: document.getElementById('editPageBgState').textContent," +
+      " customActive: document.querySelector('#editPageBgGrid [data-pagebg].active').getAttribute('data-pagebg') }; })()");
+    check('E6 v0.2.25.0 点自定义图片：行亮起 + 提示「上传图片或粘贴网址，点保存生效」+ 自定义 active 唯一', e6g1.rowVis !== 'none' && e6g1.hint.indexOf('上传图片或粘贴网址') !== -1 && e6g1.customActive === 'custom', JSON.stringify(e6g1));
+    // 网址非法（javascript:）→ 警告 + 预览不挂图（防 CSS 注入）
+    await t.evalJs("var inp = document.getElementById('editPageBgUrlInput'); inp.value = 'javascript:alert(1)'; inp.dispatchEvent(new Event('input'))");
+    await sleep(300);
+    const e6g2 = await t.evalJs("(() => { return { warn: document.getElementById('editPageBgState').textContent, innerBg: document.getElementById('editPageBgInner').style.backgroundImage }; })()");
+    check('E6 v0.2.25.0 网址非法（javascript:）→ 警告「网址需以 http:// 或 https:// 开头」+ 预览不挂图', e6g2.warn.indexOf('http://') !== -1 && e6g2.innerBg === '', JSON.stringify(e6g2));
+    // 合法网址 → 预览挂图 → 保存 → PATCH body 精确 ={"pageBgImage":"https://example.com/bg.jpg"} → 弹窗关 → body 整页背景
+    await t.evalJs("var inp = document.getElementById('editPageBgUrlInput'); inp.value = 'https://example.com/bg.jpg'; inp.dispatchEvent(new Event('input'))");
+    await sleep(300);
+    const e6g3 = await t.evalJs("(() => { var inner = document.getElementById('editPageBgInner');" +
+      " return { innerBg: inner.style.backgroundImage, state: document.getElementById('editPageBgState').textContent }; })()");
+    check('E6 v0.2.25.0 合法网址：预览挂图 url("https://example.com/bg.jpg") + 就绪文案', e6g3.innerBg.indexOf('url("https://example.com/bg.jpg")') !== -1 && e6g3.state.indexOf('就绪') !== -1, JSON.stringify(e6g3));
+    await t.evalJs("document.getElementById('editSaveBtn').click()");
+    await sleep(800);
+    const e6g4 = await t.evalJs("(() => { var card = document.querySelector('.modal-card');" +
+      " var rawCalls = window.__fetchCalls.filter(function (c) { return c.method === 'PATCH'; }).map(function (c) { return c.body; });" +
+      " var cs = getComputedStyle(document.body);" +
+      " return { cardGone: !card || !card.parentNode, rawCalls: rawCalls," +
+      " cls: document.body.className, bodyBg: cs.backgroundImage, cssVar: cs.getPropertyValue('--page-bg-image') }; })()");
+    console.log('E6g4 raw PATCH bodies:', JSON.stringify(e6g4.rawCalls));
+    const e6g4PgCalls = e6g4.rawCalls.filter(function (b) { return b.indexOf('pageBgImage') !== -1; });
+    check('E6 v0.2.25.0 保存 → PATCH 含 pageBgImage 恰 1 次且 body 精确 ={"pageBgImage":"https://example.com/bg.jpg"} + 弹窗关', e6g4PgCalls.length === 1 && e6g4PgCalls[0] === '{"pageBgImage":"https://example.com/bg.jpg"}' && e6g4.cardGone, JSON.stringify(e6g4PgCalls));
+    check('E6 v0.2.25.0 整页背景渲染：body 挂 page-bg-active + 背景=深色蒙层渐变 rgba(10, 10, 16, 0.38)+图（用户「这个就是整个页面的背景的图片」）', e6g4.cls.indexOf('page-bg-active') !== -1 && e6g4.bodyBg.indexOf('rgba(10, 10, 16, 0.38)') !== -1 && e6g4.bodyBg.indexOf('url("https://example.com/bg.jpg")') !== -1 && e6g4.cssVar.indexOf('url("https://example.com/bg.jpg")') !== -1, 'cls=' + e6g4.cls + ' bg=' + e6g4.bodyBg.slice(0, 150) + ' var=' + e6g4.cssVar);
+    // 重开 → 页面背景组预填（自定义 active + 网址框预填 + 预览挂图）→ 点默认 → 保存 → PATCH ={"pageBgImage":null} → body 恢复
+    await t.evalJs("window.__patchedMe = null; document.getElementById('profileEditBtn').click()");
+    await sleep(500);
+    await t.evalJs("document.querySelector('#editNavBtns [data-edit-tab=\"custom\"]').click()");
+    await sleep(300);
+    const e6g5 = await t.evalJs("(() => { var active = document.querySelector('#editPageBgGrid [data-pagebg].active');" +
+      " return { activePg: active ? active.getAttribute('data-pagebg') : null," +
+      " urlVal: document.getElementById('editPageBgUrlInput').value," +
+      " innerBg: document.getElementById('editPageBgInner').style.backgroundImage," +
+      " rowVis: getComputedStyle(document.getElementById('editPageBgRow')).display }; })()");
+    check('E6 v0.2.25.0 重开预填：自定义 active + 网址框预填 https 值 + 预览挂图 + 行亮起', e6g5.activePg === 'custom' && e6g5.urlVal === 'https://example.com/bg.jpg' && e6g5.innerBg.indexOf('url("https://example.com/bg.jpg")') !== -1 && e6g5.rowVis !== 'none', JSON.stringify(e6g5));
+    await t.evalJs("document.querySelector('#editPageBgGrid [data-pagebg=\"\"]').click()");
+    await sleep(300);
+    const e6g6 = await t.evalJs("(() => { return { rowVis: getComputedStyle(document.getElementById('editPageBgRow')).display, innerBg: document.getElementById('editPageBgInner').style.backgroundImage }; })()");
+    check('E6 v0.2.25.0 点默认：行隐藏 + 预览清空', e6g6.rowVis === 'none' && e6g6.innerBg === '', JSON.stringify(e6g6));
+    await t.evalJs("document.getElementById('editSaveBtn').click()");
+    await sleep(800);
+    const e6g7 = await t.evalJs("(() => { var rawCalls = window.__fetchCalls.filter(function (c) { return c.method === 'PATCH'; }).map(function (c) { return c.body; });" +
+      " var cs = getComputedStyle(document.body);" +
+      " return { rawCalls: rawCalls, cls: document.body.className, bodyBg: cs.backgroundImage, cssVar: cs.getPropertyValue('--page-bg-image') }; })()");
+    console.log('E6g7 raw PATCH bodies:', JSON.stringify(e6g7.rawCalls));
+    const e6g7PgCalls = e6g7.rawCalls.filter(function (b) { return b.indexOf('pageBgImage') !== -1; });
+    check('E6 v0.2.25.0 选默认保存 → 最后 PATCH body 精确 ={"pageBgImage":null}（共 2 次 pageBgImage 调用）+ body 恢复（无 page-bg-active 类/变量空/无图）', e6g7PgCalls.length === 2 && e6g7PgCalls[e6g7PgCalls.length - 1] === '{"pageBgImage":null}' && e6g7.cls.indexOf('page-bg-active') === -1 && e6g7.cssVar === '' && e6g7.bodyBg.indexOf('example.com') === -1, JSON.stringify(e6g7PgCalls) + ' cls=' + e6g7.cls + ' var=' + e6g7.cssVar);
 
     console.log('── T. 四 tab 走查（自己主页）──');
     // T1 默认 posts tab：1 卡（主页第一帖 + 媒体瓦片）
@@ -650,12 +724,14 @@ async function main() {
       " wrapLg: h.classList.contains('lg-static'), wrapLayer: !!h.querySelector(':scope > .lg-backdrop'), wrapSpec: !!h.querySelector(':scope > .lg-specular')," +
       " orbVis: h.querySelector(':scope > .lg-orb-field') ? getComputedStyle(h.querySelector(':scope > .lg-orb-field')).display : null," +
       " orbB: h.querySelector(':scope > .lg-orb-field') ? getComputedStyle(h.querySelector(':scope > .lg-orb-field'), '::before').backgroundImage : null," +
-      " cardBgColor: getComputedStyle(hc).backgroundColor }; })()");
+      " cardBgColor: getComputedStyle(hc).backgroundColor," +
+      " bodyCls: document.body.className, bodyBg: getComputedStyle(document.body).backgroundImage }; })()");
     check('O1 他人主页：名字/♀svg/兜底简介/加入于 + 关注钮（未关注态）+ 无编辑资料钮 + 空态', o1.text.indexOf('电池他人') !== -1 && o1.badgeSrc && o1.badgeSrc.indexOf('female_24dp_F18AFF') !== -1 && o1.text.indexOf('这个人很懒，还没有简介') !== -1 && o1.text.indexOf('加入于 2026年7月15日') !== -1 && o1.hasFollow && o1.pressed === 'false' && o1.btnText === '关注' && !o1.hasEdit && o1.empty, o1.btnText);
     check('O1 粉丝数初始 0', o1.follower === '0', o1.follower);
     check('O1 v0.2.22.6 点赞/收藏默认私人：他人主页只 2 tab（帖子/转发）+ 无点赞/收藏统计块', o1.tabs === 2 && o1.statTabs === 'posts,reposts', 'tabs=' + o1.tabs + ' stats=' + o1.statTabs);
     check('O1 v0.2.24.3/4 他人双背景公开渲染：卡=横幅预设 glass-rose（liquid-glass+data-card-bg+玻璃层）+ 包层=卡片背景 card-halo glass-clear 真液态玻璃（无色极轻白霜 gradient 在+三色相均不在+引擎 lg-static/折射层/高光层全挂）+ 卡身纯透明 + v0.2.24.4 光场亮起（orb display=block + 无色白光球 蓝紫均不在）', o1.glass && o1.bgAttr === 'glass-rose' && o1.lgLayer && o1.wrapCls.indexOf('card-halo') !== -1 && o1.wrapCls.indexOf('glass-clear') !== -1 && o1.wrapBg.indexOf('linear-gradient') !== -1 && o1.wrapBg.indexOf('rgba(255, 255, 255') !== -1 && o1.wrapBg.indexOf('30, 90, 200') === -1 && o1.wrapBg.indexOf('232, 110, 160') === -1 && o1.wrapBg.indexOf('96, 100, 230') === -1 && o1.wrapLg && o1.wrapLayer && o1.wrapSpec && o1.cardBgColor === 'rgba(0, 0, 0, 0)' && o1.orbVis === 'block' && o1.orbB.indexOf('255, 255, 255') !== -1 && o1.orbB.indexOf('96, 165, 250') === -1, JSON.stringify({ glass: o1.glass, attr: o1.bgAttr, layer: o1.lgLayer, wrapCls: o1.wrapCls, wrapBg: o1.wrapBg.slice(0, 60), wrapLg: o1.wrapLg, wrapLayer: o1.wrapLayer, wrapSpec: o1.wrapSpec, cardBgColor: o1.cardBgColor, orbVis: o1.orbVis, orbB: o1.orbB.slice(0, 60) }));
     check('O1 v0.2.24.1/2 标准液态玻璃=代码白边环 2px + 柔影', o1.wrapShadow.indexOf('rgba(255, 255, 255, 0.8)') !== -1 && o1.wrapShadow.indexOf('inset') !== -1 && o1.wrapShadow.indexOf('rgba(0, 0, 0, 0.4)') !== -1, o1.wrapShadow);
+    check('O1 v0.2.25.0 整页背景公开渲染：他人主页也渲染本人设置的图（body page-bg-active + 背景含 UPL-DEMO01.jpg + 深色蒙层；计算样式把相对路径解析为绝对 URL 属正常）', o1.bodyCls.indexOf('page-bg-active') !== -1 && o1.bodyBg.indexOf('UPL-DEMO01.jpg') !== -1 && o1.bodyBg.indexOf('rgba(10, 10, 16, 0.38)') !== -1, 'cls=' + o1.bodyCls + ' bg=' + o1.bodyBg.slice(0, 150));
 
     // O2 关注链：点击 → 乐观已关注 + POST 捕获 → 罐头回程 followerCount 1 + toast；再点 → DELETE → 取消
     await t.evalJs("document.getElementById('profileFollowBtn').click()");
@@ -711,7 +787,7 @@ async function main() {
     // L1 hub 首卡作者锚 → 个人主页（href 形状断言）
     const l1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]'); var a = c ? c.querySelector('.post-author-link') : null;" +
       " return { ver: window.MN_SITE_VERSION, href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && a.textContent.length > 0) : false }; })()");
-    check('L1 版本 v0.2.24.4', l1.ver === 'v0.2.24.4', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.25.0', l1.ver === 'v0.2.25.0', 'ver=' + l1.ver);
     check('L1 云卡作者锚 → profile（id=USR- 形状 + 头像+名字在内）', l1.href && /^community-profile\.html\?id=USR-\d{6}$/.test(l1.href) && l1.wrapped, l1.href);
 
     // L2 点作者锚 → 真导航 → 头部渲染（真数据）+ 几何 + 关注钮
