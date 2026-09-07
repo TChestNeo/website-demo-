@@ -2292,9 +2292,47 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 .glass-clear { --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.10)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.10), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.06), transparent 40%), var(--color-surface-container-high); } /* v0.2.24.3 标准液态玻璃=真液态玻璃（用户「不是你液态玻璃是真的吗」+「参考 rdev/liquid-glass-react」）：包层挂全站液态玻璃引擎（折射 70+三通道色散+磨砂 24px+饱和 140%+镜面高光=rdev 同款配方，见 renderHeader）+ 无色极轻白霜（0.14/0.04/0.10 三层=v0.2.24.1 白磨砂 ~1/4 强度，亮/暗主题都呈磨砂玻璃体而非白底；配方形状与横幅组同源、零色相）+ 代码白边环 2px+柔影（见 .card-halo.glass-clear）。v0.2.24.2 纯透明并入本配方：卡身仍直透、白底不再有 */
 .card-halo > .lg-orb-field { display: block; position: absolute; inset: 0; z-index: -2; border-radius: inherit; overflow: hidden; pointer-events: none; } /* v0.2.24.4 玻璃光场（用户「还是一样没有」根因=rdev demo 玻璃后有彩色场景可折，本站页面背景纯平→折射/磨砂全无对象）：包层内置无色白光球垫在引擎磨砂层之下——光先被 blur(24px) 磨开再被折射滤镜三通道色散（折射后光斑边缘仍会泛出轻微彩边=液体玻璃天然色散，不是上色；首版光球用参考代码蓝紫 #60a5fa/#a78bfa 被用户「为什么有蓝色和紫色在背面能不能去掉」驳回→改纯白） */
 .lg-orb-field { display: none; } /* 默认无板/无包层：光场不亮（卡身实底也会盖住）——只有标准液态玻璃亮光 */
-.card-halo > .lg-orb-field::before { content: ''; position: absolute; left: -70px; top: 30px; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%); }
-.card-halo > .lg-orb-field::after { content: ''; position: absolute; right: -90px; bottom: -70px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 70%); }
+.card-halo > .lg-orb-field::before { content: ''; position: absolute; left: -70px; top: 30px; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%); }
+.card-halo > .lg-orb-field::after { content: ''; position: absolute; right: -90px; bottom: -70px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 70%); }
+/* v0.2.25.1 光球提亮 0.5/0.45→0.85/0.75（用户「还是一样没有」——深色默认背景下玻璃体也要有可见白光可磨可折） */
 .card-halo > .lg-specular { background: linear-gradient(115deg, rgba(255, 255, 255, 0) 28%, rgba(255, 255, 255, 0.16) 44%, rgba(255, 255, 255, 0.03) 56%, rgba(255, 255, 255, 0) 72%), radial-gradient(circle at 50% 26%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 55%); } /* v0.2.24.4 高光层加斜向流光（rdev 光泽质感）+ 顶部聚光——引擎默认圆形 0.16 高光太弱看不出 */
+/* v0.2.25.1 玻璃体可见化（用户「还是一样没有啊」+ 责令精读 rdev/liquid-glass-react 教程+demo+源码）：
+   ①两层环形高光=rdev 源码 index.tsx Border layer 1/2 原值移植（唯一在任何背景下都可见的玻璃招牌层）：
+     1.5px 异或环（content-box xor 掩膜只留 padding 环）+白渐变 135°（静态无跟手=定角；0→0.12/0.32@33%
+     →0.4/0.6@66%→0）+ 内白环影 0.5px+高光/阴影 1px——层 1 mix-blend screen opacity 0.2、
+     层 2 mix-blend overlay（原库无 opacity）；环贴卡缘（inset 6px=包层 padding，rdev 环贴玻璃缘同义）；
+   ②页面背景图存在时包层背景复刻该图（background-attachment:fixed+cover+center 与 body 同参数
+     =像素级无缝对齐；引擎磨砂层 z:-1 垫在包层背景之上直接采样它——不再依赖 Chrome 对 body
+     背景的采样，demo 同款「玻璃后有场景可磨可折」在背景图下必现；无背景图时仍纯白霜配方） */
+.card-halo.glass-clear::before, .card-halo.glass-clear::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: var(--radius-lg);
+  pointer-events: none;
+  padding: 1.5px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.5) inset, 0 1px 3px rgba(255, 255, 255, 0.25) inset, 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+.card-halo.glass-clear::before {
+  mix-blend-mode: screen;
+  opacity: 0.2;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.12) 33%, rgba(255, 255, 255, 0.4) 66%, rgba(255, 255, 255, 0) 100%);
+}
+.card-halo.glass-clear::after {
+  mix-blend-mode: overlay;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.32) 33%, rgba(255, 255, 255, 0.6) 66%, rgba(255, 255, 255, 0) 100%);
+}
+.page-bg-active .card-halo.glass-clear {
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.10)), radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.10), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255, 255, 255, 0.06), transparent 40%), var(--page-bg-image, none);
+  background-size: auto, auto, auto, cover;
+  background-position: 0 0, 0 0, 0 0, center;
+  background-attachment: scroll, scroll, scroll, fixed;
+  background-repeat: no-repeat;
+}
 /* 弹窗顶部 基础/自定义 导航 + 背景预设网格 */
 .edit-nav { display: flex; gap: 4px; background: var(--color-surface-container-low); border-radius: var(--radius-full); padding: 4px; margin-bottom: var(--space-md); }
 .edit-nav button { flex: 1; border: none; background: transparent; color: var(--color-outline); cursor: pointer; padding: 6px 12px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); font-weight: 600; }
@@ -2307,6 +2345,22 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 .edit-bg-preview.has-plate.glass-clear .pv-card { position: relative; }
 .edit-bg-preview.has-plate.glass-clear .pv-card::before { content: ''; position: absolute; left: -12px; top: 6px; width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 70%); }
 .edit-bg-preview.has-plate.glass-clear .pv-card::after { content: ''; position: absolute; right: -10px; bottom: -8px; width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%); }
+/* v0.2.25.1 预览迷你双层环形高光（与大卡同配方缩小版：1px 环+同渐变同混合） */
+.edit-bg-preview.has-plate.glass-clear::before, .edit-bg-preview.has-plate.glass-clear::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  padding: 1px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.5) inset, 0 1px 2px rgba(255, 255, 255, 0.25) inset;
+}
+.edit-bg-preview.has-plate.glass-clear::before { mix-blend-mode: screen; opacity: 0.2; background: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.12) 33%, rgba(255, 255, 255, 0.4) 66%, rgba(255, 255, 255, 0) 100%); }
+.edit-bg-preview.has-plate.glass-clear::after { mix-blend-mode: overlay; background: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.32) 33%, rgba(255, 255, 255, 0.6) 66%, rgba(255, 255, 255, 0) 100%); }
 .edit-bg-flat { width: 100%; height: 36px; border-radius: var(--radius-sm); background: var(--lg-bg, var(--color-surface-container-high)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.14); } /* 横幅纯渐变条 */
 .edit-bg-preview .pv-card { display: flex; flex-direction: column; height: 48px; border-radius: var(--radius-sm); overflow: hidden; background: transparent; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.45); } /* 透明卡轮廓（卡身纯透明） */
 .edit-bg-preview .pv-card .pv-banner { flex: none; height: 14px; background: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)); } /* 迷你品牌横幅条（固定示意，卡片背景组预览只表达背景层） */

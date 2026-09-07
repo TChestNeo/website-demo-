@@ -1,0 +1,15 @@
+修复：v0.2.25.1 Community 液态玻璃体可见化（rev 00121-hdk）
+
+用户「还是一样没有啊，你能不能仔细看看这个链接内的整个使用教学内容」（+ demo https://liquid-glass.maxrovensky.com/ + 仓库 .git 直读）——git clone 精读 rdev/liquid-glass-react 源码后实锤根因并修复：
+
+①根因：rdev demo 的玻璃感 = 玻璃后有彩色照片场景可磨可折；本站主页纯深色平底 → 磨砂/折射/色散「无米下锅」全看不见。而库里唯一在任何背景下都可见的招牌层 = 两层白色环形高光（源码 index.tsx Border layer 1/2），此前从未移植。
+
+②移植两层环形高光（index.tsx:508-559 原值）：::before（screen 混合、opacity 0.2）/ ::after（overlay 混合）= 1.5px content-box xor 异或环（仅留 padding 环）+ 白渐变 135°（0→0.12/0.32@33%→0.4/0.6@66%→0，静态无跟手=定角）+ 内白环影 0.5px+高光/阴影 1px，环贴卡缘（inset 6px=包层 padding；rdev 环贴玻璃缘同义）——纯白无色，符合用户「不要有颜色」。
+
+③页面背景图存在时包层背景复刻该图（.page-bg-active .card-halo.glass-clear：三霜层+var(--page-bg-image)，background-attachment:fixed+cover+center 与 body 同参数=像素级无缝对齐）——卡身/引擎磨砂层直接采样包层自己，不再依赖 Chrome 对 body 背景的采样，demo 同款「玻璃后有场景可磨可折」必现；无背景图时仍纯白霜配方。
+
+④光场光球提亮 0.5/0.45→0.85/0.75——深色默认背景下玻璃体也有可见白光可磨可折。预览迷你卡同款双层迷你高光（1px 环缩小版）。
+
+横幅组 7 预设不动、玻璃仍全无色（纯白）、后端零改动；测试 259/259（零后端）+电池 76→79 本地（E6c2 预览迷你高光+E6d rdev 双环原值断言 screen/overlay/135°/1.5px/top=6px+O1 包层复刻背景图含 UPL-DEMO01.jpg+attachment fixed；掩膜计算样式序列化 'exclude, exclude' 双值 → 断言改包含式）+19/19 线上（L1 版本 v0.2.25.1）+冒烟 49/49+curl 五连（health 58+版本 v0.2.25.1+双环 CSS×2+page-bg-active 复刻 CSS+光球 0.85+匿名 PATCH 401）；部署一次 exit 0（00121-hdk，28 env describe 全量+逗号参数引号）
+
+（不 push）
