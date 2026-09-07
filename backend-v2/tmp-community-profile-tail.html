@@ -26,12 +26,12 @@
 .edit-gender-pill:hover { background: var(--color-surface-container-low); }
 .edit-gender-pill.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
 /* v0.2.23.0 卡片背景自定义（用户「自定义是可以自定义卡片背景」+「把那个react内的加入那个自定义内」）；
-   v0.2.23.1 口径修正：用户「你那个卡片背景是横幅我要的是背景就是整个」——预设渐变铺满整张卡
-   （编辑资料按钮所在的 profile-header 整卡），横幅不再单独渐变（background none 露整卡渐变）；
+   v0.2.23.1 口径修正：预设渐变铺满整张 profile-header 卡（tint 须包成线性渐变层才合法）；
+   v0.2.23.2 口径修正：用户「你放在自定义内的那个叫横幅不叫背景」——横幅与背景分开：横幅保持
+   v0.2.22.5 品牌渐变不动（background none 覆盖已删除），预设只作为横幅下方的卡片背景；
    液体玻璃引擎（liquid-glass.js = rdev/liquid-glass-react 移植；弹性跟手已按 v0.2.9.1 撤销口径下线——
    一律静态玻璃：折射+磨砂+镜面高光） */
-.profile-header.glass-bg { background: linear-gradient(var(--lg-tint, rgba(255,255,255,0.08)), var(--lg-tint, rgba(255,255,255,0.08))), var(--lg-bg, var(--color-surface-container-high)); } /* 整卡=霜面+预设渐变；tint 是颜色，须包成均匀渐变层才合法（颜色只许出现在 background 简写最后一层） */
-.profile-header.glass-bg .profile-banner { background: none; } /* 横幅不再单独渐变——整卡同渐变全幅 */
+.profile-header.glass-bg { background: linear-gradient(var(--lg-tint, rgba(255,255,255,0.08)), var(--lg-tint, rgba(255,255,255,0.08))), var(--lg-bg, var(--color-surface-container-high)); } /* 卡片背景=霜面+预设渐变；tint 是颜色，须包成均匀渐变层才合法（颜色只许出现在 background 简写最后一层） */
 .profile-header .lg-backdrop { -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); } /* 引擎默认 6px，主页卡给 14px 磨砂 */
 .bg-default { --lg-bg: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-frost { --lg-tint: rgba(255,255,255,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.30)), linear-gradient(135deg, rgba(96,100,230,0.50), rgba(150,120,245,0.35) 50%, rgba(96,100,230,0.50)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
@@ -44,13 +44,18 @@
 .edit-nav { display: flex; gap: 4px; background: var(--color-surface-container-low); border-radius: var(--radius-full); padding: 4px; margin-bottom: var(--space-md); }
 .edit-nav button { flex: 1; border: none; background: transparent; color: var(--color-outline); cursor: pointer; padding: 6px 12px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md); font-weight: 600; }
 .edit-nav button.active { background: var(--color-primary); color: #fff; }
-.edit-bg-preview { margin-bottom: 10px; }
-.edit-bg-preview .swatch-fill { width: 100%; height: 48px; }
+/* v0.2.23.2 预览改整卡模型：顶部横幅条（品牌渐变不动）+ 下方卡片背景（预设）——不再是一根横幅条 */
+.edit-bg-preview { margin-bottom: 10px; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-md); overflow: hidden; }
+.edit-bg-preview .swatch-fill { width: 100%; height: 56px; display: flex; flex-direction: column; }
+.edit-bg-preview .pv-banner { flex: none; height: 20px; background: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
+.edit-bg-preview .pv-body { flex: 1; background: linear-gradient(var(--lg-tint, rgba(255,255,255,0.08)), var(--lg-tint, rgba(255,255,255,0.08))), var(--lg-bg, var(--color-surface-container-high)); }
+.edit-bg-preview .swatch-fill.bg-default .pv-body { background: var(--color-surface-container-high); } /* 默认=无背景，纯卡片底色 */
 .edit-bg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .edit-bg-swatch { display: flex; flex-direction: column; gap: 4px; align-items: center; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-md); background: var(--color-surface-container-low); padding: 6px; cursor: pointer; font-family: inherit; color: inherit; }
 .edit-bg-swatch:hover { border-color: var(--color-outline); }
 .edit-bg-swatch.active { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(70,72,212,0.35); }
 .edit-bg-swatch .swatch-fill { width: 100%; height: 36px; border-radius: 6px; background: var(--lg-bg, var(--color-surface-container-high)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), inset 0 0 0 1px rgba(255,255,255,0.14); }
+.edit-bg-swatch .swatch-fill.bg-default { background: var(--color-surface-container-high); } /* 默认=无背景，纯卡片底色 */
 .edit-bg-swatch .swatch-label { font-size: var(--fs-label-sm); color: var(--color-on-surface-variant); }
 .profile-empty { text-align: center; color: var(--color-outline); padding: var(--space-xl) var(--space-md); font-size: var(--fs-label-md); }
 #profileState404 { padding: var(--space-xl) var(--space-md); text-align: center; }
@@ -552,7 +557,7 @@
     var u = profileUser;
     if (!u) { toastMsg('资料加载中，请稍后再试', true); return; }
     editPendingAvatar = null;
-    // v0.2.23.0 卡片背景（用户「自定义是可以自定义卡片背景」）：null = 默认品牌横幅
+    // v0.2.23.0 卡片背景（用户「自定义是可以自定义卡片背景」）；v0.2.23.2 null = 无背景（横幅保持品牌渐变不动）
     var editCardBg = u.cardBg || null;
     var backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
@@ -595,7 +600,7 @@
       '<div id="editTabCustom" style="display:none">' +
         '<div class="form-group">' +
           '<label class="form-label">卡片背景（液体玻璃）</label>' +
-          '<div class="edit-bg-preview"><span class="swatch-fill' + (editCardBg ? ' ' + editCardBg : ' bg-default') + '"></span></div>' +
+          '<div class="edit-bg-preview"><div class="swatch-fill' + (editCardBg ? ' ' + editCardBg : ' bg-default') + '"><span class="pv-banner"></span><span class="pv-body"></span></div></div>' +
           '<div class="edit-bg-grid" id="editBgGrid">' +
             CARD_BG_DEFS.map(function (b) {
               return '<button type="button" class="edit-bg-swatch' + ((editCardBg || '') === b[0] ? ' active' : '') + '" data-bg="' + b[0] + '" title="' + b[1] + '">' +
@@ -643,7 +648,7 @@
       });
     });
 
-    // v0.2.23.0 卡片背景预设选择（data-bg 空串 = 默认 → editCardBg null 恢复品牌横幅）
+    // v0.2.23.0 卡片背景预设选择（data-bg 空串 = 默认 → editCardBg null 恢复无背景，横幅不动）
     card.querySelectorAll('#editBgGrid [data-bg]').forEach(function (b) {
       b.addEventListener('click', function () {
         editCardBg = b.getAttribute('data-bg') || null;
