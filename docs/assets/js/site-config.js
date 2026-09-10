@@ -391,7 +391,13 @@ window.MN_SITE = window.MN_SITE || {};
 //   ⑤编辑器顶部 Migrate 钮紫渐变 mono 翻黑灰渐变（亮 #1c1c22→#3a3a46/暗 #1e1e2d→#32324a——白横扫面板
 //   与 invert 滤镜机制不动）⑥弹窗 Migrate 药丸悬停紫层/紫光环/暗色星芒翻灰；ethereal.css 零改动无需
 //   inline-css；后端零改动；（补丁位 15→16·修复轮；2026-09-11）
-window.MN_SITE_VERSION = 'v0.2.28.16';
+// v0.2.29.0 = 表格卡 Sheet Card（用户「我们还缺少一个sheet card」——wiki 表格迁移目标）：FC 新卡片族第 7 型——
+//   可编辑表格（首行表头加粗、行内编辑框 .card-edit-field 不 arm 拖拽、底部 +添加行/+添加列、行尾 ✕ 删除
+//   删光自补空白行、窄卡 .sheet-scroll 横向滚动）；数据走 dataset.sheetData={cols,cells} JSON 串 additive
+//   草稿往返（legacy drafts omit → 种子 2 列 4 行）；调色板 Sheet Card 入口（table 图标 8×5）+ 图层图标表映射；
+//   table-layout:fixed 首行 ✕ 占位列防 ✕ 列塌 0 宽；后端零改动、ethereal 零改动无需 inline-css；
+//   （小改动位 28→29·新功能轮·补丁归零；2026-09-11）
+window.MN_SITE_VERSION = 'v0.2.29.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -423,4 +429,8 @@ window.MN_SITE_VERSION = 'v0.2.28.16';
 // v10.28.17.4 = 顶部 Migrate 按钮换 cssbuttons-io 设计（用户「再把Migrate按钮的Ui 改成这个」给了紫渐变代码按钮 CSS；首轮误改弹窗内 Migrate to Cards → 同轮修正：cssbuttons-io 归顶部钮，弹窗钮还原 v10.28.17.3 药丸独立类 .migrate-pill）：.migrate-btn 紫渐变底 linear-gradient(#8e2de2,#4a00e0)+ghostwhite 字+代码图标（</> 双箭头 currentColor）+悬停黑色斜面板 skew(30deg) 左→右横扫+按下缩小 0.95；亮/暗主题共用同一套（紫渐变两主题都成立零覆写）（补丁位 3→4·观感微调轮；2026-09-02）
 // v10.28.18.1 = 站点 v0.2.9.1 撤销轮同轮：编辑器卡弹性下线全静态（补丁位 0→1·修复轮；2026-09-03）
 // v10.28.18 = 编辑器卡全液态玻璃（站点 v0.2.9.0 同轮）：createGridCard 对全部卡无条件 LG.apply 弹性+小卡滤镜（主题/分组是后到状态→层显隐全交 CSS 门控，玻璃族 4 型外/主题卡/外板/图底/组内成员层 display:none）；组背景 .grid-group-bg 静态+小卡滤镜（那张「整卡」的卡面）、stats-edit-panel 动态面板静态挂载；弹性 transform 与编辑器 rotate 组合（逐帧重组 rotate(X) translate3d(...) 不覆盖旋转）（小更新位 17→18·观感轮·补丁归零；2026-09-02）
-window.FLUIDCANVAS_VERSION = 'v10.28.18.1';
+// v10.28.19 = 表格卡 Sheet Card（用户「我们还缺少一个sheet card」）：可编辑表格卡（首行表头加粗、行内编辑、
+//   +添加行/+添加列、行尾 ✕ 删行删光自补、窄卡横向滚动）；dataset.sheetData={cols,cells} additive 草稿往返
+//   （cells[0] 恒表头行）；调色板入口 + assetSpan 8×5 + LAYER_TYPE_ICONS sheet:table；table-layout:fixed
+//   首行 ✕ 占位列（防 ✕ 列塌 0 宽）（小更新位 18→19·小功能轮·补丁归零；2026-09-11）
+window.FLUIDCANVAS_VERSION = 'v10.28.19';
