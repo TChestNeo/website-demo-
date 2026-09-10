@@ -340,7 +340,16 @@ window.MN_SITE = window.MN_SITE || {};
 //   （暗色横幅视觉消失与模块融为一体，齿轮/火箭白图标仍可见，!important 压内联 style；
 //   mono 深色自有暗族渐变特异性更高不受影响）；ethereal.css 改动已重跑 inline-css（43 页）；
 //   后端零改动；（补丁位 9→10·观感微调轮；2026-09-10）
-window.MN_SITE_VERSION = 'v0.2.28.10';
+// v0.2.28.11 = 用户「还是一样有啊，那个东西会不会是向内的阴影导致的？」——升级扫描探针（box-shadow 顶层
+//   逗号切层 + 伪元素 + 边框全测）实证：①全侧栏无任何 inset 内阴影（lg-static 环规则要求
+//   .liquid-glass.lg-static 双类，侧栏模块只有 lg-static 从未生效——内阴影假设排除）；
+//   ②v0.2.28.10 横幅修复确已生效（暗色 bg=4% 白）；真身=访客模块「注册 / 登录」btn-primary——
+//   靛蓝渐变填充 186×42 L=81.7（与旧横幅同亮度）+ 16px 靛蓝光晕，修了横幅它还在所以「还是一样」；
+//   修法=ethereal.css 深色侧边栏块增 html[data-theme="dark"] .guest-module .btn-primary
+//   深靛蓝低调渐变 #23233a→#34344f + 白字 + 灭光晕（hover 微提亮 #2b2b46→#3d3d5c；亮色保留原靛蓝 CTA；
+//   html[...] 前缀与 mono 深色黑族规则同特异性 (0,3,1)、settings-modal 运行时注入在后故 mono 仍赢）；ethereal.css 改动
+//   已重跑 inline-css（43 页）；后端零改动；（补丁位 10→11·观感微调轮；2026-09-10）
+window.MN_SITE_VERSION = 'v0.2.28.11';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

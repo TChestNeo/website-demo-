@@ -20,6 +20,8 @@
 //   S14 亮色：侧栏 user-banner 保持亮靛蓝渐变（v0.2.28.10 只动深色）；
 //   S15 深色：banner 改极暗白 4%（v0.2.28.10 用户「深色模式左侧菜单内亮色长方形」——蓝主题漏网，真身=横幅）；
 //   S16 深色 mono：settings-modal 注入的暗族渐变仍赢（html[data-accent=mono][data-theme=dark] 特异性更高）；
+//   S17 深色：访客「注册 / 登录」按钮改深靛蓝低调渐变+灭光晕（v0.2.28.11 真身——「还是一样」的亮块）；
+//   S18 深色 mono：访客按钮 mono 暗族渐变仍赢（同特异性、settings 注入在后）；
 //   Z 全程零 console error。
 // 验证口径：composer 标记由探针直接注入 feedContent（cloudMode 启动链是页面自身逻辑、线上真后端可跑，
 //   非本轮恢复目标——本轮断言的是被洗后恢复的 CSS 规则对标记的适配）。
@@ -112,6 +114,9 @@ async function waitFor(cdp, expr, timeout, label) {
     ok('F ' + pg + '：气泡延迟 0.8s 规则在 + 旧 5s 已除（v0.2.28.9）', delay08Idx !== -1 && delay08Idx > anchorIdx && delay5Idx === -1);
     const bannerIdx = t.indexOf(':root[data-theme="dark"] .user-banner');
     ok('F ' + pg + '：暗色横幅白 4% 规则在（v0.2.28.10 深色侧边栏块）', bannerIdx !== -1 && t.indexOf('rgba(255, 255, 255, 0.04) !important', bannerIdx) !== -1);
+    const guestBtnIdx = t.indexOf('html[data-theme="dark"] .guest-module .btn-primary');
+    ok('F ' + pg + '：暗色访客按钮低调渐变+灭光晕规则在（v0.2.28.11 深色侧边栏块）', guestBtnIdx !== -1 && guestBtnIdx > bannerIdx &&
+      t.indexOf('#23233a', guestBtnIdx) !== -1 && t.indexOf('box-shadow: none', guestBtnIdx) !== -1);
   }
 
   // —— Chrome CDP ——
@@ -278,6 +283,23 @@ async function waitFor(cdp, expr, timeout, label) {
       document.documentElement.setAttribute('data-accent', 'mono');
       await new Promise(function (r) { setTimeout(r, 120); });
       var cs = getComputedStyle(document.querySelector('#slati-sidebar .user-banner'));
+      var monoWin = cs.backgroundImage.indexOf('linear-gradient(135deg, rgb(30, 30, 45), rgb(50, 50, 74))') !== -1;
+      document.documentElement.removeAttribute('data-accent');
+      return monoWin;
+    })()`));
+    ok('S17 深色：访客「注册 / 登录」按钮深靛蓝低调渐变+白字+灭光晕（v0.2.28.11 真身）', await cdp.evalJs(`(() => {
+      var b = document.querySelector('#slati-sidebar .guest-module .btn-primary');
+      if (!b) return false;
+      var cs = getComputedStyle(b);
+      return cs.backgroundImage.indexOf('linear-gradient(135deg, rgb(35, 35, 58), rgb(52, 52, 79))') !== -1 &&
+        cs.backgroundImage.indexOf('70, 72, 212') === -1 &&
+        cs.color === 'rgb(255, 255, 255)' &&
+        cs.boxShadow === 'none';
+    })()`));
+    ok('S18 深色 mono：访客按钮 mono 暗族渐变仍赢（同特异性、settings 注入在后）', await cdp.evalJs(`(async () => {
+      document.documentElement.setAttribute('data-accent', 'mono');
+      await new Promise(function (r) { setTimeout(r, 120); });
+      var cs = getComputedStyle(document.querySelector('#slati-sidebar .guest-module .btn-primary'));
       var monoWin = cs.backgroundImage.indexOf('linear-gradient(135deg, rgb(30, 30, 45), rgb(50, 50, 74))') !== -1;
       document.documentElement.removeAttribute('data-accent');
       return monoWin;

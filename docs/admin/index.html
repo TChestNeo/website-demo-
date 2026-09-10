@@ -248,6 +248,22 @@
 :root[data-theme="dark"] .user-banner {
   background: rgba(255, 255, 255, 0.04) !important;
 }
+/* 2026-09-10 用户「还是一样有啊，那个东西会不会是向内的阴影导致的？」——升级扫描（box-shadow
+   顶层逗号切层 + 伪元素 + 边框全测）实证：全侧栏无任何 inset 内阴影（lg-static 环要求
+   .liquid-glass.lg-static 双类，侧栏模块只有 lg-static 从未生效）；v0.2.28.10 横幅修复已生效
+   （bg=4% 白）。真身=访客模块「注册 / 登录」btn-primary：靛蓝渐变填充 186×42 L=81.7
+   （与旧横幅同亮度）+ 16px 靛蓝光晕——修了横幅它还在，所以「还是一样」。暗色改深靛蓝
+   低调渐变 + 白字 + 灭光晕，融于暗侧栏仍可点（亮色保留原靛蓝 CTA）；html[...] 前缀与 mono
+   暗族规则同特异性 (0,3,1)，settings-modal 运行时注入在后故 mono 黑族仍赢 */
+html[data-theme="dark"] .guest-module .btn-primary {
+  background: linear-gradient(135deg, #23233a, #34344f);
+  color: #ffffff;
+  box-shadow: none;
+}
+html[data-theme="dark"] .guest-module .btn-primary:hover {
+  background: linear-gradient(135deg, #2b2b46, #3d3d5c);
+  box-shadow: none;
+}
 
 /* ----- Reset & Base ----- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
