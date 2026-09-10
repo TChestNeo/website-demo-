@@ -2020,6 +2020,40 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   will-change: transform;
 }
 </style>
+<style>
+/* Create World CTA（2026-09-10 用户「平台首页的 Create World 按钮改成亮色让他突出显眼」）：
+   亮蓝紫渐变+辉光，亮/暗 × 蓝/黑白四主题一致高亮——!important 压过 mono 黑族 btn-primary 覆盖
+   （与 overview.html MicroNationary 横幅按钮同款配方，两处独立维护） */
+.btn.create-world-cta {
+  background: linear-gradient(135deg, #6a6cff, #b14dff) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(106, 108, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+.btn.create-world-cta:hover {
+  background: linear-gradient(135deg, #7d7fff, #c05eff) !important;
+  box-shadow: 0 6px 28px rgba(106, 108, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+.btn.create-world-cta:focus-visible {
+  box-shadow: 0 0 0 3px rgba(106, 108, 255, 0.4), 0 4px 20px rgba(106, 108, 255, 0.45) !important;
+}
+/* 深色模式（用户 2026-09-10「在深色模式下你把他改成白底黑字的」）：
+   白底黑字高对比 CTA + 白色辉光，蓝/黑白两种主题色一致（只按 data-theme 切） */
+:root[data-theme="dark"] .btn.create-world-cta {
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+:root[data-theme="dark"] .btn.create-world-cta:hover {
+  background: #f0f0f5 !important;
+  color: #000000 !important;
+  box-shadow: 0 6px 28px rgba(255, 255, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+:root[data-theme="dark"] .btn.create-world-cta:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 4px 20px rgba(255, 255, 255, 0.25) !important;
+}
+</style>
 </head>
 <body class="pre-stagger">
 
@@ -2062,7 +2096,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           <p class="body-md" style="color:var(--color-on-surface-variant)">Your worldbuilding console is fully operational.</p>
         </div>
         <div style="display:flex;gap:var(--space-sm)">
-          <a href="pages/create-world.html" class="btn btn-primary">Create World</a>
+          <a href="pages/create-world.html" class="btn btn-primary create-world-cta">Create World</a>
           <a href="pages/explore.html" class="btn btn-outline">View Archive</a>
         </div>
       </div>

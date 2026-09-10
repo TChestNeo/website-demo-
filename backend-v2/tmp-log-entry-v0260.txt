@@ -1,0 +1,201 @@
+—— 观感微调：Story 地球底点阵 + 入口卡聚光灯 + ch4 历史转折扩五事件（rev 00157-fqp → 00158-htq → 00159-lxd → 00160-kqx）——
+
+用户口径轮（2026-09-10，四连）：「算了你撤销这个，然后保留那个球 在那个球的背景加上这个」+ DotGrid 组件源码 →「为什么他默认是亮着的？不应该是暗的吗只有滑鼠靠近时才亮起」→「把那个刚才叫你放亮光的那个入口卡片的亮光换成这个」+ SpotlightCard 组件源码 →「在美国独立和冷战之间增加 一战与二战 和 苏联的成立 把一个只存在于理论的政权变成现实」。
+
+【rev 00157-fqp · DotGrid 点阵底 + globe 回归】
+① 撤销 WovenCloth Atelier Flag 全链：删除 docs/story/woven-cloth-atelier.html + backend-v2 tmp 源包（threeui bundle 已哈希校验入站一轮），移除 build 复制步骤、wip .cloth-* CSS、ch2-00 cloth-layer iframe 标记、电池 W 组（__seek 确定性推进检查）。用户验收后决定放弃布匹旗面（此前 rev 00156-qts 完整逐字保留实现）。
+② globe 回归：ch2-00 恢复 <canvas class="scene-gl" data-gl-kind="globe"> + .gl-fallback（story-gl.js 经纬线球，z:1）；电池恢复断言 scene-gl 仅 1 个 + storyWebgl.ok 布尔 + fallback 层。
+③ DotGrid 点阵底（用户钦定组件）：React 源逐行语义移植为 docs/story/story-dots.js（vanilla，站点零框架口径）——结构 section.dot-grid > .dot-grid__wrap > canvas.dot-grid__canvas 原样入 ch2-00；DotGrid.css 原样并入 wip style 块 + 故事站定位覆盖（.scene .dot-grid absolute inset 0 z:0，垫在 globe z:1 之后、scene-stage z:2 文字最上）；props 口径（dotSize 16 / gap 32 / activeColor #5227FF / proximity 150 / speedTrigger 100 / shockRadius 250 / shockStrength 5 / maxSpeed 5000 / resistance 750 / returnDuration 1.5）；throttle 50ms / Path2D 圆点 / rAF 全帧 / ResizeObserver（回退 window resize）/ 窗口级 mousemove（passive）+click 监听全按原组件；惯性推离+弹性回位抽 inertiaPush 共用（var 循环闭包每点各绑自身——原 for-of const 每迭代新绑定的语义等价）；gsap 3.13.0 + InertiaPlugin.min.js cdnjs CDN（curl 200 验证）；电池探测口 window.storyDots = { ok, count, config, pointer, getMaxOffset }（story-morph 惯例）。
+
+【rev 00158-htq · 默认暗、滑鼠靠近才亮（用户反馈「为什么默认是亮着的」）】
+根因 = 原作者默认 baseColor=activeColor='#5227FF' 同色 → 靠近混色等于没生效、全点阵常亮；且原作者 pointer 初始 (0,0) → 画布左上角 150px 内常亮一角。两处口径偏差（用户钦定）：
+④ baseColor 改 '#120826' 暗紫底（原作者 #5227FF）——组件自带 base→active 混色才真正「靠近变亮」；
+⑤ pointer 初始移出画布 (-9999,-9999)——初始全暗，滑鼠入画布才亮。
+两偏差在 story-dots.js 文件头注释显式记录（provenance 可追溯）；电池补「初始全暗」断言（pointer (-9999,-9999)）。
+
+【rev 00159-lxd · overview Story 卡亮光换 SpotlightCard（用户贴组件源码）】
+⑥ 把此前暖金双光晕（--mx/--my + mix-blend-mode 迭代方案）整体替换为 SpotlightCard 语义：::before 层 radial-gradient(circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent 80%)，opacity 0 → 0.6 on hover/focus-within，0.5s ease；CSS 默认 --spotlight-color rgba(255,255,255,0.05)，JS mousemove 写入 0.25；卡片原设计保留（不套组件 #111/#222 卡皮——用户只要换亮光）；保留 .story-spot:hover { opacity: 1 }（覆盖 ethereal.css:221 全局 a:hover opacity 0.85「卡片变白」修复）。
+⑦ 电池 tmp-spot-probe.js 重写 7/7（A1 ::before 径向光斑在场 / A2 悬停前灭 / A3 光跟随指针+悬停亮 .6+spotlight 0.25 / A4 悬停卡 opacity 1 / A3b 光心随指针移动 / A5 移出熄灭 / Z 零 console error）。
+
+【rev 00160-kqx · ch4 历史转折 3→5 事件（用户钦定顺序与口径）】
+⑧ tmp-story-ch4-tail.html：在美国独立（ch4-02）与冷战之间插入「一战与二战」（ch4-03，kicker 历史转折 · 三）与「苏联的成立」（ch4-04，kicker 历史转折 · 四——narration 口径「1848 年马克思画了一个没有阶级的社会 → 1917 年一群人把它搬进现实：一个只存在于理论的政权，第一次变成了一个国家」，紧扣用户原话）；冷战重编号 ch4-05（kicker 历史转折 · 五，data-voice ch4-05）；两个新场景各按统一九段 schema（evt-background/event/actors/conflict/turning/consequences/perspectives/philosophy/related，perspectives 带 Debate 标签并置两种解释——苏联事件「支持者看到阶级解放与快速工业化，批评者看到权力集中与镇压」中立口径）；ch4-00 hero「这一章讲三场转折」改「五场」；footer 补新事件 Fact 行；finale 知识地图 kmap ch4 行补两个事件名。
+⑨ 电池计数更新：scenes 44→46、narration 42→44、G 组 3 事件×9 段→5 事件×9 段（45 块）、debates 3→5。本地 55/55 ✅、LIVE 4/4 ✅。
+
+⑩ 部署（三轮同链）：docker build → tag → token 直登 → push → tmp-deploy-story.ps1（28 env describe 全量原样，逗号参数引号）。rev 00157-fqp → 00158-htq → 00159-lxd → 00160-kqx（终版）。
+
+⑪ 线上验证（每轮）：curl 链（health 58 表 + wip 内容 grep + ch4-00~ch4-05 场景各 1）+ LIVE 电池（story.mnationworld.com 46 场景 + 主站交叉 v0.2.26.0 + Story 卡 → /wip + 零 console error）。
+
+【rev 00161-548 · 「冷战」两字字体轮转（用户口径：「冷战两字能不能在出现的时候它的字体自动…切换多种字体」+ 追加「记得是要冷战两字亮起的时候才开始切换」）】
+⑫ 标记：ch4-05 narration 行 2 改 <span class="fc-words" data-fc="冷战">（MagicText 只拆文本节点、元素节点原样保留 → span 与其内 .mw×2 存活）。
+⑬ 新模块 docs/story/story-fontcycle.js（构建链 story-dots.js 之后加载）：**触发 = 只等「冷战」两字自己的 .mw-fill 全亮（≥ .98）**——不是整行、更不是场景入场（用户追加口径）；纯定时器轮转滚轮零参与；节奏：冷战亮起后顿 320ms → 淡出 .26s → 换 font-family → 淡入 → 停留 .62s × 4 字体（ZCOOL XiaoWei / ZCOOL KuaiLe / Ma Shan Zheng / Zhi Mang Xing）→ 回到默认字体收尾；每页只跑一次；document.fonts.load 预载只拉「冷战」两字切片（unicode-range 按需，4 字体共 8 字形）；reduced-motion 整体跳过；探测口 window.storyFontCycle = { ok, skipped, done, fonts }。
+⑭ 踩坑：story.js 的 fill 更新在 rAF 合并回调里（晚于同一滚动事件）——首版只在 scroll 事件里检查「冷战亮起」抢跑永远错过 → 加 120ms setInterval 轮询兜底捕捉亮起时刻（started 后 clearInterval）。电池 FC 标记断言同坑：MagicText ghost+fill 双份文本，textContent='冷冷战战' → 改断言 .mw-fill 字串拼接 = '冷战'。
+⑮ Google Fonts link 追加 4 家族（css2 curl 200 验证）；.fc-words { display:inline-block; transition: opacity .26s ease } 入 wip 合并 style 块。
+⑯ 电池新增 FC 组 4 项：标记存活（chars=冷战 + .mw×2 + 行 .on）→ 滚动到位后**零滚动输入** waitFor 字体自动开转（font-family 换为轮转字体）→ 轮完回默认（style 清空 + done + 字可见）→ reduced-motion 跳过。本地 59/59 ✅、LIVE 4/4 ✅。
+⑰ 部署：同链，rev 00161-548。curl：data-fc=1 + 4 字体 link 在场 + story-fontcycle.js 挂载 + health 58 表。
+
+【rev 00162-wf7 · 字体轮转口径 v2（用户：「切换完直接停止在最后一个字体 + 每一个字体只停留 0.2s + 不要有淡出/入的动画」）】
+⑱ story-fontcycle.js：HOLD 620→200ms；整个淡出/淡入机制删除（不再动 opacity，字恒可见——「冷战亮起」检查除外，那是触发条件不是动画）；轮完停在最后一个字体 Zhi Mang Xing（不再 style='' 回默认）；LEAD_IN 320ms 保留（亮起后略顿再开转）。
+⑲ .fc-words 去掉 opacity transition（build 合并 style 块）；电池 FC 组改断言：轮转中 opacity 恒 1（硬切无淡出）+ 轮完停 Zhi Mang Xing + done 后 500ms 不再回默认。本地 59/59 ✅、LIVE 4/4 ✅。
+⑳ 部署：同链，rev 00162-wf7。curl：线上模块 HOLD=200 + 唯一 opacity 引用是触发检查 + .fc-words 无 transition。
+
+【rev 00163-9vn · Community composer 工具 icon 悬停气泡延迟 5s→2.5s（v0.2.26.1）】
+用户口径（2026-09-10 三连）：「为什么首页顶部的按钮当滑鼠停留3s后并不会浮出那个icon的按钮名称」→ 排查后说明是
+5s 延迟口径（用户 09-05 自己钦定）→ 用户「一样没有亮啊」→ 用户拍板「改成2.5s」。
+㉑ 排查：CDP 探针 tmp-tooltip-probe.js 实证 5s 机制本身没坏（3.2s 仍隐藏/5.3s 亮起 opacity 1——transition:
+opacity .15s ease 5s, visibility 0s linear 5s 的 visibility 离散翻转在 5s 处生效）；curl 线上确认规则在场。
+㉒ 修改：community-hub.html .composer-tool:hover::after 两处 5s→2.5s（opacity + visibility 同步改）；注释补
+09-10 口径；白底黑字/移开 0.15s 淡出不变。site-config.js bump v0.2.26.0→v0.2.26.1（补丁位·观感微调轮）。
+㉓ 探针 v2 重写（7/7 ✅）：注入 composerHtml 同款完整 DOM（含 textarea——气泡浮其上验证 z 序不被表单控件盖）、
+B5 elementFromPoint 命中按钮（真机若被透明层盖住 hover 永不触发——用户报不亮的可能根因之一，实测无遮挡）、
+1.5s 仍隐藏（2.5s 口径）/ 2.9s 亮起 / 移开隐藏 / 零 console error。
+㉔ 踩坑：Write 探针时工作目录已是 backend-v2 却用相对路径 backend-v2/… → 写进嵌套 backend-v2/backend-v2/
+旧文件仍被执行跑出「旧标签」结果——cp 归位 + rmdir 修复。
+㉕ 部署：Docker Desktop 未启动（npipe 不存在）→ 从用户级安装路径 %LOCALAPPDATA%\Programs\DockerDesktop 启动
+→ docker info 轮询就绪 → build（EXIT=0 真检查）→ tag → token 直登 → push → tmp-deploy-story.ps1（28 env
+describe 全量原样）→ rev 00163-9vn exit 0。
+㉖ curl 链：health tables 58 + site-config v0.2.26.1 + hub 页 2.5s transition 在场 + 旧 5s 0 处。
+
+【rev 00164-4tn · composer 气泡延迟 2.5s→1.5s（v0.2.26.2）】
+用户同晚「能不能改成1.5s」继续提速。㉗ community-hub.html transition 2.5s→1.5s（opacity+visibility 同步）、
+注释补一句；site-config bump v0.2.26.1→v0.2.26.2（补丁位·观感微调轮）。㉘ 探针 v3 节奏同步（0.9s 仍隐藏/
+2.1s 亮起）7/7 ✅；踩坑：bash 工作目录被环境切回仓库根跑 node 报 MODULE_NOT_FOUND——cd backend-v2 重跑即过。
+㉙ 部署同链：build EXIT=0 → tag → token 直登 → push → tmp-deploy-story.ps1（28 env）→ rev 00164-4tn exit 0。
+㉚ curl 链：health tables 58 + v0.2.26.2 + 1.5s transition 在场 + 旧 2.5s 0 处。
+
+【rev 00165-hzj · Settings 弹窗左侧菜单（v0.2.27.0·新功能轮）】
+用户「能不能在设置的窗口左侧添加一个菜单」。㉛ settings-modal.js：六区块（Profile/Appearance/Notifications/
+Privacy/Language/Account）从一条长滚动页改成「左菜单 190px + 右内容区」——菜单项 icon+文字、active 高亮、
+sticky 随滚动；点菜单项切换右侧 .settings-sec（display 切换，六区块 DOM 全保留→既有 getElementById 事件
+接线零改动）；卡片 max-width 560→860px（#settingsCard id 覆盖 .modal-card）；≤640px 视口菜单退化顶部横向
+滚动条（.settings-layout flex-direction column + 菜单 row）；CSS 由 ensureStyle 一次性注入 <style>
+（slati-settings-menu-style id 防重）；site-config bump v0.2.26.2→v0.2.27.0（小改动位·新功能轮）。
+㉜ 新探针 tmp-settings-menu-probe.js 7/7 ✅：S1 菜单 6 项顺序（踩坑：button textContent 连 icon 连字文本
+personProfile——断言改取最后文字 span）/ S2 默认 Profile 可见其余隐藏 / S3 860px / S4 点 Appearance 切换+
+4 主题 pill / S5 点 Account + Logout/Delete 在场 / S6 Emulation 390px 菜单 flex-direction row / Z 零 error。
+㉝ 部署同链：build EXIT=0 → tag → token 直登 → push → tmp-deploy-story.ps1（28 env）→ rev 00165-hzj exit 0。
+㉞ curl 链：health tables 58 + v0.2.27.0 + settings-modal.js 菜单代码 9 处 + .settings-layout flex 在场。
+
+【rev 00166-dtp · Settings 弹窗 Discord 式全屏（v0.2.27.1·观感微调）】
+用户「那个设置弹窗能不能覆盖整个页面但是一样是弹窗类似discord的那种大小」。㉟ settings-modal.js ensureStyle：
+#settingsCard width/height 100% + max-width none + max-height 100vh + border-radius 0 + border none（铺满布局
+视口；玻璃模糊+scale 缩放入场保留=仍是弹窗；X/ESC 关闭不变，backdrop 点击关闭随全屏自然失效）；
+.modal-card-body max-height 改 calc(100vh - 2*lg)。site-config bump v0.2.27.0→v0.2.27.1（补丁位·观感微调）。
+㊱ 探针 S3 改全屏断言 7/7 ✅。踩坑：首版断言「cw≥1200 && ch≥850」与「≥ innerWidth-2」都挂——实测
+headless 布局视口 = 文档可视区 1243×802（innerWidth 1258 含 15px 滚动条槽，fixed inset:0 的含块是布局视口
+铺不到滚动条上，全屏弹窗通例）——断言改对比 documentElement.clientWidth×innerHeight 即过。
+㊲ 部署同链：build EXIT=0 → tag → token 直登 → push → tmp-deploy-story.ps1（28 env）→ rev 00166-dtp exit 0。
+㊳ curl 链：health tables 58 + v0.2.27.1 + 全屏规则 width/height 100% + max-width none 在场。
+
+【rev 00167-q7z · Settings 弹窗加回边缘（v0.2.27.2·观感微调）】
+用户「我要有边缘的」——全屏太满，要大弹窗带一圈空隙。㊴ settings-modal.js ensureStyle：#settingsCard
+width/height 改 calc(100% - 48px)（四周 24px 边缘，背后页面露一圈，backdrop 点击关闭随之复活——全屏时被
+卡片盖住自然失效）+ max-height none + border-radius 回 var(--radius-lg) + 边框回 --modal-border（基类自带，
+清掉 border:none 即恢复）；.modal-card-body max-height 改 calc(100vh - 48px - 2*lg)；≤640px 视口边缘收窄
+8px（width/height calc(100% - 16px)）。site-config bump v0.2.27.1→v0.2.27.2（补丁位·观感微调）。
+㊵ 探针 S3 改边缘断言 7/7 ✅：卡片宽=布局视口-48±2 && 高=innerHeight-48±2 && 圆角>0 && borderTopStyle≠none
+&& max-width none——比全屏断言多一道「不再是 0 圆角无边框」的口径守卫。
+㊶ 部署同链：build EXIT=0（踩坑：bash cwd 又漂 backend-v2 且 Dockerfile 在仓库根——build 上下文必须仓库根）
+→ tag → token 直登 → push → tmp-deploy-story.ps1（28 env）→ rev 00167-q7z exit 0。
+㊷ curl 链：health tables 58 + v0.2.27.2 + 边缘规则 calc(100% - 48px)/radius-lg/100vh - 48px 三处在场 +
+overview 200。
+
+【rev 00168-2vv · Appearance 主题色 蓝白/黑白（v0.2.28.0·新功能）】
+用户「在Appearance文字大小下方再增加一个主题色分成黑白和现在这个蓝白两种 然后那个按钮分成上下两个部分
+上半部显示主题配色 下半部就是名称」。㊸ settings-modal.js：①DEFAULT_SETTINGS 加 accent 'blue'|'mono'（旧
+存档 merge 自动补默认）；②applyAccent() 页面加载即设/撤 html[data-accent=mono]；③ensureStyle 常驻注入
+mono 覆盖（--color-primary 亮近黑 #1c1c22/暗近白 #ececf2 主色家族 20 变量 + nav-item/badge/dropdown/
+auth-terms 勾选/upload-zone/guest-hero 等蓝 tint 组件跟随翻中性灰——ethereal.css 零改动零 inline-css 重跑）；
+④关键修法：ensureStyle 原来只在开弹窗时跑，改 IIFE 顶层先跑一次——否则刷新后 mono 不生效；
+⑤Appearance 第三行 Accent Color 区块：两个 .accent-chip 上下两段（上半部 swatch=配色本身——Blue 纯蓝块/
+Mono 左黑右白对半分，下半部名称 Blue/Mono）；⑥点 chip 换 accent + 持久化。site-config bump
+v0.2.27.2→v0.2.28.0（小改动位·新功能轮）。
+㊹ 探针 10/10 ✅（S4b 区块结构 + S4c 点 Mono 变数级 #1c1c22+实际元素 rgb(28,28,34) 双重断言 + S4d 点回
+Blue 恢复路径）。踩坑两连：①compareDocumentPosition 方向写反（ac.compareDocumentPosition(fs) 的 FOLLOWING
+位=fs 在 ac 之后——正确是 fs.compareDocumentPosition(ac)）；②style.background 读回被 Chrome 规范化成
+rgb(70, 72, 212) 而非 #4648d4——断言去空格后比 rgb 形式。
+㊺ 部署同链：build EXIT=0（仓库根上下文）→ tag → token 直登 → push → tmp-deploy-story.ps1（28 env）→
+rev 00168-2vv exit 0。
+㊻ curl 链：health tables 58 + v0.2.28.0 + settings-modal.js accent 规则 28 处（data-accent=mono/accent-chip/
+accent-swatch）+ accent 默认值/applyAccent 页面加载 init 在场 + overview 200。
+
+【rev 00169-zg6 · 深色 mono 适配 按钮/卡片不白化（v0.2.28.1·观感微调）】
+用户「深色模式下按钮和卡片不要变白 除了文字」。㊼ 根因：mono 深色把 --color-primary 设成近白 #ececf2——
+主色既是文字色又是按钮/开关/面板/填充条的背景色，全部染白。settings-modal.js ensureStyle 补覆盖：深色
+mono 下 btn-primary 渐变（#3a3a44→#4a4a56 深灰）/auth-panel-body/toggle-switch.active/lb-score-fill/
+team-avatar/lift-info-btn 全翻深灰底；text-gradient 尾色改浅灰（文字仍近白）；亮色 mono 同步把 btn-primary/
+auth-panel-body/text-gradient/team-avatar 的硬编码蓝伴色（#5b5de0/#3b3dc4/#8131cf）翻纯黑灰；settings
+菜单 active 蓝 tint 改中性灰 rgba(118,117,134,0.10)（亮暗通用）。小圆点进度标记（dot/connector/milestone/
+art-sec 条）保留浅色=accent 标记语义不动。ethereal.css 零改动零 inline-css 重跑。
+㊽ 探针 11/11 ✅：S4c 扩展主按钮渐变去蓝断言（bg 含 rgb(28,28,34) 且无 rgb(91,93,224)）+ 新增 S4e 深色
+Mono（data-theme=dark + 主色仍 #ececf2 + 主按钮渐变 rgb(58,58,68) 无近白 + 开关深灰 + 菜单 active 中性灰）
++ 恢复 Blue/Light 防污染后续断言。
+㊾ 部署同链：build EXIT=0 → tag → token 直登 → push → tmp-deploy-story.ps1（28 env）→ rev 00169-zg6 exit 0。
+㊿ curl 链：health tables 58 + v0.2.28.1 + 线上 settings-modal.js 深色 mono 覆盖 13 条/mono 总覆盖 34 条 +
+深色 mono 适配注释在场 + overview 200。
+
+㊿1【2026-09-10 v0.2.28.2 深色侧边栏+黑白主题观感修正（rev 00170-6x5，commit 未建）】
+口径（用户两条连续反馈）：①「按钮怎么变成灰色的了然后 卡片中间那个白色还是一样你没有把他换成深色」——v0.2.28.1
+深灰按钮 #3a3a44 被拒+「卡片中间白」未修；②「更改侧边栏选中态样式（白色/浅色→暗色深色调 rgba(255,255,255,0.08) 或
+#1E1E2D，文字图标浅色/白色）+ 清除侧边栏容器白色/浅色边框/阴影（→rgba(255,255,255,0.05)）+ 去除硬编码外边框/网格分割线」。
+诊断（tmp-darkmono-scan.js v2 重写：双模式 dump 计算样式+白系元素扫描）：深色 mono 残留白点真身 = ①overview 特色国家
+头像圆 56x56 内联渐变 var(--color-primary)→var(--color-secondary)（白→紫，即「卡片中间那个白色」真身）；②sidebar 用户
+banner 内联 主色→#3b3dc4（白→蓝）；③nav 选中项 mono 白 tint 0.10+白描边；④模块卡片白边框 8%/分割线 12%。按钮灰真身 =
+#3a3a44 灰系 + --color-on-primary 近黑导致黑字压灰底。
+修：①ethereal.css 深色块加侧边栏规则——nav active 暗底 rgba(255,255,255,0.08)+白字+animation:none（navGlow forwards
+填充会盖过背景声明的级联陷阱），hover 白 5%，模块边框/分割线统一白 5% 半透明；②深色 mono 按钮翻纯黑族 #1e1e2d 系渐变
+（用户示例色）+btn-primary 显式白字；③白渐变修复（!important 压内联 style）：user-banner、头像 3px 白描边→8% 半透明、
+mn-ai-fab/mn-ai-head、featured-nation-avatar（overview.html 加类名）；④mono nav 规则重构——深色交还 ethereal 统一管
+（蓝/黑白同款暗色选中态），亮色 mono 显式 [data-theme=light] 防串主题。
+坑：①probe S4e 开关 background 0.2s 过渡竞态——断言前 sleep 500（此前 13/13 与 12/13 交替即此因）；②node -e 字符串补丁
+把 return 尾部替换成赋值表达式导致 evalJs 语法错——直接 Edit 工具重写整块；③PowerShell 部署脚本管道加 2>&1 会把
+gcloud stderr 变成 ErrorRecord 触发 $ErrorActionPreference='Stop' 中断部署（revision 未变）——去掉 2>&1 重跑即好；
+④evalJs "Uncaught" 无详情 = 表达式语法错（页面级异常 try/catch 包裹返回 __err 可定位）。
+验证：本地探针 13/13×3（S4e 黑族按钮白字/S4f 深色侧边栏/S4g 深色 Blue 同规则）+ community-hub 深色 mono 扫描
+white-ish(0)；线上 curl：health tables 58 + site-config v0.2.28.2 + ethereal 新规则在 + overview 内联页新规则在。
+后端零改动；ethereal.css 改动已重跑 inline-css（43 页）；（补丁位 1→2·观感微调轮）
+
+㊿2（52）v0.2.28.2 → v0.2.28.3：暗色去卡片正中白光（用户「能不能去除卡片中间的那个白光？？你根本没有找到真身」）——真身找到了！
+前情：v0.2.28.2 我误把 overview 56px 特色国家头像圆当「卡片中间白色」真身，被用户否定。本轮先用计算样式取证：
+CDP 扫描 dump 全页 .lg-specular 层——9 处全部 radial-gradient(circle, rgba(255,255,255,0.16), transparent 60%)、
+display:block，宿主=侧栏 3 模块 + 页面各卡 + 设置弹窗 #settingsCard（1133×714 正中）。真身 = liquid-glass.js
+为每张玻璃卡注入的镜面高光层（lg-specular），圆心恒在卡正中央——这就是「卡片中间的白光」。
+之前扫描漏掉的原因：发白元素过滤器要求 alpha>0.3，这层只有 0.16。
+修法：ethereal.css .lg-specular 基础规则后加 :root[data-theme="dark"] .lg-specular { display: none; }
+（暗色整层藏起、白光消失；亮色保留 rdev 高光配方不受影响）。JS 零改动（层无内联 display，纯 CSS 可压）。
+验证：本地探针 15/15（新增 S4h 深色白光层全灭含弹窗卡/侧栏/页面卡 + S4i 切回亮色高光恢复 display≠none）；
+线上 curl：health tables 58 + site-config v0.2.28.3 + ethereal 新规则在 + overview 内联页新规则在。
+部署：revision 00171-tgf（exit 0）。后端零改动；ethereal.css 改动已重跑 inline-css（43 页）；
+（补丁位 2→3·观感微调轮；2026-09-10）
+
+㊿3（53）v0.2.28.3 → v0.2.28.4：首页 Create World 按钮亮色高亮（用户「把那个首页的 Create World 按钮的颜色改成亮色 主要是让他变得突出显眼」）
+位置：overview 欢迎横幅 CTA（docs/pages/overview.html 欢迎卡右侧 <a class="btn btn-primary">Create World</a>）。
+修法：按钮加 create-world-cta 类 + 页内 <style>——亮蓝紫渐变 linear-gradient(135deg, #6a6cff, #b14dff)
++ 辉光 box-shadow 0 4px 20px rgba(106,108,255,0.45) + inset 白描 + 白字 600；hover 提亮 #7d7fff→#c05eff 上浮 1px；
+focus-visible 光环。关键点：background/box-shadow/color 全部 !important——深色 mono 的 ensureStyle 黑族
+btn-primary 覆盖（html[data-accent="mono"][data-theme="dark"] 特异性 0,3,1）会压过普通类规则，!important 保证
+亮/暗 × 蓝/黑白四主题一致高亮。ethereal.css 零改动→无需重跑 inline-css。
+验证：本地探针 17/17（新增 S4j 深色 Mono CTA 亮蓝紫白字不被黑族覆盖 + S4k 亮色 CTA 依然亮蓝紫）；
+线上 curl：health 58 + v0.2.28.4 + overview 页 CTA 类/亮色在。
+部署：revision 00172-xhp（exit 0）。后端零改动；（补丁位 3→4·观感微调轮；2026-09-10）
+
+㊿4（54）v0.2.28.4 → v0.2.28.5：Create World CTA 深色模式改白底黑字（用户「在深色模式下你把他改成白底黑字的」）
+前轮 CTA 亮蓝紫渐变用户只在深色模式下要白底黑字（经典暗色 UI 高对比 CTA），亮色保持亮蓝紫不变。
+修法：overview.html 页内样式在 CTA 亮色规则后追加 :root[data-theme="dark"] 覆盖——background #ffffff
++ color #000000 + 白色辉光 0 4px 20px rgba(255,255,255,0.25)（!important），hover 微降 #f0f0f5 保持反馈，
+focus-visible 白光环；只按 data-theme 切换（蓝/黑白两种主题色一致，accent 无关）。
+验证：本地探针 18/18（S4j 深色 Mono 白底黑字改写 + 新增 S4j2 深色 Blue 同样白底黑字 + S4k 亮色仍亮蓝紫）；
+线上 curl：health 58 + v0.2.28.5 + overview 页深色白底规则在。
+部署：revision 00173-sgg（exit 0）。后端零改动；ethereal 零改动无需 inline-css；（补丁位 4→5·观感微调轮；2026-09-10）
+
+㊿5（55）v0.2.28.5 → v0.2.28.6：CTA 样式应用到真正的平台首页按钮（用户「我是指平台首页的那个Create World 但是 MicroNationary那个你也别撤销」）
+前两轮的 CTA 样式其实落在 overview.html 的 MicroNationary 欢迎横幅按钮上，用户真正要改的是平台首页
+index.html dashboard 欢迎卡里的 Create World 按钮——且 MicroNationary 那个保持不动、不撤销。
+修法：docs/index.html 按钮加 create-world-cta 类 + 页内 <style> 整块复用 overview 同款配方（亮色亮蓝紫渐变
+#6a6cff→#b14dff + 辉光 + 白字 600，hover 提亮上浮，focus-visible 光环；:root[data-theme="dark"] 下白底 #ffffff
+黑字 #000000 + 白辉光，hover #f0f0f5；全部 !important 压过 mono 黑族 btn-primary）。overview.html 零改动
+（两处按钮各自独立维护同款样式）。ethereal.css 零改动→无需重跑 inline-css。
+验证：本地探针 20/20（新增 S7 平台首页 CTA 类+亮色渐变 + S8 平台首页深色白底黑字——直设 data-theme 同时
+同步 localStorage slati_settings.theme = 主题 pill 等价，防 index 页加载时 applyTheme() 回读翻台；原有 18 项全绿）；
+线上 curl：health 58 + v0.2.28.6 + index 页 create-world-cta 7 处（类+6 规则）+ 深色白底规则在 +
+overview 页 7 处保持不动。
+部署：revision 00174-6z5（exit 0）。后端零改动；（补丁位 5→6·观感微调轮；2026-09-10）

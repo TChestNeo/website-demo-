@@ -317,7 +317,12 @@ window.MN_SITE = window.MN_SITE || {};
 //   :root[data-theme="dark"] 下 CTA 白底 #ffffff 黑字 #000000 + 白色辉光（0 4px 20px rgba(255,255,255,0.25)），
 //   hover 微降 #f0f0f5；只按 data-theme 切换（蓝/黑白两种主题色一致），亮色保持 v0.2.28.4 亮蓝紫渐变；
 //   ethereal 零改动无需 inline-css；后端零改动；（补丁位 4→5·观感微调轮；2026-09-10）
-window.MN_SITE_VERSION = 'v0.2.28.5';
+// v0.2.28.6 = CTA 样式应用到真正的平台首页按钮（用户「我是指平台首页的那个Create World」）：index.html
+//   dashboard 欢迎横幅的 Create World 按钮加 create-world-cta 类 + 同款页内样式（亮色亮蓝紫渐变 #6a6cff→#b14dff
+//   +辉光；深色白底黑字+白辉光，!important 压 mono 黑族 btn-primary）；overview.html MicroNationary 横幅按钮
+//   保持不动（用户「MicroNationary那个你也别撤销」）；ethereal 零改动无需 inline-css；后端零改动；
+//   （补丁位 5→6·观感微调轮；2026-09-10）
+window.MN_SITE_VERSION = 'v0.2.28.6';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
