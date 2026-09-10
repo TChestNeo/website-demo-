@@ -308,7 +308,12 @@ window.MN_SITE = window.MN_SITE || {};
 //   .lg-specular { display: none; }（暗色整层藏起；亮色保留 rdev 高光配方，计算样式断言暗色全灭/
 //   亮色恢复）。ethereal.css 改动已重跑 inline-css（43 页）；后端零改动；
 //   （补丁位 2→3·观感微调轮；2026-09-10）
-window.MN_SITE_VERSION = 'v0.2.28.3';
+// v0.2.28.4 = 首页 Create World 按钮亮色高亮（用户「把那个首页的 Create World 按钮的颜色改成亮色
+//   主要是让他变得突出显眼」）：overview 欢迎横幅 CTA 加 create-world-cta 类，页内样式亮蓝紫渐变
+//   #6a6cff→#b14dff + 辉光（0 4px 20px rgba(106,108,255,0.45)+内白描）+hover 提亮上浮；
+//   !important 压过 mono 黑族 btn-primary 覆盖——亮/暗 × 蓝/黑白四主题一致高亮；ethereal 零改动
+//   无需重跑 inline-css；后端零改动；（补丁位 3→4·观感微调轮；2026-09-10）
+window.MN_SITE_VERSION = 'v0.2.28.4';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

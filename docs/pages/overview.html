@@ -1998,6 +1998,24 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 }
 
 </style>
+  <style>
+/* Create World CTA（2026-09-10 用户「首页的 Create World 按钮改成亮色让他突出显眼」）：
+   亮蓝紫渐变+辉光，亮/暗 × 蓝/黑白四主题一致高亮——!important 压过 mono 黑族 btn-primary 覆盖 */
+.btn.create-world-cta {
+  background: linear-gradient(135deg, #6a6cff, #b14dff) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(106, 108, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+.btn.create-world-cta:hover {
+  background: linear-gradient(135deg, #7d7fff, #c05eff) !important;
+  box-shadow: 0 6px 28px rgba(106, 108, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+.btn.create-world-cta:focus-visible {
+  box-shadow: 0 0 0 3px rgba(106, 108, 255, 0.4), 0 4px 20px rgba(106, 108, 255, 0.45) !important;
+}
+</style>
 </head>
 <body class="pre-stagger">
 
@@ -2023,7 +2041,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           <p class="body-md" style="color:var(--color-on-surface-variant)">Your gateway to the global registry of worlds, lore archives, and community knowledge.</p>
         </div>
         <div style="display:flex;gap:var(--space-sm)">
-          <a href="create-world.html" class="btn btn-primary">Create World</a>
+          <a href="create-world.html" class="btn btn-primary create-world-cta">Create World</a>
           <a href="explore.html" class="btn btn-outline">View Archive</a>
         </div>
       </div>
