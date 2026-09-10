@@ -186,7 +186,7 @@
       'html[data-accent="mono"] .auth-terms input[type="checkbox"] { background: rgba(28, 28, 34, 0.06); border-color: rgba(28, 28, 34, 0.45); }',
       'html[data-accent="mono"] .auth-terms input[type="checkbox"]:hover { background: rgba(28, 28, 34, 0.12); }',
       'html[data-accent="mono"] .auth-terms input[type="checkbox"]:checked { background: #1c1c22; border-color: #1c1c22; }',
-      'html[data-accent="mono"] .upload-zone:hover { background: rgba(28, 28, 34, 0.03); }',
+      'html[data-accent="mono"] .upload-zone:hover { border-color: rgba(28, 28, 34, 0.35); background: rgba(28, 28, 34, 0.03); }',
       'html[data-accent="mono"] .guest-hero { background: linear-gradient(135deg, rgba(28, 28, 34, 0.06), rgba(28, 28, 34, 0.03)), var(--card-bg); }',
       // 主色渐变组件去蓝（亮 mono）：btn-primary/auth-panel-body/text-gradient/team-avatar 翻纯黑灰渐变，lift-info-btn 纯深灰
       'html[data-accent="mono"] .btn-primary { background: linear-gradient(135deg, #1c1c22, #3a3a46); }',
@@ -218,6 +218,63 @@
       'html[data-accent="mono"][data-theme="dark"] .mn-ai-fab, html[data-accent="mono"][data-theme="dark"] .mn-ai-head { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }',
       // overview 特色国家头像圆（用户「卡片中间那个白色」真身）：内联主色→紫渐变，深色 mono 翻黑族
       'html[data-accent="mono"][data-theme="dark"] .featured-nation-avatar { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }',
+      // ── v0.2.28.16 FluidCanvas 主题色适配（用户「FuildCanvas怎么还没做主题色的适配？我现在明明设置是黑白主题」）──
+      // 真身=FC 两页从未加载本脚本 → data-accent 不落、黑白规则从未注入（FC 页面暗色覆写早已按「settings-modal
+      // 运行时注入在后故 mono 族赢」设计，只差接入这一步）；本轮 FC 两页接入 settings-modal.js + 次色家族 mono
+      // 翻中性灰（亮 mono 中灰底白字、暗 mono 亮灰当文字——一切把次色当背景的组件另有纯黑族覆写）+ FC 组件
+      // 硬编码蓝紫翻黑白（亮 mono 近黑 #1c1c22 族、暗 mono 近白 #ececf2 族——沿用 v0.2.28.0 两套配方）
+      'html[data-accent="mono"][data-theme="light"] { --color-secondary: #4a4a56; --color-on-secondary: #ffffff; --color-secondary-container: #5c5c6a; --color-on-secondary-container: #f5f5f7; }',
+      'html[data-accent="mono"][data-theme="dark"] { --color-secondary: #b0b0c2; --color-on-secondary: #16161c; --color-secondary-container: #3c3c4a; --color-on-secondary-container: #ececf2; }',
+      'html[data-accent="mono"] .badge-secondary { background: rgba(28, 28, 34, 0.10); }',
+      'html[data-accent="mono"][data-theme="dark"] .badge-secondary { background: rgba(255, 255, 255, 0.10); }',
+      'html[data-accent="mono"][data-theme="dark"] .btn-secondary { background: #1e1e2d; color: #ffffff; }',
+      'html[data-accent="mono"] .input-glass:focus { box-shadow: 0 0 0 3px rgba(28, 28, 34, 0.1); }',
+      'html[data-accent="mono"][data-theme="dark"] .input-glass:focus { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1); }',
+      'html[data-accent="mono"] .lb-score-bar { background: rgba(28, 28, 34, 0.08); }',
+      'html[data-accent="mono"][data-theme="dark"] .lb-score-bar { background: rgba(255, 255, 255, 0.10); }',
+      'html[data-accent="mono"] .milestone::before { background: rgba(28, 28, 34, 0.12); }',
+      'html[data-accent="mono"][data-theme="dark"] .milestone::before { background: rgba(255, 255, 255, 0.12); }',
+      'html[data-accent="mono"] .chart-legend-bar { background: linear-gradient(to right, rgba(28, 28, 34, 0.08), rgba(28, 28, 34, 0.75)); }',
+      'html[data-accent="mono"][data-theme="dark"] .chart-legend-bar { background: linear-gradient(to right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.75)); }',
+      'html[data-accent="mono"] #channelOverview { background: linear-gradient(135deg, rgba(28, 28, 34, 0.04), rgba(28, 28, 34, 0.02)), var(--card-bg) !important; }',
+      'html[data-accent="mono"][data-theme="dark"] .channel-avatar { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }',
+      // FC 首页工作台组件（fluidcanvas.html）：上传区/文件条/目标卡/发布钮/最近目标章/内容库——蓝 tint 翻黑白
+      'html[data-accent="mono"] .upload-zone.drag-over { border-color: #1c1c22; background: rgba(28, 28, 34, 0.06); box-shadow: 0 0 0 4px rgba(28, 28, 34, 0.08); }',
+      'html[data-accent="mono"] .upload-zone.drag-over .upload-zone-icon { color: #1c1c22; }',
+      'html[data-accent="mono"] .file-info-bar { background: rgba(28, 28, 34, 0.04); border-color: rgba(28, 28, 34, 0.12); }',
+      'html[data-accent="mono"] .file-info-icon { color: #1c1c22; }',
+      'html[data-accent="mono"] .target-card:hover { border-color: rgba(28, 28, 34, 0.25); background: rgba(28, 28, 34, 0.03); }',
+      'html[data-accent="mono"] .target-card.selected { border-color: #1c1c22; background: rgba(28, 28, 34, 0.06); box-shadow: 0 0 0 3px rgba(28, 28, 34, 0.08); }',
+      'html[data-accent="mono"] .target-card.selected .target-icon { color: #1c1c22; }',
+      'html[data-accent="mono"] .publish-btn { background: linear-gradient(135deg, #1c1c22, #3a3a46); }',
+      'html[data-accent="mono"] .publish-btn:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(28, 28, 34, 0.3); }',
+      'html[data-accent="mono"] .recent-target-badge { background: rgba(28, 28, 34, 0.08); color: #1c1c22; }',
+      'html[data-accent="mono"] .content-lib-card:hover { background: rgba(28, 28, 34, 0.03); }',
+      'html[data-accent="mono"] .cl-badge.article { background: rgba(28, 28, 34, 0.08); color: #1c1c22; }',
+      'html[data-accent="mono"] .cl-action-btn:hover { background: rgba(28, 28, 34, 0.08); color: #1c1c22; }',
+      'html[data-accent="mono"][data-theme="dark"] .upload-zone:hover { border-color: rgba(236, 236, 242, 0.35); background: rgba(255, 255, 255, 0.03); }',
+      'html[data-accent="mono"][data-theme="dark"] .upload-zone.drag-over { border-color: #ececf2; background: rgba(255, 255, 255, 0.06); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08); }',
+      'html[data-accent="mono"][data-theme="dark"] .upload-zone.drag-over .upload-zone-icon { color: #ececf2; }',
+      'html[data-accent="mono"][data-theme="dark"] .file-info-bar { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.12); }',
+      'html[data-accent="mono"][data-theme="dark"] .file-info-icon { color: #ececf2; }',
+      'html[data-accent="mono"][data-theme="dark"] .target-card:hover { border-color: rgba(236, 236, 242, 0.25); background: rgba(255, 255, 255, 0.03); }',
+      'html[data-accent="mono"][data-theme="dark"] .target-card.selected { border-color: #ececf2; background: rgba(255, 255, 255, 0.06); box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08); }',
+      'html[data-accent="mono"][data-theme="dark"] .target-card.selected .target-icon { color: #ececf2; }',
+      'html[data-accent="mono"][data-theme="dark"] .publish-btn { background: linear-gradient(135deg, #1e1e2d, #32324a); color: #ffffff; }',
+      'html[data-accent="mono"][data-theme="dark"] .publish-btn:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); }',
+      'html[data-accent="mono"][data-theme="dark"] .recent-target-badge { background: rgba(255, 255, 255, 0.10); color: #ececf2; }',
+      'html[data-accent="mono"][data-theme="dark"] .content-lib-card:hover { background: rgba(255, 255, 255, 0.03); }',
+      'html[data-accent="mono"][data-theme="dark"] .cl-badge.article { background: rgba(255, 255, 255, 0.10); color: #ececf2; }',
+      'html[data-accent="mono"][data-theme="dark"] .cl-action-btn:hover { background: rgba(255, 255, 255, 0.08); color: #ececf2; }',
+      // FC 编辑器顶部 Migrate 钮（v0.2.28.15 紫渐变 #8e2de2→#4a00e0）：mono 亮翻黑灰渐变、暗翻纯黑族（用户示例
+      // #1e1e2d）；白色横扫面板 + 字母 invert 滤镜不动（白面板黑白两主题都成立、invert 换色机制与底色无关）
+      'html[data-accent="mono"][data-theme="light"] .migrate-btn { background: linear-gradient(to right, #1c1c22, #3a3a46); }',
+      'html[data-accent="mono"][data-theme="dark"] .migrate-btn { background: linear-gradient(to right, #1e1e2d, #32324a); }',
+      // FC 编辑器弹窗 Migrate 药丸（v10.28.17.3 近黑药丸+悬停紫色渐变层/光环/星芒）：药丸本体黑白本就成立，
+      // 只翻悬停紫层→灰层、紫色光环→灰环、暗色星芒深紫→灰
+      'html[data-accent="mono"] .migrate-pill::before { box-shadow: inset 0 0.5px hsl(0, 0%, 100%), inset 0 -1px 2px 0 hsl(0, 0%, 0%), 0px 4px 10px -4px hsla(0 0% 0% / calc(1 - var(--active, 0))), 0 0 0 calc(var(--active, 0) * 0.375rem) hsl(0 0% 30% / 0.75); }',
+      'html[data-accent="mono"] .migrate-pill::after { background-color: hsla(0 0% 45% / 0.75); background-image: radial-gradient(at 51% 89%, hsla(0 0% 82% / 1) 0px, transparent 50%), radial-gradient(at 100% 100%, hsla(0 0% 62% / 1) 0px, transparent 50%), radial-gradient(at 22% 91%, hsla(0 0% 62% / 1) 0px, transparent 50%); }',
+      'html[data-accent="mono"][data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(0 0% 40%); }',
       'html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117, 134, 0.10); }',
       // ── 主题色选择按钮：上下两部分——上半部配色 swatch、下半部名称 ──
       '.accent-subnav { display: flex; gap: 8px; }',

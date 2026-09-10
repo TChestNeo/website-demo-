@@ -2486,6 +2486,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/site-config.js"></script>
+<script src="../assets/js/settings-modal.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
 <script>try { var _fcv = document.getElementById('fcVersion'); if (window.FLUIDCANVAS_VERSION && _fcv) _fcv.textContent = window.FLUIDCANVAS_VERSION; } catch (e) {}</script>
 <script src="../assets/js/storage.js"></script>
@@ -2691,7 +2692,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // --- Content renderers ---
   function makeChannelCard(label, avatar, subtitle, stats, btnHtml) {
     return '<div class="flex-center gap-md" style="flex-wrap:wrap">' +
-      '<div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;flex-shrink:0">' + avatar + '</div>' +
+      '<div class="channel-avatar" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;flex-shrink:0">' + avatar + '</div>' +
       '<div style="flex:1;min-width:200px"><h1 class="headline-lg" style="margin-bottom:2px">' + label + '</h1><p class="body-md" style="color:var(--color-on-surface-variant)">' + subtitle + '</p>' +
         '<div style="display:flex;gap:16px;margin-top:8px;font-size:var(--fs-label-md);color:var(--color-on-surface-variant)">' + stats + '</div></div>' + btnHtml + '</div>';
   }
@@ -3094,7 +3095,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   ];
 
   var TYPE_META = {
-    article:   { icon:'article',   color:'#4648d4', bg:'rgba(70,72,212,0.08)',   label:'Article' },
+    article:   { icon:'article',   color:'var(--color-primary)', bg:'color-mix(in srgb, var(--color-primary) 8%, transparent)',   label:'Article' },
     sovereign: { icon:'edit_note', color:'#ea580c', bg:'rgba(234,88,12,0.08)',   label:'Sovereign Log' },
     community: { icon:'forum',     color:'#16a34a', bg:'rgba(22,163,74,0.08)',   label:'Community Post' },
   };
@@ -3119,7 +3120,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var videos = contentLibrary.filter(function(c){ return c.subtype==='video'; }).length;
     document.getElementById('clStats').innerHTML =
       '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + total + '</div><div class="metric-label">Total Items</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#4648d4">' + articles + '</div><div class="metric-label">Articles</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + articles + '</div><div class="metric-label">Articles</div></div>' +
       '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + sovereigns + '</div><div class="metric-label">Sovereign Logs</div></div>' +
       '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + communities + '</div><div class="metric-label">Community Posts</div></div>';
     if (window.LG) LG.scan(document); // v0.2.9.0：动态 metric-card 挂液态玻璃

@@ -379,7 +379,19 @@ window.MN_SITE = window.MN_SITE || {};
 //   顶部钮本就零覆写）④字母挂黑白相反滤镜——span 静息 filter:invert(1) 白字反转成黑字压在白色面板上、
 //   悬停 invert(0) 面板滑离时同步翻回白字，0.4s 与面板横扫同曲线同步丝滑换色；ethereal.css 零改动
 //   无需 inline-css；后端零改动；（补丁位 14→15·观感微调轮；2026-09-11）
-window.MN_SITE_VERSION = 'v0.2.28.15';
+// v0.2.28.16 = 用户「FuildCanvas怎么还没做主题色的适配？我现在明明设置是黑白主题」——真身=FC 两页从未加载
+//   settings-modal.js → data-accent 不落、黑白规则从未注入（FC 页面暗色覆写早已按「settings-modal 运行时
+//   注入在后故 mono 族赢」设计，只差接入这一步）。本轮：①FC 两页接入 settings-modal.js（site-config 后一行）；
+//   ②次色家族 mono 翻中性灰（亮 mono 中灰 #4a4a56 底白字、暗 mono 亮灰 #b0b0c2 当文字；暗 mono 把次色当
+//   背景的组件翻纯黑族——.btn-secondary #1e1e2d 白字、channel-avatar 黑灰渐变）③FC 组件硬编码蓝紫翻黑白
+//   （亮 mono 近黑 #1c1c22 族/暗 mono 近白 #ececf2 族：上传区 drag-over+图标、文件条+图标、目标卡选中、
+//   发布钮渐变、最近目标章、内容库 article 徽章/操作钮悬停、input-glass 焦点环、榜单槽、里程碑线、图例条、
+//   channelOverview 卡渐变；语义色 sovereign 橙/community 绿/status 蓝与内容调色板不动）④FC JS 模板两处
+//   硬编码 #4648d4 改 var(--color-primary)（TYPE_META.article + Articles 指标，bg 用 color-mix 8%）；
+//   ⑤编辑器顶部 Migrate 钮紫渐变 mono 翻黑灰渐变（亮 #1c1c22→#3a3a46/暗 #1e1e2d→#32324a——白横扫面板
+//   与 invert 滤镜机制不动）⑥弹窗 Migrate 药丸悬停紫层/紫光环/暗色星芒翻灰；ethereal.css 零改动无需
+//   inline-css；后端零改动；（补丁位 15→16·修复轮；2026-09-11）
+window.MN_SITE_VERSION = 'v0.2.28.16';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

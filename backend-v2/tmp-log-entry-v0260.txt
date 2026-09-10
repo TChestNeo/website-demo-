@@ -330,3 +330,36 @@ Z 零 console error；教训：悬停/主题切换断言踩 --active 回落 tran
 线上 curl：health 58 + v0.2.28.14 + 编辑器页 .migrate-btn 1/.migrate-pill 2/紫渐变/暗色覆写各在 +
 root/editor/hub 回归 200。
 部署：revision 00182-m5b（exit 0）。（补丁位 13→14·纯修复轮；2026-09-11）
+㊿4（64）v0.2.28.15 = Migrate 按钮定制轮（补丁位 14→15·观感微调轮；2026-09-11；rev 00183-wmg）。
+用户「大小能不能和旁边的按钮匹配一下然后能不能改成药丸形…滑出的颜色改成白色…字母黑白相反滤镜」——顶部 Migrate 钮四项定制：
+①大小对齐旁边 .btn-sm（font-size var(--fs-label-sm)、span padding 7px 16px、svg 24px、margin 8px，高度 38px 与 History/Tags/Save Draft/Publish 一致——邻钮 .btn-outline 含 1px 边框 38px，migrate 无边框用 7px 上下垫等值对齐；首版 6px 垫=36px 被探针 S1 撞出）；
+②改药丸形（border-radius var(--radius-full)，与邻居 .btn 同）；
+③横扫面板黑→白（#fff，亮/暗主题一致——两主题对顶部钮本就零覆写）；
+④字母挂黑白相反滤镜——span 静息 filter:invert(1) 白字反转成黑字压在白色面板上、悬停 invert(0) 面板滑离时同步翻回白字，0.4s 与面板横扫同曲线同步丝滑换色。
+探针 tmp-migrate-btn-v02815-probe.js 8/8（F1 静态定制块在/S1 尺寸对齐/S2 静息药丸 9999px+invert(1)+白面板+skew c=0.57735/S3 悬停横扫 translateX>100+滤镜同步翻回/S4 按下 0.95/S5 弹窗回归/S6 暗色一致/Z 零报错；教训：filter:invert(0) 悬停终值序列化 invert(0)/none 两可，断言按两可收）。
+线上 curl：health 58 + v0.2.28.15 + 编辑器页 invert(1)/invert(0)/白面板/药丸/7px 垫各在 + root/overview 回归 200。
+部署：revision 00183-wmg（exit 0）。docker 登录踩 PS 管道换行坑（--password-stdin 被拒→-p 直传成功）+ 空 auths 条目盖过 wincred 再清。
+零后端、ethereal 零改动无需 inline-css。
+㊿5（65）v0.2.28.16 = FluidCanvas 主题色适配轮（补丁位 15→16·修复轮；2026-09-11；rev 00184-7sw）。
+用户「FuildCanvas怎么还没做主题色的适配？我现在明明设置是黑白主题」——真身=FC 两页（fluidcanvas.html/
+fluidcanvas-editor.html）从未加载 settings-modal.js → data-accent 从不落地、mono 规则从未注入，黑白主题色
+（accent=mono）在 FC 全失效。修法：
+①两页在 site-config.js 后接入 settings-modal.js（load 安全：applyFontSize/applyAccent/ensureStyle/applyTheme
+全无 DOM 依赖，applyTheme 与 FC 内联 theme-init 解析逻辑一致不冲突）；
+②settings-modal.js 新增 mono 规则块（约 55 行，注释注明本轮用户原话）：主次色令牌（亮 mono 近黑 #1c1c22 族
+/次色 #4a4a56、暗 mono 近白 #ececf2/次色 #b0b0c2）+ FC 组件硬编码蓝紫逐项翻黑白（publish-btn 黑灰→纯黑族
+#1e1e2d→#32324a 白字、upload-zone drag-over/悬停、file-info-bar、target-card.selected、recent-target-badge、
+cl-badge.article、migrate-btn 两主题、badge-secondary、input-glass 焦点环、channelOverview 内联渐变
+!important 去蓝、channel-avatar 暗色纯黑族 !important 压内联 var 渐变）；
+③JS 模板 var 化（TYPE_META.article color/bg 改 var(--color-primary)+color-mix、clStats Articles 指标）+ 头像
+加 .channel-avatar 类（暗 mono 白渐变圆上白字不可见的覆写抓手）；
+④药丸/星芒/migrate 面板 mono 翻灰（上一轮白色面板与 invert 滤镜属 v0.2.28.15 定制，不覆盖）。
+blue 模式零影响；访客门禁/overview 回归不受新规则影响。
+探针 tmp-fc-accent-v02816-probe.js 43/43（F1-F3 静态+M1 亮 mono 12 断言+M2 暗 mono 14 断言（含
+guest-module btn-primary 特异性链 0,4,1>0,3,1 用注入 fixture 验证——guest-module 是访客门禁组件登录态
+不渲染）+M3/M4 编辑器亮暗 mono 5 断言（药丸悬停 ::after 灰层 '115,115,115'）+M5/M6 blue 回归亮暗+
+M7 访客门禁（fc-guest+fc-locked-hero 显示+studio-main 隐藏）+M8 overview mono 回归+Z 零报错；
+踩坑：本机 Chrome 的 CSS.enable 要求 DOM 先 enable（否则报「DOM agent needs to be enabled first」）、
+content 视图惰性初始化先点导航再断言、target-card.selected 0.15s border 过渡竞态等 300ms）。
+线上 curl：health 58 + v0.2.28.16 + 两页含 settings-modal.js + mono 规则在 + root/overview 回归 200。
+部署：revision 00184-7sw（exit 0）。零后端、ethereal.css 零改动无需 inline-css。
