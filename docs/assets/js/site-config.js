@@ -365,7 +365,13 @@ window.MN_SITE = window.MN_SITE || {};
 //   （导航序 5 不变）；fluidcanvas-editor.html 标签页 <title> 与 editor-header 头部「Article Editor」残留文案
 //   （建页时从旧文章编辑器复制模板遗留）→「FluidCanvas Editor」；ethereal.css 零改动无需 inline-css；
 //   后端零改动；（补丁位 12→13·口径修正轮；2026-09-11）
-window.MN_SITE_VERSION = 'v0.2.28.13';
+// v0.2.28.14 = 用户「为什么fluidcanvas-editor右上角的Migrate按钮有bug」——git 考古定位：v0.2.8.0 液态玻璃
+//   移植轮（4a01104）重写 fluidcanvas-editor.html head style 尾部时把 Migrate 两套按钮样式整块误删
+//   （189→30 行）：顶部 Migrate 钮 cssbuttons-io 紫渐变（v10.28.17.4 用户钦定设计）+ 弹窗 Migrate to Cards
+//   Uiverse 药丸（v10.28.17.3）自此裸奔成默认按钮；修法=从 df70a76（v10.28.17.4 同轮修正终版）原样恢复
+//   180 行样式块（含暗色主题覆写）；ethereal.css 零改动无需 inline-css；后端零改动；
+//   （补丁位 13→14·纯修复轮；2026-09-11）
+window.MN_SITE_VERSION = 'v0.2.28.14';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

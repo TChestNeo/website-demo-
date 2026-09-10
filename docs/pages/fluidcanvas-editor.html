@@ -1650,6 +1650,191 @@ html.fc-guest .fc-locked-hero {
   text-align: center;
 }
 
+/* ── v0.2.28.14 恢复：Migrate 两套按钮样式（顶部 cssbuttons-io 紫渐变 + 弹窗 Uiverse 药丸）
+   v0.2.8.0 液态玻璃移植轮（4a01104）重写本 style 尾部时整块误删（189→30 行）——
+   顶部 Migrate 钮与弹窗 Migrate to Cards 药丸自此裸奔；从 df70a76（v10.28.17.4 同轮修正终版）
+   原样恢复（180 行，含暗色主题覆写）。 */
+/* ── 顶部 Migrate 按钮：cssbuttons-io 设计（v10.28.17.4 紫色渐变+黑面板横扫）──
+   原设计 = 紫渐变底 + ghostwhite 字 + 代码图标；悬停黑色斜面板从左向右扫过整钮、
+   按下缩小 0.95。亮/暗主题共用同一套（紫渐变两主题都成立，无需主题覆写）。 */
+.migrate-btn {
+  position: relative;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  border-radius: 0.8em;
+  cursor: pointer;
+  border: none;
+  background: linear-gradient(to right, #8e2de2, #4a00e0);
+  color: ghostwhite;
+  overflow: hidden;
+  padding: 0;   /* 内边距在 span 上（原设计） */
+}
+.migrate-btn svg {
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.5em;
+}
+.migrate-btn span {
+  position: relative;
+  z-index: 10;
+  transition: color 0.4s;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8em 1.2em 0.8em 1.05em;
+}
+.migrate-btn::before,
+.migrate-btn::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+.migrate-btn::before {
+  content: "";
+  background: #000;
+  width: 120%;
+  left: -10%;
+  transform: skew(30deg);
+  transition: transform 0.4s cubic-bezier(0.3, 1, 0.8, 1);
+}
+.migrate-btn:hover::before {
+  transform: translate3d(100%, 0, 0);
+}
+.migrate-btn:active {
+  transform: scale(0.95);
+}
+
+/* ── Migrate to Cards 按钮（弹窗内）：Uiverse.io by MuhammadHasann 设计
+   （v10.28.17.3 亮/暗双主题适配；v10.28.17.4 同轮修正还原——cssbuttons-io 设计归顶部
+   Migrate 按钮，弹窗钮回退药丸。类名 .migrate-btn → .migrate-pill 独立作用域）──
+   原设计 = 近黑药丸 + 白字 + 悬停紫色渐变/光环；暗色主题下药丸翻浅色、文字翻深色，
+   紫色悬停层两主题共用（浅药丸上更亮眼）。 */
+.migrate-pill {
+  --mb-pill: hsla(0 0% 12% / 1);   /* 药丸底色（亮主题=近黑） */
+  --mb-text-c: 0 0% 100%;           /* 文字色相组（亮主题=白） */
+  --border_radius: 9999px;
+  --transtion: 0.3s ease-in-out;
+
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transform-origin: center;
+  padding: 1rem 2rem;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border_radius);
+  transform: scale(calc(1 + (var(--active, 0) * 0.1)));
+  transition: transform var(--transtion);
+}
+.migrate-pill::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%; height: 100%;
+  background-color: var(--mb-pill);
+  border-radius: var(--border_radius);
+  box-shadow: inset 0 0.5px hsl(0, 0%, 100%), inset 0 -1px 2px 0 hsl(0, 0%, 0%),
+    0px 4px 10px -4px hsla(0 0% 0% / calc(1 - var(--active, 0))),
+    0 0 0 calc(var(--active, 0) * 0.375rem) hsl(260 97% 50% / 0.75);
+  transition: all var(--transtion);
+  z-index: 0;
+}
+.migrate-pill::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%; height: 100%;
+  background-color: hsla(260 97% 61% / 0.75);
+  background-image: radial-gradient(
+      at 51% 89%,
+      hsla(266, 45%, 74%, 1) 0px,
+      transparent 50%
+    ),
+    radial-gradient(at 100% 100%, hsla(266, 36%, 60%, 1) 0px, transparent 50%),
+    radial-gradient(at 22% 91%, hsla(266, 36%, 60%, 1) 0px, transparent 50%);
+  background-position: top;
+  opacity: var(--active, 0);
+  border-radius: var(--border_radius);
+  transition: opacity var(--transtion);
+  z-index: 2;
+}
+.migrate-pill:is(:hover, :focus-visible) { --active: 1; }
+.migrate-pill:active { transform: scale(1); }
+.migrate-pill .dots_border {
+  --size_border: calc(100% + 2px);
+  overflow: hidden;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--size_border); height: var(--size_border);
+  background-color: transparent;
+  border-radius: var(--border_radius);
+  z-index: -10;
+}
+.migrate-pill .dots_border::before {
+  content: "";
+  position: absolute;
+  top: 30%; left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: left;
+  transform: rotate(0deg);
+  width: 100%; height: 2rem;
+  background-color: white;
+  mask: linear-gradient(transparent 0%, white 120%);
+  animation: rotate 2s linear infinite;
+}
+@keyframes rotate { to { transform: rotate(360deg); } }
+.migrate-pill .sparkle {
+  position: relative;
+  z-index: 10;
+  width: 1.75rem;
+}
+.migrate-pill .sparkle .path {
+  fill: currentColor;
+  stroke: currentColor;
+  transform-origin: center;
+  color: hsl(0, 0%, 100%);
+}
+.migrate-pill:is(:hover, :focus) .sparkle .path {
+  animation: path 1.5s linear 0.5s infinite;
+}
+.migrate-pill .sparkle .path:nth-child(1) { --scale_path_1: 1.2; }
+.migrate-pill .sparkle .path:nth-child(2) { --scale_path_2: 1.2; }
+.migrate-pill .sparkle .path:nth-child(3) { --scale_path_3: 1.2; }
+@keyframes path {
+  0%, 34%, 71%, 100% { transform: scale(1); }
+  17% { transform: scale(var(--scale_path_1, 1)); }
+  49% { transform: scale(var(--scale_path_2, 1)); }
+  83% { transform: scale(var(--scale_path_3, 1)); }
+}
+.migrate-pill .text_button {
+  position: relative;
+  z-index: 10;
+  background-image: linear-gradient(
+    90deg,
+    hsl(var(--mb-text-c) / 1) 0%,
+    hsl(var(--mb-text-c) / var(--active, 0)) 120%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  font-size: 1rem;
+  color: transparent;
+}
+/* 暗色主题：药丸翻浅色、文字翻深色、星芒换深紫（浅药丸上白星不可见） */
+:root[data-theme="dark"] .migrate-pill {
+  --mb-pill: #f2f1fb;
+  --mb-text-c: 240 14% 14%;
+}
+:root[data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(260 55% 42%); }
+
 /* ── 液态玻璃 v2.1（2026-09-03 v0.2.9.1 撤销轮：弹性下线、面自身样式全还原）
    liquid-glass.js 注入 .lg-backdrop（背层模糊+SVG 折射色散）与 .lg-specular
    （镜面高光）两层，挂 z:-1 垫在父半透明底之上、内容之下。v0.2.9.0 的

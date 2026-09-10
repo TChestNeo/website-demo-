@@ -311,3 +311,22 @@ transitions.js 新键在旧键除 / editor.html 文件不存在 / FC 编辑器�
 FluidCanvas Editor（Article Editor 0 处）+ sidebar.js 新 href 在旧链接 0 处 + transitions.js 新键 + root/overview/
 hub 回归 200。
 部署：revision 00181-cm4（exit 0）。（补丁位 12→13·口径修正轮；2026-09-11）
+
+㊿3（63）v0.2.28.13 → v0.2.28.14：恢复 Migrate 两套按钮样式（用户「为什么fluidcanvas-editor右上角的Migrate按钮
+有bug？」；rev 00182-m5b）
+git 考古定位：v0.2.8.0 液态玻璃移植轮（4a01104）重写 fluidcanvas-editor.html head style 尾部时把 Migrate
+两套按钮样式整块误删（189→30 行）——顶部 Migrate 钮 cssbuttons-io 紫渐变（v10.28.17.4 用户钦定）+ 弹窗
+Migrate to Cards Uiverse 药丸（v10.28.17.3）自此裸奔成浏览器默认按钮。
+修法：从 df70a76（v10.28.17.4 同轮修正终版）原样恢复 180 行样式块（.migrate-btn 紫渐变+黑面板横扫
+skew(30deg)+active 0.95；.migrate-pill 药丸 ::before 近黑+紫环 6px+放大 1.1+星芒三枚+dots_border 光束
++text_button 渐变裁切；:root[data-theme="dark"] 药丸翻浅 #f2f1fb+星芒深紫），插入 .fc-locked-hero 块后
+（v0.2.28.14 恢复注释注明出处）。
+后端零改动；ethereal.css 零改动无需 inline-css。
+验证：新探针 tmp-migrate-restore-probe.js 12/12（F1 静态样式块在+S1 顶部钮紫渐变 ghostwhite 无边框+
+S2a 静息黑面板 skew c=0.57735+S2b 悬停横扫 translateX 172px+S3 按下 0.95+S4 点击开弹窗双 active+
+S5 药丸结构 dots_border/sparkle×3/text_button+S6 药丸 ::before 近黑 9999px+S7 悬停放大 1.1+紫环
+rgba(86,4,251,.75) 6px+S8 暗色翻浅 rgb(242,241,251)+星芒 rgb(87,48,166)+S9 暗色顶部钮紫渐变共用+
+Z 零 console error；教训：悬停/主题切换断言踩 --active 回落 transition 竞态，等待 700ms）。
+线上 curl：health 58 + v0.2.28.14 + 编辑器页 .migrate-btn 1/.migrate-pill 2/紫渐变/暗色覆写各在 +
+root/editor/hub 回归 200。
+部署：revision 00182-m5b（exit 0）。（补丁位 13→14·纯修复轮；2026-09-11）
