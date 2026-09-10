@@ -230,6 +230,17 @@
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.35);
 }
 
+/* ----- 深色侧边栏（2026-09-10 用户「选中态改暗色深色调 + 清除容器白边框/阴影/分割线」）----- */
+:root[data-theme="dark"] .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
+:root[data-theme="dark"] .nav-item.active {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  animation: none; /* navGlow forwards 填充会盖过本规则——深色下禁用 */
+}
+:root[data-theme="dark"] .app-sidebar .sidebar-module { border: 1px solid rgba(255, 255, 255, 0.05); }
+:root[data-theme="dark"] .app-sidebar .sidebar-divider { background: rgba(255, 255, 255, 0.05); }
+
 /* ----- Reset & Base ----- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1624,6 +1635,12 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   border-radius: inherit; pointer-events: none;
   background: radial-gradient(circle at var(--lg-px, 50%) var(--lg-py, 50%), rgba(255, 255, 255, 0.16), transparent 60%);
 }
+/* 暗色模式去镜面高光白光（2026-09-10 用户「卡片中间的那个白光」——真身=此层：
+   圆心恒在卡正中、rgba(255,255,255,0.16) 白晕，暗色玻璃卡/设置弹窗正中一片白光；
+   暗色下沉静无光斑整层藏起，亮色保留 rdev 高光配方） */
+:root[data-theme="dark"] .lg-specular {
+  display: none;
+}
 
 /* 各面配方：父面旧模糊值平移+饱和到层 */
 .modal-card .lg-backdrop, .auth-card .lg-backdrop,
@@ -2015,6 +2032,51 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     <!-- Stats row -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-sm);margin-bottom:var(--space-md)" id="statsRow"></div>
 
+    <!-- v0.2.26.0 Story 知识站入口卡（影院深色与平台卡视觉区分；整卡锚 → story.mnationworld.com）
+         滑鼠跟随聚光灯（用户钦定 SpotlightCard 组件语义，原生移植）：::before 白色径向光斑跟随
+         --mouse-x/--mouse-y，悬停/聚焦才亮（opacity .6），0.5s 淡入；悬停不再整卡变淡（覆盖全局 a:hover） -->
+    <style>
+      .story-spot {
+        --mouse-x: 50%; --mouse-y: 50%;
+        --spotlight-color: rgba(255, 255, 255, 0.05); /* 组件 CSS 默认值；JS 在 mousemove 写入 0.25（组件 spotlightColor 默认值） */
+      }
+      .story-spot:hover { opacity: 1; } /* 关掉全局 a:hover 变淡——用户口径：不是卡片变白 */
+      .story-spot::before {
+        content: ''; position: absolute; inset: 0; pointer-events: none;
+        background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), var(--spotlight-color), transparent 80%);
+        opacity: 0; transition: opacity 0.5s ease;
+      }
+      .story-spot:hover::before,
+      .story-spot:focus-within::before { opacity: 0.6; }
+    </style>
+    <a class="tilt-container story-spot" href="https://story.mnationworld.com/wip" style="display:block;margin-bottom:var(--space-md);border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,#0a0a12 0%,#161228 55%,#2a1a3e 100%);color:#e8e6f0;padding:var(--space-lg);position:relative;text-decoration:none">
+      <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;background:radial-gradient(circle,rgba(201,168,106,0.16),transparent 70%);border-radius:50%;pointer-events:none"></div>
+      <div style="position:absolute;bottom:-40px;left:30%;width:120px;height:120px;background:radial-gradient(circle,rgba(90,100,220,0.14),transparent 70%);border-radius:50%;pointer-events:none"></div>
+      <div style="position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-md)">
+        <div style="flex:1;min-width:220px">
+          <div style="font-size:11px;letter-spacing:0.24em;color:#c9a86a;margin-bottom:8px">M.NATIONWORLD · 知识入口</div>
+          <div style="font-family:'Noto Serif SC','Songti SC',serif;font-size:22px;font-weight:700;margin-bottom:6px">政治启蒙 · 故事站</div>
+          <div style="font-size:13px;color:rgba(232,230,240,0.62);line-height:1.6">先了解政治，再创造国家——滚轮式叙事带你从零认识政治、国家与制度。</div>
+        </div>
+        <div style="flex-shrink:0">
+          <span style="display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(201,168,106,0.5);color:#c9a86a;border-radius:999px;padding:9px 20px;font-size:13px;letter-spacing:0.05em">开始阅读 <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span></span>
+        </div>
+      </div>
+    </a>
+    <script>
+      // Story 卡聚光灯（用户钦定 SpotlightCard 组件语义，原生移植）：白色光斑跟随指针
+      (function () {
+        var card = document.querySelector('.story-spot');
+        if (!card) return;
+        card.addEventListener('mousemove', function (e) {
+          var r = card.getBoundingClientRect();
+          card.style.setProperty('--mouse-x', (e.clientX - r.left) + 'px');
+          card.style.setProperty('--mouse-y', (e.clientY - r.top) + 'px');
+          card.style.setProperty('--spotlight-color', 'rgba(255, 255, 255, 0.25)');
+        });
+      })();
+    </script>
+
     <!-- Featured + Recent columns -->
     <div style="display:grid;grid-template-columns:1fr 340px;gap:var(--space-md)">
       <!-- Featured nation -->
@@ -2086,7 +2148,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     var code = featured.name.split(/\s+/).map(function(w) { return w.charAt(0).toUpperCase(); }).slice(0, 2).join('');
     document.getElementById('featuredNation').innerHTML =
       '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:12px">' +
-        '<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex-shrink:0">' + code + '</div>' +
+        '<div class="featured-nation-avatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex-shrink:0">' + code + '</div>' +
         '<div>' +
           '<h3 class="headline-md" style="margin-bottom:0">' + featured.name + '</h3>' +
           '<span class="label-sm" style="color:var(--color-outline)">' + (featured.classification || 'Sovereign Nation') + ' · Since ' + new Date(featured.createdAt).getFullYear() + '</span>' +

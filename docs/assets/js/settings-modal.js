@@ -8,6 +8,7 @@
   var DEFAULT_SETTINGS = {
     theme: 'light',   // 'light' | 'dark' | 'auto' | 'system'
     fontSize: 'medium',
+    accent: 'blue',   // 'blue' 蓝白 | 'mono' 黑白
     emailNotif: true,
     pushNotif: true,
     inAppNotif: true,
@@ -46,6 +47,15 @@
     document.documentElement.setAttribute('data-font-size', size);
   }
   applyFontSize(); // page-load init
+
+  // ── Apply accent color（主题色：blue 蓝白 / mono 黑白；2026-09-10 用户「主题色分成黑白和现在这个蓝白两种」）──
+  function applyAccent(accent) {
+    var a = accent || settings.accent;
+    if (a === 'mono') document.documentElement.setAttribute('data-accent', 'mono');
+    else document.documentElement.removeAttribute('data-accent');
+  }
+  applyAccent(); // page-load init
+  ensureStyle(); // accent/menu CSS 常驻注入（页面加载即生效，不等开弹窗——否则刷新后 accent 选择会失效）
 
   // ── Theme resolution & application ──
   var _themeTimer = null;
@@ -139,8 +149,98 @@
     return sw;
   }
 
+  // ── 左侧菜单（2026-09-10 用户「能不能在设置的窗口左侧添加一个菜单」）──
+  // 六个区块从一条长滚动页改成「左菜单 + 右内容区」经典设置布局：点菜单项切换右侧区块，
+  // 菜单 sticky 随滚动、≤640px 视口退化为顶部横向滚动条（卡片 90vw 放不下 190px 侧栏）。
+  var MENU = [
+    { id: 'profile',       icon: 'person',          label: 'Profile' },
+    { id: 'appearance',    icon: 'palette',         label: 'Appearance' },
+    { id: 'notifications', icon: 'notifications',   label: 'Notifications' },
+    { id: 'privacy',       icon: 'lock',            label: 'Privacy' },
+    { id: 'language',      icon: 'translate',       label: 'Language' },
+    { id: 'account',       icon: 'manage_accounts', label: 'Account' },
+  ];
+
+  function ensureStyle() {
+    if (document.getElementById('slati-settings-menu-style')) return;
+    var st = document.createElement('style');
+    st.id = 'slati-settings-menu-style';
+    st.textContent = [
+      // 2026-09-10 用户口径两连：「设置弹窗能不能覆盖整个页面…类似discord的那种大小」→「我要有边缘的」：
+      // 近全屏大弹窗带 24px 边缘（背后页面露一圈，backdrop 点击关闭随之复活）+ 圆角/边框恢复；
+      // 玻璃模糊+缩放入场保留——依然是弹窗不是跳页；X/ESC 关闭
+      '#settingsCard { width: calc(100% - 48px); height: calc(100% - 48px); max-width: none; max-height: none; border-radius: var(--radius-lg); }',
+      '#settingsCard .modal-card-body { max-height: calc(100vh - 48px - 2 * var(--space-lg)); }',
+      '@media (max-width: 640px) { #settingsCard { width: calc(100% - 16px); height: calc(100% - 16px); } }',
+      // ── 主题色「黑白」mono：主色家族翻中性灰黑（亮主题近黑/暗主题近白）+ 各处蓝 tint 组件跟随 ──
+      'html[data-accent="mono"][data-theme="light"] { --color-primary: #1c1c22; --color-on-primary: #ffffff; --color-primary-container: #2a2a32; --color-on-primary-container: #f5f5f7; --color-primary-fixed: #e6e6ea; --color-primary-fixed-dim: #c9c9d1; --color-on-primary-fixed: #101014; --color-on-primary-fixed-variant: #3c3c46; --color-inverse-primary: #d4d4dc; --color-surface-tint: #3a3a42; --btn-ghost-hover: rgba(28, 28, 34, 0.06); }',
+      'html[data-accent="mono"][data-theme="dark"] { --color-primary: #ececf2; --color-on-primary: #16161c; --color-primary-container: #3c3c46; --color-on-primary-container: #f5f5f7; --color-primary-fixed: #3a3a44; --color-primary-fixed-dim: #2c2c34; --color-on-primary-fixed: #f5f5f7; --color-on-primary-fixed-variant: #d9d9e1; --color-inverse-primary: #2c2c34; --color-surface-tint: #c9c9d1; --btn-ghost-hover: rgba(255, 255, 255, 0.10); }',
+      'html[data-accent="mono"] .btn-primary { box-shadow: 0 4px 16px rgba(28, 28, 34, 0.18); }',
+      'html[data-accent="mono"] .btn-primary:hover { box-shadow: 0 6px 20px rgba(28, 28, 34, 0.3); }',
+      'html[data-accent="mono"] .btn-primary:focus-visible { box-shadow: 0 0 0 3px rgba(28, 28, 34, 0.12); }',
+      'html[data-accent="mono"][data-theme="light"] .nav-item:hover { background: rgba(28, 28, 34, 0.05); }',
+      'html[data-accent="mono"][data-theme="light"] .nav-item.active { background: rgba(28, 28, 34, 0.1); border-color: rgba(28, 28, 34, 0.15); animation: none; }',
+      'html[data-accent="mono"] .badge-primary { background: rgba(28, 28, 34, 0.1); }',
+      'html[data-accent="mono"] .dropdown-option:hover { background: rgba(28, 28, 34, 0.05); }',
+      'html[data-accent="mono"] .dropdown-option.selected { background: rgba(28, 28, 34, 0.1); }',
+      'html[data-accent="mono"] .auth-terms input[type="checkbox"] { background: rgba(28, 28, 34, 0.06); border-color: rgba(28, 28, 34, 0.45); }',
+      'html[data-accent="mono"] .auth-terms input[type="checkbox"]:hover { background: rgba(28, 28, 34, 0.12); }',
+      'html[data-accent="mono"] .auth-terms input[type="checkbox"]:checked { background: #1c1c22; border-color: #1c1c22; }',
+      'html[data-accent="mono"] .upload-zone:hover { background: rgba(28, 28, 34, 0.03); }',
+      'html[data-accent="mono"] .guest-hero { background: linear-gradient(135deg, rgba(28, 28, 34, 0.06), rgba(28, 28, 34, 0.03)), var(--card-bg); }',
+      // 主色渐变组件去蓝（亮 mono）：btn-primary/auth-panel-body/text-gradient/team-avatar 翻纯黑灰渐变，lift-info-btn 纯深灰
+      'html[data-accent="mono"] .btn-primary { background: linear-gradient(135deg, #1c1c22, #3a3a46); }',
+      'html[data-accent="mono"] .btn-primary:hover { background: linear-gradient(135deg, #2a2a32, #4a4a56); }',
+      'html[data-accent="mono"] .auth-panel-body { background: linear-gradient(135deg, #1c1c22, #3a3a46); }',
+      'html[data-accent="mono"] .text-gradient { background: linear-gradient(135deg, var(--color-primary), #6a6a76); -webkit-background-clip: text; background-clip: text; }',
+      'html[data-accent="mono"] .team-avatar { background: linear-gradient(135deg, #1c1c22, #3a3a46); }',
+      'html[data-accent="mono"] .lift-info-btn { background: #1c1c22; box-shadow: 0 4px 14px rgba(28, 28, 34, 0.35); }',
+      // 深色 nav 选中态/hover 由 ethereal.css 深色侧边栏块统一管（暗底白字，蓝/黑白两种主题色一致）——此处不再单独覆盖
+      'html[data-accent="mono"][data-theme="dark"] .dropdown-option:hover { background: rgba(255, 255, 255, 0.06); }',
+      'html[data-accent="mono"][data-theme="dark"] .dropdown-option.selected { background: rgba(255, 255, 255, 0.10); }',
+      'html[data-accent="mono"][data-theme="dark"] .badge-primary { background: rgba(255, 255, 255, 0.10); }',
+      // 深色 mono 适配（用户「深色模式下按钮和卡片不要变白 除了文字」+「按钮怎么变成灰色的了」）：
+      // 文字/链接/边框仍近白（--color-primary #ececf2 不动），一切把主色当背景的组件翻纯黑族
+      // （用户示例 #1e1e2d）——不再是灰 #3a3a44 族；btn-primary 显式白字
+      // （--color-on-primary 深色 mono 下是近黑，不显式翻白字会黑字压黑底）
+      'html[data-accent="mono"][data-theme="dark"] .btn-primary { background: linear-gradient(135deg, #1e1e2d, #32324a); color: #ffffff; }',
+      'html[data-accent="mono"][data-theme="dark"] .btn-primary:hover { background: linear-gradient(135deg, #26263a, #3a3a56); }',
+      'html[data-accent="mono"][data-theme="dark"] .toggle-switch.active { background: #1e1e2d; }',
+      'html[data-accent="mono"][data-theme="dark"] .auth-panel-body { background: linear-gradient(135deg, #1e1e2d, #2c2c3e); }',
+      'html[data-accent="mono"][data-theme="dark"] .lb-score-fill { background: #4a4a56; }',
+      'html[data-accent="mono"][data-theme="dark"] .text-gradient { background: linear-gradient(135deg, var(--color-primary), #b8b8c8); -webkit-background-clip: text; background-clip: text; }',
+      'html[data-accent="mono"][data-theme="dark"] .team-avatar { background: linear-gradient(135deg, #3a3a44, #4a4a56); }',
+      'html[data-accent="mono"][data-theme="dark"] .lift-info-btn { background: #1e1e2d; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }',
+      // 深色 mono 发白渐变修复（sidebar.js/ai-chat.js 内联硬编码白→蓝/白→紫渐变，!important 压过内联 style）：
+      // 用户 banner、头像白描边、AI 悬浮球/聊天头
+      'html[data-accent="mono"][data-theme="dark"] .user-banner { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }',
+      'html[data-accent="mono"][data-theme="dark"] .user-module .avatar { border-color: rgba(255, 255, 255, 0.08) !important; }',
+      'html[data-accent="mono"][data-theme="dark"] .mn-ai-fab, html[data-accent="mono"][data-theme="dark"] .mn-ai-head { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }',
+      // overview 特色国家头像圆（用户「卡片中间那个白色」真身）：内联主色→紫渐变，深色 mono 翻黑族
+      'html[data-accent="mono"][data-theme="dark"] .featured-nation-avatar { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }',
+      'html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117, 134, 0.10); }',
+      // ── 主题色选择按钮：上下两部分——上半部配色 swatch、下半部名称 ──
+      '.accent-subnav { display: flex; gap: 8px; }',
+      '.accent-chip { width: 88px; padding: 0; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-md); background: var(--color-surface-container-low, transparent); overflow: hidden; cursor: pointer; display: flex; flex-direction: column; font-family: var(--font-family); transition: border-color 0.15s ease, box-shadow 0.15s ease; }',
+      '.accent-chip .accent-swatch { height: 28px; display: block; }',
+      '.accent-chip .accent-name { padding: 6px 0 7px; font-size: 12px; font-weight: 600; color: var(--color-on-surface-variant); }',
+      '.accent-chip.active { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-fixed); }',
+      '.accent-chip.active .accent-name { color: var(--color-on-surface); }',
+      '.settings-layout { display: flex; gap: var(--space-lg); align-items: flex-start; }',
+      '.settings-menu { width: 190px; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; padding-right: var(--space-md); border-right: 1px solid rgba(118,117,134,0.12); position: sticky; top: 0; }',
+      '.settings-menu-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 12px; border: none; border-radius: var(--radius-md); background: transparent; color: var(--color-on-surface-variant); font-family: var(--font-family); font-size: var(--fs-label-md); font-weight: 500; cursor: pointer; text-align: left; transition: background-color 0.15s ease, color 0.15s ease; }',
+      '.settings-menu-item:hover { background: rgba(118,117,134,0.08); color: var(--color-on-surface); }',
+      '.settings-menu-item.active { background: rgba(70,72,212,0.08); color: var(--color-primary); font-weight: 600; }',
+      '.settings-pane { flex: 1; min-width: 0; }',
+      '.settings-sec-hidden { display: none; }',
+      '@media (max-width: 640px) { .settings-layout { flex-direction: column; } .settings-menu { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 1px solid rgba(118,117,134,0.12); padding-right: 0; padding-bottom: var(--space-sm); position: static; } .settings-menu-item { width: auto; flex-shrink: 0; } }',
+    ].join('\n');
+    document.head.appendChild(st);
+  }
+
   // ── Build modal ──
   function buildModal() {
+    ensureStyle();
     var s = settings;
     var user = (window.SlatiDB && SlatiDB.getUser()) || {
       displayName: 'Alex Rivera',
@@ -198,6 +298,18 @@
       return '<button class="subnav-pill' + (s.fontSize === fs ? ' active' : '') + '" data-fs="' + fs + '">' + fs.charAt(0).toUpperCase() + fs.slice(1) + '</button>';
     }).join('');
 
+    // 主题色（用户「主题色分成黑白和现在这个蓝白两种」+「按钮分成上下两个部分 上半部显示主题配色 下半部就是名称」）：
+    // swatch 上半部直接是配色本身——蓝白=纯蓝块、黑白=左黑右白对半分
+    var accentOpts = [
+      { id: 'blue', label: 'Blue', sw: '#4648d4' },
+      { id: 'mono', label: 'Mono', sw: 'linear-gradient(90deg, #1c1c22 0 50%, #f2f2f5 50% 100%)' },
+    ];
+    var accentHTML = accentOpts.map(function (a) {
+      return '<button type="button" class="accent-chip' + (s.accent === a.id ? ' active' : '') + '" data-accent="' + a.id + '">' +
+        '<span class="accent-swatch" style="background:' + a.sw + '"></span>' +
+        '<span class="accent-name">' + a.label + '</span></button>';
+    }).join('');
+
     var appearSection = el('div', '', null, [
       el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' } }, 'Appearance'),
       el('div', '', { style: { paddingBottom: '12px', borderBottom: '1px solid rgba(118,117,134,0.08)' } }, [
@@ -207,6 +319,10 @@
       el('div', '', { style: { padding: '12px 0' } }, [
         el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block', marginBottom: '8px' } }, 'Font Size'),
         el('div', 'subnav', { id: 'fontSizeSubnav', style: { display: 'inline-flex' } }, fontSizeHTML),
+      ]),
+      el('div', '', { style: { paddingTop: '12px' } }, [
+        el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block', marginBottom: '8px' } }, 'Accent Color'),
+        el('div', 'accent-subnav', { id: 'accentSubnav', style: { display: 'flex', gap: '8px' } }, accentHTML),
       ]),
     ]);
 
@@ -282,11 +398,23 @@
       ]),
     ]);
 
-    // ── Assemble sections ──
-    var sections = [profileSection, appearSection, notifSection, privSection, langSection, accountSection];
-    var body = el('div', '', null, sections.map(function(sec, i) {
-      return el('div', '', { style: { marginBottom: i < sections.length - 1 ? 'var(--space-lg)' : '0', paddingBottom: i < sections.length - 1 ? 'var(--space-md)' : '0', borderBottom: i < sections.length - 1 ? '1px solid rgba(118,117,134,0.1)' : 'none' } }, [sec]);
+    // ── Assemble：左菜单 + 右内容区（2026-09-10 用户左侧菜单口径）──
+    var secList = [
+      { id: 'profile', el: profileSection },
+      { id: 'appearance', el: appearSection },
+      { id: 'notifications', el: notifSection },
+      { id: 'privacy', el: privSection },
+      { id: 'language', el: langSection },
+      { id: 'account', el: accountSection },
+    ];
+    var menu = el('div', 'settings-menu', { id: 'settingsMenu' }, MENU.map(function (m) {
+      return el('button', 'settings-menu-item' + (m.id === 'profile' ? ' active' : ''), { type: 'button', dataset: { sec: m.id } },
+        icon(m.icon, 18) + '<span>' + m.label + '</span>');
     }));
+    var pane = el('div', 'settings-pane', null, secList.map(function (s) {
+      return el('div', 'settings-sec' + (s.id === 'profile' ? '' : ' settings-sec-hidden'), { dataset: { sec: s.id } }, [s.el]);
+    }));
+    var body = el('div', 'settings-layout', null, [menu, pane]);
 
     // ── Header ──
     var header = el('div', '', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-lg)' } }, [
@@ -372,6 +500,20 @@
       });
     }
 
+    // Accent color chips（主题色：蓝白 Blue / 黑白 Mono）
+    var accentSubnav = document.getElementById('accentSubnav');
+    if (accentSubnav) {
+      accentSubnav.addEventListener('click', function (e) {
+        var btn = e.target.closest('.accent-chip');
+        if (!btn) return;
+        accentSubnav.querySelectorAll('.accent-chip').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        settings.accent = btn.dataset.accent;
+        applyAccent(btn.dataset.accent);
+        saveSettings(settings);
+      });
+    }
+
     // Language pills
     var langSubnav = document.getElementById('langSubnav');
     if (langSubnav) {
@@ -384,6 +526,22 @@
         saveSettings(settings);
         // Apply to pages using the i18n module (no-op where it isn't loaded)
         if (window.MN_I18N) window.MN_I18N.setLang(btn.dataset.lang);
+      });
+    }
+
+    // Left menu switching（2026-09-10 左侧菜单口径：点菜单项换右侧区块，active 高亮同步）
+    var menuEl = document.getElementById('settingsMenu');
+    if (menuEl) {
+      menuEl.addEventListener('click', function (e) {
+        var btn = e.target.closest('.settings-menu-item');
+        if (!btn) return;
+        var cardEl = modalEls.container.querySelector('#settingsCard');
+        cardEl.querySelectorAll('.settings-menu-item').forEach(function (b) {
+          b.classList.toggle('active', b.dataset.sec === btn.dataset.sec);
+        });
+        cardEl.querySelectorAll('.settings-sec').forEach(function (s) {
+          s.classList.toggle('settings-sec-hidden', s.dataset.sec !== btn.dataset.sec);
+        });
       });
     }
 

@@ -207,6 +207,17 @@
   --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.35);
 }
 
+/* ----- 深色侧边栏（2026-09-10 用户「选中态改暗色深色调 + 清除容器白边框/阴影/分割线」）----- */
+:root[data-theme="dark"] .nav-item:hover { background: rgba(255, 255, 255, 0.05); }
+:root[data-theme="dark"] .nav-item.active {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  animation: none; /* navGlow forwards 填充会盖过本规则——深色下禁用 */
+}
+:root[data-theme="dark"] .app-sidebar .sidebar-module { border: 1px solid rgba(255, 255, 255, 0.05); }
+:root[data-theme="dark"] .app-sidebar .sidebar-divider { background: rgba(255, 255, 255, 0.05); }
+
 /* ----- Reset & Base ----- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1600,6 +1611,12 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1;
   border-radius: inherit; pointer-events: none;
   background: radial-gradient(circle at var(--lg-px, 50%) var(--lg-py, 50%), rgba(255, 255, 255, 0.16), transparent 60%);
+}
+/* 暗色模式去镜面高光白光（2026-09-10 用户「卡片中间的那个白光」——真身=此层：
+   圆心恒在卡正中、rgba(255,255,255,0.16) 白晕，暗色玻璃卡/设置弹窗正中一片白光；
+   暗色下沉静无光斑整层藏起，亮色保留 rdev 高光配方） */
+:root[data-theme="dark"] .lg-specular {
+  display: none;
 }
 
 /* 各面配方：父面旧模糊值平移+饱和到层 */

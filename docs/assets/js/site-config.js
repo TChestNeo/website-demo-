@@ -248,7 +248,67 @@ window.MN_SITE = window.MN_SITE || {};
 //   彻底透到页面，仅留三层无色白霜+引擎光场/高光/双环各层（横幅组 7 预设不动）；②page-bg-active 复刻层
 //   加与 body 同款深色蒙层 rgba(10,10,16,0.38)（复刻=页面本来样子：蒙层+图，包层与页周无接缝、白字可读）；
 //   预览/色块随配方同步透明；后端零改动；（补丁位 1→2·去默认底色修复轮；2026-09-08）
-window.MN_SITE_VERSION = 'v0.2.25.2';
+// v0.2.26.0 = Story 政治启蒙故事站上线（用户引入 ChatGPT 反推提示词+「先了解政治，再创造国家」理念，钦定
+//   v1=完整学习路径 8 页+3D 丝滑切换（CSS 3D 为主局部 WebGL））：①story.mnationworld.com 子域接线
+//   （Cloud Run DomainMapping REST+Cloud DNS CNAME ghs.googlehosted.com；entrypoint.js Host 路由
+//   story.mnationworld.com→docs/story/ 静态根——docRoot 1 插入+4 置换，主站行为不变，纯公开免登录）；
+//   ②故事站 8 页（序章/什么是政治/国家的诞生/政治的历史/历史转折/制度的图谱/政治哲学之问/尾声知识地图→主站），
+//   滚轮叙事引擎 story.js（IO 加 .in+--p 单变量 CSS 消费+分句揭示+reduced-motion 降级）+局部 WebGL
+//   story-gl.js（星空/地球，裸 WebGL1 零库，能力探测 CSS 兜底）；文案中文第二人称故事化中性口径
+//   （Fact/Interpretation 标签+来源脚注+topicId/data-voice schema 预留）；③注册成功跳转 story 子域
+//   （demo+api 两分支，setOnboardingStep(1) 保留，尾声 CTA 回 onboarding-identity 原链不断）；
+//   ④MicroNationary overview 中间信息区 Story 入口卡；后端 API 零改动；（小改动位 25→26·新功能轮；2026-09-08）
+// v0.2.26.1 = Community composer 工具 icon 悬停气泡延迟 5s→2.5s（用户 2026-09-10「改成2.5s」——此前 5s
+//   口径（用户 09-05 钦定）实测等太久不浮出；.composer-tool:hover::after transition 5s→2.5s，白底黑字/移开
+//   0.15s 淡出不变；后端零改动；（补丁位 0→1·观感微调轮；2026-09-10）
+// v0.2.26.2 = 同上气泡延迟 2.5s→1.5s（用户同晚「能不能改成1.5s」继续提速；transition 2.5s→1.5s，其余不变；
+//   后端零改动；（补丁位 1→2·观感微调轮；2026-09-10）
+// v0.2.27.0 = Settings 弹窗左侧菜单（用户「能不能在设置的窗口左侧添加一个菜单」）：六区块从一条长滚动页
+//   改成「左菜单 + 右内容区」经典设置布局（Profile/Appearance/Notifications/Privacy/Language/Account 各带
+//   icon，点菜单项切换右侧区块 + active 高亮，菜单 sticky 随滚动）；卡片 560→860px；≤640px 视口菜单退化
+//   顶部横向滚动条；六区块 DOM 全保留（display 切换）——既有事件接线零改动；后端零改动；
+//   （小改动位 26→27·新功能轮；2026-09-10）
+// v0.2.27.1 = 同上设置弹窗 Discord 式全屏（用户「覆盖整个页面但是一样是弹窗类似discord的那种大小」）：
+//   #settingsCard width/height 100% + max-width none + max-height 100vh + 圆角/边框清零（铺满布局视口，
+//   玻璃模糊+缩放入场保留——仍是弹窗；X/ESC 关闭，backdrop 点击关闭随全屏自然失效）；
+//   .modal-card-body max-height 改 calc(100vh - 2*lg)；后端零改动；（补丁位 0→1·观感微调轮；2026-09-10）
+// v0.2.27.2 = 同上设置弹窗加回边缘（用户「我要有边缘的」）：#settingsCard 近全屏但四周留 24px 空隙
+//   （width/height calc(100% - 48px)，背后页面露一圈，backdrop 点击关闭随之复活）+ 圆角 var(--radius-lg)
+//   与 --modal-border 边框恢复；.modal-card-body max-height 改 calc(100vh - 48px - 2*lg)；
+//   ≤640px 视口边缘收窄到 8px；后端零改动；（补丁位 1→2·观感微调轮；2026-09-10）
+// v0.2.28.0 = Settings Appearance 新增主题色（用户「主题色分成黑白和现在这个蓝白两种 + 按钮分成上下两个
+//   部分 上半部显示主题配色 下半部就是名称」）：①Font Size 下方新增 Accent Color 区块，两个 .accent-chip
+//   按钮上下两段（上半部 swatch 直接是配色——Blue 纯蓝块/Mono 左黑右白对半分，下半部名称）；②accent 设置
+//   'blue'|'mono' 持久化 slati_settings（旧存档 merge 补默认值）；③mono 实现=html[data-accent=mono] 覆盖
+//   主色家族（--color-primary 亮近黑 #1c1c22/暗近白 #ececf2 等 20 个变量）+ nav/badge/dropdown/auth 勾选/
+//   upload-zone/guest-hero 等蓝 tint 组件跟随翻中性灰；④accent CSS 由 ensureStyle 常驻注入（页面加载即生效
+//   ——ensureStyle 原来只在开弹窗时跑，改 IIFE 顶层先跑一次，否则刷新后 mono 不生效）；后端零改动；
+//   （小改动位 27→28·新功能轮；2026-09-10）
+// v0.2.28.1 = 深色 mono 适配（用户「深色模式下按钮和卡片不要变白 除了文字」）：--color-primary 近白把
+//   所有「主色当背景」的组件都染白了——深色 mono 下 btn-primary 渐变/auth-panel-body/toggle-switch.active/
+//   lb-score-fill/team-avatar/lift-info-btn 全翻深灰底（#3a3a44 系），text-gradient 尾色改浅灰（文字仍近白）；
+//   亮色 mono 同步把 btn-primary/auth-panel-body/text-gradient/team-avatar 的硬编码蓝伴色（#5b5de0/#3b3dc4/
+//   #8131cf）翻纯黑灰；.settings-menu-item.active 蓝 tint 改中性灰 rgba(118,117,134,0.10)（亮暗通用）；
+//   小圆点类进度标记（progress-step dot/connector/milestone-dot/art-sec 条）保留浅色=accent 标记语义；
+//   后端零改动；（补丁位 0→1·观感微调轮；2026-09-10）
+// v0.2.28.2 = 深色侧边栏+黑白主题观感修正（用户「按钮怎么变成灰色的了 + 卡片中间那个白色还是一样」+
+//   「侧边栏选中态改暗色深色调 + 清除容器白边框/阴影」）：①ethereal.css 深色块新增侧边栏规则——nav 选中项
+//   暗底 rgba(255,255,255,0.08)+白字白图标+navGlow 动画禁用（forwards 填充会盖过背景声明），hover 白 5%，
+//   模块卡片边框/分割线从白 8%/12% 降为白 5% 半透明融合进背景；②深色 mono 按钮灰色被拒（#3a3a44 灰系）→
+//   纯黑族 #1e1e2d 系渐变（btn-primary 显式白字——深色 mono 的 --color-on-primary 是近黑，不翻会黑字压黑底），
+//   toggle-switch.active/auth-panel-body/lift-info-btn 同族；③发白渐变修复（!important 压内联 style）：
+//   sidebar 用户 banner（sidebar.js 内联 主色→#3b3dc4 白→蓝）、头像 3px 白描边降 8% 半透明、AI 悬浮球/聊天头
+//   （ai-chat.js 内联 主色→#8131cf 白→紫）、overview 特色国家头像圆（内联主色→紫渐变 56px 圆；
+//   注：v0.2.28.3 证实它并非「卡片中间白光」真身）；④mono nav 覆盖规则重构——深色交还 ethereal 统一管
+//   （蓝/黑白同款暗色选中态），亮色 mono 规则显式 [data-theme=light] 防串主题；ethereal.css 改动已重跑
+//   inline-css（43 页）；后端零改动；（补丁位 1→2·观感微调轮；2026-09-10）
+// v0.2.28.3 = 暗色去卡片正中白光（用户「能不能去除卡片中间的那个白光？？你根本没有找到真身」——真身=
+//   .lg-specular 镜面高光层：liquid-glass.js 每张玻璃卡注入、圆心恒在卡正中、rgba(255,255,255,0.16)
+//   白晕；暗色下弹窗卡/侧栏模块/页面卡正中一片白光。修法=ethereal.css 增 :root[data-theme="dark"]
+//   .lg-specular { display: none; }（暗色整层藏起；亮色保留 rdev 高光配方，计算样式断言暗色全灭/
+//   亮色恢复）。ethereal.css 改动已重跑 inline-css（43 页）；后端零改动；
+//   （补丁位 2→3·观感微调轮；2026-09-10）
+window.MN_SITE_VERSION = 'v0.2.28.3';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
