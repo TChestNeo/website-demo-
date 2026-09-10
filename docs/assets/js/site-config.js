@@ -397,7 +397,10 @@ window.MN_SITE = window.MN_SITE || {};
 //   草稿往返（legacy drafts omit → 种子 2 列 4 行）；调色板 Sheet Card 入口（table 图标 8×5）+ 图层图标表映射；
 //   table-layout:fixed 首行 ✕ 占位列防 ✕ 列塌 0 宽；后端零改动、ethereal 零改动无需 inline-css；
 //   （小改动位 28→29·新功能轮·补丁归零；2026-09-11）
-window.MN_SITE_VERSION = 'v0.2.29.0';
+// v0.2.29.1 = 表格卡默认尺寸 8×5 → 宽10格×长7格（用户「那个卡片大小能不能是默认长7格宽10格」）：
+//   工厂默认 spanW||10/spanH||7 + assetSpan {w:10,h:7}（拖放入画布同尺寸）+ 草稿恢复兜底 10/7 三处同改；
+//   （补丁位 0→1·观感微调轮；2026-09-11）
+window.MN_SITE_VERSION = 'v0.2.29.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -433,4 +436,6 @@ window.MN_SITE_VERSION = 'v0.2.29.0';
 //   +添加行/+添加列、行尾 ✕ 删行删光自补、窄卡横向滚动）；dataset.sheetData={cols,cells} additive 草稿往返
 //   （cells[0] 恒表头行）；调色板入口 + assetSpan 8×5 + LAYER_TYPE_ICONS sheet:table；table-layout:fixed
 //   首行 ✕ 占位列（防 ✕ 列塌 0 宽）（小更新位 18→19·小功能轮·补丁归零；2026-09-11）
-window.FLUIDCANVAS_VERSION = 'v10.28.19';
+// v10.28.19.1 = 表格卡默认尺寸 宽10格×长7格（用户「那个卡片大小能不能是默认长7格宽10格」）：
+//   工厂默认/assetSpan/草稿恢复兜底三处 8×5 → 10×7（补丁位 0→1·观感微调轮；2026-09-11）
+window.FLUIDCANVAS_VERSION = 'v10.28.19.1';
