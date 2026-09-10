@@ -408,7 +408,13 @@ window.MN_SITE = window.MN_SITE || {};
 //   每列上方 ↔ 手柄、每行左侧 ↕ 手柄（含表头行），按住拖动调整单列宽/单行高（最小列宽 40px/行高 22px）；
 //   colgroup 三截制（18px 手柄列+数据列+22px ✕ 列）；sheetData 增 colW/rowH 随草稿往返（legacy 省略→默认等分）；
 //   （补丁位 2→3·观感微调轮；2026-09-11）
-window.MN_SITE_VERSION = 'v0.2.29.3';
+// v0.2.30.0 = 编辑器撤回/恢复按钮（用户「能不能在顶部添加一个撤回和恢复按钮」）：
+//   快照式撤销——buildDraft() JSON 串（剥 lastSaved 时间戳）当快照，600ms 防抖跟在每次 onContentChange 后
+//   （连打 10 个字=一次快照，零调用点改动）；基线在初始化完成后即拍下（刚打开时的样子）——
+//   首个改动即可撤回回原点；撤回/恢复栈上限 60；工具栏 History 左侧加 撤回/恢复 两钮
+//   （disabled 灰态）+ Ctrl+Z/Ctrl+Y（焦点在 input/textarea/contenteditable 时让给原生撤销）；
+//   （小改动位 29→30·新功能轮·补丁归零；2026-09-11）
+window.MN_SITE_VERSION = 'v0.2.30.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -455,4 +461,10 @@ window.MN_SITE_VERSION = 'v0.2.29.3';
 //   （mousedown stopPropagation 不 arm 卡拖+白名单两处排除+document 级 move/up）；
 //   sheetData 增 colW/rowH 随草稿往返（legacy drafts omit → 默认等分）；colgroup 三截制
 //   （补丁位 2→3·观感微调轮；2026-09-11）
-window.FLUIDCANVAS_VERSION = 'v10.28.19.3';
+// v10.28.20 = 撤回/恢复（用户「能不能在顶部添加一个撤回和恢复按钮」）：快照式撤销栈——
+//   historyCommit 剥 lastSaved 后 JSON 串对比防时间戳误判；600ms 防抖挂在 onContentChange 尾（零调用点改动）；
+//   基线初始化完成后即拍下（首个改动即可撤回回原点）；historyUndoAction/historyRedoAction 走
+//   applyDraft 恢复（v10.28.15.2 先清画布→幂等）+saveDraft 落库 + 重基线 lastCommitted
+//   防序列化归一漂移吞恢复链；栈上限 60；工具栏两钮 + Ctrl+Z/Ctrl+Y
+//   （input/textarea/contenteditable 焦点时让给原生撤销）（小更新位 19→20·小功能轮·补丁归零；2026-09-11）
+window.FLUIDCANVAS_VERSION = 'v10.28.20';
