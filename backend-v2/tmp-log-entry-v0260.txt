@@ -213,3 +213,15 @@ Post 14px+38 高/space-between/输入框 --input-bg 非白无边框/气泡 attr(
 注入 feedContent，cloudMode 启动链是页面自身逻辑非本轮目标）；线上 curl：health 58 + v0.2.28.7 +
 三页 composer-tool=1/search-capsule=2/postComposer=1。
 部署：revision 00175-d57（exit 0）。后端零改动；（补丁位 6→7·修复轮；2026-09-10）
+
+㊿7（57）v0.2.28.7 → v0.2.28.8：Post 按钮改白色（用户「能不能把那个Post按钮改成白色的」）
+Community 三页 composer 的 Post 钮（#postSubmit，原来吃 .btn-primary 亮蓝紫主题渐变）改白底黑字
++ 白色辉光，亮/暗主题一致——沿用 v0.2.28.5 用户钦定的 CTA 白底黑字配方（background #ffffff +
+color #000000 + 辉光 0 4px 20px rgba(255,255,255,0.25) + inset 高光，hover #f0f0f5 提亮反馈，
+全部 !important 压过 .btn-primary；opacity:1 !important 防 hover 0.9 透底）。字号 14px/实高 38px
+与工具钮等高不变（S4 口径保持）。规则继续落在 v0.2.16.0 无标记本地段（防再洗）；ethereal.css
+零改动→无需重跑 inline-css；后端零改动。
+验证：探针 tmp-hub-composer-probe.js 19/19（原 14 项全绿 + F 三页新增白底+hover 规则在无标记块断言
++ 新增 S11 亮色 Post 白底黑字 + S12 深色仍白底黑字——直设 data-theme + localStorage 同步主题 pill 等价）；
+线上 curl：health 58 + v0.2.28.8 + 三页 background:#ffffff !important 各 1 + #postSubmit:hover 各 1。
+部署：revision 00176-9gk（exit 0）。（补丁位 7→8·观感微调轮；2026-09-10）

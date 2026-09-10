@@ -1,4 +1,4 @@
-// tmp-hub-composer-probe.js — Community 三页 composer 样式恢复验证（2026-09-10 v0.2.28.7）
+// tmp-hub-composer-probe.js — Community 三页 composer 样式恢复验证（2026-09-10 v0.2.28.7 起，v0.2.28.8 加 S11/S12 Post 白钮）
 // 背景：d370f05 重跑 inline-css.js（43 页）把留在 ethereal 内联标记块内的页级样式整块洗掉——
 //   community-hub/post/profile 三页各丢 121 行（搜索胶囊 UI 适配 + Composer 输入框 + 发帖工具条 icon 按钮）。
 //   用户「为什么Community首页顶部的输入框卡片没有做适配？」+「还有那个icon按钮又是怎么回事」。
@@ -14,6 +14,8 @@
 //   S8 搜索胶囊背景 = --input-bg 计算值非白 + 1px 描边（2026-09-03 Ui 适配口径）；
 //   S9 深色：输入框/胶囊背景随 --input-bg 翻深（≠亮色值且≠白）；
 //   S10 深色：工具钮文字色 = --color-outline 计算值；
+//   S11 亮色：Post 钮白底黑字（v0.2.28.8 用户「能不能把那个Post按钮改成白色的」）；
+//   S12 深色：Post 钮仍白底黑字（亮/暗主题一致）；
 //   Z 全程零 console error。
 // 验证口径：composer 标记由探针直接注入 feedContent（cloudMode 启动链是页面自身逻辑、线上真后端可跑，
 //   非本轮恢复目标——本轮断言的是被洗后恢复的 CSS 规则对标记的适配）。
@@ -97,7 +99,10 @@ async function waitFor(cdp, expr, timeout, label) {
     const t = fs.readFileSync(path.join(DOCS, 'pages', pg), 'utf8');
     const toolIdx = t.indexOf('.composer-tool {');
     const anchorIdx = t.indexOf(ANCHOR);
+    const whiteIdx = t.indexOf('background: #ffffff !important;');
+    const hoverIdx = t.indexOf('#postSubmit:hover {');
     ok('F ' + pg + '：.composer-tool { 规则在 + 位于 v0.2.16.0 无标记本地段之后（防再洗）', toolIdx !== -1 && anchorIdx !== -1 && toolIdx > anchorIdx);
+    ok('F ' + pg + '：Post 白底黑字 + hover 规则在（v0.2.28.8）', whiteIdx !== -1 && hoverIdx !== -1 && whiteIdx > anchorIdx && hoverIdx > whiteIdx);
   }
 
   // —— Chrome CDP ——
@@ -212,6 +217,12 @@ async function waitFor(cdp, expr, timeout, label) {
         cs.borderTopWidth === '1px' && cs.borderTopStyle !== 'none';
     })()`));
 
+    ok('S11 亮色：Post 钮白底黑字（v0.2.28.8 白底黑字配方）', await cdp.evalJs(`(() => {
+      var b = document.getElementById('postSubmit');
+      var cs = getComputedStyle(b);
+      return cs.backgroundColor === 'rgb(255, 255, 255)' && cs.color === 'rgb(0, 0, 0)';
+    })()`));
+
     // —— 深色模式（直设 data-theme + localStorage 同步 = 主题 pill 等价）——
     const lightBg = await cdp.evalJs("getComputedStyle(document.getElementById('postComposer')).backgroundColor");
     const lightCapsule = await cdp.evalJs("getComputedStyle(document.querySelector('.search-capsule')).backgroundColor");
@@ -237,6 +248,11 @@ async function waitFor(cdp, expr, timeout, label) {
       var outUsed = getComputedStyle(probe).color;
       probe.remove();
       return getComputedStyle(t).color === outUsed;
+    })()`));
+    ok('S12 深色：Post 钮仍白底黑字（亮/暗主题一致）', await cdp.evalJs(`(() => {
+      var b = document.getElementById('postSubmit');
+      var cs = getComputedStyle(b);
+      return cs.backgroundColor === 'rgb(255, 255, 255)' && cs.color === 'rgb(0, 0, 0)';
     })()`));
     // 恢复亮色
     await cdp.evalJs(`(() => {

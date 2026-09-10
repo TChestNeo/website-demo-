@@ -1835,6 +1835,16 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   font-size: 14px;
   line-height: 1;
   padding: 12px 20px;
+  /* 2026-09-10 用户「能不能把那个Post按钮改成白色的」：白底黑字 + 白色辉光，亮/暗主题一致
+     （!important 压过 .btn-primary 主题渐变；hover 浅灰 #f0f0f5 保持可点反馈） */
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+#postSubmit:hover {
+  background: #f0f0f5 !important;
+  opacity: 1 !important;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
 }
 /* 2026-09-05 用户「icon 的名称能不能是鼠标停留5秒后才显示啊？还有配色能不能是白底黑字啊」：
    气泡基础规则放 .composer-tool::after（内容+几何+白底黑字+细边框+pointer-events:none 永不挡点击+默认透明隐藏），

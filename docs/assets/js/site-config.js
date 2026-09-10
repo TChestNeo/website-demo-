@@ -327,7 +327,10 @@ window.MN_SITE = window.MN_SITE || {};
 //   community-hub/post/profile 三页各丢 121 行（搜索胶囊 UI 适配 + Composer 输入框 + 发帖工具条 icon 按钮三块）；
 //   本次从 git 历史 d370f05^ 原样恢复三块并移入 v0.2.16.0 本地段无标记块（与媒体段同处），杜绝再洗；
 //   ethereal 零改动无需 inline-css；后端零改动；（补丁位 6→7·修复轮；2026-09-10）
-window.MN_SITE_VERSION = 'v0.2.28.7';
+// v0.2.28.8 = 用户「能不能把那个Post按钮改成白色的」：Community 三页 composer 的 Post 钮白底黑字 + 白色辉光，
+//   亮/暗主题一致（!important 压过 .btn-primary 主题渐变，hover 浅灰 #f0f0f5）——沿用 v0.2.28.5 CTA 白底黑字配方；
+//   字号 14px/实高 38px 与工具钮等高不变；ethereal 零改动无需 inline-css；后端零改动；（补丁位 7→8·观感微调轮；2026-09-10）
+window.MN_SITE_VERSION = 'v0.2.28.8';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
