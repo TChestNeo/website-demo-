@@ -404,7 +404,11 @@ window.MN_SITE = window.MN_SITE || {};
 //   +添加行 → rowSpan+1 卡片变长、+添加列 → colSpan+1 卡片变宽；sheetGrow 读 dataset 现有跨度写回
 //   +setCardSize+刷手柄，跨度随草稿往返；种子 3 行与 restoreSheet 恢复路径不增长；
 //   （补丁位 1→2·观感微调轮；2026-09-11）
-window.MN_SITE_VERSION = 'v0.2.29.2';
+// v0.2.29.3 = 表格卡列宽/行高手柄（用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」）：
+//   每列上方 ↔ 手柄、每行左侧 ↕ 手柄（含表头行），按住拖动调整单列宽/单行高（最小列宽 40px/行高 22px）；
+//   colgroup 三截制（18px 手柄列+数据列+22px ✕ 列）；sheetData 增 colW/rowH 随草稿往返（legacy 省略→默认等分）；
+//   （补丁位 2→3·观感微调轮；2026-09-11）
+window.MN_SITE_VERSION = 'v0.2.29.3';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -446,4 +450,9 @@ window.MN_SITE_VERSION = 'v0.2.29.2';
 //   sheetGrow 助手读 dataset 现有跨度 +1 写回+setCardSize+refreshResizeHandles；+添加行/+添加列按钮
 //   传 grow 参数（种子 3 行与草稿恢复不增长）；草稿无新字段（colSpan/rowSpan 既有字段随跨度往返）
 //   （补丁位 1→2·观感微调轮；2026-09-11）
-window.FLUIDCANVAS_VERSION = 'v10.28.19.2';
+// v10.28.19.3 = 表格卡列宽/行高手柄（用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」）：
+//   手柄行（每列 ↔）+ 行侧手柄（每行 ↕，含表头行）；sheetGripDrag 按住拖动改单列宽/单行高
+//   （mousedown stopPropagation 不 arm 卡拖+白名单两处排除+document 级 move/up）；
+//   sheetData 增 colW/rowH 随草稿往返（legacy drafts omit → 默认等分）；colgroup 三截制
+//   （补丁位 2→3·观感微调轮；2026-09-11）
+window.FLUIDCANVAS_VERSION = 'v10.28.19.3';
