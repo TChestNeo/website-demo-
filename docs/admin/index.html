@@ -264,6 +264,21 @@ html[data-theme="dark"] .guest-module .btn-primary:hover {
   background: linear-gradient(135deg, #2b2b46, #3d3d5c);
   box-shadow: none;
 }
+/* 2026-09-10 用户「Home 和 MicroNationary 菜单项背后出现异常长方形白色/浅色亮光块」——
+   三轮零阈值扫描实证：侧栏容器 .app-sidebar 全透明（--sidebar-bg 从定义起只被 dropdown 用过，
+   侧栏本身零背景），玻璃注入层 .lg-backdrop（透明、挂 SVG 折射滤镜 + blur(14px) 磨砂）
+   垫在导航模块背后——页面亮内容透过全透明侧栏再经磨砂/滤镜放大 = 亮块真身。
+   修法（对应用户三点要求）：① 侧栏整列铺满不透明深底（--sidebar-bg #1a1a2e），
+   亮块无孔可入，从上到下底色统一干净深色；② 暗色下侧栏玻璃注入层灭滤镜灭磨砂
+   （透明层零折射需求，杜绝 feImage 位移图/磨砂伪影）；③ .nav-item.active 高亮不动。
+   亮色主题零触碰 */
+:root[data-theme="dark"] .app-sidebar {
+  background: var(--sidebar-bg);
+}
+:root[data-theme="dark"] .app-sidebar .lg-backdrop {
+  filter: none;
+  backdrop-filter: none;
+}
 
 /* ----- Reset & Base ----- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

@@ -349,7 +349,16 @@ window.MN_SITE = window.MN_SITE || {};
 //   深靛蓝低调渐变 #23233a→#34344f + 白字 + 灭光晕（hover 微提亮 #2b2b46→#3d3d5c；亮色保留原靛蓝 CTA；
 //   html[...] 前缀与 mono 深色黑族规则同特异性 (0,3,1)、settings-modal 运行时注入在后故 mono 仍赢）；ethereal.css 改动
 //   已重跑 inline-css（43 页）；后端零改动；（补丁位 10→11·观感微调轮；2026-09-10）
-window.MN_SITE_VERSION = 'v0.2.28.11';
+// v0.2.28.12 = 用户「Home 和 MicroNationary 菜单项背后出现异常长方形白色/浅色亮光块」——三轮零阈值扫描
+//   （零阈值 nav-module 子树 + 左侧条带几何扫描）实证：侧栏容器 .app-sidebar 全透明（--sidebar-bg 从定义起
+//   只被 dropdown 用过，侧栏本身零背景规则），玻璃注入层 .lg-backdrop（透明、挂 SVG 折射滤镜
+//   url(#lg-glass-filter) + blur(14px) saturate(1.4) 磨砂）垫在导航模块背后——页面亮内容透过
+//   全透明侧栏再经磨砂/滤镜放大 = 亮块真身；修法=ethereal.css 深色侧边栏块增 ①:root[data-theme="dark"]
+//   .app-sidebar 铺满不透明深底 var(--sidebar-bg) #1a1a2e（亮块无孔可入、从上到下底色统一干净深色）
+//   ②:root[data-theme="dark"] .app-sidebar .lg-backdrop 灭 filter 灭 backdrop-filter（透明层零折射
+//   需求，杜绝 feImage 位移图/磨砂伪影）③.nav-item.active 高亮规则零触碰、亮色主题零触碰；
+//   ethereal.css 改动已重跑 inline-css（43 页）；后端零改动；（补丁位 11→12·观感微调轮；2026-09-10）
+window.MN_SITE_VERSION = 'v0.2.28.12';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

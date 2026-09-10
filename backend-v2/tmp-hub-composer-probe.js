@@ -22,6 +22,10 @@
 //   S16 深色 mono：settings-modal 注入的暗族渐变仍赢（html[data-accent=mono][data-theme=dark] 特异性更高）；
 //   S17 深色：访客「注册 / 登录」按钮改深靛蓝低调渐变+灭光晕（v0.2.28.11 真身——「还是一样」的亮块）；
 //   S18 深色 mono：访客按钮 mono 暗族渐变仍赢（同特异性、settings 注入在后）；
+//   S19 深色：侧栏容器铺满不透明深底 rgb(26,26,46)（v0.2.28.12 亮块真身=容器全透明透亮）；
+//   S20 深色：侧栏全部 .lg-backdrop 注入层 filter/backdrop-filter 双灭（SVG 折射/磨砂伪影杜绝）；
+//   S21 深色：active 菜单项高亮逻辑完好（白 8% 底+白 5% 边+白字+灭动画——修复不碰高亮）；
+//   S22 亮色：侧栏容器仍透明 + 注入层滤镜/磨砂原样（v0.2.28.12 只动深色零触碰亮色）；
 //   Z 全程零 console error。
 // 验证口径：composer 标记由探针直接注入 feedContent（cloudMode 启动链是页面自身逻辑、线上真后端可跑，
 //   非本轮恢复目标——本轮断言的是被洗后恢复的 CSS 规则对标记的适配）。
@@ -117,6 +121,12 @@ async function waitFor(cdp, expr, timeout, label) {
     const guestBtnIdx = t.indexOf('html[data-theme="dark"] .guest-module .btn-primary');
     ok('F ' + pg + '：暗色访客按钮低调渐变+灭光晕规则在（v0.2.28.11 深色侧边栏块）', guestBtnIdx !== -1 && guestBtnIdx > bannerIdx &&
       t.indexOf('#23233a', guestBtnIdx) !== -1 && t.indexOf('box-shadow: none', guestBtnIdx) !== -1);
+    const sbIdx = t.indexOf(':root[data-theme="dark"] .app-sidebar {');
+    const lbIdx = t.indexOf(':root[data-theme="dark"] .app-sidebar .lg-backdrop');
+    const nxt = lbIdx !== -1 ? t.slice(lbIdx, lbIdx + 260) : '';
+    ok('F ' + pg + '：暗色侧栏铺深底 + 注入层灭滤镜磨砂规则在（v0.2.28.12 深色侧边栏块）', sbIdx !== -1 && sbIdx > guestBtnIdx &&
+      t.indexOf('background: var(--sidebar-bg)', sbIdx) !== -1 && lbIdx !== -1 && lbIdx > sbIdx &&
+      nxt.indexOf('filter: none') !== -1 && nxt.indexOf('backdrop-filter: none') !== -1);
   }
 
   // —— Chrome CDP ——
@@ -304,6 +314,30 @@ async function waitFor(cdp, expr, timeout, label) {
       document.documentElement.removeAttribute('data-accent');
       return monoWin;
     })()`));
+    await waitFor(cdp, "document.querySelector('#slati-sidebar .lg-backdrop')", 5000, '侧栏玻璃注入层就绪');
+    ok('S19 深色：侧栏容器铺满不透明深底 rgb(26,26,46)（v0.2.28.12 亮块无孔可入）', await cdp.evalJs(`(() => {
+      var sb = document.getElementById('slati-sidebar');
+      if (!sb) return false;
+      return getComputedStyle(sb).backgroundColor === 'rgb(26, 26, 46)';
+    })()`));
+    ok('S20 深色：侧栏全部 .lg-backdrop 注入层 filter/backdrop 双灭（SVG 折射/磨砂伪影杜绝）', await cdp.evalJs(`(() => {
+      var ls = document.querySelectorAll('#slati-sidebar .lg-backdrop');
+      if (ls.length === 0) return false;
+      var allOff = true;
+      ls.forEach(function (l) {
+        var cs = getComputedStyle(l);
+        if (cs.filter !== 'none' || cs.backdropFilter !== 'none') allOff = false;
+      });
+      return allOff;
+    })()`));
+    ok('S21 深色：active 菜单项高亮逻辑完好（白 8% 底 + 白 5% 边 + 白字 + 灭动画）', await cdp.evalJs(`(() => {
+      var a = document.querySelector('#slati-sidebar .nav-item.active');
+      if (!a) return false;
+      var cs = getComputedStyle(a);
+      return cs.backgroundColor === 'rgba(255, 255, 255, 0.08)' &&
+        cs.borderTopColor === 'rgba(255, 255, 255, 0.05)' &&
+        cs.color === 'rgb(255, 255, 255)' && cs.animationName === 'none';
+    })()`));
     // 恢复亮色
     await cdp.evalJs(`(() => {
       document.documentElement.setAttribute('data-theme', 'light');
@@ -313,6 +347,19 @@ async function waitFor(cdp, expr, timeout, label) {
       return true;
     })()`);
     await sleep(500);
+
+    ok('S22 亮色：侧栏容器仍透明 + 注入层滤镜/磨砂原样（v0.2.28.12 零触碰亮色）', await cdp.evalJs(`(() => {
+      var sb = document.getElementById('slati-sidebar');
+      if (!sb) return false;
+      var ls = document.querySelectorAll('#slati-sidebar .lg-backdrop');
+      if (ls.length === 0) return false;
+      var keep = true;
+      ls.forEach(function (l) {
+        var cs = getComputedStyle(l);
+        if (cs.filter.indexOf('lg-glass-filter') === -1 || cs.backdropFilter.indexOf('blur(14px)') === -1) keep = false;
+      });
+      return getComputedStyle(sb).backgroundColor === 'rgba(0, 0, 0, 0)' && keep;
+    })()`));
 
     // —— S13 强制 :hover（CSS.forcePseudoState）验气泡延迟 0.8s ——
     await cdp.send('DOM.enable');

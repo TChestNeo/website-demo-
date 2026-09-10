@@ -269,3 +269,27 @@ ethereal.css 改动→重跑 inline-css（43 页）。
 console error）；终版扫描：访客按钮已暗、全侧栏零 inset。
 线上 curl：health 58 + v0.2.28.11 + 三页横幅规则在 + 访客按钮规则 base/hover 各 1（#23233a 在）。
 部署：revision 00179-w77（exit 0）。（补丁位 10→11·观感微调轮；2026-09-10）
+
+㊿1（61）v0.2.28.11 → v0.2.28.12：暗色左栏亮块追踪第三轮——真身=侧栏容器全透明透亮（用户「Home 和 MicroNationary 菜单项背后出现异常长方形白色/浅色亮光块，疑似残余内边框/旧选中背景/伪元素没清干净」）
+背景：v0.2.28.10 修横幅、v0.2.28.11 修访客按钮，用户仍见亮块且定位「Home 和 MicroNationary 背后」。
+零阈值探针 tmp-nav-area-dump.js（nav-module 子树含伪元素/注入层全量转储 + 几何区域相交元素）
++ tmp-sidebar-strip-scan.js（左侧条带几何扫描，合成亮度阈值 45，防低阈值漏报）实证：
+①侧栏容器 .app-sidebar 自建站起零背景规则（--sidebar-bg 从定义起只被 dropdown-menu 用过），
+整列 position:fixed 全透明——页面亮内容（Community 整页背景图等）直接透过侧栏 = 亮块真身；
+②玻璃注入层 .lg-backdrop（透明、挂 SVG 折射滤镜 url(#lg-glass-filter) + blur(14px) saturate(1.4)
+磨砂，z:-1 垫在导航模块背后）把透过的亮内容再磨砂放大；③全侧栏零 inset/伪元素/白边框残留，
+横幅与访客按钮前两轮修复均生效。
+修法（对应用户三点要求）：ethereal.css 深色侧边栏块增
+①:root[data-theme="dark"] .app-sidebar { background: var(--sidebar-bg); }——整列铺满不透明深底
+#1a1a2e，亮块无孔可入、从上到下底色统一干净深色；
+②:root[data-theme="dark"] .app-sidebar .lg-backdrop { filter:none; backdrop-filter:none; }——
+透明注入层零折射需求，杜绝 SVG 折射/磨砂伪影；
+③.nav-item.active 高亮规则零触碰、亮色主题零触碰。
+ethereal.css 改动→重跑 inline-css（43 页）；后端零改动。
+验证：探针 tmp-hub-composer-probe.js 41/41（原 34 项全绿 + F 三页暗色侧栏铺深底+注入层灭滤镜
+规则在 + S19 深色侧栏容器 bg=rgb(26,26,46) 不透明 + S20 深色全部 .lg-backdrop filter/backdrop 双灭
++ S21 深色 active 高亮白 8% 底白 5% 边白字灭动画完好 + S22 亮色容器仍透明滤镜磨砂原样 + Z 零
+console error）。
+线上 curl：health 58 + v0.2.28.12 + hub 页 .lg-backdrop 选择器 1/var(--sidebar-bg) 2/backdrop-filter
+none 1 + index/hub/overview 回归 200。
+部署：revision 00180-49x（exit 0）。（补丁位 11→12·观感微调轮；2026-09-10）
