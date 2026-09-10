@@ -199,3 +199,17 @@ index.html dashboard 欢迎卡里的 Create World 按钮——且 MicroNationary
 线上 curl：health 58 + v0.2.28.6 + index 页 create-world-cta 7 处（类+6 规则）+ 深色白底规则在 +
 overview 页 7 处保持不动。
 部署：revision 00174-6z5（exit 0）。后端零改动；（补丁位 5→6·观感微调轮；2026-09-10）
+
+㊿6（56）v0.2.28.6 → v0.2.28.7：Community 三页被洗样式恢复（用户「为什么Community首页顶部的输入框卡片没有做适配？，还有那个icon按钮又是怎么回事」）
+根因：d370f05（v0.2.28.2+28.3 深色轮）重跑 inline-css.js 43 页——inliner 整块替换 ethereal 内联标记块，
+留在标记块内的页级样式被洗掉：community-hub/post/profile 三页各丢 121 行（搜索胶囊 UI 适配 + #postComposer
+输入框 + 整个发帖工具条 icon 按钮族）——正好对上用户两个抱怨（输入框卡片没适配 = 无 input-bg/描边样式；
+icon 按钮不对劲 = 裸小按钮，38px 触控尺寸/24px 图标/悬停放大/5s 白底黑字气泡全没了）。
+修法：从 git 历史（d370f05^）提取 147 行原块 → 重新插入三页 v0.2.16.0 无标记本地段（含防再洗注释——
+v0.2.16.0 媒体/灯箱样式同区早有此布置，页级样式必须出标记块）；ethereal.css 零改动→无需重跑 inline-css。
+验证：探针 tmp-hub-composer-probe.js 14/14（F1-F3 三页规则在无标记块；S1-S10 工具钮 38×38/图标 24px/
+Post 14px+38 高/space-between/输入框 --input-bg 非白无边框/气泡 attr(data-tip) 白底黑字默认藏/胶囊
+--input-bg+1px 描边/深色双背景翻深+工具钮 --color-outline；Z 零 console error——composer 标记由探针直接
+注入 feedContent，cloudMode 启动链是页面自身逻辑非本轮目标）；线上 curl：health 58 + v0.2.28.7 +
+三页 composer-tool=1/search-capsule=2/postComposer=1。
+部署：revision 00175-d57（exit 0）。后端零改动；（补丁位 6→7·修复轮；2026-09-10）

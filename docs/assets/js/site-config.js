@@ -322,7 +322,12 @@ window.MN_SITE = window.MN_SITE || {};
 //   +辉光；深色白底黑字+白辉光，!important 压 mono 黑族 btn-primary）；overview.html MicroNationary 横幅按钮
 //   保持不动（用户「MicroNationary那个你也别撤销」）；ethereal 零改动无需 inline-css；后端零改动；
 //   （补丁位 5→6·观感微调轮；2026-09-10）
-window.MN_SITE_VERSION = 'v0.2.28.6';
+// v0.2.28.7 = 恢复被 inline-css 洗掉的 Community 三页 composer 样式（用户「输入框卡片没有做适配」+「那个icon按钮又是怎么回事」）：
+//   真身=d370f05 重跑 inline-css.js（43 页）时把留在 ethereal 内联标记块内的页级样式整块替换洗掉——
+//   community-hub/post/profile 三页各丢 121 行（搜索胶囊 UI 适配 + Composer 输入框 + 发帖工具条 icon 按钮三块）；
+//   本次从 git 历史 d370f05^ 原样恢复三块并移入 v0.2.16.0 本地段无标记块（与媒体段同处），杜绝再洗；
+//   ethereal 零改动无需 inline-css；后端零改动；（补丁位 6→7·修复轮；2026-09-10）
+window.MN_SITE_VERSION = 'v0.2.28.7';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
