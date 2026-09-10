@@ -371,7 +371,15 @@ window.MN_SITE = window.MN_SITE || {};
 //   Uiverse 药丸（v10.28.17.3）自此裸奔成默认按钮；修法=从 df70a76（v10.28.17.4 同轮修正终版）原样恢复
 //   180 行样式块（含暗色主题覆写）；ethereal.css 零改动无需 inline-css；后端零改动；
 //   （补丁位 13→14·纯修复轮；2026-09-11）
-window.MN_SITE_VERSION = 'v0.2.28.14';
+// v0.2.28.15 = 用户「大小能不能和旁边的按钮匹配一下然后能不能改成药丸形…滑出的颜色改成白色…字母黑白相反
+//   滤镜」——顶部 Migrate 钮定制：①大小对齐旁边 .btn-sm（font-size var(--fs-label-sm)、span padding
+//   7px 16px、svg 24px、margin 8px，高度 38px 与 History/Tags/Save Draft/Publish 一致——邻钮 .btn-outline
+//   含 1px 边框 38px，migrate 无边框用 7px 上下垫等值对齐）②改药丸形
+//   （border-radius: var(--radius-full)，与邻居 .btn 同）③横扫面板黑→白（亮/暗主题一致，两主题对
+//   顶部钮本就零覆写）④字母挂黑白相反滤镜——span 静息 filter:invert(1) 白字反转成黑字压在白色面板上、
+//   悬停 invert(0) 面板滑离时同步翻回白字，0.4s 与面板横扫同曲线同步丝滑换色；ethereal.css 零改动
+//   无需 inline-css；后端零改动；（补丁位 14→15·观感微调轮；2026-09-11）
+window.MN_SITE_VERSION = 'v0.2.28.15';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
