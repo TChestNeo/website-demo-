@@ -27,7 +27,9 @@
     { id: 'creation', icon: 'edit_note', label: 'Creation', href: '../pages/construction.html' },
     { id: 'messages', icon: 'chat', label: 'Messages', href: '../pages/messages.html' },
     { id: 'activity', icon: 'analytics', label: 'Activity', href: '../pages/activity.html' },
-    { id: 'editor', icon: 'article', label: 'Editor', href: '../pages/editor.html' },
+    // v0.2.28.13 用户「为什么Editor按钮连接的不是 fluidcanvas-editor」——旧文章编辑器 editor.html 已删，
+    // Editor 直入 FC 编辑器（getActiveId 的 editor 判断本就先于 fluidcanvas，高亮自动正确）
+    { id: 'editor', icon: 'article', label: 'Editor', href: '../pages/fluidcanvas-editor.html' },
     { id: 'following', icon: 'favorite', label: 'Following', href: '../pages/following.html' },
     { id: 'upload', icon: 'cloud_upload', label: 'Upload', href: '../pages/fluidcanvas.html#upload' },
     { id: 'studio', icon: 'draw', label: 'FluidCanvas', href: '../pages/fluidcanvas.html' },

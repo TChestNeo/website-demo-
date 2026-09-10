@@ -293,3 +293,21 @@ console error）。
 线上 curl：health 58 + v0.2.28.12 + hub 页 .lg-backdrop 选择器 1/var(--sidebar-bg) 2/backdrop-filter
 none 1 + index/hub/overview 回归 200。
 部署：revision 00180-49x（exit 0）。（补丁位 11→12·观感微调轮；2026-09-10）
+
+㊿2（62）v0.2.28.12 → v0.2.28.13：Editor 按钮直入 FluidCanvas 编辑器 + 删除旧文章编辑器（用户「为什么Editor按钮
+连接的不是 fluidcanvas-editor？」+「我都这么说了肯定是改去fluidcanvas-editor 然后把那个旧的删掉啊」；rev 00181-cm4）
+① 侧栏直入：sidebar.js Editor 项 href ../pages/editor.html → ../pages/fluidcanvas-editor.html（getActiveId 的
+editor 判断本就先于 fluidcanvas 判断——fluidcanvas-editor.html 上 Editor 高亮自动正确，零改动）。
+② 转场导航序：transitions.js NAV_ORDER 键 'editor.html': 5 → 'fluidcanvas-editor.html': 5（方向性转场序 5 不变）。
+③ 删旧页：git rm docs/pages/editor.html（113KB 旧 Markdown 文章编辑器，删除前全站引用仅 sidebar.js/transitions.js
+两处，已全部置换清零；FC 编辑器保留 fluidcanvas.html 内部 4 处链接 + 访客送返 ?locked=1 门禁，可直入）。
+④ 文案残留：fluidcanvas-editor.html 的 <title> 与 editor-header 可见头部「Article Editor」（建页复制模板残留）
+两处改「FluidCanvas Editor」。
+后端零改动；ethereal.css 零改动→无需重跑 inline-css。
+验证：探针 tmp-hub-composer-probe.js 46/46（原 41 项全绿 + F5 文件级四断言：sidebar.js 新 href 在旧链接除 /
+transitions.js 新键在旧键除 / editor.html 文件不存在 / FC 编辑器标题头部 FluidCanvas Editor 在 Article Editor 除
++ S23 侧栏渲染 Editor 项 href=fluidcanvas-editor.html 且旧 editor.html 链接不存在 + Z 零 console error）。
+线上 curl：health 58 + v0.2.28.13 + /pages/editor.html 404 + /pages/fluidcanvas-editor.html 200 新标题
+FluidCanvas Editor（Article Editor 0 处）+ sidebar.js 新 href 在旧链接 0 处 + transitions.js 新键 + root/overview/
+hub 回归 200。
+部署：revision 00181-cm4（exit 0）。（补丁位 12→13·口径修正轮；2026-09-11）

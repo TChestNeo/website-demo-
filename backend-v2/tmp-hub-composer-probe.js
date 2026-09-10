@@ -26,6 +26,8 @@
 //   S20 深色：侧栏全部 .lg-backdrop 注入层 filter/backdrop-filter 双灭（SVG 折射/磨砂伪影杜绝）；
 //   S21 深色：active 菜单项高亮逻辑完好（白 8% 底+白 5% 边+白字+灭动画——修复不碰高亮）；
 //   S22 亮色：侧栏容器仍透明 + 注入层滤镜/磨砂原样（v0.2.28.12 只动深色零触碰亮色）；
+//   F5 文件级：sidebar.js/transitions.js 换链 + editor.html 已删 + fluidcanvas-editor 标题/头部已改（v0.2.28.13）；
+//   S23 侧栏渲染：Editor 项 href=fluidcanvas-editor.html 且旧 editor.html 链接不存在（v0.2.28.13）；
 //   Z 全程零 console error。
 // 验证口径：composer 标记由探针直接注入 feedContent（cloudMode 启动链是页面自身逻辑、线上真后端可跑，
 //   非本轮恢复目标——本轮断言的是被洗后恢复的 CSS 规则对标记的适配）。
@@ -128,6 +130,19 @@ async function waitFor(cdp, expr, timeout, label) {
       t.indexOf('background: var(--sidebar-bg)', sbIdx) !== -1 && lbIdx !== -1 && lbIdx > sbIdx &&
       nxt.indexOf('filter: none') !== -1 && nxt.indexOf('backdrop-filter: none') !== -1);
   }
+
+  // —— F5 v0.2.28.13：Editor 直入 FC 编辑器 + 旧页删除（文件级静态断言）——
+  const sideJs = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'sidebar.js'), 'utf8');
+  const transJs = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'transitions.js'), 'utf8');
+  const fcEd = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
+  ok('F5 sidebar.js：Editor href 指向 fluidcanvas-editor.html + 旧 editor.html 链接已除（v0.2.28.13）',
+    sideJs.indexOf("href: '../pages/fluidcanvas-editor.html'") !== -1 && sideJs.indexOf("'../pages/editor.html'") === -1);
+  ok('F5 transitions.js：NAV_ORDER 键 fluidcanvas-editor.html: 5 + 旧 editor.html 键已除（v0.2.28.13）',
+    transJs.indexOf("'fluidcanvas-editor.html': 5") !== -1 && transJs.indexOf("'editor.html'") === -1);
+  ok('F5 旧页 editor.html 已删除（v0.2.28.13）', !fs.existsSync(path.join(DOCS, 'pages', 'editor.html')));
+  ok('F5 fluidcanvas-editor.html：标签标题 + 头部残留文案已改 FluidCanvas Editor（v0.2.28.13）',
+    fcEd.indexOf('<title>FluidCanvas Editor | M.NationWorld</title>') !== -1 &&
+    fcEd.indexOf('>Article Editor</span>') === -1 && fcEd.indexOf('>FluidCanvas Editor</span>') !== -1);
 
   // —— Chrome CDP ——
   let chromePath = null;
@@ -359,6 +374,20 @@ async function waitFor(cdp, expr, timeout, label) {
         if (cs.filter.indexOf('lg-glass-filter') === -1 || cs.backdropFilter.indexOf('blur(14px)') === -1) keep = false;
       });
       return getComputedStyle(sb).backgroundColor === 'rgba(0, 0, 0, 0)' && keep;
+    })()`));
+
+    // —— S23 侧栏渲染链接：Editor 项直入 FC 编辑器 + 旧 editor.html 链接不存在（v0.2.28.13）——
+    ok('S23 侧栏渲染：Editor 项 href=fluidcanvas-editor.html + 旧 editor.html 链接不存在（v0.2.28.13）', await cdp.evalJs(`(() => {
+      var links = document.querySelectorAll('#slati-sidebar a');
+      if (links.length === 0) return false;
+      var hasFc = false;
+      var bad = false;
+      links.forEach(function (a) {
+        var h = a.getAttribute('href') || '';
+        if (h.slice(-'fluidcanvas-editor.html'.length) === 'fluidcanvas-editor.html') hasFc = true;
+        else if (h.indexOf('editor.html') !== -1) bad = true;
+      });
+      return hasFc && !bad;
     })()`));
 
     // —— S13 强制 :hover（CSS.forcePseudoState）验气泡延迟 0.8s ——

@@ -358,7 +358,14 @@ window.MN_SITE = window.MN_SITE || {};
 //   ②:root[data-theme="dark"] .app-sidebar .lg-backdrop 灭 filter 灭 backdrop-filter（透明层零折射
 //   需求，杜绝 feImage 位移图/磨砂伪影）③.nav-item.active 高亮规则零触碰、亮色主题零触碰；
 //   ethereal.css 改动已重跑 inline-css（43 页）；后端零改动；（补丁位 11→12·观感微调轮；2026-09-10）
-window.MN_SITE_VERSION = 'v0.2.28.12';
+// v0.2.28.13 = 用户「为什么Editor按钮连接的不是 fluidcanvas-editor」——Editor 按钮直入 FC 编辑器 + 删旧页：
+//   侧边栏 Editor 菜单项 href editor.html → fluidcanvas-editor.html（旧文章编辑器 editor.html 整页删除，
+//   全站引用复查仅 sidebar.js/transitions.js 两处均已改；getActiveId 的 editor 判断本就先于 fluidcanvas
+//   判断，FC 编辑器页高亮自动正确零改动）；transitions.js NAV_ORDER 键 editor.html → fluidcanvas-editor.html
+//   （导航序 5 不变）；fluidcanvas-editor.html 标签页 <title> 与 editor-header 头部「Article Editor」残留文案
+//   （建页时从旧文章编辑器复制模板遗留）→「FluidCanvas Editor」；ethereal.css 零改动无需 inline-css；
+//   后端零改动；（补丁位 12→13·口径修正轮；2026-09-11）
+window.MN_SITE_VERSION = 'v0.2.28.13';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

@@ -19,7 +19,7 @@
     'construction.html': 3, 'create-topic-step-1.html': 3, 'create-topic-step-2.html': 3, 'create-topic-step-3.html': 3,
     'create-world.html': 3, 'world-wizard.html': 3, 'world-created.html': -1,
     'messages.html': 4,
-    'editor.html': 5,
+    'fluidcanvas-editor.html': 5,
     'workspace.html': 8,
     'help.html': 9,
     'signup-and-login.html': -1, 'signup-and-login': -1,
