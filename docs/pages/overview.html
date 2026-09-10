@@ -2015,6 +2015,21 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 .btn.create-world-cta:focus-visible {
   box-shadow: 0 0 0 3px rgba(106, 108, 255, 0.4), 0 4px 20px rgba(106, 108, 255, 0.45) !important;
 }
+/* 深色模式（用户 2026-09-10「在深色模式下你把他改成白底黑字的」）：
+   白底黑字高对比 CTA + 白色辉光，蓝/黑白两种主题色一致（只按 data-theme 切） */
+:root[data-theme="dark"] .btn.create-world-cta {
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+:root[data-theme="dark"] .btn.create-world-cta:hover {
+  background: #f0f0f5 !important;
+  color: #000000 !important;
+  box-shadow: 0 6px 28px rgba(255, 255, 255, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+:root[data-theme="dark"] .btn.create-world-cta:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 4px 20px rgba(255, 255, 255, 0.25) !important;
+}
 </style>
 </head>
 <body class="pre-stagger">

@@ -313,7 +313,11 @@ window.MN_SITE = window.MN_SITE || {};
 //   #6a6cff→#b14dff + 辉光（0 4px 20px rgba(106,108,255,0.45)+内白描）+hover 提亮上浮；
 //   !important 压过 mono 黑族 btn-primary 覆盖——亮/暗 × 蓝/黑白四主题一致高亮；ethereal 零改动
 //   无需重跑 inline-css；后端零改动；（补丁位 3→4·观感微调轮；2026-09-10）
-window.MN_SITE_VERSION = 'v0.2.28.4';
+// v0.2.28.5 = Create World CTA 深色模式改白底黑字（用户「在深色模式下你把他改成白底黑字的」）：
+//   :root[data-theme="dark"] 下 CTA 白底 #ffffff 黑字 #000000 + 白色辉光（0 4px 20px rgba(255,255,255,0.25)），
+//   hover 微降 #f0f0f5；只按 data-theme 切换（蓝/黑白两种主题色一致），亮色保持 v0.2.28.4 亮蓝紫渐变；
+//   ethereal 零改动无需 inline-css；后端零改动；（补丁位 4→5·观感微调轮；2026-09-10）
+window.MN_SITE_VERSION = 'v0.2.28.5';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
