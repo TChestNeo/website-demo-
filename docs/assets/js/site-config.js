@@ -330,7 +330,10 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.28.8 = 用户「能不能把那个Post按钮改成白色的」：Community 三页 composer 的 Post 钮白底黑字 + 白色辉光，
 //   亮/暗主题一致（!important 压过 .btn-primary 主题渐变，hover 浅灰 #f0f0f5）——沿用 v0.2.28.5 CTA 白底黑字配方；
 //   字号 14px/实高 38px 与工具钮等高不变；ethereal 零改动无需 inline-css；后端零改动；（补丁位 7→8·观感微调轮；2026-09-10）
-window.MN_SITE_VERSION = 'v0.2.28.8';
+// v0.2.28.9 = 用户「能不能把那个icon按钮名称 滑鼠停留的时常从1.5s改成 0.8s?」：Community 三页 composer 工具钮
+//   悬停气泡延迟 5s → 0.8s（hover 态 transition opacity 0.15s ease 0.8s + visibility 0s linear 0.8s，
+//   基础态淡出规则不动）；ethereal 零改动无需 inline-css；后端零改动；（补丁位 8→9·观感微调轮；2026-09-10）
+window.MN_SITE_VERSION = 'v0.2.28.9';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

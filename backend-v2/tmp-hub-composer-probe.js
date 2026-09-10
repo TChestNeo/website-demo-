@@ -16,6 +16,7 @@
 //   S10 深色：工具钮文字色 = --color-outline 计算值；
 //   S11 亮色：Post 钮白底黑字（v0.2.28.8 用户「能不能把那个Post按钮改成白色的」）；
 //   S12 深色：Post 钮仍白底黑字（亮/暗主题一致）；
+//   S13 气泡延迟 0.8s（v0.2.28.9 用户「滑鼠停留的时常从1.5s改成 0.8s」——强制 :hover 计算值 0.8s/0.8s，基础态淡出 0.15s 保持）；
 //   Z 全程零 console error。
 // 验证口径：composer 标记由探针直接注入 feedContent（cloudMode 启动链是页面自身逻辑、线上真后端可跑，
 //   非本轮恢复目标——本轮断言的是被洗后恢复的 CSS 规则对标记的适配）。
@@ -103,6 +104,9 @@ async function waitFor(cdp, expr, timeout, label) {
     const hoverIdx = t.indexOf('#postSubmit:hover {');
     ok('F ' + pg + '：.composer-tool { 规则在 + 位于 v0.2.16.0 无标记本地段之后（防再洗）', toolIdx !== -1 && anchorIdx !== -1 && toolIdx > anchorIdx);
     ok('F ' + pg + '：Post 白底黑字 + hover 规则在（v0.2.28.8）', whiteIdx !== -1 && hoverIdx !== -1 && whiteIdx > anchorIdx && hoverIdx > whiteIdx);
+    const delay08Idx = t.indexOf('opacity 0.15s ease 0.8s');
+    const delay5Idx = t.indexOf('ease 5s');
+    ok('F ' + pg + '：气泡延迟 0.8s 规则在 + 旧 5s 已除（v0.2.28.9）', delay08Idx !== -1 && delay08Idx > anchorIdx && delay5Idx === -1);
   }
 
   // —— Chrome CDP ——
@@ -263,6 +267,21 @@ async function waitFor(cdp, expr, timeout, label) {
       return true;
     })()`);
     await sleep(500);
+
+    // —— S13 强制 :hover（CSS.forcePseudoState）验气泡延迟 0.8s ——
+    await cdp.send('DOM.enable');
+    await cdp.send('CSS.enable');
+    const doc13 = await cdp.send('DOM.getDocument', { depth: -1 });
+    const tool13 = await cdp.send('DOM.querySelector', { nodeId: doc13.root.nodeId, selector: '.composer-tool' });
+    const baseDelay13 = await cdp.evalJs("getComputedStyle(document.querySelector('.composer-tool'), '::after').transitionDelay");
+    await cdp.send('CSS.forcePseudoState', { nodeId: tool13.nodeId, forcedPseudoClasses: ['hover'] });
+    const hoverDelay13 = await cdp.evalJs("getComputedStyle(document.querySelector('.composer-tool'), '::after').transitionDelay");
+    await cdp.send('CSS.forcePseudoState', { nodeId: tool13.nodeId, forcedPseudoClasses: [] });
+    ok('S13 气泡延迟 0.8s（强制 :hover 计算值 0.8s/0.8s；基础态淡出 0.15s 保持）', (() => {
+      const hv = hoverDelay13.split(',').map(function (s) { return parseFloat(s); });
+      return hv.length === 2 && hv[0] === 0.8 && hv[1] === 0.8 &&
+        baseDelay13.indexOf('0.15s') !== -1 && baseDelay13.indexOf('0.8s') === -1;
+    })());
 
     ok('Z 零 console error', cdp.errs.length === 0);
   } catch (e) {

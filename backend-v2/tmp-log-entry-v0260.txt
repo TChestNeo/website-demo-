@@ -225,3 +225,13 @@ color #000000 + 辉光 0 4px 20px rgba(255,255,255,0.25) + inset 高光，hover 
 + 新增 S11 亮色 Post 白底黑字 + S12 深色仍白底黑字——直设 data-theme + localStorage 同步主题 pill 等价）；
 线上 curl：health 58 + v0.2.28.8 + 三页 background:#ffffff !important 各 1 + #postSubmit:hover 各 1。
 部署：revision 00176-9gk（exit 0）。（补丁位 7→8·观感微调轮；2026-09-10）
+
+㊿8（58）v0.2.28.8 → v0.2.28.9：icon 气泡延迟改 0.8s（用户「能不能把那个icon按钮名称 滑鼠停留的时常从1.5s改成 0.8s?」）
+Community 三页 composer 工具钮悬停气泡延迟 5s → 0.8s（hover 态 transition opacity 0.15s ease 0.8s +
+visibility 0s linear 0.8s——停留 0.8s 即淡入；基础态淡出 0.15s 规则不动）。注：用户说「从 1.5s」，
+实际线上是 5s（2026-09-05 用户自己钦定的「停留5秒后才显示」），本轮按其要求降到 0.8s。
+规则继续落 v0.2.16.0 无标记本地段（防再洗）；ethereal.css 零改动→无需重跑 inline-css；后端零改动。
+验证：探针 tmp-hub-composer-probe.js 23/23（原 22 项全绿 + F 三页新增 0.8s 规则在无标记块且旧 5s 已除
++ S13 强制 :hover（CSS.forcePseudoState）计算值 0.8s/0.8s + 基础态淡出 0.15s 保持——零等待确定性断言）；
+线上 curl：health 58 + v0.2.28.9 + 三页 0.8s 规则各 1 + ease 5s 各 0（旧值除尽）。
+部署：revision 00177-nld（exit 0）。（补丁位 8→9·观感微调轮；2026-09-10）
