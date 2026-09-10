@@ -333,7 +333,14 @@ window.MN_SITE = window.MN_SITE || {};
 // v0.2.28.9 = 用户「能不能把那个icon按钮名称 滑鼠停留的时常从1.5s改成 0.8s?」：Community 三页 composer 工具钮
 //   悬停气泡延迟 5s → 0.8s（hover 态 transition opacity 0.15s ease 0.8s + visibility 0s linear 0.8s，
 //   基础态淡出规则不动）；ethereal 零改动无需 inline-css；后端零改动；（补丁位 8→9·观感微调轮；2026-09-10）
-window.MN_SITE_VERSION = 'v0.2.28.9';
+// v0.2.28.10 = 用户「呃为什么深色模式下可以看见左侧菜单内有一个亮色的长方形你能隐藏他吗」——真身=用户模块
+//   顶部 60px 亮靛蓝横幅（sidebar.js 内联渐变；v0.2.28.2 的 banner 翻黑族只覆盖 mono 黑白主题，
+//   默认蓝主题深色下漏网——扫描探针实证 L=81.7 234×60 全栏唯一实心亮块）；修法=ethereal.css 深色侧边栏块
+//   增 :root[data-theme="dark"] .user-banner { background: rgba(255,255,255,0.04) !important; }
+//   （暗色横幅视觉消失与模块融为一体，齿轮/火箭白图标仍可见，!important 压内联 style；
+//   mono 深色自有暗族渐变特异性更高不受影响）；ethereal.css 改动已重跑 inline-css（43 页）；
+//   后端零改动；（补丁位 9→10·观感微调轮；2026-09-10）
+window.MN_SITE_VERSION = 'v0.2.28.10';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

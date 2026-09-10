@@ -17,6 +17,9 @@
 //   S11 亮色：Post 钮白底黑字（v0.2.28.8 用户「能不能把那个Post按钮改成白色的」）；
 //   S12 深色：Post 钮仍白底黑字（亮/暗主题一致）；
 //   S13 气泡延迟 0.8s（v0.2.28.9 用户「滑鼠停留的时常从1.5s改成 0.8s」——强制 :hover 计算值 0.8s/0.8s，基础态淡出 0.15s 保持）；
+//   S14 亮色：侧栏 user-banner 保持亮靛蓝渐变（v0.2.28.10 只动深色）；
+//   S15 深色：banner 改极暗白 4%（v0.2.28.10 用户「深色模式左侧菜单内亮色长方形」——蓝主题漏网，真身=横幅）；
+//   S16 深色 mono：settings-modal 注入的暗族渐变仍赢（html[data-accent=mono][data-theme=dark] 特异性更高）；
 //   Z 全程零 console error。
 // 验证口径：composer 标记由探针直接注入 feedContent（cloudMode 启动链是页面自身逻辑、线上真后端可跑，
 //   非本轮恢复目标——本轮断言的是被洗后恢复的 CSS 规则对标记的适配）。
@@ -107,6 +110,8 @@ async function waitFor(cdp, expr, timeout, label) {
     const delay08Idx = t.indexOf('opacity 0.15s ease 0.8s');
     const delay5Idx = t.indexOf('ease 5s');
     ok('F ' + pg + '：气泡延迟 0.8s 规则在 + 旧 5s 已除（v0.2.28.9）', delay08Idx !== -1 && delay08Idx > anchorIdx && delay5Idx === -1);
+    const bannerIdx = t.indexOf(':root[data-theme="dark"] .user-banner');
+    ok('F ' + pg + '：暗色横幅白 4% 规则在（v0.2.28.10 深色侧边栏块）', bannerIdx !== -1 && t.indexOf('rgba(255, 255, 255, 0.04) !important', bannerIdx) !== -1);
   }
 
   // —— Chrome CDP ——
@@ -227,6 +232,13 @@ async function waitFor(cdp, expr, timeout, label) {
       return cs.backgroundColor === 'rgb(255, 255, 255)' && cs.color === 'rgb(0, 0, 0)';
     })()`));
 
+    await waitFor(cdp, "document.querySelector('#slati-sidebar .user-banner')", 5000, '侧栏横幅就绪');
+    ok('S14 亮色：侧栏 user-banner 保持亮靛蓝渐变（v0.2.28.10 只动深色）', await cdp.evalJs(`(() => {
+      var cs = getComputedStyle(document.querySelector('#slati-sidebar .user-banner'));
+      return cs.backgroundImage.indexOf('linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196))') !== -1 &&
+        cs.backgroundColor === 'rgba(0, 0, 0, 0)';
+    })()`));
+
     // —— 深色模式（直设 data-theme + localStorage 同步 = 主题 pill 等价）——
     const lightBg = await cdp.evalJs("getComputedStyle(document.getElementById('postComposer')).backgroundColor");
     const lightCapsule = await cdp.evalJs("getComputedStyle(document.querySelector('.search-capsule')).backgroundColor");
@@ -257,6 +269,18 @@ async function waitFor(cdp, expr, timeout, label) {
       var b = document.getElementById('postSubmit');
       var cs = getComputedStyle(b);
       return cs.backgroundColor === 'rgb(255, 255, 255)' && cs.color === 'rgb(0, 0, 0)';
+    })()`));
+    ok('S15 深色：侧栏 banner 改极暗白 4%（v0.2.28.10 蓝主题漏网横幅视觉消失）', await cdp.evalJs(`(() => {
+      var cs = getComputedStyle(document.querySelector('#slati-sidebar .user-banner'));
+      return cs.backgroundColor === 'rgba(255, 255, 255, 0.04)' && cs.backgroundImage === 'none';
+    })()`));
+    ok('S16 深色 mono：settings-modal 注入的暗族渐变仍赢（特异性更高）', await cdp.evalJs(`(async () => {
+      document.documentElement.setAttribute('data-accent', 'mono');
+      await new Promise(function (r) { setTimeout(r, 120); });
+      var cs = getComputedStyle(document.querySelector('#slati-sidebar .user-banner'));
+      var monoWin = cs.backgroundImage.indexOf('linear-gradient(135deg, rgb(30, 30, 45), rgb(50, 50, 74))') !== -1;
+      document.documentElement.removeAttribute('data-accent');
+      return monoWin;
     })()`));
     // 恢复亮色
     await cdp.evalJs(`(() => {

@@ -241,6 +241,13 @@
 }
 :root[data-theme="dark"] .app-sidebar .sidebar-module { border: 1px solid rgba(255, 255, 255, 0.05); }
 :root[data-theme="dark"] .app-sidebar .sidebar-divider { background: rgba(255, 255, 255, 0.05); }
+/* 2026-09-10 用户「深色模式下左侧菜单内有一个亮色的长方形能隐藏他吗」——真身=用户模块顶部
+   60px 亮靛蓝横幅（sidebar.js 内联渐变无暗色覆写，暗色下全栏唯一实心亮块，扫描探针实证
+   L=81.7 234×60）；暗色改极暗底与模块融为一体（横幅视觉消失，齿轮/火箭白图标仍可见），
+   亮色保留原靛蓝渐变（!important 压过内联 style） */
+:root[data-theme="dark"] .user-banner {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
 
 /* ----- Reset & Base ----- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

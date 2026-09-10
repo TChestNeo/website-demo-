@@ -235,3 +235,17 @@ visibility 0s linear 0.8s——停留 0.8s 即淡入；基础态淡出 0.15s 规
 + S13 强制 :hover（CSS.forcePseudoState）计算值 0.8s/0.8s + 基础态淡出 0.15s 保持——零等待确定性断言）；
 线上 curl：health 58 + v0.2.28.9 + 三页 0.8s 规则各 1 + ease 5s 各 0（旧值除尽）。
 部署：revision 00177-nld（exit 0）。（补丁位 8→9·观感微调轮；2026-09-10）
+
+㊿9（59）v0.2.28.9 → v0.2.28.10：暗色左栏亮色长方形隐藏（用户「呃为什么深色模式下可以看见左侧菜单内有一个亮色的长方形你能隐藏他吗」）
+排查：写一次性扫描探针 tmp-sidebar-scan.js（暗色 + 侧栏内所有元素计算背景亮度扫描）——真身=用户模块
+顶部 60px 亮靛蓝横幅 .user-banner（sidebar.js 内联 linear-gradient(135deg,var(--color-primary),#3b3dc4)，
+L=81.7 234×60 全栏唯一实心亮块；v0.2.28.2 的「banner 翻黑族」修的是 settings-modal.js 注入的
+html[data-accent="mono"][data-theme="dark"] 特异性规则，只覆盖黑白主题——用户默认蓝主题深色下漏网）。
+修法：ethereal.css 深色侧边栏块（v0.2.28.2 同区）增 :root[data-theme="dark"] .user-banner
+{ background: rgba(255,255,255,0.04) !important; }——暗色横幅视觉消失与模块融为一体，齿轮/火箭
+白图标仍可见（!important 压内联 style；mono 深色自有暗族渐变特异性更高不受影响；亮色保持原渐变）；
+ethereal.css 改动→重跑 inline-css（43 页）；后端零改动。
+验证：探针 tmp-hub-composer-probe.js 29/29（原 23 项全绿 + F 三页暗色横幅规则在 + S14 亮色横幅
+仍亮靛蓝渐变 + S15 深色横幅白 4% 且无渐变 + S16 深色 mono 暗族渐变仍赢特异性 + Z 零 console error）；
+线上 curl：health 58 + v0.2.28.10 + 三页 rgba(255,255,255,0.04) !important 各 1。
+部署：revision 00178-995（exit 0）。（补丁位 9→10·观感微调轮；2026-09-10）
