@@ -463,7 +463,15 @@ window.MN_SITE = window.MN_SITE || {};
 //   LAST_INPUT_EL 改存元素（选区态/光标态都可回用）；标题框/搜索框/弹层输入框打字不弹（防干扰）；
 //   Escape 在卡内输入框只折叠选区工具栏保持；零后端、ethereal 零改动无需 inline-css；
 //   FC v10.28.21.2（补丁位 1→2·观感微调轮；2026-09-12）
-window.MN_SITE_VERSION = 'v0.2.31.2';
+// v0.2.32.0 = 工具栏添加图像·Wiki 式内联图（用户「在工具栏的右侧那边再增加一个按钮叫添加图像，
+//   就是你可以添加国旗/国徽等等的图像，然后图像的大小是根据文字的大小进行等比例变化的，这样
+//   可以完成类似于Wiki的功能」）：工具栏右端 image 钮（输入框态置灰——输入框装不了图）+ 弹层
+//   （国旗库 15 面程序化条纹光栅化 PNG data URL + 上传任意图）；只进内容卡文字，插入
+//   <img class="tt-inline-img">（CSS height 1.5em，em 继承 → 字号变图等比变：光标态整块字号/
+//   选区 span 字号两条路都等比）；内容卡草稿 innerHTML 往返 + sanitizeDraftHtml 放行 data: 图 →
+//   保存/恢复无损；零后端、ethereal 零改动无需 inline-css；
+//   FC v10.28.22（小更新位 21→22·新功能轮·补丁归零；2026-09-12）
+window.MN_SITE_VERSION = 'v0.2.32.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -575,4 +583,13 @@ window.MN_SITE_VERSION = 'v0.2.31.2';
 //   null 照旧不弹；Escape 在卡内输入框只折叠选区工具栏保持（恒显口径）；草稿无新字段；零后端、
 //   ethereal 零改动无需 inline-css
 //   （补丁位 1→2·观感微调轮；2026-09-12）
-window.FLUIDCANVAS_VERSION = 'v10.28.21.2';
+// v10.28.22 = 工具栏添加图像·Wiki 式内联图（用户「在工具栏的右侧那边再增加一个按钮叫添加图像…
+//   图像的大小是根据文字的大小进行等比例变化…完成类似于Wiki的功能」）：工具栏右端 image 钮 +
+//   tt-img-pop 弹层（国旗库 15 面：块2 IIFE 经 window.FC_FLAG_LIBRARY 供数、canvas 光栅化 PNG
+//   data URL；+ 上传任意图，国徽等同口径）；只进内容卡文字（输入框态按钮置灰），insertInlineImage
+//   选区替换/光标插入、光标置图后、onContentChange 入撤销快照；img.tt-inline-img height 1.5em →
+//   字号变图等比变；草稿 innerHTML 往返 + sanitizeDraftHtml 放行 data: 图无损；块1 showToast
+//   上窗（上传成功 toast 跨 IIFE 调用——电池抓出 ReferenceError）；零后端、ethereal 零改动
+//   无需 inline-css
+//   （小更新位 21→22·新功能轮·补丁归零；2026-09-12）
+window.FLUIDCANVAS_VERSION = 'v10.28.22';
