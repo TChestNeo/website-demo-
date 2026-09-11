@@ -2438,7 +2438,11 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     .grid-card {
       --card-radius: 8px;
       --card-border-style: solid;
-      --card-border-color: var(--divider-line-strong);
+      /* v10.28.20.3: 边框统一暗色微弱线 var(--divider-line)（用户「将卡片
+         整体的外边框统一改为暗色低调的微弱边框…融入深色背景」；深色 =
+         rgba(255,255,255,0.08)）。宽度保持 2px——主题卡外板几何按 2px
+         边宽调过，只换色不动宽。 */
+      --card-border-color: var(--divider-line);
       --card-border-width: 2px;
       /* 2026-08-17 用户要求卡片 100% 不透明：--card-bg 在共享浅色主题里是
          rgba(255,255,255,0.55) 玻璃质感（其它页面依赖），编辑器局部覆盖为
@@ -2461,8 +2465,15 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     /* v10.27: 用户要卡片磨砂玻璃质感（推翻 08-17「100% 不透明」口径）：
        55% 半透 + backdrop blur；1px 细灰边；右上角 2px 高光条勾出 3D 感。
        高光用 background-image（卡片 ::before/::after 已被边饰主题占用，不能动）。
+       v10.28.20.3: 高光条清除——用户「深色模式下卡片外框右上角有一条很
+       突兀的白色/浅色高光边线…清除卡片右上角及整个外框所有的白色/浅色
+       渐变高光线」：那根 2px 白渐变（浅色玻璃的 3D 感、深色下变成刺眼白线）
+       撤掉；边框并入统一暗色微弱线 var(--divider-line)（深色 =
+       rgba(255,255,255,0.08)——正是用户举例值；浅色=rgba(118,117,134,0.08)
+       低调灰）。同轮 .grid-group-bg / 主题卡填充层同款高光条一并清除
+       （组背景就是那张「整卡」的卡面，留一根就又变回「一个一个」）。
        v10.28.6.2: 数据卡/国旗卡并入（用户「国旗卡片那边的也是…检查一下
-       是否一致」）——同样 55%+模糊+高光+细边；国旗卡有图时玻璃被图盖住
+       是否一致」）——同样 55%+模糊+细边；国旗卡有图时玻璃被图盖住
        无观感变化，无损。国旗卡无专属类（身份在 dataset.cardType），用
        属性选择器。v10.28.6.3: 资产卡族并入（用户「把Emblem卡片作用下」——
        Emblem/Governance/Economic Ledger/Constitution/Gallery 全走
@@ -2475,12 +2486,8 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     .grid-card[data-card-type="flag"]:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]),
     .grid-card.asset-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]) {
       --card-border-width: 1px;
-      --card-border-color: rgba(125, 130, 140, 0.38);
+      --card-border-color: var(--divider-line);
       background-color: color-mix(in srgb, var(--card-bg-color) 55%, transparent);
-      background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
-      background-size: 45% 2px;
-      background-position: top right;
-      background-repeat: no-repeat;
       backdrop-filter: blur(12px) saturate(1.4);
       -webkit-backdrop-filter: blur(12px) saturate(1.4);
     }
@@ -2499,22 +2506,19 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
          穿过背景落到画布 → 只会取消选中，选不中组也就没法长按拆分） */
       pointer-events: auto;
       cursor: pointer;
-      /* v10.28.17.2: 组背景升级为卡面玻璃（白磨砂+高光+模糊，与 .grid-card
-         同一配方）——成员独立卡面已藏（见下方组内一体规则），组背景就是
-         那一张「整卡」的卡面（用户「不存在任何独立的背景」）。
+      /* v10.28.17.2: 组背景升级为卡面玻璃（白磨砂+模糊，与 .grid-card
+         同一配方；v10.28.20.3 起高光条随卡片一并清除）——成员独立卡面已藏
+         （见下方组内一体规则），组背景就是那一张「整卡」的卡面（用户
+         「不存在任何独立的背景」）。
          --card-bg-color 定义在 .grid-card 上，组背景是卡的兄弟节点继承不到
          （自定义属性只向下继承）——缺了它 color-mix 里的 var() 解析失败、
          整条 background-color 作废变透明（电池实抓 rgba(0,0,0,0)），
          这里补同款定义。 */
       --card-bg-color: var(--color-surface-container);
       background-color: color-mix(in srgb, var(--card-bg-color) 55%, transparent);
-      background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
-      background-size: 45% 2px;
-      background-position: top right;
-      background-repeat: no-repeat;
       backdrop-filter: blur(12px) saturate(1.4);
       -webkit-backdrop-filter: blur(12px) saturate(1.4);
-      border: 1px solid var(--divider-line-strong);
+      border: 1px solid var(--divider-line);
       border-radius: 14px;
       box-shadow: 0 4px 18px rgba(0, 0, 0, 0.10);
     }
@@ -3520,15 +3524,17 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       z-index: -1;
       inset: 0;
       background-color: var(--card-tint-base, var(--card-bg-color));
-      /* v10.28.6.2: 高光条进填充层 background-image 列表（主题卡自身
-         background 透明且被本层 z -1 盖住，v10.27 内容卡「高光画卡自身」
-         路径不可复用）+ 填充半透明化（卡身玻璃感）。--card-layers 为纯
-         渐变无位置语法，longhand 合法（带位置语法的是 ::after 的
+      /* v10.28.6.2: 填充半透明化（卡身玻璃感）+ 高光条进填充层
+         background-image 列表（主题卡自身 background 透明且被本层 z -1
+         盖住，v10.27 内容卡「高光画卡自身」路径不可复用）。
+         v10.28.20.3: 高光条清除（用户「清除卡片右上角及整个外框所有的
+         白色/浅色渐变高光线」）——列表退回纯 --card-layers。--card-layers
+         为纯渐变无位置语法，longhand 合法（带位置语法的是 ::after 的
          --card-overlay，须 shorthand，见上）。 */
-      background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0)), var(--card-layers, none);
-      background-size: 45% 2px, auto;
-      background-position: top right, 0 0;
-      background-repeat: no-repeat, repeat;
+      background-image: var(--card-layers, none);
+      background-size: auto;
+      background-position: 0 0;
+      background-repeat: repeat;
       clip-path: var(--card-clip, none);
       pointer-events: none;
       opacity: 0.55;
@@ -3538,7 +3544,8 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
        （与内容卡同款 12px blur + saturate），剪影填充层半透明化——tint
        （纸/藏宝/科技，上方规则 opacity 0.55）+ 油漆 ::before 0.55（油漆
        无板无 tint，填充即上上方规则 678 画的剪影）；高光条进填充层
-       background-image 列表。外板（.card-outer-band 与板 ::before）不
+       background-image 列表（v10.28.20.3 已随用户「清除卡片右上角…所有的
+       白色/浅色渐变高光线」撤下）。外板（.card-outer-band 与板 ::before）不
        透明不动（v10.21 口径）。legacy 油漆+外板组合除外板不透明也除外
        （:not(.has-outer-bg)，油漆填充规则 721 优先级平本规则但本规则
        更晚——不排除会连板一起半透明）。 */
@@ -3556,10 +3563,12 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     .grid-card.card-edge-paint:not(.has-outer-bg)::before,
     .grid-group-bg.card-edge-paint:not(.has-outer-bg)::before {
       opacity: 0.55;
-      background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0)), var(--card-layers, none);
-      background-size: 45% 2px, auto;
-      background-position: top right, 0 0;
-      background-repeat: no-repeat, repeat;
+      /* v10.28.20.3: 高光条清除（同上，用户「清除卡片右上角…所有的
+         白色/浅色渐变高光线」）。 */
+      background-image: var(--card-layers, none);
+      background-size: auto;
+      background-position: 0 0;
+      background-repeat: repeat;
     }
     /* v10.28.6 — 数据卡「透明背景（纸感）」（右键菜单勾选项，有外板边缘
        时显示、默认关）：卡身完全透明、画布透出，只剩边缘装饰。外板样式
@@ -5613,7 +5622,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (groupStyles[g] && groupStyles[g].cardEdge) gsOut[g] = groupStyles[g];
     });
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸); v10.28.17.3 adds NO new fields (Migrate to Cards 按钮 Uiverse 换肤：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.17.4 adds NO new fields (顶部 Migrate 按钮换 cssbuttons-io 紫渐变代码按钮换肤+弹窗 Migrate to Cards 还原 v10.28.17.3 药丸：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.19 adds additive sheetData (表格卡——用户「我们还缺少一个sheet card」：可编辑表格，首行表头加粗、行内编辑、底部 +添加行/+添加列、行尾 ✕ 删除；dataset JSON 串 {cols,cells}，cells[0] 恒为表头行；legacy drafts omit → 种子 2 列 4 行); v10.28.19.1 grows sheet default to 10×7 (表格卡默认尺寸 宽10格×长7格——用户「那个卡片大小能不能是默认长7格宽10格」：工厂默认/assetSpan/草稿恢复兜底三处 8×5→10×7); v10.28.19.2 adds NO new fields (表格卡加行/加列自动变长变宽——用户「然后能不能在添加行/列的时候自动变长和宽啊」：+添加行 → rowSpan+1 卡片变长、+添加列 → colSpan+1 卡片变宽；sheetGrow 读 dataset 现有跨度写回+setCardSize+刷手柄，跨度随草稿往返；种子 3 行与 restoreSheet 恢复路径不增长); v10.28.19.3 extends sheetData with colW/rowH (表格卡列宽/行高手柄——用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」：每列上方 ↔、每行左侧 ↕ 按住拖动调整；colgroup 三截制 18px+数据列+22px；colW/rowH 随草稿往返，legacy drafts omit → 默认等分); v10.28.20 adds NO new fields (撤回/恢复——用户「能不能在顶部添加一个撤回和恢复按钮」：快照式撤销栈，historySnapshot 剥 lastSaved 时间戳后 JSON 串对比，600ms 防抖挂在 onContentChange 尾零调用点改动；historyRestore 走 applyDraft 先清画布幂等+saveDraft 落库+重基线防序列化归一漂移吞恢复链；栈上限 60；工具栏 撤回/恢复 两钮 + Ctrl+Z/Ctrl+Y 输入框焦点让位原生撤销); v10.28.20.1 adds NO new fields (吸合误判修复——用户「为什么我把卡片拖到一个位置他会被一个和他没有任何接近的卡片吸附合并？」：真身=findMergeSnap 只按单轴边距判命中，同高不同 x 的卡隔着千余像素照样被吸；修法=边对判定加垂直轴严格重叠守卫——x 轴边对要求 y 范围相交、y 轴边对要求 x 范围相交；补丁位 0→1·纯修复轮); v10.28.20.2 adds NO new fields (一体式高亮——用户「画布是不是一体…改成全部一体式的不要偷懒就搞成一个一个的」+「我怕你又偷懒…只使用一个感应，其他都只是花瓶」：画布本体本来就一体=单一 div+自身长高+拖拽感应挂 document 全页生效，零复制零花瓶段；唯一一格一格=drawHighlightRange 一格建一个 div（拖 10×7 的卡 = 70 个小方块各自描边）——改为整个覆盖范围只建 ONE 块矩形；拖卡覆盖预览与侧栏资产落点预览共用同函数自动一并变一体；补丁位 1→2·观感微调轮)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸); v10.28.17.3 adds NO new fields (Migrate to Cards 按钮 Uiverse 换肤：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.17.4 adds NO new fields (顶部 Migrate 按钮换 cssbuttons-io 紫渐变代码按钮换肤+弹窗 Migrate to Cards 还原 v10.28.17.3 药丸：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.19 adds additive sheetData (表格卡——用户「我们还缺少一个sheet card」：可编辑表格，首行表头加粗、行内编辑、底部 +添加行/+添加列、行尾 ✕ 删除；dataset JSON 串 {cols,cells}，cells[0] 恒为表头行；legacy drafts omit → 种子 2 列 4 行); v10.28.19.1 grows sheet default to 10×7 (表格卡默认尺寸 宽10格×长7格——用户「那个卡片大小能不能是默认长7格宽10格」：工厂默认/assetSpan/草稿恢复兜底三处 8×5→10×7); v10.28.19.2 adds NO new fields (表格卡加行/加列自动变长变宽——用户「然后能不能在添加行/列的时候自动变长和宽啊」：+添加行 → rowSpan+1 卡片变长、+添加列 → colSpan+1 卡片变宽；sheetGrow 读 dataset 现有跨度写回+setCardSize+刷手柄，跨度随草稿往返；种子 3 行与 restoreSheet 恢复路径不增长); v10.28.19.3 extends sheetData with colW/rowH (表格卡列宽/行高手柄——用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」：每列上方 ↔、每行左侧 ↕ 按住拖动调整；colgroup 三截制 18px+数据列+22px；colW/rowH 随草稿往返，legacy drafts omit → 默认等分); v10.28.20 adds NO new fields (撤回/恢复——用户「能不能在顶部添加一个撤回和恢复按钮」：快照式撤销栈，historySnapshot 剥 lastSaved 时间戳后 JSON 串对比，600ms 防抖挂在 onContentChange 尾零调用点改动；historyRestore 走 applyDraft 先清画布幂等+saveDraft 落库+重基线防序列化归一漂移吞恢复链；栈上限 60；工具栏 撤回/恢复 两钮 + Ctrl+Z/Ctrl+Y 输入框焦点让位原生撤销); v10.28.20.1 adds NO new fields (吸合误判修复——用户「为什么我把卡片拖到一个位置他会被一个和他没有任何接近的卡片吸附合并？」：真身=findMergeSnap 只按单轴边距判命中，同高不同 x 的卡隔着千余像素照样被吸；修法=边对判定加垂直轴严格重叠守卫——x 轴边对要求 y 范围相交、y 轴边对要求 x 范围相交；补丁位 0→1·纯修复轮); v10.28.20.2 adds NO new fields (一体式高亮——用户「画布是不是一体…改成全部一体式的不要偷懒就搞成一个一个的」+「我怕你又偷懒…只使用一个感应，其他都只是花瓶」：画布本体本来就一体=单一 div+自身长高+拖拽感应挂 document 全页生效，零复制零花瓶段；唯一一格一格=drawHighlightRange 一格建一个 div（拖 10×7 的卡 = 70 个小方块各自描边）——改为整个覆盖范围只建 ONE 块矩形；拖卡覆盖预览与侧栏资产落点预览共用同函数自动一并变一体；补丁位 1→2·观感微调轮); v10.28.20.3 adds NO new fields (卡框高光清除+边框统一暗色——用户「深色模式下卡片外框右上角有一条很突兀的白色/浅色高光边线…清除卡片右上角及整个外框所有的白色/浅色渐变高光线」+「将卡片整体的外边框统一改为暗色低调的微弱边框…融入深色背景」：真身=v10.27 磨砂玻璃轮「右上角 2px 高光条」background-image 白渐变贴 top right——浅色玻璃 3D 感、深色下变成刺眼白线；4 处卡片表面高光全清（玻璃卡本体/组背景卡面/主题卡填充层 tint/油漆 ::before——组背景就是那张「整卡」的卡面），边框统一 var(--divider-line)（深色=rgba(255,255,255,0.08) 正是用户举例值、浅色=rgba(118,117,134,0.08)；基础卡宽 2px 不动——主题卡外板几何按 2px 边宽调过只换色）；统计编辑面板高光保留（v10.28.6.2 钦定浮动面板非卡框）；补丁位 2→3·观感微调轮)
       title: titleInput.value,
       tags: tags,
       cards: cards,
