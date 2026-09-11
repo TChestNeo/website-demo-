@@ -483,7 +483,16 @@ window.MN_SITE = window.MN_SITE || {};
 //   会把弹层关掉+display:none 后懒加载缩略图永不加载——电池探针实况，收起改走显式路径）；
 //   零后端、ethereal 零改动无需 inline-css；
 //   FC v10.28.23（小更新位 22→23·新功能轮·补丁归零；2026-09-12）
-window.MN_SITE_VERSION = 'v0.2.33.0';
+// v0.2.34.0 = 图像可以插进任何可打字处（用户「我希望他能添加在任何可以打字的地方而不是
+//   只限于文字内容卡片」）：卡内输入框（标签/姓名/头衔/简介/统计指标/时间线事件与描述/
+//   表格格…）第一次插图时现场升级成 contentEditable span（同名同类同内联样式、文字照搬），
+//   此后文字+图片共存；纯文字字段永远还是 input 零影响既有路径；数字/年份字段除外（数值
+//   与图表逻辑要纯文字，toast 引导）；序列化全走 fieldHtml/fieldText/setFieldText/
+//   makeTextField——带标记文字按 HTML 往返、草稿零新字段（rich HTML 坐既有 label/charName/
+//   charTitle/charBio/statsRows/tlEvents/sheetData 串）；弹层打开记住卡内输入框
+//   IMG_SAVED_INPUT（搜索/上传抢焦点后仍插回原位）；零后端、ethereal 零改动无需 inline-css；
+//   FC v10.28.24（小更新位 23→24·新功能轮·补丁归零；2026-09-12）
+window.MN_SITE_VERSION = 'v0.2.34.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -616,4 +625,16 @@ window.MN_SITE_VERSION = 'v0.2.33.0';
 //   弹层关掉+display:none 后懒加载缩略图永不加载——电池探针实况，收起改走显式路径）；
 //   零后端、ethereal 零改动无需 inline-css
 //   （小更新位 22→23·新功能轮·补丁归零；2026-09-12）
-window.FLUIDCANVAS_VERSION = 'v10.28.23';
+// v10.28.24 = 图像插进任何可打字处（用户「我希望他能添加在任何可以打字的地方而不是只限于
+//   文字内容卡片」）：卡内输入框（标签/姓名/头衔/简介/统计指标/时间线事件与描述/表格格…）
+//   第一次插图时现场升级成 contentEditable span（同名同类同内联样式、文字照搬、dataset.rich=
+//   '1'），此后文字+图片共存；纯文字字段永远还是 input 零影响既有路径；数字/年份字段除外
+//   （数值与图表逻辑要纯文字，toast「数字或年份字段不能插图」）；textSelInCard/textCaretInCard
+//   接受 rich span（富文本字段选区/光标态工具栏照常）；序列化全走 fieldHtml/fieldText/
+//   setFieldText/makeTextField——带标记文字按 HTML 往返、草稿零新字段（rich HTML 坐既有
+//   label/charName/charTitle/charBio/statsRows/tlEvents/sheetData 串）；IMG_SAVED_INPUT 弹层
+//   打开时记住卡内输入框（工具栏 mousedown preventDefault 保焦点、搜索/上传抢焦点后仍插回
+//   原位）；richFieldSync 按类名接回 statsSerialize/tlSerialize/sheetSerialize/charSerialize/
+//   autoSizeLabel 原管线；零后端、ethereal 零改动无需 inline-css
+//   （小更新位 23→24·新功能轮·补丁归零；2026-09-12）
+window.FLUIDCANVAS_VERSION = 'v10.28.24';

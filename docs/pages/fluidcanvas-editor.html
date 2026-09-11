@@ -2629,6 +2629,15 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       pointer-events: auto;
     }
     .grid-card .card-label:hover { border-color: var(--color-outline); }
+    /* v10.28.24: 富文本化输入框（插图后 input/textarea → contentEditable span
+       现场升级）——span 默认 inline 吃不到 width，统一 inline-block；表格格/
+       事件描述/简介按原 block 布局 */
+    .grid-card [contenteditable="true"] { display: inline-block; white-space: pre-wrap; word-break: break-word; }
+    .grid-card [contenteditable="true"][data-placeholder]:empty::before {
+      content: attr(data-placeholder); color: var(--color-outline); opacity: 0.45;
+    }
+    .grid-card .sheet-cell[contenteditable="true"], .grid-card .tl-desc[contenteditable="true"],
+    .grid-card .char-bio[contenteditable="true"] { display: block; width: 100%; }
     .grid-card .card-stripes,
     .grid-card .card-img-bg,
     .grid-card .card-bg-img { pointer-events: none; }
@@ -4785,7 +4794,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       parts.push(c.dataset.cardType);
       parts.push(c.dataset.cardId);
       var label = c.querySelector('.card-label');
-      if (label) parts.push(label.value);
+      if (label) parts.push(fieldHtml(label));
       parts.push(c.style.borderRadius, c.style.background, c.style.borderStyle);
       parts.push(c.dataset.rotate || '0');
       // v9: size + position — resize/drag-only changes must trip autosave
@@ -5580,7 +5589,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         entry.w = parseFloat(c.style.width);
       }
       var lbl = c.querySelector('.card-label');
-      entry.label = lbl ? lbl.value : (c.dataset.label || '');
+      entry.label = lbl ? fieldHtml(lbl) : (c.dataset.label || '');
       if (c.dataset.captionPos) entry.captionPos = c.dataset.captionPos;
       if (c.dataset.captionVertical === '1') entry.captionVertical = '1';
       // v10.0: caption background (additive — legacy drafts omit all)
@@ -5614,9 +5623,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (c.dataset.groupId) entry.groupId = c.dataset.groupId;
       // v10.28: 新卡片族 additive 字段（legacy drafts omit → 默认空/示例行）
       if (entry.type === 'character') {
-        entry.charName = (c.querySelector('.card-label') && c.querySelector('.card-label').value) || '';
-        entry.charTitle = (c.querySelector('.char-title') && c.querySelector('.char-title').value) || '';
-        entry.charBio = (c.querySelector('.char-bio') && c.querySelector('.char-bio').value) || '';
+        entry.charName = fieldHtml(c.querySelector('.card-label')) || '';
+        entry.charTitle = fieldHtml(c.querySelector('.char-title')) || '';
+        entry.charBio = fieldHtml(c.querySelector('.char-bio')) || '';
         if (c.dataset.charAvatar) entry.charAvatar = c.dataset.charAvatar;
       } else if (entry.type === 'map') {
         if (c.dataset.mapImg) entry.mapImg = c.dataset.mapImg;
@@ -5669,7 +5678,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (groupStyles[g] && groupStyles[g].cardEdge) gsOut[g] = groupStyles[g];
     });
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸); v10.28.17.3 adds NO new fields (Migrate to Cards 按钮 Uiverse 换肤：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.17.4 adds NO new fields (顶部 Migrate 按钮换 cssbuttons-io 紫渐变代码按钮换肤+弹窗 Migrate to Cards 还原 v10.28.17.3 药丸：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.19 adds additive sheetData (表格卡——用户「我们还缺少一个sheet card」：可编辑表格，首行表头加粗、行内编辑、底部 +添加行/+添加列、行尾 ✕ 删除；dataset JSON 串 {cols,cells}，cells[0] 恒为表头行；legacy drafts omit → 种子 2 列 4 行); v10.28.19.1 grows sheet default to 10×7 (表格卡默认尺寸 宽10格×长7格——用户「那个卡片大小能不能是默认长7格宽10格」：工厂默认/assetSpan/草稿恢复兜底三处 8×5→10×7); v10.28.19.2 adds NO new fields (表格卡加行/加列自动变长变宽——用户「然后能不能在添加行/列的时候自动变长和宽啊」：+添加行 → rowSpan+1 卡片变长、+添加列 → colSpan+1 卡片变宽；sheetGrow 读 dataset 现有跨度写回+setCardSize+刷手柄，跨度随草稿往返；种子 3 行与 restoreSheet 恢复路径不增长); v10.28.19.3 extends sheetData with colW/rowH (表格卡列宽/行高手柄——用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」：每列上方 ↔、每行左侧 ↕ 按住拖动调整；colgroup 三截制 18px+数据列+22px；colW/rowH 随草稿往返，legacy drafts omit → 默认等分); v10.28.20 adds NO new fields (撤回/恢复——用户「能不能在顶部添加一个撤回和恢复按钮」：快照式撤销栈，historySnapshot 剥 lastSaved 时间戳后 JSON 串对比，600ms 防抖挂在 onContentChange 尾零调用点改动；historyRestore 走 applyDraft 先清画布幂等+saveDraft 落库+重基线防序列化归一漂移吞恢复链；栈上限 60；工具栏 撤回/恢复 两钮 + Ctrl+Z/Ctrl+Y 输入框焦点让位原生撤销); v10.28.20.1 adds NO new fields (吸合误判修复——用户「为什么我把卡片拖到一个位置他会被一个和他没有任何接近的卡片吸附合并？」：真身=findMergeSnap 只按单轴边距判命中，同高不同 x 的卡隔着千余像素照样被吸；修法=边对判定加垂直轴严格重叠守卫——x 轴边对要求 y 范围相交、y 轴边对要求 x 范围相交；补丁位 0→1·纯修复轮); v10.28.20.2 adds NO new fields (一体式高亮——用户「画布是不是一体…改成全部一体式的不要偷懒就搞成一个一个的」+「我怕你又偷懒…只使用一个感应，其他都只是花瓶」：画布本体本来就一体=单一 div+自身长高+拖拽感应挂 document 全页生效，零复制零花瓶段；唯一一格一格=drawHighlightRange 一格建一个 div（拖 10×7 的卡 = 70 个小方块各自描边）——改为整个覆盖范围只建 ONE 块矩形；拖卡覆盖预览与侧栏资产落点预览共用同函数自动一并变一体；补丁位 1→2·观感微调轮); v10.28.20.3 adds NO new fields (卡框高光清除+边框统一暗色——用户「深色模式下卡片外框右上角有一条很突兀的白色/浅色高光边线…清除卡片右上角及整个外框所有的白色/浅色渐变高光线」+「将卡片整体的外边框统一改为暗色低调的微弱边框…融入深色背景」：真身=v10.27 磨砂玻璃轮「右上角 2px 高光条」background-image 白渐变贴 top right——浅色玻璃 3D 感、深色下变成刺眼白线；4 处卡片表面高光全清（玻璃卡本体/组背景卡面/主题卡填充层 tint/油漆 ::before——组背景就是那张「整卡」的卡面），边框统一 var(--divider-line)（深色=rgba(255,255,255,0.08) 正是用户举例值、浅色=rgba(118,117,134,0.08)；基础卡宽 2px 不动——主题卡外板几何按 2px 边宽调过只换色）；统计编辑面板高光保留（v10.28.6.2 钦定浮动面板非卡框）；补丁位 2→3·观感微调轮); v10.28.20.4 adds NO new fields (吸合方向感——用户「能不能判定一下方向，如果卡片是在左侧合并后应该就是在左侧而不是变成跑到下方」：真身=mergeCards 等宽归一以左缘为锚，窄卡从左/右并入既有组时被拉成组宽、右缘越过目标竖边 → reflowGroup 按水平重叠把全组压成一列叠到下方（实况探针：80px 窄卡左并入 174px 组 → 整组塌成一列，拖卡落到目标下方）；修法=findMergeSnap 边对加 side（'left'/'right'/'top'/'bottom'=拖动卡在目标哪一侧），mergeCards(card, target, side) 归一后按 side 重新贴齐（左/右贴竖边、上/下贴横边并 x 对齐目标列）再 reflow——贴齐边恒 flush，reflow 按边分列不再塌；补丁位 3→4·纯修复轮); v10.28.20.5 adds NO new fields (国旗卡默认 8×6→8×5、国徽卡默认 4×3→5×5——用户「把国旗卡片改成 长5格 国徽卡片改成5x5」：assetSpan flag h 6→5 + shield 显式 5×5，草稿恢复兜底同步（flag rowSpan||5、shield 分支 colSpan||5/rowSpan||5）；补丁位 4→5·观感微调轮); v10.28.21 adds NO new fields (合并组整体缩放+单击恒选整组——用户「合并后整体的卡片能不能做一个可以放大缩小的功能和独立卡片一样，然后当我只是要选中整体的卡片时会直接触发到独立卡片而不是在选中独立卡片的情况下双击才会触发」：①整组选中时 8 手柄挂组框（可见成员旋转感知 bbox 并集、轴对齐、rotation 0），拖手柄=整组缩放——组框像素→整格量化、成员位置按框内相对比例缩放、成员尺寸各自量化整格（span 既有字段往返）、等比锁成员两轴取小倍率保长宽比（fitW/fitH 既有字段）；提交不 reflow/不对齐列顶（用户刚调的结果系统不抢回）；②单击组内成员恒选整组（v10.28.15.1「再次点击同一张卡=单独选中」切换分支整体移除，死变量 mousedownAlreadySelected 删除）、单独选中只走双击；合并后 deselectAll 不自动选中保留；小更新位 20→21·新功能轮·补丁归零); v10.28.21.1 adds NO new fields (组内图源弹窗劫持双击修复——用户「选中了整体然后要再选中单独的卡片时就不让选了」+「再点击一次就打开了」：真身=组内国旗/国徽卡未设图时单击必弹图源弹窗，modal 遮罩吃掉双击第二击 → 双击单独选中/拖出拆分整条路径失效；修法=①组内卡单击不再弹图源，只在单独选中且 e.detail=2 时弹（用户钦定「在选中独立卡片的情况下双击才会触发」）②单独选中后单击同一张卡保持单独不重置回整组；补丁位 0→1·纯修复轮); v10.28.21.2 adds NO new fields (文字工具栏输入中恒显——用户「那个工具栏能不能在输入的时候都会一直展示」：真身=v10.28.10 输入框口径只认非空选区（框选口径光标态不弹），卡内编辑框（标签/姓名/表格格…）打字时工具栏不显示；修法=textSelInInput 光标态在 .grid-card 内输入框也弹+缓存 LAST_INPUT_EL 改存元素（选区态/光标态都可回用）；标题框/搜索框/弹层输入框打字不弹（防干扰）；Escape 在卡内输入框只折叠选区工具栏保持；补丁位 1→2·观感微调轮; v10.28.22 adds NO new fields (工具栏添加图像·Wiki 式内联图——用户「在工具栏的右侧那边再增加一个按钮叫添加图像，就是你可以添加国旗/国徽等等的图像，然后图像的大小是根据文字的大小进行等比例变化的，这样可以完成类似于Wiki的功能」：工具栏右端 image 钮（输入框态置灰——输入框装不了图）+ tt-img-pop 弹层（国旗库 15 面程序化条纹 canvas 光栅化 PNG data URL——块2 IIFE 经 window.FC_FLAG_LIBRARY 供数 + 上传任意图）；只进内容卡文字，insertInlineImage 选区替换/光标插入、光标置图后、onContentChange 入撤销快照；<img class="tt-inline-img"> CSS height 1.5em（em 继承 → 字号变图等比变：光标态整块字号/选区 span 字号两条路都等比）；内容卡草稿本就 innerHTML 往返 + sanitizeDraftHtml 放行 data: 图 → 保存/恢复无损，零新字段；块1 showToast 上窗（上传成功 toast 跨 IIFE 调用——电池抓出 ReferenceError）；小更新位 21→22·新功能轮·补丁归零); v10.28.23 adds NO new fields (添加图像钮不再置灰+弹层挂工具栏上方+网页搜索——用户「为什么该按钮没办法点击？」：v10.28.22 输入框态置灰 pointer-events:none 是设计却成事故，去置灰、插入时无内容卡光标 toast 引导；用户「他这个的图像的弹窗是在工具栏上方的就是用户可以直接进行一个预览，而不是覆盖全屏的」：showImgPop 上方优先锚定、贴顶翻下方；用户「一样可以在网页上搜索/上传」：弹层顶部搜索框+Wikimedia Commons API（免费免密钥 CORS origin=*，window.FC_IMG_SEARCH_API 可打桩）2 列缩略图预览、点格插 640px 缩略 URL、坏图格自动隐去、清除/失败回退国旗库；搜索框抢焦点→插入时光标回放（IMG_SAVED_RANGE 打开弹层时记住、先 focus 后加范围——Chrome 先加范围再 focus 会丢）；hideTextToolbar 弹层开着不收工具栏（点搜索框聚焦会把弹层关掉+display:none 后懒加载缩略图永不加载——电池探针实况，收起改走显式路径）；小更新位 22→23·新功能轮·补丁归零)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸); v10.28.17.3 adds NO new fields (Migrate to Cards 按钮 Uiverse 换肤：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.17.4 adds NO new fields (顶部 Migrate 按钮换 cssbuttons-io 紫渐变代码按钮换肤+弹窗 Migrate to Cards 还原 v10.28.17.3 药丸：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.19 adds additive sheetData (表格卡——用户「我们还缺少一个sheet card」：可编辑表格，首行表头加粗、行内编辑、底部 +添加行/+添加列、行尾 ✕ 删除；dataset JSON 串 {cols,cells}，cells[0] 恒为表头行；legacy drafts omit → 种子 2 列 4 行); v10.28.19.1 grows sheet default to 10×7 (表格卡默认尺寸 宽10格×长7格——用户「那个卡片大小能不能是默认长7格宽10格」：工厂默认/assetSpan/草稿恢复兜底三处 8×5→10×7); v10.28.19.2 adds NO new fields (表格卡加行/加列自动变长变宽——用户「然后能不能在添加行/列的时候自动变长和宽啊」：+添加行 → rowSpan+1 卡片变长、+添加列 → colSpan+1 卡片变宽；sheetGrow 读 dataset 现有跨度写回+setCardSize+刷手柄，跨度随草稿往返；种子 3 行与 restoreSheet 恢复路径不增长); v10.28.19.3 extends sheetData with colW/rowH (表格卡列宽/行高手柄——用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」：每列上方 ↔、每行左侧 ↕ 按住拖动调整；colgroup 三截制 18px+数据列+22px；colW/rowH 随草稿往返，legacy drafts omit → 默认等分); v10.28.20 adds NO new fields (撤回/恢复——用户「能不能在顶部添加一个撤回和恢复按钮」：快照式撤销栈，historySnapshot 剥 lastSaved 时间戳后 JSON 串对比，600ms 防抖挂在 onContentChange 尾零调用点改动；historyRestore 走 applyDraft 先清画布幂等+saveDraft 落库+重基线防序列化归一漂移吞恢复链；栈上限 60；工具栏 撤回/恢复 两钮 + Ctrl+Z/Ctrl+Y 输入框焦点让位原生撤销); v10.28.20.1 adds NO new fields (吸合误判修复——用户「为什么我把卡片拖到一个位置他会被一个和他没有任何接近的卡片吸附合并？」：真身=findMergeSnap 只按单轴边距判命中，同高不同 x 的卡隔着千余像素照样被吸；修法=边对判定加垂直轴严格重叠守卫——x 轴边对要求 y 范围相交、y 轴边对要求 x 范围相交；补丁位 0→1·纯修复轮); v10.28.20.2 adds NO new fields (一体式高亮——用户「画布是不是一体…改成全部一体式的不要偷懒就搞成一个一个的」+「我怕你又偷懒…只使用一个感应，其他都只是花瓶」：画布本体本来就一体=单一 div+自身长高+拖拽感应挂 document 全页生效，零复制零花瓶段；唯一一格一格=drawHighlightRange 一格建一个 div（拖 10×7 的卡 = 70 个小方块各自描边）——改为整个覆盖范围只建 ONE 块矩形；拖卡覆盖预览与侧栏资产落点预览共用同函数自动一并变一体；补丁位 1→2·观感微调轮); v10.28.20.3 adds NO new fields (卡框高光清除+边框统一暗色——用户「深色模式下卡片外框右上角有一条很突兀的白色/浅色高光边线…清除卡片右上角及整个外框所有的白色/浅色渐变高光线」+「将卡片整体的外边框统一改为暗色低调的微弱边框…融入深色背景」：真身=v10.27 磨砂玻璃轮「右上角 2px 高光条」background-image 白渐变贴 top right——浅色玻璃 3D 感、深色下变成刺眼白线；4 处卡片表面高光全清（玻璃卡本体/组背景卡面/主题卡填充层 tint/油漆 ::before——组背景就是那张「整卡」的卡面），边框统一 var(--divider-line)（深色=rgba(255,255,255,0.08) 正是用户举例值、浅色=rgba(118,117,134,0.08)；基础卡宽 2px 不动——主题卡外板几何按 2px 边宽调过只换色）；统计编辑面板高光保留（v10.28.6.2 钦定浮动面板非卡框）；补丁位 2→3·观感微调轮); v10.28.20.4 adds NO new fields (吸合方向感——用户「能不能判定一下方向，如果卡片是在左侧合并后应该就是在左侧而不是变成跑到下方」：真身=mergeCards 等宽归一以左缘为锚，窄卡从左/右并入既有组时被拉成组宽、右缘越过目标竖边 → reflowGroup 按水平重叠把全组压成一列叠到下方（实况探针：80px 窄卡左并入 174px 组 → 整组塌成一列，拖卡落到目标下方）；修法=findMergeSnap 边对加 side（'left'/'right'/'top'/'bottom'=拖动卡在目标哪一侧），mergeCards(card, target, side) 归一后按 side 重新贴齐（左/右贴竖边、上/下贴横边并 x 对齐目标列）再 reflow——贴齐边恒 flush，reflow 按边分列不再塌；补丁位 3→4·纯修复轮); v10.28.20.5 adds NO new fields (国旗卡默认 8×6→8×5、国徽卡默认 4×3→5×5——用户「把国旗卡片改成 长5格 国徽卡片改成5x5」：assetSpan flag h 6→5 + shield 显式 5×5，草稿恢复兜底同步（flag rowSpan||5、shield 分支 colSpan||5/rowSpan||5）；补丁位 4→5·观感微调轮); v10.28.21 adds NO new fields (合并组整体缩放+单击恒选整组——用户「合并后整体的卡片能不能做一个可以放大缩小的功能和独立卡片一样，然后当我只是要选中整体的卡片时会直接触发到独立卡片而不是在选中独立卡片的情况下双击才会触发」：①整组选中时 8 手柄挂组框（可见成员旋转感知 bbox 并集、轴对齐、rotation 0），拖手柄=整组缩放——组框像素→整格量化、成员位置按框内相对比例缩放、成员尺寸各自量化整格（span 既有字段往返）、等比锁成员两轴取小倍率保长宽比（fitW/fitH 既有字段）；提交不 reflow/不对齐列顶（用户刚调的结果系统不抢回）；②单击组内成员恒选整组（v10.28.15.1「再次点击同一张卡=单独选中」切换分支整体移除，死变量 mousedownAlreadySelected 删除）、单独选中只走双击；合并后 deselectAll 不自动选中保留；小更新位 20→21·新功能轮·补丁归零); v10.28.21.1 adds NO new fields (组内图源弹窗劫持双击修复——用户「选中了整体然后要再选中单独的卡片时就不让选了」+「再点击一次就打开了」：真身=组内国旗/国徽卡未设图时单击必弹图源弹窗，modal 遮罩吃掉双击第二击 → 双击单独选中/拖出拆分整条路径失效；修法=①组内卡单击不再弹图源，只在单独选中且 e.detail=2 时弹（用户钦定「在选中独立卡片的情况下双击才会触发」）②单独选中后单击同一张卡保持单独不重置回整组；补丁位 0→1·纯修复轮); v10.28.21.2 adds NO new fields (文字工具栏输入中恒显——用户「那个工具栏能不能在输入的时候都会一直展示」：真身=v10.28.10 输入框口径只认非空选区（框选口径光标态不弹），卡内编辑框（标签/姓名/表格格…）打字时工具栏不显示；修法=textSelInInput 光标态在 .grid-card 内输入框也弹+缓存 LAST_INPUT_EL 改存元素（选区态/光标态都可回用）；标题框/搜索框/弹层输入框打字不弹（防干扰）；Escape 在卡内输入框只折叠选区工具栏保持；补丁位 1→2·观感微调轮; v10.28.22 adds NO new fields (工具栏添加图像·Wiki 式内联图——用户「在工具栏的右侧那边再增加一个按钮叫添加图像，就是你可以添加国旗/国徽等等的图像，然后图像的大小是根据文字的大小进行等比例变化的，这样可以完成类似于Wiki的功能」：工具栏右端 image 钮（输入框态置灰——输入框装不了图）+ tt-img-pop 弹层（国旗库 15 面程序化条纹 canvas 光栅化 PNG data URL——块2 IIFE 经 window.FC_FLAG_LIBRARY 供数 + 上传任意图）；只进内容卡文字，insertInlineImage 选区替换/光标插入、光标置图后、onContentChange 入撤销快照；<img class="tt-inline-img"> CSS height 1.5em（em 继承 → 字号变图等比变：光标态整块字号/选区 span 字号两条路都等比）；内容卡草稿本就 innerHTML 往返 + sanitizeDraftHtml 放行 data: 图 → 保存/恢复无损，零新字段；块1 showToast 上窗（上传成功 toast 跨 IIFE 调用——电池抓出 ReferenceError）；小更新位 21→22·新功能轮·补丁归零); v10.28.23 adds NO new fields (添加图像钮不再置灰+弹层挂工具栏上方+网页搜索——用户「为什么该按钮没办法点击？」：v10.28.22 输入框态置灰 pointer-events:none 是设计却成事故，去置灰、插入时无内容卡光标 toast 引导；用户「他这个的图像的弹窗是在工具栏上方的就是用户可以直接进行一个预览，而不是覆盖全屏的」：showImgPop 上方优先锚定、贴顶翻下方；用户「一样可以在网页上搜索/上传」：弹层顶部搜索框+Wikimedia Commons API（免费免密钥 CORS origin=*，window.FC_IMG_SEARCH_API 可打桩）2 列缩略图预览、点格插 640px 缩略 URL、坏图格自动隐去、清除/失败回退国旗库；搜索框抢焦点→插入时光标回放（IMG_SAVED_RANGE 打开弹层时记住、先 focus 后加范围——Chrome 先加范围再 focus 会丢）；hideTextToolbar 弹层开着不收工具栏（点搜索框聚焦会把弹层关掉+display:none 后懒加载缩略图永不加载——电池探针实况，收起改走显式路径）；小更新位 22→23·新功能轮·补丁归零); v10.28.24 adds NO new fields (图像可以插进任何可打字处——用户「我希望他能添加在任何可以打字的地方而不是只限于文字内容卡片」：卡内输入框（标签/姓名/头衔/简介/统计指标/时间线事件与描述/表格格…）第一次插图时现场升级成 contentEditable span（同名同类同内联样式、文字照搬、dataset.rich='1'），此后文字+图片共存；纯文字字段永远还是 input 零影响既有路径；数字/年份字段除外（数值与图表逻辑要纯文字，toast 引导）；序列化全走 fieldHtml/fieldText/setFieldText/makeTextField——带标记文字按 HTML 往返、草稿零新字段（rich HTML 坐既有 label/charName/charTitle/charBio/statsRows/tlEvents/sheetData 串）；弹层打开记住卡内输入框 IMG_SAVED_INPUT（工具栏 mousedown preventDefault 保焦点、搜索/上传抢焦点后仍插回原位）；小更新位 23→24·新功能轮·补丁归零)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -5947,7 +5956,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function autoSizeLabel(input) {
     var card = input.closest('.grid-card');
     var vertical = card && card.dataset.captionVertical === '1';
-    labelSizer.textContent = input.value || input.placeholder || '';
+    labelSizer.textContent = fieldText(input) || input.placeholder || '';
     labelSizer.style.lineHeight = getComputedStyle(input).lineHeight;
     if (vertical) {
       // v9.5 竖排: inputs never auto-grow — size by height instead.
@@ -5968,6 +5977,106 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     }
   }
   window.autoSizeLabel = autoSizeLabel;
+
+  // ── v10.28.24: 任何可打字处都能插图（用户「添加在任何可以打字的地方」）──
+  // input/textarea 装不了图 → 第一次插图时把该框「现场升级」成 contentEditable
+  // span（同名同类同内联样式，文字照搬），此后文字+图片共存；纯文字字段永远
+  // 还是 input（零影响既有路径）。序列化全走 fieldHtml/fieldText/setFieldText：
+  // 带标记文字按 HTML 往返，草稿零新字段（rich HTML 坐既有 label/JSON 串）。
+  // 本块=主 IIFE（buildDraft/各卡序列化都在这里）；工具栏 IIFE 经 window.* 调用。
+  function fieldHtml(el) {
+    if (!el) return '';
+    if (el.dataset && el.dataset.rich === '1') return el.innerHTML;
+    return (el.value != null) ? el.value : (el.textContent || '');
+  }
+  function fieldText(el) {
+    if (!el) return '';
+    if (el.dataset && el.dataset.rich === '1') return el.textContent;
+    return (el.value != null) ? el.value : (el.textContent || '');
+  }
+  function setFieldText(el, v) {
+    if (!el) return;
+    var s = (v == null) ? '' : String(v);
+    if (el.dataset && el.dataset.rich === '1') {
+      // 富文本字段按 HTML 回灌；无标记纯文字走 textContent（「<」照字面显示，
+      // 防误当标签解析）
+      if (/<[a-zA-Z][^>]*>/.test(s)) el.innerHTML = s; else el.textContent = s;
+    } else if (el.value != null) {
+      if (/<[a-zA-Z][^>]*>/.test(s)) { richifyField(el, s); return; } // 草稿恢复带标记 → 现场升级再回灌
+      el.value = s;
+    } else {
+      el.textContent = s;
+    }
+  }
+  function makeTextField(cls, text, tag) {
+    var inp = document.createElement(tag || 'input');
+    inp.className = cls;
+    inp.value = text || '';
+    // 草稿恢复的带标记文字 → 出生即富文本（图片直接还原）
+    if (text && /<[a-zA-Z][^>]*>/.test(text)) return richifyField(inp, text);
+    return inp;
+  }
+  function richifyField(inp, html) {
+    // input/textarea → contentEditable span 现场升级：同名同类同内联样式，
+    // 值文字照搬（html 参数=带标记草稿出生即富文本）；选区偏移由插入路径回放
+    var span = document.createElement('span');
+    span.className = inp.className;
+    span.style.cssText = inp.style.cssText;
+    span.contentEditable = 'true';
+    span.setAttribute('role', 'textbox');
+    span.dataset.rich = '1';
+    if (inp.hasAttribute('placeholder')) span.dataset.placeholder = inp.getAttribute('placeholder');
+    if (inp.hasAttribute('title')) span.setAttribute('title', inp.getAttribute('title'));
+    span.onclick = inp.onclick;
+    span.oninput = inp.oninput;
+    if (html) span.innerHTML = html; else span.textContent = inp.value || '';
+    if (inp.parentNode) inp.parentNode.replaceChild(span, inp);
+    // 原 input 的 addEventListener('input') 监听死透 → 永久接上管线：打字/
+    // 粘贴都触发 input；插图/格式化的程序化改动不触发 input → MutationObserver
+    // 兜底（观察器无外部引用，随 span 一起可回收）
+    span.addEventListener('input', function () { richFieldSync(span); });
+    if (window.MutationObserver) {
+      var mo = new MutationObserver(function () { richFieldSync(span); });
+      mo.observe(span, { subtree: true, childList: true, characterData: true });
+    }
+    if (span.classList.contains('card-label')) {
+      // 标签名专属：Enter 退出改名、blur 退出 editing-label（照搬 setupCardLabelInput）
+      span.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter') { ev.preventDefault(); var c = span.closest('.grid-card'); if (c) exitLabelEdit(); }
+      });
+      span.addEventListener('blur', function () {
+        var c = span.closest('.grid-card');
+        if (c && editingLabelCard === c) exitLabelEdit();
+      });
+    }
+    richFieldSync(span);
+    return span;
+  }
+  function richFieldSync(span) {
+    // 升级后原 input 的 input 监听死了 → 按类名接回各自的序列化管线
+    var card = span.closest ? span.closest('.grid-card') : null;
+    if (card) {
+      if (span.classList.contains('stats-label') || span.classList.contains('stats-value')) {
+        refreshStatsBars(card); statsSerialize(card);
+      } else if (span.classList.contains('tl-year') || span.classList.contains('tl-title') || span.classList.contains('tl-desc')) {
+        tlSerialize(card);
+      } else if (span.classList.contains('sheet-cell')) {
+        sheetSerialize(card);
+      } else if (span.classList.contains('char-title') || span.classList.contains('char-bio') ||
+                 (span.classList.contains('card-label') && card.dataset.cardType === 'character')) {
+        charSerialize(card);
+      }
+      if (span.classList.contains('card-label')) autoSizeLabel(span);
+    }
+    if (window.onContentChange) window.onContentChange();
+  }
+  // 跨块出口：工具栏 IIFE（块 4）里的 insertInlineImage 经 window.* 调用
+  window.fieldHtml = fieldHtml;
+  window.fieldText = fieldText;
+  window.setFieldText = setFieldText;
+  window.makeTextField = makeTextField;
+  window.richifyField = richifyField;
+  window.richFieldSync = richFieldSync;
 
   // ── Card drag (shared Canvas-style solid drag, pixel precise) ──
   function addCardDrag(card) {
@@ -6260,7 +6369,19 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     card.classList.add('editing-label');
     editingLabelCard = card;
     var l = card.querySelector('.card-label');
-    setTimeout(function () { l.focus(); l.select(); if (window.refreshTextToolbar) window.refreshTextToolbar(); }, 0); // v10.28.10: 全选即弹工具篮（与卡文字「选择即弹」体验一致）
+    setTimeout(function () {
+      l.focus();
+      // v10.28.24: 富文本化标签没有 select() → 全选内容等价回放
+      if (l.select) l.select();
+      else {
+        var r0 = document.createRange();
+        r0.selectNodeContents(l);
+        var s0 = window.getSelection();
+        s0.removeAllRanges();
+        s0.addRange(r0);
+      }
+      if (window.refreshTextToolbar) window.refreshTextToolbar();
+    }, 0); // v10.28.10: 全选即弹工具篮（与卡文字「选择即弹」体验一致）
   }
   function setupCardLabelInput(card, labelEl) {
     labelEl.onclick = function (e) {
@@ -6284,9 +6405,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var iconEl = document.createElement('span');
     iconEl.className = 'material-symbols-outlined card-icon';
     iconEl.textContent = icon;
-    var labelEl = document.createElement('input');
-    labelEl.className = 'card-label';
-    labelEl.value = label;
+    var labelEl = makeTextField('card-label', label); // v10.28.24: 带标记草稿出生即富文本
     setupCardLabelInput(card, labelEl);
     card.appendChild(iconEl);
     card.appendChild(labelEl);
@@ -6318,9 +6437,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var iconEl = document.createElement('span');
     iconEl.className = 'material-symbols-outlined card-icon';
     iconEl.textContent = 'flag';
-    var labelEl = document.createElement('input');
-    labelEl.className = 'card-label';
-    labelEl.value = label || 'Flag';
+    var labelEl = makeTextField('card-label', label || 'Flag'); // v10.28.24: 带标记草稿出生即富文本
     setupCardLabelInput(card, labelEl);
     card.appendChild(iconEl);
     card.appendChild(labelEl);
@@ -6365,9 +6482,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // 编辑框带 .card-edit-field 类，addCardDrag 不 arm 拖拽（打字不拖卡）。
 
   function charSerialize(card) {
-    card.dataset.charName = card.querySelector('.card-label') ? card.querySelector('.card-label').value : '';
-    card.dataset.charTitle = card.querySelector('.char-title') ? card.querySelector('.char-title').value : '';
-    card.dataset.charBio = card.querySelector('.char-bio') ? card.querySelector('.char-bio').value : '';
+    card.dataset.charName = card.querySelector('.card-label') ? fieldHtml(card.querySelector('.card-label')) : '';
+    card.dataset.charTitle = card.querySelector('.char-title') ? fieldHtml(card.querySelector('.char-title')) : '';
+    card.dataset.charBio = card.querySelector('.char-bio') ? fieldHtml(card.querySelector('.char-bio')) : '';
   }
   function createCharacterCard(col, row, spanW, spanH) {
     var card = createGridCard('character', col, row, spanW || 4, spanH || 5);
@@ -6393,15 +6510,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       fi.value = '';
     });
     avatar.addEventListener('click', function () { fi.click(); });
-    var nameEl = document.createElement('input');
-    nameEl.className = 'card-label card-edit-field';
+    var nameEl = makeTextField('card-label card-edit-field', '');
     nameEl.placeholder = '姓名';
     setupCardLabelInput(card, nameEl);
-    var titleEl = document.createElement('input');
-    titleEl.className = 'char-title card-edit-field';
+    var titleEl = makeTextField('char-title card-edit-field', '');
     titleEl.placeholder = '头衔';
-    var bioEl = document.createElement('textarea');
-    bioEl.className = 'char-bio card-edit-field';
+    var bioEl = makeTextField('char-bio card-edit-field', '', 'textarea');
     bioEl.placeholder = '简介…';
     card.appendChild(fi);
     card.appendChild(avatar);
@@ -7497,7 +7611,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var rows = [];
     statsRootOf(card).querySelectorAll('.stats-row').forEach(function (r) {
       rows.push({
-        label: r.querySelector('.stats-label').value,
+        label: fieldHtml(r.querySelector('.stats-label')),
         value: parseFloat(r.querySelector('.stats-value').value) || 0
       });
     });
@@ -7520,9 +7634,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function addStatsRow(card, label, value) {
     var row = document.createElement('div');
     row.className = 'stats-row';
-    var l = document.createElement('input');
-    l.className = 'stats-label card-edit-field';
-    l.placeholder = '指标'; l.value = label || '';
+    var l = makeTextField('stats-label card-edit-field', label || '');
+    l.placeholder = '指标';
     var v = document.createElement('input');
     v.className = 'stats-value card-edit-field';
     v.type = 'number'; v.placeholder = '0'; v.value = value != null ? value : '';
@@ -7958,9 +8071,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var evs = [];
     card.querySelectorAll('.tl-event').forEach(function (ev) {
       evs.push({
-        year: ev.querySelector('.tl-year').value,
-        title: ev.querySelector('.tl-title').value,
-        desc: ev.querySelector('.tl-desc').value
+        year: fieldText(ev.querySelector('.tl-year')),
+        title: fieldHtml(ev.querySelector('.tl-title')),
+        desc: fieldHtml(ev.querySelector('.tl-desc'))
       });
     });
     card.dataset.tlEvents = JSON.stringify(evs);
@@ -7968,15 +8081,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function addTimelineEvent(card, year, title, desc) {
     var ev = document.createElement('div');
     ev.className = 'tl-event';
-    var y = document.createElement('input');
-    y.className = 'tl-year card-edit-field';
-    y.placeholder = '年份'; y.value = year || '';
-    var t = document.createElement('input');
-    t.className = 'tl-title card-edit-field';
-    t.placeholder = '事件'; t.value = title || '';
-    var d = document.createElement('textarea');
-    d.className = 'tl-desc card-edit-field';
-    d.placeholder = '描述…'; d.value = desc || '';
+    var y = makeTextField('tl-year card-edit-field', year || '');
+    y.placeholder = '年份';
+    var t = makeTextField('tl-title card-edit-field', title || '');
+    t.placeholder = '事件';
+    var d = makeTextField('tl-desc card-edit-field', desc || '', 'textarea');
+    d.placeholder = '描述…';
     var del = document.createElement('button');
     del.className = 'row-del'; del.textContent = '✕'; del.title = '删除此事件';
     del.addEventListener('click', function () {
@@ -8042,10 +8152,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     return head.querySelectorAll('.sheet-cell').length; // 数输入格——不含行尾 ✕ 占位列
   }
   function sheetNewCell(card, placeholder, value) {
-    var inp = document.createElement('input');
-    inp.className = 'sheet-cell card-edit-field';
+    var inp = makeTextField('sheet-cell card-edit-field', value || '');
     inp.placeholder = placeholder;
-    inp.value = value || '';
     inp.addEventListener('input', function () { sheetSerialize(card); onContentChange(); });
     return inp;
   }
@@ -8111,7 +8219,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var cells = [];
     card.querySelectorAll('.sheet-head-row, .sheet-body-row').forEach(function (tr) {
       var row = [];
-      tr.querySelectorAll('.sheet-cell').forEach(function (inp) { row.push(inp.value); });
+      tr.querySelectorAll('.sheet-cell').forEach(function (inp) { row.push(fieldHtml(inp)); });
       cells.push(row);
     });
     // v10.28.19.3: 列宽/行高随草稿往返——colW=数据列实际宽、rowH=表头+数据行实际高
@@ -8254,9 +8362,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   // v10.28: 草稿还原辅助（applyDraft 调用；DOM 重建后填回字段）
   function restoreCharacter(card, cData) {
-    if (cData.charName) { var n = card.querySelector('.card-label'); if (n) n.value = cData.charName; }
-    if (cData.charTitle) { var t = card.querySelector('.char-title'); if (t) t.value = cData.charTitle; }
-    if (cData.charBio) { var b = card.querySelector('.char-bio'); if (b) b.value = cData.charBio; }
+    if (cData.charName) { var n = card.querySelector('.card-label'); if (n) setFieldText(n, cData.charName); }
+    if (cData.charTitle) { var t = card.querySelector('.char-title'); if (t) setFieldText(t, cData.charTitle); }
+    if (cData.charBio) { var b = card.querySelector('.char-bio'); if (b) setFieldText(b, cData.charBio); }
     if (cData.charAvatar) {
       card.dataset.charAvatar = cData.charAvatar;
       var av = card.querySelector('.char-avatar');
@@ -8414,7 +8522,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     clearAspectLock(card, true); // stripes have no intrinsic size — unlock, snap back to grid
     card.dataset.label = flagName;
     var labelEl = card.querySelector('.card-label');
-    if (labelEl) { labelEl.value = flagName; autoSizeLabel(labelEl); }
+    if (labelEl) { setFieldText(labelEl, flagName); autoSizeLabel(labelEl); }
     var stripesDiv = document.createElement('div');
     stripesDiv.className = 'card-stripes';
     stripesDiv.innerHTML = stripesHtml;
@@ -8447,7 +8555,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     card.classList.add('has-bg-img');
     card.dataset.label = alt;
     var labelEl = card.querySelector('.card-label');
-    if (labelEl) { labelEl.value = alt; autoSizeLabel(labelEl); }
+    if (labelEl) { setFieldText(labelEl, alt); autoSizeLabel(labelEl); }
     clearAspectLock(card); // replacement image re-fits from scratch
     var imgEl = document.createElement('img');
     imgEl.className = 'card-img-bg';
@@ -9068,7 +9176,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var name = document.createElement('span');
       name.className = 'layer-name' + (hidden ? ' hidden' : '');
       var lbl = card.querySelector('.card-label');
-      name.textContent = (lbl && lbl.value) ? lbl.value : (card.dataset.label || icon.textContent);
+      name.textContent = fieldText(lbl) || card.dataset.label || icon.textContent;
 
       var up = document.createElement('button');
       up.className = 'layer-btn';
@@ -12784,8 +12892,18 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var focusEl = sel.focusNode && sel.focusNode.nodeType === 3 ? sel.focusNode.parentNode : sel.focusNode;
     var card = (anchorEl && anchorEl.closest && anchorEl.closest('.grid-card')) ||
                (focusEl && focusEl.closest && focusEl.closest('.grid-card'));
-    if (!card || card.dataset.cardType !== 'content') return null;
-    var textEl = card.querySelector('.card-text-content');
+    if (!card) return null;
+    var textEl;
+    if (card.dataset.cardType === 'content') {
+      textEl = card.querySelector('.card-text-content');
+    } else {
+      // v10.28.24: 非内容卡的富文本化字段（标签/姓名/统计/时间线/表格格…）
+      // 也是文字区——插图升级出的 contentEditable span（dataset.rich='1'）
+      var host = (anchorEl && anchorEl.closest && anchorEl.closest('[data-rich="1"]')) ||
+                 (focusEl && focusEl.closest && focusEl.closest('[data-rich="1"]'));
+      if (!host || host.closest('.grid-card') !== card) return null;
+      textEl = host;
+    }
     if (!textEl || !range.intersectsNode(textEl)) return null;
     var textRange = document.createRange();
     textRange.selectNodeContents(textEl);
@@ -12805,9 +12923,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var el = node && node.nodeType === 3 ? node.parentNode : node;
     if (!el || !el.closest) return null;
     var textEl = el.closest('.card-text-content');
+    // v10.28.24: 富文本化输入框（dataset.rich='1'）也算文字区
+    if (!textEl && el.dataset && el.dataset.rich === '1') textEl = el;
     if (!textEl) return null;
     var card = textEl.closest('.grid-card');
-    if (!card || card.dataset.cardType !== 'content') return null;
+    if (!card || (card.dataset.cardType !== 'content' && !(textEl.dataset && textEl.dataset.rich === '1'))) return null;
     // v10.28.10: fromCaret 标记——refresh 里的焦点守卫只对卡内光标态生效
     return { sel: sel, range: range, textEl: textEl, card: card, fromCaret: true };
   }
@@ -12889,7 +13009,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var info = textSelInCard() || textCaretInCard() || textSelInInput();
     // v10.28.23: 图像钮不再置灰——v10.28.22 输入框态置灰（pointer-events:none）被用户
     // 报「按钮没办法点击」（还点不动且无提示）；现在任何态可点，插入时无内容卡光标
-    // 会由 insertInlineImage toast 引导（「图像只能插入内容卡的文字里」）
+    // 会由 insertInlineImage toast 引导（「图像只能插进文字里（内容卡或卡内输入框）」）
     if (info && info.inputEl) {
       // v10.28.10: 输入框态——queryCommandState 只认 contenteditable 文档选区，
       // 输入框激活态/字号/字体一律从元素计算样式读
@@ -13132,12 +13252,18 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // 图像的大小是根据文字的大小进行等比例变化…可以完成类似于Wiki的功能」）：
   // Wiki 式内联图——国旗库（程序化条纹光栅化 PNG data URL，块 2 经
   // window.FC_FLAG_LIBRARY 供数）+ 上传任意图（国徽等，与国徽卡上传同口径）；
-  // 只进内容卡文字（输入框装不了图 → 按钮置灰）；插入 <img class="tt-inline-img">
-  // （CSS height 1.5em）→ 字号变图等比变：光标态整块字号改 textEl.style、选区
-  // 字号包 span——两条路都走 em 继承自动等比；草稿 innerHTML 往返 +
-  // sanitizeDraftHtml 放行 data: 图 → 保存/恢复无损。 ──
+  // v10.28.22 只进内容卡文字；v10.28.24 起任何可打字处都能插（用户「添加在
+  // 任何可以打字的地方」）——卡内输入框第一次插图时现场升级成富文本 span
+  // （见 richifyField）。插入 <img class="tt-inline-img">（CSS height 1.5em）
+  // → 字号变图等比变：光标态整块字号改 textEl.style、选区字号包 span——两条
+  // 路都走 em 继承自动等比；草稿 innerHTML 往返 + sanitizeDraftHtml 放行
+  // data: 图 → 保存/恢复无损。 ──
   var IMG_POP = null, IMG_BUILT = false;
   var IMG_SAVED_RANGE = null, IMG_SAVED_EL = null; // v10.28.23: 弹层打开瞬间记住的内容卡光标/选区（搜索框抢焦点后回放用）
+  var IMG_SAVED_INPUT = null; // v10.28.24: 弹层打开瞬间记住的卡内输入框（插入时现场升级成富文本）
+  // v10.28.24: 富文本化 helpers（fieldHtml/fieldText/setFieldText/makeTextField/
+  // richifyField/richFieldSync）住在块 3 主 IIFE（buildDraft/各卡序列化都在那边），
+  // 经 window.* 供本块调用——见 autoSizeLabel 附近。
   function flagToDataUrl(colors) {
     var W = 240, H = 150; // 国旗卡 8宽×5长 同比例
     var cv = document.createElement('canvas');
@@ -13163,7 +13289,37 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       } catch (e) {}
       info = textSelInCard() || textCaretInCard();
     }
-    if (!info) { showToast('图像只能插入内容卡的文字里'); return false; }
+    if (!info) {
+      // v10.28.24: 卡内输入框（标签/姓名/统计/时间线描述/表格格…）也可以插——
+      // 第一次插图把该框现场升级成富文本 span（图片与文字共存），纯文字字段
+      // 永远还是 input。数字/年份字段不行（数值与图表逻辑要纯文字）。
+      var inEl = IMG_SAVED_INPUT && IMG_SAVED_INPUT.isConnected ? IMG_SAVED_INPUT : null;
+      if (!inEl) inEl = (textSelInInput() || {}).inputEl || null;
+      if (inEl && inEl.isConnected && inEl.closest && inEl.closest('.grid-card')) {
+        if (typeof inEl.selectionStart !== 'number' || (inEl.classList && inEl.classList.contains('tl-year'))) {
+          showToast('数字或年份字段不能插图');
+          return false;
+        }
+        var caret = { s: inEl.selectionStart, e: inEl.selectionEnd };
+        var rich = window.richifyField(inEl);
+        // Chrome 先加范围再 focus 会丢——先 focus 再放范围（同 v10.28.23 回放）
+        try { rich.focus(); } catch (e1) {}
+        var r = document.createRange();
+        var node = rich.firstChild;
+        if (node && node.nodeType === 3) {
+          var len = node.nodeValue.length;
+          r.setStart(node, Math.max(0, Math.min(caret.s, len)));
+          r.setEnd(node, Math.max(0, Math.min(caret.e, len)));
+        } else {
+          r.setStart(rich, 0); r.setEnd(rich, 0);
+        }
+        var selx = window.getSelection();
+        selx.removeAllRanges();
+        selx.addRange(r);
+        info = textSelInCard() || textCaretInCard();
+      }
+      if (!info) { showToast('图像只能插进文字里（内容卡或卡内输入框）'); return false; }
+    }
     var img = document.createElement('img');
     img.className = 'tt-inline-img';
     img.src = src;
@@ -13180,6 +13336,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     sel.removeAllRanges();
     sel.addRange(after);
     refreshTextToolbar();
+    // v10.28.24: 富文本字段插入后同步序列化（插图是程序化改动不触发 input，
+    // MutationObserver 是微任务异步——这里同步落一次保证草稿快照即时）
+    if (info.textEl.dataset && info.textEl.dataset.rich === '1') window.richFieldSync(info.textEl);
     if (window.onContentChange) window.onContentChange();
     return true;
   }
@@ -13322,15 +13481,20 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!anchor) return;
     // v10.28.23: 记住打开瞬间的内容卡光标/选区——弹层里点搜索框会抢焦点，
     // 之后点图插入时活选区已丢，靠这里回放（见 insertInlineImage）
-    IMG_SAVED_RANGE = null; IMG_SAVED_EL = null;
+    // v10.28.24: 卡内输入框也记住（工具栏 mousedown preventDefault → 焦点
+    // 还在输入框；输入框 blur 后 selectionStart/End 保留，回放不受影响）
+    IMG_SAVED_RANGE = null; IMG_SAVED_EL = null; IMG_SAVED_INPUT = null;
     var sel0 = window.getSelection();
     if (sel0 && sel0.rangeCount) {
       var r0 = sel0.getRangeAt(0).cloneRange();
       var el0 = r0.startContainer.nodeType === 3 ? r0.startContainer.parentNode : r0.startContainer;
-      if (el0 && el0.closest && el0.closest('.card-text-content')) {
+      if (el0 && el0.closest && (el0.closest('.card-text-content') || el0.closest('[data-rich="1"]'))) {
         IMG_SAVED_RANGE = r0; IMG_SAVED_EL = el0;
       }
     }
+    var ae = document.activeElement;
+    if (ae && (ae.nodeName === 'INPUT' || ae.nodeName === 'TEXTAREA') &&
+        ae.closest && ae.closest('.grid-card')) IMG_SAVED_INPUT = ae;
     showLibView(); // 每次打开从国旗库开始（结果页态简单可预期）
     IMG_POP.classList.add('active');
     IMG_POP.style.visibility = 'hidden';
