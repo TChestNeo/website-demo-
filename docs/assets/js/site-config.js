@@ -437,7 +437,12 @@ window.MN_SITE = window.MN_SITE || {};
 //   哪一侧），mergeCards(card, target, side) 归一后按 side 重新贴齐（左/右贴竖边、上/下贴横边
 //   并 x 对齐目标列）再 reflow——贴齐边恒 flush，reflow 按边分列不再塌；
 //   FC v10.28.20.4（补丁位 3→4·纯修复轮；2026-09-12）
-window.MN_SITE_VERSION = 'v0.2.30.4';
+// v0.2.30.5 = 国旗卡/国徽卡默认尺寸（用户「把国旗卡片改成 长5格 国徽卡片改成5x5」，问询钦定国旗=8宽×5长）：
+//   国旗卡 8×6→8×5（assetSpan flag h 6→5 + 草稿恢复 rowSpan||5）、国徽卡（Emblem 盾徽资产卡）
+//   4×3→5×5（assetSpan shield 显式 5×5 + 草稿恢复新增 shield 分支 colSpan||5/rowSpan||5）；
+//   零后端、ethereal 零改动无需 inline-css；
+//   FC v10.28.20.5（补丁位 4→5·观感微调轮；2026-09-12）
+window.MN_SITE_VERSION = 'v0.2.30.5';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -517,4 +522,7 @@ window.MN_SITE_VERSION = 'v0.2.30.4';
 //   哪一侧），mergeCards(card, target, side) 归一后按 side 重新贴齐再 reflow——左/右贴竖边、
 //   上/下贴横边并 x 对齐目标列，贴齐边恒 flush、reflow 按边分列不再塌
 //   （补丁位 3→4·纯修复轮；2026-09-12）
-window.FLUIDCANVAS_VERSION = 'v10.28.20.4';
+// v10.28.20.5 = 国旗卡默认 8×6→8×5、国徽卡默认 4×3→5×5（用户「把国旗卡片改成 长5格 国徽卡片改成5x5」，
+//   问询钦定国旗=8宽×5长）：assetSpan flag h 6→5 + shield 显式 5×5、草稿恢复兜底同改
+//   （补丁位 4→5·观感微调轮；2026-09-12）
+window.FLUIDCANVAS_VERSION = 'v10.28.20.5';
