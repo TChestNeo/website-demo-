@@ -471,7 +471,19 @@ window.MN_SITE = window.MN_SITE || {};
 //   选区 span 字号两条路都等比）；内容卡草稿 innerHTML 往返 + sanitizeDraftHtml 放行 data: 图 →
 //   保存/恢复无损；零后端、ethereal 零改动无需 inline-css；
 //   FC v10.28.22（小更新位 21→22·新功能轮·补丁归零；2026-09-12）
-window.MN_SITE_VERSION = 'v0.2.32.0';
+// v0.2.33.0 = 添加图像弹层改版·钮不再置灰（用户「为什么该按钮没办法点击？」——真身=v10.28.22
+//   输入框态置灰（pointer-events:none 还无提示）是设计却成了事故；另用户「他这个的图像的弹窗
+//   是在工具栏上方的就是用户可以直接进行一个预览，而不是覆盖全屏的」+「一样可以在网页上
+//   搜索/上传」）：①钮任何态可点，插入时无内容卡光标 toast 引导（「图像只能插入内容卡的文字里」）；
+//   ②弹层锚定工具栏上方直接预览（贴顶放不下才翻下方）；③弹层内网页搜索——Wikimedia Commons
+//   维基图库 API（免费免密钥、CORS origin=*），640px 缩略图预览网格、点格插入缩略 URL
+//   （原图可能是几十 MB 的 TIFF 用不上）、坏图格自动隐去、无结果/失败回退国旗库（保留用户输入词）；
+//   国旗库/上传保留；④搜索框抢焦点后光标回放——打开弹层时记住内容卡光标/选区、插入时先
+//   focus 后加范围（Chrome 先加范围再 focus 会丢）；⑤弹层开着时工具栏不收起（点搜索框聚焦
+//   会把弹层关掉+display:none 后懒加载缩略图永不加载——电池探针实况，收起改走显式路径）；
+//   零后端、ethereal 零改动无需 inline-css；
+//   FC v10.28.23（小更新位 22→23·新功能轮·补丁归零；2026-09-12）
+window.MN_SITE_VERSION = 'v0.2.33.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -592,4 +604,16 @@ window.MN_SITE_VERSION = 'v0.2.32.0';
 //   上窗（上传成功 toast 跨 IIFE 调用——电池抓出 ReferenceError）；零后端、ethereal 零改动
 //   无需 inline-css
 //   （小更新位 21→22·新功能轮·补丁归零；2026-09-12）
-window.FLUIDCANVAS_VERSION = 'v10.28.22';
+// v10.28.23 = 添加图像钮不再置灰 + 弹层挂工具栏上方 + 网页搜索（用户「为什么该按钮没办法
+//   点击？」——v10.28.22 输入框态置灰 pointer-events:none 成事故，去掉置灰、插入时无内容卡
+//   光标 toast 引导；用户「弹窗是在工具栏上方的…直接进行一个预览，而不是覆盖全屏」——
+//   showImgPop 上方优先锚定、贴顶翻下方；用户「一样可以在网页上搜索/上传」——弹层顶部
+//   搜索框 + Wikimedia Commons API（免费免密钥 CORS origin=*，window.FC_IMG_SEARCH_API 可
+//   打桩）：2 列缩略图预览网格、点格插 640px 缩略 URL、坏图格自动隐去、清除搜索/失败回退
+//   国旗库；搜索框抢焦点→插入时光标回放（IMG_SAVED_RANGE 打开弹层时记住、先 focus 后加
+//   范围）；renderLibTiles/showLibView/runImgSearch/renderImgResults 拆分；弹层 mousedown
+//   排除 .tim-search（保输入框聚焦）；hideTextToolbar 弹层开着不收工具栏（点搜索框聚焦会把
+//   弹层关掉+display:none 后懒加载缩略图永不加载——电池探针实况，收起改走显式路径）；
+//   零后端、ethereal 零改动无需 inline-css
+//   （小更新位 22→23·新功能轮·补丁归零；2026-09-12）
+window.FLUIDCANVAS_VERSION = 'v10.28.23';

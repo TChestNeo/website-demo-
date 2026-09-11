@@ -3922,23 +3922,51 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       transition: transform 0.1s;
     }
     .tt-swatch:hover { transform: scale(1.25); }
-    /* v10.28.22: 添加图像钮（输入框态置灰——输入框装不了图）+ 图像弹层 + 内联图
-       （height 1.5em：字号变图等比变——块字号/span 字号都走 em 继承） */
-    .tt-btn.tt-disabled { opacity: 0.35; pointer-events: none; }
-    .radius-popover.tt-img-pop { z-index: 302; width: 238px; padding: 10px; }
+    /* v10.28.22: 添加图像钮 + 图像弹层 + 内联图（height 1.5em：字号变图等比变——
+       块字号/span 字号都走 em 继承）；v10.28.23: 钮不再置灰（输入框态点不动被用户
+       报「按钮没办法点击」——任何态可点，插入时无内容卡光标会 toast 引导）、弹层
+       挂工具栏上方直接预览 + 网页搜索（维基图库） */
+    .tt-btn.tt-disabled { opacity: 0.35; pointer-events: none; } /* v10.28.23: 图像钮不再使用 */
+    .radius-popover.tt-img-pop { z-index: 302; width: 280px; padding: 10px; }
+    .tim-search { display: flex; gap: 6px; margin-bottom: 8px; }
+    .tim-search input {
+      flex: 1; min-width: 0; height: 28px; padding: 0 8px;
+      border: 1px solid var(--divider-line-strong); border-radius: 6px;
+      background: var(--color-surface); color: var(--color-on-surface);
+      font-size: 12px; font-family: var(--font-family);
+    }
+    .tim-search input:focus { outline: none; border-color: var(--color-primary); }
+    .tim-search-btn {
+      width: 28px; height: 28px; padding: 0; border: none; border-radius: 6px;
+      background: var(--color-primary); color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .tim-search-btn .material-symbols-outlined { font-size: 16px; }
+    .tim-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 6px; font-size: 11px; color: var(--color-outline);
+    }
+    .tim-clear { cursor: pointer; color: var(--color-primary); }
     .tim-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+    .tim-grid.tim-search-mode { grid-template-columns: repeat(2, 1fr); }
     .tim-tile {
       position: relative; height: 46px; padding: 0;
       border: 1px solid var(--divider-line); border-radius: 8px;
       overflow: hidden; background: var(--color-surface); cursor: pointer;
     }
     .tim-tile:hover { border-color: var(--color-primary); }
+    .tim-tile.tim-thumb-tile { height: 78px; }
+    .tim-thumb-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .tim-stripes { position: absolute; inset: 0; display: flex; flex-direction: column; }
     .tim-upload {
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
       color: var(--color-outline); font-size: 10px;
     }
     .tim-upload .material-symbols-outlined { font-size: 18px; }
+    .tim-loading {
+      grid-column: 1 / -1; padding: 18px 0; text-align: center;
+      font-size: 12px; color: var(--color-outline);
+    }
     .card-text-content img.tt-inline-img {
       height: 1.5em; width: auto; vertical-align: middle; border-radius: 2px;
     }
@@ -5641,7 +5669,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (groupStyles[g] && groupStyles[g].cardEdge) gsOut[g] = groupStyles[g];
     });
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸); v10.28.17.3 adds NO new fields (Migrate to Cards 按钮 Uiverse 换肤：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.17.4 adds NO new fields (顶部 Migrate 按钮换 cssbuttons-io 紫渐变代码按钮换肤+弹窗 Migrate to Cards 还原 v10.28.17.3 药丸：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.19 adds additive sheetData (表格卡——用户「我们还缺少一个sheet card」：可编辑表格，首行表头加粗、行内编辑、底部 +添加行/+添加列、行尾 ✕ 删除；dataset JSON 串 {cols,cells}，cells[0] 恒为表头行；legacy drafts omit → 种子 2 列 4 行); v10.28.19.1 grows sheet default to 10×7 (表格卡默认尺寸 宽10格×长7格——用户「那个卡片大小能不能是默认长7格宽10格」：工厂默认/assetSpan/草稿恢复兜底三处 8×5→10×7); v10.28.19.2 adds NO new fields (表格卡加行/加列自动变长变宽——用户「然后能不能在添加行/列的时候自动变长和宽啊」：+添加行 → rowSpan+1 卡片变长、+添加列 → colSpan+1 卡片变宽；sheetGrow 读 dataset 现有跨度写回+setCardSize+刷手柄，跨度随草稿往返；种子 3 行与 restoreSheet 恢复路径不增长); v10.28.19.3 extends sheetData with colW/rowH (表格卡列宽/行高手柄——用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」：每列上方 ↔、每行左侧 ↕ 按住拖动调整；colgroup 三截制 18px+数据列+22px；colW/rowH 随草稿往返，legacy drafts omit → 默认等分); v10.28.20 adds NO new fields (撤回/恢复——用户「能不能在顶部添加一个撤回和恢复按钮」：快照式撤销栈，historySnapshot 剥 lastSaved 时间戳后 JSON 串对比，600ms 防抖挂在 onContentChange 尾零调用点改动；historyRestore 走 applyDraft 先清画布幂等+saveDraft 落库+重基线防序列化归一漂移吞恢复链；栈上限 60；工具栏 撤回/恢复 两钮 + Ctrl+Z/Ctrl+Y 输入框焦点让位原生撤销); v10.28.20.1 adds NO new fields (吸合误判修复——用户「为什么我把卡片拖到一个位置他会被一个和他没有任何接近的卡片吸附合并？」：真身=findMergeSnap 只按单轴边距判命中，同高不同 x 的卡隔着千余像素照样被吸；修法=边对判定加垂直轴严格重叠守卫——x 轴边对要求 y 范围相交、y 轴边对要求 x 范围相交；补丁位 0→1·纯修复轮); v10.28.20.2 adds NO new fields (一体式高亮——用户「画布是不是一体…改成全部一体式的不要偷懒就搞成一个一个的」+「我怕你又偷懒…只使用一个感应，其他都只是花瓶」：画布本体本来就一体=单一 div+自身长高+拖拽感应挂 document 全页生效，零复制零花瓶段；唯一一格一格=drawHighlightRange 一格建一个 div（拖 10×7 的卡 = 70 个小方块各自描边）——改为整个覆盖范围只建 ONE 块矩形；拖卡覆盖预览与侧栏资产落点预览共用同函数自动一并变一体；补丁位 1→2·观感微调轮); v10.28.20.3 adds NO new fields (卡框高光清除+边框统一暗色——用户「深色模式下卡片外框右上角有一条很突兀的白色/浅色高光边线…清除卡片右上角及整个外框所有的白色/浅色渐变高光线」+「将卡片整体的外边框统一改为暗色低调的微弱边框…融入深色背景」：真身=v10.27 磨砂玻璃轮「右上角 2px 高光条」background-image 白渐变贴 top right——浅色玻璃 3D 感、深色下变成刺眼白线；4 处卡片表面高光全清（玻璃卡本体/组背景卡面/主题卡填充层 tint/油漆 ::before——组背景就是那张「整卡」的卡面），边框统一 var(--divider-line)（深色=rgba(255,255,255,0.08) 正是用户举例值、浅色=rgba(118,117,134,0.08)；基础卡宽 2px 不动——主题卡外板几何按 2px 边宽调过只换色）；统计编辑面板高光保留（v10.28.6.2 钦定浮动面板非卡框）；补丁位 2→3·观感微调轮); v10.28.20.4 adds NO new fields (吸合方向感——用户「能不能判定一下方向，如果卡片是在左侧合并后应该就是在左侧而不是变成跑到下方」：真身=mergeCards 等宽归一以左缘为锚，窄卡从左/右并入既有组时被拉成组宽、右缘越过目标竖边 → reflowGroup 按水平重叠把全组压成一列叠到下方（实况探针：80px 窄卡左并入 174px 组 → 整组塌成一列，拖卡落到目标下方）；修法=findMergeSnap 边对加 side（'left'/'right'/'top'/'bottom'=拖动卡在目标哪一侧），mergeCards(card, target, side) 归一后按 side 重新贴齐（左/右贴竖边、上/下贴横边并 x 对齐目标列）再 reflow——贴齐边恒 flush，reflow 按边分列不再塌；补丁位 3→4·纯修复轮); v10.28.20.5 adds NO new fields (国旗卡默认 8×6→8×5、国徽卡默认 4×3→5×5——用户「把国旗卡片改成 长5格 国徽卡片改成5x5」：assetSpan flag h 6→5 + shield 显式 5×5，草稿恢复兜底同步（flag rowSpan||5、shield 分支 colSpan||5/rowSpan||5）；补丁位 4→5·观感微调轮); v10.28.21 adds NO new fields (合并组整体缩放+单击恒选整组——用户「合并后整体的卡片能不能做一个可以放大缩小的功能和独立卡片一样，然后当我只是要选中整体的卡片时会直接触发到独立卡片而不是在选中独立卡片的情况下双击才会触发」：①整组选中时 8 手柄挂组框（可见成员旋转感知 bbox 并集、轴对齐、rotation 0），拖手柄=整组缩放——组框像素→整格量化、成员位置按框内相对比例缩放、成员尺寸各自量化整格（span 既有字段往返）、等比锁成员两轴取小倍率保长宽比（fitW/fitH 既有字段）；提交不 reflow/不对齐列顶（用户刚调的结果系统不抢回）；②单击组内成员恒选整组（v10.28.15.1「再次点击同一张卡=单独选中」切换分支整体移除，死变量 mousedownAlreadySelected 删除）、单独选中只走双击；合并后 deselectAll 不自动选中保留；小更新位 20→21·新功能轮·补丁归零); v10.28.21.1 adds NO new fields (组内图源弹窗劫持双击修复——用户「选中了整体然后要再选中单独的卡片时就不让选了」+「再点击一次就打开了」：真身=组内国旗/国徽卡未设图时单击必弹图源弹窗，modal 遮罩吃掉双击第二击 → 双击单独选中/拖出拆分整条路径失效；修法=①组内卡单击不再弹图源，只在单独选中且 e.detail=2 时弹（用户钦定「在选中独立卡片的情况下双击才会触发」）②单独选中后单击同一张卡保持单独不重置回整组；补丁位 0→1·纯修复轮); v10.28.21.2 adds NO new fields (文字工具栏输入中恒显——用户「那个工具栏能不能在输入的时候都会一直展示」：真身=v10.28.10 输入框口径只认非空选区（框选口径光标态不弹），卡内编辑框（标签/姓名/表格格…）打字时工具栏不显示；修法=textSelInInput 光标态在 .grid-card 内输入框也弹+缓存 LAST_INPUT_EL 改存元素（选区态/光标态都可回用）；标题框/搜索框/弹层输入框打字不弹（防干扰）；Escape 在卡内输入框只折叠选区工具栏保持；补丁位 1→2·观感微调轮; v10.28.22 adds NO new fields (工具栏添加图像·Wiki 式内联图——用户「在工具栏的右侧那边再增加一个按钮叫添加图像，就是你可以添加国旗/国徽等等的图像，然后图像的大小是根据文字的大小进行等比例变化的，这样可以完成类似于Wiki的功能」：工具栏右端 image 钮（输入框态置灰——输入框装不了图）+ tt-img-pop 弹层（国旗库 15 面程序化条纹 canvas 光栅化 PNG data URL——块2 IIFE 经 window.FC_FLAG_LIBRARY 供数 + 上传任意图）；只进内容卡文字，insertInlineImage 选区替换/光标插入、光标置图后、onContentChange 入撤销快照；<img class="tt-inline-img"> CSS height 1.5em（em 继承 → 字号变图等比变：光标态整块字号/选区 span 字号两条路都等比）；内容卡草稿本就 innerHTML 往返 + sanitizeDraftHtml 放行 data: 图 → 保存/恢复无损，零新字段；块1 showToast 上窗（上传成功 toast 跨 IIFE 调用——电池抓出 ReferenceError）；小更新位 21→22·新功能轮·补丁归零)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸); v10.28.17.3 adds NO new fields (Migrate to Cards 按钮 Uiverse 换肤：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.17.4 adds NO new fields (顶部 Migrate 按钮换 cssbuttons-io 紫渐变代码按钮换肤+弹窗 Migrate to Cards 还原 v10.28.17.3 药丸：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.19 adds additive sheetData (表格卡——用户「我们还缺少一个sheet card」：可编辑表格，首行表头加粗、行内编辑、底部 +添加行/+添加列、行尾 ✕ 删除；dataset JSON 串 {cols,cells}，cells[0] 恒为表头行；legacy drafts omit → 种子 2 列 4 行); v10.28.19.1 grows sheet default to 10×7 (表格卡默认尺寸 宽10格×长7格——用户「那个卡片大小能不能是默认长7格宽10格」：工厂默认/assetSpan/草稿恢复兜底三处 8×5→10×7); v10.28.19.2 adds NO new fields (表格卡加行/加列自动变长变宽——用户「然后能不能在添加行/列的时候自动变长和宽啊」：+添加行 → rowSpan+1 卡片变长、+添加列 → colSpan+1 卡片变宽；sheetGrow 读 dataset 现有跨度写回+setCardSize+刷手柄，跨度随草稿往返；种子 3 行与 restoreSheet 恢复路径不增长); v10.28.19.3 extends sheetData with colW/rowH (表格卡列宽/行高手柄——用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」：每列上方 ↔、每行左侧 ↕ 按住拖动调整；colgroup 三截制 18px+数据列+22px；colW/rowH 随草稿往返，legacy drafts omit → 默认等分); v10.28.20 adds NO new fields (撤回/恢复——用户「能不能在顶部添加一个撤回和恢复按钮」：快照式撤销栈，historySnapshot 剥 lastSaved 时间戳后 JSON 串对比，600ms 防抖挂在 onContentChange 尾零调用点改动；historyRestore 走 applyDraft 先清画布幂等+saveDraft 落库+重基线防序列化归一漂移吞恢复链；栈上限 60；工具栏 撤回/恢复 两钮 + Ctrl+Z/Ctrl+Y 输入框焦点让位原生撤销); v10.28.20.1 adds NO new fields (吸合误判修复——用户「为什么我把卡片拖到一个位置他会被一个和他没有任何接近的卡片吸附合并？」：真身=findMergeSnap 只按单轴边距判命中，同高不同 x 的卡隔着千余像素照样被吸；修法=边对判定加垂直轴严格重叠守卫——x 轴边对要求 y 范围相交、y 轴边对要求 x 范围相交；补丁位 0→1·纯修复轮); v10.28.20.2 adds NO new fields (一体式高亮——用户「画布是不是一体…改成全部一体式的不要偷懒就搞成一个一个的」+「我怕你又偷懒…只使用一个感应，其他都只是花瓶」：画布本体本来就一体=单一 div+自身长高+拖拽感应挂 document 全页生效，零复制零花瓶段；唯一一格一格=drawHighlightRange 一格建一个 div（拖 10×7 的卡 = 70 个小方块各自描边）——改为整个覆盖范围只建 ONE 块矩形；拖卡覆盖预览与侧栏资产落点预览共用同函数自动一并变一体；补丁位 1→2·观感微调轮); v10.28.20.3 adds NO new fields (卡框高光清除+边框统一暗色——用户「深色模式下卡片外框右上角有一条很突兀的白色/浅色高光边线…清除卡片右上角及整个外框所有的白色/浅色渐变高光线」+「将卡片整体的外边框统一改为暗色低调的微弱边框…融入深色背景」：真身=v10.27 磨砂玻璃轮「右上角 2px 高光条」background-image 白渐变贴 top right——浅色玻璃 3D 感、深色下变成刺眼白线；4 处卡片表面高光全清（玻璃卡本体/组背景卡面/主题卡填充层 tint/油漆 ::before——组背景就是那张「整卡」的卡面），边框统一 var(--divider-line)（深色=rgba(255,255,255,0.08) 正是用户举例值、浅色=rgba(118,117,134,0.08)；基础卡宽 2px 不动——主题卡外板几何按 2px 边宽调过只换色）；统计编辑面板高光保留（v10.28.6.2 钦定浮动面板非卡框）；补丁位 2→3·观感微调轮); v10.28.20.4 adds NO new fields (吸合方向感——用户「能不能判定一下方向，如果卡片是在左侧合并后应该就是在左侧而不是变成跑到下方」：真身=mergeCards 等宽归一以左缘为锚，窄卡从左/右并入既有组时被拉成组宽、右缘越过目标竖边 → reflowGroup 按水平重叠把全组压成一列叠到下方（实况探针：80px 窄卡左并入 174px 组 → 整组塌成一列，拖卡落到目标下方）；修法=findMergeSnap 边对加 side（'left'/'right'/'top'/'bottom'=拖动卡在目标哪一侧），mergeCards(card, target, side) 归一后按 side 重新贴齐（左/右贴竖边、上/下贴横边并 x 对齐目标列）再 reflow——贴齐边恒 flush，reflow 按边分列不再塌；补丁位 3→4·纯修复轮); v10.28.20.5 adds NO new fields (国旗卡默认 8×6→8×5、国徽卡默认 4×3→5×5——用户「把国旗卡片改成 长5格 国徽卡片改成5x5」：assetSpan flag h 6→5 + shield 显式 5×5，草稿恢复兜底同步（flag rowSpan||5、shield 分支 colSpan||5/rowSpan||5）；补丁位 4→5·观感微调轮); v10.28.21 adds NO new fields (合并组整体缩放+单击恒选整组——用户「合并后整体的卡片能不能做一个可以放大缩小的功能和独立卡片一样，然后当我只是要选中整体的卡片时会直接触发到独立卡片而不是在选中独立卡片的情况下双击才会触发」：①整组选中时 8 手柄挂组框（可见成员旋转感知 bbox 并集、轴对齐、rotation 0），拖手柄=整组缩放——组框像素→整格量化、成员位置按框内相对比例缩放、成员尺寸各自量化整格（span 既有字段往返）、等比锁成员两轴取小倍率保长宽比（fitW/fitH 既有字段）；提交不 reflow/不对齐列顶（用户刚调的结果系统不抢回）；②单击组内成员恒选整组（v10.28.15.1「再次点击同一张卡=单独选中」切换分支整体移除，死变量 mousedownAlreadySelected 删除）、单独选中只走双击；合并后 deselectAll 不自动选中保留；小更新位 20→21·新功能轮·补丁归零); v10.28.21.1 adds NO new fields (组内图源弹窗劫持双击修复——用户「选中了整体然后要再选中单独的卡片时就不让选了」+「再点击一次就打开了」：真身=组内国旗/国徽卡未设图时单击必弹图源弹窗，modal 遮罩吃掉双击第二击 → 双击单独选中/拖出拆分整条路径失效；修法=①组内卡单击不再弹图源，只在单独选中且 e.detail=2 时弹（用户钦定「在选中独立卡片的情况下双击才会触发」）②单独选中后单击同一张卡保持单独不重置回整组；补丁位 0→1·纯修复轮); v10.28.21.2 adds NO new fields (文字工具栏输入中恒显——用户「那个工具栏能不能在输入的时候都会一直展示」：真身=v10.28.10 输入框口径只认非空选区（框选口径光标态不弹），卡内编辑框（标签/姓名/表格格…）打字时工具栏不显示；修法=textSelInInput 光标态在 .grid-card 内输入框也弹+缓存 LAST_INPUT_EL 改存元素（选区态/光标态都可回用）；标题框/搜索框/弹层输入框打字不弹（防干扰）；Escape 在卡内输入框只折叠选区工具栏保持；补丁位 1→2·观感微调轮; v10.28.22 adds NO new fields (工具栏添加图像·Wiki 式内联图——用户「在工具栏的右侧那边再增加一个按钮叫添加图像，就是你可以添加国旗/国徽等等的图像，然后图像的大小是根据文字的大小进行等比例变化的，这样可以完成类似于Wiki的功能」：工具栏右端 image 钮（输入框态置灰——输入框装不了图）+ tt-img-pop 弹层（国旗库 15 面程序化条纹 canvas 光栅化 PNG data URL——块2 IIFE 经 window.FC_FLAG_LIBRARY 供数 + 上传任意图）；只进内容卡文字，insertInlineImage 选区替换/光标插入、光标置图后、onContentChange 入撤销快照；<img class="tt-inline-img"> CSS height 1.5em（em 继承 → 字号变图等比变：光标态整块字号/选区 span 字号两条路都等比）；内容卡草稿本就 innerHTML 往返 + sanitizeDraftHtml 放行 data: 图 → 保存/恢复无损，零新字段；块1 showToast 上窗（上传成功 toast 跨 IIFE 调用——电池抓出 ReferenceError）；小更新位 21→22·新功能轮·补丁归零); v10.28.23 adds NO new fields (添加图像钮不再置灰+弹层挂工具栏上方+网页搜索——用户「为什么该按钮没办法点击？」：v10.28.22 输入框态置灰 pointer-events:none 是设计却成事故，去置灰、插入时无内容卡光标 toast 引导；用户「他这个的图像的弹窗是在工具栏上方的就是用户可以直接进行一个预览，而不是覆盖全屏的」：showImgPop 上方优先锚定、贴顶翻下方；用户「一样可以在网页上搜索/上传」：弹层顶部搜索框+Wikimedia Commons API（免费免密钥 CORS origin=*，window.FC_IMG_SEARCH_API 可打桩）2 列缩略图预览、点格插 640px 缩略 URL、坏图格自动隐去、清除/失败回退国旗库；搜索框抢焦点→插入时光标回放（IMG_SAVED_RANGE 打开弹层时记住、先 focus 后加范围——Chrome 先加范围再 focus 会丢）；hideTextToolbar 弹层开着不收工具栏（点搜索框聚焦会把弹层关掉+display:none 后懒加载缩略图永不加载——电池探针实况，收起改走显式路径）；小更新位 22→23·新功能轮·补丁归零)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -12417,7 +12445,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   </button>
   <!-- v10.28.22: 添加图像（用户「在工具栏的右侧那边再增加一个按钮叫添加图像…
        图像的大小是根据文字的大小进行等比例变化…完成类似于Wiki的功能」）——Wiki
-       式内联图：国旗库+上传，只进内容卡文字（输入框态置灰） -->
+       式内联图：国旗库+上传，只进内容卡文字
+       v10.28.23: 钮不再置灰（用户「为什么该按钮没办法点击？」——输入框态置灰是
+       设计却成了事故；任何态可点，插入时无内容卡光标会 toast 引导） -->
   <div class="tt-sep"></div>
   <button type="button" class="tt-btn" id="ttImgBtn" title="添加图像">
     <span class="material-symbols-outlined">image</span>
@@ -12433,8 +12463,16 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   <div class="tsz-grid" id="ttSizeGrid"></div>
 </div>
 
-<!-- ═══ v10.28.22 IMAGE POPOVER（工具栏右端「添加图像」：国旗库 + 上传，Wiki 式内联图） ═══ -->
+<!-- ═══ v10.28.22 IMAGE POPOVER（工具栏右端「添加图像」：国旗库 + 上传，Wiki 式内联图）
+     v10.28.23: 弹层挂工具栏上方直接预览（用户「弹窗是在工具栏上方的…而不是覆盖全屏」）+
+     网页搜索（用户「一样可以在网页上搜索/上传」——Wikimedia Commons 维基图库 API：
+     免费免密钥、CORS origin=*）+ 上传保留 ═══ -->
 <div class="radius-popover tt-img-pop" id="ttImgPop">
+  <div class="tim-search">
+    <input type="text" id="ttImgSearch" placeholder="搜索图片（维基图库）…">
+    <button type="button" class="tim-search-btn" id="ttImgSearchBtn" title="搜索"><span class="material-symbols-outlined">search</span></button>
+  </div>
+  <div class="tim-head"><span id="ttImgHead">国旗库</span><span class="tim-clear" id="ttImgClear" hidden>清除搜索</span></div>
   <div class="tim-grid" id="ttImgGrid"></div>
   <input type="file" id="ttInlineFileInput" accept="image/*" style="display:none">
 </div>
@@ -12815,6 +12853,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   window.textSelInInput = textSelInInput;
 
   function hideTextToolbar() {
+    // v10.28.23: 图像弹层开着时工具栏不收起——弹层挂工具栏上方，点搜索框聚焦会
+    // 让选区离开内容卡触发本函数（电池探针实况）：照常收起 = ①弹层随工具栏被关
+    // （用户点进搜索框弹层就没了）②弹层 display:none 后懒加载缩略图永不加载
+    // （request 都不发出、坏图格 onerror 不触发）。收起改走显式路径：Escape/点
+    // 画布 → hideContextMenu、钮 toggle、插入成功 → hideImgPop
+    if (IMG_POP && IMG_POP.classList.contains('active')) return;
     if (TOOLBAR) TOOLBAR.style.display = 'none';
     hideFontPanel();
     hideSizePop();
@@ -12843,9 +12887,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function syncToolbarState() {
     if (TOOLBAR.style.display === 'none') return;
     var info = textSelInCard() || textCaretInCard() || textSelInInput();
-    // v10.28.22: 添加图像只进内容卡文字——输入框态置灰（输入框装不了图）
-    var imgBtnEl = document.getElementById('ttImgBtn');
-    if (imgBtnEl) imgBtnEl.classList.toggle('tt-disabled', !!(info && info.inputEl));
+    // v10.28.23: 图像钮不再置灰——v10.28.22 输入框态置灰（pointer-events:none）被用户
+    // 报「按钮没办法点击」（还点不动且无提示）；现在任何态可点，插入时无内容卡光标
+    // 会由 insertInlineImage toast 引导（「图像只能插入内容卡的文字里」）
     if (info && info.inputEl) {
       // v10.28.10: 输入框态——queryCommandState 只认 contenteditable 文档选区，
       // 输入框激活态/字号/字体一律从元素计算样式读
@@ -13093,6 +13137,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // 字号包 span——两条路都走 em 继承自动等比；草稿 innerHTML 往返 +
   // sanitizeDraftHtml 放行 data: 图 → 保存/恢复无损。 ──
   var IMG_POP = null, IMG_BUILT = false;
+  var IMG_SAVED_RANGE = null, IMG_SAVED_EL = null; // v10.28.23: 弹层打开瞬间记住的内容卡光标/选区（搜索框抢焦点后回放用）
   function flagToDataUrl(colors) {
     var W = 240, H = 150; // 国旗卡 8宽×5长 同比例
     var cv = document.createElement('canvas');
@@ -13107,6 +13152,17 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   function insertInlineImage(src, alt) {
     var info = textSelInCard() || textCaretInCard();
+    if (!info && IMG_SAVED_RANGE && IMG_SAVED_EL && IMG_SAVED_EL.isConnected) {
+      // v10.28.23: 弹层里搜索框抢过焦点 → 活选区没了；回放打开弹层时记住的
+      // 内容卡光标再插入（先 focus 后加范围——Chrome 先加范围再 focus 会丢）
+      try {
+        IMG_SAVED_EL.focus();
+        var sel1 = window.getSelection();
+        sel1.removeAllRanges();
+        sel1.addRange(IMG_SAVED_RANGE);
+      } catch (e) {}
+      info = textSelInCard() || textCaretInCard();
+    }
     if (!info) { showToast('图像只能插入内容卡的文字里'); return false; }
     var img = document.createElement('img');
     img.className = 'tt-inline-img';
@@ -13127,11 +13183,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (window.onContentChange) window.onContentChange();
     return true;
   }
-  function buildImgPop() {
-    if (IMG_BUILT || !IMG_POP) return;
-    IMG_BUILT = true;
-    var grid = document.getElementById('ttImgGrid');
-    if (!grid) return;
+  // v10.28.23: 国旗库+上传格独立成 renderLibTiles（搜索结果覆盖同一网格，
+  // 清除搜索/失败回退时重绘回库视图）
+  function renderLibTiles(grid) {
     var lib = window.FC_FLAG_LIBRARY || [];
     lib.forEach(function (f) {
       var b = document.createElement('button');
@@ -13164,6 +13218,88 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (fi) fi.click();
     });
     grid.appendChild(up);
+  }
+  function showLibView(keepQuery) {
+    var grid = document.getElementById('ttImgGrid');
+    if (grid) { grid.innerHTML = ''; grid.classList.remove('tim-search-mode'); renderLibTiles(grid); }
+    var head = document.getElementById('ttImgHead');
+    if (head) head.textContent = '国旗库';
+    var clear = document.getElementById('ttImgClear');
+    if (clear) clear.hidden = true;
+    if (!keepQuery) {
+      var input = document.getElementById('ttImgSearch');
+      if (input) input.value = '';
+    }
+  }
+  // v10.28.23: 网页搜索——Wikimedia Commons 维基图库 API（免费免密钥、CORS
+  // origin=*；与 Wiki 式内联图同源口径）。电池经 window.FC_IMG_SEARCH_API 打桩。
+  function runImgSearch(q) {
+    q = (q || '').trim();
+    if (!q) return;
+    var grid = document.getElementById('ttImgGrid');
+    if (!grid) return;
+    grid.innerHTML = '<div class="tim-loading">搜索中…</div>';
+    grid.classList.add('tim-search-mode');
+    var head = document.getElementById('ttImgHead');
+    if (head) head.textContent = '搜索：' + (q.length > 12 ? q.slice(0, 12) + '…' : q);
+    var clear = document.getElementById('ttImgClear');
+    if (clear) clear.hidden = false;
+    var api = window.FC_IMG_SEARCH_API || 'https://commons.wikimedia.org/w/api.php';
+    var url = api + '?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=24' +
+      '&prop=imageinfo&iiprop=url|size&iiurlwidth=640&gsrsearch=' + encodeURIComponent(q);
+    fetch(url).then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      renderImgResults((j && j.query && j.query.pages) || {});
+    }).catch(function () {
+      showToast('搜索失败，请检查网络后重试');
+      showLibView(true); // 保留用户输入的词，方便改词重试
+    });
+  }
+  function renderImgResults(pages) {
+    var grid = document.getElementById('ttImgGrid');
+    if (!grid) return;
+    var items = Object.keys(pages).map(function (k) { return pages[k]; })
+      .filter(function (p) { return p && p.imageinfo && p.imageinfo[0] && p.imageinfo[0].thumburl; })
+      .sort(function (a, b) { return (a.index || 0) - (b.index || 0); });
+    grid.innerHTML = '';
+    if (!items.length) {
+      grid.innerHTML = '<div class="tim-loading">没有找到图片，换个词试试</div>';
+      return;
+    }
+    items.forEach(function (p) {
+      var ii = p.imageinfo[0];
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tim-tile tim-thumb-tile';
+      b.title = (p.title || '').replace(/^File:/, '') + '（维基共享资源）';
+      var im = document.createElement('img');
+      im.loading = 'lazy';
+      im.alt = p.title || '';
+      im.src = ii.thumburl;
+      im.addEventListener('error', function () { b.style.display = 'none'; }); // 坏图格自动隐去
+      b.appendChild(im);
+      b.addEventListener('click', function () {
+        hideImgPop();
+        // 插 640px 缩略 URL（原图可能是几十 MB 的 TIFF——1.5em 高的内联图用不上）
+        insertInlineImage(ii.thumburl, p.title || '');
+      });
+      grid.appendChild(b);
+    });
+  }
+  function buildImgPop() {
+    if (IMG_BUILT || !IMG_POP) return;
+    IMG_BUILT = true;
+    showLibView();
+    var input = document.getElementById('ttImgSearch');
+    var sbtn = document.getElementById('ttImgSearchBtn');
+    if (input) input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); runImgSearch(input.value); }
+    });
+    if (sbtn) sbtn.addEventListener('click', function () { runImgSearch(input && input.value); });
+    var clear = document.getElementById('ttImgClear');
+    if (clear) clear.addEventListener('click', function () { showLibView(); });
     var fi = document.getElementById('ttInlineFileInput');
     if (fi) fi.addEventListener('change', function () {
       var file = fi.files && fi.files[0];
@@ -13184,13 +13320,27 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     buildImgPop();
     var anchor = document.getElementById('ttImgBtn');
     if (!anchor) return;
+    // v10.28.23: 记住打开瞬间的内容卡光标/选区——弹层里点搜索框会抢焦点，
+    // 之后点图插入时活选区已丢，靠这里回放（见 insertInlineImage）
+    IMG_SAVED_RANGE = null; IMG_SAVED_EL = null;
+    var sel0 = window.getSelection();
+    if (sel0 && sel0.rangeCount) {
+      var r0 = sel0.getRangeAt(0).cloneRange();
+      var el0 = r0.startContainer.nodeType === 3 ? r0.startContainer.parentNode : r0.startContainer;
+      if (el0 && el0.closest && el0.closest('.card-text-content')) {
+        IMG_SAVED_RANGE = r0; IMG_SAVED_EL = el0;
+      }
+    }
+    showLibView(); // 每次打开从国旗库开始（结果页态简单可预期）
     IMG_POP.classList.add('active');
     IMG_POP.style.visibility = 'hidden';
     var r = anchor.getBoundingClientRect();
     var w = IMG_POP.offsetWidth, h = IMG_POP.offsetHeight;
     var x = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8)); // 右端钮 → 弹层右缘对齐按钮右缘
-    var y = r.bottom + 6;
-    if (y + h > window.innerHeight - 8) y = Math.max(8, r.top - h - 6);
+    // v10.28.23: 挂工具栏上方直接预览（用户「弹窗是在工具栏上方的…而不是覆盖全屏」）；
+    // 工具栏贴顶放不下才翻到下方（原 v10.28.22 是下方优先）
+    var y = r.top - h - 6;
+    if (y < 8) y = r.bottom + 6;
     IMG_POP.style.left = x + 'px';
     IMG_POP.style.top = y + 'px';
     IMG_POP.style.visibility = '';
@@ -13380,7 +13530,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   });
   // v10.28.22: 添加图像按钮 → 弹层切换；弹层内 mousedown 保光标（同字号弹层口径）
   IMG_POP = document.getElementById('ttImgPop');
-  if (IMG_POP) IMG_POP.addEventListener('mousedown', function (e) { e.preventDefault(); });
+  if (IMG_POP) IMG_POP.addEventListener('mousedown', function (e) {
+    // v10.28.23: 搜索输入框/搜索钮要能正常聚焦点击——只对弹层其余部分保光标
+    if (e.target.closest && e.target.closest('.tim-search')) return;
+    e.preventDefault();
+  });
   var imgBtnEl2 = document.getElementById('ttImgBtn');
   if (imgBtnEl2) imgBtnEl2.addEventListener('click', function () {
     if (IMG_POP && IMG_POP.classList.contains('active')) hideImgPop();
