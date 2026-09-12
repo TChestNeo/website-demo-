@@ -499,7 +499,15 @@ window.MN_SITE = window.MN_SITE || {};
 //   元素级落在内联图边界，Chrome 光标矩形退化（0,0,0,0）→ 工具栏定位锚到视口左上角；修法=光标优先放进
 //   图后文本节点偏移 0（探针实证矩形正常）+positionToolbar 退化矩形兜底锚回文字区矩形（图是末节点等
 //   残余情况也绝不跳左上角）；零后端、ethereal 零改动无需 inline-css；FC v10.28.24.1（补丁位 0→1）
-window.MN_SITE_VERSION = 'v0.2.34.1';
+// v0.2.34.2 = 两个修复（补丁位 1→2·纯修复轮；2026-09-12）——用户「就只有content card正常 sheet card
+//   不正常」+「一添加它的大小就已经超出了表格而且也没办法像文字一样删除」：①大字号时宽图溢出表格格——
+//   内联图 height 1.5em 下宽图（国旗 1.6:1）在字号 29+ 时宽度超过固定宽表格格（线上探针实证 font 32 →
+//   77px 图 > 69px 格溢出）；修法=规则加 max-width:100% + object-fit:contain（普通字号零变化、超宽
+//   按比例收进盒内不压扁不溢出）②点击内联图无法像文字一样删除——点击图后光标落点不定且无选中反馈
+//   （探针实证 Delete/Backspace 不一定命中图）；修法=点击 rich 字段里的内联图直接整图选中（可视反馈），
+//   Delete/Backspace 即删；内容卡点击行为不动（用户基线）；零后端、ethereal 零改动无需 inline-css；
+//   FC v10.28.24.2（补丁位 1→2）
+window.MN_SITE_VERSION = 'v0.2.34.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -650,4 +658,9 @@ window.MN_SITE_VERSION = 'v0.2.34.1';
 //   ②插图后光标 setStartAfter(img) 元素级落在内联图边界，Chrome 光标矩形退化（0,0,0,0）→ 工具栏
 //   定位跳左上角；修法=光标优先放进图后文本节点偏移 0（探针实证矩形正常）+positionToolbar 退化
 //   矩形兜底锚回 textEl 矩形；零后端、ethereal 零改动无需 inline-css
-window.FLUIDCANVAS_VERSION = 'v10.28.24.1';
+// v10.28.24.2 = 两个修复（补丁位 1→2·纯修复轮；2026-09-12）——用户「就只有content card正常 sheet card
+//   不正常」+「一添加它的大小就已经超出了表格而且也没办法像文字一样删除」：①大字号时宽图溢出表格格——
+//   规则加 max-width:100% + object-fit:contain（普通字号零变化、超宽按比例收进盒内不压扁不溢出）
+//   ②点击 rich 字段里的内联图直接整图选中（可视反馈），Delete/Backspace 即删；内容卡点击行为不动
+//   （用户基线）；零后端、ethereal 零改动无需 inline-css
+window.FLUIDCANVAS_VERSION = 'v10.28.24.2';
