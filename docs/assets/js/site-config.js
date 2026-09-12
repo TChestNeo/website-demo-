@@ -542,7 +542,25 @@ window.MN_SITE = window.MN_SITE || {};
 //   ③reflowGroup 保形化（只重画背景/手柄、永不改成员几何）+行卡机制（rowInGroup）整体退役（legacy 草稿
 //   忽略该字段、像素几何照存）；④组背景 computeGroupOutline 并集轮廓 clip-path（L/十字剪影、描边/阴影
 //   filter drop-shadow 栈跟随剪影、空角点击落到画布）；⑤墙让位 right/left 加垂直重叠守卫（台阶斜对卡不误推）
-window.MN_SITE_VERSION = 'v0.2.36.0';
+// v0.2.37.0 = 自定义页面背景（小改动位 36→37·新功能轮·补丁归零；2026-09-13）——用户「在卡片列表的下方添加
+//   一个标题叫自定义…上传自己的背景…16:9是最低要求可以做得很长…多图纵向拼接（图2 接图1 下）…拖动改变
+//   上下排列顺序…虚化边缘单独调整虚化范围做出渐渐变化的过渡…弹窗右侧整页预览左侧工具栏…预览多个比例
+//   （平板16:10/手机20:9/16:9/21:9 + 详细折叠 1:1.4/4:3/1:1）」：资产面板「自定义」区（页面背景入口+状态
+//   「未设置/N 张」）；背景=整页背景直接画在 gridCanvas 自身 background-image 上（不建 div——层级天然正确、
+//   背景图不是事件目标；.has-page-bg 类灭网格线；minHeight=画布宽×合成高/1600 让画布随背景长高，滚动扩行
+//   零侵入）；弹窗左工具栏（上传+图片列表[缩略图/上下虚化滑块 0-400px/删除/拖拽排序把手]+比例区+保存/取消/
+//   移除）右整页预览（真实画布克隆剥手柄/对齐线/编辑态 scale 进比例框，aspect-ratio 7 档：1.6/2.222/1.778/
+//   2.333 + 详细 0.714/1.333/1）；合成=1600 宽离屏 canvas 纵向拼接+缝区 destination-in 线性渐变交叉淡化
+//   （α_i+α_{i+1}≡1；避开 CSS mask-image 史载渲染前科）+先 fillRect 主题底色（JPEG 无 alpha 防深色主题发黑）；
+//   16:9 最低校验=合成高/1600 ≥ 9/16 保存拦截+红提示实时重算（羽化重叠降低总高）；上传四门禁（8MB/图片类型/
+//   6 张/累积 dataURL 2.5MB 护 localStorage）；草稿 additive pageBg {imgs,order,feathers}（v 保持 9；合成产物
+//   不入草稿、载入确定性重算；legacy 草稿省略=无背景）；撤销/重做经 applyDraft 清场/恢复往返；零后端、
+//   ethereal 零改动无需 inline-css；getCardFingerprint 补 pagebg 签名（线上电池 draftHas:false 真 bug：指纹
+//   不含背景 → autosave 守卫 fp!==lastSavedContent 永不跳变 → 草稿/云 PUT 永不写 → 刷新丢背景）；电池 27/27
+//   （新 S7b 自动落草稿回归）+ 线上电池 PASS（上传3→拖序→虚化→7 比例→保存→刷新恢复→撤销/重做→移除；
+//   putWithPageBg 仅供参考——fcCloudMode 仅真登录 USR- 用户开）；部署两次 exit 0（00207-hw9 初版、
+//   00208-nzm 指纹修复）；FC v10.28.27.0（小更新位 26→27）
+window.MN_SITE_VERSION = 'v0.2.37.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -729,4 +747,15 @@ window.MN_SITE_VERSION = 'v0.2.36.0';
 //   该字段、像素几何照存）；组背景 clip-path path() 并集轮廓（computeGroupOutline 区间带扫描+边集 XOR+
 //   Eulerian 连环+凸角圆弧 r=min(14,邻段半长)、凹角直角；L/十字剪影、空角点击落画布；描边/阴影 drop-shadow
 //   栈跟随剪影）；墙让位 right/left 加垂直重叠守卫（台阶斜对卡不误推）；零后端、ethereal 零改动无需 inline-css
-window.FLUIDCANVAS_VERSION = 'v10.28.26.0';
+// v10.28.27.0 = 自定义页面背景（小更新位 26→27·新功能轮·补丁归零；2026-09-13）——用户「在卡片列表的下方
+//   添加一个标题叫自定义…上传自己的背景…16:9是最低要求可以做得很长…多图纵向拼接…拖动改变上下排列顺序…
+//   虚化边缘单独调整虚化范围…弹窗右侧整页预览左侧工具栏…预览多个比例（平板16:10/手机20:9/16:9/21:9 +
+//   详细折叠 1:1.4/4:3/1:1）」：资产面板「自定义」区入口；背景=整页背景画在 gridCanvas 自身
+//   background-image（不建 div，层级/事件零侵入；.has-page-bg 灭网格线；minHeight 随合成高长高）；
+//   弹窗左工具栏右整页预览（克隆 scale 进 7 档 aspect-ratio 比例框）；合成=1600 宽 canvas 纵向拼接+缝区
+//   destination-in 线性渐变交叉淡化+主题底色预填（JPEG 无 alpha）；16:9 最低校验保存拦截+红提示；
+//   草稿 additive pageBg（v 保持 9；产物不入草稿载入重算）；撤销/重做往返；getCardFingerprint 补 pagebg
+//   签名（线上电池 draftHas:false：指纹不含背景 → autosave 永不写草稿 → 刷新丢背景）；电池 27/27
+//   （新 S7b 自动落草稿回归）+ 线上电池 PASS；部署两次 exit 0（00207-hw9、00208-nzm 指纹修复）；零后端、
+//   ethereal 零改动无需 inline-css
+window.FLUIDCANVAS_VERSION = 'v10.28.27.0';

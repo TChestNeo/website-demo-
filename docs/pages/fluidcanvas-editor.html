@@ -620,6 +620,76 @@ textarea.input-glass {
   border-radius: 10px;
 }
 .modal-card-body::-webkit-scrollbar-thumb:hover { background: rgba(118,117,134,0.32); }
+/* ── v10.28.27 自定义页面背景弹窗：左工具栏 + 右整页预览 ── */
+.modal-card-preview { max-width: min(1040px, 94vw); width: 94%; }
+.pbg-shell {
+  display: flex; gap: var(--space-md);
+  height: calc(85vh - 2 * var(--space-lg));
+}
+.pbg-tools {
+  width: 300px; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: var(--space-sm);
+  overflow-y: auto; padding-right: 6px;
+  scrollbar-width: thin;
+}
+.pbg-tools::-webkit-scrollbar { width: 5px; }
+.pbg-tools::-webkit-scrollbar-thumb { background: rgba(118,117,134,0.18); border-radius: 10px; }
+.pbg-list { display: flex; flex-direction: column; gap: 6px; min-height: 40px; }
+.pbg-list-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--divider-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-container-lowest);
+  user-select: none;
+}
+.pbg-list-item.dragging { opacity: 0.4; }
+.pbg-list-item.drag-over { border-top: 2px solid var(--color-primary); }
+.pbg-thumb {
+  width: 48px; height: 34px; flex-shrink: 0;
+  border-radius: 4px; background-size: cover; background-position: center;
+  border: 1px solid var(--divider-line);
+}
+.pbg-item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.pbg-feather-row { display: flex; align-items: center; gap: 4px; }
+.pbg-feather-row span { font-size: var(--fs-label-sm); color: var(--color-outline); width: 30px; flex-shrink: 0; }
+.pbg-feather-row input[type="range"] { flex: 1; min-width: 0; }
+.pbg-grip { cursor: grab; color: var(--color-outline); }
+.pbg-del { cursor: pointer; color: var(--color-outline); border: none; background: none; padding: 2px; }
+.pbg-del:hover { color: #e5484d; }
+.pbg-ratio-label { font-size: var(--fs-label-sm); color: var(--color-outline); padding: 4px 0 2px; }
+.pbg-ratio-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.pbg-ratio-btn {
+  flex: 1 1 42%; text-align: center;
+  border: 1px solid var(--divider-line-strong);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  border-radius: var(--radius-md);
+  padding: 5px 6px; font-size: 13px; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.pbg-ratio-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.pbg-ratio-btn:hover:not(.active) { border-color: var(--color-primary); color: var(--color-primary); }
+details.pbg-details summary {
+  font-size: var(--fs-label-sm); color: var(--color-outline);
+  cursor: pointer; padding: 4px 0; user-select: none;
+}
+.pbg-preview { flex: 1; min-width: 0; display: flex; align-items: flex-start; justify-content: center; }
+.pbg-frame {
+  width: min(100%, 620px); flex-shrink: 0;
+  border: 1px solid var(--divider-line-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-container-lowest);
+  overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: thin;
+}
+.pbg-frame::-webkit-scrollbar { width: 5px; }
+.pbg-frame::-webkit-scrollbar-thumb { background: rgba(118,117,134,0.18); border-radius: 10px; }
+.pbg-clone-wrap { position: relative; pointer-events: none; transform-origin: 0 0; overflow: hidden; }
+.pbg-hint { display: none; color: #e5484d; font-size: var(--fs-label-sm); }
+.pbg-hint.show { display: block; }
+.pbg-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; }
+.pbg-empty { font-size: var(--fs-label-sm); color: var(--color-outline); padding: 8px; text-align: center; }
 /* Keep old modal-card scrollbar for backward compat with existing modals */
 .modal-card:not(:has(.modal-card-body)) {
   overflow-y: auto;
@@ -2351,6 +2421,20 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       width: 0; padding: 0; border-right: none;
       overflow: hidden;
     }
+    /* v10.28.27: 自定义页面背景入口——不用 .card 类、不加 draggable：
+       filterAssets 只过滤 .asset-panel .card，资产拖拽武装按 .card[draggable]
+       绑定；误用会被搜索隐藏 + 被武装成资产拖拽（drop 到画布走
+       createAssetCard 造出未知类型卡）。 */
+    .asset-custom-entry {
+      display: flex; align-items: center; gap: var(--space-sm);
+      padding: var(--space-sm); margin-top: 4px;
+      border: 1px solid var(--divider-line);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .asset-custom-entry:hover { border-color: var(--color-primary); }
+    .asset-custom-entry .state { margin-left: auto; font-size: var(--fs-label-sm); color: var(--color-outline); }
     /* Toggle button pinned to the panel's right edge */
     .asset-panel-toggle {
       position: absolute; left: calc(var(--asset-panel-w) + 6px); top: 8px;
@@ -2417,6 +2501,13 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
          （--divider-line 本身只有 8% alpha）。 */
       transition: background-color 0.2s;
     }
+    /* v10.28.27: 自定义页面背景——背景图由 JS 写 inline background-image
+       （backgroundSize 100% auto 宽铺顶对齐），has-page-bg 类灭网格线
+       （网格线是 .grid-canvas 规则的两笔 linear-gradient；inline 优先于本
+       规则所以背景图保留）。背景画在画布自身 = 层级天然正确（画布自身背景
+       < z:0 组背景 < z:1 卡片）且背景图不是事件目标——空点取消选中判据
+       e.target === gridCanvas 零影响。 */
+    .grid-canvas.has-page-bg { background-image: none; }
 
     /* ── Content Card (v8) — editable text block, the new text layer ──
        Background/border opacity is adjustable (背景卡片性质, 0–100%); at 0%
@@ -4369,6 +4460,14 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="history_edu" data-label="Timeline"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">history_edu</span><span class="label-md">Timeline</span></div></div>
     <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="image" data-label="Gallery"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">image</span><span class="label-md">Gallery</span></div></div>
     <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="content" data-label="Content Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">edit_note</span><span class="label-md">Content Card</span></div></div>
+    <!-- v10.28.27: 页面背景入口——非 .card 类、无 draggable（filterAssets 只过滤
+         .card；资产拖拽武装按 .card[draggable] 绑定），状态角标由 JS 回写 -->
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">自定义</div>
+    <div class="asset-custom-entry" onclick="openPageBgModal()">
+      <span class="material-symbols-outlined" style="color:var(--color-primary)">wallpaper</span>
+      <span class="label-md">页面背景</span>
+      <span class="state" id="pageBgEntryState">未设置</span>
+    </div>
   </div>
 
   <!-- ═══ EDITOR BODY (grid canvas) ═══ -->
@@ -4557,6 +4656,53 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       <button class="btn btn-primary btn-sm" onclick="confirmFlagSelection()">
         <span class="material-symbols-outlined">check</span> Confirm Selection
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Page Background Modal (v10.28.27) — 自定义页面背景：多图纵向拼接/
+     拖拽排序/边缘虚化/7 比例整页预览；16:9 是最低要求（可更长） -->
+<div class="modal-container" id="pageBgModal">
+  <div class="modal-card modal-card-preview" data-onclose="closePageBgModalCancel">
+    <div class="flex-between" style="margin-bottom:var(--space-sm)">
+      <h3 class="headline-md">页面背景</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closePageBgModalCancel()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="pbg-shell">
+      <div class="pbg-tools">
+        <input type="file" id="pageBgFileInput" accept="image/*" style="display:none" onchange="handlePageBgUpload(this)">
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('pageBgFileInput').click()">
+          <span class="material-symbols-outlined">upload_file</span> 上传图片
+        </button>
+        <div class="pbg-list" id="pbgList"></div>
+        <div class="pbg-empty" id="pbgEmpty">还没有图片——上传后会按顺序纵向拼接（图2 接在图1 下方）。</div>
+        <div class="pbg-ratio-label">基础比例</div>
+        <div class="pbg-ratio-row" id="pbgRatioRow">
+          <button class="pbg-ratio-btn" data-ratio="1.6" onclick="pbgSetRatio('1.6', this)">平板 16:10</button>
+          <button class="pbg-ratio-btn" data-ratio="2.222" onclick="pbgSetRatio('2.222', this)">手机 20:9</button>
+          <button class="pbg-ratio-btn active" data-ratio="1.778" onclick="pbgSetRatio('1.778', this)">16:9</button>
+          <button class="pbg-ratio-btn" data-ratio="2.333" onclick="pbgSetRatio('2.333', this)">21:9</button>
+        </div>
+        <details class="pbg-details">
+          <summary>详细（折叠屏适配）</summary>
+          <div class="pbg-ratio-row" style="margin-top:4px">
+            <button class="pbg-ratio-btn" data-ratio="0.714" onclick="pbgSetRatio('0.714', this)">1:1.4</button>
+            <button class="pbg-ratio-btn" data-ratio="1.333" onclick="pbgSetRatio('1.333', this)">4:3</button>
+            <button class="pbg-ratio-btn" data-ratio="1" onclick="pbgSetRatio('1', this)">1:1</button>
+          </div>
+        </details>
+        <div class="pbg-hint" id="pbgRatioHint"></div>
+        <div class="pbg-actions">
+          <button class="btn btn-primary btn-sm" onclick="closePageBgModal()">保存</button>
+          <button class="btn btn-ghost btn-sm" onclick="closePageBgModalCancel()">取消</button>
+          <button class="btn btn-ghost btn-sm" style="color:#e5484d" onclick="pbgRemoveAll()">移除背景</button>
+        </div>
+      </div>
+      <div class="pbg-preview">
+        <div class="pbg-frame" id="pbgFrame" style="aspect-ratio:1.778">
+          <div class="pbg-clone-wrap" id="pbgCloneWrap"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -4837,6 +4983,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       // v10.28.14: 吸合分组——合并/拆分必须触发自动保存
       parts.push(c.dataset.groupId || '');
     });
+    // v10.28.27: 自定义页面背景——保存/撤销/移除都必须触发自动保存
+    // （线上电池抓出 draftHas:false：指纹不含 pageBg → autosave 守卫
+    // fp!==lastSavedContent 永不跳变 → 草稿/云端 PUT 永不写 → 刷新丢背景。
+    // 同卡图口径：只放张数+顺序+虚化值，绝不把 dataURL 放进每键都跑的指纹）
+    parts.push(PAGE_BG_STATE ? 'pagebg:' + PAGE_BG_STATE.imgs.length + ':' +
+      PAGE_BG_STATE.order.join(',') + ':' +
+      JSON.stringify(PAGE_BG_STATE.feathers) : '');
     return parts.join('|||');
   }
 
@@ -5184,6 +5337,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       // → 刷新后卡片翻倍（真 bug，2026-09-01 用户报）。
       getAllCards().forEach(function (c) { if (c.parentNode) c.parentNode.removeChild(c); });
       gridCanvas.querySelectorAll('.grid-group-bg').forEach(function (b) { b.remove(); });
+      // v10.28.27: 撤销/重做/云 409 三条路径都走 applyDraft——页面背景
+      // 一并清场（只摘 DOM 会残留，下一次 buildDraft 把旧背景又写回草稿）
+      removePageBg();
+      PAGE_BG_STATE = null;
+      PAGE_BG_COMPOSITE = null;
+      updatePageBgEntryState();
       deselectAll();
       if (draft) {
         // v10.28.16: 组样式表随草稿往返（分组主题化——组背景套边缘主题）
@@ -5319,6 +5478,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
             }
           });
           reflowAllGroups(); // v10.28.15: 恢复后组背景+规整布局（按几何算，与恢复顺序无关）；v10.28.16 组背景重放边缘主题
+          // v10.28.27: additive 页面背景恢复（形状校验+默认羽化补缺；
+          // 不调 onContentChange——载入口径同卡片恢复）
+          if (draft.pageBg && draft.pageBg.imgs && draft.pageBg.imgs.length) restorePageBg(draft.pageBg);
         }
 
         // Legacy paragraph restore → migration (v1–v7 drafts). v6/v7 stored
@@ -5690,7 +5852,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (groupStyles[g] && groupStyles[g].cardEdge) gsOut[g] = groupStyles[g];
     });
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸); v10.28.17.3 adds NO new fields (Migrate to Cards 按钮 Uiverse 换肤：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.17.4 adds NO new fields (顶部 Migrate 按钮换 cssbuttons-io 紫渐变代码按钮换肤+弹窗 Migrate to Cards 还原 v10.28.17.3 药丸：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.19 adds additive sheetData (表格卡——用户「我们还缺少一个sheet card」：可编辑表格，首行表头加粗、行内编辑、底部 +添加行/+添加列、行尾 ✕ 删除；dataset JSON 串 {cols,cells}，cells[0] 恒为表头行；legacy drafts omit → 种子 2 列 4 行); v10.28.19.1 grows sheet default to 10×7 (表格卡默认尺寸 宽10格×长7格——用户「那个卡片大小能不能是默认长7格宽10格」：工厂默认/assetSpan/草稿恢复兜底三处 8×5→10×7); v10.28.19.2 adds NO new fields (表格卡加行/加列自动变长变宽——用户「然后能不能在添加行/列的时候自动变长和宽啊」：+添加行 → rowSpan+1 卡片变长、+添加列 → colSpan+1 卡片变宽；sheetGrow 读 dataset 现有跨度写回+setCardSize+刷手柄，跨度随草稿往返；种子 3 行与 restoreSheet 恢复路径不增长); v10.28.19.3 extends sheetData with colW/rowH (表格卡列宽/行高手柄——用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」：每列上方 ↔、每行左侧 ↕ 按住拖动调整；colgroup 三截制 18px+数据列+22px；colW/rowH 随草稿往返，legacy drafts omit → 默认等分); v10.28.20 adds NO new fields (撤回/恢复——用户「能不能在顶部添加一个撤回和恢复按钮」：快照式撤销栈，historySnapshot 剥 lastSaved 时间戳后 JSON 串对比，600ms 防抖挂在 onContentChange 尾零调用点改动；historyRestore 走 applyDraft 先清画布幂等+saveDraft 落库+重基线防序列化归一漂移吞恢复链；栈上限 60；工具栏 撤回/恢复 两钮 + Ctrl+Z/Ctrl+Y 输入框焦点让位原生撤销); v10.28.20.1 adds NO new fields (吸合误判修复——用户「为什么我把卡片拖到一个位置他会被一个和他没有任何接近的卡片吸附合并？」：真身=findMergeSnap 只按单轴边距判命中，同高不同 x 的卡隔着千余像素照样被吸；修法=边对判定加垂直轴严格重叠守卫——x 轴边对要求 y 范围相交、y 轴边对要求 x 范围相交；补丁位 0→1·纯修复轮); v10.28.20.2 adds NO new fields (一体式高亮——用户「画布是不是一体…改成全部一体式的不要偷懒就搞成一个一个的」+「我怕你又偷懒…只使用一个感应，其他都只是花瓶」：画布本体本来就一体=单一 div+自身长高+拖拽感应挂 document 全页生效，零复制零花瓶段；唯一一格一格=drawHighlightRange 一格建一个 div（拖 10×7 的卡 = 70 个小方块各自描边）——改为整个覆盖范围只建 ONE 块矩形；拖卡覆盖预览与侧栏资产落点预览共用同函数自动一并变一体；补丁位 1→2·观感微调轮); v10.28.20.3 adds NO new fields (卡框高光清除+边框统一暗色——用户「深色模式下卡片外框右上角有一条很突兀的白色/浅色高光边线…清除卡片右上角及整个外框所有的白色/浅色渐变高光线」+「将卡片整体的外边框统一改为暗色低调的微弱边框…融入深色背景」：真身=v10.27 磨砂玻璃轮「右上角 2px 高光条」background-image 白渐变贴 top right——浅色玻璃 3D 感、深色下变成刺眼白线；4 处卡片表面高光全清（玻璃卡本体/组背景卡面/主题卡填充层 tint/油漆 ::before——组背景就是那张「整卡」的卡面），边框统一 var(--divider-line)（深色=rgba(255,255,255,0.08) 正是用户举例值、浅色=rgba(118,117,134,0.08)；基础卡宽 2px 不动——主题卡外板几何按 2px 边宽调过只换色）；统计编辑面板高光保留（v10.28.6.2 钦定浮动面板非卡框）；补丁位 2→3·观感微调轮); v10.28.20.4 adds NO new fields (吸合方向感——用户「能不能判定一下方向，如果卡片是在左侧合并后应该就是在左侧而不是变成跑到下方」：真身=mergeCards 等宽归一以左缘为锚，窄卡从左/右并入既有组时被拉成组宽、右缘越过目标竖边 → reflowGroup 按水平重叠把全组压成一列叠到下方（实况探针：80px 窄卡左并入 174px 组 → 整组塌成一列，拖卡落到目标下方）；修法=findMergeSnap 边对加 side（'left'/'right'/'top'/'bottom'=拖动卡在目标哪一侧），mergeCards(card, target, side) 归一后按 side 重新贴齐（左/右贴竖边、上/下贴横边并 x 对齐目标列）再 reflow——贴齐边恒 flush，reflow 按边分列不再塌；补丁位 3→4·纯修复轮); v10.28.20.5 adds NO new fields (国旗卡默认 8×6→8×5、国徽卡默认 4×3→5×5——用户「把国旗卡片改成 长5格 国徽卡片改成5x5」：assetSpan flag h 6→5 + shield 显式 5×5，草稿恢复兜底同步（flag rowSpan||5、shield 分支 colSpan||5/rowSpan||5）；补丁位 4→5·观感微调轮); v10.28.21 adds NO new fields (合并组整体缩放+单击恒选整组——用户「合并后整体的卡片能不能做一个可以放大缩小的功能和独立卡片一样，然后当我只是要选中整体的卡片时会直接触发到独立卡片而不是在选中独立卡片的情况下双击才会触发」：①整组选中时 8 手柄挂组框（可见成员旋转感知 bbox 并集、轴对齐、rotation 0），拖手柄=整组缩放——组框像素→整格量化、成员位置按框内相对比例缩放、成员尺寸各自量化整格（span 既有字段往返）、等比锁成员两轴取小倍率保长宽比（fitW/fitH 既有字段）；提交不 reflow/不对齐列顶（用户刚调的结果系统不抢回）；②单击组内成员恒选整组（v10.28.15.1「再次点击同一张卡=单独选中」切换分支整体移除，死变量 mousedownAlreadySelected 删除）、单独选中只走双击；合并后 deselectAll 不自动选中保留；小更新位 20→21·新功能轮·补丁归零); v10.28.21.1 adds NO new fields (组内图源弹窗劫持双击修复——用户「选中了整体然后要再选中单独的卡片时就不让选了」+「再点击一次就打开了」：真身=组内国旗/国徽卡未设图时单击必弹图源弹窗，modal 遮罩吃掉双击第二击 → 双击单独选中/拖出拆分整条路径失效；修法=①组内卡单击不再弹图源，只在单独选中且 e.detail=2 时弹（用户钦定「在选中独立卡片的情况下双击才会触发」）②单独选中后单击同一张卡保持单独不重置回整组；补丁位 0→1·纯修复轮); v10.28.21.2 adds NO new fields (文字工具栏输入中恒显——用户「那个工具栏能不能在输入的时候都会一直展示」：真身=v10.28.10 输入框口径只认非空选区（框选口径光标态不弹），卡内编辑框（标签/姓名/表格格…）打字时工具栏不显示；修法=textSelInInput 光标态在 .grid-card 内输入框也弹+缓存 LAST_INPUT_EL 改存元素（选区态/光标态都可回用）；标题框/搜索框/弹层输入框打字不弹（防干扰）；Escape 在卡内输入框只折叠选区工具栏保持；补丁位 1→2·观感微调轮; v10.28.22 adds NO new fields (工具栏添加图像·Wiki 式内联图——用户「在工具栏的右侧那边再增加一个按钮叫添加图像，就是你可以添加国旗/国徽等等的图像，然后图像的大小是根据文字的大小进行等比例变化的，这样可以完成类似于Wiki的功能」：工具栏右端 image 钮（输入框态置灰——输入框装不了图）+ tt-img-pop 弹层（国旗库 15 面程序化条纹 canvas 光栅化 PNG data URL——块2 IIFE 经 window.FC_FLAG_LIBRARY 供数 + 上传任意图）；只进内容卡文字，insertInlineImage 选区替换/光标插入、光标置图后、onContentChange 入撤销快照；<img class="tt-inline-img"> CSS height 1.5em（em 继承 → 字号变图等比变：光标态整块字号/选区 span 字号两条路都等比）；内容卡草稿本就 innerHTML 往返 + sanitizeDraftHtml 放行 data: 图 → 保存/恢复无损，零新字段；块1 showToast 上窗（上传成功 toast 跨 IIFE 调用——电池抓出 ReferenceError）；小更新位 21→22·新功能轮·补丁归零); v10.28.23 adds NO new fields (添加图像钮不再置灰+弹层挂工具栏上方+网页搜索——用户「为什么该按钮没办法点击？」：v10.28.22 输入框态置灰 pointer-events:none 是设计却成事故，去置灰、插入时无内容卡光标 toast 引导；用户「他这个的图像的弹窗是在工具栏上方的就是用户可以直接进行一个预览，而不是覆盖全屏的」：showImgPop 上方优先锚定、贴顶翻下方；用户「一样可以在网页上搜索/上传」：弹层顶部搜索框+Wikimedia Commons API（免费免密钥 CORS origin=*，window.FC_IMG_SEARCH_API 可打桩）2 列缩略图预览、点格插 640px 缩略 URL、坏图格自动隐去、清除/失败回退国旗库；搜索框抢焦点→插入时光标回放（IMG_SAVED_RANGE 打开弹层时记住、先 focus 后加范围——Chrome 先加范围再 focus 会丢）；hideTextToolbar 弹层开着不收工具栏（点搜索框聚焦会把弹层关掉+display:none 后懒加载缩略图永不加载——电池探针实况，收起改走显式路径）；小更新位 22→23·新功能轮·补丁归零); v10.28.24 adds NO new fields (图像可以插进任何可打字处——用户「我希望他能添加在任何可以打字的地方而不是只限于文字内容卡片」：卡内输入框（标签/姓名/头衔/简介/统计指标/时间线事件与描述/表格格…）第一次插图时现场升级成 contentEditable span（同名同类同内联样式、文字照搬、dataset.rich='1'），此后文字+图片共存；纯文字字段永远还是 input 零影响既有路径；数字/年份字段除外（数值与图表逻辑要纯文字，toast 引导）；序列化全走 fieldHtml/fieldText/setFieldText/makeTextField——带标记文字按 HTML 往返、草稿零新字段（rich HTML 坐既有 label/charName/charTitle/charBio/statsRows/tlEvents/sheetData 串）；弹层打开记住卡内输入框 IMG_SAVED_INPUT（工具栏 mousedown preventDefault 保焦点、搜索/上传抢焦点后仍插回原位）；小更新位 23→24·新功能轮·补丁归零; v10.28.24.1 adds NO new fields (两个修复——用户「在Sheet卡片里添加图像时它的大小没有跟随文本大小」+「为什么在content card输入时工具栏会跑到左上角」：①内联图 1.5em 规则选择器只写 .card-text-content → 加 [data-rich="1"] img.tt-inline-img，富文本化字段（表格格/标签/统计…）里的图随所在字号等比；②真身=插图后光标 setStartAfter(img) 元素级落在内联图边界，Chrome 光标矩形退化（0,0,0,0）→ 工具栏定位锚到视口左上角；修法=光标优先放进图后文本节点偏移 0（探针实证矩形正常）+positionToolbar 退化矩形兜底锚回 textEl 矩形（图是末节点等残余情况也绝不跳左上角）；补丁位 0→1·纯修复轮); v10.28.24.2 adds NO new fields (两个修复——用户「就只有content card正常 sheet card不正常」+「一添加它的大小就已经超出了表格而且也没办法像文字一样删除」：①大字号时宽图溢出表格格——内联图 height 1.5em 下宽图（国旗 1.6:1）在字号 29+ 时宽度超过固定宽表格格（线上探针实证 font 32 → 77px 图 > 69px 格溢出）；修法=规则加 max-width:100% + object-fit:contain（普通字号零变化、超宽按比例收进盒内不压扁不溢出）②点击内联图无法像文字一样删除——点击图后光标落点不定且无选中反馈（探针实证 Delete/Backspace 不一定命中图）；修法=点击 rich 字段里的内联图直接整图选中（可视反馈），Delete/Backspace 即删；内容卡点击行为不动（用户基线）；补丁位 1→2·纯修复轮); v10.28.25 adds additive rowInGroup (合并组可整行成行——用户「如果那个卡片已经有左右两个合并了的 然后我在下面上去合并他只会变成左右两列，我希望是从下面合并时他是可以变成上下两行的就是不只是两列」：真身（探针实证）=旧行为把下方拖入卡挤进目标列，reflow 的 fill 把矮列拉高填满（2列组下方并入 → 另一列 130→216 被拉大），组永远只是左右两列；修法=上/下并入既有组时整宽成行贴组底/组顶——rowInGroup 标记随草稿往返（additive，legacy drafts omit）、reflowGroup 行卡独立于列（不进列划分/不参与 fill/不随列顶对齐跳动、宽度恒整组宽、幂等）、alignGroupTops 列顶对齐跳过行卡、拆分/侧并入清除标记；左右并入仍是列；小更新位 24→25·新功能轮·补丁归零); v10.28.26 adds NO new fields (自由形状合并组——用户「合并后不只是正方形，可以是L型/十字型」：rowInGroup 整行机制整体退役（legacy drafts 含 rowInGroup='1' 恢复时忽略该字段、像素几何照存；载入不再 reflow 归一=形状保持）；接触面模型=上/下并入只按「接触的那一面」（对边 ≤12px 且 x 相交的成员）的最宽值调整大小（倒L 只匹配那一列宽、平底跨列=整面宽）、左右并入完全保尺寸+顶对齐目标；组背景 clip-path 多边形跟随 L/十字剪影（描边/阴影走 filter drop-shadow 栈）；小更新位 25→26·新功能轮·补丁归零)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸); v10.28.17.3 adds NO new fields (Migrate to Cards 按钮 Uiverse 换肤：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.17.4 adds NO new fields (顶部 Migrate 按钮换 cssbuttons-io 紫渐变代码按钮换肤+弹窗 Migrate to Cards 还原 v10.28.17.3 药丸：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.19 adds additive sheetData (表格卡——用户「我们还缺少一个sheet card」：可编辑表格，首行表头加粗、行内编辑、底部 +添加行/+添加列、行尾 ✕ 删除；dataset JSON 串 {cols,cells}，cells[0] 恒为表头行；legacy drafts omit → 种子 2 列 4 行); v10.28.19.1 grows sheet default to 10×7 (表格卡默认尺寸 宽10格×长7格——用户「那个卡片大小能不能是默认长7格宽10格」：工厂默认/assetSpan/草稿恢复兜底三处 8×5→10×7); v10.28.19.2 adds NO new fields (表格卡加行/加列自动变长变宽——用户「然后能不能在添加行/列的时候自动变长和宽啊」：+添加行 → rowSpan+1 卡片变长、+添加列 → colSpan+1 卡片变宽；sheetGrow 读 dataset 现有跨度写回+setCardSize+刷手柄，跨度随草稿往返；种子 3 行与 restoreSheet 恢复路径不增长); v10.28.19.3 extends sheetData with colW/rowH (表格卡列宽/行高手柄——用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」：每列上方 ↔、每行左侧 ↕ 按住拖动调整；colgroup 三截制 18px+数据列+22px；colW/rowH 随草稿往返，legacy drafts omit → 默认等分); v10.28.20 adds NO new fields (撤回/恢复——用户「能不能在顶部添加一个撤回和恢复按钮」：快照式撤销栈，historySnapshot 剥 lastSaved 时间戳后 JSON 串对比，600ms 防抖挂在 onContentChange 尾零调用点改动；historyRestore 走 applyDraft 先清画布幂等+saveDraft 落库+重基线防序列化归一漂移吞恢复链；栈上限 60；工具栏 撤回/恢复 两钮 + Ctrl+Z/Ctrl+Y 输入框焦点让位原生撤销); v10.28.20.1 adds NO new fields (吸合误判修复——用户「为什么我把卡片拖到一个位置他会被一个和他没有任何接近的卡片吸附合并？」：真身=findMergeSnap 只按单轴边距判命中，同高不同 x 的卡隔着千余像素照样被吸；修法=边对判定加垂直轴严格重叠守卫——x 轴边对要求 y 范围相交、y 轴边对要求 x 范围相交；补丁位 0→1·纯修复轮); v10.28.20.2 adds NO new fields (一体式高亮——用户「画布是不是一体…改成全部一体式的不要偷懒就搞成一个一个的」+「我怕你又偷懒…只使用一个感应，其他都只是花瓶」：画布本体本来就一体=单一 div+自身长高+拖拽感应挂 document 全页生效，零复制零花瓶段；唯一一格一格=drawHighlightRange 一格建一个 div（拖 10×7 的卡 = 70 个小方块各自描边）——改为整个覆盖范围只建 ONE 块矩形；拖卡覆盖预览与侧栏资产落点预览共用同函数自动一并变一体；补丁位 1→2·观感微调轮); v10.28.20.3 adds NO new fields (卡框高光清除+边框统一暗色——用户「深色模式下卡片外框右上角有一条很突兀的白色/浅色高光边线…清除卡片右上角及整个外框所有的白色/浅色渐变高光线」+「将卡片整体的外边框统一改为暗色低调的微弱边框…融入深色背景」：真身=v10.27 磨砂玻璃轮「右上角 2px 高光条」background-image 白渐变贴 top right——浅色玻璃 3D 感、深色下变成刺眼白线；4 处卡片表面高光全清（玻璃卡本体/组背景卡面/主题卡填充层 tint/油漆 ::before——组背景就是那张「整卡」的卡面），边框统一 var(--divider-line)（深色=rgba(255,255,255,0.08) 正是用户举例值、浅色=rgba(118,117,134,0.08)；基础卡宽 2px 不动——主题卡外板几何按 2px 边宽调过只换色）；统计编辑面板高光保留（v10.28.6.2 钦定浮动面板非卡框）；补丁位 2→3·观感微调轮); v10.28.20.4 adds NO new fields (吸合方向感——用户「能不能判定一下方向，如果卡片是在左侧合并后应该就是在左侧而不是变成跑到下方」：真身=mergeCards 等宽归一以左缘为锚，窄卡从左/右并入既有组时被拉成组宽、右缘越过目标竖边 → reflowGroup 按水平重叠把全组压成一列叠到下方（实况探针：80px 窄卡左并入 174px 组 → 整组塌成一列，拖卡落到目标下方）；修法=findMergeSnap 边对加 side（'left'/'right'/'top'/'bottom'=拖动卡在目标哪一侧），mergeCards(card, target, side) 归一后按 side 重新贴齐（左/右贴竖边、上/下贴横边并 x 对齐目标列）再 reflow——贴齐边恒 flush，reflow 按边分列不再塌；补丁位 3→4·纯修复轮); v10.28.20.5 adds NO new fields (国旗卡默认 8×6→8×5、国徽卡默认 4×3→5×5——用户「把国旗卡片改成 长5格 国徽卡片改成5x5」：assetSpan flag h 6→5 + shield 显式 5×5，草稿恢复兜底同步（flag rowSpan||5、shield 分支 colSpan||5/rowSpan||5）；补丁位 4→5·观感微调轮); v10.28.21 adds NO new fields (合并组整体缩放+单击恒选整组——用户「合并后整体的卡片能不能做一个可以放大缩小的功能和独立卡片一样，然后当我只是要选中整体的卡片时会直接触发到独立卡片而不是在选中独立卡片的情况下双击才会触发」：①整组选中时 8 手柄挂组框（可见成员旋转感知 bbox 并集、轴对齐、rotation 0），拖手柄=整组缩放——组框像素→整格量化、成员位置按框内相对比例缩放、成员尺寸各自量化整格（span 既有字段往返）、等比锁成员两轴取小倍率保长宽比（fitW/fitH 既有字段）；提交不 reflow/不对齐列顶（用户刚调的结果系统不抢回）；②单击组内成员恒选整组（v10.28.15.1「再次点击同一张卡=单独选中」切换分支整体移除，死变量 mousedownAlreadySelected 删除）、单独选中只走双击；合并后 deselectAll 不自动选中保留；小更新位 20→21·新功能轮·补丁归零); v10.28.21.1 adds NO new fields (组内图源弹窗劫持双击修复——用户「选中了整体然后要再选中单独的卡片时就不让选了」+「再点击一次就打开了」：真身=组内国旗/国徽卡未设图时单击必弹图源弹窗，modal 遮罩吃掉双击第二击 → 双击单独选中/拖出拆分整条路径失效；修法=①组内卡单击不再弹图源，只在单独选中且 e.detail=2 时弹（用户钦定「在选中独立卡片的情况下双击才会触发」）②单独选中后单击同一张卡保持单独不重置回整组；补丁位 0→1·纯修复轮); v10.28.21.2 adds NO new fields (文字工具栏输入中恒显——用户「那个工具栏能不能在输入的时候都会一直展示」：真身=v10.28.10 输入框口径只认非空选区（框选口径光标态不弹），卡内编辑框（标签/姓名/表格格…）打字时工具栏不显示；修法=textSelInInput 光标态在 .grid-card 内输入框也弹+缓存 LAST_INPUT_EL 改存元素（选区态/光标态都可回用）；标题框/搜索框/弹层输入框打字不弹（防干扰）；Escape 在卡内输入框只折叠选区工具栏保持；补丁位 1→2·观感微调轮; v10.28.22 adds NO new fields (工具栏添加图像·Wiki 式内联图——用户「在工具栏的右侧那边再增加一个按钮叫添加图像，就是你可以添加国旗/国徽等等的图像，然后图像的大小是根据文字的大小进行等比例变化的，这样可以完成类似于Wiki的功能」：工具栏右端 image 钮（输入框态置灰——输入框装不了图）+ tt-img-pop 弹层（国旗库 15 面程序化条纹 canvas 光栅化 PNG data URL——块2 IIFE 经 window.FC_FLAG_LIBRARY 供数 + 上传任意图）；只进内容卡文字，insertInlineImage 选区替换/光标插入、光标置图后、onContentChange 入撤销快照；<img class="tt-inline-img"> CSS height 1.5em（em 继承 → 字号变图等比变：光标态整块字号/选区 span 字号两条路都等比）；内容卡草稿本就 innerHTML 往返 + sanitizeDraftHtml 放行 data: 图 → 保存/恢复无损，零新字段；块1 showToast 上窗（上传成功 toast 跨 IIFE 调用——电池抓出 ReferenceError）；小更新位 21→22·新功能轮·补丁归零); v10.28.23 adds NO new fields (添加图像钮不再置灰+弹层挂工具栏上方+网页搜索——用户「为什么该按钮没办法点击？」：v10.28.22 输入框态置灰 pointer-events:none 是设计却成事故，去置灰、插入时无内容卡光标 toast 引导；用户「他这个的图像的弹窗是在工具栏上方的就是用户可以直接进行一个预览，而不是覆盖全屏的」：showImgPop 上方优先锚定、贴顶翻下方；用户「一样可以在网页上搜索/上传」：弹层顶部搜索框+Wikimedia Commons API（免费免密钥 CORS origin=*，window.FC_IMG_SEARCH_API 可打桩）2 列缩略图预览、点格插 640px 缩略 URL、坏图格自动隐去、清除/失败回退国旗库；搜索框抢焦点→插入时光标回放（IMG_SAVED_RANGE 打开弹层时记住、先 focus 后加范围——Chrome 先加范围再 focus 会丢）；hideTextToolbar 弹层开着不收工具栏（点搜索框聚焦会把弹层关掉+display:none 后懒加载缩略图永不加载——电池探针实况，收起改走显式路径）；小更新位 22→23·新功能轮·补丁归零); v10.28.24 adds NO new fields (图像可以插进任何可打字处——用户「我希望他能添加在任何可以打字的地方而不是只限于文字内容卡片」：卡内输入框（标签/姓名/头衔/简介/统计指标/时间线事件与描述/表格格…）第一次插图时现场升级成 contentEditable span（同名同类同内联样式、文字照搬、dataset.rich='1'），此后文字+图片共存；纯文字字段永远还是 input 零影响既有路径；数字/年份字段除外（数值与图表逻辑要纯文字，toast 引导）；序列化全走 fieldHtml/fieldText/setFieldText/makeTextField——带标记文字按 HTML 往返、草稿零新字段（rich HTML 坐既有 label/charName/charTitle/charBio/statsRows/tlEvents/sheetData 串）；弹层打开记住卡内输入框 IMG_SAVED_INPUT（工具栏 mousedown preventDefault 保焦点、搜索/上传抢焦点后仍插回原位）；小更新位 23→24·新功能轮·补丁归零; v10.28.24.1 adds NO new fields (两个修复——用户「在Sheet卡片里添加图像时它的大小没有跟随文本大小」+「为什么在content card输入时工具栏会跑到左上角」：①内联图 1.5em 规则选择器只写 .card-text-content → 加 [data-rich="1"] img.tt-inline-img，富文本化字段（表格格/标签/统计…）里的图随所在字号等比；②真身=插图后光标 setStartAfter(img) 元素级落在内联图边界，Chrome 光标矩形退化（0,0,0,0）→ 工具栏定位锚到视口左上角；修法=光标优先放进图后文本节点偏移 0（探针实证矩形正常）+positionToolbar 退化矩形兜底锚回 textEl 矩形（图是末节点等残余情况也绝不跳左上角）；补丁位 0→1·纯修复轮); v10.28.24.2 adds NO new fields (两个修复——用户「就只有content card正常 sheet card不正常」+「一添加它的大小就已经超出了表格而且也没办法像文字一样删除」：①大字号时宽图溢出表格格——内联图 height 1.5em 下宽图（国旗 1.6:1）在字号 29+ 时宽度超过固定宽表格格（线上探针实证 font 32 → 77px 图 > 69px 格溢出）；修法=规则加 max-width:100% + object-fit:contain（普通字号零变化、超宽按比例收进盒内不压扁不溢出）②点击内联图无法像文字一样删除——点击图后光标落点不定且无选中反馈（探针实证 Delete/Backspace 不一定命中图）；修法=点击 rich 字段里的内联图直接整图选中（可视反馈），Delete/Backspace 即删；内容卡点击行为不动（用户基线）；补丁位 1→2·纯修复轮); v10.28.25 adds additive rowInGroup (合并组可整行成行——用户「如果那个卡片已经有左右两个合并了的 然后我在下面上去合并他只会变成左右两列，我希望是从下面合并时他是可以变成上下两行的就是不只是两列」：真身（探针实证）=旧行为把下方拖入卡挤进目标列，reflow 的 fill 把矮列拉高填满（2列组下方并入 → 另一列 130→216 被拉大），组永远只是左右两列；修法=上/下并入既有组时整宽成行贴组底/组顶——rowInGroup 标记随草稿往返（additive，legacy drafts omit）、reflowGroup 行卡独立于列（不进列划分/不参与 fill/不随列顶对齐跳动、宽度恒整组宽、幂等）、alignGroupTops 列顶对齐跳过行卡、拆分/侧并入清除标记；左右并入仍是列；小更新位 24→25·新功能轮·补丁归零); v10.28.26 adds NO new fields (自由形状合并组——用户「合并后不只是正方形，可以是L型/十字型」：rowInGroup 整行机制整体退役（legacy drafts 含 rowInGroup='1' 恢复时忽略该字段、像素几何照存；载入不再 reflow 归一=形状保持）；接触面模型=上/下并入只按「接触的那一面」（对边 ≤12px 且 x 相交的成员）的最宽值调整大小（倒L 只匹配那一列宽、平底跨列=整面宽）、左右并入完全保尺寸+顶对齐目标；组背景 clip-path 多边形跟随 L/十字剪影（描边/阴影走 filter drop-shadow 栈）；小更新位 25→26·新功能轮·补丁归零); v10.28.27 adds additive pageBg (自定义页面背景——用户「整个背景…在卡片列表下方添加一个标题叫自定义…上传自己的背景…16:9是最低要求可以做得更长…先做图1再做图2位置在图1下继续…拖动改变上下排列顺序…虚化边缘单独调整虚化范围…预览多个比例」：imgs=≤1600px JPEG q0.85 压缩 dataURL 数组（含 w/h）、order=排列顺序、feathers=每图 {top,bottom} 虚化 px@1600 合成宽（legacy drafts omit → 无页面背景）；合成产物不入草稿（载入时从 imgs+feathers 确定性重算）；小更新位 26→27·新功能轮·补丁归零)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -5698,6 +5860,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       activePreset: currentPreset,
       presets: presetData,
       groupStyles: gsOut,
+      pageBg: PAGE_BG_STATE ? { imgs: PAGE_BG_STATE.imgs, order: PAGE_BG_STATE.order, feathers: PAGE_BG_STATE.feathers } : null, // v10.28.27 additive
       lastSaved: Date.now()
     };
     return draft;
@@ -5851,9 +6014,475 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function closeAllModals() {
     document.getElementById('modalBackdrop').classList.remove('active');
-    document.querySelectorAll('.modal-card.active').forEach(function (c) { c.classList.remove('active'); });
+    document.querySelectorAll('.modal-card.active').forEach(function (c) {
+      c.classList.remove('active');
+      // v10.28.27: additive 关闭钩子——弹窗关闭时执行自己的收尾
+      // （页面背景弹窗=取消语义：丢工作副本，经保存路径到达时工作副本
+      // 已置空故幂等）。无 data-onclose 的既有弹窗零影响。
+      var h = c.getAttribute('data-onclose');
+      if (h && typeof window[h] === 'function') window[h]();
+    });
   }
   window.closeAllModals = closeAllModals;
+
+  // ═══ 自定义页面背景 (v10.28.27) ═══
+  // 用户「然后整个背景，这里的背景是整个页面的背景不是卡片…上传自己的背景…
+  // 16:9是最低要求可以做得很长…多图纵向拼接（图2 接图1 下）…拖动改变上下
+  // 排列顺序…虚化边缘单独调整虚化范围…弹窗右侧整页预览左侧工具栏…7 比例
+  // 预览（平板16:10/手机20:9/16:9/21:9 + 详细 1:1.4/4:3/1:1）」。
+  // 设计：背景直接画在 gridCanvas 自身 background-image 上（inline style）——
+  // 不建 div：层级天然正确（画布自身背景 < z:0 组背景 < z:1 卡片）、背景图
+  // 不是事件目标（空点取消选中判据 e.target === gridCanvas 零影响）。
+  // 高度衔接：style.minHeight = clientWidth × compH/1600——offsetHeight 取
+  // max(inline height, minHeight)，syncCanvasHeight/滚动扩行全部零侵入。
+  // 合成：canvas destination-in 线性渐变交叉淡化（缝区 α_i+α_{i+1}≡1；
+  // 避开 CSS mask-image——v10.16 史载用户机器渲染失败前科）；JPEG 无 alpha
+  // → 主画布先 fillRect 主题底色（运行期取色，羽化淡出区不按黑合成）。
+  var PAGE_BG_STATE = null;      // 已保存的页面背景（随草稿往返）
+  var PAGE_BG_WORKING = null;    // 弹窗会话工作副本（保存才提交）
+  var PAGE_BG_COMPOSITE = null;  // 内存态合成产物 {dataURL,w,h}（不入草稿，载入重算）
+  var PAGE_BG_ID = 0;
+  var COMP_W = 1600, FEATHER_MAX = 400, FEATHER_DEFAULT = 80, PBG_MAX_IMGS = 6, PBG_MAX_BYTES = 2.5e6;
+  var PBG_IMG_CACHE = {}; // id → 解码后的 Image（压缩用原图，合成画布直接取）
+  var PBG_RENDER_TMR = null;
+  var PBG_SWAP_GUARD = null; // 拖拽排序：已换位对防 dragover 风暴自触发
+
+  function pbgDeepCopy(v) {
+    if (!v) return null;
+    var o = { imgs: v.imgs.map(function (im) { return { id: im.id, dataURL: im.dataURL, w: im.w, h: im.h }; }),
+      order: v.order.slice(), feathers: {} };
+    Object.keys(v.feathers || {}).forEach(function (k) { o.feathers[k] = { top: v.feathers[k].top, bottom: v.feathers[k].bottom }; });
+    return o;
+  }
+
+  function pbgTotalBytes(state) {
+    if (!state) return 0;
+    return state.imgs.reduce(function (s, im) { return s + im.dataURL.length; }, 0);
+  }
+
+  function pbgImgById(state, id) {
+    return (state.imgs || []).find(function (im) { return im.id === id; });
+  }
+
+  function pbgLoadImages(state, cb) {
+    var ids = (state && state.imgs) ? state.imgs.map(function (im) { return im.id; }) : [];
+    var left = ids.length, failed = false;
+    if (!left) { cb(true); return; }
+    ids.forEach(function (id) {
+      if (PBG_IMG_CACHE[id]) { if (--left === 0) cb(!failed); return; }
+      var im = pbgImgById(state, id);
+      var img = new Image();
+      img.onload = function () { PBG_IMG_CACHE[id] = img; if (--left === 0) cb(!failed); };
+      img.onerror = function () { failed = true; PBG_IMG_CACHE[id] = null; if (--left === 0) cb(!failed); };
+      img.src = im.dataURL;
+    });
+  }
+
+  // 合成引擎：1600 宽纵向拼接 + 缝区互补交叉淡化。返回 {dataURL,w,h} 存 PAGE_BG_COMPOSITE。
+  // 每图 H_i = round(COMP_W×h_i/w_i)；缝区重叠 O_i = min(B_i,H_i/2) + min(T_{i+1},H_{i+1}/2)；
+  // compH = ΣH_i − ΣO_i；缝内两侧淡化宽=O（α 和≡1，单独调任一侧虚化都加宽渐变）。
+  function renderPageBgComposite() {
+    var s = PAGE_BG_WORKING || PAGE_BG_STATE;
+    if (!s || !s.imgs || !s.imgs.length) { PAGE_BG_COMPOSITE = null; return null; }
+    var order = (s.order && s.order.length === s.imgs.length) ? s.order : s.imgs.map(function (im) { return im.id; });
+    var list = order.map(function (id) { return pbgImgById(s, id); }).filter(Boolean);
+    if (!list.length || !list.every(function (im) { return !!PBG_IMG_CACHE[im.id]; })) { return PAGE_BG_COMPOSITE; }
+    var Hs = list.map(function (im) { return Math.round(COMP_W * im.h / im.w); });
+    var O = list.map(function (im, i) {
+      if (i === list.length - 1) return 0;
+      var f1 = s.feathers[im.id] || { top: 0, bottom: 0 };
+      var f2 = s.feathers[list[i + 1].id] || { top: 0, bottom: 0 };
+      return Math.min(f1.bottom, Hs[i] / 2) + Math.min(f2.top, Hs[i + 1] / 2);
+    });
+    var compH = 0;
+    Hs.forEach(function (h, i) { compH += h - (i > 0 ? O[i - 1] : 0); });
+    compH = Math.max(1, Math.round(compH));
+    var baseColor = '#ffffff';
+    try { baseColor = getComputedStyle(gridCanvas).backgroundColor; } catch (e) {}
+    var main = document.createElement('canvas');
+    main.width = COMP_W; main.height = compH;
+    var ctx = main.getContext('2d');
+    // JPEG 无 alpha：先铺主题底色（羽化淡出区不按黑合成，深色主题不发黑）
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, COMP_W, compH);
+    var y = 0;
+    list.forEach(function (im, i) {
+      var H = Hs[i];
+      var f = s.feathers[im.id] || { top: 0, bottom: 0 };
+      // 有效淡化宽=缝区重叠：中图顶=O_{i-1}、中图底=O_i（两侧互补 α 和≡1，单独调任一侧
+      // 虚化都加宽渐变——若只用各自 B/T，上一张的下虚化会被下一张不透明区整个盖住，
+      // 用户调「下边缘」看不到变化）；首图顶/末图底=自身羽化（从主题底色淡入/淡出）。
+      // O 至多 H_i/2+H_{i+1}/2，可能超图高 → 超时按比例压缩保 stop 有序。
+      var rawT = Math.max(0, f.top), rawB = Math.max(0, f.bottom);
+      var T = Math.min(i === 0 ? rawT : O[i - 1], H);
+      var B = Math.min(i === list.length - 1 ? rawB : O[i], H);
+      if (T + B > H) { var kk = H / (T + B); T *= kk; B *= kk; }
+      var temp = document.createElement('canvas'); // 图高制（非全高），n 张图 n 张小 temp
+      temp.width = COMP_W; temp.height = H;
+      var tctx = temp.getContext('2d');
+      tctx.drawImage(PBG_IMG_CACHE[im.id], 0, 0, COMP_W, H);
+      tctx.globalCompositeOperation = 'destination-in';
+      var grad = tctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, T > 0 ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,1)');
+      grad.addColorStop(T / H, 'rgba(0,0,0,1)');
+      grad.addColorStop((H - B) / H, 'rgba(0,0,0,1)');
+      grad.addColorStop(1, B > 0 ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,1)');
+      tctx.fillStyle = grad;
+      tctx.fillRect(0, 0, COMP_W, H);
+      ctx.drawImage(temp, 0, y);
+      // 下一张起点回退本图重叠 O_i（末图 O=0）——缝区两图坐标重合交叉淡化
+      y += H - O[i];
+    });
+    PAGE_BG_COMPOSITE = { dataURL: main.toDataURL('image/jpeg', 0.9), w: COMP_W, h: compH };
+    return PAGE_BG_COMPOSITE;
+  }
+
+  function applyPageBgToCanvas(comp) {
+    var c = comp || PAGE_BG_COMPOSITE;
+    if (!c) { removePageBg(); return; }
+    gridCanvas.style.backgroundImage = 'url("' + c.dataURL + '")';
+    gridCanvas.style.backgroundSize = '100% auto';
+    gridCanvas.style.backgroundPosition = 'top center';
+    gridCanvas.style.backgroundRepeat = 'no-repeat';
+    gridCanvas.classList.add('has-page-bg');
+    syncPageBgMinHeight();
+  }
+
+  function syncPageBgMinHeight() {
+    if (!PAGE_BG_COMPOSITE) return;
+    gridCanvas.style.minHeight = Math.round(gridCanvas.clientWidth * PAGE_BG_COMPOSITE.h / PAGE_BG_COMPOSITE.w) + 'px';
+  }
+
+  function removePageBg() {
+    gridCanvas.classList.remove('has-page-bg');
+    gridCanvas.style.backgroundImage = '';
+    gridCanvas.style.backgroundSize = '';
+    gridCanvas.style.backgroundPosition = '';
+    gridCanvas.style.backgroundRepeat = '';
+    gridCanvas.style.minHeight = '';
+  }
+
+  function updatePageBgEntryState() {
+    var el = document.getElementById('pageBgEntryState');
+    if (!el) return;
+    el.textContent = (PAGE_BG_STATE && PAGE_BG_STATE.imgs.length) ? PAGE_BG_STATE.imgs.length + ' 张' : '未设置';
+  }
+
+  function updatePbgRatioHint() {
+    var hint = document.getElementById('pbgRatioHint');
+    if (!hint) return;
+    var comp = PAGE_BG_COMPOSITE;
+    var ok = !!(comp && comp.h / comp.w >= 9 / 16 - 1e-4);
+    hint.classList.toggle('show', !ok);
+    hint.textContent = comp
+      ? '当前背景比例约 ' + (comp.h / comp.w).toFixed(3) + ':1，未达 16:9 最低要求——请再上传图片加长（羽化重叠会降低总高）。'
+      : '高度不足 16:9——请上传图片（可多张纵向拼接加长）。';
+  }
+
+  function handlePageBgUpload(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    input.value = '';
+    if (!PAGE_BG_WORKING) return;
+    if (!/^image\//.test(file.type)) { showToast('请选择图片文件'); return; }
+    if (file.size > 8 * 1024 * 1024) { showToast('图片超过 8MB，请换一张更小的'); return; }
+    if (PAGE_BG_WORKING.imgs.length >= PBG_MAX_IMGS) { showToast('最多 ' + PBG_MAX_IMGS + ' 张图片'); return; }
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var raw = e.target.result;
+      // 累积 dataURL 总长门禁（护 localStorage 配额，同 handleCardBgUpload 口径）
+      if (raw.length + pbgTotalBytes(PAGE_BG_WORKING) > PBG_MAX_BYTES) {
+        showToast('背景图片总量过大（草稿存储限制），请移除旧图或换更小的图片');
+        return;
+      }
+      var img = new Image();
+      img.onload = function () {
+        // 压缩：宽 ≤1600、JPEG q0.85（小图不放大，合成时统一拉到 1600 宽）
+        var scale = Math.min(1, COMP_W / img.naturalWidth);
+        var w = Math.max(1, Math.round(img.naturalWidth * scale));
+        var h = Math.max(1, Math.round(img.naturalHeight * scale));
+        var cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        var id = 'bg' + (++PAGE_BG_ID);
+        var isFirst = PAGE_BG_WORKING.imgs.length === 0;
+        PAGE_BG_WORKING.imgs.push({ id: id, dataURL: cv.toDataURL('image/jpeg', 0.85), w: w, h: h });
+        PAGE_BG_WORKING.order.push(id);
+        // 默认：首图顶硬边、后续图缝区 80px 渐变、末图底 80px 软底边
+        PAGE_BG_WORKING.feathers[id] = { top: isFirst ? 0 : FEATHER_DEFAULT, bottom: FEATHER_DEFAULT };
+        PBG_IMG_CACHE[id] = img;
+        renderPbgList();
+        var comp = renderPageBgComposite();
+        if (comp) { updateCloneBg(); }
+        updatePbgRatioHint();
+      };
+      img.onerror = function () { showToast('图片无法读取'); };
+      img.src = raw;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderPbgList() {
+    var list = document.getElementById('pbgList');
+    var empty = document.getElementById('pbgEmpty');
+    var s = PAGE_BG_WORKING;
+    if (!s || !s.imgs.length) { list.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+    if (empty) empty.style.display = 'none';
+    var order = (s.order && s.order.length === s.imgs.length) ? s.order : s.imgs.map(function (im) { return im.id; });
+    list.innerHTML = order.map(function (id) {
+      var im = pbgImgById(s, id);
+      if (!im) return '';
+      var f = s.feathers[id] || { top: 0, bottom: 0 };
+      return '<div class="pbg-list-item" draggable="true" data-pbg-id="' + id + '" ' +
+        'ondragstart="pbgDragStart(event, \'' + id + '\')" ondragover="pbgDragOver(event)" ondragend="pbgDragEnd(event)">' +
+        '<span class="material-symbols-outlined pbg-grip">drag_indicator</span>' +
+        '<div class="pbg-thumb" style="background-image:url(\'' + im.dataURL + '\')"></div>' +
+        '<div class="pbg-item-main">' +
+        '<div class="pbg-feather-row"><span>上</span><input type="range" min="0" max="' + FEATHER_MAX + '" step="10" value="' + f.top + '" oninput="pbgSetFeather(\'' + id + '\',\'top\',this.value)"><span class="pbg-fv" style="text-align:right">' + f.top + '</span></div>' +
+        '<div class="pbg-feather-row"><span>下</span><input type="range" min="0" max="' + FEATHER_MAX + '" step="10" value="' + f.bottom + '" oninput="pbgSetFeather(\'' + id + '\',\'bottom\',this.value)"><span class="pbg-fv" style="text-align:right">' + f.bottom + '</span></div>' +
+        '</div>' +
+        '<button class="pbg-del" onclick="pbgRemoveImage(\'' + id + '\')" title="删除"><span class="material-symbols-outlined">close</span></button>' +
+        '</div>';
+    }).join('');
+  }
+
+  function pbgSetFeather(id, edge, px) {
+    if (!PAGE_BG_WORKING) return;
+    var f = PAGE_BG_WORKING.feathers[id];
+    if (!f) return;
+    var v = Math.max(0, Math.min(FEATHER_MAX, parseInt(px) || 0));
+    f[edge] = v;
+    var item = document.querySelector('.pbg-list-item[data-pbg-id="' + id + '"]');
+    if (item) {
+      var spans = item.querySelectorAll('.pbg-fv');
+      if (spans[edge === 'top' ? 0 : 1]) spans[edge === 'top' ? 0 : 1].textContent = v;
+    }
+    // 30ms 防抖重合成 + 预览层换图 + 红提示重算
+    if (PBG_RENDER_TMR) clearTimeout(PBG_RENDER_TMR);
+    PBG_RENDER_TMR = setTimeout(function () {
+      PBG_RENDER_TMR = null;
+      var comp = renderPageBgComposite();
+      if (comp) updateCloneBg();
+      updatePbgRatioHint();
+    }, 30);
+  }
+
+  function pbgRemoveImage(id) {
+    if (!PAGE_BG_WORKING) return;
+    PAGE_BG_WORKING.imgs = PAGE_BG_WORKING.imgs.filter(function (im) { return im.id !== id; });
+    PAGE_BG_WORKING.order = PAGE_BG_WORKING.order.filter(function (x) { return x !== id; });
+    delete PAGE_BG_WORKING.feathers[id];
+    delete PBG_IMG_CACHE[id];
+    renderPbgList();
+    var comp = renderPageBgComposite();
+    if (comp) { updateCloneBg(); } else { clearCloneBg(); }
+    updatePbgRatioHint();
+  }
+
+  // ── 拖拽排序（HTML5 DnD）：dragover 直接换位，order 从 DOM 序重推（唯一真相源）──
+  function pbgDragStart(e, id) {
+    if (e.dataTransfer) { e.dataTransfer.setData('text/plain', id); e.dataTransfer.effectAllowed = 'move'; }
+    var item = document.querySelector('.pbg-list-item[data-pbg-id="' + id + '"]');
+    if (item) item.classList.add('dragging');
+    PBG_SWAP_GUARD = null;
+    window.pbgDragId = id;
+  }
+  function pbgDragOver(e) {
+    e.preventDefault();
+    var dragId = window.pbgDragId;
+    var list = document.getElementById('pbgList');
+    if (!dragId || !list) return;
+    var dragEl = list.querySelector('.pbg-list-item[data-pbg-id="' + dragId + '"]');
+    var target = e.target && e.target.closest ? e.target.closest('.pbg-list-item') : null;
+    if (!dragEl || !target || target === dragEl) return;
+    var key = dragId + '|' + target.dataset.pbgId;
+    if (PBG_SWAP_GUARD === key) return; // 已换位，同一对不再触发（防 dragover 风暴）
+    PBG_SWAP_GUARD = key;
+    var r = target.getBoundingClientRect();
+    if (e.clientY < r.top + r.height / 2) list.insertBefore(dragEl, target);
+    else list.insertBefore(dragEl, target.nextSibling);
+    PAGE_BG_WORKING.order = Array.prototype.map.call(list.querySelectorAll('.pbg-list-item'), function (li) { return li.dataset.pbgId; });
+    var comp = renderPageBgComposite();
+    if (comp) updateCloneBg();
+    updatePbgRatioHint();
+  }
+  function pbgDragEnd() {
+    var list = document.getElementById('pbgList');
+    if (list) list.querySelectorAll('.pbg-list-item').forEach(function (li) { li.classList.remove('dragging'); });
+    window.pbgDragId = null;
+    PBG_SWAP_GUARD = null;
+  }
+
+  // ── 整页克隆预览：真实画布 cloneNode 剥手柄/对齐线/编辑态，scale 进比例框 ──
+  function buildPreviewClone() {
+    var wrap = document.getElementById('pbgCloneWrap');
+    wrap.innerHTML = '';
+    var clone = gridCanvas.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.classList.remove('drag-over');
+    clone.querySelectorAll('.resize-handle, .align-guide-v, .align-guide-h, .boundary-guide, .cell-hl').forEach(function (el) { el.remove(); });
+    clone.querySelectorAll('.grid-card').forEach(function (c) { c.classList.remove('selected', 'dragging', 'merge-target', 'group-single'); });
+    // contenteditable 全剥——pointer-events:none 挡鼠标但 Tab 聚焦仍可进入编辑
+    clone.querySelectorAll('[contenteditable]').forEach(function (el) { el.removeAttribute('contenteditable'); });
+    clone.style.margin = '0';
+    // 先剥真实画布背景痕迹，由 WORKING 合成重写（避免闪旧图）
+    clone.classList.remove('has-page-bg');
+    clone.style.backgroundImage = 'none';
+    clone.style.minHeight = '';
+    wrap.appendChild(clone);
+    pbgRescaleClone();
+  }
+  function pbgRescaleClone() {
+    var wrap = document.getElementById('pbgCloneWrap');
+    var clone = wrap && wrap.firstChild;
+    var frame = document.getElementById('pbgFrame');
+    if (!clone || !frame || !frame.clientWidth || !gridCanvas.clientWidth) return;
+    var s = frame.clientWidth / gridCanvas.clientWidth;
+    wrap.style.width = Math.round(gridCanvas.clientWidth * s) + 'px';
+    wrap.style.height = Math.round(clone.offsetHeight * s) + 'px';
+    clone.style.transform = 'scale(' + s + ')';
+    clone.style.transformOrigin = '0 0';
+  }
+  function updateCloneBg() {
+    var wrap = document.getElementById('pbgCloneWrap');
+    var clone = wrap && wrap.firstChild;
+    if (!clone || !PAGE_BG_COMPOSITE) return;
+    var c = PAGE_BG_COMPOSITE;
+    clone.style.backgroundImage = 'url("' + c.dataURL + '")';
+    clone.style.backgroundSize = '100% auto';
+    clone.style.backgroundPosition = 'top center';
+    clone.style.backgroundRepeat = 'no-repeat';
+    clone.classList.add('has-page-bg');
+    clone.style.minHeight = Math.round(clone.clientWidth * c.h / c.w) + 'px';
+    pbgRescaleClone();
+  }
+  function clearCloneBg() {
+    var wrap = document.getElementById('pbgCloneWrap');
+    var clone = wrap && wrap.firstChild;
+    if (!clone) return;
+    clone.classList.remove('has-page-bg');
+    clone.style.backgroundImage = 'none';
+    clone.style.minHeight = '';
+    pbgRescaleClone();
+  }
+
+  function pbgSetRatio(name, btn) {
+    var frame = document.getElementById('pbgFrame');
+    if (frame) frame.style.aspectRatio = name;
+    document.querySelectorAll('#pageBgModal .pbg-ratio-btn').forEach(function (b) { b.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+    pbgRescaleClone();
+  }
+
+  function pbgEnsureRendered() {
+    var s = PAGE_BG_WORKING;
+    if (!s || !s.imgs.length) { clearCloneBg(); updatePbgRatioHint(); return; }
+    pbgLoadImages(s, function (ok) {
+      if (!ok || PAGE_BG_WORKING !== s) return;
+      var comp = renderPageBgComposite();
+      if (comp) updateCloneBg();
+      updatePbgRatioHint();
+    });
+  }
+
+  function openPageBgModal() {
+    // deepCopy(null)=null 时也要有空工作副本（上传/保存/取消都按非空会话走）
+    PAGE_BG_WORKING = pbgDeepCopy(PAGE_BG_STATE) || { imgs: [], order: [], feathers: {} };
+    renderPbgList();
+    buildPreviewClone();
+    pbgEnsureRendered();
+    // 遮罩只挡鼠标不挡键盘——blur 防聚焦中的输入框打字漂移真实画布
+    try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {}
+    openModal('pageBgModal');
+  }
+
+  function closePageBgModal() {
+    if (!PAGE_BG_WORKING) { closeAllModals(); return; }
+    if (!PAGE_BG_WORKING.imgs.length) {
+      // 无图=等同于移除
+      PAGE_BG_STATE = null;
+      PAGE_BG_COMPOSITE = null;
+      removePageBg();
+      onContentChange();
+      PAGE_BG_WORKING = null;
+      updatePageBgEntryState();
+      closeAllModals();
+      showToast('已移除页面背景');
+      return;
+    }
+    var comp = renderPageBgComposite();
+    // 16:9 = 最低要求（compH/1600 ≥ 9/16）
+    if (!comp || comp.h / comp.w < 9 / 16 - 1e-4) {
+      showToast('背景高度不足 16:9——请再上传图片加长');
+      updatePbgRatioHint();
+      return; // 不关窗
+    }
+    PAGE_BG_STATE = pbgDeepCopy(PAGE_BG_WORKING);
+    PAGE_BG_COMPOSITE = comp;
+    applyPageBgToCanvas(comp);
+    onContentChange(); // 一次通知：撤销快照 + autosave 指纹链
+    PAGE_BG_WORKING = null; // 先置空再关窗——data-onclose 取消钩子幂等空转
+    updatePageBgEntryState();
+    closeAllModals();
+  }
+
+  function closePageBgModalCancel() {
+    PAGE_BG_WORKING = null;
+    closeAllModals();
+  }
+
+  function pbgRemoveAll() {
+    if (!confirm('移除页面背景？')) return;
+    PAGE_BG_STATE = null;
+    PAGE_BG_WORKING = null;
+    PAGE_BG_COMPOSITE = null;
+    removePageBg();
+    onContentChange();
+    updatePageBgEntryState();
+    closeAllModals();
+  }
+
+  function restorePageBg(pbg) {
+    var state = null;
+    try {
+      if (pbg && Array.isArray(pbg.imgs) && pbg.imgs.length) {
+        var imgs = pbg.imgs.filter(function (im) { return im && im.dataURL && im.w && im.h; });
+        if (imgs.length) {
+          var idSet = {};
+          imgs.forEach(function (im) { idSet[im.id] = true; });
+          // 形状校验：order 长度与 id 集合与 imgs 一致，否则退回 imgs 序
+          var order = (Array.isArray(pbg.order) && pbg.order.length === imgs.length &&
+            pbg.order.every(function (x) { return idSet[x]; })) ? pbg.order.slice() : imgs.map(function (im) { return im.id; });
+          var feathers = {};
+          imgs.forEach(function (im, i) {
+            var f = (pbg.feathers && pbg.feathers[im.id]) || { top: i === 0 ? 0 : FEATHER_DEFAULT, bottom: FEATHER_DEFAULT };
+            feathers[im.id] = { top: Math.max(0, Math.min(FEATHER_MAX, parseInt(f.top) || 0)), bottom: Math.max(0, Math.min(FEATHER_MAX, parseInt(f.bottom) || 0)) };
+          });
+          state = { imgs: imgs, order: order, feathers: feathers };
+          var maxId = 0;
+          imgs.forEach(function (im) { var m = /^bg(\d+)$/.exec(im.id); if (m) maxId = Math.max(maxId, parseInt(m[1]) || 0); });
+          PAGE_BG_ID = maxId;
+        }
+      }
+    } catch (e) { state = null; }
+    PAGE_BG_STATE = state;
+    PAGE_BG_COMPOSITE = null;
+    if (!state) { removePageBg(); updatePageBgEntryState(); return; }
+    // 解码 → 确定性重算合成 → 上画布（不调 onContentChange，载入口径同卡片恢复）
+    pbgLoadImages(state, function (ok) {
+      if (!ok) { removePageBg(); return; }
+      var comp = renderPageBgComposite();
+      if (comp) { PAGE_BG_COMPOSITE = comp; applyPageBgToCanvas(comp); }
+    });
+    updatePageBgEntryState();
+  }
+
+  // 弹窗级 Escape = 取消（全局 Escape 不关弹窗——L10274 系只处理菜单/选区/缩放）
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    var m = document.getElementById('pageBgModal');
+    if (m && m.querySelector('.modal-card.active')) closePageBgModalCancel();
+  });
 
   // ── Migrate Content (v10.23 零成本搬运) ──
   // 外部文章零成本进画布：粘贴或上传 .txt/.md → 按标题/段落自动拆成内容卡。
@@ -12546,6 +13175,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         );
       });
     }
+    // v10.28.27: 列数/面板折叠/窗口 resize 都会改画布宽 → 背景高度按新宽重算
+    if (PAGE_BG_COMPOSITE) syncPageBgMinHeight();
   }
 
   // ── Init ──
@@ -12608,6 +13239,20 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   window.positionCardSilent = positionCardSilent;
   window.moveCardPx = moveCardPx;
   window.refitColumns = refitColumns;
+  // v10.28.27: 页面背景导出（电池驱动 + 资产面板入口）
+  window.openPageBgModal = openPageBgModal;
+  window.closePageBgModal = closePageBgModal;
+  window.closePageBgModalCancel = closePageBgModalCancel;
+  window.renderPageBgComposite = renderPageBgComposite;
+  window.syncPageBgMinHeight = syncPageBgMinHeight;
+  window.pbgSetFeather = pbgSetFeather;
+  window.pbgSetRatio = pbgSetRatio;
+  window.pbgRemoveImage = pbgRemoveImage;
+  window.pbgRemoveAll = pbgRemoveAll;
+  window.pbgDragStart = pbgDragStart;
+  window.pbgDragOver = pbgDragOver;
+  window.pbgDragEnd = pbgDragEnd;
+  window.handlePageBgUpload = handlePageBgUpload;
   window.applyPresetCardPositions = applyPresetCardPositions;
   window.beginResize = beginResize;
   window.pageSize = pageSize;
