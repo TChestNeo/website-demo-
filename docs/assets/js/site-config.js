@@ -492,7 +492,14 @@ window.MN_SITE = window.MN_SITE || {};
 //   charTitle/charBio/statsRows/tlEvents/sheetData 串）；弹层打开记住卡内输入框
 //   IMG_SAVED_INPUT（搜索/上传抢焦点后仍插回原位）；零后端、ethereal 零改动无需 inline-css；
 //   FC v10.28.24（小更新位 23→24·新功能轮·补丁归零；2026-09-12）
-window.MN_SITE_VERSION = 'v0.2.34.0';
+// v0.2.34.1 = 两个修复（补丁位 0→1·纯修复轮；2026-09-12）——用户「在Sheet卡片里添加图像时它的大小
+//   没有跟随文本大小」+「为什么在content card输入时工具栏会跑到左上角」：①内联图 1.5em 规则选择器只写
+//   .card-text-content，富文本化字段（表格格/标签/统计…）里图掉回自然大小 → 选择器加 [data-rich="1"]
+//   img.tt-inline-img（em 取所在 span 字号，随表格格字号等比）②真身=插图后光标 setStartAfter(img)
+//   元素级落在内联图边界，Chrome 光标矩形退化（0,0,0,0）→ 工具栏定位锚到视口左上角；修法=光标优先放进
+//   图后文本节点偏移 0（探针实证矩形正常）+positionToolbar 退化矩形兜底锚回文字区矩形（图是末节点等
+//   残余情况也绝不跳左上角）；零后端、ethereal 零改动无需 inline-css；FC v10.28.24.1（补丁位 0→1）
+window.MN_SITE_VERSION = 'v0.2.34.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -637,4 +644,10 @@ window.MN_SITE_VERSION = 'v0.2.34.0';
 //   原位）；richFieldSync 按类名接回 statsSerialize/tlSerialize/sheetSerialize/charSerialize/
 //   autoSizeLabel 原管线；零后端、ethereal 零改动无需 inline-css
 //   （小更新位 23→24·新功能轮·补丁归零；2026-09-12）
-window.FLUIDCANVAS_VERSION = 'v10.28.24';
+// v10.28.24.1 = 两个修复（补丁位 0→1·纯修复轮；2026-09-12）——用户「在Sheet卡片里添加图像时它的
+//   大小没有跟随文本大小」+「content card输入时工具栏跑到左上角」：①内联图 1.5em 规则选择器只写
+//   .card-text-content → 加 [data-rich="1"] img.tt-inline-img（富文本化字段里的图随所在字号等比）
+//   ②插图后光标 setStartAfter(img) 元素级落在内联图边界，Chrome 光标矩形退化（0,0,0,0）→ 工具栏
+//   定位跳左上角；修法=光标优先放进图后文本节点偏移 0（探针实证矩形正常）+positionToolbar 退化
+//   矩形兜底锚回 textEl 矩形；零后端、ethereal 零改动无需 inline-css
+window.FLUIDCANVAS_VERSION = 'v10.28.24.1';
