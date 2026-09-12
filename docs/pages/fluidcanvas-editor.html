@@ -4733,6 +4733,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // 卡，然后拖出即拆）为 true；整组选中 / 普通选中为 false。v10.28.21 单击
   // 恒选整组，单独选中只走双击（mousedownAlreadySelected 切换链整体移除）。
   var selectionIsSingle = false;
+  var clickPairState = null; // v10.28.25.1: 慢双击容错（同卡两击 ≤800ms/漂移 ≤10px → 延迟补发单独选中）
   var cardIdCounter = 0;
 
   // ── Grid snap (v8) ──
@@ -6323,6 +6324,28 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       // 否则单击把单独态打回整组，「单独选中后再双击弹图源」永远到不了
       // 双击（用户「选中整体后再选单独的不让选」）。
       if (selectionIsSingle && selectedCard === card) return;
+      // v10.28.25.1: 慢双击容错——单独选中原本只有原生 dblclick 一条路，真实
+      // 双击慢于浏览器阈值（~500ms）或两击漂移超限就不派发 dblclick，单独选中
+      // 整条失效（用户「在整体单独选中一个卡片调整他的大小时没办法办到，只能
+      // 长按拆分」：探针 T3 可信慢双击仅整组选中）。同卡两次单击 ≤800ms 且漂移
+      // ≤10px → 延迟 120ms 补发单独选中：原生 dblclick 先到（它已
+      // selectCard(card,true)）计时器自然跳过；翻转发生在延迟里，双击第二击
+      // 时刻 selectionIsSingle 仍是旧值——v10.28.21.1 图源弹窗条件（单独选中
+      // 后再双击才弹，e.detail=2）不受影响。
+      if (card.dataset.groupId) {
+        var lp = clickPairState;
+        var now = Date.now();
+        if (lp && lp.card === card && now - lp.t <= 800 &&
+            Math.abs(e.clientX - lp.x) <= 10 && Math.abs(e.clientY - lp.y) <= 10) {
+          clickPairState = null;
+          setTimeout(function () {
+            if (selectionIsSingle && selectedCard === card) return; // 原生 dblclick 已处理
+            selectCard(card, true);
+          }, 120);
+        } else {
+          clickPairState = { card: card, t: now, x: e.clientX, y: e.clientY };
+        }
+      }
       selectCard(card);
     });
     card.addEventListener('dblclick', function (e) {
@@ -8670,6 +8693,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     selectedCard = null;
     selectionIsSingle = false;
     selectedGroupId = null; // v10.28.16: 取消选中即退出分组外观模式
+    clickPairState = null; // v10.28.25.1: 点空画布清双击对——A、空点、A 不算双击
     refreshResizeHandles();
     syncStatsEditPanel(); // v10.28.5.2: 取消选中 → 编辑面板隐藏、列表搬回卡内
   }
@@ -8929,6 +8953,55 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // 卡顶（顶部永远齐平），列内堆叠相对关系、x、宽高一律不碰（中间怎么调
   // 怎么调、图片尺寸永不被系统缩放）。重排幂等（对齐后零位移）；对齐量由
   // 当前几何重推（无累积）。
+  // v10.28.25.1 — 行组行卡快照：记录每张行卡在列块上方/下方及其间距
+  // （above=行卡中心在列块中心之上；off=行卡贴列块的原始间距，Round N
+  // 成行恒 flush → 实测 0，但保留通用性）。列成员缩放提交后按新列块+原
+  // 间距把行卡贴回，列块变高行下推、变矮行上收——不压行、不留空。
+  function snapshotGroupRows(g) {
+    var mems = getAllCards().filter(function (c) { return c.dataset.groupId === g; });
+    var cols = mems.filter(function (c) { return c.dataset.rowInGroup !== '1'; });
+    var rows = mems.filter(function (c) { return c.dataset.rowInGroup === '1'; });
+    if (cols.length === 0 || rows.length === 0) return null;
+    var bT = Infinity, bB = -Infinity;
+    cols.forEach(function (c) {
+      var t = parseFloat(c.style.top) || 0;
+      var b = t + c.offsetHeight;
+      if (t < bT) bT = t;
+      if (b > bB) bB = b;
+    });
+    var mid = (bT + bB) / 2;
+    return rows.map(function (r) {
+      var t = parseFloat(r.style.top) || 0;
+      var b = t + r.offsetHeight;
+      var above = (t + b) / 2 < mid;
+      return { card: r, above: above, off: above ? (bT - b) : (t - bB), h: r.offsetHeight };
+    });
+  }
+
+  function pushGroupRows(st) {
+    if (!st.rows) return;
+    var cols = groupMembers(st.card).filter(function (c) { return c.dataset.rowInGroup !== '1'; });
+    if (cols.length === 0) return;
+    var bT = Infinity, bB = -Infinity;
+    cols.forEach(function (c) {
+      var t = parseFloat(c.style.top) || 0;
+      var b = t + c.offsetHeight;
+      if (t < bT) bT = t;
+      if (b > bB) bB = b;
+    });
+    var moved = false;
+    st.rows.forEach(function (rr) {
+      if (!rr.card.dataset.groupId) return; // 拖拽途中被拆出/删掉的卡
+      var nt = rr.above ? (bT - rr.off - rr.h) : (bB + rr.off);
+      var ct = parseFloat(rr.card.style.top) || 0;
+      if (Math.abs(nt - ct) < 0.5) return;
+      rr.card.style.top = nt + 'px';
+      rr.card.dataset.y = nt;
+      moved = true;
+    });
+    if (moved) updateGroupBgs();
+  }
+
   function alignGroupTops(g) {
     var mems = getAllCards().filter(function (c) { return c.dataset.groupId === g; });
     if (mems.length < 2) { updateGroupBgs(); return; }
@@ -9604,6 +9677,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       spanH: parseFloat(card.dataset.rowSpan) || 3,
       moved: false
     };
+    // v10.28.25.1: 行组内列成员缩放 → 松手后行卡按原偏移贴回列块（顶行贴顶、
+    // 底行贴底），不压行、不留空（探针实证：列成员 s 拖 +45 → 底行被压 44px）
+    if (card.dataset.groupId && card.dataset.rowInGroup !== '1') {
+      resizeState.rows = snapshotGroupRows(card.dataset.groupId);
+    }
     card.classList.add('dragging');
     card.style.zIndex = 50;
   }
@@ -9825,6 +9903,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         // v10.28.17.2: 改列顶对齐——用户调整必须生效（reflow 填满会把手刚调的
         // 尺寸改回去）；顶部永远齐平、中间自由、图片尺寸不被系统缩放。
         if (st.card.dataset.groupId) alignGroupTops(st.card.dataset.groupId); else updateGroupBgs();
+        if (st.card.dataset.groupId) pushGroupRows(st); // v10.28.25.1: 行卡贴回列块（无快照空转）
         onContentChange();
       }
       // Suppress click-triggered modals after a resize (mirrors drag mouseup)
