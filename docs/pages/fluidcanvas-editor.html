@@ -2518,16 +2518,23 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       background-color: color-mix(in srgb, var(--card-bg-color) 55%, transparent);
       backdrop-filter: blur(12px) saturate(1.4);
       -webkit-backdrop-filter: blur(12px) saturate(1.4);
-      border: 1px solid var(--divider-line);
-      border-radius: 14px;
-      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.10);
+      /* v10.28.26 — 自由形状组：剪影由 JS 写 clip-path: path(...)（L 型/
+         十字型并集轮廓，随组形状走）；描边/阴影改 filter drop-shadow 栈
+         跟随剪影（border/box-shadow 只画 bbox 矩形，clip 会裁掉直边描边）。
+         ⚠ filter: drop-shadow() 没有 spread 参数——box-shadow 的
+         「0 0 0 1px」四长写法在 drop-shadow 里无效、整条声明作废变 none
+         （探针实证），描边只能四向偏移叠影（同主题选中环口径）：
+         四向 1px 分隔线描边 + 投影；组是矩形时视觉与旧 border 配方一致。 */
+      clip-path: none;
+      filter: drop-shadow(1px 0 0 var(--divider-line)) drop-shadow(-1px 0 0 var(--divider-line)) drop-shadow(0 1px 0 var(--divider-line)) drop-shadow(0 -1px 0 var(--divider-line)) drop-shadow(0 4px 18px rgba(0, 0, 0, 0.10));
     }
     /* v10.28.17.2: 整组选中 = 一条整组框（同卡片选中环配方：主色描边+3px
        环）——整组选中时成员手柄已隐藏（refreshResizeHandles），选中视觉
-       只剩组背景这一圈（用户「第一个框是单独卡片的框而不是整个框起来」）。 */
+       只剩组背景这一圈（用户「第一个框是单独卡片的框而不是整个框起来」）。
+       v10.28.26: 选中环改四向 drop-shadow 主色 1px + fixed-dim 3px 跟随
+       L/十字剪影（同 drop-shadow 无 spread 口径）。 */
     .grid-group-bg.selected {
-      border-color: var(--color-primary);
-      box-shadow: var(--card-shadow, var(--shadow-sm)), 0 0 0 3px var(--color-primary-fixed-dim);
+      filter: drop-shadow(1px 0 0 var(--color-primary)) drop-shadow(-1px 0 0 var(--color-primary)) drop-shadow(0 1px 0 var(--color-primary)) drop-shadow(0 -1px 0 var(--color-primary)) drop-shadow(3px 0 0 var(--color-primary-fixed-dim)) drop-shadow(-3px 0 0 var(--color-primary-fixed-dim)) drop-shadow(0 3px 0 var(--color-primary-fixed-dim)) drop-shadow(0 -3px 0 var(--color-primary-fixed-dim)) drop-shadow(0 4px 18px rgba(0, 0, 0, 0.10));
     }
     /* v10.28.15 — 分组「一体」外观（钦定「边框+主题边缘全隐藏」）：组内卡
        自身边框/阴影/外板/环带/剪影填充/焦边全部藏起，外框只剩组背景一条
@@ -5304,7 +5311,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
               if (cData.z) card.style.zIndex = String(parseInt(cData.z) || 0);
               if (cData.hidden === '1') { card.dataset.hidden = '1'; card.classList.add('layer-hidden'); }
               if (cData.groupId) card.dataset.groupId = cData.groupId; // v10.28.14: wiki 吸合分组 (additive)
-              if (cData.rowInGroup === '1') card.dataset.rowInGroup = '1'; // v10.28.25: 整行成员 (additive)
+              // v10.28.26: rowInGroup 整行机制退役——legacy drafts 含该字段时忽略（像素几何照存）
               // v3+ drafts store free pixel positions — restore exactly
               if (cData.x != null && cData.y != null) moveCardPx(card, parseFloat(cData.x), parseFloat(cData.y));
               // v9.5: re-cap the vertical label height to the final restored size
@@ -5625,8 +5632,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (c.dataset.hidden === '1') entry.hidden = '1';
       // v10.28.14: wiki 吸合分组 (additive — legacy drafts omit; 字符串 groupId)
       if (c.dataset.groupId) entry.groupId = c.dataset.groupId;
-      // v10.28.25: 整行成员 (additive — legacy drafts omit; 组内整宽成行的卡)
-      if (c.dataset.rowInGroup === '1') entry.rowInGroup = '1';
+      // v10.28.26: rowInGroup 不再序列化（整行机制退役，legacy 值随字段消失）
       // v10.28: 新卡片族 additive 字段（legacy drafts omit → 默认空/示例行）
       if (entry.type === 'character') {
         entry.charName = fieldHtml(c.querySelector('.card-label')) || '';
@@ -5684,7 +5690,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (groupStyles[g] && groupStyles[g].cardEdge) gsOut[g] = groupStyles[g];
     });
     var draft = {
-      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸); v10.28.17.3 adds NO new fields (Migrate to Cards 按钮 Uiverse 换肤：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.17.4 adds NO new fields (顶部 Migrate 按钮换 cssbuttons-io 紫渐变代码按钮换肤+弹窗 Migrate to Cards 还原 v10.28.17.3 药丸：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.19 adds additive sheetData (表格卡——用户「我们还缺少一个sheet card」：可编辑表格，首行表头加粗、行内编辑、底部 +添加行/+添加列、行尾 ✕ 删除；dataset JSON 串 {cols,cells}，cells[0] 恒为表头行；legacy drafts omit → 种子 2 列 4 行); v10.28.19.1 grows sheet default to 10×7 (表格卡默认尺寸 宽10格×长7格——用户「那个卡片大小能不能是默认长7格宽10格」：工厂默认/assetSpan/草稿恢复兜底三处 8×5→10×7); v10.28.19.2 adds NO new fields (表格卡加行/加列自动变长变宽——用户「然后能不能在添加行/列的时候自动变长和宽啊」：+添加行 → rowSpan+1 卡片变长、+添加列 → colSpan+1 卡片变宽；sheetGrow 读 dataset 现有跨度写回+setCardSize+刷手柄，跨度随草稿往返；种子 3 行与 restoreSheet 恢复路径不增长); v10.28.19.3 extends sheetData with colW/rowH (表格卡列宽/行高手柄——用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」：每列上方 ↔、每行左侧 ↕ 按住拖动调整；colgroup 三截制 18px+数据列+22px；colW/rowH 随草稿往返，legacy drafts omit → 默认等分); v10.28.20 adds NO new fields (撤回/恢复——用户「能不能在顶部添加一个撤回和恢复按钮」：快照式撤销栈，historySnapshot 剥 lastSaved 时间戳后 JSON 串对比，600ms 防抖挂在 onContentChange 尾零调用点改动；historyRestore 走 applyDraft 先清画布幂等+saveDraft 落库+重基线防序列化归一漂移吞恢复链；栈上限 60；工具栏 撤回/恢复 两钮 + Ctrl+Z/Ctrl+Y 输入框焦点让位原生撤销); v10.28.20.1 adds NO new fields (吸合误判修复——用户「为什么我把卡片拖到一个位置他会被一个和他没有任何接近的卡片吸附合并？」：真身=findMergeSnap 只按单轴边距判命中，同高不同 x 的卡隔着千余像素照样被吸；修法=边对判定加垂直轴严格重叠守卫——x 轴边对要求 y 范围相交、y 轴边对要求 x 范围相交；补丁位 0→1·纯修复轮); v10.28.20.2 adds NO new fields (一体式高亮——用户「画布是不是一体…改成全部一体式的不要偷懒就搞成一个一个的」+「我怕你又偷懒…只使用一个感应，其他都只是花瓶」：画布本体本来就一体=单一 div+自身长高+拖拽感应挂 document 全页生效，零复制零花瓶段；唯一一格一格=drawHighlightRange 一格建一个 div（拖 10×7 的卡 = 70 个小方块各自描边）——改为整个覆盖范围只建 ONE 块矩形；拖卡覆盖预览与侧栏资产落点预览共用同函数自动一并变一体；补丁位 1→2·观感微调轮); v10.28.20.3 adds NO new fields (卡框高光清除+边框统一暗色——用户「深色模式下卡片外框右上角有一条很突兀的白色/浅色高光边线…清除卡片右上角及整个外框所有的白色/浅色渐变高光线」+「将卡片整体的外边框统一改为暗色低调的微弱边框…融入深色背景」：真身=v10.27 磨砂玻璃轮「右上角 2px 高光条」background-image 白渐变贴 top right——浅色玻璃 3D 感、深色下变成刺眼白线；4 处卡片表面高光全清（玻璃卡本体/组背景卡面/主题卡填充层 tint/油漆 ::before——组背景就是那张「整卡」的卡面），边框统一 var(--divider-line)（深色=rgba(255,255,255,0.08) 正是用户举例值、浅色=rgba(118,117,134,0.08)；基础卡宽 2px 不动——主题卡外板几何按 2px 边宽调过只换色）；统计编辑面板高光保留（v10.28.6.2 钦定浮动面板非卡框）；补丁位 2→3·观感微调轮); v10.28.20.4 adds NO new fields (吸合方向感——用户「能不能判定一下方向，如果卡片是在左侧合并后应该就是在左侧而不是变成跑到下方」：真身=mergeCards 等宽归一以左缘为锚，窄卡从左/右并入既有组时被拉成组宽、右缘越过目标竖边 → reflowGroup 按水平重叠把全组压成一列叠到下方（实况探针：80px 窄卡左并入 174px 组 → 整组塌成一列，拖卡落到目标下方）；修法=findMergeSnap 边对加 side（'left'/'right'/'top'/'bottom'=拖动卡在目标哪一侧），mergeCards(card, target, side) 归一后按 side 重新贴齐（左/右贴竖边、上/下贴横边并 x 对齐目标列）再 reflow——贴齐边恒 flush，reflow 按边分列不再塌；补丁位 3→4·纯修复轮); v10.28.20.5 adds NO new fields (国旗卡默认 8×6→8×5、国徽卡默认 4×3→5×5——用户「把国旗卡片改成 长5格 国徽卡片改成5x5」：assetSpan flag h 6→5 + shield 显式 5×5，草稿恢复兜底同步（flag rowSpan||5、shield 分支 colSpan||5/rowSpan||5）；补丁位 4→5·观感微调轮); v10.28.21 adds NO new fields (合并组整体缩放+单击恒选整组——用户「合并后整体的卡片能不能做一个可以放大缩小的功能和独立卡片一样，然后当我只是要选中整体的卡片时会直接触发到独立卡片而不是在选中独立卡片的情况下双击才会触发」：①整组选中时 8 手柄挂组框（可见成员旋转感知 bbox 并集、轴对齐、rotation 0），拖手柄=整组缩放——组框像素→整格量化、成员位置按框内相对比例缩放、成员尺寸各自量化整格（span 既有字段往返）、等比锁成员两轴取小倍率保长宽比（fitW/fitH 既有字段）；提交不 reflow/不对齐列顶（用户刚调的结果系统不抢回）；②单击组内成员恒选整组（v10.28.15.1「再次点击同一张卡=单独选中」切换分支整体移除，死变量 mousedownAlreadySelected 删除）、单独选中只走双击；合并后 deselectAll 不自动选中保留；小更新位 20→21·新功能轮·补丁归零); v10.28.21.1 adds NO new fields (组内图源弹窗劫持双击修复——用户「选中了整体然后要再选中单独的卡片时就不让选了」+「再点击一次就打开了」：真身=组内国旗/国徽卡未设图时单击必弹图源弹窗，modal 遮罩吃掉双击第二击 → 双击单独选中/拖出拆分整条路径失效；修法=①组内卡单击不再弹图源，只在单独选中且 e.detail=2 时弹（用户钦定「在选中独立卡片的情况下双击才会触发」）②单独选中后单击同一张卡保持单独不重置回整组；补丁位 0→1·纯修复轮); v10.28.21.2 adds NO new fields (文字工具栏输入中恒显——用户「那个工具栏能不能在输入的时候都会一直展示」：真身=v10.28.10 输入框口径只认非空选区（框选口径光标态不弹），卡内编辑框（标签/姓名/表格格…）打字时工具栏不显示；修法=textSelInInput 光标态在 .grid-card 内输入框也弹+缓存 LAST_INPUT_EL 改存元素（选区态/光标态都可回用）；标题框/搜索框/弹层输入框打字不弹（防干扰）；Escape 在卡内输入框只折叠选区工具栏保持；补丁位 1→2·观感微调轮; v10.28.22 adds NO new fields (工具栏添加图像·Wiki 式内联图——用户「在工具栏的右侧那边再增加一个按钮叫添加图像，就是你可以添加国旗/国徽等等的图像，然后图像的大小是根据文字的大小进行等比例变化的，这样可以完成类似于Wiki的功能」：工具栏右端 image 钮（输入框态置灰——输入框装不了图）+ tt-img-pop 弹层（国旗库 15 面程序化条纹 canvas 光栅化 PNG data URL——块2 IIFE 经 window.FC_FLAG_LIBRARY 供数 + 上传任意图）；只进内容卡文字，insertInlineImage 选区替换/光标插入、光标置图后、onContentChange 入撤销快照；<img class="tt-inline-img"> CSS height 1.5em（em 继承 → 字号变图等比变：光标态整块字号/选区 span 字号两条路都等比）；内容卡草稿本就 innerHTML 往返 + sanitizeDraftHtml 放行 data: 图 → 保存/恢复无损，零新字段；块1 showToast 上窗（上传成功 toast 跨 IIFE 调用——电池抓出 ReferenceError）；小更新位 21→22·新功能轮·补丁归零); v10.28.23 adds NO new fields (添加图像钮不再置灰+弹层挂工具栏上方+网页搜索——用户「为什么该按钮没办法点击？」：v10.28.22 输入框态置灰 pointer-events:none 是设计却成事故，去置灰、插入时无内容卡光标 toast 引导；用户「他这个的图像的弹窗是在工具栏上方的就是用户可以直接进行一个预览，而不是覆盖全屏的」：showImgPop 上方优先锚定、贴顶翻下方；用户「一样可以在网页上搜索/上传」：弹层顶部搜索框+Wikimedia Commons API（免费免密钥 CORS origin=*，window.FC_IMG_SEARCH_API 可打桩）2 列缩略图预览、点格插 640px 缩略 URL、坏图格自动隐去、清除/失败回退国旗库；搜索框抢焦点→插入时光标回放（IMG_SAVED_RANGE 打开弹层时记住、先 focus 后加范围——Chrome 先加范围再 focus 会丢）；hideTextToolbar 弹层开着不收工具栏（点搜索框聚焦会把弹层关掉+display:none 后懒加载缩略图永不加载——电池探针实况，收起改走显式路径）；小更新位 22→23·新功能轮·补丁归零); v10.28.24 adds NO new fields (图像可以插进任何可打字处——用户「我希望他能添加在任何可以打字的地方而不是只限于文字内容卡片」：卡内输入框（标签/姓名/头衔/简介/统计指标/时间线事件与描述/表格格…）第一次插图时现场升级成 contentEditable span（同名同类同内联样式、文字照搬、dataset.rich='1'），此后文字+图片共存；纯文字字段永远还是 input 零影响既有路径；数字/年份字段除外（数值与图表逻辑要纯文字，toast 引导）；序列化全走 fieldHtml/fieldText/setFieldText/makeTextField——带标记文字按 HTML 往返、草稿零新字段（rich HTML 坐既有 label/charName/charTitle/charBio/statsRows/tlEvents/sheetData 串）；弹层打开记住卡内输入框 IMG_SAVED_INPUT（工具栏 mousedown preventDefault 保焦点、搜索/上传抢焦点后仍插回原位）；小更新位 23→24·新功能轮·补丁归零; v10.28.24.1 adds NO new fields (两个修复——用户「在Sheet卡片里添加图像时它的大小没有跟随文本大小」+「为什么在content card输入时工具栏会跑到左上角」：①内联图 1.5em 规则选择器只写 .card-text-content → 加 [data-rich="1"] img.tt-inline-img，富文本化字段（表格格/标签/统计…）里的图随所在字号等比；②真身=插图后光标 setStartAfter(img) 元素级落在内联图边界，Chrome 光标矩形退化（0,0,0,0）→ 工具栏定位锚到视口左上角；修法=光标优先放进图后文本节点偏移 0（探针实证矩形正常）+positionToolbar 退化矩形兜底锚回 textEl 矩形（图是末节点等残余情况也绝不跳左上角）；补丁位 0→1·纯修复轮); v10.28.24.2 adds NO new fields (两个修复——用户「就只有content card正常 sheet card不正常」+「一添加它的大小就已经超出了表格而且也没办法像文字一样删除」：①大字号时宽图溢出表格格——内联图 height 1.5em 下宽图（国旗 1.6:1）在字号 29+ 时宽度超过固定宽表格格（线上探针实证 font 32 → 77px 图 > 69px 格溢出）；修法=规则加 max-width:100% + object-fit:contain（普通字号零变化、超宽按比例收进盒内不压扁不溢出）②点击内联图无法像文字一样删除——点击图后光标落点不定且无选中反馈（探针实证 Delete/Backspace 不一定命中图）；修法=点击 rich 字段里的内联图直接整图选中（可视反馈），Delete/Backspace 即删；内容卡点击行为不动（用户基线）；补丁位 1→2·纯修复轮); v10.28.25 adds additive rowInGroup (合并组可整行成行——用户「如果那个卡片已经有左右两个合并了的 然后我在下面上去合并他只会变成左右两列，我希望是从下面合并时他是可以变成上下两行的就是不只是两列」：真身（探针实证）=旧行为把下方拖入卡挤进目标列，reflow 的 fill 把矮列拉高填满（2列组下方并入 → 另一列 130→216 被拉大），组永远只是左右两列；修法=上/下并入既有组时整宽成行贴组底/组顶——rowInGroup 标记随草稿往返（additive，legacy drafts omit）、reflowGroup 行卡独立于列（不进列划分/不参与 fill/不随列顶对齐跳动、宽度恒整组宽、幂等）、alignGroupTops 列顶对齐跳过行卡、拆分/侧并入清除标记；左右并入仍是列；小更新位 24→25·新功能轮·补丁归零)
+      v: 9, // v9: v8 + resize handles & align toggle; v9.1 adds additive aspect-lock fields; v9.5 adds additive captionPos/captionVertical; v10.0 adds additive caption background fields; v10.1 adds additive card-background + outer-plate fields; v10.2 adds NO new fields (edge upgrade is dataset-driven, rebuilt by applyCardBg/applyCaptionBg); v10.4 adds additive cardBgImg (card background image layer); v10.5 adds NO new fields (treasure wave clip = url(#map-wave-clip) constant); v10.6 adds NO new fields (paper crumple clip = url(#paper-edge-clip) constant); v10.7 adds NO new fields (6 HUD silhouettes = url(#hud-frame-1..6) constants; legacy cardEdge 'tech' → 'tech4' normalized in applyCardBg); v10.8 adds NO new fields (outer plate is theme-owned: setCardEdge writes the existing outerEdge/outerBgExtent datasets — 16px auto plate; legacy outerBgColor drafts still render via applyOuterBg); v10.9 adds NO new fields (bg image extends to the outer plate via the state-driven CSS rule .has-outer-bg.has-card-bg-img .card-bg-img); v10.10 adds additive outerBgGap (outer-plate margin, 0-40px, --outer-gap CSS var; legacy drafts omit → default 0); v10.11 adds NO new fields (intermediate, never delivered — bg image extent --outer-img-extent: extent at gap 0 / 0 at gap>0; tint no longer fills the margin band); v10.12 adds NO new fields (.card-outer-hole hole layer is derived from outerBgGap — applyOuterBg creates it at gap>0 so the visible ring sits extent-thick at distance gap; visible margin card→plate = gap); v10.13 adds NO new fields (bg image always covers the plate box; --outer-img-clip — derived from outerBgGap/outerBgExtent — keeps only the ring band at gap>0 so the image stays visible as the outer background band; margin card→image = gap); v10.15 adds NO new fields (油漆1~6 笔刷边缘加入边缘主题体系：dataset cardEdge 'paint1'~'paint6' 值走既有 cardBg 字段组，applyCardBg 归一 card-edge-paint 类；clip 走常量 url(#mn-paint-clip-1..6)，油漆5 卡级滤镜链 url(#mn-paint-filter-5) 由 CSS data-card-edge="paint5" 属性选择器阶梯驱动；旧边框体系 'paintN' borderStyle 草稿载入时迁移为 cardEdge 主题); v10.16 adds NO new fields (.card-outer-hole hole layer removed — the margin ring is now the plate ::before's OWN BORDER: extent-thick border + transparent background → truly transparent middle, canvas grid shows through, rounded corners via border-radius and themed shape via --card-clip at EVERY gap; three earlier mechanisms dropped: painted hole = white background (user feedback), mask-image ring = computed correct but not rendered on the user's machine (外边缘不见了), evenodd polygon clip = square corners (user feedback 「一调整边距就变方正」); the image band keeps its v10.13 polygon); v10.17 adds NO new fields (user screenshot pixel analysis 2026-08-21 — the plate ring renders but its left-bottom section is eaten: ① both plate rules z-index -1 → 1 so overlapping cards no longer cover the ring, ② paint-themed plates drop the --card-clip silhouette on the ring and use rounded-rect border-radius — the paint blobs' inset/wavy edges bite the 16px band into a broken ring at plate scale; paper/treasure/tech keep their box-filling silhouette cuts); v10.18 adds NO new fields (① plate z-index 1 → 3 + plated cards z 2 — v10.17's z 1 tied with .grid-card's z 1 (line 160) so tree order still let later cards cover the ring, user feedback 「还是这样」; z 3 sits strictly above every card element (plain z 1 / plated z 2) and the plated-card z 2 rescues filter-trapped themed plates (filter creates a stacking context that pins the plate's own z 3 inside the card) vs plain neighbors — known limit: themed-vs-themed plated pairs still fall back to tree order; ② outerBgGap fixed steps 0/8/16/24/32/40/48/56/64 default 16 (0 = no margin, plate hugs card) replacing the v10.10 0-40 free slider — UI is a select, old draft values snap via snapOuterGap (round to 8, e.g. 12→16)); v10.19 adds NO new fields (the transparent plate middle revealed the white canvas at gap>0 — light-theme --color-surface-container-lowest #ffffff read as the recurring 白色背景 (user 2026-08-21 「那个白色背景就不能丢掉吗」); the band now fills with the plate's own color for image-less cards via .has-outer-bg:not(.has-card-bg-img)::before — themed: --outer-tint gradient (same source as the border-image ring → one solid plate), legacy: --outer-bg solid; bg-image cards keep the v10.13 image band); v10.20 adds NO new fields (user 2026-08-21 「为什么还在啊？还有为什么是覆盖在图片上方」: ① the v10.19 fill sat on the plate ::before at internal z 3 — the ::before box covers the card area and z 3 sits above the card's own image layers (z 0), so the fill painted OVER card images (internal z only orders card children — v10.18's z 3 never helped the neighbor fix, which is the card-level z 2; both plate rules return to z -1); ② the fill moves to a dedicated .card-outer-band child layer (z -2, same box/radius/clip as the plate) — created by applyOuterBg at gap>0, hidden by CSS on bg-image cards, so the margin band still fills with the plate color but images always stay on top; the white that remains on pale plates is the plate's own chosen color — switch the edge theme/color for a non-white band); v10.21 adds NO new fields (user 「我不要半透明的」 — the themed tints carry alpha (tech 0.16/0.18, treasure 0.55, paper 0.88) and the whole plate (ring + margin band) rendered semi-transparent, leaking the canvas through; applyOuterBg now strips the rgba alpha from --outer-tint (stripTintAlpha) so the plate is fully opaque while the card-body layers keep the theme design; legacy --outer-bg keeps the user's own opacity slider); v10.22 adds NO new fields (user 「他和边缘不是一体的」 — the ring was border-image (gradient sampled compressed into the 16px ring) while the margin band was the band layer's background (gradient sampled across the whole plate box): same gradient, two different sample regions → color jump at the ring/margin seam; the ring is now part of the .card-outer-band layer itself — one continuous gradient across ring + margin, no seam; the plate ::before keeps only the box-shadow glow + 1px edge line to trace the outline; band created at gap 0 too since it now also paints the ring); v10.27.1 adds additive z + hidden (Canva-style layers: DOM order = bottom→top layer order and round-trips via the cards array; after any layer op z is written as 1 + index across ALL cards so mixed themed/plain stacking is truthful — overrides the class-level .has-outer-bg z 2; hidden = eye toggle, card hidden via display:none); v10.28 adds additive charName/charTitle/charBio/charAvatar/mapImg/mapPins/statsRows/tlEvents (new card family 人物卡/地图卡/数据卡/时间线卡 — dataset JSON strings; legacy drafts omit → defaults); v10.28.4 adds additive baseFontSize (content 卡光标态改整块默认字号——写在 .card-text-content 的 style 上、innerHTML 存不进，走 dataset 往返); v10.28.7.1 adds NO new fields (aspect-locked corner resize follows the mouse exactly — projection denominator (w0²+h0²)/2 → w0²+h0²); v10.28.7.2 adds NO new fields (卡片背景图盖内容修复 — 数据/人物/地图/时间线内容层 CSS 提层 position:relative + z-index:1，纯样式无新字段); v10.28.8 adds additive sneData (SNE 指数卡 — 六指标 JSON 串 {name,value}；legacy drafts omit → 六项默认 0); v10.28.9.2 drops the mapPins field（钉子移除——用户「在外面没有打开地图的情况下单点可以设置地名请把这个功能移除」；legacy drafts 的 mapPins 恢复时忽略不渲染）; v10.28.14 adds additive groupId (wiki 吸合分组——用户「两个卡片靠近时可以和wiki一样合并在一起，然后自动创建一个外背景」：拖近 ≤12px 吸合贴齐成组 + 普通不透明组背景 + 组整体移动 + 组内双击单独选中 + 长按 ≥600ms 拆分；legacy drafts omit → 无组); v10.28.15 adds additive w (content/text 精确像素宽——等宽挤压后 colSpan 整格舍入还原不回精确宽，legacy drafts omit → colSpan 恢复); v10.28.15.1 adds NO new fields (单击切换选中轮：首击整组→再击同卡单卡→三击回组；单选中拖出=拆分); v10.28.15.2 adds NO new fields (刷新翻倍修复轮：applyDraft 先清空画布+采纳云端重戳 lastSaved); v10.28.16 adds additive groupStyles (组整体主题化——组背景套边缘主题+外板边距，键为 groupId，用户「合并后保留和普通卡片一样的自定义，一样可以自定义边缘主题那些」；legacy drafts omit → 普通不透明组背景); v10.28.17 adds NO new fields (矮列放大填满不落草稿——填满几何每次重排从当前列高重推，重排幂等：图卡 fitW/fitH 已是既有字段、content/text 高度仍走自然高+重排补); v10.28.17.1 adds NO new fields (合拼三连修复：列顶对齐不落草稿——重排每次从当前几何重推；合并后 deselectAll 纯交互态); v10.28.17.2 adds NO new fields (一体口径补全：成员独立卡面/背景图组内隐藏+组背景卡面玻璃+整组选中单框——全状态类驱动；合并后单独调整不反弹——alignGroupTops 只对齐列顶不落草稿、不缩放任何尺寸); v10.28.17.3 adds NO new fields (Migrate to Cards 按钮 Uiverse 换肤：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.17.4 adds NO new fields (顶部 Migrate 按钮换 cssbuttons-io 紫渐变代码按钮换肤+弹窗 Migrate to Cards 还原 v10.28.17.3 药丸：纯样式+按钮内层 DOM，迁移逻辑零改动); v10.28.19 adds additive sheetData (表格卡——用户「我们还缺少一个sheet card」：可编辑表格，首行表头加粗、行内编辑、底部 +添加行/+添加列、行尾 ✕ 删除；dataset JSON 串 {cols,cells}，cells[0] 恒为表头行；legacy drafts omit → 种子 2 列 4 行); v10.28.19.1 grows sheet default to 10×7 (表格卡默认尺寸 宽10格×长7格——用户「那个卡片大小能不能是默认长7格宽10格」：工厂默认/assetSpan/草稿恢复兜底三处 8×5→10×7); v10.28.19.2 adds NO new fields (表格卡加行/加列自动变长变宽——用户「然后能不能在添加行/列的时候自动变长和宽啊」：+添加行 → rowSpan+1 卡片变长、+添加列 → colSpan+1 卡片变宽；sheetGrow 读 dataset 现有跨度写回+setCardSize+刷手柄，跨度随草稿往返；种子 3 行与 restoreSheet 恢复路径不增长); v10.28.19.3 extends sheetData with colW/rowH (表格卡列宽/行高手柄——用户「能不能在每一列/行的外面再增加一个格子点击这个格子可以调整该行的长度该列的宽度」：每列上方 ↔、每行左侧 ↕ 按住拖动调整；colgroup 三截制 18px+数据列+22px；colW/rowH 随草稿往返，legacy drafts omit → 默认等分); v10.28.20 adds NO new fields (撤回/恢复——用户「能不能在顶部添加一个撤回和恢复按钮」：快照式撤销栈，historySnapshot 剥 lastSaved 时间戳后 JSON 串对比，600ms 防抖挂在 onContentChange 尾零调用点改动；historyRestore 走 applyDraft 先清画布幂等+saveDraft 落库+重基线防序列化归一漂移吞恢复链；栈上限 60；工具栏 撤回/恢复 两钮 + Ctrl+Z/Ctrl+Y 输入框焦点让位原生撤销); v10.28.20.1 adds NO new fields (吸合误判修复——用户「为什么我把卡片拖到一个位置他会被一个和他没有任何接近的卡片吸附合并？」：真身=findMergeSnap 只按单轴边距判命中，同高不同 x 的卡隔着千余像素照样被吸；修法=边对判定加垂直轴严格重叠守卫——x 轴边对要求 y 范围相交、y 轴边对要求 x 范围相交；补丁位 0→1·纯修复轮); v10.28.20.2 adds NO new fields (一体式高亮——用户「画布是不是一体…改成全部一体式的不要偷懒就搞成一个一个的」+「我怕你又偷懒…只使用一个感应，其他都只是花瓶」：画布本体本来就一体=单一 div+自身长高+拖拽感应挂 document 全页生效，零复制零花瓶段；唯一一格一格=drawHighlightRange 一格建一个 div（拖 10×7 的卡 = 70 个小方块各自描边）——改为整个覆盖范围只建 ONE 块矩形；拖卡覆盖预览与侧栏资产落点预览共用同函数自动一并变一体；补丁位 1→2·观感微调轮); v10.28.20.3 adds NO new fields (卡框高光清除+边框统一暗色——用户「深色模式下卡片外框右上角有一条很突兀的白色/浅色高光边线…清除卡片右上角及整个外框所有的白色/浅色渐变高光线」+「将卡片整体的外边框统一改为暗色低调的微弱边框…融入深色背景」：真身=v10.27 磨砂玻璃轮「右上角 2px 高光条」background-image 白渐变贴 top right——浅色玻璃 3D 感、深色下变成刺眼白线；4 处卡片表面高光全清（玻璃卡本体/组背景卡面/主题卡填充层 tint/油漆 ::before——组背景就是那张「整卡」的卡面），边框统一 var(--divider-line)（深色=rgba(255,255,255,0.08) 正是用户举例值、浅色=rgba(118,117,134,0.08)；基础卡宽 2px 不动——主题卡外板几何按 2px 边宽调过只换色）；统计编辑面板高光保留（v10.28.6.2 钦定浮动面板非卡框）；补丁位 2→3·观感微调轮); v10.28.20.4 adds NO new fields (吸合方向感——用户「能不能判定一下方向，如果卡片是在左侧合并后应该就是在左侧而不是变成跑到下方」：真身=mergeCards 等宽归一以左缘为锚，窄卡从左/右并入既有组时被拉成组宽、右缘越过目标竖边 → reflowGroup 按水平重叠把全组压成一列叠到下方（实况探针：80px 窄卡左并入 174px 组 → 整组塌成一列，拖卡落到目标下方）；修法=findMergeSnap 边对加 side（'left'/'right'/'top'/'bottom'=拖动卡在目标哪一侧），mergeCards(card, target, side) 归一后按 side 重新贴齐（左/右贴竖边、上/下贴横边并 x 对齐目标列）再 reflow——贴齐边恒 flush，reflow 按边分列不再塌；补丁位 3→4·纯修复轮); v10.28.20.5 adds NO new fields (国旗卡默认 8×6→8×5、国徽卡默认 4×3→5×5——用户「把国旗卡片改成 长5格 国徽卡片改成5x5」：assetSpan flag h 6→5 + shield 显式 5×5，草稿恢复兜底同步（flag rowSpan||5、shield 分支 colSpan||5/rowSpan||5）；补丁位 4→5·观感微调轮); v10.28.21 adds NO new fields (合并组整体缩放+单击恒选整组——用户「合并后整体的卡片能不能做一个可以放大缩小的功能和独立卡片一样，然后当我只是要选中整体的卡片时会直接触发到独立卡片而不是在选中独立卡片的情况下双击才会触发」：①整组选中时 8 手柄挂组框（可见成员旋转感知 bbox 并集、轴对齐、rotation 0），拖手柄=整组缩放——组框像素→整格量化、成员位置按框内相对比例缩放、成员尺寸各自量化整格（span 既有字段往返）、等比锁成员两轴取小倍率保长宽比（fitW/fitH 既有字段）；提交不 reflow/不对齐列顶（用户刚调的结果系统不抢回）；②单击组内成员恒选整组（v10.28.15.1「再次点击同一张卡=单独选中」切换分支整体移除，死变量 mousedownAlreadySelected 删除）、单独选中只走双击；合并后 deselectAll 不自动选中保留；小更新位 20→21·新功能轮·补丁归零); v10.28.21.1 adds NO new fields (组内图源弹窗劫持双击修复——用户「选中了整体然后要再选中单独的卡片时就不让选了」+「再点击一次就打开了」：真身=组内国旗/国徽卡未设图时单击必弹图源弹窗，modal 遮罩吃掉双击第二击 → 双击单独选中/拖出拆分整条路径失效；修法=①组内卡单击不再弹图源，只在单独选中且 e.detail=2 时弹（用户钦定「在选中独立卡片的情况下双击才会触发」）②单独选中后单击同一张卡保持单独不重置回整组；补丁位 0→1·纯修复轮); v10.28.21.2 adds NO new fields (文字工具栏输入中恒显——用户「那个工具栏能不能在输入的时候都会一直展示」：真身=v10.28.10 输入框口径只认非空选区（框选口径光标态不弹），卡内编辑框（标签/姓名/表格格…）打字时工具栏不显示；修法=textSelInInput 光标态在 .grid-card 内输入框也弹+缓存 LAST_INPUT_EL 改存元素（选区态/光标态都可回用）；标题框/搜索框/弹层输入框打字不弹（防干扰）；Escape 在卡内输入框只折叠选区工具栏保持；补丁位 1→2·观感微调轮; v10.28.22 adds NO new fields (工具栏添加图像·Wiki 式内联图——用户「在工具栏的右侧那边再增加一个按钮叫添加图像，就是你可以添加国旗/国徽等等的图像，然后图像的大小是根据文字的大小进行等比例变化的，这样可以完成类似于Wiki的功能」：工具栏右端 image 钮（输入框态置灰——输入框装不了图）+ tt-img-pop 弹层（国旗库 15 面程序化条纹 canvas 光栅化 PNG data URL——块2 IIFE 经 window.FC_FLAG_LIBRARY 供数 + 上传任意图）；只进内容卡文字，insertInlineImage 选区替换/光标插入、光标置图后、onContentChange 入撤销快照；<img class="tt-inline-img"> CSS height 1.5em（em 继承 → 字号变图等比变：光标态整块字号/选区 span 字号两条路都等比）；内容卡草稿本就 innerHTML 往返 + sanitizeDraftHtml 放行 data: 图 → 保存/恢复无损，零新字段；块1 showToast 上窗（上传成功 toast 跨 IIFE 调用——电池抓出 ReferenceError）；小更新位 21→22·新功能轮·补丁归零); v10.28.23 adds NO new fields (添加图像钮不再置灰+弹层挂工具栏上方+网页搜索——用户「为什么该按钮没办法点击？」：v10.28.22 输入框态置灰 pointer-events:none 是设计却成事故，去置灰、插入时无内容卡光标 toast 引导；用户「他这个的图像的弹窗是在工具栏上方的就是用户可以直接进行一个预览，而不是覆盖全屏的」：showImgPop 上方优先锚定、贴顶翻下方；用户「一样可以在网页上搜索/上传」：弹层顶部搜索框+Wikimedia Commons API（免费免密钥 CORS origin=*，window.FC_IMG_SEARCH_API 可打桩）2 列缩略图预览、点格插 640px 缩略 URL、坏图格自动隐去、清除/失败回退国旗库；搜索框抢焦点→插入时光标回放（IMG_SAVED_RANGE 打开弹层时记住、先 focus 后加范围——Chrome 先加范围再 focus 会丢）；hideTextToolbar 弹层开着不收工具栏（点搜索框聚焦会把弹层关掉+display:none 后懒加载缩略图永不加载——电池探针实况，收起改走显式路径）；小更新位 22→23·新功能轮·补丁归零); v10.28.24 adds NO new fields (图像可以插进任何可打字处——用户「我希望他能添加在任何可以打字的地方而不是只限于文字内容卡片」：卡内输入框（标签/姓名/头衔/简介/统计指标/时间线事件与描述/表格格…）第一次插图时现场升级成 contentEditable span（同名同类同内联样式、文字照搬、dataset.rich='1'），此后文字+图片共存；纯文字字段永远还是 input 零影响既有路径；数字/年份字段除外（数值与图表逻辑要纯文字，toast 引导）；序列化全走 fieldHtml/fieldText/setFieldText/makeTextField——带标记文字按 HTML 往返、草稿零新字段（rich HTML 坐既有 label/charName/charTitle/charBio/statsRows/tlEvents/sheetData 串）；弹层打开记住卡内输入框 IMG_SAVED_INPUT（工具栏 mousedown preventDefault 保焦点、搜索/上传抢焦点后仍插回原位）；小更新位 23→24·新功能轮·补丁归零; v10.28.24.1 adds NO new fields (两个修复——用户「在Sheet卡片里添加图像时它的大小没有跟随文本大小」+「为什么在content card输入时工具栏会跑到左上角」：①内联图 1.5em 规则选择器只写 .card-text-content → 加 [data-rich="1"] img.tt-inline-img，富文本化字段（表格格/标签/统计…）里的图随所在字号等比；②真身=插图后光标 setStartAfter(img) 元素级落在内联图边界，Chrome 光标矩形退化（0,0,0,0）→ 工具栏定位锚到视口左上角；修法=光标优先放进图后文本节点偏移 0（探针实证矩形正常）+positionToolbar 退化矩形兜底锚回 textEl 矩形（图是末节点等残余情况也绝不跳左上角）；补丁位 0→1·纯修复轮); v10.28.24.2 adds NO new fields (两个修复——用户「就只有content card正常 sheet card不正常」+「一添加它的大小就已经超出了表格而且也没办法像文字一样删除」：①大字号时宽图溢出表格格——内联图 height 1.5em 下宽图（国旗 1.6:1）在字号 29+ 时宽度超过固定宽表格格（线上探针实证 font 32 → 77px 图 > 69px 格溢出）；修法=规则加 max-width:100% + object-fit:contain（普通字号零变化、超宽按比例收进盒内不压扁不溢出）②点击内联图无法像文字一样删除——点击图后光标落点不定且无选中反馈（探针实证 Delete/Backspace 不一定命中图）；修法=点击 rich 字段里的内联图直接整图选中（可视反馈），Delete/Backspace 即删；内容卡点击行为不动（用户基线）；补丁位 1→2·纯修复轮); v10.28.25 adds additive rowInGroup (合并组可整行成行——用户「如果那个卡片已经有左右两个合并了的 然后我在下面上去合并他只会变成左右两列，我希望是从下面合并时他是可以变成上下两行的就是不只是两列」：真身（探针实证）=旧行为把下方拖入卡挤进目标列，reflow 的 fill 把矮列拉高填满（2列组下方并入 → 另一列 130→216 被拉大），组永远只是左右两列；修法=上/下并入既有组时整宽成行贴组底/组顶——rowInGroup 标记随草稿往返（additive，legacy drafts omit）、reflowGroup 行卡独立于列（不进列划分/不参与 fill/不随列顶对齐跳动、宽度恒整组宽、幂等）、alignGroupTops 列顶对齐跳过行卡、拆分/侧并入清除标记；左右并入仍是列；小更新位 24→25·新功能轮·补丁归零); v10.28.26 adds NO new fields (自由形状合并组——用户「合并后不只是正方形，可以是L型/十字型」：rowInGroup 整行机制整体退役（legacy drafts 含 rowInGroup='1' 恢复时忽略该字段、像素几何照存；载入不再 reflow 归一=形状保持）；接触面模型=上/下并入只按「接触的那一面」（对边 ≤12px 且 x 相交的成员）的最宽值调整大小（倒L 只匹配那一列宽、平底跨列=整面宽）、左右并入完全保尺寸+顶对齐目标；组背景 clip-path 多边形跟随 L/十字剪影（描边/阴影走 filter drop-shadow 栈）；小更新位 25→26·新功能轮·补丁归零)
       title: titleInput.value,
       tags: tags,
       cards: cards,
@@ -8791,247 +8797,48 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   window.normalizeCardWidth = normalizeCardWidth;
 
-  // v10.28.15 — 规整布局模型：组 = 若干列，列 = 贴齐的竖堆。列按成员
-  // x 排序（左缘越过当前列右缘的成员归入该列，贴齐右缘起新列）；列间
-  // flush 贴齐（首列锚定最左，后续列贴前列右缘），列内按 y 排序 flush
-  // 堆叠（首卡锚定，其余贴前卡底缘）——左右加入=新开一列，下方加入=
-  // 挤进本列。v10.28.17 起 reflowGroup 的 x 推进用 fill 后实际列宽，
-  // 列划分与贴齐跨重排稳定（0.5px 容差）。移动只写 style+dataset.x/y
-  // （与 moveCardPx 同口径，草稿往返不依赖重算）。
-  function groupColumns(mems) {
-    var sorted = mems.slice().sort(function (a, b) {
-      var ax = parseFloat(a.style.left) || 0, bx = parseFloat(b.style.left) || 0;
-      return (ax - bx) || ((parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0));
-    });
-    var cols = [];
-    sorted.forEach(function (c) {
-      var left = parseFloat(c.style.left) || 0;
-      var right = left + (c.offsetWidth || 0);
-      var col = cols[cols.length - 1];
-      if (col && left < col.right - 0.5) {
-        col.cards.push(c);
-        if (right > col.right) col.right = right;
-      } else {
-        cols.push({ cards: [c], left: left, right: right });
-      }
-    });
-    return cols;
-  }
-  window.groupColumns = groupColumns;
-
+  // v10.28.26 — 自由形状合并组（用户「合并后不只是正方形，可以是 L 型/十字型」）：
+  // 组的形状 = 成员各自几何的直接并集。reflow 只重画背景与手柄，永不改成员
+  // 位置/尺寸（合并/拆分/删卡/载入草稿全部保形）。旧 reflow（列划分/矮列
+  // fill 填满/列顶对齐/行卡贴列块）会把任何形状压回「等宽列+整行」——L 型
+  // 在此被拉平，与自由形状语义冲突，随 v10.28.25 行卡机制一并整体退役。
   function reflowGroup(g) {
     var mems = getAllCards().filter(function (c) { return c.dataset.groupId === g; });
     // <2 张：交给 updateGroupBgs 解散（清掉孤卡上的残留 groupId——不清会
     // 永久藏边框）
     if (mems.length < 2) { updateGroupBgs(); return; }
-    // v10.28.25 — 整行成员（rowInGroup）：自成一行贴列块上/下——不进列划分、
-    // 不参与 fill（不把别的列拉高）、不随列顶对齐跳动；宽度恒整组宽。
-    var rows = [], colMems = [];
-    mems.forEach(function (c) { (c.dataset.rowInGroup === '1' ? rows : colMems).push(c); });
-    if (colMems.length === 0) {
-      // 全是整行：竖排 flush（锚定最上卡顶，幂等）
-      var glA = Infinity, grA = -Infinity;
-      rows.forEach(function (r) {
-        var l = parseFloat(r.style.left) || 0;
-        if (l < glA) glA = l;
-        if (l + (r.offsetWidth || 0) > grA) grA = l + (r.offsetWidth || 0);
-      });
-      var gwA = Math.max(1, grA - glA);
-      rows.forEach(function (r) { if (Math.abs(r.offsetWidth - gwA) > 0.5) normalizeCardWidth(r, gwA); });
-      var ry = Infinity;
-      rows.forEach(function (r) { var t = parseFloat(r.style.top) || 0; if (t < ry) ry = t; });
-      rows.slice().sort(function (a, b) { return (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0); })
-        .forEach(function (r) {
-          r.style.left = glA + 'px'; r.style.top = ry + 'px';
-          r.dataset.x = glA; r.dataset.y = ry;
-          ry += r.offsetHeight || 0;
-        });
-      updateGroupBgs(); refreshResizeHandles(); return;
-    }
-    // v10.28.17 — 钦定「矮列的卡片放大填满」（用户「为什么当合拼一体时
-    // 左右两列的高度不一致？」）：列高取最高列，矮列卡片等比放大补齐——
-    // 图卡宽高同比例（aspectRatio 不变）、content/text 只加高。两条稳定性
-    // 约束：① 全组等宽归一从重排移除（职责只在 mergeCards 并入入口）——
-    // 若重排再归一，草稿恢复的放大尺寸会成为新的「最宽基准」每轮再放大
-    // （v10.28.15.2 翻倍 bug 同族）；② 重排对已填满几何幂等——f 每次从
-    // 当前几何重推，已等高的列 f=1 空转，反复重排/重载不累积。
-    var cols = groupColumns(colMems);
-    // 列高 = 成员高度之和（贴齐竖堆零间距）；H = 最高列
-    var colHeights = cols.map(function (col) {
-      return col.cards.reduce(function (s, c) { return s + (c.offsetHeight || 0); }, 0);
-    });
-    var H = 0;
-    colHeights.forEach(function (h) { if (h > H) H = h; });
-    // 矮列放大填满（等高的列 H-colH < 0.5px 跳过）
-    cols.forEach(function (col, i) {
-      if (H - colHeights[i] < 0.5) return;
-      var f = H / Math.max(1, colHeights[i]);
-      col.cards.forEach(function (c) {
-        if (isAspectLocked(c)) {
-          var w2 = Math.max(1, Math.round(c.offsetWidth * f));
-          var h2 = Math.max(1, Math.round(c.offsetHeight * f));
-          c.style.width = w2 + 'px';
-          c.style.height = h2 + 'px';
-          c.dataset.fitW = w2;
-          c.dataset.fitH = h2;
-          var step = getCellSize() + 2;
-          c.dataset.colSpan = Math.max(1, Math.round((w2 + 2) / step));
-          c.dataset.rowSpan = Math.max(1, Math.round((h2 + 2) / step));
-        } else {
-          c.style.height = Math.max(1, Math.round(c.offsetHeight * f)) + 'px';
-        }
-      });
-    });
-    // 定位：列内按实际高度堆叠、列间按实际宽度贴齐（fill 后列宽可能不同，
-    // 以实际宽度推进保证列划分跨重排稳定）。v10.28.17.1 — 列顶对齐：吸合
-    // 提交只校正 x、y 偏移按用户拖放保留，列高填满后列顶仍参差 → 底缘永远
-    // 对不齐（用户「高度还是一样不一样」的真身）；所有列顶对齐到最上卡顶 →
-    // 等高列+齐顶齐底 = 一张整卡。列内堆叠相对关系不变（下方加入仍挤在本列
-    // 底部）；重排幂等（对齐后列顶相等 → 再重排零位移）。
-    var x = cols[0].left;
-    var alignTop = Infinity;
-    cols.forEach(function (col) {
-      col.cards.forEach(function (c) {
-        var t = parseFloat(c.style.top) || 0;
-        if (t < alignTop) alignTop = t;
-      });
-    });
-    cols.forEach(function (col) {
-      var cards = col.cards.slice().sort(function (a, b) {
-        return (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0);
-      });
-      var y = alignTop;
-      var colW = 0;
-      cards.forEach(function (c) { if (c.offsetWidth > colW) colW = c.offsetWidth; });
-      cards.forEach(function (c) {
-        c.style.left = x + 'px';
-        c.style.top = y + 'px';
-        c.dataset.x = x;
-        c.dataset.y = y;
-        y += c.offsetHeight || 0;
-      });
-      x += colW;
-    });
-    // v10.28.25 — 整行成员贴列块上/下（整组宽、幂等；组宽在列定位后重推——
-    // fill 可能把列加宽）
-    if (rows.length) {
-      var gL2 = Infinity, gR2 = -Infinity;
-      mems.forEach(function (c) {
-        var l = parseFloat(c.style.left) || 0;
-        if (l < gL2) gL2 = l;
-        if (l + (c.offsetWidth || 0) > gR2) gR2 = l + (c.offsetWidth || 0);
-      });
-      var gW2 = Math.max(1, gR2 - gL2);
-      rows.forEach(function (r) { if (Math.abs(r.offsetWidth - gW2) > 0.5) normalizeCardWidth(r, gW2); });
-      var topRows = rows.filter(function (r) { return (parseFloat(r.style.top) || 0) < alignTop - 0.5; })
-        .sort(function (a, b) { return (parseFloat(b.style.top) || 0) - (parseFloat(a.style.top) || 0); });
-      var botRows = rows.filter(function (r) { return (parseFloat(r.style.top) || 0) >= alignTop - 0.5; })
-        .sort(function (a, b) { return (parseFloat(a.style.top) || 0) - (parseFloat(b.style.top) || 0); });
-      var ry2 = alignTop;
-      topRows.forEach(function (r) {
-        ry2 -= r.offsetHeight;
-        r.style.left = gL2 + 'px'; r.style.top = ry2 + 'px';
-        r.dataset.x = gL2; r.dataset.y = ry2;
-      });
-      ry2 = alignTop + H;
-      botRows.forEach(function (r) {
-        r.style.left = gL2 + 'px'; r.style.top = ry2 + 'px';
-        r.dataset.x = gL2; r.dataset.y = ry2;
-        ry2 += r.offsetHeight;
-      });
-    }
     updateGroupBgs();
     refreshResizeHandles();
   }
   window.reflowGroup = reflowGroup;
 
-  // v10.28.17.2 — 合并后用户可单独调整（用户「那个一样长度的是默认合并时
-  // 但是如果是合并完后用户要单独调整是可以的…最顶部的部分的高度永远一致
-  // 行不行？中间部分要怎么调就怎么调但是图片的大小永远是等比例」）：缩放/
-  // 旋转等调整提交点不再 reflowGroup——reflow 的填满/等宽会把手刚调的尺寸
-  // 改回去（调整被系统「抢回去」）。这里只做列顶对齐：所有列顶锚定到最上
-  // 卡顶（顶部永远齐平），列内堆叠相对关系、x、宽高一律不碰（中间怎么调
-  // 怎么调、图片尺寸永不被系统缩放）。重排幂等（对齐后零位移）；对齐量由
-  // 当前几何重推（无累积）。
-  // v10.28.25.1 — 行组行卡快照：记录每张行卡在列块上方/下方及其间距
-  // （above=行卡中心在列块中心之上；off=行卡贴列块的原始间距，Round N
-  // 成行恒 flush → 实测 0，但保留通用性）。列成员缩放提交后按新列块+原
-  // 间距把行卡贴回，列块变高行下推、变矮行上收——不压行、不留空。
-  function snapshotGroupRows(g) {
-    var mems = getAllCards().filter(function (c) { return c.dataset.groupId === g; });
-    var cols = mems.filter(function (c) { return c.dataset.rowInGroup !== '1'; });
-    var rows = mems.filter(function (c) { return c.dataset.rowInGroup === '1'; });
-    if (cols.length === 0 || rows.length === 0) return null;
-    var bT = Infinity, bB = -Infinity;
-    cols.forEach(function (c) {
-      var t = parseFloat(c.style.top) || 0;
-      var b = t + c.offsetHeight;
-      if (t < bT) bT = t;
-      if (b > bB) bB = b;
-    });
-    var mid = (bT + bB) / 2;
-    return rows.map(function (r) {
-      var t = parseFloat(r.style.top) || 0;
-      var b = t + r.offsetHeight;
-      var above = (t + b) / 2 < mid;
-      return { card: r, above: above, off: above ? (bT - b) : (t - bB), h: r.offsetHeight };
-    });
-  }
-
-  // v10.28.25.2 — 挤压让位快照：组内列成员单卡缩放时，把同侧伙伴按
+  // v10.28.25.2 — 挤压让位快照：组内单卡缩放时，把同侧伙伴按
   // 「移动边=墙」分类并记下起点（用户「旁边卡片不会因为被挤压而移动」，
   // 探针实证：2列组 A 东扩 → B 原位不动重叠 66px、东收也不回贴）。
-  // 松手时墙外同侧伙伴随墙整列平移（列内贴齐/列间间距全保留、对边不碰；
-  // 收边墙回撤=负位移回贴）。行卡不进四组（贴回列块走 pushGroupRows、
-  // 宽走 reassertRowWidths）；同列（x 相交）只走纵向、异列只走横向。
-  // 同时记列块起点左缘/宽（行宽跟随用）。落位绝对化（起点+位移）幂等。
+  // 松手时墙外同侧伙伴随墙整列平移（齐平/间隙全保留；收边墙回撤=
+  // 负位移回贴）。同列（x 相交）只走纵向、异列只走横向。落位绝对化
+  // （起点+位移）幂等。v10.28.26: 右/左集合加垂直重叠守卫（正对移动边
+  // 且垂直相交才让位）——自由形状下台阶式斜对卡不再被误推；行卡跳过、
+  // 列块起点记录随行卡机制退役一并删除。
   function snapshotGroupPartners(card) {
     var L = parseFloat(card.style.left) || 0;
     var T = parseFloat(card.style.top) || 0;
     var R = L + card.offsetWidth;
     var B = T + card.offsetHeight;
-    var sets = { right: [], left: [], below: [], above: [], blkL: Infinity, blkR: -Infinity };
+    var sets = { right: [], left: [], below: [], above: [] };
     groupMembers(card).forEach(function (c) {
-      if (c.dataset.rowInGroup === '1') return;
+      if (c === card) return;
       var l = parseFloat(c.style.left) || 0;
       var t = parseFloat(c.style.top) || 0;
       var r = l + c.offsetWidth;
-      if (l < sets.blkL) sets.blkL = l;
-      if (r > sets.blkR) sets.blkR = r;
-      if (c === card) return;
       var b = t + c.offsetHeight;
       if (r > L && l < R) {
         if (b <= T) sets.above.push({ card: c, l: l, t: t });
         else if (t >= B) sets.below.push({ card: c, l: l, t: t });
-      } else if (l >= R) sets.right.push({ card: c, l: l, t: t });
-      else if (r <= L) sets.left.push({ card: c, l: l, t: t });
+      } else if (l >= R && b > T && t < B) sets.right.push({ card: c, l: l, t: t });
+      else if (r <= L && b > T && t < B) sets.left.push({ card: c, l: l, t: t });
     });
     return sets;
-  }
-
-  function pushGroupRows(st) {
-    if (!st.rows) return;
-    var cols = groupMembers(st.card).filter(function (c) { return c.dataset.rowInGroup !== '1'; });
-    if (cols.length === 0) return;
-    var bT = Infinity, bB = -Infinity;
-    cols.forEach(function (c) {
-      var t = parseFloat(c.style.top) || 0;
-      var b = t + c.offsetHeight;
-      if (t < bT) bT = t;
-      if (b > bB) bB = b;
-    });
-    var moved = false;
-    st.rows.forEach(function (rr) {
-      if (!rr.card.dataset.groupId) return; // 拖拽途中被拆出/删掉的卡
-      // v10.28.25.2: h 实读当前值（行宽重断言可能让等比锁行变高，快照 h 过期）
-      var nt = rr.above ? (bT - rr.off - rr.card.offsetHeight) : (bB + rr.off);
-      var ct = parseFloat(rr.card.style.top) || 0;
-      if (Math.abs(nt - ct) < 0.5) return;
-      rr.card.style.top = nt + 'px';
-      rr.card.dataset.y = nt;
-      moved = true;
-    });
-    if (moved) updateGroupBgs();
   }
 
   // v10.28.25.2 — 挤压让位：松手时按移动边位移量整列平移同侧伙伴
@@ -9073,64 +8880,6 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (moved) updateGroupBgs();
   }
 
-  // v10.28.25.2 — 行宽跟随列块：列成员横向缩放后，处于默认全宽状态的行卡
-  // （左缘/宽与列块起点一致——Round N「行=组宽」幂等状态）重断言为新列块
-  // 左缘+宽：列块变宽行变宽、变窄行变窄（探针实证：右列东扩 +66 行卡仍停
-  // 旧宽差 66px）。用户自定义宽/移过位的行不抢回（尊重单卡自由调整）。
-  function reassertRowWidths(st) {
-    var p = st.partners;
-    if (!p || st.dirX === 0) return;
-    var card = st.card;
-    var cL = parseFloat(card.style.left) || 0;
-    var dw = st.dirX === 1 ? (cL + card.offsetWidth) - (st.origLeft + st.origW)
-                           : st.origLeft - cL;
-    if (Math.abs(dw) < 0.5) return;
-    var w0 = p.blkR - p.blkL;
-    var newL = st.dirX === -1 ? (p.blkL - dw) : p.blkL;
-    var newW = w0 + dw;
-    var moved = false;
-    groupMembers(card).forEach(function (r) {
-      if (r.dataset.rowInGroup !== '1') return;
-      var rl = parseFloat(r.style.left) || 0;
-      if (Math.abs(rl - p.blkL) > 0.5 || Math.abs(r.offsetWidth - w0) > 0.5) return;
-      if (Math.abs(rl - newL) >= 0.5) { r.style.left = newL + 'px'; r.dataset.x = newL; moved = true; }
-      if (Math.abs(r.offsetWidth - newW) > 0.5) { normalizeCardWidth(r, newW); moved = true; }
-    });
-    if (moved) updateGroupBgs();
-  }
-
-  function alignGroupTops(g) {
-    var mems = getAllCards().filter(function (c) { return c.dataset.groupId === g; });
-    if (mems.length < 2) { updateGroupBgs(); return; }
-    // v10.28.25: 整行成员不进列（否则行卡被并入末列，列顶对齐会把它拖上去）
-    var cols = groupColumns(mems.filter(function (c) { return c.dataset.rowInGroup !== '1'; }));
-    if (cols.length === 0) { updateGroupBgs(); return; }
-    var alignTop = Infinity;
-    cols.forEach(function (col) {
-      col.cards.forEach(function (c) {
-        var t = parseFloat(c.style.top) || 0;
-        if (t < alignTop) alignTop = t;
-      });
-    });
-    cols.forEach(function (col) {
-      var colTop = Infinity;
-      col.cards.forEach(function (c) {
-        var t = parseFloat(c.style.top) || 0;
-        if (t < colTop) colTop = t;
-      });
-      var dy = alignTop - colTop;
-      if (Math.abs(dy) < 0.5) return;
-      col.cards.forEach(function (c) {
-        var t = (parseFloat(c.style.top) || 0) + dy;
-        c.style.top = t + 'px';
-        c.dataset.y = t;
-      });
-    });
-    updateGroupBgs();
-    refreshResizeHandles();
-  }
-  window.alignGroupTops = alignGroupTops;
-
   function reflowAllGroups() {
     var seen = {};
     getAllCards().forEach(function (c) {
@@ -9141,25 +8890,42 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function mergeCards(card, target, side) {
     var g = target.dataset.groupId || makeGroupId();
-    // v10.28.25 — 上下并入既有组=整宽成行（用户「已经有左右两个合并了的，
-    // 从下面上去合并只会变成左右两列，希望变成上下两行」）。真身（探针实证）：
-    // 旧行为把拖入卡挤进目标列，reflow 的 fill 把矮列拉高填满（2列组下方并入 →
-    // 另一列 130→216 被拉大），组永远还是左右两列；新行为=整宽行贴组底/组顶，
-    // 列块不拉伸、自成一行；左右并入仍是列（行标记清除，拆出的旧行卡回列）。
-    if (target.dataset.groupId && (side === 'top' || side === 'bottom')) {
-      var mems = getAllCards().filter(function (c) { return c.dataset.groupId === g; });
-      var gL = Infinity, gT = Infinity, gR = -Infinity, gB = -Infinity;
-      mems.forEach(function (c) {
+    delete card.dataset.rowInGroup; // v10.28.25 行卡标记（legacy）——自由形状下无行卡语义，清理残留
+    var tL = parseFloat(target.style.left) || 0, tT = parseFloat(target.style.top) || 0;
+    if (side === 'top' || side === 'bottom') {
+      // v10.28.26 — 接触面模型（用户「从上方/下方合并时只根据他动到的那一面
+      // 的最宽值调整大小，不是整组最宽」）：面 = 组内（target 未分组则=[target]）
+      // 「对边与卡对边距离 ≤12px（MERGE_THRESHOLD）且 x 范围与卡相交」的成员——
+      // 倒 L 台阶底下方并入只匹配接触的那一列宽、平底跨两列=整面宽。空面退化
+      // 为 [target]（保 v10.28.20.4 方向感：贴齐边恒 flush）。
+      var cL0 = parseFloat(card.style.left) || 0, cT0 = parseFloat(card.style.top) || 0;
+      var cR0 = cL0 + card.offsetWidth, cB0 = cT0 + card.offsetHeight;
+      var face = getAllCards().filter(function (c) {
+        if (c === card) return false;
+        if (target.dataset.groupId) { if (c.dataset.groupId !== g) return false; }
+        else if (c !== target) return false;
         var l = parseFloat(c.style.left) || 0, t = parseFloat(c.style.top) || 0;
-        if (l < gL) gL = l;
-        if (t < gT) gT = t;
-        if (l + c.offsetWidth > gR) gR = l + c.offsetWidth;
-        if (t + c.offsetHeight > gB) gB = t + c.offsetHeight;
+        var r = l + c.offsetWidth, b = t + c.offsetHeight;
+        if (r <= cL0 || l >= cR0) return false; // x 不相交（贴邻不算相交）
+        var gap = side === 'bottom' ? Math.abs(cT0 - b) : Math.abs(cB0 - t);
+        return gap <= MERGE_THRESHOLD;
       });
-      normalizeCardWidth(card, gR - gL);
-      card.style.left = gL + 'px';
-      card.style.top = (side === 'bottom' ? gB : (gT - card.offsetHeight)) + 'px';
-      card.dataset.rowInGroup = '1';
+      if (face.length === 0) face = [target];
+      var fL = Infinity, fT = Infinity, fR = -Infinity, fB = -Infinity;
+      face.forEach(function (c) {
+        var l = parseFloat(c.style.left) || 0, t = parseFloat(c.style.top) || 0;
+        if (l < fL) fL = l;
+        if (t < fT) fT = t;
+        if (l + c.offsetWidth > fR) fR = l + c.offsetWidth;
+        if (t + c.offsetHeight > fB) fB = t + c.offsetHeight;
+      });
+      // 宽=面并集跨度（normalizeCardWidth 等比锁卡高度随比例——复用单卡口径）；
+      // 左/顶按面对齐：贴面左缘、贴面外侧边；moveCardPx 落位同步 dataset.x/y
+      // （草稿序列化读 dataset.x——直写 style.left 会留下旧 dataset.x，重载
+      // 后卡片跳回旧位，探针 P7 实证）。
+      normalizeCardWidth(card, Math.max(1, fR - fL));
+      moveCardPx(card, fL, (side === 'bottom' ? fB : (fT - card.offsetHeight)));
+      if (!target.dataset.groupId) target.dataset.groupId = g; // 面=[target]（未分组目标）时目标卡须同步入组——否则新组只有一张卡被 reflowGroup 解散、合并完全不成组（电池 S4 实证）
       card.dataset.groupId = g;
       reflowGroup(g);
       // v10.28.17.1: 合并后不自动选中——保持用户合并前的专注，避免整组突然
@@ -9170,32 +8936,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       showToast('卡片已合并成一组');
       return;
     }
-    delete card.dataset.rowInGroup; // 侧并入=列成员；曾为行卡的卡回列不残留标记
-    // v10.28.15 — 合并等宽（钦定「以较宽的那张为准」）：首次合并双方
-    // 同宽=较宽者；并入既有组=挤到组宽（组宽不变）。先归一后 reflow——
-    // 高度变了贴齐位由 reflow 重排。
-    var W = target.offsetWidth;
-    if (!target.dataset.groupId) W = Math.max(W, card.offsetWidth);
-    normalizeCardWidth(card, W);
-    if (!target.dataset.groupId) normalizeCardWidth(target, W);
-    // v10.28.20.4 — 吸合方向感（用户「能不能判定一下方向，如果卡片是在左侧
-    // 合并后应该就是在左侧而不是变成跑到下方」）：等宽归一以左缘为锚，窄卡
-    // 从左/右并入时被拉成组宽、右缘越过目标竖边 → reflowGroup 按水平重叠把
-    // 全组压成一列叠到下方（实况探针：80px 窄卡左并入 174px 组 → 整组塌成
-    // 一列，拖卡落到目标下方）。归一后按吸合边把卡重新贴回目标侧（左/右贴
-    // 竖边、上/下贴横边并 x 对齐目标列），再 reflow——贴齐边恒 flush，
-    // reflow 按边分列不再塌。
-    var tL = parseFloat(target.style.left) || 0, tT = parseFloat(target.style.top) || 0;
+    // v10.28.26 — 左右并入保尺寸（用户「从左/右侧合并时不会因为长度不一样
+    // 被拉长成一个长度，保持一样的大小但是合并」）：完全不做宽度归一（首并
+    // 双方也各保原尺寸），只贴目标侧边 + 顶对齐目标（moveCardPx 落位同步
+    // dataset.x/y，防草稿重载跳位）。曾为行卡的卡清理标记。
     if (side === 'left') {
-      card.style.left = (tL - card.offsetWidth) + 'px';
+      moveCardPx(card, tL - card.offsetWidth, tT);
     } else if (side === 'right') {
-      card.style.left = (tL + target.offsetWidth) + 'px';
-    } else if (side === 'top') {
-      card.style.top = (tT - card.offsetHeight) + 'px';
-      card.style.left = tL + 'px';
-    } else if (side === 'bottom') {
-      card.style.top = (tT + target.offsetHeight) + 'px';
-      card.style.left = tL + 'px';
+      moveCardPx(card, tL + target.offsetWidth, tT);
     }
     card.dataset.groupId = g;
     if (!target.dataset.groupId) target.dataset.groupId = g;
@@ -9286,6 +9034,198 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     bg.insertBefore(tintEl, bg.firstChild);
   }
 
+  // v10.28.26 — computeGroupOutline：多矩形并集轮廓 → path 串（坐标相对
+  // bg div 原点）。区间带扫描：全部矩形上/下缘 y 排序成带（带覆盖判据=
+  // 中点测试，带内无任何矩形边、覆盖集恒定），每带合并 x 区间；竖直边界=
+  // 每带每个区间端点的整带高段（带内区间外即并集外，任意区间端点必为边界）；
+  // 水平边界=首带顶缘/末带底缘/空洞两侧外缘整区间（并集外沿）+ 相邻带共享
+  // 边两带区间集事件扫描 XOR（同 x 事件逐条处理：先按该 x 之前状态结算上
+  // 一段再翻转计数——切分不同时（台阶/L 台阶）只出差异段；逐带加边依赖
+  // 端点键成对抵消仅在切分相同时成立，会漏内边，探针实证台阶 14px 凹口）。
+  // 并集外沿每端点偶度数（丁字点/触点均成立）→ Eulerian 走环；多环=
+  // 不相连并集多子路径。圆角：去共线点后按环面积 sign(cross) 定凸
+  // （corner cross 与面积同号=外凸），凸角 r=min(14, 邻段半长) 发射弧
+  // （A=cur−r·û1、B=cur+r·û2、sweep=cross>0，隐式圆心=cur+r·(û2−û1)）；
+  // 凹角保持直角。输出坐标 round 到 1 位小数。
+  function computeGroupOutline(rects) {
+    if (!rects || rects.length === 0) return null;
+    var ys = [];
+    rects.forEach(function (r) { ys.push(r.t, r.b); });
+    ys.sort(function (a, b) { return a - b; });
+    var bands = [];
+    for (var i = 0; i < ys.length - 1; i++) {
+      if (ys[i + 1] - ys[i] < 0.01) continue; // 重复 y 缘合并
+      var mid = (ys[i] + ys[i + 1]) / 2;
+      var xs = [];
+      rects.forEach(function (r) {
+        if (r.t <= mid && r.b >= mid) xs.push([r.l, r.r]);
+      });
+      if (xs.length === 0) continue;
+      xs.sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; });
+      var merged = [];
+      xs.forEach(function (iv) {
+        var last = merged[merged.length - 1];
+        if (last && iv[0] <= last[1]) { if (iv[1] > last[1]) last[1] = iv[1]; }
+        else merged.push([iv[0], iv[1]]);
+      });
+      bands.push({ y0: ys[i], y1: ys[i + 1], ints: merged });
+    }
+    if (bands.length === 0) return null;
+    // 边集合（精确浮点键）：竖直段每带每区间端点整带高；水平段每带上下缘。
+    var edges = {};
+    function edgeKey(x1, y1, x2, y2) {
+      if (y1 === y2) {
+        return (x1 < x2) ? 'H' + x1 + ',' + y1 + '|' + x2 + ',' + y2
+                         : 'H' + x2 + ',' + y2 + '|' + x1 + ',' + y1;
+      }
+      return (y1 < y2) ? 'V' + x1 + ',' + y1 + '|' + x2 + ',' + y2
+                       : 'V' + x2 + ',' + y2 + '|' + x1 + ',' + y1;
+    }
+    function addEdge(x1, y1, x2, y2) {
+      var k = edgeKey(x1, y1, x2, y2);
+      if (edges[k]) delete edges[k]; else edges[k] = [x1, y1, x2, y2];
+    }
+    // 竖直段：每带每区间端点整带高。
+    bands.forEach(function (b) {
+      b.ints.forEach(function (iv) {
+        addEdge(iv[0], b.y0, iv[0], b.y1);
+        addEdge(iv[1], b.y0, iv[1], b.y1);
+      });
+    });
+    // 水平段：每共享边界只加一次（XOR 对称），首/末/空洞缘=整区间。
+    function xorH(below, above, y) {
+      var evs = [];
+      below.forEach(function (iv) { evs.push([iv[0], 1, 'a']); evs.push([iv[1], -1, 'a']); });
+      above.forEach(function (iv) { evs.push([iv[0], 1, 'b']); evs.push([iv[1], -1, 'b']); });
+      evs.sort(function (p, q) { return p[0] - q[0]; }); // 稳定排序：同 x 保持插入序
+      var aC = 0, bC = 0, out = [], cur = null;
+      evs.forEach(function (ev) {
+        var inBefore = (aC > 0) !== (bC > 0);
+        if (ev[2] === 'a') aC += ev[1]; else bC += ev[1];
+        var inAfter = (aC > 0) !== (bC > 0);
+        if (inAfter && !inBefore) cur = ev[0];
+        else if (inBefore && !inAfter && cur !== null) {
+          if (ev[0] > cur + 1e-9) out.push([cur, ev[0]]); // 同 x 起闭=零长段丢弃
+          cur = null;
+        }
+      });
+      return out;
+    }
+    bands.forEach(function (b, bi) {
+      var prev = bi > 0 ? bands[bi - 1] : null;
+      var next = bi < bands.length - 1 ? bands[bi + 1] : null;
+      var hasPrev = !!prev && prev.y1 === b.y0; // 同出 ys 数组元素，严格等值
+      var hasNext = !!next && b.y1 === next.y0;
+      if (!hasPrev) b.ints.forEach(function (iv) { addEdge(iv[0], b.y0, iv[1], b.y0); });
+      if (!hasNext) b.ints.forEach(function (iv) { addEdge(iv[0], b.y1, iv[1], b.y1); });
+      if (hasNext) xorH(b.ints, next.ints, b.y1).forEach(function (iv) {
+        addEdge(iv[0], b.y1, iv[1], b.y1);
+      });
+    });
+    var list = Object.keys(edges).map(function (k) { return edges[k]; });
+    if (list.length === 0) return null;
+    // Eulerian 走环：邻接表（端点键→边序号），每环从未用边起点走到回起点；
+    // 剩余边继续（多环）。触点/丁字点度数偶，任意配对在 nonzero 填充下
+    // 渲染正确。
+    var adj = {};
+    function nodeKey(x, y) { return x + ',' + y; }
+    var used = {};
+    list.forEach(function (e, idx) {
+      [nodeKey(e[0], e[1]), nodeKey(e[2], e[3])].forEach(function (n) {
+        (adj[n] = adj[n] || []).push(idx);
+      });
+    });
+    var rings = [];
+    list.forEach(function (e, idx) {
+      if (used[idx]) return;
+      var cur = e, curIdx = idx;
+      var startKey = nodeKey(cur[0], cur[1]);
+      var curKey = nodeKey(cur[2], cur[3]);
+      var ring = [[cur[0], cur[1]]]; // 起点入环
+      while (true) {
+        used[curIdx] = true;
+        if (curKey === startKey) break; // 回到起点闭环
+        // v10.28.26 修复：入环的是「到达节点」curKey（刚走完边的远端），
+        // 而非边的第一端点——旧写法把 (0,200) 接到 (100,100) 再错连出
+        // (0,200)-(200,0) 对角线，L 形剪影被走成三角形（电池 U1/U2 实证）
+        var cc = curKey.split(',');
+        ring.push([parseFloat(cc[0]), parseFloat(cc[1])]);
+        var cands = adj[curKey], next = -1;
+        for (var ci = 0; ci < cands.length; ci++) {
+          if (!used[cands[ci]]) { next = cands[ci]; break; }
+        }
+        if (next === -1) break; // 理论不可达（度数偶保护）
+        cur = list[next];
+        curIdx = next;
+        curKey = (nodeKey(cur[0], cur[1]) === curKey) ? nodeKey(cur[2], cur[3]) : nodeKey(cur[0], cur[1]);
+      }
+      if (ring.length > 2) rings.push(ring);
+    });
+    // 环 → path：去连续共线点（竖直链拼接点）→ 面积定凸 → 凸角圆弧、凹角直角
+    var parts = [];
+    rings.forEach(function (ring) {
+      var pts = [ring[0]];
+      for (var i = 1; i < ring.length; i++) {
+        var p = ring[i];
+        var last = pts[pts.length - 1];
+        if (Math.abs(p[0] - last[0]) < 1e-6 && Math.abs(p[1] - last[1]) < 1e-6) continue;
+        if (pts.length >= 2) {
+          var p2 = pts[pts.length - 2];
+          var v1x = last[0] - p2[0], v1y = last[1] - p2[1];
+          var v2x = p[0] - last[0], v2y = p[1] - last[1];
+          if (Math.abs(v1x * v2y - v1y * v2x) < 1e-6 && v1x * v2x + v1y * v2y >= 0) {
+            pts[pts.length - 1] = p; // 共线延伸 → 替换末点
+            continue;
+          }
+        }
+        pts.push(p);
+      }
+      if (pts.length < 3) return;
+      // 环首尾跨闭共线：首点与末点、次点共线则去首点；末点与首点、次末点共线则去末点
+      var n = pts.length;
+      var flx = pts[n - 1][0] - pts[0][0], fly = pts[n - 1][1] - pts[0][1];
+      var fsx = pts[1][0] - pts[0][0], fsy = pts[1][1] - pts[0][1];
+      if (Math.abs(flx * fsy - fly * fsx) < 1e-6 && flx * fsx + fly * fsy >= 0) pts.shift();
+      n = pts.length;
+      var llx = pts[n - 2][0] - pts[n - 1][0], lly = pts[n - 2][1] - pts[n - 1][1];
+      var lsx = pts[0][0] - pts[n - 1][0], lsy = pts[0][1] - pts[n - 1][1];
+      if (Math.abs(llx * lsy - lly * lsx) < 1e-6 && llx * lsx + lly * lsy >= 0) pts.pop();
+      n = pts.length;
+      if (n < 3) return;
+      // 面积（y-down 坐标，符号即环向）
+      var area = 0;
+      for (var j = 0; j < n; j++) {
+        var a = pts[j], b = pts[(j + 1) % n];
+        area += a[0] * b[1] - b[0] * a[1];
+      }
+      if (Math.abs(area) < 1) return; // 退化环跳过
+      function rd(v) { return Math.round(v * 10) / 10; }
+      var d = '';
+      pts.forEach(function (pp, j) {
+        var prev = pts[(j - 1 + n) % n];
+        var next = pts[(j + 1) % n];
+        var u1x = pp[0] - prev[0], u1y = pp[1] - prev[1];
+        var u2x = next[0] - pp[0], u2y = next[1] - pp[1];
+        var l1 = Math.sqrt(u1x * u1x + u1y * u1y);
+        var l2 = Math.sqrt(u2x * u2x + u2y * u2y);
+        var cross = u1x * u2y - u1y * u2x;
+        var convex = (cross > 0) === (area > 0) && Math.abs(cross) > 1e-6;
+        var rr = convex ? Math.min(14, l1 / 2, l2 / 2) : 0;
+        if (rr >= 1) {
+          var ax = pp[0] - rr * u1x / l1, ay = pp[1] - rr * u1y / l1;
+          var bx = pp[0] + rr * u2x / l2, by = pp[1] + rr * u2y / l2;
+          d += ' L' + rd(ax) + ' ' + rd(ay) +
+               ' A' + rd(rr) + ' ' + rd(rr) + ' 0 0 ' + (cross > 0 ? 1 : 0) + ' ' +
+               rd(bx) + ' ' + rd(by);
+        } else {
+          d += ' L' + rd(pp[0]) + ' ' + rd(pp[1]);
+        }
+      });
+      parts.push('M' + rd(pts[0][0]) + ' ' + rd(pts[0][1]) + d + 'Z');
+    });
+    return parts.length ? parts.join(' ') : null;
+  }
+
   function updateGroupBgs() {
     gridCanvas.querySelectorAll('.grid-group-bg').forEach(function (b) { b.remove(); });
     var groups = {};
@@ -9322,6 +9262,17 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       bg.style.top = (minY - GROUP_BG_PAD) + 'px';
       bg.style.width = (maxX - minX + GROUP_BG_PAD * 2) + 'px';
       bg.style.height = (maxY - minY + GROUP_BG_PAD * 2) + 'px';
+      // v10.28.26 — 自由形状剪影：成员卡 bbox 各外扩 PAD 的矩形并集轮廓
+      // （坐标相对 bg 原点）→ clip-path。clip 参与命中测试：L 型空角点击
+      // 落到画布（取消选中/拖放可用），不再被组背景矩形拦截。
+      var rects = vis.map(function (c) {
+        var bb = cardBBox(c, parseFloat(c.style.left) || 0, parseFloat(c.style.top) || 0);
+        return { l: bb.left - minX, t: bb.top - minY,
+                 r: bb.right - minX + GROUP_BG_PAD * 2,
+                 b: bb.bottom - minY + GROUP_BG_PAD * 2 };
+      });
+      var outline = computeGroupOutline(rects);
+      if (outline) bg.style.clipPath = "path('" + outline + "')";
       if (mems.some(function (c) { return c.classList.contains('selected'); })) bg.classList.add('selected');
       // v10.28.15.1→v10.28.21: 点击组背景 → 选中整组（双击成员卡=单独选中
       // 再拖出拆分，长按亦保留；单击恒整组）。stopPropagation 防落到画布
@@ -9349,6 +9300,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   window.mergeCards = mergeCards;
   window.splitCardFromGroup = splitCardFromGroup;
   window.updateGroupBgs = updateGroupBgs;
+  window.computeGroupOutline = computeGroupOutline; // 测试钩子（电池/探针纸面串断言）
 
   // ── Layers (v10.27.1, Canva 式分层) ──
   // DOM 顺序 = 层级顺序（后兄弟在上）。层操作后给所有卡写内联 z = 1 + 索引，
@@ -9607,9 +9559,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     st.card.style.transform = 'rotate(' + rot + 'deg)';
     moveCardPx(st.card, parseFloat(st.card.style.left) || 0,
                parseFloat(st.card.style.top) || 0);
-    // v10.28.14: 旋转改变包围盒 → 组背景重算；v10.28.17.2 组内旋转走列顶
-    // 对齐（顶部永远齐平、不触碰任何尺寸）
-    if (st.card.dataset.groupId) alignGroupTops(st.card.dataset.groupId); else updateGroupBgs();
+    // v10.28.14: 旋转改变包围盒 → 组背景重算。v10.28.26: 组内旋转只重算
+    // 背景（旧列顶对齐随行卡机制退役——自由形状下组内成员本就各自独立）
+    updateGroupBgs();
     onContentChange();
   }
 
@@ -9778,12 +9730,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       spanH: parseFloat(card.dataset.rowSpan) || 3,
       moved: false
     };
-    // v10.28.25.1: 行组内列成员缩放 → 松手后行卡按原偏移贴回列块（顶行贴顶、
-    // 底行贴底），不压行、不留空（探针实证：列成员 s 拖 +45 → 底行被压 44px）
-    // v10.28.25.2: 同组伙伴快照（挤压让位+行宽跟随）——四向组+列块起点
-    // 左缘/宽；松手按移动边位移整列平移（快照空转安全）。
-    if (card.dataset.groupId && card.dataset.rowInGroup !== '1') {
-      resizeState.rows = snapshotGroupRows(card.dataset.groupId);
+    // v10.28.25.2: 同组伙伴快照（挤压让位）——四向组；松手按移动边位移
+    // 同侧伙伴整体平移（快照空转安全）。v10.28.26: 行卡快照随行卡机制
+    // 退役，只留伙伴快照（自由形状下台阶斜对卡不进 right/left 集合）。
+    if (card.dataset.groupId) {
       resizeState.partners = snapshotGroupPartners(card);
     }
     card.classList.add('dragging');
@@ -9888,8 +9838,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var scaleX = newW / st.box.w, scaleY = newH / st.box.h;
     st.members.forEach(function (mm) {
       var m = mm.card;
-      m.style.left = (newLeft + (mm.x - st.box.left) * scaleX) + 'px';
-      m.style.top = (newTop + (mm.y - st.box.top) * scaleY) + 'px';
+      // 位置存内存浮点（mm.nx/mm.ny）：style.left 经 CSSOM 序列化约 6 位
+      // 有效数字，写 1005.1018 读回 "1005.1"——去重叠链若反解析 style 会
+      // 凭空产生 0.002px 假重叠，把齐平卡错推下移（S7 阶梯级联实况）
+      mm.nx = newLeft + (mm.x - st.box.left) * scaleX;
+      mm.ny = newTop + (mm.y - st.box.top) * scaleY;
+      m.style.left = mm.nx + 'px';
+      m.style.top = mm.ny + 'px';
       if (mm.locked) {
         var s = Math.min(scaleX, scaleY);
         var wPx = Math.max(cs, mm.w * s), hPx = Math.max(cs, mm.h * s);
@@ -9914,34 +9869,44 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // 右缘、dirX=-1 右→左贴左缘，y 同理），重叠者贴上前一成员边缘——对边
     // 固定不破坏（首/尾成员仍锚定框边）、贴齐结构跨帧与草稿往返稳定。
     if (st.dirX !== 0) {
+      // v10.28.26: x 链只在本行内（y 范围严格相交）——自由形状组（十字/
+      // L）里上下堆叠成员 x 相同，旧全量链会把堆叠成员当「重叠」串推
+      // （探针 P8：十字 e 柄 +60 → 右臂被推到 1410 飞离组框）；镜像 y 链
+      // 的 x 相交守卫（9846「y 链只在本列内」）。同 y 的堆叠成员互不链。
       var byX = st.members.slice().sort(function (a, b) {
-        var ax = parseFloat(a.card.style.left) || 0, bx = parseFloat(b.card.style.left) || 0;
-        return st.dirX === 1 ? (ax - bx) : (bx - ax);
+        return st.dirX === 1 ? (a.nx - b.nx) : (b.nx - a.nx);
       });
-      var xEdge = st.dirX === 1 ? -Infinity : Infinity;
+      var rows = [];
       byX.forEach(function (mm) {
-        var x = parseFloat(mm.card.style.left) || 0;
+        var x = mm.nx;
         var w = mm.card.offsetWidth;
+        var y = mm.ny;
+        var h = mm.card.offsetHeight;
+        var edge = st.dirX === 1 ? -Infinity : Infinity;
+        rows.forEach(function (p) {
+          if (p.b > y && y + h > p.t) { // y 严格相交=同行
+            if (st.dirX === 1) { if (p.edge > edge) edge = p.edge; }
+            else { if (p.edge < edge) edge = p.edge; }
+          }
+        });
         if (st.dirX === 1) {
-          if (x < xEdge) { x = xEdge; mm.card.style.left = x + 'px'; }
-          xEdge = x + w;
+          if (x < edge) { x = edge; mm.nx = x; mm.card.style.left = x + 'px'; }
         } else {
-          if (x + w > xEdge) { x = xEdge - w; mm.card.style.left = x + 'px'; }
-          xEdge = x;
+          if (x + w > edge) { x = edge - w; mm.nx = x; mm.card.style.left = x + 'px'; }
         }
+        rows.push({ t: y, b: y + h, edge: st.dirX === 1 ? x + w : x });
       });
     }
     if (st.dirY !== 0) {
       // y 链只在本列内（x 范围相交）——列间成员无 x 重叠不串链
       var byY = st.members.slice().sort(function (a, b) {
-        var ay = parseFloat(a.card.style.top) || 0, by = parseFloat(b.card.style.top) || 0;
-        return st.dirY === 1 ? (ay - by) : (by - ay);
+        return st.dirY === 1 ? (a.ny - b.ny) : (b.ny - a.ny);
       });
       var placed = [];
       byY.forEach(function (mm) {
-        var x = parseFloat(mm.card.style.left) || 0;
+        var x = mm.nx;
         var w = mm.card.offsetWidth;
-        var y = parseFloat(mm.card.style.top) || 0;
+        var y = mm.ny;
         var h = mm.card.offsetHeight;
         var cand = st.dirY === 1 ? -Infinity : Infinity;
         placed.forEach(function (o) {
@@ -9951,9 +9916,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           }
         });
         if (st.dirY === 1) {
-          if (y < cand) { y = cand; mm.card.style.top = y + 'px'; }
+          if (y < cand) { y = cand; mm.ny = y; mm.card.style.top = y + 'px'; }
         } else {
-          if (y + h > cand) { y = cand - h; mm.card.style.top = y + 'px'; }
+          if (y + h > cand) { y = cand - h; mm.ny = y; mm.card.style.top = y + 'px'; }
         }
         placed.push({ left: x, right: x + w, top: y, bottom: y + h });
       });
@@ -9978,9 +9943,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   // v10.28.25.2 — 单卡缩放提交（onResizeUp 与 Escape 共用）：跨度写回 →
   // moveCardPx 落位（clamp/dataset.x/y/刷手柄）→ 挤压让位（同侧伙伴随
-  // 移动边整列平移，收边回贴）→ 行宽跟随列块 → 列顶对齐（v10.28.15/
-  // v10.28.17.2 口径不变）→ 行卡贴回列块。两条提交路径恒一致——
-  // Escape 曾漏 pushGroupRows（v10.28.25.1 只上了 onResizeUp），本轮收口。
+  // 移动边整体平移，收边回贴）。两条提交路径恒一致——Escape 曾漏
+  // pushGroupRows（v10.28.25.1 只上了 onResizeUp），本轮收口。
+  // v10.28.26: 自由形状下不再触发列顶对齐/行宽跟随/行卡贴回（行卡机制
+  // 退役），只留墙让位 + 背景重算。
   function commitSingleResize(st) {
     st.card.dataset.colSpan = st.spanW;
     st.card.dataset.rowSpan = st.spanH;
@@ -9990,12 +9956,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
                parseFloat(st.card.style.top) || 0);
     if (st.card.dataset.groupId) {
       pushGroupPartners(st);   // 挤压让位（无快照空转）
-      reassertRowWidths(st);   // 行宽跟随列块（无快照/非横向空转）
-      alignGroupTops(st.card.dataset.groupId);
-      pushGroupRows(st);       // 行卡贴回列块（无快照空转）
-    } else {
-      updateGroupBgs();
     }
+    updateGroupBgs();
     onContentChange();
   }
 
