@@ -8978,6 +8978,37 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     });
   }
 
+  // v10.28.25.2 — 挤压让位快照：组内列成员单卡缩放时，把同侧伙伴按
+  // 「移动边=墙」分类并记下起点（用户「旁边卡片不会因为被挤压而移动」，
+  // 探针实证：2列组 A 东扩 → B 原位不动重叠 66px、东收也不回贴）。
+  // 松手时墙外同侧伙伴随墙整列平移（列内贴齐/列间间距全保留、对边不碰；
+  // 收边墙回撤=负位移回贴）。行卡不进四组（贴回列块走 pushGroupRows、
+  // 宽走 reassertRowWidths）；同列（x 相交）只走纵向、异列只走横向。
+  // 同时记列块起点左缘/宽（行宽跟随用）。落位绝对化（起点+位移）幂等。
+  function snapshotGroupPartners(card) {
+    var L = parseFloat(card.style.left) || 0;
+    var T = parseFloat(card.style.top) || 0;
+    var R = L + card.offsetWidth;
+    var B = T + card.offsetHeight;
+    var sets = { right: [], left: [], below: [], above: [], blkL: Infinity, blkR: -Infinity };
+    groupMembers(card).forEach(function (c) {
+      if (c.dataset.rowInGroup === '1') return;
+      var l = parseFloat(c.style.left) || 0;
+      var t = parseFloat(c.style.top) || 0;
+      var r = l + c.offsetWidth;
+      if (l < sets.blkL) sets.blkL = l;
+      if (r > sets.blkR) sets.blkR = r;
+      if (c === card) return;
+      var b = t + c.offsetHeight;
+      if (r > L && l < R) {
+        if (b <= T) sets.above.push({ card: c, l: l, t: t });
+        else if (t >= B) sets.below.push({ card: c, l: l, t: t });
+      } else if (l >= R) sets.right.push({ card: c, l: l, t: t });
+      else if (r <= L) sets.left.push({ card: c, l: l, t: t });
+    });
+    return sets;
+  }
+
   function pushGroupRows(st) {
     if (!st.rows) return;
     var cols = groupMembers(st.card).filter(function (c) { return c.dataset.rowInGroup !== '1'; });
@@ -8992,12 +9023,78 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var moved = false;
     st.rows.forEach(function (rr) {
       if (!rr.card.dataset.groupId) return; // 拖拽途中被拆出/删掉的卡
-      var nt = rr.above ? (bT - rr.off - rr.h) : (bB + rr.off);
+      // v10.28.25.2: h 实读当前值（行宽重断言可能让等比锁行变高，快照 h 过期）
+      var nt = rr.above ? (bT - rr.off - rr.card.offsetHeight) : (bB + rr.off);
       var ct = parseFloat(rr.card.style.top) || 0;
       if (Math.abs(nt - ct) < 0.5) return;
       rr.card.style.top = nt + 'px';
       rr.card.dataset.y = nt;
       moved = true;
+    });
+    if (moved) updateGroupBgs();
+  }
+
+  // v10.28.25.2 — 挤压让位：松手时按移动边位移量整列平移同侧伙伴
+  // （东墙→右侧整列、西墙→左侧整列、南/北墙→同列上下堆叠伙伴；用户
+  // 「旁边的卡片要因为被挤压而移动」）。位移从当前几何对起点重推（幂等
+  // 无累积）；落位绝对化（起点+位移），拖拽途中被拆出/删除的卡跳过；
+  // 列位移后重画组背景（列块形状已变）。
+  function pushGroupPartners(st) {
+    var p = st.partners;
+    if (!p) return;
+    var card = st.card;
+    var cL = parseFloat(card.style.left) || 0;
+    var cT = parseFloat(card.style.top) || 0;
+    var dw = 0, dh = 0;
+    if (st.dirX === 1) dw = (cL + card.offsetWidth) - (st.origLeft + st.origW);
+    else if (st.dirX === -1) dw = st.origLeft - cL;
+    if (st.dirY === 1) dh = (cT + card.offsetHeight) - (st.origTop + st.origVisH);
+    else if (st.dirY === -1) dh = st.origTop - cT;
+    var moved = false;
+    function place(list, dx, dy) {
+      if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) return;
+      list.forEach(function (o) {
+        if (!o.card.dataset.groupId) return; // 拖拽途中被拆出/删掉的卡
+        var nl = o.l + dx, nt = o.t + dy;
+        var cl = parseFloat(o.card.style.left) || 0;
+        var ct = parseFloat(o.card.style.top) || 0;
+        if (Math.abs(nl - cl) < 0.5 && Math.abs(nt - ct) < 0.5) return;
+        o.card.style.left = nl + 'px';
+        o.card.style.top = nt + 'px';
+        o.card.dataset.x = nl;
+        o.card.dataset.y = nt;
+        moved = true;
+      });
+    }
+    if (st.dirX === 1) place(p.right, dw, 0);
+    else if (st.dirX === -1) place(p.left, -dw, 0);
+    if (st.dirY === 1) place(p.below, 0, dh);
+    else if (st.dirY === -1) place(p.above, 0, -dh);
+    if (moved) updateGroupBgs();
+  }
+
+  // v10.28.25.2 — 行宽跟随列块：列成员横向缩放后，处于默认全宽状态的行卡
+  // （左缘/宽与列块起点一致——Round N「行=组宽」幂等状态）重断言为新列块
+  // 左缘+宽：列块变宽行变宽、变窄行变窄（探针实证：右列东扩 +66 行卡仍停
+  // 旧宽差 66px）。用户自定义宽/移过位的行不抢回（尊重单卡自由调整）。
+  function reassertRowWidths(st) {
+    var p = st.partners;
+    if (!p || st.dirX === 0) return;
+    var card = st.card;
+    var cL = parseFloat(card.style.left) || 0;
+    var dw = st.dirX === 1 ? (cL + card.offsetWidth) - (st.origLeft + st.origW)
+                           : st.origLeft - cL;
+    if (Math.abs(dw) < 0.5) return;
+    var w0 = p.blkR - p.blkL;
+    var newL = st.dirX === -1 ? (p.blkL - dw) : p.blkL;
+    var newW = w0 + dw;
+    var moved = false;
+    groupMembers(card).forEach(function (r) {
+      if (r.dataset.rowInGroup !== '1') return;
+      var rl = parseFloat(r.style.left) || 0;
+      if (Math.abs(rl - p.blkL) > 0.5 || Math.abs(r.offsetWidth - w0) > 0.5) return;
+      if (Math.abs(rl - newL) >= 0.5) { r.style.left = newL + 'px'; r.dataset.x = newL; moved = true; }
+      if (Math.abs(r.offsetWidth - newW) > 0.5) { normalizeCardWidth(r, newW); moved = true; }
     });
     if (moved) updateGroupBgs();
   }
@@ -9673,14 +9770,21 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       ratio: locked ? (parseFloat(card.dataset.aspectRatio) || origW / origH) : 0,
       origLeft: parseFloat(card.style.left) || 0,
       origTop: parseFloat(card.style.top) || 0,
+      // v10.28.25.2: 视觉框高（内容卡 origH 取 minHeight、文本框高可能超过它，
+      // 南墙位移必须按真实框底算——探针实证：内容卡 minHeight 86/文本框高 130，
+      // +45 拖后框未动，按 minHeight 口径会把下方伙伴推空 44px 假缝）
+      origVisH: card.offsetHeight,
       spanW: parseFloat(card.dataset.colSpan) || 4,
       spanH: parseFloat(card.dataset.rowSpan) || 3,
       moved: false
     };
     // v10.28.25.1: 行组内列成员缩放 → 松手后行卡按原偏移贴回列块（顶行贴顶、
     // 底行贴底），不压行、不留空（探针实证：列成员 s 拖 +45 → 底行被压 44px）
+    // v10.28.25.2: 同组伙伴快照（挤压让位+行宽跟随）——四向组+列块起点
+    // 左缘/宽；松手按移动边位移整列平移（快照空转安全）。
     if (card.dataset.groupId && card.dataset.rowInGroup !== '1') {
       resizeState.rows = snapshotGroupRows(card.dataset.groupId);
+      resizeState.partners = snapshotGroupPartners(card);
     }
     card.classList.add('dragging');
     card.style.zIndex = 50;
@@ -9872,6 +9976,29 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     onContentChange();
   }
 
+  // v10.28.25.2 — 单卡缩放提交（onResizeUp 与 Escape 共用）：跨度写回 →
+  // moveCardPx 落位（clamp/dataset.x/y/刷手柄）→ 挤压让位（同侧伙伴随
+  // 移动边整列平移，收边回贴）→ 行宽跟随列块 → 列顶对齐（v10.28.15/
+  // v10.28.17.2 口径不变）→ 行卡贴回列块。两条提交路径恒一致——
+  // Escape 曾漏 pushGroupRows（v10.28.25.1 只上了 onResizeUp），本轮收口。
+  function commitSingleResize(st) {
+    st.card.dataset.colSpan = st.spanW;
+    st.card.dataset.rowSpan = st.spanH;
+    // moveCardPx finalizes: clamp, dataset.x/y, derived col/row,
+    // and (via its hook) refreshes the handles.
+    moveCardPx(st.card, parseFloat(st.card.style.left) || 0,
+               parseFloat(st.card.style.top) || 0);
+    if (st.card.dataset.groupId) {
+      pushGroupPartners(st);   // 挤压让位（无快照空转）
+      reassertRowWidths(st);   // 行宽跟随列块（无快照/非横向空转）
+      alignGroupTops(st.card.dataset.groupId);
+      pushGroupRows(st);       // 行卡贴回列块（无快照空转）
+    } else {
+      updateGroupBgs();
+    }
+    onContentChange();
+  }
+
   function onResizeUp() {
     if (!resizeState) return;
     var st = resizeState;
@@ -9892,20 +10019,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       st.card.style.zIndex = '';
       hideCellHighlights();
       hideAlignGuides();
-      if (st.moved) {
-        st.card.dataset.colSpan = st.spanW;
-        st.card.dataset.rowSpan = st.spanH;
-        // moveCardPx finalizes: clamp, dataset.x/y, derived col/row,
-        // and (via its hook) refreshes the handles.
-        moveCardPx(st.card, parseFloat(st.card.style.left) || 0,
-                   parseFloat(st.card.style.top) || 0);
-        // v10.28.15: 组内卡缩放 → 组重排（列内塌合/列间重贴齐）；非组卡空转无害。
-        // v10.28.17.2: 改列顶对齐——用户调整必须生效（reflow 填满会把手刚调的
-        // 尺寸改回去）；顶部永远齐平、中间自由、图片尺寸不被系统缩放。
-        if (st.card.dataset.groupId) alignGroupTops(st.card.dataset.groupId); else updateGroupBgs();
-        if (st.card.dataset.groupId) pushGroupRows(st); // v10.28.25.1: 行卡贴回列块（无快照空转）
-        onContentChange();
-      }
+      if (st.moved) commitSingleResize(st);
       // Suppress click-triggered modals after a resize (mirrors drag mouseup)
       st.card.dataset.justDragged = '1';
       setTimeout(function () { delete st.card.dataset.justDragged; }, 300);
@@ -10229,16 +10343,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           // next draft save/reload misplaces or mis-sizes the card. (Fixes
           // the same pre-existing staleness for unlocked resizes.)
           if (resizeState.moved) {
-            resizeState.card.dataset.colSpan = resizeState.spanW;
-            resizeState.card.dataset.rowSpan = resizeState.spanH;
-            moveCardPx(resizeState.card,
-              parseFloat(resizeState.card.style.left) || 0,
-              parseFloat(resizeState.card.style.top) || 0);
-            // v10.28.15: Escape 中途提交缩放同样重排组布局；v10.28.17.2 改
-            // 列顶对齐（调整必须生效，见 onResizeUp 同款注释）
-            if (resizeState.card.dataset.groupId) alignGroupTops(resizeState.card.dataset.groupId);
-            else updateGroupBgs();
-            onContentChange();
+            // v10.28.25.2: 与 onResizeUp 共用 commitSingleResize（挤压让位/
+            // 行宽跟随/列顶对齐/行卡贴回列块，两条提交路径恒一致）
+            commitSingleResize(resizeState);
           }
           resizeState = null;
         }
