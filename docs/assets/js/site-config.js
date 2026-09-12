@@ -560,7 +560,19 @@ window.MN_SITE = window.MN_SITE || {};
 //   （新 S7b 自动落草稿回归）+ 线上电池 PASS（上传3→拖序→虚化→7 比例→保存→刷新恢复→撤销/重做→移除；
 //   putWithPageBg 仅供参考——fcCloudMode 仅真登录 USR- 用户开）；部署两次 exit 0（00207-hw9 初版、
 //   00208-nzm 指纹修复）；FC v10.28.27.0（小更新位 26→27）
-window.MN_SITE_VERSION = 'v0.2.37.0';
+// v0.2.38.0 = 上传图片信息弹窗（小改动位 37→38·新功能轮·补丁归零；2026-09-13）——用户「在上传自己的图片的
+//   时候都有一个弹窗右上角显示图片同行左侧显示图片名称，下方是详细信息Description…可以设定Public/Private/
+//   Team…Description固定长度…字数限制320字…追踪那个词（"code"是一个字不是四个）」：8 个上传入口共用
+//   #imgMetaModal（页面背景/国旗国徽/卡背景/名称背景/旧背景/内联图/头像/地图）——读图后先弹窗（预览+名称+
+//   描述+可见性分段控件），保存才落地、取消=图不落地且宿主弹窗保持打开；描述 resize:none 固定高+live 计数
+//   「N / 320」（按空格分词：code=1、你好世界=1、我的 code 很好=3）+超限红字+保存拦截 toast；弹窗叠层
+//   （同 z 110 DOM 后者在上、可叠页面背景弹窗）+closeModalOnly/closeTopModal 只关顶层（backdrop 改
+//   closeTopModal 单弹窗等价向后兼容）+Escape isComposing 守卫；草稿 additive（v 保持 9）：pageBg imgs[i]
+//   增 name/desc/visibility、卡图 imgMeta、卡背景 cardBgMeta、标题背景 captionBgMeta、头像 charAvatarMeta、
+//   地图 mapImgMeta、内联图 data-img-* 属性 innerHTML 往返零字段（legacy 缺省空名/空描述/Private）；
+//   getCardFingerprint 补元数据签名；renderPbgList 名称行 esc() 防注入+编辑钮重开弹窗；FC v10.28.28.0
+//   （小更新位 27→28）
+window.MN_SITE_VERSION = 'v0.2.38.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -758,4 +770,16 @@ window.MN_SITE_VERSION = 'v0.2.37.0';
 //   签名（线上电池 draftHas:false：指纹不含背景 → autosave 永不写草稿 → 刷新丢背景）；电池 27/27
 //   （新 S7b 自动落草稿回归）+ 线上电池 PASS；部署两次 exit 0（00207-hw9、00208-nzm 指纹修复）；零后端、
 //   ethereal 零改动无需 inline-css
-window.FLUIDCANVAS_VERSION = 'v10.28.27.0';
+// v10.28.28.0 = 上传图片信息弹窗（小更新位 27→28·新功能轮·补丁归零；2026-09-13）——用户「在上传自己的
+//   图片的时候都有一个弹窗右上角显示图片同行左侧显示图片名称，下方是详细信息 Description…可以设定
+//   Public/Private/Team…Description 固定长度…字数限制 320 字…追踪那个词（"code" 是一个字不是四个）」：
+//   8 个上传入口共用 #imgMetaModal（页面背景/国旗国徽/卡背景/名称背景/旧背景弹窗/内联图/人物头像/地图图）
+//   ——读图后先弹窗（同行名称+预览、Description 固定高不可拖、live 计数「N / 320」按空格分词实时追踪、超
+//   320 红字+保存拦截 toast、可见性 Public/Private/Team 分段控件默认 Private），保存才落地、取消=图不落地
+//   且宿主弹窗保持打开；弹窗叠层（同 z-index 110 DOM 后者在上）+closeModalOnly/closeTopModal 只关顶层
+//   （backdrop 改 closeTopModal，单弹窗等价向后兼容）+Escape isComposing 守卫；草稿 additive（v 保持 9）：
+//   pageBg imgs[i] 增 name/desc/visibility、卡图 imgMeta、卡背景 cardBgMeta、标题背景 captionBgMeta、头像
+//   charAvatarMeta、地图 mapImgMeta、内联图 data-img-* 属性 innerHTML 往返零字段（legacy 缺省空名/空描述/
+//   Private）；getCardFingerprint 补元数据签名（desc 变更也触发 autosave）；renderPbgList 名称行 esc() 防
+//   注入+编辑钮重开弹窗回填；零后端、ethereal 零改动无需 inline-css
+window.FLUIDCANVAS_VERSION = 'v10.28.28.0';
