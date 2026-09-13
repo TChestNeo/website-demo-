@@ -4681,31 +4681,8 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   </div>
 </div>
 
-<!-- Flag Source Modal -->
-<div class="modal-container" id="flagSourceModal">
-  <div class="modal-card" id="flagSourceCard" style="max-width:520px">
-    <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md" id="flagSourceTitle">Select Flag Source</h3>
-      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
-    </div>
-    <p class="body-md" id="flagSourceDesc" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-sm)">Choose how you'd like to add a flag to this article.</p>
-    <div class="flag-source-options">
-      <button class="flag-source-btn" id="uploadFileBtn" onclick="document.getElementById('flagFileInput').click()">
-        <span class="material-symbols-outlined">upload_file</span>
-        <span class="source-title">Upload from file</span>
-        <span class="source-desc">Upload an image from your device</span>
-      </button>
-      <input type="file" id="flagFileInput" accept="image/*" style="display:none" onchange="handleFlagFileUpload(this)">
-      <button class="flag-source-btn" id="flagBrowseBtn" onclick="closeAllModals();openFlagBrowser()">
-        <span class="material-symbols-outlined">travel_explore</span>
-        <span class="source-title">Search within the platform</span>
-        <span class="source-desc">浏览平台图片库与你上传的图片</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Flag Browser Modal -->
+<!-- Flag Browser Modal（v10.28.32：点国旗/国徽卡直开本弹窗，图源选择器整体移除——
+     上传按钮并入搜索栏右侧，图库=持久库 slati_img_library ∪ 当前画布扫描） -->
 <div class="modal-container" id="flagBrowserModal">
   <div class="modal-card" id="flagBrowserCard" style="max-width:640px">
     <div class="flex-between" style="margin-bottom:0">
@@ -4717,10 +4694,12 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       <button class="flag-browser-tab active" data-tab="all" onclick="switchFlagTab('all')">全部</button>
       <button class="flag-browser-tab" data-tab="mylib" onclick="switchFlagTab('mylib')">我的图库</button>
     </div>
-    <!-- Search Bar -->
+    <!-- Search Bar（v10.28.32：右侧上传按钮——用户「上传按钮放到搜索栏的右侧」） -->
     <div class="flag-search-bar">
       <span class="material-symbols-outlined" style="color:var(--color-outline);font-size:18px">search</span>
       <input type="text" placeholder="搜索图片（名称/描述）…" id="flagSearchInput" oninput="filterFlags()">
+      <input type="file" id="flagBrowserFileInput" accept="image/*" style="display:none" onchange="handleFlagFileUpload(this)">
+      <button type="button" class="tim-search-btn" id="flagSearchUploadBtn" title="上传图片" onclick="document.getElementById('flagBrowserFileInput').click()"><span class="material-symbols-outlined">upload_file</span></button>
     </div>
     <!-- Flag Grid -->
     <div class="flag-grid custom-scrollbar" id="flagGrid"></div>
@@ -6236,7 +6215,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     document.getElementById('immPreview').src = previewDataURL;
     imgMetaSetVisibility(initial.visibility || 'private');
     imgMetaRefreshCount();
-    IMG_META_PENDING = { apply: applyFn, close: o.close || 'self' };
+    IMG_META_PENDING = { apply: applyFn, close: o.close || 'self', src: previewDataURL }; // v10.28.32: src 供 imgMetaSave 入库
     // 遮罩只挡鼠标不挡键盘——blur 防聚焦中的卡内输入框打字漂移真实画布
     try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {}
     openModal('imgMetaModal');   // backdrop 已 active 幂等；meta 卡压最上
@@ -6258,6 +6237,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     IMG_META_PENDING = null;              // 先置空再关窗——data-onclose 取消钩子幂等空转
     var ok = p && p.apply ? p.apply(meta) : true;
     if (ok === false) { IMG_META_PENDING = p; return; }  // 应用失败（如内联图无插入目标）：窗留着可改可取消
+    // v10.28.32: 所有上传入口的 choke point——apply 成功后图进持久库（8+ 入口一处覆盖）
+    if (p && p.src) imgLibPut(p.src, meta);
     if (p && p.close === 'all') closeAllModals();        // flag：连图源弹窗一起关（钩子幂等）
     else closeModalOnly('imgMetaModal');                 // pageBg/bgModal/弹层宿主：只关 meta
   }
@@ -7385,22 +7366,23 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     card.appendChild(iconEl);
     card.appendChild(labelEl);
     autoSizeLabel(labelEl);
-    // v10.28.7: Emblem（盾徽）卡点击 → 图源弹窗（同国旗卡流程）。上传走
+    // v10.28.7: Emblem（盾徽）卡点击 → 图片库（同国旗卡流程）。上传走
     // handleFlagFileUpload → setCardImage（任何卡通用），草稿对非国旗卡的
     // imgSrc 保存/重载链路 v9.1 已通用——零存储改动。图片已设则点按不再弹
     // （同国旗卡口径，防误触替换）。
+    // v10.28.32: 图源选择器移除——点卡直开图片库（含国徽卡，旧版对国徽隐藏浏览入口）。
     if (asset === 'shield') {
       card.addEventListener('click', function (e) {
         if (card.dataset.justDragged) return;
         if (e.target.closest('.card-label')) return;
         if (card.querySelector('.card-stripes') || card.querySelector('.card-img-bg')) return;
-        // v10.28.21.1: 组内国徽卡同国旗卡口径——单击只选中不弹图源（遮罩
+        // v10.28.21.1: 组内国徽卡同国旗卡口径——单击只选中不弹图库（遮罩
         // 劫持双击），单独选中后再双击（e.detail=2）才弹（用户钦定）
         if (card.dataset.groupId) {
           if (!(selectionIsSingle && selectedCard === card && e.detail === 2)) return;
         }
         setCurrentFlagCard(card);
-        openFlagSourceModal();
+        openFlagBrowser();
       });
     }
     return card;
@@ -7417,12 +7399,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     card.appendChild(iconEl);
     card.appendChild(labelEl);
     autoSizeLabel(labelEl);
-    // Click to open flag source (skip if just dragged)
+    // Click to open the image library directly (v10.28.32: flagSourceModal removed;
+    // skip if just dragged or already has an image)
     card.addEventListener('click', function (e) {
       if (card.dataset.justDragged) return;
       if (e.target.closest('.card-label')) return;
       if (card.querySelector('.card-stripes') || card.querySelector('.card-img-bg')) return;
-      // v10.28.21.1: 组内国旗卡单击不再弹图源——旧行为每点必弹，遮罩吃掉
+      // v10.28.21.1: 组内国旗卡单击不再弹图库——旧行为每点必弹，遮罩吃掉
       // 双击第二击 → 单独选中/拆分的整条路径失效（用户「选中整体后再选
       // 单独的不让选 / 再点击一次就打开了」）；组内只在单独选中后再双击
       // （e.detail=2）才弹（用户钦定「在选中独立卡片的情况下双击才会触发」）
@@ -7430,7 +7413,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         if (!(selectionIsSingle && selectedCard === card && e.detail === 2)) return;
       }
       setCurrentFlagCard(card);
-      openFlagSourceModal();
+      openFlagBrowser();
     });
     return card;
   }
@@ -13218,48 +13201,43 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   window.setCurrentFlagCard = setCurrentFlagCard;
 
-  // ── Flag Source Modal ──
-  function openFlagSourceModal() {
-    // v10.28.7: Emblem 卡共用图源弹窗——标题/说明按卡种切换，平台浏览
-    // （平台图库）对国徽不适用则隐藏；国旗卡文案与旧版一致。
-    var card = currentFlagCard;
-    var isEmblem = card && card.dataset.cardType === 'shield';
-    var title = document.getElementById('flagSourceTitle');
-    var desc = document.getElementById('flagSourceDesc');
-    var browse = document.getElementById('flagBrowseBtn');
-    if (isEmblem) {
-      if (title) title.textContent = 'Select Emblem Image';
-      if (desc) desc.textContent = "Choose how you'd like to add an emblem to this card.";
-      if (browse) browse.style.display = 'none';
-    } else {
-      if (title) title.textContent = 'Select Flag Source';
-      if (desc) desc.textContent = "Choose how you'd like to add a flag to this article.";
-      if (browse) browse.style.display = '';
-    }
-    openModal('flagSourceModal');
-  }
-  window.openFlagSourceModal = openFlagSourceModal;
-
+  // ── 图库内上传（v10.28.32：图源选择器移除，上传按钮并入图库搜索栏右侧——
+  // 用户「那个添加图片的弹窗是左侧上传右侧搜索…上传按钮放到搜索栏的右侧」） ──
   function handleFlagFileUpload(input) {
     var file = input.files && input.files[0];
     if (!file) return;
     var reader = new FileReader();
     reader.onload = function (e) {
       var card = currentFlagCard;
-      if (!card) return;
       // v10.28.28: 先开图片信息弹窗（名称/描述/可见性），保存才落地；
-      // 取消=图不落地、图源弹窗保持打开（比旧「上传即关窗」更好）。
-      // close:'all'——保存后连 flagSourceModal 一起关（无钩子零副作用）。
+      // 取消=图不落地、图库保持打开。
+      // v10.28.32: close:'self'（只关 meta）——保存后图库保持打开、网格
+      // 立刻出现新图并选中（用户「为什么我上传的图片没办法在全部看见和
+      // 在我的图库看见」的直观修复）；卡片可能已删（isConnected 守卫），
+      // 无目标卡时只入库+刷新网格（图库随时可开）。
       openImgMetaModal(e.target.result, file.name.replace(/\.[^.]+$/, ''), function (meta) {
-        if (!card.isConnected) return;
-        setCardImage(card, e.target.result, meta.name); // name 同步进卡 label
-        card.dataset.imgName = meta.name;
-        card.dataset.imgDesc = meta.desc;
-        card.dataset.imgVisibility = meta.visibility;
-        onContentChange();
-        var noun = card.dataset.cardType === 'shield' ? 'Emblem' : 'Flag'; // v10.28.7: 国徽卡提示语适配
-        showToast(noun + ' uploaded: ' + file.name);
-      }, { close: 'all' });
+        if (card && card.isConnected) {
+          setCardImage(card, e.target.result, meta.name); // name 同步进卡 label
+          card.dataset.imgName = meta.name;
+          card.dataset.imgDesc = meta.desc;
+          card.dataset.imgVisibility = meta.visibility;
+          onContentChange();
+          var noun = card.dataset.cardType === 'shield' ? 'Emblem' : 'Flag'; // v10.28.7: 国徽卡提示语适配
+          showToast(noun + ' uploaded: ' + file.name);
+        } else {
+          showToast('已上传到我的图库：' + meta.name);
+        }
+        // 图库网格即时刷新 + 新图自动选中（imgMetaSave 已先把 src 写进持久库）
+        refreshLibGrid();
+        var hit = currentTabItems().find(function (f) { return f.src === e.target.result; });
+        if (hit) {
+          selectedFlagId = hit.id;
+          document.getElementById('flagSelectCount').textContent = '已选：' + hit.name;
+          document.querySelectorAll('.flag-card-item').forEach(function (c) {
+            c.classList.toggle('selected', c.dataset.flagId === hit.id);
+          });
+        }
+      }, { close: 'self' });
     };
     reader.readAsDataURL(file);
     input.value = '';
@@ -13276,12 +13254,70 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var selectedFlagId = null;
   var currentFlagTab = 'all';
 
-  // ── 我的图库 (v10.28.29) ──
-  // 用户「那个上传后可以在平台的上图像搜索那边搜索到吗」——图库=纯派生视图：
-  // 打开/切页签时扫描画布现有使用处（8 个上传入口的图都落在 dataset/结构里），
-  // 零草稿字段（v 保持 9）、零指纹改动（v10.28.28 已把 meta 签进指纹）。
-  // 统一键=dataURL（同图多处用=一格），编辑/删除按 dataURL 同步所有使用处。
+  // ── 我的图库 (v10.28.29, v10.28.32 持久化) ──
+  // v10.28.29：图库=画布扫描派生视图（8 个上传入口的图都落在 dataset/结构里）。
+  // v10.28.32：用户「上传的图片没办法在全部/我的图库看见」——换文章/新画布后
+  // 扫描不到旧上传。图库升级为持久库 slati_img_library（localStorage，上限
+  // 2.5MB 给草稿让配额，超限 ts 最旧先淘汰；未来真库=后端 Cloud Storage+DB，
+  // 就绪后迁移）。打开时 store 条目先入、canvas 扫描后入（同 src canvas 只补
+  // 空 meta，store 权威）。统一键=dataURL（同图多处用=一格）。
   var LIB_ITEMS = []; // collectImgLibrary 结果；edit/del 按 index 取（id='lib'+i）
+
+  // —— 持久库 store（v10.28.32）——
+  // 所有上传入口共用 choke point imgMetaSave → imgLibPut，一处写入全覆盖。
+  // 不压缩：透明 PNG 压 JPEG 会毁 alpha（真实上传=旗/徽小图，dataURL 可接受）。
+  var IMG_LIB_KEY = 'slati_img_library';
+  var IMG_LIB_MAX_BYTES = 2.5e6; // 2.5MB 上限（草稿也要用同一配额，让出空间）
+
+  function imgLibBytes(list) {
+    try { return JSON.stringify(list).length; } catch (e) { return Infinity; }
+  }
+  function imgLibLoad() {
+    try {
+      var raw = localStorage.getItem(IMG_LIB_KEY);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      return arr.filter(function (it) { return it && typeof it.src === 'string' && it.src; });
+    } catch (e) { return []; }
+  }
+  function imgLibSave(list) {
+    try { localStorage.setItem(IMG_LIB_KEY, JSON.stringify(list)); return true; }
+    catch (e) { return false; } // 配额满等——不崩，本次不入库
+  }
+  function imgLibPut(src, meta) {
+    if (!src || typeof src !== 'string' || !/^(data:|blob:|https?:)/i.test(src.trim())) return false;
+    try {
+      var list = imgLibLoad();
+      var i = -1;
+      for (var k = 0; k < list.length; k++) if (list[k].src === src) { i = k; break; }
+      var entry = {
+        src: src,
+        name: (meta && meta.name) || '未命名图片',
+        desc: (meta && meta.desc) || '',
+        visibility: (meta && meta.visibility) || 'private',
+        ts: Date.now()
+      };
+      if (i >= 0) list[i] = entry; else list.push(entry);
+      while (imgLibBytes(list) > IMG_LIB_MAX_BYTES && list.length > 1) { // FIFO：ts 最旧先删
+        var old = 0;
+        for (var j = 1; j < list.length; j++) if (list[j].ts < list[old].ts) old = j;
+        list.splice(old, 1);
+      }
+      if (imgLibBytes(list) > IMG_LIB_MAX_BYTES) {
+        // 单图仍超限：不入库（卡上照常应用），旧 store 原样保留
+        showToast('图片过大…未存入我的图库');
+        return false;
+      }
+      return imgLibSave(list);
+    } catch (e) { return false; }
+  }
+  window.imgLibPut = imgLibPut; // 电池探针
+  function imgLibRemove(src) {
+    if (!src) return;
+    try { imgLibSave(imgLibLoad().filter(function (it) { return it.src !== src; })); } catch (e) {}
+  }
+  window.imgLibRemove = imgLibRemove; // 电池探针
 
   function collectImgLibrary() {
     var bySrc = {};
@@ -13295,6 +13331,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       }
       bySrc[src] = { src: src, name: name || '未命名图片', desc: desc || '', visibility: vis || 'private' };
     }
+    // ⓪ v10.28.32: 持久库条目先入（跨文章/新画布可见——用户撞的「看不见」真身），
+    // canvas 扫描后入；同 src 时 canvas 只补 store 的空 meta（store 权威，编辑名不丢）
+    imgLibLoad().forEach(function (it) { put(it.src, it.name, it.desc, it.visibility); });
     // ① 页面背景（WORKING 优先——弹窗会话里看到的才是最新的）
     var pbg = PAGE_BG_WORKING || PAGE_BG_STATE;
     (pbg && pbg.imgs || []).forEach(function (im) { put(im.dataURL, im.name, im.desc, im.visibility); });
@@ -13375,6 +13414,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     document.getElementById('flagSelectCount').textContent = '未选择';
     renderFlagGrid(currentTabItems());
     openModal('flagBrowserModal');
+    // v10.28.32: 弹窗出现即焦点落搜索框——用户「弹窗出现时直接打开搜索」
+    setTimeout(function () {
+      var si = document.getElementById('flagSearchInput');
+      if (si && si.offsetParent !== null) si.focus();
+    }, 50);
   }
   window.openFlagBrowser = openFlagBrowser;
 
@@ -13483,6 +13527,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       im.dataset.imgVisibility = meta.visibility;
       if (meta.name) im.alt = meta.name;
     });
+    imgLibPut(src, meta); // v10.28.32: 铅笔编辑同步 store——先写后刷格（refreshLibGrid 读 store，先写才不陈旧；imgMetaSave 双写幂等）
     refreshLibGrid();
     onContentChange(); // 一次通知：撤销快照 + autosave（指纹已含 meta）
   }
@@ -13608,6 +13653,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       im.remove();
       if (rich && window.richFieldSync) window.richFieldSync(rich);
     });
+    // ④ v10.28.32: 持久库同步删除（图库删=彻底删）
+    imgLibRemove(src);
   }
 
   // ── Asset Panel Search ──

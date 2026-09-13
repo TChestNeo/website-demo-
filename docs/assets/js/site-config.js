@@ -622,7 +622,21 @@ window.MN_SITE = window.MN_SITE || {};
 //   group-fill/group-click/group-v172 按设计退役（自由形状合并组轮已替换其功能）不设门禁；另修复 liquid-glass.js
 //   置换图 MAP 被 v0.2.9.0 sed 注入损坏的历史 bug（每页加载 console error + 玻璃位移静默失效，恢复 4a01104 原串）；
 //   线上核验 PASS（rev 00215-gv4））
-window.MN_SITE_VERSION = 'v0.2.41.0';
+// v0.2.42.0 = 图片库直开搜索+搜索栏上传按钮+图库持久化（小改动位 41→42·新功能轮·补丁归零；2026-09-14）——用户
+//   「那个添加图片的弹窗是左侧上传右侧搜索 我希望当弹窗出现时是直接打开搜索然后上传按钮放到搜索栏的右侧放置一个上传
+//   按钮，然后为什么我上传的图片没办法在全部看见和在我的图库看见？」；探针实证（tmp-probe-imglib-userflow.js 真实点
+//   击路径）：图库=画布扫描派生视图——换文章/新画布后旧上传在图库全部「消失」，且上传后有图卡再点不弹（v10.28.7 防
+//   误触守卫）无路回图库；修法：①点无图国旗/国徽卡直开图片库（图源选择器 flagSourceModal 弹窗+函数整体移除，打开即
+//   焦点落搜索框）②上传按钮并入搜索栏右侧（上传→图片信息弹窗→保存→图落到卡+图库保持打开+网格立刻出现新图并选中——
+//   当场看见）③图库升级持久库 slati_img_library（localStorage 上限 2.5MB 给草稿让配额、ts 最旧 FIFO 淘汰、单图超限
+//   不入库 toast；全部 8+ 上传入口共用 choke point imgMetaSave→imgLibPut 一处写入全覆盖，铅笔编辑 syncLibMeta/删除
+//   removeLibUsages 同步 store；未来真库=后端 Cloud Storage+DB 后迁移）；有图卡点按保持不弹（防误触口径零回归）；
+//   零草稿字段（v 保持 9）；FC v10.28.32.0（小更新位 31→32）；电池 imglib-v2 21/21 新 + img-library 44/44 + pbg-meta
+//   38/38 适配 + 复跑 13 组全绿（tier-gating 29/29、caredge-dark 9/9（B2 过渡竞态改收敛轮询最长 30 拍根治偶发红）、
+//   page-bg 27/27、migrate-btn 41/41、liquid-glass-static 19/19、premium-multi 106/106、autosave-interval 12/12、
+//   fc-undo 15/15、group-shapes 17/17、merge-dir 19/19、merge-far 12/12；group-resize 31/34 三红（S9/S15/S17）
+//   与 0dd2153 证据同值仅注释不设门禁）（rev 00216-zc9）
+window.MN_SITE_VERSION = 'v0.2.42.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -870,4 +884,10 @@ window.MN_SITE_VERSION = 'v0.2.41.0';
 //   阴影/上传四块隐藏、setCardBgColor/updateCardBgOpacity/handleCardBgUpload 守卫 toast，还原类函数不锁）；页面背景
 //   订阅锁（openPageBgModal 拦截 toast+资产面板入口 #pageBgEntryLock 锁标+#pageBgUpgradeLink「订阅后解锁」）；
 //   XP 钩子（建卡 drop +10/发文章 +100，草稿恢复路径不挂钩）；零后端、ethereal 零改动无需 inline-css
-window.FLUIDCANVAS_VERSION = 'v10.28.31.0';
+// v10.28.32.0 = 图片库直开+搜索栏上传+图库持久化（小更新位 31→32·新功能轮·补丁归零；2026-09-14）——用户「弹窗出现
+//   时直接打开搜索+上传按钮放到搜索栏的右侧+上传的图片没办法在全部/我的图库看见」：图源选择器 flagSourceModal 整体移除
+//   （点无图国旗/国徽卡直开图片库，打开即焦点落搜索框）；上传按钮并入搜索栏右侧（保存后图库保持打开+新格即时出现并选
+//   中）；图库升级持久库 slati_img_library（上限 2.5MB FIFO 淘汰、单图超限不入库 toast；imgMetaSave choke point 一处写
+//   入覆盖 8+ 上传入口；syncLibMeta/removeLibUsages 同步 store）；有图卡点按保持不弹（防误触口径零回归）；零草稿字段
+//   （v 保持 9）；零后端、ethereal 零改动无需 inline-css
+window.FLUIDCANVAS_VERSION = 'v10.28.32.0';
