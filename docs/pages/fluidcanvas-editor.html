@@ -4220,6 +4220,33 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       color: var(--color-on-surface); text-align: center;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    /* ── 我的图库 (v10.28.29)：上传图 tile = 缩略图 + 可见性徽章 + 铅笔/垃圾桶（右上角）── */
+    .flag-card-item .lib-thumb-wrap { position: relative; }
+    .flag-card-item .lib-vis {
+      position: absolute; top: 4px; left: 4px; padding: 1px 7px;
+      border-radius: var(--radius-full); border: 1px solid var(--divider-line);
+      background: var(--color-surface-container-high);
+      font-size: 9px; font-weight: 600; color: var(--color-on-surface-variant);
+      pointer-events: none;
+    }
+    .flag-card-item .lib-icon {
+      position: absolute; top: 4px; width: 22px; height: 22px; padding: 0;
+      border: none; border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--color-surface-container-high);
+      color: var(--color-on-surface-variant);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      transition: background 0.15s, color 0.15s;
+    }
+    .flag-card-item .lib-icon .material-symbols-outlined { font-size: 14px; }
+    .flag-card-item .lib-icon:hover { background: var(--color-primary); color: #fff; }
+    .flag-card-item .lib-edit { right: 28px; }
+    .flag-card-item .lib-del { right: 4px; }
+    .flag-card-item .lib-del:hover { background: var(--color-error); }
+    .flag-grid-empty {
+      grid-column: 1 / -1; padding: 32px 12px; text-align: center;
+      font-size: var(--fs-label-sm); color: var(--color-outline);
+    }
 
     /* ── Asset card drag state ── */
     .asset-panel .card.dragging {
@@ -4649,7 +4676,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       <button class="flag-source-btn" id="flagBrowseBtn" onclick="closeAllModals();openFlagBrowser()">
         <span class="material-symbols-outlined">travel_explore</span>
         <span class="source-title">Search within the platform</span>
-        <span class="source-desc">Browse flags uploaded by the community</span>
+        <span class="source-desc">浏览平台图片库与你上传的图片</span>
       </button>
     </div>
   </div>
@@ -4659,25 +4686,25 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
 <div class="modal-container" id="flagBrowserModal">
   <div class="modal-card" id="flagBrowserCard" style="max-width:640px">
     <div class="flex-between" style="margin-bottom:0">
-      <h3 class="headline-md">Browse Flags</h3>
+      <h3 class="headline-md">图片库</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
     </div>
-    <!-- Tabs -->
+    <!-- Tabs（v10.28.29）：左「全部」=内置旗+我的上传；右「我的图库」=仅自己上传（可编辑可删除） -->
     <div class="flag-browser-tabs">
-      <button class="flag-browser-tab active" data-tab="search" onclick="switchFlagTab('search')">Search</button>
-      <button class="flag-browser-tab" data-tab="myflag" onclick="switchFlagTab('myflag')">My flag</button>
+      <button class="flag-browser-tab active" data-tab="all" onclick="switchFlagTab('all')">全部</button>
+      <button class="flag-browser-tab" data-tab="mylib" onclick="switchFlagTab('mylib')">我的图库</button>
     </div>
     <!-- Search Bar -->
     <div class="flag-search-bar">
       <span class="material-symbols-outlined" style="color:var(--color-outline);font-size:18px">search</span>
-      <input type="text" placeholder="Search flags…" id="flagSearchInput" oninput="filterFlags()">
+      <input type="text" placeholder="搜索图片（名称/描述）…" id="flagSearchInput" oninput="filterFlags()">
     </div>
     <!-- Flag Grid -->
     <div class="flag-grid custom-scrollbar" id="flagGrid"></div>
     <div class="flex-between" style="margin-top:var(--space-md)">
-      <span class="label-sm" style="color:var(--color-outline)" id="flagSelectCount">0 selected</span>
+      <span class="label-sm" style="color:var(--color-outline)" id="flagSelectCount">未选择</span>
       <button class="btn btn-primary btn-sm" onclick="confirmFlagSelection()">
-        <span class="material-symbols-outlined">check</span> Confirm Selection
+        <span class="material-symbols-outlined">check</span> 确认添加
       </button>
     </div>
   </div>
@@ -13205,11 +13232,67 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     { id: 'mf3', name: 'River Province',     colors: ['#064e3b','#22c55e','#ffffff'], used: 5 }
   ];
   // v10.28.22: 工具栏「添加图像」弹层要吃国旗库——本块是 IIFE，暴露组合数组给
-  // 工具栏块（插入逻辑的家在那边：textSelInCard/光标态都在那个闭包里）
+  // 工具栏块（插入逻辑的家在那边：textSelInCard/光标态都在那个闭包里）。
+  // v10.28.29: MY_FLAGS 假数据退出浏览器页签（图库=真实上传派生），此数组仅保留
+  // 供 tt-img-pop 国旗库使用。
   window.FC_FLAG_LIBRARY = SEED_FLAGS.concat(MY_FLAGS);
 
   var selectedFlagId = null;
-  var currentFlagTab = 'search';
+  var currentFlagTab = 'all';
+
+  // ── 我的图库 (v10.28.29) ──
+  // 用户「那个上传后可以在平台的上图像搜索那边搜索到吗」——图库=纯派生视图：
+  // 打开/切页签时扫描画布现有使用处（8 个上传入口的图都落在 dataset/结构里），
+  // 零草稿字段（v 保持 9）、零指纹改动（v10.28.28 已把 meta 签进指纹）。
+  // 统一键=dataURL（同图多处用=一格），编辑/删除按 dataURL 同步所有使用处。
+  var LIB_ITEMS = []; // collectImgLibrary 结果；edit/del 按 index 取（id='lib'+i）
+
+  function collectImgLibrary() {
+    var bySrc = {};
+    function put(src, name, desc, vis) {
+      if (!src || typeof src !== 'string' || !/^(data:|blob:|https?:)/i.test(src.trim())) return;
+      var it = bySrc[src];
+      if (it) { // 同图多处用：更具体的 meta 优先（非空覆盖空）
+        if (!it.name && name) it.name = name;
+        if (!it.desc && desc) it.desc = desc;
+        return;
+      }
+      bySrc[src] = { src: src, name: name || '未命名图片', desc: desc || '', visibility: vis || 'private' };
+    }
+    // ① 页面背景（WORKING 优先——弹窗会话里看到的才是最新的）
+    var pbg = PAGE_BG_WORKING || PAGE_BG_STATE;
+    (pbg && pbg.imgs || []).forEach(function (im) { put(im.dataURL, im.name, im.desc, im.visibility); });
+    // ②-⑥ 卡面 5 类（无 meta 的 legacy 图也收——缺名兜底「未命名图片」）
+    getAllCards().forEach(function (card) {
+      var img = card.querySelector('.card-img-bg');
+      if (img && img.src) put(img.src, card.dataset.imgName, card.dataset.imgDesc, card.dataset.imgVisibility);
+      if (card.dataset.cardBgImg) put(card.dataset.cardBgImg, card.dataset.cardBgName, card.dataset.cardBgDesc, card.dataset.cardBgVisibility);
+      if (card.dataset.captionBgImg) put(card.dataset.captionBgImg, card.dataset.captionBgName, card.dataset.captionBgDesc, card.dataset.captionBgVisibility);
+      if (card.dataset.charAvatar) put(card.dataset.charAvatar, card.dataset.charAvatarName, card.dataset.charAvatarDesc, card.dataset.charAvatarVisibility);
+      if (card.dataset.mapImg) put(card.dataset.mapImg, card.dataset.mapImgName, card.dataset.mapImgDesc, card.dataset.mapImgVisibility);
+    });
+    // ⑦ 内联图（data-img-* 与卡面同名 dataset；legacy 无 meta → 缺省名）
+    // 范围=gridCanvas（同 getAllCards 口径）——pageBgModal 的整页预览克隆里
+    // 也有 img.tt-inline-img 副本，全局 query 会把隐藏预览也算进图库
+    gridCanvas.querySelectorAll('img.tt-inline-img').forEach(function (im) {
+      put(im.src, im.dataset.imgName, im.dataset.imgDesc, im.dataset.imgVisibility);
+    });
+    return Object.keys(bySrc).map(function (k) { return bySrc[k]; });
+  }
+  window.collectImgLibrary = collectImgLibrary; // 电池探针
+
+  function currentTabItems() {
+    // all = 内置 12 旗 + 我的上传；mylib = 仅上传（点图=添加，铅笔/垃圾桶只在上传图）
+    var seeds = SEED_FLAGS.map(function (f) { return { id: f.id, kind: 'seed', name: f.name, colors: f.colors }; });
+    var libs = LIB_ITEMS.map(function (it, i) {
+      return { id: 'lib' + i, kind: 'lib', li: i, name: it.name, desc: it.desc, visibility: it.visibility, src: it.src };
+    });
+    return currentFlagTab === 'mylib' ? libs : seeds.concat(libs);
+  }
+
+  function libVisLabel(v) {
+    return v === 'public' ? 'Public' : (v === 'team' ? 'Team' : 'Private');
+  }
 
   function renderFlagStripes(colors) {
     var stripeH = 100 / colors.length;
@@ -13223,47 +13306,67 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     setCardStripes(card, stripesHtml, name);
   }
 
-  function renderFlagGrid(flags) {
+  function renderFlagGrid(items) {
     var grid = document.getElementById('flagGrid');
-    grid.innerHTML = flags.map(function (f) {
+    if (!items.length) {
+      grid.innerHTML = '<div class="flag-grid-empty">' + (currentFlagTab === 'mylib'
+        ? '还没有上传过图片——你上传的国旗、背景、头像、地图都会出现在这里' : '') + '</div>';
+      return;
+    }
+    grid.innerHTML = items.map(function (f) {
       var isSel = selectedFlagId === f.id;
+      if (f.kind === 'lib') {
+        // dataURL 只进 src 属性（esc 对 base64 空转、对 http 参数属性级安全），
+        // 绝不进 onclick——避免巨型转义属性；铅笔/垃圾桶 stopPropagation 不触发选中
+        return '<div class="flag-card-item' + (isSel ? ' selected' : '') + '" data-flag-id="' + f.id +
+          '" onclick="selectFlag(\'' + f.id + '\')" ondblclick="selectFlag(\'' + f.id + '\');confirmFlagSelection()">' +
+          '<div class="lib-thumb-wrap">' +
+          '<img class="flag-thumb" src="' + esc(f.src) + '" alt="">' +
+          '<span class="lib-vis">' + libVisLabel(f.visibility) + '</span>' +
+          '<button class="lib-icon lib-edit" title="编辑图片信息（同步所有使用处）" onclick="event.stopPropagation();editLibImg(' + f.li + ')"><span class="material-symbols-outlined">edit</span></button>' +
+          '<button class="lib-icon lib-del" title="删除（从所有使用处移除）" onclick="event.stopPropagation();delLibImg(' + f.li + ')"><span class="material-symbols-outlined">delete</span></button>' +
+          '</div>' +
+          '<div class="flag-name" title="' + esc(f.desc) + '">' + esc(f.name) + '</div>' +
+        '</div>';
+      }
       return '<div class="flag-card-item' + (isSel ? ' selected' : '') + '" data-flag-id="' + f.id + '" onclick="selectFlag(\'' + f.id + '\')" ondblclick="selectFlag(\'' + f.id + '\');confirmFlagSelection()">' +
         '<div class="flag-thumb-stripes" style="width:100%;height:80px;display:flex;flex-direction:column">' + renderFlagStripes(f.colors) + '</div>' +
-        '<div class="flag-name">' + f.name + '</div>' +
+        '<div class="flag-name">' + esc(f.name) + '</div>' +
       '</div>';
     }).join('');
   }
 
   function openFlagBrowser() {
     selectedFlagId = null;
-    currentFlagTab = 'search';
-    document.querySelectorAll('.flag-browser-tab').forEach(function (t, i) {
-      t.classList.toggle('active', i === 0);
+    currentFlagTab = 'all';
+    LIB_ITEMS = collectImgLibrary();
+    document.querySelectorAll('.flag-browser-tab').forEach(function (t) {
+      t.classList.toggle('active', t.dataset.tab === 'all');
     });
     document.getElementById('flagSearchInput').value = '';
-    document.getElementById('flagSelectCount').textContent = '0 selected';
-    renderFlagGrid(SEED_FLAGS);
+    document.getElementById('flagSelectCount').textContent = '未选择';
+    renderFlagGrid(currentTabItems());
     openModal('flagBrowserModal');
   }
   window.openFlagBrowser = openFlagBrowser;
 
   function switchFlagTab(tab) {
     currentFlagTab = tab;
+    LIB_ITEMS = collectImgLibrary();
     document.querySelectorAll('.flag-browser-tab').forEach(function (t) {
       t.classList.toggle('active', t.dataset.tab === tab);
     });
     selectedFlagId = null;
-    document.getElementById('flagSelectCount').textContent = '0 selected';
+    document.getElementById('flagSelectCount').textContent = '未选择';
     document.getElementById('flagSearchInput').value = '';
-    renderFlagGrid(tab === 'myflag' ? MY_FLAGS : SEED_FLAGS);
+    renderFlagGrid(currentTabItems());
   }
   window.switchFlagTab = switchFlagTab;
 
   function selectFlag(id) {
     selectedFlagId = id;
-    var flags = currentFlagTab === 'myflag' ? MY_FLAGS : SEED_FLAGS;
-    var flag = flags.find(function (f) { return f.id === id; });
-    document.getElementById('flagSelectCount').textContent = flag ? 'Selected: ' + flag.name : '0 selected';
+    var item = currentTabItems().find(function (f) { return f.id === id; });
+    document.getElementById('flagSelectCount').textContent = item ? '已选：' + item.name : '未选择';
     document.querySelectorAll('.flag-card-item').forEach(function (c) {
       c.classList.toggle('selected', c.dataset.flagId === id);
     });
@@ -13272,23 +13375,218 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function filterFlags() {
     var q = document.getElementById('flagSearchInput').value.toLowerCase();
-    var flags = currentFlagTab === 'myflag' ? MY_FLAGS : SEED_FLAGS;
-    var filtered = flags.filter(function (f) { return f.name.toLowerCase().includes(q); });
+    var items = currentTabItems();
+    var filtered = items.filter(function (f) {
+      if (f.kind === 'lib') return (f.name || '').toLowerCase().includes(q) || (f.desc || '').toLowerCase().includes(q);
+      return f.name.toLowerCase().includes(q);
+    });
     renderFlagGrid(filtered);
   }
   window.filterFlags = filterFlags;
 
   function confirmFlagSelection() {
     if (!selectedFlagId || !currentFlagCard) return;
-    var flags = currentFlagTab === 'myflag' ? MY_FLAGS : SEED_FLAGS;
-    var flag = flags.find(function (f) { return f.id === selectedFlagId; });
-    if (!flag) return;
-    applyFlagToCard(currentFlagCard, flag.name, flag.colors);
+    if (!currentFlagCard.isConnected) return; // 浏览期间卡片被删（与上传路径同款守卫）
+    var item = currentTabItems().find(function (f) { return f.id === selectedFlagId; });
+    if (!item) return;
+    if (item.kind === 'seed') {
+      applyFlagToCard(currentFlagCard, item.name, item.colors);
+    } else {
+      // 复用 flag 上传落地路径：setCardImage（label=名称）+ meta 三件套
+      setCardImage(currentFlagCard, item.src, item.name);
+      currentFlagCard.dataset.imgName = item.name;
+      currentFlagCard.dataset.imgDesc = item.desc;
+      currentFlagCard.dataset.imgVisibility = item.visibility;
+    }
     closeAllModals();
     onContentChange();
-    showToast('Flag set: ' + flag.name);
+    showToast(item.kind === 'seed' ? 'Flag set: ' + item.name : '图片已添加：' + item.name);
   }
   window.confirmFlagSelection = confirmFlagSelection;
+
+  // ── 图库编辑：铅笔 → 图片信息弹窗（叠层，只关 meta、browser 保持）；保存
+  // 按 dataURL 同步所有使用处（不动卡 label——卡名是卡自己的）
+  function editLibImg(idx) {
+    var it = LIB_ITEMS[idx];
+    if (!it) return;
+    openImgMetaModal(it.src, it.name, function (meta) {
+      syncLibMeta(it.src, meta);
+    }, { initial: { name: it.name, desc: it.desc, visibility: it.visibility }, close: 'self' });
+  }
+  window.editLibImg = editLibImg;
+
+  function syncLibMeta(src, meta) {
+    getAllCards().forEach(function (card) {
+      var img = card.querySelector('.card-img-bg');
+      if (img && img.src === src) {
+        card.dataset.imgName = meta.name;
+        card.dataset.imgDesc = meta.desc;
+        card.dataset.imgVisibility = meta.visibility;
+      }
+      if (card.dataset.cardBgImg === src) {
+        card.dataset.cardBgName = meta.name;
+        card.dataset.cardBgDesc = meta.desc;
+        card.dataset.cardBgVisibility = meta.visibility;
+      }
+      if (card.dataset.captionBgImg === src) {
+        card.dataset.captionBgName = meta.name;
+        card.dataset.captionBgDesc = meta.desc;
+        card.dataset.captionBgVisibility = meta.visibility;
+      }
+      if (card.dataset.charAvatar === src) {
+        card.dataset.charAvatarName = meta.name;
+        card.dataset.charAvatarDesc = meta.desc;
+        card.dataset.charAvatarVisibility = meta.visibility;
+      }
+      if (card.dataset.mapImg === src) {
+        card.dataset.mapImgName = meta.name;
+        card.dataset.mapImgDesc = meta.desc;
+        card.dataset.mapImgVisibility = meta.visibility;
+      }
+    });
+    // 页面背景：WORKING 与 STATE 都可能是「现存真相」（弹窗会话 vs 已保存）
+    [PAGE_BG_WORKING, PAGE_BG_STATE].forEach(function (s) {
+      (s && s.imgs || []).forEach(function (im) {
+        if (im.dataURL === src) {
+          im.name = meta.name; im.desc = meta.desc; im.visibility = meta.visibility;
+        }
+      });
+    });
+    if (PAGE_BG_WORKING) renderPbgList();
+    // 内联图（data-img-*；alt=名称）——范围=gridCanvas，预览克隆里的副本不动
+    gridCanvas.querySelectorAll('img.tt-inline-img').forEach(function (im) {
+      if (im.src !== src) return;
+      im.dataset.imgName = meta.name;
+      im.dataset.imgDesc = meta.desc;
+      im.dataset.imgVisibility = meta.visibility;
+      if (meta.name) im.alt = meta.name;
+    });
+    refreshLibGrid();
+    onContentChange(); // 一次通知：撤销快照 + autosave（指纹已含 meta）
+  }
+  window.syncLibMeta = syncLibMeta; // 电池探针
+
+  function refreshLibGrid() {
+    LIB_ITEMS = collectImgLibrary();
+    var q = document.getElementById('flagSearchInput').value;
+    if (q && q.trim()) filterFlags();
+    else renderFlagGrid(currentTabItems());
+  }
+
+  function countLibUsages(src) {
+    var n = 0;
+    var pbg = PAGE_BG_WORKING || PAGE_BG_STATE;
+    if (pbg && pbg.imgs) pbg.imgs.forEach(function (im) { if (im.dataURL === src) n++; });
+    getAllCards().forEach(function (card) {
+      var img = card.querySelector('.card-img-bg');
+      if (img && img.src === src) n++;
+      if (card.dataset.cardBgImg === src) n++;
+      if (card.dataset.captionBgImg === src) n++;
+      if (card.dataset.charAvatar === src) n++;
+      if (card.dataset.mapImg === src) n++;
+    });
+    gridCanvas.querySelectorAll('img.tt-inline-img').forEach(function (im) { if (im.src === src) n++; });
+    return n;
+  }
+  window.countLibUsages = countLibUsages; // 电池探针
+
+  function delLibImg(idx) {
+    var it = LIB_ITEMS[idx];
+    if (!it) return;
+    var n = countLibUsages(it.src);
+    // 站内原生 confirm 惯例（pbgRemoveAll 同款）——报使用数让用户知道影响面
+    if (!confirm('删除「' + (it.name || '未命名图片') + '」？它正用在 ' + n + ' 处（卡片/背景/文字），删除后所有地方都会移除。')) return;
+    removeLibUsages(it.src);
+    refreshLibGrid();
+    onContentChange();
+    showToast('已删除：' + it.name);
+  }
+  window.delLibImg = delLibImg;
+
+  function removeLibUsages(src) {
+    // ① 页面背景：WORKING 开着 → 直接改会话副本（pbgRemoveImage 同款收尾）；
+    // 否则从 STATE 起一份 WORKING，按 closePageBgModal 的提交路径落地
+    if (PAGE_BG_WORKING) {
+      var removed = PAGE_BG_WORKING.imgs.filter(function (im) { return im.dataURL === src; });
+      removed.forEach(function (im) { delete PBG_IMG_CACHE[im.id]; delete PAGE_BG_WORKING.feathers[im.id]; });
+      PAGE_BG_WORKING.imgs = PAGE_BG_WORKING.imgs.filter(function (im) { return im.dataURL !== src; });
+      PAGE_BG_WORKING.order = PAGE_BG_WORKING.order.filter(function (id) {
+        return PAGE_BG_WORKING.imgs.some(function (im) { return im.id === id; });
+      });
+      renderPbgList();
+      var compW = renderPageBgComposite();
+      if (compW) { updateCloneBg(); } else { clearCloneBg(); }
+      updatePbgRatioHint();
+    } else if (PAGE_BG_STATE) {
+      PAGE_BG_WORKING = pbgDeepCopy(PAGE_BG_STATE);
+      var removed2 = PAGE_BG_WORKING.imgs.filter(function (im) { return im.dataURL === src; });
+      removed2.forEach(function (im) { delete PBG_IMG_CACHE[im.id]; delete PAGE_BG_WORKING.feathers[im.id]; });
+      PAGE_BG_WORKING.imgs = PAGE_BG_WORKING.imgs.filter(function (im) { return im.dataURL !== src; });
+      PAGE_BG_WORKING.order = PAGE_BG_WORKING.order.filter(function (id) {
+        return PAGE_BG_WORKING.imgs.some(function (im) { return im.id === id; });
+      });
+      if (!PAGE_BG_WORKING.imgs.length) {
+        // 无图=等同于移除（closePageBgModal 空态分支同款）
+        PAGE_BG_STATE = null;
+        PAGE_BG_COMPOSITE = null;
+        removePageBg();
+        PAGE_BG_WORKING = null;
+        updatePageBgEntryState();
+      } else {
+        var compS = renderPageBgComposite();
+        PAGE_BG_STATE = pbgDeepCopy(PAGE_BG_WORKING);
+        if (compS) { PAGE_BG_COMPOSITE = compS; applyPageBgToCanvas(compS); }
+        PAGE_BG_WORKING = null;
+        updatePageBgEntryState();
+      }
+    }
+    // ② 卡面 5 类：每类都还原默认态（setCardBgColor/工厂默认逆向）
+    getAllCards().forEach(function (card) {
+      var img = card.querySelector('.card-img-bg');
+      if (img && img.src === src) {
+        img.remove();
+        card.classList.remove('has-bg-img');
+        clearAspectLock(card, true); // bitmap gone — unlock, snap back to grid
+        var icon = card.querySelector('.card-icon');
+        if (icon) icon.style.display = '';
+        delete card.dataset.imgName; delete card.dataset.imgDesc; delete card.dataset.imgVisibility;
+      }
+      if (card.dataset.cardBgImg === src) {
+        var bg = card.querySelector('.card-bg-img');
+        if (bg) bg.remove();
+        card.classList.remove('has-card-bg-img');
+        delete card.dataset.cardBgImg;
+        delete card.dataset.cardBgName; delete card.dataset.cardBgDesc; delete card.dataset.cardBgVisibility;
+        refreshCardBgPopoverState();
+      }
+      if (card.dataset.captionBgImg === src) {
+        delete card.dataset.captionBgImg;
+        delete card.dataset.captionBgName; delete card.dataset.captionBgDesc; delete card.dataset.captionBgVisibility;
+        applyCaptionBg(card); // 重绘回纯色/透明标题背景（clearCaptionBgImage 吃 selectedCard，这里逐卡内联）
+        refreshCaptionPopoverState();
+      }
+      if (card.dataset.charAvatar === src) {
+        delete card.dataset.charAvatar;
+        delete card.dataset.charAvatarName; delete card.dataset.charAvatarDesc; delete card.dataset.charAvatarVisibility;
+        var av = card.querySelector('.char-avatar');
+        if (av) { av.style.backgroundImage = ''; av.innerHTML = '<span class="material-symbols-outlined">person</span>'; }
+      }
+      if (card.dataset.mapImg === src) {
+        delete card.dataset.mapImg;
+        delete card.dataset.mapImgName; delete card.dataset.mapImgDesc; delete card.dataset.mapImgVisibility;
+        var mc = card.querySelector('.map-canvas');
+        if (mc) { mc.style.backgroundImage = ''; mc.classList.add('map-empty'); mc.textContent = '双击上传地图图片 · 再双击地图可框区域'; }
+      }
+    });
+    // ③ 内联图：删除后 rich 字段同步序列化（fieldHtml 与 DOM 保持一致）
+    // 范围=gridCanvas——预览克隆里的副本随下次开窗重建，不在这里动
+    gridCanvas.querySelectorAll('img.tt-inline-img').forEach(function (im) {
+      if (im.src !== src) return;
+      var rich = im.closest('[data-rich="1"]');
+      im.remove();
+      if (rich && window.richFieldSync) window.richFieldSync(rich);
+    });
+  }
 
   // ── Asset Panel Search ──
   function filterAssets(val) {

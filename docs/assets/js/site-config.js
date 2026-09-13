@@ -572,7 +572,20 @@ window.MN_SITE = window.MN_SITE || {};
 //   地图 mapImgMeta、内联图 data-img-* 属性 innerHTML 往返零字段（legacy 缺省空名/空描述/Private）；
 //   getCardFingerprint 补元数据签名；renderPbgList 名称行 esc() 防注入+编辑钮重开弹窗；FC v10.28.28.0
 //   （小更新位 27→28）
-window.MN_SITE_VERSION = 'v0.2.38.0';
+// v0.2.39.0 = 我的图库（小改动位 38→39·新功能轮·补丁归零；2026-09-13）——用户「那个上传后可以在平台的上
+//   图像搜索那边搜索到吗」+「肯定是要做的」，问询钦定：①入口=「Search within the platform」弹窗上方加顶部
+//   菜单，右侧「我的图库」左侧「全部」；②点图=就是添加图片，图片右上角铅笔 icon 点击后编辑信息（只能编辑
+//   自己上传的、内置国旗不能编辑）；③管理功能=全部（浏览+搜索+插入+编辑+删除）：图库=纯派生视图（打开/切
+//   页签时扫描画布现有使用处——页面背景/卡图/卡背景/标题背景/头像/地图/内联图 7 类，按 dataURL 去重，同图
+//   多处用=一格）；「全部」=内置 12 旗+我的上传、「我的图库」=仅上传（tile=缩略图+可见性徽章+铅笔/垃圾桶，
+//   空态提示）；点上传图=setCardImage+meta 三件套（label=名称）插入国旗卡；铅笔=图片信息弹窗叠层（只关
+//   meta、browser 保持，initial 回填），保存按 dataURL 同步所有使用处 meta（不动卡 label）；垃圾桶=原生
+//   confirm 报使用数→从所有使用处移除（卡图摘层+icon 恢复+clearAspectLock、卡背景摘层、标题背景重绘、头像/
+//   地图还原默认态、pageBg 走 pbgRemoveImage 同款收尾或 closePageBgModal 提交路径、内联图 richFieldSync）；
+//   搜索按名称+描述过滤；MY_FLAGS 假数据退出浏览器（FC_FLAG_LIBRARY 喂工具栏国旗库不动）；零草稿字段（v
+//   保持 9）、零指纹改动（meta 已入指纹）、零后端、ethereal 零改动无需 inline-css；FC v10.28.29.0（小更新位
+//   28→29）
+window.MN_SITE_VERSION = 'v0.2.39.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -782,4 +795,17 @@ window.MN_SITE_VERSION = 'v0.2.38.0';
 //   charAvatarMeta、地图 mapImgMeta、内联图 data-img-* 属性 innerHTML 往返零字段（legacy 缺省空名/空描述/
 //   Private）；getCardFingerprint 补元数据签名（desc 变更也触发 autosave）；renderPbgList 名称行 esc() 防
 //   注入+编辑钮重开弹窗回填；零后端、ethereal 零改动无需 inline-css
-window.FLUIDCANVAS_VERSION = 'v10.28.28.0';
+// v10.28.29.0 = 我的图库（小更新位 28→29·新功能轮·补丁归零；2026-09-13）——用户「那个上传后可以在平台的
+//   上图像搜索那边搜索到吗」+「肯定是要做的」，问询钦定：①入口=「Search within the platform」弹窗上方加
+//   顶部菜单，右侧「我的图库」左侧「全部」；②点图=就是添加图片，图片右上角铅笔 icon 点击后编辑信息（只能
+//   编辑自己上传的、内置国旗不能编辑）；③管理功能=全部（浏览+搜索+插入+编辑+删除）：flagBrowserModal 页签
+//   Search/My flag（演示假数据）→「全部/我的图库」——图库=纯派生视图（collectImgLibrary 扫描 7 类使用处
+//   [页面背景/卡图/卡背景/标题背景/头像/地图/内联图] 按 dataURL 去重，同图多处用=一格；零草稿字段 v 保持
+//   9、零指纹改动）；「全部」=内置 12 旗+我的上传、「我的图库」=仅上传（tile=缩略图+可见性徽章+右上角铅笔/
+//   垃圾桶，空态提示）；点上传图=setCardImage+meta 三件套插入国旗卡；铅笔=图片信息弹窗叠层（initial 回填、
+//   只关 meta browser 保持），保存 syncLibMeta 按 dataURL 同步所有使用处（不动卡 label）；垃圾桶=原生
+//   confirm 报使用数→removeLibUsages 从所有使用处移除（卡图摘层+icon 恢复+clearAspectLock、卡背景摘层、
+//   标题背景重绘、头像/地图还原默认态、pageBg 走 pbgRemoveImage 同款收尾或 closePageBgModal 提交路径、内联
+//   图 richFieldSync）；搜索按名称+描述过滤；MY_FLAGS 假数据退出浏览器（FC_FLAG_LIBRARY 喂工具栏国旗库不
+//   动）；零后端、ethereal 零改动无需 inline-css
+window.FLUIDCANVAS_VERSION = 'v10.28.29.0';
