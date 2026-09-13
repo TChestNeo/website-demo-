@@ -585,7 +585,11 @@ window.MN_SITE = window.MN_SITE || {};
 //   搜索按名称+描述过滤；MY_FLAGS 假数据退出浏览器（FC_FLAG_LIBRARY 喂工具栏国旗库不动）；零草稿字段（v
 //   保持 9）、零指纹改动（meta 已入指纹）、零后端、ethereal 零改动无需 inline-css；FC v10.28.29.0（小更新位
 //   28→29）
-window.MN_SITE_VERSION = 'v0.2.39.0';
+// v0.2.39.1 = 样本国旗全撤（用户「把那些用来做样本的图片国旗去掉」）：SEED_FLAGS 12 内置条纹旗 + MY_FLAGS 3
+//   假「我的旗」两数组整体移除——图库「全部/我的图库」两页签同源（=真实上传派生，页签结构保留），空态文案
+//   统一；tt-img-pop 国旗格零渲染（头部「国旗库」→「图片」，仅上传格+网页搜索），FC_FLAG_LIBRARY=[] 保留为
+//   将来真库接口；applyFlagToCard 导出保留兼容（setCardStripes 仍喂草稿）；补丁位 0→1·纯改动轮；FC v10.28.29.1（补丁位 0→1）
+window.MN_SITE_VERSION = 'v0.2.39.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -808,4 +812,9 @@ window.MN_SITE_VERSION = 'v0.2.39.0';
 //   标题背景重绘、头像/地图还原默认态、pageBg 走 pbgRemoveImage 同款收尾或 closePageBgModal 提交路径、内联
 //   图 richFieldSync）；搜索按名称+描述过滤；MY_FLAGS 假数据退出浏览器（FC_FLAG_LIBRARY 喂工具栏国旗库不
 //   动）；零后端、ethereal 零改动无需 inline-css
-window.FLUIDCANVAS_VERSION = 'v10.28.29.0';
+// v10.28.29.1 = 样本国旗全撤（用户「把那些用来做样本的图片国旗去掉」）：SEED_FLAGS（12 内置旗）+MY_FLAGS（3
+//   假「我的旗」）两数组移除、FC_FLAG_LIBRARY=[]——图库页签只认真实上传（全部/我的图库同源，页签结构保留、
+//   空态文案统一）、renderLibTiles 库格零渲染（tt-img-pop 头「国旗库」→「图片」，仅上传格+网页搜索）；
+//   confirmFlagSelection/filterFlags/renderFlagGrid 的 seed 分支清除（applyFlagToCard 导出保留兼容）；
+//   补丁位 0→1·纯改动轮
+window.FLUIDCANVAS_VERSION = 'v10.28.29.1';
