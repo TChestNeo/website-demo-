@@ -602,7 +602,11 @@ window.MN_SITE = window.MN_SITE || {};
 //   只是保留icon不需要名称」：工具栏 撤回/恢复 两钮去掉文字只留图标（名称保留在 title 悬停提示「撤回 (Ctrl+Z)」/
 //   「恢复 (Ctrl+Y)」）；按钮属性/撤销引擎/快捷键零改动；电池 fc-undo 复跑 15/15（S1 改纯图标断言+版本口径更新）
 //   + 线上核验 PASS（rev 00213-644）
-window.MN_SITE_VERSION = 'v0.2.40.1';
+// v0.2.40.2 = 编辑器设置/Tags 按钮纯图标化（补丁位 1→2·纯改动轮；2026-09-13）——用户「设置和Tags能不能也是
+//   只有一个icon?」：工具栏 设置（settingsBtn）与 Tags（tagsModal）两钮去掉文字只留图标（名称保留在 title 悬停
+//   提示「设置」/「Tags」）；按钮属性/弹窗/功能零改动；电池 autosave-interval 复跑 12/12（F1 版本口径+两钮纯图标钉）
+//   + fc-undo 复跑 15/15（F4/S8 版本口径）+ 线上核验 PASS（rev 00214-6dg）
+window.MN_SITE_VERSION = 'v0.2.40.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -840,4 +844,7 @@ window.MN_SITE_VERSION = 'v0.2.40.1';
 // v10.28.30.1 = 撤回/恢复按钮纯图标化（补丁位 0→1·纯改动轮；2026-09-13）——用户「能不能把undo和redo的按钮只是
 //   保留icon不需要名称」：工具栏 undoBtn/redoBtn 去掉「撤回/恢复」文字只留图标（名称保留在 title 悬停提示，
 //   disabled 灰态/onclick/撤销引擎/快捷键零改动）
-window.FLUIDCANVAS_VERSION = 'v10.28.30.1';
+// v10.28.30.2 = 设置/Tags 按钮纯图标化（补丁位 1→2·纯改动轮；2026-09-13）——用户「设置和Tags能不能也是只有
+//   一个icon?」：工具栏 settingsBtn/tagsModal 去文字只留图标（settingsBtn 原有 title="设置" 保留、tagsModal 新增
+//   title="Tags"）；onclick/功能/弹窗零改动
+window.FLUIDCANVAS_VERSION = 'v10.28.30.2';
