@@ -4474,6 +4474,10 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       Migrate
     </span>
   </button>
+  <!-- v10.28.30.0 — 设置齿轮：直开平台设置弹窗（编辑器页默认落在「编辑器」区调自动保存频率） -->
+  <button class="btn btn-outline btn-sm" id="settingsBtn" onclick="window.SlatiSettings.open()" title="设置">
+    <span class="material-symbols-outlined">settings</span> 设置
+  </button>
   <button class="btn btn-outline btn-sm" onclick="saveDraft()">
     <span class="material-symbols-outlined">save</span> Save Draft
   </button>
@@ -4964,6 +4968,24 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var lastSavedContent = '';
   var autoSaveTimer = null;
   var selectedCard = null;
+  // v10.28.30.0 — 自动保存周期制（用户「平台自动保存能不能是每10分钟一次？…最快是5分钟一次」）：
+  // 3s 防抖改固定节拍心跳——onContentChange 不再重置计时，节拍到点才 autoSave()（脏守卫照旧）；
+  // 频率=平台设置 slati_settings.fcAutoSave（分钟，默认 10、clamp 下限 5），改频事件即时重排。
+  var FC_AUTOSAVE_DEFAULT_MIN = 10;
+  var fcAutoSaveMin = FC_AUTOSAVE_DEFAULT_MIN;
+  function getAutoSaveIntervalMs() {
+    var m = Number(fcAutoSaveMin);
+    if (!m || isNaN(m)) m = FC_AUTOSAVE_DEFAULT_MIN;
+    if (m < 5) m = 5; // 最快 5 分钟
+    return m * 60000;
+  }
+  function scheduleAutoSaveTick() {
+    clearTimeout(autoSaveTimer); // restart 恒先清旧拍——改频/重排不会双发
+    autoSaveTimer = setTimeout(function () {
+      autoSave();
+      scheduleAutoSaveTick(); // 再约下一拍（页面存续期间持续心跳）
+    }, getAutoSaveIntervalMs());
+  }
   // v10.28.15.1→v10.28.21: 当前选中是否为「单卡」——组卡单独选中（双击该
   // 卡，然后拖出即拆）为 true；整组选中 / 普通选中为 false。v10.28.21 单击
   // 恒选整组，单独选中只走双击（mousedownAlreadySelected 切换链整体移除）。
@@ -5750,8 +5772,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       headerStatus.textContent = 'Unsaved';
       headerStatus.className = 'badge badge-warning';
     }
-    clearTimeout(autoSaveTimer);
-    autoSaveTimer = setTimeout(autoSave, 3000);
+    // v10.28.30.0: 不再重排 autosave——固定节拍心跳（init 已启动，见 scheduleAutoSaveTick）
     scheduleHistoryCommit(); // v10.28.20: 防抖快照入撤销栈（所有变更统一钩子）
   }
   window.onContentChange = onContentChange;
@@ -6003,7 +6024,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (e && e.name === 'QuotaExceededError') {
         // v10.0: draft exceeds the localStorage quota (usually a big
         // uploaded image) — say so once and sync lastSavedContent so
-        // autoSave stops retrying every 3s until the next real change
+        // autoSave stops retrying each tick until the next real change (v10.28.30.0 周期制口径)
         showToast('草稿过大，保存失败：请移除过大的背景图片');
         lastSavedContent = getCardFingerprint();
       } else { showToast('Failed to save'); }
@@ -13759,6 +13780,25 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       syncCloudDraft();
     });
   }
+
+  // v10.28.30.0 — 自动保存心跳启动：读站点设置（默认 10 分钟）→ 固定节拍。
+  // loadDraft 已跑完（applyDraft 尾部同步 lastSavedContent 基线）——首拍不会误存空画布。
+  (function initAutoSaveHeartbeat() {
+    if (window.SlatiSettings && window.SlatiSettings.getSettings) {
+      fcAutoSaveMin = window.SlatiSettings.getSettings().fcAutoSave;
+    }
+    scheduleAutoSaveTick();
+    // 设置弹窗改频 → 立刻按新节拍重排（clearTimeout 先清旧拍，不会双发）
+    window.addEventListener('slati-settings-changed', function () {
+      if (window.SlatiSettings && window.SlatiSettings.getSettings) {
+        fcAutoSaveMin = window.SlatiSettings.getSettings().fcAutoSave;
+      }
+      scheduleAutoSaveTick();
+    });
+    // 关页/切走兜底：有脏内容立刻存（localStorage 同步写必达；云端 PUT 尽力而为，
+    // pagehide 内 confirm 被浏览器压制 → 409 冲突留给下次会话 syncCloudDraft 调和）
+    window.addEventListener('pagehide', function () { autoSave(); });
+  })();
 
   // Refit on window resize
   var resizeTimer;

@@ -16,6 +16,7 @@
     showActivity: true,
     showNations: true,
     language: 'en',
+    fcAutoSave: 10,   // 编辑器自动保存频率（分钟；仅 fluidcanvas-editor 页读；v0.2.40.0）
   };
 
   function getSettings() {
@@ -36,6 +37,8 @@
   function saveSettings(s) {
     try {
       localStorage.setItem('slati_settings', JSON.stringify(s));
+      // v0.2.40.0 — 广播设置变更（编辑器页监听重启自动保存节拍；无监听页面零影响，dispatchEvent 缺监听不抛）
+      window.dispatchEvent(new CustomEvent('slati-settings-changed', { detail: s }));
     } catch (e) {}
   }
 
@@ -299,6 +302,8 @@
   function buildModal() {
     ensureStyle();
     var s = settings;
+    // v0.2.40.0 — 编辑器区仅编辑器页出现（该页打开弹窗默认落此区）
+    var isEditor = (location.pathname || '').indexOf('fluidcanvas-editor') !== -1;
     var user = (window.SlatiDB && SlatiDB.getUser()) || {
       displayName: 'Alex Rivera',
       citizenId: 'CIT-8842',
@@ -455,6 +460,23 @@
       ]),
     ]);
 
+    // ── Section: Editor（v0.2.40.0 仅编辑器页；自动保存频率 5/10/15/30/60 分钟）──
+    var editorSection = null;
+    if (isEditor) {
+      var fcOpts = [5, 10, 15, 30, 60];
+      var fcHTML = fcOpts.map(function (m) {
+        return '<button type="button" class="subnav-pill' + (Number(s.fcAutoSave) === m ? ' active' : '') + '" data-min="' + m + '">' + m + ' 分钟</button>';
+      }).join('');
+      editorSection = el('div', '', null, [
+        el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' } }, '编辑器'),
+        el('div', 'form-group', {}, [
+          el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block', marginBottom: '8px' } }, '自动保存频率'),
+          el('div', 'subnav', { id: 'fcAutoSubnav', style: { display: 'inline-flex', flexWrap: 'wrap' } }, fcHTML),
+          el('span', 'label-sm', { style: { display: 'block', marginTop: '8px', color: 'var(--color-outline)' } }, '平台每 N 分钟自动保存一次草稿。默认 10 分钟，最快 5 分钟；Ctrl+S 或「Save Draft」可立即保存。'),
+        ]),
+      ]);
+    }
+
     // ── Assemble：左菜单 + 右内容区（2026-09-10 用户左侧菜单口径）──
     var secList = [
       { id: 'profile', el: profileSection },
@@ -464,12 +486,20 @@
       { id: 'language', el: langSection },
       { id: 'account', el: accountSection },
     ];
-    var menu = el('div', 'settings-menu', { id: 'settingsMenu' }, MENU.map(function (m) {
-      return el('button', 'settings-menu-item' + (m.id === 'profile' ? ' active' : ''), { type: 'button', dataset: { sec: m.id } },
+    // v0.2.40.0 — 编辑器区仅编辑器页出现（该页打开弹窗默认落此区）；MENU 母数组不动，局部 slice 拼装
+    var defSec = 'profile';
+    var menuItems = MENU.slice();
+    if (isEditor && editorSection) {
+      defSec = 'editor';
+      secList.unshift({ id: 'editor', el: editorSection });
+      menuItems.unshift({ id: 'editor', icon: 'edit_note', label: '编辑器' });
+    }
+    var menu = el('div', 'settings-menu', { id: 'settingsMenu' }, menuItems.map(function (m) {
+      return el('button', 'settings-menu-item' + (m.id === defSec ? ' active' : ''), { type: 'button', dataset: { sec: m.id } },
         icon(m.icon, 18) + '<span>' + m.label + '</span>');
     }));
     var pane = el('div', 'settings-pane', null, secList.map(function (s) {
-      return el('div', 'settings-sec' + (s.id === 'profile' ? '' : ' settings-sec-hidden'), { dataset: { sec: s.id } }, [s.el]);
+      return el('div', 'settings-sec' + (s.id === defSec ? '' : ' settings-sec-hidden'), { dataset: { sec: s.id } }, [s.el]);
     }));
     var body = el('div', 'settings-layout', null, [menu, pane]);
 
@@ -583,6 +613,19 @@
         saveSettings(settings);
         // Apply to pages using the i18n module (no-op where it isn't loaded)
         if (window.MN_I18N) window.MN_I18N.setLang(btn.dataset.lang);
+      });
+    }
+
+    // Editor autosave interval pills（v0.2.40.0 仅编辑器页构建）
+    var fcSubnav = document.getElementById('fcAutoSubnav');
+    if (fcSubnav) {
+      fcSubnav.addEventListener('click', function (e) {
+        var btn = e.target.closest('.subnav-pill');
+        if (!btn) return;
+        fcSubnav.querySelectorAll('.subnav-pill').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        settings.fcAutoSave = Number(btn.dataset.min);
+        saveSettings(settings); // → slati-settings-changed → 编辑器心跳按新频率重排
       });
     }
 

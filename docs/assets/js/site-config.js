@@ -589,7 +589,16 @@ window.MN_SITE = window.MN_SITE || {};
 //   假「我的旗」两数组整体移除——图库「全部/我的图库」两页签同源（=真实上传派生，页签结构保留），空态文案
 //   统一；tt-img-pop 国旗格零渲染（头部「国旗库」→「图片」，仅上传格+网页搜索），FC_FLAG_LIBRARY=[] 保留为
 //   将来真库接口；applyFlagToCard 导出保留兼容（setCardStripes 仍喂草稿）；补丁位 0→1·纯改动轮；FC v10.28.29.1（补丁位 0→1）
-window.MN_SITE_VERSION = 'v0.2.39.1';
+// v0.2.40.0 = 编辑器自动保存周期化（小改动位 39→40·新功能轮·补丁归零；2026-09-13）——用户「平台自动保存能不能
+//   是每10分钟一次？用户可以在设置里调整保存时间频率，然后最快是5分钟一次」，问询钦定：频率 5/10/15/30/60 五
+//   档药丸（默认 10、最快 5）+ 编辑器顶栏齿轮直开平台设置弹窗：3s 防抖改固定节拍心跳（onContentChange 不再重
+//   排、到点 autoSave 脏守卫照旧、再约下一拍）；slati_settings 增 fcAutoSave 键（草稿 schema 不动 v 保持 9、
+//   不进草稿）；设置弹窗新「编辑器」区（仅编辑器页显示、该页打开默认落此区；MENU 母数组不动局部 slice 拼装）；
+//   saveSettings 广播 slati-settings-changed（编辑器监听重排，无监听页零影响）；pagehide 关页脏内容兜底保存
+//   （localStorage 同步写必达、云端 409 留待下次 syncCloudDraft 调和）；QuotaExceeded 放弃机制保留；手动保存
+//   （Save Draft/Ctrl+S/publish/historyRestore）零改动；电池 autosave-interval 12/12（时间加速注入：≥60s→150ms 真跑
+//   不真等 10 分钟）+ img-library 42/42 + page-bg 27/27 + pbg-meta 38/38 复跑全绿 + 线上电池 PASS（rev 00212-clv）
+window.MN_SITE_VERSION = 'v0.2.40.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -817,4 +826,11 @@ window.MN_SITE_VERSION = 'v0.2.39.1';
 //   空态文案统一）、renderLibTiles 库格零渲染（tt-img-pop 头「国旗库」→「图片」，仅上传格+网页搜索）；
 //   confirmFlagSelection/filterFlags/renderFlagGrid 的 seed 分支清除（applyFlagToCard 导出保留兼容）；
 //   补丁位 0→1·纯改动轮
-window.FLUIDCANVAS_VERSION = 'v10.28.29.1';
+// v10.28.30.0 = 自动保存周期制（小更新位 29→30·新功能轮·补丁归零；2026-09-13）——用户「平台自动保存能不能是
+//   每10分钟一次？…最快是5分钟一次」：3s 防抖改固定节拍心跳（onContentChange 移除 clearTimeout/setTimeout 重
+//   排；scheduleAutoSaveTick 到点 autoSave 再约下一拍，脏守卫 getCardFingerprint!==lastSavedContent 保留）；
+//   频率读 SlatiSettings.getSettings().fcAutoSave（默认 10 分钟、clamp 下限 5）；设置改频 → slati-settings-
+//   changed 监听重排（clearTimeout 先清旧拍不双发）；pagehide 兜底保存；QuotaExceeded 同步 lastSavedContent
+//   停摆机制保留（每拍口径）；头部新齿轮按钮（id=settingsBtn）直开平台设置弹窗；零后端、ethereal 零改动无需
+//   inline-css
+window.FLUIDCANVAS_VERSION = 'v10.28.30.0';
