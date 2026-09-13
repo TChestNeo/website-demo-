@@ -606,7 +606,23 @@ window.MN_SITE = window.MN_SITE || {};
 //   只有一个icon?」：工具栏 设置（settingsBtn）与 Tags（tagsModal）两钮去掉文字只留图标（名称保留在 title 悬停
 //   提示「设置」/「Tags」）；按钮属性/弹窗/功能零改动；电池 autosave-interval 复跑 12/12（F1 版本口径+两钮纯图标钉）
 //   + fc-undo 复跑 15/15（F4/S8 版本口径）+ 线上核验 PASS（rev 00214-6dg）
-window.MN_SITE_VERSION = 'v0.2.40.2';
+// v0.2.41.0 = 用户等级系统 + 订阅/免费功能限制（小改动位 40→41·新功能轮·补丁归零；2026-09-14）——用户「做一下
+//   用户等级系统和订阅与无订阅的功能限制」，问询钦定：①等级结构=等级靠活跃+会员靠订阅（两套并行系统）；②免费限制=
+//   每语言字体 5 个、不能自定义边缘、不能自定义卡片背景和页面背景、但不限制平台主题；③订阅判定=先做铺垫之后连接
+//   Xendit，只要判定钱到账就自动开通（沿用后端 applyPaid webhook 状态机，audit 已预留 via:'xendit'），不要管理员
+//   开通；④等级称号=微型国家主题（旅行者→君主 10 级）：FC 编辑器 SUBSCRIPTION_TEST_MODE 翻 false（caption/card 边缘
+//   装饰锁正式激活）；字体面板每语言免费 5 个（超限组锁行「剩余 N 个字体」+订阅解锁链接）；卡片背景/页面背景加订阅锁
+//   （四控件隐藏+toast+入口锁标「订阅后解锁」）；等级系统本地化 slati_xp（每日登录 +20/建卡 +10/发文章 +100/提交国家
+//   +150/提交世界 +150/创建话题 +80/引导完成 +50；侧栏 Lv 徽章+XP 进度条+升级 toast）；premium.html 支付网关升级
+//   （Xendit）预告注记（到账自动生效无需人工审核口径不变）；零后端、ethereal 零改动无需 inline-css
+//   （电池 tier-gating 29/29 + 复跑 13 组全绿：caredge-dark 9/9、page-bg 27/27、pbg-meta 38/38、img-library 42/42、
+//   migrate-btn 41/41（悬停横扫断言改 transition:none 注入+readyExpr 正则双转义修复）、liquid-glass-static 19/19、
+//   premium-multi 106/106、autosave-interval 12/12、fc-undo 15/15、group-shapes 17/17、merge-dir 19/19、merge-far 12/12；
+//   group-resize 31/34 三红（S9/S15/S17）为 round-Y 前既有陈旧（0dd2153 worktree 同值实证）仅注释不设门禁；
+//   group-fill/group-click/group-v172 按设计退役（自由形状合并组轮已替换其功能）不设门禁；另修复 liquid-glass.js
+//   置换图 MAP 被 v0.2.9.0 sed 注入损坏的历史 bug（每页加载 console error + 玻璃位移静默失效，恢复 4a01104 原串）；
+//   线上核验 PASS（rev 00215-gv4））
+window.MN_SITE_VERSION = 'v0.2.41.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -847,4 +863,11 @@ window.MN_SITE_VERSION = 'v0.2.40.2';
 // v10.28.30.2 = 设置/Tags 按钮纯图标化（补丁位 1→2·纯改动轮；2026-09-13）——用户「设置和Tags能不能也是只有
 //   一个icon?」：工具栏 settingsBtn/tagsModal 去文字只留图标（settingsBtn 原有 title="设置" 保留、tagsModal 新增
 //   title="Tags"）；onclick/功能/弹窗零改动
-window.FLUIDCANVAS_VERSION = 'v10.28.30.2';
+// v10.28.31.0 = 订阅门禁激活 + 字体每语言免费 5 个 + 卡片/页面背景锁 + XP 钩子（小更新位 30→31·新功能轮·补丁归零；
+//   2026-09-14）：SUBSCRIPTION_TEST_MODE 翻 false（isSubscriberUser 按 slati_user.tier 判定，caption/card 边缘装饰
+//   锁+订阅 chip+升级链接正式生效）；字体面板 FREE_FONT_CAP_PER_LANG=5（免费每语言 5 个、超限组尾 .fp-lock 锁行
+//   「剩余 N 个字体」+订阅解锁链接、每次打开重建弃 FP_BUILT 一次守护）；卡片背景订阅锁（#cardBgLockRow+色盘/透明度/
+//   阴影/上传四块隐藏、setCardBgColor/updateCardBgOpacity/handleCardBgUpload 守卫 toast，还原类函数不锁）；页面背景
+//   订阅锁（openPageBgModal 拦截 toast+资产面板入口 #pageBgEntryLock 锁标+#pageBgUpgradeLink「订阅后解锁」）；
+//   XP 钩子（建卡 drop +10/发文章 +100，草稿恢复路径不挂钩）；零后端、ethereal 零改动无需 inline-css
+window.FLUIDCANVAS_VERSION = 'v10.28.31.0';

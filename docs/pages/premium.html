@@ -2483,6 +2483,10 @@ document.head.appendChild(bgStyle);
 
 <div class="plan-note" id="planNote">注册默认「普通用户」（免费）；Basic 为学生价方案（RM12/月）。会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay / Google Pay，可随时在「管理订阅」取消）或每年支付（一次付清 1 年 · 送 2 个月，银行卡 / GrabPay，不自动续费）。</div>
 
+<!-- v0.2.41.0: 支付网关升级预告（Xendit）——开通口径不变：判定钱到账即自动开通，
+     无需人工审核（沿用后端 webhook 状态机，接入 Xendit 后自动生效） -->
+<div class="plan-note" id="gatewayNote" style="margin-top:10px;border-left-color:var(--color-primary,#4648d4)">支付网关即将升级（Xendit）——订阅开通仍为到账自动生效，无需人工审核。</div>
+
 <!-- 全屏倒数跳转遮罩（点击订阅/每年支付 → checkout 成功后 3-2-1 → 跳 Stripe 结账页） -->
 <div id="cdOverlay" class="cd-overlay">
   <div class="cd-ring"><div class="cd-ring-inner"></div><span class="cd-num" id="cdNum">3</span></div>

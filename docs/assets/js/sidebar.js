@@ -74,6 +74,25 @@
     // v0.2.21.0 个人主页入口：真用户（USR- id）头像+名字+公民号包锚 → 自己主页（../pages 前缀全站惯例；
     // 设置齿轮留在锚外；访客/演示账号不包）
     var isRealUser = loggedIn && user && String(user.id || '').indexOf('USR-') === 0;
+
+    // 用户等级徽章（活跃 XP；与订阅 tier 并行）。loggedIn 守卫 + try/catch——访客/异常零影响
+    var levelBadgeHTML = '';
+    if (loggedIn) {
+      try {
+        var st = window.SlatiDB.getLevelState();
+        levelBadgeHTML =
+          '<div class="mn-lv-badge" style="margin-top:8px">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
+              '<span style="font-weight:600;font-size:11px;color:var(--color-on-surface)">Lv.' + st.lv + ' · ' + st.name + '</span>' +
+              '<span style="font-size:10px;color:var(--color-outline)">' + (st.isMax ? (st.xp + ' XP') : (st.xp + ' / ' + st.nextNeed + ' XP')) + '</span>' +
+            '</div>' +
+            (st.isMax ? '' :
+              '<div style="height:5px;border-radius:999px;background:rgba(128,128,140,0.25);overflow:hidden">' +
+                '<div style="width:' + Math.round(st.progress * 100) + '%;height:100%;background:var(--color-primary);border-radius:999px;transition:width 0.4s ease"></div>' +
+              '</div>') +
+          '</div>';
+      } catch (e) { levelBadgeHTML = ''; }
+    }
     var userModuleHTML = loggedIn
       ? '<!-- User Module -->' +
         '<div class="sidebar-module user-module" style="padding:0;overflow:hidden">' +
@@ -94,6 +113,7 @@
             '<div class="user-name" style="font-weight:700;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + user.displayName + '</div>' +
             '<div class="user-citizen-id label-sm" style="color:var(--color-outline)">' + user.citizenId + '</div>' +
             (isRealUser ? '</a>' : '') +
+            levelBadgeHTML +
             '<button class="settings-btn-collapsed" style="display:none" title="Settings">' +
               '<span class="material-symbols-outlined" style="font-size:18px">settings</span>' +
             '</button>' +
@@ -273,6 +293,24 @@
   window.addEventListener('resize', function() {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(checkResponsive, 150);
+  });
+
+  // 用户等级（活跃 XP）：XP 变动实时刷新徽章；升级底部居中 toast 3.5s 自灭
+  window.addEventListener('mn:xp-changed', function() {
+    try { renderSidebar(); } catch (e) {}
+  });
+  window.addEventListener('mn:level-up', function(e) {
+    try {
+      var st = (e && e.detail && e.detail.state) || null;
+      if (!st) return;
+      var el = document.createElement('div');
+      el.style.cssText = 'position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:9999;' +
+        'background:var(--color-primary,#4648d4);color:#fff;padding:10px 18px;border-radius:999px;' +
+        'font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.25);pointer-events:none';
+      el.textContent = '等级提升！Lv.' + st.lv + ' · ' + st.name;
+      document.body.appendChild(el);
+      setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 3500);
+    } catch (err) {}
   });
 
   // Init

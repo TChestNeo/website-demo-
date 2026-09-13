@@ -20,6 +20,8 @@ var SlatiDB = (function () {
     ONBOARDING_STEP: 'slati_onboarding_step',
     REGISTRY_STEP: 'slati_registry_step',
     FOLLOWING: 'slati_following',
+    XP: 'slati_xp',
+    XP_LAST_LOGIN: 'slati_xp_last_login',
   };
 
   function get(key) {
@@ -101,6 +103,7 @@ var SlatiDB = (function () {
     mirrorNation(nation); // 云端镜像：服务端 id 回写（demo 用户自动跳过）
     remove(KEYS.NATION);
     remove(KEYS.REGISTRY_STEP);
+    addXP('submit_nation', 150);
     return nation;
   }
 
@@ -132,6 +135,7 @@ var SlatiDB = (function () {
     set(KEYS.WORLDS, worlds);
     remove(KEYS.WORLD);
     // 无云端镜像：后端 /social/worlds 端点未建（与 mirrorNation 同理，待后端批次）
+    addXP('submit_world', 150);
     return record;
   }
 
@@ -148,6 +152,7 @@ var SlatiDB = (function () {
     topics.push(topic);
     set(KEYS.TOPICS, topics);
     mirrorTopic(topic); // 云端镜像：服务端 id 回写（demo 用户自动跳过）
+    addXP('create_topic', 80);
     return topic;
   }
 
@@ -160,7 +165,9 @@ var SlatiDB = (function () {
     return get(KEYS.ONBOARDING_STEP) || 0;
   }
   function setOnboardingStep(step) {
+    var prev = get(KEYS.ONBOARDING_STEP) || 0;
     set(KEYS.ONBOARDING_STEP, step);
+    if (prev < 3 && step >= 3) addXP('onboarding_done', 50); // 引导完成（step≥3 跨越）一次性 +50
   }
   function getRegistryStep() {
     return get(KEYS.REGISTRY_STEP) || 1;
@@ -227,6 +234,77 @@ var SlatiDB = (function () {
         { id: 'TOP-demo-4', name: 'Governance Design Lab', description: 'Experimenting with novel political systems and constitutions', category: 'Governance', memberCount: 3400, createdAt: '2024-01-10T00:00:00Z' },
       ]);
     }
+  }
+
+  // --- 用户等级（活跃 XP）──────────────────────────────────────────
+  // 等级靠活跃、会员靠订阅——两套并行系统（本模块只管 XP 等级，tier 由订阅状态机管）。
+  // 未来后端迁移路径：users.xp + xp_events 表（migration 021+），addXP 改为云端 mirror、
+  // 本表只读作缓存；等级判定口径不变（累计 XP 阈值）。LEVELS 称号=微型国家主题。
+  var LEVELS = [
+    { lv: 1, name: '旅行者', need: 0 },
+    { lv: 2, name: '拓荒者', need: 100 },
+    { lv: 3, name: '公民', need: 250 },
+    { lv: 4, name: '建城者', need: 450 },
+    { lv: 5, name: '镇长', need: 700 },
+    { lv: 6, name: '总督', need: 1000 },
+    { lv: 7, name: '外交官', need: 1400 },
+    { lv: 8, name: '首相', need: 1900 },
+    { lv: 9, name: '元首', need: 2500 },
+    { lv: 10, name: '君主', need: 3200 },
+  ];
+
+  function getXP() {
+    var v = get(KEYS.XP);
+    return (typeof v === 'number' && v >= 0) ? v : 0;
+  }
+
+  // { xp, lv, name, need, nextNeed, progress, isMax }（max 级 nextNeed=need、progress=1）
+  function getLevelState() {
+    var xp = getXP();
+    var lv = 1;
+    for (var i = 0; i < LEVELS.length; i++) {
+      if (xp >= LEVELS[i].need) lv = LEVELS[i].lv;
+    }
+    var cur = LEVELS[lv - 1];
+    var isMax = lv === LEVELS.length;
+    var nextNeed = isMax ? cur.need : LEVELS[lv].need;
+    return {
+      xp: xp,
+      lv: lv,
+      name: cur.name,
+      need: cur.need,
+      nextNeed: nextNeed,
+      progress: isMax ? 1 : Math.min(1, (xp - cur.need) / (nextNeed - cur.need)),
+      isMax: isMax,
+    };
+  }
+
+  // 活跃事件加 XP：登录守卫（访客不计）、写失败静默返回 null（与 set 同口径）；
+  // 广播 mn:xp-changed；跨级时补发 mn:level-up（携带升级前后等级）。
+  function addXP(source, amount) {
+    if (!isLoggedIn()) return null;
+    amount = Math.max(0, parseInt(amount, 10) || 0);
+    if (!amount) return null;
+    var before = getLevelState();
+    if (!set(KEYS.XP, getXP() + amount)) return null;
+    var state = getLevelState();
+    if (window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('mn:xp-changed', { detail: { source: source, amount: amount, state: state } }));
+      if (state.lv > before.lv) {
+        window.dispatchEvent(new CustomEvent('mn:level-up', { detail: { state: state, from: before } }));
+      }
+    }
+    return state;
+  }
+
+  // 每日登录奖励 +20（日期键防重复：当天只发一次）
+  function grantDailyLoginBonus() {
+    if (!isLoggedIn()) return null;
+    var t = new Date();
+    var key = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate();
+    if (get(KEYS.XP_LAST_LOGIN) === key) return null;
+    set(KEYS.XP_LAST_LOGIN, key);
+    return addXP('daily_login', 20);
   }
 
   // --- Following ---
@@ -430,6 +508,7 @@ var SlatiDB = (function () {
   seedFollowing();
   bindAuthEvents();
   cloudMerge();
+  grantDailyLoginBonus();
 
   return {
     KEYS: KEYS,
@@ -459,5 +538,9 @@ var SlatiDB = (function () {
     setRegistryStep: setRegistryStep,
     getFollowing: getFollowing,
     saveFollowing: saveFollowing,
+    LEVELS: LEVELS,
+    getLevelState: getLevelState,
+    addXP: addXP,
+    grantDailyLoginBonus: grantDailyLoginBonus,
   };
 })();

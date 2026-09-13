@@ -4136,6 +4136,15 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .fp-row:hover { background: var(--color-surface-container-low); }
+    /* v10.28.31: 订阅锁行——免费用户超限组尾（剩余 N 个字体 · 订阅解锁 →） */
+    .fp-lock {
+      grid-column: 1 / -1;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 14px; font-size: 12px; font-weight: 600;
+      color: var(--color-primary); text-decoration: none;
+      border-top: 1px dashed var(--divider-line-strong);
+    }
+    .fp-lock:hover { background: var(--color-surface-container-low); }
 
     /* ── Flag Source Modal ── */
     .flag-source-options {
@@ -4524,6 +4533,13 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       <span class="material-symbols-outlined" style="color:var(--color-primary)">wallpaper</span>
       <span class="label-md">页面背景</span>
       <span class="state" id="pageBgEntryState">未设置</span>
+    </div>
+    <!-- v10.28.31: 订阅锁——免费用户显示锁标 + 升级链接（updatePageBgEntryState 按订阅态显隐） -->
+    <div id="pageBgEntryLock" style="display:none;align-items:center;justify-content:space-between;gap:6px;padding:6px 8px;border:1px dashed var(--divider-line-strong);border-radius:8px;background:var(--color-surface-container-low)">
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--color-on-surface)">
+        <span class="material-symbols-outlined" style="font-size:16px;color:var(--color-primary)">lock</span>页面背景
+      </span>
+      <a href="premium.html" id="pageBgUpgradeLink" style="font-size:12px;color:var(--color-primary);text-decoration:none;white-space:nowrap">订阅后解锁 →</a>
     </div>
   </div>
 
@@ -4947,9 +4963,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   //     outerEdge + outerBgExtent=16; applyCardBg moves the silhouette to
   //     a .card-tint child while ::before paints the plate). Legacy drafts
   //     with a plain outerBgColor still render a rounded plate.
-  //     Edge themes stay subscriber-gated in the UI only — during the
-  //     testing phase SUBSCRIPTION_TEST_MODE unlocks everything; flip it
-  //     to false to re-gate. Draft v stays 9 (additive).
+  //     Edge themes stay subscriber-gated in the UI only — since
+  //     v10.28.31 SUBSCRIPTION_TEST_MODE=false re-gates them for free
+  //     users (tier read from slati_user). Draft v stays 9 (additive).
   // ══════════════════════════════════════════════════════════════════
 
   // ── DOM refs ──
@@ -6048,6 +6064,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     headerStatus.textContent = 'Published';
     headerStatus.className = 'badge badge-success';
     showToast('Article published successfully!');
+    if (window.SlatiDB && SlatiDB.addXP) SlatiDB.addXP('publish_article', 100); // v10.28.31 活跃 XP
   }
   window.publishArticle = publishArticle;
 
@@ -6123,6 +6140,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         headerStatus.textContent = 'Pending review';
         headerStatus.className = 'badge badge-warning';
         showToast('已提交审核');
+        if (window.SlatiDB && SlatiDB.addXP) SlatiDB.addXP('publish_article', 100); // v10.28.31 活跃 XP
       } else {
         showToast('发布失败，请稍后重试');
       }
@@ -6424,8 +6442,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function updatePageBgEntryState() {
     var el = document.getElementById('pageBgEntryState');
-    if (!el) return;
-    el.textContent = (PAGE_BG_STATE && PAGE_BG_STATE.imgs.length) ? PAGE_BG_STATE.imgs.length + ' 张' : '未设置';
+    if (el) el.textContent = (PAGE_BG_STATE && PAGE_BG_STATE.imgs.length) ? PAGE_BG_STATE.imgs.length + ' 张' : '未设置';
+    // v10.28.31: 订阅锁标 + 升级链接显隐（免费=显示，订阅=隐藏）
+    var lock = document.getElementById('pageBgEntryLock');
+    if (lock) lock.style.display = isSubscriberUser() ? 'none' : 'flex';
   }
 
   function updatePbgRatioHint() {
@@ -6442,6 +6462,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function handlePageBgUpload(input) {
     var file = input.files && input.files[0];
     if (!file) return;
+    if (!isSubscriberUser()) { input.value = ''; showToast('页面背景为订阅用户专属功能——订阅后解锁'); return; } // v10.28.31 订阅锁（belt-and-braces 防线）
     input.value = '';
     if (!PAGE_BG_WORKING) return;
     if (!/^image\//.test(file.type)) { showToast('请选择图片文件'); return; }
@@ -6671,6 +6692,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
 
   function openPageBgModal() {
+    // v10.28.31: 订阅锁——免费用户拦截（入口锁标 + 订阅后解锁链接在资产面板）
+    if (!isSubscriberUser()) { showToast('页面背景为订阅用户专属功能——订阅后解锁'); return; }
     // deepCopy(null)=null 时也要有空工作副本（上传/保存/取消都按非空会话走）
     PAGE_BG_WORKING = pbgDeepCopy(PAGE_BG_STATE) || { imgs: [], order: [], feathers: {} };
     renderPbgList();
@@ -12008,9 +12031,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   window.applyCaptionBg = applyCaptionBg;
 
-  // v10.1: testing phase — subscription items are unlocked for everyone.
-  // Re-gate by flipping this to false (exposed on window for the battery).
-  var SUBSCRIPTION_TEST_MODE = true;
+  // v10.28.31: 订阅门禁正式激活（v10.1–v10.28.30 测试期全开）。判定按
+  // slati_user.tier：free/无 tier = 受限，basic/premium/ultra = 订阅用户。
+  // 测试钩子 setSubscriptionTestMode 保留（电池可临时翻回全开）。
+  var SUBSCRIPTION_TEST_MODE = false;
   function isSubscriberUser() {
     if (SUBSCRIPTION_TEST_MODE) return true;
     try {
@@ -12579,15 +12603,18 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var gst = (groupMode && selectedGroupId) ? (groupStyles[selectedGroupId] || null) : null;
     var gTitle = document.getElementById('cardBgGroupTitle');
     if (gTitle) gTitle.style.display = groupMode ? 'flex' : 'none';
-    var colorRow = document.getElementById('cardBgColorRow');
-    if (colorRow) colorRow.style.display = groupMode ? 'none' : '';
-    var opacityRow = document.getElementById('cardBgOpacityRow');
-    if (opacityRow) opacityRow.style.display = groupMode ? 'none' : '';
-    var shadowBlock = document.getElementById('cardBgShadowBlock');
-    if (shadowBlock) shadowBlock.style.display = groupMode ? 'none' : '';
-    var uploadBlock = document.getElementById('cardBgUploadBlock');
-    if (uploadBlock) uploadBlock.style.display = groupMode ? 'none' : '';
     var sub = isSubscriberUser();
+    // v10.28.31: 订阅锁——免费用户四块自定义控件全藏、锁行显示（分组模式本就不显这四块）
+    var lockRow = document.getElementById('cardBgLockRow');
+    if (lockRow) lockRow.style.display = (!groupMode && !sub) ? 'flex' : 'none';
+    var colorRow = document.getElementById('cardBgColorRow');
+    if (colorRow) colorRow.style.display = (groupMode || !sub) ? 'none' : 'flex'; // 内联 flex 是设计布局（旧 '' 会抹成 block 堆叠）
+    var opacityRow = document.getElementById('cardBgOpacityRow');
+    if (opacityRow) opacityRow.style.display = (groupMode || !sub) ? 'none' : '';
+    var shadowBlock = document.getElementById('cardBgShadowBlock');
+    if (shadowBlock) shadowBlock.style.display = (groupMode || !sub) ? 'none' : '';
+    var uploadBlock = document.getElementById('cardBgUploadBlock');
+    if (uploadBlock) uploadBlock.style.display = (groupMode || !sub) ? 'none' : '';
     var color = card.dataset.cardBgColor || '';
     var wheel = document.getElementById('cardColorPicker');
     if (wheel && color && /^#[0-9a-fA-F]{6}$/.test(color)) wheel.value = color;
@@ -12649,6 +12676,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // ── card background (inner) setters ──
   function setCardBgColor(hex) {
     if (!selectedCard) return;
+    if (!isSubscriberUser()) { showToast('卡片背景为订阅用户专属功能'); return; } // v10.28.31 订阅锁（UI 防线，渲染器不查订阅）
     if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return;
     var img = selectedCard.querySelector('.card-img-bg');
     var stripes = selectedCard.querySelector('.card-stripes');
@@ -12677,6 +12705,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function updateCardBgOpacity(v) {
     if (!selectedCard || !selectedCard.dataset.cardBgColor) return; // color-only control
+    if (!isSubscriberUser()) { showToast('卡片背景为订阅用户专属功能'); return; } // v10.28.31 订阅锁（UI 防线）
     var val = Math.max(0, Math.min(100, parseInt(v) || 0));
     selectedCard.dataset.cardBgOpacity = val;
     applyCardBg(selectedCard);
@@ -12711,6 +12740,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function handleCardBgUpload(input) {
     var file = input.files && input.files[0];
     if (!file || !selectedCard) return;
+    if (!isSubscriberUser()) { input.value = ''; showToast('卡片背景为订阅用户专属功能'); return; } // v10.28.31 订阅锁（UI 防线）
     if (file.size > 1.5 * 1024 * 1024) { // keep the draft inside the localStorage quota
       showToast('图片超过 1.5MB，请换一张更小的');
       input.value = '';
@@ -13088,6 +13118,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         } else {
           createAssetCard(data.asset, data.label, cc, cr, spanW, spanH);
         }
+        // v10.28.31 活跃 XP：只在用户拖放建卡时 +10（草稿恢复路径不挂钩，防虚涨）
+        if (window.SlatiDB && SlatiDB.addXP) SlatiDB.addXP('card_create', 10);
         onContentChange();
       }
     } catch (err) { /* ignore */ }
@@ -13902,6 +13934,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // v10.8: switchCardBgTab/setOuterBgColor/updateOuterBgOpacity/
   // updateOuterExtent/setOuterEdge/resetOuterBg removed with the outer tab
 
+  // v10.28.31: 资产面板「页面背景」订阅锁标首绘（订阅态与入口状态角标同轮刷新）
+  updatePageBgEntryState();
+
   // Self-check log — paste this into the chat if something looks wrong:
   // shows total/content card counts and the snap/align toggle state.
   var cardCount = getAllCards().length;
@@ -14192,6 +14227,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     </div>
     <!-- v10.3 — 预设色块已按用户要求删除（用户将自行提供预设背景）。
          将来加预设背景时在此处放一个容器，由 refreshCardBgPopoverState 填充。 -->
+    <!-- v10.28.31: 订阅锁行——免费用户显示锁+订阅解锁链接，色盘/透明度/阴影/上传四块隐藏
+         （显隐由 refreshCardBgPopoverState 按 isSubscriberUser() 切换） -->
+    <div id="cardBgLockRow" style="display:none;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;margin-bottom:8px;border:1px dashed var(--divider-line-strong);border-radius:8px;background:var(--color-surface-container-low)">
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--color-on-surface)">
+        <span class="material-symbols-outlined" style="font-size:16px;color:var(--color-primary)">lock</span>卡片背景为订阅用户专属功能
+      </span>
+      <a href="premium.html" id="cardBgUpgradeLink" style="font-size:12px;color:var(--color-primary);text-decoration:none;white-space:nowrap">订阅解锁 →</a>
+    </div>
     <div id="cardBgColorRow" style="display:flex;align-items:center;gap:8px">
       <span class="label-sm" style="color:var(--color-on-surface-variant)">色盘:</span>
       <input type="color" id="cardColorPicker" onchange="setCardBgColor(this.value)" style="width:32px;height:32px;border:none;cursor:pointer;border-radius:50%;padding:0;background:none">
@@ -14348,7 +14391,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var FMT_CMD = { bold: 'bold', italic: 'italic', underline: 'underline', strike: 'strikeThrough' };
   var FC_SIZES = [10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48, 56, 64, 72];
   var LOADED_FONTS = { Inter: true }; // 页面已预载，不再重复注入
-  var FP_BUILT = false, FP_OBSERVER = null;
+  var FP_OBSERVER = null;
+  // v10.28.31: 订阅限制——免费用户每语言前 5 个字体，超限组尾锁行提示剩余数
+  // （订阅解锁链接 → premium.html）；电池可从 window 读值断言
+  var FREE_FONT_CAP_PER_LANG = 5;
+  window.FREE_FONT_CAP_PER_LANG = FREE_FONT_CAP_PER_LANG;
   var TOOLBAR = null, FONT_PANEL = null, FONT_LIST = null;
   var SIZE_POP = null; // v10.28.4: 字号弹层（预设下拉 + 自定义输入框）
   // v10.28.4: 开弹层时保存的选区快照——焦点进自定义输入框时 Chrome 会把文档选区
@@ -15044,23 +15091,29 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   window.hideImgPop = hideImgPop;
 
   // ── 字体面板：10 语言组 + 行字体名以自身字体展示（滚动懒加载） ──
+  // v10.28.31: 弃 FP_BUILT 一次守护——每次打开重建（订阅状态/测试模式可变，
+  // 一次构建会缓存过期锁态）；免费用户每语言前 FREE_FONT_CAP_PER_LANG 个，
+  // 超限组尾锁行（剩余 N 个字体 · 订阅解锁 → premium.html）
   function buildFontPanel() {
-    if (FP_BUILT || !FONT_LIST) return;
-    FP_BUILT = true;
+    if (!FONT_LIST) return;
+    var sub = (typeof window.isSubscriberUser === 'function') ? window.isSubscriberUser() : true;
+    FONT_LIST.innerHTML = '';
+    if (FP_OBSERVER) { FP_OBSERVER.disconnect(); FP_OBSERVER = null; }
     var rows = [];
     window.FLUIDCANVAS_FONTS.forEach(function (group) {
       var head = document.createElement('div');
       head.className = 'fp-group';
-      head.textContent = group.label + ' · ' + group.fonts.length;
+      var shown = sub ? group.fonts : group.fonts.slice(0, FREE_FONT_CAP_PER_LANG);
+      head.textContent = sub ? (group.label + ' · ' + group.fonts.length) : (group.label + ' · ' + shown.length + '/' + group.fonts.length);
       FONT_LIST.appendChild(head);
-      group.fonts.forEach(function (f) {
+      shown.forEach(function (f) {
         var row = document.createElement('button');
         row.type = 'button';
         row.className = 'fp-row';
         row.textContent = f.name;
         row.dataset.name = f.name;
         row.dataset.family = f.cssFamily;
-        row.title = f.name; // 3 列网格下长名省略号截断，悬停看全名
+        row.title = f.name; // 3 列网格下长名号省略号截断，悬停看全名
         if (f.axes) row.dataset.axes = f.axes;
         row.addEventListener('click', function () {
           setFontFamily({ name: f.name, cssFamily: f.cssFamily, axes: f.axes || null });
@@ -15069,6 +15122,15 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         FONT_LIST.appendChild(row);
         rows.push(row);
       });
+      if (!sub && group.fonts.length > FREE_FONT_CAP_PER_LANG) {
+        var lock = document.createElement('a');
+        lock.className = 'fp-lock';
+        lock.href = 'premium.html';
+        lock.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">lock</span> 剩余 ' +
+          (group.fonts.length - FREE_FONT_CAP_PER_LANG) + ' 个字体 · 订阅解锁 →';
+        lock.title = '订阅后解锁全部 ' + group.fonts.length + ' 个字体';
+        FONT_LIST.appendChild(lock);
+      }
     });
     // 行进入视口（含 200px 预载区）才注入该字体 link + 设自身字体——
     // 首次打开不触发 283 个拉丁字体批量下载，滚动到哪加载到哪
