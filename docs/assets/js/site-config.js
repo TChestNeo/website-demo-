@@ -598,7 +598,11 @@ window.MN_SITE = window.MN_SITE || {};
 //   （localStorage 同步写必达、云端 409 留待下次 syncCloudDraft 调和）；QuotaExceeded 放弃机制保留；手动保存
 //   （Save Draft/Ctrl+S/publish/historyRestore）零改动；电池 autosave-interval 12/12（时间加速注入：≥60s→150ms 真跑
 //   不真等 10 分钟）+ img-library 42/42 + page-bg 27/27 + pbg-meta 38/38 复跑全绿 + 线上电池 PASS（rev 00212-clv）
-window.MN_SITE_VERSION = 'v0.2.40.0';
+// v0.2.40.1 = 编辑器撤回/恢复按钮纯图标化（补丁位 0→1·纯改动轮；2026-09-13）——用户「能不能把undo和redo的按钮
+//   只是保留icon不需要名称」：工具栏 撤回/恢复 两钮去掉文字只留图标（名称保留在 title 悬停提示「撤回 (Ctrl+Z)」/
+//   「恢复 (Ctrl+Y)」）；按钮属性/撤销引擎/快捷键零改动；电池 fc-undo 复跑 15/15（S1 改纯图标断言+版本口径更新）
+//   + 线上核验 PASS（rev 00213-644）
+window.MN_SITE_VERSION = 'v0.2.40.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -833,4 +837,7 @@ window.MN_SITE_VERSION = 'v0.2.40.0';
 //   changed 监听重排（clearTimeout 先清旧拍不双发）；pagehide 兜底保存；QuotaExceeded 同步 lastSavedContent
 //   停摆机制保留（每拍口径）；头部新齿轮按钮（id=settingsBtn）直开平台设置弹窗；零后端、ethereal 零改动无需
 //   inline-css
-window.FLUIDCANVAS_VERSION = 'v10.28.30.0';
+// v10.28.30.1 = 撤回/恢复按钮纯图标化（补丁位 0→1·纯改动轮；2026-09-13）——用户「能不能把undo和redo的按钮只是
+//   保留icon不需要名称」：工具栏 undoBtn/redoBtn 去掉「撤回/恢复」文字只留图标（名称保留在 title 悬停提示，
+//   disabled 灰态/onclick/撤销引擎/快捷键零改动）
+window.FLUIDCANVAS_VERSION = 'v10.28.30.1';

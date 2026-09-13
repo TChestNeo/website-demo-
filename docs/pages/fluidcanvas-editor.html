@@ -4451,10 +4451,11 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   <span class="label-sm" style="color:var(--color-outline)" id="lastSavedLabel"></span>
   <!-- v10.28.20 — 撤回/恢复：快照式撤销栈（600ms 防抖自动记录，撤到哪一步恢复哪一步） -->
   <button class="btn btn-outline btn-sm" id="undoBtn" onclick="historyUndoAction()" disabled title="撤回 (Ctrl+Z)">
-    <span class="material-symbols-outlined">undo</span> 撤回
+    <!-- v10.28.30.1: 用户「能不能把undo和redo的按钮只是保留icon不需要名称」——纯图标无文字，名称保留在 title 悬停提示 -->
+    <span class="material-symbols-outlined">undo</span>
   </button>
   <button class="btn btn-outline btn-sm" id="redoBtn" onclick="historyRedoAction()" disabled title="恢复 (Ctrl+Y)">
-    <span class="material-symbols-outlined">redo</span> 恢复
+    <span class="material-symbols-outlined">redo</span>
   </button>
   <button class="btn btn-outline btn-sm" onclick="openModal('historyModal')">
     <span class="material-symbols-outlined">history</span> History
