@@ -24,27 +24,35 @@ function createMailer(cfg) {
     const purpose = opts.purpose || 'login';
     const staff = purpose === 'staff_login';
     const neutral = purpose === 'password_reset';
+    const student = purpose === 'student_verify';
 
     const subject = staff
       ? 'SlatiControl 管理后台登录验证码 / SlatiControl sign-in code'
-      : neutral
-        ? 'M.NationWorld 验证码 / M.NationWorld verification code'
-        : registered
-          ? 'M.NationWorld 登录验证码 / Sign-in code'
-          : '欢迎加入 M.NationWorld / Welcome to M.NationWorld';
+      : student
+        ? 'M.NationWorld 学生认证验证码 / Student verification code'
+        : neutral
+          ? 'M.NationWorld 验证码 / M.NationWorld verification code'
+          : registered
+            ? 'M.NationWorld 登录验证码 / Sign-in code'
+            : '欢迎加入 M.NationWorld / Welcome to M.NationWorld';
     const text =
       (staff
         ? '您的 SlatiControl 管理后台登录验证码是：' + code + '\n10 分钟内有效。若非本人操作请立即报告。\n\n'
-        : neutral
-          ? '您的 M.NationWorld 验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n'
-          : registered
-            ? '您的登录验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n'
-            : '感谢注册 M.NationWorld！您的验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n') +
+        : student
+          ? '您的 M.NationWorld 学生认证验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n'
+          : neutral
+            ? '您的 M.NationWorld 验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n'
+            : registered
+              ? '您的登录验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n'
+              : '感谢注册 M.NationWorld！您的验证码是：' + code + '\n10 分钟内有效。若非本人操作请忽略。\n\n') +
       (staff
         ? 'Your SlatiControl verification code: ' + code +
           '\nValid for 10 minutes. If this was not you, report it immediately.'
-        : 'Your M.NationWorld verification code: ' + code +
-          '\nValid for 10 minutes. If this was not you, ignore this email.');
+        : student
+          ? 'Your M.NationWorld student verification code: ' + code +
+            '\nValid for 10 minutes. If this was not you, ignore this email.'
+          : 'Your M.NationWorld verification code: ' + code +
+            '\nValid for 10 minutes. If this was not you, ignore this email.');
 
     if (!transporter) {
       console.log(`[dev-mail] to=${email} code=${code} registered=${registered} purpose=${purpose}`);

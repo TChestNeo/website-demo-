@@ -13,9 +13,9 @@ function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'mn2-mig-'));
 }
 
-test('迁移：user_version=20、58 表、角色/权限/平台种子齐整', () => {
+test('迁移：user_version=21、58 表、角色/权限/平台种子齐整', () => {
   const db = openDb(path.join(tmpDir(), 'a.sqlite'));
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 20);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 21);
   // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 + 010 两 + 014 一 = 58（触发器不算表）
   const n = db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().n;
   assert.strictEqual(n, 58);
@@ -42,7 +42,7 @@ test('迁移：重复打开同库幂等（版本不再推进、无重复执行�
   const p = path.join(tmpDir(), 'b.sqlite');
   openDb(p);
   const db = openDb(p);
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 20);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 21);
 });
 
 test('迁移 005-009：社交/工单/知识库/审核/财务关键表与扩展列就位（D5/D6 口径）', () => {
@@ -145,9 +145,9 @@ test('迁移 017：following.users 显示名→id 引用 + 粉丝索引（v0.2.2
   db.prepare("INSERT INTO following (user_id, target_type, target_id, created_at) VALUES ('F1', 'user', 'No Such Name', ?)").run(iso); // 不存在 → 删
   db.prepare("INSERT INTO following (user_id, target_type, target_id, created_at) VALUES ('F1', 'nation', 'NAT-000001', ?)").run(iso); // 其他类型不动
 
-  migrate(db, srcDir); // 补跑 017-020
+  migrate(db, srcDir); // 补跑 017-021
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 20);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 21);
   const rows = db.prepare('SELECT target_id FROM following WHERE user_id = ? ORDER BY target_type, target_id').all('F1');
   assert.deepStrictEqual(rows.map((r) => r.target_id), ['NAT-000001', 'U1'], '显示名→最早注册的 id；映射不到的行已删；nation 不动');
   assert.ok(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='index' AND name = 'idx_following_target'").get().n === 1, '粉丝反查索引就位');
@@ -189,6 +189,26 @@ test('迁移 020：users.page_bg_image 加列（v0.2.25.0 主页整页背景图�
   assert.strictEqual(db.prepare('SELECT page_bg_image FROM users WHERE id = ?').get('u020').page_bg_image, null);
   db.prepare('UPDATE users SET page_bg_image = ? WHERE id = ?').run('/uploads/UPL-X0001.jpg', 'u020');
   assert.strictEqual(db.prepare('SELECT page_bg_image FROM users WHERE id = ?').get('u020').page_bg_image, '/uploads/UPL-X0001.jpg');
+});
+
+test('迁移 021：users 学生认证四列 + email_codes 重建扩 purpose（v0.2.44.0 学生价；无新表 → health 58 不变）', () => {
+  const db = openDb(path.join(tmpDir(), 'o.sqlite'));
+  // 四列就位、默认 NULL
+  for (const c of ['student_email', 'student_verified_at', 'student_expires_at', 'student_source']) {
+    const col = db.prepare('PRAGMA table_info(users)').all().find(x => x.name === c);
+    assert.ok(col, '021 列缺: ' + c);
+    assert.strictEqual(col.dflt_value, null);
+  }
+  // email_codes 重建后：历史行拷贝保留 + 新枚举可插
+  const iso = new Date().toISOString();
+  db.prepare("INSERT INTO email_codes (code_hash, email, purpose, actor_type, created_at, expires_at) VALUES ('h000', 'old@x.com', 'login', 'user', ?, ?)").run(iso, iso);
+  db.prepare("INSERT INTO email_codes (code_hash, email, purpose, actor_type, created_at, expires_at) VALUES ('h001', 's@school.edu.my', 'student_verify', 'user', ?, ?)").run(iso, iso);
+  assert.strictEqual(db.prepare("SELECT count(*) AS n FROM email_codes").get().n, 2);
+  assert.strictEqual(db.prepare("SELECT count(*) AS n FROM email_codes WHERE purpose = 'login'").get().n, 1, '012 历史行拷贝保留');
+  // 旧枚举仍被拒（CHECK 收紧在 student_verify 之外零变化）
+  assert.throws(() => db.prepare("INSERT INTO email_codes (code_hash, email, purpose, actor_type, created_at, expires_at) VALUES ('h002', 'x@x.com', 'nope', 'user', ?, ?)").run(iso, iso), /CHECK/);
+  // 索引就位
+  assert.ok(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='index' AND name = 'idx_users_student'").get().n === 1, '学生邮箱索引就位');
 });
 
 test('迁移：重复版本号启动即报错（防静默跳过）', () => {

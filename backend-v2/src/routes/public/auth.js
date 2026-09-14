@@ -22,6 +22,7 @@ const {
 const { ipOf } = require('../../middleware/ratelimit');
 const { pad6, insertWithId } = require('../../ids');
 const { enforceTierExpiry } = require('../../tiers');
+const { studentShape, studentRefresh } = require('../../students');
 const { audit } = require('../../audit');
 const { recordLogin, insertSecurityEvent } = require('../../security');
 const { hashPassword, verifyPassword } = require('../../password');
@@ -64,6 +65,7 @@ function publicUser(row) {
     status: row.status,
     hasPassword: !!row.password_hash, // W6：前端据此判断是否需引导设密（additive）
     gender: row.gender || null, // 013：Male/Female/Other（注册第二页下拉），NULL = 未填写
+    student: studentShape(row), // v0.2.44.0：认证有效 → {email, verifiedAt, expiresAt, source}，否则 null
     createdAt: row.created_at
   };
 }
@@ -218,7 +220,7 @@ function register(router, deps) {
   router.add('GET', '/api/auth/me', requireSession((req, res, ctx) => {
     const now = Date.now();
     // 订阅到期惰性降级（webhook 断链/扣款失败的最终兜底）
-    const user = enforceTierExpiry(ctx.db, ctx.config, ctx.user);
+    const user = studentRefresh(ctx.db, enforceTierExpiry(ctx.db, ctx.config, ctx.user));
     // 活跃时间 1 小时刷新一次，避免每请求写库
     if (!user.last_active_at || now - new Date(user.last_active_at).getTime() > 3600 * 1000) {
       ctx.db.prepare('UPDATE users SET last_active_at = ? WHERE id = ?')
@@ -448,4 +450,5 @@ function register(router, deps) {
   });
 }
 
-module.exports = { register, createUser, publicUser };
+// v0.2.44.0：student-verify 端点复用同一套邮箱码基建（码格式/哈希/规范化/重发间隔）
+module.exports = { register, createUser, publicUser, EMAIL_RE, normalizeEmail, randomCode, hashCode, CODE_ATTEMPTS_MAX, RESEND_MS };

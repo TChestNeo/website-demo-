@@ -57,6 +57,13 @@ const config = {
   sessionCookie: 'mn_session',
   staffCookie: 'sc_session',
 
+  // 学生认证（v0.2.44.0 学生价 RM5.50）：认证有效期 365 天（过期读取路径惰性清除，同 tier 惰性降级）；
+  // domains = 学校邮箱域名白名单（可选 env 逗号分隔，整表替换；空 → students.js DEFAULT_DOMAINS）
+  student: {
+    ttlMs: 365 * 24 * 3600 * 1000,
+    domains: (process.env.STUDENT_EMAIL_DOMAINS || '').split(',').map((s) => s.trim()).filter(Boolean)
+  },
+
   // 开发模式固定登录码（DEV_LOGIN_CODE，仅本地测试用）：
   // 用户/Staff 验证码环节直接放行、只允许登录已有账号/staff 行；生产环境强制忽略（误配也不生效）。
   devLoginCode: process.env.NODE_ENV === 'production' ? '' : (process.env.DEV_LOGIN_CODE || ''),
@@ -80,7 +87,8 @@ const config = {
   //                  到期不自动续，webhook 顺延 12 个月；Apple/Google Pay 随卡自动出现在结账页）
   // STRIPE_ENABLED 未开 / 密钥未配 → 付费页回退「申请开通」工单流程（降级路径）。
   // prices：5 个主 SKU（basic/premium/ultra/pkg-premium/pkg-ultra）的 recurring Price ID；
-  // pricesOnce：同 SKU 的年付（one_time）Price ID。Basic = 学生价 RM12/月（付费层，新用户默认 free 普通用户）。
+  // pricesOnce：同 SKU 的年付（one_time）Price ID。Basic = 学生价方案 RM12/月（付费层，新用户默认 free 普通用户；
+  // 学校邮箱认证后学生价 RM5.50/月走 studentPrices 独立 Price）。
   // 缺哪个，哪个 SKU 的对应通道就不走支付、回退申请流。
   // paymentMethods（订阅）：只放卡类——FPX/支付宝等一次性方式不支撑订阅，放进订阅清单 Checkout 建会话会失败。
   // oncePaymentMethods（每年支付）：默认 card,grabpay——v0.2.13.1 实证轮（09-04 探活 PaymentMethodConfigurations
@@ -112,6 +120,13 @@ const config = {
       ultra: process.env.STRIPE_PRICE_ULTRA_ONCE || '',
       'pkg-premium': process.env.STRIPE_PRICE_PKG_PREMIUM_ONCE || '',
       'pkg-ultra': process.env.STRIPE_PRICE_PKG_ULTRA_ONCE || ''
+    },
+    // v0.2.44.0 学生价（仅 Basic SKU × 仅 myr）：月付 RM5.50 + 年付 RM55（用户 Stripe 后台创建）
+    studentPrices: {
+      basic: process.env.STRIPE_PRICE_BASIC_STUDENT || ''
+    },
+    studentPricesOnce: {
+      basic: process.env.STRIPE_PRICE_BASIC_STUDENT_ONCE || ''
     },
     catalog: (() => {
       try {

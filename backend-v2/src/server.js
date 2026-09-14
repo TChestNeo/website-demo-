@@ -18,6 +18,7 @@ const { register: registerSocial } = require('./routes/public/social');
 const { register: registerMessages } = require('./routes/public/messages');
 const { register: registerTickets } = require('./routes/public/tickets');
 const { register: registerSubscriptions } = require('./routes/public/subscriptions');
+const { register: registerStudentVerify } = require('./routes/public/student-verify');
 const { register: registerBadge } = require('./routes/public/badge');
 const { register: registerDrafts } = require('./routes/public/drafts');
 const { register: registerArticles } = require('./routes/public/articles');
@@ -75,6 +76,7 @@ function createServer(deps = {}) {
   registerMessages(router, ctx);
   registerTickets(router, ctx);
   registerSubscriptions(router, ctx);
+  registerStudentVerify(router, ctx);
   registerBadge(router, ctx);
   registerDrafts(router, ctx);
   registerArticles(router, ctx);

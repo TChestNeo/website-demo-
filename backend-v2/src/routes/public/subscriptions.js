@@ -26,6 +26,7 @@ const { insertWithId, pad6 } = require('../../ids');
 const { createCheckoutSession, createPortalSession, verifyWebhook } = require('../../stripe');
 const { enforceTierExpiry } = require('../../tiers');
 const { audit } = require('../../audit');
+const { studentShape, studentRefresh } = require('../../students');
 
 const TIER_OF = { basic: 'basic', premium: 'premium', ultra: 'ultra', 'pkg-premium': 'premium', 'pkg-ultra': 'ultra' };
 const TIER_KEYS = Object.keys(TIER_OF);
@@ -207,14 +208,18 @@ function register(router, ctx) {
       mode: 'hybrid', // subscription（自动续费，卡类）+ once（每年支付 1 年，一次付清）
       currency,
       prices,
-      onceMethods: paymentMethodsFor(cfg, currency, 'once')
+      onceMethods: paymentMethodsFor(cfg, currency, 'once'),
+      // v0.2.44.0 学生价（仅 Basic × 仅 myr）：前端据此门学生 CTA/年付按钮
+      studentPrice: currency === 'myr' && !!((cfg.stripe.studentPrices || {}).basic),
+      studentHasOnce: currency === 'myr' && !!((cfg.stripe.studentPricesOnce || {}).basic)
     };
     let user = null;
     try { user = authenticate(ctx.db, req, res, ctx); } catch (e) { /* 匿名：只给配置态 */ }
     if (user) {
-      user = enforceTierExpiry(ctx.db, cfg, user);
+      user = studentRefresh(db, enforceTierExpiry(ctx.db, cfg, user));
       out.tier = user.tier;
       out.tierExpiresAt = user.tier_expires_at || null;
+      out.student = studentShape(user);
       // portal 只管订阅（取消/换卡/账单）；年付 once 用户有 customer id 但无订阅，不给 portal
       out.hasPortal = !!db.prepare(
         "SELECT 1 FROM payments WHERE user_id = ? AND status = 'paid' AND stripe_subscription_id IS NOT NULL LIMIT 1"
@@ -237,7 +242,16 @@ function register(router, ctx) {
     else if (body.mode !== undefined && body.mode !== 'subscription') throw new HttpError('VALIDATION', 'mode 非法');
     const currency = normalizeCurrency(body.currency);
     if (currency !== 'myr' && !(cfg.stripe.catalog || {})[currency]) throw new HttpError('VALIDATION', 'currency 暂不支持');
-    const priceId = priceIdFor(cfg, tierKey, currency, mode);
+    // v0.2.44.0 学生价（仅 Basic SKU × 仅 myr）：守卫在限流后、建会话前；认证缺失 → STUDENT_REQUIRED（前端走重新认证弹窗）
+    const student = body.student === true;
+    if (student) {
+      if (tierKey !== 'basic') throw new HttpError('VALIDATION', '学生价仅适用于 Basic 方案');
+      if (currency !== 'myr') throw new HttpError('VALIDATION', '学生价仅限 MYR 结算');
+      if (!studentRefresh(db, ctx.user).student_email) throw new HttpError('STUDENT_REQUIRED', '请先完成学生邮箱认证');
+    }
+    const priceId = student
+      ? (mode === 'once' ? (cfg.stripe.studentPricesOnce || {}).basic : (cfg.stripe.studentPrices || {}).basic)
+      : priceIdFor(cfg, tierKey, currency, mode);
     if (!cfg.stripe.enabled || !cfg.stripe.secretKey || !priceId) {
       throw new HttpError('PAYMENTS_DISABLED', '在线支付未开通，请通过申请流程开通');
     }
@@ -248,8 +262,9 @@ function register(router, ctx) {
       paymentMethods: paymentMethodsFor(cfg, currency, mode)
     });
     insertWithId(db, 'payments',
-      ['user_id', 'stripe_session_id', 'tier_key', 'amount_micro', 'currency', 'months', 'status', 'created_at'],
-      [ctx.user.id, session.id, tierKey, 0, currency, mode === 'once' ? ONCE_MONTHS : MONTHS, 'pending', new Date().toISOString()],
+      ['user_id', 'stripe_session_id', 'tier_key', 'amount_micro', 'currency', 'months', 'status', 'promo_id', 'created_at'],
+      [ctx.user.id, session.id, tierKey, 0, currency, mode === 'once' ? ONCE_MONTHS : MONTHS, 'pending',
+        student ? 'student' : null, new Date().toISOString()],
       (s) => 'PAY-' + pad6(s));
     sendJson(res, 200, { url: session.url });
   }));

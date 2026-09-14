@@ -666,7 +666,25 @@ window.MN_SITE = window.MN_SITE || {};
 //   发红；caredge-dark 9/9、fc-undo 15/15、group-shapes 17/17、merge-dir 19/19、merge-far 12/12、migrate-btn 41/41、
 //   page-bg 27/27、pbg-meta 38/38、tier-gating 29/29；group-resize 41/44 三红与 0dd2153 证据同值仅注释不设门禁）
 //   （rev 00218-ftt）
-window.MN_SITE_VERSION = 'v0.2.43.0';
+// v0.2.44.0 = 订阅页学生价 RM5.50 学校邮箱验证码认证（小改动位 43→44·新功能轮·补丁归零；2026-09-14）——用户「然后在订阅
+//   那边添加一个学生价格，以RM5为标准，认证方式使用学生电子邮件接受认证码/邮件进行认证」（中途修正「改成RM5.50」）；
+//   问询钦定：①两价并存——Basic 常规价 RM12/月人人可买无需认证，已认证学生解锁 RM5.50/月（Basic 卡双价格状态）②只做
+//   A 邮箱码——学校邮箱验证码全自动认证（复用 W6 email_codes 基建，purpose 'student_verify'、独立限流桶 sv:email/sv:ip/
+//   svf:ip），B 学生证人工审核留待 W3 tickets 轮（弹窗提示「即将上线」）③edu 域名白名单——内置 19 学校域名后缀
+//   （students.js DEFAULT_DOMAINS），env STUDENT_EMAIL_DOMAINS 可整表覆盖，白名单外显式 400 STUDENT_EMAIL_DOMAIN
+//   ④Stripe 建价=用户建——STRIPE_PRICE_BASIC_STUDENT（RM5.50 月付 MYR）+ STRIPE_PRICE_BASIC_STUDENT_ONCE（RM55 年付
+//   MYR，月价×10 送 2、折合 RM4.58/月）部署时回填 env，缺价 checkout 走既有 409 如实 toast；设计口径：学生价仅 MYR 结算
+//   （非 MYR 认证仍可做、注明「学生价仅限 MYR 结算」）；认证有效期 365 天（config.student.ttlMs）过期读取路径惰性清除
+//   （students.js studentRefresh，同 tier 惰性降级口径，无 cron）；payments.promo_id='student' 记录促销来源，applyPaid/
+//   tier 状态机零改动（学生价仍是 basic tier）；迁移 021（users 四列 student_email/student_verified_at/student_expires_at/
+//   student_source + email_codes 重建扩 purpose 枚举，user_version 20→21，health 58 表不变）；后端测试 273/273（student-
+//   verify 13 用例新）；前端 premium.html Basic 卡双态渲染（RM5.50+原价划线+✓ 学生认证徽章/未认证入口链）+ 学生认证弹窗
+//   （三步：学校邮箱→六格 OTP 60s 倒计时→成功；输满即验/粘贴分发/退格跳格同 forgot-password 口径；Escape/backdrop 关、
+//   每次打开重置）；法务 financial-terms 两文件+terms.html 价格表学生优惠注同步「常规价 RM12/月；学生用户凭学校邮箱认证
+//   后可享学生价 RM5.50/月，认证有效期 365 天」；零草稿字段（v 保持 9）；零 FC 改动（v10.28.33.0 不变）；ethereal 零改动
+//   无需 inline-css；电池 student-price 新（F 静态组+S1-S7 浏览器场景+Z 零 console error）+ premium-multi 复跑 + 13 组
+//   复跑全绿（group-resize 41/44 三红与 0dd2153 证据同值仅注释不设门禁）（rev 00219-k9k）
+window.MN_SITE_VERSION = 'v0.2.44.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

@@ -2147,14 +2147,17 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md);max-width:1050px;margin:0 auto var(--space-xl)">
 
     <div class="plan-card reveal reveal-d1" data-plan-card="basic" data-apply-label="Basic">
-      <div class="plan-badge student">学生价 Student</div>
+      <div class="plan-badge student" id="basicBadge">学生价 Student</div>
       <span class="material-symbols-outlined" style="font-size:32px;color:#4648d4;margin-bottom:8px;margin-top:8px">person</span>
       <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Basic<span class="cur-chip">✓ 当前方案</span></h3>
       <p style="color:#767586;font-size:13px;margin-bottom:16px">Essential worldbuilding tools</p>
       <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="basicPrice" data-plan-price>$5.99</div>
+      <p id="basicStrike" style="display:none;font-size:15px;color:#767586;margin:-6px 0 8px;text-decoration:line-through">$5.99</p>
       <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="basic" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:600;text-decoration:none">订阅</button>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-once="basic" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">每年支付</button>
+      <button id="basicStudentEntry" style="display:none;width:100%;margin-top:8px;background:rgba(70,72,212,0.12);border:1px solid rgba(70,72,212,0.45);color:#b9bbff;font-weight:600;font-size:13px;padding:8px 14px;border-radius:10px;cursor:pointer">学生认证 · 解锁 RM5.50/月</button>
+      <p id="basicStudentNote" style="display:none;font-size:11px;color:#767586;text-align:center;margin:8px 0 0;line-height:1.5"></p>
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Basic wiki cards</div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Basic 3D decorations</div>
@@ -2242,7 +2245,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   <!-- Feature Matrix -->
   <div class="card reveal reveal-d5" style="max-width:1050px;margin:0 auto var(--space-xl);padding:var(--space-lg)">
     <h2 class="headline-md" style="text-align:center;margin-bottom:var(--space-md)">Complete Feature Matrix</h2>
-    <p id="basicNoteMatrix" style="text-align:center;font-size:13px;color:#767586;margin-bottom:var(--space-lg)">注册默认免费「普通用户」层；Basic 为学生价方案（RM12/月），Premium / Ultra 提供更高能力</p>
+    <p id="basicNoteMatrix" style="text-align:center;font-size:13px;color:#767586;margin-bottom:var(--space-lg)">注册默认免费「普通用户」层；Basic 为学生价方案（常规价 RM12/月，学校邮箱认证后 RM5.50/月），Premium / Ultra 提供更高能力</p>
     <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse;font-size:14px">
       <thead>
@@ -2328,7 +2331,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 // 尾数一律 X.99 / X.00（零小数币整百/整千）。myr/usd 两行 = 页面原 ms-MY/en-US 行逐字保留（锚本身）。
 // 显示与扣款同币（显示行仅供前端；实扣 Price ID 由后端按 currency 服务端解析）。
 var pricing = {
-  'myr':{label:'MYR (RM)',basic:'RM12',premium:'RM23.50',ultra:'RM45.50',pkgPremium:'RM29.90',pkgUltra:'RM60.90',verify:'RM32.00',boost:'RM8.60',addonBasic:'RM10',addonPlus:'RM14',addonPremium:'RM20',addonUltra:'RM24'},
+  'myr':{label:'MYR (RM)',basic:'RM12',premium:'RM23.50',ultra:'RM45.50',pkgPremium:'RM29.90',pkgUltra:'RM60.90',verify:'RM32.00',boost:'RM8.60',addonBasic:'RM10',addonPlus:'RM14',addonPremium:'RM20',addonUltra:'RM24',student:{basic:'RM5.50',basicOnce:'RM55',basicYm:'RM4.58'}},
   'usd':{label:'USD ($)',basic:'$5.99',premium:'$11.99',ultra:'$15.99',pkgPremium:'$12.99',pkgUltra:'$19.99',verify:'$7.99',boost:'$5.10',addonBasic:'$5.50',addonPlus:'$6.50',addonPremium:'$7.99',addonUltra:'$8.99'},
   'eur':{label:'EUR (€)',basic:'€5.99',premium:'€11.00',ultra:'€14.99',pkgPremium:'€11.99',pkgUltra:'€18.00',verify:'€7.00',boost:'€4.99',addonBasic:'€5.00',addonPlus:'€5.99',addonPremium:'€7.00',addonUltra:'€8.00'},
   'gbp':{label:'GBP (£)',basic:'£4.99',premium:'£9.99',ultra:'£12.99',pkgPremium:'£10.00',pkgUltra:'£15.99',verify:'£6.00',boost:'£4.00',addonBasic:'£4.00',addonPlus:'£5.00',addonPremium:'£6.00',addonUltra:'£7.00'},
@@ -2392,6 +2395,12 @@ var ymP = {
 var YKEY = { 'pkg-premium': 'pkgPremium', 'pkg-ultra': 'pkgUltra' };
 function yearPrice(key) { var k = YKEY[key] || key; var r = yP[MN_CUR] || yP.usd; return (r && r[k]) || ''; }
 function yearPerMonth(key) { var k = YKEY[key] || key; var r = ymP[MN_CUR] || ymP.usd; return (r && r[k]) || ''; }
+
+// v0.2.44.0 学生价（用户 RM5→RM5.50 修正；仅 myr 行带 student 键 → p.student 存在性 = 该币学生价可见口径）
+// RM55 = 月价 ×10 送 2（年付公式）；RM4.58 = 55÷12 折合每月（实扣价以后端 Stripe Price 为准，改数需同步）
+var sP = p.student || null;
+function studentYear() { return sP ? sP.basicOnce : ''; }
+function studentYm() { return sP ? sP.basicYm : ''; }
 document.getElementById('currencyLabel').textContent = p.label;
 document.getElementById('basicPrice').textContent = p.basic;
 document.getElementById('premiumPrice').textContent = p.premium;
@@ -2405,7 +2414,8 @@ if(ab)ab.textContent=p.addonBasic;if(ap)ap.textContent=p.addonPlus;if(ap2)ap2.te
 
 // v0.2.12.0：上方特性区静态文案里的 RM12 → 当前币 Basic 价（元素在本文档前面，直接可写）
 var nmNote = document.getElementById('basicNoteMatrix');
-if (nmNote) nmNote.textContent = '注册默认免费「普通用户」层；Basic 为学生价方案（' + p.basic + '/月），Premium / Ultra 提供更高能力';
+if (nmNote) nmNote.textContent = '注册默认免费「普通用户」层；Basic 为学生价方案（常规价 ' + p.basic + '/月'
+  + (sP ? '，学校邮箱认证后 ' + sP.basic + '/月' : '') + '），Premium / Ultra 提供更高能力';
 
 // ── Cyberfall Background ──
 (function(){
@@ -2481,7 +2491,7 @@ bgStyle.textContent='@keyframes floatCubeBG{0%{transform:translateY(0) rotate(0d
 document.head.appendChild(bgStyle);
 </script>
 
-<div class="plan-note" id="planNote">注册默认「普通用户」（免费）；Basic 为学生价方案（RM12/月）。会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay / Google Pay，可随时在「管理订阅」取消）或每年支付（一次付清 1 年 · 送 2 个月，银行卡 / GrabPay，不自动续费）。</div>
+<div class="plan-note" id="planNote">注册默认「普通用户」（免费）；Basic 为学生价方案（常规价 RM12/月，学校邮箱认证后 RM5.50/月）。会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay / Google Pay，可随时在「管理订阅」取消）或每年支付（一次付清 1 年 · 送 2 个月，银行卡 / GrabPay，不自动续费）。</div>
 
 <!-- v0.2.41.0: 支付网关升级预告（Xendit）——开通口径不变：判定钱到账即自动开通，
      无需人工审核（沿用后端 webhook 状态机，接入 Xendit 后自动生效） -->
@@ -2493,6 +2503,22 @@ document.head.appendChild(bgStyle);
   <div class="cd-text" id="cdText">即将跳转到支付页面…</div>
   <div class="cd-sub" id="cdSub">在线支付由 Stripe 安全处理 · 请勿关闭页面</div>
 </div>
+
+<style>
+/* v0.2.44.0 学生认证弹窗（无标记块：不进 ethereal 内联清单，inline-css 刷新不洗）。
+   弹窗外框复用现成 .modal-backdrop/.modal-container/.modal-card 系统，此处只补六格验证码与输入件 */
+.sv-row{display:flex;gap:8px;justify-content:center;margin:14px 0 6px}
+.sv-cell{width:44px;height:52px;text-align:center;font-size:20px;font-weight:700;border:1px solid rgba(255,255,255,0.22);border-radius:10px;background:rgba(255,255,255,0.05);color:#fff;outline:none}
+.sv-cell:focus{border-color:var(--color-primary,#4648d4);box-shadow:0 0 0 3px rgba(70,72,212,0.25)}
+.sv-cell.filled{border-color:var(--color-primary,#4648d4)}
+.sv-input{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.22);background:rgba(255,255,255,0.05);color:#fff;font-size:14px;outline:none}
+.sv-input:focus{border-color:var(--color-primary,#4648d4)}
+.sv-err{display:none;color:#f87171;font-size:12px;margin-top:8px;line-height:1.5}
+.sv-hint{font-size:12px;color:rgba(255,255,255,0.45);margin-top:10px;line-height:1.6}
+.sv-resend{font-size:12px;color:#b9bbff;cursor:pointer;margin-top:10px;text-align:center;text-decoration:underline}
+.sv-ok{display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0 2px}
+.sv-ok .ico{width:52px;height:52px;border-radius:50%;background:rgba(34,197,94,0.12);color:#22c55e;display:flex;align-items:center;justify-content:center;font-size:28px}
+</style>
 
 <script>
 // ── 订阅流程：等级感知 + 在线支付（Stripe 混合模式）──
@@ -2535,8 +2561,10 @@ document.head.appendChild(bgStyle);
   function renderGuest() {
     var b = $('subStatus');
     b.style.display = 'flex';
-    b.innerHTML = '<span>登录后即可订阅会员方案（注册默认「普通用户」免费；Basic 学生价 ' + p.basic + '/月）</span>'
+    b.innerHTML = '<span>登录后即可订阅会员方案（注册默认「普通用户」免费；Basic 常规价 ' + p.basic + '/月'
+      + (sP ? '，学校邮箱认证后 ' + sP.basic + '/月' : '') + '）</span>'
       + '<a class="btn btn-primary btn-sm" href="../signup-and-login" style="margin:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:#fff;text-decoration:none">登录 / 注册</a>';
+    var gb = $('basicBadge'); if (gb) gb.textContent = sP ? '学生价 ' + sP.basic : '学生价 Student';
     document.querySelectorAll('[data-plan-card]').forEach(function (card) {
       var btn = card.querySelector('[data-plan-cta]');
       if (!btn) return;
@@ -2547,6 +2575,8 @@ document.head.appendChild(bgStyle);
     });
     document.querySelectorAll('[data-plan-once]').forEach(function (x) { x.style.display = 'none'; });
     document.querySelectorAll('[data-once-hint]').forEach(function (x) { x.style.display = 'none'; });
+    var se = $('basicStudentEntry'); if (se) se.style.display = 'none'; // 未登录：学生入口/提示不显示
+    var sn = $('basicStudentNote'); if (sn) sn.style.display = 'none';
   }
 
   // 付费页恒为最终支付态：登录即可点「订阅」走 checkout，无申请回退（2026-08-20 起）
@@ -2567,11 +2597,20 @@ document.head.appendChild(bgStyle);
     if (!nb || !p) return;
     var list = ((sub && sub.onceMethods) || (MN_CUR === 'myr' ? ['card', 'grabpay'] : ['card']))
       .map(function (m) { return METHOD_ZH[m] || m; }).join(' / ');
-    nb.innerHTML = '注册默认「普通用户」（免费）；Basic 为学生价方案（' + p.basic + '/月，' + p.label + '）。'
+    nb.innerHTML = '注册默认「普通用户」（免费）；Basic 为学生价方案（常规价 ' + p.basic + '/月'
+      + (sP ? '，学校邮箱认证后 ' + sP.basic + '/月（MYR 结算，有效期 1 年）' : '') + '，' + p.label + '）。'
       + '会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay / Google Pay，可随时在「管理订阅」取消）'
       + '或每年支付 1 年（一次付清 · 送 2 个月，' + list + '，不自动续费）。';
   }
   refreshPlanNote();
+
+  // v0.2.44.0 学生价即时态（renderUser/syncState/探针共用）：仅 myr 币 × 已认证 × 后端学生价已配
+  function studentPriceNow() {
+    if (!sP) return '';
+    var ok = !!(me && me.student);
+    var cfg = !!(sub && sub.studentPrice);
+    return (MN_CUR === 'myr' && ok && cfg) ? sP.basic : '';
+  }
 
   function renderUser() {
     var rank = TIER_RANK[me.tier] != null ? TIER_RANK[me.tier] : 0; // 未知 tier 按 free（普通用户）处理：Basic 不是自带默认
@@ -2604,7 +2643,11 @@ document.head.appendChild(bgStyle);
     // 每年支付通道态：已配置密钥时按该 SKU 年付 Price 决定；未配置密钥时全部亮起（最终态预览，点击后后端如实提示）
     function onceState(key) {
       if (!me) return false;
-      if (sub && sub.enabled) return !!(sub.prices && sub.prices[key] && sub.prices[key].hasOnce);
+      if (sub && sub.enabled) {
+        // v0.2.44.0：学生态 Basic 年付有独立 Price 配置态（studentHasOnce），与常规年付拆开
+        if (sp && key === 'basic') return !!sub.studentHasOnce;
+        return !!(sub.prices && sub.prices[key] && sub.prices[key].hasOnce);
+      }
       return true;
     }
     function setOnceBtn(card, key, hide) {
@@ -2612,10 +2655,11 @@ document.head.appendChild(bgStyle);
       if (!ob) return;
       var show = !hide && onceState(key);
       var hint = card.querySelector('[data-once-hint]');
+      // 文案先落（隐藏态也保持正确标签，重渲幂等）：v0.2.44.0 学生态（Basic × myr）用学生年价 RM55
+      ob.textContent = '每年支付 · ' + ((sp && key === 'basic') ? studentYear() : yearPrice(key)) + '/年'; // v0.2.13.0：once = 年付 1 年（月价×10，无「单次」口吻）
       if (!show) { ob.style.display = 'none'; if (hint) hint.style.display = 'none'; return; }
       ob.style.display = 'block';
-      ob.textContent = '每年支付 · ' + yearPrice(key) + '/年'; // v0.2.13.0：once = 年付 1 年（月价×10，无「单次」口吻）
-      var ht = onceHintText(card, key);
+      var ht = (sp && key === 'basic') ? '折合每月 ' + studentYm() + '/月（月付 ' + sp + '/月）' : onceHintText(card, key);
       if (!hint) {
         hint = document.createElement('div');
         hint.dataset.onceHint = '';
@@ -2625,12 +2669,56 @@ document.head.appendChild(bgStyle);
       hint.textContent = ht;
       hint.style.display = ht ? 'block' : 'none';
     }
+
+    // v0.2.44.0 Basic 卡双态：已认证学生（myr × 学生价已配）→ RM5.50 + 原价划线；
+    // 认证了但学生价不可用（非 myr / 未配）→ 常规价 + ✓ 认证徽章 + 提示；未认证 → 常规价 + 学生入口链。
+    var svOk = !!(me && me.student);
+    var sp = studentPriceNow();
+    function renderBasicCard(card, rank) {
+      var btn = card.querySelector('[data-plan-cta]');
+      var chip = card.querySelector('.cur-chip');
+      var badge = $('basicBadge');
+      var priceEl = $('basicPrice');
+      var strike = $('basicStrike');
+      var entry = $('basicStudentEntry');
+      var note = $('basicStudentNote');
+      priceEl.textContent = p.basic; // 先回落常规价（cardPrice 读 [data-plan-price]；重渲幂等）
+      if (strike) strike.style.display = 'none';
+      if (entry) entry.style.display = 'none';
+      if (note) note.style.display = 'none';
+      if (badge) badge.textContent = sP ? '学生价 ' + sP.basic : '学生价 Student';
+      if (sp) {
+        priceEl.textContent = sp;
+        if (strike) { strike.textContent = p.basic; strike.style.display = 'block'; }
+        if (badge) badge.textContent = '✓ 学生认证';
+      } else if (svOk) {
+        if (badge) badge.textContent = '✓ 学生认证';
+        if (note) {
+          var st = me.student;
+          note.innerHTML = '已认证 <b style="color:rgba(255,255,255,0.75)">' + st.email + '</b> · 有效至 ' + (st.expiresAt || '').slice(0, 10)
+            + (MN_CUR !== 'myr' ? '<br>学生价仅限 MYR 结算' : '<br>学生价即将上线');
+          note.style.display = 'block';
+        }
+      } else if (entry) {
+        entry.textContent = sP ? '学生认证 · 解锁 ' + sP.basic + '/月' : '学生认证';
+        entry.style.display = 'block';
+      }
+      if (TIER_RANK.basic > rank) {
+        setCta(btn, '订阅 · ' + cardPrice(card) + '/月', false);
+        setOnceBtn(card, 'basic', false);
+      } else if (TIER_RANK.basic === rank) {
+        setCta(btn, '✓ 当前方案', true);
+        if (chip) chip.style.display = 'inline-block';
+        setOnceBtn(card, 'basic', true);
+      } else { setCta(btn, '已包含', true); setOnceBtn(card, 'basic', true); }
+    }
     document.querySelectorAll('[data-plan-card]').forEach(function (card) {
       var key = card.dataset.planCard;
       var target = card.dataset.targetTier || key;
       var btn = card.querySelector('[data-plan-cta]');
       var chip = card.querySelector('.cur-chip');
       var tr = TIER_RANK[target] || 1;
+      if (key === 'basic' && !card.dataset.targetTier) { renderBasicCard(card, rank); return; }
       if (card.dataset.targetTier) { // 包价卡：等级 ≥ 包价等级时仍可购买（叠加团队等权益）
         if (tr < rank) { setCta(btn, '已包含', true); setOnceBtn(card, key, true); }
         else { setCta(btn, '订阅 · ' + cardPrice(card) + '/月', false); setOnceBtn(card, key, false); }
@@ -2671,11 +2759,15 @@ document.head.appendChild(bgStyle);
     var label = btn.textContent;
     btn.disabled = true;
     btn.textContent = '跳转到支付页…';
-    MN_API.post('/subscription/checkout', { tierKey: key, mode: mode || 'subscription', currency: MN_CUR }).then(function (r) {
+    var payload = { tierKey: key, mode: mode || 'subscription', currency: MN_CUR };
+    // v0.2.44.0：已认证学生的 Basic 购买自动带学生旗（后端走学生价 Price + payments.promo_id='student'）
+    if (key === 'basic' && !!(me && me.student)) payload.student = true;
+    MN_API.post('/subscription/checkout', payload).then(function (r) {
       if (r.ok && r.data && r.data.url) { countdownJump(btn, r.data.url); return; }
       btn.disabled = false;
       btn.textContent = label;
       if (r.status === 401) toast('请登录正式账号后在线支付');
+      else if (r.status === 403) { toast('学生认证已过期，请重新认证'); openStudentModal(); } // STUDENT_REQUIRED：过期/被清 → 重认证弹窗
       else if (r.status === 409) toast((sub && sub.enabled) ? '该方案在线支付暂未开通，请稍后再试' : '在线支付通道即将上线（后端 Stripe 密钥配置完成后即可在线扣款）');
       else toast('支付请求失败（' + (r.status || '网络') + '），请稍后重试');
     });
@@ -2703,7 +2795,234 @@ document.head.appendChild(bgStyle);
       if (ab.dataset.guestLink) { location.href = ab.dataset.guestLink; return; }
       toast('该增值项在线购买即将上线，敬请期待');
     }
+    var se = ev.target.closest('#basicStudentEntry');
+    if (se) { openStudentModal(); return; } // v0.2.44.0 学生认证入口
   });
+
+  // ── 学生认证弹窗（v0.2.44.0 A 方案：学校邮箱验证码全自动；B 学生证人工审核留待下轮）──
+  // 复用现成 .modal-backdrop/.modal-container/.modal-card 系统；DOM 全部 JS 生成，每次打开重建（=重置步骤 1）；
+  // 六格 OTP 交互同 forgot-password 口径（输满即验/粘贴分发/退格跳格）；成功 → me.student 落本地态重渲卡片。
+  var svEl = null, svEmail = '', svSent = false, svVerifying = false, svTimer = null, svT = 0;
+
+  function svEl_(tag, cls, css) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (css) n.style.cssText = css;
+    return n;
+  }
+  function svEsc(e) { if (e.key === 'Escape') svClose(); }
+  function svClose() {
+    if (svTimer) { clearInterval(svTimer); svTimer = null; }
+    svEmail = ''; svSent = false; svVerifying = false;
+    document.removeEventListener('keydown', svEsc);
+    if (svEl && svEl.parentNode) svEl.parentNode.removeChild(svEl);
+    svEl = null;
+  }
+  function svShowErr(el, msg) {
+    el.textContent = msg;
+    el.style.display = 'block';
+    setTimeout(function () { el.style.display = 'none'; }, 3200);
+  }
+  function openStudentModal() {
+    svClose();
+    var backdrop = svEl_('div', 'modal-backdrop');
+    var container = svEl_('div', 'modal-container');
+    var card = svEl_('div', 'modal-card');
+    var body = svEl_('div', 'modal-card-body');
+
+    var head = svEl_('div', '', 'display:flex;align-items:center;justify-content:space-between;margin-bottom:14px');
+    var title = svEl_('div', '', 'font-size:17px;font-weight:700');
+    title.textContent = '学生认证';
+    var x = svEl_('button', '', 'background:none;border:none;color:rgba(255,255,255,0.55);font-size:20px;cursor:pointer;padding:0;line-height:1');
+    x.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px">close</span>';
+    x.addEventListener('click', svClose);
+    head.appendChild(title); head.appendChild(x);
+    body.appendChild(head);
+
+    // ── 步骤 1：学校邮箱 ──
+    var s1 = svEl_('div');
+    var s1p = svEl_('p', '', 'font-size:13px;color:rgba(255,255,255,0.7);margin:0 0 12px;line-height:1.6');
+    s1p.textContent = '输入学校邮箱接收验证码，认证后 Basic 解锁学生价' + (sP ? ' ' + sP.basic + '/月' : '') + '（MYR 结算，有效期 1 年）。';
+    var input = svEl_('input', 'sv-input');
+    input.type = 'email';
+    input.placeholder = '学校邮箱（如 name@university.edu.my）';
+    var s1err = svEl_('div', 'sv-err');
+    var send = svEl_('button', 'btn btn-primary btn-sm', 'width:100%;margin-top:12px');
+    send.textContent = '发送验证码';
+    var s1hint = svEl_('div', 'sv-hint');
+    s1hint.textContent = '支持 .edu / .edu.my 等学校域名自动认证；白名单外的学校暂不支持（学生证人工审核即将上线）。';
+    s1.appendChild(s1p); s1.appendChild(input); s1.appendChild(s1err); s1.appendChild(send); s1.appendChild(s1hint);
+
+    // ── 步骤 2：六格验证码 ──
+    var s2 = svEl_('div');
+    s2.style.display = 'none';
+    var emailText = svEl_('p', 'sv-mail', 'font-size:13px;color:rgba(255,255,255,0.7);margin:0;line-height:1.6');
+    var s2err = svEl_('div', 'sv-err');
+    var row = svEl_('div', 'sv-row');
+    var cells = [];
+    for (var i = 0; i < 6; i++) {
+      var c = svEl_('input', 'sv-cell');
+      c.type = 'text'; c.inputMode = 'numeric'; c.maxLength = 1;
+      row.appendChild(c); cells.push(c);
+    }
+    var resend = svEl_('div', 'sv-resend');
+    resend.textContent = '重新发送';
+    var s2hint = svEl_('div', 'sv-hint');
+    s2hint.textContent = '验证码 10 分钟内有效。';
+    s2.appendChild(emailText); s2.appendChild(row); s2.appendChild(s2err); s2.appendChild(resend); s2.appendChild(s2hint);
+
+    // ── 步骤 3：成功 ──
+    var s3 = svEl_('div');
+    s3.style.display = 'none';
+    var okBox = svEl_('div', 'sv-ok');
+    var ico = svEl_('div', 'ico');
+    ico.innerHTML = '<span class="material-symbols-outlined">check</span>';
+    var okT = svEl_('div', '', 'font-size:16px;font-weight:700');
+    okT.textContent = '认证成功！';
+    var okEmail = svEl_('div', '', 'font-size:13px;color:rgba(255,255,255,0.7)');
+    var okExp = svEl_('div', '', 'font-size:12px;color:rgba(255,255,255,0.45)');
+    okBox.appendChild(ico); okBox.appendChild(okT); okBox.appendChild(okEmail); okBox.appendChild(okExp);
+    var done = svEl_('button', 'btn btn-primary btn-sm', 'width:100%;margin-top:14px');
+    done.textContent = '完成';
+    done.addEventListener('click', svClose);
+    s3.appendChild(okBox); s3.appendChild(done);
+
+    body.appendChild(s1); body.appendChild(s2); body.appendChild(s3);
+    card.appendChild(body);
+    container.appendChild(card);
+    var frag = svEl_('div');
+    frag.appendChild(backdrop);
+    frag.appendChild(container);
+    svEl = frag;
+
+    function svGo(n) {
+      s1.style.display = n === 1 ? 'block' : 'none';
+      s2.style.display = n === 2 ? 'block' : 'none';
+      s3.style.display = n === 3 ? 'block' : 'none';
+    }
+    // 六格交互（同 forgot-password 口径）
+    function svReadCode() {
+      var s = '';
+      for (var i = 0; i < 6; i++) s += cells[i].value;
+      return s;
+    }
+    function svClearCells() {
+      for (var i = 0; i < 6; i++) { cells[i].value = ''; cells[i].classList.remove('filled'); }
+      cells[0].focus();
+    }
+    function svVerify() {
+      if (svVerifying) return;
+      var code6 = svReadCode();
+      svVerifying = true;
+      MN_API.post('/student-verify/verify', { email: svEmail, code: code6 }).then(function (r) {
+        svVerifying = false;
+        if (svReadCode() !== code6) return; // 验码途中改了格子：本次结果作废
+        if (r.ok && r.data && r.data.ok && r.data.student) {
+          if (me) me.student = r.data.student;
+          okEmail.textContent = r.data.student.email;
+          okExp.textContent = '有效期至 ' + (r.data.student.expiresAt || '').slice(0, 10) + ' · Basic 学生价已解锁';
+          svGo(3);
+          renderUser();
+          syncState();
+        } else if (r.status === 429) { svClearCells(); svShowErr(s2err, '尝试过于频繁，请稍后再试'); }
+        else { svClearCells(); svShowErr(s2err, '验证码无效或已过期'); }
+      }).catch(function () {
+        svVerifying = false;
+        if (svReadCode() !== code6) return;
+        svClearCells(); svShowErr(s2err, '验证失败，请重试');
+      });
+    }
+    function svAfterCode() {
+      s2err.style.display = 'none';
+      if (svReadCode().length === 6) svVerify(); // 输满六位自动验证
+    }
+    function svFillCode(digits) { // 粘贴分发（6 位数字一次落格）
+      var d = (digits || '').replace(/\D/g, '').slice(0, 6);
+      for (var i = 0; i < 6; i++) {
+        cells[i].value = d[i] || '';
+        cells[i].classList.toggle('filled', !!d[i]);
+      }
+      cells[Math.min(d.length, 5)].focus();
+      svAfterCode();
+    }
+    cells.forEach(function (c, idx) {
+      c.addEventListener('input', function () {
+        c.value = c.value.replace(/\D/g, '').slice(-1);
+        c.classList.toggle('filled', !!c.value);
+        if (c.value && idx < 5) cells[idx + 1].focus();
+        svAfterCode();
+      });
+      c.addEventListener('keydown', function (e) {
+        if (e.key === 'Backspace' && !c.value && idx > 0) {
+          cells[idx - 1].value = '';
+          cells[idx - 1].classList.remove('filled');
+          cells[idx - 1].focus();
+          svAfterCode();
+          e.preventDefault();
+        }
+        if (e.key === 'Enter' && svReadCode().length === 6) svVerify();
+      });
+      c.addEventListener('paste', function (e) {
+        e.preventDefault();
+        svFillCode((e.clipboardData || window.clipboardData).getData('text'));
+      });
+      c.addEventListener('focus', function () { c.select(); });
+    });
+
+    function svCountdown() {
+      svT = 60;
+      resend.textContent = svT + ' 秒后可重发';
+      if (svTimer) clearInterval(svTimer);
+      svTimer = setInterval(function () {
+        svT--;
+        if (svT <= 0) { clearInterval(svTimer); svTimer = null; resend.textContent = '重新发送'; svSent = false; return; }
+        resend.textContent = svT + ' 秒后可重发';
+      }, 1000);
+    }
+    function svSend() {
+      if (svSent) return; // 60s 冷却中：不可重发
+      var email = input.value.trim();
+      if (!email) { svShowErr(s1err, '请输入学校邮箱'); return; }
+      svSent = true;
+      send.disabled = true;
+      send.textContent = '发送中…';
+      MN_API.post('/student-verify/email-code', { email: email }).then(function (r) {
+        send.disabled = false;
+        if (r.ok && r.data && r.data.ok) {
+          svEmail = email;
+          emailText.textContent = '验证码已发送至 ' + email;
+          svGo(2);
+          svCountdown();
+          cells[0].focus();
+        } else if (r.status === 400 && r.data && r.data.error && r.data.error.code === 'STUDENT_EMAIL_DOMAIN') {
+          svSent = false;
+          svShowErr(s1err, '该邮箱域名暂不支持自动认证（学生证人工审核即将上线）');
+        } else if (r.status === 429) {
+          svSent = false;
+          svShowErr(s1err, '发送过于频繁，请稍后再试');
+        } else {
+          svSent = false;
+          svShowErr(s1err, '发送失败，请稍后重试');
+        }
+      }).catch(function () {
+        svSent = false;
+        send.disabled = false;
+        svShowErr(s1err, '发送失败，请稍后重试');
+      });
+    }
+    send.addEventListener('click', svSend);
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') svSend(); });
+    resend.addEventListener('click', function () { if (!svSent) svSend(); });
+    backdrop.addEventListener('click', function (e) { if (e.target === backdrop) svClose(); });
+
+    document.body.appendChild(frag);
+    backdrop.classList.add('active');
+    card.classList.add('active');
+    document.addEventListener('keydown', svEsc);
+    input.focus();
+  }
+  // 电池探针：打开认证弹窗 / 读即时学生价
+  window.__mnStudent = { open: openStudentModal, sp: studentPriceNow };
 
   // 本地登录态（与 index.html demo 登录同源：slati_session + slati_user）
   function localUser() {
@@ -2744,6 +3063,7 @@ document.head.appendChild(bgStyle);
               tier: t,
               email: (me && me.email) || (r.data.user.email || ''),
               tierExpiresAt: r.data.user.tierExpiresAt || null,
+              student: (me && me.student) || (r.data.user.student || null), // 支付确认轮询重建 me：学生认证态带回
               source: 'server'
             };
             renderUser();
@@ -2767,7 +3087,9 @@ document.head.appendChild(bgStyle);
       hasPortal: !!(sub && sub.hasPortal),
       expiry: (me && me.tierExpiresAt) || null,
       once: ((sub && sub.onceMethods) || []).join(','), // 每年支付方式清单（配置态）
-      onceKeys: onceKeys.join(',') // 有年付 Price 的 SKU
+      onceKeys: onceKeys.join(','), // 有年付 Price 的 SKU
+      student: !!(me && me.student), // 学生认证态（后端惰性清过期 → 非 null 即有效）
+      studentPrice: studentPriceNow() || null // 即时学生价（''=不可用）
     };
   }
 
@@ -2779,13 +3101,14 @@ document.head.appendChild(bgStyle);
         tier: r.data.user.tier || 'free', // 兜底 free 普通用户：Basic 不是自带默认（订阅/管理员授予才可得）
         email: r.data.user.email,
         tierExpiresAt: r.data.user.tierExpiresAt || null,
+        student: r.data.user.student || null, // v0.2.44.0 学生认证态（过期已被 /auth/me 惰性清除）
         source: 'server'
       };
       renderUser();
     } else {
       var lu = localUser();
       if (lu) {
-        me = { tier: lu.tier || 'free', email: lu.email, tierExpiresAt: null, source: 'local' };
+        me = { tier: lu.tier || 'free', email: lu.email, tierExpiresAt: null, student: lu.student || null, source: 'local' };
         renderUser();
       } else {
         renderGuest();

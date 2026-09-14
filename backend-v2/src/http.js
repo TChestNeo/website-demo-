@@ -11,6 +11,8 @@ const CODES = {
   CONFLICT: 409,
   RATE_LIMITED: 429,
   PAYMENTS_DISABLED: 409,
+  STUDENT_EMAIL_DOMAIN: 400,  // 学生认证邮箱域名不在白名单（前端显示人工审核指引）
+  STUDENT_REQUIRED: 403,      // checkout 学生旗但认证缺失/已过期（前端走重新认证弹窗）
   INTERNAL: 500,
   SERVICE_UNAVAILABLE: 503
 };
