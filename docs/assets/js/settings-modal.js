@@ -178,6 +178,18 @@
       // ── 主题色「黑白」mono：主色家族翻中性灰黑（亮主题近黑/暗主题近白）+ 各处蓝 tint 组件跟随 ──
       'html[data-accent="mono"][data-theme="light"] { --color-primary: #1c1c22; --color-on-primary: #ffffff; --color-primary-container: #2a2a32; --color-on-primary-container: #f5f5f7; --color-primary-fixed: #e6e6ea; --color-primary-fixed-dim: #c9c9d1; --color-on-primary-fixed: #101014; --color-on-primary-fixed-variant: #3c3c46; --color-inverse-primary: #d4d4dc; --color-surface-tint: #3a3a42; --btn-ghost-hover: rgba(28, 28, 34, 0.06); }',
       'html[data-accent="mono"][data-theme="dark"] { --color-primary: #ececf2; --color-on-primary: #16161c; --color-primary-container: #3c3c46; --color-on-primary-container: #f5f5f7; --color-primary-fixed: #3a3a44; --color-primary-fixed-dim: #2c2c34; --color-on-primary-fixed: #f5f5f7; --color-on-primary-fixed-variant: #d9d9e1; --color-inverse-primary: #2c2c34; --color-surface-tint: #c9c9d1; --btn-ghost-hover: rgba(255, 255, 255, 0.10); }',
+      // ── v0.2.44.1 mono 暗色背景翻黑族（用户「把黑白主题的深色模式背景颜色改成黑色系的而不是原本的蓝色」）──
+      // 暗蓝紫表面令牌全翻中性黑族（html/body/卡片/网格画布/输入框/弹窗/侧栏一次全盖，蓝 theme 零影响）；
+      // 按钮黑族保留 v0.2.28.15 用户钦定配方（#1e1e2d/#32324a）不动，背景家族才翻
+      'html[data-accent="mono"][data-theme="dark"] { --color-background: #0b0b0d; --color-surface: #141416; --color-surface-dim: #0e0e10; --color-surface-bright: #1b1b1e; --color-surface-container-lowest: #0a0a0c; --color-surface-container-low: #0f0f11; --color-surface-container: #151518; --color-surface-container-high: #1d1d20; --color-surface-container-highest: #232327; --color-surface-variant: #2a2a2f; --color-surface-tint: #b0b0b5; --color-outline: #9c9ca2; --color-outline-variant: #4a4a4f; --glass-bg: #141418; --card-bg: rgba(21, 21, 25, 0.55); --card-bg-hover: rgba(30, 30, 36, 0.72); --input-bg: #121215; --input-bg-focus: #1a1a1e; --modal-bg: rgba(21, 21, 26, 0.75); --subnav-bg: #141418; --sidebar-bg: #101013; --btn-ghost-hover: rgba(255, 255, 255, 0.08); }',
+      // ── v0.2.44.1 FC 白底白字按钮（用户「FC 里有一些按钮在深色的黑白主题下是白底白字」）──
+      // 真身=暗 mono 主色近白 #ececf2 当按钮底 + 硬编码白字 → 白底白字；active 族翻纯黑族 #32324a 白字
+      // （扫描探针实证 3 处可见 + 隐藏面板同模式 5 处，一条族规则全盖）；小指示点（snap-dot/lb-fill/
+      // milestone-dot 无文字）保持近白高亮不翻；toast 家底硬编码蓝 #1e1c32 翻黑族（编辑器 toast 亦随翻，
+      // 白字与「深色不白」口径一致）
+      'html[data-accent="mono"][data-theme="dark"] .grid-controls .col-btn.active, html[data-accent="mono"][data-theme="dark"] .vp-presets .vp-btn.active, html[data-accent="mono"][data-theme="dark"] .pbg-ratio-btn.active, html[data-accent="mono"][data-theme="dark"] .caption-pos-btn.active, html[data-accent="mono"][data-theme="dark"] .caption-vertical-toggle.active, html[data-accent="mono"][data-theme="dark"] .caption-tab.active, html[data-accent="mono"][data-theme="dark"] .caption-edge-btn.active, html[data-accent="mono"][data-theme="dark"] .tim-search-btn, html[data-accent="mono"][data-theme="dark"] .flag-card-item .lib-icon:hover { background: #32324a; color: #ffffff; border-color: #32324a; }',
+      'html[data-accent="mono"][data-theme="dark"] .progress-step.active .dot, html[data-accent="mono"][data-theme="dark"] .progress-step.completed .dot { background: #32324a; color: #ffffff; }',
+      'html[data-accent="mono"][data-theme="dark"] .toast { background: #1a1a1e; color: #ffffff; }',
       'html[data-accent="mono"] .btn-primary { box-shadow: 0 4px 16px rgba(28, 28, 34, 0.18); }',
       'html[data-accent="mono"] .btn-primary:hover { box-shadow: 0 6px 20px rgba(28, 28, 34, 0.3); }',
       'html[data-accent="mono"] .btn-primary:focus-visible { box-shadow: 0 0 0 3px rgba(28, 28, 34, 0.12); }',

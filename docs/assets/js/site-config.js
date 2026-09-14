@@ -684,7 +684,19 @@ window.MN_SITE = window.MN_SITE || {};
 //   后可享学生价 RM5.50/月，认证有效期 365 天」；零草稿字段（v 保持 9）；零 FC 改动（v10.28.33.0 不变）；ethereal 零改动
 //   无需 inline-css；电池 student-price 新（F 静态组+S1-S7 浏览器场景+Z 零 console error）+ premium-multi 复跑 + 13 组
 //   复跑全绿（group-resize 41/44 三红与 0dd2153 证据同值仅注释不设门禁）（rev 00219-k9k）
-window.MN_SITE_VERSION = 'v0.2.44.0';
+// v0.2.44.1 = mono 暗色背景翻黑族 + FC 白底白字按钮修复（补丁位 0→1·观感修复轮；2026-09-14）——用户「你能不能把黑白
+//   主题的深色模式背景颜色改成黑色系的而不是原本的蓝色？还有那个FuildCanva里有一些按钮的颜色在深色的黑白主题下是是白底
+//   白字的」；扫描探针（tmp-monodark-discover.js）实证：暗 mono 全表面仍蓝紫家族（FC 两页 html/body/卡片/网格画布/输入框
+//   /弹窗/侧栏全 h=240°）——真身=暗蓝紫表面令牌（--color-background #161625、--card-bg rgba(30,30,50,.55) 等）从未按
+//   mono 翻；白底白字真身=暗 mono 主色近白 #ececf2 当按钮底+硬编码白字（可见 3 处 col-btn.active/tim-search-btn/
+//   pbg-ratio-btn.active + 隐藏面板同模式 caption-*/vp-btn.active 等）——修法全在 settings-modal.js：①mono 暗令牌族
+//   （背景/表面/容器/玻璃/卡片/输入/弹窗/侧栏/outline 全翻中性黑族 #0b0b0d~#2a2a2f；按钮黑族保留 v0.2.28.15 用户钦定
+//   配方不动）②active 按钮族一条规则全翻纯黑族 #32324a 白字 ③progress-step 圆点同修 ④toast 硬编码蓝 #1e1c32 翻黑族
+//   （编辑器 toast 亦随翻白字，与「深色不白」口径一致）；小指示点（snap-dot/lb-fill/milestone-dot 无文字）保持近白高亮；
+//   亮 mono/蓝 theme 零影响；FC v10.28.33.1（补丁位 0→1）；零后端、ethereal 零改动无需 inline-css；
+//   电池 monodark 22/22 新（F 静态 4+M1 暗 mono 首页/M2 暗 mono 编辑器/M3 亮 mono 回归/M4 暗蓝回归+Z 零 console error）
+//   （rev 00220-57l）
+window.MN_SITE_VERSION = 'v0.2.44.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -952,4 +964,9 @@ window.MN_SITE_VERSION = 'v0.2.44.0';
 //   字段（imgLibPut 一处入库，自己上传=displayName 兜底「你」、Wikimedia 图='Wikimedia Commons'；collectImgLibrary
 //   派生化同口径兜底，旧条目渲染期补齐不重写 store）；弹窗栈：closeModalOnly 只关本窗图库保持开、backdrop 点关最上层、
 //   Escape 最先关 info；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
-window.FLUIDCANVAS_VERSION = 'v10.28.33.0';
+// v10.28.33.1 = mono 暗色背景翻黑族 + 白底白字按钮修复（补丁位 0→1·观感修复轮；2026-09-14）——用户「黑白主题深色模式
+//   背景改成黑色系而不是蓝色 + 深色黑白主题下白底白字按钮」：暗 mono 表面令牌族翻中性黑族（网格画布/状态栏/卡片/输入框
+//   随 --color-* 令牌全翻黑，settings-modal.js 运行时注入赢页面 :root 覆写）；白底白字 active 族（col-btn/vp-btn/
+//   pbg-ratio-btn/caption-*/tim-search-btn/lib-icon:hover）翻纯黑族 #32324a 白字；progress-step 圆点同修；toast 翻黑族；
+//   小指示点保持近白高亮；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
+window.FLUIDCANVAS_VERSION = 'v10.28.33.1';
