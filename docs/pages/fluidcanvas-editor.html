@@ -634,6 +634,10 @@ textarea.input-glass {
 }
 .imm-count { font-variant-numeric: tabular-nums; }
 .imm-count.over { color: #e5484d; font-weight: 600; }
+/* ── v10.28.33 图片信息只读弹窗（图库 info 图标二级弹窗：上传者/简介/时间/可见性/尺寸）── */
+.iim-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 8px; }
+.iim-label { flex: 0 0 64px; font-size: var(--fs-label-sm); color: var(--color-outline); }
+.iim-value { flex: 1; min-width: 0; font-size: var(--fs-label-sm); word-break: break-word; white-space: pre-wrap; }
 .pbg-name-row { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .pbg-name {
   flex: 1; min-width: 0; font-size: var(--fs-label-sm);
@@ -4251,6 +4255,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     .flag-card-item .lib-icon:hover { background: var(--color-primary); color: #fff; }
     .flag-card-item .lib-edit { right: 28px; }
     .flag-card-item .lib-del { right: 4px; }
+    .flag-card-item .lib-info { right: 52px; } /* v10.28.33: info 最外侧，铅笔/垃圾桶位置不动 */
     .flag-card-item .lib-del:hover { background: var(--color-error); }
     .flag-grid-empty {
       grid-column: 1 / -1; padding: 32px 12px; text-align: center;
@@ -4788,6 +4793,29 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       <button class="btn btn-primary btn-sm" style="flex:1" onclick="imgMetaSave()">保存</button>
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeImgMetaModalCancel()">取消</button>
     </div>
+  </div>
+</div>
+
+<!-- Image Info Modal (v10.28.33) — 只读二级弹窗：图库 info 图标（仅 public/team 显示）→
+     上传者/简介/上传时间/可见性/尺寸。同 z 110 DOM 后者在上，可叠 flagBrowserModal；
+     closeModalOnly 只关本窗、图库保持开；未来真库=后端 Cloud Storage+DB 就绪后字段对接。 -->
+<div class="modal-container" id="imgInfoModal">
+  <div class="modal-card" style="max-width:480px">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md">图片信息</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModalOnly('imgInfoModal')"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="imm-row" style="margin-bottom:var(--space-md)">
+      <img class="imm-preview" id="iimPreview" alt="" style="width:96px;height:96px">
+      <div style="min-width:0">
+        <div id="iimName" style="font-weight:600;font-size:var(--fs-body-md);word-break:break-word">—</div>
+        <div class="label-sm" style="color:var(--color-outline);margin-top:2px" id="iimSize">尺寸：—</div>
+      </div>
+    </div>
+    <div class="iim-row"><span class="iim-label">简介</span><span class="iim-value custom-scrollbar" id="iimDesc" style="max-height:180px;overflow-y:auto">暂无简介</span></div>
+    <div class="iim-row"><span class="iim-label">上传者</span><span class="iim-value" id="iimUploader">—</span></div>
+    <div class="iim-row"><span class="iim-label">上传时间</span><span class="iim-value" id="iimTs">—</span></div>
+    <div class="iim-row"><span class="iim-label">可见性</span><span class="iim-value" id="iimVis">—</span></div>
   </div>
 </div>
 
@@ -6770,6 +6798,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     if (e.isComposing) return;  // v10.28.28: 中文输入法组合态 Esc 不关窗
+    // v10.28.33: info 只读窗最先（DOM 在 imgMetaModal 后=视觉最顶，双叠时先关 info）
+    var iim = document.getElementById('imgInfoModal');
+    if (iim && iim.querySelector('.modal-card.active')) { closeModalOnly('imgInfoModal'); return; }
     // v10.28.28: 图片信息弹窗优先（叠在 pageBgModal 上时只关顶层）
     var mm = document.getElementById('imgMetaModal');
     if (mm && mm.querySelector('.modal-card.active')) { closeImgMetaModalCancel(); return; }
@@ -13372,6 +13403,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     try { localStorage.setItem(IMG_LIB_KEY, JSON.stringify(list)); return true; }
     catch (e) { return false; } // 配额满等——不崩，本次不入库
   }
+  // v10.28.33: 上传者（纯前端先做；未来真库=后端 Cloud Storage+DB 就绪后自然对接）
+  function libUserName() {
+    try { var u = SlatiDB.getUser(); return (u && u.displayName) || '你'; } catch (e) { return '你'; }
+  }
+  function libUploaderDefault(src) {
+    return /^https:\/\/upload\.wikimedia\.org\//i.test(src || '') ? 'Wikimedia Commons' : libUserName();
+  }
   function imgLibPut(src, meta) {
     if (!src || typeof src !== 'string' || !/^(data:|blob:|https?:)/i.test(src.trim())) return false;
     try {
@@ -13383,7 +13421,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         name: (meta && meta.name) || '未命名图片',
         desc: (meta && meta.desc) || '',
         visibility: (meta && meta.visibility) || 'private',
-        ts: Date.now()
+        ts: Date.now(),
+        uploader: (meta && meta.uploader) || libUploaderDefault(src)
       };
       if (i >= 0) list[i] = entry; else list.push(entry);
       while (imgLibBytes(list) > IMG_LIB_MAX_BYTES && list.length > 1) { // FIFO：ts 最旧先删
@@ -13408,19 +13447,21 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function collectImgLibrary() {
     var bySrc = {};
-    function put(src, name, desc, vis) {
+    function put(src, name, desc, vis, uploader, ts) {
       if (!src || typeof src !== 'string' || !/^(data:|blob:|https?:)/i.test(src.trim())) return;
       var it = bySrc[src];
       if (it) { // 同图多处用：更具体的 meta 优先（非空覆盖空）
         if (!it.name && name) it.name = name;
         if (!it.desc && desc) it.desc = desc;
+        if (!it.uploader && uploader) it.uploader = uploader;
+        if (!it.ts && ts) it.ts = ts;
         return;
       }
-      bySrc[src] = { src: src, name: name || '未命名图片', desc: desc || '', visibility: vis || 'private' };
+      bySrc[src] = { src: src, name: name || '未命名图片', desc: desc || '', visibility: vis || 'private', uploader: uploader || libUploaderDefault(src), ts: ts || null };
     }
     // ⓪ v10.28.32: 持久库条目先入（跨文章/新画布可见——用户撞的「看不见」真身），
     // canvas 扫描后入；同 src 时 canvas 只补 store 的空 meta（store 权威，编辑名不丢）
-    imgLibLoad().forEach(function (it) { put(it.src, it.name, it.desc, it.visibility); });
+    imgLibLoad().forEach(function (it) { put(it.src, it.name, it.desc, it.visibility, it.uploader, it.ts); });
     // ① 页面背景（WORKING 优先——弹窗会话里看到的才是最新的）
     var pbg = PAGE_BG_WORKING || PAGE_BG_STATE;
     (pbg && pbg.imgs || []).forEach(function (im) { put(im.dataURL, im.name, im.desc, im.visibility); });
@@ -13447,7 +13488,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // v10.28.29.1: 样本旗撤除后 all/mylib 数据同源（=真实上传派生）；页签结构保留——
     // 全部=将来平台共享图的位置，现在只有自己的上传
     return LIB_ITEMS.map(function (it, i) {
-      return { id: 'lib' + i, kind: 'lib', li: i, name: it.name, desc: it.desc, visibility: it.visibility, src: it.src };
+      return { id: 'lib' + i, kind: 'lib', li: i, name: it.name, desc: it.desc, visibility: it.visibility, uploader: it.uploader, ts: it.ts, src: it.src };
     });
   }
 
@@ -13484,6 +13525,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         '<span class="lib-vis">' + libVisLabel(f.visibility) + '</span>' +
         '<button class="lib-icon lib-edit" title="编辑图片信息（同步所有使用处）" onclick="event.stopPropagation();editLibImg(' + f.li + ')"><span class="material-symbols-outlined">edit</span></button>' +
         '<button class="lib-icon lib-del" title="删除（从所有使用处移除）" onclick="event.stopPropagation();delLibImg(' + f.li + ')"><span class="material-symbols-outlined">delete</span></button>' +
+        // v10.28.33: info 图标仅「别人看得见」的图显示（public/team）；private 不渲染
+        (f.visibility && f.visibility !== 'private' ?
+          '<button class="lib-icon lib-info" title="查看图片信息" onclick="event.stopPropagation();showLibImgInfo(' + f.li + ')"><span class="material-symbols-outlined">info</span></button>' : '') +
         '</div>' +
         '<div class="flag-name" title="' + esc(f.desc) + '">' + esc(f.name) + '</div>' +
       '</div>';
@@ -13626,6 +13670,39 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (q && q.trim()) filterFlags();
     else renderFlagGrid(currentTabItems());
   }
+
+  // ═══ 图片信息弹窗 (v10.28.33) ═══
+  // 图库 info 图标（仅 public/team）→ 只读二级弹窗：上传者/简介/时间/可见性/尺寸。
+  // 内容一次性快照进 DOM（不持 index）——后台 refreshLibGrid 重建 LIB_ITEMS 不脏本窗；
+  // 全部 textContent 写入（esc() 只用于 HTML 属性插值，desc 永不进 HTML）。
+  var IIN_LOAD_TOKEN = 0;
+  function fmtTs(ts) {
+    if (!ts) return '—';
+    var d = new Date(ts);
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function showLibImgInfo(li) {
+    var it = LIB_ITEMS[li];
+    if (!it) return;
+    document.getElementById('iimPreview').src = it.src;
+    document.getElementById('iimPreview').alt = it.name || '';
+    document.getElementById('iimName').textContent = it.name || '未命名图片';
+    document.getElementById('iimDesc').textContent = it.desc || '暂无简介';
+    document.getElementById('iimUploader').textContent = it.uploader || '—';
+    document.getElementById('iimTs').textContent = fmtTs(it.ts);
+    document.getElementById('iimVis').textContent = libVisLabel(it.visibility);
+    var sizeEl = document.getElementById('iimSize');
+    sizeEl.textContent = '尺寸：读取中…';
+    var token = ++IIN_LOAD_TOKEN;
+    var im = new Image();
+    im.onload = function () { if (token === IIN_LOAD_TOKEN && im.naturalWidth) sizeEl.textContent = '尺寸：' + im.naturalWidth + ' × ' + im.naturalHeight; };
+    im.onerror = function () { if (token === IIN_LOAD_TOKEN) sizeEl.textContent = '尺寸：—'; };
+    im.src = it.src;
+    openModal('imgInfoModal'); // backdrop 已 active 幂等；本卡压最上（DOM 序）
+  }
+  window.showLibImgInfo = showLibImgInfo; // 电池探针
+  window.fmtTs = fmtTs; // 电池探针
 
   function countLibUsages(src) {
     var n = 0;

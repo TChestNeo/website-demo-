@@ -651,7 +651,22 @@ window.MN_SITE = window.MN_SITE || {};
 //   0→1）；电池 group-resize 收紧 S6/S7/S8 贴齐断言+新 W1-W9 缝对场景 41/44（S9/S15/S17 三红与 0dd2153 证据同值
 //   仅注释不设门禁）+ 复跑 13 组全绿（group-shapes 17/17：S7 臂顶裂为此轮缝钉自曝回归、顶对齐跟随修复；双击配对
 //   竞态改收敛重试根治偶发红）；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css（rev 00217-32b）
-window.MN_SITE_VERSION = 'v0.2.42.1';
+// v0.2.43.0 = 图库 info 图标+图片信息二级弹窗（小改动位 42→43·新功能轮·补丁归零；2026-09-14）——用户「那么那个搜索图片
+//   那边能不能做一个就是别人看见的图片右上角有一个info的icon点击后有一个二级弹窗弹出可以查看图片是谁上传的还有图片的
+//   简介这些信息」；问询钦定：①纯前端先做（uploader 字段结构预留，未来真库=后端 Cloud Storage+DB 就绪后对接）②只有公
+//   开图片显示（info 图标仅 visibility=public/team 的图——别人看得见的；private 无图标）；修法：①slati_img_library 条目
+//   新增 uploader 字段（choke point imgLibPut 一处入库，8+ 上传入口+铅笔编辑全覆盖：自己上传=当前用户 displayName 兜底
+//   「你」、Wikimedia 搜索图='Wikimedia Commons'；collectImgLibrary 扫描派生化同口径兜底，旧条目缺 uploader 渲染期补齐
+//   绝不重写 store）②图库 tile 右上角新 info 图标（仅 public/team 渲染、right:52px 最外侧不挤铅笔/垃圾桶、stopPropagation
+//   不触发选中）③二级只读弹窗 imgInfoModal 叠 flagBrowserModal 上（预览+名称+简介兜底「暂无简介」+上传者+上传时间+可见
+//   性+尺寸异步读取；closeModalOnly 只关本窗图库保持开、backdrop 点关最上层、Escape 最先关 info）；零草稿字段（v 保持
+//   9）；零后端、ethereal 零改动无需 inline-css；FC v10.28.33.0（小更新位 32→33）；电池 imglib-v2 31/31 新（S8a-S8i 上传
+//   者落库/公开图标私有无/二级弹窗内容+Escape 优先关 info/维基兜底/重渲染图标保持）+ img-library 44/44 + 复跑 13 组全绿
+//   （autosave-interval 12/12：S3a/S7 遮罩竞态改收敛轮询根治——settings 遮罩 active 在 rAF 里挂、固定 300ms 高负载下偶
+//   发红；caredge-dark 9/9、fc-undo 15/15、group-shapes 17/17、merge-dir 19/19、merge-far 12/12、migrate-btn 41/41、
+//   page-bg 27/27、pbg-meta 38/38、tier-gating 29/29；group-resize 41/44 三红与 0dd2153 证据同值仅注释不设门禁）
+//   （rev 00218-ftt）
+window.MN_SITE_VERSION = 'v0.2.43.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -913,4 +928,10 @@ window.MN_SITE_VERSION = 'v0.2.42.1';
 //   成员记顶对齐对，闭缝遍钉住中心顶后同顶侧臂漂 +8.667 裂开→S7 实证；每帧把跟随顶拉回锚顶只上拉不造重叠）；
 //   组框/快照排除隐藏成员（与 refreshResizeHandles 口径一致）；零草稿字段（v 保持 9）；零后端、ethereal 零改动
 //   无需 inline-css
-window.FLUIDCANVAS_VERSION = 'v10.28.32.1';
+// v10.28.33.0 = 图库 info 图标+图片信息二级弹窗（小更新位 32→33·新功能轮·补丁归零；2026-09-14）——图库 tile 右上角
+//   新 info 图标（仅 visibility=public/team 渲染，private 无）；点击开只读二级弹窗 imgInfoModal：预览+名称+简介（兜底
+//   「暂无简介」）+上传者+上传时间+可见性+尺寸（异步读取带 token 守卫防旧图回写）；slati_img_library 条目新增 uploader
+//   字段（imgLibPut 一处入库，自己上传=displayName 兜底「你」、Wikimedia 图='Wikimedia Commons'；collectImgLibrary
+//   派生化同口径兜底，旧条目渲染期补齐不重写 store）；弹窗栈：closeModalOnly 只关本窗图库保持开、backdrop 点关最上层、
+//   Escape 最先关 info；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
+window.FLUIDCANVAS_VERSION = 'v10.28.33.0';
