@@ -3722,6 +3722,86 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     { id:'ART-015', title:'Inter-Micronation Trade Agreement',     author:'Cartography Guild',      date:'2026-08-08', views:890,   bookmarks:145,  words:2600, status:'published' },
   ];
 
+  // v10.28.35.0: 文章查看器演示样例——ART-001 附真实正文（按编辑器 draft v9 契约：
+  // content 正文卡 + flag 国旗卡 + text 签名卡；字段与 buildDraft/applyDraft 同口径）。
+  // 查看器打开时经 localStorage demo store 兜底渲染（云端 ART-001 不存在 → 404 → 本地样例）。
+  articles[0].contentJson = {
+    v: 9,
+    title: 'The Founding Charter of Etheria',
+    tags: [],
+    cards: [
+      {
+        id: 'c1', type: 'content',
+        col: 3, row: 2, colSpan: 26, rowSpan: 10,
+        content: '<h2 style="margin:0 0 8px">The Founding Charter</h2>' +
+          '<p><b>Article I — Sovereignty.</b> The Nation of Etheria is hereby established as an independent, self-governing micronation founded on the principles of open knowledge and shared imagination.</p>' +
+          '<p><b>Article II — Citizenship.</b> Citizenship is open to all who uphold this Charter, regardless of origin. Every citizen holds one vote in the Assembly.</p>' +
+          '<p><b>Article III — Knowledge.</b> The Archive of Etheria shall preserve every founding document, treaty and map for future generations.</p>',
+        bgAlpha: 0, baseFontSize: 14
+      },
+      {
+        id: 'c2', type: 'flag', label: 'Etheria',
+        col: 3, row: 13, colSpan: 12, rowSpan: 7,
+        imgSrc: 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20360%22%3E%3Crect%20width%3D%22600%22%20height%3D%22120%22%20fill%3D%22%236C5CE7%22%2F%3E%3Crect%20y%3D%22120%22%20width%3D%22600%22%20height%3D%22120%22%20fill%3D%22%23FFFFFF%22%2F%3E%3Crect%20y%3D%22240%22%20width%3D%22600%22%20height%3D%22120%22%20fill%3D%22%232E5BFF%22%2F%3E%3C%2Fsvg%3E'
+      },
+      {
+        id: 'c3', type: 'text', label: 'Charter Notes',
+        col: 17, row: 13, colSpan: 12, rowSpan: 7,
+        background: 'rgba(108,92,231,0.08)',
+        content: '<b>Signatories</b><br>— The Cartography Guild<br>— Council of Etheria<br>— Citizens Assembly<br><i>Ratified 2026-08-05</i>'
+      }
+    ],
+    settings: { snapOn: true, alignOn: true },
+    activePreset: '169',
+    presets: {},
+    groupStyles: {},
+    pageBg: null,
+    lastSaved: 1750000000000
+  };
+
+  // v10.28.35.0: 云端文章（GET /api/articles：published 全部 + 本人各状态）
+  // 置顶并入种子列表；删除/批量操作仍只作用于本地种子（云端删除走后端，另行接线）
+  var cloudArticles = [];
+  var cloudLoaded = false;
+  function seedDemoArticleContent() {
+    try {
+      var store = {};
+      articles.forEach(function (a) { if (a.contentJson) store[a.id] = a.contentJson; });
+      if (Object.keys(store).length) {
+        localStorage.setItem('slati_demo_article_content', JSON.stringify(store));
+      }
+    } catch (e) {}
+  }
+  function loadCloudArticles() {
+    if (cloudLoaded) return;
+    cloudLoaded = true;
+    var run = function () {
+      if (!window.MN_API || !window.MN_API.get) return;
+      MN_API.get('/articles').then(function (res) {
+        if (!res || !res.ok || !res.data || !Array.isArray(res.data.articles)) return;
+        cloudArticles = res.data.articles.map(function (a) {
+          return {
+            id: a.id,
+            title: a.title || 'Untitled',
+            author: 'Member',
+            date: String(a.createdAt || '').slice(0, 10) || '—',
+            views: 0, bookmarks: 0, words: 0,
+            status: a.status === 'published' ? 'published' : 'review',
+            cloud: true
+          };
+        });
+        renderArtStats();
+        renderArtList();
+      });
+    };
+    if (window.MN_API) { run(); return; }
+    // v10.28.35.0: FC 页无 api.js 静态引入 → 动态注入（与 storage.js ensureApi 同口径）
+    var s = document.createElement('script');
+    s.src = '../assets/js/api.js';
+    s.onload = run;
+    document.head.appendChild(s);
+  }
+
   // ═══════════════════════════════════════════
   // State
   // ═══════════════════════════════════════════
@@ -3749,7 +3829,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // List
   // ═══════════════════════════════════════════
   function getFilteredArticles() {
-    var result = articles.slice();
+    var result = cloudArticles.concat(articles); // v10.28.35.0: 云端已发布文章置顶并入种子列表
     if (artFilter !== 'all') {
       result = result.filter(function(a){ return a.status === artFilter; });
     }
@@ -3792,7 +3872,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         '<div class="art-actions">' +
           '<button class="art-action-btn" title="Edit"><span class="material-symbols-outlined" style="font-size:16px">edit</span></button>' +
           '<button class="art-action-btn" title="View"><span class="material-symbols-outlined" style="font-size:16px">visibility</span></button>' +
-          '<button class="art-action-btn danger" title="Delete"><span class="material-symbols-outlined" style="font-size:16px">delete</span></button>' +
+          (a.cloud ? '' : '<button class="art-action-btn danger" title="Delete"><span class="material-symbols-outlined" style="font-size:16px">delete</span></button>') +
         '</div>' +
       '</div>';
     }).join('');
@@ -3912,6 +3992,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (e.target.closest('.art-checkbox')) { toggleSelect(id); return; }
     if (e.target.closest('.art-action-btn.danger')) { deleteArticle(id); return; }
     if (e.target.closest('.art-title') || e.target.closest('.art-action-btn[title="Edit"]')) { window.location.href = 'fluidcanvas-editor.html'; return; }
+    if (e.target.closest('.art-action-btn[title="View"]')) { window.location.href = 'fluidcanvas-editor.html?article=' + encodeURIComponent(id); return; } // v10.28.35.0: 文章查看器
   });
 
   function applyState(filter, sort) {
@@ -3925,7 +4006,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     renderArtList();
   }
 
-  return { init: function() { renderArtStats(); renderArtList(); }, applyState: applyState };
+  return { init: function() { seedDemoArticleContent(); loadCloudArticles(); renderArtStats(); renderArtList(); }, applyState: applyState };
   })();
 
   initURLSync();

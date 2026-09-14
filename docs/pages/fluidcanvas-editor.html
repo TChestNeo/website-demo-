@@ -37,7 +37,9 @@
       var raw = localStorage.getItem('slati_session');
       if (raw) loggedIn = !!(JSON.parse(raw) || {}).loggedIn;
     } catch (e) {}
-    if (!loggedIn) window.location.replace('fluidcanvas.html?locked=1');
+    // v10.28.35.0: ?article=ART-xxx 文章查看模式——游客可看已发布文章（后端按
+    // published/own 强制，无越权），门禁跳过 redirect；普通编辑路径照旧送回 FC
+    if (!loggedIn && !/[?&]article=/.test(window.location.search)) window.location.replace('fluidcanvas.html?locked=1');
   })();
   </script>
   <style>
@@ -1761,6 +1763,63 @@ html.fc-guest .fc-locked-hero {
   padding: var(--space-xl) var(--space-lg);
   text-align: center;
 }
+
+/* ═══ Article View Mode（v10.28.35.0）═══
+   ?article=ART-xxx 只读查看已发布文章（其他用户视角）：编辑器 chrome 全隐、
+   格子范围硬裁剪——画布包进 #fcViewScaler（overflow:hidden + 等比缩放适配视口），
+   超出格子的任何内容（越界卡片/超出画布的背景/编辑器 UI）一律不可见；
+   画布内零交互（pointer-events:none 整子树）。 */
+body.fc-viewmode .editor-header,
+body.fc-viewmode .title-input,
+body.fc-viewmode .grid-controls,
+body.fc-viewmode .asset-panel,
+body.fc-viewmode .asset-panel-toggle,
+body.fc-viewmode .editor-statusbar { display: none !important; }
+body.fc-viewmode .canvas-body { padding: 0; }
+body.fc-viewmode .editor-body {
+  overflow: hidden !important;
+  padding: 16px !important;
+  display: flex; align-items: center; justify-content: center;
+}
+body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
+#fcViewScaler {
+  overflow: hidden;
+  position: relative;
+  flex: none;
+  border-radius: var(--radius-md);
+  box-shadow: 0 24px 60px -16px rgba(0,0,0,0.45);
+  background: var(--color-surface-container-lowest);
+}
+#fcViewTitle {
+  position: fixed; left: 20px; bottom: 18px; z-index: 60;
+  max-width: min(60vw, 560px);
+  padding: 10px 18px;
+  border-radius: var(--radius-full);
+  background: var(--card-bg);
+  border: var(--card-border);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-md);
+  font-weight: 700; font-size: 14px; color: var(--color-on-surface);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  pointer-events: none;
+}
+#fcViewPlaceholder {
+  position: absolute; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-lg);
+}
+.fcvp-card {
+  max-width: 480px; width: 100%;
+  text-align: center;
+  padding: 40px 32px;
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+  border: var(--card-border);
+  box-shadow: var(--shadow-md);
+}
+.fcvp-card .fcvp-icon { font-size: 44px; color: var(--color-outline); margin-bottom: 14px; }
+.fcvp-card h2 { margin: 0 0 10px; font-size: 18px; color: var(--color-on-surface); }
+.fcvp-card p { margin: 0 0 22px; font-size: 13px; line-height: 1.7; color: var(--color-on-surface-variant); }
 
 /* ── v0.2.28.14 恢复：Migrate 两套按钮样式（顶部 cssbuttons-io 紫渐变 + 弹窗 Uiverse 药丸）
    v0.2.8.0 液态玻璃移植轮（4a01104）重写本 style 尾部时整块误删（189→30 行）——
@@ -5895,6 +5954,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   // Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y —— 焦点在输入框/可编辑卡内时让给原生撤销（表单优先）
   document.addEventListener('keydown', function (e) {
+    if (document.body.classList.contains('fc-viewmode')) return; // v10.28.35.0: 查看模式零快捷键
     if (!(e.ctrlKey || e.metaKey)) return;
     var el = document.activeElement;
     if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return;
@@ -6064,6 +6124,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
 
   function saveDraft() {
+    if (document.body.classList.contains('fc-viewmode')) return; // v10.28.35.0: 查看模式绝不写本地草稿
     var draft = buildDraft();
     try {
       localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(draft));
@@ -6110,6 +6171,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var cloudDraftVersion = null; // 服务端版本（PUT baseVersion → 409 检测）
 
   function putCloudDraft(draft) {
+    if (document.body.classList.contains('fc-viewmode')) return; // v10.28.35.0: 查看模式绝不推云端草稿
     if (!window.MN_API || !fcCloudMode) return;
     var body = { data: draft };
     if (cloudDraftVersion != null) body.baseVersion = cloudDraftVersion;
@@ -6140,6 +6202,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
 
   function syncCloudDraft() {
+    if (document.body.classList.contains('fc-viewmode')) return; // v10.28.35.0: 查看模式不采纳云端草稿（防覆盖文章渲染）
     if (!window.MN_API || !fcCloudMode) return;
     MN_API.get('/drafts/fluidcanvas/main').then(function (res) {
       if (!res.ok || !res.data || !res.data.draft) return;
@@ -13967,6 +14030,16 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function computeCols() {
     var body = gridCanvas.parentElement; // .editor-body
     var avail = body.clientWidth - 20; // padding buffer
+    // v10.28.35.0: 查看模式面板已 display:none——按作者编辑器口径（面板 260px 开放 +
+    // 1px 右缘 divider）重建格宽，否则查看器格子比作者格子宽、「超出格子」判定两处不一致
+    if (document.body.classList.contains('fc-viewmode')) {
+      var cb = document.querySelector('.canvas-body');
+      if (cb) {
+        var pw = parseInt(getComputedStyle(cb).getPropertyValue('--asset-panel-w'), 10);
+        if (isNaN(pw)) pw = 260;
+        avail -= pw + 1;
+      }
+    }
     var cs = getCellSize();
     var gap = 2;
     return Math.max(12, Math.floor((avail + gap) / (cs + gap)));
@@ -14112,10 +14185,131 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (PAGE_BG_COMPOSITE) syncPageBgMinHeight();
   }
 
+  // ── Article View Mode（v10.28.35.0）──────────────────────────────────────
+  // ?article=ART-xxx：只读查看已发布文章（其他用户视角）。零新渲染器——复用
+  // applyDraft 全量恢复（全部卡型/组背景/页面背景/富文本），只读+硬裁剪：
+  // 「显示范围只有那个格子的范围，超出格子就无法显示」——画布包进 #fcViewScaler
+  // （overflow:hidden + 等比缩放适配视口），越界卡片/超出画布的背景一律裁掉。
+  function isArticleView() {
+    return /[?&]article=([^&#]+)/.test(window.location.search);
+  }
+  function getArticleParam() {
+    var m = window.location.search.match(/[?&]article=([^&#]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function escArticleText(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+  function showArticlePlaceholder(title, reason) {
+    document.body.classList.add('fc-viewmode');
+    var holder = document.createElement('div');
+    holder.id = 'fcViewPlaceholder';
+    holder.innerHTML =
+      '<div class="fcvp-card">' +
+        '<span class="material-symbols-outlined fcvp-icon">article</span>' +
+        '<h2>' + escArticleText(title || 'Article unavailable') + '</h2>' +
+        '<p>' + escArticleText(reason) + '</p>' +
+        '<a class="btn btn-primary btn-sm" href="fluidcanvas.html?view=articles">← Back to Articles</a>' +
+      '</div>';
+    var cb = document.querySelector('.canvas-body');
+    if (cb) cb.appendChild(holder);
+  }
+  function enterViewLayout() {
+    // 格范围 = 编辑器 boot 自身重建的格（cols/cellSize 与作者刷新编辑器看到的一致）：
+    // 宽 cols×(cell+2)、高 totalRows×(cell+2)——与 positionCard 像素数学同口径。
+    var cs = getCellSize();
+    var gap = 2;
+    var gridW = currentCols * (cs + gap);
+    var gridH = totalRows * (cs + gap);
+    var canvas = gridCanvas;
+    var scaler = document.createElement('div');
+    scaler.id = 'fcViewScaler';
+    canvas.parentNode.insertBefore(scaler, canvas);
+    scaler.appendChild(canvas);
+    canvas.style.width = gridW + 'px';
+    canvas.style.height = gridH + 'px';
+    canvas.style.minHeight = '0';
+    canvas.style.position = 'absolute';
+    canvas.style.left = '0';
+    canvas.style.top = '0';
+    canvas.style.transformOrigin = 'top left';
+    function rescale() {
+      var body = canvas.parentNode.parentNode; // #fcViewScaler → .editor-body
+      if (!body) return;
+      var availW = Math.max(120, body.clientWidth - 32);
+      var availH = Math.max(120, body.clientHeight - 32);
+      var s = Math.min(1, availW / gridW, availH / gridH);
+      canvas.style.transform = 'scale(' + s + ')';
+      scaler.style.width = Math.round(gridW * s) + 'px';
+      scaler.style.height = Math.round(gridH * s) + 'px';
+    }
+    // 只读硬化：pointer-events:none 挡鼠标但挡不住 Tab 焦点——contentEditable
+    // 卡/卡内输入框全部关闭编辑并移出 Tab 序（readOnly 不改样式不置灰）
+    canvas.querySelectorAll('input, textarea, select').forEach(function (el) {
+      el.readOnly = true; el.tabIndex = -1;
+    });
+    canvas.querySelectorAll('[contenteditable]').forEach(function (el) {
+      el.setAttribute('contenteditable', 'false'); el.tabIndex = -1;
+    });
+    canvas.querySelectorAll('button, a').forEach(function (el) { el.tabIndex = -1; });
+    rescale();
+    window.addEventListener('resize', rescale);
+  }
+  function renderArticleDraft(draft) {
+    applyDraft(draft);
+    enterViewLayout();
+    if (draft && draft.title) {
+      var chip = document.createElement('div');
+      chip.id = 'fcViewTitle';
+      chip.textContent = draft.title;
+      document.body.appendChild(chip);
+    }
+  }
+  function initArticleView() {
+    var id = getArticleParam();
+    document.body.classList.add('fc-viewmode');
+    if (!id) { showArticlePlaceholder('', '缺少文章编号，无法打开。'); return; }
+    if (!window.MN_API) { showArticlePlaceholder(id, '无法连接文章服务，请稍后再试。'); return; }
+    MN_API.get('/articles/' + encodeURIComponent(id)).then(function (res) {
+      var art = (res && res.ok && res.data && res.data.article) ? res.data.article : null;
+      var cj = art ? (art.contentJson || art.content_json) : null;
+      if (art && cj) {
+        var draft = null;
+        try { draft = (typeof cj === 'string') ? JSON.parse(cj) : cj; } catch (e) {}
+        if (draft && Array.isArray(draft.cards)) { renderArticleDraft(draft); return; }
+        showArticlePlaceholder(art.title || id, '这篇文章的正文内容无法读取。');
+        return;
+      }
+      // 云端没有 → demo 种子兜底（fluidcanvas.html ?view=articles 首访时写入
+      // slati_demo_article_content；ART-001 样例文章零后端即可演示）
+      try {
+        var store = JSON.parse(localStorage.getItem('slati_demo_article_content') || '{}');
+        var demo = store[id];
+        if (demo) {
+          var dd = null;
+          try { dd = (typeof demo === 'string') ? JSON.parse(demo) : demo; } catch (e) {}
+          if (dd && Array.isArray(dd.cards)) { renderArticleDraft(dd); return; }
+        }
+      } catch (e) {}
+      var reason = (res && res.status === 404)
+        ? '这篇文章不存在，或已被删除。'
+        : '这篇文章暂未公开（可能仍在审核中），或没有正文内容。';
+      showArticlePlaceholder(art ? art.title : id, reason);
+    });
+  }
+
   // ── Init ──
   initPresetData();
   applyPreset('169');
-  loadDraft();
+  // v10.28.35.0: ?article= 查看模式——完全不碰本地草稿（不 loadDraft），
+  // 直接拉云端文章渲染；普通编辑路径照旧
+  if (isArticleView()) {
+    initArticleView();
+  } else {
+    loadDraft();
+  }
   syncCanvasHeight();
   updateWordCount();
   if (!titleInput.value) {
@@ -14154,6 +14348,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // Refit on window resize
   var resizeTimer;
   window.addEventListener('resize', function () {
+    if (document.body.classList.contains('fc-viewmode')) return; // v10.28.35.0: 查看模式列数/卡位冻结（rescale 自管缩放）
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(refitColumns, 250);
   });

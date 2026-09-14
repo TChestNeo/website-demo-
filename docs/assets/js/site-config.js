@@ -729,7 +729,9 @@ window.MN_SITE = window.MN_SITE || {};
 //   剩余探针慢帧=无头 SwiftShader 软件重绘伪影（真实 GPU 合成不存在，A/B 禁玻璃后同段干净）；零草稿字段（v 保持 9）；
 //   零后端、ethereal 零改动无需 inline-css
 //   （rev 00223-znx）
-window.MN_SITE_VERSION = 'v0.2.45.2';
+// v0.2.46.0 = 文章查看器（其他用户看已发布文章，格子范围硬裁剪——小改动位 45→46·新功能轮；2026-09-15）——用户「现在能不能做一下当我发布文章后其他用户看见这个文章的界面？我要求它的显示范围只有那个格子的范围超出格子就无法显示」：编辑器 ?article=ART-xxx 查看模式（复用 applyDraft 全量渲染器零复制：chrome 全隐+只读硬化+游客可看已发布）+ 格范围硬裁剪（画布包进 #fcViewScaler overflow:hidden + 等比缩放适配视口，越界卡片/超出画布的背景一律不可见）；首页 ?view=articles 列表接云端（GET /api/articles：published 全部+本人各状态置顶合并）+ View 按钮接线查看器 + ART-001 样例正文（demo store 兜底零后端可演示）；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
+//   （rev 00224-k5l）
+window.MN_SITE_VERSION = 'v0.2.46.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1022,4 +1024,6 @@ window.MN_SITE_VERSION = 'v0.2.45.2';
 //   （强排读 1421→93）。序列化链/处理器实测无辜；剩余慢帧=无头 SwiftShader 软件重绘伪影（真实 GPU 不存在）；零草稿字段
 //   （v 保持 9）；零后端、ethereal 零改动无需 inline-css
 //   （rev 00223-znx）
-window.FLUIDCANVAS_VERSION = 'v10.28.34.2';
+// v10.28.35.0 = 文章查看器（小更新位 34→35·新功能轮；2026-09-15）——用户「现在能不能做一下当我发布文章后其他用户看见这个文章的界面？我要求它的显示范围只有那个格子的范围超出格子就无法显示」：编辑器 ?article=ART-xxx 只读查看模式（head 门禁跳过 redirect 游客可看已发布；body.fc-viewmode chrome 全隐；applyDraft 全量渲染零新渲染器；saveDraft/putCloudDraft/syncCloudDraft/keydown/refitColumns 五处 viewmode 守卫——绝不覆盖本地草稿；画布包进 #fcViewScaler overflow:hidden 等比缩放适配视口=格子范围硬裁剪；pointer-events:none + contenteditable 关闭 + Tab 序移除只读硬化；云端 404 → localStorage demo store 兜底（ART-001 样例）；非公开/404/无正文 → 占位状态卡）；首页 ?view=articles：View 按钮接线查看器、云端文章合并置顶（author=Member/日期 createdAt/cloud 行无删除钮）、批量发布删除仍只作用本地种子；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
+//   （rev 00224-k5l）
+window.FLUIDCANVAS_VERSION = 'v10.28.35.0';
