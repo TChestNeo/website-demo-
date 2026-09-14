@@ -600,7 +600,22 @@ textarea.input-glass {
   box-shadow: var(--shadow-lg);
   transform: scale(0.95);
   opacity: 0;
-  transition: all 0.25s ease;
+  /* v0.2.45.2：隐藏态免绘制——旧隐藏态只 opacity:0，玻璃卡（backdrop-filter
+     blur(32px)）连同卡内无限动画（迁移按钮魔法条 2s 自转）每帧照样重光栅
+     ——编辑器静息实测 15fps（探针 tmp-probe-editor-jank 二分实证：摘掉转圈
+     条 17→52 帧/秒）。visibility 隐藏杀绘制，关闭延迟 0.25s 等淡出结束 */
+  visibility: hidden;
+  transition: all 0.25s ease, visibility 0s linear 0.25s;
+}
+/* v0.2.45.2：隐藏弹窗内动画全停——visibility:hidden 只免绘制，卡内无限动画
+   （迁移按钮魔法条 2s 自转）的合成器 tick 仍每帧把玻璃面拖进重光栅循环：
+   探针微基准⑥ 暂停全部动画后编辑链慢帧 7→3、整窗 fc-moving 7→2 实证；
+   animation 不吃继承且 `*` 不命中伪元素 → ::before/::after 一并点名。
+   弹窗打开 (.active) 规则失配，卡内动画照常从零起播、零视觉差异 */
+.modal-card:not(.active) *,
+.modal-card:not(.active) *::before,
+.modal-card:not(.active) *::after {
+  animation: none !important;
 }
 /* Inner scroll body — carries the scroll so border-radius stays intact */
 .modal-card-body {
@@ -723,7 +738,7 @@ details.pbg-details summary {
   scrollbar-width: thin;
   scrollbar-color: rgba(118,117,134,0.2) transparent;
 }
-.modal-card.active { transform: scale(1); opacity: 1; pointer-events: auto; }
+.modal-card.active { transform: scale(1); opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s, 0s; } /* v0.2.45.2：打开立即可见（visibility 延迟归零），淡入动画保留 */
 
 /* ----- Progress Steps ----- */
 .progress-steps {
@@ -2615,6 +2630,19 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       box-shadow: var(--card-shadow, var(--shadow-sm)), 0 0 0 3px var(--color-primary-fixed-dim);
     }
     .grid-card.dragging { cursor: grabbing; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
+    /* v0.2.45.2：手势期间玻璃挂起（body.fc-moving）——backdrop-filter 面的
+       背底内容每帧变化（卡在头栏/面板玻璃下穿过、组背景随组移动）→ 每帧重
+       采样重光栅；探针 tmp-probe-editor-jank A/B 实证：全页禁玻璃后同一次
+       拖拽 15 慢帧 → 2 慢帧（60fps，读取量反而更高）。拖拽/缩放/旋转/表格
+       手柄期间全页玻璃暂离，提交后下一帧还原——运动中不可察、松手瞬时回稳。
+       组背景五连 drop-shadow 栈同为软件光栅化大头，一并挂起。 */
+    body.fc-moving * {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+    body.fc-moving .grid-group-bg {
+      filter: none !important;
+    }
     /* v10.28.14 — wiki 吸合分组：组外背景（钦定「就普通的不透明」——
        surface-container-low 不透明色，z 0 恒在卡下）+ 吸合目标虚线提示 */
     .grid-group-bg {
@@ -7118,6 +7146,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
           if (!st.dragging) {
             st.dragging = true;
+            // v0.2.45.2：起拖即挂 fc-moving（全页玻璃暂离，见 .grid-card.dragging
+            // 后 CSS 注释——拖拽中玻璃面每帧重光栅是掉帧大头）
+            document.body.classList.add('fc-moving');
             // v10.28.14: 组成员整组高亮提层 + 起拖时按当前 groupId 懒取成员
             //（长按先拆出的卡 groupId 已清 → 成员只剩本卡，即单卡拖）
             st.members = st.singleDrag ? [st.card] : groupMembers(st.card);
@@ -7132,68 +7163,101 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           }
 
           st.moved = true;
-          var nx = st.origX + dx;
-          var ny = st.origY + dy;
-          // v10.28.14 — wiki 吸合（合并）：未分组卡拖近目标卡 ≤12px 时贴齐，
-          // 优先于网格/对齐吸附（贴齐位不是网格点，混用会在吸合点来回跳）。
-          // 吸合成功记 mergeTarget，mouseup 校验仍在贴齐位 → 提交成组。
-          var merge = null;
-          if (!st.card.dataset.groupId) merge = findMergeSnap(st.card, nx, ny);
-          if (merge) {
-            if (merge.axis === 'x') nx += merge.d; else ny += merge.d;
-          } else {
-            // Grid snap (toggle): round the top-left corner to the grid.
-            // v9.4: no boundary clamp — the card can be dragged beyond the
-            // page edge.
-            if (snapOn) {
-              var step = getCellSize() + 2;
-              nx = Math.round(nx / step) * step;
-              ny = Math.round(ny / step) * step;
-            }
-            // Alignment (v9, default ON): snap to other cards' bbox lines and
-            // the page center within 6px, per axis, and show the guide lines.
-            // Runs after grid snap and wins per axis.
-            if (alignOn) {
-              var asnap = computeAlignSnap(st.card, nx, ny, ALIGN_THRESHOLD);
-              nx = asnap.nx; ny = asnap.ny;
-              updateAlignGuides(asnap.guideV, asnap.guideH);
-            }
+          // v0.2.45.2：rAF 合并——每帧只算一次吸合/吸附/落位。原实现每个
+          // mousemove 事件全量执行：吸合+对齐双遍 getAllCards × offsetWidth/
+          // offsetHeight 强排读，12 卡≈48 读/事件（写在读前 layout thrash，
+          // 探针 tmp-probe-editor-jank 实测）；合并后每帧一次 + 拖拽期尺寸
+          // 缓存零强排读（125Hz 鼠标 ≈ 每帧吞掉 2+ 事件）
+          st.pendingX = e.clientX;
+          st.pendingY = e.clientY;
+          if (!st.raf) {
+            st.raf = requestAnimationFrame(function () {
+              st.raf = null;
+              if (addCardDrag._activeDrag !== st) return; // 已松手（mouseup 已同步落位）
+              try { dragFrame(st, st.pendingX, st.pendingY); } catch (err) { console.error('onMove:', err); }
+            });
           }
-          clearMergeTarget();
-          if (merge) {
-            st.mergeTarget = merge;
-            merge.target.classList.add('merge-target');
-            // 目标卡在组里 → 整组点亮吸合提示
-            if (merge.target.dataset.groupId) {
-              groupMembers(merge.target).forEach(function (c) { c.classList.add('merge-target'); });
-            }
-            updateAlignGuides(null, null); // 吸合时收起对齐参考线，不打架
-          } else {
-            st.mergeTarget = null;
-          }
-          // 位置统一从成员初位 + 主卡吸附后的位移——单卡=原行为，组=整组平移
-          var dxA = nx - st.origX, dyA = ny - st.origY;
-          st.memberOrig.forEach(function (mo) {
-            mo.card.style.left = (mo.x + dxA) + 'px';
-            mo.card.style.top = (mo.y + dyA) + 'px';
-          });
-          syncStatsEditPanel(); // v10.28.5.2: 拖拽中面板实时跟随（拖拽不经 moveCardPx，mouseup 才提交）
-          // Boundary reference (v9.4): touching/crossing the page edge
-          // lights up the blue boundary lines. Follows the align toggle,
-          // display-only — never blocks.
-          updateBoundaryGuides(alignOn && boundaryTouched(st.card));
-          // Preview matches what the user sees: the card's rotation-aware
-          // pixel bbox → every cell it intersects.
-          highlightCardCoverage(st.card);
-          refreshResizeHandles();
-          if (st.members.length > 1) updateGroupBgs(); // v10.28.14: 组背景实时跟随
         } catch (err) { console.error('onMove:', err); }
       });
+
+      // v0.2.45.2：每帧一次的拖拽落位体（自 mousemove 拆出；mouseup 同步
+      // flush 挂起帧后走原提交链，吸合重验/落位用最终位置）
+      function dragFrame(st, clientX, clientY) {
+        if (!st.sizes) {
+          // 拖拽期几何缓存：拖拽只平移、不改任何卡尺寸（长按拆分也不改
+          // 几何），起拖后一次性读全卡尺寸，帧内零强排读
+          st.sizes = {};
+          getAllCards().forEach(function (c) {
+            st.sizes[c.dataset.cardId] = { w: c.offsetWidth, h: c.offsetHeight };
+          });
+        }
+        var nx = st.origX + (clientX - st.startX);
+        var ny = st.origY + (clientY - st.startY);
+        // v10.28.14 — wiki 吸合（合并）：未分组卡拖近目标卡 ≤12px 时贴齐，
+        // 优先于网格/对齐吸附（贴齐位不是网格点，混用会在吸合点来回跳）。
+        // 吸合成功记 mergeTarget，mouseup 校验仍在贴齐位 → 提交成组。
+        var merge = null;
+        if (!st.card.dataset.groupId) merge = findMergeSnap(st.card, nx, ny, st.sizes);
+        if (merge) {
+          if (merge.axis === 'x') nx += merge.d; else ny += merge.d;
+        } else {
+          // Grid snap (toggle): round the top-left corner to the grid.
+          // v9.4: no boundary clamp — the card can be dragged beyond the
+          // page edge.
+          if (snapOn) {
+            var step = getCellSize() + 2;
+            nx = Math.round(nx / step) * step;
+            ny = Math.round(ny / step) * step;
+          }
+          // Alignment (v9, default ON): snap to other cards' bbox lines and
+          // the page center within 6px, per axis, and show the guide lines.
+          // Runs after grid snap and wins per axis.
+          if (alignOn) {
+            var asnap = computeAlignSnap(st.card, nx, ny, ALIGN_THRESHOLD, st.sizes);
+            nx = asnap.nx; ny = asnap.ny;
+            updateAlignGuides(asnap.guideV, asnap.guideH);
+          }
+        }
+        clearMergeTarget();
+        if (merge) {
+          st.mergeTarget = merge;
+          merge.target.classList.add('merge-target');
+          // 目标卡在组里 → 整组点亮吸合提示
+          if (merge.target.dataset.groupId) {
+            groupMembers(merge.target).forEach(function (c) { c.classList.add('merge-target'); });
+          }
+          updateAlignGuides(null, null); // 吸合时收起对齐参考线，不打架
+        } else {
+          st.mergeTarget = null;
+        }
+        // 位置统一从成员初位 + 主卡吸附后的位移——单卡=原行为，组=整组平移
+        var dxA = nx - st.origX, dyA = ny - st.origY;
+        st.memberOrig.forEach(function (mo) {
+          mo.card.style.left = (mo.x + dxA) + 'px';
+          mo.card.style.top = (mo.y + dyA) + 'px';
+        });
+        syncStatsEditPanel(); // v10.28.5.2: 拖拽中面板实时跟随（拖拽不经 moveCardPx，mouseup 才提交）
+        // Boundary reference (v9.4): touching/crossing the page edge
+        // lights up the blue boundary lines. Follows the align toggle,
+        // display-only — never blocks.
+        updateBoundaryGuides(alignOn && boundaryTouched(st.card));
+        // Preview matches what the user sees: the card's rotation-aware
+        // pixel bbox → every cell it intersects.
+        highlightCardCoverage(st.card);
+        refreshResizeHandles();
+        if (st.members.length > 1) updateGroupBgs(); // v10.28.14: 组背景实时跟随
+      }
 
       document.addEventListener('mouseup', function (e) {
         var st = addCardDrag._activeDrag;
         if (!st) return;
         addCardDrag._activeDrag = null;
+        // v0.2.45.2：先把挂起的最后一帧同步落位（rAF 合并后位置可能差一帧；
+        // 吸合重验/落位提交必须用最终位置）
+        if (st.raf) { cancelAnimationFrame(st.raf); st.raf = null; try { dragFrame(st, st.pendingX, st.pendingY); } catch (err) { console.error('onMove:', err); } }
+        // v0.2.45.2：松手落位同帧仍无玻璃（提交链最后一帧画完不付重光栅费），
+        // 下一帧还原玻璃——松手瞬间零卡顿
+        requestAnimationFrame(function () { document.body.classList.remove('fc-moving'); });
         try {
           if (st.longPressTimer) { clearTimeout(st.longPressTimer); st.longPressTimer = null; }
           var mems = st.members || [st.card];
@@ -9248,6 +9312,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   function sheetGripDrag(e, grip, mode) {
     e.preventDefault(); e.stopPropagation(); // 不 arm 卡片拖拽、不选文字
+    document.body.classList.add('fc-moving'); // v0.2.45.2：表格手柄手势玻璃暂离（同上）
     var card = grip.closest('.sheet-card');
     var startXY = mode === 'col' ? e.clientX : e.clientY;
     var startSize, apply;
@@ -9266,14 +9331,25 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       apply = function (px) { tr.style.height = px + 'px'; };
     }
     var MIN = mode === 'col' ? 40 : 22; // 最小列宽 40px / 最小行高 22px
-    function onMove(ev) {
-      ev.preventDefault();
+    // v0.2.45.2：rAF 合并——表格列宽/行高手柄每帧只写一次（写宽即触发表格
+    // 重排+重绘，125Hz mousemove 下原实现每事件一次）；松手同步 flush 终值
+    var gripRaf = null, gripLastEv = null;
+    function applyMove(ev) {
       var d = (mode === 'col' ? ev.clientX : ev.clientY) - startXY;
       apply(Math.max(MIN, startSize + d));
     }
+    function onMove(ev) {
+      ev.preventDefault();
+      gripLastEv = ev;
+      if (gripRaf) return;
+      gripRaf = requestAnimationFrame(function () { gripRaf = null; applyMove(gripLastEv); });
+    }
     function onUp() {
+      if (gripRaf) { cancelAnimationFrame(gripRaf); gripRaf = null; }
+      if (gripLastEv) applyMove(gripLastEv);
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+      requestAnimationFrame(function () { document.body.classList.remove('fc-moving'); }); // v0.2.45.2：提交后下一帧还原玻璃
       sheetSerialize(card); onContentChange();
     }
     document.addEventListener('mousemove', onMove);
@@ -9702,8 +9778,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
 
   // 旋转感知像素包围盒（与 cardLineSet 同公式）——吸合/组背景共用
-  function cardBBox(card, x, y) {
-    var w = card.offsetWidth || 0, h = card.offsetHeight || 0;
+  function cardBBox(card, x, y, size) {
+    // v0.2.45.2：可选 size 缓存（拖拽热路径传——offsetWidth/Height 是强排读，
+    // 写在读前每事件触发 layout thrash）
+    var w = (size ? size.w : card.offsetWidth) || 0, h = (size ? size.h : card.offsetHeight) || 0;
     var rad = Math.abs(parseFloat(card.dataset.rotate) || 0) * Math.PI / 180;
     var bw = Math.abs(w * Math.cos(rad)) + Math.abs(h * Math.sin(rad));
     var bh = Math.abs(w * Math.sin(rad)) + Math.abs(h * Math.cos(rad));
@@ -9725,12 +9803,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // 抓出：落点 (0,160) 命中 x=1050 的卡，d=8px 却相距 1050px）。
   // x 轴边对 → y 范围需相交；y 轴边对 → x 范围需相交（严格重叠，
   // 边相切不算——角对角不是「贴近」）。
-  function findMergeSnap(card, nx, ny) {
-    var self = cardBBox(card, nx, ny);
+  function findMergeSnap(card, nx, ny, sizes) {
+    var self = cardBBox(card, nx, ny, sizes && sizes[card.dataset.cardId]);
     var best = null;
     getAllCards().forEach(function (t) {
       if (t === card) return;
-      var tgt = cardBBox(t, parseFloat(t.style.left) || 0, parseFloat(t.style.top) || 0);
+      var tgt = cardBBox(t, parseFloat(t.style.left) || 0, parseFloat(t.style.top) || 0,
+                         sizes && sizes[t.dataset.cardId]);
       var pairs = [['right', 'left', 'x', 'left'], ['left', 'right', 'x', 'right'],
                    ['bottom', 'top', 'y', 'top'], ['top', 'bottom', 'y', 'bottom']];
       pairs.forEach(function (p) {
@@ -10418,8 +10497,24 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       resizeHandles.push(h);
     });
     // One-time document listeners (same pattern as addCardDrag._docBound)
-    document.addEventListener('mousemove', function (e) { onResizeMove(e); onRotateMove(e); });
-    document.addEventListener('mouseup', function (e) { onResizeUp(e); onRotateUp(e); });
+    // v0.2.45.2：rAF 合并——缩放/旋转每帧只算一次（125Hz mousemove 下原实现
+    // 每事件全量算+写尺寸 → 每事件强制一次布局+玻璃层重绘）；挂起帧在
+    // mouseup 同步 flush，提交链用最终几何（幂等：绝对从起点重推）
+    var _lastMoveEv = null, _moveRaf = null;
+    document.addEventListener('mousemove', function (e) {
+      if (!resizeState && !rotateState) return;
+      _lastMoveEv = e;
+      if (_moveRaf) return;
+      _moveRaf = requestAnimationFrame(function () {
+        _moveRaf = null;
+        try { onResizeMove(_lastMoveEv); onRotateMove(_lastMoveEv); } catch (err) {}
+      });
+    });
+    document.addEventListener('mouseup', function (e) {
+      if (_moveRaf) { cancelAnimationFrame(_moveRaf); _moveRaf = null; }
+      try { onResizeMove(_lastMoveEv); onRotateMove(_lastMoveEv); } catch (err) {}
+      onResizeUp(e); onRotateUp(e);
+    });
     return resizeHandles;
   }
 
@@ -10507,6 +10602,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     };
     card.classList.add('dragging');
     card.style.zIndex = 50;
+    document.body.classList.add('fc-moving'); // v0.2.45.2：旋转手势玻璃暂离（同上）
   }
 
   function onRotateMove(e) {
@@ -10550,6 +10646,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!rotateState) return;
     var st = rotateState;
     rotateState = null;
+    requestAnimationFrame(function () { document.body.classList.remove('fc-moving'); }); // v0.2.45.2：提交后下一帧还原玻璃
     try {
       st.card.classList.remove('dragging');
       st.card.style.zIndex = '';
@@ -10638,6 +10735,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     e.stopPropagation(); // blocks canvas deselect + card drag
     e.preventDefault();  // blocks text selection
     hideContextMenu();
+    document.body.classList.add('fc-moving'); // v0.2.45.2：缩放手势玻璃暂离（同上）
     var card = selectedCard;
     var dirX = dir.indexOf('e') !== -1 ? 1 : (dir.indexOf('w') !== -1 ? -1 : 0);
     var dirY = dir.indexOf('s') !== -1 ? 1 : (dir.indexOf('n') !== -1 ? -1 : 0);
@@ -11033,6 +11131,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!resizeState) return;
     var st = resizeState;
     resizeState = null;
+    requestAnimationFrame(function () { document.body.classList.remove('fc-moving'); }); // v0.2.45.2：提交后下一帧还原玻璃
     try {
       if (st.isGroup) {
         // v10.28.21: 整组缩放松手——清成员拖拽态 + 提交（commitGroupResize）。
@@ -11065,8 +11164,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var alignGuideKey = '';
   var guideVEl = null, guideHEl = null;
 
-  function cardLineSet(card, x, y) {
-    var w = card.offsetWidth, h = card.offsetHeight;
+  function cardLineSet(card, x, y, size) {
+    // v0.2.45.2：可选 size 缓存（同 cardBBox 口径）
+    var w = size ? size.w : card.offsetWidth, h = size ? size.h : card.offsetHeight;
     var rad = Math.abs(parseFloat(card.dataset.rotate) || 0) * Math.PI / 180;
     var hw = (Math.abs(w * Math.cos(rad)) + Math.abs(h * Math.sin(rad))) / 2;
     var hh = (Math.abs(w * Math.sin(rad)) + Math.abs(h * Math.cos(rad))) / 2;
@@ -11078,9 +11178,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // Pure: returns { nx, ny, guideV, guideH } — snapped top-left (canvas
   // coords) plus guide line coordinates (null = no snap on that axis).
   // threshold: 6 for drag (snap), 0.5 for resize (display-only).
-  function computeAlignSnap(card, nx, ny, threshold) {
+  function computeAlignSnap(card, nx, ny, threshold, sizes) {
     var th = threshold == null ? ALIGN_THRESHOLD : threshold;
-    var self = cardLineSet(card, nx, ny);
+    var self = cardLineSet(card, nx, ny, sizes && sizes[card.dataset.cardId]);
     var selfX = [self.left, self.cx, self.right];
     var selfY = [self.top, self.cy, self.bottom];
     var bestX = null, bestY = null, bestGX = null, bestGY = null;
@@ -11088,7 +11188,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     getAllCards().forEach(function (c) {
       if (c !== card) {
         targets.push(cardLineSet(c, parseFloat(c.style.left) || 0,
-                                    parseFloat(c.style.top) || 0));
+                                    parseFloat(c.style.top) || 0,
+                                    sizes && sizes[c.dataset.cardId]));
       }
     });
     var page = pageSize();
@@ -11389,6 +11490,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         if (rotateState.moved) commitRotate(rotateState);
         rotateState = null;
       }
+      // v0.2.45.2：Escape 中途提交缩放/旋转后还原玻璃；仍在拖拽（按住鼠标
+      // 时按 Esc 不取消卡片拖拽）则保持挂起直到松手
+      if (addCardDrag._activeDrag && addCardDrag._activeDrag.dragging) document.body.classList.add('fc-moving');
+      else requestAnimationFrame(function () { document.body.classList.remove('fc-moving'); });
     }
     // v10.27.1 — Layers 快捷键（与 Canva 一致）：Ctrl+[ 下移一层 / Ctrl+] 上移一层。
     // 输入框/可编辑文本内不接管（label 输入、卡内文字照常打字）。

@@ -713,7 +713,23 @@ window.MN_SITE = window.MN_SITE || {};
 //   修法=暗色 :root[data-theme="dark"] .tilt-container:not(.card) 覆写 box-shadow（外侧深投影保留，!important 压过内联
 //   rest/hover 两态，channelOverview/channelSummary 等 .card 卡除外）；亮色零触碰；零后端、ethereal 零改动无需 inline-css
 //   （rev 00222-ww8）
-window.MN_SITE_VERSION = 'v0.2.45.1';
+// v0.2.45.2 = FC 首页频道卡边缘光+切换卡顿修复（用户「为什么FC首页顶部的那个个人频道和团队频道的那个边缘的亮光那么
+//   割裂，然后顶部的频道切换动画很卡」）+ 编辑器掉帧根治（补丁位 1→2·性能修复轮；2026-09-15）——①首页：暗色 active
+//   账户卡边缘统一语言（白细线边框+底部内嵌主色指示条——割裂真身=旧高亮描边+反光条杂拼）；切换期 tilt 倾斜冻结
+//   （data-tilt-off token + tilt.js _slatiTiltBound 去重/守卫，切换窗口内 mousemove/mouseleave 不重算倾斜）、统一
+//   0.15s/0.2s 退出+200ms 交换+0.02s 交错进入+420ms 解冻、LG.scan 延迟 420ms 避让切换窗口、过渡 0.5s→0.35s；
+//   ②编辑器：用户「能不能顺便优化一下整个FC的代码因为连文章编辑那边的操作都有明显的掉帧」；探针 tmp-probe-editor-jank
+//   实证真身：①隐藏弹窗（旧隐藏态只 opacity:0 仍每帧渲染）
+//   玻璃卡 blur(32px)+卡内无限转圈动画 → 编辑器静息 15fps（二分：摘转圈条 17→52 帧/秒）→ modal-card 隐藏态
+//   visibility:hidden + 隐藏态卡内动画全停（animation:none !important 连伪元素；打开 .active 规则失配动画照常起播）
+//   静息回 60fps（91 帧/1.5s max 17ms）；②拖拽/缩放/旋转/表格手柄期间玻璃面 backdrop-filter 每帧重采样重光栅
+//   （A/B 实证禁玻璃后同拖拽 15 慢帧→0）→ body.fc-moving 全页玻璃暂离+组背景 drop-shadow 栈挂起，提交后下一帧还原；
+//   ③拖拽 125Hz 事件 rAF 合并（每帧一次吸合/吸附/落位）+ 拖拽期尺寸缓存（强排读 1421→93/60 事件）+ 缩放/旋转/手柄
+//   同步合并；序列化链（buildDraft/stringify 含 546KB pageBg 仅 0.9ms）与处理器（onContentChange 0.1ms）实测无辜；
+//   剩余探针慢帧=无头 SwiftShader 软件重绘伪影（真实 GPU 合成不存在，A/B 禁玻璃后同段干净）；零草稿字段（v 保持 9）；
+//   零后端、ethereal 零改动无需 inline-css
+//   （rev 00223-znx）
+window.MN_SITE_VERSION = 'v0.2.45.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -996,4 +1012,14 @@ window.MN_SITE_VERSION = 'v0.2.45.1';
 //   在深色模式下才看得见」；修法=暗色 .tilt-container:not(.card) 灭顶线覆写（!important 压过内联 hover 加亮，外侧深投影
 //   保留）；亮色零触碰；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
 //   （rev 00222-ww8）
-window.FLUIDCANVAS_VERSION = 'v10.28.34.1';
+// v10.28.34.2 = FC 首页频道卡边缘光+切换卡顿修复 + 编辑器掉帧根治（补丁位 1→2·性能修复轮；2026-09-15）——①首页：暗色
+//   active 账户卡边缘统一语言（白细线边框+底部内嵌主色指示条——割裂真身=旧高亮描边+反光条杂拼）；切换期 tilt 倾斜冻结
+//   （data-tilt-off token + tilt.js _slatiTiltBound 去重/守卫，切换窗口内 mousemove/mouseleave 不重算倾斜）、统一
+//   0.15s/0.2s 退出+200ms 交换+0.02s 交错进入+420ms 解冻、LG.scan 延迟 420ms 避让切换窗口、过渡 0.5s→0.35s；
+//   ②编辑器：用户「能不能顺便优化一下整个FC的代码因为连文章编辑那边的操作都有明显的掉帧」；探针 tmp-probe-editor-jank
+//   实证三真身：隐藏弹窗玻璃+无限动画（静息 15fps→60fps：visibility:hidden + 隐藏态卡内 animation:none 全停）；手势期
+//   玻璃重光栅（body.fc-moving 全页玻璃暂离+组背景阴影栈挂起，提交后下一帧还原）；125Hz 事件 rAF 合并+拖拽期尺寸缓存
+//   （强排读 1421→93）。序列化链/处理器实测无辜；剩余慢帧=无头 SwiftShader 软件重绘伪影（真实 GPU 不存在）；零草稿字段
+//   （v 保持 9）；零后端、ethereal 零改动无需 inline-css
+//   （rev 00223-znx）
+window.FLUIDCANVAS_VERSION = 'v10.28.34.2';

@@ -2156,9 +2156,9 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       position: relative;
       border: var(--card-border);
       box-shadow: var(--shadow-sm);
-      transition: border-color 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
-                  flex 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
-                  box-shadow 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+      transition: border-color 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
+                  flex 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
+                  box-shadow 0.35s cubic-bezier(0.25, 0.1, 0.25, 1); /* v0.2.45.2：0.5s 慢动作感 → 0.35s 跟手 */
     }
     .account-personal.active {
       border-color: var(--color-primary);
@@ -2170,14 +2170,24 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
       cursor: pointer; min-width: 0; position: relative;
       height: 68px;
       box-shadow: var(--shadow-sm);
-      transition: border-color 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
-                  flex 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
-                  box-shadow 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+      transition: border-color 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
+                  flex 0.35s cubic-bezier(0.25, 0.1, 0.25, 1),
+                  box-shadow 0.35s cubic-bezier(0.25, 0.1, 0.25, 1); /* v0.2.45.2：0.5s 慢动作感 → 0.35s 跟手 */
     }
     .account-team-wrap.active {
       border-color: var(--color-primary);
     }
     .account-team-wrap.has-teams { cursor: default; }
+    /* v0.2.45.2（2026-09-15 频道卡边缘割裂修复）：暗色活跃态全饱和主色霓虹边
+       （rgb(70,72,212) 1px 亮线）与相邻卡白发丝边并排 → 两卡上缘同一水平线上一亮一暗
+       硬断开（割裂）；活跃态改白发丝边 + 内侧主色底缘指示 + 微亮面——两卡边缘语言一致、
+       活跃仍可辨。亮色零触碰（原主色边保留） */
+    :root[data-theme="dark"] .account-personal.active,
+    :root[data-theme="dark"] .account-team-wrap.active {
+      border-color: rgba(255, 255, 255, 0.08);
+      background: rgba(46, 46, 76, 0.72);
+      box-shadow: var(--shadow-sm), inset 0 -2px 0 rgba(70, 72, 212, 0.65);
+    }
     .team-scroll {
       flex: 1; overflow-y: auto; overflow-x: hidden;
       scroll-behavior: smooth; scroll-snap-type: y mandatory;
@@ -2801,9 +2811,16 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
     var contentCards = document.querySelectorAll('#channelOverview, #quickStats, #contentTabs, #slideTrack');
 
-    contentCards.forEach(function(el, i) {
-      el.style.transition = 'opacity 0.2s ease, transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)';
-      el.style.transitionDelay = (i * 0.03) + 's';
+    // v0.2.45.2 切场防卡：tilt 冻结（mousemove/mouseleave 会把切场 transform 覆写成
+    // perspective rotate → 卡片跳回原位，实证 150ms 覆写）；token 防快速连切时旧定时器提前解冻
+    var ov = document.getElementById('channelOverview');
+    if (ov) ov.setAttribute('data-tilt-off', '1');
+    var freezeToken = window.__tiltFreeze = (window.__tiltFreeze || 0) + 1;
+    window.__fcSwitchAt = Date.now(); // LG.scan 延后判定（renderContent 读）
+
+    contentCards.forEach(function(el) {
+      el.style.transition = 'opacity 0.15s ease, transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1)';
+      el.style.transitionDelay = '0s'; // 统一同步出场：旧错峰 i*0.03s 尾卡 340ms 才走完，250ms 换手截断尾（实证 ct/st 被 transition:none 硬拽到 0）
       el.style.opacity = '0';
       el.style.transform = 'translate' + axis + '(' + exitVal + ')';
     });
@@ -2818,13 +2835,17 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       });
       requestAnimationFrame(function() {
         newCards.forEach(function(el, i) {
-          el.style.transition = 'opacity 0.3s ease, transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)';
-          el.style.transitionDelay = (i * 0.04) + 's';
+          el.style.transition = 'opacity 0.25s ease, transform 0.28s cubic-bezier(0.25, 0.1, 0.25, 1)';
+          el.style.transitionDelay = (i * 0.02) + 's';
           el.style.opacity = '1';
           el.style.transform = 'translateX(0) translateY(0)';
         });
+        // 入场动画走完（3*0.02s 错峰 + 0.28s）再解冻 tilt
+        setTimeout(function() {
+          if (window.__tiltFreeze === freezeToken && ov) ov.removeAttribute('data-tilt-off');
+        }, 420);
       });
-    }, 250);
+    }, 200); // 0.2s 出场结束再换手，不再截尾
   }
 
   // --- Content renderers ---
@@ -2864,7 +2885,15 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + (isPersonal ? '3,842' : (activeTeam ? activeTeam.members * 510 : '0')) + '</div><div class="metric-label">Bookmarks</div><div class="metric-change" style="color:#22c55e">↑ ' + (isPersonal ? '8.1' : '5.2') + '%</div></div>' +
       '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + (isPersonal ? '1,256' : (activeTeam ? activeTeam.members * 170 : '0')) + '</div><div class="metric-label">Shares</div><div class="metric-change" style="color:#22c55e">↑ 21.7%</div></div>' +
       '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + (isPersonal ? '892' : (activeTeam ? activeTeam.members * 120 : '0')) + '</div><div class="metric-label">New Followers</div><div class="metric-change" style="color:#dc2626">↓ 3.2%</div></div>';
-    if (window.LG) LG.scan(document); // v0.2.9.0：动态 metric-card 挂液态玻璃
+    // v0.2.9.0：动态 metric-card 挂液态玻璃；v0.2.45.2：切场期间延后扫描——
+    // SVG 滤镜/backdrop 层注入在入场动画窗口内会逐帧重绘（切场掉帧主因之一）
+    if (window.LG) {
+      if (window.__fcSwitchAt && Date.now() - window.__fcSwitchAt < 1500) {
+        setTimeout(function() { LG.scan(document); }, 420);
+      } else {
+        LG.scan(document);
+      }
+    }
 
     // Content lists
     renderContentTables();
@@ -2914,7 +2943,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     track.style.transform = 'translateX(0)';
 
     if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
-    if (window.LG) LG.scan(document); // v0.2.9.0：动态面板卡挂液态玻璃
+    // v0.2.45.2：切场期间延后扫描（同 renderContent 口径）
+    if (window.LG) {
+      if (window.__fcSwitchAt && Date.now() - window.__fcSwitchAt < 1500) {
+        setTimeout(function() { LG.scan(document); }, 420);
+      } else {
+        LG.scan(document);
+      }
+    }
   }
 
   // --- Dashboard content sub-tabs (tab state lives in URL) ---
