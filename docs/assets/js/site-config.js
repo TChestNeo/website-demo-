@@ -696,7 +696,18 @@ window.MN_SITE = window.MN_SITE || {};
 //   亮 mono/蓝 theme 零影响；FC v10.28.33.1（补丁位 0→1）；零后端、ethereal 零改动无需 inline-css；
 //   电池 monodark 22/22 新（F 静态 4+M1 暗 mono 首页/M2 暗 mono 编辑器/M3 亮 mono 回归/M4 暗蓝回归+Z 零 console error）
 //   （rev 00220-57l）
-window.MN_SITE_VERSION = 'v0.2.44.1';
+// v0.2.45.0 = FC 三页合一 Douyin 式 URL 视图切换（小改动位 44→45·新功能轮；2026-09-15）——用户「把 FuildCanva 首页
+//   除了编辑页面以外的页面切换方式改成这个链接的结构」（参考抖音用户页：一条路径+查询参数决定显示哪个 tab；只参考结构
+//   不访问链接）+ 范围钦定「全部并进一个页面，但除了 editor 的页面是独立的那个」：analytics/articles 并入
+//   fluidcanvas.html 成为 ?view=analytics / ?view=articles 两个新视图；首页既有三视图（dashboard/content/upload）同步
+//   URL 化（?view= + &tab= + &period= + &filter= + &sort=；pushState 前进后退、刷新保留、旧 #hash 首次 replaceState
+//   规范化）；两旧页改 ~12 行重定向 stub（JS location.replace + meta refresh 兜底，零后端）；顺带修 articles 独立页
+//   自带 bug（内联 onclick 在 IIFE 外解析不到 → 事件委托）；FC v10.28.34.0（小更新位 33→34）；零后端、ethereal 零改动
+//   无需 inline-css；电池 fcmerge 52/52 新（F0 静态 5 + A-J 12 场景：裸载/直载子态/pushState/back 不增条目/委托勾选+
+//   删除+批量发布 toast/#hash 规范化/stub 重定向/content tab=media/侧栏点击/reload 保留 + K guest 门禁新 spawn +
+//   L 零 Runtime exception+零 console error + M 390px 五视图未裁剪溢出不宽于既有基线——M 实证修 #periodTabs 窄屏换行）
+//   （rev 00221-vz9）
+window.MN_SITE_VERSION = 'v0.2.45.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -969,4 +980,10 @@ window.MN_SITE_VERSION = 'v0.2.44.1';
 //   随 --color-* 令牌全翻黑，settings-modal.js 运行时注入赢页面 :root 覆写）；白底白字 active 族（col-btn/vp-btn/
 //   pbg-ratio-btn/caption-*/tim-search-btn/lib-icon:hover）翻纯黑族 #32324a 白字；progress-step 圆点同修；toast 翻黑族；
 //   小指示点保持近白高亮；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
-window.FLUIDCANVAS_VERSION = 'v10.28.33.1';
+// v10.28.34.0 = FC 三页合一 Douyin 式 URL 视图切换（小更新位 33→34·新功能轮；2026-09-15）——analytics/articles 并入
+//   fluidcanvas.html 成为 URL 参数驱动的视图（?view=analytics&tab=&period= / ?view=articles&filter=&sort=），首页
+//   既有三视图同步 URL 化（分享/后退/前进/刷新保留状态，旧 #hash 兼容）；两旧页改重定向 stub；articles 内联 onclick
+//   bug 改事件委托；批量发布补 toast 反馈；门禁变化=analytics/articles 对访客随 fc-guest 锁屏（与编辑器一致）；编辑器页
+//   独立不动；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
+//   （rev 00221-vz9）
+window.FLUIDCANVAS_VERSION = 'v10.28.34.0';
