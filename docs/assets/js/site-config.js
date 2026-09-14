@@ -707,7 +707,13 @@ window.MN_SITE = window.MN_SITE || {};
 //   删除+批量发布 toast/#hash 规范化/stub 重定向/content tab=media/侧栏点击/reload 保留 + K guest 门禁新 spawn +
 //   L 零 Runtime exception+零 console error + M 390px 五视图未裁剪溢出不宽于既有基线——M 实证修 #periodTabs 窄屏换行）
 //   （rev 00221-vz9）
-window.MN_SITE_VERSION = 'v0.2.45.0';
+// v0.2.45.1 = 暗色菜单卡白顶线修复（补丁位 0→1·观感修复轮；2026-09-15）——用户「FC 首页左侧菜单上方有一个白白的东西？
+//   在深色模式下才看得见」；真身=3D 菜单卡顶部 inline box-shadow inset 0 1px 0 rgba(255,255,255,0.8) 白高光线
+//   （hover 内联加亮到 0.9；亮色卡上隐形、暗色卡上独亮——扫描探针+像素分析实证左列唯一非文字亮块 72×1px 峰值亮度≈230）；
+//   修法=暗色 :root[data-theme="dark"] .tilt-container:not(.card) 覆写 box-shadow（外侧深投影保留，!important 压过内联
+//   rest/hover 两态，channelOverview/channelSummary 等 .card 卡除外）；亮色零触碰；零后端、ethereal 零改动无需 inline-css
+//   （rev 00222-ww8）
+window.MN_SITE_VERSION = 'v0.2.45.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -986,4 +992,8 @@ window.MN_SITE_VERSION = 'v0.2.45.0';
 //   bug 改事件委托；批量发布补 toast 反馈；门禁变化=analytics/articles 对访客随 fc-guest 锁屏（与编辑器一致）；编辑器页
 //   独立不动；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
 //   （rev 00221-vz9）
-window.FLUIDCANVAS_VERSION = 'v10.28.34.0';
+// v10.28.34.1 = 暗色菜单卡白顶线修复（补丁位 0→1·观感修复轮；2026-09-15）——用户「FC 首页左侧菜单上方有一个白白的东西？
+//   在深色模式下才看得见」；修法=暗色 .tilt-container:not(.card) 灭顶线覆写（!important 压过内联 hover 加亮，外侧深投影
+//   保留）；亮色零触碰；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
+//   （rev 00222-ww8）
+window.FLUIDCANVAS_VERSION = 'v10.28.34.1';
