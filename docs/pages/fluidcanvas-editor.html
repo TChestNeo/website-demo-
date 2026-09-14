@@ -6235,9 +6235,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!draft.title) { showToast('请先填写标题再发布'); return; }
     MN_API.post('/articles', { title: draft.title, contentJson: JSON.stringify(draft) }).then(function (res) {
       if (res.ok && res.data && res.data.article) {
-        headerStatus.textContent = 'Pending review';
-        headerStatus.className = 'badge badge-warning';
-        showToast('已提交审核');
+        // v10.28.35.1: 发布即公开（审核段已去除——后端 POST 直存 published）
+        headerStatus.textContent = 'Published';
+        headerStatus.className = 'badge badge-success';
+        showToast('已发布');
         if (window.SlatiDB && SlatiDB.addXP) SlatiDB.addXP('publish_article', 100); // v10.28.31 活跃 XP
       } else {
         showToast('发布失败，请稍后重试');
@@ -14295,7 +14296,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       } catch (e) {}
       var reason = (res && res.status === 404)
         ? '这篇文章不存在，或已被删除。'
-        : '这篇文章暂未公开（可能仍在审核中），或没有正文内容。';
+        : '这篇文章暂未公开，或没有正文内容。'; // v10.28.35.1: 审核段已去除，提示同步去掉「审核中」
       showArticlePlaceholder(art ? art.title : id, reason);
     });
   }

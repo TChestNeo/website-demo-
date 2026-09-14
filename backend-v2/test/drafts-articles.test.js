@@ -55,7 +55,7 @@ test('草稿：无 baseVersion 覆盖（upsert 语义）；用户隔离；校验
   } finally { await t.close(); }
 });
 
-test('文章：POST pending + ART- id；匿名只见 published；本人见自己全部；他人 pending 404', async () => {
+test('文章：POST 直接 published（审核段已去除）+ ART- id；匿名立即可见；他人可取全文；遗留 pending 防御口径', async () => {
   const t = await testApp();
   try {
     const alice = t.loginAs('alice@x.com', { displayName: 'Alice' });
@@ -65,26 +65,29 @@ test('文章：POST pending + ART- id；匿名只见 published；本人见自己
     assert.strictEqual(r.status, 200);
     const art = (await r.json()).article;
     assert.match(art.id, /^ART-\d{6}$/);
-    assert.strictEqual(art.status, 'pending');
+    assert.strictEqual(art.status, 'published', '发布即公开（v0.2.46.1 去除审核段）');
 
-    // 匿名列表：pending 不可见
+    // 匿名列表：立即可见
     const anonList = (await (await t.request('GET', '/api/articles')).json()).articles;
-    assert.strictEqual(anonList.length, 0);
-    // 本人列表：可见 pending
+    assert.strictEqual(anonList.length, 1);
+    assert.strictEqual(anonList[0].id, art.id);
+    assert.strictEqual(anonList[0].status, 'published');
+    // 本人列表：同样可见
     const ownList = (await (await t.request('GET', '/api/articles', undefined, { cookie: alice.cookie })).json()).articles;
     assert.strictEqual(ownList.length, 1);
     assert.strictEqual(ownList[0].id, art.id);
-    // 他人不可见 pending（404 口径）
-    assert.strictEqual((await t.request('GET', '/api/articles/' + art.id, undefined, { cookie: bob.cookie })).status, 404);
-    // 本人可取完整内容
-    const full = (await (await t.request('GET', '/api/articles/' + art.id, undefined, { cookie: alice.cookie })).json()).article;
+    // 他人（bob）可直接取完整内容
+    const full = (await (await t.request('GET', '/api/articles/' + art.id, undefined, { cookie: bob.cookie })).json()).article;
     assert.deepStrictEqual(full.contentJson, DRAFT);
 
-    // published 后匿名可见
-    t.db.prepare("UPDATE articles SET status = 'published' WHERE id = ?").run(art.id);
-    const pubList = (await (await t.request('GET', '/api/articles')).json()).articles;
-    assert.strictEqual(pubList.length, 1);
-    assert.strictEqual(pubList[0].id, art.id);
+    // 遗留 pending 防御口径（迁移 022 上线前的存量数据）：对他人 404、匿名列表不可见、本人列表仍可见
+    t.db.prepare("UPDATE articles SET status = 'pending' WHERE id = ?").run(art.id);
+    const anonList2 = (await (await t.request('GET', '/api/articles')).json()).articles;
+    assert.strictEqual(anonList2.length, 0);
+    assert.strictEqual((await t.request('GET', '/api/articles/' + art.id, undefined, { cookie: bob.cookie })).status, 404);
+    const ownList2 = (await (await t.request('GET', '/api/articles', undefined, { cookie: alice.cookie })).json()).articles;
+    assert.strictEqual(ownList2.length, 1);
+    assert.strictEqual(ownList2[0].status, 'pending');
   } finally { await t.close(); }
 });
 

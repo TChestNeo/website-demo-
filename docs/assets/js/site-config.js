@@ -731,7 +731,18 @@ window.MN_SITE = window.MN_SITE || {};
 //   （rev 00223-znx）
 // v0.2.46.0 = 文章查看器（其他用户看已发布文章，格子范围硬裁剪——小改动位 45→46·新功能轮；2026-09-15）——用户「现在能不能做一下当我发布文章后其他用户看见这个文章的界面？我要求它的显示范围只有那个格子的范围超出格子就无法显示」：编辑器 ?article=ART-xxx 查看模式（复用 applyDraft 全量渲染器零复制：chrome 全隐+只读硬化+游客可看已发布）+ 格范围硬裁剪（画布包进 #fcViewScaler overflow:hidden + 等比缩放适配视口，越界卡片/超出画布的背景一律不可见）；首页 ?view=articles 列表接云端（GET /api/articles：published 全部+本人各状态置顶合并）+ View 按钮接线查看器 + ART-001 样例正文（demo store 兜底零后端可演示）；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
 //   （rev 00224-k5l）
-window.MN_SITE_VERSION = 'v0.2.46.0';
+// v0.2.46.1 = 文章发布去除「提交审核」段——发布即公开（补丁位 0→1·发布流程修复轮；2026-09-15）——用户「呃那个我点击
+//   上传时是提交审核你能不能先去除掉这一段？」；根因=原 P7 审核管线从未接文章，POST 恒存 pending 永卡死（作者自己可见、
+//   他人永远 404）——并非「审核中」而是「没人审」；修法=POST /api/articles 直存 status='published'（响应同带 published）、
+//   编辑器 publishCloudArticle 成功态改 badge-success「Published」+ toast「已发布」、查看器占位文案去掉「审核中」；迁移
+//   022 把遗留 pending 文章一律转 published（无新表 health 58 不变、user_version 21→22）；GET 列表/详情对遗留 pending
+//   防御口径保留（本人可见、他人 404）——GET 路由零改动；零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css；
+//   测试 273/273（文章 test 3 重写：直接 published 语义 + 匿名立即可见 + 他人可取全文 + 遗留 pending 防御 + 迁移 022
+//   新测试：遗留 pending 转 published/hidden 不动/updated_at 不虚报；三处 user_version 断言 21→22）；电池
+//   article-view 38/38 复跑全绿（37 项原断言 + F0-6 发布即公开静态：badge-success+已发布 toast+占位文案无审核；
+//   pending fixture 走占位状态卡的防御路径断言仍有效）；后端 v0.2.46.1 + FC v10.28.35.1 双线
+//   （rev 00225-6v6）
+window.MN_SITE_VERSION = 'v0.2.46.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1026,4 +1037,10 @@ window.MN_SITE_VERSION = 'v0.2.46.0';
 //   （rev 00223-znx）
 // v10.28.35.0 = 文章查看器（小更新位 34→35·新功能轮；2026-09-15）——用户「现在能不能做一下当我发布文章后其他用户看见这个文章的界面？我要求它的显示范围只有那个格子的范围超出格子就无法显示」：编辑器 ?article=ART-xxx 只读查看模式（head 门禁跳过 redirect 游客可看已发布；body.fc-viewmode chrome 全隐；applyDraft 全量渲染零新渲染器；saveDraft/putCloudDraft/syncCloudDraft/keydown/refitColumns 五处 viewmode 守卫——绝不覆盖本地草稿；画布包进 #fcViewScaler overflow:hidden 等比缩放适配视口=格子范围硬裁剪；pointer-events:none + contenteditable 关闭 + Tab 序移除只读硬化；云端 404 → localStorage demo store 兜底（ART-001 样例）；非公开/404/无正文 → 占位状态卡）；首页 ?view=articles：View 按钮接线查看器、云端文章合并置顶（author=Member/日期 createdAt/cloud 行无删除钮）、批量发布删除仍只作用本地种子；零草稿字段（v 保持 9）；零后端、ethereal 零改动无需 inline-css
 //   （rev 00224-k5l）
-window.FLUIDCANVAS_VERSION = 'v10.28.35.0';
+// v10.28.35.1 = 文章发布去除「提交审核」段——发布即公开（补丁位 0→1·纯修复轮；2026-09-15）——用户「呃那个我点击上传时
+//   是提交审核你能不能先去除掉这一段？」：publishCloudArticle 成功分支改 headerStatus badge-success「Published」+
+//   toast「已发布」（原 badge-warning「Pending review」+「已提交审核」）；查看器占位文案「可能仍在审核中」删除（发布
+//   即公开无审核态）；后端 POST /api/articles 同步直存 published + 迁移 022 转遗留 pending；零草稿字段（v 保持 9）、
+//   零后端、ethereal 零改动无需 inline-css
+//   （rev 00225-6v6）
+window.FLUIDCANVAS_VERSION = 'v10.28.35.1';

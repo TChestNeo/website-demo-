@@ -1,6 +1,7 @@
 'use strict';
-// 文章（P6）：POST 提交即 status='pending'（P7 审核管线接管并回填 moderation_item_id，
-// 审核通过 → published）；GET 列表公开仅 published + 本人全部状态；
+// 文章（P6）：POST 直接 status='published'（2026-09-15 用户令去除「提交审核」段——
+// 原 P7 管线从未接文章，pending 恒卡死；遗留 pending 由迁移 022 转 published）。
+// GET 列表公开仅 published + 本人全部状态（遗留 pending 防御口径保留）；
 // GET /:id 完整内容仅 published 或本人。content_json 存编辑器 draft 整体 JSON（零适配）。
 
 const { HttpError, sendJson, readJson } = require('../../http');
@@ -33,8 +34,8 @@ function register(router, ctx) {
     if (Buffer.byteLength(contentJson, 'utf8') > MAX_BYTES) throw new HttpError('VALIDATION', '内容超过 4MB');
     const iso = new Date().toISOString();
     const { id } = insertWithId(db, 'articles', ['author_id', 'title', 'content_json', 'status', 'created_at', 'updated_at'],
-      [c.user.id, title, contentJson, 'pending', iso, iso], (s) => 'ART-' + pad6(s));
-    sendJson(res, 200, { article: { id, title, status: 'pending', createdAt: iso } });
+      [c.user.id, title, contentJson, 'published', iso, iso], (s) => 'ART-' + pad6(s));
+    sendJson(res, 200, { article: { id, title, status: 'published', createdAt: iso } });
   }));
 
   router.add('GET', '/api/articles', (req, res) => {
