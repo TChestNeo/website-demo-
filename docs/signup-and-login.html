@@ -2083,6 +2083,44 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
                   var(--color-background);
     }
   </style>
+  <style>
+    /* v0.2.47.0 六格验证码 OTP（用户「能不能把输入验证码的收入框换成这个」粘贴 React OtpInput 组件源码 → 原生复刻）：
+       视觉对齐 forgot-password .rp-cell 玻璃语言、复用主题令牌自动适配暗色；otp-pop=字符弹入、otp-shake=错误抖动 */
+    .otp-box { display: flex; gap: 8px; }
+    .otp-box .otp-cell {
+      width: 40px; height: 48px; text-align: center; padding: 0;
+      font-family: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+      font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;
+      color: var(--color-on-surface);
+      border: 2px solid rgba(70,72,212,0.28); border-radius: 10px;
+      background: rgba(70,72,212,0.04);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .otp-box .otp-cell:nth-child(4) { margin-left: 4px; } /* groupEvery=3：三格一组 12px 间隔 */
+    .otp-box .otp-cell:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(70,72,212,0.16);
+      background: var(--color-surface-container-lowest);
+    }
+    .otp-box .otp-cell.filled { background: rgba(70,72,212,0.10); border-color: rgba(70,72,212,0.5); }
+    .otp-error .otp-cell, .otp-error .otp-cell:focus { border-color: var(--color-error); }
+    .otp-status { font-size: var(--fs-label-sm); color: var(--color-outline); margin: 8px 0 0; min-height: 1.2em; }
+    .otp-status.otp-error { color: var(--color-error); }
+    .otp-pop { animation: otp-pop 0.22s cubic-bezier(0.23, 1, 0.32, 1); }
+    .otp-shake { animation: otp-shake 0.32s cubic-bezier(0.23, 1, 0.32, 1); }
+    @keyframes otp-pop {
+      from { opacity: 0; transform: translateY(8px) scale(0.96); filter: blur(4px); }
+      to { opacity: 1; transform: none; filter: none; }
+    }
+    @keyframes otp-shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(4px); }
+      75% { transform: translateX(-3px); }
+    }
+    @media (prefers-reduced-motion: reduce) { .otp-pop, .otp-shake { animation: none; } }
+  </style>
 </head>
 <body class="auth-bg pre-stagger">
 
@@ -2162,14 +2200,22 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           <label class="form-label">Password</label>
           <input type="password" class="input-glass" id="loginPassword" placeholder="Your password" autocomplete="current-password">
         </div>
-        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素；v0.2.46.2 独立发码按钮——用户「注册页面的验证码能不能单独放一个按钮要不然新用户不知道点击哪里获得验证码」：发码不再藏进主按钮首击，输入框旁显式 Send Code） -->
+        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素；v0.2.46.2 独立发码按钮——用户「注册页面的验证码能不能单独放一个按钮要不然新用户不知道点击哪里获得验证码」：发码不再藏进主按钮首击，输入框旁显式 Send Code；
+             v0.2.47.0 单输入框升级六格 OTP——用户「能不能把输入验证码的收入框换成这个」（React OtpInput 组件源码→原生复刻：自动跳格/粘贴分发/退格跳格/弹入动画/错误抖动；见 initOtpBox） -->
         <div class="form-group" id="loginCodeGroup" style="display:none">
           <label class="form-label">Verification Code</label>
-          <div style="display:flex;gap:8px">
-            <input type="text" class="input-glass" id="loginCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code" style="flex:1;min-width:0">
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="otp-box" id="loginOtp" role="group" aria-label="Verification code">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="Verification code, character 1 of 6">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 2 of 6">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 3 of 6">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 4 of 6">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 5 of 6">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 6 of 6">
+            </div>
             <button class="btn btn-primary" id="loginSendBtn" onclick="sendLoginCode()" style="white-space:nowrap">Send Code</button>
           </div>
-          <p id="loginCodeHint" style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:4px"></p>
+          <p class="otp-status" id="loginCodeHint"></p>
         </div>
         <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleLogin()">
           <span id="loginBtnLabel">Enter Console</span>
@@ -2221,14 +2267,22 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           <label class="form-label">Password</label>
           <input type="password" class="input-glass" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password">
         </div>
-        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素；v0.2.46.2 独立发码按钮——用户「注册页面的验证码能不能单独放一个按钮要不然新用户不知道点击哪里获得验证码」：发码不再藏进主按钮首击，输入框旁显式 Send Code） -->
+        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素；v0.2.46.2 独立发码按钮——用户「注册页面的验证码能不能单独放一个按钮要不然新用户不知道点击哪里获得验证码」：发码不再藏进主按钮首击，输入框旁显式 Send Code；
+             v0.2.47.0 单输入框升级六格 OTP——用户「能不能把输入验证码的收入框换成这个」（React OtpInput 组件源码→原生复刻：自动跳格/粘贴分发/退格跳格/弹入动画/错误抖动；见 initOtpBox） -->
         <div class="form-group" id="signupCodeGroup" style="display:none">
           <label class="form-label">Verification Code</label>
-          <div style="display:flex;gap:8px">
-            <input type="text" class="input-glass" id="signupCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code" style="flex:1;min-width:0">
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="otp-box" id="signupOtp" role="group" aria-label="Verification code">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="Verification code, character 1 of 6">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 2 of 6">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 3 of 6">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 4 of 6">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 5 of 6">
+              <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 6 of 6">
+            </div>
             <button class="btn btn-primary" id="signupSendBtn" onclick="sendSignupCode()" style="white-space:nowrap">Send Code</button>
           </div>
-          <p id="signupCodeHint" style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:4px"></p>
+          <p class="otp-status" id="signupCodeHint"></p>
         </div>
         <!-- v2.4.2 条款同意挪进注册表单（用户「不是我是希望用户在注册的时候同意就可以了不需要在登录的时候同意因为都同意过了」）：
              同意在注册时做一次即可，登录不再显示/拦截；随注册半淡入淡出（login 态蓝板 z4 压盖）；未勾点 Create Account 由 handleSignup 拦截（demo/api 双模式） -->
@@ -2268,6 +2322,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   var AUTH_API = false;              // 后端可达 → 密码+邮箱验证码双因素；否则 demo 模式
   var codeSent = { signup: false, login: false };
   var countdown = { signup: 0, login: 0 };
+  var otps = {}; // 六格 OTP 实例（initOtpBox 初始化，见下）
   // 未登录门禁回跳（2026-08-31）：?next=/pages/fluidcanvas.html 等登录成功后送回原目标页；
   // 只认站内绝对路径（以 / 开头且不含 // 与 ://）防开放跳转；注册流程不走 next（保持 onboarding 首登链）
   var NEXT = (function () {
@@ -2354,23 +2409,156 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     window.location.href = NEXT || 'index.html';
   }
 
+  // ── 六格验证码 OTP（v0.2.47.0）──
+  // 用户「能不能把输入验证码的收入框换成这个」粘贴了 shadcn/motion 的 React OtpInput 组件源码；
+  // 站无 React → 原生 JS/CSS 1:1 复刻其交互（行为逐条对照组件：useOtpInput + OtpInput）：
+  // 自动跳格、整段粘贴分发（非数字过滤）、退格跳格/Delete、方向键/Home/End、
+  // 焦点自动全选并跳回首个空位、字符弹入动画（.otp-pop）、错误红框+抖动+焦点回首格（.otp-error/.otp-shake，
+  // 已填值保留——同组件口径，焦点全选后直接重打覆盖）。成功即导航无停留窗口，故无 success 态。
+  function initOtpBox(boxId, hintId) {
+    var box = document.getElementById(boxId);
+    var cells = Array.prototype.slice.call(box.querySelectorAll('.otp-cell'));
+    var hint = document.getElementById(hintId);
+    var len = cells.length;
+    var chars = [];
+    for (var j = 0; j < len; j++) chars.push('');
+
+    function keep(text) {
+      return String(text).split('').filter(function (c) { return /^[0-9]$/.test(c); }).join('');
+    }
+    function empty() { var next = []; for (var k = 0; k < len; k++) next.push(''); return next; }
+    function render() {
+      for (var r = 0; r < len; r++) {
+        cells[r].value = chars[r];
+        cells[r].classList.toggle('filled', !!chars[r]);
+      }
+    }
+    function pop(i) {
+      if (!chars[i]) return;
+      cells[i].classList.remove('otp-pop');
+      void cells[i].offsetWidth; // 重启动画（连打同格也能弹）
+      cells[i].classList.add('otp-pop');
+    }
+    function commit(next, pops) {
+      chars = next;
+      render();
+      for (var p = 0; p < (pops || []).length; p++) pop(pops[p]);
+    }
+    function firstEmpty() { return chars.indexOf(''); }
+    function focusAt(i) {
+      var el = cells[Math.max(0, Math.min(len - 1, i))];
+      el.focus();
+      el.select();
+    }
+    function fillFrom(index, text) {
+      var incoming = keep(text);
+      if (!incoming) return;
+      var next = chars.slice();
+      var cursor = index, pops = [];
+      for (var i = 0; i < incoming.length && cursor < len; i++, cursor++) {
+        next[cursor] = incoming[i];
+        pops.push(cursor);
+      }
+      commit(next, pops);
+      focusAt(cursor);
+    }
+    function setStatus(text, tone) {
+      hint.textContent = text;
+      hint.className = 'otp-status' + (tone ? ' otp-' + tone : '');
+    }
+    function shake() {
+      box.classList.remove('otp-shake');
+      void box.offsetWidth;
+      box.classList.add('otp-shake');
+    }
+
+    hint.className = 'otp-status';
+    cells.forEach(function (cell, i) {
+      cell.addEventListener('input', function (e) {
+        var previous = chars[i] || '';
+        var raw = e.currentTarget.value;
+        // 已有字再打一字 → 浏览器拼成 '12'：只取新字符（组件同款 trimmed 逻辑）
+        var trimmed = (raw.length > 1 && previous && raw.indexOf(previous) === 0) ? raw.slice(previous.length) : raw;
+        var incoming = keep(trimmed);
+        if (!incoming) {
+          if (raw.length === 0 && previous) {
+            var c1 = chars.slice(); c1[i] = '';
+            commit(c1);
+          }
+          e.currentTarget.value = chars[i] || ''; // 非法输入还原
+          return;
+        }
+        if (incoming.length === 1) {
+          var c2 = chars.slice(); c2[i] = incoming;
+          e.currentTarget.value = incoming;
+          commit(c2, [i]);
+          if (i < len - 1) focusAt(i + 1); // 自动跳格
+          return;
+        }
+        fillFrom(i, incoming); // 多字符（粘贴落进 input 等）→ 从本格起分发
+      });
+      cell.addEventListener('keydown', function (e) {
+        if (e.key === 'Backspace') {
+          e.preventDefault();
+          var next = chars.slice();
+          if (chars[i]) { next[i] = ''; commit(next); return; }
+          if (i > 0) { next[i - 1] = ''; commit(next); focusAt(i - 1); } // 空格退格跳上一格
+          return;
+        }
+        if (e.key === 'Delete') {
+          e.preventDefault();
+          var d = chars.slice(); d[i] = '';
+          commit(d);
+          return;
+        }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); focusAt(i - 1); return; }
+        if (e.key === 'ArrowRight') { e.preventDefault(); focusAt(i + 1); return; }
+        if (e.key === 'Home') { e.preventDefault(); focusAt(0); return; }
+        if (e.key === 'End') { e.preventDefault(); focusAt(len - 1); }
+      });
+      cell.addEventListener('paste', function (e) {
+        e.preventDefault();
+        var text = keep(e.clipboardData.getData('text'));
+        fillFrom(text.length >= len ? 0 : i, text); // 整码粘贴从首格分发
+      });
+      cell.addEventListener('focus', function (e) {
+        e.currentTarget.select();
+        var fe = firstEmpty();
+        if (fe !== -1 && fe < i) { focusAt(fe); return; } // 跳到首个空位（组件同款）
+      });
+    });
+
+    return {
+      value: function () { return chars.join(''); },
+      clear: function () { commit(empty()); focusAt(0); },
+      focus: function () { var fe = firstEmpty(); focusAt(fe === -1 ? 0 : fe); },
+      setError: function (msg) { setStatus(msg, 'error'); box.classList.add('otp-error'); shake(); focusAt(0); },
+      resetStatus: function () { box.classList.remove('otp-error'); }
+    };
+  }
+
+  otps.login = initOtpBox('loginOtp', 'loginCodeHint');
+  otps.signup = initOtpBox('signupOtp', 'signupCodeHint');
+
   // ── 邮箱验证码两段式（api 模式）──
   // 第一步点击发码（60s 倒计时），码到达后第二步同按钮提交验证。
   // 任何网络失败 → 回退原 demo 分支（已填内容不丢失）。
   function setCodeHint(tab, text) {
-    document.getElementById(tab + 'CodeHint').textContent = text;
+    var el = document.getElementById(tab + 'CodeHint');
+    el.textContent = text;
+    el.className = 'otp-status';
+    if (otps[tab]) otps[tab].resetStatus(); // 发码成功清错误态（红框复原）
   }
 
   // v0.2.46.2：倒计时挂发码按钮（disabled + Resend in Xs → Resend Code），主按钮文案恒常不再变身；
   // codeSent 发码后保持 true——主按钮带码点击恒走验证（倒计时结束不再被首击重发打断）
   function startCountdown(tab) {
     var btn = document.getElementById(tab + 'SendBtn');
-    var codeInput = document.getElementById(tab + 'Code');
     codeSent[tab] = true;
     countdown[tab] = 60;
     btn.disabled = true;
     btn.textContent = 'Resend in ' + countdown[tab] + 's';
-    if (codeInput) codeInput.focus();
+    if (otps[tab]) otps[tab].focus(); // v0.2.47.0 焦点落 OTP 首格（v0.2.46.2 落单输入框同口径）
     var timer = setInterval(function () {
       countdown[tab]--;
       if (countdown[tab] <= 0) {
@@ -2424,12 +2612,12 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     var name = document.getElementById('signupName').value.trim();
     var email = document.getElementById('signupEmail').value.trim();
     var password = document.getElementById('signupPassword').value;
-    var code = document.getElementById('signupCode').value.trim();
+    var code = otps.signup.value();
 
     if (!codeSent.signup) { sendSignupCode(); return; } // 主按钮首击自动发码（旧路径保留）
-    if (!code) { showError('signupError', 'Enter the 6-digit code from your email'); return; }
+    if (!code) { otps.signup.setError('Enter the 6-digit code from your email'); return; }
     MN_API.post('/auth/verify', { email: email, code: code, displayName: name, password: password }).then(function (r) {
-      if (!r.ok) { showError('signupError', 'Invalid or expired code'); return; }
+      if (!r.ok) { otps.signup.setError('Invalid or expired code'); return; } // v0.2.47.0 错误走 OTP 红框+抖动+焦点回首格（值保留可重打）
       SlatiDB.saveUser(r.data.user);
       if (r.data.status === 'new') SlatiDB.setOnboardingStep(1);
       window.location.href = 'https://story.mnationworld.com/wip'; // v0.2.26.0 注册成功 → 故事站单页（跨子域绝对 URL；setOnboardingStep(1) 保留，故事尾声 CTA 回 onboarding-identity 原链不断）
@@ -2460,12 +2648,12 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   function apiLogin() {
     var email = document.getElementById('loginEmail').value.trim();
     var password = document.getElementById('loginPassword').value;
-    var code = document.getElementById('loginCode').value.trim();
+    var code = otps.login.value();
 
     if (!codeSent.login) { sendLoginCode(); return; } // 主按钮首击自动发码（旧路径保留）
-    if (!code) { showError('loginError', 'Enter the 6-digit code from your email'); return; }
+    if (!code) { otps.login.setError('Enter the 6-digit code from your email'); return; }
     MN_API.post('/auth/verify', { email: email, code: code, password: password }).then(function (r) {
-      if (!r.ok) { showError('loginError', 'Invalid code or password'); return; }
+      if (!r.ok) { otps.login.setError('Invalid code or password'); return; } // v0.2.47.0 错误走 OTP 红框+抖动+焦点回首格（值保留可重打）
       SlatiDB.saveUser(r.data.user);
       if (r.data.passwordSetupRequired) {
         // W6：旧账号（此前无密码）→ 引导设密后继续
