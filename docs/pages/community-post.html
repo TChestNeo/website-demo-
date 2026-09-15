@@ -2860,6 +2860,7 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
         clearReply();
         var c = r.data.comment;
         if (c.status === 'removed') { toastMsg('内容违反社区规则，已被拦截', true); return; }
+        SlatiDB.addXP('create_comment', 2); // v0.2.49.0 发布评论 +2 立得（removed 评论不记）
         var list = document.getElementById('commentsList');
         var empty = list.querySelector('p.comment-empty'); // 空列表占位专用类（裸 querySelector('p') 会误中评论正文 <p>）
         if (empty) list.innerHTML = '';

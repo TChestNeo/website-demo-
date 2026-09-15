@@ -75,6 +75,14 @@ function writeLimit(ctx) {
   return ctx.limiter('sw:user:' + ctx.user.id, w.max, w.windowMs);
 }
 
+// v0.2.49.0 获得类经验（后端实时记录）：别人对你做（粉丝/赞/评论/收藏）→ users.xp_gained 累加。
+// 只进不出（取消不扣回，防刷循环）；自操作由调用方排除；amount 未配置 = 不记（防 config 缺块崩路由）。
+function gainXp(c, userId, key) {
+  const n = (((c.config || {}).xp || {}).gained || {})[key];
+  if (!userId || !n) return;
+  c.db.prepare('UPDATE users SET xp_gained = xp_gained + ? WHERE id = ?').run(n, userId);
+}
+
 function requireName(body, max, label) {
   const name = String(body && body.name || '').trim();
   if (!name || name.length > max) throw new HttpError('VALIDATION', `${label}需 1-${max} 字符`);
@@ -315,12 +323,14 @@ function register(router, ctx) {
   });
 
   // ── 点赞（v0.2.17.0：幂等开关；content_likes 自然主键去重）──
+  // v0.2.49.0：新赞（changes>0）且非自赞 → 给作者 +15 获得类经验（后端实时记，重复赞不二次记）
   router.add('POST', '/api/social/posts/:id/like', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
-    const post = c.db.prepare('SELECT id, status FROM posts WHERE id = ?').get(req.params.id);
+    const post = c.db.prepare('SELECT id, status, author_id FROM posts WHERE id = ?').get(req.params.id);
     if (!post || post.status !== 'visible') throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
-    c.db.prepare("INSERT OR IGNORE INTO content_likes (user_id, target_type, target_id, created_at) VALUES (?, 'post', ?, ?)")
+    const info = c.db.prepare("INSERT OR IGNORE INTO content_likes (user_id, target_type, target_id, created_at) VALUES (?, 'post', ?, ?)")
       .run(c.user.id, post.id, new Date().toISOString());
+    if (info.changes > 0 && post.author_id !== c.user.id) gainXp(c, post.author_id, 'like');
     const likeCount = c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'post' AND target_id = ?").get(post.id).n;
     sendJson(res, 200, { liked: true, likeCount });
   }));
@@ -335,12 +345,14 @@ function register(router, ctx) {
   }));
 
   // ── 收藏（v0.2.20.0：星标开关；favorites 表 005 已有 target_type='post'，零迁移）──
+  // v0.2.49.0：新收藏（changes>0）且非自藏 → 给作者 +12（「保存」= 星标收藏按钮，站点用词「收藏」）
   router.add('POST', '/api/social/posts/:id/favorite', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
-    const post = c.db.prepare('SELECT id, status FROM posts WHERE id = ?').get(req.params.id);
+    const post = c.db.prepare('SELECT id, status, author_id FROM posts WHERE id = ?').get(req.params.id);
     if (!post || post.status !== 'visible') throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
-    c.db.prepare("INSERT OR IGNORE INTO favorites (user_id, target_type, target_id, created_at) VALUES (?, 'post', ?, ?)")
+    const info = c.db.prepare("INSERT OR IGNORE INTO favorites (user_id, target_type, target_id, created_at) VALUES (?, 'post', ?, ?)")
       .run(c.user.id, post.id, new Date().toISOString());
+    if (info.changes > 0 && post.author_id !== c.user.id) gainXp(c, post.author_id, 'favorite');
     sendJson(res, 200, { favorited: true });
   }));
 
@@ -423,13 +435,15 @@ function register(router, ctx) {
   });
 
   // ── 关注（v0.2.21.0：幂等开关，同点赞口径；自关 400；目标必须 active）──
+  // v0.2.49.0：新关注（changes>0）→ 给目标 +25（自关已 400 挡；重复关注不二次记）
   router.add('POST', '/api/social/users/:id/follow', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
     const target = c.db.prepare('SELECT id, status FROM users WHERE id = ?').get(req.params.id);
     if (!target || target.status !== 'active') throw new HttpError('NOT_FOUND', '用户不存在或已注销');
     if (target.id === c.user.id) throw new HttpError('VALIDATION', '不能关注自己');
-    c.db.prepare("INSERT OR IGNORE INTO following (user_id, target_type, target_id, created_at) VALUES (?, 'user', ?, ?)")
+    const info = c.db.prepare("INSERT OR IGNORE INTO following (user_id, target_type, target_id, created_at) VALUES (?, 'user', ?, ?)")
       .run(c.user.id, target.id, new Date().toISOString());
+    if (info.changes > 0) gainXp(c, target.id, 'fan');
     const followerCount = c.db.prepare("SELECT count(*) AS n FROM following WHERE target_type = 'user' AND target_id = ?").get(target.id).n;
     sendJson(res, 200, { following: true, followerCount });
   }));
@@ -561,6 +575,8 @@ function register(router, ctx) {
     const commentStatus = l0.verdict === 'reject' ? 'removed' : 'visible';
     const { id } = insertWithId(c.db, 'comments', ['post_id', 'author_id', 'parent_id', 'content', 'status', 'created_at'],
       [post.id, c.user.id, parentId, content, commentStatus, iso], (s) => 'CMT-' + pad6(s));
+    // v0.2.49.0：获得评论 +10（removed 不记；hold 的 status='visible' → 记；自评不记）
+    if (commentStatus !== 'removed' && post.author_id !== c.user.id) gainXp(c, post.author_id, 'comment');
     if (l0.verdict === 'reject') {
       const itemId = createModerationItem(c.db, {
         kind: 'text', targetType: 'comment', targetId: id, contentHash: hash,
@@ -581,6 +597,30 @@ function register(router, ctx) {
     const row = c.db.prepare('SELECT * FROM comments WHERE id = ?').get(id);
     sendJson(res, 200, { comment: commentRow(c.db, row), moderation: { verdict: l0.verdict, reasonCode: l0.reasonCode } });
   }));
+
+  // ── 平台活跃日（v0.2.49.0：话题 +25「30 天连续活跃」门禁的数据源）──
+  // 活跃日 = 当天 ≥ minPosters（默认 10）个不同用户发过可见帖（用户钦定「至少一天内不同的10个用户
+  // 发布一个帖子」）。公开无鉴权：纯平台热度统计，无用户维度数据。
+  // SQLite date() 输出 UTC 日期；前端用 toISOString().slice(0,10) 同域比对（时区一致）。
+  // 窗口 windowDays 天（默认 60 ≥ 30 话题判定够用），缺失天补 0，升序返回。
+  router.add('GET', '/api/social/activity', (req, res, c) => {
+    const act = (((c.config || {}).xp || {}).activity || {});
+    const minPosters = act.minPosters || 10;
+    const windowDays = act.windowDays || 60;
+    // 以「今天 UTC 零点」为基准回退 (windowDays-1) 天——整天边界，加 i 天恒落在 UTC 午夜（无 DST 漂移）
+    const startMs = new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00.000Z').getTime() - (windowDays - 1) * 86400 * 1000;
+    const sinceIso = new Date(startMs).toISOString();
+    const rows = c.db.prepare("SELECT date(created_at) AS d, count(DISTINCT author_id) AS n FROM posts "
+      + "WHERE status = 'visible' AND created_at >= ? GROUP BY d").all(sinceIso);
+    const byDate = new Map(rows.map((r) => [r.d, r.n]));
+    const days = [];
+    for (let i = 0; i < windowDays; i++) {
+      const date = new Date(startMs + i * 86400 * 1000).toISOString().slice(0, 10);
+      const posters = byDate.get(date) || 0;
+      days.push({ date, posters, active: posters >= minPosters });
+    }
+    sendJson(res, 200, { days });
+  });
 
   // ── 媒体上传（v0.2.16.0：社区帖子多图/视频）──
   // 二进制 body（fetch/XMLHttpRequest 直传文件字节），?ext= 指定扩展名（白名单 + 魔数双校验）；

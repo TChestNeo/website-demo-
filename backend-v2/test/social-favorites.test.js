@@ -69,6 +69,24 @@ test('收藏错误：匿名 401；hidden / removed / 不存在帖 404', async ()
   } finally { await t.close(); }
 });
 
+test('v0.2.49.0 获得收藏经验：新收藏 +12 给作者；自藏/重复藏 0；取消不扣', async () => {
+  const t = await testApp();
+  try {
+    const alice = t.loginAs('alice@x.com', { displayName: 'Alice' });
+    const bob = t.loginAs('bob@x.com', { displayName: 'Bob' });
+    const post = await makePost(t, alice);
+    const xp = (id) => t.db.prepare('SELECT xp_gained FROM users WHERE id = ?').get(id).xp_gained;
+    await t.request('POST', '/api/social/posts/' + post.id + '/favorite', undefined, { cookie: bob.cookie });
+    assert.strictEqual(xp(alice.user.id), 12, '新收藏给作者 +12（「保存」=星标收藏）');
+    await t.request('POST', '/api/social/posts/' + post.id + '/favorite', undefined, { cookie: bob.cookie });
+    assert.strictEqual(xp(alice.user.id), 12, '重复收藏不二次记');
+    await t.request('DELETE', '/api/social/posts/' + post.id + '/favorite', undefined, { cookie: bob.cookie });
+    assert.strictEqual(xp(alice.user.id), 12, '取消收藏不扣回');
+    await t.request('POST', '/api/social/posts/' + post.id + '/favorite', undefined, { cookie: alice.cookie });
+    assert.strictEqual(xp(alice.user.id), 12, '自藏不记');
+  } finally { await t.close(); }
+});
+
 test('收藏限流：socialWrite 同预算同 key——第 3 次操作 429', async () => {
   const t = await testApp({ config: { rateLimits: { socialWrite: { max: 2, windowMs: 60000 } } } });
   try {

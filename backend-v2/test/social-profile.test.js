@@ -1,6 +1,7 @@
 'use strict';
 // v0.2.21.0 用户主页 + 关注系统：GET /api/social/users/:id（头部+统计）、
 // GET /api/social/users/:id/posts?tab=（帖子/转发/点赞/收藏四流）、POST/DELETE /api/social/users/:id/follow（幂等开关）。
+// v0.2.49.0：获得粉丝经验 +25（新关注记、重复不记、取关不扣）。
 // 口径：公共 GET 走 optionalViewer（不刷 DAU）；只认 active 用户，banned/deleted 一律 404。
 const { test } = require('node:test');
 const assert = require('node:assert');
@@ -298,10 +299,14 @@ test('follow：POST 200 + 幂等；DELETE 幂等；followerCount 同步', async 
     const r1 = await t.request('POST', '/api/social/users/' + alice.user.id + '/follow', undefined, { cookie: bob.cookie });
     assert.strictEqual(r1.status, 200);
     assert.deepStrictEqual(await r1.json(), { following: true, followerCount: 1 });
+    // v0.2.49.0：获得粉丝经验——新关注给 alice +25
+    assert.strictEqual(t.db.prepare('SELECT xp_gained FROM users WHERE id = ?').get(alice.user.id).xp_gained, 25);
     const r2 = await t.request('POST', '/api/social/users/' + alice.user.id + '/follow', undefined, { cookie: bob.cookie });
     assert.deepStrictEqual(await r2.json(), { following: true, followerCount: 1 }, '重复关注幂等');
+    assert.strictEqual(t.db.prepare('SELECT xp_gained FROM users WHERE id = ?').get(alice.user.id).xp_gained, 25, '重复关注不二次记');
     const r3 = await t.request('DELETE', '/api/social/users/' + alice.user.id + '/follow', undefined, { cookie: bob.cookie });
     assert.deepStrictEqual(await r3.json(), { following: false, followerCount: 0 });
+    assert.strictEqual(t.db.prepare('SELECT xp_gained FROM users WHERE id = ?').get(alice.user.id).xp_gained, 25, '取关不扣回（只进不出）');
     const r4 = await t.request('DELETE', '/api/social/users/' + alice.user.id + '/follow', undefined, { cookie: bob.cookie });
     assert.deepStrictEqual(await r4.json(), { following: false, followerCount: 0 }, '重复取关幂等');
   } finally { await t.close(); }

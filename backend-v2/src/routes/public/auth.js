@@ -66,6 +66,7 @@ function publicUser(row) {
     hasPassword: !!row.password_hash, // W6：前端据此判断是否需引导设密（additive）
     gender: row.gender || null, // 013：Male/Female/Other（注册第二页下拉），NULL = 未填写
     student: studentShape(row), // v0.2.44.0：认证有效 → {email, verifiedAt, expiresAt, source}，否则 null
+    xpGained: row.xp_gained || 0, // v0.2.49.0 获得类经验（粉丝/赞/评论/收藏，后端实时累加；前端登录同步进徽章）
     createdAt: row.created_at
   };
 }

@@ -6126,6 +6126,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function saveDraft() {
     if (document.body.classList.contains('fc-viewmode')) return; // v10.28.35.0: 查看模式绝不写本地草稿
     var draft = buildDraft();
+    // v0.2.49.0 文章 XP 旗子重置：标题空且无卡 = 草稿清空重写 → 下一篇文章算新（+120）
+    if (window.SlatiDB && !draft.title && !(draft.cards && draft.cards.length)) {
+      SlatiDB.set(SlatiDB.KEYS.ARTICLE_PUBLISHED, false);
+    }
     try {
       localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(draft));
       lastSavedContent = getCardFingerprint();
@@ -6154,13 +6158,23 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
 
   // ── Publish ──
+  // v0.2.49.0 发布经验：草稿首次发布 = 新文章 +120；同草稿之后任何再发布 = 更新 +5（用户钦定）。
+  // 旗子 slati_article_published：首发布 XP 记上才置真；草稿清空重写（saveDraft 标题空且无卡）
+  // 重置为假 → 回到 +120。编辑器无「新建文章」按钮，草稿清空是唯一的新文章起点信号。
+  function publishXPReward() {
+    if (!window.SlatiDB || !SlatiDB.addXP) return;
+    var published = !!SlatiDB.get(SlatiDB.KEYS.ARTICLE_PUBLISHED);
+    var state = SlatiDB.addXP('publish_article', published ? 5 : 120);
+    if (!published && state) SlatiDB.set(SlatiDB.KEYS.ARTICLE_PUBLISHED, true); // guest 没记上不置旗
+  }
+
   function publishArticle() {
     saveDraft();
     if (fcCloudMode) { publishCloudArticle(); return; }
     headerStatus.textContent = 'Published';
     headerStatus.className = 'badge badge-success';
     showToast('Article published successfully!');
-    if (window.SlatiDB && SlatiDB.addXP) SlatiDB.addXP('publish_article', 15); // v10.28.31 活跃 XP（v0.2.48.0 重平衡 100→15）
+    publishXPReward();
   }
   window.publishArticle = publishArticle;
 
@@ -6239,7 +6253,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         headerStatus.textContent = 'Published';
         headerStatus.className = 'badge badge-success';
         showToast('已发布');
-        if (window.SlatiDB && SlatiDB.addXP) SlatiDB.addXP('publish_article', 15); // v10.28.31 活跃 XP（v0.2.48.0 重平衡 100→15）
+        publishXPReward();
       } else {
         showToast('发布失败，请稍后重试');
       }

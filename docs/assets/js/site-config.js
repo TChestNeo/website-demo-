@@ -757,7 +757,21 @@ window.MN_SITE = window.MN_SITE || {};
 //   零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css；FC v10.28.35.2（补丁位 1→2：编辑器 XP 钩子数值
 //   随动）；电池 xp-rebalance 新 + tier-gating 钉更新复跑全绿
 //   （rev 00228-w6f）
-window.MN_SITE_VERSION = 'v0.2.48.0';
+// v0.2.49.0 = 社交互动经验值来源（小改动位 48→49·新功能轮；2026-09-16）——用户逐字两段「发布一个评论 +2 一篇文章 +120
+//   发帖 +25，一个粉丝 +25 一个赞 +15，获得一个评论 +10」+「一个保存 +12」；问询钦定：①文章「发布新文章是 +120，更新
+//   文章是 +5」→ 草稿首次发布算新 +120、同一份草稿之后任何再发布（哪怕改了内容）+5、草稿清空重写才回到 +120
+//   （fluidcanvas-editor 旗子 slati_article_published 判定：首发布 120/再发布 5，仅 addXP 成功才置旗、草稿清空重置）
+//   ②发帖「两个都要」= 社区发帖 +25 立得、创建话题也 +25 但无立即奖励（旧 +5 移除）——话题须保持至少 30 天连续活跃度
+//   才结算：活跃日=当天 ≥10 个不同用户各发至少一帖（用户钦定平台热度口径），连续 30 活跃日且话题创建满 30 天 → 每话题
+//   +25（前端 pending 队列 + GET /api/social/activity 结算，断档只延迟不清零）③赞/保存「都是获得」= 获得赞 +15、获得
+//   收藏 +12（「保存」=帖子星标收藏按钮）④获得类经验「后端实时记录」= 后端 users 新列 xp_gained（迁移 023）在别人操作
+//   时直接写库（一个粉丝 +25/一个赞 +15/获得一个评论 +10/一个收藏 +12；重复赞藏关幂等不二记、自赞自评自藏不记、取消不
+//   扣回），登录/刷新经 /auth/me 同步前端徽章；双轨架构=动作类 XP 走前端 localStorage addXP、获得类走后端 xp_gained，
+//   总经验=本地+获得（getLevelState 内部合计——sidebar.js 零改动，等级表/徽章/进度条公式零改动）；GET /api/social/activity
+//   公开端点（60 天窗口、UTC 日域、缺失日补 0、posters≥10 旗 active）；零草稿字段（v 保持 9）、ethereal 零改动无需
+//   inline-css；后端测试 282/282（+9 新：XP 记分幂等/自操作排除/removed·hold 口径/activity 端点锚点模式）
+//   （rev 00229-d4z）
+window.MN_SITE_VERSION = 'v0.2.49.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1062,4 +1076,10 @@ window.MN_SITE_VERSION = 'v0.2.48.0';
 //   +15），publishArticle/publishCloudArticle 两处 addXP('publish_article', 100) 改 15（发布即得 15 XP）；零草稿字段
 //   （v 保持 9）；零后端、ethereal 零改动无需 inline-css
 //   （rev 00228-w6f）
-window.FLUIDCANVAS_VERSION = 'v10.28.35.2';
+// v10.28.35.3 = 编辑器发布 XP 钩子 120/5 新·更新判定（补丁位 2→3·数值平衡轮；2026-09-16）——站点社交 XP（v0.2.49.0：
+//   发布新文章 +120、更新文章 +5）：publishArticle/publishCloudArticle 两处 addXP('publish_article', 15) 换
+//   publishXPReward()（读 slati_article_published 旗子：首次发布 120、同草稿再发布 5——「草稿首次发布算新、同草稿再发布
+//   算更新、草稿清空重写回新」用户钦定；仅 addXP 成功（非 guest）才置旗）；saveDraft 草稿清空（无标题无卡）重置旗子=
+//   新文章起点；零草稿字段（v 保持 9）、零后端、ethereal 零改动无需 inline-css
+//   （rev 00229-d4z）
+window.FLUIDCANVAS_VERSION = 'v10.28.35.3';

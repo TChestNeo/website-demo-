@@ -22,6 +22,9 @@ var SlatiDB = (function () {
     FOLLOWING: 'slati_following',
     XP: 'slati_xp',
     XP_LAST_LOGIN: 'slati_xp_last_login',
+    XP_GAINED: 'slati_xp_gained',               // 获得类 XP（后端实时记，登录/刷新同步）
+    XP_TOPIC_PENDING: 'slati_xp_topic_pending', // 话题 30 天待结算队列 [{id, created}]
+    ARTICLE_PUBLISHED: 'slati_article_published', // 文章草稿已发布旗（新 +120 / 更新 +5 判定）
   };
 
   function get(key) {
@@ -51,6 +54,7 @@ var SlatiDB = (function () {
   function saveUser(user) {
     set(KEYS.USER, user);
     set(KEYS.SESSION, { loggedIn: true, at: new Date().toISOString() });
+    if (user && user.xpGained != null) syncXPGained(user.xpGained); // 获得类经验同步（后端实时记）
     mirrorProfile(user); // 云端镜像 PATCH /me（demo 用户自动跳过）
   }
 
@@ -66,6 +70,9 @@ var SlatiDB = (function () {
   function logout() {
     mirrorLogout(); // 云端会话一并失效（demo 用户自动跳过）
     remove(KEYS.SESSION);
+    // 登出清获得类经验与待结算队列：换号后旧账号的获得经验不得混入新账号徽章
+    remove(KEYS.XP_GAINED);
+    remove(KEYS.XP_TOPIC_PENDING);
   }
 
   // --- Nation Draft (multi-step form) ---
@@ -152,7 +159,14 @@ var SlatiDB = (function () {
     topics.push(topic);
     set(KEYS.TOPICS, topics);
     mirrorTopic(topic); // 云端镜像：服务端 id 回写（demo 用户自动跳过）
-    addXP('create_topic', 5); // v0.2.48.0 重平衡 80→5
+    // v0.2.49.0 话题经验改 30 天结算：无立即奖励（旧 +5 移除），创建日入待结算队列，
+    // 平台连续 30 个活跃日 + 话题满 30 天 → +25（settlePendingTopics 结算）。
+    // 仅云端账号入队：demo 用户无后端活动数据可查，且防队列无限增长。
+    if (hasCloudUser()) {
+      var pending = get(KEYS.XP_TOPIC_PENDING) || [];
+      pending.push({ id: topic.id, created: new Date().toISOString().slice(0, 10) });
+      set(KEYS.XP_TOPIC_PENDING, pending);
+    }
     return topic;
   }
 
@@ -238,8 +252,9 @@ var SlatiDB = (function () {
 
   // --- 用户等级（活跃 XP）──────────────────────────────────────────
   // 等级靠活跃、会员靠订阅——两套并行系统（本模块只管 XP 等级，tier 由订阅状态机管）。
-  // 未来后端迁移路径：users.xp + xp_events 表（migration 021+），addXP 改为云端 mirror、
-  // 本表只读作缓存；等级判定口径不变（累计 XP 阈值）。LEVELS 称号=微型国家主题。
+  // v0.2.49.0 双轨：动作类 XP 仍走本地 addXP（既有体系）；获得类 XP（粉丝/赞/评论/收藏）
+  // 后端实时记 users.xp_gained（迁移 023），登录/刷新经 syncXPGained 带回，
+  // getLevelState 内部用合计判定——等级表/徽章/进度条公式零改动。
   // v0.2.48.0 重平衡（用户新数值表）：12 级、need 累计阈值 0/1200/2400/4800/9600/19200/38400/76800/153600/307200/614400/1228800；
   // 0 经验即 Lv1（问询钦定）；Lv11 皇帝/Lv12 传奇为新称号（前 10 沿用）。
   var LEVELS = [
@@ -262,9 +277,16 @@ var SlatiDB = (function () {
     return (typeof v === 'number' && v >= 0) ? v : 0;
   }
 
+  // 获得类 XP（后端实时记，登录/刷新同步）：坏值按 0（同 getXP 口径）
+  function getXPGained() {
+    var v = get(KEYS.XP_GAINED);
+    return (typeof v === 'number' && v >= 0) ? v : 0;
+  }
+
   // { xp, lv, name, need, nextNeed, progress, isMax }（max 级 nextNeed=need、progress=1）
+  // v0.2.49.0：total = 本地动作 XP + 获得 XP（同步静默、异步回填——sidebar 每次渲染都取最新合计）
   function getLevelState() {
-    var xp = getXP();
+    var xp = getXP() + getXPGained();
     var lv = 1;
     for (var i = 0; i < LEVELS.length; i++) {
       if (xp >= LEVELS[i].need) lv = LEVELS[i].lv;
@@ -299,6 +321,52 @@ var SlatiDB = (function () {
       }
     }
     return state;
+  }
+
+  // 获得类 XP 同步（v0.2.49.0）：后端 xpGained 数值带回——与存量不同才写 + 广播，
+  // 跨级照发 mn:level-up（detail 形状同 addXP，sidebar toast 读 state.lv）。
+  function syncXPGained(n) {
+    n = Math.max(0, parseInt(n, 10) || 0);
+    var prev = getXPGained();
+    if (prev === n) return null;
+    var before = getLevelState();
+    if (!set(KEYS.XP_GAINED, n)) return null;
+    var state = getLevelState();
+    if (window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('mn:xp-changed', { detail: { source: 'gained', amount: n - prev, state: state } }));
+      if (state.lv > before.lv) {
+        window.dispatchEvent(new CustomEvent('mn:level-up', { detail: { state: state, from: before } }));
+      }
+    }
+    return state;
+  }
+
+  // 话题 30 天结算（v0.2.49.0 用户钦定）：平台连续 30 个活跃日 + 话题创建满 30 天 → 每话题 +25。
+  // 活跃日定义（用户自定）：当天 ≥10 个不同用户各发至少一帖（平台热度门禁，days[].active 由后端判）。
+  // 连续窗口结尾取「今天 active 则到今天，否则到昨天」——早上访问当天还没满 10 人发帖，
+  // 硬以今天结尾会把 29 天连击清零；断档只延迟（不清零，滑动窗口）。日期全 UTC 串同域比对。
+  function settlePendingTopics(days) {
+    if (!Array.isArray(days) || !days.length) return;
+    var pending = get(KEYS.XP_TOPIC_PENDING) || [];
+    if (!pending.length) return;
+    var todayUtc = new Date().toISOString().slice(0, 10);
+    var lastIdx = days.length - 1;
+    var endIdx = (days[lastIdx].date === todayUtc && days[lastIdx].active) ? lastIdx : lastIdx - 1;
+    var streak = 0;
+    for (var i = endIdx; i >= 0 && days[i].active; i--) streak += 1;
+    if (streak < 30) return; // 连续活跃不足 30 天：队列原样保留，下次刷新再查
+    var endDate = days[endIdx].date;
+    var left = [];
+    for (var j = 0; j < pending.length; j++) {
+      var p = pending[j];
+      // 话题满 30 天（以连续窗口结尾日起算）才发；没满的继续等
+      if (Date.parse(endDate) - Date.parse(p.created) >= 30 * 86400 * 1000) {
+        addXP('topic_sustained', 25);
+      } else {
+        left.push(p);
+      }
+    }
+    set(KEYS.XP_TOPIC_PENDING, left);
   }
 
   // 每日登录奖励 +5（v0.2.48.0 重平衡 20→5；日期键防重复：当天只发一次）
@@ -443,7 +511,13 @@ var SlatiDB = (function () {
       mergeInto(api, KEYS.TEAMS, '/social/teams', 'teams');
       mergeFollowing(api);
       api.get('/auth/me').then(function (r) {
-        if (r.ok && r.data && r.data.user) set(KEYS.USER, r.data.user);
+        if (!r.ok || !r.data || !r.data.user) return;
+        set(KEYS.USER, r.data.user); // 权威覆盖本地用户
+        if (r.data.user.xpGained != null) syncXPGained(r.data.user.xpGained); // 获得类 XP 同步（后端实时记）
+      });
+      // 话题 30 天结算（活跃日数据源；失败静默，离线自然降级）
+      api.get('/social/activity').then(function (r) {
+        if (r.ok && r.data && Array.isArray(r.data.days)) settlePendingTopics(r.data.days);
       });
     });
   }
@@ -502,7 +576,11 @@ var SlatiDB = (function () {
   function bindAuthEvents() {
     if (!window.addEventListener) return;
     window.addEventListener('mn:unauthorized', function () {
-      if (hasCloudUser()) remove(KEYS.SESSION);
+      if (hasCloudUser()) {
+        remove(KEYS.SESSION);
+        remove(KEYS.XP_GAINED);        // 换号防陈旧获得经验混入新账号（同 logout 口径）
+        remove(KEYS.XP_TOPIC_PENDING);
+      }
     });
   }
 

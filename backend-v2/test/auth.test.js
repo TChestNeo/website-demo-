@@ -93,10 +93,11 @@ test('verify：新邮箱建号 status=new + user 形状（camel）+ Set-Cookie m
   const body = await res.json();
   assert.strictEqual(body.status, 'new');
   assert.deepStrictEqual(Object.keys(body.user).sort(), [
-    'avatarUrl', 'citizenId', 'createdAt', 'displayName', 'email', 'gender', 'hasPassword', 'id', 'role', 'status', 'student', 'tier', 'tierExpiresAt'
+    'avatarUrl', 'citizenId', 'createdAt', 'displayName', 'email', 'gender', 'hasPassword', 'id', 'role', 'status', 'student', 'tier', 'tierExpiresAt', 'xpGained'
   ].sort());
   assert.strictEqual(body.user.gender, null); // 013：未填写 NULL
   assert.strictEqual(body.user.displayName, 'Neo');
+  assert.strictEqual(body.user.xpGained, 0); // 023：新号获得类经验 0 起步
   assert.strictEqual(body.user.role, 'user'); // D4：role 恒 user
   assert.strictEqual(body.user.hasPassword, true); // W6：新注册强制带密码，无设密过渡
   assert.ok(!('passwordSetupRequired' in body));

@@ -64,6 +64,15 @@ const config = {
     domains: (process.env.STUDENT_EMAIL_DOMAINS || '').split(',').map((s) => s.trim()).filter(Boolean)
   },
 
+  // 社交经验值（v0.2.49.0 用户数值表：粉丝+25/赞+15/获评论+10/收藏+12）：
+  // gained = 「别人对你做」时后端实时累加（users.xp_gained 迁移 023）；动作类 XP 仍在前端 localStorage。
+  // activity = 平台活跃日判定（话题 +25 的 30 天连续门禁）：当天 ≥ minPosters 个不同用户发帖算活跃日
+  //（用户钦定「至少一天内不同的10个用户发布一个帖子」）；windowDays = 活动窗口（≥30 供话题判定）。
+  xp: {
+    gained: { fan: 25, like: 15, comment: 10, favorite: 12 },
+    activity: { minPosters: 10, windowDays: 60 }
+  },
+
   // 开发模式固定登录码（DEV_LOGIN_CODE，仅本地测试用）：
   // 用户/Staff 验证码环节直接放行、只允许登录已有账号/staff 行；生产环境强制忽略（误配也不生效）。
   devLoginCode: process.env.NODE_ENV === 'production' ? '' : (process.env.DEV_LOGIN_CODE || ''),

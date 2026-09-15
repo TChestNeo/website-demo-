@@ -1,6 +1,7 @@
 'use strict';
 // v0.2.17.0 互动端点测试：单帖详情 GET /:id、幂等点赞 POST/DELETE /:id/like、
 // 评论 GET/POST /:id/comments（一层回复 + L0 先发后审 + 去重/处罚/限流）+ 公共 GET 可选鉴权（likedByMe）。
+// v0.2.49.0：获得类经验（获得赞 +15/获得评论 +10，后端实时记 users.xp_gained；自操作/removed 不记）。
 const { test } = require('node:test');
 const assert = require('node:assert');
 const { testApp } = require('./helpers');
@@ -159,6 +160,8 @@ test('评论零容忍 → removed + 封号 + 决策/通知 + 列表不出现', a
     assert.ok(t.db.prepare('SELECT count(*) AS n FROM notifications WHERE user_id = ?').get(bob.user.id).n > 0);
     const list = (await (await t.request('GET', '/api/social/posts/' + post.id + '/comments')).json()).comments;
     assert.strictEqual(list.length, 0);
+    // v0.2.49.0：removed 评论（零容忍）不记经验
+    assert.strictEqual(t.db.prepare('SELECT xp_gained FROM users WHERE id = ?').get(alice.user.id).xp_gained, 0);
   } finally { await t.close(); }
 });
 
@@ -173,6 +176,8 @@ test('评论 warning 词 → visible 先发后审 + l0_hold 人工', async () =>
     assert.strictEqual(body.moderation.verdict, 'hold');
     const item = t.db.prepare('SELECT * FROM moderation_items WHERE target_id = ?').get(body.comment.id);
     assert.strictEqual(item.status, 'l0_hold');
+    // v0.2.49.0：hold 评论 status='visible'（先发后审）→ 照记 +10
+    assert.strictEqual(t.db.prepare('SELECT xp_gained FROM users WHERE id = ?').get(alice.user.id).xp_gained, 10);
   } finally { await t.close(); }
 });
 
@@ -257,5 +262,41 @@ test('GET comments：created_at ASC + 仅 visible；hidden/removed 不出 + comm
     assert.strictEqual(detail.commentCount, 2);
     t.db.prepare('UPDATE posts SET status = ? WHERE id = ?').run('hidden', post.id);
     assert.strictEqual((await t.request('GET', '/api/social/posts/' + post.id + '/comments')).status, 404);
+  } finally { await t.close(); }
+});
+
+test('v0.2.49.0 获得赞经验：新赞 +15 给作者；自赞/重复赞 0；取消赞不扣', async () => {
+  const t = await testApp();
+  try {
+    const alice = t.loginAs('alice@x.com', { displayName: 'Alice' });
+    const bob = t.loginAs('bob@x.com', { displayName: 'Bob' });
+    const post = await makePost(t, alice);
+    const xp = (id) => t.db.prepare('SELECT xp_gained FROM users WHERE id = ?').get(id).xp_gained;
+    await t.request('POST', '/api/social/posts/' + post.id + '/like', undefined, { cookie: bob.cookie });
+    assert.strictEqual(xp(alice.user.id), 15, '新赞给作者 +15');
+    assert.strictEqual(xp(bob.user.id), 0, '赞人方不记');
+    await t.request('POST', '/api/social/posts/' + post.id + '/like', undefined, { cookie: bob.cookie });
+    assert.strictEqual(xp(alice.user.id), 15, '重复赞不二次记');
+    await t.request('DELETE', '/api/social/posts/' + post.id + '/like', undefined, { cookie: bob.cookie });
+    assert.strictEqual(xp(alice.user.id), 15, '取消赞不扣回（只进不出）');
+    await t.request('POST', '/api/social/posts/' + post.id + '/like', undefined, { cookie: alice.cookie });
+    assert.strictEqual(xp(alice.user.id), 15, '自赞不记');
+  } finally { await t.close(); }
+});
+
+test('v0.2.49.0 获得评论经验：visible 评论 +10 给作者；自评 0；多评论累加', async () => {
+  const t = await testApp();
+  try {
+    const alice = t.loginAs('alice@x.com', { displayName: 'Alice' });
+    const bob = t.loginAs('bob@x.com', { displayName: 'Bob' });
+    const post = await makePost(t, alice);
+    const xp = (id) => t.db.prepare('SELECT xp_gained FROM users WHERE id = ?').get(id).xp_gained;
+    await t.request('POST', '/api/social/posts/' + post.id + '/comments', { content: CLEAN_COMMENT }, { cookie: bob.cookie });
+    assert.strictEqual(xp(alice.user.id), 10, '获得评论 +10');
+    await t.request('POST', '/api/social/posts/' + post.id + '/comments', { content: '第二个评论：期待贵国国庆阅兵' }, { cookie: bob.cookie });
+    assert.strictEqual(xp(alice.user.id), 20, '每条评论各 +10');
+    // 自评（alice 评自己的帖）不记
+    await t.request('POST', '/api/social/posts/' + post.id + '/comments', { content: '自己的帖自己顶' }, { cookie: alice.cookie });
+    assert.strictEqual(xp(alice.user.id), 20, '自评不记');
   } finally { await t.close(); }
 });
