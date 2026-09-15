@@ -2162,10 +2162,13 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           <label class="form-label">Password</label>
           <input type="password" class="input-glass" id="loginPassword" placeholder="Your password" autocomplete="current-password">
         </div>
-        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素） -->
+        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素；v0.2.46.2 独立发码按钮——用户「注册页面的验证码能不能单独放一个按钮要不然新用户不知道点击哪里获得验证码」：发码不再藏进主按钮首击，输入框旁显式 Send Code） -->
         <div class="form-group" id="loginCodeGroup" style="display:none">
           <label class="form-label">Verification Code</label>
-          <input type="text" class="input-glass" id="loginCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+          <div style="display:flex;gap:8px">
+            <input type="text" class="input-glass" id="loginCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code" style="flex:1;min-width:0">
+            <button class="btn btn-primary" id="loginSendBtn" onclick="sendLoginCode()" style="white-space:nowrap">Send Code</button>
+          </div>
           <p id="loginCodeHint" style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:4px"></p>
         </div>
         <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleLogin()">
@@ -2218,10 +2221,13 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
           <label class="form-label">Password</label>
           <input type="password" class="input-glass" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password">
         </div>
-        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素） -->
+        <!-- 邮箱验证码（后端可达时显示，与密码组成双因素；v0.2.46.2 独立发码按钮——用户「注册页面的验证码能不能单独放一个按钮要不然新用户不知道点击哪里获得验证码」：发码不再藏进主按钮首击，输入框旁显式 Send Code） -->
         <div class="form-group" id="signupCodeGroup" style="display:none">
           <label class="form-label">Verification Code</label>
-          <input type="text" class="input-glass" id="signupCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+          <div style="display:flex;gap:8px">
+            <input type="text" class="input-glass" id="signupCode" placeholder="6-digit code" maxlength="6" inputmode="numeric" autocomplete="one-time-code" style="flex:1;min-width:0">
+            <button class="btn btn-primary" id="signupSendBtn" onclick="sendSignupCode()" style="white-space:nowrap">Send Code</button>
+          </div>
           <p id="signupCodeHint" style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:4px"></p>
         </div>
         <!-- v2.4.2 条款同意挪进注册表单（用户「不是我是希望用户在注册的时候同意就可以了不需要在登录的时候同意因为都同意过了」）：
@@ -2355,21 +2361,25 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     document.getElementById(tab + 'CodeHint').textContent = text;
   }
 
+  // v0.2.46.2：倒计时挂发码按钮（disabled + Resend in Xs → Resend Code），主按钮文案恒常不再变身；
+  // codeSent 发码后保持 true——主按钮带码点击恒走验证（倒计时结束不再被首击重发打断）
   function startCountdown(tab) {
-    var labelId = tab === 'signup' ? 'signupBtnLabel' : 'loginBtnLabel';
-    var label = document.getElementById(labelId);
+    var btn = document.getElementById(tab + 'SendBtn');
+    var codeInput = document.getElementById(tab + 'Code');
     codeSent[tab] = true;
     countdown[tab] = 60;
-    label.textContent = 'Resend in ' + countdown[tab] + 's';
+    btn.disabled = true;
+    btn.textContent = 'Resend in ' + countdown[tab] + 's';
+    if (codeInput) codeInput.focus();
     var timer = setInterval(function () {
       countdown[tab]--;
       if (countdown[tab] <= 0) {
         clearInterval(timer);
-        label.textContent = 'Resend Code';
-        codeSent[tab] = false; // 允许重新发码
+        btn.disabled = false;
+        btn.textContent = 'Resend Code';
         return;
       }
-      label.textContent = 'Resend in ' + countdown[tab] + 's';
+      btn.textContent = 'Resend in ' + countdown[tab] + 's';
     }, 1000);
   }
 
@@ -2385,33 +2395,38 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     handleLogin();
   }
 
+  // v0.2.46.2 独立发码按钮（用户「验证码能不能单独放一个按钮」）：显式按钮与主按钮首击共用此链；
+  // 校验同 W6 口径（发码前先过密码策略，避免等 60s 重发窗口才发现不合格）
+  function sendSignupCode() {
+    var name = document.getElementById('signupName').value.trim();
+    var email = document.getElementById('signupEmail').value.trim();
+    var password = document.getElementById('signupPassword').value;
+    if (!name) { showError('signupError', 'Please enter a display name'); return; }
+    if (!email) { showError('signupError', 'Please enter an email address'); return; }
+    if (!password || password.length < 8 || password.length > 72) {
+      showError('signupError', 'Password must be 8-72 characters');
+      return;
+    }
+    if (countdown.signup > 0) return; // 倒计时中按钮已禁用，双保险
+    MN_API.post('/auth/email-code', { email: email }).then(function (r) {
+      if (r.ok) {
+        setCodeHint('signup', 'Verification code sent to ' + email + ' — valid for 10 minutes');
+        startCountdown('signup');
+      } else if (r.status === 429) {
+        showError('signupError', 'Please wait before requesting another code');
+      } else {
+        demoSignup();
+      }
+    }).catch(demoSignup);
+  }
+
   function apiSignup() {
     var name = document.getElementById('signupName').value.trim();
     var email = document.getElementById('signupEmail').value.trim();
     var password = document.getElementById('signupPassword').value;
     var code = document.getElementById('signupCode').value.trim();
 
-    if (!name) { showError('signupError', 'Please enter a display name'); return; }
-    if (!email) { showError('signupError', 'Please enter an email address'); return; }
-    // W6：发码前先过密码策略（8-72），避免等 60s 重发窗口才发现密码不合格
-    if (!password || password.length < 8 || password.length > 72) {
-      showError('signupError', 'Password must be 8-72 characters');
-      return;
-    }
-
-    if (!codeSent.signup) {
-      MN_API.post('/auth/email-code', { email: email }).then(function (r) {
-        if (r.ok) {
-          setCodeHint('signup', 'Verification code sent to ' + email + ' — valid for 10 minutes');
-          startCountdown('signup');
-        } else if (r.status === 429) {
-          showError('signupError', 'Please wait before requesting another code');
-        } else {
-          demoSignup();
-        }
-      }).catch(demoSignup);
-      return;
-    }
+    if (!codeSent.signup) { sendSignupCode(); return; } // 主按钮首击自动发码（旧路径保留）
     if (!code) { showError('signupError', 'Enter the 6-digit code from your email'); return; }
     MN_API.post('/auth/verify', { email: email, code: code, displayName: name, password: password }).then(function (r) {
       if (!r.ok) { showError('signupError', 'Invalid or expired code'); return; }
@@ -2421,31 +2436,33 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
     }).catch(demoSignup);
   }
 
+  function sendLoginCode() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var password = document.getElementById('loginPassword').value;
+    if (!email) { showError('loginError', 'Please enter your email'); return; }
+    if (!password || password.length < 8 || password.length > 72) {
+      showError('loginError', 'Password must be 8-72 characters');
+      return;
+    }
+    if (countdown.login > 0) return; // 倒计时中按钮已禁用，双保险
+    MN_API.post('/auth/email-code', { email: email }).then(function (r) {
+      if (r.ok) {
+        setCodeHint('login', 'Verification code sent to ' + email + ' — valid for 10 minutes');
+        startCountdown('login');
+      } else if (r.status === 429) {
+        showError('loginError', 'Please wait before requesting another code');
+      } else {
+        demoLogin();
+      }
+    }).catch(demoLogin);
+  }
+
   function apiLogin() {
     var email = document.getElementById('loginEmail').value.trim();
     var password = document.getElementById('loginPassword').value;
     var code = document.getElementById('loginCode').value.trim();
 
-    if (!email) { showError('loginError', 'Please enter your email'); return; }
-    // W6：发码前先过密码策略，避免等 60s 重发窗口才发现密码不合格
-    if (!password || password.length < 8 || password.length > 72) {
-      showError('loginError', 'Password must be 8-72 characters');
-      return;
-    }
-
-    if (!codeSent.login) {
-      MN_API.post('/auth/email-code', { email: email }).then(function (r) {
-        if (r.ok) {
-          setCodeHint('login', 'Verification code sent to ' + email + ' — valid for 10 minutes');
-          startCountdown('login');
-        } else if (r.status === 429) {
-          showError('loginError', 'Please wait before requesting another code');
-        } else {
-          demoLogin();
-        }
-      }).catch(demoLogin);
-      return;
-    }
+    if (!codeSent.login) { sendLoginCode(); return; } // 主按钮首击自动发码（旧路径保留）
     if (!code) { showError('loginError', 'Enter the 6-digit code from your email'); return; }
     MN_API.post('/auth/verify', { email: email, code: code, password: password }).then(function (r) {
       if (!r.ok) { showError('loginError', 'Invalid code or password'); return; }

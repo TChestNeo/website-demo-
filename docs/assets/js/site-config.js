@@ -742,7 +742,9 @@ window.MN_SITE = window.MN_SITE || {};
 //   article-view 38/38 复跑全绿（37 项原断言 + F0-6 发布即公开静态：badge-success+已发布 toast+占位文案无审核；
 //   pending fixture 走占位状态卡的防御路径断言仍有效）；后端 v0.2.46.1 + FC v10.28.35.1 双线
 //   （rev 00225-6v6）
-window.MN_SITE_VERSION = 'v0.2.46.1';
+// v0.2.46.2 = 注册/登录页验证码独立发码按钮（补丁位 1→2·纯修复轮；2026-09-15）——用户「注册页面的验证码能不能单独放一个按钮要不然新用户不知道点击哪里获得验证码」；真身=api 模式下发码藏在主按钮首击（点 Create Account 先发码、按钮文字变 Resend in Xs、第二次点击才验证），新用户看不出点哪里拿码；修法=验证码输入框旁新增显式 Send Code 按钮（flex 并排；倒计时挂发码按钮——Resend in Xs 禁用 → Resend Code 恢复；主按钮文案恒常 Create Account / Enter Console 不再变身）；主按钮首击仍自动发码（旧路径零破坏）、发码成功后焦点落验证码框、codeSent 发码后保持 true（倒计时结束后主按钮带码点击恒走验证不再重发）；登录侧同款（同页同模式）；demo 模式零变化（验证码组隐藏不渲染）；FC v10.28.35.1 零改动、零草稿字段（v 保持 9）、零后端、ethereal 零改动无需 inline-css
+//   （rev 00226-q4b）
+window.MN_SITE_VERSION = 'v0.2.46.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
