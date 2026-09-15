@@ -152,7 +152,7 @@ var SlatiDB = (function () {
     topics.push(topic);
     set(KEYS.TOPICS, topics);
     mirrorTopic(topic); // 云端镜像：服务端 id 回写（demo 用户自动跳过）
-    addXP('create_topic', 80);
+    addXP('create_topic', 5); // v0.2.48.0 重平衡 80→5
     return topic;
   }
 
@@ -167,7 +167,7 @@ var SlatiDB = (function () {
   function setOnboardingStep(step) {
     var prev = get(KEYS.ONBOARDING_STEP) || 0;
     set(KEYS.ONBOARDING_STEP, step);
-    if (prev < 3 && step >= 3) addXP('onboarding_done', 50); // 引导完成（step≥3 跨越）一次性 +50
+    if (prev < 3 && step >= 3) addXP('onboarding_done', 10); // 引导完成（step≥3 跨越）一次性 +10（v0.2.48.0 重平衡 50→10）
   }
   function getRegistryStep() {
     return get(KEYS.REGISTRY_STEP) || 1;
@@ -240,17 +240,21 @@ var SlatiDB = (function () {
   // 等级靠活跃、会员靠订阅——两套并行系统（本模块只管 XP 等级，tier 由订阅状态机管）。
   // 未来后端迁移路径：users.xp + xp_events 表（migration 021+），addXP 改为云端 mirror、
   // 本表只读作缓存；等级判定口径不变（累计 XP 阈值）。LEVELS 称号=微型国家主题。
+  // v0.2.48.0 重平衡（用户新数值表）：12 级、need 累计阈值 0/1200/2400/4800/9600/19200/38400/76800/153600/307200/614400/1228800；
+  // 0 经验即 Lv1（问询钦定）；Lv11 皇帝/Lv12 传奇为新称号（前 10 沿用）。
   var LEVELS = [
     { lv: 1, name: '旅行者', need: 0 },
-    { lv: 2, name: '拓荒者', need: 100 },
-    { lv: 3, name: '公民', need: 250 },
-    { lv: 4, name: '建城者', need: 450 },
-    { lv: 5, name: '镇长', need: 700 },
-    { lv: 6, name: '总督', need: 1000 },
-    { lv: 7, name: '外交官', need: 1400 },
-    { lv: 8, name: '首相', need: 1900 },
-    { lv: 9, name: '元首', need: 2500 },
-    { lv: 10, name: '君主', need: 3200 },
+    { lv: 2, name: '拓荒者', need: 1200 },
+    { lv: 3, name: '公民', need: 2400 },
+    { lv: 4, name: '建城者', need: 4800 },
+    { lv: 5, name: '镇长', need: 9600 },
+    { lv: 6, name: '总督', need: 19200 },
+    { lv: 7, name: '外交官', need: 38400 },
+    { lv: 8, name: '首相', need: 76800 },
+    { lv: 9, name: '元首', need: 153600 },
+    { lv: 10, name: '君主', need: 307200 },
+    { lv: 11, name: '皇帝', need: 614400 },
+    { lv: 12, name: '传奇', need: 1228800 },
   ];
 
   function getXP() {
@@ -297,14 +301,14 @@ var SlatiDB = (function () {
     return state;
   }
 
-  // 每日登录奖励 +20（日期键防重复：当天只发一次）
+  // 每日登录奖励 +5（v0.2.48.0 重平衡 20→5；日期键防重复：当天只发一次）
   function grantDailyLoginBonus() {
     if (!isLoggedIn()) return null;
     var t = new Date();
     var key = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate();
     if (get(KEYS.XP_LAST_LOGIN) === key) return null;
     set(KEYS.XP_LAST_LOGIN, key);
-    return addXP('daily_login', 20);
+    return addXP('daily_login', 5);
   }
 
   // --- Following ---

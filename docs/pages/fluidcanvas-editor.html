@@ -6160,7 +6160,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     headerStatus.textContent = 'Published';
     headerStatus.className = 'badge badge-success';
     showToast('Article published successfully!');
-    if (window.SlatiDB && SlatiDB.addXP) SlatiDB.addXP('publish_article', 100); // v10.28.31 活跃 XP
+    if (window.SlatiDB && SlatiDB.addXP) SlatiDB.addXP('publish_article', 15); // v10.28.31 活跃 XP（v0.2.48.0 重平衡 100→15）
   }
   window.publishArticle = publishArticle;
 
@@ -6239,7 +6239,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         headerStatus.textContent = 'Published';
         headerStatus.className = 'badge badge-success';
         showToast('已发布');
-        if (window.SlatiDB && SlatiDB.addXP) SlatiDB.addXP('publish_article', 100); // v10.28.31 活跃 XP
+        if (window.SlatiDB && SlatiDB.addXP) SlatiDB.addXP('publish_article', 15); // v10.28.31 活跃 XP（v0.2.48.0 重平衡 100→15）
       } else {
         showToast('发布失败，请稍后重试');
       }
