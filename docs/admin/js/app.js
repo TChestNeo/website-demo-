@@ -271,20 +271,25 @@
   // ── 导航 ──
   function renderNav() {
     const box = $('navGroups');
-    // 单卡导航：与前端侧栏一致的一层卡片 + 分类标题（组名）+ 图标条目（无 W 徽章、无组间分隔线）
-    box.replaceChildren(h('div', { class: 'sidebar-module nav-card' }, ...NAV.flatMap((g) => {
-      const items = g.items || [g.item];
+    // 单卡导航：一层卡片 + 分类标题 + 图标条目（无 W 徽章、无组间分隔线）；
+    // 分类口径：Analytics/Users/Content/Community 并入「Dashboard 总览」（各条目保留原图标），其余组各成一个分类
+    const sections = [
+      { g: NAV[0], subs: NAV.slice(0, 5) },
+      ...NAV.slice(5).map((g) => ({ g, subs: [g] }))
+    ];
+    box.replaceChildren(h('div', { class: 'sidebar-module nav-card' }, ...sections.flatMap(({ g, subs }) => {
       const title = h('div', { class: 'nav-group-title' },
         h('span', { text: g.en }),
         h('span', { class: 'zh', text: g.zh })
       );
-      return [title, ...items.map((it) => h('a', {
+      const items = subs.flatMap((sg) => (sg.items || [sg.item]).map((it) => h('a', {
         class: 'nav-item',
         href: it.route ? '#/' + it.route : '#/todo/' + it.todo
       },
-        h('span', { class: 'material-symbols-outlined', text: g.icon }),
+        h('span', { class: 'material-symbols-outlined', text: sg.icon }),
         h('span', { text: it.label })
-      ))];
+      )));
+      return [title, ...items];
     })));
   }
 

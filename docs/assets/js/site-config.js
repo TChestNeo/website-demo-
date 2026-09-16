@@ -818,7 +818,14 @@ window.MN_SITE = window.MN_SITE || {};
 //   ethereal 零改动无需 inline-css；smoke-admin 48/48（导航断言 1 卡+12 标题+23 条目+零徽章）；部署一次
 //   exit 0（env 30 条从 describe 全量重建）；curl 链 5/5
 //   （rev 00238-b8v）
-window.MN_SITE_VERSION = 'v0.2.49.6';
+// v0.2.49.7 = 后台菜单分类合并（补丁位 6→7·观感修复轮；2026-09-17）——用户「用户，分析，内容，社区不需要单独的
+//   分类全部放在总览的分类内」；改法：NAV 数据不动（TODO 注册表/图标/点击流全保留），renderNav 视觉分组
+//   Analytics/Users/Content/Community 并入「Dashboard 总览」（各条目保留原图标）→ 分类 12→8（总览 5 条目 +
+//   财务 8 + 客服/AI/安全/平台/审计 5 组 + 工作人员 5）；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段
+//   （v 保持 9）、ethereal 零改动无需 inline-css；smoke-admin 48/48（导航断言 1 卡+8 标题+23 条目+零徽章）；
+//   部署一次 exit 0（env 30 条从 describe 全量重建）；curl 链 3/3
+//   （rev 00239-phh）
+window.MN_SITE_VERSION = 'v0.2.49.7';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
