@@ -271,25 +271,16 @@
   // ── 导航 ──
   function renderNav() {
     const box = $('navGroups');
-    // 单卡导航：12 组合并一张大卡（.nav-card），组内结构/图标/.soon/href/active 全不变
-    box.replaceChildren(h('div', { class: 'sidebar-module nav-card' }, ...NAV.map((g) => {
+    // 单卡扁平导航：与前端侧栏一致——一层卡片 + 图标条目（无组名、无 W 徽章，图标取各组图标）
+    box.replaceChildren(h('div', { class: 'sidebar-module nav-card' }, ...NAV.flatMap((g) => {
       const items = g.items || [g.item];
-      return h('div', { class: 'nav-group' },
-        h('div', { class: 'nav-group-title' },
-          h('span', { text: g.en }),
-          h('span', { class: 'zh', text: g.zh })
-        ),
-        h('div', { class: 'nav-group-items' },
-          ...items.map((it) => h('a', {
-            class: 'nav-item',
-            href: it.route ? '#/' + it.route : '#/todo/' + it.todo
-          },
-            g.items ? null : h('span', { class: 'material-symbols-outlined', text: g.icon }),
-            h('span', { text: it.label }),
-            it.wave ? h('span', { class: 'soon', text: 'W' + it.wave }) : null
-          ))
-        )
-      );
+      return items.map((it) => h('a', {
+        class: 'nav-item',
+        href: it.route ? '#/' + it.route : '#/todo/' + it.todo
+      },
+        h('span', { class: 'material-symbols-outlined', text: g.icon }),
+        h('span', { text: it.label })
+      ));
     })));
   }
 

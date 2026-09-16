@@ -803,7 +803,15 @@ window.MN_SITE = window.MN_SITE || {};
 //   菜单层无权限过滤口径不动）；组间 border-top 细分隔线 + 组名小字弱化（全主题令牌，暗色自动适配）；零后端、
 //   零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css；smoke-admin 导航断言同步改 1 卡 + 12 组 49/49 全绿
 //   （rev 00236-2wv）
-window.MN_SITE_VERSION = 'v0.2.49.4';
+// v0.2.49.5 = 后台菜单单卡扁平化（补丁位 4→5·观感修复轮；2026-09-17）——用户「我希望是做到和前端一样…那个W啥的
+//   能不能去掉…能不能只有和前端一样的一层卡片而不是这个这样的多层卡片」；改法：renderNav 组块结构全部拆除 → 1 张
+//   .sidebar-module.nav-card 内 23 个扁平 .nav-item（组名/W3-5 徽章全去、图标取各组图标、href/active 全保留、
+//   route() 零改动、菜单层无权限过滤口径不动）；.nav-item 尺寸对齐前端（gap 12/padding 10 14/图标 20/fs-label-md）、
+//   .nav-card padding var(--space-sm)（仿前端 nav-module）；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段
+//   （v 保持 9）、ethereal 零改动无需 inline-css；smoke-admin 48/48（导航断言并成 1 卡+23 条目+零组块+零徽章，
+//   总断言数 49→48）；部署一次 exit 0（env 30 条从 describe 全量重建）；curl 链 5/5
+//   （rev 00237-rct）
+window.MN_SITE_VERSION = 'v0.2.49.5';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

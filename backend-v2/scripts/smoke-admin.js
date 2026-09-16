@@ -293,10 +293,11 @@ async function main() {
     ok('角色栏 = 项目总监', await client.evalJs(`document.getElementById('admRoles').textContent === '项目总监'`));
 
     // ── 导航壳 ──
-    ok('导航 1 张合并卡 + 12 分组块', await client.evalJs(`
+    ok('导航 1 张扁平卡 + 23 条目（无组块无 W 徽章）', await client.evalJs(`
       document.querySelectorAll('#navGroups .sidebar-module').length === 1 &&
-      document.querySelectorAll('#navGroups .nav-group').length === 12`));
-    ok('建设中标记 ≥15（W3/W4/W5）', await client.evalJs(`document.querySelectorAll('#navGroups .soon').length >= 15`));
+      document.querySelectorAll('#navGroups .nav-item').length === 23 &&
+      document.querySelectorAll('#navGroups .nav-group').length === 0 &&
+      document.querySelectorAll('#navGroups .soon').length === 0`));
     await client.waitFor(`document.getElementById('pane-dashboard').style.display === 'block'`, 6000, '默认 dashboard 面板');
     ok('默认深链 → Dashboard 激活态', await client.evalJs(`
       document.querySelector('#navGroups a[href="#/dashboard"]').classList.contains('active')`));
