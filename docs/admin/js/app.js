@@ -271,16 +271,20 @@
   // ── 导航 ──
   function renderNav() {
     const box = $('navGroups');
-    // 单卡扁平导航：与前端侧栏一致——一层卡片 + 图标条目（无组名、无 W 徽章，图标取各组图标）
+    // 单卡导航：与前端侧栏一致的一层卡片 + 分类标题（组名）+ 图标条目（无 W 徽章、无组间分隔线）
     box.replaceChildren(h('div', { class: 'sidebar-module nav-card' }, ...NAV.flatMap((g) => {
       const items = g.items || [g.item];
-      return items.map((it) => h('a', {
+      const title = h('div', { class: 'nav-group-title' },
+        h('span', { text: g.en }),
+        h('span', { class: 'zh', text: g.zh })
+      );
+      return [title, ...items.map((it) => h('a', {
         class: 'nav-item',
         href: it.route ? '#/' + it.route : '#/todo/' + it.todo
       },
         h('span', { class: 'material-symbols-outlined', text: g.icon }),
         h('span', { text: it.label })
-      ));
+      ))];
     })));
   }
 
