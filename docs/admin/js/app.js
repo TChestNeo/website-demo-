@@ -271,9 +271,10 @@
   // ── 导航 ──
   function renderNav() {
     const box = $('navGroups');
-    box.replaceChildren(...NAV.map((g) => {
+    // 单卡导航：12 组合并一张大卡（.nav-card），组内结构/图标/.soon/href/active 全不变
+    box.replaceChildren(h('div', { class: 'sidebar-module nav-card' }, ...NAV.map((g) => {
       const items = g.items || [g.item];
-      return h('div', { class: 'sidebar-module' },
+      return h('div', { class: 'nav-group' },
         h('div', { class: 'nav-group-title' },
           h('span', { text: g.en }),
           h('span', { class: 'zh', text: g.zh })
@@ -289,7 +290,7 @@
           ))
         )
       );
-    }));
+    })));
   }
 
   // ── 路由（#hash 深链）──

@@ -2252,6 +2252,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     .nav-item.active { background: rgba(59,130,246,0.12); color: var(--color-primary); font-weight: 700; }
     .nav-item .soon { margin-left: auto; font-size: 10px; color: var(--color-outline); font-weight: 500; }
 
+    /* 单卡导航：12 组合并一张大卡，组间细分隔线（主题令牌，暗色自动适配） */
+    .nav-card { padding: 4px 6px 8px; }
+    .nav-card .nav-group + .nav-group { margin-top: 2px; padding-top: 4px;
+      border-top: 1px solid var(--adm-border, var(--card-border)); }
+    .nav-card .nav-group-title { font-size: 12px; font-weight: 600; letter-spacing: 0.015em; padding: 6px 10px 2px; }
+
     .adm-login { max-width: 520px; margin: var(--space-xl) auto; padding: var(--space-lg); }
     .adm-login .headline-md { margin-bottom: var(--space-xs); }
     .adm-login .body-md { margin-bottom: var(--space-md); }

@@ -293,7 +293,9 @@ async function main() {
     ok('角色栏 = 项目总监', await client.evalJs(`document.getElementById('admRoles').textContent === '项目总监'`));
 
     // ── 导航壳 ──
-    ok('导航 12 顶级组', await client.evalJs(`document.querySelectorAll('#navGroups .sidebar-module').length === 12`));
+    ok('导航 1 张合并卡 + 12 分组块', await client.evalJs(`
+      document.querySelectorAll('#navGroups .sidebar-module').length === 1 &&
+      document.querySelectorAll('#navGroups .nav-group').length === 12`));
     ok('建设中标记 ≥15（W3/W4/W5）', await client.evalJs(`document.querySelectorAll('#navGroups .soon').length >= 15`));
     await client.waitFor(`document.getElementById('pane-dashboard').style.display === 'block'`, 6000, '默认 dashboard 面板');
     ok('默认深链 → Dashboard 激活态', await client.evalJs(`
