@@ -7,14 +7,16 @@
   <title>FluidCanvas Editor | M.NationWorld</title>
 
   <script>
-  /* 防主题白闪：原 theme-init.js 内联——必须 CSS 之前同步执行（外链脚本走网络晚到 → 页面先按默认主题画一帧再跳 = 切页闪白） */
+  /* 防主题白闪：原 theme-init.js 内联——必须 CSS 之前同步执行（外链脚本走网络晚到 → 页面先按默认主题画一帧再跳 = 切页闪白）；mono 主题色一并同步落 data-accent——规则静态在 ethereal.css 随内联首帧生效，不再等 settings-modal.js 注入后才变黑白 */
   (function () {
     var theme = 'light';
+    var accent = 'blue';
     try {
       var raw = localStorage.getItem('slati_settings');
       if (raw) {
         var s = JSON.parse(raw);
         if (s.theme) theme = s.theme;
+        if (s.accent) accent = s.accent;
       }
     } catch (e) {}
     if (theme === 'auto') {
@@ -25,6 +27,9 @@
     }
     if (theme === 'dark') {
       document.documentElement.setAttribute('data-theme', 'dark');
+    }
+    if (accent === 'mono') {
+      document.documentElement.setAttribute('data-accent', 'mono');
     }
   })();
   </script>
@@ -602,22 +607,7 @@ textarea.input-glass {
   box-shadow: var(--shadow-lg);
   transform: scale(0.95);
   opacity: 0;
-  /* v0.2.45.2：隐藏态免绘制——旧隐藏态只 opacity:0，玻璃卡（backdrop-filter
-     blur(32px)）连同卡内无限动画（迁移按钮魔法条 2s 自转）每帧照样重光栅
-     ——编辑器静息实测 15fps（探针 tmp-probe-editor-jank 二分实证：摘掉转圈
-     条 17→52 帧/秒）。visibility 隐藏杀绘制，关闭延迟 0.25s 等淡出结束 */
-  visibility: hidden;
-  transition: all 0.25s ease, visibility 0s linear 0.25s;
-}
-/* v0.2.45.2：隐藏弹窗内动画全停——visibility:hidden 只免绘制，卡内无限动画
-   （迁移按钮魔法条 2s 自转）的合成器 tick 仍每帧把玻璃面拖进重光栅循环：
-   探针微基准⑥ 暂停全部动画后编辑链慢帧 7→3、整窗 fc-moving 7→2 实证；
-   animation 不吃继承且 `*` 不命中伪元素 → ::before/::after 一并点名。
-   弹窗打开 (.active) 规则失配，卡内动画照常从零起播、零视觉差异 */
-.modal-card:not(.active) *,
-.modal-card:not(.active) *::before,
-.modal-card:not(.active) *::after {
-  animation: none !important;
+  transition: all 0.25s ease;
 }
 /* Inner scroll body — carries the scroll so border-radius stays intact */
 .modal-card-body {
@@ -637,110 +627,13 @@ textarea.input-glass {
   border-radius: 10px;
 }
 .modal-card-body::-webkit-scrollbar-thumb:hover { background: rgba(118,117,134,0.32); }
-/* ── v10.28.28 图片信息弹窗（上传元数据：名称/描述/可见性）── */
-.imm-row { display: flex; align-items: center; gap: 10px; }
-.imm-name { flex: 1; min-width: 0; }
-.imm-preview {
-  width: 64px; height: 64px; flex-shrink: 0; object-fit: cover;
-  border-radius: var(--radius-md); border: 1px solid var(--divider-line);
-  background: var(--color-surface-container-lowest);
-}
-.imm-desc {
-  width: 100%; height: 110px;          /* 固定高度，不可拖拽调整（用户钦定） */
-  resize: none; overflow-y: auto; line-height: 1.5; margin-top: 4px;
-}
-.imm-count { font-variant-numeric: tabular-nums; }
-.imm-count.over { color: #e5484d; font-weight: 600; }
-/* ── v10.28.33 图片信息只读弹窗（图库 info 图标二级弹窗：上传者/简介/时间/可见性/尺寸）── */
-.iim-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 8px; }
-.iim-label { flex: 0 0 64px; font-size: var(--fs-label-sm); color: var(--color-outline); }
-.iim-value { flex: 1; min-width: 0; font-size: var(--fs-label-sm); word-break: break-word; white-space: pre-wrap; }
-.pbg-name-row { display: flex; align-items: center; gap: 4px; min-width: 0; }
-.pbg-name {
-  flex: 1; min-width: 0; font-size: var(--fs-label-sm);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.pbg-edit { display: flex; border: none; background: none; padding: 0; color: var(--color-outline); cursor: pointer; }
-.pbg-edit:hover { color: var(--color-primary); }
-.pbg-edit .material-symbols-outlined { font-size: 14px; }
-
-/* ── v10.28.27 自定义页面背景弹窗：左工具栏 + 右整页预览 ── */
-.modal-card-preview { max-width: min(1040px, 94vw); width: 94%; }
-.pbg-shell {
-  display: flex; gap: var(--space-md);
-  height: calc(85vh - 2 * var(--space-lg));
-}
-.pbg-tools {
-  width: 300px; flex-shrink: 0;
-  display: flex; flex-direction: column; gap: var(--space-sm);
-  overflow-y: auto; padding-right: 6px;
-  scrollbar-width: thin;
-}
-.pbg-tools::-webkit-scrollbar { width: 5px; }
-.pbg-tools::-webkit-scrollbar-thumb { background: rgba(118,117,134,0.18); border-radius: 10px; }
-.pbg-list { display: flex; flex-direction: column; gap: 6px; min-height: 40px; }
-.pbg-list-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px;
-  border: 1px solid var(--divider-line);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-container-lowest);
-  user-select: none;
-}
-.pbg-list-item.dragging { opacity: 0.4; }
-.pbg-list-item.drag-over { border-top: 2px solid var(--color-primary); }
-.pbg-thumb {
-  width: 48px; height: 34px; flex-shrink: 0;
-  border-radius: 4px; background-size: cover; background-position: center;
-  border: 1px solid var(--divider-line);
-}
-.pbg-item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.pbg-feather-row { display: flex; align-items: center; gap: 4px; }
-.pbg-feather-row span { font-size: var(--fs-label-sm); color: var(--color-outline); width: 30px; flex-shrink: 0; }
-.pbg-feather-row input[type="range"] { flex: 1; min-width: 0; }
-.pbg-grip { cursor: grab; color: var(--color-outline); }
-.pbg-del { cursor: pointer; color: var(--color-outline); border: none; background: none; padding: 2px; }
-.pbg-del:hover { color: #e5484d; }
-.pbg-ratio-label { font-size: var(--fs-label-sm); color: var(--color-outline); padding: 4px 0 2px; }
-.pbg-ratio-row { display: flex; flex-wrap: wrap; gap: 6px; }
-.pbg-ratio-btn {
-  flex: 1 1 42%; text-align: center;
-  border: 1px solid var(--divider-line-strong);
-  background: var(--color-surface-container);
-  color: var(--color-on-surface);
-  border-radius: var(--radius-md);
-  padding: 5px 6px; font-size: 13px; cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
-}
-.pbg-ratio-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
-.pbg-ratio-btn:hover:not(.active) { border-color: var(--color-primary); color: var(--color-primary); }
-details.pbg-details summary {
-  font-size: var(--fs-label-sm); color: var(--color-outline);
-  cursor: pointer; padding: 4px 0; user-select: none;
-}
-.pbg-preview { flex: 1; min-width: 0; display: flex; align-items: flex-start; justify-content: center; }
-.pbg-frame {
-  width: min(100%, 620px); flex-shrink: 0;
-  border: 1px solid var(--divider-line-strong);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-container-lowest);
-  overflow-y: auto; overflow-x: hidden;
-  scrollbar-width: thin;
-}
-.pbg-frame::-webkit-scrollbar { width: 5px; }
-.pbg-frame::-webkit-scrollbar-thumb { background: rgba(118,117,134,0.18); border-radius: 10px; }
-.pbg-clone-wrap { position: relative; pointer-events: none; transform-origin: 0 0; overflow: hidden; }
-.pbg-hint { display: none; color: #e5484d; font-size: var(--fs-label-sm); }
-.pbg-hint.show { display: block; }
-.pbg-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; }
-.pbg-empty { font-size: var(--fs-label-sm); color: var(--color-outline); padding: 8px; text-align: center; }
 /* Keep old modal-card scrollbar for backward compat with existing modals */
 .modal-card:not(:has(.modal-card-body)) {
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(118,117,134,0.2) transparent;
 }
-.modal-card.active { transform: scale(1); opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s, 0s; } /* v0.2.45.2：打开立即可见（visibility 延迟归零），淡入动画保留 */
+.modal-card.active { transform: scale(1); opacity: 1; pointer-events: auto; }
 
 /* ----- Progress Steps ----- */
 .progress-steps {
@@ -1764,6 +1657,370 @@ html.fc-guest .fc-locked-hero {
   text-align: center;
 }
 
+/* ── 液态玻璃 v2.1（2026-09-03 v0.2.9.1 撤销轮：弹性下线、面自身样式全还原）
+   liquid-glass.js 注入 .lg-backdrop（背层模糊+SVG 折射色散）与 .lg-specular
+   （镜面高光）两层，挂 z:-1 垫在父半透明底之上、内容之下。v0.2.9.0 的
+   「挂载态 blanket」（position:relative / z-index:0 / backdrop-filter:none）
+   已整体删除——用户 2026-09-03：「除液态玻璃外全部还原」：面自身定位/层级/
+   模糊保持原本 CSS 规则（玻璃面自带 backdrop-filter/定位即层叠上下文，负 z
+   层不上逃），不再有位置被改的副作用。 ── */
+
+/* v0.2.9.0 blanket 与 auth-card z 补回规则已删（面原本 z:2 规则原样生效） */
+
+/* hero 亮环（rdev 静环：mask-composite Chrome 不渲染 → inset box-shadow；
+   全静态后无 transform 写，环恒静）。访客 hero 增特异性：
+   html.mn-guest .guest-hero 的 box-shadow:var(--shadow-md)（0,2,1）会压过本环（0,2,0） */
+.liquid-glass.lg-static,
+html.mn-guest .guest-hero.liquid-glass.lg-static {
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+:root[data-theme="dark"] .liquid-glass.lg-static,
+:root[data-theme="dark"] html.mn-guest .guest-hero.liquid-glass.lg-static {
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+
+/* 层：负 z 垫底、永不挡点击；圆角继承。默认配方 = rdev 卡片（blur 6 + sat 140%） */
+.lg-backdrop {
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1;
+  border-radius: inherit; pointer-events: none;
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  backdrop-filter: blur(6px) saturate(140%);
+  filter: url(#lg-glass-filter); /* SVG 置换折射+三通道色散；小卡由 JS 内联覆写 sm 实例 */
+}
+.lg-specular {
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1;
+  border-radius: inherit; pointer-events: none;
+  background: radial-gradient(circle at var(--lg-px, 50%) var(--lg-py, 50%), rgba(255, 255, 255, 0.16), transparent 60%);
+}
+/* 暗色模式去镜面高光白光（2026-09-10 用户「卡片中间的那个白光」——真身=此层：
+   圆心恒在卡正中、rgba(255,255,255,0.16) 白晕，暗色玻璃卡/设置弹窗正中一片白光；
+   暗色下沉静无光斑整层藏起，亮色保留 rdev 高光配方） */
+:root[data-theme="dark"] .lg-specular {
+  display: none;
+}
+
+/* 各面配方：父面旧模糊值平移+饱和到层 */
+.modal-card .lg-backdrop, .auth-card .lg-backdrop,
+.context-menu .lg-backdrop, .text-toolbar .lg-backdrop,
+.font-panel .lg-backdrop, .plan-card .lg-backdrop {
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(24px) saturate(1.4);
+}
+.rp-card .lg-backdrop, .mre-stage .lg-backdrop,
+.mre-side .lg-backdrop, .mre-panel .lg-backdrop {
+  -webkit-backdrop-filter: blur(32px);
+  backdrop-filter: blur(32px);
+}
+.team-modal-card .lg-backdrop,
+.account-personal .lg-backdrop, .account-team-wrap .lg-backdrop {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+.sidebar-module .lg-backdrop {
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+}
+.editor-header .lg-backdrop, .studio-header .lg-backdrop {
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+}
+.grid-card .lg-backdrop, .stats-edit-panel .lg-backdrop, .grid-group-bg .lg-backdrop {
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+}
+.glass-container .lg-backdrop {
+  -webkit-backdrop-filter: blur(40px);
+  backdrop-filter: blur(40px);
+}
+
+/* 编辑器门控：玻璃族之外的卡 / 主题卡（card-edge）/ 外板 / 图底 → 层藏起
+   （v0.2.9.1 弹性下线后全部是 .lg-static，门控选择器同步换类）；组内成员卡面
+   由组背景接管（v10.28.17.2 口径：成员自身 backdrop-filter:none 管不到注入层，
+   漏门即回归用户 9-02「独立背景」投诉） */
+.grid-card.lg-static:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-backdrop,
+.grid-card.lg-static:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-specular,
+.grid-card.lg-static.has-outer-bg > .lg-backdrop, .grid-card.lg-static.has-outer-bg > .lg-specular,
+.grid-card.lg-static.has-card-bg-img > .lg-backdrop, .grid-card.lg-static.has-card-bg-img > .lg-specular,
+.grid-card.lg-static[class*="card-edge-"] > .lg-backdrop, .grid-card.lg-static[class*="card-edge-"] > .lg-specular,
+.lg-static[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-backdrop,
+.lg-static[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-specular {
+  display: none !important;
+}
+
+/* 侧栏导航滚动条隐藏（用户 2026-09-03「把左侧根菜单的上下滑轨隐藏」）——滚动功能保留，
+   只藏滑轨；nav-module 带 .custom-scrollbar 类，此规则置后压过 */
+.nav-module {
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* 旧 Edge/IE */
+}
+.nav-module::-webkit-scrollbar { display: none; }
+
+/* 侧栏导航模块层：absolute 出流（2026-09-03 用户「左侧菜单空出很多空位要下滑才看见」——
+   sticky 在流内占整段高度，两张层把菜单顶到卡片下方 2 倍高度处；实测菜单项 t=1277 vs 卡片顶 t=258）；
+   模块需建包含块（负偏移补 padding；% 高按模块内容盒解析）；brand/user 模块普通 absolute */
+.nav-module.lg-static { position: relative; }
+.nav-module.lg-static > .lg-backdrop,
+.nav-module.lg-static > .lg-specular {
+  position: absolute;
+  top: calc(-1 * var(--space-sm));
+  left: calc(-1 * var(--space-sm));
+  right: auto;
+  bottom: auto;
+  width: calc(100% + 2 * var(--space-sm));
+  height: calc(100% + 2 * var(--space-sm));
+}
+
+/* ═══ 主题色「黑白」mono 家族（2026-09-16 自 settings-modal.js 运行时注入迁入本文件——切页闪修复）═══
+   用户「黑白主题在切换页面时会先显示默认主题的颜色再转变成黑白主题的颜色」——真身=mono 规则与 data-accent 全靠
+   settings-modal.js 在 body 末尾运行时注入 → 首帧先画蓝家族再跳黑白；迁入后随本文件内联进 40 页 HTML，
+   data-accent 由 head 内联 theme-init 同步落——首帧即黑白；弹窗实时切换主题色仍走 applyAccent（只开关 html 属性） */
+/* ── 主题色「黑白」mono：主色家族翻中性灰黑（亮主题近黑/暗主题近白）+ 各处蓝 tint 组件跟随 ── */
+/* 亮 mono 用 :not([data-theme="dark"]) 而非 [data-theme="light"]——head 内联 theme-init 亮色不落 data-theme 属性（applyTheme 才补），
+   :not() 让首帧（无属性时）即匹配 mono 亮族，切页不再先蓝后黑白 */
+html[data-accent="mono"]:not([data-theme="dark"]) { --color-primary: #1c1c22; --color-on-primary: #ffffff; --color-primary-container: #2a2a32; --color-on-primary-container: #f5f5f7; --color-primary-fixed: #e6e6ea; --color-primary-fixed-dim: #c9c9d1; --color-on-primary-fixed: #101014; --color-on-primary-fixed-variant: #3c3c46; --color-inverse-primary: #d4d4dc; --color-surface-tint: #3a3a42; --btn-ghost-hover: rgba(28, 28, 34, 0.06); }
+html[data-accent="mono"][data-theme="dark"] { --color-primary: #ececf2; --color-on-primary: #16161c; --color-primary-container: #3c3c46; --color-on-primary-container: #f5f5f7; --color-primary-fixed: #3a3a44; --color-primary-fixed-dim: #2c2c34; --color-on-primary-fixed: #f5f5f7; --color-on-primary-fixed-variant: #d9d9e1; --color-inverse-primary: #2c2c34; --color-surface-tint: #c9c9d1; --btn-ghost-hover: rgba(255, 255, 255, 0.10); }
+/* ── v0.2.44.1 mono 暗色背景翻黑族（用户「把黑白主题的深色模式背景颜色改成黑色系的而不是原本的蓝色」）── */
+/* 暗蓝紫表面令牌全翻中性黑族（html/body/卡片/网格画布/输入框/弹窗/侧栏一次全盖，蓝 theme 零影响）； */
+/* 按钮黑族保留 v0.2.28.15 用户钦定配方（#1e1e2d/#32324a）不动，背景家族才翻 */
+html[data-accent="mono"][data-theme="dark"] { --color-background: #0b0b0d; --color-surface: #141416; --color-surface-dim: #0e0e10; --color-surface-bright: #1b1b1e; --color-surface-container-lowest: #0a0a0c; --color-surface-container-low: #0f0f11; --color-surface-container: #151518; --color-surface-container-high: #1d1d20; --color-surface-container-highest: #232327; --color-surface-variant: #2a2a2f; --color-surface-tint: #b0b0b5; --color-outline: #9c9ca2; --color-outline-variant: #4a4a4f; --glass-bg: #141418; --card-bg: rgba(21, 21, 25, 0.55); --card-bg-hover: rgba(30, 30, 36, 0.72); --input-bg: #121215; --input-bg-focus: #1a1a1e; --modal-bg: rgba(21, 21, 26, 0.75); --subnav-bg: #141418; --sidebar-bg: #101013; --btn-ghost-hover: rgba(255, 255, 255, 0.08); }
+/* ── v0.2.44.1 FC 白底白字按钮（用户「FC 里有一些按钮在深色的黑白主题下是白底白字」）── */
+/* 真身=暗 mono 主色近白 #ececf2 当按钮底 + 硬编码白字 → 白底白字；active 族翻纯黑族 #32324a 白字 */
+/* （扫描探针实证 3 处可见 + 隐藏面板同模式 5 处，一条族规则全盖）；小指示点（snap-dot/lb-fill/ */
+/* milestone-dot 无文字）保持近白高亮不翻；toast 家底硬编码蓝 #1e1c32 翻黑族（编辑器 toast 亦随翻， */
+/* 白字与「深色不白」口径一致） */
+html[data-accent="mono"][data-theme="dark"] .grid-controls .col-btn.active, html[data-accent="mono"][data-theme="dark"] .vp-presets .vp-btn.active, html[data-accent="mono"][data-theme="dark"] .pbg-ratio-btn.active, html[data-accent="mono"][data-theme="dark"] .caption-pos-btn.active, html[data-accent="mono"][data-theme="dark"] .caption-vertical-toggle.active, html[data-accent="mono"][data-theme="dark"] .caption-tab.active, html[data-accent="mono"][data-theme="dark"] .caption-edge-btn.active, html[data-accent="mono"][data-theme="dark"] .tim-search-btn, html[data-accent="mono"][data-theme="dark"] .flag-card-item .lib-icon:hover { background: #32324a; color: #ffffff; border-color: #32324a; }
+html[data-accent="mono"][data-theme="dark"] .progress-step.active .dot, html[data-accent="mono"][data-theme="dark"] .progress-step.completed .dot { background: #32324a; color: #ffffff; }
+html[data-accent="mono"][data-theme="dark"] .toast { background: #1a1a1e; color: #ffffff; }
+html[data-accent="mono"] .btn-primary { box-shadow: 0 4px 16px rgba(28, 28, 34, 0.18); }
+html[data-accent="mono"] .btn-primary:hover { box-shadow: 0 6px 20px rgba(28, 28, 34, 0.3); }
+html[data-accent="mono"] .btn-primary:focus-visible { box-shadow: 0 0 0 3px rgba(28, 28, 34, 0.12); }
+html[data-accent="mono"]:not([data-theme="dark"]) .nav-item:hover { background: rgba(28, 28, 34, 0.05); }
+html[data-accent="mono"]:not([data-theme="dark"]) .nav-item.active { background: rgba(28, 28, 34, 0.1); border-color: rgba(28, 28, 34, 0.15); animation: none; }
+html[data-accent="mono"] .badge-primary { background: rgba(28, 28, 34, 0.1); }
+html[data-accent="mono"] .dropdown-option:hover { background: rgba(28, 28, 34, 0.05); }
+html[data-accent="mono"] .dropdown-option.selected { background: rgba(28, 28, 34, 0.1); }
+html[data-accent="mono"] .auth-terms input[type="checkbox"] { background: rgba(28, 28, 34, 0.06); border-color: rgba(28, 28, 34, 0.45); }
+html[data-accent="mono"] .auth-terms input[type="checkbox"]:hover { background: rgba(28, 28, 34, 0.12); }
+html[data-accent="mono"] .auth-terms input[type="checkbox"]:checked { background: #1c1c22; border-color: #1c1c22; }
+html[data-accent="mono"] .upload-zone:hover { border-color: rgba(28, 28, 34, 0.35); background: rgba(28, 28, 34, 0.03); }
+html[data-accent="mono"] .guest-hero { background: linear-gradient(135deg, rgba(28, 28, 34, 0.06), rgba(28, 28, 34, 0.03)), var(--card-bg); }
+/* 主色渐变组件去蓝（亮 mono）：btn-primary/auth-panel-body/text-gradient/team-avatar 翻纯黑灰渐变，lift-info-btn 纯深灰 */
+html[data-accent="mono"] .btn-primary { background: linear-gradient(135deg, #1c1c22, #3a3a46); }
+html[data-accent="mono"] .btn-primary:hover { background: linear-gradient(135deg, #2a2a32, #4a4a56); }
+html[data-accent="mono"] .auth-panel-body { background: linear-gradient(135deg, #1c1c22, #3a3a46); }
+html[data-accent="mono"] .text-gradient { background: linear-gradient(135deg, var(--color-primary), #6a6a76); -webkit-background-clip: text; background-clip: text; }
+html[data-accent="mono"] .team-avatar { background: linear-gradient(135deg, #1c1c22, #3a3a46); }
+html[data-accent="mono"] .lift-info-btn { background: #1c1c22; box-shadow: 0 4px 14px rgba(28, 28, 34, 0.35); }
+/* 深色 nav 选中态/hover 由 ethereal.css 深色侧边栏块统一管（暗底白字，蓝/黑白两种主题色一致）——此处不再单独覆盖 */
+html[data-accent="mono"][data-theme="dark"] .dropdown-option:hover { background: rgba(255, 255, 255, 0.06); }
+html[data-accent="mono"][data-theme="dark"] .dropdown-option.selected { background: rgba(255, 255, 255, 0.10); }
+html[data-accent="mono"][data-theme="dark"] .badge-primary { background: rgba(255, 255, 255, 0.10); }
+/* 深色 mono 适配（用户「深色模式下按钮和卡片不要变白 除了文字」+「按钮怎么变成灰色的了」）： */
+/* 文字/链接/边框仍近白（--color-primary #ececf2 不动），一切把主色当背景的组件翻纯黑族 */
+/* （用户示例 #1e1e2d）——不再是灰 #3a3a44 族；btn-primary 显式白字 */
+/* （--color-on-primary 深色 mono 下是近黑，不显式翻白字会黑字压黑底） */
+html[data-accent="mono"][data-theme="dark"] .btn-primary { background: linear-gradient(135deg, #1e1e2d, #32324a); color: #ffffff; }
+html[data-accent="mono"][data-theme="dark"] .btn-primary:hover { background: linear-gradient(135deg, #26263a, #3a3a56); }
+html[data-accent="mono"][data-theme="dark"] .toggle-switch.active { background: #1e1e2d; }
+html[data-accent="mono"][data-theme="dark"] .auth-panel-body { background: linear-gradient(135deg, #1e1e2d, #2c2c3e); }
+html[data-accent="mono"][data-theme="dark"] .lb-score-fill { background: #4a4a56; }
+html[data-accent="mono"][data-theme="dark"] .text-gradient { background: linear-gradient(135deg, var(--color-primary), #b8b8c8); -webkit-background-clip: text; background-clip: text; }
+html[data-accent="mono"][data-theme="dark"] .team-avatar { background: linear-gradient(135deg, #3a3a44, #4a4a56); }
+html[data-accent="mono"][data-theme="dark"] .lift-info-btn { background: #1e1e2d; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }
+/* 深色 mono 发白渐变修复（sidebar.js/ai-chat.js 内联硬编码白→蓝/白→紫渐变，!important 压过内联 style）： */
+/* 用户 banner、头像白描边、AI 悬浮球/聊天头 */
+html[data-accent="mono"][data-theme="dark"] .user-banner { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }
+html[data-accent="mono"][data-theme="dark"] .user-module .avatar { border-color: rgba(255, 255, 255, 0.08) !important; }
+html[data-accent="mono"][data-theme="dark"] .mn-ai-fab, html[data-accent="mono"][data-theme="dark"] .mn-ai-head { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }
+/* overview 特色国家头像圆（用户「卡片中间那个白色」真身）：内联主色→紫渐变，深色 mono 翻黑族 */
+html[data-accent="mono"][data-theme="dark"] .featured-nation-avatar { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }
+/* ── v0.2.28.16 FluidCanvas 主题色适配（用户「FuildCanvas怎么还没做主题色的适配？我现在明明设置是黑白主题」）── */
+/* 真身=FC 两页从未加载本脚本 → data-accent 不落、黑白规则从未注入（FC 页面暗色覆写早已按「settings-modal */
+/* 运行时注入在后故 mono 族赢」设计，只差接入这一步）；本轮 FC 两页接入 settings-modal.js + 次色家族 mono */
+/* 翻中性灰（亮 mono 中灰底白字、暗 mono 亮灰当文字——一切把次色当背景的组件另有纯黑族覆写）+ FC 组件 */
+/* 硬编码蓝紫翻黑白（亮 mono 近黑 #1c1c22 族、暗 mono 近白 #ececf2 族——沿用 v0.2.28.0 两套配方） */
+html[data-accent="mono"]:not([data-theme="dark"]) { --color-secondary: #4a4a56; --color-on-secondary: #ffffff; --color-secondary-container: #5c5c6a; --color-on-secondary-container: #f5f5f7; }
+html[data-accent="mono"][data-theme="dark"] { --color-secondary: #b0b0c2; --color-on-secondary: #16161c; --color-secondary-container: #3c3c4a; --color-on-secondary-container: #ececf2; }
+html[data-accent="mono"] .badge-secondary { background: rgba(28, 28, 34, 0.10); }
+html[data-accent="mono"][data-theme="dark"] .badge-secondary { background: rgba(255, 255, 255, 0.10); }
+html[data-accent="mono"][data-theme="dark"] .btn-secondary { background: #1e1e2d; color: #ffffff; }
+html[data-accent="mono"] .input-glass:focus { box-shadow: 0 0 0 3px rgba(28, 28, 34, 0.1); }
+html[data-accent="mono"][data-theme="dark"] .input-glass:focus { box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1); }
+html[data-accent="mono"] .lb-score-bar { background: rgba(28, 28, 34, 0.08); }
+html[data-accent="mono"][data-theme="dark"] .lb-score-bar { background: rgba(255, 255, 255, 0.10); }
+html[data-accent="mono"] .milestone::before { background: rgba(28, 28, 34, 0.12); }
+html[data-accent="mono"][data-theme="dark"] .milestone::before { background: rgba(255, 255, 255, 0.12); }
+html[data-accent="mono"] .chart-legend-bar { background: linear-gradient(to right, rgba(28, 28, 34, 0.08), rgba(28, 28, 34, 0.75)); }
+html[data-accent="mono"][data-theme="dark"] .chart-legend-bar { background: linear-gradient(to right, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.75)); }
+html[data-accent="mono"] #channelOverview { background: linear-gradient(135deg, rgba(28, 28, 34, 0.04), rgba(28, 28, 34, 0.02)), var(--card-bg) !important; }
+html[data-accent="mono"][data-theme="dark"] .channel-avatar { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }
+/* FC 首页工作台组件（fluidcanvas.html）：上传区/文件条/目标卡/发布钮/最近目标章/内容库——蓝 tint 翻黑白 */
+html[data-accent="mono"] .upload-zone.drag-over { border-color: #1c1c22; background: rgba(28, 28, 34, 0.06); box-shadow: 0 0 0 4px rgba(28, 28, 34, 0.08); }
+html[data-accent="mono"] .upload-zone.drag-over .upload-zone-icon { color: #1c1c22; }
+html[data-accent="mono"] .file-info-bar { background: rgba(28, 28, 34, 0.04); border-color: rgba(28, 28, 34, 0.12); }
+html[data-accent="mono"] .file-info-icon { color: #1c1c22; }
+html[data-accent="mono"] .target-card:hover { border-color: rgba(28, 28, 34, 0.25); background: rgba(28, 28, 34, 0.03); }
+html[data-accent="mono"] .target-card.selected { border-color: #1c1c22; background: rgba(28, 28, 34, 0.06); box-shadow: 0 0 0 3px rgba(28, 28, 34, 0.08); }
+html[data-accent="mono"] .target-card.selected .target-icon { color: #1c1c22; }
+html[data-accent="mono"] .publish-btn { background: linear-gradient(135deg, #1c1c22, #3a3a46); }
+html[data-accent="mono"] .publish-btn:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(28, 28, 34, 0.3); }
+html[data-accent="mono"] .recent-target-badge { background: rgba(28, 28, 34, 0.08); color: #1c1c22; }
+html[data-accent="mono"] .content-lib-card:hover { background: rgba(28, 28, 34, 0.03); }
+html[data-accent="mono"] .cl-badge.article { background: rgba(28, 28, 34, 0.08); color: #1c1c22; }
+html[data-accent="mono"] .cl-action-btn:hover { background: rgba(28, 28, 34, 0.08); color: #1c1c22; }
+html[data-accent="mono"][data-theme="dark"] .upload-zone:hover { border-color: rgba(236, 236, 242, 0.35); background: rgba(255, 255, 255, 0.03); }
+html[data-accent="mono"][data-theme="dark"] .upload-zone.drag-over { border-color: #ececf2; background: rgba(255, 255, 255, 0.06); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08); }
+html[data-accent="mono"][data-theme="dark"] .upload-zone.drag-over .upload-zone-icon { color: #ececf2; }
+html[data-accent="mono"][data-theme="dark"] .file-info-bar { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.12); }
+html[data-accent="mono"][data-theme="dark"] .file-info-icon { color: #ececf2; }
+html[data-accent="mono"][data-theme="dark"] .target-card:hover { border-color: rgba(236, 236, 242, 0.25); background: rgba(255, 255, 255, 0.03); }
+html[data-accent="mono"][data-theme="dark"] .target-card.selected { border-color: #ececf2; background: rgba(255, 255, 255, 0.06); box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08); }
+html[data-accent="mono"][data-theme="dark"] .target-card.selected .target-icon { color: #ececf2; }
+html[data-accent="mono"][data-theme="dark"] .publish-btn { background: linear-gradient(135deg, #1e1e2d, #32324a); color: #ffffff; }
+html[data-accent="mono"][data-theme="dark"] .publish-btn:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3); }
+html[data-accent="mono"][data-theme="dark"] .recent-target-badge { background: rgba(255, 255, 255, 0.10); color: #ececf2; }
+html[data-accent="mono"][data-theme="dark"] .content-lib-card:hover { background: rgba(255, 255, 255, 0.03); }
+html[data-accent="mono"][data-theme="dark"] .cl-badge.article { background: rgba(255, 255, 255, 0.10); color: #ececf2; }
+html[data-accent="mono"][data-theme="dark"] .cl-action-btn:hover { background: rgba(255, 255, 255, 0.08); color: #ececf2; }
+/* FC 编辑器顶部 Migrate 钮（v0.2.28.15 紫渐变 #8e2de2→#4a00e0）：mono 亮翻黑灰渐变、暗翻纯黑族（用户示例 */
+/* #1e1e2d）；白色横扫面板 + 字母 invert 滤镜不动（白面板黑白两主题都成立、invert 换色机制与底色无关） */
+html[data-accent="mono"]:not([data-theme="dark"]) .migrate-btn { background: linear-gradient(to right, #1c1c22, #3a3a46); }
+html[data-accent="mono"][data-theme="dark"] .migrate-btn { background: linear-gradient(to right, #1e1e2d, #32324a); }
+/* FC 编辑器弹窗 Migrate 药丸（v10.28.17.3 近黑药丸+悬停紫色渐变层/光环/星芒）：药丸本体黑白本就成立， */
+/* 只翻悬停紫层→灰层、紫色光环→灰环、暗色星芒深紫→灰 */
+html[data-accent="mono"] .migrate-pill::before { box-shadow: inset 0 0.5px hsl(0, 0%, 100%), inset 0 -1px 2px 0 hsl(0, 0%, 0%), 0px 4px 10px -4px hsla(0 0% 0% / calc(1 - var(--active, 0))), 0 0 0 calc(var(--active, 0) * 0.375rem) hsl(0 0% 30% / 0.75); }
+html[data-accent="mono"] .migrate-pill::after { background-color: hsla(0 0% 45% / 0.75); background-image: radial-gradient(at 51% 89%, hsla(0 0% 82% / 1) 0px, transparent 50%), radial-gradient(at 100% 100%, hsla(0 0% 62% / 1) 0px, transparent 50%), radial-gradient(at 22% 91%, hsla(0 0% 62% / 1) 0px, transparent 50%); }
+html[data-accent="mono"][data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(0 0% 40%); }
+html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117, 134, 0.10); }
+
+</style><style>
+/* ── 页面专属 CSS（2026-09-16 迁出内联块）——
+   此前各轮把编辑器页专属规则直接写进上方「ethereal.css 内联」标记所在的样式块内
+   而 inline-css.js 刷新路径按「CSS_MARK 至该块首个结束标签」整段替换——
+   2026-09-16 重跑 inliner 时整块页面 CSS 被抹除（pbg 预设按钮/迁移药丸白底白字回归）。
+   此处按 HEAD 原位恢复（原内联块行 604-619/639-742/1766-2016）并独立成块：后续 ethereal.css
+   改动重跑 inline-css.js 不再波及本块 ── */
+
+  /* v0.2.45.2：隐藏态免绘制——旧隐藏态只 opacity:0，玻璃卡（backdrop-filter
+     blur(32px)）连同卡内无限动画（迁移按钮魔法条 2s 自转）每帧照样重光栅
+     ——编辑器静息实测 15fps（探针 tmp-probe-editor-jank 二分实证：摘掉转圈
+     条 17→52 帧/秒）。visibility 隐藏杀绘制，关闭延迟 0.25s 等淡出结束 */
+.modal-card {
+  visibility: hidden;
+  transition: all 0.25s ease, visibility 0s linear 0.25s;
+}
+
+/* v0.2.45.2：隐藏弹窗内动画全停——visibility:hidden 只免绘制，卡内无限动画
+   （迁移按钮魔法条 2s 自转）的合成器 tick 仍每帧把玻璃面拖进重光栅循环：
+   探针微基准⑥ 暂停全部动画后编辑链慢帧 7→3、整窗 fc-moving 7→2 实证；
+   animation 不吃继承且 `*` 不命中伪元素 → ::before/::after 一并点名。
+   弹窗打开 (.active) 规则失配，卡内动画照常从零起播、零视觉差异 */
+.modal-card:not(.active) *,
+.modal-card:not(.active) *::before,
+.modal-card:not(.active) *::after {
+  animation: none !important;
+}
+
+/* ── v10.28.28 图片信息弹窗（上传元数据：名称/描述/可见性）── */
+.imm-row { display: flex; align-items: center; gap: 10px; }
+.imm-name { flex: 1; min-width: 0; }
+.imm-preview {
+  width: 64px; height: 64px; flex-shrink: 0; object-fit: cover;
+  border-radius: var(--radius-md); border: 1px solid var(--divider-line);
+  background: var(--color-surface-container-lowest);
+}
+.imm-desc {
+  width: 100%; height: 110px;          /* 固定高度，不可拖拽调整（用户钦定） */
+  resize: none; overflow-y: auto; line-height: 1.5; margin-top: 4px;
+}
+.imm-count { font-variant-numeric: tabular-nums; }
+.imm-count.over { color: #e5484d; font-weight: 600; }
+/* ── v10.28.33 图片信息只读弹窗（图库 info 图标二级弹窗：上传者/简介/时间/可见性/尺寸）── */
+.iim-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 8px; }
+.iim-label { flex: 0 0 64px; font-size: var(--fs-label-sm); color: var(--color-outline); }
+.iim-value { flex: 1; min-width: 0; font-size: var(--fs-label-sm); word-break: break-word; white-space: pre-wrap; }
+.pbg-name-row { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.pbg-name {
+  flex: 1; min-width: 0; font-size: var(--fs-label-sm);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pbg-edit { display: flex; border: none; background: none; padding: 0; color: var(--color-outline); cursor: pointer; }
+.pbg-edit:hover { color: var(--color-primary); }
+.pbg-edit .material-symbols-outlined { font-size: 14px; }
+
+/* ── v10.28.27 自定义页面背景弹窗：左工具栏 + 右整页预览 ── */
+.modal-card-preview { max-width: min(1040px, 94vw); width: 94%; }
+.pbg-shell {
+  display: flex; gap: var(--space-md);
+  height: calc(85vh - 2 * var(--space-lg));
+}
+.pbg-tools {
+  width: 300px; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: var(--space-sm);
+  overflow-y: auto; padding-right: 6px;
+  scrollbar-width: thin;
+}
+.pbg-tools::-webkit-scrollbar { width: 5px; }
+.pbg-tools::-webkit-scrollbar-thumb { background: rgba(118,117,134,0.18); border-radius: 10px; }
+.pbg-list { display: flex; flex-direction: column; gap: 6px; min-height: 40px; }
+.pbg-list-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--divider-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-container-lowest);
+  user-select: none;
+}
+.pbg-list-item.dragging { opacity: 0.4; }
+.pbg-list-item.drag-over { border-top: 2px solid var(--color-primary); }
+.pbg-thumb {
+  width: 48px; height: 34px; flex-shrink: 0;
+  border-radius: 4px; background-size: cover; background-position: center;
+  border: 1px solid var(--divider-line);
+}
+.pbg-item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.pbg-feather-row { display: flex; align-items: center; gap: 4px; }
+.pbg-feather-row span { font-size: var(--fs-label-sm); color: var(--color-outline); width: 30px; flex-shrink: 0; }
+.pbg-feather-row input[type="range"] { flex: 1; min-width: 0; }
+.pbg-grip { cursor: grab; color: var(--color-outline); }
+.pbg-del { cursor: pointer; color: var(--color-outline); border: none; background: none; padding: 2px; }
+.pbg-del:hover { color: #e5484d; }
+.pbg-ratio-label { font-size: var(--fs-label-sm); color: var(--color-outline); padding: 4px 0 2px; }
+.pbg-ratio-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.pbg-ratio-btn {
+  flex: 1 1 42%; text-align: center;
+  border: 1px solid var(--divider-line-strong);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  border-radius: var(--radius-md);
+  padding: 5px 6px; font-size: 13px; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.pbg-ratio-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.pbg-ratio-btn:hover:not(.active) { border-color: var(--color-primary); color: var(--color-primary); }
+details.pbg-details summary {
+  font-size: var(--fs-label-sm); color: var(--color-outline);
+  cursor: pointer; padding: 4px 0; user-select: none;
+}
+.pbg-preview { flex: 1; min-width: 0; display: flex; align-items: flex-start; justify-content: center; }
+.pbg-frame {
+  width: min(100%, 620px); flex-shrink: 0;
+  border: 1px solid var(--divider-line-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-container-lowest);
+  overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: thin;
+}
+.pbg-frame::-webkit-scrollbar { width: 5px; }
+.pbg-frame::-webkit-scrollbar-thumb { background: rgba(118,117,134,0.18); border-radius: 10px; }
+.pbg-clone-wrap { position: relative; pointer-events: none; transform-origin: 0 0; overflow: hidden; }
+.pbg-hint { display: none; color: #e5484d; font-size: var(--fs-label-sm); }
+.pbg-hint.show { display: block; }
+.pbg-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; }
+.pbg-empty { font-size: var(--fs-label-sm); color: var(--color-outline); padding: 8px; text-align: center; }
+
+.modal-card.active { transform: scale(1); opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s, 0s; } /* v0.2.45.2：打开立即可见（visibility 延迟归零），淡入动画保留 */
+
 /* ═══ Article View Mode（v10.28.35.0）═══
    ?article=ART-xxx 只读查看已发布文章（其他用户视角）：编辑器 chrome 全隐、
    格子范围硬裁剪——画布包进 #fcViewScaler（overflow:hidden + 等比缩放适配视口），
@@ -2015,121 +2272,8 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
   --mb-text-c: 240 14% 14%;
 }
 :root[data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(260 55% 42%); }
-
-/* ── 液态玻璃 v2.1（2026-09-03 v0.2.9.1 撤销轮：弹性下线、面自身样式全还原）
-   liquid-glass.js 注入 .lg-backdrop（背层模糊+SVG 折射色散）与 .lg-specular
-   （镜面高光）两层，挂 z:-1 垫在父半透明底之上、内容之下。v0.2.9.0 的
-   「挂载态 blanket」（position:relative / z-index:0 / backdrop-filter:none）
-   已整体删除——用户 2026-09-03：「除液态玻璃外全部还原」：面自身定位/层级/
-   模糊保持原本 CSS 规则（玻璃面自带 backdrop-filter/定位即层叠上下文，负 z
-   层不上逃），不再有位置被改的副作用。 ── */
-
-/* v0.2.9.0 blanket 与 auth-card z 补回规则已删（面原本 z:2 规则原样生效） */
-
-/* hero 亮环（rdev 静环：mask-composite Chrome 不渲染 → inset box-shadow；
-   全静态后无 transform 写，环恒静）。访客 hero 增特异性：
-   html.mn-guest .guest-hero 的 box-shadow:var(--shadow-md)（0,2,1）会压过本环（0,2,0） */
-.liquid-glass.lg-static,
-html.mn-guest .guest-hero.liquid-glass.lg-static {
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
-}
-:root[data-theme="dark"] .liquid-glass.lg-static,
-:root[data-theme="dark"] html.mn-guest .guest-hero.liquid-glass.lg-static {
-  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
-}
-
-/* 层：负 z 垫底、永不挡点击；圆角继承。默认配方 = rdev 卡片（blur 6 + sat 140%） */
-.lg-backdrop {
-  position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1;
-  border-radius: inherit; pointer-events: none;
-  -webkit-backdrop-filter: blur(6px) saturate(140%);
-  backdrop-filter: blur(6px) saturate(140%);
-  filter: url(#lg-glass-filter); /* SVG 置换折射+三通道色散；小卡由 JS 内联覆写 sm 实例 */
-}
-.lg-specular {
-  position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1;
-  border-radius: inherit; pointer-events: none;
-  background: radial-gradient(circle at var(--lg-px, 50%) var(--lg-py, 50%), rgba(255, 255, 255, 0.16), transparent 60%);
-}
-/* 暗色模式去镜面高光白光（2026-09-10 用户「卡片中间的那个白光」——真身=此层：
-   圆心恒在卡正中、rgba(255,255,255,0.16) 白晕，暗色玻璃卡/设置弹窗正中一片白光；
-   暗色下沉静无光斑整层藏起，亮色保留 rdev 高光配方） */
-:root[data-theme="dark"] .lg-specular {
-  display: none;
-}
-
-/* 各面配方：父面旧模糊值平移+饱和到层 */
-.modal-card .lg-backdrop, .auth-card .lg-backdrop,
-.context-menu .lg-backdrop, .text-toolbar .lg-backdrop,
-.font-panel .lg-backdrop, .plan-card .lg-backdrop {
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  backdrop-filter: blur(24px) saturate(1.4);
-}
-.rp-card .lg-backdrop, .mre-stage .lg-backdrop,
-.mre-side .lg-backdrop, .mre-panel .lg-backdrop {
-  -webkit-backdrop-filter: blur(32px);
-  backdrop-filter: blur(32px);
-}
-.team-modal-card .lg-backdrop,
-.account-personal .lg-backdrop, .account-team-wrap .lg-backdrop {
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-}
-.sidebar-module .lg-backdrop {
-  -webkit-backdrop-filter: blur(14px) saturate(1.4);
-  backdrop-filter: blur(14px) saturate(1.4);
-}
-.editor-header .lg-backdrop, .studio-header .lg-backdrop {
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-}
-.grid-card .lg-backdrop, .stats-edit-panel .lg-backdrop, .grid-group-bg .lg-backdrop {
-  -webkit-backdrop-filter: blur(12px) saturate(1.4);
-  backdrop-filter: blur(12px) saturate(1.4);
-}
-.glass-container .lg-backdrop {
-  -webkit-backdrop-filter: blur(40px);
-  backdrop-filter: blur(40px);
-}
-
-/* 编辑器门控：玻璃族之外的卡 / 主题卡（card-edge）/ 外板 / 图底 → 层藏起
-   （v0.2.9.1 弹性下线后全部是 .lg-static，门控选择器同步换类）；组内成员卡面
-   由组背景接管（v10.28.17.2 口径：成员自身 backdrop-filter:none 管不到注入层，
-   漏门即回归用户 9-02「独立背景」投诉） */
-.grid-card.lg-static:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-backdrop,
-.grid-card.lg-static:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-specular,
-.grid-card.lg-static.has-outer-bg > .lg-backdrop, .grid-card.lg-static.has-outer-bg > .lg-specular,
-.grid-card.lg-static.has-card-bg-img > .lg-backdrop, .grid-card.lg-static.has-card-bg-img > .lg-specular,
-.grid-card.lg-static[class*="card-edge-"] > .lg-backdrop, .grid-card.lg-static[class*="card-edge-"] > .lg-specular,
-.lg-static[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-backdrop,
-.lg-static[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-specular {
-  display: none !important;
-}
-
-/* 侧栏导航滚动条隐藏（用户 2026-09-03「把左侧根菜单的上下滑轨隐藏」）——滚动功能保留，
-   只藏滑轨；nav-module 带 .custom-scrollbar 类，此规则置后压过 */
-.nav-module {
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* 旧 Edge/IE */
-}
-.nav-module::-webkit-scrollbar { display: none; }
-
-/* 侧栏导航模块层：absolute 出流（2026-09-03 用户「左侧菜单空出很多空位要下滑才看见」——
-   sticky 在流内占整段高度，两张层把菜单顶到卡片下方 2 倍高度处；实测菜单项 t=1277 vs 卡片顶 t=258）；
-   模块需建包含块（负偏移补 padding；% 高按模块内容盒解析）；brand/user 模块普通 absolute */
-.nav-module.lg-static { position: relative; }
-.nav-module.lg-static > .lg-backdrop,
-.nav-module.lg-static > .lg-specular {
-  position: absolute;
-  top: calc(-1 * var(--space-sm));
-  left: calc(-1 * var(--space-sm));
-  right: auto;
-  bottom: auto;
-  width: calc(100% + 2 * var(--space-sm));
-  height: calc(100% + 2 * var(--space-sm));
-}
-
 </style>
+
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
 /* cyrillic-ext */

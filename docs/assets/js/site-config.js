@@ -771,7 +771,14 @@ window.MN_SITE = window.MN_SITE || {};
 //   公开端点（60 天窗口、UTC 日域、缺失日补 0、posters≥10 旗 active）；零草稿字段（v 保持 9）、ethereal 零改动无需
 //   inline-css；后端测试 282/282（+9 新：XP 记分幂等/自操作排除/removed·hold 口径/activity 端点锚点模式）
 //   （rev 00229-d4z）
-window.MN_SITE_VERSION = 'v0.2.49.0';
+// v0.2.49.1 = 黑白主题切页闪修复（补丁位 0→1·观感修复轮；2026-09-16）——用户「那个黑白主题在切换页面时会先显示默认
+//   主题的颜色再转变成黑白主题的颜色」；真身=mono 规则与 data-accent 全靠 settings-modal.js 在 body 末尾运行时注入
+//   → 首帧先画蓝家族再跳黑白；修法三件：①mono 主题色规则整体迁入 ethereal.css（随 inline-css.js 内联进 40 页，首帧
+//   即黑白；弹窗实时切换仍走 applyAccent 只开关 html 属性）②29 页 head 内联「防主题白闪」块同步落 data-accent
+//   （theme-init.js 原版源同步）③settings-modal.js 注入样式只剩弹窗 UI 规则；零后端、零草稿字段（v 保持 9）；
+//   FC v10.28.35.4（补丁位 3→4：FC 两页 head 块随修 + FC mono 规则随迁 ethereal）
+//   （rev 00231-8bp）
+window.MN_SITE_VERSION = 'v0.2.49.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1082,4 +1089,8 @@ window.MN_SITE_VERSION = 'v0.2.49.0';
 //   算更新、草稿清空重写回新」用户钦定；仅 addXP 成功（非 guest）才置旗）；saveDraft 草稿清空（无标题无卡）重置旗子=
 //   新文章起点；零草稿字段（v 保持 9）、零后端、ethereal 零改动无需 inline-css
 //   （rev 00229-d4z）
-window.FLUIDCANVAS_VERSION = 'v10.28.35.3';
+// v10.28.35.4 = 黑白主题切页闪修复随动（补丁位 3→4·观感修复轮；2026-09-16）——mono 规则（含 FC 工作台/编辑器
+//   Migrate 族）自 settings-modal.js 运行时注入迁入 ethereal.css 随内联首帧生效 + FC 两页 head 内联块同步落
+//   data-accent（与站点 v0.2.49.1 同轮）；零草稿字段（v 保持 9）、零 FC 逻辑改动
+//   （rev 00231-8bp）
+window.FLUIDCANVAS_VERSION = 'v10.28.35.4';
