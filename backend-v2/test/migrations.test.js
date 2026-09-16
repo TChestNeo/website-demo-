@@ -1,5 +1,5 @@
 'use strict';
-// 迁移 001-023：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
+// 迁移 001-024：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
 
 const test = require('node:test');
 const assert = require('node:assert');
@@ -13,9 +13,9 @@ function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'mn2-mig-'));
 }
 
-test('迁移：user_version=23、58 表、角色/权限/平台种子齐整', () => {
+test('迁移：user_version=24、58 表、角色/权限/平台种子齐整', () => {
   const db = openDb(path.join(tmpDir(), 'a.sqlite'));
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 23);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 24);
   // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 + 010 两 + 014 一 = 58（触发器不算表）
   const n = db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().n;
   assert.strictEqual(n, 58);
@@ -34,6 +34,10 @@ test('迁移：user_version=23、58 表、角色/权限/平台种子齐整', () 
   // 平台设置种子（D8 预算红线默认值）
   assert.strictEqual(db.prepare("SELECT value FROM platform_settings WHERE key = 'budget.total'").get().value, '60');
   assert.strictEqual(db.prepare("SELECT value FROM platform_settings WHERE key = 'budget.copilot'").get().value, '10');
+  // 024 订阅开放开关种子（默认开放）
+  const so = db.prepare("SELECT value, type FROM platform_settings WHERE key = 'subscriptions.open'").get();
+  assert.strictEqual(so.value, 'true');
+  assert.strictEqual(so.type, 'boolean');
   // users.role 只允许 'user'（D4）
   assert.throws(() => db.prepare("INSERT INTO users (email, role, created_at, updated_at) VALUES ('x@y.z', 'admin', 't', 't')").run(), /CHECK/);
 });
@@ -42,7 +46,7 @@ test('迁移：重复打开同库幂等（版本不再推进、无重复执行�
   const p = path.join(tmpDir(), 'b.sqlite');
   openDb(p);
   const db = openDb(p);
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 23);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 24);
 });
 
 test('迁移 005-009：社交/工单/知识库/审核/财务关键表与扩展列就位（D5/D6 口径）', () => {
@@ -145,9 +149,9 @@ test('迁移 017：following.users 显示名→id 引用 + 粉丝索引（v0.2.2
   db.prepare("INSERT INTO following (user_id, target_type, target_id, created_at) VALUES ('F1', 'user', 'No Such Name', ?)").run(iso); // 不存在 → 删
   db.prepare("INSERT INTO following (user_id, target_type, target_id, created_at) VALUES ('F1', 'nation', 'NAT-000001', ?)").run(iso); // 其他类型不动
 
-  migrate(db, srcDir); // 补跑 017-023
+  migrate(db, srcDir); // 补跑 017-024
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 23);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 24);
   const rows = db.prepare('SELECT target_id FROM following WHERE user_id = ? ORDER BY target_type, target_id').all('F1');
   assert.deepStrictEqual(rows.map((r) => r.target_id), ['NAT-000001', 'U1'], '显示名→最早注册的 id；映射不到的行已删；nation 不动');
   assert.ok(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='index' AND name = 'idx_following_target'").get().n === 1, '粉丝反查索引就位');
@@ -230,9 +234,9 @@ test('迁移 022：遗留 pending 文章一律转 published（v0.2.46.1 直接�
   db.prepare("INSERT INTO articles (id, author_id, title, content_json, status, created_at, updated_at) VALUES ('ART-000002', 'u022', 'Already Published', '{}', 'published', ?, ?)").run(iso, iso);
   db.prepare("INSERT INTO articles (id, author_id, title, content_json, status, created_at, updated_at) VALUES ('ART-000003', 'u022', 'Legacy Hidden', '{}', 'hidden', ?, ?)").run(iso, iso);
 
-  migrate(db, srcDir); // 补跑 022-023
+  migrate(db, srcDir); // 补跑 022-024
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 23);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 24);
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000001'").get().status, 'published', '遗留 pending → published');
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000002'").get().status, 'published', '已发布不动');
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000003'").get().status, 'hidden', 'hidden/removed 不动（非发布态不该复活）');

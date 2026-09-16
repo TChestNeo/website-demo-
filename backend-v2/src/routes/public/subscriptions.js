@@ -252,6 +252,10 @@ function register(router, ctx) {
     const priceId = student
       ? (mode === 'once' ? (cfg.stripe.studentPricesOnce || {}).basic : (cfg.stripe.studentPrices || {}).basic)
       : priceIdFor(cfg, tierKey, currency, mode);
+    // 订阅开放开关（platform_settings 键，每请求现查；缺行 = 开放兜底）。关闭只挡公开结账：
+    // webhook/portal/status 不受影响（存量订阅照常扣款续费）。前端零感知——409 走既有 toast。
+    const openRow = db.prepare("SELECT value FROM platform_settings WHERE key = 'subscriptions.open'").get();
+    if (openRow && openRow.value === 'false') throw new HttpError('SUBSCRIPTIONS_CLOSED', '订阅暂未开放，请稍后再试');
     if (!cfg.stripe.enabled || !cfg.stripe.secretKey || !priceId) {
       throw new HttpError('PAYMENTS_DISABLED', '在线支付未开通，请通过申请流程开通');
     }
@@ -301,4 +305,4 @@ function register(router, ctx) {
   });
 }
 
-module.exports = { register, enforceTierExpiry, TIER_OF, TIER_KEYS };
+module.exports = { register, enforceTierExpiry, TIER_OF, TIER_KEYS, TIER_RANK, extendExpiry };

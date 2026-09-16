@@ -29,6 +29,7 @@ const { register: registerStaffDashboard } = require('./routes/staff/dashboard')
 const { register: registerStaffAnalytics } = require('./routes/staff/analytics');
 const { register: registerStaffUsers } = require('./routes/staff/users');
 const { register: registerStaffSecurity } = require('./routes/staff/security');
+const { register: registerStaffSubscriptions } = require('./routes/staff/subscriptions');
 const { createBudget } = require('./moderation/budget');
 const blocklist = require('../data/blocklist.json');
 
@@ -87,6 +88,7 @@ function createServer(deps = {}) {
   registerStaffAnalytics(router, ctx);
   registerStaffUsers(router, ctx);
   registerStaffSecurity(router, ctx);
+  registerStaffSubscriptions(router, ctx);
 
   const server = http.createServer((req, res) => {
     (async () => {
