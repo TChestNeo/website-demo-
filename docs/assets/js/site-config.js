@@ -787,7 +787,17 @@ window.MN_SITE = window.MN_SITE || {};
 //   扫描器本身两处修正（渐变只祖先曾因标签已置被跳过→伪白卡误报；背景-clip:text/伪元素滤镜豁免）；扫描复跑暗 mono
 //   0 处、亮 mono 0 处回归；零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css（五页修复全在页内局部规则）
 //   （rev 00234-vs4）
-window.MN_SITE_VERSION = 'v0.2.49.2';
+// v0.2.49.3 = 后端黑白主题暗色白底白字第二轮（补丁位 2→3·观感修复轮；2026-09-17）——用户「我在黑白主题的深色模式下看
+//   后端还是一样是有白底白字的问题尤其是按钮」；真身=第一轮 admin 修复只盖了静态可见的登录门 #gateLogoutBtn，登录后
+//   面板 JS 渲染的裸 .btn（顶栏退出登录、← 返回列表、标记、标记跟进、应用、分页上一页/下一页）全部漏网——真实后端
+//   +真实登录 CDP 探针（临时库+种子+mailer 桩码，wow2 扫描器逐区块扫）锁定：裸 .btn 无背景规则 → Chrome UA
+//   buttonface 白底 + 继承浅字；修法：admin 页内局部规则泛化「:root[data-theme="dark"] .btn:not(.btn-primary):
+//   not(.btn-secondary):not(.btn-outline):not(.btn-ghost) → 深面+浅字」一次盖全（UA buttonface 通病 all accents
+//   通用非 mono 独有，:not 排除变体不盖 btn-primary 已有暗色规则）；零后端、零草稿字段（v 保持 9）、ethereal 零改动
+//   无需 inline-css；新电池 admin-dark 22/22（mono 暗 17：登录页/重置视图/面板七区块 wow2 零白底白字+启用分页暗底+
+//   按钮族计算态；蓝暗回归 4；控制台零错误）+monodark 29/29（F5 泛化规则静态锚）+mono-flash 22/22 复跑全绿
+//   （rev 00235-ltg）
+window.MN_SITE_VERSION = 'v0.2.49.3';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

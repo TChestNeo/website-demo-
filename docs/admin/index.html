@@ -2349,9 +2349,17 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       transition: box-shadow .2s ease, transform .2s ease; }
     .adm-card:hover, .stat-card:hover { box-shadow: var(--adm-shadow-hover), var(--adm-highlight); transform: translateY(-2px); }
     .adm-side .sidebar-module { box-shadow: var(--adm-shadow-card), var(--adm-highlight); }
-    /* 暗色适配（2026-09-17）：裸 .btn 全站无背景规则 → Chrome UA buttonface 白底 + button 继承浅字 = 白底白字
-       （#gateLogoutBtn「退出登录」，静态壳 /api/admin 404 时可见）；暗色翻深面 */
-    :root[data-theme="dark"] #gateLogoutBtn { background: var(--color-surface-container-high); color: var(--color-on-surface); }
+    /* 暗色适配（2026-09-17 两轮）：裸 .btn（无 primary/secondary/outline/ghost 变体）无背景规则 →
+       Chrome UA buttonface 白底 + button 继承浅字 = 白底白字。
+       第一轮只修了静态可见的 #gateLogoutBtn（登录门「退出登录」）——登录后面板 JS 渲染的裸 .btn
+       （顶栏 #logoutBtn「退出登录」、← 返回列表、标记、标记跟进、应用、分页 上一页/下一页）静态扫描
+       被登录门挡在门外全部漏网（用户二报「尤其是按钮」）；第二轮泛化：暗色下所有裸 .btn 统一翻深面
+       （UA buttonface 通病，all accents 通用非 mono 独有）。:not() 排除自带背景的变体类，
+       避免盖掉 .btn-primary 等已有的 mono/蓝暗色规则 */
+    :root[data-theme="dark"] .btn:not(.btn-primary):not(.btn-secondary):not(.btn-outline):not(.btn-ghost) {
+      background: var(--color-surface-container-high);
+      color: var(--color-on-surface);
+    }
   </style>
 </head>
 <body>
