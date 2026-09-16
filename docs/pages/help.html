@@ -2262,6 +2262,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       color: #fff; font-weight: 700; font-size: 14px;
       margin-bottom: var(--space-sm);
     }
+    /* 黑白主题暗色适配（2026-09-17）：mono dark 主色翻浅灰白——渐变起点变白、白字白底；翻深灰渐变（与 ethereal mono 活跃态 #32324a 同族） */
+    html[data-accent="mono"][data-theme="dark"] .step-num {
+      background: linear-gradient(135deg, #32324a, #2c2c3e);
+      color: #ffffff;
+    }
 
     /* 官方人员身份验证（验证码） */
     .badge-status {

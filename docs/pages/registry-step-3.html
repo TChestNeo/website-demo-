@@ -2187,6 +2187,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       display: flex; align-items: center; justify-content: center;
     }
     .stepper-btn:hover { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+    /* 暗色适配（2026-09-17）：.stepper-btn 硬编码白底——所有暗色主题白底白字（白底 + 继承浅字）；
+       暗色翻深面，hover 用主色 + on-primary（mono dark 主色=浅灰白配深字，蓝暗主色配白字，两族都对） */
+    :root[data-theme="dark"] .stepper-btn { background: var(--color-surface-container-high); color: var(--color-on-surface); }
+    :root[data-theme="dark"] .stepper-btn:hover { background: var(--color-primary); color: var(--color-on-primary); border-color: var(--color-primary); }
   </style>
 </head>
 <body class="pre-stagger">

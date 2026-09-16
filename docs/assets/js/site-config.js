@@ -778,7 +778,16 @@ window.MN_SITE = window.MN_SITE || {};
 //   （theme-init.js 原版源同步）③settings-modal.js 注入样式只剩弹窗 UI 规则；零后端、零草稿字段（v 保持 9）；
 //   FC v10.28.35.4（补丁位 3→4：FC 两页 head 块随修 + FC mono 规则随迁 ethereal）
 //   （rev 00231-8bp）
-window.MN_SITE_VERSION = 'v0.2.49.1';
+// v0.2.49.2 = 黑白主题暗色白底白字适配（补丁位 1→2·观感修复轮；2026-09-17）——用户「那个后端的黑白主题有出现白底白字
+//   的情况你再适配一下」；全站扫描器（CDP 计算态+祖先链 alpha 合成）锁定 6 页 30 处：mono dark 把主/次色翻浅灰白
+//   （#ececf2/#b0b0c2），任何用 var(--color-primary)/var(--color-secondary) 作底+硬编码白字的组件变白底白字；修法：
+//   ①messages 页 JS 模板/按钮全量加 msg-acc 类 → 暗 mono 翻深底 #32324a（页内局部规则）②explore 国家代码圆片加
+//   world-code-chip 类 → 深灰渐变（#32324a→#2c2c3e）③help .step-num 渐变翻深灰 ④registry-step-3 .stepper-btn
+//   硬编码白底 → 所有暗色主题翻深面（白底白字全暗色通病非 mono 独有）⑤admin 裸 .btn（UA buttonface 白底）→ 暗色翻深面；
+//   扫描器本身两处修正（渐变只祖先曾因标签已置被跳过→伪白卡误报；背景-clip:text/伪元素滤镜豁免）；扫描复跑暗 mono
+//   0 处、亮 mono 0 处回归；零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css（五页修复全在页内局部规则）
+//   （rev 00234-vs4）
+window.MN_SITE_VERSION = 'v0.2.49.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

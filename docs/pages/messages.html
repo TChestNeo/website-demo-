@@ -2174,6 +2174,16 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       animation: fadeUp 0.4s cubic-bezier(0.22,0.61,0.36,1) forwards;
     }
   </style>
+  <style>
+/* 黑白主题暗色适配（2026-09-17）：mono dark 把主色/次色翻成浅灰白（#ececf2/#b0b0c2）——
+   本页大量 JS 模板/按钮用 var(--color-primary)/var(--color-secondary) 作底 + 白字，
+   暗 mono 下变白底白字；统一给这些元素加 msg-acc 类翻深底（与 ethereal mono 活跃态 #32324a 同族） */
+html[data-accent="mono"][data-theme="dark"] .msg-acc {
+  background: #32324a !important;
+  border-color: #32324a !important;
+  color: #ffffff !important;
+}
+  </style>
 </head>
 <body class="pre-stagger">
 
@@ -2212,7 +2222,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0" id="chatArea">
           <div class="flex-between" style="padding-bottom:var(--space-sm);border-bottom:1px solid rgba(118,117,134,0.1);margin-bottom:var(--space-sm);display:none" id="chatHeader">
             <div class="flex-center gap-sm">
-              <div class="avatar-sm" style="background:var(--color-primary);border-radius:50%"></div>
+              <div class="avatar-sm msg-acc" style="background:var(--color-primary);border-radius:50%"></div>
               <div>
                 <div style="font-weight:600;font-size:var(--fs-label-md)" id="chatName">Select a conversation</div>
                 <div class="label-sm" style="color:var(--color-outline)" id="chatStatus"></div>
@@ -2233,7 +2243,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           <div style="display:none;gap:8px;align-items:center;margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid rgba(118,117,134,0.1)" id="chatInputBar">
             <button style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:1px solid rgba(118,117,134,0.15);background:var(--card-bg);color:var(--color-on-surface-variant);cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="openUploadPopup(event)" onmouseenter="this.style.background='rgba(70,72,212,0.05)'" onmouseleave="this.style.background='var(--card-bg)'"><span class="material-symbols-outlined" style="font-size:20px">add_circle</span></button>
             <input type="text" class="input-glass" placeholder="Type a message..." style="border-radius:var(--radius-full)" id="chatInput" onkeydown="if(event.key==='Enter')sendMessage()">
-            <button style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:none;background:var(--color-primary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(70,72,212,0.25)" onclick="sendMessage()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'"><span class="material-symbols-outlined" style="font-size:20px">send</span></button>
+            <button class="msg-acc" style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:none;background:var(--color-primary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(70,72,212,0.25)" onclick="sendMessage()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'"><span class="material-symbols-outlined" style="font-size:20px">send</span></button>
           </div>
         </div>
       </div>
@@ -2252,7 +2262,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0" id="groupChatArea">
           <div class="flex-between" style="padding-bottom:var(--space-sm);border-bottom:1px solid rgba(118,117,134,0.1);margin-bottom:var(--space-sm);display:none" id="groupChatHeader">
             <div class="flex-center gap-sm">
-              <div class="avatar-sm" style="background:var(--color-secondary);border-radius:var(--radius-DEFAULT);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px" id="groupAvatar"></div>
+              <div class="avatar-sm msg-acc" style="background:var(--color-secondary);border-radius:var(--radius-DEFAULT);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px" id="groupAvatar"></div>
               <div>
                 <div style="font-weight:600;font-size:var(--fs-label-md)" id="groupChatName">Select a group</div>
                 <div class="label-sm" style="color:var(--color-outline)" id="groupChatMeta"></div>
@@ -2274,7 +2284,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           <div style="display:none;gap:8px;align-items:center;margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid rgba(118,117,134,0.1)" id="groupChatInputBar">
             <button style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:1px solid rgba(118,117,134,0.15);background:var(--card-bg);color:var(--color-on-surface-variant);cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="openUploadPopup(event)" onmouseenter="this.style.background='rgba(22,163,74,0.05)'" onmouseleave="this.style.background='var(--card-bg)'"><span class="material-symbols-outlined" style="font-size:20px">add_circle</span></button>
             <input type="text" class="input-glass" placeholder="Type a message..." style="border-radius:var(--radius-full)" id="groupChatInput" onkeydown="if(event.key==='Enter')sendGroupMessage()">
-            <button style="width:38px;height:38px;padding:0;border-radius:50%;border:none;background:var(--color-secondary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(22,163,74,0.25)" onclick="sendGroupMessage()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'"><span class="material-symbols-outlined" style="font-size:20px">send</span></button>
+            <button class="msg-acc" style="width:38px;height:38px;padding:0;border-radius:50%;border:none;background:var(--color-secondary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(22,163,74,0.25)" onclick="sendGroupMessage()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'"><span class="material-symbols-outlined" style="font-size:20px">send</span></button>
           </div>
         </div>
       </div>
@@ -2303,6 +2313,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Floating Action Button (visible on Private & Groups panels) -->
     <button
       id="fabBtn"
+      class="msg-acc"
       onclick="openActionModal()"
       title="Add friend or create group"
       style="
@@ -2507,7 +2518,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Message input + send -->
     <div style="display:flex;gap:8px;margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid rgba(118,117,134,0.1);align-items:center">
       <input type="text" class="input-glass" placeholder="Add a message..." style="border-radius:var(--radius-full);flex:1" id="forwardMsgInput" onkeydown="if(event.key==='Enter')doForward()">
-      <button style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:none;background:var(--color-primary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(70,72,212,0.25)" onclick="doForward()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'">
+      <button class="msg-acc" style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:none;background:var(--color-primary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(70,72,212,0.25)" onclick="doForward()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'">
         <span class="material-symbols-outlined" style="font-size:20px">send</span>
       </button>
     </div>
@@ -2545,7 +2556,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
     <!-- Top: avatar + name + bio -->
     <div style="padding:var(--space-lg);text-align:center;border-bottom:1px solid rgba(118,117,134,0.06)">
-      <div style="width:72px;height:72px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:24px;margin:0 auto var(--space-sm);letter-spacing:0.5px" id="infoAvatar">?</div>
+      <div class="msg-acc" style="width:72px;height:72px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:24px;margin:0 auto var(--space-sm);letter-spacing:0.5px" id="infoAvatar">?</div>
       <div style="font-weight:700;font-size:var(--fs-headline-sm);margin-bottom:4px" id="infoName">—</div>
       <div style="font-size:var(--fs-label-md);color:var(--color-on-surface-variant);line-height:1.5" id="infoBio">—</div>
     </div>
@@ -2899,7 +2910,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var readMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">Read</div>' : '';
 
     return '<div class="msg-row' + animClass + '" style="display:flex;flex-direction:column;align-items:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:12px" oncontextmenu="showContextMenu(event,\'' + panel + '\',\'' + chatId + '\',' + idx + ',' + (isPinned ? 'true' : 'false') + ')">' +
-      '<div style="max-width:70%;padding:10px 16px;border-radius:' + (isSent ? 'var(--radius-xl) var(--radius-xl) 4px var(--radius-xl)' : 'var(--radius-xl) var(--radius-xl) var(--radius-xl) 4px') + ';' +
+      '<div' + (isSent ? ' class="msg-acc"' : '') + ' style="max-width:70%;padding:10px 16px;border-radius:' + (isSent ? 'var(--radius-xl) var(--radius-xl) 4px var(--radius-xl)' : 'var(--radius-xl) var(--radius-xl) var(--radius-xl) 4px') + ';' +
         (isSent ? 'background:var(--color-primary);color:white;' : 'background:var(--card-bg);border:1px solid var(--divider-line);color:var(--color-on-surface);') +
         'font-size:var(--fs-label-md);cursor:default;overflow:hidden">' +
         '<div class="label-sm" style="margin-bottom:2px;opacity:0.7">' + pinBadge + m.from + '</div>' +
@@ -3043,7 +3054,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       if (q && c.name.toLowerCase().indexOf(q) === -1) return;
       var sel = findForwardIndex('private', c.id) !== -1;
       html += '<div style="display:flex;align-items:center;gap:var(--space-sm);padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;transition:background 0.12s' + (sel ? ';background:rgba(70,72,212,0.08)' : '') + '" onclick="selectForwardTarget(\'private\',\'' + c.id + '\')">' +
-        '<div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0">' + c.avatar + '</div>' +
+        '<div class="msg-acc" style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0">' + c.avatar + '</div>' +
         '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + c.name + '</span>' +
         '<span class="label-sm" style="color:var(--color-outline)">Private</span>' +
         (sel ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline-variant)">radio_button_unchecked</span>') +
@@ -3053,7 +3064,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       if (q && g.name.toLowerCase().indexOf(q) === -1) return;
       var sel = findForwardIndex('group', g.id) !== -1;
       html += '<div style="display:flex;align-items:center;gap:var(--space-sm);padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;transition:background 0.12s' + (sel ? ';background:rgba(22,163,74,0.08)' : '') + '" onclick="selectForwardTarget(\'group\',\'' + g.id + '\')">' +
-        '<div style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + g.avatar + '</div>' +
+        '<div class="msg-acc" style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + g.avatar + '</div>' +
         '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + g.name + '</span>' +
         '<span class="label-sm" style="color:var(--color-outline)">Group</span>' +
         (sel ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-secondary)">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline-variant)">radio_button_unchecked</span>') +
@@ -3592,7 +3603,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         pinned.forEach(function(pm, pi) {
           var isSent = !pm.sent;
           html += '<div style="display:flex;justify-content:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:8px">' +
-            '<div style="max-width:80%;padding:8px 14px;border-radius:var(--radius-lg);font-size:var(--fs-label-md);' +
+            '<div' + (isSent ? ' class="msg-acc"' : '') + ' style="max-width:80%;padding:8px 14px;border-radius:var(--radius-lg);font-size:var(--fs-label-md);' +
               (isSent ? 'background:var(--color-primary);color:white;' : 'background:var(--card-bg);border:1px solid var(--divider-line);') + '">' +
               '<div style="font-size:10px;opacity:0.65;margin-bottom:2px"><span class="material-symbols-outlined" style="font-size:10px;vertical-align:middle">push_pin</span> ' + pm.from + '</div>' +
               (pm._forwardedFrom ? '<div style="font-size:9px;opacity:0.45;margin-bottom:2px">↪ Forwarded from ' + pm._forwardedFrom + '</div>' : '') +
@@ -3770,7 +3781,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         var isActive = c.id === activeChat;
         var ring = isActive ? '2px solid var(--color-primary)' : '2px solid transparent';
         return '<div title="' + c.name + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openChat(\'' + c.id + '\')">' +
-          '<div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
+          '<div class="msg-acc" style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
             c.avatar +
             (c.online ? '<span class="status-dot status-dot-green" style="position:absolute;bottom:0;right:0;border:2px solid white"></span>' : '') +
           '</div>' +
@@ -3780,7 +3791,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       html = conversations.map(function(c) {
         return '<div class="card card-hover" style="cursor:pointer;padding:var(--space-sm)" onclick="openChat(\'' + c.id + '\')">' +
           '<div class="flex-center gap-sm">' +
-            '<div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative">' +
+            '<div class="msg-acc" style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative">' +
               c.avatar +
               (c.online ? '<span class="status-dot status-dot-green" style="position:absolute;bottom:0;right:0;border:2px solid white"></span>' : '') +
             '</div>' +
@@ -4185,7 +4196,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         var isActive = g.id === activeGroup;
         var ring = isActive ? '2px solid var(--color-secondary)' : '2px solid transparent';
         return '<div title="' + g.name + (g.unread > 0 ? ' (' + g.unread + ' unread)' : '') + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openGroupChat(\'' + g.id + '\')">' +
-          '<div style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
+          '<div class="msg-acc" style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
             g.avatar +
             (g.unread > 0 ? '<span style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:var(--color-primary);border-radius:50%;border:1px solid white"></span>' : '') +
           '</div>' +
@@ -4194,11 +4205,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     } else {
       html = groups.map(function(g) {
         var unreadBadge = g.unread > 0
-          ? '<span style="background:var(--color-primary);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:var(--radius-full);min-width:20px;text-align:center;flex-shrink:0">' + g.unread + '</span>'
+          ? '<span class="msg-acc" style="background:var(--color-primary);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:var(--radius-full);min-width:20px;text-align:center;flex-shrink:0">' + g.unread + '</span>'
           : '';
         return '<div class="card card-hover" style="cursor:pointer;padding:var(--space-sm)" onclick="openGroupChat(\'' + g.id + '\')">' +
           '<div class="flex-center gap-sm">' +
-            '<div style="width:40px;height:40px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">' +
+            '<div class="msg-acc" style="width:40px;height:40px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">' +
               g.avatar +
             '</div>' +
             '<div style="min-width:0;flex:1">' +
@@ -4415,7 +4426,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
             '</div>' +
           '</button>' +
         '</div>' +
-        '<button class="btn btn-primary" style="width:100%;background:var(--color-secondary);border-color:var(--color-secondary)" onclick="createGroupDemo()">' +
+        '<button class="btn btn-primary msg-acc" style="width:100%;background:var(--color-secondary);border-color:var(--color-secondary)" onclick="createGroupDemo()">' +
           '<span class="material-symbols-outlined" style="font-size:18px">group_add</span> Create Group' +
         '</button>' +
         '<p id="groupResult" style="text-align:center;margin-top:var(--space-sm);font-size:var(--fs-label-md);color:var(--color-secondary);display:none"></p>';

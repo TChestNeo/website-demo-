@@ -2349,6 +2349,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       transition: box-shadow .2s ease, transform .2s ease; }
     .adm-card:hover, .stat-card:hover { box-shadow: var(--adm-shadow-hover), var(--adm-highlight); transform: translateY(-2px); }
     .adm-side .sidebar-module { box-shadow: var(--adm-shadow-card), var(--adm-highlight); }
+    /* 暗色适配（2026-09-17）：裸 .btn 全站无背景规则 → Chrome UA buttonface 白底 + button 继承浅字 = 白底白字
+       （#gateLogoutBtn「退出登录」，静态壳 /api/admin 404 时可见）；暗色翻深面 */
+    :root[data-theme="dark"] #gateLogoutBtn { background: var(--color-surface-container-high); color: var(--color-on-surface); }
   </style>
 </head>
 <body>

@@ -2164,6 +2164,14 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 }
 
 </style>
+  <style>
+/* 黑白主题暗色适配（2026-09-17）：mono dark 主/次色翻浅灰白——国家代码圆片渐变两停靠点全变浅，
+   白字白底；world-code-chip 翻深灰渐变（与 ethereal mono 活跃态 #32324a 同族） */
+html[data-accent="mono"][data-theme="dark"] .world-code-chip {
+  background: linear-gradient(135deg, #32324a, #2c2c3e) !important;
+  color: #ffffff !important;
+}
+  </style>
 </head>
 <body class="pre-stagger">
 
@@ -2289,7 +2297,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
       return '<div class="card card-hover tilt-container">' +
         '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:12px">' +
-          '<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0">' + code + '</div>' +
+          '<div class="world-code-chip" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0">' + code + '</div>' +
           '<div style="min-width:0;flex:1">' +
             '<div style="font-weight:700;font-size:var(--fs-body-md);color:var(--color-on-surface)">' + n.name + '</div>' +
             '<div class="label-sm" style="color:var(--color-outline)">' + n.classification + '</div>' +
@@ -2345,7 +2353,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   document.getElementById('popularNations').innerHTML = allNations.slice(0, 4).map(function(n) {
     var code = n.name.split(/\s+/).map(function(w) { return w.charAt(0).toUpperCase(); }).slice(0, 2).join('');
     return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
-      '<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;flex-shrink:0">' + code + '</div>' +
+      '<div class="world-code-chip" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;flex-shrink:0">' + code + '</div>' +
       '<span style="flex:1;font-size:var(--fs-label-md);font-weight:500">' + n.name + '</span>' +
       '<span class="label-sm" style="color:var(--color-outline)">' + (n.demographics && n.demographics.population ? n.demographics.population : '') + '</span>' +
     '</div>';
