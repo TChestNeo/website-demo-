@@ -11,7 +11,6 @@ const CODES = {
   CONFLICT: 409,
   RATE_LIMITED: 429,
   PAYMENTS_DISABLED: 409,
-  SUBSCRIPTIONS_CLOSED: 409, // 订阅开放开关关闭：只挡公开结账（前端既有 409 分支文案吻合，零改动）
   STUDENT_EMAIL_DOMAIN: 400,  // 学生认证邮箱域名不在白名单（前端显示人工审核指引）
   STUDENT_REQUIRED: 403,      // checkout 学生旗但认证缺失/已过期（前端走重新认证弹窗）
   INTERNAL: 500,

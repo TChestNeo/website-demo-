@@ -1,23 +1,17 @@
 'use strict';
-// 订阅开放开关（platform_settings 键，运行时切换）+ staff 免付费测试发放。
-// 口径：关闭只挡公开 checkout；webhook/portal/status 不受影响；前端零感知（409 复用既有分支）。
+// staff 免付费测试发放（官方开发者测试通道；director 专属）。
+// 2026-09-17 按用户钦定移除订阅开放总闸（state/open + checkout 守卫）——只留指定用户 grant。
 // fetchImpl 桩记录 Stripe 请求并返回假 session——绝不接真实网络（预算红线）。
 
 const { test } = require('node:test');
 const assert = require('node:assert');
-const crypto = require('node:crypto');
 const { testApp } = require('./helpers');
 
-// ── 桩：小份 Stripe 假响应 + 验签（同 subscriptions.test.js 算法，跨文件不 require）──
+// ── 桩：小份 Stripe 假响应（grant 不触网，桩仅防意外调用；跨文件不 require）──
 function stripeStub() {
   const calls = [];
-  let n = 0;
   const fetchImpl = async (url) => {
     calls.push(url);
-    if (url.indexOf('/checkout/sessions') > -1) {
-      const id = 'cs_test_' + (++n);
-      return { ok: true, status: 200, json: async () => ({ id, url: 'https://checkout.stripe.com/c/pay/' + id }) };
-    }
     throw new Error('unexpected stripe call ' + url);
   };
   return { calls, fetchImpl };
@@ -35,11 +29,6 @@ function stripeConfig(over = {}) {
     }
   };
 }
-const WH_SECRET = 'whsec_test';
-function sign(raw, secret, ts = Math.floor(Date.now() / 1000)) {
-  const v1 = crypto.createHmac('sha256', secret).update(ts + '.' + raw).digest('hex');
-  return 't=' + ts + ',v1=' + v1;
-}
 
 // 到期窗口断言（日历月 UTC 加月：1 月 = 28~31 天、12 月 ≈ 364~366 天）
 function inWindow(iso, minMs, maxMs) {
@@ -54,86 +43,6 @@ function director(t, email = 'neo@slatiworld.local') {
 function technician(t, email = 'tech@slatiworld.local') {
   return t.loginStaffAs(email, {}, ['technical']);
 }
-
-test('state：无 cookie 401；technical 403；director 200 种子态 open:true', async () => {
-  const t = await testApp();
-  try {
-    assert.strictEqual((await t.request('GET', '/api/staff/subscriptions/state')).status, 401);
-    const tech = technician(t);
-    await t.assertDenied(await t.request('GET', '/api/staff/subscriptions/state', undefined, { cookie: tech.cookie }));
-    const neo = director(t);
-    const d = await (await t.request('GET', '/api/staff/subscriptions/state', undefined, { cookie: neo.cookie })).json();
-    assert.strictEqual(d.open, true); // 种子行（024 INSERT OR IGNORE）
-    assert.strictEqual(d.updatedBy, null);
-    assert.ok(d.updatedAt);
-  } finally { await t.close(); }
-});
-
-test('toggle：director 关闭 → DB 行 + 审计 + state 反映；缺布尔 400；technical 403', async () => {
-  const t = await testApp();
-  try {
-    const neo = director(t);
-    const r = await t.request('POST', '/api/staff/subscriptions/open', { open: false }, { cookie: neo.cookie });
-    assert.strictEqual(r.status, 200);
-    const d = await r.json();
-    assert.strictEqual(d.open, false);
-    assert.strictEqual(d.updatedBy, neo.staff.id);
-    const row = t.db.prepare("SELECT * FROM platform_settings WHERE key = 'subscriptions.open'").get();
-    assert.strictEqual(row.value, 'false');
-    assert.strictEqual(row.type, 'boolean');
-    assert.strictEqual(row.updated_by, neo.staff.id);
-    const a = t.db.prepare("SELECT * FROM audit_log WHERE action = 'subscriptions_open' ORDER BY seq DESC LIMIT 1").get();
-    assert.strictEqual(a.actor_type, 'staff');
-    assert.strictEqual(a.actor_id, neo.staff.id);
-    assert.strictEqual(a.target_type, 'platform_setting');
-    assert.strictEqual(a.target_id, 'subscriptions.open');
-    assert.deepStrictEqual(JSON.parse(a.prev_value), { open: true });
-    assert.deepStrictEqual(JSON.parse(a.new_value), { open: false });
-    assert.strictEqual((await (await t.request('GET', '/api/staff/subscriptions/state', undefined, { cookie: neo.cookie })).json()).open, false);
-    assert.strictEqual((await t.request('POST', '/api/staff/subscriptions/open', {}, { cookie: neo.cookie })).status, 400);
-    const tech = technician(t);
-    await t.assertDenied(await t.request('POST', '/api/staff/subscriptions/open', { open: false }, { cookie: tech.cookie }));
-    assert.ok(t.db.prepare("SELECT 1 FROM audit_log WHERE action = 'perm_denied' AND result = 'denied'").get());
-  } finally { await t.close(); }
-});
-
-test('关闭挡 checkout（SUBSCRIPTIONS_CLOSED）、webhook/portal/status 不受影响；重开恢复', async () => {
-  const stub = stripeStub();
-  const t = await testApp({ config: stripeConfig(), fetchImpl: stub.fetchImpl });
-  try {
-    const neo = director(t);
-    await t.request('POST', '/api/staff/subscriptions/open', { open: false }, { cookie: neo.cookie });
-
-    const alice = t.loginAs('alice@x.com');
-    const r = await t.request('POST', '/api/subscription/checkout', { tierKey: 'premium' }, { cookie: alice.cookie });
-    assert.strictEqual(r.status, 409);
-    const err = (await r.json()).error;
-    assert.strictEqual(err.code, 'SUBSCRIPTIONS_CLOSED'); // 区分 PAYMENTS_DISABLED
-
-    // status 形状不变（前端零感知）
-    const st = await (await t.request('GET', '/api/subscription/status', undefined, { cookie: alice.cookie })).json();
-    assert.strictEqual(st.enabled, true);
-    assert.strictEqual(st.prices.premium.hasPrice, true);
-
-    // portal 路由活着（无 customer → 404，非 503）
-    assert.strictEqual((await t.request('POST', '/api/subscription/portal', {}, { cookie: alice.cookie })).status, 404);
-
-    // webhook 照常 200（存量订阅扣款续费不被中断）
-    const ev = { id: 'evt_unknown', type: 'checkout.session.completed', data: { object: { id: 'cs_unknown', payment_status: 'paid' } } };
-    const raw = JSON.stringify(ev);
-    const w = await fetch(t.base + '/api/webhooks/stripe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Stripe-Signature': sign(raw, WH_SECRET) },
-      body: raw
-    });
-    assert.strictEqual(w.status, 200);
-
-    // 重开 → 结账恢复
-    await t.request('POST', '/api/staff/subscriptions/open', { open: true }, { cookie: neo.cookie });
-    const ok = await (await t.request('POST', '/api/subscription/checkout', { tierKey: 'premium' }, { cookie: alice.cookie })).json();
-    assert.match(ok.url, /^https:\/\/checkout\.stripe\.com\//);
-  } finally { await t.close(); }
-});
 
 test('grant 基础流：free → basic、到期 ~1 月、落库、/auth/me 即时生效、审计、零 payments 行', async () => {
   const t = await testApp({ config: stripeConfig(), fetchImpl: stripeStub().fetchImpl });
@@ -192,7 +101,7 @@ test('grant 同 tier 无到期 → 保持 NULL（永久授予不转限时）', a
   } finally { await t.close(); }
 });
 
-test('grant 参数校验：tierKey 400 / email 404 / months 非法 400、0→1 月、24→钳 12 月、6→6 月', async () => {
+test('grant 参数校验 + RBAC：tierKey 400 / email 404 / months 非法 400、0→1 月、24→钳 12 月、6→6 月；technical 403 + denied 审计', async () => {
   const t = await testApp({ config: stripeConfig(), fetchImpl: stripeStub().fetchImpl });
   try {
     const neo = director(t);
@@ -211,5 +120,9 @@ test('grant 参数校验：tierKey 400 / email 404 / months 非法 400、0→1 �
     const dt6 = Date.parse(m6.tierExpiresAt) - Date.parse(m24.tierExpiresAt);
     assert.ok(dt6 >= 175 * DAY && dt6 <= 192 * DAY, `6 月差值 ${dt6}ms 不在窗口内`);
     assert.strictEqual(t.db.prepare('SELECT tier FROM users WHERE id = ?').get(dave.user.id).tier, 'basic');
+    // RBAC：technical 403 + perm_denied 审计行
+    const tech = technician(t);
+    await t.assertDenied(await t.request('POST', '/api/staff/subscriptions/grant', { email: 'dave@x.com', tierKey: 'basic' }, { cookie: tech.cookie }));
+    assert.ok(t.db.prepare("SELECT 1 FROM audit_log WHERE action = 'perm_denied' AND result = 'denied'").get());
   } finally { await t.close(); }
 });
