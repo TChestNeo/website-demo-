@@ -21,6 +21,14 @@
  * opacity/transform 的关键帧动画时不写任何内联——关键帧照常淡入，如 dashboard 欢迎卡
  * animate-fade-in-up）；另加 rAF 挂起兜底定时（后台标签打开时强制起播剩余卡，防
  * opacity:0 卡死回归）。
+ * 2026-09-17 v0.2.50.4 守卫收窄修复（用户报告部分页面切页上下淡出淡入动画「不见或
+ * 乱透了」——50.3 守卫回归）：getAnimations() 也会返回运行中的 CSS 过渡——boot 解除
+ * pre-stagger 的同一 tick 里守卫强制刷样式，.card 基类 transition: all 0.2s（覆盖
+ * opacity）当场起 0→1 过渡，真实浏览器 phase=active 被误判为「关键帧动画」→ 整页卡片
+ * 被跳过波浪（headless 151 无 phase 键、flush 瞬间 progress 为 null 才没被电池抓到）。
+ * 收窄为只认 CSS 关键帧动画（构造器/transitionProperty 双重过滤 CSSTransition）；欢迎卡
+ * animate-fade-in-up 是 CSSAnimation 照常正确跳过——纯 bug 修复，所有动画一个不少，
+ * 节奏/时长/缓动/双模式逐字不动。
  */
 (function () {
   'use strict';
@@ -71,12 +79,23 @@
   // 双动画守卫（v0.2.50.3 隐形修复）：元素已有「正在生效」且覆盖 opacity/transform 的
   // CSS 关键帧动画（如 dashboard 欢迎卡 animate-fade-in-up）时判定为真——该卡淡入由
   // 关键帧自管（CSS 动画本就压过 inline 过渡，与今日生效观感逐帧相同），JS 不再写任何
-  // 内联，避免两套动画互搏 + inline 污染
+  // 内联，避免两套动画互搏 + inline 污染。
+  // v0.2.50.4 收窄：只认 CSS 关键帧动画。getAnimations() 也会返回运行中的 CSS 过渡——
+  // boot 解除 pre-stagger 的同一 tick 里，守卫的 getAnimations() 强制刷样式会让 .card
+  // 基类 transition: all 0.2s（覆盖 opacity）当场起一个 0→1 过渡；真实浏览器该过渡
+  // phase=active 被误判为「关键帧动画」→ 整页卡片跳过波浪（headless 151 无 phase 键、
+  // flush 瞬间 progress 为 null 才没误判——电池全绿但用户浏览器部分页面动画不见/乱透）
   function hasActiveOpacityAnim(el) {
     if (!el.getAnimations) return false;
     var anims = el.getAnimations();
     for (var i = 0; i < anims.length; i++) {
-      var a = anims[i], ct = null;
+      var a = anims[i];
+      // CSS 过渡不参与判定（v0.2.50.4）：pre-stagger 解除瞬间卡片天然有一条 opacity 过渡
+      // 在跑，它永远不能作为「已有关键帧动画自管淡入」的证据
+      var ctorName = '';
+      try { ctorName = a.constructor && a.constructor.name ? a.constructor.name : ''; } catch (e) {}
+      if (ctorName === 'CSSTransition' || a.transitionProperty !== undefined) continue;
+      var ct = null;
       try { ct = a.effect && a.effect.getComputedTiming ? a.effect.getComputedTiming() : null; } catch (e) {}
       if (!ct) continue;
       // 动画「当前是否覆盖样式」判定：phase 字段在部分 Chrome 版本缺失（实测 headless 151

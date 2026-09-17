@@ -894,7 +894,18 @@ window.MN_SITE = window.MN_SITE || {};
 //   FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css、页面
 //   HTML 零改动
 //   （rev 00245-g89）
-window.MN_SITE_VERSION = 'v0.2.50.3';
+// v0.2.50.4 = 守卫收窄修复（补丁位 3→4·纯修复轮；2026-09-18）——用户报告部分页面切页上下淡出淡入动画
+//   「不见或乱透了」；诊断：50.3 双动画守卫 hasActiveOpacityAnim 的 getAnimations() 也会返回运行中的 CSS
+//   过渡——boot 解除 pre-stagger 的同一 tick 里守卫强制刷样式，.card 基类 transition: all 0.2s（覆盖
+//   opacity）当场起 0→1 过渡（探针实证 dashboard 10 张卡、community-hub 1 张卡中招），progress=0<1/
+//   真实浏览器 phase=active → 误判「已有关键帧动画」→ 整卡跳过波浪（旧电池 76 starts 被 pre-stagger
+//   过渡的 transitionstart 污染没抓到）；修法（只动 transitions.js）：守卫收窄为只认 CSS 关键帧动画
+//   （构造器 CSSTransition + transitionProperty 双重过滤）；欢迎卡 animate-fade-in-up 是 CSSAnimation
+//   照常正确跳过——所有动画一个不少，节奏/时长/缓动/双模式逐字不动；探针 23/23（11 页 boot 捕获重放 +
+//   每页漏动画=0 + would-skip 集合正确）；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、
+//   ethereal 零改动无需 inline-css、页面 HTML 零改动
+//   （rev 00246-47s）
+window.MN_SITE_VERSION = 'v0.2.50.4';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
