@@ -913,7 +913,14 @@ window.MN_SITE = window.MN_SITE || {};
 //   云端会话（/api/conversations）不受影响；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、
 //   ethereal 零改动无需 inline-css
 //   （rev 00247-cmw）
-window.MN_SITE_VERSION = 'v0.2.50.5';
+// v0.2.50.6 = Messages Add Friend 改用户 ID 添加（补丁位 5→6·口径修正轮；2026-09-18）——用户「把那个Add
+//   Friend Chat 的email添加改成 输入用户id添加」；改法（只动 messages.html）：加好友弹窗输入框从 email
+//   改为用户 ID（占位符 User ID (USR-XXXXXX)、说明文案同步），云端模式 POST /conversations 恒发 {userId}
+//   （后端本就 userId 优先，零后端改动；email 分支零残留），404 文案「No user found with that ID.」；
+//   本地演示模式加好友流程原样；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、
+//   ethereal 零改动无需 inline-css
+//   （rev 00248-zwk）
+window.MN_SITE_VERSION = 'v0.2.50.6';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

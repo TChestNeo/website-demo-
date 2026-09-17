@@ -4298,8 +4298,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     if (type === 'friend') {
       content.innerHTML =
         '<h4 style="font-weight:600;margin-bottom:var(--space-sm)">Add a Friend</h4>' +
-        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-md)">Enter a username or friend code to start a conversation.</p>' +
-        '<input type="text" class="input-glass" placeholder="' + (cloudMode ? 'Email address' : 'Username or Friend Code') + '" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-sm)" id="friendInput">' +
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-md)">Enter a user ID to start a conversation.</p>' +
+        '<input type="text" class="input-glass" placeholder="User ID (USR-XXXXXX)" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-sm)" id="friendInput">' +
         '<button class="btn btn-primary" style="width:100%" onclick="addFriendDemo()">' +
           '<span class="material-symbols-outlined" style="font-size:18px">person_add</span> Send Request' +
         '</button>' +
@@ -4355,9 +4355,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var name = input.value.trim();
     if (!name) return;
     var el = document.getElementById('friendResult');
-    // 云端模式：输入视为 email（USR- 前缀视为 userId），POST 建会话
+    // 云端模式：输入即用户 ID（USR-XXXXXX），POST 建会话
     if (cloudMode) {
-      var body = String(name).indexOf('USR-') === 0 ? { userId: name } : { email: name };
+      var body = { userId: name };
       MN_API.post('/conversations', body).then(function(res) {
         if (res.ok) {
           el.textContent = '✓ Conversation started!';
@@ -4366,7 +4366,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           refreshCloudChat();
           setTimeout(closeModal, 600);
         } else if (res.status === 404) {
-          el.textContent = 'No user found with that email.';
+          el.textContent = 'No user found with that ID.';
           el.style.display = 'block';
           el.style.color = '#ef4444';
         } else {
