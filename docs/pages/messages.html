@@ -404,7 +404,7 @@ button { color: inherit; }
   border-radius: var(--radius-full);
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -454,7 +454,7 @@ button { color: inherit; }
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-xl);
   outline: none;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 .input-glass:focus {
   border-color: var(--color-primary);
@@ -516,10 +516,10 @@ textarea.input-glass {
   padding: var(--space-md);
   box-shadow: var(--shadow-md);
 }
+.card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .card-hover:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
-  transition: all 0.2s ease;
 }
 
 /* ----- Status Dots ----- */
@@ -593,7 +593,7 @@ textarea.input-glass {
   box-shadow: var(--shadow-lg);
   transform: scale(0.95);
   opacity: 0;
-  transition: all 0.25s ease;
+  transition: transform 0.25s ease, opacity 0.25s ease;
 }
 /* Inner scroll body — carries the scroll so border-radius stays intact */
 .modal-card-body {
@@ -677,7 +677,6 @@ textarea.input-glass {
   font-size: var(--fs-label-md);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
   text-decoration: none;
 }
 .nav-item {
@@ -719,7 +718,7 @@ textarea.input-glass {
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
   white-space: nowrap;
   text-align: center;
   text-decoration: none;
@@ -884,7 +883,7 @@ body.pre-stagger .auth-card { opacity: 0; }
   padding: var(--space-lg);
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color 0.2s ease, background 0.2s ease;
   background: var(--btn-outline-hover);
 }
 .upload-zone:hover {
@@ -909,7 +908,7 @@ body.pre-stagger .auth-card { opacity: 0; }
   font-weight: 500;
   color: var(--color-on-surface-variant);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
   border: none;
   background: transparent;
   white-space: nowrap; /* v0.2.3.11 标签折行修复（用户「Sign up 的 up 在 Sign 下方，能不能和 Log in 一样一行」）：active 加粗 font-weight 600 后按钮最小内容宽塌缩（min-content=最长单词），flex:1 均分下「Sign up」折成两行——nowrap 使 min-content=完整文字，控件按整词自适宽 */
@@ -2173,6 +2172,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     .msg-row.fade-up {
       animation: fadeUp 0.4s cubic-bezier(0.22,0.61,0.36,1) forwards;
     }
+    /* 动画掉帧修复（2026-09-17）：三屏滑轨提升为独立合成层（滑动=移动缓存位图，不再逐帧重绘整条 3× 宽滑轨）；
+       面板切换的 opacity 渐隐改为瞬时切换（0.4s 渐隐让含磨砂卡的面板在滑动期间逐帧重栅格化，
+       实测滑动帧均耗时 51-65ms → 瞬时切换后只动合成层）；#announceList 的 CSS mask 已移除（见元素行）——
+       mask 强制滚动/滑动时逐帧重栅格化列表区域，是滚动掉帧主因 */
+    #msgSlide { will-change: transform; }
+    .msg-row.fade-up { will-change: transform, opacity; }
   </style>
   <style>
 /* 黑白主题暗色适配（2026-09-17）：mono dark 把主色/次色翻成浅灰白（#ececf2/#b0b0c2）——
@@ -2209,9 +2214,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       <div id="msgSlide" style="display:flex;transition:transform 0.55s cubic-bezier(0.25,0.1,0.25,1);height:100%">
 
       <!-- ═══════════════════ Panel 0: Private messages ═══════════════════ -->
-      <div style="display:flex;gap:var(--space-md);width:100%;flex-shrink:0;min-width:0;min-height:0;transition:opacity 0.4s ease" id="privatePanel">
+      <div style="display:flex;gap:var(--space-md);width:100%;flex-shrink:0;min-width:0;min-height:0" id="privatePanel">
 
-        <div id="convSidebar" style="width:320px;flex-shrink:0;display:flex;flex-direction:column;gap:var(--space-xs);transition:width 0.3s ease">
+        <div id="convSidebar" style="width:320px;flex-shrink:0;display:flex;flex-direction:column;gap:var(--space-xs);transition:width 0.25s cubic-bezier(0.22,0.61,0.36,1)">
           <button id="convCollapseBtn" onclick="toggleConvSidebar()" style="align-self:flex-end;background:none;border:none;cursor:pointer;color:var(--color-outline);width:28px;height:28px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.12s" onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'" title="Collapse sidebar">
             <span class="material-symbols-outlined" style="font-size:18px" id="convCollapseIcon">first_page</span>
           </button>
@@ -2249,9 +2254,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       </div>
 
       <!-- ═══════════════════ Panel 1: Groups ═══════════════════ -->
-      <div style="display:flex;gap:var(--space-md);width:100%;flex-shrink:0;min-width:0;min-height:0;transition:opacity 0.4s ease" id="groupsPanel">
+      <div style="display:flex;gap:var(--space-md);width:100%;flex-shrink:0;min-width:0;min-height:0" id="groupsPanel">
 
-        <div id="groupSidebar" style="width:320px;flex-shrink:0;display:flex;flex-direction:column;gap:var(--space-xs);transition:width 0.3s ease">
+        <div id="groupSidebar" style="width:320px;flex-shrink:0;display:flex;flex-direction:column;gap:var(--space-xs);transition:width 0.25s cubic-bezier(0.22,0.61,0.36,1)">
           <button id="groupCollapseBtn" onclick="toggleGroupSidebar()" style="align-self:flex-end;background:none;border:none;cursor:pointer;color:var(--color-outline);width:28px;height:28px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.12s" onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'" title="Collapse sidebar">
             <span class="material-symbols-outlined" style="font-size:18px" id="groupCollapseIcon">first_page</span>
           </button>
@@ -2290,7 +2295,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       </div>
 
       <!-- ═══════════════════ Panel 2: Announcements ═══════════════════ -->
-      <div style="display:flex;flex-direction:column;width:100%;flex-shrink:0;min-width:0;min-height:0;height:100%;transition:opacity 0.4s ease" id="announcementsPanel">
+      <div style="display:flex;flex-direction:column;width:100%;flex-shrink:0;min-width:0;min-height:0;height:100%" id="announcementsPanel">
         <!-- Category filter pills -->
         <div class="flex-between" style="margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-sm)">
           <div class="subnav" data-slider style="flex-wrap:wrap" id="categoryFilters">
@@ -2303,7 +2308,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         </div>
 
         <!-- Announcement list -->
-        <div class="custom-scrollbar" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:var(--space-sm);padding:8px 10px 24px;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 6px,black calc(100% - 28px),transparent 100%),linear-gradient(to right,transparent 0%,black 10px,black calc(100% - 10px),transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0%,black 6px,black calc(100% - 28px),transparent 100%),linear-gradient(to right,transparent 0%,black 10px,black calc(100% - 10px),transparent 100%);mask-composite:intersect" id="announceList">
+        <div class="custom-scrollbar" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:var(--space-sm);padding:8px 10px 24px" id="announceList">
         </div>
       </div>
 
@@ -2401,7 +2406,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         border-radius:var(--radius-lg);
         background:var(--card-bg);
         cursor:pointer;
-        transition:all 0.2s ease;
+        transition:border-color 0.2s ease,box-shadow 0.2s ease,background 0.2s ease;
         text-align:left;
         width:100%;
       " onmouseenter="this.style.borderColor='var(--color-primary)';this.style.boxShadow='0 0 0 3px rgba(70,72,212,0.08)';this.style.background='rgba(70,72,212,0.02)'"
@@ -2429,7 +2434,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         border-radius:var(--radius-lg);
         background:var(--card-bg);
         cursor:pointer;
-        transition:all 0.2s ease;
+        transition:border-color 0.2s ease,box-shadow 0.2s ease,background 0.2s ease;
         text-align:left;
         width:100%;
       " onmouseenter="this.style.borderColor='var(--color-secondary)';this.style.boxShadow='0 0 0 3px rgba(22,163,74,0.08)';this.style.background='rgba(22,163,74,0.02)'"
@@ -2563,11 +2568,11 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
 
     <!-- Tab bar -->
     <div style="display:flex;border-bottom:1px solid rgba(118,117,134,0.1);padding:0 var(--space-md)">
-      <button class="infoTab active" data-infotab="pinned" onclick="switchInfoTab('pinned')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-on-surface);border-bottom:2px solid transparent;transition:all 0.15s">📌 Pinned</button>
-      <button class="infoTab" data-infotab="images" onclick="switchInfoTab('images')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:all 0.15s">🖼 Images</button>
-      <button class="infoTab" data-infotab="videos" onclick="switchInfoTab('videos')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:all 0.15s">🎬 Videos</button>
-      <button class="infoTab" data-infotab="links" onclick="switchInfoTab('links')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:all 0.15s">🔗 Links</button>
-      <button class="infoTab" data-infotab="files" onclick="switchInfoTab('files')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:all 0.15s">📁 Files</button>
+      <button class="infoTab active" data-infotab="pinned" onclick="switchInfoTab('pinned')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-on-surface);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">📌 Pinned</button>
+      <button class="infoTab" data-infotab="images" onclick="switchInfoTab('images')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">🖼 Images</button>
+      <button class="infoTab" data-infotab="videos" onclick="switchInfoTab('videos')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">🎬 Videos</button>
+      <button class="infoTab" data-infotab="links" onclick="switchInfoTab('links')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">🔗 Links</button>
+      <button class="infoTab" data-infotab="files" onclick="switchInfoTab('files')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">📁 Files</button>
     </div>
 
     <!-- Tab content -->
@@ -4400,7 +4405,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
             'display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:var(--space-xs);' +
             'padding:var(--space-sm);' +
             'border:2px solid var(--color-primary);border-radius:var(--radius-lg);' +
-            'background:rgba(70,72,212,0.04);cursor:pointer;transition:all 0.2s ease;text-align:left;' +
+            'background:rgba(70,72,212,0.04);cursor:pointer;transition:border-color 0.2s ease,background 0.2s ease;text-align:left;' +
           '" id="typeGroup">' +
             '<div style="width:36px;height:36px;border-radius:50%;background:rgba(70,72,212,0.1);display:flex;align-items:center;justify-content:center">' +
               '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">groups</span>' +
@@ -4415,7 +4420,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
             'display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:var(--space-xs);' +
             'padding:var(--space-sm);' +
             'border:1px solid rgba(118,117,134,0.15);border-radius:var(--radius-lg);' +
-            'background:var(--card-bg);cursor:pointer;transition:all 0.2s ease;text-align:left;' +
+            'background:var(--card-bg);cursor:pointer;transition:border-color 0.2s ease,background 0.2s ease;text-align:left;' +
           '" id="typeAnnouncement">' +
             '<div style="width:36px;height:36px;border-radius:50%;background:rgba(234,88,12,0.1);display:flex;align-items:center;justify-content:center">' +
               '<span class="material-symbols-outlined" style="font-size:20px;color:#ea580c">campaign</span>' +
@@ -4661,7 +4666,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var html = filtered.map(function(a) {
       var cs = getCategoryStyle(a.category);
       var isExpanded = expandedAnnounce === a.id;
-      return '<div class="card card-hover tilt-container" style="padding:var(--space-md);cursor:pointer;transition:all 0.25s ease' + (isExpanded ? ';box-shadow:0 0 0 1px ' + cs.color + ',0 4px 24px rgba(0,0,0,0.06)' : '') + '" onclick="toggleAnnouncement(\'' + a.id + '\')">' +
+      return '<div class="card card-hover tilt-container" style="padding:var(--space-md);cursor:pointer;transition:box-shadow 0.25s ease' + (isExpanded ? ';box-shadow:0 0 0 1px ' + cs.color + ',0 4px 24px rgba(0,0,0,0.06)' : '') + '" onclick="toggleAnnouncement(\'' + a.id + '\')">' +
         '<div class="flex-between" style="margin-bottom:4px">' +
           '<div class="flex-center gap-sm" style="justify-content:flex-start;min-width:0">' +
             '<span class="material-symbols-outlined" style="font-size:22px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +
@@ -4788,7 +4793,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var html = filtered.map(function(a) {
       var cs = getCategoryStyle(a.category);
       var isExpanded = expandedAnnounce === a.id;
-      return '<div class="card card-hover tilt-container" style="padding:var(--space-md);cursor:pointer;transition:all 0.25s ease' + (isExpanded ? ';box-shadow:0 0 0 1px ' + cs.color + ',0 4px 24px rgba(0,0,0,0.06)' : '') + '" onclick="toggleAnnouncement(\'' + a.id + '\')">' +
+      return '<div class="card card-hover tilt-container" style="padding:var(--space-md);cursor:pointer;transition:box-shadow 0.25s ease' + (isExpanded ? ';box-shadow:0 0 0 1px ' + cs.color + ',0 4px 24px rgba(0,0,0,0.06)' : '') + '" onclick="toggleAnnouncement(\'' + a.id + '\')">' +
         '<div class="flex-between" style="margin-bottom:4px">' +
           '<div class="flex-center gap-sm" style="justify-content:flex-start;min-width:0">' +
             '<span class="material-symbols-outlined" style="font-size:22px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +

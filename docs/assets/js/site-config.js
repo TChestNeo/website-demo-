@@ -825,7 +825,19 @@ window.MN_SITE = window.MN_SITE || {};
 //   （v 保持 9）、ethereal 零改动无需 inline-css；smoke-admin 48/48（导航断言 1 卡+8 标题+23 条目+零徽章）；
 //   部署一次 exit 0（env 30 条从 describe 全量重建）；curl 链 3/3
 //   （rev 00239-phh）
-window.MN_SITE_VERSION = 'v0.2.49.7';
+// v0.2.49.8 = Messages 页动画掉帧优化（补丁位 7→8·性能修复轮；2026-09-17）——用户「现在是Messages 那边的动画有明显
+//   掉帧请优化一下」；CDP 帧间隔探针（transition/animation 事件开窗只计动画进行中的帧，多轮取中位+暖机）锁定：
+//   面板切换 0.55s 滑动期间只出 11-13 帧（60fps 应 33，均帧 51-65ms）、侧栏 width 折叠均帧 100ms、公告滚动
+//   45% 帧超 20ms；主线程零长任务 → 成本全在合成/光栅侧；修法七刀：①#msgSlide will-change:transform 层提升
+//   （滑动=移动缓存位图不再逐帧重绘 3× 宽滑轨）②三面板切换时的 opacity 渐隐 0.4s 改瞬时（渐隐让含磨砂卡的面板
+//   滑动期间逐帧重采背景）③announceList CSS mask 移除（mask 强制滚动/滑动逐帧重栅格列表区）④本页 19 处
+//   transition:all → 显式属性列表（.btn/.input-glass/.modal-card/.card-hover/.subnav-pill/.upload-zone/
+//   .segmented-option/infoTab/群类型按钮/公告卡；公告卡只留 box-shadow 让 tilt 即时跟手不逐 mousemove 重启过渡）
+//   ⑤侧栏折叠 width 0.3s ease → 0.25s cubic-bezier(0.22,0.61,0.36,1) 锐曲线 ⑥.msg-row.fade-up will-change
+//   ⑦.card-hover 过渡移基类（悬停抬升双向平滑）；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、
+//   ethereal 零改动无需 inline-css；新电池 msg-anim 31/31（F0 静态 11 + 功能回归 M1-M8 + 帧健康 M9 + 控制台零错误）
+//   （rev 00240-gs4）
+window.MN_SITE_VERSION = 'v0.2.49.8';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
