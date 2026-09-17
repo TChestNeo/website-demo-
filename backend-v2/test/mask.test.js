@@ -38,7 +38,7 @@ test('maskIp：三态（前两段 / 完整 / 隐藏）', () => {
 
 test('maskUserRow：客服见基础档案+riskLevel、不见内部字段；internal 见全部', () => {
   const u = {
-    id: 'USR-1', display_name: 'N', email: 'e@x.y', citizen_id: 'CIT-1', avatar_url: null,
+    id: 'USR-1', display_name: 'N', email: 'e@x.y', citizen_id: 'USR-1', avatar_url: null,
     language: 'zh', country: null, bio: null, tier: 'free', tier_expires_at: null, status: 'active',
     created_at: 't', last_active_at: null, last_login_at: null, risk_level: 'medium',
     risk_reasons: '["new_device"]', warning_count: 2, muted_until: null, dob: null

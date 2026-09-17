@@ -1,5 +1,5 @@
 'use strict';
-// 迁移 001-025：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
+// 迁移 001-026：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
 
 const test = require('node:test');
 const assert = require('node:assert');
@@ -13,9 +13,9 @@ function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'mn2-mig-'));
 }
 
-test('迁移：user_version=25、59 表、角色/权限/平台种子齐整', () => {
+test('迁移：user_version=26、59 表、角色/权限/平台种子齐整', () => {
   const db = openDb(path.join(tmpDir(), 'a.sqlite'));
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 25);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 26);
   // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 + 010 两 + 014 一 + 025 一 = 59（触发器不算表）
   const n = db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().n;
   assert.strictEqual(n, 59);
@@ -46,7 +46,7 @@ test('迁移：重复打开同库幂等（版本不再推进、无重复执行�
   const p = path.join(tmpDir(), 'b.sqlite');
   openDb(p);
   const db = openDb(p);
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 25);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 26);
 });
 
 test('迁移 005-009：社交/工单/知识库/审核/财务关键表与扩展列就位（D5/D6 口径）', () => {
@@ -149,9 +149,9 @@ test('迁移 017：following.users 显示名→id 引用 + 粉丝索引（v0.2.2
   db.prepare("INSERT INTO following (user_id, target_type, target_id, created_at) VALUES ('F1', 'user', 'No Such Name', ?)").run(iso); // 不存在 → 删
   db.prepare("INSERT INTO following (user_id, target_type, target_id, created_at) VALUES ('F1', 'nation', 'NAT-000001', ?)").run(iso); // 其他类型不动
 
-  migrate(db, srcDir); // 补跑 017-025
+  migrate(db, srcDir); // 补跑 017-026
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 25);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 26);
   const rows = db.prepare('SELECT target_id FROM following WHERE user_id = ? ORDER BY target_type, target_id').all('F1');
   assert.deepStrictEqual(rows.map((r) => r.target_id), ['NAT-000001', 'U1'], '显示名→最早注册的 id；映射不到的行已删；nation 不动');
   assert.ok(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='index' AND name = 'idx_following_target'").get().n === 1, '粉丝反查索引就位');
@@ -234,9 +234,9 @@ test('迁移 022：遗留 pending 文章一律转 published（v0.2.46.1 直接�
   db.prepare("INSERT INTO articles (id, author_id, title, content_json, status, created_at, updated_at) VALUES ('ART-000002', 'u022', 'Already Published', '{}', 'published', ?, ?)").run(iso, iso);
   db.prepare("INSERT INTO articles (id, author_id, title, content_json, status, created_at, updated_at) VALUES ('ART-000003', 'u022', 'Legacy Hidden', '{}', 'hidden', ?, ?)").run(iso, iso);
 
-  migrate(db, srcDir); // 补跑 022-025
+  migrate(db, srcDir); // 补跑 022-026
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 25);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 26);
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000001'").get().status, 'published', '遗留 pending → published');
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000002'").get().status, 'published', '已发布不动');
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000003'").get().status, 'hidden', 'hidden/removed 不动（非发布态不该复活）');
@@ -273,6 +273,33 @@ test('迁移 025：friend_requests 表就位（v0.2.51.0 好友请求；+1 表 �
   assert.throws(() => db.prepare("INSERT INTO friend_requests (id, sender_id, recipient_id, status, created_at) VALUES ('FR-000002', 'f1', 'f2', 'nope', 't')").run(), /CHECK/);
   db.prepare("DELETE FROM users WHERE id = 'f1'").run();
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM friend_requests').get().n, 0);
+  db.close();
+});
+
+test('迁移 026：citizen_id 统一 USR- 口径（v0.2.51.1 CIT→USR；无新表 → health 59 不变）', () => {
+  const srcDir = path.join(__dirname, '..', 'migrations');
+  // 先只迁到 025（同 017 口径），插旧口径数据（CIT-/NULL/已一致三种），再补跑 026 验证数据迁移
+  const preDir = tmpDir();
+  for (const f of fs.readdirSync(srcDir)) {
+    if (/^\d+_.*\.sql$/.test(f) && Number.parseInt(f, 10) <= 25) fs.copyFileSync(path.join(srcDir, f), path.join(preDir, f));
+  }
+  const p = path.join(tmpDir(), 's.sqlite');
+  const db = new Database(p);
+  db.pragma('foreign_keys = ON');
+  migrate(db, preDir);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 25);
+
+  const iso = new Date().toISOString();
+  db.prepare("INSERT INTO users (id, email, display_name, status, role, citizen_id, created_at, updated_at) VALUES ('USR-000001', 'a@x.com', 'Citizen A', 'active', 'user', 'CIT-000001', ?, ?)").run(iso, iso);
+  db.prepare("INSERT INTO users (id, email, display_name, status, role, citizen_id, created_at, updated_at) VALUES ('USR-000002', 'b@x.com', 'Citizen B', 'active', 'user', NULL, ?, ?)").run(iso, iso);
+  db.prepare("INSERT INTO users (id, email, display_name, status, role, citizen_id, created_at, updated_at) VALUES ('USR-000003', 'c@x.com', 'Citizen C', 'active', 'user', 'USR-000003', ?, ?)").run(iso, iso);
+
+  migrate(db, srcDir); // 补跑 026
+
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 26);
+  assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000001'").get().citizen_id, 'USR-000001', '旧 CIT- 存量改写为 id');
+  assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000002'").get().citizen_id, 'USR-000002', 'NULL 补齐为 id');
+  assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000003'").get().citizen_id, 'USR-000003', '已一致不动');
   db.close();
 });
 

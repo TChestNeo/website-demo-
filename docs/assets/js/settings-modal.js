@@ -206,7 +206,7 @@
     var isEditor = (location.pathname || '').indexOf('fluidcanvas-editor') !== -1;
     var user = (window.SlatiDB && SlatiDB.getUser()) || {
       displayName: 'Alex Rivera',
-      citizenId: 'CIT-8842',
+      citizenId: 'USR-8842',
       avatarUrl: 'https://ui-avatars.com/api/?name=Alex+Rivera&background=4648d4&color=fff&size=80',
       bio: '',
     };

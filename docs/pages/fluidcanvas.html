@@ -2571,7 +2571,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       <img id="personalAvatar" src="" alt="" class="avatar" style="width:36px;height:36px;flex-shrink:0">
       <div style="min-width:0;flex:1">
         <div style="font-weight:700;font-size:var(--fs-label-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="personalName">Personal</div>
-        <div class="label-sm" style="color:var(--color-outline)" id="personalId">CIT-0000</div>
+        <div class="label-sm" style="color:var(--color-outline)" id="personalId">USR-0000</div>
       </div>
       <span class="status-dot status-dot-green" style="flex-shrink:0"></span>
     </div>
@@ -2789,7 +2789,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 </script>
 <script>
   // --- Data ---
-  var user = SlatiDB.getUser() || { displayName: 'Alex Rivera', citizenId: 'CIT-8842', avatarUrl: 'https://ui-avatars.com/api/?name=Alex+Rivera&background=4648d4&color=fff&size=80' };
+  var user = SlatiDB.getUser() || { displayName: 'Alex Rivera', citizenId: 'USR-8842', avatarUrl: 'https://ui-avatars.com/api/?name=Alex+Rivera&background=4648d4&color=fff&size=80' };
   var teams = SlatiDB.getTeams();
   var activeAccount = SlatiDB.getActiveAccount();
   var hasTeams = teams.length > 0;
@@ -2798,7 +2798,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // --- Account selector ---
   document.getElementById('personalAvatar').src = user.avatarUrl || 'https://ui-avatars.com/api/?name=S&background=4648d4&color=fff&size=80';
   document.getElementById('personalName').textContent = user.displayName || 'Sovereign';
-  document.getElementById('personalId').textContent = user.citizenId || 'CIT-0000';
+  document.getElementById('personalId').textContent = user.citizenId || 'USR-0000';
 
   function renderTeamSection() {
     var teamWrap = document.getElementById('teamAccount');

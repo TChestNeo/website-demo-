@@ -102,7 +102,7 @@ test('verify：新邮箱建号 status=new + user 形状（camel）+ Set-Cookie m
   assert.strictEqual(body.user.hasPassword, true); // W6：新注册强制带密码，无设密过渡
   assert.ok(!('passwordSetupRequired' in body));
   assert.ok(body.user.id.startsWith('USR-'));
-  assert.ok(body.user.citizenId.startsWith('CIT-'));
+  assert.ok(body.user.citizenId.startsWith('USR-'));
   assert.match(res.headers.get('set-cookie'), /^mn_session=.+; HttpOnly/);
   // 登录史 success 行（§5）
   const lh = a.db.prepare("SELECT * FROM login_history WHERE email = 'new@example.com' AND result = 'success'").get();

@@ -2559,7 +2559,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       language: selectedLang,
       country: selectedCountry,
       dob: document.getElementById('dob').value,
-      citizenId: user.citizenId || ('CIT-' + Math.floor(Math.random() * 10000)),
+      citizenId: user.citizenId || ('USR-' + Math.floor(Math.random() * 10000)),
       avatarUrl: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=4648d4&color=fff&size=80',
       createdAt: user.createdAt || new Date().toISOString()
     });

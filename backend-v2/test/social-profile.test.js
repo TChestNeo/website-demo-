@@ -27,7 +27,7 @@ test('profile：匿名 GET 200 全形状（bio/gender 随行、stats 零值、is
     assert.ok(u.avatarUrl, 'avatar_url 随行');
     assert.strictEqual(u.bio, '热爱地理与国旗设计');
     assert.strictEqual(u.gender, 'Male');
-    assert.ok(/^CIT-\d{6}$/.test(u.citizenId), 'citizenId 随行');
+    assert.ok(/^USR-\d{6}$/.test(u.citizenId), 'citizenId 随行');
     assert.ok(u.createdAt, 'createdAt 随行');
     assert.strictEqual(u.isSelf, false);
     assert.strictEqual(u.followedByMe, false);

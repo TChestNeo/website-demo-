@@ -2497,7 +2497,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     SlatiDB.saveUser({
       displayName: name,
       email: email,
-      citizenId: 'CIT-' + Math.floor(Math.random() * 10000),
+      citizenId: 'USR-' + Math.floor(Math.random() * 10000),
       avatarUrl: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=4648d4&color=fff&size=80',
       createdAt: new Date().toISOString()
     });
@@ -2521,7 +2521,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       SlatiDB.saveUser({
         displayName: email.split('@')[0] || 'Sovereign',
         email: email,
-        citizenId: 'CIT-' + Math.floor(Math.random() * 10000),
+        citizenId: 'USR-' + Math.floor(Math.random() * 10000),
         avatarUrl: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(email.split('@')[0]) + '&background=4648d4&color=fff&size=80',
         createdAt: new Date().toISOString()
       });

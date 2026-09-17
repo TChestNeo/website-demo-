@@ -946,7 +946,16 @@ window.MN_SITE = window.MN_SITE || {};
 //   demo 模式邀请存 localStorage invites（无预置数据）；FC 零改动（v10.28.35.4 保持）；零草稿字段（v 保持 9）、
 //   ethereal 零改动无需 inline-css
 //   （rev 00251-44l）
-window.MN_SITE_VERSION = 'v0.2.51.0';
+// v0.2.51.1 = 公民号前缀 CIT- → USR- 全栈统一（补丁位 0→1·口径修正轮；2026-09-18）——用户「能不能把CIT改成
+//   USR？啊」；
+//   后端——auth.js 公民号生成改为恒等于用户 id（USR- 同 seq 天然同号）；迁移 026 存量数据归位（citizen_id
+//   NULL 补齐、异值改写为 id；无新表 → health 59 不变）；测试钉 25→26 全同步 + 新 026 迁移测试（017 口径
+//   三态验证）；
+//   前端——8 处兜底字面量 CIT- → USR-（signup-and-login/sidebar/settings-modal/fluidcanvas/
+//   onboarding-identity，真实数据走 /auth/me 零改动）；FC 零改动（v10.28.35.4 保持）；零草稿字段（v 保持 9）、
+//   ethereal 零改动无需 inline-css
+//   （rev 00252-xgd）
+window.MN_SITE_VERSION = 'v0.2.51.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

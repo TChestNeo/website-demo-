@@ -83,7 +83,7 @@ function createUser(db, { email, displayName, tier = 'free', status = 'active', 
     [normalizeEmail(email), name, avatarFor(name), 'zh', tier, status, passwordHash, iso, iso],
     (s) => 'USR-' + pad6(s)
   );
-  const citizenId = 'CIT-' + pad6(seq);
+  const citizenId = id; // v0.2.51.1：公民号与用户 ID 统一（USR- 口径；原 CIT- 前缀撤除）
   db.prepare('UPDATE users SET citizen_id = ? WHERE id = ?').run(citizenId, id);
   return db.prepare('SELECT * FROM users WHERE id = ?').get(id);
 }
