@@ -851,7 +851,15 @@ window.MN_SITE = window.MN_SITE || {};
 //   1931→799ms、污染 7/7→0/7（含隐藏卡兜底后 0/18 全干净）、Messages 公告卡 computed 恢复 box-shadow 0.25s；
 //   FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css
 //   （rev 00241-9lj）
-window.MN_SITE_VERSION = 'v0.2.49.9';
+// v0.2.50.0 = Messages 链接抖音式结构（小改动位 49→50·新功能轮；2026-09-17）——用户「能不能把Message的链接的结构
+//   改成这种？https://www.douyin.com/user/self?from_tab_name=main&showSubTab=compilation&showTab=favorite_collection」
+//   （问询钦定三件套：路径不动 / 只加 showTab= / 点 tab 地址栏跟着变）；改法（messages.html）：①URL 参数直达
+//   ?showTab=announcements|groups 直接开对应 tab（private 默认；旧 ?tab= 兼容读取）②switchToPanel 尾部
+//   replaceState 联动——点 tab 地址栏实时更新（private 回到干净路径、不刷新不进历史，抖音式体验）
+//   ③index.html「View all announcements」链接 ?tab=announcements → ?showTab=announcements；零后端、零草稿字段
+//   （v 保持 9）、ethereal 零改动无需 inline-css、FC 零改动（v10.28.35.4 保持）
+//   （rev 00242-p77）
+window.MN_SITE_VERSION = 'v0.2.50.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

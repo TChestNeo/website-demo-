@@ -4736,6 +4736,11 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
 
     // FAB visibility
     updateFab();
+
+    // 抖音式地址栏联动（2026-09-17 Request J）：点 tab 时 URL 跟着变——
+    // ?showTab=groups / ?showTab=announcements / private=默认回到干净路径；replaceState 不刷新不进历史
+    var q = targetPanel === 0 ? '' : '?showTab=' + tabMap[targetPanel];
+    try { history.replaceState(null, '', window.location.pathname + q); } catch (e) {}
   }
 
   document.getElementById('msgSubnav').addEventListener('click', function(e) {
@@ -4945,14 +4950,18 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   updateFab();
   initCloudDMs();
 
-  // Auto-switch tab based on URL parameter
+  // Auto-switch tab based on URL parameter（2026-09-17 Request J：showTab= 抖音式 tab 直达；
+  // 旧 ?tab= 参数继续兼容读取——switchToPanel 内会把 URL 归一成 showTab 形态）
   (function(){
     var params = new URLSearchParams(window.location.search);
-    var tab = params.get('tab');
+    var tab = params.get('showTab') || params.get('tab');
     if (tab === 'announcements') {
       switchToPanel(2);
     } else if (tab === 'groups') {
       switchToPanel(1);
+    } else if (params.has('showTab') || params.has('tab')) {
+      // 不认识的 tab 值 → 默认 private 并清掉参数（URL 归一）
+      try { history.replaceState(null, '', window.location.pathname); } catch (e) {}
     }
   })();
 </script>
