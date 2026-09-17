@@ -920,7 +920,13 @@ window.MN_SITE = window.MN_SITE || {};
 //   本地演示模式加好友流程原样；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、
 //   ethereal 零改动无需 inline-css
 //   （rev 00248-zwk）
-window.MN_SITE_VERSION = 'v0.2.50.6';
+// v0.2.50.7 = Messages + 弹窗淡入动画（补丁位 6→7·观感轮；2026-09-18）——用户「那个弹窗出现时能不能添加一个
+//   淡入的动画？」；改法（只动 messages.html）：actionModal（Add Friend/Create Group 弹窗）出现时遮罩
+//   0.2s 淡入 + 卡片 0.25s 上浮缩放淡入（@keyframes modalFadeIn/modalCardIn，页面专属 CSS 留在页面内）；
+//   关闭仍即时（用户只要求淡入）；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、
+//   ethereal 零改动无需 inline-css
+//   （rev 00249-dll）
+window.MN_SITE_VERSION = 'v0.2.50.7';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
