@@ -850,7 +850,9 @@ window.MN_SITE = window.MN_SITE || {};
 //   ·stagger 60→40ms ·退出计时 240→220ms/280→240ms；修后：事件量 38/34/30（降 ~3 倍）、dashboard 落定
 //   1931→799ms、污染 7/7→0/7（含隐藏卡兜底后 0/18 全干净）、Messages 公告卡 computed 恢复 box-shadow 0.25s；
 //   FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css
-//   （rev 00241-9lj）
+//   （rev 00241-9lj）⚠观感修法已于 v0.2.50.1 按用户纠正整体回滚——本轮的 transform-only/波浪头 8 张上限/
+//   去渐隐/快节奏全部恢复原样，仅保留「动画结束 transitionend/cancel 回收 inline transition + 隐藏卡兜底
+//   定时清理」两个不改变观感的隐形修复（详见 v0.2.50.1 注记）
 // v0.2.50.0 = Messages 链接抖音式结构（小改动位 49→50·新功能轮；2026-09-17）——用户「能不能把Message的链接的结构
 //   改成这种？https://www.douyin.com/user/self?from_tab_name=main&showSubTab=compilation&showTab=favorite_collection」
 //   （问询钦定三件套：路径不动 / 只加 showTab= / 点 tab 地址栏跟着变）；改法（messages.html）：①URL 参数直达
@@ -859,7 +861,18 @@ window.MN_SITE = window.MN_SITE || {};
 //   ③index.html「View all announcements」链接 ?tab=announcements → ?showTab=announcements；零后端、零草稿字段
 //   （v 保持 9）、ethereal 零改动无需 inline-css、FC 零改动（v10.28.35.4 保持）
 //   （rev 00242-p77）
-window.MN_SITE_VERSION = 'v0.2.50.0';
+// v0.2.50.1 = 切页动画观感恢复（补丁位 0→1·口径修正轮；2026-09-17）——用户纠正「为什么你要简化页面之间的切换？？
+//   那个你不能动你知道吗？」：transitions.js 进出场动画观感是用户钦定设计——v0.2.49.9 的性能简化修法
+//   （transform-only 不渐隐 / 入场波浪头只做前 8 张 / stagger 60→40ms / 退出计时 240→220/280→240ms）
+//   整体回滚，恢复原样观感（全卡片 opacity+transform 渐隐波浪入场、0.4s 橡皮筋节奏、退出渐隐、计时
+//   240/280ms 全数回来）；只保留两个不改变观感的隐形修复：①动画结束 transitionend/cancel 回收 inline
+//   transition（写前先记 prevOpacity/prevTransition/prevDelay，回收还原——0.4s 橡皮筋不再污染 hover/tilt，
+//   如 Messages 公告卡 box-shadow-only 过渡被盖）②隐藏卡（display:none 不渲染、transitionend 永不触发）
+//   600ms 兜底定时强制清理（done 守卫幂等，保证零残留）；进出场退出路径保持原样（页面 240/280ms 后
+//   即销毁，无残留顾虑）；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、ethereal 零改动
+//   无需 inline-css
+//   （rev 00243-hls）
+window.MN_SITE_VERSION = 'v0.2.50.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
