@@ -881,7 +881,20 @@ window.MN_SITE = window.MN_SITE || {};
 //   页内部 49.8 七刀本就零改动（未受影响）；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、
 //   ethereal 零改动无需 inline-css
 //   （rev 00244-6db）
-window.MN_SITE_VERSION = 'v0.2.50.2';
+// v0.2.50.3 = 切页进场帧健康隐形修复（补丁位 2→3·隐形性能轮；2026-09-17）——用户「之前Gemini都说了会掉帧
+//   卡顿现在出现了……之前的那个淡入的效果也是很卡也不一致」+ 钦定「不可以取舍任何限制拥有的所有过渡动画」
+//   （所有动画一个不少、观感零变化）；诊断：入场波浪 opacity<1 让磨砂卡（.card blur 24px/.search-capsule
+//   16px/.auth-card 32px）逐帧重采样背景 = 掉帧主因（基线电池实证 dashboard 波浪 75% 帧 >20ms、max 233ms），
+//   淡入不一致 = 逐卡 setTimeout 离帧起播 + 欢迎卡 animate-fade-in-up 关键帧与波浪两套动画互搏；改法
+//   （只动 transitions.js，三刀全隐形）：①rAF 批量波浪替换逐卡 setTimeout（起播帧对齐、同一帧到点的卡一次
+//   style 批量写入；节奏 60/40ms、时长、缓动、LIGHT cap 8 逐字不动，起播量化 ≤1 帧）②动画期间写 inline
+//   will-change 层提升（背景只采样一次、opacity/transform 走合成器；cleanup 还原原值，退出双分支同写页面即
+//   销毁无需清理）③双动画守卫（hasActiveOpacityAnim 查 phase/fill——已有覆盖 opacity/transform 的关键帧
+//   动画的卡跳过一切内联写入，关键帧照常淡入）；另加 rAF 挂起兜底定时（后台标签打开时强制起播剩余卡）；
+//   FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css、页面
+//   HTML 零改动
+//   （rev 00245-g89）
+window.MN_SITE_VERSION = 'v0.2.50.3';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
