@@ -4,11 +4,18 @@
  * Exit direction depends on nav order relative to target.
  * Entrance direction is stored in sessionStorage so the next page
  * knows which way to animate cards in.
+ *
+ * 2026-09-17 Request I 掉帧轮：进出场全部 transform-only（fade opacity 会让磨砂卡
+ * 逐帧重采样背景）；入场波浪头只做前 STAGGER_CAP 个元素且动画结束回收 inline
+ * transition（0.4s 橡皮筋污染 hover/tilt 根治，含隐藏卡兜底定时回收）。
  */
 (function () {
   'use strict';
 
-  var STAGGER_DELAY = 60;
+  var STAGGER_DELAY = 40;
+  // 波浪头上限（2026-09-17 Request I 掉帧轮）：只动画前 8 个元素——长尾卡排队会拖 2s 落定
+  // 且每张卡的 inline transition 永久残留（hover/tilt 0.4s 橡皮筋污染）
+  var STAGGER_CAP = 8;
   // h1 + p = hero 副标题（如 guidelines 的 Standards and protocols…）：跟大标题一起淡入，不再原地呆住
   var CARD_SELECTOR = '.card, .app-main h1, .app-main h1 + p, .app-main h2, .app-main .search-capsule, .app-main header, .auth-card';
 
@@ -49,7 +56,7 @@
 
   // --- Staggered card entrance with direction ---
   function initStagger() {
-    // 切页防双重绘制（08-28）：解除 CSS 预隐藏——同 tick 内下面即写内联 opacity，中间无绘制帧
+    // 切页防双重绘制（08-28）：解除 CSS 预隐藏——同 tick 内下面即写内联 transform，中间无绘制帧
     if (document.body) document.body.classList.remove('pre-stagger');
     var cards = document.querySelectorAll(CARD_SELECTOR);
     if (cards.length === 0) return;
@@ -72,16 +79,40 @@
       default:       startTransform = 'translateY(18px)';  break;
     }
 
-    cards.forEach(function (el) {
-      el.style.opacity = '0';
+    // 2026-09-17 Request I 掉帧轮：入场只动画 transform（不 fade opacity）——
+    // opacity<1 会让磨砂卡逐帧重采样背景，是全页入场掉帧主因（同 Messages 面板渐隐修法）；
+    // 只做前 STAGGER_CAP 个元素，其余零动画零内联残留（不再隐形排队）
+    var animated = [];
+    for (var i = 0; i < cards.length && i < STAGGER_CAP; i++) animated.push(cards[i]);
+
+    animated.forEach(function (el) {
       el.style.transform = startTransform;
     });
 
-    cards.forEach(function (el, i) {
+    animated.forEach(function (el, i) {
       setTimeout(function () {
-        el.style.transition = 'opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1)';
-        el.style.opacity = '1';
+        var prevTransition = el.style.transition;
+        var prevDelay = el.style.transitionDelay;
+        el.style.transition = 'transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1)';
         el.style.transform = 'translateY(0) translateX(0)';
+        // 动画结束即回收 inline transition（恢复卡片自带的内联/类过渡）——否则 0.4s
+        // 橡皮筋永久污染 hover/tilt（如 Messages 公告卡 box-shadow-only 过渡会被盖掉）
+        var done = false;
+        function cleanup(ev) {
+          if (ev && (ev.target !== el || ev.propertyName !== 'transform')) return;
+          if (done) return;
+          done = true;
+          el.removeEventListener('transitionend', cleanup);
+          el.removeEventListener('transitioncancel', cleanup);
+          el.style.transition = prevTransition;
+          el.style.transitionDelay = prevDelay;
+          el.style.transform = '';
+        }
+        el.addEventListener('transitionend', cleanup);
+        el.addEventListener('transitioncancel', cleanup);
+        // 兜底定时回收：display:none 容器里的卡（如设置弹窗内 .card）不渲染、
+        // transitionend 永不触发——到点强制清理，保证零残留
+        setTimeout(cleanup, 400 + i * STAGGER_DELAY + 200);
       }, i * STAGGER_DELAY);
     });
   }
@@ -156,19 +187,19 @@
         entranceDir = 'left';
       }
 
-      // Animate cards individually, skip subnav
+      // Animate cards individually, skip subnav（2026-09-17 Request I：只动 transform 不 fade——
+      // 磨砂卡 opacity 逐帧重采样背景；页面 240ms 后即销毁，inline 无残留问题）
       var mainH = getMainEl();
       var cards = mainH.querySelectorAll('.card, h1, h1 + p, h2, .search-capsule, header, .upload-zone, table, #statsRow > *, #featuredNation, #recentContribs');
       cards.forEach(function (card, i) {
-        card.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+        card.style.transition = 'transform 0.22s ease';
         card.style.transitionDelay = (i * 0.025) + 's';
-        card.style.opacity = '0';
         card.style.transform = exitTransform;
       });
 
       try { sessionStorage.setItem('slati_entrance_dir', entranceDir); } catch (e) {}
 
-      setTimeout(function () { window.location.href = href; }, 280);
+      setTimeout(function () { window.location.href = href; }, 240);
 
     } else {
       var mainV = getMainEl();
@@ -189,11 +220,12 @@
 
       try { sessionStorage.setItem('slati_entrance_dir', entranceDir); } catch (e) {}
 
-      mainV.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-      mainV.style.opacity = '0';
+      // 2026-09-17 Request I：只动 transform 不 fade opacity（.app-main 整页磨砂卡族，
+      // 渐隐=全页逐帧重采样背景——切页退出掉帧主因）
+      mainV.style.transition = 'transform 0.22s ease';
       mainV.style.transform = exitTransform;
 
-      setTimeout(function () { window.location.href = href; }, 240);
+      setTimeout(function () { window.location.href = href; }, 220);
     }
   });
 

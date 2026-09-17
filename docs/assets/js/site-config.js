@@ -837,7 +837,21 @@ window.MN_SITE = window.MN_SITE || {};
 //   ⑦.card-hover 过渡移基类（悬停抬升双向平滑）；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、
 //   ethereal 零改动无需 inline-css；新电池 msg-anim 31/31（F0 静态 11 + 功能回归 M1-M8 + 帧健康 M9 + 控制台零错误）
 //   （rev 00240-gs4）
-window.MN_SITE_VERSION = 'v0.2.49.8';
+// v0.2.49.9 = 页面切换掉帧优化（补丁位 8→9·性能修复轮；2026-09-17）——用户「在页面切换的的时候会掉帧卡顿，你再优化
+//   一下」；真身=transitions.js 切页进出场动画三病（探针跨文档测量：pagehide 快照退出窗口 + 新文档读入场窗口）：
+//   ①入场给全页每张 .card 写 inline transition「opacity 0.4s + transform 0.4s」并逐张 stagger 60ms——fade opacity
+//   让磨砂卡族逐帧重采样背景（全页版 Messages 面板渐隐同病；修前入场均帧 75-129ms、64-100% 帧超 20ms、落定近 2s）
+//   ②入场 stagger 长尾全卡排队（事件量 112-124 起落）+ inline transition 永不回收——0.4s 橡皮筋永久污染全站
+//   hover/tilt，甚至盖掉上一轮 Messages 公告卡的 box-shadow-only 过渡（每次切页进 Messages tilt 又拖 0.4s，探针
+//   实证 computed transition 被盖）③退出动画同样 fade opacity（.app-main 整页渐隐/水平逐卡渐隐）；修法（只动
+//   transitions.js）：进出场全部 transform-only 不 fade（同 Messages 修法②）·入场波浪头只做前 8 个元素其余零动画
+//   零内联残留 ·动画结束 transitionend/cancel 回收 inline transition（恢复卡片自带过渡；隐藏卡 display:none 不
+//   渲染、transitionend 永不触发 → 另加 600ms 兜底定时强制清理——电池 M2d 抓到 dashboard 1/18 后补的第五刀）
+//   ·stagger 60→40ms ·退出计时 240→220ms/280→240ms；修后：事件量 38/34/30（降 ~3 倍）、dashboard 落定
+//   1931→799ms、污染 7/7→0/7（含隐藏卡兜底后 0/18 全干净）、Messages 公告卡 computed 恢复 box-shadow 0.25s；
+//   FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css
+//   （rev 00241-9lj）
+window.MN_SITE_VERSION = 'v0.2.49.9';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
