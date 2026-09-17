@@ -2195,6 +2195,52 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   color: #ffffff !important;
 }
   </style>
+  <style>
+/* 灵动岛通知弹窗（v0.2.51.0）——页面专属 CSS，不进 ethereal 内联块 */
+#notifPopup {
+  position:fixed;
+  width:360px;
+  max-width:calc(100vw - 32px);
+  background:var(--card-bg);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:24px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.18);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  z-index:150;
+  display:none;
+  flex-direction:column;
+  transform-origin:top right;
+}
+#notifPopup.island-open {
+  animation:notifIslandIn 0.28s cubic-bezier(0.22,0.61,0.36,1);
+}
+@keyframes notifIslandIn {
+  from { opacity:0; transform:translateY(-6px) scale(0.85); }
+  to   { opacity:1; transform:none; }
+}
+#notifBody {
+  position:relative;
+  overflow:hidden;
+  transition:height 0.28s cubic-bezier(0.22,0.61,0.36,1);
+}
+#notifListView, #notifDecisionView {
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  transition:opacity 0.22s ease, transform 0.28s cubic-bezier(0.22,0.61,0.36,1);
+}
+#notifListView { opacity:1; transform:none; }
+#notifDecisionView { opacity:0; transform:translateY(10px) scale(0.98); pointer-events:none; }
+#notifPopup.show-decision #notifListView { opacity:0; transform:translateY(-10px) scale(0.98); pointer-events:none; }
+#notifPopup.show-decision #notifDecisionView { opacity:1; transform:none; pointer-events:auto; }
+#notifListView .notif-entry { transition:background 0.15s ease; }
+#notifListView .notif-entry:hover { background:rgba(118,117,134,0.08); }
+@media (prefers-reduced-motion: reduce) {
+  #notifPopup.island-open, #notifBody, #notifListView, #notifDecisionView { animation:none; transition:none; }
+}
+  </style>
 </head>
 <body class="pre-stagger">
 
@@ -2209,11 +2255,12 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         <button class="subnav-pill" data-tab="groups">Groups</button>
         <button class="subnav-pill" data-tab="announcements">Announcements</button>
       </div>
-      <div class="search-capsule" style="margin-left:auto" id="searchCapsule">
+      <div class="search-capsule" style="margin-left:auto;position:relative" id="searchCapsule">
         <span class="material-symbols-outlined">search</span>
         <input type="text" placeholder="Search messages..." id="searchInput" oninput="handleSearch(this.value)">
         <span style="width:1px;height:20px;background:var(--divider-line);flex-shrink:0;border-radius:1px"></span>
-        <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);cursor:pointer">notifications</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);cursor:pointer" id="bellBtn" onclick="toggleNotifPopup()">notifications</span>
+        <span id="bellBadge" style="position:absolute;top:-4px;right:-4px;background:var(--color-primary);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:var(--radius-full);min-width:16px;text-align:center;display:none;pointer-events:none;border:2px solid var(--card-bg)">0</span>
       </div>
     </div>
 
@@ -2465,6 +2512,29 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     <!-- Sub-form area (hidden by default) -->
     <div id="modalSubForm" style="display:none;border-top:1px solid rgba(118,117,134,0.1);padding-top:var(--space-md)">
       <div id="modalSubFormContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ Dynamic Island Notification Popup（v0.2.51.0） ═══════════════════ -->
+<div id="notifPopup">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px">
+    <span id="notifTitle" style="font-weight:700;font-size:var(--fs-label-lg)">通知</span>
+    <button onclick="closeNotifPopup()" style="background:none;border:none;cursor:pointer;color:var(--color-outline);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center"
+      onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'">
+      <span class="material-symbols-outlined" style="font-size:18px">close</span>
+    </button>
+  </div>
+  <div id="notifBody">
+    <div id="notifListView" style="padding:0 12px 12px;max-height:280px;overflow-y:auto;box-sizing:border-box"></div>
+    <div id="notifDecisionView" style="padding:8px 16px 20px;text-align:center;box-sizing:border-box">
+      <div id="notifDecisionAvatar" class="msg-acc" style="width:48px;height:48px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;margin:0 auto 10px"></div>
+      <div id="notifDecisionName" style="font-weight:700;font-size:var(--fs-label-lg)"></div>
+      <div id="notifDecisionId" style="color:var(--color-outline);font-size:12px;margin-top:2px"></div>
+      <div style="display:flex;gap:12px;margin-top:16px">
+        <button class="btn btn-outline" style="border-radius:var(--radius-full);flex:1" onclick="declineInvite(notifPendingId)">不同意</button>
+        <button class="btn btn-primary msg-acc" style="border-radius:var(--radius-full);flex:1" onclick="acceptInvite(notifPendingId)">同意</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2782,6 +2852,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       }
       if (d.conversations) conversations = d.conversations;
       if (d.groups) groups = d.groups;
+      if (d.invites) invites = d.invites;
       // Merge saved messages INTO defaults so new seed data isn't lost
       if (d.mockMessages) {
         Object.keys(d.mockMessages).forEach(function(id) {
@@ -2837,7 +2908,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         mockMessages: saveMsgs,
         groups: groups,
         mockGroupMessages: mockGroupMessages,
-        pinnedMessages: pinnedMessages
+        pinnedMessages: pinnedMessages,
+        invites: invites
       });
       localStorage.setItem('slati_messages', data);
       console.log('[M.NationWorld] Saved ' + (data.length / 1024).toFixed(1) + ' KB to localStorage');
@@ -4363,22 +4435,33 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var name = input.value.trim();
     if (!name) return;
     var el = document.getElementById('friendResult');
-    // 云端模式：输入即用户 ID（USR-XXXXXX），POST 建会话
+    // 云端模式：输入即用户 ID（USR-XXXXXX），POST 发送好友请求（对方在铃铛通知里同意后才建会话）
     if (cloudMode) {
       var body = { userId: name };
-      MN_API.post('/conversations', body).then(function(res) {
+      MN_API.post('/friend-requests', body).then(function(res) {
         if (res.ok) {
-          el.textContent = '✓ Conversation started!';
+          el.textContent = '✓ 好友请求已发送！';
           el.style.display = 'block';
           el.style.color = 'var(--color-secondary)';
-          refreshCloudChat();
           setTimeout(closeModal, 600);
         } else if (res.status === 404) {
           el.textContent = 'No user found with that ID.';
           el.style.display = 'block';
           el.style.color = '#ef4444';
+        } else if (res.status === 409) {
+          el.textContent = 'Friend request already sent or you are already friends.';
+          el.style.display = 'block';
+          el.style.color = '#ef4444';
+        } else if (res.status === 400) {
+          el.textContent = 'You cannot send a friend request to yourself.';
+          el.style.display = 'block';
+          el.style.color = '#ef4444';
+        } else if (res.status === 429) {
+          el.textContent = 'Too many requests — try again later.';
+          el.style.display = 'block';
+          el.style.color = '#ef4444';
         } else {
-          el.textContent = 'Could not start a conversation — try again.';
+          el.textContent = 'Could not send friend request — try again.';
           el.style.display = 'block';
           el.style.color = '#ef4444';
         }
@@ -4856,19 +4939,193 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       myCloudId = u.id;
       cloudMode = true;
       refreshCloudChat();
+      refreshFriendRequests();
       setInterval(refreshCloudChat, 15000);
+      setInterval(refreshFriendRequests, 15000);
     });
+  }
+
+  // ──────────────────────────────────────────────
+  //  NOTIFICATION POPUP（v0.2.51.0 灵动岛好友请求）
+  // ──────────────────────────────────────────────
+  var invites = [];            // {id, name, userId, avatar, time}（demo=localStorage，cloud=/api/friend-requests）
+  var notifPendingId = null;   // 决定视图当前处理中的邀请 id（inline onclick 引用，必须顶层 var）
+
+  function updateNotifBadge() {
+    var b = document.getElementById('bellBadge');
+    b.textContent = invites.length;
+    b.style.display = invites.length ? 'block' : 'none';
+  }
+
+  function renderNotifPopup() {
+    var list = document.getElementById('notifListView');
+    var html = '';
+    if (!invites.length) {
+      // 空态用 person_add 图标（保护搜索栏铃铛的 notifications 精确串）
+      html = '<div style="padding:28px 0 24px;text-align:center;color:var(--color-outline)">' +
+        '<span class="material-symbols-outlined" style="font-size:32px;display:block;margin-bottom:8px">person_add</span>' +
+        '<div class="label-sm">暂无好友请求</div></div>';
+    } else {
+      html = invites.map(function(inv) {
+        return '<div class="notif-entry" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;cursor:pointer" onclick="openNotifDecision(\'' + inv.id + '\')">' +
+          '<div class="msg-acc" style="width:40px;height:40px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">' + inv.avatar + '</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">「' + inv.name + '」想加你为好友</div>' +
+            '<div style="color:var(--color-outline);font-size:11px;margin-top:2px">' + inv.userId + '</div>' +
+          '</div>' +
+          '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline)">chevron_right</span>' +
+        '</div>';
+      }).join('');
+    }
+    list.innerHTML = html;
+    // 开窗中重渲（轮询/同意/拒绝后）→ 同步列表新高度，morph 过渡不跳变
+    if (document.getElementById('notifPopup').style.display === 'flex') {
+      document.getElementById('notifBody').style.height = list.offsetHeight + 'px';
+    }
+  }
+
+  function toggleNotifPopup() {
+    var p = document.getElementById('notifPopup');
+    if (p.style.display === 'flex') { closeNotifPopup(); return; }
+    if (cloudMode) refreshFriendRequests();
+    var r = document.getElementById('bellBtn').getBoundingClientRect();
+    p.style.top = (r.bottom + 8) + 'px';
+    p.style.right = Math.max(12, window.innerWidth - r.right) + 'px';
+    p.style.display = 'flex';
+    renderNotifPopup();
+    p.classList.remove('island-open');
+    void p.offsetWidth; // reflow：重放灵动岛展开动画
+    p.classList.add('island-open');
+  }
+
+  function closeNotifPopup() {
+    var p = document.getElementById('notifPopup');
+    p.style.display = 'none';
+    p.classList.remove('show-decision', 'island-open');
+    document.getElementById('notifTitle').textContent = '通知';
+    notifPendingId = null;
+  }
+
+  function morphNotifView(view) {
+    var p = document.getElementById('notifPopup');
+    var body = document.getElementById('notifBody');
+    var h0 = body.getBoundingClientRect().height;
+    body.style.height = h0 + 'px';
+    document.getElementById('notifTitle').textContent = view === 'decision' ? '好友请求' : '通知';
+    p.classList.toggle('show-decision', view === 'decision');
+    void body.offsetHeight; // reflow：锁定当前高 → 过渡到目标视图高度
+    var target = document.getElementById(view === 'decision' ? 'notifDecisionView' : 'notifListView');
+    body.style.height = target.offsetHeight + 'px';
+  }
+
+  function openNotifDecision(id) {
+    var inv = null;
+    for (var i = 0; i < invites.length; i++) { if (invites[i].id === id) { inv = invites[i]; break; } }
+    if (!inv) return;
+    notifPendingId = id;
+    document.getElementById('notifDecisionAvatar').textContent = inv.avatar;
+    document.getElementById('notifDecisionName').textContent = inv.name;
+    document.getElementById('notifDecisionId').textContent = inv.userId;
+    morphNotifView('decision');
+  }
+
+  function refreshFriendRequests() {
+    if (!cloudMode) return;
+    MN_API.get('/friend-requests').then(function(res) {
+      if (!res.ok || !res.data) return;
+      invites = (res.data.requests || []).map(function(r) {
+        return {
+          id: r.id,
+          name: r.sender.displayName || r.sender.id,
+          userId: r.sender.id,
+          avatar: (r.sender.displayName || '?').charAt(0).toUpperCase(),
+          time: convTime(r.createdAt)
+        };
+      });
+      updateNotifBadge();
+      renderNotifPopup();
+    });
+  }
+
+  function acceptInvite(id) {
+    var inv = null;
+    for (var i = 0; i < invites.length; i++) { if (invites[i].id === id) { inv = invites[i]; break; } }
+    if (!inv) return;
+    if (cloudMode) {
+      MN_API.post('/friend-requests/' + id + '/accept').then(function(res) {
+        if (res.ok) {
+          invites = invites.filter(function(x) { return x.id !== id; });
+          showToast('已同意 ' + inv.name + ' 的好友请求');
+          refreshCloudChat(); // 新 DM 即时入侧栏
+          updateNotifBadge();
+          renderNotifPopup();
+          morphNotifView('list');
+        } else {
+          showToast('⚠ Accept failed — try again.', true);
+        }
+      });
+      return;
+    }
+    invites = invites.filter(function(x) { return x.id !== id; });
+    conversations.push({
+      id: 'c' + (conversations.length + 1),
+      name: inv.name,
+      lastMsg: 'Friend request accepted. Say hello!',
+      time: 'Now',
+      avatar: inv.avatar,
+      online: true
+    });
+    saveData();
+    renderConversationList();
+    showToast('已同意 ' + inv.name + ' 的好友请求');
+    updateNotifBadge();
+    renderNotifPopup();
+    morphNotifView('list');
+  }
+
+  function declineInvite(id) {
+    var inv = null;
+    for (var i = 0; i < invites.length; i++) { if (invites[i].id === id) { inv = invites[i]; break; } }
+    if (!inv) return;
+    if (cloudMode) {
+      MN_API.post('/friend-requests/' + id + '/decline').then(function(res) {
+        if (res.ok) {
+          invites = invites.filter(function(x) { return x.id !== id; });
+          showToast('已拒绝 ' + inv.name + ' 的好友请求');
+          updateNotifBadge();
+          renderNotifPopup();
+          morphNotifView('list');
+        } else {
+          showToast('⚠ Decline failed — try again.', true);
+        }
+      });
+      return;
+    }
+    invites = invites.filter(function(x) { return x.id !== id; });
+    saveData();
+    showToast('已拒绝 ' + inv.name + ' 的好友请求');
+    updateNotifBadge();
+    renderNotifPopup();
+    morphNotifView('list');
   }
 
   // ──────────────────────────────────────────────
   //  INIT
   // ──────────────────────────────────────────────
   loadData();
+  updateNotifBadge();
   renderConversationList();
   renderGroupList();
   renderAnnouncements();
   updateFab();
   initCloudDMs();
+
+  // 通知弹窗：外点 / Escape 关闭（关闭即时无动画）
+  document.addEventListener('click', function(e) {
+    var p = document.getElementById('notifPopup');
+    if (p && p.style.display !== 'none' && !p.contains(e.target) && !document.getElementById('bellBtn').contains(e.target)) closeNotifPopup();
+  });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeNotifPopup(); });
 
   // Auto-switch tab based on URL parameter（2026-09-17 Request J：showTab= 抖音式 tab 直达；
   // 旧 ?tab= 参数继续兼容读取——switchToPanel 内会把 URL 归一成 showTab 形态）

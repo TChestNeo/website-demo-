@@ -10,6 +10,7 @@
 const { HttpError, sendJson, readJson } = require('../../http');
 const { requireSession } = require('../../middleware/auth');
 const { insertWithId, pad6 } = require('../../ids');
+const { membersOf, resolveTarget, createDm } = require('./dm-shared');
 
 const MSG_MAX = 4000;
 const PAGE_SIZE = 100;
@@ -23,18 +24,6 @@ function requireMember(db, convId, userId) {
   const ok = db.prepare("SELECT 1 FROM conversation_members WHERE conversation_id = ? AND actor_type = 'user' AND actor_id = ?")
     .get(convId, userId);
   if (!ok) throw new HttpError('FORBIDDEN', '无权访问该会话');
-}
-
-function publicUser(row) {
-  return { id: row.id, displayName: row.display_name, avatarUrl: row.avatar_url };
-}
-
-function membersOf(db, convId) {
-  return db.prepare(`
-    SELECT u.id, u.display_name, u.avatar_url FROM conversation_members m
-    JOIN users u ON u.id = m.actor_id
-    WHERE m.conversation_id = ? AND m.actor_type = 'user' ORDER BY m.joined_at
-  `).all(convId).map(publicUser);
 }
 
 function lastMessageOf(db, convId, userId) {
@@ -56,28 +45,7 @@ function unreadOf(db, convId, userId) {
   `).get(convId, userId, convId, userId).n;
 }
 
-// dm 去重：恰有两名成员且包含双方
-function findDm(db, a, b) {
-  return db.prepare(`
-    SELECT c.id FROM conversations c
-    JOIN conversation_members m1 ON m1.conversation_id = c.id AND m1.actor_type = 'user' AND m1.actor_id = ?
-    JOIN conversation_members m2 ON m2.conversation_id = c.id AND m2.actor_type = 'user' AND m2.actor_id = ?
-    WHERE c.kind = 'dm'
-      AND (SELECT count(*) FROM conversation_members x WHERE x.conversation_id = c.id) = 2
-    LIMIT 1
-  `).get(a, b);
-}
-
-// 按 userId 或 email 定位目标用户（email 归一化精确匹配；查无 → 404 防枚举口径统一）
-function resolveTarget(db, body) {
-  let row = null;
-  if (body.userId) row = db.prepare('SELECT * FROM users WHERE id = ?').get(String(body.userId));
-  else if (body.email) {
-    row = db.prepare('SELECT * FROM users WHERE email = ?').get(String(body.email).trim().toLowerCase());
-  }
-  if (!row) throw new HttpError('NOT_FOUND', '找不到该用户');
-  return row;
-}
+// dm 去重/定位：见 dm-shared.js（与 friend-requests 共用同一身份逻辑）
 
 function register(router, ctx) {
   const db = ctx.db;
@@ -107,23 +75,11 @@ function register(router, ctx) {
     const target = resolveTarget(c.db, body);
     if (target.id === c.user.id) throw new HttpError('VALIDATION', '不能与自己私聊');
 
-    const existing = findDm(c.db, c.user.id, target.id);
-    if (existing) {
-      const row = c.db.prepare('SELECT kind, created_at FROM conversations WHERE id = ?').get(existing.id);
-      sendJson(res, 200, {
-        conversation: { id: existing.id, kind: row.kind, createdAt: row.created_at, members: membersOf(c.db, existing.id) },
-        created: false,
-      });
-      return;
-    }
-    const iso = new Date().toISOString();
-    const { id } = insertWithId(c.db, 'conversations', ['kind', 'created_at'], ['dm', iso], (s) => 'CONV-' + pad6(s));
-    const ins = c.db.prepare("INSERT INTO conversation_members (conversation_id, actor_type, actor_id, last_read_at, joined_at) VALUES (?, 'user', ?, ?, ?)");
-    ins.run(id, c.user.id, iso, iso);
-    ins.run(id, target.id, null, iso);
+    const { id, created } = createDm(c.db, c.user.id, target.id);
+    const row = c.db.prepare('SELECT kind, created_at FROM conversations WHERE id = ?').get(id);
     sendJson(res, 200, {
-      conversation: { id, kind: 'dm', createdAt: iso, members: membersOf(c.db, id) },
-      created: true,
+      conversation: { id, kind: row.kind, createdAt: row.created_at, members: membersOf(c.db, id) },
+      created,
     });
   }));
 

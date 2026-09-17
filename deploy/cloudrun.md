@@ -71,7 +71,7 @@ gcloud run deploy mnationworld-web \
 - `SEED_DEMO_STAFF=false`：只 seed director Neo，不建演示 staff。
 - GCS FUSE 卷要求 gen2 执行环境 + 同项目桶 + 计算服务账号 storage.objectAdmin（已配：`641398703651-compute@developer.gserviceaccount.com`）。
 - 区域 asia-southeast1（新加坡，离马来西亚最近）；已开的 API：run.googleapis.com、artifactregistry.googleapis.com（仓库 mn-backend）。
-- 验证：`/api/health` 应回 `{status:ok, tables:58, version:2.0.0}`；`/admin/` 用 staff 邮箱登录——**W6 双因素：密码 + 邮件验证码**（Neo 首登仅码 → 设密引导 → 此后密码+码）。
+- 验证：`/api/health` 应回 `{status:ok, tables:59, version:2.0.0}`；`/admin/` 用 staff 邮箱登录——**W6 双因素：密码 + 邮件验证码**（Neo 首登仅码 → 设密引导 → 此后密码+码）。
 - 扩容：`gcloud run services update mnationworld-web --region asia-southeast1 --max-instances N`（N>1 时活库随实例分裂——快照只保证「存续」不保证「一致」，正式发布前用 Cloud SQL）。
 - 控制台改名会丢失配置（实测教训）——重命名服务后必须重跑上面完整 deploy 命令补 env + 卷，别在控制台裸建。
 

@@ -931,7 +931,22 @@ window.MN_SITE = window.MN_SITE || {};
 //   分隔线 + notifications 图标（与平台首页同一结构/样式，首页铃铛目前同为纯展示无点击行为，保持一致）；
 //   FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css
 //   （rev 00250-s9m）
-window.MN_SITE_VERSION = 'v0.2.50.8';
+// v0.2.51.0 = Messages 好友请求 + 灵动岛通知弹窗（小改动位 50→51·新功能轮；2026-09-18）——用户「这个通知弹窗
+//   我希望可以做成有灵动岛效果的，当弹出好友邀请时点击右上角的消息弹窗内的好友邀请右上角整个消息窗会变成
+//   一个选择窗口上方中间会显示对方用户名称和ID然后下方左右是同意或不同意的药丸形按钮」（问询钦定真实后端
+//   好友请求系统）；
+//   后端——迁移 025 friend_requests 表（FR- id、sender/recipient FK、pending/accepted/declined、health
+//   58→59 表）；新路由 src/routes/public/friend-requests.js 四端点（发送限流 20/小时/自请求 400/已是好友
+//   409/待处理重复 409；GET 待处理列表带发送方公开档案；accept 自动建 DM、decline 标记；dm 去重/建会话抽到
+//   dm-shared.js 与 messages.js 共用）；测试 282→294；
+//   前端——铃铛 id/onclick + 红点计数徽章；#notifPopup 灵动岛弹窗（铃铛下方右锚定、islandIn 缩放展开 0.28s、
+//   列表视图→点邀请整窗 morph 决定视图：上方居中头像+名字+ID、下方左「不同意」右「同意」药丸钮、高度 FLIP
+//   过渡+双视图交叉淡入淡出）；云端 GET/accept/decline 真 API（同意后 refreshCloudChat 即时出现新会话）；
+//   addFriendDemo 云端分支 POST /conversations → POST /friend-requests（成功文案「✓ 好友请求已发送！」）；
+//   demo 模式邀请存 localStorage invites（无预置数据）；FC 零改动（v10.28.35.4 保持）；零草稿字段（v 保持 9）、
+//   ethereal 零改动无需 inline-css
+//   （rev 00251-44l）
+window.MN_SITE_VERSION = 'v0.2.51.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
