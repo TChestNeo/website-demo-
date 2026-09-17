@@ -2732,7 +2732,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   var pinnedMessages = {};
   var justPinnedRef = null; // tracks message just pinned for animation
 
-  var DATA_VERSION = 3; // bump to invalidate stale localStorage
+  var DATA_VERSION = 4; // bump to invalidate stale localStorage（v0.2.50.5 移除测试聊天/群——旧存档会把已删的测试数据合并复活）
 
   // Safe media registry — avoids embedding long base64 data URLs in inline onclick
   var _mediaReg = {};
@@ -3755,31 +3755,17 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     renderConversationList();
   }
 
-  var conversations = [
-    { id: 'c1', name: 'Marcus Vane', lastMsg: 'The floating district plans look...', time: '12:34 PM', avatar: 'M', online: true },
-    { id: 'c2', name: 'Studio Prime', lastMsg: 'Digital embassy renderings attached.', time: '10:15 AM', avatar: 'S', online: false },
-    { id: 'c3', name: 'Sovereign Council', lastMsg: 'Agenda for next governance summit.', time: 'Yesterday', avatar: 'SC', online: true },
-  ];
+  // v0.2.50.5 用户「能不能把message内测试用的群和聊天去除？」——移除全部演示私聊；
+  // 新会话从空开始（addFriendDemo 创建；云端会话由 mergeCloudConversations 并入）
+  var conversations = [];
 
-  var mockMessages = {
-    c1: [
-      { from: 'Marcus Vane', text: 'I\'ve been working on the modular aquatic district proposals.', sent: true },
-      { from: 'You', text: 'Looking forward to reviewing them. Any updates on Phase 1?', sent: false },
-      { from: 'Marcus Vane', text: 'The floating district plans look promising — I\'ve attached the preliminary blueprints.', sent: true },
-    ],
-    c2: [
-      { from: 'Studio Prime', text: 'Here are the latest digital embassy renderings for your review.', sent: true },
-      { from: 'You', text: 'These look incredible. Can we schedule a walkthrough?', sent: false },
-      { from: 'Studio Prime', text: 'Absolutely. I\'ll set up a virtual tour for Thursday at 3 PM.', sent: true },
-    ],
-    c3: [
-      { from: 'Sovereign Council', text: 'The agenda for the next governance summit has been finalized.', sent: true },
-      { from: 'You', text: 'Great. Is the trade agreement still on the agenda?', sent: false },
-      { from: 'Sovereign Council', text: 'Yes — moved to item #4. I\'ve also added the border treaty discussion as a new item.', sent: true },
-    ]
-  };
+  var mockMessages = {}; // v0.2.50.5 演示消息随测试聊天一并移除
 
   function renderConversationList() {
+    if (!conversations.length) {
+      document.getElementById('conversationList').innerHTML = '<div class="label-sm" style="color:var(--color-outline);text-align:center;padding:16px 8px;line-height:1.6">No chats yet — tap <b>+</b> to start one</div>';
+      return;
+    }
     var html;
     if (convCollapsed) {
       html = conversations.map(function(c) {
@@ -4110,91 +4096,17 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     renderGroupList();
   }
 
-  var groups = [
-    { id: 'g1', name: 'Etheria Editorial Board', members: 12, online: 3, lastMsg: 'Final draft approved for publication', time: '2:45 PM', avatar: 'EE', unread: 3, isAnnouncement: true },
-    { id: 'g2', name: 'Cartography Guild', members: 28, online: 8, lastMsg: 'New map overlay ready for review', time: '11:30 AM', avatar: 'CG', unread: 0 },
-    { id: 'g3', name: 'Diplomatic Council', members: 8, online: 2, lastMsg: 'Treaty draft v3 uploaded to repository', time: 'Yesterday', avatar: 'DC', unread: 5, isAnnouncement: true },
-    { id: 'g4', name: 'Lore Keepers', members: 15, online: 4, lastMsg: 'Chapter 7 revisions done. Ready for your review!', time: 'Monday', avatar: 'LK', unread: 0 },
-    { id: 'g5', name: 'Worldbuilding Workshop', members: 42, online: 12, lastMsg: 'Workshop #23 notes posted in the channel', time: 'Tuesday', avatar: 'WW', unread: 1 },
-    { id: 'g6', name: 'Cultural Exchange Forum', members: 19, online: 6, lastMsg: 'New festival proposal from Neo-Venice', time: 'Wednesday', avatar: 'CE', unread: 0 },
-  ];
+  var groups = []; // v0.2.50.5 移除演示群；新群从 createGroupDemo 创建
 
-  var groupMembers = {
-    g1: [
-      { name: 'Marcus Vane', role: 'Admin', avatar: 'MV' },
-      { name: 'Elena Rossi', role: 'Admin', avatar: 'ER' },
-      { name: 'You', role: 'Admin', avatar: 'Y' },
-      { name: 'Sofia Chen', role: 'Member', avatar: 'SC' },
-      { name: 'Liam O\'Brien', role: 'Member', avatar: 'LO' },
-      { name: 'Aria Patel', role: 'Member', avatar: 'AP' },
-      { name: 'Noah Kim', role: 'Member', avatar: 'NK' },
-      { name: 'Zara Williams', role: 'Member', avatar: 'ZW' },
-      { name: 'Hugo Tanaka', role: 'Member', avatar: 'HT' },
-      { name: 'Ivy Laurent', role: 'Member', avatar: 'IL' },
-    ],
-    g2: [
-      { name: 'Prof. Atlas Stone', role: 'Admin', avatar: 'AS' },
-      { name: 'You', role: 'Admin', avatar: 'Y' },
-      { name: 'Mira Novak', role: 'Member', avatar: 'MN' },
-      { name: 'Dr. Kai Rivers', role: 'Member', avatar: 'KR' },
-      { name: 'Nina Szabo', role: 'Member', avatar: 'NS' },
-      { name: 'Oscar Flint', role: 'Member', avatar: 'OF' },
-    ],
-    g3: [
-      { name: 'Ambassador Keen', role: 'Admin', avatar: 'AK' },
-      { name: 'Council Chair', role: 'Admin', avatar: 'CC' },
-      { name: 'You', role: 'Admin', avatar: 'Y' },
-      { name: 'Delegate Sarah Wu', role: 'Member', avatar: 'SW' },
-      { name: 'Envoy Ravi Singh', role: 'Member', avatar: 'RS' },
-      { name: 'Minister Grace Okafor', role: 'Member', avatar: 'GO' },
-      { name: 'Consul Lars Johansson', role: 'Member', avatar: 'LJ' },
-      { name: 'Attaché Yuki Mori', role: 'Member', avatar: 'YM' },
-    ],
-    g4: [
-      { name: 'Archivist Prime', role: 'Admin', avatar: 'AP' },
-      { name: 'You', role: 'Member', avatar: 'Y' },
-      { name: 'Scribe Elowen', role: 'Member', avatar: 'SE' },
-      { name: 'Keeper Thorne', role: 'Member', avatar: 'KT' },
-      { name: 'Lore Master Jin', role: 'Member', avatar: 'LJ' },
-      { name: 'Chronicler Maya', role: 'Member', avatar: 'CM' },
-    ],
-    g5: [
-      { name: 'Master Builder Ty', role: 'Admin', avatar: 'MT' },
-      { name: 'Architect Dana', role: 'Admin', avatar: 'AD' },
-      { name: 'You', role: 'Member', avatar: 'Y' },
-      { name: 'Designer Finn', role: 'Member', avatar: 'DF' },
-      { name: 'Planner Zoe', role: 'Member', avatar: 'PZ' },
-      { name: 'Sculptor Remy', role: 'Member', avatar: 'SR' },
-      { name: 'Engineer Petra', role: 'Member', avatar: 'EP' },
-    ],
-    g6: [
-      { name: 'Curator Faye', role: 'Admin', avatar: 'CF' },
-      { name: 'You', role: 'Member', avatar: 'Y' },
-      { name: 'Ambassador Niko', role: 'Member', avatar: 'AN' },
-      { name: 'Delegate Priya', role: 'Member', avatar: 'DP' },
-      { name: 'Envoy Hassan', role: 'Member', avatar: 'EH' },
-      { name: 'Liaison Chloe', role: 'Member', avatar: 'LC' },
-    ]
-  };
+  var groupMembers = {}; // v0.2.50.5 演示成员表一并移除
 
-  var mockGroupMessages = {
-    g1: [
-      { from: 'Marcus Vane', text: 'I think the editorial guidelines need a revision for the upcoming issue.', sent: true },
-      { from: 'You', text: 'Agreed. Let\'s schedule a meeting to discuss the changes.', sent: false },
-      { from: 'Elena Rossi', text: 'I\'ve drafted some proposals. Sharing them in a moment.', sent: true },
-    ],
-    g2: [
-      { from: 'CartographyBot', text: 'New satellite imagery overlay has been processed.', sent: true },
-      { from: 'You', text: 'Looks great! Can we add elevation data to the eastern region?', sent: false },
-    ],
-    g3: [
-      { from: 'Council Chair', text: 'The treaty draft is ready for review. All members please read before Friday.', sent: true },
-      { from: 'Ambassador Keen', text: 'Section 4 needs clarification on territorial waters.', sent: true },
-      { from: 'You', text: 'I\'ll prepare a summary of proposed amendments.', sent: false },
-    ],
-  };
+  var mockGroupMessages = {}; // v0.2.50.5 演示群消息一并移除
 
   function renderGroupList() {
+    if (!groups.length) {
+      document.getElementById('groupList').innerHTML = '<div class="label-sm" style="color:var(--color-outline);text-align:center;padding:16px 8px;line-height:1.6">No groups yet — tap <b>+</b> to create one</div>';
+      return;
+    }
     var html;
     if (groupCollapsed) {
       html = groups.map(function(g) {

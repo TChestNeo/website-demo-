@@ -905,7 +905,15 @@ window.MN_SITE = window.MN_SITE || {};
 //   每页漏动画=0 + would-skip 集合正确）；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、
 //   ethereal 零改动无需 inline-css、页面 HTML 零改动
 //   （rev 00246-47s）
-window.MN_SITE_VERSION = 'v0.2.50.4';
+// v0.2.50.5 = Messages 移除测试群和聊天（补丁位 4→5·口径修正轮；2026-09-18）——用户「能不能把message内
+//   测试用的群和聊天去除？」；改法（只动 messages.html）：移除全部演示数据（3 个演示私聊 Marcus Vane/
+//   Studio Prime/Sovereign Council + 6 个演示群 + 群成员表 + 演示群消息），会话/群从空开始（新增会话
+//   addFriendDemo、建群 createGroupDemo 功能原样保留）；DATA_VERSION 3→4 失效旧 localStorage（旧存档会
+//   把已删的测试数据合并复活）；侧栏空列表加空态提示（tap + 开始）；公告保留（用户只要求群和聊天）；
+//   云端会话（/api/conversations）不受影响；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）、
+//   ethereal 零改动无需 inline-css
+//   （rev 00247-cmw）
+window.MN_SITE_VERSION = 'v0.2.50.5';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
