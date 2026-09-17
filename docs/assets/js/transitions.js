@@ -9,11 +9,20 @@
  * 不改变观感的隐形修复——动画结束 transitionend/cancel 回收 inline transition（0.4s
  * 橡皮筋不再污染 hover/tilt，如 Messages 公告卡 box-shadow-only 过渡）+ 隐藏卡
  * （display:none 不渲染、transitionend 永不触发）600ms 兜底定时强制清理。
+ * 2026-09-17 v0.2.50.2 Messages 页专属轻量模式（用户钦定）：49.9 轻量修法
+ * （transform-only 不渐隐 / 波浪头前 STAGGER_CAP 张 / 40ms / 退出 220-240ms）只保留给
+ * 进入/离开 messages.html（全卡渐隐波浪在 63 张卡的 Messages 上 ~4s 才落定）——
+ * 其余页面切页保持原样观感。
  */
 (function () {
   'use strict';
 
-  var STAGGER_DELAY = 60;
+  var STAGGER_DELAY = 60;        // 原样观感节奏（除 Messages 外全站）
+  var LIGHT_STAGGER_DELAY = 40;  // Messages 页轻量入场节奏（49.9 口径）
+  var STAGGER_CAP = 8;           // Messages 页轻量入场波浪头上限
+  // Messages 页专属轻量模式（2026-09-17 v0.2.50.2 用户钦定）：49.9 修法只作用于进入/离开
+  // messages.html；其余页面保持原样观感（钦定设计）。LIGHT 在脚本加载时按当前页判定
+  var LIGHT = getFilename(window.location.pathname) === 'messages.html';
   // h1 + p = hero 副标题（如 guidelines 的 Standards and protocols…）：跟大标题一起淡入，不再原地呆住
   var CARD_SELECTOR = '.card, .app-main h1, .app-main h1 + p, .app-main h2, .app-main .search-capsule, .app-main header, .auth-card';
 
@@ -77,21 +86,32 @@
       default:       startTransform = 'translateY(18px)';  break;
     }
 
-    // 写前先记下每张卡原有的 inline opacity（回收时还原）
+    var delay = LIGHT ? LIGHT_STAGGER_DELAY : STAGGER_DELAY;
+    // 轻量模式（Messages 专属）：只动画前 STAGGER_CAP 个元素、不 fade opacity——
+    // opacity<1 让磨砂卡逐帧重采样背景，是全页入场掉帧主因；原样观感=全卡渐隐波浪
+    var animated = [];
+    var n = LIGHT ? Math.min(cards.length, STAGGER_CAP) : cards.length;
+    for (var i = 0; i < n; i++) animated.push(cards[i]);
+
+    // 写前先记下每张卡原有的 inline opacity（原样观感回收时还原；轻量模式不动 opacity）
     var prevOpacities = [];
-    cards.forEach(function (el, i) {
-      prevOpacities[i] = el.style.opacity;
-      el.style.opacity = '0';
+    animated.forEach(function (el, i) {
+      if (!LIGHT) {
+        prevOpacities[i] = el.style.opacity;
+        el.style.opacity = '0';
+      }
       el.style.transform = startTransform;
     });
 
-    cards.forEach(function (el, i) {
+    animated.forEach(function (el, i) {
       setTimeout(function () {
         var prevOpacity = prevOpacities[i];
         var prevTransition = el.style.transition;
         var prevDelay = el.style.transitionDelay;
-        el.style.transition = 'opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1)';
-        el.style.opacity = '1';
+        el.style.transition = LIGHT
+          ? 'transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1)'
+          : 'opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1)';
+        if (!LIGHT) el.style.opacity = '1';
         el.style.transform = 'translateY(0) translateX(0)';
         // 观感零改变的隐形修复：动画结束即回收 inline transition/opacity（恢复卡片自带的
         // 内联/类过渡）——否则 0.4s 橡皮筋永久污染 hover/tilt（如 Messages 公告卡
@@ -105,15 +125,15 @@
           el.removeEventListener('transitioncancel', cleanup);
           el.style.transition = prevTransition;
           el.style.transitionDelay = prevDelay;
-          el.style.opacity = prevOpacity;
+          if (!LIGHT) el.style.opacity = prevOpacity;
           el.style.transform = '';
         }
         el.addEventListener('transitionend', cleanup);
         el.addEventListener('transitioncancel', cleanup);
         // 兜底定时回收：display:none 容器里的卡（如设置弹窗内 .card）不渲染、
         // transitionend 永不触发——到点强制清理，保证零残留
-        setTimeout(cleanup, 400 + i * STAGGER_DELAY + 200);
-      }, i * STAGGER_DELAY);
+        setTimeout(cleanup, 400 + i * delay + 200);
+      }, i * delay);
     });
   }
 
@@ -191,15 +211,20 @@
       var mainH = getMainEl();
       var cards = mainH.querySelectorAll('.card, h1, h1 + p, h2, .search-capsule, header, .upload-zone, table, #statsRow > *, #featuredNation, #recentContribs');
       cards.forEach(function (card, i) {
-        card.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+        if (LIGHT) {
+          // Messages 专属轻量退出（49.9 口径）：只动 transform 不 fade
+          card.style.transition = 'transform 0.22s ease';
+        } else {
+          card.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+          card.style.opacity = '0';
+        }
         card.style.transitionDelay = (i * 0.025) + 's';
-        card.style.opacity = '0';
         card.style.transform = exitTransform;
       });
 
       try { sessionStorage.setItem('slati_entrance_dir', entranceDir); } catch (e) {}
 
-      setTimeout(function () { window.location.href = href; }, 280);
+      setTimeout(function () { window.location.href = href; }, LIGHT ? 240 : 280);
 
     } else {
       var mainV = getMainEl();
@@ -220,11 +245,17 @@
 
       try { sessionStorage.setItem('slati_entrance_dir', entranceDir); } catch (e) {}
 
-      mainV.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-      mainV.style.opacity = '0';
+      if (LIGHT) {
+        // Messages 专属轻量退出（49.9 口径）：只动 transform 不 fade opacity（.app-main
+        // 整页磨砂卡族，渐隐=全页逐帧重采样背景）
+        mainV.style.transition = 'transform 0.22s ease';
+      } else {
+        mainV.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        mainV.style.opacity = '0';
+      }
       mainV.style.transform = exitTransform;
 
-      setTimeout(function () { window.location.href = href; }, 240);
+      setTimeout(function () { window.location.href = href; }, LIGHT ? 220 : 240);
     }
   });
 
