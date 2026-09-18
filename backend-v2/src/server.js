@@ -17,6 +17,7 @@ const { register: registerStaffAuth } = require('./routes/staff/auth');
 const { register: registerSocial } = require('./routes/public/social');
 const { register: registerMessages } = require('./routes/public/messages');
 const { register: registerFriendRequests } = require('./routes/public/friend-requests');
+const { register: registerNotifications } = require('./routes/public/notifications');
 const { register: registerTickets } = require('./routes/public/tickets');
 const { register: registerSubscriptions } = require('./routes/public/subscriptions');
 const { register: registerStudentVerify } = require('./routes/public/student-verify');
@@ -77,6 +78,7 @@ function createServer(deps = {}) {
   registerSocial(router, ctx);
   registerMessages(router, ctx);
   registerFriendRequests(router, ctx);
+  registerNotifications(router, ctx);
   registerTickets(router, ctx);
   registerSubscriptions(router, ctx);
   registerStudentVerify(router, ctx);

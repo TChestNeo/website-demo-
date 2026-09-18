@@ -53,7 +53,24 @@ function register(router, ctx) {
     if (row.status !== 'published' && (!user || user.id !== row.author_id)) {
       throw new HttpError('NOT_FOUND', '文章不存在'); // 未发布文章对非本人不可见（口径统一 404）
     }
-    sendJson(res, 200, { article: { ...meta(row), contentJson: JSON.parse(row.content_json) } });
+    // v0.2.52.0：浏览自增（镜像 posts 口径）+ 实时互动字段。死计数列 like_count/favorite_count
+    // 继续零读写（实时 count 与帖子口径一致，不双账）；likedByMe 复用 softUser，匿名恒 false。
+    db.prepare('UPDATE articles SET view_count = view_count + 1 WHERE id = ?').run(row.id);
+    const fresh = db.prepare('SELECT * FROM articles WHERE id = ?').get(row.id);
+    const likeCount = db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'article' AND target_id = ?").get(row.id).n;
+    const favoriteCount = db.prepare("SELECT count(*) AS n FROM favorites WHERE target_type = 'article' AND target_id = ?").get(row.id).n;
+    const likedByMe = user
+      ? !!db.prepare("SELECT 1 FROM content_likes WHERE user_id = ? AND target_type = 'article' AND target_id = ?").get(user.id, row.id)
+      : false;
+    const favoritedByMe = user
+      ? !!db.prepare("SELECT 1 FROM favorites WHERE user_id = ? AND target_type = 'article' AND target_id = ?").get(user.id, row.id)
+      : false;
+    sendJson(res, 200, {
+      article: {
+        ...meta(fresh), contentJson: JSON.parse(fresh.content_json),
+        viewCount: fresh.view_count, likeCount, favoriteCount, likedByMe, favoritedByMe,
+      },
+    });
   });
 }
 

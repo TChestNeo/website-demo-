@@ -4569,6 +4569,46 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       margin-right: 6px; text-transform: uppercase; letter-spacing: 0.05em;
     }
   </style>
+<style>
+/* Article View 操作条（v10.28.36.0 文章查看模式点赞/收藏）——独立样式块，
+   绝不入 ethereal 内联块；条挂在 body（#fcViewScaler 外），不受只读硬化影响 */
+#fcViewActions {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 60;
+}
+#fcViewActions .fcva-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-outline);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+#fcViewActions .fcva-pill:hover { background: rgba(118, 117, 134, 0.1); }
+#fcViewActions .fcva-pill:active { transform: scale(0.94); }
+#fcViewActions .fcva-pill .material-symbols-outlined { font-size: 20px; }
+#fcViewActions .fcva-pill.liked { color: #ef4444; }
+#fcViewActions .fcva-pill.favorited { color: #d4a017; }
+#fcViewActions .fcva-pill .fcva-count { min-width: 12px; text-align: left; }
+</style>
 </head>
 <body class="pre-stagger">
 
@@ -14451,7 +14491,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (art && cj) {
         var draft = null;
         try { draft = (typeof cj === 'string') ? JSON.parse(cj) : cj; } catch (e) {}
-        if (draft && Array.isArray(draft.cards)) { renderArticleDraft(draft); return; }
+        if (draft && Array.isArray(draft.cards)) { renderArticleDraft(draft); renderArticleActions(art); return; }
         showArticlePlaceholder(art.title || id, '这篇文章的正文内容无法读取。');
         return;
       }
@@ -15982,6 +16022,72 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     else showImgPop();
   });
 })();
+</script>
+
+<script>
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  ARTICLE VIEW ACTIONS（v10.28.36.0 文章查看模式点赞/收藏操作条）
+  //  镜像 community-hub toggleLike/toggleFavorite：乐观更新 + 失败回滚；
+  //  访客（非 USR- 登录）点击仅 toast 引导不发请求；demo 种子/404 路径不建条。
+  // ═══════════════════════════════════════════════════════════════════════════
+  function fcvaIsCloudUser() {
+    try {
+      var u = window.SlatiDB && SlatiDB.getUser();
+      return !!(u && u.id && String(u.id).indexOf('USR-') === 0);
+    } catch (e) { return false; }
+  }
+
+  function renderArticleActions(art) {
+    if (!art || document.getElementById('fcViewActions')) return;
+    var bar = document.createElement('div');
+    bar.id = 'fcViewActions';
+    bar.dataset.articleId = art.id;
+    var likeCount = (typeof art.likeCount === 'number') ? art.likeCount : 0;
+    var favCount = (typeof art.favoriteCount === 'number') ? art.favoriteCount : 0;
+    bar.innerHTML =
+      '<button type="button" class="fcva-pill' + (art.likedByMe ? ' liked' : '') + '" aria-pressed="' + (art.likedByMe ? 'true' : 'false') + '" onclick="fcvaToggle(this, \'like\')">' +
+        '<span class="material-symbols-outlined">' + (art.likedByMe ? 'favorite' : 'favorite_border') + '</span>' +
+        '<span class="fcva-count">' + likeCount + '</span>' +
+      '</button>' +
+      '<button type="button" class="fcva-pill' + (art.favoritedByMe ? ' favorited' : '') + '" aria-pressed="' + (art.favoritedByMe ? 'true' : 'false') + '" onclick="fcvaToggle(this, \'favorite\')">' +
+        '<span class="material-symbols-outlined">' + (art.favoritedByMe ? 'star' : 'star_border') + '</span>' +
+        '<span class="fcva-count">' + favCount + '</span>' +
+      '</button>';
+    document.body.appendChild(bar);
+  }
+
+  function fcvaToggle(btn, kind) {
+    var bar = document.getElementById('fcViewActions');
+    var id = bar && bar.dataset.articleId;
+    if (!id) return;
+    if (!fcvaIsCloudUser()) { window.showToast('登录后才能' + (kind === 'like' ? '点赞' : '收藏')); return; }
+    var isLike = kind === 'like';
+    var wasOn = btn.getAttribute('aria-pressed') === 'true';
+    var next = !wasOn;
+    var countEl = btn.querySelector('.fcva-count');
+    var iconEl = btn.querySelector('.material-symbols-outlined');
+    var before = parseInt(countEl.textContent, 10) || 0;
+    // 乐观更新
+    btn.setAttribute('aria-pressed', next ? 'true' : 'false');
+    btn.classList.toggle(isLike ? 'liked' : 'favorited', next);
+    if (iconEl) iconEl.textContent = isLike ? (next ? 'favorite' : 'favorite_border') : (next ? 'star' : 'star_border');
+    countEl.textContent = before + (next ? 1 : -1);
+    window.MN_API[next ? 'post' : 'del']('/social/articles/' + encodeURIComponent(id) + '/' + kind).then(function (r) {
+      if (r.ok && r.data) {
+        // 服务端真值回写（文章端点返回 likeCount/favoriteCount）
+        var real = isLike ? r.data.likeCount : r.data.favoriteCount;
+        if (typeof real === 'number') countEl.textContent = real;
+        return;
+      }
+      // 失败回滚
+      btn.setAttribute('aria-pressed', wasOn ? 'true' : 'false');
+      btn.classList.toggle(isLike ? 'liked' : 'favorited', wasOn);
+      if (iconEl) iconEl.textContent = isLike ? (wasOn ? 'favorite' : 'favorite_border') : (wasOn ? 'star' : 'star_border');
+      countEl.textContent = before;
+      if (r.status === 401) window.showToast('登录已过期，请重新登录');
+      else window.showToast('操作失败，请稍后再试');
+    });
+  }
 </script>
 
 </body>

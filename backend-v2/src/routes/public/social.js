@@ -364,6 +364,50 @@ function register(router, ctx) {
     sendJson(res, 200, { favorited: false });
   }));
 
+  // ── 文章点赞/收藏（v0.2.52.0 铃铛聚合通知 + 文章点赞收藏：content_likes/favorites 复用
+  //    target_type='article'，005 已预留且无 CHECK → 零迁移）──
+  // 口径镜像帖子：POST 校验 published（否则 404）、INSERT OR IGNORE 幂等、新互动（changes>0）
+  // 且非自操作 → 给作者 +15/+12 获得类经验；DELETE 不校验存在（无害 no-op 幂等）。
+  router.add('POST', '/api/social/articles/:id/like', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    const art = c.db.prepare('SELECT id, status, author_id FROM articles WHERE id = ?').get(req.params.id);
+    if (!art || art.status !== 'published') throw new HttpError('NOT_FOUND', '文章不存在或未公开');
+    const info = c.db.prepare("INSERT OR IGNORE INTO content_likes (user_id, target_type, target_id, created_at) VALUES (?, 'article', ?, ?)")
+      .run(c.user.id, art.id, new Date().toISOString());
+    if (info.changes > 0 && art.author_id !== c.user.id) gainXp(c, art.author_id, 'like');
+    const likeCount = c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'article' AND target_id = ?").get(art.id).n;
+    sendJson(res, 200, { liked: true, likeCount });
+  }));
+
+  router.add('DELETE', '/api/social/articles/:id/like', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    // 不校验文章存在：对已删除文章取消点赞 = 无害 no-op（幂等，与帖子同口径）
+    c.db.prepare("DELETE FROM content_likes WHERE user_id = ? AND target_type = 'article' AND target_id = ?")
+      .run(c.user.id, req.params.id);
+    const likeCount = c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'article' AND target_id = ?").get(req.params.id).n;
+    sendJson(res, 200, { liked: false, likeCount });
+  }));
+
+  router.add('POST', '/api/social/articles/:id/favorite', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    const art = c.db.prepare('SELECT id, status, author_id FROM articles WHERE id = ?').get(req.params.id);
+    if (!art || art.status !== 'published') throw new HttpError('NOT_FOUND', '文章不存在或未公开');
+    const info = c.db.prepare("INSERT OR IGNORE INTO favorites (user_id, target_type, target_id, created_at) VALUES (?, 'article', ?, ?)")
+      .run(c.user.id, art.id, new Date().toISOString());
+    if (info.changes > 0 && art.author_id !== c.user.id) gainXp(c, art.author_id, 'favorite');
+    const favoriteCount = c.db.prepare("SELECT count(*) AS n FROM favorites WHERE target_type = 'article' AND target_id = ?").get(art.id).n;
+    sendJson(res, 200, { favorited: true, favoriteCount });
+  }));
+
+  router.add('DELETE', '/api/social/articles/:id/favorite', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    // 不校验文章存在：对已删除文章取消收藏 = 无害 no-op（幂等，与取消点赞同口径）
+    c.db.prepare("DELETE FROM favorites WHERE user_id = ? AND target_type = 'article' AND target_id = ?")
+      .run(c.user.id, req.params.id);
+    const favoriteCount = c.db.prepare("SELECT count(*) AS n FROM favorites WHERE target_type = 'article' AND target_id = ?").get(req.params.id).n;
+    sendJson(res, 200, { favorited: false, favoriteCount });
+  }));
+
   // ── 用户主页（v0.2.21.0：Twitter 式个人主页——头部+统计+4 tab；关注系统一起做）──
   // 公共 GET 走 optionalViewer（不刷 DAU）；只认 active 用户，banned/deleted 一律 404 同口径。
   router.add('GET', '/api/social/users/:id', (req, res, c) => {

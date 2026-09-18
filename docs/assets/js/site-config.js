@@ -963,7 +963,19 @@ window.MN_SITE = window.MN_SITE || {};
 //   不透明底 + 灭玻璃注入层滤镜/磨砂（与暗色同款同观感，mono 走 var() 自动适配）；重跑 inline-css.js
 //   40 页内联块刷新；FC 零改动（v10.28.35.4 保持）；零后端、零草稿字段（v 保持 9）
 //   （rev 00253-np7）
-window.MN_SITE_VERSION = 'v0.2.51.2';
+// v0.2.52.0 = 通知铃铛聚合 + 文章点赞/收藏（小改动位 51→52·新功能轮；2026-09-19）——用户「那个铃铛能不能是在Home
+//   的时候会显示所有除了公告以外的信息例如谁点赞/收藏了你的帖子，谁点赞/收藏了你的文章，谁关注了你；只有在你进入
+//   特定页面时才筛选」（问询钦定：①文章点赞/收藏这轮一起做——平台之前完全没有 ②评论也进通知 ③铃铛就两处：
+//   首页=全部通知（除公告，公告是静态区块天然不进通知流）、Messages 页=只显示好友请求（现状天然满足，零改动））；
+//   后端：新 GET /api/notifications 七类事件实时聚合（帖子赞/藏、文章赞/藏、帖子评论、关注、好友请求——零迁移：
+//   content_likes/favorites 复用 target_type='article'（005 预留无 CHECK），不建事件表不碰 notifications 表；
+//   social.js 新增文章点赞/收藏四端点（镜像帖子口径：幂等/异人 XP +15/+12/404 未公开）；articles.js GET /:id
+//   扩展 viewCount/likeCount/favoriteCount/likedByMe/favoritedByMe（浏览自增镜像帖子）；测试 295→309 全绿；
+//   前端：首页铃铛 dashBellBtn+dashBellBadge 红点（localStorage lastSeen 按用户隔离）+ #dashNotifPopup 灵动岛弹窗
+//   （照 messages 观感：缩放展开/好友请求 morph 决定视图同意不同意药丸/15s 轮询/外点 Escape 关闭）；FC 文章查看模式
+//   ?article= 右下 #fcViewActions 悬浮操作条（点赞/收藏带计数，乐观更新+回滚，访客 toast 引导登录）
+//   （rev 00254-w4f）
+window.MN_SITE_VERSION = 'v0.2.52.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1278,4 +1290,9 @@ window.MN_SITE_VERSION = 'v0.2.51.2';
 //   Migrate 族）自 settings-modal.js 运行时注入迁入 ethereal.css 随内联首帧生效 + FC 两页 head 内联块同步落
 //   data-accent（与站点 v0.2.49.1 同轮）；零草稿字段（v 保持 9）、零 FC 逻辑改动
 //   （rev 00231-8bp）
-window.FLUIDCANVAS_VERSION = 'v10.28.35.4';
+// v10.28.36.0 = 文章查看模式点赞/收藏操作条（小更新位 35→36·小功能轮；2026-09-19）——?article= 只读查看页右下
+//   浮动胶囊 #fcViewActions：点赞（红心+计数）/收藏（金星+计数），数据源=GET /api/articles/:id 新互动字段
+//   （likeCount/favoriteCount/likedByMe/favoritedByMe，与站点 v0.2.52.0 同轮）；点击镜像 community-hub
+//   乐观更新+失败回滚，访客 toast 引导登录；demo 种子/404 路径不建条；零草稿字段（v 保持 9）
+//   （rev 待部署后补）
+window.FLUIDCANVAS_VERSION = 'v10.28.36.0';

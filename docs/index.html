@@ -2234,6 +2234,60 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 4px 20px rgba(255, 255, 255, 0.25) !important;
 }
 </style>
+<style>
+/* 通知铃铛灵动岛弹窗（v0.2.52.0 铃铛聚合通知）——页面专属 CSS，绝不入 ethereal 内联块 */
+#dashNotifPopup {
+  position: fixed;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 150;
+  display: none;
+  flex-direction: column;
+  transform-origin: top right;
+}
+#dashNotifPopup.island-open {
+  animation: dashNotifIslandIn 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+@keyframes dashNotifIslandIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.85); }
+  to   { opacity: 1; transform: none; }
+}
+#dashNotifBody {
+  position: relative;
+  overflow: hidden;
+  transition: height 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+#dashNotifListView,
+#dashNotifDecisionView {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  box-sizing: border-box;
+  transition: opacity 0.22s ease, transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+#dashNotifListView { opacity: 1; transform: none; }
+#dashNotifDecisionView { opacity: 0; transform: translateY(10px) scale(0.98); pointer-events: none; }
+#dashNotifPopup.show-decision #dashNotifListView { opacity: 0; transform: translateY(-10px) scale(0.98); pointer-events: none; }
+#dashNotifPopup.show-decision #dashNotifDecisionView { opacity: 1; transform: none; pointer-events: auto; }
+.dash-notif-entry { transition: background 0.15s ease; }
+.dash-notif-entry:hover { background: rgba(118, 117, 134, 0.08); }
+@media (prefers-reduced-motion: reduce) {
+  #dashNotifPopup.island-open,
+  #dashNotifBody,
+  #dashNotifListView,
+  #dashNotifDecisionView {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+</style>
 </head>
 <body class="pre-stagger">
 
@@ -2260,11 +2314,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     </section>
 
     <header class="flex-between" style="margin-bottom:var(--space-md)">
-      <div class="search-capsule">
+      <div class="search-capsule" style="position:relative">
         <span class="material-symbols-outlined">search</span>
         <input type="text" placeholder="Search worlds, topics...">
         <span style="width:1px;height:20px;background:var(--divider-line);flex-shrink:0;border-radius:1px"></span>
-        <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);cursor:pointer">notifications</span>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);cursor:pointer" id="dashBellBtn" onclick="toggleDashNotifPopup()">notifications</span>
+        <span id="dashBellBadge" style="position:absolute;top:-4px;right:-4px;background:var(--color-primary);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:var(--radius-full);min-width:16px;text-align:center;display:none;pointer-events:none;border:2px solid var(--card-bg)">0</span>
       </div>
     </header>
 
@@ -2353,6 +2408,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="assets/js/tilt.js"></script>
 <script src="assets/js/site-config.js"></script>
 <script src="assets/js/storage.js"></script>
+<script src="assets/js/api.js"></script>
 <script src="assets/js/sidebar.js"></script>
 <script src="assets/js/pricing.js"></script>
 <script src="assets/js/transitions.js"></script>
@@ -2589,6 +2645,257 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   document.getElementById('myWorlds').innerHTML = myWorldsHtml;
   if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+</script>
+
+<!-- ═══════════════ Notification Bell Popup（v0.2.52.0 铃铛聚合通知）═══════════════ -->
+<div id="dashNotifPopup">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px">
+    <span id="dashNotifTitle" style="font-weight:700;font-size:var(--fs-label-lg)">通知</span>
+    <button type="button" onclick="closeDashNotifPopup()" aria-label="关闭通知" style="background:none;border:none;cursor:pointer;color:var(--color-outline);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center"
+      onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'">
+      <span class="material-symbols-outlined" style="font-size:18px">close</span>
+    </button>
+  </div>
+  <div id="dashNotifBody">
+    <div id="dashNotifListView" style="padding:0 12px 12px;max-height:280px;overflow-y:auto"></div>
+    <div id="dashNotifDecisionView" style="padding:8px 16px 20px;text-align:center">
+      <div id="dashNotifDecisionAvatar" style="width:48px;height:48px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;margin:0 auto 10px"></div>
+      <div id="dashNotifDecisionName" style="font-weight:700;font-size:var(--fs-label-lg)"></div>
+      <div id="dashNotifDecisionId" style="color:var(--color-outline);font-size:12px;margin-top:2px"></div>
+      <div id="dashNotifDecisionError" style="color:#ef4444;font-size:12px;margin-top:4px;min-height:16px"></div>
+      <div style="display:flex;gap:12px;margin-top:16px">
+        <button type="button" class="btn btn-outline" style="border-radius:var(--radius-full);flex:1" onclick="declineDashInvite(dashNotifPendingId)">不同意</button>
+        <button type="button" class="btn btn-primary" style="border-radius:var(--radius-full);flex:1" onclick="acceptDashInvite(dashNotifPendingId)">同意</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  NOTIFICATION BELL（v0.2.52.0 铃铛聚合通知）
+  //  Home 铃铛 = 全部通知（帖子赞/藏、文章赞/藏、帖子评论、关注、好友请求；
+  //  公告是页面静态区块不进通知流，「除公告外」自动满足）；
+  //  Messages 页铃铛保持只显示好友请求（特定页面筛选，messages.html 零改动）。
+  //  未读红点 = 前端 localStorage lastSeen（按用户 id 隔离，服务端零事件表）。
+  // ═══════════════════════════════════════════════════════════════════════════
+  var dashNotifs = [];           // 聚合列表 {type,id,targetId,actor:{...},createdAt}
+  var dashNotifPendingId = null; // 决定视图当前处理的好友请求 id（inline onclick 引用）
+  var dashCloudMode = false;
+  var dashNotifOpen = false;     // 窗开时轮询续推 lastSeen（保持已读）
+
+  function dashUserId() {
+    var u = window.SlatiDB && SlatiDB.getUser();
+    return (u && String(u.id || '').indexOf('USR-') === 0) ? u.id : null;
+  }
+  function dashSeenKey() { return 'mn_notif_seen_' + (dashUserId() || 'guest'); }
+  function dashLastSeen() { try { return localStorage.getItem(dashSeenKey()) || ''; } catch (e) { return ''; } }
+
+  function timeAgo(iso) {
+    var s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+    if (s < 60) return '刚刚';
+    if (s < 3600) return Math.floor(s / 60) + ' 分钟前';
+    if (s < 86400) return Math.floor(s / 3600) + ' 小时前';
+    if (s < 86400 * 7) return Math.floor(s / 86400) + ' 天前';
+    var d = new Date(iso);
+    return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+  }
+  function dashNotifText(type) {
+    switch (type) {
+      case 'post_like': return '点赞了你的帖子';
+      case 'post_favorite': return '收藏了你的帖子';
+      case 'article_like': return '点赞了你的文章';
+      case 'article_favorite': return '收藏了你的文章';
+      case 'post_comment': return '评论了你的帖子';
+      case 'follow': return '关注了你';
+      default: return '想加你为好友';
+    }
+  }
+
+  function renderDashNotifPopup() {
+    var list = document.getElementById('dashNotifListView');
+    var html = '';
+    if (!dashCloudMode) {
+      var hasLocal = !!(window.SlatiDB && SlatiDB.getUser());
+      html = hasLocal
+        ? '<div style="padding:28px 0 24px;text-align:center;color:var(--color-outline)">' +
+            '<span class="material-symbols-outlined" style="font-size:32px;display:block;margin-bottom:8px">inbox</span>' +
+            '<div class="label-sm">暂无通知</div></div>'
+        : '<div style="padding:28px 0 24px;text-align:center;color:var(--color-outline)">' +
+            '<span class="material-symbols-outlined" style="font-size:32px;display:block;margin-bottom:8px">notifications_off</span>' +
+            '<div class="label-sm">登录后查看通知</div>' +
+            '<a href="pages/signup-and-login.html" style="display:inline-block;margin-top:10px;color:var(--color-primary);font-weight:600">去登录 →</a></div>';
+    } else if (!dashNotifs.length) {
+      html = '<div style="padding:28px 0 24px;text-align:center;color:var(--color-outline)">' +
+        '<span class="material-symbols-outlined" style="font-size:32px;display:block;margin-bottom:8px">inbox</span>' +
+        '<div class="label-sm">暂无通知</div></div>';
+    } else {
+      html = dashNotifs.map(function (item) {
+        var name = item.actor.displayName || item.actor.id || '?';
+        var letter = name.charAt(0).toUpperCase();
+        var onClick = item.type === 'friend_request'
+          ? 'onclick="openDashDecision(\'' + item.id + '\')"'
+          : 'onclick="dashNotifJump(\'' + item.type + '\', \'' + item.targetId + '\')"';
+        return '<div class="dash-notif-entry" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;cursor:pointer" ' + onClick + '>' +
+          '<div style="width:40px;height:40px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">' + letter + '</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + name + ' <span style="font-weight:400">' + dashNotifText(item.type) + '</span></div>' +
+            '<div style="color:var(--color-outline);font-size:11px;margin-top:2px">' + timeAgo(item.createdAt) + '</div>' +
+          '</div>' +
+          '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline)">chevron_right</span>' +
+        '</div>';
+      }).join('');
+    }
+    list.innerHTML = html;
+    var p = document.getElementById('dashNotifPopup');
+    if (p.style.display === 'flex') {
+      document.getElementById('dashNotifBody').style.height = list.offsetHeight + 'px';
+    }
+  }
+
+  function updateDashBadge() {
+    var b = document.getElementById('dashBellBadge');
+    if (!b) return;
+    var n = 0;
+    if (dashCloudMode && dashUserId()) {
+      var last = dashLastSeen();
+      for (var i = 0; i < dashNotifs.length; i++) {
+        if (dashNotifs[i].createdAt > last) n++;
+      }
+    }
+    b.textContent = n;
+    b.style.display = n ? 'block' : 'none';
+  }
+
+  function dashPushSeen() {
+    if (!dashCloudMode || !dashUserId()) return;
+    var newest = '';
+    for (var i = 0; i < dashNotifs.length; i++) {
+      if (!newest || dashNotifs[i].createdAt > newest) newest = dashNotifs[i].createdAt;
+    }
+    if (newest) { try { localStorage.setItem(dashSeenKey(), newest); } catch (e) {} }
+    updateDashBadge();
+  }
+
+  function refreshDashNotifs() {
+    if (!dashCloudMode || !window.MN_API) return;
+    MN_API.get('/notifications').then(function (res) {
+      if (!res || !res.ok || !res.data) return;
+      dashNotifs = res.data.notifications || [];
+      updateDashBadge();
+      renderDashNotifPopup();
+      if (dashNotifOpen) dashPushSeen();
+    });
+  }
+
+  function toggleDashNotifPopup() {
+    var p = document.getElementById('dashNotifPopup');
+    if (p.style.display === 'flex') { closeDashNotifPopup(); return; }
+    if (dashCloudMode) refreshDashNotifs();
+    var r = document.getElementById('dashBellBtn').getBoundingClientRect();
+    p.style.top = (r.bottom + 8) + 'px';
+    p.style.right = Math.max(12, window.innerWidth - r.right) + 'px';
+    p.style.display = 'flex';
+    dashNotifOpen = true;
+    renderDashNotifPopup();
+    dashPushSeen();
+    // 每次开窗重放灵动岛入场动画（remove → reflow → add）
+    p.classList.remove('island-open');
+    void p.offsetWidth;
+    p.classList.add('island-open');
+  }
+
+  function closeDashNotifPopup() {
+    var p = document.getElementById('dashNotifPopup');
+    if (!p) return;
+    p.style.display = 'none';
+    p.classList.remove('show-decision');
+    p.classList.remove('island-open');
+    document.getElementById('dashNotifTitle').textContent = '通知';
+    dashNotifPendingId = null;
+    dashNotifOpen = false;
+  }
+
+  function morphDashView(decision) {
+    var p = document.getElementById('dashNotifPopup');
+    var body = document.getElementById('dashNotifBody');
+    var h0 = body.getBoundingClientRect().height;
+    body.style.height = h0 + 'px';
+    document.getElementById('dashNotifTitle').textContent = decision ? '好友请求' : '通知';
+    p.classList.toggle('show-decision', !!decision);
+    void body.offsetHeight;
+    var target = document.getElementById(decision ? 'dashNotifDecisionView' : 'dashNotifListView');
+    body.style.height = target.offsetHeight + 'px';
+  }
+
+  function openDashDecision(id) {
+    var item = null;
+    for (var i = 0; i < dashNotifs.length; i++) {
+      if (dashNotifs[i].id === id) { item = dashNotifs[i]; break; }
+    }
+    if (!item) return;
+    dashNotifPendingId = id;
+    var name = item.actor.displayName || item.actor.id || '?';
+    document.getElementById('dashNotifDecisionAvatar').textContent = name.charAt(0).toUpperCase();
+    document.getElementById('dashNotifDecisionName').textContent = name;
+    document.getElementById('dashNotifDecisionId').textContent = item.actor.id || '';
+    document.getElementById('dashNotifDecisionError').textContent = '';
+    morphDashView(true);
+  }
+
+  function applyDashDecision(id, action) {
+    var item = null;
+    for (var i = 0; i < dashNotifs.length; i++) {
+      if (dashNotifs[i].id === id) { item = dashNotifs[i]; break; }
+    }
+    if (!item) return;
+    MN_API.post('/friend-requests/' + id + '/' + action).then(function (res) {
+      if (res && res.ok) {
+        dashNotifs = dashNotifs.filter(function (x) { return x.id !== id; });
+        updateDashBadge();
+        renderDashNotifPopup();
+        morphDashView(false);
+      } else {
+        document.getElementById('dashNotifDecisionError').textContent = '操作失败，请重试';
+      }
+    });
+  }
+  function acceptDashInvite(id) { applyDashDecision(id, 'accept'); }
+  function declineDashInvite(id) { applyDashDecision(id, 'decline'); }
+
+  function dashNotifJump(type, targetId) {
+    if (!targetId) return;
+    closeDashNotifPopup();
+    if (type === 'post_like' || type === 'post_favorite' || type === 'post_comment') {
+      window.location.href = 'pages/community-post.html?id=' + encodeURIComponent(targetId);
+    } else if (type === 'article_like' || type === 'article_favorite') {
+      window.location.href = 'pages/fluidcanvas-editor.html?article=' + encodeURIComponent(targetId);
+    } else if (type === 'follow') {
+      window.location.href = 'pages/community-profile.html?id=' + encodeURIComponent(targetId);
+    }
+  }
+
+  // 云模式判定：后端可达 + 登录且用户 id 为 USR- 前缀（照 messages 口径）
+  if (window.MN_API) {
+    MN_API.probe().then(function (up) {
+      if (!up || !dashUserId()) return;
+      dashCloudMode = true;
+      refreshDashNotifs();
+      setInterval(refreshDashNotifs, 15000);
+    });
+  }
+
+  // 外点 / Escape 关闭
+  document.addEventListener('click', function (e) {
+    var p = document.getElementById('dashNotifPopup');
+    var bell = document.getElementById('dashBellBtn');
+    if (p && p.style.display !== 'none' && !p.contains(e.target) && !bell.contains(e.target)) {
+      closeDashNotifPopup();
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeDashNotifPopup();
+  });
 </script>
 </body>
 </html>
