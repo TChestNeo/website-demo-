@@ -35,6 +35,8 @@ const PASSWORD_MIN = 8;            // W6 密码策略（路由层校验，策略
 const PASSWORD_MAX = 72;
 // v0.2.23.0 卡片背景预设白名单（迁移 018 users.card_bg；social.js 主页端点同名单校验，两处须同步）
 const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear'];
+// v0.2.53.0 卡片边缘主题（迁移 027 users.card_edge；FC 14 键；social.js 必须同步）
+const CARD_EDGE_KEYS = ['paper', 'treasure', 'tech1', 'tech2', 'tech3', 'tech4', 'tech5', 'tech6', 'paint1', 'paint2', 'paint3', 'paint4', 'paint5', 'paint6'];
 // v0.2.25.0 页面背景图片（020 列）：仅本站直传路径（/uploads/UPL-*）或 http(s) 外链——防 CSS 注入等杂值
 const PAGE_BG_IMAGE_RE = /^(\/uploads\/UPL-[A-Za-z0-9]+\.(jpg|jpeg|png|gif|webp)|https?:\/\/.)/i;
 
@@ -297,6 +299,13 @@ function register(router, deps) {
       push('page_bg_image = ?', pageBgImage);
       prev.pageBgImage = ctx.user.page_bg_image;
     }
+    // v0.2.53.0 卡片边缘主题（027 列；null = 恢复默认圆角卡，显式 null 合法；白名单 14 键）
+    if (body.cardEdge !== undefined) {
+      const cardEdge = body.cardEdge === null ? null : String(body.cardEdge);
+      if (cardEdge !== null && !CARD_EDGE_KEYS.includes(cardEdge)) throw new HttpError('VALIDATION', '卡片边缘样式无效');
+      push('card_edge = ?', cardEdge);
+      prev.cardEdge = ctx.user.card_edge;
+    }
     if (sets.length) {
       push('updated_at = ?', new Date().toISOString());
       ctx.db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?`).run(...vals, ctx.user.id);
@@ -312,7 +321,7 @@ function register(router, deps) {
         next: {
           displayName: next.display_name, avatarUrl: next.avatar_url, language: next.language,
           country: next.country, bio: next.bio, dob: next.dob, gender: next.gender, cardBg: next.card_bg,
-          cardPlate: next.card_plate, pageBgImage: next.page_bg_image
+          cardPlate: next.card_plate, pageBgImage: next.page_bg_image, cardEdge: next.card_edge
         }
       });
       sendJson(res, 200, { user: publicUser(next) });

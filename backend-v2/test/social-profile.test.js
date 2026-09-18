@@ -256,6 +256,32 @@ test('v0.2.25.0 页面背景图片：pageBgImage 落库 + 非法值 400 + null �
   } finally { await t.close(); }
 });
 
+test('v0.2.53.0 卡片边缘主题：PATCH /auth/me 落库 + 非法键 400 + null 恢复默认 + 主页公开渲染', async () => {
+  const t = await testApp();
+  try {
+    const alice = t.loginAs('alice@x.com');
+    const prof = (cookie) => t.request('GET', '/api/social/users/' + alice.user.id, undefined, cookie ? { cookie } : undefined).then((r) => r.json());
+    assert.strictEqual((await prof()).user.cardEdge, null, '默认 NULL');
+    const r1 = await t.request('PATCH', '/api/auth/me', { cardEdge: 'paper' }, { cookie: alice.cookie });
+    assert.strictEqual(r1.status, 200);
+    assert.strictEqual((await r1.json()).user.cardEdge || null, null, 'PATCH 响应经 publicUser 不含 cardEdge（主页端点权威）');
+    assert.strictEqual((await prof()).user.cardEdge, 'paper', '本人主页返回落库键');
+    const anon = await t.request('GET', '/api/social/users/' + alice.user.id);
+    assert.strictEqual((await anon.json()).user.cardEdge, 'paper', '他人（匿名）也看到边缘主题——公开');
+    const r2 = await t.request('PATCH', '/api/auth/me', { cardEdge: 'hack-edge' }, { cookie: alice.cookie });
+    assert.strictEqual(r2.status, 400, '白名单外键 400');
+    assert.strictEqual((await r2.json()).error.code, 'VALIDATION');
+    assert.strictEqual((await prof()).user.cardEdge, 'paper', '非法值不落库');
+    // FC 14 键代表款可落库：油漆族（无外板族）也合法
+    const r3 = await t.request('PATCH', '/api/auth/me', { cardEdge: 'paint5' }, { cookie: alice.cookie });
+    assert.strictEqual(r3.status, 200);
+    assert.strictEqual((await prof()).user.cardEdge, 'paint5');
+    const r4 = await t.request('PATCH', '/api/auth/me', { cardEdge: null }, { cookie: alice.cookie });
+    assert.strictEqual(r4.status, 200, '显式 null = 恢复默认圆角卡');
+    assert.strictEqual((await prof()).user.cardEdge, null);
+  } finally { await t.close(); }
+});
+
 test('tab=bogus → 400 VALIDATION；缺省 tab 同 posts', async () => {
   const t = await testApp();
   try {

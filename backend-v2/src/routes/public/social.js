@@ -22,6 +22,8 @@ const MAX_COMMENT_LEN = 2000; // comments.content ≤2000（写入层校验，�
 const MAX_MEDIA = 3;
 // v0.2.23.0 卡片背景预设白名单（迁移 018 users.card_bg；auth.js PATCH /auth/me 同名单校验，两处须同步）
 const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear'];
+// v0.2.53.0 卡片边缘主题（迁移 027 users.card_edge；FC 14 键；auth.js 必须同步）
+const CARD_EDGE_KEYS = ['paper', 'treasure', 'tech1', 'tech2', 'tech3', 'tech4', 'tech5', 'tech6', 'paint1', 'paint2', 'paint3', 'paint4', 'paint5', 'paint6'];
 // v0.2.25.0 页面背景图片（020 列）校验口径：仅本站直传路径或 http(s) 外链（与 auth.js 同）
 const PAGE_BG_IMAGE_RE = /^(\/uploads\/UPL-[A-Za-z0-9]+\.(jpg|jpeg|png|gif|webp)|https?:\/\/.)/i;
 
@@ -445,6 +447,8 @@ function register(router, ctx) {
         cardPlate: CARD_BG_KEYS.includes(row.card_plate) ? row.card_plate : null,
         // v0.2.25.0 页面背景图片（020 列；NULL=无背景，公开——他人主页也渲染你的整页背景图；口径与 PATCH 校验同）
         pageBgImage: (typeof row.page_bg_image === 'string' && PAGE_BG_IMAGE_RE.test(row.page_bg_image)) ? row.page_bg_image : null,
+        // v0.2.53.0 卡片边缘主题（027 列；NULL=默认圆角卡，公开——他人主页也渲染你的边缘剪影）
+        cardEdge: CARD_EDGE_KEYS.includes(row.card_edge) ? row.card_edge : null,
         isSelf,
         followedByMe,
         followerCount,

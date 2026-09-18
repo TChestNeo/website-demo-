@@ -119,8 +119,8 @@ const FRAME_REC = `(function () {
   // ═══ F 静态检查 ═══
   const trSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'transitions.js'), 'utf8');
   const sconfSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
-  ok('F0 版本双线 v0.2.52.0 / v10.28.36.0',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.52.0';") !== -1 &&
+  ok('F0 版本双线 v0.2.53.0 / v10.28.36.0',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.53.0';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.0';") !== -1 &&
     sconfSrc.indexOf('Messages 页专属轻量切页模式') !== -1);
   ok('F1 双模式入场串：原样渐隐+位移全串 + 轻量 transform-only 串都在',

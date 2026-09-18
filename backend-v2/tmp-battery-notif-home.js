@@ -119,11 +119,11 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
   const count = (s, n) => s.split(n).length - 1;
 
   console.log('═══ F0 双版本 + changelog ═══');
-  ok('F0-1 site-config 双版本 v0.2.52.0 / v10.28.36.0 + changelog 标记',
-    count(sconf, "window.MN_SITE_VERSION = 'v0.2.52.0';") === 1 &&
+  ok('F0-1 site-config 双版本 v0.2.53.0 / v10.28.36.0 + changelog 标记',
+    count(sconf, "window.MN_SITE_VERSION = 'v0.2.53.0';") === 1 &&
     count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.0';") === 1 &&
     sconf.indexOf('通知铃铛聚合') !== -1 && sconf.indexOf('文章查看模式点赞/收藏操作条') !== -1,
-    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.52.0';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.0';"));
+    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.53.0';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.0';"));
 
   console.log('═══ F1 index.html 铃铛/灵动岛 ═══');
   ok('F1-1 铃铛按钮+红点徽章（唯一性 + search-capsule position:relative + 徽章在铃铛后）',
@@ -212,10 +212,10 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
     'like=' + count(articlesSrc, 'likeCount') + ' fav=' + count(articlesSrc, 'favoritedByMe'));
 
   console.log('═══ F5 零迁移 ═══');
-  ok('F5-1 health.test.js 仍钉 59 表 / user_version 26（两处钉）',
+  ok('F5-1 health.test.js 仍钉 59 表 / user_version 27（两处钉）',
     count(healthTest, 'data.tables, 59') === 1 &&
-    count(healthTest, "user_version', { simple: true }), 26") === 2,
-    'tables=' + count(healthTest, 'data.tables, 59') + ' uv=' + count(healthTest, "user_version', { simple: true }), 26"));
+    count(healthTest, "user_version', { simple: true }), 27") === 2,
+    'tables=' + count(healthTest, 'data.tables, 59') + ' uv=' + count(healthTest, "user_version', { simple: true }), 27"));
   console.log('');
 
   await new Promise(r => server.listen(PORT, r));

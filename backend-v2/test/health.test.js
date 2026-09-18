@@ -3,7 +3,7 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const { testApp } = require('./helpers');
 
-test('GET /api/health 返回 db ok，且迁移 001-026 全部 59 张表就位', async () => {
+test('GET /api/health 返回 db ok，且迁移 001-027 全部 59 张表就位', async () => {
   const t = await testApp();
   try {
     const res = await t.request('GET', '/api/health');
@@ -12,7 +12,7 @@ test('GET /api/health 返回 db ok，且迁移 001-026 全部 59 张表就位', 
     assert.strictEqual(data.status, 'ok');
     assert.strictEqual(data.db, 'ok');
     assert.strictEqual(data.tables, 59);
-    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 26); // 001_users_auth … 026_citizen_id_to_usr
+    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 27); // 001_users_auth … 027_card_edge
   } finally {
     await t.close();
   }
@@ -36,7 +36,7 @@ test('重复打开同一数据库不重复执行迁移（user_version 幂等）'
   try {
     const { openDb } = require('../src/db');
     openDb(t.dir + '/test.sqlite'); // 同文件再开一次，不抛错即幂等
-    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 26);
+    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 27);
   } finally {
     await t.close();
   }

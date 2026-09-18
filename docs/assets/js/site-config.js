@@ -975,7 +975,19 @@ window.MN_SITE = window.MN_SITE || {};
 //   （照 messages 观感：缩放展开/好友请求 morph 决定视图同意不同意药丸/15s 轮询/外点 Escape 关闭）；FC 文章查看模式
 //   ?article= 右下 #fcViewActions 悬浮操作条（点赞/收藏带计数，乐观更新+回滚，访客 toast 引导登录）
 //   （rev 00254-w4f）
-window.MN_SITE_VERSION = 'v0.2.52.0';
+// v0.2.53.0 = 个人主页卡片边缘主题（FC 14 主题全量移植；小改动位 52→53·新功能轮；2026-09-19）——用户「能不能把FC里的
+//   所有边缘添加到Community 的个人页面内的最上方那一个部分？」（问询钦定：①选择权=本人选、访客可见 ②套用范围=整张
+//   header 卡——横幅+头像+名字+简介+统计整卡变边缘剪影 ③订阅门禁=订阅专属 UI-only，FC 同口径渲染器与后端都不查订阅）；
+//   community-profile.html：FC EDGE_STYLES 14 款全量逐字移植（paper 破旧的纸/treasure 藏宝图/tech1-6/paint1-6，SVG
+//   objectBoundingBox defs 块+剪层/覆盖层/环带 CSS 机制+卡级噪点滤镜 paint5+外板 16px 非油漆专属）；横幅改绝对定位
+//   全卡层（background-size 100% 140px 锁顶部带——直接对 140px 盒子 clip 会让 objectBoundingBox y 轴按 140px
+//   缩放，tech 底角斜切横穿横幅底边、paint 内缩后整体浮空）+ .profile-body 补 140px padding-top；油漆 cqi 内容内缩
+//   （cqi 恒≥剪影内缩保内容在剪影内）；编辑资料弹窗「自定义」tab 加「边缘」区（swatch 网格+迷你剪影预览，diff-only
+//   保存；非订阅=锁图标+「订阅后可用」+「订阅」徽标，点击 toast 不生效）；边缘优先于卡片背景板（halo 不挂）；
+//   后端：迁移 027 users.card_edge + auth.js/social.js CARD_EDGE_KEYS 双份白名单 + PATCH 校验 + 主页端点公开暴露；
+//   测试 309→311 全绿；FC v10.28.36.0 零改动；ethereal/inline-css/entrypoint 零改动
+//   （rev 00255-lz2）
+window.MN_SITE_VERSION = 'v0.2.53.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1294,5 +1306,5 @@ window.MN_SITE_VERSION = 'v0.2.52.0';
 //   浮动胶囊 #fcViewActions：点赞（红心+计数）/收藏（金星+计数），数据源=GET /api/articles/:id 新互动字段
 //   （likeCount/favoriteCount/likedByMe/favoritedByMe，与站点 v0.2.52.0 同轮）；点击镜像 community-hub
 //   乐观更新+失败回滚，访客 toast 引导登录；demo 种子/404 路径不建条；零草稿字段（v 保持 9）
-//   （rev 待部署后补）
+//   （rev 00254-w4f）
 window.FLUIDCANVAS_VERSION = 'v10.28.36.0';

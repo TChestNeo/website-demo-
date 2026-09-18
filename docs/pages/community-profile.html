@@ -2628,9 +2628,256 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
 @media (max-width: 900px) {
   .profile-page-wrap { padding-left: var(--space-sm); padding-right: var(--space-sm); }
 }
+/* ===== v0.2.53.0 卡片边缘主题（FC 14 主题移植：paper/treasure/tech1-6/paint1-6）===== */
+/* 机制照 FC L3681-4069：主题态卡身透明化 → ::before 剪层 → ::after 覆盖层 → 非油漆 16px
+   自动外板+环带 → 油漆卡级噪点滤镜 → 满幅子层（横幅）也带剪影。订阅门禁 UI-only（FC 同口径）。 */
+.profile-header.card-edge-paper, .profile-header.card-edge-treasure,
+.profile-header.card-edge-tech, .profile-header.card-edge-paint {
+  position: relative; background: transparent; border-color: transparent;
+  box-shadow: none; overflow: visible; padding: 0;
+  backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4);
+}
+/* ::before 剪层（FC L3764-3783）：非油漆挂 has-outer-bg 后被下方 0,3,1 外板规则接管 */
+.profile-header.card-edge-paper::before, .profile-header.card-edge-treasure::before,
+.profile-header.card-edge-tech::before, .profile-header.card-edge-paint::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-color: var(--card-tint-base, transparent); background-image: var(--card-layers, none);
+  clip-path: var(--card-clip, none); border: none; box-shadow: none; border-radius: 0;
+}
+/* ::after 覆盖层（FC L3784-3802）：background 必须 shorthand（tech 层带位置/尺寸语法） */
+.profile-header.card-edge-paper::after, .profile-header.card-edge-treasure::after,
+.profile-header.card-edge-tech::after, .profile-header.card-edge-paint::after {
+  content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: var(--card-overlay, none); clip-path: var(--card-clip, none);
+}
+/* 16px 外板（FC L3712+L3815-3842）：clip 对放大盒解析=剪影等比放大；extent 16+gap 16=32px；
+   margin 34px 0 让外板不压 back-link/标签卡（FC 画布上漂浮无邻居，个人页列布局需留白） */
+.profile-header.has-outer-bg { z-index: 2; margin: 34px 0; }
+.profile-header.card-edge-paper.has-outer-bg::before,
+.profile-header.card-edge-treasure.has-outer-bg::before,
+.profile-header.card-edge-tech.has-outer-bg::before {
+  inset: calc(-1 * (var(--outer-extent, 16px) + var(--outer-gap, 0px)));
+  background-color: transparent; background-image: none; border: none; border-radius: 0;
+  box-shadow: var(--outer-glow, none), 0 0 0 1px var(--outer-border-line, transparent);
+  clip-path: var(--card-clip, none);
+}
+/* 环带（FC L3869-3879）：z -2 垫底，同盒同剪影一次取样 */
+.profile-header .card-outer-band {
+  position: absolute; inset: calc(-1 * (var(--outer-extent, 16px) + var(--outer-gap, 0px)));
+  z-index: -2; pointer-events: none; border-radius: 0;
+  background-color: var(--outer-bg, transparent); background-image: var(--outer-tint, none);
+  clip-path: var(--card-clip, none);
+}
+/* 卡身剪影子层（FC L3900-3920）：与外板共存时承载剪影，半透明 */
+.profile-header .card-tint {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0.55;
+  background-color: var(--card-tint-base, transparent); background-image: var(--card-layers, none);
+  clip-path: var(--card-clip, none);
+}
+/* 油漆无外板路径（FC L3942-3951）：::before 即剪影填充 */
+.profile-header.card-edge-paint:not(.has-outer-bg)::before { opacity: 0.55; }
+/* 浮动投影（FC L4006-4029 常态款） */
+.profile-header.card-edge-paper, .profile-header.card-edge-treasure,
+.profile-header.card-edge-paint {
+  filter: drop-shadow(0 10px 22px rgba(0,0,0,0.38)) drop-shadow(0 2px 6px rgba(0,0,0,0.22));
+}
+.profile-header.card-edge-tech {
+  filter: drop-shadow(0 0 6px rgba(34,211,238,0.40)) drop-shadow(0 10px 22px rgba(0,0,0,0.35));
+}
+/* 油漆5 卡级噪点撕裂滤镜（FC L4030-4035：必须卡级链首，子层级会被自身 clip 裁干净） */
+.profile-header.card-edge-paint[data-card-edge="paint5"] {
+  filter: url(#mn-paint-filter-5) drop-shadow(0 10px 22px rgba(0,0,0,0.38)) drop-shadow(0 2px 6px rgba(0,0,0,0.22));
+}
+/* 横幅满幅子层（FC L3985-3990 同款机制，profile 特化）：
+   横幅只有顶部 140px 带——直接对 140px 盒子 clip 会让 objectBoundingBox y 轴按 140px
+   缩放（tech 底角斜切横穿横幅底边、paint 内缩后横幅整体缩小浮空）。改法：主题态横幅变
+   绝对定位全卡层（clip 1:1 映射正确），渐变用 background-size 100% 140px + no-repeat
+   锁在顶部带；.profile-body 补 140px padding-top 顶开布局 */
+.profile-header.card-edge-paper .profile-banner, .profile-header.card-edge-treasure .profile-banner,
+.profile-header.card-edge-tech .profile-banner, .profile-header.card-edge-paint .profile-banner {
+  position: absolute; inset: 0 0 auto 0; height: 100%; z-index: -1;
+  clip-path: var(--card-clip, none); pointer-events: none;
+  background-size: 100% 140px; background-repeat: no-repeat; background-position: 0 0;
+}
+.profile-header.card-edge-paper .profile-body, .profile-header.card-edge-treasure .profile-body,
+.profile-header.card-edge-tech .profile-body, .profile-header.card-edge-paint .profile-body {
+  padding-top: calc(140px + var(--space-md));
+}
+/* 油漆内容内缩（FC L3296-3306 同款）：container-type+cqi 随卡宽等比；不设上限——
+   cqi 恒 ≥ 剪影内缩百分比，保内容永在剪影内 */
+.profile-header.card-edge-paint { container-type: inline-size; }
+.profile-header.card-edge-paint .profile-body { padding: max(16px, var(--paint-pad, 10cqi)); padding-top: calc(140px + max(16px, var(--paint-pad, 10cqi))); }
+.profile-header[data-card-edge="paint1"] { --paint-pad: 6cqi; }
+.profile-header[data-card-edge="paint2"] { --paint-pad: 10cqi; }
+.profile-header[data-card-edge="paint3"] { --paint-pad: 12cqi; }
+.profile-header[data-card-edge="paint4"] { --paint-pad: 10cqi; }
+.profile-header[data-card-edge="paint5"] { --paint-pad: 12cqi; }
+.profile-header[data-card-edge="paint6"] { --paint-pad: 10cqi; }
+/* 主题前景色（edge.color 口径；页面明暗主题色在纸(浅)/科技(深)底上不可读，须随主题） */
+.profile-header.card-edge-paper { --edge-text: #4e342e; --edge-sub: rgba(78,52,46,0.78); --edge-line: rgba(78,52,46,0.32); }
+.profile-header.card-edge-treasure { --edge-text: #ffe0b2; --edge-sub: rgba(255,224,178,0.82); --edge-line: rgba(255,224,178,0.30); }
+.profile-header.card-edge-tech { --edge-text: #a5f3fc; --edge-sub: rgba(165,243,252,0.80); --edge-line: rgba(165,243,252,0.28); }
+.profile-header.card-edge-paint { --edge-text: #ffffff; --edge-sub: rgba(255,255,255,0.85); --edge-line: rgba(255,255,255,0.35); }
+.profile-header.card-edge-paper, .profile-header.card-edge-treasure,
+.profile-header.card-edge-tech, .profile-header.card-edge-paint { color: var(--edge-text); }
+.profile-header.card-edge-paper .profile-top, .profile-header.card-edge-treasure .profile-top,
+.profile-header.card-edge-tech .profile-top, .profile-header.card-edge-paint .profile-top { border-bottom-color: var(--edge-line); }
+.profile-header.card-edge-paper .profile-bio, .profile-header.card-edge-treasure .profile-bio,
+.profile-header.card-edge-tech .profile-bio, .profile-header.card-edge-paint .profile-bio,
+.profile-header.card-edge-paper .profile-joined, .profile-header.card-edge-treasure .profile-joined,
+.profile-header.card-edge-tech .profile-joined, .profile-header.card-edge-paint .profile-joined,
+.profile-header.card-edge-paper .profile-counts, .profile-header.card-edge-treasure .profile-counts,
+.profile-header.card-edge-tech .profile-counts, .profile-header.card-edge-paint .profile-counts { color: var(--edge-sub); }
+.profile-header.card-edge-paper .profile-counts b, .profile-header.card-edge-treasure .profile-counts b,
+.profile-header.card-edge-tech .profile-counts b, .profile-header.card-edge-paint .profile-counts b,
+.profile-header.card-edge-paper .profile-stat-num, .profile-header.card-edge-treasure .profile-stat-num,
+.profile-header.card-edge-tech .profile-stat-num, .profile-header.card-edge-paint .profile-stat-num { color: var(--edge-text); }
+.profile-header.card-edge-paper .profile-stat-label, .profile-header.card-edge-treasure .profile-stat-label,
+.profile-header.card-edge-tech .profile-stat-label, .profile-header.card-edge-paint .profile-stat-label { color: var(--edge-sub); }
+.profile-header.card-edge-paper .profile-stat, .profile-header.card-edge-treasure .profile-stat,
+.profile-header.card-edge-tech .profile-stat, .profile-header.card-edge-paint .profile-stat { background: rgba(255,255,255,0.12); }
+/* 编辑弹窗：边缘色块 + 迷你剪影预览（代表款：tech→hud-frame-4、paint→mn-paint-clip-1） */
+.edit-bg-swatch .swatch-fill.edge-fill-default { background: var(--color-surface-container-high); }
+.edit-bg-swatch .swatch-fill.edge-fill-paper { background: linear-gradient(135deg, rgba(255,248,225,0.9), rgba(233,214,174,0.9)); }
+.edit-bg-swatch .swatch-fill.edge-fill-treasure { background: linear-gradient(135deg, rgba(129,92,49,0.72), rgba(58,38,20,0.72)); }
+.edit-bg-swatch .swatch-fill.edge-fill-tech1, .edit-bg-swatch .swatch-fill.edge-fill-tech2,
+.edit-bg-swatch .swatch-fill.edge-fill-tech3, .edit-bg-swatch .swatch-fill.edge-fill-tech4,
+.edit-bg-swatch .swatch-fill.edge-fill-tech5, .edit-bg-swatch .swatch-fill.edge-fill-tech6 { background: linear-gradient(135deg, rgba(10,22,40,0.92), rgba(24,15,48,0.92)); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint1 { background: linear-gradient(135deg, #e63920, #b02a15); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint2 { background: linear-gradient(135deg, #1fa396, #14796f); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint3 { background: linear-gradient(135deg, #ca8a32, #9e6b25); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint4 { background: linear-gradient(135deg, #f59e0b, #c77c05); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint5 { background: linear-gradient(135deg, #dc2626, #a81b1b); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint6 { background: linear-gradient(135deg, #65a30d, #4c7a09); }
+.edit-bg-swatch.edge-locked { opacity: 0.55; cursor: not-allowed; }
+.edit-bg-preview .pv-card.pv-edge-paper { clip-path: url(#paper-edge-clip); background: linear-gradient(135deg, rgba(255,248,225,0.9), rgba(233,214,174,0.9)); }
+.edit-bg-preview .pv-card.pv-edge-treasure { clip-path: url(#map-wave-clip); background: linear-gradient(135deg, rgba(129,92,49,0.72), rgba(58,38,20,0.72)); }
+.edit-bg-preview .pv-card.pv-edge-tech { clip-path: url(#hud-frame-4); background: linear-gradient(135deg, rgba(10,22,40,0.92), rgba(24,15,48,0.92)); }
+.edit-bg-preview .pv-card.pv-edge-paint { clip-path: url(#mn-paint-clip-1); background: linear-gradient(135deg, #2277e6, #19b5f3); }
 </style>
 </head>
 <body class="pre-stagger">
+<!-- v0.2.53.0 — 边缘主题剪影（FC v10.5/v10.6/v10.7/v10.15 逐字移植）：objectBoundingBox
+     SVG 剪切路径。路径坐标全部按 0~1 百分比解释，任意尺寸/宽高比容器边缘自动适配、
+     不拉伸变形。由 EDGE_STYLES 的 clip 字段经 url(#…) → --card-clip 变量传给剪层
+     (::before/::after)、.card-tint 子层与满幅子层（.profile-banner）。16px 自动外板
+     复用同一剪影：clip 对更大的 ::before 板盒解析 = 剪影等比放大。width/height 为 0
+     零渲染占用；不能用 display:none（部分浏览器无法解析被隐藏 SVG 的引用）。 -->
+<svg width="0" height="0" style="position:absolute;pointer-events:none;" aria-hidden="true">
+  <defs>
+    <!-- 藏宝图（v10.5）：四边平滑波浪 -->
+    <clipPath id="map-wave-clip" clipPathUnits="objectBoundingBox">
+      <path d="
+        M 0.03,0.05
+        C 0.18,0.01 0.35,0.08 0.52,0.03
+        C 0.68,0.00 0.82,0.07 0.97,0.04
+        C 1.01,0.22 0.95,0.48 0.98,0.72
+        C 0.95,0.85 1.00,0.94 0.96,0.96
+        C 0.78,1.00 0.62,0.94 0.48,0.97
+        C 0.32,1.01 0.18,0.94 0.03,0.96
+        C -0.01,0.72 0.05,0.45 0.02,0.22
+        Z" />
+    </clipPath>
+    <!-- 破旧的纸（v10.6）：褶皱折角纸 —— 右上斜切折角 + 左下圆弧卷角
+         + 四边微不规则撕边 -->
+    <clipPath id="paper-edge-clip" clipPathUnits="objectBoundingBox">
+      <path d="
+        M 0.015,0.012
+        C 0.18,0.008 0.38,0.016 0.58,0.010
+        C 0.72,0.006 0.82,0.012 0.86,0.008
+        C 0.91,0.025 0.95,0.045 0.995,0.082
+        C 0.988,0.25 0.995,0.45 0.988,0.65
+        C 0.982,0.78 0.992,0.88 0.965,0.955
+        C 0.850,0.968 0.700,0.958 0.550,0.970
+        C 0.400,0.982 0.260,0.965 0.160,0.970
+        C 0.090,0.945 0.030,0.900 0.005,0.835
+        C 0.012,0.680 0.006,0.480 0.012,0.280
+        C 0.005,0.150 0.012,0.050 0.015,0.012
+        Z" />
+    </clipPath>
+    <!-- 科技1~6（v10.7）：6 款赛博 HUD 切角剪影。hud-frame-4 四角对称斜切
+         与 v10.2 原科技切角最接近（tech 别名指向 tech4）。 -->
+    <clipPath id="hud-frame-1" clipPathUnits="objectBoundingBox">
+      <polygon points="0.12 0, 0.95 0, 1 0.08, 1 0.72, 0.82 1, 0.15 1, 0 0.85, 0 0.18" />
+    </clipPath>
+    <clipPath id="hud-frame-2" clipPathUnits="objectBoundingBox">
+      <polygon points="0.20 0, 0.95 0, 1 0.08, 1 0.85, 0.92 1, 0.20 1, 0.14 0.92, 0 0.92, 0 0.25" />
+    </clipPath>
+    <clipPath id="hud-frame-3" clipPathUnits="objectBoundingBox">
+      <polygon points="0.22 0, 0.92 0, 1 0.12, 1 0.70, 0.78 1, 0.08 1, 0 0.88, 0 0.22" />
+    </clipPath>
+    <clipPath id="hud-frame-4" clipPathUnits="objectBoundingBox">
+      <polygon points="0.18 0, 0.82 0, 1 0.18, 1 0.82, 0.82 1, 0.18 1, 0 0.82, 0 0.18" />
+    </clipPath>
+    <clipPath id="hud-frame-5" clipPathUnits="objectBoundingBox">
+      <polygon points="0.08 0, 0.95 0, 1 0.08, 1 0.75, 0.78 1, 0.05 1, 0 0.92, 0 0.08" />
+    </clipPath>
+    <clipPath id="hud-frame-6" clipPathUnits="objectBoundingBox">
+      <polygon points="0.12 0, 0.38 0, 0.40 0.05, 0.60 0.05, 0.62 0, 0.88 0, 1 0.18, 1 0.82, 0.88 1, 0.62 1, 0.60 0.95, 0.40 0.95, 0.38 1, 0.12 1, 0 0.82, 0 0.18" />
+    </clipPath>
+    <!-- 油漆1~6（v10.15）：6 款笔刷/水彩/墨迹异形边缘。属背景边缘主题体系
+         （EDGE_STYLES paint1~6）——clip 经 --card-clip 只裁背景层剪影
+         （::before/.card-tint/满幅子层），内容完好，与纸/藏宝图/科技同族。
+         款式5 加 feTurbulence + feDisplacementMap 噪点撕裂滤镜（卡级
+         filter 链首把剪影边缘撕成墨雾）。 -->
+    <clipPath id="mn-paint-clip-1" clipPathUnits="objectBoundingBox">
+      <path d="
+        M 0.05 0.04 C 0.15 0.01, 0.35 0.08, 0.55 0.02 C 0.75 -0.01, 0.88 0.05, 0.95 0.02
+        C 0.98 0.08, 0.96 0.25, 0.98 0.45 C 1.01 0.65, 0.95 0.85, 0.96 0.95
+        C 0.85 0.98, 0.65 0.92, 0.45 0.97 C 0.25 1.01, 0.12 0.94, 0.04 0.96
+        C -0.01 0.80, 0.03 0.60, 0.01 0.40 C 0.02 0.20, -0.01 0.08, 0.05 0.04 Z
+        M 0.01 0.15 Q 0.02 0.12, 0.03 0.16 Z
+        M 0.97 0.01 Q 0.99 0.00, 0.98 0.03 Z
+        M 0.06 0.98 Q 0.08 1.00, 0.05 0.99 Z
+      " />
+    </clipPath>
+    <clipPath id="mn-paint-clip-2" clipPathUnits="objectBoundingBox">
+      <path d="
+        M 0.08 0.08
+        L 0.12 0.02 L 0.15 0.07 L 0.20 0.01 L 0.24 0.06 L 0.30 0.03 L 0.36 0.08 L 0.42 0.01 L 0.48 0.06 L 0.55 0.02 L 0.62 0.07 L 0.70 0.01 L 0.76 0.08 L 0.82 0.03 L 0.88 0.09 L 0.94 0.02 L 0.92 0.12
+        L 0.98 0.18 L 0.93 0.25 L 1.00 0.32 L 0.94 0.40 L 0.98 0.48 L 0.92 0.56 L 0.99 0.64 L 0.93 0.72 L 0.97 0.80 L 0.91 0.88 L 0.96 0.95
+        L 0.88 0.92 L 0.82 0.98 L 0.75 0.93 L 0.68 0.99 L 0.60 0.94 L 0.52 0.98 L 0.45 0.92 L 0.38 0.97 L 0.30 0.91 L 0.22 0.98 L 0.16 0.92 L 0.10 0.97 L 0.05 0.90
+        L 0.08 0.82 L 0.01 0.74 L 0.06 0.66 L 0.00 0.58 L 0.07 0.50 L 0.02 0.42 L 0.08 0.35 L 0.01 0.28 L 0.06 0.20 L 0.02 0.12 Z
+      " />
+    </clipPath>
+    <clipPath id="mn-paint-clip-3" clipPathUnits="objectBoundingBox">
+      <path d="
+        M 0.04 0.15
+        L 0.07 0.05 L 0.09 0.18 L 0.12 0.02 L 0.15 0.12 L 0.18 0.08 L 0.21 0.16 L 0.25 0.01 L 0.28 0.10 L 0.32 0.04 L 0.36 0.15 L 0.40 0.08 L 0.44 0.14 L 0.48 0.03 L 0.52 0.12 L 0.57 0.06 L 0.62 0.15 L 0.68 0.04 L 0.73 0.12 L 0.78 0.07 L 0.83 0.14 L 0.88 0.08 L 0.92 0.16 C 0.97 0.22, 0.95 0.40, 0.97 0.60
+        C 0.95 0.80, 0.98 0.92, 0.94 0.96 C 0.80 0.94, 0.60 0.98, 0.40 0.95 C 0.20 0.97, 0.08 0.93, 0.03 0.95 C 0.02 0.75, 0.05 0.50, 0.03 0.30 Z
+      " />
+    </clipPath>
+    <clipPath id="mn-paint-clip-4" clipPathUnits="objectBoundingBox">
+      <path d="
+        M 0.08 0.06 C 0.30 0.02, 0.60 0.09, 0.88 0.04
+        L 0.93 0.01 L 0.90 0.12 L 0.98 0.10 L 0.92 0.22 L 1.00 0.28 L 0.91 0.36 L 0.97 0.44 L 0.89 0.52 L 0.96 0.60 L 0.90 0.68 L 0.98 0.76 L 0.88 0.84 L 0.94 0.92
+        C 0.70 0.97, 0.40 0.92, 0.12 0.96
+        L 0.06 0.92 L 0.10 0.82 L 0.02 0.76 L 0.09 0.68 L 0.01 0.60 L 0.08 0.50 L 0.00 0.42 L 0.08 0.32 L 0.02 0.24 L 0.09 0.16 L 0.04 0.08 Z
+      " />
+    </clipPath>
+    <clipPath id="mn-paint-clip-5" clipPathUnits="objectBoundingBox">
+      <path d="
+        M 0.10 0.10 C 0.30 0.06, 0.70 0.06, 0.90 0.10
+        C 0.94 0.30, 0.94 0.70, 0.90 0.90
+        C 0.70 0.94, 0.30 0.94, 0.10 0.90
+        C 0.06 0.70, 0.06 0.30, 0.10 0.10 Z
+      " />
+    </clipPath>
+    <!-- 油漆5 动态噪点喷墨撕裂滤镜（demo 同款参数） -->
+    <filter id="mn-paint-filter-5" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.08" numOctaves="3" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+    <clipPath id="mn-paint-clip-6" clipPathUnits="objectBoundingBox">
+      <path d="
+        M 0.05 0.03 C 0.35 0.01, 0.65 0.04, 0.95 0.02
+        L 0.92 0.12 L 0.98 0.20 L 0.93 0.28 L 1.00 0.36 L 0.94 0.45 L 0.98 0.54 L 0.91 0.62 L 0.97 0.70 L 0.92 0.78 L 0.99 0.86 L 0.92 0.94
+        C 0.65 0.98, 0.35 0.95, 0.03 0.97
+        L 0.08 0.88 L 0.01 0.80 L 0.07 0.72 L 0.00 0.64 L 0.06 0.55 L 0.01 0.46 L 0.08 0.38 L 0.02 0.28 L 0.09 0.18 L 0.03 0.10 Z
+      " />
+    </clipPath>
+  </defs>
+</svg>
 
 <div class="app-layout">
   <aside class="app-sidebar" id="slati-sidebar"></aside>
@@ -2804,6 +3051,163 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
   var CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear'];
   var CARD_BG_DEFS = [['', '默认'], ['glass-frost', '磨砂'], ['glass-ocean', '深海'], ['glass-violet', '薰衣草'], ['glass-rose', '樱花'], ['glass-mint', '薄荷'], ['glass-sunset', '落日']];
   var CARD_PLATE_DEFS = [['', '默认'], ['glass-clear', '标准液态玻璃']];
+  // v0.2.53.0 卡片边缘主题白名单（与后端 social.js/auth.js CARD_EDGE_KEYS 同步；'' = 默认圆角卡）+ 中文名
+  var EDGE_KEYS = ['paper', 'treasure', 'tech1', 'tech2', 'tech3', 'tech4', 'tech5', 'tech6', 'paint1', 'paint2', 'paint3', 'paint4', 'paint5', 'paint6'];
+  var EDGE_DEFS = [['', '默认'], ['paper', '破旧的纸'], ['treasure', '藏宝图'], ['tech1', '科技1'], ['tech2', '科技2'], ['tech3', '科技3'], ['tech4', '科技4'], ['tech5', '科技5'], ['tech6', '科技6'], ['paint1', '油漆1'], ['paint2', '油漆2'], ['paint3', '油漆3'], ['paint4', '油漆4'], ['paint5', '油漆5'], ['paint6', '油漆6']];
+  // ── 以下 EDGE_STYLES 全族逐字移植 FC（fluidcanvas-editor.html L12296-12448，零差异直译）──
+  var TORN_CLIP_SOFT = 'polygon(0.9% 2.8%, 4.2% 1.1%, 9.8% 1.9%, 16.4% 0.7%, 23.8% 1.6%, 31.5% 0.9%, 39.4% 1.8%, 47.9% 0.6%, 56.2% 1.4%, 64.8% 0.8%, 73.1% 1.7%, 81.6% 0.7%, 90.3% 1.3%, 96.8% 0.9%, 99.4% 3.1%, 98.6% 10.4%, 99.3% 22.1%, 98.4% 34.8%, 99.2% 47.6%, 98.5% 60.3%, 99.4% 72.9%, 98.7% 84.4%, 99.1% 93.2%, 96.9% 97.4%, 88.7% 98.9%, 76.4% 99.2%, 63.1% 98.6%, 49.8% 99.3%, 36.6% 98.4%, 23.2% 99.1%, 9.6% 98.7%, 2.7% 97.9%)';
+  // SVG noise tiles: feTurbulence + feColorMatrix (alpha channel = brown-
+  // tinted noise), 140px intrinsic size auto-tiles via background-repeat;
+  // stitchTiles='stitch' kills seams. URI encoding: %3C/%3E angle
+  // brackets, %23 hash, single-quoted SVG attrs inside double-quoted
+  // CSS url("…").
+  var NOISE_PAPER = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'140\' height=\'140\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'2\' stitchTiles=\'stitch\'/%3E%3CfeColorMatrix type=\'matrix\' values=\'0 0 0 0 0.50 0 0 0 0 0.34 0 0 0 0 0.19 0 0 0 0.28 0\'/%3E%3C/filter%3E%3Crect width=\'140\' height=\'140\' filter=\'url(%23n)\'/%3E%3C/svg%3E")';
+  var NOISE_TREASURE = 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'140\' height=\'140\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'2\' stitchTiles=\'stitch\'/%3E%3CfeColorMatrix type=\'matrix\' values=\'0 0 0 0 0.24 0 0 0 0 0.13 0 0 0 0 0.07 0 0 0 0.38 0\'/%3E%3C/filter%3E%3Crect width=\'140\' height=\'140\' filter=\'url(%23n)\'/%3E%3C/svg%3E")';
+  // 科技 HUD 六款剪影。四角 L 包角不再写死 5% 切线：每款剪影的四角切点在
+  // HUD_CORNERS 描述（与 #hud-frame-N 多边形逐点对应；每角 [水平边切深,
+  // 垂直边切深]，从该角起算的百分比），hudOverlay() 按切点生成 8 条核心
+  // 亮条（2px #7ee7ff）+ 8 条柔光副本（6px alpha 0.30，外移 2px——超出
+  // 剪影的部分被 ::after 的 clip 裁掉，留下贴边的内辉）+ 4px 扫描线。
+  // techFrame(n) 组装完整配方；tech 别名指向 tech4（四角对称斜切与原科技
+  // 切角最接近）。
+  var TECH_CLIP_SOFT = 'polygon(3% 0, 97% 0, 100% 3%, 100% 97%, 97% 100%, 3% 100%, 0 97%, 0 3%)';
+  var TECH_CARD_LAYERS = [
+    'linear-gradient(135deg, rgba(10,22,40,0.92), rgba(24,15,48,0.92))',
+    'repeating-linear-gradient(0deg, rgba(34,211,238,0.06) 0 1px, transparent 1px 22px)',
+    'repeating-linear-gradient(90deg, rgba(34,211,238,0.06) 0 1px, transparent 1px 22px)',
+    'radial-gradient(ellipse 120% 90% at 18% 0%, rgba(34,211,238,0.12), transparent 60%)',
+    'radial-gradient(ellipse 120% 90% at 82% 100%, rgba(139,92,246,0.14), transparent 60%)'
+  ];
+  var TECH_LABEL_LAYERS = ['linear-gradient(135deg, rgba(10,22,40,0.90), rgba(24,15,48,0.90))'];
+  var TECH_TINT = 'linear-gradient(135deg, rgba(34,211,238,0.16), rgba(139,92,246,0.18))';
+  var TECH_BORDER = '1px solid #22d3ee';
+  var TECH_RADIUS = '4px';
+  var TECH_GLOW = '0 0 10px rgba(34,211,238,0.45)';
+  var TECH_COLOR = '#a5f3fc';
+  var HUD_CORNERS = {
+    // 每角 [水平边切深, 垂直边切深]：左上 [顶边从左, 左边从顶]、
+    // 右上 [顶边从右, 右边从顶]、右下 [底边从右, 右边从底]、
+    // 左下 [底边从左, 左边从底]。逐点对应上方 SVG 多边形。
+    'hud-frame-1': { tl: [12, 18], tr: [5, 8], br: [18, 28], bl: [15, 15] },  // 左上缺角 + 右下大斜切
+    'hud-frame-2': { tl: [20, 25], tr: [5, 8], br: [8, 15], bl: [20, 8] },    // 左上大斜切 + 左下阶梯缺角
+    'hud-frame-3': { tl: [22, 22], tr: [8, 12], br: [22, 30], bl: [8, 12] },  // 左右双向平行大斜切
+    'hud-frame-4': { tl: [18, 18], tr: [18, 18], br: [18, 18], bl: [18, 18] },// 四角对称斜切
+    'hud-frame-5': { tl: [8, 8], tr: [5, 8], br: [22, 25], bl: [5, 8] },      // 经典矩形 + 右下单边大切角
+    'hud-frame-6': { tl: [12, 18], tr: [12, 18], br: [12, 18], bl: [12, 18] } // 八边形战术卡槽切角 + 上下中缝缺口
+  };
+  // 每角 4 层：竖条骑水平边（2px×20px）、横条骑垂直边（20px×2px）、
+  // 各自 6px 柔光副本外移 2px。位置语法 linear-gradient(色,色) x y /
+  // 宽 高 no-repeat（纯色渐变画实心小条）。calc(100% - n%) = 从右/下
+  // 起算的切深；辉光坐标额外 ±2px 朝轮廓外推。
+  function hudOverlay(c) {
+    var L = [];
+    function corner(v, h, gv, gh) {
+      L.push('linear-gradient(#7ee7ff, #7ee7ff) ' + v + ' / 2px 20px no-repeat');
+      L.push('linear-gradient(#7ee7ff, #7ee7ff) ' + h + ' / 20px 2px no-repeat');
+      L.push('linear-gradient(rgba(34,211,238,0.30), rgba(34,211,238,0.30)) ' + gv + ' / 6px 24px no-repeat');
+      L.push('linear-gradient(rgba(34,211,238,0.30), rgba(34,211,238,0.30)) ' + gh + ' / 24px 6px no-repeat');
+    }
+    var tl = c.tl, tr = c.tr, br = c.br, bl = c.bl;
+    corner(tl[0] + '% 0', '0 ' + tl[1] + '%',
+      'calc(' + tl[0] + '% - 2px) -2px', '-2px calc(' + tl[1] + '% - 2px)');
+    corner('calc(100% - ' + tr[0] + '%) 0', '100% ' + tr[1] + '%',
+      'calc(100% - ' + tr[0] + '% + 2px) -2px', 'calc(100% + 2px) calc(' + tr[1] + '% - 2px)');
+    corner('calc(100% - ' + br[0] + '%) 100%', '100% calc(100% - ' + br[1] + '%)',
+      'calc(100% - ' + br[0] + '% + 2px) calc(100% + 2px)', 'calc(100% + 2px) calc(100% - ' + br[1] + '% + 2px)');
+    corner(bl[0] + '% 100%', '0 calc(100% - ' + bl[1] + '%)',
+      'calc(' + bl[0] + '% - 2px) calc(100% + 2px)', '-2px calc(100% - ' + bl[1] + '% + 2px)');
+    L.push('repeating-linear-gradient(0deg, rgba(163,243,252,0.045) 0 1px, transparent 1px 4px)');
+    return L;
+  }
+  function techFrame(n) {
+    return {
+      clip: 'url(#hud-frame-' + n + ')',
+      clipSoft: TECH_CLIP_SOFT, // 标签六款共用浅切角（小尺寸下大斜切会吞字）
+      cardLayers: TECH_CARD_LAYERS,
+      cardOverlay: hudOverlay(HUD_CORNERS['hud-frame-' + n]),
+      labelLayers: TECH_LABEL_LAYERS,
+      tint: TECH_TINT, border: TECH_BORDER, radius: TECH_RADIUS,
+      glow: TECH_GLOW, color: TECH_COLOR
+    };
+  }
+  // 油漆1~6 笔刷/墨迹/水彩背景边缘（用户提供方案）：clip 走 --card-clip
+  // 只裁背景层剪影，内容完好。色块 = 不透明双停渐变（底色 + 深一档），
+  // 无叠加层无噪点；油漆5 卡级位移滤镜（CSS 阶梯链首，把剪影边缘撕成
+  // 墨雾）。油漆无外板（setCardEdge 对 paint* 跳过自动外板，避免色板环带）。
+  var PAINT_GRADS = {
+    1: 'linear-gradient(135deg, #e63920, #b02a15)',
+    2: 'linear-gradient(135deg, #1fa396, #14796f)',
+    3: 'linear-gradient(135deg, #ca8a32, #9e6b25)',
+    4: 'linear-gradient(135deg, #f59e0b, #c77c05)',
+    5: 'linear-gradient(135deg, #dc2626, #a81b1b)',
+    6: 'linear-gradient(135deg, #65a30d, #4c7a09)'
+  };
+  function paintFrame(n) {
+    return {
+      clip: 'url(#mn-paint-clip-' + n + ')',
+      clipSoft: TORN_CLIP_SOFT,
+      cardLayers: [PAINT_GRADS[n]],
+      cardOverlay: [], // 无叠加层（join 得空串 → ::after 不画）
+      labelLayers: [PAINT_GRADS[n]],
+      tint: PAINT_GRADS[n],
+      border: '1px solid rgba(255, 255, 255, 0.40)',
+      radius: '4px',
+      glow: '0 1px 3px rgba(0, 0, 0, 0.35)',
+      color: '#ffffff'
+    };
+  }
+  var EDGE_STYLES = {
+    paper: {
+      clip: 'url(#paper-edge-clip)', clipSoft: TORN_CLIP_SOFT, // 褶皱折角纸（右上斜切折角+左下圆弧卷角+四边微撕边）
+      cardLayers: [
+        'linear-gradient(135deg, rgba(255,248,225,0.90), rgba(233,214,174,0.90))',
+        'radial-gradient(circle at 16% 24%, rgba(146,104,60,0.16) 0 7%, transparent 7.5%)',
+        'radial-gradient(circle at 82% 18%, rgba(146,104,60,0.12) 0 5%, transparent 5.5%)',
+        'radial-gradient(circle at 68% 78%, rgba(146,104,60,0.20) 0 9%, transparent 9.5%)',
+        'radial-gradient(circle at 24% 70%, rgba(146,104,60,0.10) 0 6%, transparent 6.5%)',
+        NOISE_PAPER
+      ],
+      cardOverlay: [
+        'radial-gradient(ellipse 92% 92% at 50% 50%, transparent 60%, rgba(62,39,21,0.10) 82%, rgba(44,27,13,0.28) 93%, rgba(28,16,7,0.52) 99%)',
+        'radial-gradient(ellipse 130% 110% at 50% 38%, transparent 64%, rgba(38,22,10,0.18) 100%)'
+      ],
+      labelLayers: ['linear-gradient(135deg, rgba(255,248,225,0.94), rgba(232,213,173,0.94))'],
+      tint: 'linear-gradient(135deg, rgba(255,248,225,0.88), rgba(232,213,173,0.88))',
+      border: '1px dashed #8d6e63', radius: '5px 2px 6px 3px / 3px 6px 2px 5px',
+      glow: '0 0 0 1px rgba(141,110,99,0.35)', color: '#4e342e'
+    },
+    treasure: {
+      clip: 'url(#map-wave-clip)', clipSoft: TORN_CLIP_SOFT, // 波浪地图边缘（SVG objectBoundingBox 自适应）
+      cardLayers: [
+        'linear-gradient(135deg, rgba(129,92,49,0.72), rgba(58,38,20,0.72))',
+        'radial-gradient(circle at 20% 30%, rgba(46,28,13,0.35) 0 9%, transparent 9.5%)',
+        'radial-gradient(circle at 76% 22%, rgba(46,28,13,0.28) 0 6%, transparent 6.5%)',
+        'radial-gradient(circle at 64% 76%, rgba(46,28,13,0.40) 0 11%, transparent 11.5%)',
+        'radial-gradient(circle at 26% 66%, rgba(46,28,13,0.25) 0 7%, transparent 7.5%)',
+        NOISE_TREASURE
+      ],
+      cardOverlay: [
+        'radial-gradient(ellipse 92% 92% at 50% 50%, transparent 52%, rgba(34,20,9,0.16) 76%, rgba(24,13,5,0.38) 90%, rgba(15,8,3,0.66) 99%)',
+        'radial-gradient(ellipse 130% 110% at 50% 38%, transparent 58%, rgba(20,11,4,0.28) 100%)'
+      ],
+      labelLayers: ['linear-gradient(135deg, rgba(129,92,49,0.88), rgba(58,38,20,0.88))'],
+      tint: 'linear-gradient(135deg, rgba(121,85,40,0.55), rgba(62,39,21,0.55))',
+      border: '1px solid #5d4037', radius: '3px',
+      glow: 'inset 0 0 8px rgba(30,18,8,0.7)', color: '#ffe0b2'
+    },
+    tech1: techFrame(1), tech2: techFrame(2), tech3: techFrame(3),
+    tech4: techFrame(4), tech5: techFrame(5), tech6: techFrame(6),
+    // tech 别名 = tech4（FC 同口径；不落库，仅渲染器兜底）
+    tech: techFrame(4),
+    paint1: paintFrame(1), paint2: paintFrame(2), paint3: paintFrame(3),
+    paint4: paintFrame(4), paint5: paintFrame(5), paint6: paintFrame(6)
+  };
+  // 外板（环带）直接用 tint → 半透明漏出页面底。剥掉每个 rgba 的 alpha
+  // 分量 → 板完全不透明；卡身 layers 不动（主题设计保留）。FC L12881-12884 同款。
+  function stripTintAlpha(tint) {
+    if (!tint || typeof tint !== 'string') return tint;
+    return tint.replace(/rgba\(\s*([^,)]+),\s*([^,)]+),\s*([^,)]+),\s*[^)]+\)/g, 'rgb($1, $2, $3)');
+  }
   var TAB_EMPTY = { posts: '还没有发过帖子', reposts: '还没有转发过', likes: '还没有点赞的内容', favorites: '还没有收藏的帖子' };
 
   function parseProfileId() {
@@ -2816,6 +3220,18 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
   function isGuest() {
     var u = SlatiDB.getUser();
     return !u || String(u.id).indexOf('USR-') !== 0;
+  }
+
+  // v0.2.53.0 订阅门禁（FC L12516-12529 同口径；tier 经 publicUser→cloudMerge 落 localStorage）：
+  //   UI-only 防线——渲染器与后端都不查订阅（FC 亦然），非订阅用户仅在选择侧被挡。
+  //   判定按 slati_user.tier：free/无 tier = 受限，basic/premium/ultra = 订阅用户。
+  var SUBSCRIPTION_TEST_MODE = false;
+  function isSubscriberUser() {
+    if (SUBSCRIPTION_TEST_MODE) return true;
+    try {
+      var u = SlatiDB.getUser();
+      return !!(u && u.tier && u.tier !== 'free');
+    } catch (e) { return false; }
   }
 
   function render404(msg) {
@@ -3060,6 +3476,34 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
     }
   }
 
+  // v0.2.53.0 边缘主题套用（FC applyCardBg + applyOuterBg 的 profile 合并精简版）：
+  //   卡级 CSS 变量驱动剪层/覆盖层/环带；非油漆自动 16px 外板+16px 间隙（FC v10.8 口径）；
+  //   油漆无外板（FC setCardEdge 对 paint* 跳过，避免色板环带）。
+  function applyCardEdge(card, key) {
+    var edge = EDGE_STYLES[key];
+    if (!edge) return;
+    card.style.background = '';
+    card.style.backgroundImage = '';
+    card.style.setProperty('--card-clip', edge.clip);
+    card.style.setProperty('--card-layers', edge.cardLayers.join(', '));
+    card.style.setProperty('--card-overlay', edge.cardOverlay.join(', '));
+    card.style.setProperty('--card-tint-base', edge.tint);
+    var isPaint = key.indexOf('paint') === 0;
+    if (!isPaint) {
+      card.style.setProperty('--outer-extent', '16px');
+      card.style.setProperty('--outer-gap', '16px');
+      card.style.setProperty('--outer-tint', stripTintAlpha(edge.tint));
+      card.style.setProperty('--outer-glow', edge.glow);
+      // border 取色与 FC 一次性 <i> 取色同结果（1px solid #… / 1px dashed #… 末段即颜色）
+      card.style.setProperty('--outer-border-line', String(edge.border).split(' ').pop());
+      card.style.setProperty('--outer-bg', 'transparent');
+    } else {
+      ['--outer-extent', '--outer-gap', '--outer-tint', '--outer-glow', '--outer-border-line', '--outer-bg'].forEach(function (p) {
+        card.style.removeProperty(p);
+      });
+    }
+  }
+
   function renderHeader(u) {
     var genderTxt = GENDER_ZH[u.gender] || null;
     applyPageBg(u);
@@ -3068,11 +3512,19 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
     //   自己的 --lg-bg 与横幅互不干扰），卡身纯透明透出背景层 + 四周阔 6px（margin:-6px+padding:6px）
     var cardBg = CARD_BG_KEYS.indexOf(u.cardBg) !== -1 ? u.cardBg : null;
     var cardPlate = CARD_BG_KEYS.indexOf(u.cardPlate) !== -1 ? u.cardPlate : null;
+    // v0.2.53.0 卡片边缘主题（027 列）：整卡边缘剪影优先于卡片背景板（halo 6px 环会被外板盖住且叠层风险；
+    //   cardPlate 不落库改动，切回默认即恢复）。edgeCls 折叠族类：tech*→tech、paint*→paint、其余原样
+    var cardEdge = EDGE_KEYS.indexOf(u.cardEdge) !== -1 ? u.cardEdge : null;
+    var edgeCls = cardEdge ? (cardEdge.indexOf('tech') === 0 ? 'tech' : (cardEdge.indexOf('paint') === 0 ? 'paint' : cardEdge)) : '';
+    var edgeIsPaint = edgeCls === 'paint';
     var headerWrap = document.getElementById('profileHeader');
-    headerWrap.className = cardPlate ? 'card-halo ' + cardPlate : '';
+    headerWrap.className = (cardPlate && !cardEdge) ? 'card-halo ' + cardPlate : '';
     headerWrap.innerHTML =
       '<div class="lg-orb-field" aria-hidden="true"></div>' + // v0.2.24.4 玻璃光场（无色白光球垫在引擎层下 z:-2；默认 display:none，只标准液态玻璃亮）
-      '<div class="card profile-header' + (cardBg ? ' liquid-glass glass-bg ' + cardBg : '') + '"' + (cardBg ? ' data-card-bg="' + cardBg + '"' : '') + '>' +
+      // 主题态：保留 glass-bg 横幅预设（纯 CSS var(--lg-bg) 生效）去掉 liquid-glass（玻璃引擎与边缘剪影冲突）
+      '<div class="card profile-header' + (cardBg ? ' glass-bg ' + cardBg : '') + (cardEdge ? ' card-edge-' + edgeCls + (edgeIsPaint ? '' : ' has-outer-bg') : (cardBg ? ' liquid-glass' : '')) + '"' + (cardBg ? ' data-card-bg="' + cardBg + '"' : '') + (cardEdge ? ' data-card-edge="' + cardEdge + '"' : '') + '>' +
+        // 外板环带 + 卡身剪影子层（innerHTML 重建即重生，免 FC 的 JS 增删；油漆无外板不渲染）
+        (cardEdge && !edgeIsPaint ? '<div class="card-outer-band"></div><div class="card-tint"></div>' : '') +
         '<div class="profile-banner"></div>' +
         '<div class="profile-body">' +
         '<div class="profile-top">' +
@@ -3108,11 +3560,14 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
       toggleFollow();
     });
     // v0.2.23.0 玻璃预设 → 挂全站液体玻璃引擎（静态玻璃：折射+磨砂+高光；幂等 _lgStatic 守卫）
-    if (cardBg && window.LG) window.LG.apply(document.querySelector('#profileHeader .profile-header'));
+    // v0.2.53.0 主题态边缘剪影优先：卡不挂玻璃引擎（显式双保险），改挂边缘 CSS 变量
+    var card = document.querySelector('#profileHeader .profile-header');
+    if (cardEdge) applyCardEdge(card, cardEdge);
+    else if (cardBg && window.LG) window.LG.apply(card);
     // v0.2.24.3 标准液态玻璃=真引擎挂包层（先 remove 清上轮守卫标记再 apply——包层 #profileHeader 跨重渲染常驻，
     //   innerHTML 换卡已抹掉注入层但 _lgStatic 还在，直接 apply 会空转；默认无板时 remove 兜底清干净）
     if (window.LG) window.LG.remove(headerWrap);
-    if (cardPlate && window.LG) window.LG.apply(headerWrap);
+    if (cardPlate && !cardEdge && window.LG) window.LG.apply(headerWrap);
   }
 
   function toggleFollow() {
@@ -3159,6 +3614,9 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
     var editCardPlate = u.cardPlate || null;
     // v0.2.25.0 页面背景图片（020 列；null = 无整页背景；自定义 = 上传路径或外链，公开渲染于整页 body）
     var editPageBgImage = u.pageBgImage || null;
+    // v0.2.53.0 卡片边缘主题（027 列；null = 默认圆角卡；订阅门禁 UI-only——非订阅锁定不生效）
+    var editCardEdge = EDGE_KEYS.indexOf(u.cardEdge) !== -1 ? u.cardEdge : null;
+    var sub = isSubscriberUser();
     var backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
     var cont = document.createElement('div');
@@ -3221,6 +3679,21 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
                 '<span class="swatch-label">' + b[1] + '</span></button>';
             }).join('') +
           '</div>' +
+        '</div>' +
+        // v0.2.53.0 边缘主题组：与横幅/卡片背景同一套 swatch 网格；迷你剪影预览（代表款剪影 tech→hud-frame-4/paint→mn-paint-clip-1）；
+        //   订阅门禁（FC buildEdgeButtons 同口径）：非订阅 → 锁图标 + title「订阅后可用」+「订阅」徽标，点击 toast 不生效
+        '<div class="form-group">' +
+          '<label class="form-label">边缘</label>' +
+          '<div class="edit-bg-preview"><div class="pv-card' + (editCardEdge ? ' pv-edge-' + (editCardEdge.indexOf('tech') === 0 ? 'tech' : (editCardEdge.indexOf('paint') === 0 ? 'paint' : editCardEdge)) : '') + '" id="editEdgePreview"></div></div>' +
+          '<div class="edit-bg-grid" id="editEdgeGrid">' +
+            EDGE_DEFS.map(function (b) {
+              var locked = b[0] !== '' && !sub;
+              return '<button type="button" class="edit-bg-swatch' + ((editCardEdge || '') === b[0] ? ' active' : '') + (locked ? ' edge-locked' : '') + '" data-edge="' + b[0] + '" title="' + (locked ? '订阅后可用' : b[1]) + '">' +
+                '<span class="swatch-fill' + (b[0] ? ' edge-fill-' + b[0] : ' bg-default') + '">' + (locked ? '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline);display:block;line-height:36px;text-align:center">lock</span>' : '') + '</span>' +
+                '<span class="swatch-label">' + b[1] + (locked ? '<span class="label-sm" style="margin-left:4px;color:var(--color-outline)">订阅</span>' : '') + '</span></button>';
+            }).join('') +
+          '</div>' +
+          '<a href="premium.html" id="cardEdgeUpgradeLink" style="display:' + (sub ? 'none' : 'inline-block') + ';font-size:var(--fs-label-sm);color:var(--color-primary);text-decoration:none;margin-top:8px">订阅后解锁背景边缘 →</a>' +
         '</div>' +
         // v0.2.25.0 页面背景（用户「在自定义那边再加上一个背景图片 这个就是整个页面的背景的图片」）：
         //   默认 = 无整页背景；自定义图片 = 上传（复用头像同款直传）或 http(s) 网址；预览 = 迷你整页（迷你卡浮在背景图上）
@@ -3295,6 +3768,18 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
         card.querySelectorAll('#editPlateGrid [data-plate]').forEach(function (x) { x.classList.toggle('active', x === b); });
         var pv = card.querySelector('#editPlatePreview');
         pv.className = 'edit-bg-preview' + (editCardPlate ? ' has-plate ' + editCardPlate : '');
+      });
+    });
+
+    // v0.2.53.0 边缘主题选择（data-edge 空串 = 默认圆角卡）；订阅门禁 UI-only：非订阅点击 toast 不生效
+    card.querySelectorAll('#editEdgeGrid [data-edge]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var val = b.getAttribute('data-edge') || null;
+        if (val && !sub) { toastMsg('背景边缘为订阅用户专属功能', true); return; }
+        editCardEdge = val;
+        card.querySelectorAll('#editEdgeGrid [data-edge]').forEach(function (x) { x.classList.toggle('active', x === b); });
+        var pv = card.querySelector('#editEdgePreview');
+        pv.className = 'pv-card' + (editCardEdge ? ' pv-edge-' + (editCardEdge.indexOf('tech') === 0 ? 'tech' : (editCardEdge.indexOf('paint') === 0 ? 'paint' : editCardEdge)) : '');
       });
     });
 
@@ -3420,6 +3905,8 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
       if (editCardPlate !== (u.cardPlate || null)) body.cardPlate = editCardPlate;
       // v0.2.25.0 页面背景图片（null = 恢复默认无背景，显式入 body）
       if (editPageBgImage !== (u.pageBgImage || null)) body.pageBgImage = editPageBgImage;
+      // v0.2.53.0 卡片边缘主题（null = 恢复默认圆角卡，显式入 body；diff-only——无改动不触碰 E6 精确 body 断言）
+      if (editCardEdge !== (EDGE_KEYS.indexOf(u.cardEdge) !== -1 ? u.cardEdge : null)) body.cardEdge = editCardEdge;
       if (!Object.keys(body).length) { close(); return; } // 没改动直接关
       var stateEl = card.querySelector('#editSaveState');
       var saveBtn = card.querySelector('#editSaveBtn');

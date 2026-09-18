@@ -48,8 +48,9 @@ class CDP {
         const { res, rej, method } = this.pending.get(m.id); this.pending.delete(m.id);
         m.error ? rej(new Error(method + ' 失败: ' + m.error.message)) : res(m.result);
       } else if (m.method === 'Runtime.exceptionThrown') {
-        const d = m.exceptionDetails || {};
-        this.errs.push(JSON.stringify({ text: d.text, desc: d.exception && d.exception.description, url: d.url, line: d.lineNumber }).slice(0, 300));
+        // 正确层级：异常详情挂在 m.params.exceptionDetails（v0.2.53.0 修正——旧写 m.exceptionDetails 恒 {} 丢失描述）
+        const d = (m.params && m.params.exceptionDetails) || {};
+        this.errs.push(JSON.stringify({ text: d.text, desc: d.exception && d.exception.description, url: d.url, line: d.lineNumber, raw: JSON.stringify(d).slice(0, 600) }).slice(0, 1000));
       } else if (m.method === 'Runtime.consoleAPICalled' && m.params && m.params.type === 'error') {
         // 静态壳 /api 404 会以 Failed to load resource 进 console——豁免；其余 console error 记作真错误
         const a = m.params.args || [];
@@ -108,19 +109,25 @@ const FIXTURE_LIST = { articles: [
   { id: 'ART-CLOUD-1', title: 'Cloud Constitution', status: 'published', authorId: 'USR-000042', createdAt: '2026-09-14T10:00:00.000Z', updatedAt: '2026-09-14T10:00:00.000Z' },
   { id: 'ART-PENDING-1', title: 'Draft Act', status: 'pending', authorId: 'USR-000042', createdAt: '2026-09-13T08:30:00.000Z', updatedAt: '2026-09-13T08:30:00.000Z' }
 ] };
+// v0.2.53.0 时序修正：stub 响应改为 setTimeout(0) 宏任务解析（生产对齐）。
+// 旧写 Promise.resolve 即时解析 → microtask 在页面两个 <script> 块之间排空，
+// 而 renderArticleActions/fcvaToggle（v10.28.36.0）定义在第二个块——回调先跑即幽灵
+// ReferenceError（探针实证 fluidcanvas-editor.html:14494）。真实网络 fetch 必跨 task
+// 边界（整页解析完后才 resolve），setTimeout(0) 忠实复刻生产时序。
 const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window.__slatiFetchStub = true;' +
   ' var realFetch = window.fetch.bind(window);' +
+  ' var stubResponse = function (body, status) { return new Promise(function (resolve) { setTimeout(function () { resolve(new Response(body, { status: status, headers: { "Content-Type": "application/json" } })); }, 0); }); };' +
   ' window.fetch = function (url, opts) {' +
   '  var u = String(url);' +
   '  if (u.indexOf("/articles") !== -1) {' +
   '   if (u.indexOf("/articles/") !== -1) {' +
   '    var id = decodeURIComponent(u.split("/articles/")[1].split("?")[0].split("#")[0]);' +
   '    if (id === "ART-CLOUD-1") {' +
-  '     return Promise.resolve(new Response(JSON.stringify({ article: { id: id, title: "Cloud Constitution", status: "published", createdAt: "2026-09-14T10:00:00.000Z", updatedAt: "2026-09-14T10:00:00.000Z", contentJson: ' + JSON.stringify(FIXTURE_CONTENT) + ' } }), { status: 200, headers: { "Content-Type": "application/json" } }));' +
+  '     return stubResponse(JSON.stringify({ article: { id: id, title: "Cloud Constitution", status: "published", createdAt: "2026-09-14T10:00:00.000Z", updatedAt: "2026-09-14T10:00:00.000Z", contentJson: ' + JSON.stringify(FIXTURE_CONTENT) + ' } }), 200);' +
   '    }' +
-  '    return Promise.resolve(new Response(JSON.stringify({ error: "NOT_FOUND" }), { status: 404, headers: { "Content-Type": "application/json" } }));' +
+  '    return stubResponse(JSON.stringify({ error: "NOT_FOUND" }), 404);' +
   '   }' +
-  '   return Promise.resolve(new Response(JSON.stringify(' + JSON.stringify(FIXTURE_LIST) + '), { status: 200, headers: { "Content-Type": "application/json" } }));' +
+  '   return stubResponse(JSON.stringify(' + JSON.stringify(FIXTURE_LIST) + '), 200);' +
   '  }' +
   '  return realFetch(url, opts);' +
   ' };' +
@@ -131,8 +138,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const main = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas.html'), 'utf8');
   const sconf = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   const editor = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
-  ok('F0-1 版本双线 v0.2.52.0 / v10.28.36.0 + 文章查看器注释块 + 直接发布注释块',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.52.0';") !== -1 &&
+  ok('F0-1 版本双线 v0.2.53.0 / v10.28.36.0 + 文章查看器注释块 + 直接发布注释块',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.53.0';") !== -1 &&
     sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.0';") !== -1 &&
     sconf.indexOf('文章查看器') !== -1 && sconf.indexOf('提交审核') !== -1);
   ok('F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）',

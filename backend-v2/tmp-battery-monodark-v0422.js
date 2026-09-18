@@ -136,8 +136,8 @@ const SCAN = `(function(){
   // ═══ F 静态检查 ═══
   const ethSrc = fs.readFileSync(path.join(DOCS, 'assets', 'css', 'ethereal.css'), 'utf8');
   const sconfSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
-  ok('F1 版本双线 v0.2.52.0 / v10.28.36.0 + 注释块（49.2→49.3 白底白字第二轮·按钮）',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.52.0';") !== -1 &&
+  ok('F1 版本双线 v0.2.53.0 / v10.28.36.0 + 注释块（49.2→49.3 白底白字第二轮·按钮）',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.53.0';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.0';") !== -1 &&
     sconfSrc.indexOf('黑白主题') !== -1 && sconfSrc.indexOf('深色模式背景') !== -1 &&
     sconfSrc.indexOf('白底白字') !== -1 && sconfSrc.indexOf('msg-acc') !== -1 &&
