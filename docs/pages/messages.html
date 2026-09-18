@@ -283,6 +283,20 @@ html[data-theme="dark"] .guest-module .btn-primary:hover {
   filter: none;
   backdrop-filter: none;
 }
+/* 2026-09-18 用户「为什么在亮色模式下平台的左侧菜单背景卡片会发黄的还有颜色变深色的？」——
+   真身=亮色侧栏玻璃注入层 .lg-backdrop 的 SVG 三通道折射滤镜（feImage 品红噪点位移图把
+   R/G/B 各推不同距离、蓝通道推最远 -84 → 边缘剩红+绿=黄色晕边；噪点斑块=深浅不均暗斑）
+   + blur(14px) saturate(1.4) 磨砂叠在半透明白卡片上；暗色同机制已在 2026-09-10 修掉
+   （灭滤镜灭磨砂+铺不透明底），当时注释「亮色主题零触碰」故亮色遗留至今。
+   修法（问询钦定「彻底铺不透明白底」）：亮色侧栏同样铺满 --sidebar-bg（近纯白 0.95）
+   不透明底 + 灭玻璃注入层滤镜/磨砂，与暗色同款同观感；亮色 mono 走 var() 自动适配 */
+:root:not([data-theme="dark"]) .app-sidebar {
+  background: var(--sidebar-bg);
+}
+:root:not([data-theme="dark"]) .app-sidebar .lg-backdrop {
+  filter: none;
+  backdrop-filter: none;
+}
 
 /* ----- Reset & Base ----- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -404,7 +418,7 @@ button { color: inherit; }
   border-radius: var(--radius-full);
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  transition: all 0.2s ease;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -454,7 +468,7 @@ button { color: inherit; }
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-xl);
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition: all 0.2s ease;
 }
 .input-glass:focus {
   border-color: var(--color-primary);
@@ -516,10 +530,10 @@ textarea.input-glass {
   padding: var(--space-md);
   box-shadow: var(--shadow-md);
 }
-.card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .card-hover:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+  transition: all 0.2s ease;
 }
 
 /* ----- Status Dots ----- */
@@ -593,7 +607,7 @@ textarea.input-glass {
   box-shadow: var(--shadow-lg);
   transform: scale(0.95);
   opacity: 0;
-  transition: transform 0.25s ease, opacity 0.25s ease;
+  transition: all 0.25s ease;
 }
 /* Inner scroll body — carries the scroll so border-radius stays intact */
 .modal-card-body {
@@ -620,12 +634,6 @@ textarea.input-glass {
   scrollbar-color: rgba(118,117,134,0.2) transparent;
 }
 .modal-card.active { transform: scale(1); opacity: 1; pointer-events: auto; }
-
-/* actionModal fade-in（v0.2.50.7 用户「那个弹窗出现时能不能添加一个淡入的动画？」）——遮罩+卡片双 keyframes */
-@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes modalCardIn { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
-#actionModal { animation: modalFadeIn 0.2s ease; }
-#actionModal > div:first-child { animation: modalCardIn 0.25s cubic-bezier(0.22,0.61,0.36,1); }
 
 /* ----- Progress Steps ----- */
 .progress-steps {
@@ -683,6 +691,7 @@ textarea.input-glass {
   font-size: var(--fs-label-md);
   font-weight: 500;
   cursor: pointer;
+  transition: all 0.15s ease;
   text-decoration: none;
 }
 .nav-item {
@@ -724,7 +733,7 @@ textarea.input-glass {
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
   text-align: center;
   text-decoration: none;
@@ -889,7 +898,7 @@ body.pre-stagger .auth-card { opacity: 0; }
   padding: var(--space-lg);
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: all 0.2s;
   background: var(--btn-outline-hover);
 }
 .upload-zone:hover {
@@ -914,7 +923,7 @@ body.pre-stagger .auth-card { opacity: 0; }
   font-weight: 500;
   color: var(--color-on-surface-variant);
   cursor: pointer;
-  transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+  transition: all 0.2s;
   border: none;
   background: transparent;
   white-space: nowrap; /* v0.2.3.11 标签折行修复（用户「Sign up 的 up 在 Sign 下方，能不能和 Log in 一样一行」）：active 加粗 font-weight 600 后按钮最小内容宽塌缩（min-content=最长单词），flex:1 均分下「Sign up」折成两行——nowrap 使 min-content=完整文字，控件按整词自适宽 */
@@ -1884,6 +1893,25 @@ html[data-accent="mono"] .migrate-pill::after { background-color: hsla(0 0% 45% 
 html[data-accent="mono"][data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(0 0% 40%); }
 html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117, 134, 0.10); }
 
+</style>
+  <style>
+/* ═══ Messages 页专属过渡/弹窗块（50.x 显式过渡列表 + 50.7 弹窗淡入）═══
+   2026-09-18 inliner 漂移修复（v0.2.51.2）：50.x 轮优化当时直接写进本页内联块、从未回写 ethereal.css，
+   本轮重跑 inline-css.js 被整块抹除（电池 msg-anim 45/51 当场抓住）；按 09-17「页面专属 CSS 永不入
+   内联块」口径迁出独立块——同特异性靠后覆盖内联块 ethereal 原版，inliner 重跑永不触碰 */
+.btn { transition: opacity 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.2s ease; }
+.input-glass { transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; }
+.card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.card-hover:hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.modal-card { transition: transform 0.25s ease, opacity 0.25s ease; }
+.subnav-pill { transition: background 0.2s ease, color 0.2s ease; }
+.upload-zone { transition: border-color 0.2s ease, background 0.2s ease; }
+.segmented-option { transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease; }
+/* actionModal fade-in（v0.2.50.7 用户「那个弹窗出现时能不能添加一个淡入的动画？」）——遮罩+卡片双 keyframes */
+@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalCardIn { from { opacity: 0; transform: translateY(14px) scale(0.96); } to { opacity: 1; transform: none; } }
+#actionModal { animation: modalFadeIn 0.2s ease; }
+#actionModal > div:first-child { animation: modalCardIn 0.25s cubic-bezier(0.22,0.61,0.36,1); }
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/

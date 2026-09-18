@@ -284,6 +284,20 @@ html[data-theme="dark"] .guest-module .btn-primary:hover {
   filter: none;
   backdrop-filter: none;
 }
+/* 2026-09-18 用户「为什么在亮色模式下平台的左侧菜单背景卡片会发黄的还有颜色变深色的？」——
+   真身=亮色侧栏玻璃注入层 .lg-backdrop 的 SVG 三通道折射滤镜（feImage 品红噪点位移图把
+   R/G/B 各推不同距离、蓝通道推最远 -84 → 边缘剩红+绿=黄色晕边；噪点斑块=深浅不均暗斑）
+   + blur(14px) saturate(1.4) 磨砂叠在半透明白卡片上；暗色同机制已在 2026-09-10 修掉
+   （灭滤镜灭磨砂+铺不透明底），当时注释「亮色主题零触碰」故亮色遗留至今。
+   修法（问询钦定「彻底铺不透明白底」）：亮色侧栏同样铺满 --sidebar-bg（近纯白 0.95）
+   不透明底 + 灭玻璃注入层滤镜/磨砂，与暗色同款同观感；亮色 mono 走 var() 自动适配 */
+:root:not([data-theme="dark"]) .app-sidebar {
+  background: var(--sidebar-bg);
+}
+:root:not([data-theme="dark"]) .app-sidebar .lg-backdrop {
+  filter: none;
+  backdrop-filter: none;
+}
 
 /* ----- Reset & Base ----- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
