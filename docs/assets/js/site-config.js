@@ -987,7 +987,15 @@ window.MN_SITE = window.MN_SITE || {};
 //   后端：迁移 027 users.card_edge + auth.js/social.js CARD_EDGE_KEYS 双份白名单 + PATCH 校验 + 主页端点公开暴露；
 //   测试 309→311 全绿；FC v10.28.36.0 零改动；ethereal/inline-css/entrypoint 零改动
 //   （rev 00255-lz2）
-window.MN_SITE_VERSION = 'v0.2.53.0';
+// v0.2.53.1 = 边缘选择器真实剪影 + 油漆5 内容扭曲修复（补丁位 0→1·观感修复轮；2026-09-19）——用户「那个边缘的选择在边缘自定义选择那边的展示能不能是整个选择的边缘是用该边缘直接展示的？，还有好像在使用油漆五的时候在FC那边内容也会被他的特效影响到变得扭曲你也修一下」：
+//   ①编辑资料弹窗「边缘」区 swatch 从渐变方块改为直显真实剪影（.swatch-shape 内层挂该键真实 clip-path + 族底色
+//   渐变，投影挂外层 fill 的 filter 跟随剪影；预览 #editEdgePreview 按当前键写真实 clip-path + cardLayers[0]
+//   族底色，旧 pv-edge-* 代表款类删除）②油漆5 噪点撕裂滤镜从卡级移挂剪层/覆盖层（::before/::after）——卡级
+//   filter 对整卡渲染结果位移，卡内文字/头像/统计全被噪点扯动（用户反馈「内容也被特效影响变得扭曲」）；CSS 顺序
+//   filter→clip-path 下子层位移结果被自身 clip 裁回剪影内、内容层零滤镜完全免疫，剪影边缘墨雾感由纹理特征位移×
+//   clip 交互保留；FC 同机制同修（v10.28.36.1）；后端零改动（user_version 27/health 59 表不变）；零草稿字段（v 保持 9）
+//   （rev 00256-6bg）
+window.MN_SITE_VERSION = 'v0.2.53.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1307,4 +1315,10 @@ window.MN_SITE_VERSION = 'v0.2.53.0';
 //   （likeCount/favoriteCount/likedByMe/favoritedByMe，与站点 v0.2.52.0 同轮）；点击镜像 community-hub
 //   乐观更新+失败回滚，访客 toast 引导登录；demo 种子/404 路径不建条；零草稿字段（v 保持 9）
 //   （rev 00254-w4f）
-window.FLUIDCANVAS_VERSION = 'v10.28.36.0';
+// v10.28.36.1 = 油漆5 噪点撕裂滤镜移挂剪层/覆盖层（补丁位 0→1·观感修复轮；2026-09-19）——用户「使用油漆五的时候
+//   在FC那边内容也会被他的特效影响到变得扭曲」：卡级 filter: url(#mn-paint-filter-5) 对整卡渲染结果位移，卡内
+//   文字/图片一起被噪点扯动；CSS 顺序 filter→clip-path 下改为 ::before/::after 子层挂滤镜——位移结果被自身
+//   clip 裁回剪影内、卡身内容层零滤镜完全免疫，剪影边缘墨雾感由纹理特征位移×clip 交互保留（比旧版弱、内容
+//   优先）；hover/selected/dragging 三态同步去 url()；defs 零改动；与站点 v0.2.53.1 同轮同机制
+//   （rev 00256-6bg）
+window.FLUIDCANVAS_VERSION = 'v10.28.36.1';

@@ -2684,9 +2684,16 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
 .profile-header.card-edge-tech {
   filter: drop-shadow(0 0 6px rgba(34,211,238,0.40)) drop-shadow(0 10px 22px rgba(0,0,0,0.35));
 }
-/* 油漆5 卡级噪点撕裂滤镜（FC L4030-4035：必须卡级链首，子层级会被自身 clip 裁干净） */
+/* 油漆5 噪点撕裂滤镜（v0.2.53.1 从卡级移挂剪层/覆盖层：卡级 filter 对整卡渲染
+   结果位移，卡内文字/头像/统计全被噪点扯动（用户反馈「内容也被特效影响变得扭曲」）；
+   CSS 顺序 filter→clip-path 下子层位移结果被自身 clip 裁回剪影内，内容层零滤镜
+   完全免疫，剪影边缘墨雾感由纹理特征位移×clip 交互保留——FC v10.28.36.1 同机制） */
 .profile-header.card-edge-paint[data-card-edge="paint5"] {
-  filter: url(#mn-paint-filter-5) drop-shadow(0 10px 22px rgba(0,0,0,0.38)) drop-shadow(0 2px 6px rgba(0,0,0,0.22));
+  filter: drop-shadow(0 10px 22px rgba(0,0,0,0.38)) drop-shadow(0 2px 6px rgba(0,0,0,0.22));
+}
+.profile-header.card-edge-paint[data-card-edge="paint5"]::before,
+.profile-header.card-edge-paint[data-card-edge="paint5"]::after {
+  filter: url(#mn-paint-filter-5);
 }
 /* 横幅满幅子层（FC L3985-3990 同款机制，profile 特化）：
    横幅只有顶部 140px 带——直接对 140px 盒子 clip 会让 objectBoundingBox y 轴按 140px
@@ -2736,24 +2743,40 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
 .profile-header.card-edge-tech .profile-stat-label, .profile-header.card-edge-paint .profile-stat-label { color: var(--edge-sub); }
 .profile-header.card-edge-paper .profile-stat, .profile-header.card-edge-treasure .profile-stat,
 .profile-header.card-edge-tech .profile-stat, .profile-header.card-edge-paint .profile-stat { background: rgba(255,255,255,0.12); }
-/* 编辑弹窗：边缘色块 + 迷你剪影预览（代表款：tech→hud-frame-4、paint→mn-paint-clip-1） */
+/* 编辑弹窗：边缘 swatch 直显真实剪影（v0.2.53.1 用户「整个选择的边缘是用该边缘直接展示的」）——
+   每色块 = 该边缘真实形状（swatch-shape 内层挂该键真实 clip-path + 族底色渐变）；
+   投影挂外层 fill 的 filter（filter 先于自身 clip 应用会被裁，投影必须在外层才能跟随剪影）；
+   通用 inset 白高光清掉（会露在剪影外）。预览改 JS 按当前键写真实 clip（EDGE_STYLES）。 */
+.edit-bg-swatch .swatch-fill { position: relative; }
+.edit-bg-swatch .swatch-fill .swatch-shape { position: absolute; inset: 0; display: block; border-radius: 6px; }
 .edit-bg-swatch .swatch-fill.edge-fill-default { background: var(--color-surface-container-high); }
-.edit-bg-swatch .swatch-fill.edge-fill-paper { background: linear-gradient(135deg, rgba(255,248,225,0.9), rgba(233,214,174,0.9)); }
-.edit-bg-swatch .swatch-fill.edge-fill-treasure { background: linear-gradient(135deg, rgba(129,92,49,0.72), rgba(58,38,20,0.72)); }
+.edit-bg-swatch .swatch-fill.edge-fill-paper,
+.edit-bg-swatch .swatch-fill.edge-fill-treasure,
 .edit-bg-swatch .swatch-fill.edge-fill-tech1, .edit-bg-swatch .swatch-fill.edge-fill-tech2,
 .edit-bg-swatch .swatch-fill.edge-fill-tech3, .edit-bg-swatch .swatch-fill.edge-fill-tech4,
-.edit-bg-swatch .swatch-fill.edge-fill-tech5, .edit-bg-swatch .swatch-fill.edge-fill-tech6 { background: linear-gradient(135deg, rgba(10,22,40,0.92), rgba(24,15,48,0.92)); }
-.edit-bg-swatch .swatch-fill.edge-fill-paint1 { background: linear-gradient(135deg, #e63920, #b02a15); }
-.edit-bg-swatch .swatch-fill.edge-fill-paint2 { background: linear-gradient(135deg, #1fa396, #14796f); }
-.edit-bg-swatch .swatch-fill.edge-fill-paint3 { background: linear-gradient(135deg, #ca8a32, #9e6b25); }
-.edit-bg-swatch .swatch-fill.edge-fill-paint4 { background: linear-gradient(135deg, #f59e0b, #c77c05); }
-.edit-bg-swatch .swatch-fill.edge-fill-paint5 { background: linear-gradient(135deg, #dc2626, #a81b1b); }
-.edit-bg-swatch .swatch-fill.edge-fill-paint6 { background: linear-gradient(135deg, #65a30d, #4c7a09); }
+.edit-bg-swatch .swatch-fill.edge-fill-tech5, .edit-bg-swatch .swatch-fill.edge-fill-tech6,
+.edit-bg-swatch .swatch-fill.edge-fill-paint1, .edit-bg-swatch .swatch-fill.edge-fill-paint2,
+.edit-bg-swatch .swatch-fill.edge-fill-paint3, .edit-bg-swatch .swatch-fill.edge-fill-paint4,
+.edit-bg-swatch .swatch-fill.edge-fill-paint5, .edit-bg-swatch .swatch-fill.edge-fill-paint6 {
+  box-shadow: none;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.35));
+}
+.edit-bg-swatch .swatch-fill.edge-fill-paper .swatch-shape { clip-path: url(#paper-edge-clip); background: linear-gradient(135deg, rgba(255,248,225,0.9), rgba(233,214,174,0.9)); }
+.edit-bg-swatch .swatch-fill.edge-fill-treasure .swatch-shape { clip-path: url(#map-wave-clip); background: linear-gradient(135deg, rgba(129,92,49,0.72), rgba(58,38,20,0.72)); }
+.edit-bg-swatch .swatch-fill.edge-fill-tech1 .swatch-shape { clip-path: url(#hud-frame-1); background: linear-gradient(135deg, rgba(10,22,40,0.92), rgba(24,15,48,0.92)); }
+.edit-bg-swatch .swatch-fill.edge-fill-tech2 .swatch-shape { clip-path: url(#hud-frame-2); background: linear-gradient(135deg, rgba(10,22,40,0.92), rgba(24,15,48,0.92)); }
+.edit-bg-swatch .swatch-fill.edge-fill-tech3 .swatch-shape { clip-path: url(#hud-frame-3); background: linear-gradient(135deg, rgba(10,22,40,0.92), rgba(24,15,48,0.92)); }
+.edit-bg-swatch .swatch-fill.edge-fill-tech4 .swatch-shape { clip-path: url(#hud-frame-4); background: linear-gradient(135deg, rgba(10,22,40,0.92), rgba(24,15,48,0.92)); }
+.edit-bg-swatch .swatch-fill.edge-fill-tech5 .swatch-shape { clip-path: url(#hud-frame-5); background: linear-gradient(135deg, rgba(10,22,40,0.92), rgba(24,15,48,0.92)); }
+.edit-bg-swatch .swatch-fill.edge-fill-tech6 .swatch-shape { clip-path: url(#hud-frame-6); background: linear-gradient(135deg, rgba(10,22,40,0.92), rgba(24,15,48,0.92)); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint1 .swatch-shape { clip-path: url(#mn-paint-clip-1); background: linear-gradient(135deg, #e63920, #b02a15); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint2 .swatch-shape { clip-path: url(#mn-paint-clip-2); background: linear-gradient(135deg, #1fa396, #14796f); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint3 .swatch-shape { clip-path: url(#mn-paint-clip-3); background: linear-gradient(135deg, #ca8a32, #9e6b25); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint4 .swatch-shape { clip-path: url(#mn-paint-clip-4); background: linear-gradient(135deg, #f59e0b, #c77c05); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint5 .swatch-shape { clip-path: url(#mn-paint-clip-5); background: linear-gradient(135deg, #dc2626, #a81b1b); }
+.edit-bg-swatch .swatch-fill.edge-fill-paint6 .swatch-shape { clip-path: url(#mn-paint-clip-6); background: linear-gradient(135deg, #65a30d, #4c7a09); }
 .edit-bg-swatch.edge-locked { opacity: 0.55; cursor: not-allowed; }
-.edit-bg-preview .pv-card.pv-edge-paper { clip-path: url(#paper-edge-clip); background: linear-gradient(135deg, rgba(255,248,225,0.9), rgba(233,214,174,0.9)); }
-.edit-bg-preview .pv-card.pv-edge-treasure { clip-path: url(#map-wave-clip); background: linear-gradient(135deg, rgba(129,92,49,0.72), rgba(58,38,20,0.72)); }
-.edit-bg-preview .pv-card.pv-edge-tech { clip-path: url(#hud-frame-4); background: linear-gradient(135deg, rgba(10,22,40,0.92), rgba(24,15,48,0.92)); }
-.edit-bg-preview .pv-card.pv-edge-paint { clip-path: url(#mn-paint-clip-1); background: linear-gradient(135deg, #2277e6, #19b5f3); }
+/* 迷你剪影预览：JS 按当前键写 inline clip-path（真实剪影 + 族底色），不再用代表款 pv-edge-* 类 */
 </style>
 </head>
 <body class="pre-stagger">
@@ -3680,16 +3703,17 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
             }).join('') +
           '</div>' +
         '</div>' +
-        // v0.2.53.0 边缘主题组：与横幅/卡片背景同一套 swatch 网格；迷你剪影预览（代表款剪影 tech→hud-frame-4/paint→mn-paint-clip-1）；
+        // v0.2.53.1 边缘主题组：swatch 直显真实剪影（v0.2.53.1 起不再用代表款剪影，预览与色块
+        //   均按当前键取 EDGE_STYLES 真实 clip-path + 族底色）；
         //   订阅门禁（FC buildEdgeButtons 同口径）：非订阅 → 锁图标 + title「订阅后可用」+「订阅」徽标，点击 toast 不生效
         '<div class="form-group">' +
           '<label class="form-label">边缘</label>' +
-          '<div class="edit-bg-preview"><div class="pv-card' + (editCardEdge ? ' pv-edge-' + (editCardEdge.indexOf('tech') === 0 ? 'tech' : (editCardEdge.indexOf('paint') === 0 ? 'paint' : editCardEdge)) : '') + '" id="editEdgePreview"></div></div>' +
+          '<div class="edit-bg-preview"><div class="pv-card" id="editEdgePreview"' + (editCardEdge && EDGE_STYLES[editCardEdge] ? ' style="clip-path:' + EDGE_STYLES[editCardEdge].clip + ';background:' + EDGE_STYLES[editCardEdge].cardLayers[0] + '"' : '') + '></div></div>' +
           '<div class="edit-bg-grid" id="editEdgeGrid">' +
             EDGE_DEFS.map(function (b) {
               var locked = b[0] !== '' && !sub;
               return '<button type="button" class="edit-bg-swatch' + ((editCardEdge || '') === b[0] ? ' active' : '') + (locked ? ' edge-locked' : '') + '" data-edge="' + b[0] + '" title="' + (locked ? '订阅后可用' : b[1]) + '">' +
-                '<span class="swatch-fill' + (b[0] ? ' edge-fill-' + b[0] : ' bg-default') + '">' + (locked ? '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline);display:block;line-height:36px;text-align:center">lock</span>' : '') + '</span>' +
+                '<span class="swatch-fill' + (b[0] ? ' edge-fill-' + b[0] : ' bg-default') + '">' + (b[0] ? '<span class="swatch-shape"></span>' : '') + (locked ? '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline);display:block;line-height:36px;text-align:center">lock</span>' : '') + '</span>' +
                 '<span class="swatch-label">' + b[1] + (locked ? '<span class="label-sm" style="margin-left:4px;color:var(--color-outline)">订阅</span>' : '') + '</span></button>';
             }).join('') +
           '</div>' +
@@ -3779,7 +3803,10 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
         editCardEdge = val;
         card.querySelectorAll('#editEdgeGrid [data-edge]').forEach(function (x) { x.classList.toggle('active', x === b); });
         var pv = card.querySelector('#editEdgePreview');
-        pv.className = 'pv-card' + (editCardEdge ? ' pv-edge-' + (editCardEdge.indexOf('tech') === 0 ? 'tech' : (editCardEdge.indexOf('paint') === 0 ? 'paint' : editCardEdge)) : '');
+        // v0.2.53.1 预览取真实剪影：clip-path + 族底色（cardLayers[0] 为不透明渐变；tech 的 tint 半透明不可作背景）
+        var st = editCardEdge ? EDGE_STYLES[editCardEdge] : null;
+        pv.style.clipPath = st ? st.clip : 'none';
+        pv.style.background = st ? st.cardLayers[0] : 'transparent';
       });
     });
 

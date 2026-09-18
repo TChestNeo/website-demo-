@@ -4029,17 +4029,27 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     }
     /* v10.15 — 油漆1~6 笔刷/墨迹/水彩异形边缘（背景边缘主题体系：
        只裁背景层剪影，内容/标签完好——与纸/藏宝图/科技同族）。
-       阴影同纸款配方（笔触剪影投影 + 选中四向环）。油漆5 的噪点
-       撕裂滤镜必须在卡级（filter 链首）：父级 filter 合成的是子层
-       clip 之后的结果，卡级位移才能把剪影边缘撕成墨雾、且影子
-       跟着雾边跑；子层级 filter 会被自身 clip-path 裁回干净边缘。 */
+       阴影同纸款配方（笔触剪影投影 + 选中四向环）。
+       v10.28.36.1 — 油漆5 噪点撕裂滤镜从卡级移挂剪层/覆盖层
+       （::before/::after）：卡级 filter 对整卡渲染结果位移，卡内
+       文字/图片一起被噪点扯动（用户反馈「内容也被特效影响变得
+       扭曲」）；CSS 顺序 filter→clip-path 下子层位移结果被自身
+       clip 裁回剪影内，卡身内容层零滤镜完全免疫，剪影边缘的
+       墨雾感由纹理特征位移×clip 的交互保留。 */
     .grid-card.card-edge-paint,
     .grid-group-bg.card-edge-paint {
       filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
     }
     .grid-card.card-edge-paint[data-card-edge="paint5"],
     .grid-group-bg.card-edge-paint[data-card-edge="paint5"] {
-      filter: url(#mn-paint-filter-5) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
+    }
+    /* v10.28.36.1 油漆5 噪点撕裂滤镜移挂剪层/覆盖层（内容零位移，见上方注释） */
+    .grid-card.card-edge-paint[data-card-edge="paint5"]::before,
+    .grid-card.card-edge-paint[data-card-edge="paint5"]::after,
+    .grid-group-bg.card-edge-paint[data-card-edge="paint5"]::before,
+    .grid-group-bg.card-edge-paint[data-card-edge="paint5"]::after {
+      filter: url(#mn-paint-filter-5);
     }
     .grid-card.card-edge-paint:hover,
     .grid-group-bg.card-edge-paint:hover {
@@ -4047,7 +4057,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     }
     .grid-card.card-edge-paint[data-card-edge="paint5"]:hover,
     .grid-group-bg.card-edge-paint[data-card-edge="paint5"]:hover {
-      filter: url(#mn-paint-filter-5) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
+      filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.45)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.22));
     }
     .grid-card.card-edge-paint.selected,
     .grid-group-bg.card-edge-paint.selected {
@@ -4055,13 +4065,13 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     }
     .grid-card.card-edge-paint[data-card-edge="paint5"].selected,
     .grid-group-bg.card-edge-paint[data-card-edge="paint5"].selected {
-      filter: url(#mn-paint-filter-5) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(-2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 -2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 0 8px var(--color-primary-fixed-dim));
+      filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.38)) drop-shadow(2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(-2px 0 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 -2px 0 rgba(255, 236, 190, 0.95)) drop-shadow(0 0 8px var(--color-primary-fixed-dim));
     }
     .grid-card.card-edge-paint.dragging {
       filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.45));
     }
     .grid-card.card-edge-paint[data-card-edge="paint5"].dragging {
-      filter: url(#mn-paint-filter-5) drop-shadow(0 18px 34px rgba(0, 0, 0, 0.45));
+      filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.45));
     }
     .grid-card.card-edge-paper.dragging, .grid-card.card-edge-treasure.dragging,
     .grid-card.card-edge-tech.dragging {

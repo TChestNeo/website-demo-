@@ -54,13 +54,13 @@ function ok(name, cond) {
 // 3. site-config 版本 + changelog 条目 + FC 零改动
 {
   const s = read(path.join(DOCS, 'assets/js/site-config.js'));
-  ok('site-config 版本 = v0.2.53.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.53.0';") !== -1);
+  ok('site-config 版本 = v0.2.53.1', s.indexOf("window.MN_SITE_VERSION = 'v0.2.53.1';") !== -1);
   ok('site-config changelog 含 v0.2.51.2 条目 + 用户原话 + 修法口径',
     s.indexOf('v0.2.51.2 = 亮色侧栏发黄/暗斑修复') !== -1 &&
     s.indexOf('为什么在亮色模式下平台的') !== -1 &&
     s.indexOf('彻底铺不透明白底') !== -1);
   ok('site-config 51.1 changelog 历史条目保留', s.indexOf('v0.2.51.1 = 公民号前缀 CIT- → USR- 全栈统一') !== -1);
-  ok('FC v10.28.36.0 保持', s.indexOf("'v10.28.36.0'") !== -1);
+  ok('FC v10.28.36.1 保持', s.indexOf("'v10.28.36.1'") !== -1);
 }
 
 console.log('\nsidebar-light 巡检：' + pass + ' 通过 / ' + fail + ' 失败');

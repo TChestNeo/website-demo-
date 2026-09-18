@@ -102,9 +102,9 @@ const SNAP = `(function(){
   };
   const allHtml = []; readAll(DOCS, allHtml);
   const countHtml = (pred) => allHtml.filter(pred).length;
-  ok('F0 版本双线 v0.2.53.0 / v10.28.36.0 + 用户原话注释（49.1 注释块保留）',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.53.0';") !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.0';") !== -1 &&
+  ok('F0 版本双线 v0.2.53.1 / v10.28.36.1 + 用户原话注释（49.1 注释块保留）',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.53.1';") !== -1 &&
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.1';") !== -1 &&
     sconfSrc.indexOf('黑白主题') !== -1 && sconfSrc.indexOf('转变成黑白主题的颜色') !== -1);
   ok('F1 settings-modal.js 已无 mono 规则（迁出干净）+ 弹窗 UI 规则保留',
     smSrc.indexOf('0b0b0d') === -1 && smSrc.indexOf('32324a') === -1 &&
