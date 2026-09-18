@@ -1,4 +1,4 @@
-// tmp-battery-community-profile.js — v0.2.21.0 Community 个人主页 + 关注系统电池（2026-09-07；v0.2.23.0 加卡片背景液体玻璃链；v0.2.23.2 横幅/背景分开；v0.2.23.3 结构重排=横幅预设+卡身纯底色+四周 6px 光环；v0.2.24.0 独立双背景=横幅组改名+卡片背景新组、卡身纯透明+包层背景阔 6px；v0.2.24.1 卡片背景只 2 选项=默认/标准液态玻璃 glass-clear 无色+代码白边环 2px+柔影；v0.2.24.2 glass-clear 白磨砂改纯透明填充（用户「把默认白背景也去掉」）+色块环示意；v0.2.24.3 标准液态玻璃=真液态玻璃（用户「不是你液态玻璃是真的吗」+「参考 rdev/liquid-glass-react」）：包层挂全站液体玻璃引擎（折射+磨砂 24px+饱和 140%+镜面高光=rdev 同款）+无色极轻白霜 0.14/0.04/0.10；v0.2.24.4 玻璃光场（用户「还是一样没有」根因=玻璃后无光可折）：包层内置无色白光球垫引擎层下（首版蓝紫参考代码同色被用户「为什么有蓝色和紫色在背面能不能去掉」驳回→改纯白）+高光层斜向流光+预览光球示意；v0.2.53.1 卡片边缘主题（FC 14 款全量移植 profile-header 整卡：订阅专属 E7 锁链+编辑流程、访客可见 O5、静态锚 Q）；v0.2.53.2 液态玻璃换代（用户贴的生成器代码：glass-distortion 噪点波动折射滤镜+磨砂 10px+卡身白霜 0.34/暗 0.58，新 E6f2 横幅单独玻璃阶段））
+// tmp-battery-community-profile.js — v0.2.21.0 Community 个人主页 + 关注系统电池（2026-09-07；v0.2.23.0 加卡片背景液体玻璃链；v0.2.23.2 横幅/背景分开；v0.2.23.3 结构重排=横幅预设+卡身纯底色+四周 6px 光环；v0.2.24.0 独立双背景=横幅组改名+卡片背景新组、卡身纯透明+包层背景阔 6px；v0.2.24.1 卡片背景只 2 选项=默认/标准液态玻璃 glass-clear 无色+代码白边环 2px+柔影；v0.2.24.2 glass-clear 白磨砂改纯透明填充（用户「把默认白背景也去掉」）+色块环示意；v0.2.24.3 标准液态玻璃=真液态玻璃（用户「不是你液态玻璃是真的吗」+「参考 rdev/liquid-glass-react」）：包层挂全站液体玻璃引擎（折射+磨砂 24px+饱和 140%+镜面高光=rdev 同款）+无色极轻白霜 0.14/0.04/0.10；v0.2.24.4 玻璃光场（用户「还是一样没有」根因=玻璃后无光可折）：包层内置无色白光球垫引擎层下（首版蓝紫参考代码同色被用户「为什么有蓝色和紫色在背面能不能去掉」驳回→改纯白）+高光层斜向流光+预览光球示意；v0.2.53.1 卡片边缘主题（FC 14 款全量移植 profile-header 整卡：订阅专属 E7 锁链+编辑流程、访客可见 O5、静态锚 Q）；v0.2.53.2 液态玻璃换代（用户贴的生成器代码：glass-distortion 噪点波动折射滤镜+磨砂 10px+卡身白霜 0.34/暗 0.58，新 E6f2 横幅单独玻璃阶段）；v0.2.53.3 左侧菜单底部空白面板去掉（sidebar.js 菜单卡去 flex:1 收内容高——S1/L1 版本锚 53.2→53.3））
 // 用户：「先把用户的个人主页做一下吧？」→ 钦定完整版 Twitter 式主页（头像/名字/简介/加入时间/统计 4 块 + 帖子/转发/点赞/收藏 4 tab）+ 关注系统 + 三入口。
 // 本地：静态壳 + document-start fetch 罐头（每次导航新文档生效——MN_API 底层走 fetch，罐头统一从 fetch 层拦；
 //   profile/posts 四 tab/follow/点赞/收藏/转发全罐头；唯一真资源 = /uploads/UPL-DEMO01.jpg 1x1 PNG 供瓦片+灯箱）。
@@ -300,7 +300,7 @@ async function main() {
     const ver = await t.evalJs('window.MN_SITE_VERSION');
     const s1 = await t.evalJs("(() => { var a = document.querySelector('.user-module a[href*=\"community-profile.html\"]');" +
       " return { href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && !!a.querySelector('.user-name')) : false }; })()");
-    check('S1 版本 v0.2.53.2', ver === 'v0.2.53.2', 'ver=' + ver);
+    check('S1 版本 v0.2.53.3', ver === 'v0.2.53.3', 'ver=' + ver);
     check('S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）', s1.href === '../pages/community-profile.html?id=USR-000101' && s1.wrapped, s1.href);
 
     // S2 点侧栏锚 → 真导航到自己主页
@@ -990,7 +990,7 @@ async function main() {
     // L1 hub 首卡作者锚 → 个人主页（href 形状断言）
     const l1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]'); var a = c ? c.querySelector('.post-author-link') : null;" +
       " return { ver: window.MN_SITE_VERSION, href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && a.textContent.length > 0) : false }; })()");
-    check('L1 版本 v0.2.53.2', l1.ver === 'v0.2.53.2', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.53.3', l1.ver === 'v0.2.53.3', 'ver=' + l1.ver);
     check('L1 云卡作者锚 → profile（id=USR- 形状 + 头像+名字在内）', l1.href && /^community-profile\.html\?id=USR-\d{6}$/.test(l1.href) && l1.wrapped, l1.href);
 
     // L2 点作者锚 → 真导航 → 头部渲染（真数据）+ 几何 + 关注钮

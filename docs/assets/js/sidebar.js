@@ -168,7 +168,10 @@
       userModuleHTML +
 
       '<!-- Nav Module -->' +
-      '<div class="sidebar-module nav-module custom-scrollbar" style="flex:1;overflow-y:auto;padding:var(--space-sm)">' +
+      // v0.2.53.3 用户「那个左侧菜单的底部背景能不能去掉？」（问询钦定「去掉空白面板」）：
+      // 菜单卡不再 flex:1 拉伸到屏幕底部（1080p 下菜单项下面空出一大块空白卡片背景），
+      // 高度收为内容高——侧栏只剩 logo/用户/菜单三张卡，下方留纯色侧栏底
+      '<div class="sidebar-module nav-module custom-scrollbar" style="overflow-y:auto;padding:var(--space-sm)">' +
         '<nav class="sidebar-nav">' +
           navHTML(navTop) +
           '<div class="divider sidebar-divider"></div>' +

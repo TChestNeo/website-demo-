@@ -1005,7 +1005,14 @@ window.MN_SITE = window.MN_SITE || {};
 //   ethereal/liquid-glass.js/inline-css/entrypoint 零改动；后端零改动（user_version 27/health 59 表不变）；
 //   FC v10.28.36.1 零改动；零草稿字段（v 保持 9）
 //   （rev 00257-jl2）
-window.MN_SITE_VERSION = 'v0.2.53.2';
+// v0.2.53.3 = 左侧菜单底部空白面板去掉（补丁位 2→3·观感修复轮；2026-09-19）——用户「那个左侧菜单的底部背景能不能去掉？或者变成刚才给你的那个液态玻璃或者只保留那个用户卡片，logo卡片 还有菜单卡片？」（问询钦定「去掉空白面板（推荐）」）：
+//   探针实证底部背景真身=菜单卡 flex:1 拉伸到屏幕底部，1080p 下菜单项下面空出一大块空白卡片背景；
+//   sidebar.js 菜单卡内联 style 去 flex:1，高度收为内容高——侧栏只剩 logo/用户/菜单三张卡，
+//   下方留纯色侧栏底（上轮钦定口径不动）；亮/暗两模式同生效；ethereal/inline-css/entrypoint 零改动
+//   （ethereal 零改动无需 inline-css）；后端零改动（user_version 27/health 59 表不变）；
+//   FC v10.28.36.1 零改动；零草稿字段（v 保持 9）
+//   （rev 00258-7hf）
+window.MN_SITE_VERSION = 'v0.2.53.3';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
