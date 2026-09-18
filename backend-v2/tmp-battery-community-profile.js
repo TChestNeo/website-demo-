@@ -1,4 +1,4 @@
-// tmp-battery-community-profile.js — v0.2.21.0 Community 个人主页 + 关注系统电池（2026-09-07；v0.2.23.0 加卡片背景液体玻璃链；v0.2.23.2 横幅/背景分开；v0.2.23.3 结构重排=横幅预设+卡身纯底色+四周 6px 光环；v0.2.24.0 独立双背景=横幅组改名+卡片背景新组、卡身纯透明+包层背景阔 6px；v0.2.24.1 卡片背景只 2 选项=默认/标准液态玻璃 glass-clear 无色+代码白边环 2px+柔影；v0.2.24.2 glass-clear 白磨砂改纯透明填充（用户「把默认白背景也去掉」）+色块环示意；v0.2.24.3 标准液态玻璃=真液态玻璃（用户「不是你液态玻璃是真的吗」+「参考 rdev/liquid-glass-react」）：包层挂全站液体玻璃引擎（折射+磨砂 24px+饱和 140%+镜面高光=rdev 同款）+无色极轻白霜 0.14/0.04/0.10；v0.2.24.4 玻璃光场（用户「还是一样没有」根因=玻璃后无光可折）：包层内置无色白光球垫引擎层下（首版蓝紫参考代码同色被用户「为什么有蓝色和紫色在背面能不能去掉」驳回→改纯白）+高光层斜向流光+预览光球示意；v0.2.53.1 卡片边缘主题（FC 14 款全量移植 profile-header 整卡：订阅专属 E7 锁链+编辑流程、访客可见 O5、静态锚 Q））
+// tmp-battery-community-profile.js — v0.2.21.0 Community 个人主页 + 关注系统电池（2026-09-07；v0.2.23.0 加卡片背景液体玻璃链；v0.2.23.2 横幅/背景分开；v0.2.23.3 结构重排=横幅预设+卡身纯底色+四周 6px 光环；v0.2.24.0 独立双背景=横幅组改名+卡片背景新组、卡身纯透明+包层背景阔 6px；v0.2.24.1 卡片背景只 2 选项=默认/标准液态玻璃 glass-clear 无色+代码白边环 2px+柔影；v0.2.24.2 glass-clear 白磨砂改纯透明填充（用户「把默认白背景也去掉」）+色块环示意；v0.2.24.3 标准液态玻璃=真液态玻璃（用户「不是你液态玻璃是真的吗」+「参考 rdev/liquid-glass-react」）：包层挂全站液体玻璃引擎（折射+磨砂 24px+饱和 140%+镜面高光=rdev 同款）+无色极轻白霜 0.14/0.04/0.10；v0.2.24.4 玻璃光场（用户「还是一样没有」根因=玻璃后无光可折）：包层内置无色白光球垫引擎层下（首版蓝紫参考代码同色被用户「为什么有蓝色和紫色在背面能不能去掉」驳回→改纯白）+高光层斜向流光+预览光球示意；v0.2.53.1 卡片边缘主题（FC 14 款全量移植 profile-header 整卡：订阅专属 E7 锁链+编辑流程、访客可见 O5、静态锚 Q）；v0.2.53.2 液态玻璃换代（用户贴的生成器代码：glass-distortion 噪点波动折射滤镜+磨砂 10px+卡身白霜 0.34/暗 0.58，新 E6f2 横幅单独玻璃阶段））
 // 用户：「先把用户的个人主页做一下吧？」→ 钦定完整版 Twitter 式主页（头像/名字/简介/加入时间/统计 4 块 + 帖子/转发/点赞/收藏 4 tab）+ 关注系统 + 三入口。
 // 本地：静态壳 + document-start fetch 罐头（每次导航新文档生效——MN_API 底层走 fetch，罐头统一从 fetch 层拦；
 //   profile/posts 四 tab/follow/点赞/收藏/转发全罐头；唯一真资源 = /uploads/UPL-DEMO01.jpg 1x1 PNG 供瓦片+灯箱）。
@@ -300,7 +300,7 @@ async function main() {
     const ver = await t.evalJs('window.MN_SITE_VERSION');
     const s1 = await t.evalJs("(() => { var a = document.querySelector('.user-module a[href*=\"community-profile.html\"]');" +
       " return { href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && !!a.querySelector('.user-name')) : false }; })()");
-    check('S1 版本 v0.2.53.1', ver === 'v0.2.53.1', 'ver=' + ver);
+    check('S1 版本 v0.2.53.2', ver === 'v0.2.53.2', 'ver=' + ver);
     check('S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）', s1.href === '../pages/community-profile.html?id=USR-000101' && s1.wrapped, s1.href);
 
     // S2 点侧栏锚 → 真导航到自己主页
@@ -518,11 +518,13 @@ async function main() {
       " glass: h.classList.contains('liquid-glass'), cls: h.className, attr: h.getAttribute('data-card-bg')," +
       " layer: !!h.querySelector('.lg-backdrop'), spec: !!h.querySelector('.lg-specular')," +
       " layerFilter: h.querySelector('.lg-backdrop') ? (getComputedStyle(h.querySelector('.lg-backdrop')).backdropFilter || getComputedStyle(h.querySelector('.lg-backdrop')).webkitBackdropFilter) : null," +
+      " layerFilterUrl: h.querySelector('.lg-backdrop') ? getComputedStyle(h.querySelector('.lg-backdrop')).filter : null," +
       " cardBgColor: getComputedStyle(h).backgroundColor, bannerBgImg: getComputedStyle(h.querySelector('.profile-banner')).backgroundImage," +
       " wrapCls: w.className, wrapBg: getComputedStyle(w).backgroundImage, wrapBgColor: getComputedStyle(w).backgroundColor," +
       " wrapShadow: getComputedStyle(w).boxShadow," +
       " wrapLg: w.classList.contains('lg-static'), wrapLayer: !!haloBack, wrapSpec: !!sp," +
       " haloLayerFilter: haloBack ? (getComputedStyle(haloBack).backdropFilter || getComputedStyle(haloBack).webkitBackdropFilter) : null," +
+      " haloLayerFilterUrl: haloBack ? getComputedStyle(haloBack).filter : null," +
       " orb: !!orb, orbVis: orb ? getComputedStyle(orb).display : null," +
       " orbB: orb ? getComputedStyle(orb, '::before').backgroundImage : null, orbA: orb ? getComputedStyle(orb, '::after').backgroundImage : null," +
       " specBg: sp ? getComputedStyle(sp).backgroundImage : null," +
@@ -537,10 +539,10 @@ async function main() {
     const e6dCardBgCalls = e6d.rawCalls.filter(function (b) { return b.indexOf('cardBg') !== -1; });
     check('E6 保存 → PATCH 含 cardBg 恰 1 次且 body 精确 ={"cardBg":"glass-ocean","cardPlate":"glass-clear"}+ 弹窗关 + toast', e6dCardBgCalls.length === 1 && e6dCardBgCalls[0] === '{"cardBg":"glass-ocean","cardPlate":"glass-clear"}' && e6d.cardGone && e6d.toasts.indexOf('资料已保存') !== -1, JSON.stringify(e6dCardBgCalls));
     check('E6 头部重拉挂液体玻璃：liquid-glass + glass-ocean 类 + data-card-bg + 折射/高光双层', e6d.glass && e6d.cls.indexOf('glass-ocean') !== -1 && e6d.attr === 'glass-ocean' && e6d.layer && e6d.spec, JSON.stringify({ glass: e6d.glass, cls: e6d.cls, attr: e6d.attr, layer: e6d.layer, spec: e6d.spec }));
-    check('E6 玻璃层 backdrop-filter 生效（blur 14px + saturate）', e6d.layerFilter && e6d.layerFilter.indexOf('blur(14px)') !== -1 && e6d.layerFilter.indexOf('saturate') !== -1, String(e6d.layerFilter));
+    check('E6 玻璃层 backdrop-filter 生效（blur 10px + saturate；v0.2.53.2 生成器代码口径 14→10）+ v0.2.53.2 折射滤镜=url("#glass-distortion")（噪点波动折射，覆盖引擎三通道色散——无色散不发黄）', e6d.layerFilter && e6d.layerFilter.indexOf('blur(10px)') !== -1 && e6d.layerFilter.indexOf('saturate') !== -1 && e6d.layerFilterUrl && e6d.layerFilterUrl.indexOf('url("#glass-distortion")') !== -1, JSON.stringify({ layerFilter: e6d.layerFilter, layerFilterUrl: e6d.layerFilterUrl }));
     check('E6 v0.2.24.3 独立双背景：横幅=卡上深海渐变 + 卡片背景=包层 card-halo glass-clear lg-static（引擎类在）+ 真液态玻璃霜体（无色极轻白霜 gradient 在 + 三色相均不在）+ 卡身纯透明直透页面', e6d.bannerBgImg.indexOf('linear-gradient') !== -1 && e6d.bannerBgImg.indexOf('rgba(30, 90, 200') !== -1 && e6d.wrapCls === 'card-halo glass-clear lg-static' && e6d.wrapBg.indexOf('linear-gradient') !== -1 && e6d.wrapBg.indexOf('rgba(255, 255, 255') !== -1 && e6d.wrapBg.indexOf('30, 90, 200') === -1 && e6d.wrapBg.indexOf('232, 110, 160') === -1 && e6d.wrapBg.indexOf('96, 100, 230') === -1 && e6d.cardBgColor === 'rgba(0, 0, 0, 0)', 'banner=' + e6d.bannerBgImg.slice(0, 50) + ' wrapCls=' + e6d.wrapCls + ' wrapBg=' + e6d.wrapBg.slice(0, 80) + ' card=' + e6d.cardBgColor);
     check('E6 v0.2.25.2 默认底色移除：包层背景色透明（横幅以外彻底透到页面——用户「默认的那个背景你也没在标准液态玻璃背景的情况下除了横幅以外的移除啊」）', e6d.wrapBgColor === 'rgba(0, 0, 0, 0)', 'wrapBgColor=' + e6d.wrapBgColor);
-    check('E6 v0.2.24.3 真液态玻璃引擎挂包层：lg-static 类 + 折射层 .lg-backdrop + 镜面高光 .lg-specular 双注入 + 层磨砂 24px saturate（rdev 配方）', e6d.wrapLg && e6d.wrapLayer && e6d.wrapSpec && e6d.haloLayerFilter && e6d.haloLayerFilter.indexOf('blur(24px)') !== -1 && e6d.haloLayerFilter.indexOf('saturate') !== -1, JSON.stringify({ wrapLg: e6d.wrapLg, wrapLayer: e6d.wrapLayer, wrapSpec: e6d.wrapSpec, haloLayerFilter: e6d.haloLayerFilter }));
+    check('E6 v0.2.24.3 真液态玻璃引擎挂包层：lg-static 类 + 折射层 .lg-backdrop + 镜面高光 .lg-specular 双注入 + 层磨砂 10px saturate（v0.2.53.2 生成器代码口径 24→10）+ 同款波动折射滤镜 url("#glass-distortion")', e6d.wrapLg && e6d.wrapLayer && e6d.wrapSpec && e6d.haloLayerFilter && e6d.haloLayerFilter.indexOf('blur(10px)') !== -1 && e6d.haloLayerFilter.indexOf('saturate') !== -1 && e6d.haloLayerFilterUrl && e6d.haloLayerFilterUrl.indexOf('url("#glass-distortion")') !== -1, JSON.stringify({ wrapLg: e6d.wrapLg, wrapLayer: e6d.wrapLayer, wrapSpec: e6d.wrapSpec, haloLayerFilter: e6d.haloLayerFilter, haloLayerFilterUrl: e6d.haloLayerFilterUrl }));
     check('E6 v0.2.24.4 玻璃光场亮起：.lg-orb-field 在包层内 display=block + 无色双白光球（蓝紫 96,165,250/167,139,250 均不在——用户去色）+ 高光层斜向流光', e6d.orb && e6d.orbVis === 'block' && e6d.orbB.indexOf('255, 255, 255') !== -1 && e6d.orbA.indexOf('255, 255, 255') !== -1 && e6d.orbB.indexOf('96, 165, 250') === -1 && e6d.orbA.indexOf('167, 139, 250') === -1 && e6d.specBg.indexOf('linear-gradient') !== -1, JSON.stringify({ orb: e6d.orb, orbVis: e6d.orbVis, orbB: e6d.orbB, orbA: e6d.orbA, specBg: e6d.specBg.slice(0, 60) }));
     check('E6 v0.2.24.1 标准液态玻璃包层=代码白边环 2px（rgba(255,255,255,0.8) inset）+ 柔影（0 4px 12px rgba(0,0,0,0.4)）', e6d.wrapShadow.indexOf('rgba(255, 255, 255, 0.8)') !== -1 && e6d.wrapShadow.indexOf('inset') !== -1 && e6d.wrapShadow.indexOf('rgba(0, 0, 0, 0.4)') !== -1, e6d.wrapShadow);
     check('E6 v0.2.25.1 rdev 双层环形高光原值移植：::before screen 0.2 / ::after overlay（index.tsx Border layer 1/2 原值）+ 白渐变 135° 双环 + 1.5px 异或环贴卡缘（top=6px=包层 padding）+ 光球提亮 0.85/0.75（用户「还是一样没有」——任何背景下可见的玻璃招牌层）', e6d.shBefContent !== 'none' && e6d.shBefMix === 'screen' && e6d.shAftMix === 'overlay' && e6d.shBefBg.indexOf('linear-gradient') !== -1 && e6d.shAftBg.indexOf('linear-gradient') !== -1 && e6d.shBefBg.indexOf('135deg') !== -1 && e6d.shBefTop === '6px' && e6d.shBefPad === '1.5px' && (e6d.shMask.indexOf('xor') !== -1 || e6d.shMask.indexOf('exclude') !== -1) && e6d.orbB.indexOf('0.85') !== -1 && e6d.orbA.indexOf('0.75') !== -1, JSON.stringify({ bMix: e6d.shBefMix, aMix: e6d.shAftMix, bBg: e6d.shBefBg.slice(0, 60), top: e6d.shBefTop, pad: e6d.shBefPad, mask: e6d.shMask, content: e6d.shBefContent, orbB: e6d.orbB.slice(0, 60), orbA: e6d.orbA.slice(0, 60) }));
@@ -572,6 +574,43 @@ async function main() {
     const e6fCardBgCalls = e6f.rawCalls.filter(function (b) { return b.indexOf('cardBg') !== -1; });
     check('E6 双双选默认 → 保存 → 最后 PATCH body 精确 ={"cardBg":null,"cardPlate":null} + 头部回默认（无 liquid-glass/无 data-card-bg/无预设类）', e6fCardBgCalls.length === 2 && e6fCardBgCalls[e6fCardBgCalls.length - 1] === '{"cardBg":null,"cardPlate":null}' && !e6f.glass && !e6f.attr && e6f.cls.indexOf('glass-') === -1, JSON.stringify(e6fCardBgCalls));
     check('E6 v0.2.24.0 回默认 → 包层类清空（无 card-halo）+ 卡身回实底（非透明）+ 横幅回品牌渐变 + v0.2.24.3 引擎层已卸载（无 lg-static/无 .lg-backdrop）+ v0.2.24.4 光场灭（orb display=none）', e6f.wrapCls === '' && !e6f.wrapLg && !e6f.wrapLayer && e6f.orbVis === 'none' && e6f.cardBgColor !== 'rgba(0, 0, 0, 0)' && e6f.bannerBgImg !== 'none' && e6f.bannerBgImg.indexOf('linear-gradient') !== -1, 'wrapCls=' + e6f.wrapCls + ' wrapLg=' + e6f.wrapLg + ' wrapLayer=' + e6f.wrapLayer + ' orbVis=' + e6f.orbVis + ' card=' + e6f.cardBgColor + ' banner=' + e6f.bannerBgImg.slice(0, 60));
+
+    // E6f2 v0.2.53.2 液态玻璃换代（用户贴的生成器代码）：横幅单独玻璃——无包层、卡身白霜 0.34、层折射滤镜=glass-distortion、磨砂 10px → 恢复默认
+    await t.evalJs("window.__patchedMe = null; document.getElementById('profileEditBtn').click()");
+    await sleep(500);
+    await t.evalJs("document.querySelector('#editNavBtns [data-edit-tab=\"custom\"]').click()");
+    await sleep(300);
+    await t.evalJs("document.querySelector('#editBgGrid [data-bg=\"glass-ocean\"]').click()");
+    await sleep(300);
+    await t.evalJs("document.getElementById('editSaveBtn').click()");
+    await sleep(800);
+    const e6f2 = await t.evalJs("(() => { var w = document.getElementById('profileHeader');" +
+      " var h = w.querySelector('.profile-header'); var back = h.querySelector('.lg-backdrop');" +
+      " var rawCalls = window.__fetchCalls.filter(function (c) { return c.method === 'PATCH'; }).map(function (c) { return c.body; });" +
+      " return { rawCalls: rawCalls, wrapCls: w.className, cls: h.className, glass: h.classList.contains('liquid-glass')," +
+      " attr: h.getAttribute('data-card-bg'), layer: !!back," +
+      " layerFilter: back ? (getComputedStyle(back).backdropFilter || getComputedStyle(back).webkitBackdropFilter) : null," +
+      " layerFilterUrl: back ? getComputedStyle(back).filter : null," +
+      " cardBgColor: getComputedStyle(h).backgroundColor, orbVis: w.querySelector(':scope > .lg-orb-field') ? getComputedStyle(w.querySelector(':scope > .lg-orb-field')).display : null }; })()");
+    console.log('E6f2 raw PATCH bodies:', JSON.stringify(e6f2.rawCalls));
+    const e6f2CardBgCalls = e6f2.rawCalls.filter(function (b) { return b.indexOf('cardBg') !== -1; });
+    check('E6f2 v0.2.53.2 横幅单独玻璃保存：最后 PATCH body 精确 ={"cardBg":"glass-ocean"}（cardPlate 未动不入 body）', e6f2CardBgCalls.length >= 1 && e6f2CardBgCalls[e6f2CardBgCalls.length - 1] === '{"cardBg":"glass-ocean"}', JSON.stringify(e6f2CardBgCalls));
+    check('E6f2 v0.2.53.2 横幅单独玻璃渲染：无 card-halo 包层 + liquid-glass + glass-ocean + 引擎折射层在 + 磨砂 blur 10px saturate（生成器代码口径）+ 折射滤镜=url("#glass-distortion")（低频噪点+高斯模糊+标准双通道位移，无色散）+ 光场灭（无包层）', e6f2.wrapCls === '' && e6f2.glass && e6f2.cls.indexOf('glass-ocean') !== -1 && e6f2.attr === 'glass-ocean' && e6f2.layer && e6f2.layerFilter.indexOf('blur(10px)') !== -1 && e6f2.layerFilter.indexOf('saturate') !== -1 && e6f2.layerFilterUrl.indexOf('url("#glass-distortion")') !== -1 && e6f2.orbVis === 'none', JSON.stringify({ wrapCls: e6f2.wrapCls, cls: e6f2.cls, layerFilter: e6f2.layerFilter, layerFilterUrl: e6f2.layerFilterUrl, orbVis: e6f2.orbVis }));
+    check('E6f2 v0.2.53.2 卡身白霜 rgba(255, 255, 255, 0.34)（生成器 ::before 白 tint 同思路，卡身有实底调高到 0.34 才透出磨砂折射层见玻璃；暗色 0.58 见 Q 静态锚）', e6f2.cardBgColor === 'rgba(255, 255, 255, 0.34)', e6f2.cardBgColor);
+    // 恢复默认（重开 → 横幅默认 → 保存 → 最后 PATCH cardBg:null；E6g 起的后续阶段不受污染）
+    await t.evalJs("window.__patchedMe = null; document.getElementById('profileEditBtn').click()");
+    await sleep(500);
+    await t.evalJs("document.querySelector('#editNavBtns [data-edit-tab=\"custom\"]').click()");
+    await sleep(300);
+    await t.evalJs("document.querySelector('#editBgGrid [data-bg=\"\"]').click()");
+    await sleep(300);
+    await t.evalJs("document.getElementById('editSaveBtn').click()");
+    await sleep(800);
+    const e6f2r = await t.evalJs("(() => { var h = document.querySelector('#profileHeader .profile-header');" +
+      " var rawCalls = window.__fetchCalls.filter(function (c) { return c.method === 'PATCH'; }).map(function (c) { return c.body; });" +
+      " return { rawCalls: rawCalls, glass: h.classList.contains('liquid-glass'), cls: h.className, cardBgColor: getComputedStyle(h).backgroundColor }; })()");
+    const e6f2rCardBgCalls = e6f2r.rawCalls.filter(function (b) { return b.indexOf('cardBg') !== -1; });
+    check('E6f2 v0.2.53.2 恢复默认：最后 PATCH body 精确 ={"cardBg":null} + 头部回默认（无 liquid-glass/无预设类）+ 卡身回实底（白霜卸下）', e6f2rCardBgCalls[e6f2rCardBgCalls.length - 1] === '{"cardBg":null}' && !e6f2r.glass && e6f2r.cls.indexOf('glass-') === -1 && e6f2r.cardBgColor !== 'rgba(255, 255, 255, 0.34)', JSON.stringify({ calls: e6f2rCardBgCalls, cls: e6f2r.cls, cardBgColor: e6f2r.cardBgColor }));
 
     // E6g v0.2.25.0 页面背景组（独立弹窗会话——E6d/E6f 的 cardBg PATCH 精确断言不受 pageBgImage 污染）：
     //   弹窗放大 1 倍 → 默认选中 → 点自定义 → 网址非法警告 → 合法网址预览 → 保存 → body 整页背景 → 重开预填 → 默认 → 保存恢复
@@ -930,11 +969,11 @@ async function main() {
 
     check('O5 全程 0 console error', errs.length === 0, errs.slice(0, 3).join(' | '));
 
-    // Q v0.2.53.1 静态锚：页面/后端双白名单/迁移文件逐键在场
-    console.log('── Q. 静态锚（v0.2.53.1 卡片边缘主题）──');
+    // Q v0.2.53.1 静态锚：页面/后端双白名单/迁移文件逐键在场（v0.2.53.2 加 glass-distortion 折射滤镜 + 暗色卡身白霜）
+    console.log('── Q. 静态锚（v0.2.53.1 卡片边缘主题 + v0.2.53.2 液态玻璃换代）──');
     const pageSrc = fs.readFileSync(path.join(DOCS, 'pages', 'community-profile.html'), 'utf8');
-    const qMissing = ['paper-edge-clip', 'hud-frame-4', 'mn-paint-clip-5', 'mn-paint-filter-5', 'data-card-edge', 'applyCardEdge', 'EDGE_DEFS', 'SUBSCRIPTION_TEST_MODE', 'swatch-shape'].filter(function (k) { return pageSrc.indexOf(k) === -1; });
-    check('Q 页面静态锚：SVG defs（paper-edge-clip/hud-frame-4/mn-paint-clip-5/mn-paint-filter-5）+ data-card-edge + applyCardEdge + EDGE_DEFS + SUBSCRIPTION_TEST_MODE + swatch-shape', qMissing.length === 0, '缺=' + qMissing.join(','));
+    const qMissing = ['paper-edge-clip', 'hud-frame-4', 'mn-paint-clip-5', 'mn-paint-filter-5', 'data-card-edge', 'applyCardEdge', 'EDGE_DEFS', 'SUBSCRIPTION_TEST_MODE', 'swatch-shape', 'glass-distortion', 'rgba(26, 26, 46, 0.58)'].filter(function (k) { return pageSrc.indexOf(k) === -1; });
+    check('Q 页面静态锚：SVG defs（paper-edge-clip/hud-frame-4/mn-paint-clip-5/mn-paint-filter-5/glass-distortion）+ data-card-edge + applyCardEdge + EDGE_DEFS + SUBSCRIPTION_TEST_MODE + swatch-shape + v0.2.53.2 暗色卡身白霜 0.58', qMissing.length === 0, '缺=' + qMissing.join(','));
     const authSrc = fs.readFileSync(path.join(__dirname, 'src', 'routes', 'public', 'auth.js'), 'utf8');
     const socialSrc = fs.readFileSync(path.join(__dirname, 'src', 'routes', 'public', 'social.js'), 'utf8');
     check('Q 后端白名单双份同步：auth.js + social.js 各含 CARD_EDGE_KEYS', authSrc.indexOf('CARD_EDGE_KEYS') !== -1 && socialSrc.indexOf('CARD_EDGE_KEYS') !== -1, '');
@@ -951,7 +990,7 @@ async function main() {
     // L1 hub 首卡作者锚 → 个人主页（href 形状断言）
     const l1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]'); var a = c ? c.querySelector('.post-author-link') : null;" +
       " return { ver: window.MN_SITE_VERSION, href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && a.textContent.length > 0) : false }; })()");
-    check('L1 版本 v0.2.53.1', l1.ver === 'v0.2.53.1', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.53.2', l1.ver === 'v0.2.53.2', 'ver=' + l1.ver);
     check('L1 云卡作者锚 → profile（id=USR- 形状 + 头像+名字在内）', l1.href && /^community-profile\.html\?id=USR-\d{6}$/.test(l1.href) && l1.wrapped, l1.href);
 
     // L2 点作者锚 → 真导航 → 头部渲染（真数据）+ 几何 + 关注钮

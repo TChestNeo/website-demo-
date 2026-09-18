@@ -2521,8 +2521,15 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 .card-halo { margin: -6px; padding: 6px; position: relative; z-index: 0; border-radius: calc(var(--radius-lg) + 6px); background: var(--lg-bg, linear-gradient(135deg, #60a5fa, #a78bfa)); } /* v0.2.24.0 独立卡片背景层：包层挂背景预设类（自己的 --lg-bg），铺满整卡 + 四周阔出 6px（margin 负值抵消 padding，卡片视觉尺寸不变；兜底=参考代码蓝紫渐变）。v0.2.24.3 position:relative+z-index:0=包层建层叠上下文（引擎约定：玻璃面自带定位即层叠上下文，负 z 双层垫在包层底之上、卡内容之下不上逃） */
 .card-halo .profile-header { background: transparent; } /* v0.2.24.0 卡身纯透明——透出背景层（选中卡片背景时） */
 .card-halo.glass-clear { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.8); } /* v0.2.24.1/2 标准液态玻璃白边环 2px + 柔影——与用户参考代码一模一样（v0.2.24.2 填充层改透明） */
-.profile-header .lg-backdrop { -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); } /* 引擎默认 6px，主页卡给 14px 磨砂 */
-.card-halo > .lg-backdrop { -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4); } /* v0.2.24.3 包层引擎层 24px 磨砂（modal-card 同款=rdev 配方大面值；折射 70+三通道色散+镜面高光引擎自带）；子代选择器只命中包层自己的层，卡层仍 14px（横幅组不动） */
+/* v0.2.53.2 液态玻璃换代（用户贴的生成器代码同款）：磨砂 14/24px→10px + 挂噪点波动折射滤镜 #glass-distortion——
+   标准双通道位移不拆颜色通道→无色散不发黄（引擎三通道色散滤镜被本规则 filter 覆盖：0,2,0 特异性压过 ethereal 内联 .lg-backdrop 的 0,1,0）；blur 10px=saturate 同用户代码口径 */
+.profile-header .lg-backdrop { -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4); -webkit-filter: url(#glass-distortion); filter: url(#glass-distortion); }
+.card-halo > .lg-backdrop { -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4); -webkit-filter: url(#glass-distortion); filter: url(#glass-distortion); } /* 包层引擎层同换 10px 磨砂 + 同款折射（子代选择器只命中包层自己的层，卡层同款） */
+/* v0.2.53.2 卡身玻璃白霜（用户代码 ::before 白 tint 同思路）：横幅模式（无 card-halo 包层）液体玻璃卡身半透白霜——
+   卡身原有实底，霜调高到 0.34 才透出下方磨砂折射层见玻璃质感（用户代码 0.15 是无底色纯玻璃层口径）；暗色模式换深蓝霜。
+   :not(.card-halo) 作用域：卡片背景板模式下卡身必须保持透明（.card-halo .profile-header 规则），白霜不得盖回 */
+#profileHeader:not(.card-halo) .profile-header.liquid-glass { background: rgba(255, 255, 255, 0.34); }
+:root[data-theme="dark"] #profileHeader:not(.card-halo) .profile-header.liquid-glass { background: rgba(26, 26, 46, 0.58); }
 .bg-default { --lg-bg: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-frost { --lg-tint: rgba(255,255,255,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.10) 45%, rgba(255,255,255,0.30)), linear-gradient(135deg, rgba(96,100,230,0.50), rgba(150,120,245,0.35) 50%, rgba(96,100,230,0.50)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
 .glass-ocean { --lg-tint: rgba(30,90,200,0.10); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(30,90,200,0.55), rgba(40,140,190,0.40) 50%, rgba(30,90,200,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), var(--color-surface-container-high); }
@@ -2899,6 +2906,12 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
         L 0.08 0.88 L 0.01 0.80 L 0.07 0.72 L 0.00 0.64 L 0.06 0.55 L 0.01 0.46 L 0.08 0.38 L 0.02 0.28 L 0.09 0.18 L 0.03 0.10 Z
       " />
     </clipPath>
+    <!-- v0.2.53.2 液态玻璃换代（用户贴的生成器代码同款）：噪点波动折射——低频分形噪点+高斯模糊+标准双通道位移（不拆颜色通道→无色散不发黄，侧栏发黄教训不重演），整面玻璃如水面轻波；挂在带 backdrop-filter 的玻璃层上，filter 作用于磨砂后的合成输出；区域 x/y -20% + 140% 口径保位移拉出边界的像素不被裁 -->
+    <filter id="glass-distortion" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.014 0.014" numOctaves="2" seed="92" result="noise" />
+      <feGaussianBlur in="noise" stdDeviation="2" result="blurred" />
+      <feDisplacementMap in="SourceGraphic" in2="blurred" scale="63" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
   </defs>
 </svg>
 

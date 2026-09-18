@@ -74,8 +74,8 @@ async function waitFor(cdp, expr, timeout, label) {
   const msgSrc = fs.readFileSync(path.join(DOCS, 'pages', 'messages.html'), 'utf8');
   const idxSrc = fs.readFileSync(path.join(DOCS, 'index.html'), 'utf8');
   const sconfSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
-  ok('F0 版本双线 v0.2.53.1 / v10.28.36.1 + 用户原话注释',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.53.1';") !== -1 &&
+  ok('F0 版本双线 v0.2.53.2 / v10.28.36.1 + 用户原话注释',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.53.2';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.1';") !== -1 &&
     sconfSrc.indexOf('douyin.com/user/self') !== -1);
   ok('F1 直达读取 showTab + 旧 tab 兼容',

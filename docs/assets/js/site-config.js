@@ -995,7 +995,17 @@ window.MN_SITE = window.MN_SITE || {};
 //   filter→clip-path 下子层位移结果被自身 clip 裁回剪影内、内容层零滤镜完全免疫，剪影边缘墨雾感由纹理特征位移×
 //   clip 交互保留；FC 同机制同修（v10.28.36.1）；后端零改动（user_version 27/health 59 表不变）；零草稿字段（v 保持 9）
 //   （rev 00256-6bg）
-window.MN_SITE_VERSION = 'v0.2.53.1';
+// v0.2.53.2 = 个人页卡片背景液态玻璃换代（用户贴的生成器代码；补丁位 1→2·观感修复轮；2026-09-19）——用户「能不能把那个液态玻璃换成 以下这个代码？」（问询钦定：①只换 Community 个人页编辑资料弹窗「自定义」内的卡片背景玻璃——横幅玻璃预设 + 卡片背景板「标准液态玻璃」，不是全站、不是 FC ②侧栏保持纯色底不装回）：
+//   新 #glass-distortion 滤镜（feTurbulence fractalNoise 0.014/2 octaves/seed 92 → feGaussianBlur 2 →
+//   feDisplacementMap scale 63 R/G 双通道位移，x/y -20% 140% 区域口径）挂在带 backdrop-filter 的玻璃层上，
+//   标准双通道位移不拆颜色通道→无色散不发黄（引擎三通道色散滤镜被页面规则 0,2,0 特异性覆盖）；
+//   横幅玻璃层 + 卡片背景板包层磨砂 14/24px→10px（用户代码口径）；横幅模式卡身加半透白霜
+//   rgba(255,255,255,0.34)/暗色 rgba(26,26,46,0.58)（用户代码 ::before 白 tint 同思路，卡身有实底调高才透出
+//   磨砂折射层；:not(.card-halo) 作用域不压卡片背景板透明卡身）；只动 community-profile.html 页面专块 + defs；
+//   ethereal/liquid-glass.js/inline-css/entrypoint 零改动；后端零改动（user_version 27/health 59 表不变）；
+//   FC v10.28.36.1 零改动；零草稿字段（v 保持 9）
+//   （rev 00257-jl2）
+window.MN_SITE_VERSION = 'v0.2.53.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
