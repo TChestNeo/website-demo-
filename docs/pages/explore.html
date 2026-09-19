@@ -2196,13 +2196,13 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
     <!-- Sub nav -->
     <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md);flex-wrap:wrap">
       <div class="subnav" data-slider>
-        <a href="overview.html" class="subnav-pill">Overview</a>
-        <a href="explore.html" class="subnav-pill active">Explore</a>
-        <a href="guidelines.html" class="subnav-pill">Guidelines</a>
+        <a href="overview.html" class="subnav-pill" data-i18n="ex.nav.overview">Overview</a>
+        <a href="explore.html" class="subnav-pill active" data-i18n="ex.nav.explore">Explore</a>
+        <a href="guidelines.html" class="subnav-pill" data-i18n="ex.nav.guidelines">Guidelines</a>
       </div>
       <div class="search-capsule" style="margin-left:auto">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search worlds, events..." oninput="filterNations(this.value)">
+        <input type="text" placeholder="Search worlds, events..." oninput="filterNations(this.value)" data-i18n-placeholder="ex.ph.search">
       </div>
     </div>
 
@@ -2211,7 +2211,7 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
 
       <!-- Left: Nation/Event article cards -->
       <div>
-        <h2 class="headline-md" style="margin-bottom:var(--space-sm)">All Worlds & Entities</h2>
+        <h2 class="headline-md" style="margin-bottom:var(--space-sm)" data-i18n="ex.heading">All Worlds & Entities</h2>
         <div style="display:flex;flex-direction:column;gap:var(--space-sm)" id="nationCards"></div>
       </div>
 
@@ -2225,19 +2225,19 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
               <span class="material-symbols-outlined" style="font-size:20px;color:#eab308">verified</span>
               <span style="font-weight:700;font-size:13px">M.NationWorld Premium</span>
             </div>
-            <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4">Advanced analytics, custom themes, priority support.</p>
+            <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4" data-i18n="ex.premium.desc">Advanced analytics, custom themes, priority support.</p>
             <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;font-size:12px" onclick="window.location.href='premium.html'">
               <span class="material-symbols-outlined" style="font-size:14px">rocket_launch</span>
-              Subscribe — <span data-slati-price>$11.99</span>/mo
+              <span data-i18n="ex.premium.subscribe">Subscribe — </span><span data-slati-price>$11.99</span><span data-i18n="ex.premium.perMo">/mo</span>
             </button>
-            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'">View all plans →</button>
+            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'" data-i18n="ex.premium.viewPlans">View all plans →</button>
           </div>
         </div>
         <!-- Hot Topics -->
         <div class="card">
           <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
             <span class="material-symbols-outlined" style="font-size:18px;color:#ea580c">local_fire_department</span>
-            Trending Topics
+            <span data-i18n="ex.trending">Trending Topics</span>
           </h3>
           <div id="trendingTopics" style="display:flex;flex-direction:column;gap:4px"></div>
         </div>
@@ -2246,7 +2246,7 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
         <div class="card">
           <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
             <span class="material-symbols-outlined" style="font-size:18px;color:#eab308">star</span>
-            Popular Worlds
+            <span data-i18n="ex.popular">Popular Worlds</span>
           </h3>
           <div id="popularNations" style="display:flex;flex-direction:column;gap:4px"></div>
         </div>
@@ -2255,7 +2255,7 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
         <div class="card">
           <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
             <span class="material-symbols-outlined" style="font-size:18px;color:#22c55e">trending_up</span>
-            Top Growing
+            <span data-i18n="ex.growing">Top Growing</span>
           </h3>
           <div id="topGrowing" style="display:flex;flex-direction:column;gap:4px"></div>
         </div>
@@ -2273,6 +2273,8 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
 <script src="../assets/js/pricing.js"></script>
 <script src="../assets/js/subnav.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   // 国家 + 22 类型世界合并展示（世界记录归一化到国家卡片形状）
   var nations = SlatiDB.getNations();
   var worlds = SlatiDB.getWorlds().map(function (w) {
@@ -2294,8 +2296,8 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
     if (nations.length === 0) {
       document.getElementById('nationCards').innerHTML =
         '<div class="card" style="text-align:center;padding:var(--space-xl)">' +
-          '<p style="color:var(--color-outline)">No worlds match your search.</p>' +
-          '<a href="create-world.html" class="btn btn-primary" style="margin-top:var(--space-sm)">Create the first world →</a>' +
+          '<p style="color:var(--color-outline)">' + (T('ex.empty') || 'No worlds match your search.') + '</p>' +
+          '<a href="create-world.html" class="btn btn-primary" style="margin-top:var(--space-sm)">' + (T('ex.createFirst') || 'Create the first world →') + '</a>' +
         '</div>';
       return;
     }
@@ -2318,7 +2320,7 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
           '</div>' +
           '<span class="material-symbols-outlined" style="font-size:18px;color:#22c55e">verified</span>' +
         '</div>' +
-        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:10px;line-height:1.5">' + (n.lore || 'A world in the M.NationWorld registry.') + '</p>' +
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:10px;line-height:1.5">' + (n.lore || (T('ex.loreFallback') || 'A world in the M.NationWorld registry.')) + '</p>' +
         '<div class="flex-between" style="flex-wrap:wrap;gap:6px">' +
           '<div style="display:flex;gap:4px;flex-wrap:wrap">' +
             '<span class="badge badge-secondary">' + n.classification + '</span>' +
@@ -2392,6 +2394,23 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
 <script src="../assets/js/transitions.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
+</script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/explore.i18n.js"></script>
+<script>
+MN_I18N.apply();
+// v0.2.54.0：subnav 滑块克隆（DOMContentLoaded 建于 apply 之后，首建即翻译文字）；运行时切语言补一次同步
+if (window.MN_I18N && window.MN_I18N.onChange) {
+  MN_I18N.onChange(function () {
+    var clones = document.querySelectorAll('.subnav-highlight-clone');
+    var pills = document.querySelectorAll('.subnav-pill');
+    for (var i = 0; i < clones.length && i < pills.length; i++) {
+      clones[i].textContent = pills[i].textContent;
+    }
+  });
+}
 </script>
 </body>
 </html>

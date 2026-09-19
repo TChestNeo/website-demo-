@@ -2164,41 +2164,41 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
 <div style="position:fixed;top:0;left:0;right:0;padding:var(--space-sm) var(--space-md);z-index:50;display:flex;align-items:center;gap:12px">
   <img src="../assets/image/M.NationWorld logo.png" alt="M.NationWorld" style="height:24px;width:auto">
-  <span style="font-weight:700">M.NationWorld</span>
-  <span style="margin-left:auto;font-size:var(--fs-label-sm);color:var(--color-outline)">Create Topic</span>
+  <span style="font-weight:700" data-i18n="cts1.topbar.brand">M.NationWorld</span>
+  <span style="margin-left:auto;font-size:var(--fs-label-sm);color:var(--color-outline)" data-i18n="cts1.topbar.label">Create Topic</span>
 </div>
 
 <div class="topic-wizard">
   <!-- Progress -->
   <div class="progress-steps" style="justify-content:center;margin-bottom:var(--space-lg)">
-    <div class="progress-step active"><span class="dot">1</span><span>Info</span></div>
+    <div class="progress-step active"><span class="dot">1</span><span data-i18n="cts1.steps.info">Info</span></div>
     <div class="progress-connector"></div>
-    <div class="progress-step pending"><span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">2</span><span style="color:var(--color-outline)">Branding</span></div>
+    <div class="progress-step pending"><span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">2</span><span style="color:var(--color-outline)" data-i18n="cts1.steps.branding">Branding</span></div>
     <div class="progress-connector"></div>
-    <div class="progress-step pending"><span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">3</span><span style="color:var(--color-outline)">Review</span></div>
+    <div class="progress-step pending"><span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">3</span><span style="color:var(--color-outline)" data-i18n="cts1.steps.review">Review</span></div>
   </div>
 
   <div class="card tilt-container" style="padding:var(--space-lg)">
-    <h2 class="headline-md" style="margin-bottom:4px">Create a New Topic</h2>
-    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">Step 1: Define your topic</p>
+    <h2 class="headline-md" style="margin-bottom:4px" data-i18n="cts1.hero.title">Create a New Topic</h2>
+    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)" data-i18n="cts1.hero.sub">Step 1: Define your topic</p>
 
     <div class="form-group">
-      <label class="form-label">Topic Name</label>
-      <input type="text" class="input-glass" id="topicName" placeholder="e.g. Digital Sovereignty Protocols">
+      <label class="form-label" data-i18n="cts1.form.name">Topic Name</label>
+      <input type="text" class="input-glass" id="topicName" placeholder="e.g. Digital Sovereignty Protocols" data-i18n-placeholder="cts1.ph.name">
     </div>
     <div class="form-group">
-      <label class="form-label">Short Description</label>
-      <textarea class="input-glass" id="topicDesc" placeholder="What is this topic about?" rows="3"></textarea>
+      <label class="form-label" data-i18n="cts1.form.desc">Short Description</label>
+      <textarea class="input-glass" id="topicDesc" placeholder="What is this topic about?" rows="3" data-i18n-placeholder="cts1.ph.desc"></textarea>
     </div>
     <div class="form-group">
-      <label class="form-label">Category</label>
+      <label class="form-label" data-i18n="cts1.form.category">Category</label>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px" id="categoryGrid"></div>
     </div>
 
     <div class="flex-between" style="margin-top:var(--space-lg)">
-      <a href="../index.html" class="btn btn-ghost">Discard Draft</a>
+      <a href="../index.html" class="btn btn-ghost" data-i18n="cts1.actions.discard">Discard Draft</a>
       <button class="btn btn-primary btn-lg" onclick="handleNext()">
-        Continue to Branding
+        <span data-i18n="cts1.actions.continue">Continue to Branding</span>
         <span class="material-symbols-outlined">arrow_forward</span>
       </button>
     </div>
@@ -2211,6 +2211,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/liquid-glass.js"></script>
 <script src="../assets/js/storage.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   var categories = [
     { id: 'governance', icon: 'account_balance', label: 'Governance' },
     { id: 'art', icon: 'palette', label: 'Art & Lore' },
@@ -2220,12 +2223,38 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   ];
   var selectedCategory = '';
 
-  document.getElementById('categoryGrid').innerHTML = categories.map(function(c) {
-    return '<button class="btn btn-ghost" style="flex-direction:column;padding:12px 8px;gap:4px" onclick="selectCategory(\'' + c.id + '\', this)" data-cat="' + c.id + '">' +
-      '<span class="material-symbols-outlined" style="font-size:24px">' + c.icon + '</span>' +
-      '<span class="label-sm">' + c.label + '</span>' +
-    '</button>';
-  }).join('');
+  // v0.2.54.0 i18n：类别按钮渲染抽成 renderCategoryGrid——首载 T() 恒空落原文字面量，
+  // body 尾部三件套 apply 后经 window.__mnI18nRerender 再按当前语言重渲一次。
+  // selectedCategory 只存 id（草稿数据不译），标签译文只影响显示。
+  function renderCategoryGrid() {
+    var grid = document.getElementById('categoryGrid');
+    if (!grid) return;
+    var labels = [
+      T('cts1.cat.governance') || 'Governance',
+      T('cts1.cat.art') || 'Art & Lore',
+      T('cts1.cat.tech') || 'Technology',
+      T('cts1.cat.social') || 'Social',
+      T('cts1.cat.other') || 'Other',
+    ];
+    grid.innerHTML = categories.map(function(c, i) {
+      return '<button class="btn btn-ghost" style="flex-direction:column;padding:12px 8px;gap:4px" onclick="selectCategory(\'' + c.id + '\', this)" data-cat="' + c.id + '">' +
+        '<span class="material-symbols-outlined" style="font-size:24px">' + c.icon + '</span>' +
+        '<span class="label-sm">' + labels[i] + '</span>' +
+      '</button>';
+    }).join('');
+    if (selectedCategory) {
+      var sel = grid.querySelector('button[data-cat="' + selectedCategory + '"]');
+      if (sel) {
+        sel.style.background = 'rgba(70,72,212,0.1)';
+        sel.style.border = '1px solid rgba(70,72,212,0.2)';
+        sel.style.color = 'var(--color-primary)';
+      }
+    }
+  }
+  renderCategoryGrid();
+
+  // v0.2.54.0 i18n：重渲钩子——语言切换（含 body 尾部三件套首次 apply）时重刷类别按钮
+  window.__mnI18nRerender = renderCategoryGrid;
 
   function selectCategory(id, el) {
     selectedCategory = id;
@@ -2240,9 +2269,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   function handleNext() {
     var name = document.getElementById('topicName').value.trim();
     var desc = document.getElementById('topicDesc').value.trim();
-    if (!name) { showError('Please enter a topic name'); return; }
-    if (!desc) { showError('Please enter a description'); return; }
-    if (!selectedCategory) { showError('Please select a category'); return; }
+    if (!name) { showError(T('cts1.err.name') || 'Please enter a topic name'); return; }
+    if (!desc) { showError(T('cts1.err.desc') || 'Please enter a description'); return; }
+    if (!selectedCategory) { showError(T('cts1.err.category') || 'Please select a category'); return; }
 
     localStorage.setItem('slati_topic_draft', JSON.stringify({
       name: name, description: desc, category: selectedCategory
@@ -2260,5 +2289,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/create-topic-step-1.i18n.js"></script>
+<script>MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); }); MN_I18N.apply();</script>
 </body>
 </html>

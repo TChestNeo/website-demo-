@@ -2487,13 +2487,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Sub nav -->
     <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md);flex-wrap:wrap">
       <div class="subnav" data-slider id="communitySubnav">
-        <a class="subnav-pill active" data-tab="recommend">Recommend</a>
-        <a class="subnav-pill" data-tab="following">Following</a>
-        <a class="subnav-pill" data-tab="topic">Topic</a>
+        <a class="subnav-pill active" data-tab="recommend" data-i18n="hub.tab.recommend">Recommend</a>
+        <a class="subnav-pill" data-tab="following" data-i18n="hub.tab.following">Following</a>
+        <a class="subnav-pill" data-tab="topic" data-i18n="hub.tab.topic">Topic</a>
       </div>
       <div class="search-capsule" style="margin-left:auto">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search topics...">
+        <input type="text" placeholder="Search topics..." data-i18n-placeholder="hub.search.placeholder">
       </div>
     </div>
 
@@ -2509,29 +2509,29 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           <div style="position:relative;z-index:1">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
               <span class="material-symbols-outlined" style="font-size:20px;color:#eab308">verified</span>
-              <span style="font-weight:700;font-size:13px">M.NationWorld Premium</span>
+              <span style="font-weight:700;font-size:13px" data-i18n="hub.premium.name">M.NationWorld Premium</span>
             </div>
-            <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4">Advanced analytics, custom themes, priority support.</p>
+            <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4" data-i18n="hub.premium.desc">Advanced analytics, custom themes, priority support.</p>
             <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;font-size:12px" onclick="window.location.href='premium.html'">
               <span class="material-symbols-outlined" style="font-size:14px">rocket_launch</span>
-              Subscribe — <span data-slati-price>$11.99</span>/mo
+              <span data-i18n="hub.premium.subscribePre">Subscribe — </span><span data-slati-price>$11.99</span><span data-i18n="hub.premium.perMo">/mo</span>
             </button>
-            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'">View all plans →</button>
+            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'" data-i18n="hub.premium.viewPlans">View all plans →</button>
           </div>
         </div>
         <!-- Discovery Hub -->
         <div class="card" id="discoveryHub">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm)">Discovery Hub</h3>
+          <h3 class="label-md" style="margin-bottom:var(--space-sm)" data-i18n="hub.discovery.title">Discovery Hub</h3>
           <div class="subnav" data-slider style="margin-bottom:var(--space-sm)" id="discoveryTabs">
-            <a class="subnav-pill active" data-dtab="topics">Topics</a>
-            <a class="subnav-pill" data-dtab="channels">Channels</a>
+            <a class="subnav-pill active" data-dtab="topics" data-i18n="hub.discovery.topics">Topics</a>
+            <a class="subnav-pill" data-dtab="channels" data-i18n="hub.discovery.channels">Channels</a>
           </div>
           <div id="discoveryList" style="display:flex;flex-direction:column;gap:4px"></div>
         </div>
 
         <!-- Trending -->
         <div class="card">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm)">Trending</h3>
+          <h3 class="label-md" style="margin-bottom:var(--space-sm)" data-i18n="hub.trending">Trending</h3>
           <div id="trendingList" style="display:flex;flex-direction:column;gap:4px"></div>
         </div>
       </div>
@@ -2550,6 +2550,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/subnav.js"></script>
 <script src="../assets/js/report.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性翻译取词（i18n.js 加载前返回 null → 原文兜底，天然零报错）
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   var currentTab = 'recommend';
   var currentDiscoveryTab = 'topics';
   var topics = SlatiDB.getTopics();
@@ -2579,12 +2582,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   function relativeTime(iso) {
     var diff = Date.now() - new Date(iso).getTime();
     if (Number.isNaN(diff)) return '';
-    if (diff < 60000) return 'just now';
+    if (diff < 60000) return T('hub.time.justNow') || 'just now';
     var m = Math.floor(diff / 60000);
-    if (m < 60) return m + ' min ago';
+    if (m < 60) return m + (T('hub.time.minAgo') || ' min ago');
     var h = Math.floor(m / 60);
-    if (h < 24) return h + ' hr ago';
-    return Math.floor(h / 24) + ' d ago';
+    if (h < 24) return h + (T('hub.time.hrAgo') || ' hr ago');
+    return Math.floor(h / 24) + (T('hub.time.dAgo') || ' d ago');
   }
 
   function toastMsg(msg, isError) {
@@ -2605,9 +2608,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   function cloudPostItem(p) {
     // v0.2.18.0 转发卡：repostOfId 有值时徽章换「转发了」（复用既有 badge-success 绿徽章，零新 CSS）
     return {
-      icon: 'person', badge: p.repostOfId ? '转发了' : 'Citizen Post',
+      icon: 'person', badge: p.repostOfId ? (T('hub.badge.reposted') || '转发了') : (T('hub.badge.citizenPost') || 'Citizen Post'),
       badgeClass: p.repostOfId ? 'badge-success' : 'badge-primary',
-      author: p.authorName || 'Citizen',
+      author: p.authorName || (T('hub.citizen') || 'Citizen'),
       avatarUrl: p.avatarUrl || null,
       authorId: p.authorId || null, // v0.2.21.0 作者 id → 个人主页入口（头像/名字包锚）
       title: p.content.length > 90 ? p.content.slice(0, 90) + '…' : p.content,
@@ -2628,14 +2631,14 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   // v0.2.18.0 嵌入原帖盒（hub 卡 + 帖页共用形状）：头像/作者/时间/正文截 200 字/媒体网格；
   // o=null → 原帖已删除或不可见占位。全量 escapeHtml。
   function repostEmbeddedHtml(o) {
-    if (!o) return '<div class="repost-embedded-gone">原帖已删除或不可见</div>';
+    if (!o) return '<div class="repost-embedded-gone">' + (T('hub.repostGone') || '原帖已删除或不可见') + '</div>';
     var m = (o.media || []).filter(function (x) { return MEDIA_URL_RE.test(x); });
     var text = String(o.content || '');
     var shown = text.length > 200 ? text.slice(0, 200) + '…' : text;
     return '<div class="repost-embedded">' +
       '<div class="flex-center" style="justify-content:flex-start;gap:6px">' +
         (o.avatarUrl ? '<img src="' + escapeHtml(o.avatarUrl) + '" alt="" class="avatar avatar-sm">' : '') +
-        '<span style="font-weight:600;font-size:var(--fs-label-md)">' + escapeHtml(o.authorName || 'Citizen') + '</span>' +
+        '<span style="font-weight:600;font-size:var(--fs-label-md)">' + escapeHtml(o.authorName || (T('hub.citizen') || 'Citizen')) + '</span>' +
         '<span class="label-sm" style="color:var(--color-outline)">' + escapeHtml(o.createdAt ? relativeTime(o.createdAt) : '') + '</span>' +
       '</div>' +
       (shown ? '<p class="repost-embedded-text">' + escapeHtml(shown) + '</p>' : '') +
@@ -2650,38 +2653,40 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   var placeholderTips = ['有什么好事？', '有什么新消息？', '同志有什么新消息要分享分享？', '贵国有什么新闻吗？'];
   var PH_SLOT_MS = 30 * 60 * 1000;
   function phIdxNow() { return Math.floor(Date.now() / PH_SLOT_MS) % placeholderTips.length; }
+  // v0.2.54.0 i18n：取句时现译（zh 字典值=原文，电池断言安全）
+  function phText(i) { return T('hub.ph.' + i) || placeholderTips[i]; }
   var phBoundaryTimer = null;
   function armPhBoundary() {
     if (phBoundaryTimer) clearTimeout(phBoundaryTimer);
     var next = (Math.floor(Date.now() / PH_SLOT_MS) + 1) * PH_SLOT_MS;
     phBoundaryTimer = setTimeout(function () {
       var b = document.getElementById('postComposer');
-      if (b) b.placeholder = placeholderTips[phIdxNow()]; // 正点换句（免刷新）
+      if (b) b.placeholder = phText(phIdxNow()); // 正点换句（免刷新）
       armPhBoundary();
     }, next - Date.now() + 500);
   }
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') {
       var b = document.getElementById('postComposer');
-      if (b) b.placeholder = placeholderTips[phIdxNow()]; // 回前台兜底（节流环境下定时器可能迟触发）
+      if (b) b.placeholder = phText(phIdxNow()); // 回前台兜底（节流环境下定时器可能迟触发）
     }
   });
 
   function composerHtml() {
     return '<div class="card">' +
-      '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="" aria-label="有什么好事？" style="width:100%;border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:none;overflow-y:auto;max-height:240px;margin-bottom:8px"></textarea>' +
+      '<textarea id="postComposer" rows="3" maxlength="2000" placeholder="" aria-label="' + (T('hub.composer.ariaLabel') || '有什么好事？') + '" style="width:100%;border-radius:var(--radius-md);padding:10px;color:inherit;font:inherit;resize:none;overflow-y:auto;max-height:240px;margin-bottom:8px"></textarea>' +
       '<input type="file" id="postImgInput" accept="image/*,video/*" multiple style="display:none">' +
       '<input type="file" id="postGifInput" accept="image/gif" multiple style="display:none">' +
       '<div class="pm-list" id="pendingMedia"></div>' +
       '<div class="composer-actions">' +
       '<div class="composer-tools">' +
-      '<button type="button" class="composer-tool" data-action="upload" data-tip="上传图片" aria-label="上传图片"><span class="material-symbols-outlined">image</span></button>' +
-      '<button type="button" class="composer-tool" data-action="gif" data-tip="GIF" aria-label="GIF"><span class="material-symbols-outlined">gif</span></button>' +
-      '<button type="button" class="composer-tool" data-tip="投票" aria-label="投票"><span class="material-symbols-outlined">poll</span></button>' +
-      '<button type="button" class="composer-tool" data-tip="表情符号" aria-label="表情符号"><span class="material-symbols-outlined">sentiment_satisfied</span></button>' +
-      '<button type="button" class="composer-tool" data-tip="创办活动" aria-label="创办活动"><span class="material-symbols-outlined">event</span></button>' +
+      '<button type="button" class="composer-tool" data-action="upload" data-tip="' + (T('hub.tool.upload') || '上传图片') + '" aria-label="' + (T('hub.tool.upload') || '上传图片') + '"><span class="material-symbols-outlined">image</span></button>' +
+      '<button type="button" class="composer-tool" data-action="gif" data-tip="' + (T('hub.tool.gif') || 'GIF') + '" aria-label="' + (T('hub.tool.gif') || 'GIF') + '"><span class="material-symbols-outlined">gif</span></button>' +
+      '<button type="button" class="composer-tool" data-tip="' + (T('hub.tool.poll') || '投票') + '" aria-label="' + (T('hub.tool.poll') || '投票') + '"><span class="material-symbols-outlined">poll</span></button>' +
+      '<button type="button" class="composer-tool" data-tip="' + (T('hub.tool.emoji') || '表情符号') + '" aria-label="' + (T('hub.tool.emoji') || '表情符号') + '"><span class="material-symbols-outlined">sentiment_satisfied</span></button>' +
+      '<button type="button" class="composer-tool" data-tip="' + (T('hub.tool.event') || '创办活动') + '" aria-label="' + (T('hub.tool.event') || '创办活动') + '"><span class="material-symbols-outlined">event</span></button>' +
       '</div>' +
-      '<button class="btn btn-primary btn-sm" id="postSubmit">Post</button>' +
+      '<button class="btn btn-primary btn-sm" id="postSubmit">' + (T('hub.composer.post') || 'Post') + '</button>' +
       '</div></div>';
   }
 
@@ -2690,23 +2695,23 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var btn = document.getElementById('postSubmit');
     if (!el || btn.disabled) return;
     var content = el.value.trim();
-    if (!content) { toastMsg('写点内容再发布'); return; }
+    if (!content) { toastMsg(T('hub.composer.empty') || '写点内容再发布'); return; }
     btn.disabled = true;
     MN_API.post('/social/posts', { content: content, media: pendingMedia.slice() }).then(function (r) {
       btn.disabled = uploadingCount > 0; // 附件上传进行中保持禁用
       if (r.ok && r.data && r.data.post) {
         var p = r.data.post;
-        if (p.status === 'removed') { toastMsg('内容违反社区规则，已被拦截', true); return; }
+        if (p.status === 'removed') { toastMsg(T('hub.post.removed') || '内容违反社区规则，已被拦截', true); return; }
         SlatiDB.addXP('create_post', 25); // v0.2.49.0 发帖 +25 立得（removed 帖不记）
-        toastMsg(r.data.moderation && r.data.moderation.verdict === 'hold' ? '已发布，内容待审核' : '发布成功');
+        toastMsg(r.data.moderation && r.data.moderation.verdict === 'hold' ? (T('hub.post.hold') || '已发布，内容待审核') : (T('hub.post.ok') || '发布成功'));
         el.value = '';
         el.style.height = 'auto'; // 自适长框立刻回缩（重渲染前防闪高框）
         pendingMedia = []; // 发布成功清空待传附件
         renderPendingMedia();
         refreshCloudFeed();
-      } else if (r.status === 429) { toastMsg('发布过于频繁，请稍后再试', true); }
-      else if (r.status === 401) { toastMsg('登录已过期，请重新登录', true); }
-      else { toastMsg((r.data && r.data.error && r.data.error.message) || '发布失败，请稍后再试', true); }
+      } else if (r.status === 429) { toastMsg(T('hub.post.rate') || '发布过于频繁，请稍后再试', true); }
+      else if (r.status === 401) { toastMsg(T('hub.post.session') || '登录已过期，请重新登录', true); }
+      else { toastMsg((r.data && r.data.error && r.data.error.message) || (T('hub.post.fail') || '发布失败，请稍后再试'), true); }
     });
   }
 
@@ -2725,7 +2730,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         (isVideoUrl(url)
           ? '<video src="' + escapeHtml(url) + '" muted></video>'
           : '<img src="' + escapeHtml(url) + '" alt="">') +
-        '<button type="button" class="pm-rm" data-pm-rm="' + i + '" title="移除">×</button>' +
+        '<button type="button" class="pm-rm" data-pm-rm="' + i + '" title="' + (T('hub.media.remove') || '移除') + '">×</button>' +
         '</div>';
     });
     box.innerHTML = html;
@@ -2751,12 +2756,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       var ext = (file.name.split('.').pop() || '').toLowerCase();
       var isImage = IMAGE_EXTS.indexOf(ext) !== -1;
       if (!isImage && ['mp4', 'webm', 'mov'].indexOf(ext) === -1) {
-        toastMsg('不支持的格式：' + file.name, true);
+        toastMsg((T('hub.upload.badFormat') || '不支持的格式：') + file.name, true);
         return;
       }
-      if (pendingMedia.length >= 3) { toastMsg('最多 3 个附件'); return; }
+      if (pendingMedia.length >= 3) { toastMsg(T('hub.upload.max3') || '最多 3 个附件'); return; }
       var cap = isImage ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
-      if (file.size > cap) { toastMsg(isImage ? '图片超过 10MB' : '视频超过 30MB', true); return; }
+      if (file.size > cap) { toastMsg(isImage ? (T('hub.upload.imgTooBig') || '图片超过 10MB') : (T('hub.upload.vidTooBig') || '视频超过 30MB'), true); return; }
       uploadingCount++;
       updatePostSubmitState();
       fetch(MN_API.BASE + '/social/uploads?ext=.' + ext, { method: 'POST', body: file, credentials: 'include' })
@@ -2766,9 +2771,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         })
         .then(function (data) {
           if (data && data.url) { pendingMedia.push(data.url); renderPendingMedia(); }
-          else toastMsg('上传失败，请稍后再试', true);
+          else toastMsg(T('hub.upload.fail') || '上传失败，请稍后再试', true);
         })
-        .catch(function () { toastMsg('上传失败，请稍后再试', true); })
+        .catch(function () { toastMsg(T('hub.upload.fail') || '上传失败，请稍后再试', true); })
         .finally(function () { uploadingCount--; updatePostSubmitState(); });
     });
   }
@@ -2813,19 +2818,19 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       lbClose = document.createElement('button');
       lbClose.type = 'button';
       lbClose.className = 'lb-close';
-      lbClose.setAttribute('aria-label', '关闭');
+      lbClose.setAttribute('aria-label', (T('hub.lb.close') || '关闭'));
       lbClose.innerHTML = '<span class="material-symbols-outlined" style="font-size:28px">close</span>';
       lbClose.addEventListener('click', function (e) { e.stopPropagation(); closeLightbox(); });
       lbPrev = document.createElement('button');
       lbPrev.type = 'button';
       lbPrev.className = 'lb-arrow lb-prev';
-      lbPrev.setAttribute('aria-label', '上一张');
+      lbPrev.setAttribute('aria-label', (T('hub.lb.prev') || '上一张'));
       lbPrev.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px">chevron_left</span>';
       lbPrev.addEventListener('click', function (e) { e.stopPropagation(); if (lbIdx > 0) { lbIdx--; lbRenderMedia(); lbShowArrows(); } });
       lbNext = document.createElement('button');
       lbNext.type = 'button';
       lbNext.className = 'lb-arrow lb-next';
-      lbNext.setAttribute('aria-label', '下一张');
+      lbNext.setAttribute('aria-label', (T('hub.lb.next') || '下一张'));
       lbNext.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px">chevron_right</span>';
       lbNext.addEventListener('click', function (e) { e.stopPropagation(); if (lbIdx < lbList.length - 1) { lbIdx++; lbRenderMedia(); lbShowArrows(); } });
       lbCard.appendChild(lbPrev);
@@ -2854,7 +2859,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   function mediaGridHtml(media) {
     var html = '<div class="post-media pm-' + media.length + '">';
     media.forEach(function (url, i) {
-      html += '<button type="button" class="pm-tile" data-media="' + i + '" aria-label="查看大图">' +
+      html += '<button type="button" class="pm-tile" data-media="' + i + '" aria-label="' + (T('hub.media.view') || '查看大图') + '">' +
         (isVideoUrl(url)
           ? '<video controls preload="metadata" src="' + escapeHtml(url) + '"></video>'
           : '<img loading="lazy" src="' + escapeHtml(url) + '" alt="">') +
@@ -2893,13 +2898,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         '<div class="card card-hover tilt-container' + (item.cloudId ? ' post-card-click' : '') + '"' + (item.cloudId ? ' data-cloud-id="' + escapeHtml(item.cloudId) + '"' : '') + '>' +
           '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:8px">' +
             // v0.2.21.0 作者头像+徽章+名字包锚 → 个人主页（时间/report 留在锚外；演示卡无 authorId 不包）
-            (item.cloudId && item.authorId ? '<a class="post-author-link" href="community-profile.html?id=' + encodeURIComponent(item.authorId) + '" title="查看主页">' : '') +
+            (item.cloudId && item.authorId ? '<a class="post-author-link" href="community-profile.html?id=' + encodeURIComponent(item.authorId) + '" title="' + (T('hub.viewProfile') || '查看主页') + '">' : '') +
             (item.avatarUrl ? '<img src="' + escapeHtml(item.avatarUrl) + '" alt="" class="avatar avatar-sm" style="margin-right:6px">' : '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + escapeHtml(item.icon) + '</span>') +
             '<span class="badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.badge) + '</span>' +
             (item.author ? '<span style="font-weight:600;font-size:var(--fs-label-md)">' + escapeHtml(item.author) + '</span>' : '') +
             (item.cloudId && item.authorId ? '</a>' : '') +
             '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + escapeHtml(item.time) + '</span>' +
-            (item.cloudId ? '<button data-cloud-post="' + escapeHtml(item.cloudId) + '" title="Report" style="border:none;background:transparent;color:var(--color-outline);cursor:pointer;padding:2px;margin-left:4px"><span class="material-symbols-outlined" style="font-size:16px">flag</span></button>' : '') +
+            (item.cloudId ? '<button data-cloud-post="' + escapeHtml(item.cloudId) + '" title="' + (T('hub.report') || 'Report') + '" style="border:none;background:transparent;color:var(--color-outline);cursor:pointer;padding:2px;margin-left:4px"><span class="material-symbols-outlined" style="font-size:16px">flag</span></button>' : '') +
           '</div>' +
           (item.title ? '<h4 style="font-weight:600;font-size:var(--fs-body-md);margin-bottom:4px">' + escapeHtml(item.title) + '</h4>' : '') +
           (item.desc ? '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + escapeHtml(item.desc) + '</p>' : '') +
@@ -2916,18 +2921,18 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
               ? '<button type="button" class="post-action-btn' + (item.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (item.repostCount || 0) + '</span></button>' +
                 // v0.2.20.0 浏览量（静态展示，随帖页打开 +1）+ 星收藏（真功能开关，无号码）+ 分享（纯图标最右）
                 '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">visibility</span> ' + (item.views || 0) + '</span>' +
-                '<button type="button" class="post-action-btn' + (item.favoritedByMe ? ' favorited' : '') + '" data-favorite-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.favoritedByMe ? 'true' : 'false') + '" title="收藏" style="margin-left:auto;margin-right:-22px"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">' + (item.favoritedByMe ? 'star' : 'star_border') + '</span></button>' +
+                '<button type="button" class="post-action-btn' + (item.favoritedByMe ? ' favorited' : '') + '" data-favorite-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.favoritedByMe ? 'true' : 'false') + '" title="' + (T('hub.favorite') || '收藏') + '" style="margin-left:auto;margin-right:-22px"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">' + (item.favoritedByMe ? 'star' : 'star_border') + '</span></button>' +
                 // v0.2.19.2 分享钮：icon 改 upload + 去掉「分享」文字（与点赞/转发同口径纯图标钮）
-                '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(item.cloudId) + '" title="分享"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">upload</span></button>'
+                '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(item.cloudId) + '" title="' + (T('hub.share') || '分享') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">upload</span></button>'
               : '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-repost style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">repeat</span></button>' +
                 '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">visibility</span> ' + (item.views || 0) + '</span>' +
-                '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-favorite title="收藏" style="margin-left:auto;margin-right:-22px;color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">star_border</span></button>' +
-                '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-share title="分享" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">upload</span></button>') +
+                '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-favorite title="' + (T('hub.favorite') || '收藏') + '" style="margin-left:auto;margin-right:-22px;color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">star_border</span></button>' +
+                '<button type="button" class="post-action-btn post-action-btn-static label-sm" data-guest-share title="' + (T('hub.share') || '分享') + '" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">upload</span></button>') +
           '</div>' +
         '</div>';
     });
     // v0.2.18.2 云模式推荐流空态提示（演示卡已不再混排）
-    if (currentTab === 'recommend' && cloudMode && !items.length) html += '<div class="card" style="text-align:center;color:var(--color-outline);padding:24px">这里还没有帖子，来发第一帖吧 ✨</div>';
+    if (currentTab === 'recommend' && cloudMode && !items.length) html += '<div class="card" style="text-align:center;color:var(--color-outline);padding:24px">' + (T('hub.emptyFeed') || '这里还没有帖子，来发第一帖吧 ✨') + '</div>';
     document.getElementById('feedContent').innerHTML = html;
     if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
     closeLightbox(); // v0.2.16.0 重渲染清掉卡片 DOM，先关灯箱防悬空
@@ -2948,7 +2953,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     // 输入栏自适长（v0.2.14.0）：不可手拽（resize:none）、随文字长高、max-height 封顶后滚轮内滑；基线=rows=3 高度，只长不缩
     var composer = document.getElementById('postComposer');
     if (composer) {
-      composer.placeholder = placeholderTips[phIdxNow()]; // v0.2.15.8 30 分钟一档按墙钟取句（重渲染现算+边界定时器正点换）
+      composer.placeholder = phText(phIdxNow()); // v0.2.15.8 30 分钟一档按墙钟取句（重渲染现算+边界定时器正点换）
       armPhBoundary();
       var baseH = composer.offsetHeight;
       composer.addEventListener('input', function () {
@@ -2967,7 +2972,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         tool.addEventListener('click', function () {
           if (action === 'upload') { var inp1 = document.getElementById('postImgInput'); if (inp1) inp1.click(); }
           else if (action === 'gif') { var inp2 = document.getElementById('postGifInput'); if (inp2) inp2.click(); }
-          else toastMsg((tool.getAttribute('data-tip') || '该') + '功能即将上线');
+          else toastMsg((tool.getAttribute('data-tip') || '该') + (T('hub.tool.comingSoon') || '功能即将上线'));
         });
       })(tools[i]);
     }
@@ -3009,22 +3014,22 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     }
     // v0.2.18.2 演示卡爱心 = 引导登录（与帖页访客口径一致，不再装死）——挂在云模式块外，未登录 demo 模式也生效
     document.querySelectorAll('[data-guest-like]').forEach(function (btn) {
-      btn.addEventListener('click', function (e) { e.stopPropagation(); toastMsg('登录后才能点赞'); });
+      btn.addEventListener('click', function (e) { e.stopPropagation(); toastMsg(T('hub.toast.likeLogin') || '登录后才能点赞'); });
     });
     // v0.2.19.1 演示卡转发/分享：转发保持引导登录 toast（演示卡无真帖可转）；分享也弹分享弹窗（用户「为什么分享按钮点击后没有弹窗」——v0.2.19.0 只 toast）
     document.querySelectorAll('[data-guest-repost]').forEach(function (btn) {
-      btn.addEventListener('click', function (e) { e.stopPropagation(); toastMsg('登录后才能转发'); });
+      btn.addEventListener('click', function (e) { e.stopPropagation(); toastMsg(T('hub.toast.repostLogin') || '登录后才能转发'); });
     });
     document.querySelectorAll('[data-guest-share]').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         e.stopPropagation();
         // 演示卡无真帖链接可复制 → 分享本社区页链接（诚实不装死，弹窗+复制逻辑与真卡同一套）
-        openShareDialog(new URL('community-hub.html', window.location.href).href, '分享社区');
+        openShareDialog(new URL('community-hub.html', window.location.href).href, T('hub.share.communityTitle') || '分享社区');
       });
     });
     // v0.2.20.0 演示卡星收藏 = 引导登录（与演示卡爱心同口径，不装死）
     document.querySelectorAll('[data-guest-favorite]').forEach(function (btn) {
-      btn.addEventListener('click', function (e) { e.stopPropagation(); toastMsg('登录后才能收藏'); });
+      btn.addEventListener('click', function (e) { e.stopPropagation(); toastMsg(T('hub.toast.favLogin') || '登录后才能收藏'); });
     });
   }
 
@@ -3046,8 +3051,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       if (wasLiked) btn.classList.add('liked'); else btn.classList.remove('liked', 'like-pop');
       if (iconEl) iconEl.textContent = wasLiked ? 'favorite' : 'favorite_border';
       countEl.textContent = before;
-      if (r.status === 401) toastMsg('登录已过期，请重新登录', true);
-      else toastMsg('操作失败，请稍后再试', true);
+      if (r.status === 401) toastMsg(T('hub.post.session') || '登录已过期，请重新登录', true);
+      else toastMsg(T('hub.op.fail') || '操作失败，请稍后再试', true);
     });
   }
 
@@ -3065,8 +3070,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       btn.setAttribute('aria-pressed', wasFav ? 'true' : 'false');
       if (wasFav) btn.classList.add('favorited'); else btn.classList.remove('favorited');
       if (iconEl) iconEl.textContent = wasFav ? 'star' : 'star_border';
-      if (r.status === 401) toastMsg('登录已过期，请重新登录', true);
-      else toastMsg('操作失败，请稍后再试', true);
+      if (r.status === 401) toastMsg(T('hub.post.session') || '登录已过期，请重新登录', true);
+      else toastMsg(T('hub.op.fail') || '操作失败，请稍后再试', true);
     });
   }
 
@@ -3097,28 +3102,28 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       btn.classList.remove('reposted');
       countEl.textContent = Math.max(before - 1, 0);
       MN_API.del('/social/posts/' + encodeURIComponent(id) + '/repost').then(function (r) {
-        if (r.ok && r.data) { countEl.textContent = r.data.repostCount; toastMsg('已取消转发'); return; }
+        if (r.ok && r.data) { countEl.textContent = r.data.repostCount; toastMsg(T('hub.repost.cancel') || '已取消转发'); return; }
         btn.setAttribute('aria-pressed', 'true');
         btn.classList.add('reposted');
         countEl.textContent = before;
-        if (r.status === 401) toastMsg('登录已过期，请重新登录', true);
-        else toastMsg('操作失败，请稍后再试', true);
+        if (r.status === 401) toastMsg(T('hub.post.session') || '登录已过期，请重新登录', true);
+        else toastMsg(T('hub.op.fail') || '操作失败，请稍后再试', true);
       });
     } else {
       setReposted(btn, true, before + 1); // 乐观：先置位再等回程（与点赞同口径）
       MN_API.post('/social/posts/' + encodeURIComponent(id) + '/repost', { content: '' }).then(function (r) {
         if (r.ok && r.data) {
           var status = r.data.post && r.data.post.status;
-          if (status === 'removed') { setReposted(btn, false, before); toastMsg('内容违反社区规则，已被拦截', true); return; }
+          if (status === 'removed') { setReposted(btn, false, before); toastMsg(T('hub.post.removed') || '内容违反社区规则，已被拦截', true); return; }
           setReposted(btn, true, r.data.repostCount);
           var verdict = r.data.moderation && r.data.moderation.verdict;
-          toastMsg(verdict === 'hold' ? '已转发到你的主页，待审核' : '已转发到你的主页');
+          toastMsg(verdict === 'hold' ? (T('hub.repost.hold') || '已转发到你的主页，待审核') : (T('hub.repost.ok') || '已转发到你的主页'));
         } else if (r.status === 409) {
           setReposted(btn, true, null); // 服务端未返计数——已在别处转发过，按钮同步置位
-          toastMsg('你已经转发过这条帖子');
-        } else if (r.status === 401) { setReposted(btn, false, before); toastMsg('登录已过期，请重新登录', true); }
-        else if (r.status === 429) { setReposted(btn, false, before); toastMsg('转发过于频繁，请稍后再试', true); }
-        else { setReposted(btn, false, before); toastMsg('转发失败，请稍后再试', true); }
+          toastMsg(T('hub.repost.dup') || '你已经转发过这条帖子');
+        } else if (r.status === 401) { setReposted(btn, false, before); toastMsg(T('hub.post.session') || '登录已过期，请重新登录', true); }
+        else if (r.status === 429) { setReposted(btn, false, before); toastMsg(T('hub.repost.rate') || '转发过于频繁，请稍后再试', true); }
+        else { setReposted(btn, false, before); toastMsg(T('hub.repost.fail') || '转发失败，请稍后再试', true); }
       });
     }
   }
@@ -3145,12 +3150,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var card = document.createElement('div');
     card.className = 'modal-card';
     card.innerHTML =
-      '<h3 style="font-weight:600;font-size:var(--fs-body-lg);margin:0 0 var(--space-sm)">' + escapeHtml(title || '分享帖子') + '</h3>' +
+      '<h3 style="font-weight:600;font-size:var(--fs-body-lg);margin:0 0 var(--space-sm)">' + escapeHtml(title || (T('hub.share.title') || '分享帖子')) + '</h3>' +
       '<input id="shareUrlInput" type="text" readonly value="' + escapeHtml(url) + '" style="width:100%;padding:10px 12px;border:var(--card-border);border-radius:var(--radius-md);background:var(--color-surface);color:inherit;font-family:inherit;font-size:var(--fs-label-sm)">' +
       '<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:var(--space-sm)">' +
-        '<span class="label-sm" id="shareCopyState" style="color:var(--color-outline);margin-right:auto">正在复制…</span>' +
-        '<button type="button" class="btn btn-sm" id="shareCopyAgain">复制链接</button>' +
-        '<button type="button" class="btn btn-primary btn-sm" id="shareClose">关闭</button>' +
+        '<span class="label-sm" id="shareCopyState" style="color:var(--color-outline);margin-right:auto">' + (T('hub.share.copying') || '正在复制…') + '</span>' +
+        '<button type="button" class="btn btn-sm" id="shareCopyAgain">' + (T('hub.share.copyBtn') || '复制链接') + '</button>' +
+        '<button type="button" class="btn btn-primary btn-sm" id="shareClose">' + (T('hub.share.close') || '关闭') + '</button>' +
       '</div>';
     cont.appendChild(card);
     backdrop.appendChild(cont);
@@ -3167,9 +3172,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     backdrop.classList.add('active');
     var stateEl = card.querySelector('#shareCopyState');
     function doCopy() {
-      stateEl.textContent = '正在复制…';
+      stateEl.textContent = T('hub.share.copying') || '正在复制…';
       copyLink(url, function (ok) {
-        stateEl.textContent = ok ? '链接已复制，可直接粘贴' : '复制失败，请手动选择复制';
+        stateEl.textContent = ok ? (T('hub.share.copied') || '链接已复制，可直接粘贴') : (T('hub.share.copyFail') || '复制失败，请手动选择复制');
       });
     }
     card.querySelector('#shareUrlInput').addEventListener('click', function () { this.select(); });
@@ -3257,6 +3262,21 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/transitions.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
+</script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/community-hub.i18n.js"></script>
+<script>
+MN_I18N.apply();
+// v0.2.54.0 i18n：帖子流/发帖框/工具条/占位符为 JS 动态渲染（非 data-i18n 节点）——
+// 全部语言初次进入与切换语言时重渲染（zh 也有英文原文键译中文——Citizen Post 徽章/发帖按钮
+// 初次渲染在 i18n.js 加载前用兜底英文，必须补一次重渲染）
+(function () {
+  if (typeof renderFeed !== 'function') return;
+  renderFeed();
+  MN_I18N.onChange(function () { renderFeed(); });
+})();
 </script>
 </body>
 </html>

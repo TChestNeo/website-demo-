@@ -3,6 +3,9 @@
 (function (global) {
   'use strict';
 
+  // v0.2.54.0 i18n：T(key) 取当前语言；回落原文
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   const PALETTE = ['#3b82f6', '#22c55e', '#eab308', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b', '#a855f7'];
 
   function cssVar(name, fallback) {
@@ -84,7 +87,7 @@
     const total = items.reduce((s, it) => s + (Number(it.n) || 0), 0);
     if (total <= 0) {
       ctx.fillStyle = t.text; ctx.font = '12px Inter, sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('暂无数据', cx, cy);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText((T('admin.empty.noData') || '暂无数据'), cx, cy);
       return;
     }
     let a0 = -Math.PI / 2;
@@ -108,7 +111,7 @@
     const t = theme();
     if (!items.length) {
       ctx.fillStyle = t.text; ctx.font = '12px Inter, sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('暂无数据', W / 2, H / 2);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText((T('admin.empty.noData') || '暂无数据'), W / 2, H / 2);
       return;
     }
     const rowH = Math.max(16, Math.min(28, (H - 6) / items.length));

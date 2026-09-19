@@ -2279,9 +2279,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     <!-- Sub nav -->
     <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md)">
       <div class="subnav" id="msgSubnav" data-slider>
-        <button class="subnav-pill active" data-tab="private">Private messages</button>
-        <button class="subnav-pill" data-tab="groups">Groups</button>
-        <button class="subnav-pill" data-tab="announcements">Announcements</button>
+        <button class="subnav-pill active" data-tab="private" data-i18n="messages.tab.private">Private messages</button>
+        <button class="subnav-pill" data-tab="groups" data-i18n="messages.tab.groups">Groups</button>
+        <button class="subnav-pill" data-tab="announcements" data-i18n="messages.tab.announcements">Announcements</button>
       </div>
       <div class="search-capsule" style="margin-left:auto;position:relative" id="searchCapsule">
         <span class="material-symbols-outlined">search</span>
@@ -2323,14 +2323,14 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           <div class="custom-scrollbar" style="flex:1;overflow-y:auto;padding-right:8px;display:flex;align-items:center;justify-content:center" id="messageList">
             <div class="card" style="text-align:center;padding:var(--space-xl) 48px;max-width:280px" id="emptyChat">
               <span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline-variant);margin-bottom:var(--space-sm)">chat</span>
-              <p style="color:var(--color-outline);font-size:var(--fs-body-md);line-height:1.5">Select a friend to start chatting</p>
+              <p style="color:var(--color-outline);font-size:var(--fs-body-md);line-height:1.5" data-i18n="messages.empty.chatHint">Select a friend to start chatting</p>
             </div>
           </div>
           <!-- File preview strip -->
           <div id="filePreview" style="display:none;padding:var(--space-sm) 0;gap:var(--space-sm);flex-wrap:wrap;align-items:flex-end"></div>
           <div style="display:none;gap:8px;align-items:center;margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid rgba(118,117,134,0.1)" id="chatInputBar">
             <button style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:1px solid rgba(118,117,134,0.15);background:var(--card-bg);color:var(--color-on-surface-variant);cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="openUploadPopup(event)" onmouseenter="this.style.background='rgba(70,72,212,0.05)'" onmouseleave="this.style.background='var(--card-bg)'"><span class="material-symbols-outlined" style="font-size:20px">add_circle</span></button>
-            <input type="text" class="input-glass" placeholder="Type a message..." style="border-radius:var(--radius-full)" id="chatInput" onkeydown="if(event.key==='Enter')sendMessage()">
+            <input type="text" class="input-glass" placeholder="Type a message..." data-i18n-placeholder="messages.ph.message" style="border-radius:var(--radius-full)" id="chatInput" onkeydown="if(event.key==='Enter')sendMessage()">
             <button class="msg-acc" style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:none;background:var(--color-primary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(70,72,212,0.25)" onclick="sendMessage()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'"><span class="material-symbols-outlined" style="font-size:20px">send</span></button>
           </div>
         </div>
@@ -2364,14 +2364,14 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           <div class="custom-scrollbar" style="flex:1;overflow-y:auto;padding-right:8px;display:flex;align-items:center;justify-content:center" id="groupMessageList">
             <div class="card" style="text-align:center;padding:var(--space-xl) 48px;max-width:280px" id="emptyGroupChat">
               <span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline-variant);margin-bottom:var(--space-sm)">groups</span>
-              <p style="color:var(--color-outline);font-size:var(--fs-body-md);line-height:1.5">Select a group to view messages</p>
+              <p style="color:var(--color-outline);font-size:var(--fs-body-md);line-height:1.5" data-i18n="messages.empty.groupHint">Select a group to view messages</p>
             </div>
           </div>
           <!-- File preview strip -->
           <div id="groupFilePreview" style="display:none;padding:var(--space-sm) 0;gap:var(--space-sm);flex-wrap:wrap;align-items:flex-end"></div>
           <div style="display:none;gap:8px;align-items:center;margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid rgba(118,117,134,0.1)" id="groupChatInputBar">
             <button style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:1px solid rgba(118,117,134,0.15);background:var(--card-bg);color:var(--color-on-surface-variant);cursor:pointer;display:flex;align-items:center;justify-content:center" onclick="openUploadPopup(event)" onmouseenter="this.style.background='rgba(22,163,74,0.05)'" onmouseleave="this.style.background='var(--card-bg)'"><span class="material-symbols-outlined" style="font-size:20px">add_circle</span></button>
-            <input type="text" class="input-glass" placeholder="Type a message..." style="border-radius:var(--radius-full)" id="groupChatInput" onkeydown="if(event.key==='Enter')sendGroupMessage()">
+            <input type="text" class="input-glass" placeholder="Type a message..." data-i18n-placeholder="messages.ph.message" style="border-radius:var(--radius-full)" id="groupChatInput" onkeydown="if(event.key==='Enter')sendGroupMessage()">
             <button class="msg-acc" style="width:38px;height:38px;padding:0;border-radius:50%;border:none;background:var(--color-secondary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(22,163,74,0.25)" onclick="sendGroupMessage()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'"><span class="material-symbols-outlined" style="font-size:20px">send</span></button>
           </div>
         </div>
@@ -2382,10 +2382,10 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         <!-- Category filter pills -->
         <div class="flex-between" style="margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-sm)">
           <div class="subnav" data-slider style="flex-wrap:wrap" id="categoryFilters">
-            <button class="subnav-pill active" data-cat="all">All</button>
-            <button class="subnav-pill" data-cat="official">📢 Official</button>
-            <button class="subnav-pill" data-cat="community">👥 Community</button>
-            <button class="subnav-pill" data-cat="system">⚙ System</button>
+            <button class="subnav-pill active" data-cat="all" data-i18n="messages.cat.all">All</button>
+            <button class="subnav-pill" data-cat="official" data-i18n="messages.cat.official">📢 Official</button>
+            <button class="subnav-pill" data-cat="community" data-i18n="messages.cat.community">👥 Community</button>
+            <button class="subnav-pill" data-cat="system" data-i18n="messages.cat.system">⚙ System</button>
           </div>
           <span class="label-sm" style="color:var(--color-outline)" id="announceCount"></span>
         </div>
@@ -2460,7 +2460,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         padding:0;
       " onmouseenter="this.style.color='var(--color-on-surface)'" onmouseleave="this.style.color='var(--color-outline)'">
         <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
-        Back
+        <span data-i18n="messages.modal.back">Back</span>
       </button>
       <button onclick="closeModal()" style="
         background:none;border:none;
@@ -2476,8 +2476,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       </button>
     </div>
 
-    <h3 id="modalTitle" style="font-weight:700;font-size:var(--fs-headline-md);margin-bottom:6px">Start something new</h3>
-    <p id="modalDesc" style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-lg)">Add a friend or create a group conversation</p>
+    <h3 id="modalTitle" data-i18n="messages.modal.title" style="font-weight:700;font-size:var(--fs-headline-md);margin-bottom:6px">Start something new</h3>
+    <p id="modalDesc" data-i18n="messages.modal.desc" style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-lg)">Add a friend or create a group conversation</p>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);align-items:start">
       <!-- Add Friend -->
@@ -2503,8 +2503,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           <span class="material-symbols-outlined" style="font-size:24px;color:var(--color-primary)">person_add</span>
         </div>
         <div>
-          <div style="font-weight:600;font-size:var(--fs-label-md)">Add Friend</div>
-          <div style="font-size:11px;color:var(--color-outline);margin-top:2px">Start a private chat</div>
+          <div style="font-weight:600;font-size:var(--fs-label-md)" data-i18n="messages.modal.addFriend">Add Friend</div>
+          <div style="font-size:11px;color:var(--color-outline);margin-top:2px" data-i18n="messages.modal.addFriendSub">Start a private chat</div>
         </div>
       </button>
 
@@ -2531,8 +2531,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           <span class="material-symbols-outlined" style="font-size:24px;color:var(--color-secondary)">group_add</span>
         </div>
         <div>
-          <div style="font-weight:600;font-size:var(--fs-label-md)">Create Group</div>
-          <div style="font-size:11px;color:var(--color-outline);margin-top:2px">Start a group chat</div>
+          <div style="font-weight:600;font-size:var(--fs-label-md)" data-i18n="messages.modal.createGroup">Create Group</div>
+          <div style="font-size:11px;color:var(--color-outline);margin-top:2px" data-i18n="messages.modal.createGroupSub">Start a group chat</div>
         </div>
       </button>
     </div>
@@ -2560,8 +2560,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       <div id="notifDecisionName" style="font-weight:700;font-size:var(--fs-label-lg)"></div>
       <div id="notifDecisionId" style="color:var(--color-outline);font-size:12px;margin-top:2px"></div>
       <div style="display:flex;gap:12px;margin-top:16px">
-        <button class="btn btn-outline" style="border-radius:var(--radius-full);flex:1" onclick="declineInvite(notifPendingId)">不同意</button>
-        <button class="btn btn-primary msg-acc" style="border-radius:var(--radius-full);flex:1" onclick="acceptInvite(notifPendingId)">同意</button>
+        <button class="btn btn-outline" data-i18n="messages.notif.decline" style="border-radius:var(--radius-full);flex:1" onclick="declineInvite(notifPendingId)">不同意</button>
+        <button class="btn btn-primary msg-acc" data-i18n="messages.notif.accept" style="border-radius:var(--radius-full);flex:1" onclick="acceptInvite(notifPendingId)">同意</button>
       </div>
     </div>
   </div>
@@ -2584,11 +2584,11 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   </button>
   <button onclick="ctxForward()" style="display:flex;align-items:center;gap:var(--space-sm);width:100%;padding:10px 16px;border:none;background:var(--card-bg);cursor:pointer;text-align:left;font-size:var(--fs-label-md);transition:background 0.12s" onmouseenter="this.style.background='rgba(70,72,212,0.05)'" onmouseleave="this.style.background='var(--card-bg)'">
     <span class="material-symbols-outlined" style="font-size:18px;color:var(--color-on-surface-variant)">forward</span>
-    Forward
+    <span data-i18n="messages.ctx.forward">Forward</span>
   </button>
   <button onclick="ctxDelete()" style="display:flex;align-items:center;gap:var(--space-sm);width:100%;padding:10px 16px;border:none;background:var(--card-bg);cursor:pointer;text-align:left;font-size:var(--fs-label-md);transition:background 0.12s;color:#dc2626" onmouseenter="this.style.background='rgba(220,38,38,0.05)'" onmouseleave="this.style.background='var(--card-bg)'">
     <span class="material-symbols-outlined" style="font-size:18px;color:#dc2626">delete</span>
-    Delete
+    <span data-i18n="messages.ctx.delete">Delete</span>
   </button>
 </div>
 
@@ -2613,7 +2613,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     display:flex;flex-direction:column;
   ">
     <div class="flex-between" style="margin-bottom:var(--space-sm)">
-      <h4 style="font-weight:700;font-size:var(--fs-headline-sm)">Forward to...</h4>
+      <h4 style="font-weight:700;font-size:var(--fs-headline-sm)" data-i18n="messages.forward.title">Forward to...</h4>
       <button onclick="closeForwardModal()" style="background:none;border:none;cursor:pointer;color:var(--color-outline);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center" onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'">
         <span class="material-symbols-outlined" style="font-size:20px">close</span>
       </button>
@@ -2621,14 +2621,14 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     <!-- Search -->
     <div class="search-capsule" style="margin-bottom:var(--space-sm)">
       <span class="material-symbols-outlined">search</span>
-      <input type="text" placeholder="Search contacts..." id="forwardSearchInput" oninput="renderForwardContacts(this.value)">
+      <input type="text" placeholder="Search contacts..." data-i18n-placeholder="messages.forward.phSearch" id="forwardSearchInput" oninput="renderForwardContacts(this.value)">
     </div>
     <!-- Contact list -->
     <div style="display:flex;flex-direction:column;gap:2px;max-height:260px;overflow-y:auto" class="custom-scrollbar" id="forwardContactList">
     </div>
     <!-- Message input + send -->
     <div style="display:flex;gap:8px;margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid rgba(118,117,134,0.1);align-items:center">
-      <input type="text" class="input-glass" placeholder="Add a message..." style="border-radius:var(--radius-full);flex:1" id="forwardMsgInput" onkeydown="if(event.key==='Enter')doForward()">
+      <input type="text" class="input-glass" placeholder="Add a message..." data-i18n-placeholder="messages.forward.phMsg" style="border-radius:var(--radius-full);flex:1" id="forwardMsgInput" onkeydown="if(event.key==='Enter')doForward()">
       <button class="msg-acc" style="width:38px;height:38px;min-width:38px;flex-shrink:0;padding:0;border-radius:50%;border:none;background:var(--color-primary);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(70,72,212,0.25)" onclick="doForward()" onmouseenter="this.style.opacity='0.9'" onmouseleave="this.style.opacity='1'">
         <span class="material-symbols-outlined" style="font-size:20px">send</span>
       </button>
@@ -2659,7 +2659,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   ">
     <!-- Header -->
     <div class="flex-between" style="padding:var(--space-md) var(--space-lg);border-bottom:1px solid rgba(118,117,134,0.1)">
-      <span style="font-weight:700;font-size:var(--fs-headline-sm)">Chat Info</span>
+      <span style="font-weight:700;font-size:var(--fs-headline-sm)" data-i18n="messages.info.title">Chat Info</span>
       <button onclick="closeChatInfo()" style="background:none;border:none;cursor:pointer;color:var(--color-outline);width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center" onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'">
         <span class="material-symbols-outlined" style="font-size:20px">close</span>
       </button>
@@ -2674,11 +2674,11 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
 
     <!-- Tab bar -->
     <div style="display:flex;border-bottom:1px solid rgba(118,117,134,0.1);padding:0 var(--space-md)">
-      <button class="infoTab active" data-infotab="pinned" onclick="switchInfoTab('pinned')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-on-surface);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">📌 Pinned</button>
-      <button class="infoTab" data-infotab="images" onclick="switchInfoTab('images')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">🖼 Images</button>
-      <button class="infoTab" data-infotab="videos" onclick="switchInfoTab('videos')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">🎬 Videos</button>
-      <button class="infoTab" data-infotab="links" onclick="switchInfoTab('links')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">🔗 Links</button>
-      <button class="infoTab" data-infotab="files" onclick="switchInfoTab('files')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">📁 Files</button>
+      <button class="infoTab active" data-infotab="pinned" data-i18n="messages.info.tabPinned" onclick="switchInfoTab('pinned')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-on-surface);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">📌 Pinned</button>
+      <button class="infoTab" data-infotab="images" data-i18n="messages.info.tabImages" onclick="switchInfoTab('images')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">🖼 Images</button>
+      <button class="infoTab" data-infotab="videos" data-i18n="messages.info.tabVideos" onclick="switchInfoTab('videos')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">🎬 Videos</button>
+      <button class="infoTab" data-infotab="links" data-i18n="messages.info.tabLinks" onclick="switchInfoTab('links')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">🔗 Links</button>
+      <button class="infoTab" data-infotab="files" data-i18n="messages.info.tabFiles" onclick="switchInfoTab('files')" style="flex:1;padding:12px 2px;border:none;background:none;cursor:pointer;font-weight:600;font-size:12px;color:var(--color-outline);border-bottom:2px solid transparent;transition:color 0.15s ease,border-color 0.15s ease">📁 Files</button>
     </div>
 
     <!-- Tab content -->
@@ -2720,7 +2720,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     <div style="padding:var(--space-sm) var(--space-lg)">
       <div class="search-capsule" style="width:100%">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search members..." id="memberSearchInput" oninput="renderMembersList(this.value)" style="flex:1">
+        <input type="text" placeholder="Search members..." data-i18n-placeholder="messages.members.ph" id="memberSearchInput" oninput="renderMembersList(this.value)" style="flex:1">
       </div>
     </div>
 
@@ -2785,8 +2785,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   " onmouseenter="this.style.background='rgba(70,72,212,0.04)'" onmouseleave="this.style.background='var(--card-bg)'">
     <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">compress</span>
     <div>
-      <div style="font-weight:500">Compressed</div>
-      <div style="font-size:11px;color:var(--color-outline)">Smaller size, faster send</div>
+      <div style="font-weight:500" data-i18n="messages.upload.compressed">Compressed</div>
+      <div style="font-size:11px;color:var(--color-outline)" data-i18n="messages.upload.compressedSub">Smaller size, faster send</div>
     </div>
   </button>
   <button onclick="selectUpload('original')" style="
@@ -2798,8 +2798,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   " onmouseenter="this.style.background='rgba(70,72,212,0.04)'" onmouseleave="this.style.background='var(--card-bg)'">
     <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-on-surface-variant)">folder_open</span>
     <div>
-      <div style="font-weight:500">Original</div>
-      <div style="font-size:11px;color:var(--color-outline)">Full quality, larger size</div>
+      <div style="font-weight:500" data-i18n="messages.upload.original">Original</div>
+      <div style="font-size:11px;color:var(--color-outline)" data-i18n="messages.upload.originalSub">Full quality, larger size</div>
     </div>
   </button>
 </div>
@@ -2831,6 +2831,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
 <script src="../assets/js/liquid-glass.js"></script>
 <script src="../assets/js/subnav.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   // ──────────────────────────────────────────────
   //  CONTEXT MENU + FORWARD + PERSISTENCE
   // ──────────────────────────────────────────────
@@ -2943,7 +2946,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       console.log('[M.NationWorld] Saved ' + (data.length / 1024).toFixed(1) + ' KB to localStorage');
     } catch(e) {
       console.warn('[M.NationWorld] Failed to save messages — localStorage may be full:', e);
-      showToast('⚠ Could not save — storage full. Try clearing old data.', true);
+      showToast((T('messages.toast.saveFail') || '⚠ Could not save — storage full. Try clearing old data.'), true);
     }
   }
 
@@ -2952,13 +2955,13 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var animClass = isJustPinned ? ' fade-up' : '';
     var pinBadge = isPinned ? '<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-right:2px;color:#eab308">push_pin</span>' : '';
     var fwdLabel = m._forwardedFrom
-      ? '<div class="label-sm" style="margin-bottom:4px;opacity:0.55;font-style:italic;font-size:10px">↪ Forwarded from <b>' + m._forwardedFrom + '</b></div>'
+      ? '<div class="label-sm" style="margin-bottom:4px;opacity:0.55;font-style:italic;font-size:10px">' + (T('messages.msg.fwdFrom') || '↪ Forwarded from ') + '<b>' + m._forwardedFrom + '</b></div>'
       : '';
 
     // Video messages: thumbnail with play button overlay
     if (m._file && isVideoFile(m._file)) {
       var vStyle = 'max-width:260px;max-height:320px;border-radius:var(--radius-lg);display:block;cursor:pointer;object-fit:cover';
-      var vReadMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">Read</div>' : '';
+      var vReadMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">' + (T('messages.msg.read') || 'Read') + '</div>' : '';
       if (m._file.dataUrl) {
         // Video with real thumbnail
         var hasVideo = !!m._file.videoUrl;
@@ -2971,7 +2974,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
                 '<span class="material-symbols-outlined" style="font-size:26px;color:white;margin-left:3px">play_arrow</span>' +
               '</div></div>'
           : '<div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.55);color:white;font-size:9px;font-weight:600;padding:3px 7px;border-radius:6px;pointer-events:none;display:flex;align-items:center;gap:3px">' +
-              '<span class="material-symbols-outlined" style="font-size:12px">smart_display</span>Video</div>';
+              '<span class="material-symbols-outlined" style="font-size:12px">smart_display</span>' + (T('messages.msg.video') || 'Video') + '</div>';
         return '<div class="msg-row' + animClass + '" style="display:flex;flex-direction:column;align-items:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:12px" oncontextmenu="showContextMenu(event,\'' + panel + '\',\'' + chatId + '\',' + idx + ',' + (isPinned ? 'true' : 'false') + ')">' +
           '<div style="position:relative;display:inline-block;cursor:pointer" onclick="' + vidClick + '">' +
             '<img src="' + m._file.dataUrl + '" style="' + vStyle + '" alt="' + m._file.name + '">' +
@@ -2999,7 +3002,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     // Image messages: no bubble wrapping, just the image with rounded corners
     if (m._file && m._file.dataUrl) {
       var imgStyle = 'max-width:260px;max-height:320px;border-radius:var(--radius-lg);display:block;cursor:pointer;object-fit:cover';
-      var readMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">Read</div>' : '';
+      var readMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">' + (T('messages.msg.read') || 'Read') + '</div>' : '';
       var imgMediaId = _regMedia({ dataUrl: m._file.dataUrl, videoUrl: null });
       return '<div class="msg-row' + animClass + '" style="display:flex;flex-direction:column;align-items:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:12px" oncontextmenu="showContextMenu(event,\'' + panel + '\',\'' + chatId + '\',' + idx + ',' + (isPinned ? 'true' : 'false') + ')">' +
         '<img src="' + m._file.dataUrl + '" style="' + imgStyle + '" alt="' + m._file.name + '" onclick="_openRegLightbox(\'' + imgMediaId + '\')">' +
@@ -3015,12 +3018,12 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         body += '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--divider-line);border-radius:var(--radius-DEFAULT);margin-bottom:6px">' +
           '<span class="material-symbols-outlined" style="font-size:24px;' + (isSent ? 'color:rgba(255,255,255,0.8)' : 'color:var(--color-primary)') + '">draft</span>' +
           '<div style="min-width:0"><div style="font-weight:500;font-size:var(--fs-label-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + m._file.name + '</div>' +
-          '<div style="font-size:10px;opacity:0.55">' + (m._file.mode === 'compress' ? 'Compressed' : 'Original') + '</div></div>' +
+          '<div style="font-size:10px;opacity:0.55">' + (m._file.mode === 'compress' ? (T('messages.msg.compressed') || 'Compressed') : (T('messages.msg.original') || 'Original')) + '</div></div>' +
         '</div>';
       }
     }
     body += m.text;
-    var readMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">Read</div>' : '';
+    var readMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">' + (T('messages.msg.read') || 'Read') + '</div>' : '';
 
     return '<div class="msg-row' + animClass + '" style="display:flex;flex-direction:column;align-items:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:12px" oncontextmenu="showContextMenu(event,\'' + panel + '\',\'' + chatId + '\',' + idx + ',' + (isPinned ? 'true' : 'false') + ')">' +
       '<div' + (isSent ? ' class="msg-acc"' : '') + ' style="max-width:70%;padding:10px 16px;border-radius:' + (isSent ? 'var(--radius-xl) var(--radius-xl) 4px var(--radius-xl)' : 'var(--radius-xl) var(--radius-xl) var(--radius-xl) 4px') + ';' +
@@ -3074,7 +3077,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     menu.style.display = 'block';
     menu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
     menu.style.top = Math.min(e.clientY, window.innerHeight - 140) + 'px';
-    document.getElementById('ctxPinLabel').textContent = isPinned ? 'Unpin' : 'Pin';
+    document.getElementById('ctxPinLabel').textContent = isPinned ? (T('messages.msg.unpin') || 'Unpin') : (T('messages.msg.pin') || 'Pin');
   }
 
   function hideContextMenu() {
@@ -3127,9 +3130,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         pm._pinned = false;
         pinnedMessages[id].splice(idx, 1);
         saveData();
-        showToast('✓ Message unpinned');
+        showToast((T('messages.toast.unpinned') || '✓ Message unpinned'));
       } else {
-        showToast('✗ Failed to unpin', true);
+        showToast((T('messages.toast.unpinFail') || '✗ Failed to unpin'), true);
       }
     } else {
       var msg = msgs[idx];
@@ -3138,9 +3141,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         pinnedMessages[id].push(msg);
         justPinnedRef = msg;
         saveData();
-        showToast('✓ Message pinned');
+        showToast((T('messages.toast.pinned') || '✓ Message pinned'));
       } else {
-        showToast('✗ Failed to pin', true);
+        showToast((T('messages.toast.pinFail') || '✗ Failed to pin'), true);
       }
     }
     hideContextMenu();
@@ -3169,7 +3172,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       html += '<div style="display:flex;align-items:center;gap:var(--space-sm);padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;transition:background 0.12s' + (sel ? ';background:rgba(70,72,212,0.08)' : '') + '" onclick="selectForwardTarget(\'private\',\'' + c.id + '\')">' +
         '<div class="msg-acc" style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0">' + c.avatar + '</div>' +
         '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + c.name + '</span>' +
-        '<span class="label-sm" style="color:var(--color-outline)">Private</span>' +
+        '<span class="label-sm" style="color:var(--color-outline)">' + (T('messages.forward.tagPrivate') || 'Private') + '</span>' +
         (sel ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline-variant)">radio_button_unchecked</span>') +
       '</div>';
     });
@@ -3179,11 +3182,11 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       html += '<div style="display:flex;align-items:center;gap:var(--space-sm);padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;transition:background 0.12s' + (sel ? ';background:rgba(22,163,74,0.08)' : '') + '" onclick="selectForwardTarget(\'group\',\'' + g.id + '\')">' +
         '<div class="msg-acc" style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + g.avatar + '</div>' +
         '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + g.name + '</span>' +
-        '<span class="label-sm" style="color:var(--color-outline)">Group</span>' +
+        '<span class="label-sm" style="color:var(--color-outline)">' + (T('messages.forward.tagGroup') || 'Group') + '</span>' +
         (sel ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-secondary)">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline-variant)">radio_button_unchecked</span>') +
       '</div>';
     });
-    document.getElementById('forwardContactList').innerHTML = html || '<p style="text-align:center;color:var(--color-outline);padding:var(--space-md)">No contacts match</p>';
+    document.getElementById('forwardContactList').innerHTML = html || '<p style="text-align:center;color:var(--color-outline);padding:var(--space-md)">' + (T('messages.forward.noMatch') || 'No contacts match') + '</p>';
   }
 
   function selectForwardTarget(panel, id) {
@@ -3219,11 +3222,11 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var idx = forwardSource.msgIndex;
     var msgs = forwardSource.panel === 'group' ? (mockGroupMessages[id] || []) : (mockMessages[id] || []);
     var msg = forwardSource.isPinned ? (pinnedMessages[id] || [])[idx] : msgs[idx];
-    if (!msg) { showToast('✗ Failed to forward', true); closeForwardModal(); return; }
+    if (!msg) { showToast((T('messages.toast.fwdFail') || '✗ Failed to forward'), true); closeForwardModal(); return; }
 
     var senderName = forwardSource.panel === 'group'
-      ? (groups.find(function(g) { return g.id === id; }) || {}).name || 'Unknown'
-      : (conversations.find(function(c) { return c.id === id; }) || {}).name || 'Unknown';
+      ? (groups.find(function(g) { return g.id === id; }) || {}).name || (T('messages.msg.unknown') || 'Unknown')
+      : (conversations.find(function(c) { return c.id === id; }) || {}).name || (T('messages.msg.unknown') || 'Unknown');
 
     var extraText = document.getElementById('forwardMsgInput').value.trim();
 
@@ -3239,12 +3242,12 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         if (!mockGroupMessages[targetId]) mockGroupMessages[targetId] = [];
         mockGroupMessages[targetId].push(fwdMsg);
         var grp = groups.find(function(g) { return g.id === targetId; });
-        if (grp) { grp.lastMsg = '[Forwarded] ' + msg.text; grp.time = 'Now'; }
+        if (grp) { grp.lastMsg = (T('messages.msg.fwdLabel') || '[Forwarded] ') + msg.text; grp.time = 'Now'; }
       } else {
         if (!mockMessages[targetId]) mockMessages[targetId] = [];
         mockMessages[targetId].push(fwdMsg);
         var conv = conversations.find(function(c) { return c.id === targetId; });
-        if (conv) { conv.lastMsg = '[Forwarded] ' + msg.text; conv.time = 'Now'; }
+        if (conv) { conv.lastMsg = (T('messages.msg.fwdLabel') || '[Forwarded] ') + msg.text; conv.time = 'Now'; }
       }
 
       // Bubble 2: the supplementary message (if any)
@@ -3263,7 +3266,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var lastTarget = forwardSelected[forwardSelected.length - 1];
 
     saveData();
-    showToast('✓ Forwarded to ' + count + ' chat' + (count > 1 ? 's' : ''));
+    showToast((T('messages.toast.fwd') || '✓ Forwarded to ') + count + ' ' + (count > 1 ? (T('messages.toast.chats') || 'chats') : (T('messages.toast.chat') || 'chat')));
     closeForwardModal();
 
     // Navigate to the last selected target
@@ -3306,9 +3309,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     hideContextMenu();
     if (deleted) {
       saveData();
-      showToast('✓ Message deleted');
+      showToast((T('messages.toast.deleted') || '✓ Message deleted'));
     } else {
-      showToast('✗ Failed to delete', true);
+      showToast((T('messages.toast.deleteFail') || '✗ Failed to delete'), true);
     }
     rerenderTarget(target.panel, id);
   }
@@ -3481,13 +3484,13 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       if (!grp) return;
       name = grp.name;
       avatar = grp.avatar;
-      bio = chatBios[id] || 'Group chat — ' + grp.members + ' members';
+      bio = chatBios[id] || ((T('messages.info.groupBioPrefix') || 'Group chat — ') + grp.members + (T('messages.info.membersWord') || ' members'));
     } else {
       var conv = conversations.find(function(c) { return c.id === id; });
       if (!conv) return;
       name = conv.name;
       avatar = conv.avatar;
-      bio = chatBios[id] || 'M.NationWorld member';
+      bio = chatBios[id] || (T('messages.info.memberBio') || 'M.NationWorld member');
     }
 
     document.getElementById('infoAvatar').textContent = avatar;
@@ -3511,7 +3514,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     if (!activeGroup) return;
     var grp = groups.find(function(g) { return g.id === activeGroup; });
     if (!grp) return;
-    document.getElementById('membersTitle').textContent = grp.name + ' — Members';
+    document.getElementById('membersTitle').textContent = grp.name + (T('messages.members.suffix') || ' — Members');
     document.getElementById('memberSearchInput').value = '';
     renderMembersList('');
     document.getElementById('membersModal').style.display = 'flex';
@@ -3540,14 +3543,14 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     });
     var html = '';
     if (members.length === 0) {
-      html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">person_search</span><p style="font-size:var(--fs-label-md)">No members found</p></div>';
+      html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">person_search</span><p style="font-size:var(--fs-label-md)">' + (T('messages.members.empty') || 'No members found') + '</p></div>';
     } else {
       members.forEach(function(m) {
         var isAdmin = m.role === 'Admin';
         html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0">' +
           '<div style="width:36px;height:36px;border-radius:50%;background:' + (isAdmin ? 'var(--color-primary)' : 'var(--color-secondary)') + ';color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0">' + m.avatar + '</div>' +
           '<div style="flex:1;min-width:0">' +
-            '<div style="font-weight:600;font-size:var(--fs-label-md)">' + m.name + (m.name === 'You' ? ' <span style="font-weight:400;font-size:10px;color:var(--color-outline)">(you)</span>' : '') + '</div>' +
+            '<div style="font-weight:600;font-size:var(--fs-label-md)">' + m.name + (m.name === 'You' ? ' <span style="font-weight:400;font-size:10px;color:var(--color-outline)">' + (T('messages.members.you') || '(you)') + '</span>' : '') + '</div>' +
             '<div style="font-size:11px;color:' + (isAdmin ? 'var(--color-primary)' : 'var(--color-outline)') + ';font-weight:' + (isAdmin ? '600' : '400') + '">' + m.role + '</div>' +
           '</div>' +
         '</div>';
@@ -3711,7 +3714,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     if (tab === 'pinned') {
       var pinned = chatMsgs.filter(function(m) { return m._pinned; });
       if (pinned.length === 0) {
-        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">push_pin</span><p style="font-size:var(--fs-label-md)">No pinned messages</p></div>';
+        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">push_pin</span><p style="font-size:var(--fs-label-md)">' + (T('messages.info.noPinned') || 'No pinned messages') + '</p></div>';
       } else {
         pinned.forEach(function(pm, pi) {
           var isSent = !pm.sent;
@@ -3719,7 +3722,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
             '<div' + (isSent ? ' class="msg-acc"' : '') + ' style="max-width:80%;padding:8px 14px;border-radius:var(--radius-lg);font-size:var(--fs-label-md);' +
               (isSent ? 'background:var(--color-primary);color:white;' : 'background:var(--card-bg);border:1px solid var(--divider-line);') + '">' +
               '<div style="font-size:10px;opacity:0.65;margin-bottom:2px"><span class="material-symbols-outlined" style="font-size:10px;vertical-align:middle">push_pin</span> ' + pm.from + '</div>' +
-              (pm._forwardedFrom ? '<div style="font-size:9px;opacity:0.45;margin-bottom:2px">↪ Forwarded from ' + pm._forwardedFrom + '</div>' : '') +
+              (pm._forwardedFrom ? '<div style="font-size:9px;opacity:0.45;margin-bottom:2px">' + (T('messages.msg.fwdFrom') || '↪ Forwarded from ') + pm._forwardedFrom + '</div>' : '') +
               pm.text +
             '</div></div>';
         });
@@ -3733,7 +3736,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         }
       });
       if (mediaImgs.length === 0) {
-        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">image</span><p style="font-size:var(--fs-label-md)">No images shared</p></div>';
+        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">image</span><p style="font-size:var(--fs-label-md)">' + (T('messages.info.noImages') || 'No images shared') + '</p></div>';
       } else {
         html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">';
         mediaImgs.forEach(function(img) {
@@ -3756,7 +3759,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         }
       });
       if (mediaVids.length === 0) {
-        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">movie</span><p style="font-size:var(--fs-label-md)">No videos shared</p></div>';
+        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">movie</span><p style="font-size:var(--fs-label-md)">' + (T('messages.info.noVideos') || 'No videos shared') + '</p></div>';
       } else {
         html = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">';
         mediaVids.forEach(function(vid) {
@@ -3793,7 +3796,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         }
       });
       if (mediaLinks.length === 0) {
-        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">link</span><p style="font-size:var(--fs-label-md)">No links shared</p></div>';
+        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">link</span><p style="font-size:var(--fs-label-md)">' + (T('messages.info.noLinks') || 'No links shared') + '</p></div>';
       } else {
         mediaLinks.forEach(function(link) {
           html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;margin-bottom:4px;transition:background 0.12s" onmouseenter="this.style.background=\'rgba(70,72,212,0.04)\'" onmouseleave="this.style.background=\'transparent\'">' +
@@ -3819,7 +3822,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       });
       var fileIcons = { pdf: 'picture_as_pdf', spreadsheet: 'table', presentation: 'slideshow', document: 'description', '3d': 'view_in_ar', design: 'design_services', gis: 'map' };
       if (mediaFiles.length === 0) {
-        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">folder</span><p style="font-size:var(--fs-label-md)">No files shared</p></div>';
+        html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">folder</span><p style="font-size:var(--fs-label-md)">' + (T('messages.info.noFiles') || 'No files shared') + '</p></div>';
       } else {
         mediaFiles.forEach(function(file) {
           html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;margin-bottom:4px;transition:background 0.12s" onmouseenter="this.style.background=\'rgba(70,72,212,0.04)\'" onmouseleave="this.style.background=\'transparent\'">' +
@@ -3871,7 +3874,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
 
   function renderConversationList() {
     if (!conversations.length) {
-      document.getElementById('conversationList').innerHTML = '<div class="label-sm" style="color:var(--color-outline);text-align:center;padding:16px 8px;line-height:1.6">No chats yet — tap <b>+</b> to start one</div>';
+      document.getElementById('conversationList').innerHTML = '<div class="label-sm" style="color:var(--color-outline);text-align:center;padding:16px 8px;line-height:1.6">' + (T('messages.empty.noChats') || 'No chats yet — tap <b>+</b> to start one') + '</div>';
       return;
     }
     var html;
@@ -3920,7 +3923,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var conv = conversations.find(function(c) { return c.id === id; });
     if (!conv) return;
     document.getElementById('chatName').textContent = conv.name;
-    document.getElementById('chatStatus').textContent = conv.online ? 'Online' : 'Offline';
+    document.getElementById('chatStatus').textContent = conv.online ? (T('messages.chat.online') || 'Online') : (T('messages.chat.offline') || 'Offline');
     document.getElementById('chatHeader').style.display = 'flex';
     document.getElementById('chatInputBar').style.display = 'flex';
     // emptyChat is a child of messageList — it gets destroyed by innerHTML
@@ -3941,7 +3944,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     msgs.forEach(function(m, mi) {
       html += msgBubble(m, mi, !!m._pinned, 'private', id);
     });
-    ml.innerHTML = html || '<p style="text-align:center;color:var(--color-outline);margin-top:var(--space-xl)">No messages yet. Say hello!</p>';
+    ml.innerHTML = html || '<p style="text-align:center;color:var(--color-outline);margin-top:var(--space-xl)">' + (T('messages.empty.noMessages') || 'No messages yet. Say hello!') + '</p>';
     renderConversationList();
   }
 
@@ -3955,7 +3958,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
 
     // 云端会话：v1 不支持文件，纯文本走 /api/conversations
     if (cloudConvs[activeChat]) {
-      if (hasFile) { showToast('⚠ Files are not available in cloud chats yet.', true); return; }
+      if (hasFile) { showToast((T('messages.toast.cloudNoFiles') || '⚠ Files are not available in cloud chats yet.'), true); return; }
       sendCloudMessage(text);
       return;
     }
@@ -3978,7 +3981,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           videoUrl: pendingFile.videoUrl || null,
           _kind: isVid ? 'video' : 'image'
         },
-        text: (isImg || pendingFile.dataUrl) ? '' : ('[File: ' + pendingFile.name + ']')
+        text: (isImg || pendingFile.dataUrl) ? '' : ((T('messages.msg.filePrefix') || '[File: ') + pendingFile.name + ']')
       };
       mockMessages[activeChat].push(fileMsg);
       pendingFile = null;
@@ -3991,7 +3994,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     }
 
     var conv = conversations.find(function(c) { return c.id === activeChat; });
-    if (conv) { conv.lastMsg = hasFile ? '[Image]' : text; conv.time = 'Now'; }
+    if (conv) { conv.lastMsg = hasFile ? (T('messages.msg.image') || '[Image]') : text; conv.time = 'Now'; }
 
     input.value = '';
     saveData();
@@ -4011,7 +4014,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   function simulateUpload(mode) {
     if (!activeChat) return;
     if (!mockMessages[activeChat]) mockMessages[activeChat] = [];
-    var label = mode === 'compress' ? '[File sent — compressed]' : '[File sent — original]';
+    var label = mode === 'compress' ? (T('messages.msg.fileSentCompressed') || '[File sent — compressed]') : (T('messages.msg.fileSentOriginal') || '[File sent — original]');
     mockMessages[activeChat].push({ from: 'You', text: label, sent: false });
     saveData();
     openChat(activeChat);
@@ -4212,7 +4215,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
 
   function renderGroupList() {
     if (!groups.length) {
-      document.getElementById('groupList').innerHTML = '<div class="label-sm" style="color:var(--color-outline);text-align:center;padding:16px 8px;line-height:1.6">No groups yet — tap <b>+</b> to create one</div>';
+      document.getElementById('groupList').innerHTML = '<div class="label-sm" style="color:var(--color-outline);text-align:center;padding:16px 8px;line-height:1.6">' + (T('messages.empty.noGroups') || 'No groups yet — tap <b>+</b> to create one') + '</div>';
       return;
     }
     var html;
@@ -4220,7 +4223,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       html = groups.map(function(g) {
         var isActive = g.id === activeGroup;
         var ring = isActive ? '2px solid var(--color-secondary)' : '2px solid transparent';
-        return '<div title="' + g.name + (g.unread > 0 ? ' (' + g.unread + ' unread)' : '') + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openGroupChat(\'' + g.id + '\')">' +
+        return '<div title="' + g.name + (g.unread > 0 ? ' (' + g.unread + (T('messages.group.unread') || ' unread') + ')' : '') + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openGroupChat(\'' + g.id + '\')">' +
           '<div class="msg-acc" style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
             g.avatar +
             (g.unread > 0 ? '<span style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:var(--color-primary);border-radius:50%;border:1px solid white"></span>' : '') +
@@ -4243,7 +4246,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
                 '<span class="label-sm" style="color:var(--color-outline)">' + g.time + '</span>' +
               '</div>' +
               '<div class="flex-between">' +
-                '<span class="label-sm" style="color:var(--color-outline)">' + g.members + ' members · ' + g.online + ' online</span>' +
+                '<span class="label-sm" style="color:var(--color-outline)">' + g.members + (T('messages.group.membersWord') || ' members · ') + g.online + (T('messages.group.onlineWord') || ' online') + '</span>' +
                 unreadBadge +
               '</div>' +
             '</div>' +
@@ -4260,7 +4263,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var grp = groups.find(function(g) { return g.id === id; });
     if (!grp) return;
     document.getElementById('groupChatName').textContent = grp.name;
-    document.getElementById('groupChatMeta').textContent = grp.members + ' members';
+    document.getElementById('groupChatMeta').textContent = grp.members + (T('messages.info.membersWord') || ' members');
     document.getElementById('groupAvatar').textContent = grp.avatar;
     document.getElementById('groupAvatar').style.background = 'var(--color-secondary)';
     document.getElementById('groupChatHeader').style.display = 'flex';
@@ -4284,7 +4287,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     msgs.forEach(function(m, mi) {
       html += msgBubble(m, mi, !!m._pinned, 'group', id);
     });
-    gml.innerHTML = html || '<p style="text-align:center;color:var(--color-outline);margin-top:var(--space-xl)">No messages yet. Start the conversation!</p>';
+    gml.innerHTML = html || '<p style="text-align:center;color:var(--color-outline);margin-top:var(--space-xl)">' + (T('messages.empty.noGroupMessages') || 'No messages yet. Start the conversation!') + '</p>';
     renderGroupList();
   }
 
@@ -4314,7 +4317,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           videoUrl: pendingFile.videoUrl || null,
           _kind: isVid ? 'video' : 'image'
         },
-        text: (isImg || pendingFile.dataUrl) ? '' : ('[File: ' + pendingFile.name + ']')
+        text: (isImg || pendingFile.dataUrl) ? '' : ((T('messages.msg.filePrefix') || '[File: ') + pendingFile.name + ']')
       };
       mockGroupMessages[activeGroup].push(fileMsg);
       pendingFile = null;
@@ -4327,7 +4330,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     }
 
     var grp = groups.find(function(g) { return g.id === activeGroup; });
-    if (grp) { grp.lastMsg = hasFile ? '[Image]' : text; grp.time = 'Now'; }
+    if (grp) { grp.lastMsg = hasFile ? (T('messages.msg.image') || '[Image]') : text; grp.time = 'Now'; }
 
     input.value = '';
     saveData();
@@ -4347,7 +4350,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   function simulateGroupUpload(mode) {
     if (!activeGroup) return;
     if (!mockGroupMessages[activeGroup]) mockGroupMessages[activeGroup] = [];
-    var label = mode === 'compress' ? '[File sent — compressed]' : '[File sent — original]';
+    var label = mode === 'compress' ? (T('messages.msg.fileSentCompressed') || '[File sent — compressed]') : (T('messages.msg.fileSentOriginal') || '[File sent — original]');
     mockGroupMessages[activeGroup].push({ from: 'You', text: label, sent: false });
     saveData();
     openGroupChat(activeGroup);
@@ -4405,20 +4408,20 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
 
     if (type === 'friend') {
       content.innerHTML =
-        '<h4 style="font-weight:600;margin-bottom:var(--space-sm)">Add a Friend</h4>' +
-        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-md)">Enter a user ID to start a conversation.</p>' +
-        '<input type="text" class="input-glass" placeholder="User ID (USR-XXXXXX)" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-sm)" id="friendInput">' +
+        '<h4 style="font-weight:600;margin-bottom:var(--space-sm)">' + (T('messages.modal.addFriendTitle') || 'Add a Friend') + '</h4>' +
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-md)">' + (T('messages.modal.addFriendDesc') || 'Enter a user ID to start a conversation.') + '</p>' +
+        '<input type="text" class="input-glass" placeholder="' + (T('messages.modal.userIdPh') || 'User ID (USR-XXXXXX)') + '" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-sm)" id="friendInput">' +
         '<button class="btn btn-primary" style="width:100%" onclick="addFriendDemo()">' +
-          '<span class="material-symbols-outlined" style="font-size:18px">person_add</span> Send Request' +
+          '<span class="material-symbols-outlined" style="font-size:18px">person_add</span> ' + (T('messages.modal.sendRequest') || 'Send Request') +
         '</button>' +
         '<p id="friendResult" style="text-align:center;margin-top:var(--space-sm);font-size:var(--fs-label-md);color:var(--color-secondary);display:none"></p>';
     } else {
       content.innerHTML =
-        '<h4 style="font-weight:600;margin-bottom:var(--space-sm)">Create a Group</h4>' +
-        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-md)">Set up a new group conversation for your community.</p>' +
-        '<input type="text" class="input-glass" placeholder="Group Name" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-sm)" id="groupNameInput">' +
-        '<input type="text" class="input-glass" placeholder="Add members (usernames, comma-separated)" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-md)" id="groupMembersInput">' +
-        '<p style="font-size:11px;color:var(--color-outline);margin-bottom:var(--space-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Group Type</p>' +
+        '<h4 style="font-weight:600;margin-bottom:var(--space-sm)">' + (T('messages.modal.createGroupTitle') || 'Create a Group') + '</h4>' +
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:var(--space-md)">' + (T('messages.modal.createGroupDesc') || 'Set up a new group conversation for your community.') + '</p>' +
+        '<input type="text" class="input-glass" placeholder="' + (T('messages.modal.groupNamePh') || 'Group Name') + '" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-sm)" id="groupNameInput">' +
+        '<input type="text" class="input-glass" placeholder="' + (T('messages.modal.groupMembersPh') || 'Add members (usernames, comma-separated)') + '" style="width:100%;box-sizing:border-box;margin-bottom:var(--space-md)" id="groupMembersInput">' +
+        '<p style="font-size:11px;color:var(--color-outline);margin-bottom:var(--space-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">' + (T('messages.modal.groupType') || 'Group Type') + '</p>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm);margin-bottom:var(--space-md)" id="groupTypeGrid">' +
           '<button onclick="selectGroupType(\'chat\',this)" style="' +
             'aspect-ratio:1;width:100%;' +
@@ -4431,8 +4434,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
               '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">groups</span>' +
             '</div>' +
             '<div>' +
-              '<div style="font-weight:600;font-size:var(--fs-label-md)">Group</div>' +
-              '<div style="font-size:10px;color:var(--color-outline);margin-top:1px">Chat-based group</div>' +
+              '<div style="font-weight:600;font-size:var(--fs-label-md)">' + (T('messages.modal.typeGroup') || 'Group') + '</div>' +
+              '<div style="font-size:10px;color:var(--color-outline);margin-top:1px">' + (T('messages.modal.typeGroupDesc') || 'Chat-based group') + '</div>' +
             '</div>' +
           '</button>' +
           '<button onclick="selectGroupType(\'announcement\',this)" style="' +
@@ -4446,13 +4449,13 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
               '<span class="material-symbols-outlined" style="font-size:20px;color:#ea580c">campaign</span>' +
             '</div>' +
             '<div>' +
-              '<div style="font-weight:600;font-size:var(--fs-label-md)">Broadcast</div>' +
-              '<div style="font-size:10px;color:var(--color-outline);margin-top:1px">Announcement channel</div>' +
+              '<div style="font-weight:600;font-size:var(--fs-label-md)">' + (T('messages.modal.typeBroadcast') || 'Broadcast') + '</div>' +
+              '<div style="font-size:10px;color:var(--color-outline);margin-top:1px">' + (T('messages.modal.typeBroadcastDesc') || 'Announcement channel') + '</div>' +
             '</div>' +
           '</button>' +
         '</div>' +
         '<button class="btn btn-primary msg-acc" style="width:100%;background:var(--color-secondary);border-color:var(--color-secondary)" onclick="createGroupDemo()">' +
-          '<span class="material-symbols-outlined" style="font-size:18px">group_add</span> Create Group' +
+          '<span class="material-symbols-outlined" style="font-size:18px">group_add</span> ' + (T('messages.modal.createGroupSubmit') || 'Create Group') +
         '</button>' +
         '<p id="groupResult" style="text-align:center;margin-top:var(--space-sm);font-size:var(--fs-label-md);color:var(--color-secondary);display:none"></p>';
     }
@@ -4468,35 +4471,35 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       var body = { userId: name };
       MN_API.post('/friend-requests', body).then(function(res) {
         if (res.ok) {
-          el.textContent = '✓ 好友请求已发送！';
+          el.textContent = (T('messages.modal.frSentCloud') || '✓ 好友请求已发送！');
           el.style.display = 'block';
           el.style.color = 'var(--color-secondary)';
           setTimeout(closeModal, 600);
         } else if (res.status === 404) {
-          el.textContent = 'No user found with that ID.';
+          el.textContent = (T('messages.modal.fr404') || 'No user found with that ID.');
           el.style.display = 'block';
           el.style.color = '#ef4444';
         } else if (res.status === 409) {
-          el.textContent = 'Friend request already sent or you are already friends.';
+          el.textContent = (T('messages.modal.fr409') || 'Friend request already sent or you are already friends.');
           el.style.display = 'block';
           el.style.color = '#ef4444';
         } else if (res.status === 400) {
-          el.textContent = 'You cannot send a friend request to yourself.';
+          el.textContent = (T('messages.modal.frSelf') || 'You cannot send a friend request to yourself.');
           el.style.display = 'block';
           el.style.color = '#ef4444';
         } else if (res.status === 429) {
-          el.textContent = 'Too many requests — try again later.';
+          el.textContent = (T('messages.modal.fr429') || 'Too many requests — try again later.');
           el.style.display = 'block';
           el.style.color = '#ef4444';
         } else {
-          el.textContent = 'Could not send friend request — try again.';
+          el.textContent = (T('messages.modal.frFail') || 'Could not send friend request — try again.');
           el.style.display = 'block';
           el.style.color = '#ef4444';
         }
       });
       return;
     }
-    el.textContent = '✓ Friend request sent to ' + name + '!';
+    el.textContent = (T('messages.modal.frSentPre') || '✓ Friend request sent to ') + name + (T('messages.modal.frSentSuffix') || '!');
     el.style.display = 'block';
     el.style.color = 'var(--color-secondary)';
     // Add to conversations after a short delay
@@ -4541,8 +4544,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var name = nameInput.value.trim();
     if (!name) return;
     var el = document.getElementById('groupResult');
-    var typeLabel = selectedGroupType === 'chat' ? 'Group' : 'Broadcast';
-    el.textContent = '✓ ' + typeLabel + ' "' + name + '" created!';
+    var typeLabel = selectedGroupType === 'chat' ? (T('messages.modal.typeGroup') || 'Group') : (T('messages.modal.typeBroadcast') || 'Broadcast');
+    el.textContent = (T('messages.modal.createdPrefix') || '✓ ') + typeLabel + (T('messages.modal.createdMid') || ' "') + name + (T('messages.modal.createdSuffix') || '" created!');
     el.style.display = 'block';
     el.style.color = 'var(--color-secondary)';
     // Capitalize first two letters for avatar
@@ -4664,17 +4667,17 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var now = new Date();
     var diff = now - d;
     var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    if (days === 0) return 'Today';
-    if (days === 1) return 'Yesterday';
-    if (days < 7) return days + ' days ago';
+    if (days === 0) return (T('messages.ann.today') || 'Today');
+    if (days === 1) return (T('messages.ann.yesterday') || 'Yesterday');
+    if (days < 7) return days + (T('messages.ann.daysAgo') || ' days ago');
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
   function getCategoryStyle(cat) {
     var map = {
-      official: { bg: 'rgba(70,72,212,0.1)', color: '#4648d4', label: 'Official' },
-      community: { bg: 'rgba(22,163,74,0.1)', color: '#16a34a', label: 'Community' },
-      system: { bg: 'rgba(6,182,212,0.1)', color: '#06b6d4', label: 'System' },
+      official: { bg: 'rgba(70,72,212,0.1)', color: '#4648d4', label: (T('messages.ann.catOfficial') || 'Official') },
+      community: { bg: 'rgba(22,163,74,0.1)', color: '#16a34a', label: (T('messages.ann.catCommunity') || 'Community') },
+      system: { bg: 'rgba(6,182,212,0.1)', color: '#06b6d4', label: (T('messages.ann.catSystem') || 'System') },
     };
     return map[cat] || { bg: 'rgba(118,117,134,0.1)', color: '#767586', label: cat };
   }
@@ -4683,13 +4686,15 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var cat = filter || activeCategory;
     var filtered = cat === 'all' ? announcements.slice() : announcements.filter(function(a) { return a.category === cat; });
 
-    document.getElementById('announceCount').textContent = filtered.length + ' announcement' + (filtered.length !== 1 ? 's' : '');
+    var pluralSfx = T('messages.ann.plural');
+    if (pluralSfx === null) pluralSfx = 's';
+    document.getElementById('announceCount').textContent = filtered.length + (T('messages.ann.count') || ' announcement') + (filtered.length !== 1 ? pluralSfx : '');
 
     if (filtered.length === 0) {
       document.getElementById('announceList').innerHTML =
         '<div class="card" style="text-align:center;padding:var(--space-xl)">' +
           '<span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline-variant);margin-bottom:var(--space-sm)">campaign</span>' +
-          '<p style="color:var(--color-outline)">No announcements in this category yet.</p>' +
+          '<p style="color:var(--color-outline)">' + (T('messages.ann.empty') || 'No announcements in this category yet.') + '</p>' +
         '</div>';
       return;
     }
@@ -4710,7 +4715,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           '</div>' +
         '</div>' +
         '<p style="font-size:var(--fs-label-md);color:var(--color-on-surface-variant);margin-top:6px;line-height:1.5;margin-left:30px">' + a.summary + '</p>' +
-        '<div class="label-sm" style="margin-left:30px;color:var(--color-outline);margin-top:2px">by ' + a.author + '</div>' +
+        '<div class="label-sm" style="margin-left:30px;color:var(--color-outline);margin-top:2px">' + (T('messages.ann.by') || 'by ') + a.author + '</div>' +
         '<div style="margin-left:30px;overflow:hidden;transition:max-height 0.4s ease,opacity 0.4s ease,margin-top 0.4s ease' + (isExpanded ? ';max-height:600px;opacity:1;margin-top:var(--space-md)' : ';max-height:0;opacity:0;margin-top:0') + '">' +
           '<div style="border-top:1px solid rgba(118,117,134,0.1);padding-top:var(--space-md)">' +
             '<p style="font-size:var(--fs-body-md);color:var(--color-on-surface);line-height:1.7;white-space:pre-line">' + a.content + '</p>' +
@@ -4757,7 +4762,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     announceP.style.opacity = targetPanel === 2 ? '1' : '0.3';
 
     // Update search placeholder
-    searchInput.placeholder = targetPanel === 2 ? 'Search announcements...' : 'Search messages...';
+    searchInput.placeholder = targetPanel === 2 ? (T('messages.search.announcements') || 'Search announcements...') : (T('messages.search.messages') || 'Search messages...');
 
     msgPanel = targetPanel;
     // Clear stale state from other panels so info modal / members modal read the right data
@@ -4817,12 +4822,14 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   }
 
   function renderFilteredAnnouncements(filtered) {
-    document.getElementById('announceCount').textContent = filtered.length + ' result' + (filtered.length !== 1 ? 's' : '');
+    var pluralSfx2 = T('messages.ann.plural');
+    if (pluralSfx2 === null) pluralSfx2 = 's';
+    document.getElementById('announceCount').textContent = filtered.length + (T('messages.ann.result') || ' result') + (filtered.length !== 1 ? pluralSfx2 : '');
     if (filtered.length === 0) {
       document.getElementById('announceList').innerHTML =
         '<div class="card" style="text-align:center;padding:var(--space-xl)">' +
           '<span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline-variant);margin-bottom:var(--space-sm)">search_off</span>' +
-          '<p style="color:var(--color-outline)">No announcements match your search.</p>' +
+          '<p style="color:var(--color-outline)">' + (T('messages.ann.noMatch') || 'No announcements match your search.') + '</p>' +
         '</div>';
       return;
     }
@@ -4842,7 +4849,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           '</div>' +
         '</div>' +
         '<p style="font-size:var(--fs-label-md);color:var(--color-on-surface-variant);margin-top:6px;line-height:1.5;margin-left:30px">' + a.summary + '</p>' +
-        '<div class="label-sm" style="margin-left:30px;color:var(--color-outline);margin-top:2px">by ' + a.author + '</div>' +
+        '<div class="label-sm" style="margin-left:30px;color:var(--color-outline);margin-top:2px">' + (T('messages.ann.by') || 'by ') + a.author + '</div>' +
         '<div style="margin-left:30px;overflow:hidden;transition:max-height 0.4s ease,opacity 0.4s ease,margin-top 0.4s ease' + (isExpanded ? ';max-height:600px;opacity:1;margin-top:var(--space-md)' : ';max-height:0;opacity:0;margin-top:0') + '">' +
           '<div style="border-top:1px solid rgba(118,117,134,0.1);padding-top:var(--space-md)">' +
             '<p style="font-size:var(--fs-body-md);color:var(--color-on-surface);line-height:1.7;white-space:pre-line">' + a.content + '</p>' +
@@ -4872,7 +4879,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
     }
     var yest = new Date(now); yest.setDate(now.getDate() - 1);
-    if (d.toDateString() === yest.toDateString()) return 'Yesterday';
+    if (d.toDateString() === yest.toDateString()) return (T('messages.ann.yesterday') || 'Yesterday');
     return (d.getMonth() + 1) + '/' + d.getDate();
   }
 
@@ -4930,7 +4937,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         ml.scrollTop = ml.scrollHeight;
         animateLastBubble('messageList');
       } else {
-        showToast('⚠ Message failed to send — try again.', true);
+        showToast((T('messages.toast.sendFail') || '⚠ Message failed to send — try again.'), true);
       }
     });
   }
@@ -4992,13 +4999,15 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       // 空态用 person_add 图标（保护搜索栏铃铛的 notifications 精确串）
       html = '<div style="padding:28px 0 24px;text-align:center;color:var(--color-outline)">' +
         '<span class="material-symbols-outlined" style="font-size:32px;display:block;margin-bottom:8px">person_add</span>' +
-        '<div class="label-sm">暂无好友请求</div></div>';
+        '<div class="label-sm">' + (T('messages.notif.empty') || '暂无好友请求') + '</div></div>';
     } else {
       html = invites.map(function(inv) {
+        var frPre = T('messages.notif.frNamePre');
+        var frPost = T('messages.notif.frNamePost');
         return '<div class="notif-entry" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;cursor:pointer" onclick="openNotifDecision(\'' + inv.id + '\')">' +
           '<div class="msg-acc" style="width:40px;height:40px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">' + inv.avatar + '</div>' +
           '<div style="flex:1;min-width:0">' +
-            '<div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">「' + inv.name + '」想加你为好友</div>' +
+            '<div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (frPre !== null ? frPre : '「') + inv.name + (frPost !== null ? frPost : '」想加你为好友') + '</div>' +
             '<div style="color:var(--color-outline);font-size:11px;margin-top:2px">' + inv.userId + '</div>' +
           '</div>' +
           '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline)">chevron_right</span>' +
@@ -5020,6 +5029,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     p.style.top = (r.bottom + 8) + 'px';
     p.style.right = Math.max(12, window.innerWidth - r.right) + 'px';
     p.style.display = 'flex';
+    document.getElementById('notifTitle').textContent = (T('messages.notif.title') || '通知');
     renderNotifPopup();
     p.classList.remove('island-open');
     void p.offsetWidth; // reflow：重放灵动岛展开动画
@@ -5030,7 +5040,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var p = document.getElementById('notifPopup');
     p.style.display = 'none';
     p.classList.remove('show-decision', 'island-open');
-    document.getElementById('notifTitle').textContent = '通知';
+    document.getElementById('notifTitle').textContent = (T('messages.notif.title') || '通知');
     notifPendingId = null;
   }
 
@@ -5039,7 +5049,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     var body = document.getElementById('notifBody');
     var h0 = body.getBoundingClientRect().height;
     body.style.height = h0 + 'px';
-    document.getElementById('notifTitle').textContent = view === 'decision' ? '好友请求' : '通知';
+    document.getElementById('notifTitle').textContent = view === 'decision' ? (T('messages.notif.decisionTitle') || '好友请求') : (T('messages.notif.title') || '通知');
     p.classList.toggle('show-decision', view === 'decision');
     void body.offsetHeight; // reflow：锁定当前高 → 过渡到目标视图高度
     var target = document.getElementById(view === 'decision' ? 'notifDecisionView' : 'notifListView');
@@ -5083,13 +5093,13 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       MN_API.post('/friend-requests/' + id + '/accept').then(function(res) {
         if (res.ok) {
           invites = invites.filter(function(x) { return x.id !== id; });
-          showToast('已同意 ' + inv.name + ' 的好友请求');
+          showToast((T('messages.toast.frAcceptedPre') || '已同意 ') + inv.name + (T('messages.toast.frAcceptedSuffix') || ' 的好友请求'));
           refreshCloudChat(); // 新 DM 即时入侧栏
           updateNotifBadge();
           renderNotifPopup();
           morphNotifView('list');
         } else {
-          showToast('⚠ Accept failed — try again.', true);
+          showToast((T('messages.toast.acceptFail') || '⚠ Accept failed — try again.'), true);
         }
       });
       return;
@@ -5105,7 +5115,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     });
     saveData();
     renderConversationList();
-    showToast('已同意 ' + inv.name + ' 的好友请求');
+    showToast((T('messages.toast.frAcceptedPre') || '已同意 ') + inv.name + (T('messages.toast.frAcceptedSuffix') || ' 的好友请求'));
     updateNotifBadge();
     renderNotifPopup();
     morphNotifView('list');
@@ -5119,19 +5129,19 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       MN_API.post('/friend-requests/' + id + '/decline').then(function(res) {
         if (res.ok) {
           invites = invites.filter(function(x) { return x.id !== id; });
-          showToast('已拒绝 ' + inv.name + ' 的好友请求');
+          showToast((T('messages.toast.frDeclinedPre') || '已拒绝 ') + inv.name + (T('messages.toast.frDeclinedSuffix') || ' 的好友请求'));
           updateNotifBadge();
           renderNotifPopup();
           morphNotifView('list');
         } else {
-          showToast('⚠ Decline failed — try again.', true);
+          showToast((T('messages.toast.declineFail') || '⚠ Decline failed — try again.'), true);
         }
       });
       return;
     }
     invites = invites.filter(function(x) { return x.id !== id; });
     saveData();
-    showToast('已拒绝 ' + inv.name + ' 的好友请求');
+    showToast((T('messages.toast.frDeclinedPre') || '已拒绝 ') + inv.name + (T('messages.toast.frDeclinedSuffix') || ' 的好友请求'));
     updateNotifBadge();
     renderNotifPopup();
     morphNotifView('list');
@@ -5169,10 +5179,75 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       try { history.replaceState(null, '', window.location.pathname); } catch (e) {}
     }
   })();
+
+  // ──────────────────────────────────────────────
+  //  I18N 切语言重渲钩子（v0.2.54.0：body 尾部三件套 onChange 调用；惰性 T 防 undefined）
+  // ──────────────────────────────────────────────
+  var __mnPrevRerenderMsgs = window.__mnI18nRerender || function () {};
+  window.__mnI18nRerenderMsgs = function () {
+    __mnPrevRerenderMsgs();
+    renderConversationList();
+    renderGroupList();
+    renderAnnouncements();
+    renderNotifPopup();
+    if (activeChat) {
+      var conv = conversations.find(function (c) { return c.id === activeChat; });
+      if (conv) document.getElementById('chatStatus').textContent = conv.online ? (T('messages.chat.online') || 'Online') : (T('messages.chat.offline') || 'Offline');
+    }
+    if (activeGroup) {
+      var grp = groups.find(function (g) { return g.id === activeGroup; });
+      if (grp) document.getElementById('groupChatMeta').textContent = grp.members + (T('messages.info.membersWord') || ' members');
+    }
+    if (document.getElementById('chatInfoModal').style.display === 'flex') renderInfoTab(infoTab);
+    if (document.getElementById('membersModal').style.display === 'flex') {
+      var grp2 = groups.find(function (g) { return g.id === activeGroup; });
+      if (grp2) document.getElementById('membersTitle').textContent = grp2.name + (T('messages.members.suffix') || ' — Members');
+      renderMembersList(document.getElementById('memberSearchInput').value);
+    }
+    if (document.getElementById('forwardModal').style.display === 'flex') renderForwardContacts(document.getElementById('forwardSearchInput').value);
+  };
 </script>
 <script src="../assets/js/transitions.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
+</script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/messages.i18n.js"></script>
+<script>
+(function () {
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+  function applyTitles() {
+    var titles = [
+      ['#fabBtn', 'messages.fab.title'],
+      ['#convCollapseBtn', 'messages.collapse.title'],
+      ['#groupCollapseBtn', 'messages.collapse.title']
+    ];
+    titles.forEach(function (pair) {
+      var el = document.querySelector(pair[0]);
+      if (!el) return;
+      var v = T(pair[1]);
+      if (v != null) el.setAttribute('title', v);
+    });
+  }
+  function applyMsgsDynamic() {
+    applyTitles();
+    var si = document.getElementById('searchInput');
+    if (si) si.placeholder = msgPanel === 2 ? (T('messages.search.announcements') || 'Search announcements...') : (T('messages.search.messages') || 'Search messages...');
+    if (!activeChat) { var cn = document.getElementById('chatName'); if (cn) cn.textContent = (T('messages.empty.selectConv') || 'Select a conversation'); }
+    if (!activeGroup) { var gn = document.getElementById('groupChatName'); if (gn) gn.textContent = (T('messages.empty.selectGroup') || 'Select a group'); }
+    if (window.__mnI18nRerenderMsgs) window.__mnI18nRerenderMsgs();
+  }
+  var __mnPrevRerender = window.__mnI18nRerender || function () {};
+  window.__mnI18nRerender = function () {
+    __mnPrevRerender();
+    applyMsgsDynamic();
+  };
+  applyMsgsDynamic();
+  MN_I18N.apply();
+})();
 </script>
 </body>
 </html>

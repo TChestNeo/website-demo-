@@ -2281,24 +2281,32 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   </p>
 
   <div style="margin-top:var(--space-md)">
-    <span style="font-size:var(--fs-label-sm);color:rgba(255,255,255,0.3)">M.NationWorld Console v2.4.1</span>
+    <span data-i18n="trans.footer.console" style="font-size:var(--fs-label-sm);color:rgba(255,255,255,0.3)">M.NationWorld Console v2.4.1</span>
   </div>
 </div>
 
 <script>
+  // v0.2.54.0 i18n：惰性 T()——body 尾部字典三件套执行前 MN_I18N 尚不存在，T 恒 null 落英文兜底；
+  // 三件套 apply 后由 window.__mnI18nRerender 按当前语言重渲一次，此后语言切换经 onChange 再触发。
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   var count = 5;
+  var done = false;
   var numberEl = document.getElementById('countdownNumber');
   var titleEl = document.getElementById('statusTitle');
   var textEl = document.getElementById('statusText');
   var iconEl = document.getElementById('iconEl');
 
-  var messages = [
-    { title: 'Establishing Connection', text: 'Initializing creative workspace...' },
-    { title: 'Loading Modules', text: 'Preparing worldbuilding tools...' },
-    { title: 'Syncing Registry', text: 'Connecting to global ledger...' },
-    { title: 'Calibrating Console', text: 'Optimizing dashboard layout...' },
-    { title: 'Almost Ready', text: 'Finalizing workspace permissions...' },
-  ];
+  function transMessages() {
+    return [
+      { title: (T('trans.m1.title') || 'Establishing Connection'), text: (T('trans.m1.text') || 'Initializing creative workspace...') },
+      { title: (T('trans.m2.title') || 'Loading Modules'), text: (T('trans.m2.text') || 'Preparing worldbuilding tools...') },
+      { title: (T('trans.m3.title') || 'Syncing Registry'), text: (T('trans.m3.text') || 'Connecting to global ledger...') },
+      { title: (T('trans.m4.title') || 'Calibrating Console'), text: (T('trans.m4.text') || 'Optimizing dashboard layout...') },
+      { title: (T('trans.m5.title') || 'Almost Ready'), text: (T('trans.m5.text') || 'Finalizing workspace permissions...') },
+    ];
+  }
+  var messages = transMessages();
 
   var timer = setInterval(function () {
     count--;
@@ -2309,6 +2317,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     setTimeout(function () { numberEl.classList.remove('pulse'); }, 150);
 
     if (count <= 0) {
+      done = true;
       clearInterval(timer);
       // Show verified
       numberEl.textContent = '';
@@ -2316,9 +2325,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       iconEl.classList.remove('animate-spin');
       iconEl.style.color = '#22c55e';
       iconEl.classList.add('animate-scale-in');
-      titleEl.textContent = 'Welcome, Sovereign';
+      titleEl.textContent = (T('trans.ready.title') || 'Welcome, Sovereign');
       titleEl.style.color = '#22c55e';
-      textEl.textContent = 'Your console is ready.';
+      textEl.textContent = (T('trans.ready.text') || 'Your console is ready.');
 
       // Redirect after brief pause
       setTimeout(function () {
@@ -2333,11 +2342,37 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       textEl.textContent = msg.text;
     }
   }, 1000);
+
+  // v0.2.54.0 i18n：重渲钩子（三件套 apply 后首载一次；语言切换经 onChange 再触发）——
+  // 重建消息表并按当前倒计时状态重渲：done 显示就绪文案、count=5 显示初始文案、
+  // 其余按 5-count-1 重取当前段消息。
+  var __mnPrevRerender = window.__mnI18nRerender || function () {};
+  window.__mnI18nRerender = function () {
+    __mnPrevRerender();
+    messages = transMessages();
+    if (done) {
+      titleEl.textContent = (T('trans.ready.title') || 'Welcome, Sovereign');
+      textEl.textContent = (T('trans.ready.text') || 'Your console is ready.');
+    } else if (count >= 5) {
+      titleEl.textContent = (T('trans.m1.title') || 'Establishing Connection');
+      textEl.textContent = (T('trans.initial.text') || 'Initializing sovereign workspace...');
+    } else if (count > 0) {
+      var msg = messages[5 - count - 1] || messages[4];
+      titleEl.textContent = msg.title;
+      textEl.textContent = msg.text;
+    }
+  };
 </script>
 <script src="../assets/js/transitions.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/transitioning.i18n.js"></script>
+<script>MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); }); MN_I18N.apply();</script>
 </body>
 </html>

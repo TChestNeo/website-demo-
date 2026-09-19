@@ -2382,62 +2382,62 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
   <!-- staff 登录页（W6：密码 + 邮箱验证码双因素；管理端无 demo/离线回退） -->
   <div id="adminLogin" class="card adm-login" style="display:none">
-    <h3 class="headline-md">SlatiControl 登录</h3>
-    <p class="body-md" style="color:var(--color-on-surface-variant)">仅工作人员账号可进入。密码 + 邮箱验证码双因素登录，验证码发送至邮箱，10 分钟内有效。</p>
+    <h3 class="headline-md" data-i18n="admin.login.title">SlatiControl 登录</h3>
+    <p class="body-md" style="color:var(--color-on-surface-variant)" data-i18n="admin.login.sub">仅工作人员账号可进入。密码 + 邮箱验证码双因素登录，验证码发送至邮箱，10 分钟内有效。</p>
     <div class="adm-form">
-      <input class="adm-input" id="loginEmail" type="email" placeholder="工作人员邮箱" autocomplete="email" style="flex:1;min-width:220px">
-      <button class="btn btn-primary" id="sendCodeBtn">发送验证码</button>
+      <input class="adm-input" id="loginEmail" type="email" placeholder="工作人员邮箱" data-i18n-placeholder="admin.login.emailPh" autocomplete="email" style="flex:1;min-width:220px">
+      <button class="btn btn-primary" id="sendCodeBtn" data-i18n="admin.login.sendCode">发送验证码</button>
     </div>
     <div class="adm-form">
-      <input class="adm-input" id="loginPassword" type="password" placeholder="密码（8-72 字符）" autocomplete="current-password" style="flex:1">
+      <input class="adm-input" id="loginPassword" type="password" placeholder="密码（8-72 字符）" data-i18n-placeholder="admin.login.passwordPh" autocomplete="current-password" style="flex:1">
     </div>
     <div class="adm-form" id="codeRow" style="display:none">
-      <input class="adm-input" id="loginCode" placeholder="6 位验证码" maxlength="6" inputmode="numeric"
+      <input class="adm-input" id="loginCode" placeholder="6 位验证码" data-i18n-placeholder="admin.login.codePh" maxlength="6" inputmode="numeric"
         style="width:150px;letter-spacing:0.3em;text-align:center">
-      <button class="btn btn-primary" id="loginBtn">登录</button>
+      <button class="btn btn-primary" id="loginBtn" data-i18n="admin.login.submit">登录</button>
     </div>
     <p class="adm-meta" id="loginMsg"></p>
-    <p class="adm-meta" style="text-align:center"><a href="javascript:void(0)" id="forgotAdminPw" style="color:var(--color-primary)">忘记密码？</a></p>
+    <p class="adm-meta" style="text-align:center"><a href="javascript:void(0)" id="forgotAdminPw" style="color:var(--color-primary)" data-i18n="admin.login.forgot">忘记密码？</a></p>
   </div>
 
   <!-- W6：首登设密（旧 staff 仅码登录后引导；设完直达面板） -->
   <div id="adminSetPassword" class="card adm-login" style="display:none">
-    <h3 class="headline-md">设置您的密码</h3>
-    <p class="body-md" style="color:var(--color-on-surface-variant)">旧账号首次登录：设置密码后，下次登录需要密码 + 验证码。</p>
+    <h3 class="headline-md" data-i18n="admin.setpw.title">设置您的密码</h3>
+    <p class="body-md" style="color:var(--color-on-surface-variant)" data-i18n="admin.setpw.sub">旧账号首次登录：设置密码后，下次登录需要密码 + 验证码。</p>
     <div class="adm-form">
-      <input class="adm-input" id="setPassword" type="password" placeholder="新密码（8-72 字符）" autocomplete="new-password" style="flex:1">
-      <button class="btn btn-primary" id="setPwBtn">设置密码并进入</button>
+      <input class="adm-input" id="setPassword" type="password" placeholder="新密码（8-72 字符）" data-i18n-placeholder="admin.setpw.newPasswordPh" autocomplete="new-password" style="flex:1">
+      <button class="btn btn-primary" id="setPwBtn" data-i18n="admin.setpw.submit">设置密码并进入</button>
     </div>
     <p class="adm-meta" id="setPwMsg"></p>
   </div>
 
   <!-- W6：忘记密码（两步：发码 → 码 + 新密码重置） -->
   <div id="adminResetPassword" class="card adm-login" style="display:none">
-    <h3 class="headline-md">重置密码</h3>
-    <p class="body-md" style="color:var(--color-on-surface-variant)">验证码发送至工作人员邮箱，10 分钟内有效。</p>
+    <h3 class="headline-md" data-i18n="admin.reset.title">重置密码</h3>
+    <p class="body-md" style="color:var(--color-on-surface-variant)" data-i18n="admin.reset.sub">验证码发送至工作人员邮箱，10 分钟内有效。</p>
     <div class="adm-form">
-      <input class="adm-input" id="resetEmail" type="email" placeholder="工作人员邮箱" autocomplete="email" style="flex:1;min-width:220px">
-      <button class="btn btn-primary" id="resetSendBtn">发送验证码</button>
+      <input class="adm-input" id="resetEmail" type="email" placeholder="工作人员邮箱" data-i18n-placeholder="admin.login.emailPh" autocomplete="email" style="flex:1;min-width:220px">
+      <button class="btn btn-primary" id="resetSendBtn" data-i18n="admin.login.sendCode">发送验证码</button>
     </div>
     <div class="adm-form">
-      <input class="adm-input" id="resetCode" placeholder="6 位验证码" maxlength="6" inputmode="numeric"
+      <input class="adm-input" id="resetCode" placeholder="6 位验证码" data-i18n-placeholder="admin.login.codePh" maxlength="6" inputmode="numeric"
         style="width:150px;letter-spacing:0.3em;text-align:center">
-      <input class="adm-input" id="resetPassword" type="password" placeholder="新密码（8-72 字符）" autocomplete="new-password" style="flex:1">
+      <input class="adm-input" id="resetPassword" type="password" placeholder="新密码（8-72 字符）" data-i18n-placeholder="admin.setpw.newPasswordPh" autocomplete="new-password" style="flex:1">
     </div>
-    <button class="btn btn-primary" id="resetBtn" style="width:100%">重置密码</button>
+    <button class="btn btn-primary" id="resetBtn" style="width:100%" data-i18n="admin.reset.submit">重置密码</button>
     <p class="adm-meta" id="resetMsg"></p>
-    <p class="adm-meta" style="text-align:center"><a href="javascript:void(0)" id="resetBackBtn" style="color:var(--color-primary)">返回登录</a></p>
+    <p class="adm-meta" style="text-align:center"><a href="javascript:void(0)" id="resetBackBtn" style="color:var(--color-primary)" data-i18n="admin.reset.back">返回登录</a></p>
   </div>
 
   <!-- 无权限 / 后端不可达 -->
   <div id="adminGate" class="card" style="max-width:640px;margin:0 auto;display:none">
     <h3 class="headline-md" style="margin-bottom:var(--space-sm)">
       <span class="material-symbols-outlined" style="font-size:22px;vertical-align:-4px">gpp_maybe</span>
-      <span id="gateTitle">无访问权限</span>
+      <span id="gateTitle" data-i18n="admin.gate.noAccess">无访问权限</span>
     </h3>
     <p class="body-md" id="gateMsg" style="color:var(--color-on-surface-variant)"></p>
     <div class="actions" id="gateActions" style="display:none;margin-top:var(--space-sm)">
-      <button class="btn" id="gateLogoutBtn">退出登录</button>
+      <button class="btn" id="gateLogoutBtn" data-i18n="admin.logout">退出登录</button>
     </div>
   </div>
 
@@ -2445,10 +2445,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div class="adm-layout">
       <aside id="admTabs" class="adm-side">
         <div class="sidebar-module">
-          <div style="font-weight:700;font-size:14px">SlatiControl</div>
+          <div style="font-weight:700;font-size:14px" data-i18n="admin.brand">SlatiControl</div>
           <span id="admWho" class="adm-meta mono" style="display:none;word-break:break-all"></span>
           <span id="admRoles" class="adm-meta" style="display:none"></span>
-          <button class="btn" id="logoutBtn" style="display:none;width:100%;margin-top:var(--space-sm)">退出登录</button>
+          <button class="btn" id="logoutBtn" style="display:none;width:100%;margin-top:var(--space-sm)" data-i18n="admin.logout">退出登录</button>
         </div>
         <div class="sidebar-module" id="navGroups"></div>
       </aside>
@@ -2472,6 +2472,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/site-config.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
 <script src="../assets/js/api.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/admin.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 <script src="js/ui.js"></script>
 <script src="js/api-helper.js"></script>
 <script src="js/charts.js"></script>

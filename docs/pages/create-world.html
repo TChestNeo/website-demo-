@@ -2271,15 +2271,15 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
     <div style="max-width:960px;margin:0 auto">
       <div style="text-align:center;margin-bottom:var(--space-lg)">
-        <h1 class="headline-lg" style="margin-bottom:4px">Create World</h1>
-        <p class="body-md" style="color:var(--color-on-surface-variant)">选择你要创建的世界类型 —— 每一种类型都有专属的创建流程</p>
+        <h1 class="headline-lg" style="margin-bottom:4px" data-i18n="cwr.title">Create World</h1>
+        <p class="body-md" style="color:var(--color-on-surface-variant)" data-i18n="cwr.sub">选择你要创建的世界类型 —— 每一种类型都有专属的创建流程</p>
       </div>
 
       <div class="type-grid" id="typeGrid"></div>
 
       <p style="text-align:center;margin-top:var(--space-lg);font-size:var(--fs-label-sm);color:var(--color-outline)">
         <span class="status-dot status-dot-green" style="display:inline-block;vertical-align:middle"></span>
-        Creation Engine: Online · 22 world types available
+        <span data-i18n="cwr.status">Creation Engine: Online · 22 world types available</span>
       </p>
     </div>
   </main>
@@ -2292,6 +2292,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/settings-modal.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T——本脚本先于 i18n.js（body 尾部）执行，必须运行时取值；
+  // 类型卡渲染只用数据值（label/en/emoji 豁免不译），当前零调用点，为将来展示字段预留。
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   // 22 种世界类型（顺序按产品口径锁定）。
   // flow 字段：nation → 既有 3 步国家流程（registry-step-1）；
   // 其余 → world-wizard.html?type=<key>（每类型一套专属步骤/字段）。
@@ -2333,5 +2337,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/create-world.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 </body>
 </html>

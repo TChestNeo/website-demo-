@@ -133,7 +133,7 @@ async function main() {
   if (!chromePath) throw new Error('找不到 Chrome');
 
   const chrome = spawn(chromePath, [
-    '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--window-size=1280,900', '--remote-debugging-port=' + CDP_PORT,
     '--user-data-dir=' + USER_DATA, 'about:blank'
   ], { stdio: 'ignore' });
@@ -175,8 +175,8 @@ async function main() {
   await waitFor(t, "typeof handleNext === 'function'", 8000, '页面脚本就绪');
   await sleep(500); // pre-stagger / tilt settle
 
-  // ════ A0：版本（v0.2.7.0 性别栏轮） ════
-  check('A0 站点号 v0.2.7.0', (await t.evalJs('window.MN_SITE_VERSION')) === 'v0.2.7.0',
+  // ════ A0：版本（v0.2.54.0 i18n 轮同步；原 v0.2.7.0 起陈旧） ════
+  check('A0 站点号 v0.2.54.0', (await t.evalJs('window.MN_SITE_VERSION')) === 'v0.2.54.1',
     String(await t.evalJs('window.MN_SITE_VERSION')));
 
   // ════ A：结构 ════
@@ -258,13 +258,13 @@ async function main() {
     var g2 = groups[1];
     var menu = document.getElementById('genderMenu');
     return JSON.stringify({
-      secondLabel: g2 ? g2.querySelector('.form-label').textContent.trim().indexOf('Gender') === 0 : false,
+      secondLabel: g2 ? g2.querySelector('.form-label').textContent.trim().indexOf((window.MN_I18N && MN_I18N.t('oi.label.gender')) || 'Gender') === 0 : false,
       star: g2 ? (g2.querySelector('.form-label span') || {}).textContent : '',
       opts: menu ? menu.querySelectorAll('.dropdown-option').length : 0,
       optTexts: menu ? Array.prototype.map.call(menu.querySelectorAll('.dropdown-option'), function (o) { return o.textContent; }).join('|') : ''
     });
   })()`));
-  check('G1 性别栏是第二项（第 2 个 form-group 标签 Gender）', gen.secondLabel, JSON.stringify(gen));
+  check('G1 性别栏是第二项（第 2 个 form-group 标签=当前语言字典值）', gen.secondLabel, JSON.stringify(gen));
   check('G2 三选项 Male/Female/Other', gen.opts === 3 && gen.optTexts === 'Male|Female|Other', gen.opts + '/' + gen.optTexts);
   check('G3 标签带 * 红标（必填口径）', gen.star === '*', String(gen.star));
   check('G4 回显种子 gender=Male', (await t.evalJs("document.getElementById('selectedGender').textContent")) === 'Male',
@@ -289,9 +289,9 @@ async function main() {
   await sleep(300);
   const gErr = JSON.parse(await t.evalJs(`(function () {
     var fe = document.getElementById('formError');
-    return JSON.stringify({ shown: fe.style.display !== 'none', text: fe.textContent, path: window.location.pathname });
+    return JSON.stringify({ shown: fe.style.display !== 'none', text: fe.textContent, exp: (window.MN_I18N && MN_I18N.t('oi.err.gender')) || 'gender', path: window.location.pathname });
   })()`));
-  check('G6 未选性别 → Next 报错且不跳页', gErr.shown && gErr.text.indexOf('gender') > -1 && gErr.path.indexOf('identity') > -1, JSON.stringify(gErr));
+  check('G6 未选性别 → Next 报错且不跳页', gErr.shown && gErr.text.indexOf(gErr.exp) > -1 && gErr.path.indexOf('identity') > -1, JSON.stringify(gErr));
   await sleep(3300); // showError 3s 自动隐藏——等它走完再走 H 全绿路径（H2 断言 display none）
   await t.evalJs("selectGender('Female')");
 

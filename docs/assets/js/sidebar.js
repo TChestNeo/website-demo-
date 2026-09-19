@@ -6,6 +6,11 @@
 (function () {
   'use strict';
 
+  // v0.2.54.0 i18n：T(key) 取当前语言；未接入 i18n 的页面（如 FC）回落原文。
+  // 惰性取 window.MN_I18N——i18n.js 在 body 尾部、本脚本之后加载，IIFE 执行时尚不存在。
+  // 注意：renderSidebar 内禁用 MN_I18N.apply()——apply 会触发 onChange 监听器再调 renderSidebar，形成递归。
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   // Theme-aware icon helper — shared with settings-modal
   window._slatiSidebarIcon = function(name) {
     var resolved = document.documentElement.getAttribute('data-theme') || 'light';
@@ -60,6 +65,13 @@
   }
 
   function renderSidebar() {
+    // v0.2.54.0 i18n：语言切换后重渲染侧栏（DOM 结构零改动，仅文案取值变化）。
+    // 首次渲染时注册监听——此时 i18n.js（body 尾部）已执行；重复调用幂等。
+    if (!renderSidebar._i18nWired && window.MN_I18N) {
+      renderSidebar._i18nWired = true;
+      try { MN_I18N.onChange(function () { try { renderSidebar(); } catch (e) {} }); } catch (e) {}
+    }
+
     var loggedIn = !!(window.SlatiDB && SlatiDB.isLoggedIn());
     var user = (window.SlatiDB && SlatiDB.getUser()) || {
       displayName: 'Alex Rivera',
@@ -99,13 +111,13 @@
           '<!-- Banner -->' +
           '<div class="user-banner" style="height:60px;background:linear-gradient(135deg,' +
             'var(--color-primary),#3b3dc4);position:relative">' +
-            '<button class="btn btn-ghost btn-icon btn-sm" style="position:absolute;top:4px;right:4px;color:rgba(255,255,255,0.7)" title="Settings">' +
+            '<button class="btn btn-ghost btn-icon btn-sm" style="position:absolute;top:4px;right:4px;color:rgba(255,255,255,0.7)" title="' + (T('sidebar.settingsTitle') || 'Settings') + '">' +
               '<span class="material-symbols-outlined" style="font-size:16px">settings</span>' +
             '</button>' +
           '</div>' +
           '<!-- User info -->' +
           '<div class="user-info-bar" style="padding:0 var(--space-md) var(--space-sm);position:relative">' +
-            (isRealUser ? '<a href="../pages/community-profile.html?id=' + encodeURIComponent(user.id) + '" title="查看我的主页" style="display:block;text-decoration:none;color:inherit">' : '') +
+            (isRealUser ? '<a href="../pages/community-profile.html?id=' + encodeURIComponent(user.id) + '" title="' + (T('sidebar.profileTitle') || '查看我的主页') + '" style="display:block;text-decoration:none;color:inherit">' : '') +
             '<div style="position:relative;margin-top:-20px;margin-bottom:8px">' +
               '<img src="' + (user.avatarUrl || window._slatiFallbackAvatar) + '" alt="" class="avatar" style="width:40px;height:40px;border:3px solid white" />' +
               '<span class="status-dot status-dot-green" style="position:absolute;bottom:2px;right:-2px;border:2px solid white"></span>' +
@@ -114,7 +126,7 @@
             '<div class="user-citizen-id label-sm" style="color:var(--color-outline)">' + user.citizenId + '</div>' +
             (isRealUser ? '</a>' : '') +
             levelBadgeHTML +
-            '<button class="settings-btn-collapsed" style="display:none" title="Settings">' +
+            '<button class="settings-btn-collapsed" style="display:none" title="' + (T('sidebar.settingsTitle') || 'Settings') + '">' +
               '<span class="material-symbols-outlined" style="font-size:18px">settings</span>' +
             '</button>' +
           '</div>' +
@@ -126,9 +138,9 @@
             '<span class="material-symbols-outlined" style="font-size:22px;color:rgba(255,255,255,0.9)">rocket_launch</span>' +
           '</div>' +
           '<div class="user-info-bar" style="padding:var(--space-md);display:flex;flex-direction:column;gap:6px">' +
-            '<div class="user-name" style="font-weight:700;font-size:var(--fs-label-md);color:var(--color-on-surface)">加入 M.NationWorld</div>' +
-            '<div class="label-sm" style="color:var(--color-outline)">创建属于你的架空国家</div>' +
-            '<a href="../signup-and-login" class="btn btn-primary" style="width:100%;justify-content:center">注册 / 登录</a>' +
+            '<div class="user-name" style="font-weight:700;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + (T('sidebar.guest.title') || '加入 M.NationWorld') + '</div>' +
+            '<div class="label-sm" style="color:var(--color-outline)">' + (T('sidebar.guest.sub') || '创建属于你的架空国家') + '</div>' +
+            '<a href="../signup-and-login" class="btn btn-primary" style="width:100%;justify-content:center">' + (T('sidebar.guest.cta') || '注册 / 登录') + '</a>' +
           '</div>' +
         '</div>';
 
@@ -141,9 +153,10 @@
     function navHTML(items) {
       return items.map(function (item) {
         var isActive = item.id === activeId;
-        return '<a href="' + item.href + '" class="nav-item' + (isActive ? ' active' : '') + '" title="' + item.label + '">' +
+        var label = (T('sidebar.nav.' + item.id) || item.label);
+        return '<a href="' + item.href + '" class="nav-item' + (isActive ? ' active' : '') + '" title="' + label + '">' +
           '<span class="material-symbols-outlined nav-icon">' + item.icon + '</span>' +
-          '<span class="nav-label">' + item.label + '</span>' +
+          '<span class="nav-label">' + label + '</span>' +
         '</a>';
       }).join('');
     }
@@ -159,7 +172,7 @@
               '<span style="font-size:10px;color:var(--color-outline);opacity:0.45;letter-spacing:0.03em;line-height:1.2">' + (window.MN_SITE_VERSION || 'v0.2.0.0') + '</span>' +
             '</div>' +
           '</a>' +
-          '<button class="sidebar-collapse-btn" id="collapseBtn" onclick="window._slatiToggleSidebar()" title="Toggle sidebar">' +
+          '<button class="sidebar-collapse-btn" id="collapseBtn" onclick="window._slatiToggleSidebar()" title="' + (T('sidebar.toggleTitle') || 'Toggle sidebar') + '">' +
             '<img src="' + window._slatiSidebarIcon('left_panel_close') + '" id="collapseIcon" style="width:20px;height:20px" alt="">' +
           '</button>' +
         '</div>' +
@@ -310,7 +323,7 @@
       el.style.cssText = 'position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:9999;' +
         'background:var(--color-primary,#4648d4);color:#fff;padding:10px 18px;border-radius:999px;' +
         'font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.25);pointer-events:none';
-      el.textContent = '等级提升！Lv.' + st.lv + ' · ' + st.name;
+      el.textContent = (T('sidebar.levelup') || '等级提升！Lv.') + st.lv + ' · ' + st.name;
       document.body.appendChild(el);
       setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 3500);
     } catch (err) {}

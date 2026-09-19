@@ -3,6 +3,9 @@
 (function (global) {
   'use strict';
 
+  // v0.2.54.0 i18n：T(key) 取当前语言；回落原文（zh 值逐字节=现有文案，smoke-admin 中文断言安全）
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
       { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -60,14 +63,15 @@
     toastTimer = setTimeout(() => { el.style.display = 'none'; }, 2600);
   }
 
-  const RISK_LABEL = { high: ['高危', 'high'], medium: ['中危', 'warn'], low: ['低危', 'ok'] };
-  const STATUS_LABEL = { active: ['正常', 'ok'], banned: ['已封禁', 'high'], delete_pending: ['待删除', 'warn'] };
-  const TIER_LABEL = { free: ['免费', 'neutral'], basic: ['基础', 'ok'], premium: ['高级', 'warn'], ultra: ['旗舰', 'warn'] };
+  // 三元组 [原文, 类名, i18n 键]：值按后端 mode 键查表（不译），标签在渲染处取 T()
+  const RISK_LABEL = { high: ['高危', 'high', 'admin.risk.high'], medium: ['中危', 'warn', 'admin.risk.medium'], low: ['低危', 'ok', 'admin.risk.low'] };
+  const STATUS_LABEL = { active: ['正常', 'ok', 'admin.status.active'], banned: ['已封禁', 'high', 'admin.status.banned'], delete_pending: ['待删除', 'warn', 'admin.status.deletePending'] };
+  const TIER_LABEL = { free: ['免费', 'neutral', 'admin.tier.free'], basic: ['基础', 'ok', 'admin.tier.basic'], premium: ['高级', 'warn', 'admin.tier.premium'], ultra: ['旗舰', 'warn', 'admin.tier.ultra'] };
   function chip(kind, value) {
     if (value == null || value === '') return h('span', { class: 'adm-meta', text: '—' });
     const map = kind === 'risk' ? RISK_LABEL : kind === 'tier' ? TIER_LABEL : STATUS_LABEL;
-    const [label, cls] = map[value] || [value, 'neutral'];
-    return h('span', { class: 'chip ' + cls, text: label });
+    const [raw, cls, key] = map[value] || [value, 'neutral'];
+    return h('span', { class: 'chip ' + cls, text: (key ? (T(key) || raw) : raw) });
   }
 
   // 分段胶囊（页面内 tabs / 域切换 / 时间范围共用）
@@ -88,26 +92,26 @@
   }
 
   function empty(root, msg) {
-    root.replaceChildren(h('div', { class: 'empty', text: msg || '暂无数据' }));
+    root.replaceChildren(h('div', { class: 'empty', text: msg || (T('admin.empty.noData') || '暂无数据') }));
   }
 
   // 非 2xx：403 → 无权限卡；其余 → 错误卡。msg 取后端中文 error.message
   function denied(root, status, data) {
-    const msg = (data && data.error && data.error.message) || (status === 403 ? '权限不足' : '请求失败');
-    const title = status === 403 ? '无权限' : status === 404 ? '不存在' : '请求失败';
+    const msg = (data && data.error && data.error.message) || (status === 403 ? (T('admin.denied.forbidden') || '权限不足') : (T('admin.denied.failed') || '请求失败'));
+    const title = status === 403 ? (T('admin.denied.noPerm') || '无权限') : status === 404 ? (T('admin.denied.notFound') || '不存在') : (T('admin.denied.failed') || '请求失败');
     root.replaceChildren(h('div', { class: 'adm-card' },
       h('h3', { text: '🔒 ' + title }),
       h('p', { class: 'adm-meta', style: 'margin-top:4px', text: msg }),
-      h('p', { class: 'adm-meta', style: 'margin-top:6px', text: '如需此访问权限，请联系项目总监在 Staff → Roles 中调整。' })));
+      h('p', { class: 'adm-meta', style: 'margin-top:6px', text: (T('admin.denied.hint') || '如需此访问权限，请联系项目总监在 Staff → Roles 中调整。') })));
   }
 
   // 分页：{total,page,pageSize} + onGo(page)
   function pager(root, info, onGo) {
     const pages = Math.max(1, Math.ceil(info.total / info.pageSize));
     root.replaceChildren(
-      h('button', { class: 'btn', disabled: info.page <= 1, onclick: () => onGo(info.page - 1), text: '上一页' }),
-      h('span', { class: 'adm-meta', text: `第 ${info.page} / ${pages} 页 · 共 ${info.total} 条` }),
-      h('button', { class: 'btn', disabled: info.page >= pages, onclick: () => onGo(info.page + 1), text: '下一页' })
+      h('button', { class: 'btn', disabled: info.page <= 1, onclick: () => onGo(info.page - 1), text: (T('admin.pager.prev') || '上一页') }),
+      h('span', { class: 'adm-meta', text: (T('admin.pager.prefix') || '第 ') + info.page + (T('admin.pager.mid') || ' / ') + pages + (T('admin.pager.tail') || ' 页 · 共 ') + info.total + (T('admin.pager.unit') || ' 条') }),
+      h('button', { class: 'btn', disabled: info.page >= pages, onclick: () => onGo(info.page + 1), text: (T('admin.pager.next') || '下一页') })
     );
   }
 

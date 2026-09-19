@@ -2,40 +2,46 @@
    → 导航壳（§30 十二组）→ #hash 深链路由 → 页面渲染。
    登录态三态：adminLogin（登录）/ adminGate（无权限或后端不可达）/ adminRoot（面板）；
    W6 附属：adminSetPassword（旧 staff 首登设密引导）/ adminResetPassword（忘记密码两步重置）。
-   W2 只交付 Dashboard/Analytics/Users/Security 四页；其余导航组渲染「建设中」占位。 */
+   W2 只交付 Dashboard/Analytics/Users/Security 四页；其余导航组渲染「建设中」占位。
+   v0.2.54.0 i18n：全部 UI 字符串渲染处取 T()（字典在 app.js 前加载）；zh 值逐字节=现有文案。 */
 (function () {
   'use strict';
   const { h, esc, toast } = UI;
 
+  // v0.2.54.0 i18n：T(key) 取当前语言；回落原文
+  const T = (k) => (window.MN_I18N && window.MN_I18N.t(k)) || null;
+
   const ROLE_ZH = { project_director: '项目总监', customer_support: '客服', finance: '财务', moderation: '审核', security: '安全', technical: '技术', management: '管理' };
+  const ROLE_KEY = { project_director: 'admin.role.director', customer_support: 'admin.role.cs', finance: 'admin.role.finance', moderation: 'admin.role.moderation', security: 'admin.role.security', technical: 'admin.role.technical', management: 'admin.role.management' };
 
   // §30 十二顶级导航组：英文菜单 + 中文副标题；W2 外条目 → #/todo/<id>（建设中占位）
+  // kEn/kZh=组名 i18n 键；条目 k=条目名 i18n 键（缺省用组 kEn）
   const NAV = [
-    { en: 'Dashboard', zh: '总览', icon: 'dashboard', item: { label: 'Dashboard', route: 'dashboard' } },
-    { en: 'Analytics', zh: '分析', icon: 'insights', item: { label: 'Analytics', route: 'analytics' } },
-    { en: 'Users', zh: '用户', icon: 'group', item: { label: 'Users', route: 'users' } },
-    { en: 'Content', zh: '内容', icon: 'article', item: { label: 'Content', todo: 'content', wave: 5 } },
-    { en: 'Community', zh: '社区', icon: 'forum', item: { label: 'Community', todo: 'community', wave: 5 } },
-    { en: 'Finance', zh: '财务', icon: 'payments', items: [
-      { label: 'Overview', todo: 'finance.overview', wave: 4 }, { label: 'Revenue', todo: 'finance.revenue', wave: 4 },
-      { label: 'Subscriptions', todo: 'finance.subscriptions', wave: 4 }, { label: 'ARPU / ARPPU', todo: 'finance.arpu', wave: 4 },
-      { label: 'Refunds', todo: 'finance.refunds', wave: 4 }, { label: 'Costs', todo: 'finance.costs', wave: 4 },
-      { label: 'Payroll', todo: 'finance.payroll', wave: 4 }, { label: 'Donations', todo: 'finance.donations', wave: 4 }
+    { en: 'Dashboard', zh: '总览', kEn: 'admin.nav.dashboard.en', kZh: 'admin.nav.dashboard.zh', icon: 'dashboard', item: { label: 'Dashboard', route: 'dashboard' } },
+    { en: 'Analytics', zh: '分析', kEn: 'admin.nav.analytics.en', kZh: 'admin.nav.analytics.zh', icon: 'insights', item: { label: 'Analytics', route: 'analytics' } },
+    { en: 'Users', zh: '用户', kEn: 'admin.nav.users.en', kZh: 'admin.nav.users.zh', icon: 'group', item: { label: 'Users', route: 'users' } },
+    { en: 'Content', zh: '内容', kEn: 'admin.nav.content.en', kZh: 'admin.nav.content.zh', icon: 'article', item: { label: 'Content', todo: 'content', wave: 5 } },
+    { en: 'Community', zh: '社区', kEn: 'admin.nav.community.en', kZh: 'admin.nav.community.zh', icon: 'forum', item: { label: 'Community', todo: 'community', wave: 5 } },
+    { en: 'Finance', zh: '财务', kEn: 'admin.nav.finance.en', kZh: 'admin.nav.finance.zh', icon: 'payments', items: [
+      { label: 'Overview', k: 'admin.nav.item.overview', todo: 'finance.overview', wave: 4 }, { label: 'Revenue', k: 'admin.nav.item.revenue', todo: 'finance.revenue', wave: 4 },
+      { label: 'Subscriptions', k: 'admin.nav.item.subscriptions', todo: 'finance.subscriptions', wave: 4 }, { label: 'ARPU / ARPPU', k: 'admin.nav.item.arpu', todo: 'finance.arpu', wave: 4 },
+      { label: 'Refunds', k: 'admin.nav.item.refunds', todo: 'finance.refunds', wave: 4 }, { label: 'Costs', k: 'admin.nav.item.costs', todo: 'finance.costs', wave: 4 },
+      { label: 'Payroll', k: 'admin.nav.item.payroll', todo: 'finance.payroll', wave: 4 }, { label: 'Donations', k: 'admin.nav.item.donations', todo: 'finance.donations', wave: 4 }
     ] },
-    { en: 'Customer Service', zh: '客服', icon: 'support_agent', item: { label: 'Tickets', todo: 'cs.tickets', wave: 3 } },
-    { en: 'AI Assistant', zh: 'AI 辅助', icon: 'smart_toy', item: { label: 'Copilot', todo: 'ai.copilot', wave: 3 } },
-    { en: 'Security', zh: '安全', icon: 'security', item: { label: 'Security', route: 'security' } },
-    { en: 'Staff', zh: '工作人员', icon: 'badge', items: [
-      { label: 'Staff', todo: 'staff.list', wave: 4 }, { label: 'Roles', todo: 'staff.roles', wave: 4 },
-      { label: 'Permissions', todo: 'staff.permissions', wave: 4 }, { label: 'Availability', todo: 'staff.availability', wave: 5 },
-      { label: 'Payroll', todo: 'staff.payroll', wave: 4 }
+    { en: 'Customer Service', zh: '客服', kEn: 'admin.nav.cs.en', kZh: 'admin.nav.cs.zh', icon: 'support_agent', item: { label: 'Tickets', k: 'admin.nav.item.tickets', todo: 'cs.tickets', wave: 3 } },
+    { en: 'AI Assistant', zh: 'AI 辅助', kEn: 'admin.nav.ai.en', kZh: 'admin.nav.ai.zh', icon: 'smart_toy', item: { label: 'Copilot', k: 'admin.nav.item.copilot', todo: 'ai.copilot', wave: 3 } },
+    { en: 'Security', zh: '安全', kEn: 'admin.nav.security.en', kZh: 'admin.nav.security.zh', icon: 'security', item: { label: 'Security', route: 'security' } },
+    { en: 'Staff', zh: '工作人员', kEn: 'admin.nav.staff.en', kZh: 'admin.nav.staff.zh', icon: 'badge', items: [
+      { label: 'Staff', k: 'admin.nav.item.staff', todo: 'staff.list', wave: 4 }, { label: 'Roles', k: 'admin.nav.item.roles', todo: 'staff.roles', wave: 4 },
+      { label: 'Permissions', k: 'admin.nav.item.permissions', todo: 'staff.permissions', wave: 4 }, { label: 'Availability', k: 'admin.nav.item.availability', todo: 'staff.availability', wave: 5 },
+      { label: 'Payroll', k: 'admin.nav.item.payroll', todo: 'staff.payroll', wave: 4 }
     ] },
-    { en: 'Platform', zh: '平台', icon: 'settings', item: { label: 'Platform', todo: 'platform.settings', wave: 5 } },
-    { en: 'Audit Logs', zh: '审计日志', icon: 'receipt_long', item: { label: 'Audit Logs', todo: 'audit', wave: 5 } }
+    { en: 'Platform', zh: '平台', kEn: 'admin.nav.platform.en', kZh: 'admin.nav.platform.zh', icon: 'settings', item: { label: 'Platform', k: 'admin.nav.item.platform', todo: 'platform.settings', wave: 5 } },
+    { en: 'Audit Logs', zh: '审计日志', kEn: 'admin.nav.audit.en', kZh: 'admin.nav.audit.zh', icon: 'receipt_long', item: { label: 'Audit Logs', k: 'admin.nav.item.auditLogs', todo: 'audit', wave: 5 } }
   ];
-  const TODO = {}; // todoId → {title, sub, wave}
+  const TODO = {}; // todoId → {g, it, wave}（渲染处取 T() 组名/条目名）
   NAV.forEach((g) => (g.items || [g.item]).forEach((it) => {
-    if (it.todo) TODO[it.todo] = { title: g.en + ' · ' + it.label, sub: g.zh, wave: it.wave };
+    if (it.todo) TODO[it.todo] = { g, it, wave: it.wave };
   }));
 
   const ROUTES = { dashboard: SC.pages.dashboard, analytics: SC.pages.analytics, users: SC.pages.users, security: SC.pages.security };
@@ -54,10 +60,10 @@
     hideAll();
     clearInterval(cdTimer);
     const btn = $('sendCodeBtn');
-    btn.disabled = false; btn.textContent = '发送验证码';
+    btn.disabled = false; btn.textContent = (T('admin.login.sendCode') || '发送验证码');
     // 登录按钮复位：verify 成功路径不重置（boot 后表单隐藏），退出再登录时否则永远卡「登录中…」
     const lb = $('loginBtn');
-    lb.disabled = false; lb.textContent = '登录';
+    lb.disabled = false; lb.textContent = (T('admin.login.submit') || '登录');
     $('codeRow').style.display = 'none';
     $('loginMsg').textContent = '';
     $('loginMsg').className = 'adm-meta';
@@ -72,7 +78,7 @@
     const actions = $('gateActions');
     actions.style.display = mode ? 'flex' : 'none';
     const btn = $('gateLogoutBtn');
-    btn.textContent = mode === 'retry' ? '重试' : '退出登录';
+    btn.textContent = mode === 'retry' ? (T('admin.gate.retry') || '重试') : (T('admin.logout') || '退出登录');
     btn.onclick = mode === 'retry' ? boot : () => { SC.logout().then(showLogin); };
     $('adminGate').style.display = 'block';
   }
@@ -83,7 +89,7 @@
     Object.values(SC.pages).forEach((p) => { if (p && typeof p.reset === 'function') p.reset(); });
     $('admWho').textContent = [SC.staff.displayName || SC.staff.alias, SC.staff.position].filter(Boolean).join(' · ');
     $('admWho').style.display = 'block';
-    $('admRoles').textContent = SC.roles.map((r) => ROLE_ZH[r] || r).join(' · ') || '无角色';
+    $('admRoles').textContent = SC.roles.map((r) => (T(ROLE_KEY[r]) || ROLE_ZH[r] || r)).join(' · ') || (T('admin.roles.none') || '无角色');
     $('admRoles').style.display = 'block';
     $('logoutBtn').style.display = 'block';
     renderNav();
@@ -93,9 +99,9 @@
   // ── boot：会话探测三态 ──
   async function boot() {
     const r = await SC.me();
-    if (r.networkError) return showGate('无法连接后端', '请确认后端服务已启动（本地开发：node scripts/dev-serve.js）。后端恢复后点击重试；已登录会话自动续用。', 'retry');
+    if (r.networkError) return showGate((T('admin.gate.networkTitle') || '无法连接后端'), (T('admin.gate.networkMsg') || '请确认后端服务已启动（本地开发：node scripts/dev-serve.js）。后端恢复后点击重试；已登录会话自动续用。'), 'retry');
     if (r.status === 401) return showLogin();
-    if (!r.ok) return showGate('登录状态异常', (r.data && r.data.error && r.data.error.message) || '会话校验失败', 'logout');
+    if (!r.ok) return showGate((T('admin.gate.badStateTitle') || '登录状态异常'), (r.data && r.data.error && r.data.error.message) || (T('admin.gate.badStateMsg') || '会话校验失败'), 'logout');
     SC.staff = r.data.staff; SC.roles = r.data.roles || []; SC.perms = r.data.permissions || [];
     showPanel();
     checkBanner();
@@ -118,7 +124,7 @@
     m.textContent = text;
     m.className = 'adm-meta' + (isErr ? ' err' : '');
   }
-  function startCountdown(secs = 60, btnId = 'sendCodeBtn', idleLabel = '重新发送') {
+  function startCountdown(secs = 60, btnId = 'sendCodeBtn', idleLabel = (T('admin.login.resend') || '重新发送')) {
     const btn = $(btnId);
     clearInterval(cdTimer);
     btn.disabled = true;
@@ -131,22 +137,22 @@
   }
   $('sendCodeBtn').addEventListener('click', () => {
     const email = $('loginEmail').value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setLoginMsg('请输入有效邮箱', true);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setLoginMsg((T('admin.login.errEmail') || '请输入有效邮箱'), true);
     // W6：发码前先过密码策略（8-72），避免等 60s 重发窗口才发现密码不合格
     const pw = $('loginPassword').value;
-    if (!pw || pw.length < 8 || pw.length > 72) return setLoginMsg('请输入密码（8-72 字符）', true);
+    if (!pw || pw.length < 8 || pw.length > 72) return setLoginMsg((T('admin.login.errPassword') || '请输入密码（8-72 字符）'), true);
     const btn = $('sendCodeBtn');
-    btn.disabled = true; btn.textContent = '发送中…';
+    btn.disabled = true; btn.textContent = (T('admin.login.sending') || '发送中…');
     SC.sendCode(email).then((r) => {
       if (r.networkError) {
-        btn.disabled = false; btn.textContent = '发送验证码';
-        return setLoginMsg('无法连接后端，请稍后重试', true);
+        btn.disabled = false; btn.textContent = (T('admin.login.sendCode') || '发送验证码');
+        return setLoginMsg((T('admin.login.errNetwork') || '无法连接后端，请稍后重试'), true);
       }
       if (!r.ok) {
-        btn.disabled = false; btn.textContent = '发送验证码';
-        return setLoginMsg((r.data && r.data.error && r.data.error.message) || '发送失败', true);
+        btn.disabled = false; btn.textContent = (T('admin.login.sendCode') || '发送验证码');
+        return setLoginMsg((r.data && r.data.error && r.data.error.message) || (T('admin.login.errSend') || '发送失败'), true);
       }
-      setLoginMsg('验证码已发送（若该邮箱是工作人员账号，将收到 6 位验证码）。', false);
+      setLoginMsg((T('admin.login.codeSent') || '验证码已发送（若该邮箱是工作人员账号，将收到 6 位验证码）。'), false);
       $('codeRow').style.display = 'flex';
       $('loginCode').focus();
       startCountdown(60);
@@ -156,9 +162,9 @@
     const email = $('loginEmail').value.trim();
     const code = $('loginCode').value.trim();
     const password = $('loginPassword').value;
-    if (!/^\d{6}$/.test(code)) return setLoginMsg('请输入 6 位数字验证码', true);
+    if (!/^\d{6}$/.test(code)) return setLoginMsg((T('admin.login.errCode') || '请输入 6 位数字验证码'), true);
     const btn = $('loginBtn');
-    btn.disabled = true; btn.textContent = '登录中…';
+    btn.disabled = true; btn.textContent = (T('admin.login.signingIn') || '登录中…');
     SC.verify(email, code, password).then((r) => {
       if (r.ok) {
         setLoginMsg('', false);
@@ -167,9 +173,9 @@
         boot();
         return;
       }
-      btn.disabled = false; btn.textContent = '登录';
-      if (r.networkError) return setLoginMsg('无法连接后端，请稍后重试', true);
-      setLoginMsg((r.data && r.data.error && r.data.error.message) || '登录失败，请重试', true);
+      btn.disabled = false; btn.textContent = (T('admin.login.submit') || '登录');
+      if (r.networkError) return setLoginMsg((T('admin.login.errNetwork') || '无法连接后端，请稍后重试'), true);
+      setLoginMsg((r.data && r.data.error && r.data.error.message) || (T('admin.login.errVerify') || '登录失败，请重试'), true);
     });
   });
   $('loginEmail').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('sendCodeBtn').click(); });
@@ -184,7 +190,7 @@
     hideAll();
     clearInterval(cdTimer);
     const btn = $('setPwBtn');
-    btn.disabled = false; btn.textContent = '设置密码并进入';
+    btn.disabled = false; btn.textContent = (T('admin.setpw.submit') || '设置密码并进入');
     $('setPassword').value = '';
     $('setPwMsg').textContent = '';
     $('setPwMsg').className = 'adm-meta';
@@ -193,14 +199,14 @@
   }
   $('setPwBtn').addEventListener('click', () => {
     const pw = $('setPassword').value;
-    if (!pw || pw.length < 8 || pw.length > 72) return setPwMsg('密码需 8-72 字符', true);
+    if (!pw || pw.length < 8 || pw.length > 72) return setPwMsg((T('admin.setpw.errPassword') || '密码需 8-72 字符'), true);
     const btn = $('setPwBtn');
-    btn.disabled = true; btn.textContent = '设置中…';
+    btn.disabled = true; btn.textContent = (T('admin.setpw.saving') || '设置中…');
     SC.setPassword(pw).then((r) => {
       if (r.ok) { boot(); return; }
-      btn.disabled = false; btn.textContent = '设置密码并进入';
-      if (r.networkError) return setPwMsg('无法连接后端，请稍后重试', true);
-      setPwMsg((r.data && r.data.error && r.data.error.message) || '设置失败，请重试', true);
+      btn.disabled = false; btn.textContent = (T('admin.setpw.submit') || '设置密码并进入');
+      if (r.networkError) return setPwMsg((T('admin.login.errNetwork') || '无法连接后端，请稍后重试'), true);
+      setPwMsg((r.data && r.data.error && r.data.error.message) || (T('admin.setpw.errSave') || '设置失败，请重试'), true);
     });
   });
   $('setPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('setPwBtn').click(); });
@@ -211,7 +217,7 @@
     hideAll();
     clearInterval(cdTimer);
     const btn = $('resetSendBtn');
-    btn.disabled = false; btn.textContent = '发送验证码';
+    btn.disabled = false; btn.textContent = (T('admin.login.sendCode') || '发送验证码');
     $('resetEmail').value = $('loginEmail').value.trim();
     $('resetCode').value = '';
     $('resetPassword').value = '';
@@ -222,38 +228,38 @@
   }
   $('resetSendBtn').addEventListener('click', () => {
     const email = $('resetEmail').value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setResetMsg('请输入有效邮箱', true);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setResetMsg((T('admin.login.errEmail') || '请输入有效邮箱'), true);
     const btn = $('resetSendBtn');
-    btn.disabled = true; btn.textContent = '发送中…';
+    btn.disabled = true; btn.textContent = (T('admin.login.sending') || '发送中…');
     SC.sendCode(email).then((r) => {
       if (r.networkError) {
-        btn.disabled = false; btn.textContent = '发送验证码';
-        return setResetMsg('无法连接后端，请稍后重试', true);
+        btn.disabled = false; btn.textContent = (T('admin.login.sendCode') || '发送验证码');
+        return setResetMsg((T('admin.login.errNetwork') || '无法连接后端，请稍后重试'), true);
       }
       if (!r.ok) {
-        btn.disabled = false; btn.textContent = '发送验证码';
-        return setResetMsg((r.data && r.data.error && r.data.error.message) || '发送失败', true);
+        btn.disabled = false; btn.textContent = (T('admin.login.sendCode') || '发送验证码');
+        return setResetMsg((r.data && r.data.error && r.data.error.message) || (T('admin.login.errSend') || '发送失败'), true);
       }
-      setResetMsg('验证码已发送（若该邮箱是工作人员账号，将收到 6 位验证码）。', false);
-      startCountdown(60, 'resetSendBtn', '重新发送');
+      setResetMsg((T('admin.login.codeSent') || '验证码已发送（若该邮箱是工作人员账号，将收到 6 位验证码）。'), false);
+      startCountdown(60, 'resetSendBtn', (T('admin.login.resend') || '重新发送'));
     });
   });
   $('resetBtn').addEventListener('click', () => {
     const email = $('resetEmail').value.trim();
     const code = $('resetCode').value.trim();
     const pw = $('resetPassword').value;
-    if (!pw || pw.length < 8 || pw.length > 72) return setResetMsg('密码需 8-72 字符', true);
-    if (!/^\d{6}$/.test(code)) return setResetMsg('请输入 6 位数字验证码', true);
+    if (!pw || pw.length < 8 || pw.length > 72) return setResetMsg((T('admin.setpw.errPassword') || '密码需 8-72 字符'), true);
+    if (!/^\d{6}$/.test(code)) return setResetMsg((T('admin.login.errCode') || '请输入 6 位数字验证码'), true);
     const btn = $('resetBtn');
-    btn.disabled = true; btn.textContent = '重置中…';
+    btn.disabled = true; btn.textContent = (T('admin.reset.saving') || '重置中…');
     SC.resetPassword(email, code, pw).then((r) => {
-      btn.disabled = false; btn.textContent = '重置密码';
-      if (r.networkError) return setResetMsg('无法连接后端，请稍后重试', true);
-      if (!r.ok) return setResetMsg((r.data && r.data.error && r.data.error.message) || '重置失败，请重试', true);
+      btn.disabled = false; btn.textContent = (T('admin.reset.submit') || '重置密码');
+      if (r.networkError) return setResetMsg((T('admin.login.errNetwork') || '无法连接后端，请稍后重试'), true);
+      if (!r.ok) return setResetMsg((r.data && r.data.error && r.data.error.message) || (T('admin.reset.errReset') || '重置失败，请重试'), true);
       // 重置成功：回登录页，预填邮箱 + 提示用新密码登录（旧密码已失效）
       showLogin();
       $('loginEmail').value = email;
-      setLoginMsg('密码已重置——请用新密码 + 验证码登录', false);
+      setLoginMsg((T('admin.reset.done') || '密码已重置——请用新密码 + 验证码登录'), false);
     });
   });
   $('resetCode').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('resetBtn').click(); });
@@ -263,7 +269,7 @@
   // 会话过期（任意请求 401 派发 mn:unauthorized）→ 回登录
   window.addEventListener('mn:unauthorized', () => {
     if (authed) {
-      toast('登录已过期，请重新登录');
+      toast((T('admin.session.expired') || '登录已过期，请重新登录'));
       showLogin();
     }
   });
@@ -279,15 +285,15 @@
     ];
     box.replaceChildren(h('div', { class: 'sidebar-module nav-card' }, ...sections.flatMap(({ g, subs }) => {
       const title = h('div', { class: 'nav-group-title' },
-        h('span', { text: g.en }),
-        h('span', { class: 'zh', text: g.zh })
+        h('span', { text: (T(g.kEn) || g.en) }),
+        h('span', { class: 'zh', text: (T(g.kZh) || g.zh) })
       );
       const items = subs.flatMap((sg) => (sg.items || [sg.item]).map((it) => h('a', {
         class: 'nav-item',
         href: it.route ? '#/' + it.route : '#/todo/' + it.todo
       },
         h('span', { class: 'material-symbols-outlined', text: sg.icon }),
-        h('span', { text: it.label })
+        h('span', { text: (T(it.k || g.kEn) || it.label) })
       )));
       return [title, ...items];
     })));
@@ -310,15 +316,17 @@
     } else showTodo(arg || kind);
   }
   function showTodo(id) {
-    const todo = TODO[id] || { title: id, sub: '', wave: 5 };
+    const td = TODO[id];
     const pane = $('pane-todo');
     pane.style.display = 'block';
+    const title = td ? ((T(td.g.kEn) || td.g.en) + ' · ' + (T(td.it.k || td.g.kEn) || td.it.label)) : id;
+    const sub = td ? (T(td.g.kZh) || td.g.zh) : '';
     pane.replaceChildren(
-      h('div', { class: 'page-head' }, h('h2', { text: todo.title }), h('div', { class: 'page-sub', text: todo.sub || '建设中' })),
+      h('div', { class: 'page-head' }, h('h2', { text: title }), h('div', { class: 'page-sub', text: sub || (T('admin.todo.building') || '建设中') })),
       h('div', { class: 'adm-card' },
         h('span', { class: 'material-symbols-outlined adm-meta', text: 'construction', style: 'font-size:32px' }),
-        h('h3', { text: '建设中 🚧', style: 'margin-top:8px' }),
-        h('p', { class: 'adm-meta', style: 'margin-top:6px', text: `此模块将在后端 v2 第 W${todo.wave} 波次交付。目前可用：Dashboard / Analytics / Users / Security。` })));
+        h('h3', { text: (T('admin.todo.title') || '建设中 🚧'), style: 'margin-top:8px' }),
+        h('p', { class: 'adm-meta', style: 'margin-top:6px', text: (T('admin.todo.msgPrefix') || '此模块将在后端 v2 第 W') + (td ? td.wave : 5) + (T('admin.todo.msgSuffix') || ' 波次交付。目前可用：Dashboard / Analytics / Users / Security。') })));
   }
   window.addEventListener('hashchange', route);
 
@@ -329,9 +337,9 @@
       if (!r.ok || !r.data) return;
       const d = r.data;
       let text = '';
-      if (d.status === 'unconfigured') text = '⚠ AI 未配置：Copilot / 智能回复暂不可用（FAQ 检索不受影响）。';
-      else if (d.status === 'exhausted') text = '⚠ AI 预算已耗尽：AI 功能进入降级模式（永不硬停机）。';
-      else if (typeof d.ratio === 'number' && d.ratio >= 0.8) text = '⚠ AI 预算使用已超过 80%：请留意成本红线。';
+      if (d.status === 'unconfigured') text = (T('admin.banner.unconfigured') || '⚠ AI 未配置：Copilot / 智能回复暂不可用（FAQ 检索不受影响）。');
+      else if (d.status === 'exhausted') text = (T('admin.banner.exhausted') || '⚠ AI 预算已耗尽：AI 功能进入降级模式（永不硬停机）。');
+      else if (typeof d.ratio === 'number' && d.ratio >= 0.8) text = (T('admin.banner.over80') || '⚠ AI 预算使用已超过 80%：请留意成本红线。');
       if (text) { b.textContent = text; b.style.display = 'block'; }
     });
   }

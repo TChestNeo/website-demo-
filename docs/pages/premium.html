@@ -2269,10 +2269,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <div style="position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:var(--space-md) var(--space-lg)">
 
   <div class="pricing-hero reveal">
-    <span class="badge badge-warning" style="margin-bottom:8px;font-size:13px">⭐ M.NationWorld Premium</span>
-    <h1 class="display-lg" style="margin-bottom:8px;color:#fff">Choose Your <span class="text-gradient">Plan</span></h1>
-    <p class="body-lg" style="color:rgba(255,255,255,0.6);max-width:600px;margin:0 auto">From essential tools to AI-powered worldbuilding. Upgrade anytime.</p>
-    <div style="margin-top:12px;font-size:13px;color:rgba(255,255,255,0.4)">Prices shown in <strong id="currencyLabel" style="color:rgba(255,255,255,0.7)">USD</strong> · Based on your location</div>
+    <span class="badge badge-warning" style="margin-bottom:8px;font-size:13px" data-i18n="premium.hero.badge">⭐ M.NationWorld Premium</span>
+    <h1 class="display-lg" style="margin-bottom:8px;color:#fff"><span data-i18n="premium.hero.choose">Choose Your </span><span class="text-gradient" data-i18n="premium.hero.plan">Plan</span></h1>
+    <p class="body-lg" style="color:rgba(255,255,255,0.6);max-width:600px;margin:0 auto" data-i18n="premium.hero.sub">From essential tools to AI-powered worldbuilding. Upgrade anytime.</p>
+    <div style="margin-top:12px;font-size:13px;color:rgba(255,255,255,0.4)"><span data-i18n="premium.hero.pricesShown">Prices shown in </span><strong id="currencyLabel" style="color:rgba(255,255,255,0.7)">USD</strong><span data-i18n="premium.hero.pricesLoc"> · Based on your location</span></div>
   </div>
 
   <!-- 订阅状态条（未登录 / 当前方案，由脚本渲染）-->
@@ -2286,125 +2286,125 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div class="plan-card reveal reveal-d1" data-plan-card="basic" data-apply-label="Basic">
       <div class="plan-badge student" id="basicBadge">学生价 Student</div>
       <span class="material-symbols-outlined" style="font-size:32px;color:#4648d4;margin-bottom:8px;margin-top:8px">person</span>
-      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Basic<span class="cur-chip">✓ 当前方案</span></h3>
-      <p style="color:#767586;font-size:13px;margin-bottom:16px">Essential worldbuilding tools</p>
+      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Basic<span class="cur-chip" data-i18n="premium.plan.current">✓ 当前方案</span></h3>
+      <p style="color:#767586;font-size:13px;margin-bottom:16px" data-i18n="premium.plan.basicTagline">Essential worldbuilding tools</p>
       <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="basicPrice" data-plan-price>$5.99</div>
       <p id="basicStrike" style="display:none;font-size:15px;color:#767586;margin:-6px 0 8px;text-decoration:line-through">$5.99</p>
-      <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
+      <p style="color:#767586;font-size:12px;margin-bottom:16px" data-i18n="premium.plan.perMonth">per month</p>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="basic" style="width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-weight:600;text-decoration:none">订阅</button>
-      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="basic" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">每年支付</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="basic" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none" data-i18n="premium.once.label">每年支付</button>
       <button id="basicStudentEntry" style="display:none;width:100%;margin-top:8px;background:rgba(70,72,212,0.12);border:1px solid rgba(70,72,212,0.45);color:#b9bbff;font-weight:600;font-size:13px;padding:8px 14px;border-radius:10px;cursor:pointer">学生认证 · 解锁 RM5.50/月</button>
       <p id="basicStudentNote" style="display:none;font-size:11px;color:#767586;text-align:center;margin:8px 0 0;line-height:1.5"></p>
       <div style="margin-top:20px;text-align:left">
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Basic wiki cards</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Basic 3D decorations</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Analytics and statistics</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#767586;font-size:18px">remove</span> No identity verification</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#767586;font-size:18px">remove</span> No AI features</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.basicWiki">Basic wiki cards</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.basic3d">Basic 3D decorations</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.analytics">Analytics and statistics</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#767586;font-size:18px">remove</span> <span data-i18n="premium.feat.noIdentity">No identity verification</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#767586;font-size:18px">remove</span> <span data-i18n="premium.feat.noAi">No AI features</span></div>
       </div>
     </div>
 
     <div class="plan-card premium reveal reveal-d2" data-plan-card="premium" data-apply-label="Premium">
-      <div class="plan-badge popular">Most Popular</div>
+      <div class="plan-badge popular" data-i18n="premium.plan.popularBadge">Most Popular</div>
       <span class="material-symbols-outlined" style="font-size:32px;color:#eab308;margin-bottom:8px;margin-top:8px">diamond</span>
-      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium<span class="cur-chip">✓ 当前方案</span></h3>
-      <p style="color:#767586;font-size:13px;margin-bottom:16px">Advanced creator toolkit</p>
+      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium<span class="cur-chip" data-i18n="premium.plan.current">✓ 当前方案</span></h3>
+      <p style="color:#767586;font-size:13px;margin-bottom:16px" data-i18n="premium.plan.premiumTagline">Advanced creator toolkit</p>
       <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="premiumPrice" data-plan-price>$11.99</div>
-      <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
+      <p style="color:#767586;font-size:12px;margin-bottom:16px" data-i18n="premium.plan.perMonth">per month</p>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="premium" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">订阅</button>
-      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="premium" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">每年支付</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="premium" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none" data-i18n="premium.once.label">每年支付</button>
       <div style="margin-top:20px;text-align:left">
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Everything in Basic</strong></div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Identity verification</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Advanced wiki text</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Personal business cards</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> AI search and optimization</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> AI basic summary</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong data-i18n="premium.feat.everythingBasic">Everything in Basic</strong></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.identity">Identity verification</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.advancedWiki">Advanced wiki text</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.businessCards">Personal business cards</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.aiSearch">AI search and optimization</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.aiBasicSummary">AI basic summary</span></div>
       </div>
     </div>
 
     <div class="plan-card ultra reveal reveal-d3" data-plan-card="ultra" data-apply-label="Premium Ultra">
-      <div class="plan-badge best">Best Value</div>
+      <div class="plan-badge best" data-i18n="premium.plan.bestBadge">Best Value</div>
       <span class="material-symbols-outlined" style="font-size:32px;color:#8127cf;margin-bottom:8px;margin-top:8px">star</span>
-      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium Ultra<span class="cur-chip">✓ 当前方案</span></h3>
-      <p style="color:#767586;font-size:13px;margin-bottom:16px">Full AI-powered suite</p>
+      <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium Ultra<span class="cur-chip" data-i18n="premium.plan.current">✓ 当前方案</span></h3>
+      <p style="color:#767586;font-size:13px;margin-bottom:16px" data-i18n="premium.plan.ultraTagline">Full AI-powered suite</p>
       <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="ultraPrice" data-plan-price>$15.99</div>
-      <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
+      <p style="color:#767586;font-size:12px;margin-bottom:16px" data-i18n="premium.plan.perMonth">per month</p>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="ultra" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">订阅</button>
-      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="ultra" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">每年支付</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="ultra" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none" data-i18n="premium.once.label">每年支付</button>
       <div style="margin-top:20px;text-align:left">
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Everything in Premium</strong></div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Full identity suite</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Premium 3D decorations</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Full decor suite</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Multi-article AI summary</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong>Auto AI and suggestions</strong></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong data-i18n="premium.feat.everythingPremium">Everything in Premium</strong></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.fullIdentity">Full identity suite</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.premium3d">Premium 3D decorations</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.fullDecor">Full decor suite</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.multiSummary">Multi-article AI summary</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong data-i18n="premium.feat.autoAi">Auto AI and suggestions</strong></div>
       </div>
     </div>
   </div>
 
   <!-- Packages -->
-  <h2 class="headline-md section-title reveal reveal-d4">Bundle Packages — Save More</h2>
+  <h2 class="headline-md section-title reveal reveal-d4" data-i18n="premium.pkg.title">Bundle Packages — Save More</h2>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);max-width:1050px;margin:0 auto var(--space-xl)" class="reveal reveal-d4">
     <div class="package-card pkg-premium" data-plan-card="pkg-premium" data-target-tier="premium" data-apply-label="Premium 包价（36 人团队频道）">
-      <span class="badge badge-warning" style="margin-bottom:8px">⭐ Recommended</span>
+      <span class="badge badge-warning" style="margin-bottom:8px" data-i18n="premium.pkg.recommended">⭐ Recommended</span>
       <h3 style="font-size:22px;font-weight:700;margin-bottom:4px">Premium Package</h3>
-      <p style="color:#767586;font-size:13px;margin-bottom:12px">Everything for serious worldbuilding</p>
+      <p style="color:#767586;font-size:13px;margin-bottom:12px" data-i18n="premium.pkg.premiumTagline">Everything for serious worldbuilding</p>
       <div style="font-size:36px;font-weight:800;margin-bottom:4px" id="pkgPremiumPrice" data-plan-price>$12.99</div>
-      <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
+      <p style="color:#767586;font-size:12px;margin-bottom:16px" data-i18n="premium.plan.perMonth">per month</p>
       <div style="text-align:left;margin-bottom:16px">
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Premium subscription tier</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Team channel: <strong>36 members</strong></div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Full wiki customization</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Advanced decor customization</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Identity verification included</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.pkg.tierPremium">Premium subscription tier</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n-html="premium.pkg.teamChannel36">Team channel: <strong>36 members</strong></span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.pkg.fullWiki">Full wiki customization</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.pkg.advDecor">Advanced decor customization</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.pkg.identityIncluded">Identity verification included</span></div>
       </div>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="pkg-premium" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;text-decoration:none">订阅</button>
-      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="pkg-premium" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">每年支付</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="pkg-premium" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none" data-i18n="premium.once.label">每年支付</button>
     </div>
     <div class="package-card pkg-ultra" data-plan-card="pkg-ultra" data-target-tier="ultra" data-apply-label="Premium Ultra 包价（无限成员）">
-      <span class="badge badge-secondary" style="margin-bottom:8px">💎 Ultimate</span>
+      <span class="badge badge-secondary" style="margin-bottom:8px" data-i18n="premium.pkg.ultimateBadge">💎 Ultimate</span>
       <h3 style="font-size:22px;font-weight:700;margin-bottom:4px">Premium Ultra Package</h3>
-      <p style="color:#767586;font-size:13px;margin-bottom:12px">Unlimited power — most ambitious nations</p>
+      <p style="color:#767586;font-size:13px;margin-bottom:12px" data-i18n="premium.pkg.ultraTagline">Unlimited power — most ambitious nations</p>
       <div style="font-size:36px;font-weight:800;margin-bottom:4px" id="pkgUltraPrice" data-plan-price>$19.99</div>
-      <p style="color:#767586;font-size:12px;margin-bottom:16px">per month</p>
+      <p style="color:#767586;font-size:12px;margin-bottom:16px" data-i18n="premium.plan.perMonth">per month</p>
       <div style="text-align:left;margin-bottom:16px">
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Premium Ultra subscription tier</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Team channel: <strong>Unlimited members</strong></div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> All customization unlocked</div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> Special identity verification</div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.pkg.tierUltra">Premium Ultra subscription tier</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n-html="premium.pkg.teamChannelUnl">Team channel: <strong>Unlimited members</strong></span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.pkg.allCustom">All customization unlocked</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.pkg.specialIdentity">Special identity verification</span></div>
       </div>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="pkg-ultra" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">订阅</button>
-      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="pkg-ultra" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none">每年支付</button>
+      <button class="btn btn-primary btn-sm plan-cta" data-plan-once="pkg-ultra" style="display:none;width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.25);color:#fff;font-weight:600;text-decoration:none" data-i18n="premium.once.label">每年支付</button>
     </div>
   </div>
 
   <!-- Feature Matrix -->
   <div class="card reveal reveal-d5" style="max-width:1050px;margin:0 auto var(--space-xl);padding:var(--space-lg)">
-    <h2 class="headline-md" style="text-align:center;margin-bottom:var(--space-md)">Complete Feature Matrix</h2>
+    <h2 class="headline-md" style="text-align:center;margin-bottom:var(--space-md)" data-i18n="premium.matrix.title">Complete Feature Matrix</h2>
     <p id="basicNoteMatrix" style="text-align:center;font-size:13px;color:#767586;margin-bottom:var(--space-lg)">注册默认免费「普通用户」层；Basic 为学生价方案（常规价 RM12/月，学校邮箱认证后 RM5.50/月），Premium / Ultra 提供更高能力</p>
     <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse;font-size:14px">
       <thead>
         <tr style="border-bottom:2px solid rgba(0,0,0,0.06)">
-          <th style="text-align:left;padding:12px">Feature</th>
-          <th style="text-align:center;padding:12px;width:110px">普通用户<span style="display:block;font-size:10px;color:#767586;font-weight:400">免费 Free</span></th>
+          <th style="text-align:left;padding:12px" data-i18n="premium.matrix.feature">Feature</th>
+          <th style="text-align:center;padding:12px;width:110px"><span data-i18n="premium.tier.free">普通用户</span><span style="display:block;font-size:10px;color:#767586;font-weight:400" data-i18n="premium.matrix.freeLabel">免费 Free</span></th>
           <th style="text-align:center;padding:12px;width:100px">Basic</th>
           <th style="text-align:center;padding:12px;width:120px;color:#eab308">Premium</th>
           <th style="text-align:center;padding:12px;width:120px;color:#8127cf">Ultra</th>
         </tr>
       </thead>
       <tbody>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>Identity Verification</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">Basic + Advanced</td><td style="text-align:center;color:#22c55e">Full Suite + Special</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>Custom Wiki Cards</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center">Basic</td><td style="text-align:center;color:#22c55e">Basic + Advanced</td><td style="text-align:center;color:#22c55e">Basic + Advanced</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>Advanced Wiki Text</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>3D Card Decorations</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center">Basic</td><td style="text-align:center;color:#dc2626">—</td><td style="text-align:center;color:#22c55e">Basic + Advanced</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>Personal Business Cards</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">Card + Basic Decor</td><td style="text-align:center;color:#22c55e">Card + Full Decor</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>Analytics and Statistics</strong></td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>AI Search</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>AI Article Optimization</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong>AI Summary</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">Basic Summary</td><td style="text-align:center;color:#22c55e">Multi-article Advanced</td></tr>
-        <tr><td style="padding:12px"><strong>Auto AI + AI Suggestions</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e;font-weight:600">✓ Exclusive</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.identity">Identity Verification</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.basicAdvanced">Basic + Advanced</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.fullSuiteSpecial">Full Suite + Special</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.customWiki">Custom Wiki Cards</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center">Basic</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.basicAdvanced">Basic + Advanced</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.basicAdvanced">Basic + Advanced</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.advancedWiki">Advanced Wiki Text</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.decor3d">3D Card Decorations</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center">Basic</td><td style="text-align:center;color:#dc2626">—</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.basicAdvanced">Basic + Advanced</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.businessCards">Personal Business Cards</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.cardBasicDecor">Card + Basic Decor</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.cardFullDecor">Card + Full Decor</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.analytics">Analytics and Statistics</strong></td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.aiSearch">AI Search</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.aiOptimize">AI Article Optimization</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.aiSummary">AI Summary</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.basicSummary">Basic Summary</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.multiAdvanced">Multi-article Advanced</td></tr>
+        <tr><td style="padding:12px"><strong data-i18n="premium.matrix.autoAi">Auto AI + AI Suggestions</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e;font-weight:600" data-i18n="premium.matrix.cell.exclusive">✓ Exclusive</td></tr>
       </tbody>
     </table>
     </div>
@@ -2412,40 +2412,40 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
   <!-- Add-ons -->
   <div class="card reveal reveal-d5" style="max-width:1050px;margin:0 auto var(--space-xl);padding:var(--space-lg)">
-    <h2 class="headline-md" style="text-align:center;margin-bottom:var(--space-lg)">Add-ons and Unlocks</h2>
+    <h2 class="headline-md" style="text-align:center;margin-bottom:var(--space-lg)" data-i18n="premium.addon.title">Add-ons and Unlocks</h2>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-md)">
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Official Team Verification</h4>
-        <p style="font-size:12px;color:#767586;margin-bottom:4px">Lv.15 + 650 followers required</p>
-        <p style="font-weight:700" id="addonVerify">$5.99</p><p style="font-size:11px;color:#767586">One-time purchase · Lifetime access</p>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px" data-i18n="premium.addon.verifyReq">Lv.15 + 650 followers required</p>
+        <p style="font-weight:700" id="addonVerify">$5.99</p><p style="font-size:11px;color:#767586" data-i18n="premium.addon.lifetime">One-time purchase · Lifetime access</p>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Channel Boost</h4>
-        <p style="font-size:12px;color:#767586;margin-bottom:4px">Increase channel visibility</p>
-        <p style="font-weight:700" id="addonBoost">$5.10</p><p style="font-size:11px;color:#767586">One-time purchase</p>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px" data-i18n="premium.addon.boostDesc">Increase channel visibility</p>
+        <p style="font-weight:700" id="addonBoost">$5.10</p><p style="font-size:11px;color:#767586" data-i18n="premium.addon.once">One-time purchase</p>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Basic</h4>
-        <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>12</strong> 位成员</p>
-        <p style="font-weight:700" id="addonBasic" data-addon-price>$5.50</p><p style="font-size:11px;color:#767586">Per month</p>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px" data-i18n-html="premium.addon.slots12">增至 <strong>12</strong> 位成员</p>
+        <p style="font-weight:700" id="addonBasic" data-addon-price>$5.50</p><p style="font-size:11px;color:#767586" data-i18n="premium.addon.perMonth">Per month</p>
         <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-basic" data-apply-label="Team Slots — Basic" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;text-decoration:none">购买</button>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Plus</h4>
-        <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>24</strong> 位成员</p>
-        <p style="font-weight:700" id="addonPlus" data-addon-price>$6.50</p><p style="font-size:11px;color:#767586">Per month</p>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px" data-i18n-html="premium.addon.slots24">增至 <strong>24</strong> 位成员</p>
+        <p style="font-weight:700" id="addonPlus" data-addon-price>$6.50</p><p style="font-size:11px;color:#767586" data-i18n="premium.addon.perMonth">Per month</p>
         <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-plus" data-apply-label="Team Slots — Plus" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">购买</button>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Premium</h4>
-        <p style="font-size:12px;color:#767586;margin-bottom:4px">增至 <strong>36</strong> 位成员</p>
-        <p style="font-weight:700" id="addonPremium" data-addon-price>$7.99</p><p style="font-size:11px;color:#767586">Per month</p>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px" data-i18n-html="premium.addon.slots36">增至 <strong>36</strong> 位成员</p>
+        <p style="font-weight:700" id="addonPremium" data-addon-price>$7.99</p><p style="font-size:11px;color:#767586" data-i18n="premium.addon.perMonth">Per month</p>
         <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-premium" data-apply-label="Team Slots — Premium" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">购买</button>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Ultra</h4>
-        <p style="font-size:12px;color:#767586;margin-bottom:4px"><strong>Unlimited</strong> 无限成员</p>
-        <p style="font-weight:700" id="addonUltra" data-addon-price>$8.99</p><p style="font-size:11px;color:#767586">Per month</p>
+        <p style="font-size:12px;color:#767586;margin-bottom:4px" data-i18n-html="premium.addon.slotsUnl"><strong>Unlimited</strong> 无限成员</p>
+        <p style="font-weight:700" id="addonUltra" data-addon-price>$8.99</p><p style="font-size:11px;color:#767586" data-i18n="premium.addon.perMonth">Per month</p>
         <button class="btn btn-primary btn-sm plan-cta" data-addon-cta="slots-ultra" data-apply-label="Team Slots — Ultra" style="width:100%;margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;text-decoration:none">购买</button>
       </div>
     </div>
@@ -2462,6 +2462,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
 <script>
+// v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
 // v0.2.12.0 多币种价目：key = 结算币代码（SlatiPrice.currency 由 pricing.js 按 locale 解析）。
 // 金额按用户钦定 FX 口径生成（tmp-price-gen.js 2026-09-04）：弱币（idr/vnd/thb/php/inr，1 USD 换得比
 // MYR 多）→ MYR 本地价档换算（RM12/23.50/45.50/29.90/60.90 等）；其余 10 币 → USD 价档换算；
@@ -2550,9 +2552,17 @@ var ab=document.getElementById('addonBasic'),ap=document.getElementById('addonPl
 if(ab)ab.textContent=p.addonBasic;if(ap)ap.textContent=p.addonPlus;if(ap2)ap2.textContent=p.addonPremium;if(au)au.textContent=p.addonUltra;
 
 // v0.2.12.0：上方特性区静态文案里的 RM12 → 当前币 Basic 价（元素在本文档前面，直接可写）
+// v0.2.54.0 i18n：抽成 renderMatrixNote——本 script 先于 i18n.js 执行（T 恒空落中文），
+// 由 body 尾部三件套重渲钩子（window.__mnI18nRerender）再按当前语言落一次。
 var nmNote = document.getElementById('basicNoteMatrix');
-if (nmNote) nmNote.textContent = '注册默认免费「普通用户」层；Basic 为学生价方案（常规价 ' + p.basic + '/月'
-  + (sP ? '，学校邮箱认证后 ' + sP.basic + '/月' : '') + '），Premium / Ultra 提供更高能力';
+function renderMatrixNote() {
+  if (!nmNote) return;
+  nmNote.textContent = (T('premium.matrix.notePre') || '注册默认免费「普通用户」层；Basic 为学生价方案（常规价 ') + p.basic + (T('premium.perMo') || '/月')
+    + (sP ? (T('premium.studentPre') || '，学校邮箱认证后 ') + sP.basic + (T('premium.perMo') || '/月') : '')
+    + (T('premium.matrix.noteTail') || '），Premium / Ultra 提供更高能力');
+}
+renderMatrixNote();
+window.__mnI18nRerender = renderMatrixNote;
 
 // ── Cyberfall Background ──
 (function(){
@@ -2632,7 +2642,7 @@ document.head.appendChild(bgStyle);
 
 <!-- v0.2.41.0: 支付网关升级预告（Xendit）——开通口径不变：判定钱到账即自动开通，
      无需人工审核（沿用后端 webhook 状态机，接入 Xendit 后自动生效） -->
-<div class="plan-note" id="gatewayNote" style="margin-top:10px;border-left-color:var(--color-primary,#4648d4)">支付网关即将升级（Xendit）——订阅开通仍为到账自动生效，无需人工审核。</div>
+<div class="plan-note" id="gatewayNote" style="margin-top:10px;border-left-color:var(--color-primary,#4648d4)" data-i18n="premium.gatewayNote">支付网关即将升级（Xendit）——订阅开通仍为到账自动生效，无需人工审核。</div>
 
 <!-- 全屏倒数跳转遮罩（点击订阅/每年支付 → checkout 成功后 3-2-1 → 跳 Stripe 结账页） -->
 <div id="cdOverlay" class="cd-overlay">
@@ -2658,6 +2668,8 @@ document.head.appendChild(bgStyle);
 </style>
 
 <script>
+// v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
 // ── 订阅流程：等级感知 + 在线支付（Stripe 混合模式）──
 // 口径：tier 以服务端为准（GET /api/auth/me）。付费页恒为最终支付态：登录用户的卡片 CTA 始终是
 // 「订阅 · RMxx/月」（自动续费，卡类）与「每年支付 · RMyy/年」（一次付清 1 年 · 月价×10 送 2 个月，
@@ -2668,7 +2680,8 @@ document.head.appendChild(bgStyle);
 // 结账页可用：卡 + GrabPay（马区）+ Apple/Google Pay/Link（钱包随卡，买家合格即自动出现，无需列清单）。
 (function () {
   var TIER_RANK = { free: 0, basic: 1, premium: 2, ultra: 3 }; // free=普通用户（注册默认，不再直接拥有 Basic）
-  var TIER_ZH = { free: '普通用户', basic: 'Basic', premium: 'Premium', ultra: 'Premium Ultra' };
+  // v0.2.54.0 i18n：档位名不译（产品标识）；free 显示名走惰性 T()——对象字面量在 i18n.js 加载前求值会冻结中文
+  function tierZh(t) { return t === 'free' ? (T('premium.tier.free') || '普通用户') : t; }
   // 注意：free 的 rank 是 0（falsy）——所有 TIER_RANK 查找必须用 != null 判断，不能用 || 兜底（0 会被误当缺省）
   var me = null; // { tier, email, tierExpiresAt, source } 或 null（未登录/后端不可达）
   var sub = null; // GET /api/subscription/status 结果 { enabled, prices, hasPortal, … }
@@ -2698,17 +2711,18 @@ document.head.appendChild(bgStyle);
   function renderGuest() {
     var b = $('subStatus');
     b.style.display = 'flex';
-    b.innerHTML = '<span>登录后即可订阅会员方案（注册默认「普通用户」免费；Basic 常规价 ' + p.basic + '/月'
-      + (sP ? '，学校邮箱认证后 ' + sP.basic + '/月' : '') + '）</span>'
-      + '<a class="btn btn-primary btn-sm" href="../signup-and-login" style="margin:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:#fff;text-decoration:none">登录 / 注册</a>';
-    var gb = $('basicBadge'); if (gb) gb.textContent = sP ? '学生价 ' + sP.basic : '学生价 Student';
+    b.innerHTML = '<span>' + (T('premium.guest.bannerPre') || '登录后即可订阅会员方案（注册默认「普通用户」免费；Basic 常规价 ') + p.basic + (T('premium.perMo') || '/月')
+      + (sP ? (T('premium.studentPre') || '，学校邮箱认证后 ') + sP.basic + (T('premium.perMo') || '/月') : '')
+      + (T('premium.guest.bannerClose') || '）') + '</span>'
+      + '<a class="btn btn-primary btn-sm" href="../signup-and-login" style="margin:0;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.25);color:#fff;text-decoration:none">' + (T('premium.guest.cta') || '登录 / 注册') + '</a>';
+    var gb = $('basicBadge'); if (gb) gb.textContent = sP ? (T('premium.badge.studentPre') || '学生价 ') + sP.basic : (T('premium.badge.student') || '学生价 Student');
     document.querySelectorAll('[data-plan-card]').forEach(function (card) {
       var btn = card.querySelector('[data-plan-cta]');
       if (!btn) return;
-      setCta(btn, '登录后订阅', false, '../signup-and-login');
+      setCta(btn, T('premium.guest.subscribe') || '登录后订阅', false, '../signup-and-login');
     });
     document.querySelectorAll('[data-addon-cta]').forEach(function (btn) {
-      setCta(btn, '登录后购买', false, '../signup-and-login');
+      setCta(btn, T('premium.guest.buy') || '登录后购买', false, '../signup-and-login');
     });
     document.querySelectorAll('[data-plan-once]').forEach(function (x) { x.style.display = 'none'; });
     document.querySelectorAll('[data-once-hint]').forEach(function (x) { x.style.display = 'none'; });
@@ -2717,12 +2731,21 @@ document.head.appendChild(bgStyle);
   }
 
   // 付费页恒为最终支付态：登录即可点「订阅」走 checkout，无申请回退（2026-08-20 起）
-  var METHOD_ZH = { card: '银行卡', fpx: 'FPX 网银', alipay: '支付宝', grabpay: 'GrabPay', wechat_pay: '微信支付' };
+  // v0.2.54.0 i18n：方式显示名惰性求值（refreshPlanNote 可能先于 i18n.js 执行；GrabPay 品牌词不译）
+  function methodName(m) {
+    return {
+      card: T('premium.pay.card') || '银行卡',
+      fpx: T('premium.pay.fpx') || 'FPX 网银',
+      alipay: T('premium.pay.alipay') || '支付宝',
+      grabpay: 'GrabPay',
+      wechat_pay: T('premium.pay.wechat') || '微信支付'
+    }[m] || m;
+  }
   // 每年支付按钮下的小字：折合每月（年总 ÷12）与月付对比——拆成 12 个月看会比月付便宜
   function onceHintText(card, key) {
     var ym = yearPerMonth(key);
     if (!ym) return '';
-    return '折合每月 ' + ym + '/月（月付 ' + cardPrice(card) + '/月）';
+    return (T('premium.once.ymPre') || '折合每月 ') + ym + (T('premium.once.ymMid') || '/月（月付 ') + cardPrice(card) + (T('premium.once.ymPost') || '/月）');
   }
   function cardPrice(card) {
     return (((card.querySelector('[data-plan-price]') || {}).textContent) || '?').trim();
@@ -2733,11 +2756,12 @@ document.head.appendChild(bgStyle);
     var nb = document.getElementById('planNote');
     if (!nb || !p) return;
     var list = ((sub && sub.onceMethods) || (MN_CUR === 'myr' ? ['card', 'grabpay'] : ['card']))
-      .map(function (m) { return METHOD_ZH[m] || m; }).join(' / ');
-    nb.innerHTML = '注册默认「普通用户」（免费）；Basic 为学生价方案（常规价 ' + p.basic + '/月'
-      + (sP ? '，学校邮箱认证后 ' + sP.basic + '/月（MYR 结算，有效期 1 年）' : '') + '，' + p.label + '）。'
-      + '会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay / Google Pay，可随时在「管理订阅」取消）'
-      + '或每年支付 1 年（一次付清 · 送 2 个月，' + list + '，不自动续费）。';
+      .map(function (m) { return methodName(m); }).join(' / ');
+    nb.innerHTML = (T('premium.note.pre') || '注册默认「普通用户」（免费）；Basic 为学生价方案（常规价 ') + p.basic + (T('premium.perMo') || '/月')
+      + (sP ? (T('premium.studentPre') || '，学校邮箱认证后 ') + sP.basic + (T('premium.note.studentSuffix') || '/月（MYR 结算，有效期 1 年）') : '')
+      + (T('premium.note.labelSep') || '，') + p.label + (T('premium.note.close') || '）。')
+      + (T('premium.note.paySub') || '会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay / Google Pay，可随时在「管理订阅」取消）')
+      + (T('premium.note.payOncePre') || '或每年支付 1 年（一次付清 · 送 2 个月，') + list + (T('premium.note.payOncePost') || '，不自动续费）。');
   }
   refreshPlanNote();
 
@@ -2754,25 +2778,25 @@ document.head.appendChild(bgStyle);
     var b = $('subStatus');
     b.style.display = 'flex';
     var extra = '';
-    if (me.tierExpiresAt) extra += '<span style="color:rgba(255,255,255,0.4)"> · 有效期至 ' + me.tierExpiresAt.slice(0, 10) + '</span>';
+    if (me.tierExpiresAt) extra += '<span style="color:rgba(255,255,255,0.4)">' + (T('premium.user.expiryPre') || ' · 有效期至 ') + me.tierExpiresAt.slice(0, 10) + '</span>';
     if (sub && sub.hasPortal && me.source === 'server') {
-      extra += '<a id="portalLink" href="javascript:void(0)" style="color:#eab308;font-weight:600;text-decoration:none;margin-left:auto">管理订阅</a>';
+      extra += '<a id="portalLink" href="javascript:void(0)" style="color:#eab308;font-weight:600;text-decoration:none;margin-left:auto">' + (T('premium.user.manageSub') || '管理订阅') + '</a>';
     }
-    b.innerHTML = '<span>你当前的方案是 <b style="color:#eab308">' + (TIER_ZH[me.tier] || me.tier) + '</b>'
-      + '<span style="color:rgba(255,255,255,0.4)"> · ' + me.email + '</span></span>'
+    b.innerHTML = '<span>' + (T('premium.user.currentPre') || '你当前的方案是 ') + '<b style="color:#eab308">' + (tierZh(me.tier) || me.tier) + '</b>'
+      + '<span style="color:rgba(255,255,255,0.4)">' + (T('premium.user.emailSep') || ' · ') + me.email + '</span></span>'
       + extra
       + '<span style="color:rgba(255,255,255,0.45)">'
-      + (me.source === 'local' ? '当前为本地资料，请登录正式账号后在线支付'
-        : (sub && sub.enabled) ? '升级 / 加购请点卡片按钮在线支付（订阅自动续费 / 每年支付不自动续费）'
-        : '在线支付通道即将上线：后端 Stripe 密钥配置完成后即可在线扣款')
+      + (me.source === 'local' ? (T('premium.user.localWarn') || '当前为本地资料，请登录正式账号后在线支付')
+        : (sub && sub.enabled) ? (T('premium.user.upgradeHint') || '升级 / 加购请点卡片按钮在线支付（订阅自动续费 / 每年支付不自动续费）')
+        : (T('premium.user.stripePending') || '在线支付通道即将上线：后端 Stripe 密钥配置完成后即可在线扣款'))
       + '</span>';
     var pl = document.getElementById('portalLink');
     if (pl) {
       pl.addEventListener('click', function () {
-        pl.textContent = '跳转中…';
+        pl.textContent = T('premium.user.jumping') || '跳转中…';
         MN_API.post('/subscription/portal', {}).then(function (r) {
           if (r.ok && r.data && r.data.url) location.href = r.data.url;
-          else pl.textContent = '管理订阅（暂不可用）';
+          else pl.textContent = T('premium.user.manageSubUnavail') || '管理订阅（暂不可用）';
         });
       });
     }
@@ -2793,10 +2817,10 @@ document.head.appendChild(bgStyle);
       var show = !hide && onceState(key);
       var hint = card.querySelector('[data-once-hint]');
       // 文案先落（隐藏态也保持正确标签，重渲幂等）：v0.2.44.0 学生态（Basic × myr）用学生年价 RM55
-      ob.textContent = '每年支付 · ' + ((sp && key === 'basic') ? studentYear() : yearPrice(key)) + '/年'; // v0.2.13.0：once = 年付 1 年（月价×10，无「单次」口吻）
+      ob.textContent = (T('premium.once.labelPre') || '每年支付 · ') + ((sp && key === 'basic') ? studentYear() : yearPrice(key)) + (T('premium.perYear') || '/年'); // v0.2.13.0：once = 年付 1 年（月价×10，无「单次」口吻）
       if (!show) { ob.style.display = 'none'; if (hint) hint.style.display = 'none'; return; }
       ob.style.display = 'block';
-      var ht = (sp && key === 'basic') ? '折合每月 ' + studentYm() + '/月（月付 ' + sp + '/月）' : onceHintText(card, key);
+      var ht = (sp && key === 'basic') ? (T('premium.once.ymPre') || '折合每月 ') + studentYm() + (T('premium.once.ymMid') || '/月（月付 ') + sp + (T('premium.once.ymPost') || '/月）') : onceHintText(card, key);
       if (!hint) {
         hint = document.createElement('div');
         hint.dataset.onceHint = '';
@@ -2823,31 +2847,31 @@ document.head.appendChild(bgStyle);
       if (strike) strike.style.display = 'none';
       if (entry) entry.style.display = 'none';
       if (note) note.style.display = 'none';
-      if (badge) badge.textContent = sP ? '学生价 ' + sP.basic : '学生价 Student';
+      if (badge) badge.textContent = sP ? (T('premium.badge.studentPre') || '学生价 ') + sP.basic : (T('premium.badge.student') || '学生价 Student');
       if (sp) {
         priceEl.textContent = sp;
         if (strike) { strike.textContent = p.basic; strike.style.display = 'block'; }
-        if (badge) badge.textContent = '✓ 学生认证';
+        if (badge) badge.textContent = T('premium.badge.studentVerified') || '✓ 学生认证';
       } else if (svOk) {
-        if (badge) badge.textContent = '✓ 学生认证';
+        if (badge) badge.textContent = T('premium.badge.studentVerified') || '✓ 学生认证';
         if (note) {
           var st = me.student;
-          note.innerHTML = '已认证 <b style="color:rgba(255,255,255,0.75)">' + st.email + '</b> · 有效至 ' + (st.expiresAt || '').slice(0, 10)
-            + (MN_CUR !== 'myr' ? '<br>学生价仅限 MYR 结算' : '<br>学生价即将上线');
+          note.innerHTML = (T('premium.student.noteCertPre') || '已认证 <b style="color:rgba(255,255,255,0.75)">') + st.email + (T('premium.student.noteCertMid') || '</b> · 有效至 ') + (st.expiresAt || '').slice(0, 10)
+            + (MN_CUR !== 'myr' ? (T('premium.student.myrOnly') || '<br>学生价仅限 MYR 结算') : (T('premium.student.comingSoon') || '<br>学生价即将上线'));
           note.style.display = 'block';
         }
       } else if (entry) {
-        entry.textContent = sP ? '学生认证 · 解锁 ' + sP.basic + '/月' : '学生认证';
+        entry.textContent = sP ? (T('premium.student.entryUnlockPre') || '学生认证 · 解锁 ') + sP.basic + (T('premium.perMo') || '/月') : (T('premium.student.title') || '学生认证');
         entry.style.display = 'block';
       }
       if (TIER_RANK.basic > rank) {
-        setCta(btn, '订阅 · ' + cardPrice(card) + '/月', false);
+        setCta(btn, (T('premium.cta.subscribe') || '订阅 · ') + cardPrice(card) + (T('premium.perMo') || '/月'), false);
         setOnceBtn(card, 'basic', false);
       } else if (TIER_RANK.basic === rank) {
-        setCta(btn, '✓ 当前方案', true);
+        setCta(btn, T('premium.plan.current') || '✓ 当前方案', true);
         if (chip) chip.style.display = 'inline-block';
         setOnceBtn(card, 'basic', true);
-      } else { setCta(btn, '已包含', true); setOnceBtn(card, 'basic', true); }
+      } else { setCta(btn, T('premium.cta.included') || '已包含', true); setOnceBtn(card, 'basic', true); }
     }
     document.querySelectorAll('[data-plan-card]').forEach(function (card) {
       var key = card.dataset.planCard;
@@ -2857,21 +2881,21 @@ document.head.appendChild(bgStyle);
       var tr = TIER_RANK[target] || 1;
       if (key === 'basic' && !card.dataset.targetTier) { renderBasicCard(card, rank); return; }
       if (card.dataset.targetTier) { // 包价卡：等级 ≥ 包价等级时仍可购买（叠加团队等权益）
-        if (tr < rank) { setCta(btn, '已包含', true); setOnceBtn(card, key, true); }
-        else { setCta(btn, '订阅 · ' + cardPrice(card) + '/月', false); setOnceBtn(card, key, false); }
+        if (tr < rank) { setCta(btn, T('premium.cta.included') || '已包含', true); setOnceBtn(card, key, true); }
+        else { setCta(btn, (T('premium.cta.subscribe') || '订阅 · ') + cardPrice(card) + (T('premium.perMo') || '/月'), false); setOnceBtn(card, key, false); }
         return;
       }
       if (tr > rank) {
-        setCta(btn, '订阅 · ' + cardPrice(card) + '/月', false);
+        setCta(btn, (T('premium.cta.subscribe') || '订阅 · ') + cardPrice(card) + (T('premium.perMo') || '/月'), false);
         setOnceBtn(card, key, false);
       } else if (tr === rank) {
-        setCta(btn, '✓ 当前方案', true);
+        setCta(btn, T('premium.plan.current') || '✓ 当前方案', true);
         if (chip) chip.style.display = 'inline-block';
         setOnceBtn(card, key, true);
-      } else { setCta(btn, '已包含', true); setOnceBtn(card, key, true); }
+      } else { setCta(btn, T('premium.cta.included') || '已包含', true); setOnceBtn(card, key, true); }
     });
     document.querySelectorAll('[data-addon-cta]').forEach(function (btn) {
-      setCta(btn, '购买', false); // 增值项在线购买即将上线：点击如实提示
+      setCta(btn, T('premium.cta.buy') || '购买', false); // 增值项在线购买即将上线：点击如实提示
     });
   }
 
@@ -2879,8 +2903,8 @@ document.head.appendChild(bgStyle);
   function countdownJump(btn, url) {
     btn.disabled = true;
     $('cdNum').textContent = '3';
-    $('cdText').textContent = '即将跳转到支付页面…';
-    $('cdSub').textContent = '在线支付由 Stripe 安全处理 · 请勿关闭页面';
+    $('cdText').textContent = T('premium.cd.text') || '即将跳转到支付页面…';
+    $('cdSub').textContent = T('premium.cd.sub') || '在线支付由 Stripe 安全处理 · 请勿关闭页面';
     $('cdOverlay').classList.add('active');
     var n = 3;
     (function tick() {
@@ -2895,7 +2919,7 @@ document.head.appendChild(bgStyle);
   function startCheckout(btn, key, mode) {
     var label = btn.textContent;
     btn.disabled = true;
-    btn.textContent = '跳转到支付页…';
+    btn.textContent = T('premium.checkout.jumping') || '跳转到支付页…';
     var payload = { tierKey: key, mode: mode || 'subscription', currency: MN_CUR };
     // v0.2.44.0：已认证学生的 Basic 购买自动带学生旗（后端走学生价 Price + payments.promo_id='student'）
     if (key === 'basic' && !!(me && me.student)) payload.student = true;
@@ -2903,10 +2927,10 @@ document.head.appendChild(bgStyle);
       if (r.ok && r.data && r.data.url) { countdownJump(btn, r.data.url); return; }
       btn.disabled = false;
       btn.textContent = label;
-      if (r.status === 401) toast('请登录正式账号后在线支付');
-      else if (r.status === 403) { toast('学生认证已过期，请重新认证'); openStudentModal(); } // STUDENT_REQUIRED：过期/被清 → 重认证弹窗
-      else if (r.status === 409) toast((sub && sub.enabled) ? '该方案在线支付暂未开通，请稍后再试' : '在线支付通道即将上线（后端 Stripe 密钥配置完成后即可在线扣款）');
-      else toast('支付请求失败（' + (r.status || '网络') + '），请稍后重试');
+      if (r.status === 401) toast(T('premium.checkout.loginFirst') || '请登录正式账号后在线支付');
+      else if (r.status === 403) { toast(T('premium.checkout.studentExpired') || '学生认证已过期，请重新认证'); openStudentModal(); } // STUDENT_REQUIRED：过期/被清 → 重认证弹窗
+      else if (r.status === 409) toast((sub && sub.enabled) ? (T('premium.checkout.notReady') || '该方案在线支付暂未开通，请稍后再试') : (T('premium.checkout.stripePending') || '在线支付通道即将上线（后端 Stripe 密钥配置完成后即可在线扣款）'));
+      else toast((T('premium.checkout.failPre') || '支付请求失败（') + (r.status || (T('premium.checkout.network') || '网络')) + (T('premium.checkout.failPost') || '），请稍后重试'));
     });
   }
 
@@ -2930,7 +2954,7 @@ document.head.appendChild(bgStyle);
     if (ab) {
       if (ab.disabled) return;
       if (ab.dataset.guestLink) { location.href = ab.dataset.guestLink; return; }
-      toast('该增值项在线购买即将上线，敬请期待');
+      toast(T('premium.checkout.addonSoon') || '该增值项在线购买即将上线，敬请期待');
     }
     var se = ev.target.closest('#basicStudentEntry');
     if (se) { openStudentModal(); return; } // v0.2.44.0 学生认证入口
@@ -2969,7 +2993,7 @@ document.head.appendChild(bgStyle);
 
     var head = svEl_('div', '', 'display:flex;align-items:center;justify-content:space-between;margin-bottom:14px');
     var title = svEl_('div', '', 'font-size:17px;font-weight:700');
-    title.textContent = '学生认证';
+    title.textContent = T('premium.student.title') || '学生认证';
     var x = svEl_('button', '', 'background:none;border:none;color:rgba(255,255,255,0.55);font-size:20px;cursor:pointer;padding:0;line-height:1');
     x.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px">close</span>';
     x.addEventListener('click', svClose);
@@ -2979,15 +3003,15 @@ document.head.appendChild(bgStyle);
     // ── 步骤 1：学校邮箱 ──
     var s1 = svEl_('div');
     var s1p = svEl_('p', '', 'font-size:13px;color:rgba(255,255,255,0.7);margin:0 0 12px;line-height:1.6');
-    s1p.textContent = '输入学校邮箱接收验证码，认证后 Basic 解锁学生价' + (sP ? ' ' + sP.basic + '/月' : '') + '（MYR 结算，有效期 1 年）。';
+    s1p.textContent = (T('premium.student.s1pre') || '输入学校邮箱接收验证码，认证后 Basic 解锁学生价') + (sP ? ' ' + sP.basic + (T('premium.perMo') || '/月') : '') + (T('premium.student.s1suffix') || '（MYR 结算，有效期 1 年）。');
     var input = svEl_('input', 'sv-input');
     input.type = 'email';
-    input.placeholder = '学校邮箱（如 name@university.edu.my）';
+    input.placeholder = T('premium.student.phEmail') || '学校邮箱（如 name@university.edu.my）';
     var s1err = svEl_('div', 'sv-err');
     var send = svEl_('button', 'btn btn-primary btn-sm', 'width:100%;margin-top:12px');
-    send.textContent = '发送验证码';
+    send.textContent = T('premium.student.sendCode') || '发送验证码';
     var s1hint = svEl_('div', 'sv-hint');
-    s1hint.textContent = '支持 .edu / .edu.my 等学校域名自动认证；白名单外的学校暂不支持（学生证人工审核即将上线）。';
+    s1hint.textContent = T('premium.student.s1hint') || '支持 .edu / .edu.my 等学校域名自动认证；白名单外的学校暂不支持（学生证人工审核即将上线）。';
     s1.appendChild(s1p); s1.appendChild(input); s1.appendChild(s1err); s1.appendChild(send); s1.appendChild(s1hint);
 
     // ── 步骤 2：六格验证码 ──
@@ -3003,9 +3027,9 @@ document.head.appendChild(bgStyle);
       row.appendChild(c); cells.push(c);
     }
     var resend = svEl_('div', 'sv-resend');
-    resend.textContent = '重新发送';
+    resend.textContent = T('premium.student.resend') || '重新发送';
     var s2hint = svEl_('div', 'sv-hint');
-    s2hint.textContent = '验证码 10 分钟内有效。';
+    s2hint.textContent = T('premium.student.s2hint') || '验证码 10 分钟内有效。';
     s2.appendChild(emailText); s2.appendChild(row); s2.appendChild(s2err); s2.appendChild(resend); s2.appendChild(s2hint);
 
     // ── 步骤 3：成功 ──
@@ -3015,12 +3039,12 @@ document.head.appendChild(bgStyle);
     var ico = svEl_('div', 'ico');
     ico.innerHTML = '<span class="material-symbols-outlined">check</span>';
     var okT = svEl_('div', '', 'font-size:16px;font-weight:700');
-    okT.textContent = '认证成功！';
+    okT.textContent = T('premium.student.ok') || '认证成功！';
     var okEmail = svEl_('div', '', 'font-size:13px;color:rgba(255,255,255,0.7)');
     var okExp = svEl_('div', '', 'font-size:12px;color:rgba(255,255,255,0.45)');
     okBox.appendChild(ico); okBox.appendChild(okT); okBox.appendChild(okEmail); okBox.appendChild(okExp);
     var done = svEl_('button', 'btn btn-primary btn-sm', 'width:100%;margin-top:14px');
-    done.textContent = '完成';
+    done.textContent = T('premium.student.done') || '完成';
     done.addEventListener('click', svClose);
     s3.appendChild(okBox); s3.appendChild(done);
 
@@ -3057,16 +3081,16 @@ document.head.appendChild(bgStyle);
         if (r.ok && r.data && r.data.ok && r.data.student) {
           if (me) me.student = r.data.student;
           okEmail.textContent = r.data.student.email;
-          okExp.textContent = '有效期至 ' + (r.data.student.expiresAt || '').slice(0, 10) + ' · Basic 学生价已解锁';
+          okExp.textContent = (T('premium.student.okExpPre') || '有效期至 ') + (r.data.student.expiresAt || '').slice(0, 10) + (T('premium.student.okExpPost') || ' · Basic 学生价已解锁');
           svGo(3);
           renderUser();
           syncState();
-        } else if (r.status === 429) { svClearCells(); svShowErr(s2err, '尝试过于频繁，请稍后再试'); }
-        else { svClearCells(); svShowErr(s2err, '验证码无效或已过期'); }
+        } else if (r.status === 429) { svClearCells(); svShowErr(s2err, T('premium.student.errVerifyFrequent') || '尝试过于频繁，请稍后再试'); }
+        else { svClearCells(); svShowErr(s2err, T('premium.student.errBadCode') || '验证码无效或已过期'); }
       }).catch(function () {
         svVerifying = false;
         if (svReadCode() !== code6) return;
-        svClearCells(); svShowErr(s2err, '验证失败，请重试');
+        svClearCells(); svShowErr(s2err, T('premium.student.errVerify') || '验证失败，请重试');
       });
     }
     function svAfterCode() {
@@ -3108,43 +3132,43 @@ document.head.appendChild(bgStyle);
 
     function svCountdown() {
       svT = 60;
-      resend.textContent = svT + ' 秒后可重发';
+      resend.textContent = svT + (T('premium.student.resendAfter') || ' 秒后可重发');
       if (svTimer) clearInterval(svTimer);
       svTimer = setInterval(function () {
         svT--;
-        if (svT <= 0) { clearInterval(svTimer); svTimer = null; resend.textContent = '重新发送'; svSent = false; return; }
-        resend.textContent = svT + ' 秒后可重发';
+        if (svT <= 0) { clearInterval(svTimer); svTimer = null; resend.textContent = T('premium.student.resend') || '重新发送'; svSent = false; return; }
+        resend.textContent = svT + (T('premium.student.resendAfter') || ' 秒后可重发');
       }, 1000);
     }
     function svSend() {
       if (svSent) return; // 60s 冷却中：不可重发
       var email = input.value.trim();
-      if (!email) { svShowErr(s1err, '请输入学校邮箱'); return; }
+      if (!email) { svShowErr(s1err, T('premium.student.errEmpty') || '请输入学校邮箱'); return; }
       svSent = true;
       send.disabled = true;
-      send.textContent = '发送中…';
+      send.textContent = T('premium.student.sending') || '发送中…';
       MN_API.post('/student-verify/email-code', { email: email }).then(function (r) {
         send.disabled = false;
         if (r.ok && r.data && r.data.ok) {
           svEmail = email;
-          emailText.textContent = '验证码已发送至 ' + email;
+          emailText.textContent = (T('premium.student.codeSentPre') || '验证码已发送至 ') + email;
           svGo(2);
           svCountdown();
           cells[0].focus();
         } else if (r.status === 400 && r.data && r.data.error && r.data.error.code === 'STUDENT_EMAIL_DOMAIN') {
           svSent = false;
-          svShowErr(s1err, '该邮箱域名暂不支持自动认证（学生证人工审核即将上线）');
+          svShowErr(s1err, T('premium.student.errDomain') || '该邮箱域名暂不支持自动认证（学生证人工审核即将上线）');
         } else if (r.status === 429) {
           svSent = false;
-          svShowErr(s1err, '发送过于频繁，请稍后再试');
+          svShowErr(s1err, T('premium.student.errFrequent') || '发送过于频繁，请稍后再试');
         } else {
           svSent = false;
-          svShowErr(s1err, '发送失败，请稍后重试');
+          svShowErr(s1err, T('premium.student.errSend') || '发送失败，请稍后重试');
         }
       }).catch(function () {
         svSent = false;
         send.disabled = false;
-        svShowErr(s1err, '发送失败，请稍后重试');
+        svShowErr(s1err, T('premium.student.errSend') || '发送失败，请稍后重试');
       });
     }
     send.addEventListener('click', svSend);
@@ -3177,25 +3201,25 @@ document.head.appendChild(bgStyle);
     var q = new URLSearchParams(location.search);
     if (q.get('canceled') === '1') {
       n.style.display = 'flex';
-      n.innerHTML = '<span>已取消支付，可随时重试。</span>';
+      n.innerHTML = '<span>' + (T('premium.return.canceled') || '已取消支付，可随时重试。') + '</span>';
       return;
     }
     if (q.get('paid') !== '1') return;
     n.style.display = 'flex';
     n.style.borderColor = 'rgba(34,197,94,0.4)';
     n.style.background = 'rgba(34,197,94,0.06)';
-    n.innerHTML = '<span>✅ 支付已确认，正在生效（银行到账可能延迟几分钟）…</span>';
+    n.innerHTML = '<span>' + (T('premium.return.confirmed') || '✅ 支付已确认，正在生效（银行到账可能延迟几分钟）…') + '</span>';
     var baseTier = (me && me.tier) || 'free';
     var baseRank = TIER_RANK[baseTier] != null ? TIER_RANK[baseTier] : 0;
     var tries = 0;
     (function poll() {
       tries++;
-      if (tries > 12) { n.innerHTML = '<span>仍在处理中，请稍后刷新页面查看。</span>'; return; }
+      if (tries > 12) { n.innerHTML = '<span>' + (T('premium.return.pending') || '仍在处理中，请稍后刷新页面查看。') + '</span>'; return; }
       setTimeout(function () {
         MN_API.get('/auth/me').then(function (r) {
           var t = (r.ok && r.data && r.data.user && r.data.user.tier) || 'free';
           if ((TIER_RANK[t] != null ? TIER_RANK[t] : 0) > baseRank) {
-            n.innerHTML = '<span>✅ 已开通 <b style="color:#eab308">' + (TIER_ZH[t] || t) + '</b>，感谢订阅！</span>';
+            n.innerHTML = '<span>' + (T('premium.return.activatedPre') || '✅ 已开通 <b style="color:#eab308">') + (tierZh(t) || t) + (T('premium.return.activatedPost') || '</b>，感谢订阅！') + '</span>';
             me = {
               tier: t,
               email: (me && me.email) || (r.data.user.email || ''),
@@ -3260,7 +3284,24 @@ document.head.appendChild(bgStyle);
     handleReturn();
     syncState();
   });
+
+  // v0.2.54.0 i18n：重渲钩子——body 尾部三件套 apply（及语言切换）后调用。
+  // 先重刷先于 i18n.js 同步落地的矩阵注（脚本 2464 挂的 renderMatrixNote）与本页底注（本脚本同步跑过中文版）；
+  // subStatus 已渲染（/auth/me 返回后）才连带用户态条重渲——未返回前重渲会闪 guest 横幅（renderUser/renderGuest 幂等）。
+  var __mnPrevRerender = window.__mnI18nRerender || function () {};
+  window.__mnI18nRerender = function () {
+    __mnPrevRerender();
+    refreshPlanNote();
+    var st = $('subStatus');
+    if (st && st.innerHTML) { if (me) renderUser(); else renderGuest(); }
+  };
 })();
 </script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/premium.i18n.js"></script>
+<script>MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); }); MN_I18N.apply();</script>
 </body>
 </html>

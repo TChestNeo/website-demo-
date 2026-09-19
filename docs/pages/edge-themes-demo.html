@@ -460,10 +460,10 @@
 </svg>
 <div class="wrap">
 
-  <h1>Edge Themes Demo</h1>
-  <p class="sub">两个独立卡片 CSS 组件类 · 纯 CSS + 内联矢量 SVG · 零外部图片 · 可直接提取进 Vue / React</p>
+  <h1 data-i18n="edge.hero.title">Edge Themes Demo</h1>
+  <p class="sub" data-i18n="edge.sub.intro">两个独立卡片 CSS 组件类 · 纯 CSS + 内联矢量 SVG · 零外部图片 · 可直接提取进 Vue / React</p>
 
-  <div class="principle">
+  <div class="principle" data-i18n-html="edge.principle.arch">
     <b>架构总原则：</b>合成顺序是 <code>filter → clip-path → mask</code>——
     <code>filter: drop-shadow</code> 与 <code>clip-path</code> 不能放在同一元素上
     （阴影先画、随后整块被剪掉）。所以每个组件都分三层：<b>宿主元素</b>承载
@@ -473,189 +473,195 @@
     <code>&gt; img</code>）需要自己套同一剪——伪元素的 clip 管不到兄弟元素。
   </div>
 
-  <h2>① .card-parchment — 破旧的纸 / 藏宝图（褶皱折角 / 波浪边缘）</h2>
-  <p class="sub" style="margin-bottom:8px">v10.6 基础轮廓 = 褶皱折角纸（右上斜切折角 + 左下圆弧卷角 + 四边微撕边）；<code>--dark</code>（藏宝图）= 波浪地图边缘（v10.5）。两者都是 <code>clipPathUnits="objectBoundingBox"</code> 的 SVG 剪切路径，按 0~1 百分比随容器任意宽高比自适应。米黄纸面 + 氧化斑驳 + 噪点 + 烧边暗角 + 悬浮投影配方不变。</p>
+  <h2 data-i18n="edge.parchment.title">① .card-parchment — 破旧的纸 / 藏宝图（褶皱折角 / 波浪边缘）</h2>
+  <p class="sub" style="margin-bottom:8px" data-i18n-html="edge.parchment.intro">v10.6 基础轮廓 = 褶皱折角纸（右上斜切折角 + 左下圆弧卷角 + 四边微撕边）；<code>--dark</code>（藏宝图）= 波浪地图边缘（v10.5）。两者都是 <code>clipPathUnits="objectBoundingBox"</code> 的 SVG 剪切路径，按 0~1 百分比随容器任意宽高比自适应。米黄纸面 + 氧化斑驳 + 噪点 + 烧边暗角 + 悬浮投影配方不变。</p>
 
   <div class="gallery">
     <div class="specimen">
       <div class="card-parchment" style="width:280px;height:180px">
         <div class="card-body">
-          <strong style="font-size:15px">探险日志 · 第 7 页</strong>
-          <p style="margin:8px 0 0;font-size:13px">沿东岸的礁石线航行三日，望见无名岛。</p>
+          <strong style="font-size:15px" data-i18n="edge.parchment.demo1.title">探险日志 · 第 7 页</strong>
+          <p style="margin:8px 0 0;font-size:13px" data-i18n="edge.parchment.demo1.body">沿东岸的礁石线航行三日，望见无名岛。</p>
         </div>
       </div>
-      <div class="note"><b>280×180</b> — 纯文字卡片（基础用法）</div>
+      <div class="note" data-i18n-html="edge.parchment.demo1.note"><b>280×180</b> — 纯文字卡片（基础用法）</div>
     </div>
 
     <div class="specimen">
       <div class="card-parchment card-parchment--dark" style="width:280px;height:180px">
         <div class="card-body">
-          <strong style="font-size:15px">藏宝图 · 黑礁海域</strong>
-          <p style="margin:8px 0 0;font-size:13px">深色做旧版：同一个类 + 一个修饰符。</p>
+          <strong style="font-size:15px" data-i18n="edge.parchment.demo2.title">藏宝图 · 黑礁海域</strong>
+          <p style="margin:8px 0 0;font-size:13px" data-i18n="edge.parchment.demo2.body">深色做旧版：同一个类 + 一个修饰符。</p>
         </div>
       </div>
-      <div class="note"><b>280×180</b> — <code>--dark</code> 深色做旧（覆盖 6 个旋钮：5 个配色 + <code>--pch-clip</code> 波浪轮廓）</div>
+      <div class="note" data-i18n-html="edge.parchment.demo2.note"><b>280×180</b> — <code>--dark</code> 深色做旧（覆盖 6 个旋钮：5 个配色 + <code>--pch-clip</code> 波浪轮廓）</div>
     </div>
 
     <div class="specimen">
       <div class="card-parchment card-parchment--dark is-selected" style="width:400px;height:260px">
         <img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 180'%3E%3Cdefs%3E%3ClinearGradient id='sky' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23f7e7b4'/%3E%3Cstop offset='1' stop-color='%23e9b56a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='280' height='180' fill='url(%23sky)'/%3E%3Ccircle cx='205' cy='52' r='26' fill='%23f3c969'/%3E%3Cpath d='M0 120 Q 70 90 140 120 T 280 118 L 280 180 L 0 180 Z' fill='%238a6a3f'/%3E%3Cpath d='M0 145 Q 90 115 180 148 T 280 140 L 280 180 L 0 180 Z' fill='%236e5230'/%3E%3C/svg%3E">
         <div class="card-body">
-          <strong style="font-size:16px">全出血图片子层</strong>
-          <p style="margin:8px 0 0;font-size:13.5px">&lt;img&gt; 与剪层同剪（<code>clip-path: var(--pch-clip)</code>）；烧边暗角在 z 2 压住图片边缘。</p>
+          <strong style="font-size:16px" data-i18n="edge.parchment.demo3.title">全出血图片子层</strong>
+          <p style="margin:8px 0 0;font-size:13.5px" data-i18n-html="edge.parchment.demo3.body">&lt;img&gt; 与剪层同剪（<code>clip-path: var(--pch-clip)</code>）；烧边暗角在 z 2 压住图片边缘。</p>
         </div>
       </div>
-      <div class="note"><b>400×260</b> — <code>--dark</code> + <code>is-selected</code>（2px 剪影描边环）+ 内联 SVG 图片（零外部资源）</div>
+      <div class="note" data-i18n-html="edge.parchment.demo3.note"><b>400×260</b> — <code>--dark</code> + <code>is-selected</code>（2px 剪影描边环）+ 内联 SVG 图片（零外部资源）</div>
     </div>
   </div>
 
-  <h2>② .card-tech — 未来科技 / HUD 赛博（科技1~6 六款切角剪影 + L 型发光包角）</h2>
-  <p class="sub" style="margin-bottom:8px">v10.7 起六款 SVG 剪影（<code>#hud-frame-1..6</code>，objectBoundingBox 自适应）；基础 = 科技4（四角对称斜切）。四角 8 条 2px 亮条 + 8 条柔光副本的几何由切深变量（<code>--tl-a</code>…）驱动——换剪影时包角自动贴合，22px 网格 + 4px 扫描线配方不变。v10.8：编辑器里选主题自动带 16px 外缘底板（<code>--plated</code> 演示变体见下方画廊）。</p>
+  <h2 data-i18n="edge.tech.title">② .card-tech — 未来科技 / HUD 赛博（科技1~6 六款切角剪影 + L 型发光包角）</h2>
+  <p class="sub" style="margin-bottom:8px" data-i18n-html="edge.tech.intro">v10.7 起六款 SVG 剪影（<code>#hud-frame-1..6</code>，objectBoundingBox 自适应）；基础 = 科技4（四角对称斜切）。四角 8 条 2px 亮条 + 8 条柔光副本的几何由切深变量（<code>--tl-a</code>…）驱动——换剪影时包角自动贴合，22px 网格 + 4px 扫描线配方不变。v10.8：编辑器里选主题自动带 16px 外缘底板（<code>--plated</code> 演示变体见下方画廊）。</p>
 
   <div class="gallery">
     <div class="specimen">
       <div class="card-tech" style="width:280px;height:180px">
         <div class="card-body">
-          <strong style="font-size:15px">SYS://GRID-07</strong>
-          <p style="margin:8px 0 0;font-size:13px">链路稳定 · 信号强度 94%</p>
+          <strong style="font-size:15px" data-i18n="edge.tech.demo1.title">SYS://GRID-07</strong>
+          <p style="margin:8px 0 0;font-size:13px" data-i18n="edge.tech.demo1.body">链路稳定 · 信号强度 94%</p>
         </div>
       </div>
-      <div class="note"><b>280×180</b> — 纯文字 HUD 卡（基础用法）</div>
+      <div class="note" data-i18n-html="edge.tech.demo1.note"><b>280×180</b> — 纯文字 HUD 卡（基础用法）</div>
     </div>
 
     <div class="specimen">
       <div class="card-tech is-selected" style="width:400px;height:260px">
         <img alt="" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 280 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2306223a'/%3E%3Cstop offset='1' stop-color='%231a0f3c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='280' height='180' fill='url(%23g)'/%3E%3Cg stroke='%2322d3ee' stroke-width='2' fill='none' opacity='0.8'%3E%3Cpath d='M40 60 L 120 30 L 200 70 L 240 130 L 180 150 L 80 130 Z'/%3E%3Ccircle cx='120' cy='90' r='12'/%3E%3C/g%3E%3C/svg%3E">
         <div class="card-body">
-          <strong style="font-size:16px">NODE // DELTA</strong>
-          <p style="margin:8px 0 0;font-size:13.5px">选中态：霓虹光晕 + 剪影描边环；包角与切角在任何尺寸下都精确贴合（全 % 几何）。</p>
+          <strong style="font-size:16px" data-i18n="edge.tech.demo2.title">NODE // DELTA</strong>
+          <p style="margin:8px 0 0;font-size:13.5px" data-i18n="edge.tech.demo2.body">选中态：霓虹光晕 + 剪影描边环；包角与切角在任何尺寸下都精确贴合（全 % 几何）。</p>
         </div>
       </div>
-      <div class="note"><b>400×260</b> — <code>is-selected</code> + 内联 SVG 图（同样零外部资源）</div>
+      <div class="note" data-i18n-html="edge.tech.demo2.note"><b>400×260</b> — <code>is-selected</code> + 内联 SVG 图（同样零外部资源）</div>
     </div>
 
     <div class="specimen">
       <div class="card-tech" style="width:160px;height:100px">
         <div class="card-body" style="padding:10px 12px">
-          <strong style="font-size:13px">160×100</strong>
-          <p style="margin:4px 0 0;font-size:12px">切角与包角随尺寸缩放。</p>
+          <strong style="font-size:13px" data-i18n="edge.tech.demo3.title">160×100</strong>
+          <p style="margin:4px 0 0;font-size:12px" data-i18n="edge.tech.demo3.body">切角与包角随尺寸缩放。</p>
         </div>
       </div>
-      <div class="note"><b>160×100</b> — 小尺寸：% 几何自动适配</div>
+      <div class="note" data-i18n-html="edge.tech.demo3.note"><b>160×100</b> — 小尺寸：% 几何自动适配</div>
     </div>
   </div>
 
-  <p class="sub" style="margin:28px 0 0">六款剪影速览 —— 同一配方，只换 <code>--tech-clip</code> + 切深变量（<code>--f1</code>…<code>--f6</code> 修饰符，与编辑器「科技1~6」按钮一一对应）：</p>
+  <p class="sub" style="margin:28px 0 0" data-i18n-html="edge.tech.sixIntro">六款剪影速览 —— 同一配方，只换 <code>--tech-clip</code> + 切深变量（<code>--f1</code>…<code>--f6</code> 修饰符，与编辑器「科技1~6」按钮一一对应）：</p>
   <div class="gallery" style="padding-top:16px">
     <div class="specimen">
       <div class="card-tech card-tech--f1" style="width:150px;height:95px">
-        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技1</strong></div>
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px" data-i18n="edge.tech.f1.name">科技1</strong></div>
       </div>
-      <div class="note">左上缺角 + 右下大斜切</div>
+      <div class="note" data-i18n="edge.tech.f1.desc">左上缺角 + 右下大斜切</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--f2" style="width:150px;height:95px">
-        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技2</strong></div>
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px" data-i18n="edge.tech.f2.name">科技2</strong></div>
       </div>
-      <div class="note">左上大斜切 + 左下阶梯缺角</div>
+      <div class="note" data-i18n="edge.tech.f2.desc">左上大斜切 + 左下阶梯缺角</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--f3" style="width:150px;height:95px">
-        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技3</strong></div>
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px" data-i18n="edge.tech.f3.name">科技3</strong></div>
       </div>
-      <div class="note">左右双向平行大斜切</div>
+      <div class="note" data-i18n="edge.tech.f3.desc">左右双向平行大斜切</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--f4" style="width:150px;height:95px">
-        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4</strong></div>
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px" data-i18n="edge.tech.f4.name">科技4</strong></div>
       </div>
-      <div class="note">四角对称斜切（基础剪影）</div>
+      <div class="note" data-i18n="edge.tech.f4.desc">四角对称斜切（基础剪影）</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--f5" style="width:150px;height:95px">
-        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技5</strong></div>
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px" data-i18n="edge.tech.f5.name">科技5</strong></div>
       </div>
-      <div class="note">经典矩形 + 右下单边大切角</div>
+      <div class="note" data-i18n="edge.tech.f5.desc">经典矩形 + 右下单边大切角</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--f6" style="width:150px;height:95px">
-        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技6</strong></div>
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px" data-i18n="edge.tech.f6.name">科技6</strong></div>
       </div>
-      <div class="note">八边形战术卡槽 + 上下中缝缺口</div>
+      <div class="note" data-i18n="edge.tech.f6.desc">八边形战术卡槽 + 上下中缝缺口</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--plated" style="width:150px;height:95px">
         <div class="plate-body"></div>
-        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4 + 外板</strong></div>
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px" data-i18n="edge.tech.plated.name">科技4 + 外板</strong></div>
       </div>
-      <div class="note"><b>v10.8</b> — 选主题自动带外板（编辑器 16px，演示 <code>--plate:14px</code>）：剪影等比放大一圈 + 板边框/光晕，阴影跟随外板</div>
+      <div class="note" data-i18n-html="edge.tech.plated.note"><b>v10.8</b> — 选主题自动带外板（编辑器 16px，演示 <code>--plate:14px</code>）：剪影等比放大一圈 + 板边框/光晕，阴影跟随外板</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--plated" style="width:150px;height:95px">
         <div class="plate-body"></div>
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23334'/%3E%3Cstop offset='1' stop-color='%23633'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='100' fill='url(%23g)'/%3E%3C/svg%3E" alt="">
-        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4 + 外板 + 背景图</strong></div>
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px" data-i18n="edge.tech.platedImg.name">科技4 + 外板 + 背景图</strong></div>
       </div>
-      <div class="note"><b>v10.9</b> — 背景图外扩铺满外板（编辑器 <code>.card-bg-img</code> 同规则）：图片成为外背景本体，板边框/光晕让位</div>
+      <div class="note" data-i18n-html="edge.tech.platedImg.note"><b>v10.9</b> — 背景图外扩铺满外板（编辑器 <code>.card-bg-img</code> 同规则）：图片成为外背景本体，板边框/光晕让位</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--plated" style="width:150px;height:95px;--plate-gap:12px">
         <div class="plate-body"></div>
-        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">科技4 + 外板 + 边距</strong></div>
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px" data-i18n="edge.tech.platedGap.name">科技4 + 外板 + 边距</strong></div>
       </div>
-      <div class="note"><b>v10.10→v10.16</b> — 外板边距 <code>--plate-gap:12px</code>（编辑器「外板边距」滑块）：板再外推 12px，环带厚 14px、距卡 12px；间距带由板 border 环带留成真透明（页面底色透出）——真正空白，不再是衬边。v10.16 起环带改 border 环带（.plate-hole 实心层移除：用户反馈白色背景），卡片本体独立成 .plate-body 子层</div>
+      <div class="note" data-i18n-html="edge.tech.platedGap.note"><b>v10.10→v10.16</b> — 外板边距 <code>--plate-gap:12px</code>（编辑器「外板边距」滑块）：板再外推 12px，环带厚 14px、距卡 12px；间距带由板 border 环带留成真透明（页面底色透出）——真正空白，不再是衬边。v10.16 起环带改 border 环带（.plate-hole 实心层移除：用户反馈白色背景），卡片本体独立成 .plate-body 子层</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--plated img-band" style="width:150px;height:95px;--plate-gap:12px;--plate-img:calc(var(--plate) + var(--plate-gap))">
         <div class="plate-body"></div>
         <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23334'/%3E%3Cstop offset='1' stop-color='%23633'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='100' fill='url(%23g)'/%3E%3C/svg%3E" alt="">
-        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px">外板 + 边距 + 背景图</strong></div>
+        <div class="card-body" style="padding:8px 10px"><strong style="font-size:12px" data-i18n="edge.tech.imgBand.name">外板 + 边距 + 背景图</strong></div>
       </div>
-      <div class="note"><b>v10.13</b> — 图片始终盖满板盒（<code>--plate-img:calc(plate + gap)</code>）+ 环带 clip（<code>.img-band</code>）：图片只保留环带、与外板之间的可见边距恰好 = gap（12px），图片不再贴住板内沿；v10.11/v10.12 曾让图片回卡片边界 → 国旗卡上被国旗图盖死（用户反馈「增加边距的时候背景图片就不见了」）</div>
+      <div class="note" data-i18n-html="edge.tech.imgBand.note"><b>v10.13</b> — 图片始终盖满板盒（<code>--plate-img:calc(plate + gap)</code>）+ 环带 clip（<code>.img-band</code>）：图片只保留环带、与外板之间的可见边距恰好 = gap（12px），图片不再贴住板内沿；v10.11/v10.12 曾让图片回卡片边界 → 国旗卡上被国旗图盖死（用户反馈「增加边距的时候背景图片就不见了」）</div>
     </div>
   </div>
 
-  <h2>③ 标签级药丸 — 证明小尺寸可行（编辑器 caption 用浅齿变体）</h2>
+  <h2 data-i18n="edge.pills.title">③ 标签级药丸 — 证明小尺寸可行（编辑器 caption 用浅齿变体）</h2>
   <div class="pill-row">
     <div class="specimen">
       <div class="card-parchment card-parchment--soft" style="width:120px;height:28px">
-        <div class="card-body" style="padding:0 10px;font-size:12px;line-height:28px;text-align:center">羊皮纸标签</div>
+        <div class="card-body" style="padding:0 10px;font-size:12px;line-height:28px;text-align:center" data-i18n="edge.pills.parchment">羊皮纸标签</div>
       </div>
-      <div class="note"><b>120×28</b> — <code>--soft</code>（clipSoft 浅齿 ≤1.2%）</div>
+      <div class="note" data-i18n-html="edge.pills.parchmentNote"><b>120×28</b> — <code>--soft</code>（clipSoft 浅齿 ≤1.2%）</div>
     </div>
     <div class="specimen">
       <div class="card-parchment card-parchment--dark card-parchment--soft" style="width:120px;height:28px">
-        <div class="card-body" style="padding:0 10px;font-size:12px;line-height:28px;text-align:center">藏宝图标签</div>
+        <div class="card-body" style="padding:0 10px;font-size:12px;line-height:28px;text-align:center" data-i18n="edge.pills.treasure">藏宝图标签</div>
       </div>
-      <div class="note"><b>120×28</b> — <code>--dark --soft</code> 自由组合</div>
+      <div class="note" data-i18n-html="edge.pills.treasureNote"><b>120×28</b> — <code>--dark --soft</code> 自由组合</div>
     </div>
     <div class="specimen">
       <div class="card-tech card-tech--soft" style="width:120px;height:28px">
-        <div class="card-body" style="padding:0 10px;font-size:12px;line-height:28px;text-align:center">HUD 标签</div>
+        <div class="card-body" style="padding:0 10px;font-size:12px;line-height:28px;text-align:center" data-i18n="edge.pills.hud">HUD 标签</div>
       </div>
-      <div class="note"><b>120×28</b> — tech 软切角（3%）</div>
+      <div class="note" data-i18n-html="edge.pills.hudNote"><b>120×28</b> — tech 软切角（3%）</div>
     </div>
   </div>
 
-  <h2>④ 与编辑器（fluidcanvas-editor.html）的映射</h2>
-  <p class="sub" style="margin-bottom:8px">配方复制自编辑器的 <code>EDGE_STYLES</code>（v10.8），改配色时两处手动同步；褶皱纸/波浪/科技1~6 六款轮廓 = 两页共享同款 <code>#paper-edge-clip</code> / <code>#map-wave-clip</code> / <code>#hud-frame-1..6</code> SVG 定义（编辑器由 <code>hudOverlay()</code> 按 <code>HUD_CORNERS</code> 生成包角层，演示页用 <code>--tl-a</code>… 切深变量 + calc 表达同一几何；自动外板 v10.8 = 编辑器 ::before 改画板 + .card-tint 子层复刻剪影，演示页 <code>--plated</code> 用矩形近似）。</p>
+  <h2 data-i18n="edge.map.title">④ 与编辑器（fluidcanvas-editor.html）的映射</h2>
+  <p class="sub" style="margin-bottom:8px" data-i18n-html="edge.map.intro">配方复制自编辑器的 <code>EDGE_STYLES</code>（v10.8），改配色时两处手动同步；褶皱纸/波浪/科技1~6 六款轮廓 = 两页共享同款 <code>#paper-edge-clip</code> / <code>#map-wave-clip</code> / <code>#hud-frame-1..6</code> SVG 定义（编辑器由 <code>hudOverlay()</code> 按 <code>HUD_CORNERS</code> 生成包角层，演示页用 <code>--tl-a</code>… 切深变量 + calc 表达同一几何；自动外板 v10.8 = 编辑器 ::before 改画板 + .card-tint 子层复刻剪影，演示页 <code>--plated</code> 用矩形近似）。</p>
   <table>
-    <tr><th>编辑器 EDGE_STYLES 字段</th><th>演示页对应规则</th></tr>
-    <tr><td><code>clip</code></td><td><code>--pch-clip</code> / <code>--tech-clip</code>（<code>::before</code> 与 <code>::after</code> 的 <code>clip-path</code>；宿主不剪）</td></tr>
-    <tr><td><code>cardLayers</code></td><td><code>::before</code> 的 <code>background-image</code> 层栈（底色渐变 → 斑驳/网格 → 噪点瓦片）</td></tr>
-    <tr><td><code>cardOverlay</code></td><td><code>::after</code> 的 <code>background-image</code> 层栈（烧边暗角 / L 型包角 + 扫描线）</td></tr>
-    <tr><td><code>labelLayers</code></td><td>演示页药丸仍走完整 <code>::before</code> 剪层（input 标签无伪元素，编辑器里是简化层栈直接画在标签上）</td></tr>
-    <tr><td><code>clipSoft</code></td><td><code>--soft</code> 修饰符（浅齿/软切角多边形）</td></tr>
-    <tr><td><code>tint / border / radius / glow / color</code></td><td>演示页 <code>--plated</code> 用 tint 渐变 + 边框近似（编辑器保留给标签内联配方与自动外板；组件化时建议弃用）</td></tr>
-    <tr><td>选中环（编辑器 filter 选中态）</td><td><code>.is-selected</code> 修饰符（四方向零模糊 drop-shadow trace 剪影描边）</td></tr>
-    <tr><td>编辑器 CSS 变量（<code>--card-clip/--card-layers/--card-overlay/--card-tint-base</code>）</td><td>演示页直接把配方写进规则；组件化时保留变量注入方式更灵活（主题可运行时切换）</td></tr>
+    <tr><th data-i18n="edge.map.thEditor">编辑器 EDGE_STYLES 字段</th><th data-i18n="edge.map.thDemo">演示页对应规则</th></tr>
+    <tr><td><code data-i18n="edge.map.r1.editor">clip</code></td><td data-i18n-html="edge.map.r1.demo"><code>--pch-clip</code> / <code>--tech-clip</code>（<code>::before</code> 与 <code>::after</code> 的 <code>clip-path</code>；宿主不剪）</td></tr>
+    <tr><td><code data-i18n="edge.map.r2.editor">cardLayers</code></td><td data-i18n-html="edge.map.r2.demo"><code>::before</code> 的 <code>background-image</code> 层栈（底色渐变 → 斑驳/网格 → 噪点瓦片）</td></tr>
+    <tr><td><code data-i18n="edge.map.r3.editor">cardOverlay</code></td><td data-i18n-html="edge.map.r3.demo"><code>::after</code> 的 <code>background-image</code> 层栈（烧边暗角 / L 型包角 + 扫描线）</td></tr>
+    <tr><td><code data-i18n="edge.map.r4.editor">labelLayers</code></td><td data-i18n-html="edge.map.r4.demo">演示页药丸仍走完整 <code>::before</code> 剪层（input 标签无伪元素，编辑器里是简化层栈直接画在标签上）</td></tr>
+    <tr><td><code data-i18n="edge.map.r5.editor">clipSoft</code></td><td data-i18n-html="edge.map.r5.demo"><code>--soft</code> 修饰符（浅齿/软切角多边形）</td></tr>
+    <tr><td><code data-i18n="edge.map.r6.editor">tint / border / radius / glow / color</code></td><td data-i18n-html="edge.map.r6.demo">演示页 <code>--plated</code> 用 tint 渐变 + 边框近似（编辑器保留给标签内联配方与自动外板；组件化时建议弃用）</td></tr>
+    <tr><td data-i18n="edge.map.r7.editor">选中环（编辑器 filter 选中态）</td><td data-i18n-html="edge.map.r7.demo"><code>.is-selected</code> 修饰符（四方向零模糊 drop-shadow trace 剪影描边）</td></tr>
+    <tr><td data-i18n-html="edge.map.r8.editor">编辑器 CSS 变量（<code>--card-clip/--card-layers/--card-overlay/--card-tint-base</code>）</td><td data-i18n="edge.map.r8.demo">演示页直接把配方写进规则；组件化时保留变量注入方式更灵活（主题可运行时切换）</td></tr>
   </table>
 
-  <p class="foot">
+  <p class="foot" data-i18n="edge.foot">
     FluidCanvas v10.8 配套组件演示 · 所有效果由纯 CSS 与内联 SVG 实现，无外部图片、无字体依赖。
     提取到 Vue / React：复制一个类 + 一个修饰符（或把旋钮映射为组件 props），其余规则原样可用。
   </p>
 
 </div>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/edge.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 </body>
 </html>

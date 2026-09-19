@@ -41,7 +41,9 @@
     key = 'en-PH';
   }
   // Malaysia: MY timezones, Malay language, or en-MY locale
-  if (tz.startsWith('Asia/Kuala_Lumpur') || tz.startsWith('Asia/Kuching') || loc.startsWith('ms') || loc === 'en-my') {
+  // v0.2.54.0 修复：此处独立 if 会让 else-if 长链挂在它后面——Singapore/Philippines 命中后
+  // 链继续往下跑，China 分支用 loc='zh-cn' 把 key 覆盖回 zh-CN → usd（真实 zh 语言新加坡用户被多收）
+  else if (tz.startsWith('Asia/Kuala_Lumpur') || tz.startsWith('Asia/Kuching') || loc.startsWith('ms') || loc === 'en-my') {
     key = 'ms-MY';
   }
   // Taiwan
@@ -293,7 +295,9 @@
     key = 'ko-KR';
   }
   // China
-  else if (tz.startsWith('Asia/Shanghai') || tz.startsWith('Asia/Beijing') || tz.startsWith('Asia/Chongqing') || tz.startsWith('Asia/Harbin') || tz.startsWith('Asia/Urumqi') || (loc.startsWith('zh') && loc.indexOf('cn') !== -1)) {
+  // v0.2.54.1 修复：zh-CN 语言 + 欧洲时区不再被纯语言条件截胡（与 v0.2.54.0 新加坡修复同构——
+  // 中文浏览器在德国的用户被收 usd 而非 eur）；欧洲时区留给下方 EU_TZ 兜底/已命中的非欧分支
+  else if (tz.startsWith('Asia/Shanghai') || tz.startsWith('Asia/Beijing') || tz.startsWith('Asia/Chongqing') || tz.startsWith('Asia/Harbin') || tz.startsWith('Asia/Urumqi') || ((loc.startsWith('zh') && loc.indexOf('cn') !== -1) && !tz.startsWith('Europe/'))) {
     key = 'zh-CN';
   }
   // Canada: timezones or en-CA locale

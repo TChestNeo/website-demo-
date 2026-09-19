@@ -111,7 +111,7 @@ async function main() {
   const cdpPort = 9400 + Math.floor(Math.random() * 300);
   const profile = path.join(os.tmpdir(), `premium-multi-profile-${process.pid}`);
   const chrome = spawn(CHROME, [
-    '--headless=new', '--disable-gpu', '--disable-extensions',
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--disable-extensions',
     `--remote-debugging-port=${cdpPort}`, `--user-data-dir=${profile}`,
     '--no-first-run', '--no-default-browser-check', 'about:blank'
   ], { stdio: 'ignore' });
@@ -162,7 +162,8 @@ async function main() {
       ok(s.n + ' 折合每月提示模板命中', hint.indexOf('折合每月') === 0 && hint.indexOf(s.ym) !== -1, hint);
     }
     // 静态标签清扫：5 个 data-plan-once 按钮无论显隐 textContent 均为 每年支付（guest 只藏不写价）
-    const onceLabels = await client.evalJs(`(() => { const els = document.querySelectorAll('[data-plan-once]'); return { n: els.length, bad: [...els].filter((b) => b.textContent !== '每年支付').map((b) => b.textContent) }; })()`);
+    // v0.2.54.0 i18n：期望值 = 当前语言字典值（ms-MY/th-TH 场景页面渲染马来/泰语，硬编码中文断言会破）
+    const onceLabels = await client.evalJs(`(() => { const exp = ((window.MN_I18N && MN_I18N.t('premium.once.label')) || '每年支付'); const els = document.querySelectorAll('[data-plan-once]'); return { n: els.length, exp: exp, bad: [...els].filter((b) => b.textContent !== exp).map((b) => b.textContent) }; })()`);
     ok('5 个每年支付按钮静态标签（无单次残留）', onceLabels.n === 5 && onceLabels.bad.length === 0, JSON.stringify(onceLabels));
     // v0.2.13.1 回归：myr plan-note 真实方式 = 银行卡/GrabPay（status 回写或回退清单）——FPX/支付宝账户层不可用，
     // 页面不得再声称（曾致 MYR 每年支付 checkout 400 全死的活线 bug 类）
@@ -171,9 +172,10 @@ async function main() {
     await client.navigate(URL);
     await client.waitFor(`window.SlatiPrice && window.SlatiPrice.currency === 'myr'`, 15000, 'v0.2.13.1 回归 myr');
     await client.waitFor(`document.getElementById('planNote').innerText.indexOf('GrabPay') !== -1`, 10000, 'plan-note 含 GrabPay');
-    const note = await client.evalJs(`document.getElementById('planNote').innerText`);
-    ok('v0.2.13.1 plan-note 含 银行卡/GrabPay', note.indexOf('银行卡') !== -1 && note.indexOf('GrabPay') !== -1, note.slice(0, 120));
-    ok('v0.2.13.1 plan-note 无 FPX/支付宝 口吻（账户不可用不再声称）', note.indexOf('FPX') === -1 && note.indexOf('支付宝') === -1, note.slice(0, 120));
+    const note = await client.evalJs(`(() => { const t = document.getElementById('planNote').innerText; const card = ((window.MN_I18N && MN_I18N.t('premium.pay.card')) || '银行卡'); return { txt: t, card: card, hasCard: t.indexOf(card) !== -1, hasGP: t.indexOf('GrabPay') !== -1 }; })()`);
+    // v0.2.54.0 i18n：期望 银行卡 = 当前语言字典值（plan-note 由 T() 渲染，ms-MY 场景为马来语 Kad Bank）
+    ok('v0.2.13.1 plan-note 含 ' + note.card + '/GrabPay', note.hasCard && note.hasGP, note.txt.slice(0, 120));
+    ok('v0.2.13.1 plan-note 无 FPX/支付宝 口吻（账户不可用不再声称）', note.txt.indexOf('FPX') === -1 && note.txt.indexOf('支付宝') === -1, note.txt.slice(0, 120));
     // [data-slati-price] 角标 autofill（community-hub，pricing.js 尾段）
     for (const s of [
       { n: 'hub en-GB 角标 = £9.99', loc: 'en-GB', tz: 'Europe/London', want: '£9.99' },

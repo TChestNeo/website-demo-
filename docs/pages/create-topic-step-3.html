@@ -2160,21 +2160,21 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <div style="position:fixed;top:0;left:0;right:0;padding:var(--space-sm) var(--space-md);z-index:50;display:flex;align-items:center;gap:12px">
   <img src="../assets/image/M.NationWorld logo.png" alt="M.NationWorld" style="height:24px;width:auto">
   <span style="font-weight:700">M.NationWorld</span>
-  <a href="../index.html" style="margin-left:auto;font-size:var(--fs-label-sm);color:var(--color-outline)">Cancel</a>
+  <a href="../index.html" style="margin-left:auto;font-size:var(--fs-label-sm);color:var(--color-outline)" data-i18n="cts3.topbar.cancel">Cancel</a>
 </div>
 
 <div class="topic-wizard">
   <div class="progress-steps" style="justify-content:center;margin-bottom:var(--space-lg)">
-    <div class="progress-step completed"><span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span>Info</span></div>
+    <div class="progress-step completed"><span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span data-i18n="cts3.steps.info">Info</span></div>
     <div class="progress-connector done"></div>
-    <div class="progress-step completed"><span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span>Branding</span></div>
+    <div class="progress-step completed"><span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span data-i18n="cts3.steps.branding">Branding</span></div>
     <div class="progress-connector done"></div>
-    <div class="progress-step active"><span class="dot">3</span><span>Review</span></div>
+    <div class="progress-step active"><span class="dot">3</span><span data-i18n="cts3.steps.review">Review</span></div>
   </div>
 
   <div class="card tilt-container" style="padding:var(--space-lg)">
-    <h2 class="headline-md" style="margin-bottom:4px">Review & Launch</h2>
-    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">Step 3: Confirm your topic</p>
+    <h2 class="headline-md" style="margin-bottom:4px" data-i18n="cts3.hero.title">Review & Launch</h2>
+    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)" data-i18n="cts3.hero.subtitle">Step 3: Confirm your topic</p>
 
     <!-- Preview card -->
     <div class="card" style="margin-bottom:var(--space-md)" id="previewCard"></div>
@@ -2185,14 +2185,14 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div class="form-group" style="margin-top:var(--space-md)">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
         <input type="checkbox" id="termsCheck" style="width:18px;height:18px">
-        <span class="label-md" style="color:var(--color-on-surface-variant);margin:0">I agree to the M.NationWorld Community Guidelines</span>
+        <span class="label-md" style="color:var(--color-on-surface-variant);margin:0" data-i18n="cts3.terms.agree">I agree to the M.NationWorld Community Guidelines</span>
       </label>
     </div>
 
     <div class="flex-between" style="margin-top:var(--space-lg)">
-      <a href="create-topic-step-2.html" class="btn btn-ghost"><span class="material-symbols-outlined">arrow_back</span> Previous</a>
+      <a href="create-topic-step-2.html" class="btn btn-ghost"><span class="material-symbols-outlined">arrow_back</span> <span data-i18n="cts3.nav.prev">Previous</span></a>
       <button class="btn btn-primary btn-lg" id="launchBtn" onclick="handleLaunch()">
-        Launch Topic
+        <span data-i18n="cts3.nav.launch">Launch Topic</span>
         <span class="material-symbols-outlined">rocket_launch</span>
       </button>
     </div>
@@ -2204,6 +2204,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/liquid-glass.js"></script>
 <script src="../assets/js/storage.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性翻译助手——本 script 先于 i18n.js 执行（T 恒空），调用点落英文原文兜底
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   var draft;
   try {
     draft = JSON.parse(localStorage.getItem('slati_topic_draft') || '{}');
@@ -2216,45 +2218,52 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var catIcons = { governance: 'account_balance', art: 'palette', tech: 'memory', social: 'groups', other: 'more_horiz' };
     var catIcon = catIcons[draft.category] || 'forum';
 
-    // Preview card
-    document.getElementById('previewCard').innerHTML =
-      '<div class="flex-center gap-sm" style="margin-bottom:8px">' +
-        '<div style="width:40px;height:40px;border-radius:50%;background:' + (draft.accentColor || '#4648d4') + ';color:white;display:flex;align-items:center;justify-content:center;font-size:20px">' +
-          '<span class="material-symbols-outlined" style="font-size:20px">' + catIcon + '</span>' +
+    // v0.2.54.0 i18n：预览/摘要抽成 renderReview——本 script 先于 i18n.js 执行（T 恒空落英文原文），
+    // 由 body 尾部三件套 apply 后的重渲钩子（window.__mnI18nRerender）再按当前语言落一次。
+    function renderReview() {
+      // Preview card
+      document.getElementById('previewCard').innerHTML =
+        '<div class="flex-center gap-sm" style="margin-bottom:8px">' +
+          '<div style="width:40px;height:40px;border-radius:50%;background:' + (draft.accentColor || '#4648d4') + ';color:white;display:flex;align-items:center;justify-content:center;font-size:20px">' +
+            '<span class="material-symbols-outlined" style="font-size:20px">' + catIcon + '</span>' +
+          '</div>' +
+          '<div>' +
+            '<div style="font-weight:700">r/' + draft.name.replace(/\s+/g, '') + '</div>' +
+            '<div class="label-sm" style="color:var(--color-outline)">' + (draft.visibility === 'public' ? (T('cts3.preview.public') || '🌐 Public') : (T('cts3.preview.private') || '🔒 Private')) + '</div>' +
+          '</div>' +
         '</div>' +
-        '<div>' +
-          '<div style="font-weight:700">r/' + draft.name.replace(/\s+/g, '') + '</div>' +
-          '<div class="label-sm" style="color:var(--color-outline)">' + (draft.visibility === 'public' ? '🌐 Public' : '🔒 Private') + '</div>' +
-        '</div>' +
-      '</div>' +
-      '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + (draft.description || '') + '</p>';
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + (draft.description || '') + '</p>';
 
-    // Summary
-    document.getElementById('summarySection').innerHTML =
-      '<div style="display:flex;align-items:center;gap:8px">' +
-        '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:20px">category</span>' +
-        '<span class="label-md" style="color:var(--color-outline)">Category:</span>' +
-        '<span style="font-weight:600">' + (draft.category || '') + '</span>' +
-      '</div>' +
-      '<div style="display:flex;align-items:center;gap:8px">' +
-        '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:20px">visibility</span>' +
-        '<span class="label-md" style="color:var(--color-outline)">Visibility:</span>' +
-        '<span style="font-weight:600">' + (draft.visibility === 'public' ? 'Public' : 'Private') + '</span>' +
-      '</div>' +
-      '<div style="display:flex;align-items:center;gap:8px">' +
-        '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:20px">palette</span>' +
-        '<span class="label-md" style="color:var(--color-outline)">Accent:</span>' +
-        '<span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:' + (draft.accentColor || '#4648d4') + ';vertical-align:middle"></span>' +
-      '</div>';
+      // Summary
+      document.getElementById('summarySection').innerHTML =
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:20px">category</span>' +
+          '<span class="label-md" style="color:var(--color-outline)">' + (T('cts3.summary.category') || 'Category:') + '</span>' +
+          '<span style="font-weight:600">' + (draft.category || '') + '</span>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:20px">visibility</span>' +
+          '<span class="label-md" style="color:var(--color-outline)">' + (T('cts3.summary.visibility') || 'Visibility:') + '</span>' +
+          '<span style="font-weight:600">' + (draft.visibility === 'public' ? (T('cts3.visibility.public') || 'Public') : (T('cts3.visibility.private') || 'Private')) + '</span>' +
+        '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:20px">palette</span>' +
+          '<span class="label-md" style="color:var(--color-outline)">' + (T('cts3.summary.accent') || 'Accent:') + '</span>' +
+          '<span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:' + (draft.accentColor || '#4648d4') + ';vertical-align:middle"></span>' +
+        '</div>';
+    }
+    renderReview();
+    var __mnPrevRerender = window.__mnI18nRerender || function () {};
+    window.__mnI18nRerender = function () { __mnPrevRerender(); renderReview(); };
   }
 
   function handleLaunch() {
     if (!document.getElementById('termsCheck').checked) {
-      alert('Please agree to the Community Guidelines before launching.');
+      alert(T('cts3.err.agree') || 'Please agree to the Community Guidelines before launching.');
       return;
     }
     var btn = document.getElementById('launchBtn');
-    btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px"></span> Processing Launch...';
+    btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px"></span> ' + (T('cts3.launching') || 'Processing Launch...');
     btn.disabled = true;
 
     SlatiDB.saveTopic({
@@ -2267,7 +2276,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     localStorage.removeItem('slati_topic_draft');
 
     setTimeout(function () {
-      btn.innerHTML = 'Topic Launched! <span class="material-symbols-outlined">check</span>';
+      btn.innerHTML = (T('cts3.launched') || 'Topic Launched!') + ' <span class="material-symbols-outlined">check</span>';
       btn.style.background = '#22c55e';
       setTimeout(function () { window.location.href = 'community-hub.html'; }, 1000);
     }, 1500);
@@ -2277,5 +2286,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/create-topic-step-3.i18n.js"></script>
+<script>MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); }); MN_I18N.apply();</script>
 </body>
 </html>

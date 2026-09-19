@@ -2250,18 +2250,18 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div class="progress-steps" style="flex-direction:column;align-items:flex-start;gap:12px">
       <div class="progress-step completed">
         <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>
-        <span>Create account</span>
+        <span data-i18n="oc.step.create">Create account</span>
       </div>
       <div class="progress-connector" style="width:2px;height:16px;margin:0 0 0 11px;background:var(--color-primary)"></div>
       <div class="progress-step completed">
         <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>
-        <span>Identity Setup</span>
+        <span data-i18n="oc.step.identity">Identity Setup</span>
       </div>
       <div class="progress-connector" style="width:2px;height:16px;margin:0 0 0 11px;background:var(--color-primary)"></div>
       <!-- 2026-09-01 用户「打勾改成蓝色」：终页三步皆已完成——active 误标 + 绿勾 → completed 走共享类规则（品牌蓝勾） -->
       <div class="progress-step completed">
         <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>
-        <span>Complete</span>
+        <span data-i18n="oc.step.complete">Complete</span>
       </div>
     </div>
   </div>
@@ -2275,19 +2275,19 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       </div>
 
       <h1 class="display-lg text-gradient" style="margin-bottom:8px" id="greeting">All set, Sovereign!</h1>
-      <p class="body-lg" style="color:rgba(255,255,255,0.6);margin-bottom:var(--space-sm)">
+      <p class="body-lg" style="color:rgba(255,255,255,0.6);margin-bottom:var(--space-sm)" data-i18n="oc.sub">
         Your identity has been verified and your citizen profile is now live.
       </p>
 
       <!-- Status badge -->
       <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 20px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:var(--radius-full);margin-bottom:var(--space-lg)">
         <span class="status-dot status-dot-green" style="animation:pulse-glow 2s infinite"></span>
-        <span class="label-md" style="color:#22c55e">Identity Cluster Online</span>
+        <span class="label-md" style="color:#22c55e" data-i18n="oc.online">Identity Cluster Online</span>
       </div>
 
       <br>
       <a href="transitioning.html" class="btn btn-primary btn-lg animate-pulse-glow">
-        Enter Console
+        <span data-i18n="oc.enterConsole">Enter Console</span>
         <span class="material-symbols-outlined">arrow_forward</span>
       </a>
     </div>
@@ -2299,9 +2299,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/liquid-glass.js"></script>
 <script src="../assets/js/storage.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   var user = SlatiDB.getUser();
   if (user && user.displayName) {
-    document.getElementById('greeting').textContent = 'All set, ' + user.displayName + '!';
+    document.getElementById('greeting').textContent = (T('oc.greetingPre') || 'All set, ') + user.displayName + '!';
   }
   SlatiDB.setOnboardingStep(3);
 </script>
@@ -2309,5 +2311,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/onboarding-complete.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 </body>
 </html>

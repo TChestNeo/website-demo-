@@ -2195,21 +2195,21 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div style="max-width:800px;margin:0 auto">
       <!-- Header -->
       <div style="text-align:center;margin-bottom:var(--space-lg)">
-        <h1 class="headline-lg" style="margin-bottom:4px">National Incorporation Registry</h1>
-        <p class="body-md" style="color:var(--color-on-surface-variant)">Step 01 — Identity</p>
+        <h1 class="headline-lg" style="margin-bottom:4px" data-i18n="reg1.title">National Incorporation Registry</h1>
+        <p class="body-md" style="color:var(--color-on-surface-variant)" data-i18n="reg1.subtitle">Step 01 — Identity</p>
 
         <!-- Progress -->
         <div class="progress-steps" style="justify-content:center;margin-top:var(--space-md)">
           <div class="progress-step active">
-            <span class="dot">1</span><span>Identity</span>
+            <span class="dot">1</span><span data-i18n="reg1.step.identity">Identity</span>
           </div>
           <div class="progress-connector"></div>
           <div class="progress-step pending">
-            <span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">2</span><span style="color:var(--color-outline)">Geopolitics</span>
+            <span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">2</span><span style="color:var(--color-outline)" data-i18n="reg1.step.geopolitics">Geopolitics</span>
           </div>
           <div class="progress-connector"></div>
           <div class="progress-step pending">
-            <span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">3</span><span style="color:var(--color-outline)">Macro Metrics</span>
+            <span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">3</span><span style="color:var(--color-outline)" data-i18n="reg1.step.metrics">Macro Metrics</span>
           </div>
         </div>
       </div>
@@ -2217,15 +2217,15 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       <!-- Form card -->
       <div class="card tilt-container registry-card" style="padding:var(--space-lg)">
         <div class="form-group">
-          <label class="form-label">Official Nation Name</label>
-          <input type="text" class="input-glass" id="nationName" placeholder="e.g. The Republic of Caledonia">
+          <label class="form-label" data-i18n="reg1.label.name">Official Nation Name</label>
+          <input type="text" class="input-glass" id="nationName" placeholder="e.g. The Republic of Caledonia" data-i18n-placeholder="reg1.ph.name">
         </div>
         <div class="form-group">
-          <label class="form-label">Common Moniker</label>
-          <input type="text" class="input-glass" id="nationMoniker" placeholder="e.g. Caledonia">
+          <label class="form-label" data-i18n="reg1.label.moniker">Common Moniker</label>
+          <input type="text" class="input-glass" id="nationMoniker" placeholder="e.g. Caledonia" data-i18n-placeholder="reg1.ph.moniker">
         </div>
         <div class="form-group">
-          <label class="form-label">Sovereign Entity Classification</label>
+          <label class="form-label" data-i18n="reg1.label.classification">Sovereign Entity Classification</label>
           <div style="position:relative" id="classDropdown">
             <div class="input-glass flex-between" onclick="toggleDropdown()" style="cursor:pointer" id="classSelector">
               <span id="selectedClass" style="color:var(--color-outline)">Select classification</span>
@@ -2242,9 +2242,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         </div>
 
         <div class="flex-between" style="margin-top:var(--space-lg)">
-          <a href="create-world.html" class="btn btn-ghost">Cancel</a>
+          <a href="create-world.html" class="btn btn-ghost" data-i18n="reg1.cancel">Cancel</a>
           <button class="btn btn-primary btn-lg" onclick="handleNext()">
-            Next Step: Geopolitics
+            <span data-i18n="reg1.next">Next Step: Geopolitics</span>
             <span class="material-symbols-outlined">arrow_forward</span>
           </button>
         </div>
@@ -2253,7 +2253,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
       <p style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
         <span class="status-dot status-dot-green" style="display:inline-block;vertical-align:middle"></span>
-        Sovereign Validation Node: Online
+        <span data-i18n="reg1.status">Sovereign Validation Node: Online</span>
       </p>
     </div>
   </main>
@@ -2266,6 +2266,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/settings-modal.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   var selectedClass = '';
   var dropdownOpen = false;
 
@@ -2305,9 +2308,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   function handleNext() {
     var name = document.getElementById('nationName').value.trim();
     var moniker = document.getElementById('nationMoniker').value.trim();
-    if (!name) { showError('Please enter an official nation name'); return; }
-    if (!moniker) { showError('Please enter a common moniker'); return; }
-    if (!selectedClass) { showError('Please select a sovereign classification'); return; }
+    if (!name) { showError(T('reg1.err.name') || 'Please enter an official nation name'); return; }
+    if (!moniker) { showError(T('reg1.err.moniker') || 'Please enter a common moniker'); return; }
+    if (!selectedClass) { showError(T('reg1.err.classification') || 'Please select a sovereign classification'); return; }
 
     SlatiDB.saveNationDraft(1, { name: name, moniker: moniker, classification: selectedClass });
     SlatiDB.setRegistryStep(2);
@@ -2319,10 +2322,29 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     el.textContent = msg; el.style.display = '';
     setTimeout(function () { el.style.display = 'none'; }, 3000);
   }
+
+  // v0.2.54.0 i18n：重渲钩子——#selectedClass 被 selectClass() 按选项值改写，不挂 data-i18n；
+  // 仅在未选择分类时按当前语言写默认占位文案（三件套 apply 后及语言切换时由 onChange 调用；
+  // 已选分类=选项值豁免不译恒保持原值，草稿恢复的分类不会被覆写）。
+  window.__reg1Rerender = function () {
+    if (!selectedClass) {
+      var el = document.getElementById('selectedClass');
+      if (el) el.textContent = T('reg1.ph.classification') || 'Select classification';
+    }
+  };
 </script>
 <script src="../assets/js/transitions.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
+</script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/registry-step-1.i18n.js"></script>
+<script>
+  MN_I18N.onChange(function () { if (window.__reg1Rerender) window.__reg1Rerender(); });
+  MN_I18N.apply();
 </script>
 </body>
 </html>

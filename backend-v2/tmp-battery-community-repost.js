@@ -209,7 +209,7 @@ async function main() {
   if (!chromePath) throw new Error('找不到 Chrome');
 
   const chrome = spawn(chromePath, [
-    '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--window-size=1280,900', '--remote-debugging-port=' + CDP_PORT,
     '--user-data-dir=' + USER_DATA, 'about:blank'
   ], { stdio: 'ignore' });
@@ -290,10 +290,11 @@ async function main() {
       " return { gone: gone ? gone.textContent : null, hasEmb: !!c.querySelector('.repost-embedded') }; })()");
     check('H4 占位卡「原帖已删除或不可见」+ 无嵌入盒', h4.gone === '原帖已删除或不可见' && !h4.hasEmb, h4.gone);
 
-    // H5 普通卡无转发痕迹
+    // H5 普通卡无转发痕迹（徽章期望值=当前语言字典值——i18n 机制断言）
     const h5 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id=\"PST-000101\"]');" +
-      " return { badge: c.querySelector('.badge').textContent, emb: c.querySelectorAll('.repost-embedded, .repost-embedded-gone').length }; })()");
-    check('H5 普通卡 Citizen Post 徽章 + 零转发痕迹', h5.badge === 'Citizen Post' && h5.emb === 0, JSON.stringify(h5));
+      " var exp = (window.MN_I18N && MN_I18N.t('hub.badge.citizenPost')) || 'Citizen Post';" +
+      " return { badge: c.querySelector('.badge').textContent, exp: exp, emb: c.querySelectorAll('.repost-embedded, .repost-embedded-gone').length }; })()");
+    check('H5 普通卡 Citizen Post 徽章 + 零转发痕迹', h5.badge === h5.exp && h5.emb === 0, JSON.stringify(h5));
 
     // H6 转发卡整卡点击 → 真导航到转发帖页
     await t.evalJs("document.querySelector('[data-cloud-id=\"PST-000102\"] h4').click()");

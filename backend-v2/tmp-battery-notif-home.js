@@ -119,11 +119,11 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
   const count = (s, n) => s.split(n).length - 1;
 
   console.log('═══ F0 双版本 + changelog ═══');
-  ok('F0-1 site-config 双版本 v0.2.53.3 / v10.28.36.1 + changelog 标记',
-    count(sconf, "window.MN_SITE_VERSION = 'v0.2.53.3';") === 1 &&
+  ok('F0-1 site-config 双版本 v0.2.54.0 / v10.28.36.1 + changelog 标记',
+    count(sconf, "window.MN_SITE_VERSION = 'v0.2.54.1';") === 1 &&
     count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.1';") === 1 &&
     sconf.indexOf('通知铃铛聚合') !== -1 && sconf.indexOf('文章查看模式点赞/收藏操作条') !== -1,
-    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.53.3';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.1';"));
+    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.54.1';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.1';"));
 
   console.log('═══ F1 index.html 铃铛/灵动岛 ═══');
   ok('F1-1 铃铛按钮+红点徽章（唯一性 + search-capsule position:relative + 徽章在铃铛后）',
@@ -227,7 +227,7 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
     process.env.LOCALAPPDATA + '/Google/Chrome/Application/chrome.exe'
   ]) if (fs.existsSync(p)) { chromePath = p; break; }
   const chrome = spawn(chromePath, [
-    '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--window-size=1280,900', '--remote-debugging-port=' + CDP_PORT,
     '--user-data-dir=' + USER_DATA, 'about:blank'
   ], { stdio: 'ignore' });

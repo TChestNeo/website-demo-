@@ -2378,7 +2378,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <div class="glass-container tilt-container" style="position:relative;z-index:1">
   <div class="mono-badge animate-fade-in" style="margin-bottom:var(--space-md)">
     <span class="material-symbols-outlined" style="font-size:14px">check_circle</span>
-    WORLD ENTRY ARCHIVED
+    <span data-i18n="wcr.badge">WORLD ENTRY ARCHIVED</span>
   </div>
 
   <h1 class="display-lg" style="font-size:36px;margin-bottom:12px;text-shadow:0 0 40px rgba(70,72,212,0.4)" id="worldTitle">
@@ -2391,23 +2391,23 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
   <div id="processingIndicator" style="margin-bottom:var(--space-md)">
     <div class="spinner" style="margin:0 auto var(--space-sm)"></div>
-    <p class="label-sm" style="color:rgba(255,255,255,0.35)">Finalizing archive entry...</p>
+    <p class="label-sm" style="color:rgba(255,255,255,0.35)" data-i18n="wcr.processing.init">Finalizing archive entry...</p>
   </div>
 
   <div style="display:flex;gap:var(--space-sm);justify-content:center;flex-wrap:wrap">
     <a href="../index.html" class="btn btn-primary btn-lg animate-pulse-glow">
-      前往控制台
+      <span data-i18n="wcr.cta.goDashboard">前往控制台</span>
       <span class="material-symbols-outlined">arrow_forward</span>
     </a>
-    <a href="create-world.html" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8)">
+    <a href="create-world.html" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8)" data-i18n="wcr.cta.createAnother">
       再创建一个
     </a>
   </div>
 
   <p style="margin-top:var(--space-lg);font-size:var(--fs-label-sm);color:rgba(255,255,255,0.25)">
-    <a href="../index.html" style="color:rgba(255,255,255,0.3)">Bypass to Dashboard</a>
+    <a href="../index.html" style="color:rgba(255,255,255,0.3)" data-i18n="wcr.footer.bypass">Bypass to Dashboard</a>
     &nbsp;·&nbsp;
-    <span>Archive Protocol v1.0</span>
+    <span data-i18n="wcr.footer.protocol">Archive Protocol v1.0</span>
   </p>
 </div>
 
@@ -2416,18 +2416,31 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/liquid-glass.js"></script>
 <script src="../assets/js/storage.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T(key)——本脚本先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   // 读取最近创建的世界
   var worlds = SlatiDB.getWorlds();
   var world = worlds[worlds.length - 1];
 
-  if (world && world.name) {
-    var loreBrief = world.lore ? String(world.lore).slice(0, 60) : '';
-    document.getElementById('worldTitle').textContent = (world.emoji ? world.emoji + ' ' : '') + world.name + ' — 已建立';
-    document.getElementById('worldDesc').textContent =
-      '类型：' + world.typeLabel +
-      (loreBrief ? ' · ' + loreBrief + (String(world.lore).length > 60 ? '…' : '') : '') +
-      ' · 已收录进 M.NationWorld 世界档案。';
+  // worldTitle/worldDesc 是 JS 改写元素，不挂 data-i18n（尾部 apply 会用静态译文覆盖 JS 写入值）；
+  // 全部走惰性 T()——世界名/类型名/emoji/lore 等记录数据不译，无草稿分支也按当前语言渲染
+  function renderWorld() {
+    var titleEl = document.getElementById('worldTitle');
+    var descEl = document.getElementById('worldDesc');
+    if (world && world.name) {
+      var loreBrief = world.lore ? String(world.lore).slice(0, 60) : '';
+      titleEl.textContent = (world.emoji ? world.emoji + ' ' : '') + world.name + (T('wcr.js.established') || ' — 已建立');
+      descEl.textContent =
+        (T('wcr.js.type') || '类型：') + world.typeLabel +
+        (loreBrief ? ' · ' + loreBrief + (String(world.lore).length > 60 ? '…' : '') : '') +
+        (T('wcr.js.archived') || ' · 已收录进 M.NationWorld 世界档案。');
+    } else {
+      titleEl.textContent = T('wcr.hero.title') || '世界创建成功';
+      descEl.textContent = T('wcr.hero.desc') || '你的世界已收录进 M.NationWorld 世界档案。';
+    }
   }
+  renderWorld();
 
   // Simulate processing then resolve
   setTimeout(function () {
@@ -2437,9 +2450,19 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         '<div style="margin-bottom:var(--space-sm)">' +
           '<span class="material-symbols-outlined animate-scale-in" style="font-size:32px;color:#22c55e">verified</span>' +
         '</div>' +
-        '<p class="label-sm" style="color:#22c55e">Archive entry complete</p>';
+        '<p class="label-sm" id="wcDoneMsg" style="color:#22c55e">' +
+          (T('wcr.js.complete') || 'Archive entry complete') + '</p>';
     }
   }, 1600);
+
+  // v0.2.54.0 i18n：重渲钩子——body 尾部三件套 apply（及语言切换）后调用，重刷 JS 动态文案
+  var __mnPrevRerender = window.__mnI18nRerender || function () {};
+  window.__mnI18nRerender = function () {
+    __mnPrevRerender();
+    renderWorld();
+    var done = document.getElementById('wcDoneMsg');
+    if (done) done.textContent = T('wcr.js.complete') || 'Archive entry complete';
+  };
 
   // Simple canvas particle animation
   (function () {
@@ -2501,5 +2524,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/world-created.i18n.js"></script>
+<script>MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); }); MN_I18N.apply();</script>
 </body>
 </html>

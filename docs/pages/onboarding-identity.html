@@ -2295,25 +2295,25 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           <img src="../assets/image/M.NationWorld logo.png" alt="M.NationWorld" style="height:28px;width:auto">
           <span style="font-weight:700;font-size:18px">M.NationWorld</span>
         </div>
-        <h2 style="font-size:28px;font-weight:700;margin-bottom:8px">Welcome to<br>M.NationWorld</h2>
-        <p style="opacity:0.85;margin-bottom:var(--space-xl)">The global platform for worldbuilding.</p>
+        <h2 style="font-size:28px;font-weight:700;margin-bottom:8px" data-i18n-html="oi.welcome.title">Welcome to<br>M.NationWorld</h2>
+        <p style="opacity:0.85;margin-bottom:var(--space-xl)" data-i18n="oi.welcome.sub">The global platform for worldbuilding.</p>
 
         <!-- Step indicator -->
         <div class="card" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);color:white;padding:var(--space-md)">
           <div class="progress-steps" style="flex-direction:column;align-items:flex-start;gap:12px">
             <div class="progress-step completed">
               <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>
-              <span>Create account</span>
+              <span data-i18n="oi.step.create">Create account</span>
             </div>
             <div class="progress-connector" style="width:2px;height:16px;margin:0 0 0 11px"></div>
             <div class="progress-step active">
               <span class="dot">2</span>
-              <span style="font-weight:700">Identity Setup</span>
+              <span style="font-weight:700" data-i18n="oi.step.identity">Identity Setup</span>
             </div>
             <div class="progress-connector" style="width:2px;height:16px;margin:0 0 0 11px"></div>
             <div class="progress-step pending" style="opacity:0.5">
               <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">3</span>
-              <span style="color:rgba(255,255,255,0.6)">Complete</span>
+              <span style="color:rgba(255,255,255,0.6)" data-i18n="oi.step.complete">Complete</span>
             </div>
           </div>
         </div>
@@ -2322,8 +2322,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
     <!-- Right form -->
     <div class="auth-right">
-      <h2 class="headline-md" style="margin-bottom:4px">Set up your identity</h2>
-      <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+      <h2 class="headline-md" style="margin-bottom:4px" data-i18n="oi.headline">Set up your identity</h2>
+      <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)" data-i18n="oi.sub">
         Tell us a bit about yourself, Sovereign.
       </p>
 
@@ -2332,7 +2332,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <label class="form-label">Display Name <span style="color:var(--color-error)">*</span></label>
         <div class="input-icon">
           <span class="material-symbols-outlined">person</span>
-          <input type="text" class="input-glass" id="displayName" placeholder="Your name in the M.NationWorld">
+          <input type="text" class="input-glass" id="displayName" placeholder="Your name in the M.NationWorld" data-i18n-placeholder="oi.ph.name">
         </div>
       </div>
 
@@ -2385,7 +2385,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           </div>
           <div class="dropdown-menu custom-scrollbar" id="countryMenu">
             <div style="padding:8px;position:sticky;top:0;background:inherit;z-index:1">
-              <input type="text" class="input-glass" placeholder="Search countries..." oninput="filterCountries(this.value)" style="font-size:13px;padding:8px 12px">
+              <input type="text" class="input-glass" placeholder="Search countries..." oninput="filterCountries(this.value)" style="font-size:13px;padding:8px 12px" data-i18n-placeholder="oi.ph.searchCountry">
             </div>
             <div id="countryList"></div>
           </div>
@@ -2398,7 +2398,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       </div>
 
       <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleNext()">
-        Next Step
+        <span data-i18n="oi.btn.next">Next Step</span>
         <span class="material-symbols-outlined">arrow_forward</span>
       </button>
       <p id="formError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
@@ -2411,6 +2411,25 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/liquid-glass.js"></script>
 <script src="../assets/js/storage.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+  // i18n：五条 label 带 * 红标 span（电池 G1/G3 断言 Gender 标签「文本打头 + 首个 span 是 *」，结构不能动、
+  // 不挂 data-i18n），与三个下拉默认文案一起在 DOMContentLoaded 惰性应用——彼时 i18n.js 已加载，T() 生效；
+  // 已选/已回显（电池种子）时守卫跳过，字面值一字不动
+  document.addEventListener('DOMContentLoaded', function () {
+    var labelKeys = ['oi.label.name', 'oi.label.gender', 'oi.label.language', 'oi.label.country', 'oi.label.dob'];
+    var groups = document.querySelectorAll('.auth-right .form-group');
+    for (var i = 0; i < labelKeys.length && i < groups.length; i++) {
+      var lb = groups[i].querySelector('.form-label');
+      if (lb && lb.firstChild && lb.firstChild.nodeType === 3) {
+        lb.firstChild.nodeValue = (T(labelKeys[i]) || lb.firstChild.nodeValue.trim()) + ' ';
+      }
+    }
+    if (!selectedGender) { var sg = document.getElementById('selectedGender'); sg.textContent = (T('oi.sel.gender') || 'Select gender'); }
+    if (!selectedLang) { var sl = document.getElementById('selectedLang'); sl.textContent = (T('oi.sel.lang') || 'Select language'); }
+    if (!selectedCountry) { var sc = document.getElementById('selectedCountry'); sc.textContent = (T('oi.sel.country') || 'Select country'); }
+  });
+
   // Load existing user data
   var user = SlatiDB.getUser() || {};
   document.getElementById('displayName').value = user.displayName || '';
@@ -2558,13 +2577,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
   function handleNext() {
     var name = document.getElementById('displayName').value.trim();
-    if (!name) { showError('Please enter your display name'); return; }
+    if (!name) { showError((T('oi.err.name') || 'Please enter your display name')); return; }
     // 2026-09-02 用户「在第二项那边添加一个性别选择栏」：性别必填同四字段口径（* 红标+拦截）
-    if (!selectedGender) { showError('Please select your gender'); return; }
-    if (!selectedLang) { showError('Please select your primary language'); return; }
-    if (!selectedCountry) { showError('Please select your country'); return; }
+    if (!selectedGender) { showError((T('oi.err.gender') || 'Please select your gender')); return; }
+    if (!selectedLang) { showError((T('oi.err.lang') || 'Please select your primary language')); return; }
+    if (!selectedCountry) { showError((T('oi.err.country') || 'Please select your country')); return; }
     // 2026-09-01 用户「第二页要求一定要选择生日，国家位置，和语言」：生日此前不校验可空过 → 补必填（语言/国家已有校验）
-    if (!document.getElementById('dob').value) { showError('Please select your date of birth'); return; }
+    if (!document.getElementById('dob').value) { showError((T('oi.err.dob') || 'Please select your date of birth')); return; }
 
     SlatiDB.saveUser({
       displayName: name,
@@ -2592,5 +2611,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/onboarding-identity.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 </body>
 </html>

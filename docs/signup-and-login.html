@@ -2267,8 +2267,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Tab toggle（v2.3.9 反向滑浮层：与蓝板跷跷板，活跃标签悬可见半上方；v2.3.10 角补丁退役（内凹移除）、tabs/页脚 z 2 垫蓝板下） -->
     <div class="auth-tabs">
       <div class="segmented-control" id="tabSwitch" style="width:240px;max-width:240px">
-        <button class="segmented-option active" id="tabLogin" onclick="switchTab('login')">Log in</button>
-        <button class="segmented-option" id="tabSignup" onclick="switchTab('signup')">Sign up</button>
+        <button class="segmented-option active" id="tabLogin" data-i18n="auth.tab.login" onclick="switchTab('login')">Log in</button>
+        <button class="segmented-option" id="tabSignup" data-i18n="auth.tab.signup" onclick="switchTab('signup')">Sign up</button>
       </div>
     </div>
 
@@ -2284,8 +2284,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           <div class="auth-panel-captions">
             <div class="auth-caption auth-caption-signup">
               <div style="position:relative;z-index:1">
-          <h1 class="display-lg" style="margin-bottom:var(--space-sm)">Build Your<br>World</h1>
-          <p class="body-lg" style="opacity:0.85;margin-bottom:var(--space-lg)">
+          <h1 class="display-lg" style="margin-bottom:var(--space-sm)" data-i18n-html="auth.buildTitle">Build Your<br>World</h1>
+          <p class="body-lg" style="opacity:0.85;margin-bottom:var(--space-lg)" data-i18n="auth.tagline">
             Design constitutions. Forge alliances. Shape worlds.
           </p>
 
@@ -2296,15 +2296,15 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
                    白底蓝字在白底蓝板上反相高亮；completed 只在真正完成后的向导页出现） -->
               <div class="progress-step active step1indicator">
                 <span class="dot" style="background:#ffffff;color:var(--color-primary)">1</span>
-                <span style="color:rgba(255,255,255,0.9)">Create account</span>
+                <span style="color:rgba(255,255,255,0.9)" data-i18n="auth.step1">Create account</span>
               </div>
               <div class="progress-step step2indicator" style="opacity:0.5">
                 <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">2</span>
-                <span style="color:rgba(255,255,255,0.6)">Identity Setup</span>
+                <span style="color:rgba(255,255,255,0.6)" data-i18n="auth.step2">Identity Setup</span>
               </div>
               <div class="progress-step step3indicator" style="opacity:0.5">
                 <span class="dot" style="background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)">3</span>
-                <span style="color:rgba(255,255,255,0.6)">Complete</span>
+                <span style="color:rgba(255,255,255,0.6)" data-i18n="auth.step3">Complete</span>
               </div>
             </div>
           </div>
@@ -2312,8 +2312,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
             </div>
             <div class="auth-caption auth-caption-login">
               <div style="position:relative;z-index:1">
-                <h1 class="display-lg" style="margin-bottom:var(--space-sm)">Welcome back</h1>
-                <p class="body-lg" style="opacity:0.85;margin-bottom:0">
+                <h1 class="display-lg" style="margin-bottom:var(--space-sm)" data-i18n="auth.login.title">Welcome back</h1>
+                <p class="body-lg" style="opacity:0.85;margin-bottom:0" data-i18n="auth.login.sub">
                   Your world is waiting.
                 </p>
               </div>
@@ -2325,22 +2325,22 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       <!-- Login form（左半；v0.2.3.15 全部互换：默认登录态可见） -->
       <div class="auth-pane auth-pane-login">
       <div id="loginForm">
-        <h2 class="headline-md" style="margin-bottom:4px">Welcome back, Sovereign</h2>
-        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+        <h2 class="headline-md" style="margin-bottom:4px" data-i18n="auth.login.cardTitle">Welcome back, Sovereign</h2>
+        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)" data-i18n="auth.login.cardSub">
           Ready to make your mark today?
         </p>
         <div class="form-group">
-          <label class="form-label">Email or Username</label>
+          <label class="form-label" data-i18n="auth.label.emailOrUser">Email or Username</label>
           <input type="text" class="input-glass" id="loginEmail" placeholder="you@example.com" autocomplete="email">
         </div>
         <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" class="input-glass" id="loginPassword" placeholder="Your password" autocomplete="current-password">
+          <label class="form-label" data-i18n="auth.label.password">Password</label>
+          <input type="password" class="input-glass" id="loginPassword" data-i18n-placeholder="auth.ph.password" placeholder="Your password" autocomplete="current-password">
         </div>
         <!-- 邮箱验证码（后端可达时显示，与密码组成双因素；v0.2.46.2 独立发码按钮——用户「注册页面的验证码能不能单独放一个按钮要不然新用户不知道点击哪里获得验证码」：发码不再藏进主按钮首击，输入框旁显式 Send Code；
              v0.2.47.0 单输入框升级六格 OTP——用户「能不能把输入验证码的收入框换成这个」（React OtpInput 组件源码→原生复刻：自动跳格/粘贴分发/退格跳格/弹入动画/错误抖动；见 initOtpBox） -->
         <div class="form-group" id="loginCodeGroup" style="display:none">
-          <label class="form-label">Verification Code</label>
+          <label class="form-label" data-i18n="auth.label.vcode">Verification Code</label>
           <div style="display:flex;gap:8px;align-items:center">
             <div class="otp-box" id="loginOtp" role="group" aria-label="Verification code">
               <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="Verification code, character 1 of 6">
@@ -2350,33 +2350,33 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
               <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 5 of 6">
               <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 6 of 6">
             </div>
-            <button class="btn btn-primary" id="loginSendBtn" onclick="sendLoginCode()" style="white-space:nowrap">Send Code</button>
+            <button class="btn btn-primary" id="loginSendBtn" data-i18n="auth.sendCode" onclick="sendLoginCode()" style="white-space:nowrap">Send Code</button>
           </div>
           <p class="otp-status" id="loginCodeHint"></p>
         </div>
         <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleLogin()">
-          <span id="loginBtnLabel">Enter Console</span>
+          <span id="loginBtnLabel" data-i18n="auth.enterConsole">Enter Console</span>
           <span class="material-symbols-outlined">arrow_forward</span>
         </button>
         <p id="loginError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
         <!-- v2.5.0 忘记密码独立页（用户「把Forgot Passwords 变成一个单独的链接页面」）：链接常显（demo/api 通用），带已输邮箱跳 /forgot-password -->
         <p id="forgotLink" style="text-align:center;margin-top:var(--space-sm)">
-          <a href="javascript:void(0)" onclick="goForgot()" style="color:var(--color-primary);font-size:var(--fs-label-sm)">Forgot your password?</a>
+          <a href="javascript:void(0)" data-i18n="auth.forgot" onclick="goForgot()" style="color:var(--color-primary);font-size:var(--fs-label-sm)">Forgot your password?</a>
         </p>
       </div>
 
       <!-- 首登设密（api 模式：旧账号验证码登录后引导） -->
       <div id="setupForm" style="display:none">
-        <h2 class="headline-md" style="margin-bottom:4px">Set your password</h2>
-        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+        <h2 class="headline-md" style="margin-bottom:4px" data-i18n="auth.setup.cardTitle">Set your password</h2>
+        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)" data-i18n="auth.setup.cardSub">
           You're in! Set a password so your account is fully protected
         </p>
         <div class="form-group">
-          <label class="form-label">New Password</label>
-          <input type="password" class="input-glass" id="setupPassword" placeholder="Min. 8 characters" autocomplete="new-password">
+          <label class="form-label" data-i18n="auth.label.newPassword">New Password</label>
+          <input type="password" class="input-glass" id="setupPassword" data-i18n-placeholder="auth.ph.pwMin" placeholder="Min. 8 characters" autocomplete="new-password">
         </div>
         <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleSetup()">
-          Set Password &amp; Continue
+          <span data-i18n="auth.setup.submit">Set Password &amp; Continue</span>
           <span class="material-symbols-outlined" style="float:right">arrow_forward</span>
         </button>
         <p id="setupError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
@@ -2388,26 +2388,26 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       <div class="auth-pane auth-pane-signup">
       <!-- Signup form -->
       <div id="signupForm">
-        <h2 class="headline-md" style="margin-bottom:4px">Create your account</h2>
-        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">
+        <h2 class="headline-md" style="margin-bottom:4px" data-i18n="auth.signup.cardTitle">Create your account</h2>
+        <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)" data-i18n="auth.signup.cardSub">
           Join the global community of worldbuilders
         </p>
         <div class="form-group">
-          <label class="form-label">Display Name</label>
-          <input type="text" class="input-glass" id="signupName" placeholder="e.g. Alex Rivera" autocomplete="name">
+          <label class="form-label" data-i18n="auth.label.displayName">Display Name</label>
+          <input type="text" class="input-glass" id="signupName" data-i18n-placeholder="auth.ph.name" placeholder="e.g. Alex Rivera" autocomplete="name">
         </div>
         <div class="form-group">
-          <label class="form-label">Email</label>
+          <label class="form-label" data-i18n="auth.label.email">Email</label>
           <input type="email" class="input-glass" id="signupEmail" placeholder="you@example.com" autocomplete="email">
         </div>
         <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" class="input-glass" id="signupPassword" placeholder="Min. 8 characters" autocomplete="new-password">
+          <label class="form-label" data-i18n="auth.label.password">Password</label>
+          <input type="password" class="input-glass" id="signupPassword" data-i18n-placeholder="auth.ph.pwMin" placeholder="Min. 8 characters" autocomplete="new-password">
         </div>
         <!-- 邮箱验证码（后端可达时显示，与密码组成双因素；v0.2.46.2 独立发码按钮——用户「注册页面的验证码能不能单独放一个按钮要不然新用户不知道点击哪里获得验证码」：发码不再藏进主按钮首击，输入框旁显式 Send Code；
              v0.2.47.0 单输入框升级六格 OTP——用户「能不能把输入验证码的收入框换成这个」（React OtpInput 组件源码→原生复刻：自动跳格/粘贴分发/退格跳格/弹入动画/错误抖动；见 initOtpBox） -->
         <div class="form-group" id="signupCodeGroup" style="display:none">
-          <label class="form-label">Verification Code</label>
+          <label class="form-label" data-i18n="auth.label.vcode">Verification Code</label>
           <div style="display:flex;gap:8px;align-items:center">
             <div class="otp-box" id="signupOtp" role="group" aria-label="Verification code">
               <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="Verification code, character 1 of 6">
@@ -2417,7 +2417,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
               <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 5 of 6">
               <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 6 of 6">
             </div>
-            <button class="btn btn-primary" id="signupSendBtn" onclick="sendSignupCode()" style="white-space:nowrap">Send Code</button>
+            <button class="btn btn-primary" id="signupSendBtn" data-i18n="auth.sendCode" onclick="sendSignupCode()" style="white-space:nowrap">Send Code</button>
           </div>
           <p class="otp-status" id="signupCodeHint"></p>
         </div>
@@ -2425,10 +2425,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
              同意在注册时做一次即可，登录不再显示/拦截；随注册半淡入淡出（login 态蓝板 z4 压盖）；未勾点 Create Account 由 handleSignup 拦截（demo/api 双模式） -->
         <label class="auth-terms" id="authTermsBlock">
           <input type="checkbox" id="termsAgree">
-          <span>I agree to the <a href="pages/terms.html">服务条款</a> and <a href="pages/privacy.html">隐私政策</a></span>
+          <span><span data-i18n="auth.agreePre">I agree to the </span><a href="pages/terms.html"><span data-i18n="auth.terms">服务条款</span></a><span data-i18n="auth.agreeAnd"> and </span><a href="pages/privacy.html"><span data-i18n="auth.privacy">隐私政策</span></a></span>
         </label>
         <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleSignup()">
-          <span id="signupBtnLabel">Create Account</span>
+          <span id="signupBtnLabel" data-i18n="auth.signup.submit">Create Account</span>
           <span class="material-symbols-outlined">arrow_forward</span>
         </button>
         <p id="signupError" style="color:var(--color-error);font-size:var(--fs-label-sm);margin-top:var(--space-sm);display:none"></p>
@@ -2441,7 +2441,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- 表单下方页脚（两 tab 共用；v2.3.9 反向滑浮层，与标签栏同向跟蓝板跷跷板；v2.3.12 条款行迁蓝板，此处仅剩 demo 提示） -->
     <div class="auth-footer">
       <!-- Demo hint -->
-      <p id="demoHint" style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
+      <p id="demoHint" data-i18n="auth.demoHint" style="text-align:center;margin-top:var(--space-md);font-size:var(--fs-label-sm);color:var(--color-outline)">
         Demo mode — any credentials work
       </p>
     </div>
@@ -2455,6 +2455,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="assets/js/storage.js"></script>
 <script src="assets/js/api.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T（页面脚本先于 i18n.js 执行；字典三件套在 body 尾部）
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   var currentTab = 'login';
   var AUTH_API = false;              // 后端可达 → 密码+邮箱验证码双因素；否则 demo 模式
   var codeSent = { signup: false, login: false };
@@ -2495,7 +2497,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     // v2.4.2 条款必勾回注册端（用户「不是我是希望用户在注册的时候同意就可以了不需要在登录的时候同意因为都同意过了」）：
     // 同意在注册时做一次即可，未勾拦截 Create Account（demo/api 双模式生效），登录不拦
     if (!document.getElementById('termsAgree').checked) {
-      showError('signupError', 'Please agree to the Terms of Service and Privacy Policy to continue');
+      showError('signupError', (T('auth.err.agree') || 'Please agree to the Terms of Service and Privacy Policy to continue'));
       return;
     }
     if (AUTH_API) return apiSignup();
@@ -2504,9 +2506,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var email = document.getElementById('signupEmail').value.trim();
     var password = document.getElementById('signupPassword').value;
 
-    if (!name) { showError('signupError', 'Please enter a display name'); return; }
-    if (!email) { showError('signupError', 'Please enter an email address'); return; }
-    if (!password || password.length < 3) { showError('signupError', 'Password must be at least 3 characters'); return; }
+    if (!name) { showError('signupError', (T('auth.err.name') || 'Please enter a display name')); return; }
+    if (!email) { showError('signupError', (T('auth.err.email') || 'Please enter an email address')); return; }
+    if (!password || password.length < 3) { showError('signupError', (T('auth.err.pwShort') || 'Password must be at least 3 characters')); return; }
 
     SlatiDB.saveUser({
       displayName: name,
@@ -2526,8 +2528,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var email = document.getElementById('loginEmail').value.trim();
     var password = document.getElementById('loginPassword').value;
 
-    if (!email) { showError('loginError', 'Please enter your email or username'); return; }
-    if (!password || password.length < 3) { showError('loginError', 'Invalid credentials'); return; }
+    if (!email) { showError('loginError', (T('auth.err.emailOrUser') || 'Please enter your email or username')); return; }
+    if (!password || password.length < 3) { showError('loginError', (T('auth.err.credentials') || 'Invalid credentials')); return; }
 
     // In demo mode, accept any credentials. If a previous user exists, restore them.
     var existingUser = SlatiDB.getUser();
@@ -2694,17 +2696,17 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     codeSent[tab] = true;
     countdown[tab] = 60;
     btn.disabled = true;
-    btn.textContent = 'Resend in ' + countdown[tab] + 's';
+    btn.textContent = (T('auth.resendIn') || 'Resend in ') + countdown[tab] + (T('auth.resendSuffix') || 's');
     if (otps[tab]) otps[tab].focus(); // v0.2.47.0 焦点落 OTP 首格（v0.2.46.2 落单输入框同口径）
     var timer = setInterval(function () {
       countdown[tab]--;
       if (countdown[tab] <= 0) {
         clearInterval(timer);
         btn.disabled = false;
-        btn.textContent = 'Resend Code';
+        btn.textContent = (T('auth.resendCode') || 'Resend Code');
         return;
       }
-      btn.textContent = 'Resend in ' + countdown[tab] + 's';
+      btn.textContent = (T('auth.resendIn') || 'Resend in ') + countdown[tab] + (T('auth.resendSuffix') || 's');
     }, 1000);
   }
 
@@ -2726,19 +2728,19 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var name = document.getElementById('signupName').value.trim();
     var email = document.getElementById('signupEmail').value.trim();
     var password = document.getElementById('signupPassword').value;
-    if (!name) { showError('signupError', 'Please enter a display name'); return; }
-    if (!email) { showError('signupError', 'Please enter an email address'); return; }
+    if (!name) { showError('signupError', (T('auth.err.name') || 'Please enter a display name')); return; }
+    if (!email) { showError('signupError', (T('auth.err.email') || 'Please enter an email address')); return; }
     if (!password || password.length < 8 || password.length > 72) {
-      showError('signupError', 'Password must be 8-72 characters');
+      showError('signupError', (T('auth.err.pwLength') || 'Password must be 8-72 characters'));
       return;
     }
     if (countdown.signup > 0) return; // 倒计时中按钮已禁用，双保险
     MN_API.post('/auth/email-code', { email: email }).then(function (r) {
       if (r.ok) {
-        setCodeHint('signup', 'Verification code sent to ' + email + ' — valid for 10 minutes');
+        setCodeHint('signup', (T('auth.codeSentPrefix') || 'Verification code sent to ') + email + (T('auth.codeSentSuffix') || ' — valid for 10 minutes'));
         startCountdown('signup');
       } else if (r.status === 429) {
-        showError('signupError', 'Please wait before requesting another code');
+        showError('signupError', (T('auth.err.wait') || 'Please wait before requesting another code'));
       } else {
         demoSignup();
       }
@@ -2752,9 +2754,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var code = otps.signup.value();
 
     if (!codeSent.signup) { sendSignupCode(); return; } // 主按钮首击自动发码（旧路径保留）
-    if (!code) { otps.signup.setError('Enter the 6-digit code from your email'); return; }
+    if (!code) { otps.signup.setError((T('rp.err.needCode') || 'Enter the 6-digit code from your email')); return; }
     MN_API.post('/auth/verify', { email: email, code: code, displayName: name, password: password }).then(function (r) {
-      if (!r.ok) { otps.signup.setError('Invalid or expired code'); return; } // v0.2.47.0 错误走 OTP 红框+抖动+焦点回首格（值保留可重打）
+      if (!r.ok) { otps.signup.setError((T('rp.err.badCode') || 'Invalid or expired code')); return; } // v0.2.47.0 错误走 OTP 红框+抖动+焦点回首格（值保留可重打）
       SlatiDB.saveUser(r.data.user);
       if (r.data.status === 'new') SlatiDB.setOnboardingStep(1);
       window.location.href = 'https://story.mnationworld.com/wip'; // v0.2.26.0 注册成功 → 故事站单页（跨子域绝对 URL；setOnboardingStep(1) 保留，故事尾声 CTA 回 onboarding-identity 原链不断）
@@ -2764,18 +2766,18 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   function sendLoginCode() {
     var email = document.getElementById('loginEmail').value.trim();
     var password = document.getElementById('loginPassword').value;
-    if (!email) { showError('loginError', 'Please enter your email'); return; }
+    if (!email) { showError('loginError', (T('auth.err.emailShort') || 'Please enter your email')); return; }
     if (!password || password.length < 8 || password.length > 72) {
-      showError('loginError', 'Password must be 8-72 characters');
+      showError('loginError', (T('auth.err.pwLength') || 'Password must be 8-72 characters'));
       return;
     }
     if (countdown.login > 0) return; // 倒计时中按钮已禁用，双保险
     MN_API.post('/auth/email-code', { email: email }).then(function (r) {
       if (r.ok) {
-        setCodeHint('login', 'Verification code sent to ' + email + ' — valid for 10 minutes');
+        setCodeHint('login', (T('auth.codeSentPrefix') || 'Verification code sent to ') + email + (T('auth.codeSentSuffix') || ' — valid for 10 minutes'));
         startCountdown('login');
       } else if (r.status === 429) {
-        showError('loginError', 'Please wait before requesting another code');
+        showError('loginError', (T('auth.err.wait') || 'Please wait before requesting another code'));
       } else {
         demoLogin();
       }
@@ -2788,9 +2790,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var code = otps.login.value();
 
     if (!codeSent.login) { sendLoginCode(); return; } // 主按钮首击自动发码（旧路径保留）
-    if (!code) { otps.login.setError('Enter the 6-digit code from your email'); return; }
+    if (!code) { otps.login.setError((T('rp.err.needCode') || 'Enter the 6-digit code from your email')); return; }
     MN_API.post('/auth/verify', { email: email, code: code, password: password }).then(function (r) {
-      if (!r.ok) { otps.login.setError('Invalid code or password'); return; } // v0.2.47.0 错误走 OTP 红框+抖动+焦点回首格（值保留可重打）
+      if (!r.ok) { otps.login.setError((T('auth.err.badCodePw') || 'Invalid code or password')); return; } // v0.2.47.0 错误走 OTP 红框+抖动+焦点回首格（值保留可重打）
       SlatiDB.saveUser(r.data.user);
       if (r.data.passwordSetupRequired) {
         // W6：旧账号（此前无密码）→ 引导设密后继续
@@ -2812,15 +2814,15 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   function handleSetup() {
     var password = document.getElementById('setupPassword').value;
     if (!password || password.length < 8 || password.length > 72) {
-      showError('setupError', 'Password must be 8-72 characters');
+      showError('setupError', (T('auth.err.pwLength') || 'Password must be 8-72 characters'));
       return;
     }
     MN_API.post('/auth/password', { newPassword: password }).then(function (r) {
-      if (!r.ok) { showError('setupError', 'Could not set password — please try again'); return; }
+      if (!r.ok) { showError('setupError', (T('auth.err.setupFail') || 'Could not set password — please try again')); return; }
       SlatiDB.saveUser(r.data.user);
       window.location.href = NEXT || 'index.html';
     }).catch(function () {
-      showError('setupError', 'Could not set password — please try again');
+      showError('setupError', (T('auth.err.setupFail') || 'Could not set password — please try again'));
     });
   }
 
@@ -2848,14 +2850,14 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       document.getElementById('loginPassword').value = '';
     }
     if (!up) {
-      if (qp.get('reset') === '1') document.getElementById('demoHint').textContent = 'Password reset — log in with your new password';
+      if (qp.get('reset') === '1') document.getElementById('demoHint').textContent = (T('auth.demoReset') || 'Password reset — log in with your new password');
       return;
     }
     AUTH_API = true;
     document.getElementById('signupCodeGroup').style.display = '';
     document.getElementById('loginCodeGroup').style.display = '';
-    document.getElementById('demoHint').textContent = 'Secure login — password + email verification code';
-    if (qp.get('reset') === '1') setCodeHint('login', 'Password reset — log in with your new password');
+    document.getElementById('demoHint').textContent = (T('auth.demoSecure') || 'Secure login — password + email verification code');
+    if (qp.get('reset') === '1') setCodeHint('login', (T('auth.demoReset') || 'Password reset — log in with your new password'));
     MN_API.get('/auth/me').then(function (r) {
       if (r.ok && r.data && r.data.user) {
         SlatiDB.saveUser(r.data.user);
@@ -2868,5 +2870,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="assets/js/i18n.js"></script>
+<script src="assets/i18n/common.i18n.js"></script>
+<script src="assets/i18n/auth.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 </body>
 </html>

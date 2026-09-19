@@ -125,7 +125,7 @@ async function main() {
   const cdpPort = 9400 + Math.floor(Math.random() * 300);
   const profile = path.join(os.tmpdir(), `composer-profile-${process.pid}`);
   const chrome = spawn(CHROME, [
-    '--headless=new', '--disable-gpu', '--disable-extensions',
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--disable-extensions',
     `--remote-debugging-port=${cdpPort}`, `--user-data-dir=${profile}`,
     '--no-first-run', '--no-default-browser-check', 'about:blank'
   ], { stdio: 'ignore' });
@@ -139,9 +139,9 @@ async function main() {
     // 强制 cloudMode 走真实 renderFeed 渲染路径（composer 仅登录态渲染，fresh profile 无会话）
     await client.evalJs(`window.cloudMode = true; window.cloudPosts = []; renderFeed(); true`);
     await client.waitFor(`document.getElementById('postComposer') !== null`, 5000, 'composer 渲染');
-    // v0.2.14.2：发帖按钮文案 Publish → Post
-    const btnText = await client.evalJs(`(document.getElementById('postSubmit') || {}).innerText`);
-    ok('发帖按钮文案 = Post', btnText === 'Post', '实得 ' + btnText);
+    // v0.2.14.2：发帖按钮文案 Publish → Post（i18n 机制断言：期望值=当前语言字典值）
+    const btnR = await client.evalJs(`(function(){var b=(document.getElementById('postSubmit')||{});return {text:b.innerText,exp:(window.MN_I18N&&MN_I18N.t('hub.composer.post'))||'Post'};})()`);
+    ok('发帖按钮文案 = 当前语言字典值（原 Post）', btnR.text === btnR.exp, '实得 ' + btnR.text);
     // v0.2.15.0 工具条：五 icon 按钮（左）与 Post（右）同排、纯图标显示、名称只在悬停气泡（data-tip → ::after）
     const rT = await client.evalJs(`(() => {
       const tools = document.querySelectorAll('.composer-tool');

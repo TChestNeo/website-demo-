@@ -103,7 +103,7 @@ async function main() {
   if (!chromePath) throw new Error('找不到 Chrome');
 
   const chrome = spawn(chromePath, [
-    '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--window-size=1280,900', '--remote-debugging-port=' + CDP_PORT,
     '--user-data-dir=' + USER_DATA, 'about:blank'
   ], { stdio: 'ignore' });

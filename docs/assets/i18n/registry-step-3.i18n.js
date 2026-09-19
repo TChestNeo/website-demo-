@@ -1,0 +1,253 @@
+/**
+ * registry-step-3.i18n.js — 国家注册向导第 3 步「宏观指标」（registry-step-3）词典
+ * v0.2.54.0 全站 12 语言；zh-Hant 由 OpenCC 脚本生成（勿手写）。
+ * 术语表见 common.i18n.js（品牌词不译：M.NationWorld / MicroNationary / FluidCanvas / Slati Studio；
+ * 货币/数值不译：RM / MYR / XP）。
+ * 页面原文为英文——zh 值为中文翻译、fallback 英文保持（电池断言源码字面量安全）。
+ * 表单纪律：扇区名（Industrial / Agricultural / Technological / Tourism / Resource Export /
+ * Financial）为示例数据 + Chart.js 图例标签，被 JS 按值读取与电池断言——不译、不进本词典；
+ * 单位 (%)/(km²)/(USD) 保留在译文中。
+ */
+window.MN_I18N
+  .add('zh', {
+    'reg3.title': '国家成立登记处',
+    'reg3.subtitle': '步骤 03 — 宏观指标',
+    'reg3.step.identity': '身份',
+    'reg3.step.geopolitics': '地缘政治',
+    'reg3.step.metrics': '宏观指标',
+    'reg3.sectorTitle': '经济部门分布 (%)',
+    'reg3.sectorHint': '提交时总计会自动归一化为 100%。',
+    'reg3.label.population': '人口',
+    'reg3.label.military': '现役军队',
+    'reg3.label.territory': '领土 (km²)',
+    'reg3.label.gdp': 'GDP (USD)',
+    'reg3.ph.population': '例如：12,400,000',
+    'reg3.ph.military': '例如：85,000',
+    'reg3.ph.territory': '例如：427,000',
+    'reg3.ph.gdp': '例如：892,000,000,000',
+    'reg3.prev': '上一步',
+    'reg3.submit': '批准成立',
+    'reg3.err.population': '请输入人口数据'
+  })
+  .add('en', {
+    'reg3.title': 'National Incorporation Registry',
+    'reg3.subtitle': 'Step 03 — Macro Metrics',
+    'reg3.step.identity': 'Identity',
+    'reg3.step.geopolitics': 'Geopolitics',
+    'reg3.step.metrics': 'Macro Metrics',
+    'reg3.sectorTitle': 'Economic Sector Distribution (%)',
+    'reg3.sectorHint': 'Totals auto-normalize to 100% on submission.',
+    'reg3.label.population': 'Population',
+    'reg3.label.military': 'Active Military',
+    'reg3.label.territory': 'Territory (km²)',
+    'reg3.label.gdp': 'GDP (USD)',
+    'reg3.ph.population': 'e.g. 12,400,000',
+    'reg3.ph.military': 'e.g. 85,000',
+    'reg3.ph.territory': 'e.g. 427,000',
+    'reg3.ph.gdp': 'e.g. 892,000,000,000',
+    'reg3.prev': 'Previous',
+    'reg3.submit': 'Ratify Incorporation',
+    'reg3.err.population': 'Please enter a population figure'
+  })
+  .add('de', {
+    'reg3.title': 'Nationales Gründungsregister',
+    'reg3.subtitle': 'Schritt 03 — Makrokennzahlen',
+    'reg3.step.identity': 'Identität',
+    'reg3.step.geopolitics': 'Geopolitik',
+    'reg3.step.metrics': 'Makrokennzahlen',
+    'reg3.sectorTitle': 'Verteilung der Wirtschaftssektoren (%)',
+    'reg3.sectorHint': 'Die Summen werden beim Absenden automatisch auf 100 % normalisiert.',
+    'reg3.label.population': 'Bevölkerung',
+    'reg3.label.military': 'Aktives Militär',
+    'reg3.label.territory': 'Territorium (km²)',
+    'reg3.label.gdp': 'BIP (USD)',
+    'reg3.ph.population': 'z. B. 12.400.000',
+    'reg3.ph.military': 'z. B. 85.000',
+    'reg3.ph.territory': 'z. B. 427.000',
+    'reg3.ph.gdp': 'z. B. 892.000.000.000',
+    'reg3.prev': 'Zurück',
+    'reg3.submit': 'Gründung ratifizieren',
+    'reg3.err.population': 'Bitte eine Bevölkerungszahl eingeben'
+  })
+  .add('ru', {
+    'reg3.title': 'Национальный реестр создания государств',
+    'reg3.subtitle': 'Шаг 03 — Макропоказатели',
+    'reg3.step.identity': 'Идентичность',
+    'reg3.step.geopolitics': 'Геополитика',
+    'reg3.step.metrics': 'Макропоказатели',
+    'reg3.sectorTitle': 'Распределение секторов экономики (%)',
+    'reg3.sectorHint': 'Суммы автоматически нормализуются до 100 % при отправке.',
+    'reg3.label.population': 'Население',
+    'reg3.label.military': 'Действующая армия',
+    'reg3.label.territory': 'Территория (км²)',
+    'reg3.label.gdp': 'ВВП (USD)',
+    'reg3.ph.population': 'напр. 12 400 000',
+    'reg3.ph.military': 'напр. 85 000',
+    'reg3.ph.territory': 'напр. 427 000',
+    'reg3.ph.gdp': 'напр. 892 000 000 000',
+    'reg3.prev': 'Назад',
+    'reg3.submit': 'Ратифицировать создание',
+    'reg3.err.population': 'Пожалуйста, введите численность населения'
+  })
+  .add('ms', {
+    'reg3.title': 'Pendaftaran Penubuhan Negara',
+    'reg3.subtitle': 'Langkah 03 — Metrik Makro',
+    'reg3.step.identity': 'Identiti',
+    'reg3.step.geopolitics': 'Geopolitik',
+    'reg3.step.metrics': 'Metrik Makro',
+    'reg3.sectorTitle': 'Taburan Sektor Ekonomi (%)',
+    'reg3.sectorHint': 'Jumlah akan dinormalkan secara automatik kepada 100% semasa penghantaran.',
+    'reg3.label.population': 'Populasi',
+    'reg3.label.military': 'Tentera Aktif',
+    'reg3.label.territory': 'Wilayah (km²)',
+    'reg3.label.gdp': 'KDNK (USD)',
+    'reg3.ph.population': 'cth: 12,400,000',
+    'reg3.ph.military': 'cth: 85,000',
+    'reg3.ph.territory': 'cth: 427,000',
+    'reg3.ph.gdp': 'cth: 892,000,000,000',
+    'reg3.prev': 'Sebelumnya',
+    'reg3.submit': 'Ratifkan Penubuhan',
+    'reg3.err.population': 'Sila masukkan angka populasi'
+  })
+  .add('th', {
+    'reg3.title': 'ทะเบียนการก่อตั้งชาติ',
+    'reg3.subtitle': 'ขั้นตอนที่ 03 — เมตริกมหภาค',
+    'reg3.step.identity': 'อัตลักษณ์',
+    'reg3.step.geopolitics': 'ภูมิรัฐศาสตร์',
+    'reg3.step.metrics': 'เมตริกมหภาค',
+    'reg3.sectorTitle': 'การกระจายภาคเศรษฐกิจ (%)',
+    'reg3.sectorHint': 'ยอดรวมจะถูกปรับเป็น 100% โดยอัตโนมัติเมื่อส่ง',
+    'reg3.label.population': 'ประชากร',
+    'reg3.label.military': 'กำลังทหารประจำการ',
+    'reg3.label.territory': 'อาณาเขต (km²)',
+    'reg3.label.gdp': 'GDP (USD)',
+    'reg3.ph.population': 'เช่น 12,400,000',
+    'reg3.ph.military': 'เช่น 85,000',
+    'reg3.ph.territory': 'เช่น 427,000',
+    'reg3.ph.gdp': 'เช่น 892,000,000,000',
+    'reg3.prev': 'ก่อนหน้า',
+    'reg3.submit': 'ให้สัตยาบันการก่อตั้ง',
+    'reg3.err.population': 'กรุณากรอกจำนวนประชากร'
+  })
+  .add('vi', {
+    'reg3.title': 'Sổ Đăng ký Thành lập Quốc gia',
+    'reg3.subtitle': 'Bước 03 — Chỉ số Vĩ mô',
+    'reg3.step.identity': 'Danh tính',
+    'reg3.step.geopolitics': 'Địa chính trị',
+    'reg3.step.metrics': 'Chỉ số Vĩ mô',
+    'reg3.sectorTitle': 'Phân bổ Ngành Kinh tế (%)',
+    'reg3.sectorHint': 'Tổng sẽ tự động chuẩn hóa về 100% khi gửi.',
+    'reg3.label.population': 'Dân số',
+    'reg3.label.military': 'Quân đội tại ngũ',
+    'reg3.label.territory': 'Lãnh thổ (km²)',
+    'reg3.label.gdp': 'GDP (USD)',
+    'reg3.ph.population': 'ví dụ: 12.400.000',
+    'reg3.ph.military': 'ví dụ: 85.000',
+    'reg3.ph.territory': 'ví dụ: 427.000',
+    'reg3.ph.gdp': 'ví dụ: 892.000.000.000',
+    'reg3.prev': 'Quay lại',
+    'reg3.submit': 'Phê chuẩn Thành lập',
+    'reg3.err.population': 'Vui lòng nhập số liệu dân số'
+  })
+  .add('id', {
+    'reg3.title': 'Registrasi Pendirian Negara',
+    'reg3.subtitle': 'Langkah 03 — Metrik Makro',
+    'reg3.step.identity': 'Identitas',
+    'reg3.step.geopolitics': 'Geopolitik',
+    'reg3.step.metrics': 'Metrik Makro',
+    'reg3.sectorTitle': 'Distribusi Sektor Ekonomi (%)',
+    'reg3.sectorHint': 'Total otomatis dinormalkan menjadi 100% saat dikirim.',
+    'reg3.label.population': 'Populasi',
+    'reg3.label.military': 'Militer Aktif',
+    'reg3.label.territory': 'Wilayah (km²)',
+    'reg3.label.gdp': 'PDB (USD)',
+    'reg3.ph.population': 'mis. 12.400.000',
+    'reg3.ph.military': 'mis. 85.000',
+    'reg3.ph.territory': 'mis. 427.000',
+    'reg3.ph.gdp': 'mis. 892.000.000.000',
+    'reg3.prev': 'Sebelumnya',
+    'reg3.submit': 'Ratifikasi Pendirian',
+    'reg3.err.population': 'Silakan masukkan angka populasi'
+  })
+  .add('fr', {
+    'reg3.title': 'Registre national de création',
+    'reg3.subtitle': 'Étape 03 — Indicateurs macro',
+    'reg3.step.identity': 'Identité',
+    'reg3.step.geopolitics': 'Géopolitique',
+    'reg3.step.metrics': 'Indicateurs macro',
+    'reg3.sectorTitle': 'Répartition des secteurs économiques (%)',
+    'reg3.sectorHint': 'Les totaux sont automatiquement normalisés à 100 % lors de l\'envoi.',
+    'reg3.label.population': 'Population',
+    'reg3.label.military': 'Militaires actifs',
+    'reg3.label.territory': 'Territoire (km²)',
+    'reg3.label.gdp': 'PIB (USD)',
+    'reg3.ph.population': 'ex. : 12 400 000',
+    'reg3.ph.military': 'ex. : 85 000',
+    'reg3.ph.territory': 'ex. : 427 000',
+    'reg3.ph.gdp': 'ex. : 892 000 000 000',
+    'reg3.prev': 'Précédent',
+    'reg3.submit': 'Ratifier la création',
+    'reg3.err.population': 'Veuillez saisir un chiffre de population'
+  })
+  .add('es', {
+    'reg3.title': 'Registro Nacional de Incorporación',
+    'reg3.subtitle': 'Paso 03 — Métricas macro',
+    'reg3.step.identity': 'Identidad',
+    'reg3.step.geopolitics': 'Geopolítica',
+    'reg3.step.metrics': 'Métricas macro',
+    'reg3.sectorTitle': 'Distribución de sectores económicos (%)',
+    'reg3.sectorHint': 'Los totales se normalizan automáticamente al 100 % al enviar.',
+    'reg3.label.population': 'Población',
+    'reg3.label.military': 'Militar activo',
+    'reg3.label.territory': 'Territorio (km²)',
+    'reg3.label.gdp': 'PIB (USD)',
+    'reg3.ph.population': 'p. ej. 12.400.000',
+    'reg3.ph.military': 'p. ej. 85.000',
+    'reg3.ph.territory': 'p. ej. 427.000',
+    'reg3.ph.gdp': 'p. ej. 892.000.000.000',
+    'reg3.prev': 'Anterior',
+    'reg3.submit': 'Ratificar la incorporación',
+    'reg3.err.population': 'Introduce una cifra de población'
+  })
+  .add('pt', {
+    'reg3.title': 'Registro Nacional de Incorporação',
+    'reg3.subtitle': 'Passo 03 — Métricas macro',
+    'reg3.step.identity': 'Identidade',
+    'reg3.step.geopolitics': 'Geopolítica',
+    'reg3.step.metrics': 'Métricas macro',
+    'reg3.sectorTitle': 'Distribuição dos setores econômicos (%)',
+    'reg3.sectorHint': 'Os totais são normalizados automaticamente para 100% no envio.',
+    'reg3.label.population': 'População',
+    'reg3.label.military': 'Militares ativos',
+    'reg3.label.territory': 'Território (km²)',
+    'reg3.label.gdp': 'PIB (USD)',
+    'reg3.ph.population': 'ex.: 12.400.000',
+    'reg3.ph.military': 'ex.: 85.000',
+    'reg3.ph.territory': 'ex.: 427.000',
+    'reg3.ph.gdp': 'ex.: 892.000.000.000',
+    'reg3.prev': 'Anterior',
+    'reg3.submit': 'Ratificar a incorporação',
+    'reg3.err.population': 'Insira um valor de população'
+  })
+;
+/* __ZH_HANT_AUTO__ — v0.2.54.0 zh-Hant 由 OpenCC cn→tw 自动生成（勿手改，重跑本脚本再生成） */
+window.MN_I18N.add('zh-Hant', {
+  "reg3.title": "國家成立登記處",
+  "reg3.subtitle": "步驟 03 — 宏觀指標",
+  "reg3.step.identity": "身份",
+  "reg3.step.geopolitics": "地緣政治",
+  "reg3.step.metrics": "宏觀指標",
+  "reg3.sectorTitle": "經濟部門分佈 (%)",
+  "reg3.sectorHint": "提交時總計會自動歸一化為 100%。",
+  "reg3.label.population": "人口",
+  "reg3.label.military": "現役軍隊",
+  "reg3.label.territory": "領土 (km²)",
+  "reg3.label.gdp": "GDP (USD)",
+  "reg3.ph.population": "例如：12,400,000",
+  "reg3.ph.military": "例如：85,000",
+  "reg3.ph.territory": "例如：427,000",
+  "reg3.ph.gdp": "例如：892,000,000,000",
+  "reg3.prev": "上一步",
+  "reg3.submit": "批准成立",
+  "reg3.err.population": "請輸入人口數據"
+});

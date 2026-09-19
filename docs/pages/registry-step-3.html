@@ -2215,20 +2215,20 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
     <div style="max-width:800px;margin:0 auto">
       <div style="text-align:center;margin-bottom:var(--space-lg)">
-        <h1 class="headline-lg" style="margin-bottom:4px">National Incorporation Registry</h1>
-        <p class="body-md" style="color:var(--color-on-surface-variant)">Step 03 — Macro Metrics</p>
+        <h1 class="headline-lg" style="margin-bottom:4px" data-i18n="reg3.title">National Incorporation Registry</h1>
+        <p class="body-md" style="color:var(--color-on-surface-variant)" data-i18n="reg3.subtitle">Step 03 — Macro Metrics</p>
 
         <div class="progress-steps" style="justify-content:center;margin-top:var(--space-md)">
           <div class="progress-step completed">
-            <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span>Identity</span>
+            <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span data-i18n="reg3.step.identity">Identity</span>
           </div>
           <div class="progress-connector done"></div>
           <div class="progress-step completed">
-            <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span>Geopolitics</span>
+            <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span data-i18n="reg3.step.geopolitics">Geopolitics</span>
           </div>
           <div class="progress-connector done"></div>
           <div class="progress-step active">
-            <span class="dot">3</span><span>Macro Metrics</span>
+            <span class="dot">3</span><span data-i18n="reg3.step.metrics">Macro Metrics</span>
           </div>
         </div>
       </div>
@@ -2238,13 +2238,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
           <!-- Left: sector inputs -->
           <div>
-            <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">Economic Sector Distribution (%)</h3>
+            <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)" data-i18n="reg3.sectorTitle">Economic Sector Distribution (%)</h3>
 
             <div id="sectorInputs"></div>
 
             <p style="font-size:var(--fs-label-sm);color:var(--color-outline);margin-top:var(--space-sm);display:flex;align-items:center;gap:4px">
               <span class="material-symbols-outlined" style="font-size:16px">info</span>
-              Totals auto-normalize to 100% on submission.
+              <span data-i18n="reg3.sectorHint">Totals auto-normalize to 100% on submission.</span>
             </p>
           </div>
 
@@ -2259,29 +2259,29 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <!-- Demographic fields -->
         <div style="margin-top:var(--space-lg);display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md)">
           <div class="form-group">
-            <label class="form-label">Population</label>
-            <input type="text" class="input-glass" id="population" placeholder="e.g. 12,400,000">
+            <label class="form-label" data-i18n="reg3.label.population">Population</label>
+            <input type="text" class="input-glass" id="population" placeholder="e.g. 12,400,000" data-i18n-placeholder="reg3.ph.population">
           </div>
           <div class="form-group">
-            <label class="form-label">Active Military</label>
-            <input type="text" class="input-glass" id="military" placeholder="e.g. 85,000">
+            <label class="form-label" data-i18n="reg3.label.military">Active Military</label>
+            <input type="text" class="input-glass" id="military" placeholder="e.g. 85,000" data-i18n-placeholder="reg3.ph.military">
           </div>
           <div class="form-group">
-            <label class="form-label">Territory (km²)</label>
-            <input type="text" class="input-glass" id="territory" placeholder="e.g. 427,000">
+            <label class="form-label" data-i18n="reg3.label.territory">Territory (km²)</label>
+            <input type="text" class="input-glass" id="territory" placeholder="e.g. 427,000" data-i18n-placeholder="reg3.ph.territory">
           </div>
           <div class="form-group">
-            <label class="form-label">GDP (USD)</label>
-            <input type="text" class="input-glass" id="gdp" placeholder="e.g. 892,000,000,000">
+            <label class="form-label" data-i18n="reg3.label.gdp">GDP (USD)</label>
+            <input type="text" class="input-glass" id="gdp" placeholder="e.g. 892,000,000,000" data-i18n-placeholder="reg3.ph.gdp">
           </div>
         </div>
 
         <div class="flex-between" style="margin-top:var(--space-lg)">
           <a href="registry-step-2.html" class="btn btn-ghost">
-            <span class="material-symbols-outlined">arrow_back</span> Previous
+            <span class="material-symbols-outlined">arrow_back</span> <span data-i18n="reg3.prev">Previous</span>
           </a>
           <button class="btn btn-primary btn-lg" onclick="handleSubmit()">
-            Ratify Incorporation
+            <span data-i18n="reg3.submit">Ratify Incorporation</span>
             <span class="material-symbols-outlined">check</span>
           </button>
         </div>
@@ -2298,6 +2298,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/settings-modal.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性翻译——MN_I18N 三件套在本脚本之后加载，T() 只在提交/校验路径（点击）执行，彼时必已就绪；
+  // 扇区名/默认值等示例数据被 JS 按值读取与电池断言，不译不 T()。
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   var sectorColors = ['#9ca3af', '#eab308', '#4648d4', '#8127cf', '#1f2937', '#dc2626'];
   var sectorNames = ['Industrial', 'Agricultural', 'Technological', 'Tourism', 'Resource Export', 'Financial'];
   var sectorValues = [20, 15, 30, 10, 10, 15];
@@ -2375,7 +2379,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   function handleSubmit() {
     var pop = document.getElementById('population').value.trim();
     var mil = document.getElementById('military').value.trim();
-    if (!pop) { showError('Please enter a population figure'); return; }
+    if (!pop) { showError(T('reg3.err.population') || 'Please enter a population figure'); return; }
 
     SlatiDB.saveNationDraft(3, {
       sectors: sectorValues,
@@ -2400,5 +2404,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/registry-step-3.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 </body>
 </html>

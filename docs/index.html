@@ -2298,17 +2298,17 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <section class="guest-hero liquid-glass">
       <div class="guest-hero-inner">
         <span class="badge badge-primary" style="margin-bottom:12px">M.NationWorld · BETA</span>
-        <h1 class="guest-hero-title">打造属于你的<br>架空国家</h1>
-        <p class="guest-hero-sub">硬核架空国家创作平台——共和、社会主义、民主主义……<br>从一张地图、一部宪法开始，建立你梦想中的国度。</p>
+        <h1 class="guest-hero-title" data-i18n-html="index.heroTitle">打造属于你的<br>架空国家</h1>
+        <p class="guest-hero-sub" data-i18n-html="index.heroSub">硬核架空国家创作平台——共和、社会主义、民主主义……<br>从一张地图、一部宪法开始，建立你梦想中的国度。</p>
         <div class="guest-hero-cta">
-          <a href="signup-and-login" class="btn btn-primary btn-lg"><span class="material-symbols-outlined">rocket_launch</span> 免费开始创作</a>
-          <a href="pages/explore.html" class="btn btn-outline btn-lg">浏览社区</a>
+          <a href="signup-and-login" class="btn btn-primary btn-lg"><span class="material-symbols-outlined">rocket_launch</span> <span data-i18n="index.startFree">免费开始创作</span></a>
+          <a href="pages/explore.html" class="btn btn-outline btn-lg" data-i18n="index.browseCommunity">浏览社区</a>
         </div>
         <div class="guest-features">
-          <div class="guest-feature"><span class="material-symbols-outlined">draw</span><div><strong>FluidCanvas</strong><span>无限画布卡片式创作</span></div></div>
-          <div class="guest-feature"><span class="material-symbols-outlined">map</span><div><strong>地图区域编辑器</strong><span>Google Earth 式框区域</span></div></div>
-          <div class="guest-feature"><span class="material-symbols-outlined">public</span><div><strong>22 种世界类型</strong><span>选型页 + 单向导引擎</span></div></div>
-          <div class="guest-feature"><span class="material-symbols-outlined">groups</span><div><strong>社区共创</strong><span>话题、档案与交流</span></div></div>
+          <div class="guest-feature"><span class="material-symbols-outlined">draw</span><div><strong>FluidCanvas</strong><span data-i18n="index.feature.canvas">无限画布卡片式创作</span></div></div>
+          <div class="guest-feature"><span class="material-symbols-outlined">map</span><div><strong data-i18n="index.feature.map">地图区域编辑器</strong><span data-i18n="index.feature.mapDesc">Google Earth 式框区域</span></div></div>
+          <div class="guest-feature"><span class="material-symbols-outlined">public</span><div><strong data-i18n="index.feature.types">22 种世界类型</strong><span data-i18n="index.feature.typesDesc">选型页 + 单向导引擎</span></div></div>
+          <div class="guest-feature"><span class="material-symbols-outlined">groups</span><div><strong data-i18n="index.feature.community">社区共创</strong><span data-i18n="index.feature.communityDesc">话题、档案与交流</span></div></div>
         </div>
       </div>
     </section>
@@ -2316,7 +2316,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <header class="flex-between" style="margin-bottom:var(--space-md)">
       <div class="search-capsule" style="position:relative">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search worlds, topics...">
+        <input type="text" placeholder="Search worlds, topics..." data-i18n-placeholder="index.searchPh">
         <span style="width:1px;height:20px;background:var(--divider-line);flex-shrink:0;border-radius:1px"></span>
         <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);cursor:pointer" id="dashBellBtn" onclick="toggleDashNotifPopup()">notifications</span>
         <span id="dashBellBadge" style="position:absolute;top:-4px;right:-4px;background:var(--color-primary);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:var(--radius-full);min-width:16px;text-align:center;display:none;pointer-events:none;border:2px solid var(--card-bg)">0</span>
@@ -2326,26 +2326,26 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div class="card tilt-container animate-fade-in-up" style="padding:var(--space-lg);margin-bottom:var(--space-md);background:linear-gradient(135deg,rgba(70,72,212,0.06),rgba(129,39,207,0.04)),var(--card-bg)">
       <div class="flex-between" style="flex-wrap:wrap;gap:var(--space-md)">
         <div>
-          <span class="badge badge-primary" style="margin-bottom:8px">Knowledge Base</span>
-          <h1 class="headline-lg" style="margin-bottom:4px" id="welcomeBanner">Welcome back, Creator</h1>
-          <p class="body-md" style="color:var(--color-on-surface-variant)">Your worldbuilding console is fully operational.</p>
+          <span class="badge badge-primary" style="margin-bottom:8px" data-i18n="index.knowledgeBase">Knowledge Base</span>
+          <h1 class="headline-lg" style="margin-bottom:4px" id="welcomeBanner" data-i18n="index.welcome">Welcome back, Creator</h1>
+          <p class="body-md" style="color:var(--color-on-surface-variant)" data-i18n="index.welcomeSub">Your worldbuilding console is fully operational.</p>
         </div>
         <div style="display:flex;gap:var(--space-sm)">
-          <a href="pages/create-world.html" class="btn btn-primary create-world-cta">Create World</a>
-          <a href="pages/explore.html" class="btn btn-outline">View Archive</a>
+          <a href="pages/create-world.html" class="btn btn-primary create-world-cta" data-i18n="index.createWorld">Create World</a>
+          <a href="pages/explore.html" class="btn btn-outline" data-i18n="index.viewArchive">View Archive</a>
         </div>
       </div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 340px;gap:var(--space-md)">
       <div>
-        <h2 class="headline-md" style="margin-bottom:var(--space-sm)">Recent Activity</h2>
+        <h2 class="headline-md" style="margin-bottom:var(--space-sm)" data-i18n="index.recentActivity">Recent Activity</h2>
         <div id="activityFeed" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
 
-        <h2 class="headline-md" style="margin:var(--space-lg) 0 var(--space-sm)">Announcements</h2>
+        <h2 class="headline-md" style="margin:var(--space-lg) 0 var(--space-sm)" data-i18n="index.announcements">Announcements</h2>
         <div id="dashAnnouncements" style="display:flex;flex-direction:column;gap:2px"></div>
         <a href="pages/messages.html?showTab=announcements" style="display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-label-sm);color:var(--color-primary);margin-top:var(--space-sm);text-decoration:none">
-          View all announcements
+          <span data-i18n="index.viewAllAnnouncements">View all announcements</span>
           <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
         </a>
       </div>
@@ -2359,45 +2359,45 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
               <span class="material-symbols-outlined" style="font-size:22px;color:#eab308">verified</span>
               <span style="font-weight:700;font-size:var(--fs-label-md)">M.NationWorld Premium</span>
             </div>
-            <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px;line-height:1.5">Unlock advanced analytics, custom nation themes, priority support, and exclusive worldbuilding tools.</p>
+            <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px;line-height:1.5" data-i18n="index.premiumUnlock">Unlock advanced analytics, custom nation themes, priority support, and exclusive worldbuilding tools.</p>
             <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
               <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
-                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Advanced Analytics
+                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> <span data-i18n="index.premiumFeat.analytics">Advanced Analytics</span>
               </div>
               <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
-                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Custom Nation Themes
+                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> <span data-i18n="index.premiumFeat.themes">Custom Nation Themes</span>
               </div>
               <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
-                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Priority Support
+                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> <span data-i18n="index.premiumFeat.support">Priority Support</span>
               </div>
             </div>
             <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700" onclick="window.location.href='pages/premium.html'">
               <span class="material-symbols-outlined" style="font-size:16px">rocket_launch</span>
-              Subscribe — <span data-slati-price>$11.99</span>/mo
+              <span data-i18n="index.premiumSubscribe">Subscribe — </span><span data-slati-price>$11.99</span><span data-i18n="index.premiumPerMo">/mo</span>
             </button>
-            <p style="text-align:center;font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px">Coming Q4 2026 · Cancel anytime</p>
+            <p style="text-align:center;font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px" data-i18n="index.comingSoon">Coming Q4 2026 · Cancel anytime</p>
             <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.6);font-size:11px;margin-top:4px" onclick="window.location.href='pages/premium.html'">
-              View all plans
+              <span data-i18n="index.viewAllPlans">View all plans</span>
               <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
             </button>
           </div>
         </div>
 
         <div class="card">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">Quick Workbench</h3>
+          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)" data-i18n="index.quickWorkbench">Quick Workbench</h3>
           <div style="display:flex;flex-direction:column;gap:4px">
-            <a href="pages/create-world.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">add_circle</span> New World Registration</a>
-            <a href="pages/create-topic-step-1.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">edit_note</span> Create Topic</a>
-            <a href="pages/messages.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">chat</span> Open Messages</a>
+            <a href="pages/create-world.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">add_circle</span> <span data-i18n="index.workbench.newWorld">New World Registration</span></a>
+            <a href="pages/create-topic-step-1.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">edit_note</span> <span data-i18n="index.workbench.createTopic">Create Topic</span></a>
+            <a href="pages/messages.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">chat</span> <span data-i18n="index.workbench.openMessages">Open Messages</span></a>
             <a href="pages/fluidcanvas.html" class="btn btn-ghost" style="justify-content:flex-start"><span class="material-symbols-outlined">draw</span> FluidCanvas</a>
           </div>
         </div>
         <div class="card">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">Network Metrics</h3>
+          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)" data-i18n="index.networkMetrics">Network Metrics</h3>
           <div id="metricsCards"></div>
         </div>
         <div class="card">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)">My Worlds</h3>
+          <h3 class="label-md" style="margin-bottom:var(--space-sm);color:var(--color-on-surface)" data-i18n="index.myWorlds">My Worlds</h3>
           <div id="myWorlds"></div>
         </div>
       </div>
@@ -2418,9 +2418,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <script src="assets/js/settings-modal.js"></script>
 <script src="assets/js/liquid-glass.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   var user = SlatiDB.getUser();
   if (user && user.displayName) {
-    document.getElementById('welcomeBanner').textContent = 'Welcome back, ' + user.displayName;
+    document.getElementById('welcomeBanner').textContent = (T('index.welcomeNamed') || 'Welcome back, ') + user.displayName;
   }
   var nations = SlatiDB.getNations();
   var worlds = SlatiDB.getWorlds();
@@ -2565,10 +2567,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     '<div style="text-align:center;padding:var(--space-sm) 0 var(--space-md);border-bottom:1px solid rgba(118,117,134,0.08);margin-bottom:var(--space-md)">' +
       '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px">' +
         '<span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;box-shadow:0 0 6px rgba(34,197,94,0.5)"></span>' +
-        '<span style="font-size:11px;color:var(--color-outline);font-weight:500;text-transform:uppercase;letter-spacing:0.05em">Online Now</span>' +
+        '<span style="font-size:11px;color:var(--color-outline);font-weight:500;text-transform:uppercase;letter-spacing:0.05em">' + (T('index.metrics.onlineNow') || 'Online Now') + '</span>' +
       '</div>' +
       '<div style="font-size:36px;font-weight:800;color:var(--color-on-surface);line-height:1.1;letter-spacing:-0.02em;margin-bottom:2px">' + onlineNow.toLocaleString() + '</div>' +
-      '<p class="label-sm" style="color:var(--color-outline);margin-bottom:8px">Daily peak <strong style="color:var(--color-on-surface)">' + dailyPeak.toLocaleString() + '</strong> · 20-day trend</p>' +
+      '<p class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + (T('index.metrics.dailyPeak') || 'Daily peak ') + '<strong style="color:var(--color-on-surface)">' + dailyPeak.toLocaleString() + '</strong>' + (T('index.metrics.trend') || ' 20-day trend') + '</p>' +
       // Bar chart
       '<svg viewBox="0 0 ' + barW + ' ' + barH + '" style="width:100%;height:56px;display:block;overflow:visible">' +
         barRects +
@@ -2579,22 +2581,22 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
         '<span class="material-symbols-outlined" style="font-size:20px;color:#eab308">star</span>' +
         '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + featuredArticles.toLocaleString() + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline)">Featured Articles</div>' +
+        '<div class="label-sm" style="color:var(--color-outline)">' + (T('index.metrics.featured') || 'Featured Articles') + '</div>' +
       '</div>' +
       '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
         '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">article</span>' +
         '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + totalArticles.toLocaleString() + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline)">Total Articles</div>' +
+        '<div class="label-sm" style="color:var(--color-outline)">' + (T('index.metrics.totalArticles') || 'Total Articles') + '</div>' +
       '</div>' +
       '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
         '<span class="material-symbols-outlined" style="font-size:20px;color:#22c55e">public</span>' +
         '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + activeNations.toLocaleString() + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline)">Active Nations</div>' +
+        '<div class="label-sm" style="color:var(--color-outline)">' + (T('index.metrics.activeNations') || 'Active Nations') + '</div>' +
       '</div>' +
       '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
         '<span class="material-symbols-outlined" style="font-size:20px;color:#ea580c">group</span>' +
         '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + totalUsers.toLocaleString() + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline)">Total Users</div>' +
+        '<div class="label-sm" style="color:var(--color-outline)">' + (T('index.metrics.totalUsers') || 'Total Users') + '</div>' +
       '</div>' +
     '</div>';
 
@@ -2612,7 +2614,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   metricBars.forEach(function(bar) {
     bar.addEventListener('mouseenter', function() {
       tooltipDay.textContent = bar.dataset.day;
-      tooltipVal.textContent = bar.dataset.val + ' online';
+      tooltipVal.textContent = bar.dataset.val + (T('index.metrics.online') || ' online');
       var rect = bar.getBoundingClientRect();
       tooltip.style.left = (rect.left + rect.width / 2) + 'px';
       tooltip.style.top = (rect.top - 8) + 'px';
@@ -2634,7 +2636,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   var myWorldsHtml;
   if (myWorldsList.length === 0) {
-    myWorldsHtml = '<p style="color:var(--color-outline);font-size:var(--fs-label-md);text-align:center;padding:var(--space-sm)">No worlds yet.<br><a href="pages/create-world.html">Create your first world →</a></p>';
+    myWorldsHtml = '<p style="color:var(--color-outline);font-size:var(--fs-label-md);text-align:center;padding:var(--space-sm)">' + (T('index.noWorlds') || 'No worlds yet.') + '<br><a href="pages/create-world.html">' + (T('index.createFirst') || 'Create your first world →') + '</a></p>';
   } else {
     myWorldsHtml = myWorldsList.slice(0, 3).map(function (n) {
       return '<div style="padding:8px 0;display:flex;align-items:center;gap:8px">' +
@@ -2650,7 +2652,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <!-- ═══════════════ Notification Bell Popup（v0.2.52.0 铃铛聚合通知）═══════════════ -->
 <div id="dashNotifPopup">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px">
-    <span id="dashNotifTitle" style="font-weight:700;font-size:var(--fs-label-lg)">通知</span>
+    <span id="dashNotifTitle" style="font-weight:700;font-size:var(--fs-label-lg)" data-i18n="index.notif.title">通知</span>
     <button type="button" onclick="closeDashNotifPopup()" aria-label="关闭通知" style="background:none;border:none;cursor:pointer;color:var(--color-outline);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center"
       onmouseenter="this.style.background='var(--divider-line)'" onmouseleave="this.style.background='none'">
       <span class="material-symbols-outlined" style="font-size:18px">close</span>
@@ -2664,8 +2666,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       <div id="dashNotifDecisionId" style="color:var(--color-outline);font-size:12px;margin-top:2px"></div>
       <div id="dashNotifDecisionError" style="color:#ef4444;font-size:12px;margin-top:4px;min-height:16px"></div>
       <div style="display:flex;gap:12px;margin-top:16px">
-        <button type="button" class="btn btn-outline" style="border-radius:var(--radius-full);flex:1" onclick="declineDashInvite(dashNotifPendingId)">不同意</button>
-        <button type="button" class="btn btn-primary" style="border-radius:var(--radius-full);flex:1" onclick="acceptDashInvite(dashNotifPendingId)">同意</button>
+        <button type="button" class="btn btn-outline" style="border-radius:var(--radius-full);flex:1" onclick="declineDashInvite(dashNotifPendingId)" data-i18n="index.notif.decline">不同意</button>
+        <button type="button" class="btn btn-primary" style="border-radius:var(--radius-full);flex:1" onclick="acceptDashInvite(dashNotifPendingId)" data-i18n="index.notif.accept">同意</button>
       </div>
     </div>
   </div>
@@ -2693,22 +2695,24 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function timeAgo(iso) {
     var s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
-    if (s < 60) return '刚刚';
-    if (s < 3600) return Math.floor(s / 60) + ' 分钟前';
-    if (s < 86400) return Math.floor(s / 3600) + ' 小时前';
-    if (s < 86400 * 7) return Math.floor(s / 86400) + ' 天前';
+    if (s < 60) return T('time.justNow') || '刚刚';
+    if (s < 3600) return Math.floor(s / 60) + (T('time.minutesAgo') || ' 分钟前');
+    if (s < 86400) return Math.floor(s / 3600) + (T('time.hoursAgo') || ' 小时前');
+    if (s < 86400 * 7) return Math.floor(s / 86400) + (T('time.daysAgo') || ' 天前');
     var d = new Date(iso);
-    return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+    var lng = (window.MN_I18N && MN_I18N.getLang()) || 'zh';
+    try { return d.toLocaleDateString(lng === 'zh' ? 'zh-CN' : lng, { month: 'short', day: 'numeric' }); }
+    catch (e) { return (d.getMonth() + 1) + '月' + d.getDate() + '日'; }
   }
   function dashNotifText(type) {
     switch (type) {
-      case 'post_like': return '点赞了你的帖子';
-      case 'post_favorite': return '收藏了你的帖子';
-      case 'article_like': return '点赞了你的文章';
-      case 'article_favorite': return '收藏了你的文章';
-      case 'post_comment': return '评论了你的帖子';
-      case 'follow': return '关注了你';
-      default: return '想加你为好友';
+      case 'post_like': return T('index.notif.postLike') || '点赞了你的帖子';
+      case 'post_favorite': return T('index.notif.postFavorite') || '收藏了你的帖子';
+      case 'article_like': return T('index.notif.articleLike') || '点赞了你的文章';
+      case 'article_favorite': return T('index.notif.articleFavorite') || '收藏了你的文章';
+      case 'post_comment': return T('index.notif.postComment') || '评论了你的帖子';
+      case 'follow': return T('index.notif.follow') || '关注了你';
+      default: return T('index.notif.friendRequest') || '想加你为好友';
     }
   }
 
@@ -2720,15 +2724,15 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       html = hasLocal
         ? '<div style="padding:28px 0 24px;text-align:center;color:var(--color-outline)">' +
             '<span class="material-symbols-outlined" style="font-size:32px;display:block;margin-bottom:8px">inbox</span>' +
-            '<div class="label-sm">暂无通知</div></div>'
+            '<div class="label-sm">' + (T('index.notif.empty') || '暂无通知') + '</div></div>'
         : '<div style="padding:28px 0 24px;text-align:center;color:var(--color-outline)">' +
             '<span class="material-symbols-outlined" style="font-size:32px;display:block;margin-bottom:8px">notifications_off</span>' +
-            '<div class="label-sm">登录后查看通知</div>' +
-            '<a href="pages/signup-and-login.html" style="display:inline-block;margin-top:10px;color:var(--color-primary);font-weight:600">去登录 →</a></div>';
+            '<div class="label-sm">' + (T('index.notif.loginFirst') || '登录后查看通知') + '</div>' +
+            '<a href="pages/signup-and-login.html" style="display:inline-block;margin-top:10px;color:var(--color-primary);font-weight:600">' + (T('index.notif.goLogin') || '去登录 →') + '</a></div>';
     } else if (!dashNotifs.length) {
       html = '<div style="padding:28px 0 24px;text-align:center;color:var(--color-outline)">' +
         '<span class="material-symbols-outlined" style="font-size:32px;display:block;margin-bottom:8px">inbox</span>' +
-        '<div class="label-sm">暂无通知</div></div>';
+        '<div class="label-sm">' + (T('index.notif.empty') || '暂无通知') + '</div></div>';
     } else {
       html = dashNotifs.map(function (item) {
         var name = item.actor.displayName || item.actor.id || '?';
@@ -2811,7 +2815,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     p.style.display = 'none';
     p.classList.remove('show-decision');
     p.classList.remove('island-open');
-    document.getElementById('dashNotifTitle').textContent = '通知';
+    document.getElementById('dashNotifTitle').textContent = T('index.notif.title') || '通知';
     dashNotifPendingId = null;
     dashNotifOpen = false;
   }
@@ -2821,7 +2825,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var body = document.getElementById('dashNotifBody');
     var h0 = body.getBoundingClientRect().height;
     body.style.height = h0 + 'px';
-    document.getElementById('dashNotifTitle').textContent = decision ? '好友请求' : '通知';
+    document.getElementById('dashNotifTitle').textContent = decision ? (T('index.notif.friendTitle') || '好友请求') : (T('index.notif.title') || '通知');
     p.classList.toggle('show-decision', !!decision);
     void body.offsetHeight;
     var target = document.getElementById(decision ? 'dashNotifDecisionView' : 'dashNotifListView');
@@ -2856,7 +2860,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         renderDashNotifPopup();
         morphDashView(false);
       } else {
-        document.getElementById('dashNotifDecisionError').textContent = '操作失败，请重试';
+        document.getElementById('dashNotifDecisionError').textContent = T('index.notif.fail') || '操作失败，请重试';
       }
     });
   }
@@ -2897,5 +2901,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (e.key === 'Escape') closeDashNotifPopup();
   });
 </script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="assets/js/i18n.js"></script>
+<script src="assets/i18n/common.i18n.js"></script>
+<script src="assets/i18n/index.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 </body>
 </html>

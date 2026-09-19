@@ -5,6 +5,11 @@
 (function () {
   'use strict';
 
+  // v0.2.54.0 i18n：惰性 T(key)——本脚本可能先于 i18n.js（body 尾部）执行。
+  // 弹窗静态文案挂 data-i18n 由 MN_I18N.apply() 翻译；此处 T 供 JS 运行时文案（confirm 等）使用。
+  // fallback 文本保持英文（FC 页无字典=现状逐字节）；'编辑器'区 fallback 保持中文（autosave 电池断言）。
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   var DEFAULT_SETTINGS = {
     theme: 'light',   // 'light' | 'dark' | 'auto' | 'system'
     fontSize: 'medium',
@@ -134,7 +139,11 @@
     }
     if (children) {
       if (typeof children === 'string') e.innerHTML = children;
-      else children.forEach(function(c) { e.appendChild(c); });
+      else children.forEach(function(c) {
+        // v0.2.54.0 修复：icon() 返回 HTML 字符串，数组混字符串成员时走 insertAdjacentHTML（appendChild 对字符串抛 TypeError）
+        if (typeof c === 'string') e.insertAdjacentHTML('beforeend', c);
+        else e.appendChild(c);
+      });
     }
     return e;
   }
@@ -213,31 +222,31 @@
 
     // ── Section: Profile ──
     var profileSection = el('div', '', null, [
-      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' } }, 'Profile'),
+      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' }, dataset: { i18n: 'settings.sec.profile' } }, 'Profile'),
       el('div', '', { style: { display: 'flex', alignItems: 'center', gap: 'var(--space-md)', marginBottom: 'var(--space-md)' } }, [
         el('div', '', { style: { position: 'relative', flexShrink: '0' } },
           '<img src="' + (user.avatarUrl || window._slatiFallbackAvatar) + '" alt="" style="width:64px;height:64px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.08)">' +
-          '<button class="btn btn-ghost btn-icon btn-sm" style="position:absolute;bottom:-4px;right:-4px;width:28px;height:28px;border-radius:50%;background:var(--color-primary);color:white" title="Change avatar">' +
+          '<button class="btn btn-ghost btn-icon btn-sm" style="position:absolute;bottom:-4px;right:-4px;width:28px;height:28px;border-radius:50%;background:var(--color-primary);color:white" title="' + (T('settings.profile.changeAvatar') || 'Change avatar') + '">' +
             '<span class="material-symbols-outlined" style="font-size:14px">photo_camera</span>' +
           '</button>'
         ),
         el('div', '', { style: { flex: '1', minWidth: '0' } }, [
-          el('label', 'form-label', {}, 'Display Name'),
+          el('label', 'form-label', { dataset: { i18n: 'settings.profile.displayName' } }, 'Display Name'),
           el('input', 'input-glass', { type: 'text', id: 'setDisplayName', value: user.displayName, style: { marginBottom: '8px' } }),
         ]),
       ]),
       el('div', 'form-group', {}, [
-        el('label', 'form-label', {}, 'Bio'),
-        el('textarea', 'input-glass', { id: 'setBio', rows: '2', placeholder: 'A short bio about yourself…' }, user.bio || ''),
+        el('label', 'form-label', { dataset: { i18n: 'settings.profile.bio' } }, 'Bio'),
+        el('textarea', 'input-glass', { id: 'setBio', rows: '2', placeholder: 'A short bio about yourself…', dataset: { i18nPlaceholder: 'settings.profile.bioPh' } }, user.bio || ''),
       ]),
       el('div', 'form-group', {}, [
-        el('label', 'form-label', {}, 'Citizen ID'),
+        el('label', 'form-label', { dataset: { i18n: 'settings.profile.citizenId' } }, 'Citizen ID'),
         el('input', 'input-glass', { type: 'text', value: user.citizenId, readonly: '', style: { opacity: '0.6', cursor: 'not-allowed' } }),
       ]),
       // 2026-09-03 用户「在后端做一下用户性别的记录，然后在用户资料里也单独显示」：Profile 区单独一行展示
       //（注册第二页下拉填写的值，镜像到后端 /me 后权威回读；未填写显示 —）
       el('div', 'form-group', {}, [
-        el('label', 'form-label', {}, 'Gender'),
+        el('label', 'form-label', { dataset: { i18n: 'settings.profile.gender' } }, 'Gender'),
         el('input', 'input-glass', { type: 'text', value: user.gender || '—', readonly: '', style: { opacity: '0.6', cursor: 'not-allowed' } }),
       ]),
     ]);
@@ -252,12 +261,13 @@
     var themeHTML = themes.map(function(th) {
       var extra = th.id === 'system' ? ';color:#06b6d4' : '';
       return '<button class="subnav-pill' + (s.theme === th.id ? ' active' : '') + '" data-theme="' + th.id + '" style="display:flex;align-items:center;gap:6px">' +
-        '<span class="material-symbols-outlined" style="font-size:18px' + extra + '">' + th.icon + '</span>' + th.label + '</button>';
+        '<span class="material-symbols-outlined" style="font-size:18px' + extra + '">' + th.icon + '</span>' +
+        '<span data-i18n="settings.appearance.' + th.id + '">' + th.label + '</span></button>';
     }).join('');
 
     var fontSizeOpts = ['small', 'medium', 'large'];
     var fontSizeHTML = fontSizeOpts.map(function(fs) {
-      return '<button class="subnav-pill' + (s.fontSize === fs ? ' active' : '') + '" data-fs="' + fs + '">' + fs.charAt(0).toUpperCase() + fs.slice(1) + '</button>';
+      return '<button class="subnav-pill' + (s.fontSize === fs ? ' active' : '') + '" data-fs="' + fs + '" data-i18n="settings.appearance.size.' + fs + '">' + fs.charAt(0).toUpperCase() + fs.slice(1) + '</button>';
     }).join('');
 
     // 主题色（用户「主题色分成黑白和现在这个蓝白两种」+「按钮分成上下两个部分 上半部显示主题配色 下半部就是名称」）：
@@ -269,21 +279,21 @@
     var accentHTML = accentOpts.map(function (a) {
       return '<button type="button" class="accent-chip' + (s.accent === a.id ? ' active' : '') + '" data-accent="' + a.id + '">' +
         '<span class="accent-swatch" style="background:' + a.sw + '"></span>' +
-        '<span class="accent-name">' + a.label + '</span></button>';
+        '<span class="accent-name" data-i18n="settings.appearance.accent.' + a.id + '">' + a.label + '</span></button>';
     }).join('');
 
     var appearSection = el('div', '', null, [
-      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' } }, 'Appearance'),
+      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' }, dataset: { i18n: 'settings.sec.appearance' } }, 'Appearance'),
       el('div', '', { style: { paddingBottom: '12px', borderBottom: '1px solid rgba(118,117,134,0.08)' } }, [
-        el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block', marginBottom: '8px' } }, 'Theme'),
+        el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block', marginBottom: '8px' }, dataset: { i18n: 'settings.appearance.theme' } }, 'Theme'),
         el('div', 'subnav', { id: 'themeSubnav', style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } }, themeHTML),
       ]),
       el('div', '', { style: { padding: '12px 0' } }, [
-        el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block', marginBottom: '8px' } }, 'Font Size'),
+        el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block', marginBottom: '8px' }, dataset: { i18n: 'settings.appearance.fontSize' } }, 'Font Size'),
         el('div', 'subnav', { id: 'fontSizeSubnav', style: { display: 'inline-flex' } }, fontSizeHTML),
       ]),
       el('div', '', { style: { paddingTop: '12px' } }, [
-        el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block', marginBottom: '8px' } }, 'Accent Color'),
+        el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block', marginBottom: '8px' }, dataset: { i18n: 'settings.appearance.accentColor' } }, 'Accent Color'),
         el('div', 'accent-subnav', { id: 'accentSubnav', style: { display: 'flex', gap: '8px' } }, accentHTML),
       ]),
     ]);
@@ -295,13 +305,15 @@
         saveSettings(settings);
       });
       return el('div', '', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(118,117,134,0.08)' } }, [
-        el('div', '', null, [el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block' } }, label), el('span', 'label-sm', { style: { color: 'var(--color-outline)' } }, desc)]),
+        el('div', '', null, [
+          el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block' }, dataset: { i18n: 'settings.notif.' + key } }, label),
+          el('span', 'label-sm', { style: { color: 'var(--color-outline)' }, dataset: { i18n: 'settings.notif.' + key + 'Desc' } }, desc)]),
         tog,
       ]);
     }
 
     var notifSection = el('div', '', null, [
-      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' } }, 'Notifications'),
+      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' }, dataset: { i18n: 'settings.sec.notifications' } }, 'Notifications'),
       notifRow('Email Notifications', 'Receive updates via email', 'emailNotif'),
       notifRow('Push Notifications', 'Browser push notifications', 'pushNotif'),
       notifRow('In-App Notifications', 'Alerts within the platform', 'inAppNotif'),
@@ -314,49 +326,61 @@
         saveSettings(settings);
       });
       return el('div', '', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(118,117,134,0.08)' } }, [
-        el('div', '', null, [el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block' } }, label), el('span', 'label-sm', { style: { color: 'var(--color-outline)' } }, desc)]),
+        el('div', '', null, [
+          el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block' }, dataset: { i18n: 'settings.privacy.' + key } }, label),
+          el('span', 'label-sm', { style: { color: 'var(--color-outline)' }, dataset: { i18n: 'settings.privacy.' + key + 'Desc' } }, desc)]),
         tog,
       ]);
     }
 
     var privSection = el('div', '', null, [
-      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' } }, 'Privacy'),
+      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' }, dataset: { i18n: 'settings.sec.privacy' } }, 'Privacy'),
       privRow('Public Profile', 'Allow others to view your profile', 'profilePublic'),
       privRow('Activity Status', 'Show when you are online', 'showActivity'),
       privRow('Nation Affiliations', 'Display nations you belong to', 'showNations'),
     ]);
 
-    // ── Section: Language ──
-    var langs = [
-      { code: 'en', label: 'English' },
-      { code: 'zh', label: '中文' },
-      { code: 'es', label: 'Español' },
-      { code: 'fr', label: 'Français' },
+    // ── Section: Language（v0.2.54.0 全站 12 语言：读 MN_I18N.LANGS；FC 页无 i18n 用本地兜底清单）──
+    // 语言名是固有名称（中文/Deutsch/Русский…）不翻译；active 读 i18n 当前语言优先，兼顾双键旧值
+    var langs = (window.MN_I18N && window.MN_I18N.LANGS) || [
+      { code: 'zh', name: '中文' },
+      { code: 'zh-Hant', name: '繁體中文' },
+      { code: 'en', name: 'English' },
+      { code: 'de', name: 'Deutsch' },
+      { code: 'ru', name: 'Русский' },
+      { code: 'ms', name: 'Bahasa Melayu' },
+      { code: 'th', name: 'ไทย' },
+      { code: 'vi', name: 'Tiếng Việt' },
+      { code: 'id', name: 'Bahasa Indonesia' },
+      { code: 'fr', name: 'Français' },
+      { code: 'es', name: 'Español' },
+      { code: 'pt', name: 'Português' }
     ];
+    var curLang = (window.MN_I18N && window.MN_I18N.getLang()) || localStorage.getItem('slati_lang') || s.language;
     var langHTML = langs.map(function(l) {
-      return '<button class="subnav-pill' + (s.language === l.code ? ' active' : '') + '" data-lang="' + l.code + '">' + l.label + '</button>';
+      return '<button class="subnav-pill' + (curLang === l.code ? ' active' : '') + '" data-lang="' + l.code + '">' + l.name + '</button>';
     }).join('');
 
     var langSection = el('div', '', null, [
-      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' } }, 'Language'),
+      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' }, dataset: { i18n: 'settings.sec.language' } }, 'Language'),
       el('div', 'subnav', { id: 'langSubnav', style: { display: 'inline-flex', flexWrap: 'wrap' } }, langHTML),
     ]);
 
     // ── Section: Account / Danger Zone ──
     var accountSection = el('div', '', null, [
-      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' } }, 'Account'),
+      el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' }, dataset: { i18n: 'settings.sec.account' } }, 'Account'),
       el('div', '', { style: { display: 'flex', gap: 'var(--space-sm)', flexWrap: 'wrap' } }, [
         el('button', 'btn btn-outline', { id: 'setLogoutBtn', style: { color: '#dc2626', borderColor: 'rgba(220,38,38,0.2)' } },
-          icon('logout', 18) + ' Logout'),
+          [icon('logout', 18), el('span', '', { dataset: { i18n: 'settings.account.logout' } }, 'Logout')]),
         el('button', 'btn btn-ghost', { id: 'setDeleteBtn', style: { color: '#dc2626' } },
-          icon('delete_forever', 18) + ' Delete Account'),
+          [icon('delete_forever', 18), el('span', '', { dataset: { i18n: 'settings.account.delete' } }, 'Delete Account')]),
       ]),
       el('div', '', { style: { marginTop: 'var(--space-md)', fontSize: '12px', display: 'flex', gap: '14px' } }, [
-        el('a', '', { href: '../pages/terms.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '服务条款'),
-        el('a', '', { href: '../pages/financial-terms.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '财务与支付'),
-        el('a', '', { href: '../pages/platform-responsibility.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '平台责任'),
-        el('a', '', { href: '../pages/community-rules.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '社区规则'),
-        el('a', '', { href: '../pages/privacy.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' } }, '隐私政策'),
+        el('a', '', { href: '../pages/terms.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' }, dataset: { i18n: 'settings.account.terms' } }, '服务条款'),
+        el('a', '', { href: '../pages/financial-terms.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' }, dataset: { i18n: 'settings.account.fin' } }, '财务与支付'),
+        el('a', '', { href: '../pages/platform-responsibility.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' }, dataset: { i18n: 'settings.account.resp' } }, '平台责任'),
+        el('a', '', { href: '../pages/community-rules.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' }, dataset: { i18n: 'settings.account.rules' } }, '社区规则'),
+        el('a', '', { href: '../pages/privacy.html', target: '_blank', style: { color: 'var(--color-on-surface-variant)', textDecoration: 'underline' }, dataset: { i18n: 'settings.account.privacy' } }, '隐私政策'),
       ]),
     ]);
 
@@ -365,14 +389,14 @@
     if (isEditor) {
       var fcOpts = [5, 10, 15, 30, 60];
       var fcHTML = fcOpts.map(function (m) {
-        return '<button type="button" class="subnav-pill' + (Number(s.fcAutoSave) === m ? ' active' : '') + '" data-min="' + m + '">' + m + ' 分钟</button>';
+        return '<button type="button" class="subnav-pill' + (Number(s.fcAutoSave) === m ? ' active' : '') + '" data-min="' + m + '">' + m + ' <span data-i18n="settings.editor.minutes">分钟</span></button>';
       }).join('');
       editorSection = el('div', '', null, [
-        el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' } }, '编辑器'),
+        el('h3', 'label-lg', { style: { marginBottom: '12px', color: 'var(--color-on-surface)' }, dataset: { i18n: 'settings.editor.title' } }, '编辑器'),
         el('div', 'form-group', {}, [
-          el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block', marginBottom: '8px' } }, '自动保存频率'),
+          el('span', '', { style: { fontWeight: '600', fontSize: 'var(--fs-label-md)', display: 'block', marginBottom: '8px' }, dataset: { i18n: 'settings.editor.autosave' } }, '自动保存频率'),
           el('div', 'subnav', { id: 'fcAutoSubnav', style: { display: 'inline-flex', flexWrap: 'wrap' } }, fcHTML),
-          el('span', 'label-sm', { style: { display: 'block', marginTop: '8px', color: 'var(--color-outline)' } }, '平台每 N 分钟自动保存一次草稿。默认 10 分钟，最快 5 分钟；Ctrl+S 或「Save Draft」可立即保存。'),
+          el('span', 'label-sm', { style: { display: 'block', marginTop: '8px', color: 'var(--color-outline)' }, dataset: { i18n: 'settings.editor.autosaveDesc' } }, '平台每 N 分钟自动保存一次草稿。默认 10 分钟，最快 5 分钟；Ctrl+S 或「Save Draft」可立即保存。'),
         ]),
       ]);
     }
@@ -396,7 +420,7 @@
     }
     var menu = el('div', 'settings-menu', { id: 'settingsMenu' }, menuItems.map(function (m) {
       return el('button', 'settings-menu-item' + (m.id === defSec ? ' active' : ''), { type: 'button', dataset: { sec: m.id } },
-        icon(m.icon, 18) + '<span>' + m.label + '</span>');
+        icon(m.icon, 18) + '<span data-i18n="settings.menu.' + m.id + '">' + m.label + '</span>');
     }));
     var pane = el('div', 'settings-pane', null, secList.map(function (s) {
       return el('div', 'settings-sec' + (s.id === defSec ? '' : ' settings-sec-hidden'), { dataset: { sec: s.id } }, [s.el]);
@@ -406,7 +430,8 @@
     // ── Header ──
     var header = el('div', '', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-lg)' } }, [
       el('div', '', null, [
-        el('h2', 'headline-md', { style: { margin: '0' } }, icon('settings', 24) + ' Settings'),
+        el('h2', 'headline-md', { style: { margin: '0' } },
+          [icon('settings', 24), el('span', '', { dataset: { i18n: 'settings.title' } }, 'Settings')]),
       ]),
       el('button', 'btn btn-ghost btn-icon btn-sm', { id: 'settingsCloseBtn', title: 'Close' },
         '<span class="material-symbols-outlined" style="font-size:20px">close</span>'),
@@ -439,6 +464,8 @@
     modalEls = buildModal();
     document.body.appendChild(modalEls.backdrop);
     document.body.appendChild(modalEls.container);
+    // v0.2.54.0 i18n：弹窗每次打开重建，建完扫一遍 data-i18n（无 i18n 的页面如 FC 为 no-op）
+    if (window.MN_I18N) MN_I18N.apply();
 
     // Animate in
     requestAnimationFrame(function () {
@@ -501,7 +528,8 @@
       });
     }
 
-    // Language pills
+    // Language pills（v0.2.54.0 双键统一：settings.language + slati_lang 同写——
+    // 修复「刷新后 active 态与实际语言不一致」；FC 页无 i18n 时直写 localStorage 仍让全站记住选择）
     var langSubnav = document.getElementById('langSubnav');
     if (langSubnav) {
       langSubnav.addEventListener('click', function (e) {
@@ -509,10 +537,11 @@
         if (!btn) return;
         langSubnav.querySelectorAll('.subnav-pill').forEach(function (b) { b.classList.remove('active'); });
         btn.classList.add('active');
-        settings.language = btn.dataset.lang;
+        var lang = btn.dataset.lang;
+        settings.language = lang;
         saveSettings(settings);
-        // Apply to pages using the i18n module (no-op where it isn't loaded)
-        if (window.MN_I18N) window.MN_I18N.setLang(btn.dataset.lang);
+        try { localStorage.setItem('slati_lang', lang); } catch (err) {}
+        if (window.MN_I18N) window.MN_I18N.setLang(lang);
       });
     }
 
@@ -578,7 +607,7 @@
     var deleteBtn = document.getElementById('setDeleteBtn');
     if (deleteBtn) {
       deleteBtn.addEventListener('click', function () {
-        if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+        if (confirm(T('settings.account.deleteConfirm') || 'Are you sure you want to delete your account? This action cannot be undone.')) {
           if (window.SlatiDB) {
             SlatiDB.remove('slati_user');
             SlatiDB.remove('slati_session');

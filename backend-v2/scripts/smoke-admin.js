@@ -249,7 +249,7 @@ async function main() {
   const cdpPort = 9300 + Math.floor(Math.random() * 400);
   const profile = path.join(os.tmpdir(), `smoke-admin-profile-${process.pid}`);
   const chrome = spawn(CHROME, [
-    '--headless=new', '--disable-gpu', '--disable-extensions',
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--disable-extensions',
     `--remote-debugging-port=${cdpPort}`, `--user-data-dir=${profile}`,
     '--no-first-run', '--no-default-browser-check', 'about:blank'
   ], { stdio: 'ignore' });

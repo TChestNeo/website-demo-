@@ -1,10 +1,15 @@
-// tmp-battery-migrate-btn.js — Migrate 按钮换肤电池（v10.28.17.4 同轮修正版）
+// tmp-battery-migrate-btn.js — Migrate 按钮换肤电池（v10.28.17.4 同轮修正版；
+//   v0.2.45.2/v10.28.34.2 复跑适配：①2026-09-11 v0.2.28.15 用户定制（1d7e823）——
+//   白面板（黑→白）+字母黑白相反滤镜+尺寸对齐 .btn-sm（span 7px 16px）——
+//   B4/B7 断言更新 + 新钉 B7b/C4 反色滤镜两态；②悬停断言固定 sleep 改轮询
+//   （陷阱 90：forcePseudoState 生效落在渲染循环，固定 450ms 踩 0.3/0.4s
+//   transition 竞态——Q1/R3/C1 偶发读到起点矩阵假红）；③A1 版本 v10.28.34.2）
 // 用户（2026-09-02）：「再把Migrate按钮的Ui 改成这个」（给 CSS：cssbuttons-io 紫渐变
 // 代码按钮）+ 同轮纠正「不是啊我是说顶部的那个Migrate 不是Migrate to Cards 啊」+
 // 同轮二修「那个大小调一下这有点太大了」。
 // 最终口径：顶部 editor-header 的 Migrate 按钮 = cssbuttons-io（紫渐变底+ghostwhite 字
-// +</> 图标+悬停黑面板 skew(30deg) 横扫+按下 0.95，亮/暗共用零覆写；字号 12px+
-// span 竖向 0.5em 对齐兄弟 .btn-sm）；弹窗内 Migrate to Cards = 还原 v10.28.17.3
+// +</> 图标+悬停白面板 skew(30deg) 横扫+按下 0.95，亮/暗共用零覆写；字号 12px+
+// span 7px 16px 对齐兄弟 .btn-sm）；弹窗内 Migrate to Cards = 还原 v10.28.17.3
 // Uiverse 药丸（.migrate-pill 独立类，药丸近黑/白字/星芒三路径/悬停紫渐变层光环
 // 放大 1.1/暗主题翻浅）。迁移逻辑零改动回归。
 // 跑法：node tmp-battery-migrate-btn.js（LIVE_BASE=<完整站点 URL> 跑线上）
@@ -113,6 +118,7 @@ const PROBE_TOP = `(function () {
     radius: cs.borderRadius,
     btnTf: cs.transform,
     spanPadding: span ? getComputedStyle(span).padding : '',
+    spanFilter: span ? getComputedStyle(span).filter : '',
     beforeBg: before.backgroundColor,
     beforeTf: before.transform,
     beforeMtx: matrixTf(before.transform),
@@ -151,6 +157,21 @@ async function forcePseudo(t, nodeSelector, classes) {
   await t.send('CSS.forcePseudoState', { nodeId, forcedPseudoClasses: classes });
 }
 
+// 陷阱 90（根治）：headless 渲染循环节流冻结 transition 时钟（Cdbg 实证 2.3s+ 才吐一帧，
+// --disable-frame-rate-limit 与输入事件补帧均无效）——注入 transition:none !important 让悬停
+// 终态在 style recalc 即刻落位，轮询只验证 :hover 终态 CSS；动画平滑度留给用户肉眼复核。
+// 陷阱 93：readyExpr 里的正则字符串内要 `\\(` 转义（写成 `\\\\` 会匹配「字面反斜杠」永不命中）。
+async function forcePseudoSettled(t, nodeSelector, classes, readyExpr, timeout, label) {
+  try { await t.evalJs("if (!document.getElementById('mn-test-noanim')) { var s = document.createElement('style'); s.id = 'mn-test-noanim'; s.textContent = '*, *::before, *::after { transition: none !important; animation: none !important; }'; document.head.appendChild(s); }"); } catch (e) {}
+  await forcePseudo(t, nodeSelector, classes);
+  const t0 = Date.now();
+  while (Date.now() - t0 < (timeout || 4000)) {
+    try { if (await t.evalJs('!!(' + readyExpr + ')')) return; } catch (e) {}
+    await sleep(120);
+  }
+  throw new Error('forcePseudoSettled 超时: ' + label);
+}
+
 async function main() {
   const LIVE = process.env.LIVE_BASE || '';
   if (!LIVE) server.listen(PORT);
@@ -163,7 +184,7 @@ async function main() {
   if (!chromePath) throw new Error('找不到 Chrome');
 
   const chrome = spawn(chromePath, [
-    '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--window-size=1280,900', '--remote-debugging-port=' + CDP_PORT,
     '--user-data-dir=' + USER_DATA, 'about:blank'
   ], { stdio: 'ignore' });
@@ -173,8 +194,11 @@ async function main() {
     await sleep(250);
   }
 
-  const r = await fetch('http://127.0.0.1:' + CDP_PORT + '/json/new?about:blank', { method: 'PUT' });
-  const info = await r.json();
+  // 陷阱 91：/json/new 建的 tab 可能落后台，forcePseudoState 的悬停伪类在后台 tab 不生效
+  // （kill-style 注入 + transition:none 后轮询 64 轮仍 rest 态实证）——改用 /json/list
+  // 既有 front page（tmp-debug-c.js 同款先例，poll#1 即终态）。
+  const pages = await (await fetch('http://127.0.0.1:' + CDP_PORT + '/json/list')).json();
+  const info = pages.find(x => x.type === 'page');
   const t = new CDP(info.webSocketDebuggerUrl);
   await t.connect();
   await t.send('Page.enable');
@@ -182,6 +206,8 @@ async function main() {
   await t.send('Log.enable');
   await t.send('DOM.enable');
   await t.send('CSS.enable');
+  await t.send('Page.bringToFront');
+  await t.send('Emulation.setFocusEmulationEnabled', { enabled: true }); // 防 headless 后台节流冻结 transition 时钟
 
   const exc = [], err = [];
   t.on('Runtime.exceptionThrown', p => exc.push((p.exceptionDetails.exception && p.exceptionDetails.exception.description) || '?'));
@@ -199,7 +225,10 @@ async function main() {
     await t.send('Page.navigate', { url: BASE + '/pages/fluidcanvas-editor.html' });
   } else {
     await t.send('Page.navigate', { url: BASE + '/' });
-    await waitFor(t, "document.readyState === 'complete'", 8000, '根页');
+    // 陷阱 92：about:blank 的 readyState 立即是 complete，等 readyState 会秒过 → seed 在
+    // about:blank 上写 localStorage 抛 SecurityError（竞态，/json/list 时序下现形）。
+    // 改等站点专属标记（根页加载 site-config.js 才存在）。
+    await waitFor(t, "typeof window.MN_SITE_VERSION !== 'undefined'", 8000, '根页');
     await t.evalJs(seedJs);
     await t.send('Page.navigate', { url: BASE + '/pages/fluidcanvas-editor.html' });
   }
@@ -207,7 +236,7 @@ async function main() {
   await sleep(800); // 画布加载 settle（陷阱 86）
 
   // ════ A：顶部按钮结构 + 版本 ════
-  check('A1 版本 v10.28.17.4', (await t.evalJs('window.FLUIDCANVAS_VERSION')) === 'v10.28.17.4',
+  check('A1 版本 v10.28.34.2', (await t.evalJs('window.FLUIDCANVAS_VERSION')) === 'v10.28.34.2',
     String(await t.evalJs('window.FLUIDCANVAS_VERSION')));
   const structTop = JSON.parse(await t.evalJs(`(function () {
     var b = document.querySelector('.migrate-btn');
@@ -233,23 +262,29 @@ async function main() {
   check('B2 文字 ghostwhite', pr.color === 'rgb(248, 248, 255)', String(pr.color));
   check('B3 字号 12px（对齐 .btn-sm）', pr.fontSize === '12px', String(pr.fontSize));
   const padTop = pr.spanPadding ? parseFloat(pr.spanPadding.split(' ')[0]) : 0;
-  check('B4 span 内边距 0.5em 上（≈6px）', Math.abs(padTop - 6) < 0.2, pr.spanPadding);
+  check('B4 span 内边距 7px 16px（v0.2.28.15 对齐 .btn-sm）', Math.abs(padTop - 7) < 0.2, pr.spanPadding);
   check('B5 高度对齐兄弟 .btn-sm（差 <3px）', Math.abs(pr.btnH - pr.sibH) < 3, pr.btnH + ' vs ' + pr.sibH);
-  check('B6 黑面板静息 skew(30deg)（matrix c 位 0.5773）', pr.beforeMtx && Math.abs(pr.beforeMtx[2] - 0.57735) < 0.01, pr.beforeTf);
-  check('B7 面板纯黑', pr.beforeBg === 'rgb(0, 0, 0)', String(pr.beforeBg));
+  check('B6 白面板静息 skew(30deg)（matrix c 位 0.5773）', pr.beforeMtx && Math.abs(pr.beforeMtx[2] - 0.57735) < 0.01, pr.beforeTf);
+  check('B7 面板纯白（v0.2.28.15 用户定制：黑→白）', pr.beforeBg === 'rgb(255, 255, 255)', String(pr.beforeBg));
+  check('B7b 字母反色滤镜 invert(1)（白面板上黑字）', pr.spanFilter === 'invert(1)', String(pr.spanFilter));
   check('B8 图标 fill=currentColor 解析为 ghostwhite', pr.iconFill === 'rgb(248, 248, 255)', String(pr.iconFill));
   check('B9 静息按钮无缩放', pr.btnTf === 'none' || pr.btnTf === 'matrix(1, 0, 0, 1, 0, 0)', String(pr.btnTf));
   check('B10 药丸圆角 9999px（computed 钳到半高 18px）', pr.radius === '18px' || pr.radius === '9999px', String(pr.radius));
 
-  // ════ C：顶部钮悬停 → 黑面板从左扫到右 ════
-  await forcePseudo(t, '.migrate-btn', ['hover']);
-  await sleep(500); // transition 0.4s 走完
+  // ════ C：顶部钮悬停 → 白面板从左扫到右（轮询到横扫终态再读数） ════
+  // 陷阱 93：readyExpr 正则双重转义——字符串内 `\\\\` 变 `\\`，正则匹配「matrix+字面反斜杠」
+  // 永不命中 → 轮询即使读到终态也返回 false（与 transition 冻结叠加，一直误判为冻结）。
+  // 字符串内需 `\\(`（转义左括号）。PROBE_TOP 的 matrixTf 同款写法是对的。
+  await forcePseudoSettled(t, '.migrate-btn', ['hover'],
+    "(function(){ var m = getComputedStyle(document.querySelector('.migrate-btn'), '::before').transform; var a = m.match(/matrix\\(([^)]+)\\)/); return a && parseFloat(a[1].split(',')[4]) > 0; })()",
+    8000, 'C 面板横扫');
   pr = await probeOf(t, PROBE_TOP);
   const mtx = pr.beforeMtx || [0, 0, 0, 0, 0, 0];
   const expectTx = pr.btnW * 1.2; // translate3d(100%) 的 % 相对 ::before 自身盒（=钮宽 120%）
   check('C1 面板横扫到位（tx ≈ 1.2×钮宽）', Math.abs(mtx[4] - expectTx) < 2, mtx.join(',') + ' vs ' + expectTx.toFixed(1));
-  check('C2 横扫后 skew 消失（矩阵为纯平移）', Math.abs(mtx[1]) < 0.001 && Math.abs(mtx[0] - 1) < 0.001 && Math.abs(mtx[3] - 1) < 0.001, mtx.join(','));
+  check('C2 横扫后 skew 消失（矩阵为纯平移：c/b≈0、对角≈1）', Math.abs(mtx[1]) < 0.001 && Math.abs(mtx[2]) < 0.001 && Math.abs(mtx[0] - 1) < 0.001 && Math.abs(mtx[3] - 1) < 0.001, mtx.join(','));
   check('C3 悬停底纹不变（紫渐变仍在）', pr.bg.indexOf('linear-gradient(to right, rgb(142, 45, 226), rgb(74, 0, 224))') > -1, pr.bg.slice(0, 60));
+  check('C4 悬停字母滤镜翻回 invert(0)（白字上紫底）', pr.spanFilter === 'invert(0)', String(pr.spanFilter));
   await forcePseudo(t, '.migrate-btn', []);
 
   // ════ D：顶部钮按下 → scale(0.95) ════
@@ -298,9 +333,10 @@ async function main() {
   check('P3 静息缩放 1（无悬停）', pp.pillTf === 'matrix(1, 0, 0, 1, 0, 0)', String(pp.pillTf));
   check('P4 文字渐变裁切（color transparent）', pp.textColor === 'rgba(0, 0, 0, 0)', String(pp.textColor));
 
-  // ════ Q：药丸悬停 → 紫色渐变层/光环/放大 1.1 ════
-  await forcePseudo(t, '.migrate-pill', ['hover']);
-  await sleep(450); // transition 0.3s 走完（陷阱 90）
+  // ════ Q：药丸悬停 → 紫色渐变层/光环/放大 1.1（轮询到 1.1 终态再读数） ════
+  await forcePseudoSettled(t, '.migrate-pill', ['hover'],
+    "(function(){ var p = document.querySelector('.migrate-pill'); return p && p.matches(':hover') && getComputedStyle(p).transform === 'matrix(1.1, 0, 0, 1.1, 0, 0)'; })()",
+    4000, 'Q 药丸悬停放大');
   pp = await probeOf(t, PROBE_PILL);
   check('Q1 悬停放大 1.1', pp.pillTf === 'matrix(1.1, 0, 0, 1.1, 0, 0)', String(pp.pillTf));
   check('Q2 悬停紫渐变 overlay 现身（opacity 1）', pp.afterOpacity === '1', String(pp.afterOpacity));
@@ -313,8 +349,9 @@ async function main() {
   pp = await probeOf(t, PROBE_PILL);
   check('R1 暗主题药丸翻浅 #f2f1fb', pp.beforeBg === 'rgb(242, 241, 251)', String(pp.beforeBg));
   check('R2 暗主题星芒深紫', pp.pathFill === 'rgb(87, 48, 166)', String(pp.pathFill));
-  await forcePseudo(t, '.migrate-pill', ['hover']);
-  await sleep(450);
+  await forcePseudoSettled(t, '.migrate-pill', ['hover'],
+    "(function(){ var p = document.querySelector('.migrate-pill'); return p && p.matches(':hover') && getComputedStyle(p).transform === 'matrix(1.1, 0, 0, 1.1, 0, 0)'; })()",
+    4000, 'R 暗主题药丸悬停放大');
   pp = await probeOf(t, PROBE_PILL);
   check('R3 暗主题悬停仍放大 1.1', pp.pillTf === 'matrix(1.1, 0, 0, 1.1, 0, 0)', String(pp.pillTf));
   await forcePseudo(t, '.migrate-pill', []);

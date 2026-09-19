@@ -21,7 +21,7 @@ const { spawn } = require('child_process');
 
 const MODE = (process.argv[2] || 'after');
 const IS_AFTER = MODE === 'after';
-const EXPECT_VER = IS_AFTER ? 'v0.2.53.3' : 'v0.2.50.2';
+const EXPECT_VER = IS_AFTER ? 'v0.2.54.1' : 'v0.2.50.2';
 
 const DOCS = path.resolve(__dirname, '..', 'docs');
 const PORT = 4700 + Math.floor(Math.random() * 100);
@@ -230,7 +230,7 @@ const FRAME_REC = `(function () {
     process.env.LOCALAPPDATA + '/Google/Chrome/Application/chrome.exe'
   ]) if (fs.existsSync(p)) { chromePath = p; break; }
   const chrome = spawn(chromePath, [
-    '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--window-size=1280,900', '--remote-debugging-port=' + CDP_PORT,
     '--user-data-dir=' + USER_DATA, 'about:blank'
   ], { stdio: 'ignore' });

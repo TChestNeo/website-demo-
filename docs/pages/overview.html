@@ -2221,9 +2221,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Sub nav -->
     <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md)">
       <div class="subnav" data-slider>
-        <a href="overview.html" class="subnav-pill active">Overview</a>
-        <a href="explore.html" class="subnav-pill">Explore</a>
-        <a href="guidelines.html" class="subnav-pill">Guidelines</a>
+        <a href="overview.html" class="subnav-pill active" data-i18n="ov.nav.overview">Overview</a>
+        <a href="explore.html" class="subnav-pill" data-i18n="ov.nav.explore">Explore</a>
+        <a href="guidelines.html" class="subnav-pill" data-i18n="ov.nav.guidelines">Guidelines</a>
       </div>
     </div>
 
@@ -2231,13 +2231,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div class="card tilt-container" style="padding:var(--space-lg);margin-bottom:var(--space-md);background:linear-gradient(135deg,rgba(70,72,212,0.05),rgba(129,39,207,0.03)),var(--card-bg)">
       <div class="flex-between" style="flex-wrap:wrap;gap:var(--space-md)">
         <div>
-          <span class="badge badge-primary" style="margin-bottom:8px">Knowledge Base</span>
-          <h1 class="headline-lg">MicroNationary Overview</h1>
-          <p class="body-md" style="color:var(--color-on-surface-variant)">Your gateway to the global registry of worlds, lore archives, and community knowledge.</p>
+          <span class="badge badge-primary" style="margin-bottom:8px" data-i18n="ov.knowledgeBase">Knowledge Base</span>
+          <h1 class="headline-lg" data-i18n="ov.heading">MicroNationary Overview</h1>
+          <p class="body-md" style="color:var(--color-on-surface-variant)" data-i18n="ov.sub">Your gateway to the global registry of worlds, lore archives, and community knowledge.</p>
         </div>
         <div style="display:flex;gap:var(--space-sm)">
-          <a href="create-world.html" class="btn btn-primary create-world-cta">Create World</a>
-          <a href="explore.html" class="btn btn-outline">View Archive</a>
+          <a href="create-world.html" class="btn btn-primary create-world-cta" data-i18n="ov.createWorld">Create World</a>
+          <a href="explore.html" class="btn btn-outline" data-i18n="ov.viewArchive">View Archive</a>
         </div>
       </div>
     </div>
@@ -2267,12 +2267,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       <div style="position:absolute;bottom:-40px;left:30%;width:120px;height:120px;background:radial-gradient(circle,rgba(90,100,220,0.14),transparent 70%);border-radius:50%;pointer-events:none"></div>
       <div style="position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-md)">
         <div style="flex:1;min-width:220px">
-          <div style="font-size:11px;letter-spacing:0.24em;color:#c9a86a;margin-bottom:8px">M.NATIONWORLD · 知识入口</div>
-          <div style="font-family:'Noto Serif SC','Songti SC',serif;font-size:22px;font-weight:700;margin-bottom:6px">政治启蒙 · 故事站</div>
-          <div style="font-size:13px;color:rgba(232,230,240,0.62);line-height:1.6">先了解政治，再创造国家——滚轮式叙事带你从零认识政治、国家与制度。</div>
+          <div style="font-size:11px;letter-spacing:0.24em;color:#c9a86a;margin-bottom:8px" data-i18n="ov.story.tag">M.NATIONWORLD · 知识入口</div>
+          <div style="font-family:'Noto Serif SC','Songti SC',serif;font-size:22px;font-weight:700;margin-bottom:6px" data-i18n="ov.story.title">政治启蒙 · 故事站</div>
+          <div style="font-size:13px;color:rgba(232,230,240,0.62);line-height:1.6" data-i18n="ov.story.desc">先了解政治，再创造国家——滚轮式叙事带你从零认识政治、国家与制度。</div>
         </div>
         <div style="flex-shrink:0">
-          <span style="display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(201,168,106,0.5);color:#c9a86a;border-radius:999px;padding:9px 20px;font-size:13px;letter-spacing:0.05em">开始阅读 <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span></span>
+          <span style="display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(201,168,106,0.5);color:#c9a86a;border-radius:999px;padding:9px 20px;font-size:13px;letter-spacing:0.05em"><span data-i18n="ov.story.read">开始阅读</span> <span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span></span>
         </div>
       </div>
     </a>
@@ -2294,7 +2294,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div style="display:grid;grid-template-columns:1fr 340px;gap:var(--space-md)">
       <!-- Featured nation -->
       <div class="card tilt-container" style="padding:var(--space-lg)">
-        <span class="badge badge-warning" style="margin-bottom:8px">⭐ Featured World</span>
+        <span class="badge badge-warning" style="margin-bottom:8px" data-i18n="ov.featuredBadge">⭐ Featured World</span>
         <div id="featuredNation"></div>
       </div>
 
@@ -2306,17 +2306,17 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
             <span class="material-symbols-outlined" style="font-size:20px;color:#eab308">verified</span>
             <span style="font-weight:700;font-size:13px">M.NationWorld Premium</span>
           </div>
-          <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4">Advanced analytics, custom themes, priority support.</p>
+          <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4" data-i18n="ov.premium.desc">Advanced analytics, custom themes, priority support.</p>
           <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;font-size:12px" onclick="window.location.href='premium.html'">
             <span class="material-symbols-outlined" style="font-size:14px">rocket_launch</span>
-            Subscribe — <span data-slati-price>$11.99</span>/mo
+            <span data-i18n="ov.premium.subscribe">Subscribe — </span><span data-slati-price>$11.99</span><span data-i18n="ov.premium.perMo">/mo</span>
           </button>
-          <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'">View all plans →</button>
+          <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'" data-i18n="ov.premium.viewPlans">View all plans →</button>
         </div>
       </div>
       <!-- Recent contributions -->
       <div class="card" style="padding:var(--space-md)">
-        <h3 class="label-md" style="margin-bottom:var(--space-sm)">Recent Contributions</h3>
+        <h3 class="label-md" style="margin-bottom:var(--space-sm)" data-i18n="ov.recent">Recent Contributions</h3>
         <div id="recentContribs" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
     </div>
@@ -2332,6 +2332,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/pricing.js"></script>
 <script src="../assets/js/subnav.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   var nations = SlatiDB.getNations();
   var worlds = SlatiDB.getWorlds();
   var topics = SlatiDB.getTopics();
@@ -2340,19 +2342,19 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   document.getElementById('statsRow').innerHTML =
     '<div class="card" style="text-align:center">' +
       '<div class="headline-md" style="color:var(--color-primary);display:flex;align-items:center;justify-content:center;gap:4px">' + (nations.length + worlds.length).toLocaleString() + ' <span class="label-sm" style="color:#22c55e">+12%</span></div>' +
-      '<div class="label-sm" style="color:var(--color-outline)">Worlds Created</div>' +
+      '<div class="label-sm" style="color:var(--color-outline)">' + (T('ov.stat.worlds') || 'Worlds Created') + '</div>' +
     '</div>' +
     '<div class="card" style="text-align:center">' +
       '<div class="headline-md" style="color:var(--color-secondary);display:flex;align-items:center;justify-content:center;gap:4px">1,402 <span class="label-sm" style="color:#22c55e">+5%</span></div>' +
-      '<div class="label-sm" style="color:var(--color-outline)">Featured Topics</div>' +
+      '<div class="label-sm" style="color:var(--color-outline)">' + (T('ov.stat.topics') || 'Featured Topics') + '</div>' +
     '</div>' +
     '<div class="card" style="text-align:center">' +
       '<div class="headline-md" style="color:#16a34a">' + Math.max(nations.length, 892).toLocaleString() + '</div>' +
-      '<div class="label-sm" style="color:var(--color-outline)">Fictional Countries</div>' +
+      '<div class="label-sm" style="color:var(--color-outline)">' + (T('ov.stat.countries') || 'Fictional Countries') + '</div>' +
     '</div>' +
     '<div class="card" style="text-align:center">' +
       '<div class="headline-md" style="color:#eab308">312</div>' +
-      '<div class="label-sm" style="color:var(--color-outline)">Civilization Regions</div>' +
+      '<div class="label-sm" style="color:var(--color-outline)">' + (T('ov.stat.regions') || 'Civilization Regions') + '</div>' +
     '</div>';
 
   // Featured nation (first seed nation or user's first)
@@ -2364,15 +2366,15 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         '<div class="featured-nation-avatar" style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex-shrink:0">' + code + '</div>' +
         '<div>' +
           '<h3 class="headline-md" style="margin-bottom:0">' + featured.name + '</h3>' +
-          '<span class="label-sm" style="color:var(--color-outline)">' + (featured.classification || 'Sovereign Nation') + ' · Since ' + new Date(featured.createdAt).getFullYear() + '</span>' +
+          '<span class="label-sm" style="color:var(--color-outline)">' + (featured.classification || (T('ov.classFallback') || 'Sovereign Nation')) + (T('ov.since') || ' · Since ') + new Date(featured.createdAt).getFullYear() + '</span>' +
         '</div>' +
         '<span class="material-symbols-outlined" style="margin-left:auto;font-size:20px;color:#22c55e">verified</span>' +
       '</div>' +
-      '<p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:12px">' + (featured.lore || 'A world in the M.NationWorld registry.') + '</p>' +
+      '<p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:12px">' + (featured.lore || (T('ov.loreFallback') || 'A world in the M.NationWorld registry.')) + '</p>' +
       '<div class="flex-center gap-sm" style="font-size:var(--fs-label-sm);color:var(--color-outline)">' +
         '<span>🏛️ ' + (featured.capital || 'N/A') + '</span>' +
         '<span>👥 ' + (featured.demographics && featured.demographics.population ? featured.demographics.population : 'N/A') + '</span>' +
-        '<span>💰 GDP ' + (featured.demographics && featured.demographics.gdp ? '$' + parseInt(featured.demographics.gdp).toLocaleString() : 'N/A') + '</span>' +
+        '<span>💰 ' + (T('ov.gdpPrefix') || 'GDP ') + (featured.demographics && featured.demographics.gdp ? '$' + parseInt(featured.demographics.gdp).toLocaleString() : 'N/A') + '</span>' +
       '</div>';
   }
 
@@ -2397,6 +2399,23 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/transitions.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
+</script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/overview.i18n.js"></script>
+<script>
+MN_I18N.apply();
+// v0.2.54.0：subnav 滑块克隆（DOMContentLoaded 建于 apply 之后，首建即翻译文字）；运行时切语言补一次同步
+if (window.MN_I18N && window.MN_I18N.onChange) {
+  MN_I18N.onChange(function () {
+    var clones = document.querySelectorAll('.subnav-highlight-clone');
+    var pills = document.querySelectorAll('.subnav-pill');
+    for (var i = 0; i < clones.length && i < pills.length; i++) {
+      clones[i].textContent = pills[i].textContent;
+    }
+  });
+}
 </script>
 </body>
 </html>

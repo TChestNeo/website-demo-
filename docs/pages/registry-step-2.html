@@ -2191,53 +2191,53 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
     <div style="max-width:800px;margin:0 auto">
       <div style="text-align:center;margin-bottom:var(--space-lg)">
-        <h1 class="headline-lg" style="margin-bottom:4px">National Incorporation Registry</h1>
-        <p class="body-md" style="color:var(--color-on-surface-variant)">Step 02 — Geopolitics</p>
+        <h1 class="headline-lg" style="margin-bottom:4px" data-i18n="reg2.title">National Incorporation Registry</h1>
+        <p class="body-md" style="color:var(--color-on-surface-variant)" data-i18n="reg2.subtitle">Step 02 — Geopolitics</p>
 
         <div class="progress-steps" style="justify-content:center;margin-top:var(--space-md)">
           <div class="progress-step completed">
-            <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span>Identity</span>
+            <span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span data-i18n="reg2.step.identity">Identity</span>
           </div>
           <div class="progress-connector done"></div>
           <div class="progress-step active">
-            <span class="dot">2</span><span>Geopolitics</span>
+            <span class="dot">2</span><span data-i18n="reg2.step.geopolitics">Geopolitics</span>
           </div>
           <div class="progress-connector"></div>
           <div class="progress-step pending">
-            <span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">3</span><span style="color:var(--color-outline)">Macro Metrics</span>
+            <span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">3</span><span style="color:var(--color-outline)" data-i18n="reg2.step.metrics">Macro Metrics</span>
           </div>
         </div>
       </div>
 
       <div class="card tilt-container registry-card" style="padding:var(--space-lg)">
         <div class="form-group">
-          <label class="form-label">Designated Capital</label>
-          <input type="text" class="input-glass" id="capital" placeholder="e.g. Nova Centauri">
+          <label class="form-label" data-i18n="reg2.label.capital">Designated Capital</label>
+          <input type="text" class="input-glass" id="capital" placeholder="e.g. Nova Centauri" data-i18n-placeholder="reg2.ph.capital">
         </div>
         <div class="form-group">
-          <label class="form-label">Establishment Date</label>
+          <label class="form-label" data-i18n="reg2.label.established">Establishment Date</label>
           <input type="date" class="input-glass" id="established">
         </div>
         <div class="form-group">
-          <label class="form-label">Primary Lore Manifest</label>
-          <textarea class="input-glass" id="lore" placeholder="Describe your nation's founding story, core values, and vision for the future..." rows="5"></textarea>
+          <label class="form-label" data-i18n="reg2.label.lore">Primary Lore Manifest</label>
+          <textarea class="input-glass" id="lore" placeholder="Describe your nation's founding story, core values, and vision for the future..." data-i18n-placeholder="reg2.ph.lore" rows="5"></textarea>
         </div>
         <div class="form-group">
-          <label class="form-label">Cartography Data (optional)</label>
+          <label class="form-label" data-i18n="reg2.label.cartography">Cartography Data (optional)</label>
           <div class="upload-zone">
             <span class="material-symbols-outlined" style="font-size:40px;color:var(--color-outline);margin-bottom:8px">cloud_upload</span>
-            <p class="label-md" style="color:var(--color-on-surface-variant)">Drop map files here or click to browse</p>
-            <p class="label-sm" style="color:var(--color-outline)">.SHP, .GEOJSON, .SVG — Max 50MB</p>
+            <p class="label-md" style="color:var(--color-on-surface-variant)" data-i18n="reg2.upload.hint">Drop map files here or click to browse</p>
+            <p class="label-sm" style="color:var(--color-outline)" data-i18n="reg2.upload.formats">.SHP, .GEOJSON, .SVG — Max 50MB</p>
             <p id="uploadStatus" class="label-sm" style="color:var(--color-primary);margin-top:4px"></p>
           </div>
         </div>
 
         <div class="flex-between" style="margin-top:var(--space-lg)">
           <a href="registry-step-1.html" class="btn btn-ghost">
-            <span class="material-symbols-outlined">arrow_back</span> Previous
+            <span class="material-symbols-outlined">arrow_back</span> <span data-i18n="reg2.btn.previous">Previous</span>
           </a>
           <button class="btn btn-primary btn-lg" onclick="handleNext()">
-            Next Step: Macro Metrics
+            <span data-i18n="reg2.btn.next">Next Step: Macro Metrics</span>
             <span class="material-symbols-outlined">arrow_forward</span>
           </button>
         </div>
@@ -2254,6 +2254,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/settings-modal.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
 <script>
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   // Restore draft
   var draft = SlatiDB.getNationDraft();
   if (draft && draft.steps[2]) {
@@ -2265,20 +2267,20 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   // File upload simulation
   var uploadZone = document.querySelector('.upload-zone');
   uploadZone.addEventListener('click', function() {
-    document.getElementById('uploadStatus').textContent = '✨ Map uploaded (demo mode)';
+    document.getElementById('uploadStatus').textContent = (T('reg2.upload.uploaded') || '✨ Map uploaded (demo mode)');
   });
   uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); });
   uploadZone.addEventListener('drop', function(e) {
     e.preventDefault();
-    document.getElementById('uploadStatus').textContent = '✨ Map file received (demo mode)';
+    document.getElementById('uploadStatus').textContent = (T('reg2.upload.received') || '✨ Map file received (demo mode)');
   });
 
   function handleNext() {
     var capital = document.getElementById('capital').value.trim();
     var established = document.getElementById('established').value;
     var lore = document.getElementById('lore').value.trim();
-    if (!capital) { showError('Please enter a designated capital'); return; }
-    if (!established) { showError('Please select an establishment date'); return; }
+    if (!capital) { showError(T('reg2.err.capital') || 'Please enter a designated capital'); return; }
+    if (!established) { showError(T('reg2.err.established') || 'Please select an establishment date'); return; }
 
     SlatiDB.saveNationDraft(2, { capital: capital, established: established, lore: lore });
     SlatiDB.setRegistryStep(3);
@@ -2295,5 +2297,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/registry-step-2.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 </body>
 </html>

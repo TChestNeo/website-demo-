@@ -2194,7 +2194,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
       <div class="search-capsule" style="width:100%">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Filter assets..." oninput="filterAssets(this.value)">
+        <input type="text" placeholder="Filter assets..." oninput="filterAssets(this.value)" data-i18n-placeholder="ws.ph.filterAssets">
       </div>
 
       <div class="custom-scrollbar" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:4px" id="assetList">
@@ -2202,7 +2202,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       </div>
 
       <a href="../index.html" class="btn btn-ghost btn-sm" style="width:100%">
-        <span class="material-symbols-outlined">arrow_back</span> Back to Console
+        <span class="material-symbols-outlined">arrow_back</span> <span data-i18n="ws.backConsole">Back to Console</span>
       </a>
     </div>
 
@@ -2216,10 +2216,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           <span class="badge badge-success">SEC-001-ALPHA</span>
         </div>
         <div style="display:flex;gap:4px">
-          <button class="btn btn-outline btn-sm" onclick="openModal('migrateModal')">Migrate</button>
-          <button class="btn btn-outline btn-sm" onclick="openModal('historyModal')">History</button>
-          <button class="btn btn-ghost btn-sm" onclick="openModal('tagsModal')">Tags</button>
-          <button class="btn btn-primary btn-sm">Save & Publish</button>
+          <button class="btn btn-outline btn-sm" onclick="openModal('migrateModal')" data-i18n="ws.migrate">Migrate</button>
+          <button class="btn btn-outline btn-sm" onclick="openModal('historyModal')" data-i18n="ws.history">History</button>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('tagsModal')" data-i18n="ws.tags">Tags</button>
+          <button class="btn btn-primary btn-sm" data-i18n="ws.savePublish">Save & Publish</button>
         </div>
       </div>
 
@@ -2232,16 +2232,16 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
       <!-- Editor content -->
       <div class="custom-scrollbar" style="flex:1;overflow-y:auto;padding-right:8px">
-        <h2 class="headline-md" style="margin-bottom:12px">Lore & Manifestos</h2>
+        <h2 class="headline-md" style="margin-bottom:12px" data-i18n="ws.heading">Lore & Manifestos</h2>
 
         <div class="form-group">
-          <label class="form-label">Article Title</label>
-          <input type="text" class="input-glass" value="The Founding of Etheria" placeholder="Article title">
+          <label class="form-label" data-i18n="ws.label.title">Article Title</label>
+          <input type="text" class="input-glass" value="The Founding of Etheria" placeholder="Article title" data-i18n-placeholder="ws.ph.articleTitle">
         </div>
 
         <div class="form-group">
-          <label class="form-label">Content</label>
-          <textarea class="input-glass" rows="12" placeholder="Write your lore...">The Republic of Etheria was founded on principles of digital sovereignty and transparent governance. Established in the wake of the Great Reorganization, Etheria emerged as a beacon of innovation — blending AI-assisted legislation with direct citizen participation.
+          <label class="form-label" data-i18n="ws.label.content">Content</label>
+          <textarea class="input-glass" rows="12" placeholder="Write your lore..." data-i18n-placeholder="ws.ph.lore">The Republic of Etheria was founded on principles of digital sovereignty and transparent governance. Established in the wake of the Great Reorganization, Etheria emerged as a beacon of innovation — blending AI-assisted legislation with direct citizen participation.
 
 Our founding charter enshrines three core principles:
 1. All citizens have the right to propose, debate, and vote on legislation.
@@ -2252,15 +2252,15 @@ The capital city of Aether Prime was designed from the ground up as a "smart sov
         </div>
 
         <!-- Data table -->
-        <h3 class="label-md" style="margin-top:var(--space-md);margin-bottom:var(--space-sm)">Territorial & Financial Log</h3>
+        <h3 class="label-md" style="margin-top:var(--space-md);margin-bottom:var(--space-sm)" data-i18n="ws.logTitle">Territorial & Financial Log</h3>
         <div style="overflow-x:auto">
           <table style="width:100%;border-collapse:collapse;font-size:var(--fs-label-md)">
             <thead>
               <tr style="border-bottom:1px solid rgba(118,117,134,0.15)">
-                <th style="text-align:left;padding:8px 12px;color:var(--color-on-surface-variant)">Sector</th>
-                <th style="text-align:right;padding:8px 12px;color:var(--color-on-surface-variant)">Allocation</th>
-                <th style="text-align:right;padding:8px 12px;color:var(--color-on-surface-variant)">GDP Contribution</th>
-                <th style="text-align:right;padding:8px 12px;color:var(--color-on-surface-variant)">Status</th>
+                <th style="text-align:left;padding:8px 12px;color:var(--color-on-surface-variant)" data-i18n="ws.th.sector">Sector</th>
+                <th style="text-align:right;padding:8px 12px;color:var(--color-on-surface-variant)" data-i18n="ws.th.allocation">Allocation</th>
+                <th style="text-align:right;padding:8px 12px;color:var(--color-on-surface-variant)" data-i18n="ws.th.gdp">GDP Contribution</th>
+                <th style="text-align:right;padding:8px 12px;color:var(--color-on-surface-variant)" data-i18n="ws.th.status">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -2281,22 +2281,22 @@ The capital city of Aether Prime was designed from the ground up as a "smart sov
 <div class="modal-container" id="migrateModal">
   <div class="modal-card" id="migrateCard">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">Migrate Article</h3>
+      <h3 class="headline-md" data-i18n="ws.migrateTitle">Migrate Article</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModal('migrateModal')"><span class="material-symbols-outlined">close</span></button>
     </div>
-    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">Import content from an external source with AI-assisted formatting.</p>
+    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)" data-i18n="ws.migrateDesc">Import content from an external source with AI-assisted formatting.</p>
     <div class="upload-zone" style="margin-bottom:var(--space-md)">
       <span class="material-symbols-outlined" style="font-size:40px;color:var(--color-outline)">upload_file</span>
-      <p class="label-md" style="color:var(--color-on-surface-variant)">Drop files here or click to upload</p>
+      <p class="label-md" style="color:var(--color-on-surface-variant)" data-i18n="ws.migrateDrop">Drop files here or click to upload</p>
     </div>
-    <button class="btn btn-primary" style="width:100%" onclick="closeModal('migrateModal')">Start Migration</button>
+    <button class="btn btn-primary" style="width:100%" onclick="closeModal('migrateModal')" data-i18n="ws.migrateStart">Start Migration</button>
   </div>
 </div>
 
 <div class="modal-container" id="historyModal">
   <div class="modal-card" id="historyCard">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">Version History</h3>
+      <h3 class="headline-md" data-i18n="ws.historyTitle">Version History</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModal('historyModal')"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px">
@@ -2310,10 +2310,10 @@ The capital city of Aether Prime was designed from the ground up as a "smart sov
 <div class="modal-container" id="tagsModal">
   <div class="modal-card" id="tagsCard">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">Manage Tags</h3>
+      <h3 class="headline-md" data-i18n="ws.tagsTitle">Manage Tags</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModal('tagsModal')"><span class="material-symbols-outlined">close</span></button>
     </div>
-    <input type="text" class="input-glass" placeholder="Search or create tags..." style="margin-bottom:var(--space-sm)">
+    <input type="text" class="input-glass" placeholder="Search or create tags..." style="margin-bottom:var(--space-sm)" data-i18n-placeholder="ws.ph.tags">
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       <span class="badge badge-primary">Sovereignty</span>
       <span class="badge badge-secondary">Lore</span>
@@ -2322,7 +2322,7 @@ The capital city of Aether Prime was designed from the ground up as a "smart sov
       <span class="badge badge-primary">Governance</span>
       <span class="badge badge-secondary">Culture</span>
     </div>
-    <button class="btn btn-primary btn-sm" style="margin-top:var(--space-md);width:100%" onclick="closeModal('tagsModal')">Apply</button>
+    <button class="btn btn-primary btn-sm" style="margin-top:var(--space-md);width:100%" onclick="closeModal('tagsModal')" data-i18n="ws.apply">Apply</button>
   </div>
 </div>
 
@@ -2389,5 +2389,10 @@ The capital city of Aether Prime was designed from the ground up as a "smart sov
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/workspace.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 </body>
 </html>

@@ -34,6 +34,8 @@
   var listeners = [];   // fn(lang) called after every apply()
 
   function lookup(dict, key) {
+    // 扁平点分键优先（全部字典的存储形态：{'page.title': '文本'}）；嵌套对象兜底（历史兼容）
+    if (key in dict) return dict[key];
     return key.split('.').reduce(function (o, k) {
       return (o == null) ? undefined : o[k];
     }, dict);
@@ -78,7 +80,27 @@
     listeners.forEach(function (fn) { try { fn(lang); } catch (e) {} });
   }
 
+  /** v0.2.54.0 — 全站 12 语言：语言清单唯一来源（设置弹窗 pill、电池断言均读它）。
+   *  zh 简体（默认回落）/ zh-Hant 繁体（OpenCC 从 zh 自动生成）/
+   *  en 英语（v0.2.54.0 用户钦定加英语）/ 德俄马泰越印尼 / 法西葡。 */
+  var LANGS = [
+    { code: 'zh', name: '中文' },
+    { code: 'zh-Hant', name: '繁體中文' },
+    { code: 'en', name: 'English' },
+    { code: 'de', name: 'Deutsch' },
+    { code: 'ru', name: 'Русский' },
+    { code: 'ms', name: 'Bahasa Melayu' },
+    { code: 'th', name: 'ไทย' },
+    { code: 'vi', name: 'Tiếng Việt' },
+    { code: 'id', name: 'Bahasa Indonesia' },
+    { code: 'fr', name: 'Français' },
+    { code: 'es', name: 'Español' },
+    { code: 'pt', name: 'Português' }
+  ];
+
   window.MN_I18N = {
+    /** Supported language list (unique source of truth). */
+    LANGS: LANGS,
     /** Register a language dictionary. Merges into the existing one so pages can
      *  include several dictionary files (e.g. help.zh.js + badge.zh.js). Chainable. */
     add: function (l, dict) {

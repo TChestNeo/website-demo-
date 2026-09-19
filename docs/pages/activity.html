@@ -2251,19 +2251,19 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Header -->
     <header class="flex-between" style="margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-sm)">
       <div>
-        <h1 class="headline-lg" style="margin-bottom:2px">Activity Analytics</h1>
-        <p class="label-md" style="color:var(--color-outline)">Platform-wide metrics and engagement trends</p>
+        <h1 class="headline-lg" style="margin-bottom:2px" data-i18n="activity.title">Activity Analytics</h1>
+        <p class="label-md" style="color:var(--color-outline)" data-i18n="activity.subtitle">Platform-wide metrics and engagement trends</p>
       </div>
       <div class="flex-center gap-sm">
         <div class="subnav" data-slider id="timeRangePills">
-          <button class="subnav-pill" data-range="7d">7 Days</button>
-          <button class="subnav-pill active" data-range="30d">30 Days</button>
-          <button class="subnav-pill" data-range="90d">90 Days</button>
-          <button class="subnav-pill" data-range="all">All Time</button>
+          <button class="subnav-pill" data-range="7d" data-i18n="activity.range.7d">7 Days</button>
+          <button class="subnav-pill active" data-range="30d" data-i18n="activity.range.30d">30 Days</button>
+          <button class="subnav-pill" data-range="90d" data-i18n="activity.range.90d">90 Days</button>
+          <button class="subnav-pill" data-range="all" data-i18n="activity.range.all">All Time</button>
         </div>
         <div class="search-capsule">
           <span class="material-symbols-outlined">search</span>
-          <input type="text" placeholder="Search metrics...">
+          <input type="text" placeholder="Search metrics..." data-i18n-placeholder="activity.search.placeholder">
         </div>
       </div>
     </header>
@@ -2278,12 +2278,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <!-- Growth Trend Chart -->
         <div class="card chart-card">
           <div class="chart-header">
-            <h2 class="chart-title">Growth Trend</h2>
+            <h2 class="chart-title" data-i18n="activity.chart.growth">Growth Trend</h2>
             <div class="subnav" data-slider id="trendTabs">
-              <button class="subnav-pill active" data-metric="users">Users</button>
-              <button class="subnav-pill" data-metric="nations">Nations</button>
-              <button class="subnav-pill" data-metric="articles">Articles</button>
-              <button class="subnav-pill" data-metric="teams">Teams</button>
+              <button class="subnav-pill active" data-metric="users" data-i18n="activity.metricTab.users">Users</button>
+              <button class="subnav-pill" data-metric="nations" data-i18n="activity.metricTab.nations">Nations</button>
+              <button class="subnav-pill" data-metric="articles" data-i18n="activity.metricTab.articles">Articles</button>
+              <button class="subnav-pill" data-metric="teams" data-i18n="activity.metricTab.teams">Teams</button>
             </div>
           </div>
           <div id="trendChart"></div>
@@ -2291,18 +2291,18 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
         <!-- Category Distribution -->
         <div class="card chart-card">
-          <h2 class="chart-title" style="margin-bottom:var(--space-md)">Content by Category</h2>
+          <h2 class="chart-title" style="margin-bottom:var(--space-md)" data-i18n="activity.chart.category">Content by Category</h2>
           <div id="categoryChart"></div>
         </div>
 
         <!-- Weekly Activity Heatmap -->
         <div class="card chart-card">
           <div class="chart-header">
-            <h2 class="chart-title">Weekly Activity Heatmap</h2>
+            <h2 class="chart-title" data-i18n="activity.chart.heatmap">Weekly Activity Heatmap</h2>
             <div class="chart-legend">
-              <span>Less</span>
+              <span data-i18n="activity.legend.less">Less</span>
               <div class="chart-legend-bar"></div>
-              <span>More</span>
+              <span data-i18n="activity.legend.more">More</span>
             </div>
           </div>
           <div id="heatmapContainer"></div>
@@ -2318,27 +2318,27 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           <div style="position:relative;z-index:1">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
               <span class="material-symbols-outlined" style="font-size:22px;color:#eab308">verified</span>
-              <span style="font-weight:700;font-size:var(--fs-label-md)">M.NationWorld Premium</span>
+              <span style="font-weight:700;font-size:var(--fs-label-md)" data-i18n="activity.premium.title">M.NationWorld Premium</span>
             </div>
-            <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px;line-height:1.5">Unlock advanced analytics, custom nation themes, priority support, and exclusive worldbuilding tools.</p>
+            <p style="font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:12px;line-height:1.5" data-i18n="activity.premium.desc">Unlock advanced analytics, custom nation themes, priority support, and exclusive worldbuilding tools.</p>
             <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
               <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
-                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Advanced Analytics
+                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span><span data-i18n="activity.premium.feat.analytics">Advanced Analytics</span>
               </div>
               <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
-                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Custom Nation Themes
+                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span><span data-i18n="activity.premium.feat.themes">Custom Nation Themes</span>
               </div>
               <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,0.8)">
-                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span> Priority Support
+                <span class="material-symbols-outlined" style="font-size:15px;color:#22c55e">check_circle</span><span data-i18n="activity.premium.feat.support">Priority Support</span>
               </div>
             </div>
             <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700" onclick="window.location.href='premium.html'">
               <span class="material-symbols-outlined" style="font-size:16px">rocket_launch</span>
-              Subscribe — <span data-slati-price>$11.99</span>/mo
+              <span data-i18n="activity.premium.subscribePre">Subscribe — </span><span data-slati-price>$11.99</span><span data-i18n="activity.premium.mo">/mo</span>
             </button>
-            <p style="text-align:center;font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px">Coming Q4 2026 · Cancel anytime</p>
+            <p style="text-align:center;font-size:10px;color:rgba(255,255,255,0.35);margin-top:6px" data-i18n="activity.premium.note">Coming Q4 2026 · Cancel anytime</p>
             <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.6);font-size:11px;margin-top:4px" onclick="window.location.href='premium.html'">
-              View all plans
+              <span data-i18n="activity.premium.viewPlans">View all plans</span>
               <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
             </button>
           </div>
@@ -2348,7 +2348,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <div class="card">
           <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
             <span class="material-symbols-outlined" style="font-size:18px;color:#eab308">leaderboard</span>
-            Top Nations by Activity
+            <span data-i18n="activity.leaderboard.title">Top Nations by Activity</span>
           </h3>
           <div id="leaderboardList"></div>
         </div>
@@ -2357,7 +2357,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <div class="card">
           <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
             <span class="material-symbols-outlined" style="font-size:18px;color:#22c55e">celebration</span>
-            Recent Milestones
+            <span data-i18n="activity.milestones.title">Recent Milestones</span>
           </h3>
           <div id="milestonesList"></div>
         </div>
@@ -2378,6 +2378,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>
 (function() {
   'use strict';
+
+  // v0.2.54.0 i18n：惰性翻译（i18n.js 于 body 尾部加载，晚于本脚本——初始渲染走 || 原文兜底，语言切换经 onChange 重渲）
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
 
   // ═══════════════════════════════════════════
   // Seed Data
@@ -2467,11 +2470,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   function renderKPI() {
     var kpi = kpiData[currentRange];
     var items = [
-      { icon:'public',    label:'Active Nations',    value:kpi.nations,  trend:kpi.nationsTrend,  period:'this period', accent:'#16a34a' },
-      { icon:'group',     label:'Total Citizens',    value:kpi.citizens, trend:kpi.citizensTrend, period:'this period', accent:'#ea580c' },
-      { icon:'article',   label:'Articles Published', value:kpi.articles, trend:kpi.articlesTrend, period:'this period', accent:'#4648d4' },
-      { icon:'bolt',      label:'Daily Activity',    value:kpi.activity, trend:kpi.activityTrend, period:'this period', accent:'#8127cf' },
-      { icon:'handshake', label:'Treaties Signed',   value:kpi.treaties, trend:kpi.treatiesTrend, period:'this period', accent:'#eab308' }
+      { icon:'public',    label:(T('activity.kpi.activeNations') || 'Active Nations'),    value:kpi.nations,  trend:kpi.nationsTrend,  period:(T('activity.kpi.period') || 'this period'), accent:'#16a34a' },
+      { icon:'group',     label:(T('activity.kpi.totalCitizens') || 'Total Citizens'),    value:kpi.citizens, trend:kpi.citizensTrend, period:(T('activity.kpi.period') || 'this period'), accent:'#ea580c' },
+      { icon:'article',   label:(T('activity.kpi.articlesPublished') || 'Articles Published'), value:kpi.articles, trend:kpi.articlesTrend, period:(T('activity.kpi.period') || 'this period'), accent:'#4648d4' },
+      { icon:'bolt',      label:(T('activity.kpi.dailyActivity') || 'Daily Activity'),    value:kpi.activity, trend:kpi.activityTrend, period:(T('activity.kpi.period') || 'this period'), accent:'#8127cf' },
+      { icon:'handshake', label:(T('activity.kpi.treatiesSigned') || 'Treaties Signed'),   value:kpi.treaties, trend:kpi.treatiesTrend, period:(T('activity.kpi.period') || 'this period'), accent:'#eab308' }
     ];
 
     document.getElementById('kpiRow').innerHTML = items.map(function(item) {
@@ -2516,7 +2519,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         var date = new Date();
         date.setDate(date.getDate() - (29 - idx));
         ttDay.textContent = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-        ttVal.textContent = val.toLocaleString() + ' ' + currentMetric;
+        ttVal.textContent = val.toLocaleString() + ' ' + (T('activity.metric.' + currentMetric) || currentMetric);
         var rect = bar.getBoundingClientRect();
         activityTooltip.style.left = (rect.left + rect.width / 2) + 'px';
         activityTooltip.style.top = (rect.top - 8) + 'px';
@@ -2632,13 +2635,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         dayTotals[col] += val;
         var intensity = val / maxCell;
         var alpha = 0.06 + intensity * 0.9;
-        cells += '<div class="heatmap-cell" style="background:rgba(70,72,212,' + alpha.toFixed(2) + ')" title="' + hm.days[col] + ' ' + hm.timeBlocks[row] + ': ' + val.toLocaleString() + ' events"></div>';
+        cells += '<div class="heatmap-cell" style="background:rgba(70,72,212,' + alpha.toFixed(2) + ')" title="' + (T('activity.heatmap.day.' + hm.days[col].toLowerCase()) || hm.days[col]) + ' ' + hm.timeBlocks[row] + ': ' + val.toLocaleString() + ' ' + (T('activity.heatmap.events') || 'events') + '"></div>';
       }
     }
 
     // Day headers
     var headers = '<div></div>' + hm.days.map(function(d) {
-      return '<div class="heatmap-header">' + d + '</div>';
+      return '<div class="heatmap-header">' + (T('activity.heatmap.day.' + d.toLowerCase()) || d) + '</div>';
     }).join('');
 
     // Day totals
@@ -2714,11 +2717,30 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   renderLeaderboard();
   renderMilestones();
 
+  // v0.2.54.0 i18n：语言切换重渲钩子（链式，照 premium.html 模式；
+  // renderTrendChart 每次重建 .trend-bar 元素，attachTooltips 无监听器累积问题）
+  var __mnPrevRerender = window.__mnI18nRerender || function () {};
+  window.__mnI18nRerender = function () {
+    __mnPrevRerender();
+    renderKPI();
+    renderTrendChart();
+    renderCategories();
+    renderHeatmap();
+    renderLeaderboard();
+    renderMilestones();
+  };
+
 })();
 </script>
 <script src="../assets/js/transitions.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/activity.i18n.js"></script>
+<script>MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); }); MN_I18N.apply();</script>
 </body>
 </html>

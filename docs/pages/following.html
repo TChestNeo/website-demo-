@@ -2188,20 +2188,20 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Header -->
     <header class="flex-between" style="margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-sm)">
       <div>
-        <h1 class="headline-lg" style="margin-bottom:2px">Following</h1>
-        <p class="label-md" style="color:var(--color-outline)">Stay connected with nations, topics, and citizens you care about</p>
+        <h1 class="headline-lg" style="margin-bottom:2px" data-i18n="following.title">Following</h1>
+        <p class="label-md" style="color:var(--color-outline)" data-i18n="following.subtitle">Stay connected with nations, topics, and citizens you care about</p>
       </div>
       <div class="search-capsule">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search followed...">
+        <input type="text" placeholder="Search followed..." data-i18n-placeholder="following.searchPh">
       </div>
     </header>
 
     <!-- Main subnav -->
     <div class="subnav" data-slider id="mainTabs" style="margin-bottom:var(--space-md)">
-      <button class="subnav-pill active" data-tab="feed">Feed</button>
-      <button class="subnav-pill" data-tab="following">Following</button>
-      <button class="subnav-pill" data-tab="discover">Discover</button>
+      <button class="subnav-pill active" data-tab="feed" data-i18n="following.tab.feed">Feed</button>
+      <button class="subnav-pill" data-tab="following" data-i18n="following.tab.following">Following</button>
+      <button class="subnav-pill" data-tab="discover" data-i18n="following.tab.discover">Discover</button>
     </div>
 
     <!-- Two-column grid -->
@@ -2214,15 +2214,15 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <!-- Following Tab -->
         <div id="followingPanel" style="display:none">
           <div class="subnav" data-slider id="followingFilter" style="margin-bottom:var(--space-md)">
-            <button class="subnav-pill active" data-filter="all">All</button>
-            <button class="subnav-pill" data-filter="nations">Nations</button>
-            <button class="subnav-pill" data-filter="topics">Topics</button>
-            <button class="subnav-pill" data-filter="users">Users</button>
+            <button class="subnav-pill active" data-filter="all" data-i18n="following.filter.all">All</button>
+            <button class="subnav-pill" data-filter="nations" data-i18n="following.filter.nations">Nations</button>
+            <button class="subnav-pill" data-filter="topics" data-i18n="following.filter.topics">Topics</button>
+            <button class="subnav-pill" data-filter="users" data-i18n="following.filter.users">Users</button>
           </div>
           <div id="followingList" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
           <div id="followingEmpty" style="display:none;text-align:center;padding:var(--space-xl) 0">
             <span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline);opacity:0.4">favorite_border</span>
-            <p style="color:var(--color-outline);margin-top:var(--space-sm)">Nothing here yet.<br>Discover new content to follow!</p>
+            <p style="color:var(--color-outline);margin-top:var(--space-sm)" data-i18n-html="following.empty.following">Nothing here yet.<br>Discover new content to follow!</p>
           </div>
         </div>
 
@@ -2230,19 +2230,19 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <div id="discoverPanel" style="display:none">
           <!-- Nations -->
           <h2 class="headline-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
-            <span class="material-symbols-outlined" style="color:var(--color-primary)">public</span> Nations to Follow
+            <span class="material-symbols-outlined" style="color:var(--color-primary)">public</span> <span data-i18n="following.discover.nationsTitle">Nations to Follow</span>
           </h2>
           <div id="discoverNations" style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-sm);margin-bottom:var(--space-lg)"></div>
 
           <!-- Topics -->
           <h2 class="headline-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
-            <span class="material-symbols-outlined" style="color:var(--color-primary)">forum</span> Topics to Follow
+            <span class="material-symbols-outlined" style="color:var(--color-primary)">forum</span> <span data-i18n="following.discover.topicsTitle">Topics to Follow</span>
           </h2>
           <div id="discoverTopics" style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-sm);margin-bottom:var(--space-lg)"></div>
 
           <!-- Users -->
           <h2 class="headline-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
-            <span class="material-symbols-outlined" style="color:var(--color-primary)">person</span> Citizens to Follow
+            <span class="material-symbols-outlined" style="color:var(--color-primary)">person</span> <span data-i18n="following.discover.usersTitle">Citizens to Follow</span>
           </h2>
           <div id="discoverUsers" style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-sm)"></div>
         </div>
@@ -2256,14 +2256,14 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           <div style="position:relative;z-index:1">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
               <span class="material-symbols-outlined" style="font-size:20px;color:#eab308">verified</span>
-              <span style="font-weight:700;font-size:13px">M.NationWorld Premium</span>
+              <span style="font-weight:700;font-size:13px" data-i18n="following.premium.title">M.NationWorld Premium</span>
             </div>
-            <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4">Advanced analytics, custom themes, priority support.</p>
+            <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4" data-i18n="following.premium.desc">Advanced analytics, custom themes, priority support.</p>
             <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;font-size:12px" onclick="window.location.href='premium.html'">
               <span class="material-symbols-outlined" style="font-size:14px">rocket_launch</span>
-              Subscribe — <span data-slati-price>$11.99</span>/mo
+              <span data-i18n="following.premium.subscribePre">Subscribe — </span><span data-slati-price>$11.99</span><span data-i18n="following.premium.subscribeSuffix">/mo</span>
             </button>
-            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'">View all plans →</button>
+            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'" data-i18n="following.premium.viewPlans">View all plans →</button>
           </div>
         </div>
 
@@ -2284,6 +2284,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/pricing.js"></script>
 <script src="../assets/js/subnav.js"></script>
 <script>
+// v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
 (function() {
   'use strict';
 
@@ -2374,7 +2376,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     if (!feedItems.length) {
       panel.innerHTML = '<div style="text-align:center;padding:var(--space-xl) 0">' +
         '<span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline);opacity:0.4">inbox</span>' +
-        '<p style="color:var(--color-outline);margin-top:var(--space-sm)">No recent activity from followed entities.<br>Follow nations, topics, or users to see updates here.</p></div>';
+        '<p style="color:var(--color-outline);margin-top:var(--space-sm)">' + (T('following.feed.empty') || 'No recent activity from followed entities.<br>Follow nations, topics, or users to see updates here.') + '</p></div>';
       return;
     }
     panel.innerHTML = feedItems.map(function(item) {
@@ -2470,7 +2472,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           '<div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + item.title + '</div>' +
           '<div class="label-sm" style="color:var(--color-outline)">' + item.sub + '</div>' +
         '</div>' +
-        '<button class="btn btn-outline btn-sm unfollow-btn" data-type="' + item.type + '" data-id="' + item.id + '" style="flex-shrink:0;font-size:11px">Following</button>' +
+        '<button class="btn btn-outline btn-sm unfollow-btn" data-type="' + item.type + '" data-id="' + item.id + '" style="flex-shrink:0;font-size:11px">' + (T('following.list.followingBtn') || 'Following') + '</button>' +
       '</div>';
     }).join('');
 
@@ -2502,7 +2504,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px;line-height:1.3">' + n.desc + '</p>' +
         '<div class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + n.followers.toLocaleString() + ' followers</div>' +
         '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="nations" data-id="' + n.id + '">' +
-          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span> Following' : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span> Follow') +
+          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following') : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow')) +
         '</button>' +
       '</div>';
     }).join('');
@@ -2518,7 +2520,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         '</div>' +
         '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px">' + t.desc + '</p>' +
         '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="topics" data-id="' + t.id + '">' +
-          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span> Following' : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span> Follow') +
+          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following') : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow')) +
         '</button>' +
       '</div>';
     }).join('');
@@ -2531,7 +2533,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         '<div style="font-weight:600;font-size:var(--fs-label-md);margin-bottom:2px;color:var(--color-on-surface)">' + u.name + '</div>' +
         '<div class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + u.role + '</div>' +
         '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="users" data-id="' + u.id + '">' +
-          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span> Following' : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span> Follow') +
+          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following') : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow')) +
         '</button>' +
       '</div>';
     }).join('');
@@ -2544,12 +2546,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         var nowFollowing = toggleFollow(type, id);
         // Update button style
         if (nowFollowing) {
-          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span> Following';
+          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following');
           btn.style.background = 'rgba(22,163,74,0.08)';
           btn.style.color = '#16a34a';
           btn.style.borderColor = 'rgba(22,163,74,0.3)';
         } else {
-          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span> Follow';
+          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow');
           btn.style.background = '';
           btn.style.color = '';
           btn.style.borderColor = '';
@@ -2571,19 +2573,19 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       // Stats
       slot.innerHTML = '<div class="card">' +
         '<h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">' +
-          '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)">monitoring</span> Following Stats' +
+          '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)">monitoring</span> ' + (T('following.stats.title') || 'Following Stats') +
         '</h3>' +
         '<div style="display:flex;flex-direction:column;gap:8px">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
-            '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#4648d4">public</span> Nations</span>' +
+            '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#4648d4">public</span> ' + (T('following.filter.nations') || 'Nations') + '</span>' +
             '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#4648d4">' + myFollowing.nations.length + '</span>' +
           '</div>' +
           '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
-            '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#16a34a">forum</span> Topics</span>' +
+            '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#16a34a">forum</span> ' + (T('following.filter.topics') || 'Topics') + '</span>' +
             '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#16a34a">' + myFollowing.topics.length + '</span>' +
           '</div>' +
           '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">' +
-            '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#ea580c">person</span> Users</span>' +
+            '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#ea580c">person</span> ' + (T('following.filter.users') || 'Users') + '</span>' +
             '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#ea580c">' + myFollowing.users.length + '</span>' +
           '</div>' +
         '</div>' +
@@ -2597,7 +2599,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       ];
       slot.innerHTML = '<div class="card">' +
         '<h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">' +
-          '<span class="material-symbols-outlined" style="font-size:18px;color:#eab308">auto_awesome</span> Who to Follow' +
+          '<span class="material-symbols-outlined" style="font-size:18px;color:#eab308">auto_awesome</span> ' + (T('following.rec.title') || 'Who to Follow') +
         '</h3>' +
         recItems.map(function(r) {
           return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
@@ -2606,10 +2608,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
               '<div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + r.name + '</div>' +
               '<div class="label-sm" style="color:var(--color-outline)">' + r.sub + '</div>' +
             '</div>' +
-            '<button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px;color:var(--color-primary)">+ Follow</button>' +
+            '<button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px;color:var(--color-primary)">' + (T('following.rec.followBtn') || '+ Follow') + '</button>' +
           '</div>';
         }).join('') +
-        '<a href="#" class="label-sm" id="gotoDiscover" style="display:block;text-align:center;margin-top:var(--space-sm);color:var(--color-primary);text-decoration:none">View more in Discover →</a>' +
+        '<a href="#" class="label-sm" id="gotoDiscover" style="display:block;text-align:center;margin-top:var(--space-sm);color:var(--color-primary);text-decoration:none">' + (T('following.rec.viewMore') || 'View more in Discover →') + '</a>' +
       '</div>';
     }
   }
@@ -2655,6 +2657,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     }
   });
 
+  // v0.2.54.0 i18n：重渲钩子——body 尾部三件套 apply（及语言切换）后按当前 tab 整刷
+  // （Feed/Following/Discover 面板与右栏全部由 JS 渲染，switchTab 幂等可安全重跑）。
+  window.__mnI18nRerender = function () {
+    switchTab(currentTab);
+  };
+
   // ═══════════════════════════════════════════
   // Initial Render
   // ═══════════════════════════════════════════
@@ -2666,5 +2674,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/following.i18n.js"></script>
+<script>MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); }); MN_I18N.apply();</script>
 </body>
 </html>

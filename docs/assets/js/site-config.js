@@ -1012,7 +1012,24 @@ window.MN_SITE = window.MN_SITE || {};
 //   （ethereal 零改动无需 inline-css）；后端零改动（user_version 27/health 59 表不变）；
 //   FC v10.28.36.1 零改动；零草稿字段（v 保持 9）
 //   （rev 00258-7hf）
-window.MN_SITE_VERSION = 'v0.2.53.3';
+// v0.2.54.0 = 全站 12 语言 i18n（小改动位 53→54·新功能轮；2026-09-19）——用户「能不能做以下所有语言的适配？新增德语，俄语，马来语，泰语，越南语，印尼语」（问询钦定：①一次性全站 44 页（FC 两页除外）②管理后台也翻 ③语言切换器只在设置弹窗 ④访客首访跟浏览器语言自动选 ⑤加繁体 zh-Hant（OpenCC 机械转换自动生成）⑥加英语 en + 重写电池、加法/西/葡）：
+//   12 语言 zh/zh-Hant/en/de/ru/ms/th/vi/id/fr/es/pt；i18n.js LANGS 12 条 + lookup 扁平键优先修复；
+//   common.i18n.js（sidebar/settings/aichat/report/verify 共用段）+ 每页 <page>.i18n.js 字典体系；
+//   7 个旧 .zh.js（472 键）1:1 迁入新体系后删除；admin 单页应用独立接入 admin.i18n.js；
+//   电池统一 --lang=zh-CN + 硬编码中文文案断言改机制断言（期望值=当前语言字典值）；
+//   ethereal.css 零改动（不跑 inline-css）；后端零改动（user_version 27/health 59 表不变）；
+//   FC v10.28.36.1 零改动；零草稿字段（v 保持 9）
+//   （rev 00259-98x）
+// v0.2.54.1 = pricing.js 判定链欧洲修复（补丁位 0→1·纯修复轮；2026-09-20）——线上 premium-multi 电池 de-DE→eur 场景稳定超时挖出：
+//   Chrome 151 的 setLocaleOverride 不再改 navigator.language（恒 zh-CN）→ 电池 de-DE 场景 loc='zh-cn' 撞
+//   China 分支纯语言条件 → key='zh-CN' → usd（EU_TZ 兜底 key==='default' 才生效，永远轮不到）；
+//   同构真实缺陷：zh-CN 语言 + 欧元区时区用户（中文浏览器在德国/法国）被 China 分支截胡收 usd 而非 eur——
+//   与 v0.2.54.0 新加坡修复（zh 语言新加坡用户多收）同一 bug 的欧洲镜像；
+//   修法同哲学（判定链头注释「most accurate first」= 时区优先于语言）：China 分支纯语言条件加 !tz.startsWith('Europe/')
+//   限定，欧洲时区留给上方已命中的非欧分支/下方 EU_TZ 兜底；本地探针 de-DE/Berlin→eur + 6 场景零回归 +
+//   premium-multi 本地 106/106；电池锚 54.0→54.1（13 电池 15 处）
+//   （rev 00260-2jk）
+window.MN_SITE_VERSION = 'v0.2.54.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

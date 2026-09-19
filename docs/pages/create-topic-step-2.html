@@ -2160,32 +2160,32 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <div style="position:fixed;top:0;left:0;right:0;padding:var(--space-sm) var(--space-md);z-index:50;display:flex;align-items:center;gap:12px">
   <img src="../assets/image/M.NationWorld logo.png" alt="M.NationWorld" style="height:24px;width:auto">
   <span style="font-weight:700">M.NationWorld</span>
-  <a href="../index.html" style="margin-left:auto;font-size:var(--fs-label-sm);color:var(--color-outline)">Cancel</a>
+  <a href="../index.html" style="margin-left:auto;font-size:var(--fs-label-sm);color:var(--color-outline)" data-i18n="cts2.topbar.cancel">Cancel</a>
 </div>
 
 <div class="topic-wizard">
   <div class="progress-steps" style="justify-content:center;margin-bottom:var(--space-lg)">
-    <div class="progress-step completed"><span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span>Info</span></div>
+    <div class="progress-step completed"><span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span><span data-i18n="cts2.steps.info">Info</span></div>
     <div class="progress-connector done"></div>
-    <div class="progress-step active"><span class="dot">2</span><span>Branding</span></div>
+    <div class="progress-step active"><span class="dot">2</span><span data-i18n="cts2.steps.branding">Branding</span></div>
     <div class="progress-connector"></div>
-    <div class="progress-step pending"><span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">3</span><span style="color:var(--color-outline)">Review</span></div>
+    <div class="progress-step pending"><span class="dot" style="background:var(--color-outline-variant);color:var(--color-outline)">3</span><span style="color:var(--color-outline)" data-i18n="cts2.steps.review">Review</span></div>
   </div>
 
   <div class="card tilt-container" style="padding:var(--space-lg)">
-    <h2 class="headline-md" style="margin-bottom:4px">Topic Branding</h2>
-    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)">Step 2: Customize the look</p>
+    <h2 class="headline-md" style="margin-bottom:4px" data-i18n="cts2.hero.title">Topic Branding</h2>
+    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-md)" data-i18n="cts2.hero.subtitle">Step 2: Customize the look</p>
 
     <div class="form-group">
-      <label class="form-label">Topic Avatar</label>
+      <label class="form-label" data-i18n="cts2.avatar.label">Topic Avatar</label>
       <div class="upload-zone" style="max-width:160px">
         <span class="material-symbols-outlined" style="font-size:32px;color:var(--color-outline)">add_a_photo</span>
-        <p class="label-sm" style="color:var(--color-outline)">Upload image</p>
+        <p class="label-sm" style="color:var(--color-outline)" data-i18n="cts2.avatar.upload">Upload image</p>
       </div>
     </div>
 
     <div class="form-group">
-      <label class="form-label">Accent Color</label>
+      <label class="form-label" data-i18n="cts2.color.label">Accent Color</label>
       <div style="display:flex;gap:8px;flex-wrap:wrap" id="colorSwatches">
         <button class="color-swatch" data-color="#4648d4" style="width:36px;height:36px;background:#4648d4;border-radius:50%;border:3px solid transparent;cursor:pointer" onclick="selectColor('#4648d4',this)"></button>
         <button class="color-swatch" data-color="#8127cf" style="width:36px;height:36px;background:#8127cf;border-radius:50%;border:3px solid transparent;cursor:pointer" onclick="selectColor('#8127cf',this)"></button>
@@ -2197,23 +2197,26 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     </div>
 
     <div class="form-group">
-      <label class="form-label">Visibility</label>
+      <label class="form-label" data-i18n="cts2.visibility.label">Visibility</label>
       <div class="segmented-control" style="max-width:280px">
-        <button class="segmented-option active" data-vis="public" id="visPublic">Public</button>
-        <button class="segmented-option" data-vis="private" id="visPrivate">Private</button>
+        <button class="segmented-option active" data-vis="public" id="visPublic" data-i18n="cts2.visibility.public">Public</button>
+        <button class="segmented-option" data-vis="private" id="visPrivate" data-i18n="cts2.visibility.private">Private</button>
       </div>
       <p class="label-sm" style="color:var(--color-outline);margin-top:4px" id="visDesc">Anyone can view and join this topic.</p>
     </div>
 
     <div class="flex-between" style="margin-top:var(--space-lg)">
-      <a href="create-topic-step-1.html" class="btn btn-ghost"><span class="material-symbols-outlined">arrow_back</span> Previous</a>
-      <button class="btn btn-primary btn-lg" onclick="handleNext()">Continue to Review <span class="material-symbols-outlined">arrow_forward</span></button>
+      <a href="create-topic-step-1.html" class="btn btn-ghost"><span class="material-symbols-outlined">arrow_back</span> <span data-i18n="cts2.nav.prev">Previous</span></a>
+      <button class="btn btn-primary btn-lg" onclick="handleNext()"><span data-i18n="cts2.nav.next">Continue to Review</span> <span class="material-symbols-outlined">arrow_forward</span></button>
     </div>
   </div>
 </div>
 
 <script src="../assets/js/tilt.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   var selectedColor = '#4648d4';
   var visibility = 'public';
 
@@ -2227,13 +2230,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     visibility = 'public';
     this.classList.add('active');
     document.getElementById('visPrivate').classList.remove('active');
-    document.getElementById('visDesc').textContent = 'Anyone can view and join this topic.';
+    document.getElementById('visDesc').textContent = T('cts2.visibility.publicDesc') || 'Anyone can view and join this topic.';
   });
   document.getElementById('visPrivate').addEventListener('click', function() {
     visibility = 'private';
     this.classList.add('active');
     document.getElementById('visPublic').classList.remove('active');
-    document.getElementById('visDesc').textContent = 'Only invited members can view this topic.';
+    document.getElementById('visDesc').textContent = T('cts2.visibility.privateDesc') || 'Only invited members can view this topic.';
   });
 
   function handleNext() {
@@ -2243,11 +2246,30 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     localStorage.setItem('slati_topic_draft', JSON.stringify(draft));
     window.location.href = 'create-topic-step-3.html';
   }
+
+  // v0.2.54.0 i18n：重渲钩子——body 尾部三件套 apply（及语言切换）后调用，
+  // 按当前语言与当前 visibility 状态重落 visDesc（visDesc 由 JS 动态改写，不挂 data-i18n）。
+  var __mnPrevRerender = window.__mnI18nRerender || function () {};
+  window.__mnI18nRerender = function () {
+    __mnPrevRerender();
+    var desc = document.getElementById('visDesc');
+    if (desc) {
+      desc.textContent = visibility === 'private'
+        ? (T('cts2.visibility.privateDesc') || 'Only invited members can view this topic.')
+        : (T('cts2.visibility.publicDesc') || 'Anyone can view and join this topic.');
+    }
+  };
 </script>
 <script src="../assets/js/transitions.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/create-topic-step-2.i18n.js"></script>
+<script>MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); }); MN_I18N.apply();</script>
 </body>
 </html>

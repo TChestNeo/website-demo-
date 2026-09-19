@@ -2291,6 +2291,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   // 新增类型 = 在 WORLD_TYPE_CONFIGS 加一段配置，引擎零改动。
   // nation（架空国家）走既有 registry-step-1 国家流程，不在此表。
   // ─────────────────────────────────────────────────────────────
+
+  // v0.2.54.0 i18n：动态文案取词 T(key)——MN_I18N 由 body 尾部三件套注入（本脚本先执行，
+  // 故 bootWizard 改为 DOMContentLoaded 后执行，保证 T 生效）；(T(key)||原文) 兜底回落 zh。
+  // 豁免不译：WORLD_TYPE_CONFIGS 的 label/en/emoji（类型名=数据值）、select options（草稿
+  // 恢复按 val===o 比较）、field/config key、URL、icon 字面（arrow_forward/check）。
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   var WORLD_TYPE_CONFIGS = [
     // ── 世界级 ──
     { key: 'althistory-zh', label: '架空历史', en: 'Alternate History', emoji: '📜', tagline: '一个分岔的历史，一段未发生的文明',
@@ -2682,32 +2689,38 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     if (WORLD_TYPE_CONFIGS[i].key === typeKey) { cfg = WORLD_TYPE_CONFIGS[i]; break; }
   }
 
-  // nation 走既有国家流程；未知类型回选型页
+  // nation 走既有国家流程；未知类型回选型页。
+  // v0.2.54.0 i18n 启动时序：bootWizard 延迟到 DOMContentLoaded 执行——尾部三件套
+  // （i18n.js + 字典 + MN_I18N.apply()）均为同步解析脚本、先于 DOMContentLoaded 完成，
+  // T() 必已生效；transitions.js 的 boot 同挂 DOMContentLoaded 且注册在后，面板先渲染
+  // 后入波浪，zh 下视觉零变化。
   if (typeKey === 'nation') { window.location.href = 'registry-step-1.html'; }
   else if (!cfg) { window.location.href = 'create-world.html'; }
-  else { bootWizard(cfg); }
+  else { document.addEventListener('DOMContentLoaded', function () { bootWizard(cfg); }); }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function fieldHTML(f, values) {
+  function fieldHTML(f, values, cfgKey) {
     var val = values[f.key] || '';
+    var label = T('wwz.' + cfgKey + '.f.' + f.key + '.label') || f.label;
+    var ph = f.ph ? (T('wwz.' + cfgKey + '.f.' + f.key + '.ph') || f.ph) : '';
     if (f.type === 'textarea') {
-      return '<div class="form-group"><label class="form-label">' + f.label + '</label>' +
-        '<textarea class="input-glass" id="f_' + f.key + '" rows="4" placeholder="' + esc(f.ph || '') + '">' + esc(val) + '</textarea></div>';
+      return '<div class="form-group"><label class="form-label">' + label + '</label>' +
+        '<textarea class="input-glass" id="f_' + f.key + '" rows="4" placeholder="' + esc(ph) + '">' + esc(val) + '</textarea></div>';
     }
     if (f.type === 'select') {
-      var opts = '<option value="">请选择…</option>';
+      var opts = '<option value="">' + (T('wwz.selectEmpty') || '请选择…') + '</option>';
       (f.options || []).forEach(function (o) {
         opts += '<option value="' + esc(o) + '"' + (val === o ? ' selected' : '') + '>' + esc(o) + '</option>';
       });
-      return '<div class="form-group"><label class="form-label">' + f.label + '</label>' +
+      return '<div class="form-group"><label class="form-label">' + label + '</label>' +
         '<select class="input-glass" id="f_' + f.key + '">' + opts + '</select></div>';
     }
-    return '<div class="form-group"><label class="form-label">' + f.label + '</label>' +
-      '<input type="text" class="input-glass" id="f_' + f.key + '" placeholder="' + esc(f.ph || '') + '" value="' + esc(val) + '">' +
+    return '<div class="form-group"><label class="form-label">' + label + '</label>' +
+      '<input type="text" class="input-glass" id="f_' + f.key + '" placeholder="' + esc(ph) + '" value="' + esc(val) + '">' +
     '</div>';
   }
 
@@ -2726,7 +2739,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     }
 
     document.getElementById('wizardTitle').textContent = config.emoji + ' ' + config.label;
-    document.getElementById('wizardSub').textContent = config.tagline;
+    document.getElementById('wizardSub').textContent = T('wwz.' + config.key + '.tagline') || config.tagline;
 
     // 进度条
     var bar = '';
@@ -2736,7 +2749,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       if (idx < state.step) dot = '<span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>';
       else dot = '<span class="dot"' + (cls === 'pending' ? ' style="background:var(--color-outline-variant);color:var(--color-outline)"' : '') + '>' + (idx + 1) + '</span>';
       var labelStyle = cls === 'pending' ? ' style="color:var(--color-outline)"' : '';
-      bar += '<div class="progress-step ' + cls + '">' + dot + '<span' + labelStyle + '>' + st.title + '</span></div>';
+      bar += '<div class="progress-step ' + cls + '">' + dot + '<span' + labelStyle + '>' + (T('wwz.' + config.key + '.s' + (idx + 1) + '.title') || st.title) + '</span></div>';
       if (idx < config.steps.length - 1) bar += '<div class="progress-connector' + (idx < state.step ? ' done' : '') + '"></div>';
     });
     document.getElementById('progressBar').innerHTML = bar;
@@ -2744,8 +2757,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     // 面板
     document.getElementById('stepPanels').innerHTML = config.steps.map(function (st, idx) {
       return '<div class="wizard-panel" data-step="' + idx + '"' + (idx === state.step ? '' : ' style="display:none"') + '>' +
-        '<h3 class="label-md" style="margin-bottom:var(--space-md);color:var(--color-on-surface)">Step ' + (idx + 1) + ' — ' + st.title + '</h3>' +
-        st.fields.map(function (f) { return fieldHTML(f, values); }).join('') +
+        '<h3 class="label-md" style="margin-bottom:var(--space-md);color:var(--color-on-surface)">' + (T('wwz.stepPrefix') || 'Step ') + (idx + 1) + ' — ' + (T('wwz.' + config.key + '.s' + (idx + 1) + '.title') || st.title) + '</h3>' +
+        st.fields.map(function (f) { return fieldHTML(f, values, config.key); }).join('') +
       '</div>';
     }).join('');
 
@@ -2755,9 +2768,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
     function syncButtons() {
       var last = state.step === config.steps.length - 1;
-      btnNextLabel.textContent = last ? '提交创建' : '下一步：' + config.steps[state.step + 1].title;
+      btnNextLabel.textContent = last ? (T('wwz.btnSubmit') || '提交创建') : (T('wwz.btnNextPrefix') || '下一步：') + (T('wwz.' + config.key + '.s' + (state.step + 2) + '.title') || config.steps[state.step + 1].title);
       btnNext.querySelector('.material-symbols-outlined').textContent = last ? 'check' : 'arrow_forward';
-      btnPrev.textContent = state.step === 0 ? '返回类型选择' : '上一步';
+      btnPrev.textContent = state.step === 0 ? (T('wwz.btnBackTypes') || '返回类型选择') : (T('wwz.btnPrev') || '上一步');
       btnPrev.classList.toggle('btn-ghost', true);
       if (state.step > 0) {
         btnPrev.setAttribute('href', 'javascript:void(0)');
@@ -2781,7 +2794,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         if (i2 < idx) dot = '<span class="dot"><span class="material-symbols-outlined" style="font-size:14px">check</span></span>';
         else dot = '<span class="dot"' + (cls === 'pending' ? ' style="background:var(--color-outline-variant);color:var(--color-outline)"' : '') + '>' + (i2 + 1) + '</span>';
         var labelStyle = cls === 'pending' ? ' style="color:var(--color-outline)"' : '';
-        bar2 += '<div class="progress-step ' + cls + '">' + dot + '<span' + labelStyle + '>' + st.title + '</span></div>';
+        bar2 += '<div class="progress-step ' + cls + '">' + dot + '<span' + labelStyle + '>' + (T('wwz.' + config.key + '.s' + (i2 + 1) + '.title') || st.title) + '</span></div>';
         if (i2 < steps.length - 1) bar2 += '<div class="progress-connector' + (i2 < idx ? ' done' : '') + '"></div>';
       });
       document.getElementById('progressBar').innerHTML = bar2;
@@ -2795,9 +2808,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       st.fields.forEach(function (f) {
         var el = document.getElementById('f_' + f.key);
         stepValues[f.key] = el ? el.value.trim() : '';
-        if (f.required && !stepValues[f.key] && !missing) missing = f.label;
+        if (f.required && !stepValues[f.key] && !missing) missing = T('wwz.' + config.key + '.f.' + f.key + '.label') || f.label;
       });
-      if (missing) { showError('请填写：' + missing); return; }
+      if (missing) { showError((T('wwz.errFillPrefix') || '请填写：') + missing); return; }
 
       // 写入草稿（含本步全部字段，便于恢复）
       SlatiDB.saveWorldDraft(config.key, state.step + 1, stepValues);
@@ -2838,5 +2851,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/world-wizard.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 </body>
 </html>

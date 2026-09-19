@@ -2250,8 +2250,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div style="display:flex;align-items:center;justify-content:center;min-height:80vh">
       <div class="tilt-container" style="text-align:center">
         <span class="material-symbols-outlined" style="font-size:64px;color:var(--color-outline-variant);margin-bottom:var(--space-md)">construction</span>
-        <h1 class="display-lg" style="font-size:36px;margin-bottom:8px">Construction is underway,<br>please wait.</h1>
-        <p class="body-lg" style="color:var(--color-on-surface-variant)">——Coming soon——</p>
+        <h1 class="display-lg" style="font-size:36px;margin-bottom:8px" data-i18n-html="construction.hero.title">Construction is underway,<br>please wait.</h1>
+        <p class="body-lg" style="color:var(--color-on-surface-variant)" data-i18n="construction.hero.sub">——Coming soon——</p>
       </div>
     </div>
   </main>
@@ -2267,5 +2267,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/construction.i18n.js"></script>
+<script>MN_I18N.apply();</script>
 </body>
 </html>

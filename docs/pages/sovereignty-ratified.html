@@ -2378,7 +2378,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <div class="glass-container tilt-container" style="position:relative;z-index:1">
   <div class="mono-badge animate-fade-in" style="margin-bottom:var(--space-md)">
     <span class="material-symbols-outlined" style="font-size:14px">check_circle</span>
-    LEDGER TRANSACTION VERIFIED
+    <span data-i18n="sov.badge.ledger">LEDGER TRANSACTION VERIFIED</span>
   </div>
 
   <h1 class="display-lg" style="font-size:36px;margin-bottom:12px;text-shadow:0 0 40px rgba(70,72,212,0.4)" id="nationTitle">
@@ -2392,20 +2392,20 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   <!-- Loading indicator while "processing" -->
   <div id="processingIndicator" style="margin-bottom:var(--space-md)">
     <div class="spinner" style="margin:0 auto var(--space-sm)"></div>
-    <p class="label-sm" style="color:rgba(255,255,255,0.35)">Finalizing protocol initialization...</p>
+    <p class="label-sm" style="color:rgba(255,255,255,0.35)" data-i18n="sov.processing.init">Finalizing protocol initialization...</p>
   </div>
 
   <div style="display:flex;gap:var(--space-sm);justify-content:center;flex-wrap:wrap">
     <a href="../index.html" class="btn btn-primary btn-lg animate-pulse-glow">
-      Proceed to Overview
+      <span data-i18n="sov.cta.overview">Proceed to Overview</span>
       <span class="material-symbols-outlined">arrow_forward</span>
     </a>
   </div>
 
   <p style="margin-top:var(--space-lg);font-size:var(--fs-label-sm);color:rgba(255,255,255,0.25)">
-    <a href="../index.html" style="color:rgba(255,255,255,0.3)">Bypass to Dashboard</a>
+    <a href="../index.html" style="color:rgba(255,255,255,0.3)" data-i18n="sov.footer.bypass">Bypass to Dashboard</a>
     &nbsp;·&nbsp;
-    <span>Terms of Incorporation v2.4.1</span>
+    <span data-i18n="sov.footer.terms">Terms of Incorporation v2.4.1</span>
   </p>
 </div>
 
@@ -2414,17 +2414,30 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/liquid-glass.js"></script>
 <script src="../assets/js/storage.js"></script>
 <script>
+  // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
   // Submit the nation from draft
   var nation = SlatiDB.submitNation();
 
   // Update UI with nation info
-  if (nation && nation.name) {
-    document.getElementById('nationTitle').textContent = nation.name + ' — Ratified';
-    document.getElementById('nationDesc').textContent =
-      'Classification: ' + nation.classification +
-      ' · Capital: ' + nation.capital +
-      ' · Your nation\'s Wiki has been generated and its diplomatic presence is now active.';
+  // nationTitle/nationDesc 是 JS 改写元素，不挂 data-i18n（尾部 apply 会用静态译文覆盖 JS 写入值）；
+  // 全部走惰性 T()——无草稿分支也按当前语言渲染静态原文
+  function renderNation() {
+    var titleEl = document.getElementById('nationTitle');
+    var descEl = document.getElementById('nationDesc');
+    if (nation && nation.name) {
+      titleEl.textContent = nation.name + (T('sov.js.suffixRatified') || ' — Ratified');
+      descEl.textContent =
+        (T('sov.js.classification') || 'Classification: ') + nation.classification +
+        (T('sov.js.capital') || ' · Capital: ') + nation.capital +
+        (T('sov.js.wikiGenerated') || ' · Your nation\'s Wiki has been generated and its diplomatic presence is now active.');
+    } else {
+      titleEl.textContent = T('sov.hero.title') || 'Sovereignty Successfully Ratified';
+      descEl.textContent = T('sov.hero.desc') || 'Your nation\'s Wiki article has been automatically generated and its diplomatic presence is now active in the M.NationWorld registry.';
+    }
   }
+  renderNation();
 
   // Simulate processing then resolve
   setTimeout(function () {
@@ -2434,9 +2447,19 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         '<div style="margin-bottom:var(--space-sm)">' +
           '<span class="material-symbols-outlined animate-scale-in" style="font-size:32px;color:#22c55e">verified</span>' +
         '</div>' +
-        '<p class="label-sm" style="color:#22c55e">Protocol initialization complete</p>';
+        '<p class="label-sm" id="protocolDoneMsg" style="color:#22c55e">' +
+          (T('sov.js.processingComplete') || 'Protocol initialization complete') + '</p>';
     }
   }, 2000);
+
+  // v0.2.54.0 i18n：重渲钩子——body 尾部三件套 apply（及语言切换）后调用，重刷 JS 动态文案
+  var __mnPrevRerender = window.__mnI18nRerender || function () {};
+  window.__mnI18nRerender = function () {
+    __mnPrevRerender();
+    renderNation();
+    var done = document.getElementById('protocolDoneMsg');
+    if (done) done.textContent = T('sov.js.processingComplete') || 'Protocol initialization complete';
+  };
 
   // Simple canvas animation (fallback for the WebGL effect)
   (function() {
@@ -2507,5 +2530,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
 setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-stagger'); }, 1600);
 </script>
+
+<!-- v0.2.54.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/sovereignty-ratified.i18n.js"></script>
+<script>MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); }); MN_I18N.apply();</script>
 </body>
 </html>

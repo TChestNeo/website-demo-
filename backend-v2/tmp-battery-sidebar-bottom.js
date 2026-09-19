@@ -109,9 +109,9 @@ const GEOM = `(function () {
   ok('S2 sidebar.js v0.2.53.3 注释含用户原话 + 问询钦定',
     sbSrc.indexOf('v0.2.53.3') !== -1 && sbSrc.indexOf('左侧菜单的底部背景能不能去掉') !== -1 &&
     sbSrc.indexOf('去掉空白面板') !== -1);
-  ok('S3 site-config 版本 = v0.2.53.3', sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.53.3';") !== -1);
-  ok('S4 site-config changelog 含 v0.2.53.3 条目 + 用户原话 + FC 零改动',
-    sconf.indexOf('v0.2.53.3 = 左侧菜单底部空白面板去掉') !== -1 &&
+  ok('S3 site-config 版本 = v0.2.54.0', sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.54.1';") !== -1);
+  ok('S4 site-config changelog 含 v0.2.54.0 条目 + FC 零改动',
+    sconf.indexOf('v0.2.54.0 = 全站 12 语言 i18n') !== -1 &&
     sconf.indexOf('FC v10.28.36.1 零改动') !== -1);
 
   await new Promise(r => server.listen(PORT, r));
@@ -123,7 +123,7 @@ const GEOM = `(function () {
     process.env.LOCALAPPDATA + '/Google/Chrome/Application/chrome.exe'
   ]) if (fs.existsSync(p)) { chromePath = p; break; }
   const chrome = spawn(chromePath, [
-    '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--window-size=1920,1080', '--remote-debugging-port=' + CDP_PORT,
     '--user-data-dir=' + USER_DATA, 'about:blank'
   ], { stdio: 'ignore' });

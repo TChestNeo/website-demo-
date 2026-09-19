@@ -74,8 +74,8 @@ async function waitFor(cdp, expr, timeout, label) {
   const msgSrc = fs.readFileSync(path.join(DOCS, 'pages', 'messages.html'), 'utf8');
   const idxSrc = fs.readFileSync(path.join(DOCS, 'index.html'), 'utf8');
   const sconfSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
-  ok('F0 版本双线 v0.2.53.3 / v10.28.36.1 + 用户原话注释',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.53.3';") !== -1 &&
+  ok('F0 版本双线 v0.2.54.0 / v10.28.36.1 + 用户原话注释',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.54.1';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.1';") !== -1 &&
     sconfSrc.indexOf('douyin.com/user/self') !== -1);
   ok('F1 直达读取 showTab + 旧 tab 兼容',
@@ -97,7 +97,7 @@ async function waitFor(cdp, expr, timeout, label) {
     process.env.LOCALAPPDATA + '/Google/Chrome/Application/chrome.exe'
   ]) if (fs.existsSync(p)) { chromePath = p; break; }
   const chrome = spawn(chromePath, [
-    '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--window-size=1280,900', '--remote-debugging-port=' + CDP_PORT,
     '--user-data-dir=' + USER_DATA, 'about:blank'
   ], { stdio: 'ignore' });
