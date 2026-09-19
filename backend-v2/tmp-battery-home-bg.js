@@ -3,11 +3,11 @@
 //   首页 18 张 .card（问候/活动流 4/公告 10/工作台/指标/我的世界）＋搜索胶囊＋访客大卡铺满 --sidebar-bg
 //   不透明底（亮色 rgba(255,255,255,0.95) / 暗色 #1a1a2e）+ 灭玻璃注入层 .lg-backdrop 滤镜/磨砂
 //   （与 09-18 亮色侧栏修法同机制）；卡片自带 backdrop-filter blur(24px) 保留；订阅卡深色渐变白字不动
-// v0.2.54.4 起首页口径由全站规则承载（body:not(.fc-page) 三面 + 灭层），本电池静态锚同步全站规则
+// v0.2.54.5 起首页口径由全站规则承载（body:not(.fc-page) 三面 + 灭层），本电池静态锚同步全站规则
 // 断言：
 //   S  静态：ethereal 全站铺底+灭层规则在位（首页命中同口径）/ 旧 mn-index 规则零残留 / index body 有 mn-index 类 /
 //       问候卡内联 background:var(--sidebar-bg)（旧 tint 渐变已去）/ 40 页内联块全量含新规则 /
-//       site-config v0.2.54.4 + changelog 条目 + FC 零改动
+//       site-config v0.2.54.5 + changelog 条目 + FC 零改动
 //   B1 浏览器（zh-CN + 登录会话，亮色）：18 张 .card 全 rgba(255,255,255,0.95) 不透明 / 卡自带
 //       blur(24px) 保留 / .lg-backdrop computed filter+backdrop-filter 全 none / 搜索胶囊同底 /
 //       问候卡内联解析同底 → 切 data-theme=dark 全 rgb(26,26,46)
@@ -72,7 +72,7 @@ console.log('═══ S. 静态巡检 ═══');
   }
   if (bad === 0) { pass++; console.log('  ✅ S8 40 页内联块全部含全站铺底规则'); }
   const s = read('docs/assets/js/site-config.js');
-  ok('S9 site-config 版本 = v0.2.54.4', s.indexOf("window.MN_SITE_VERSION = 'v0.2.54.4';") !== -1);
+  ok('S9 site-config 版本 = v0.2.54.5', s.indexOf("window.MN_SITE_VERSION = 'v0.2.54.5';") !== -1);
   ok('S10 site-config changelog 含 v0.2.54.3 条目 + 用户原话 + 侧栏同款口径',
     s.indexOf('v0.2.54.3 = 首页卡片背景换侧栏同款不透明底') !== -1 &&
     s.indexOf('能不能把首页的卡片背景都变成') !== -1);

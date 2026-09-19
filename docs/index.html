@@ -2489,7 +2489,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function renderAnn() {
     document.getElementById('dashAnnouncements').innerHTML = dashAnnouncements.map(function(a) {
       var cs = dashCatStyle[a.cat] || dashCatStyle.system;
-      return '<a href="pages/messages.html" class="card card-hover" style="display:flex;align-items:center;gap:10px;padding:8px 12px;text-decoration:none;cursor:pointer">' +
+      return '<a href="pages/messages.html?showTab=announcements" class="card card-hover" style="display:flex;align-items:center;gap:10px;padding:8px 12px;text-decoration:none;cursor:pointer">' +
         '<span class="material-symbols-outlined" style="font-size:18px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +
         '<span class="label-sm" style="background:' + cs.bg + ';color:' + cs.color + ';padding:1px 7px;border-radius:var(--radius-full);font-weight:600;font-size:9px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.03em">' + (T('index.ann.cat.' + a.cat) || a.cat) + '</span>' +
         '<span style="flex:1;font-weight:500;font-size:var(--fs-label-sm);color:var(--color-on-surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (T('index.ann.t.' + a.titleKey) || a.titleEn) + '</span>' +

@@ -1056,7 +1056,12 @@ window.MN_SITE = window.MN_SITE || {};
 //   pv-card 均无 .card 类天然豁免；后端零改动（user_version 27/health 59 表不变）；FC v10.28.36.1 零改动；
 //   零草稿字段（v 保持 9）
 //   （rev 00263-hkp）
-window.MN_SITE_VERSION = 'v0.2.54.4';
+// v0.2.54.5 = 首页公告卡点击直达 Messages 公告 tab（补丁位 4→5·观感修复轮；2026-09-20）——用户「能不能把首页那边的公告点击后跳转是到这个页面？ https://mnationworld.com/pages/messages.html?showTab=announcements」：
+//   首页公告卡 href 补 ?showTab=announcements（原 pages/messages.html 无参数落默认 private 视图；messages 页
+//   showTab 直达 v0.2.50.8 已建成、「View all announcements」按钮早已是该链接，本轮只补公告卡这一个入口）；
+//   后端零改动（user_version 27/health 59 表不变）；FC v10.28.36.1 零改动；ethereal 零改动；零草稿字段（v 保持 9）
+//   （rev 00264-tcv）
+window.MN_SITE_VERSION = 'v0.2.54.5';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

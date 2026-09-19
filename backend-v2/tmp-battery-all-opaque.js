@@ -1,4 +1,4 @@
-// tmp-battery-all-opaque.js — v0.2.54.4 全站卡片不透明底电池（S 静态巡检 + B Chrome 浏览器段）
+// tmp-battery-all-opaque.js — v0.2.54.5 全站卡片不透明底电池（S 静态巡检 + B Chrome 浏览器段）
 // 用户「能不能把全部变成不透明的卡片？」→ 问询钦定：①全站所有页面卡片不透明底（FC 两页除外）
 //   ②首页深色订阅卡保持深色不变（内联渐变天然豁免）③Community 个人页钦定液态玻璃保留（profile-header 排除）。
 //   全站 .card 铺满 --sidebar-bg 不透明底（亮色 rgba(255,255,255,0.95) / 暗色 rgb(26,26,46)）
@@ -7,7 +7,7 @@
 // 断言：
 //   S  静态：ethereal 全站铺底+灭层规则在位（body:not(.fc-page) 三面）/ 旧 mn-index 规则零残留 /
 //       FC 两页 body 含 fc-page / 订阅卡深色渐变零触碰 / cp 钦定玻璃规则锚 / 40 页内联块含新规则 /
-//       site-config v0.2.54.4 + changelog 条目 + FC v10.28.36.1 保持 / 豁免卡锚（plan-card/auth-card）
+//       site-config v0.2.54.5 + changelog 条目 + FC v10.28.36.1 保持 / 豁免卡锚（plan-card/auth-card）
 //   B1 浏览器（登录 index 亮色）：18 张 .card 全 0.95 不透明 / 层全灭 / 胶囊同底 / 订阅卡深色渐变白字仍在
 //   B2 浏览器（登录 index 暗色）：18 卡全 rgb(26,26,46)
 //   B3 浏览器（访客 index）：guest-hero 大卡亮暗同底 + 层灭（54.3 保留回归）
@@ -84,9 +84,9 @@ console.log('═══ S. 静态巡检 ═══');
   }
   if (bad === 0) { pass++; console.log('  ✅ S10 40 页内联块全部含全站铺底规则'); }
   const s = read('docs/assets/js/site-config.js');
-  ok('S11 site-config 版本 = v0.2.54.4', s.indexOf("window.MN_SITE_VERSION = 'v0.2.54.4';") !== -1);
-  ok('S12 site-config changelog 含 v0.2.54.4 条目 + 用户原话',
-    s.indexOf('v0.2.54.4') !== -1 && s.indexOf('能不能把全部变成不透明的卡片') !== -1);
+  ok('S11 site-config 版本 = v0.2.54.5', s.indexOf("window.MN_SITE_VERSION = 'v0.2.54.5';") !== -1);
+  ok('S12 site-config changelog 含 v0.2.54.5 条目 + 用户原话',
+    s.indexOf('v0.2.54.5') !== -1 && s.indexOf('能不能把全部变成不透明的卡片') !== -1);
   ok('S13 FC v10.28.36.1 保持', s.indexOf("'v10.28.36.1'") !== -1);
   const prem = read('docs/pages/premium.html');
   const auth = read('docs/signup-and-login.html');
