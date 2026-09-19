@@ -1049,7 +1049,14 @@ window.MN_SITE = window.MN_SITE || {};
 //   底已不透明零可见效果，与侧栏模块保留 blur 同口径）；订阅卡本就是深色不透明渐变底＋白字不动；
 //   后端零改动（user_version 27/health 59 表不变）；FC v10.28.36.1 零改动；零草稿字段（v 保持 9）
 //   （rev 00262-k59）
-window.MN_SITE_VERSION = 'v0.2.54.3';
+// v0.2.54.4 = 全站卡片不透明底（补丁位 3→4·观感修复轮；2026-09-20）——用户「能不能把全部变成不透明的卡片？」（问询钦定：①全站所有页面（FC 两页除外）②首页深色订阅卡保持深色不变③Community 个人页钦定液态玻璃保留）：
+//   全站 .card 铺满 --sidebar-bg 不透明底＋灭玻璃注入层 .lg-backdrop 滤镜/磨砂（与 54.3 首页同机制，
+//   作用域 body.mn-index → body:not(.fc-page) 全站化）；FC 两页 body 挂 fc-page 排除类（FC 玻璃/倾斜设计零触碰）；
+//   profile-header 排除保留个人页钦定玻璃（card-halo 包层非 .card 天然豁免）；订阅卡/plan-card/auth-card/modal-card/
+//   pv-card 均无 .card 类天然豁免；后端零改动（user_version 27/health 59 表不变）；FC v10.28.36.1 零改动；
+//   零草稿字段（v 保持 9）
+//   （rev 00263-hkp）
+window.MN_SITE_VERSION = 'v0.2.54.4';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

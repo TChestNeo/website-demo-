@@ -260,19 +260,19 @@ html[data-theme="dark"] .guest-module .btn-primary:hover {
   filter: none;
   backdrop-filter: none;
 }
-/* 2026-09-20 用户「能不能把首页的卡片背景都变成和之前那个左侧菜单一样啊？」——问询钦定「侧栏同款不透明底」：
-   首页卡片（问候/活动流/公告/工作台/指标/我的世界）·搜索胶囊·访客大卡铺满 --sidebar-bg 不透明底
-   （亮色近纯白 0.95 / 暗色 #1a1a2e / 深色 mono #101013 随 var() 自适应）＋灭玻璃注入层 .lg-backdrop
-   滤镜/磨砂（与 09-18 亮色侧栏修法同机制——三通道折射发黄/暗斑、半透明漏背景色一并消失）；
+/* 2026-09-20 用户「能不能把全部变成不透明的卡片？」——问询钦定：①全站所有页面卡片不透明底（FC 两页除外）
+   ②首页深色订阅卡保持深色不变（内联渐变天然豁免）③Community 个人页钦定液态玻璃保留（profile-header 排除）。
+   全站 .card 铺满 --sidebar-bg 不透明底（亮色近纯白 0.95 / 暗色 #1a1a2e / 深色 mono #101013 随 var() 自适应）
+   ＋灭玻璃注入层 .lg-backdrop 滤镜/磨砂（与 09-18 亮色侧栏修法同机制——三通道折射发黄/暗斑、半透明漏背景色一并消失）；
    卡片自带 backdrop-filter 保留（底已不透明零可见效果，与侧栏模块保留 blur 同口径）；
-   订阅卡本就是深色不透明渐变底＋白字，不在此列 */
-body.mn-index .app-main .card,
-body.mn-index .app-main .search-capsule,
-body.mn-index .app-main .guest-hero {
+   FC 两页 body 挂 fc-page 类排除（FC 玻璃/倾斜设计不动）；plan-card/auth-card/modal-card/pv-card 均无 .card 类天然豁免 */
+body:not(.fc-page) .card:not(.profile-header),
+body:not(.fc-page) .search-capsule,
+body:not(.fc-page) .app-main .guest-hero {
   background: var(--sidebar-bg);
 }
-body.mn-index .app-main .card > .lg-backdrop,
-body.mn-index .app-main .guest-hero > .lg-backdrop {
+body:not(.fc-page) .card:not(.profile-header) > .lg-backdrop,
+body:not(.fc-page) .guest-hero > .lg-backdrop {
   filter: none;
   backdrop-filter: none;
 }

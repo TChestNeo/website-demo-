@@ -3,10 +3,11 @@
 //   首页 18 张 .card（问候/活动流 4/公告 10/工作台/指标/我的世界）＋搜索胶囊＋访客大卡铺满 --sidebar-bg
 //   不透明底（亮色 rgba(255,255,255,0.95) / 暗色 #1a1a2e）+ 灭玻璃注入层 .lg-backdrop 滤镜/磨砂
 //   （与 09-18 亮色侧栏修法同机制）；卡片自带 backdrop-filter blur(24px) 保留；订阅卡深色渐变白字不动
+// v0.2.54.4 起首页口径由全站规则承载（body:not(.fc-page) 三面 + 灭层），本电池静态锚同步全站规则
 // 断言：
-//   S  静态：ethereal 两规则在位（body.mn-index .app-main 铺底 + 灭层）/ index body 有 mn-index 类 /
+//   S  静态：ethereal 全站铺底+灭层规则在位（首页命中同口径）/ 旧 mn-index 规则零残留 / index body 有 mn-index 类 /
 //       问候卡内联 background:var(--sidebar-bg)（旧 tint 渐变已去）/ 40 页内联块全量含新规则 /
-//       site-config v0.2.54.3 + changelog 条目 + FC 零改动
+//       site-config v0.2.54.4 + changelog 条目 + FC 零改动
 //   B1 浏览器（zh-CN + 登录会话，亮色）：18 张 .card 全 rgba(255,255,255,0.95) 不透明 / 卡自带
 //       blur(24px) 保留 / .lg-backdrop computed filter+backdrop-filter 全 none / 搜索胶囊同底 /
 //       问候卡内联解析同底 → 切 data-theme=dark 全 rgb(26,26,46)
@@ -33,18 +34,19 @@ const read = (p) => fs.readFileSync(path.resolve(__dirname, '..', p), 'utf8');
 console.log('═══ S. 静态巡检 ═══');
 {
   const css = read('docs/assets/css/ethereal.css');
-  ok('S1 ethereal 首页铺底规则在位（body.mn-index .app-main 三面）',
-    css.indexOf('body.mn-index .app-main .card,') !== -1 &&
-    css.indexOf('body.mn-index .app-main .search-capsule,') !== -1 &&
-    css.indexOf('body.mn-index .app-main .guest-hero {') !== -1 &&
+  ok('S1 ethereal 全站铺底规则在位（body:not(.fc-page) 三面，首页命中同口径）',
+    css.indexOf('body:not(.fc-page) .card:not(.profile-header),') !== -1 &&
+    css.indexOf('body:not(.fc-page) .search-capsule,') !== -1 &&
+    css.indexOf('body:not(.fc-page) .app-main .guest-hero {') !== -1 &&
     css.indexOf('background: var(--sidebar-bg);') !== -1);
-  ok('S2 ethereal 首页灭层规则在位（card + guest-hero 直系 lg-backdrop 灭滤镜灭磨砂）',
-    css.indexOf('body.mn-index .app-main .card > .lg-backdrop,') !== -1 &&
-    css.indexOf('body.mn-index .app-main .guest-hero > .lg-backdrop {') !== -1 &&
+  ok('S2 ethereal 全站灭层规则在位（card + guest-hero 直系 lg-backdrop 灭滤镜灭磨砂）',
+    css.indexOf('body:not(.fc-page) .card:not(.profile-header) > .lg-backdrop,') !== -1 &&
+    css.indexOf('body:not(.fc-page) .guest-hero > .lg-backdrop {') !== -1 &&
     css.indexOf('filter: none;') !== -1 && css.indexOf('backdrop-filter: none;') !== -1);
-  ok('S3 ethereal 修复注释含用户原话 + 问询口径',
-    css.indexOf('能不能把首页的卡片背景都变成和之前那个左侧菜单一样啊') !== -1 &&
-    css.indexOf('侧栏同款不透明底') !== -1);
+  ok('S3 ethereal 修复注释含 54.4 用户原话 + 三钦定口径（54.3 旧注释已整体替换零残留）',
+    css.indexOf('能不能把全部变成不透明的卡片') !== -1 &&
+    css.indexOf('全站所有页面卡片不透明底') !== -1 &&
+    css.indexOf('能不能把首页的卡片背景都变成和之前那个左侧菜单一样啊') === -1);
   const idx = read('docs/index.html');
   ok('S4 index body 挂 mn-index 页面类', idx.indexOf('<body class="pre-stagger mn-index">') !== -1);
   ok('S5 问候卡内联 background:var(--sidebar-bg)（旧 tint 渐变已去）',
@@ -64,13 +66,13 @@ console.log('═══ S. 静态巡检 ═══');
   ok('S7 内联页总数 = 40（实测 ' + inlinePages.length + '）', inlinePages.length === 40);
   let bad = 0;
   for (const f of inlinePages) {
-    if (read(path.join(DOCS, f)).indexOf('body.mn-index .app-main .card') === -1) {
-      bad++; fail++; console.log('  ❌ 内联块缺首页铺底规则：' + f);
+    if (read(path.join(DOCS, f)).indexOf('body:not(.fc-page) .card:not(.profile-header)') === -1) {
+      bad++; fail++; console.log('  ❌ 内联块缺全站铺底规则：' + f);
     }
   }
-  if (bad === 0) { pass++; console.log('  ✅ S8 40 页内联块全部含首页铺底规则'); }
+  if (bad === 0) { pass++; console.log('  ✅ S8 40 页内联块全部含全站铺底规则'); }
   const s = read('docs/assets/js/site-config.js');
-  ok('S9 site-config 版本 = v0.2.54.3', s.indexOf("window.MN_SITE_VERSION = 'v0.2.54.3';") !== -1);
+  ok('S9 site-config 版本 = v0.2.54.4', s.indexOf("window.MN_SITE_VERSION = 'v0.2.54.4';") !== -1);
   ok('S10 site-config changelog 含 v0.2.54.3 条目 + 用户原话 + 侧栏同款口径',
     s.indexOf('v0.2.54.3 = 首页卡片背景换侧栏同款不透明底') !== -1 &&
     s.indexOf('能不能把首页的卡片背景都变成') !== -1);
