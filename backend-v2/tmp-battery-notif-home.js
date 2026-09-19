@@ -120,10 +120,10 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
 
   console.log('═══ F0 双版本 + changelog ═══');
   ok('F0-1 site-config 双版本 v0.2.54.0 / v10.28.36.1 + changelog 标记',
-    count(sconf, "window.MN_SITE_VERSION = 'v0.2.54.6';") === 1 &&
+    count(sconf, "window.MN_SITE_VERSION = 'v0.2.55.0';") === 1 &&
     count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.1';") === 1 &&
     sconf.indexOf('通知铃铛聚合') !== -1 && sconf.indexOf('文章查看模式点赞/收藏操作条') !== -1,
-    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.54.6';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.1';"));
+    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.55.0';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.1';"));
 
   console.log('═══ F1 index.html 铃铛/灵动岛 ═══');
   ok('F1-1 铃铛按钮+红点徽章（唯一性 + search-capsule position:relative + 徽章在铃铛后）',
@@ -160,11 +160,11 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
     count(idx, 'function timeAgo') === 1,
     'get=' + count(idx, 'MN_API.get(\'/notifications\')') + ' poll=' + count(idx, 'setInterval(refreshDashNotifs, 15000)') +
     ' guest=' + count(idx, '登录后查看通知') + ' empty=' + count(idx, '暂无通知'));
-  ok('F1-5 跳转分发三类目标（帖子/文章/主页）',
+  ok('F1-5 跳转分发三类目标（帖子/文章/主页）——v0.2.55.0 文章跳转改阅读页 article.html（3 处：搜索行/最新文章/通知）',
     count(idx, "pages/community-post.html?id=") === 1 &&
-    count(idx, "pages/fluidcanvas-editor.html?article=") === 1 &&
+    count(idx, "pages/article.html?id=") === 3 &&
     count(idx, "pages/community-profile.html?id=") === 1,
-    'post=' + count(idx, "pages/community-post.html?id=") + ' art=' + count(idx, "pages/fluidcanvas-editor.html?article=") +
+    'post=' + count(idx, "pages/community-post.html?id=") + ' art=' + count(idx, "pages/article.html?id=") +
     ' prof=' + count(idx, "pages/community-profile.html?id="));
 
   console.log('═══ F2 messages.html 零改动在位 ═══');
@@ -199,12 +199,12 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
     count(socialSrc, "'/api/social/articles/:id/favorite'") === 2,
     'reg=' + count(serverSrc, 'registerNotifications') + ' like=' + count(socialSrc, "'/api/social/articles/:id/like'") +
     ' fav=' + count(socialSrc, "'/api/social/articles/:id/favorite'"));
-  ok('F4-2 notifications.js 七类聚合（每类 push 恰 1 + article target_type 恰 2）',
-    ['post_like', 'post_favorite', 'article_like', 'article_favorite', 'post_comment', 'follow', 'friend_request']
+  ok('F4-2 notifications.js 八类聚合（每类 push 恰 1 + article target_type 恰 2；v0.2.55.0 加 article_comment）',
+    ['post_like', 'post_favorite', 'article_like', 'article_favorite', 'post_comment', 'follow', 'friend_request', 'article_comment']
       .every((t) => count(notifSrc, "push('" + t + "'") === 1) &&
     count(notifSrc, "target_type = 'article'") === 2 &&
     notifSrc.indexOf("require('../auth')") === -1 && notifSrc.indexOf("require('../moderation')") === -1,
-    'pushes=' + ['post_like', 'post_favorite', 'article_like', 'article_favorite', 'post_comment', 'follow', 'friend_request']
+    'pushes=' + ['post_like', 'post_favorite', 'article_like', 'article_favorite', 'post_comment', 'follow', 'friend_request', 'article_comment']
       .map((t) => count(notifSrc, "push('" + t + "'")).join('/'));
   ok('F4-3 articles.js 互动字段 + 浏览自增',
     count(articlesSrc, 'likeCount') >= 2 && count(articlesSrc, 'favoritedByMe') >= 2 &&
@@ -212,10 +212,10 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
     'like=' + count(articlesSrc, 'likeCount') + ' fav=' + count(articlesSrc, 'favoritedByMe'));
 
   console.log('═══ F5 零迁移 ═══');
-  ok('F5-1 health.test.js 仍钉 59 表 / user_version 27（两处钉）',
-    count(healthTest, 'data.tables, 59') === 1 &&
-    count(healthTest, "user_version', { simple: true }), 27") === 2,
-    'tables=' + count(healthTest, 'data.tables, 59') + ' uv=' + count(healthTest, "user_version', { simple: true }), 27"));
+  ok('F5-1 health.test.js 钉 60 表 / user_version 28（v0.2.55.0 028 迁移升级；两处钉）',
+    count(healthTest, 'data.tables, 60') === 1 &&
+    count(healthTest, "user_version', { simple: true }), 28") === 2,
+    'tables=' + count(healthTest, 'data.tables, 60') + ' uv=' + count(healthTest, "user_version', { simple: true }), 28"));
   console.log('');
 
   await new Promise(r => server.listen(PORT, r));

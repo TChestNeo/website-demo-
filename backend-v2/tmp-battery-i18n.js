@@ -63,9 +63,9 @@ console.log('═══ S. 静态巡检 ═══');
   ok('S1 7 旧 .zh.js 全删（badge/help/ticket/ai-chat/community-rules/financial-terms/platform-responsibility）',
     legacy.length === 0, legacy.join(','));
   const dicts = dirFiles.filter(f => f.endsWith('.i18n.js')).map(f => f.replace('.i18n.js', ''));
-  const expected = DICT_FILES.concat(['common', 'admin']).sort();
-  ok('S2 词典文件集恰 39 个（37 页 + common + admin，无杂散无缺失；auth 同域双页共用）',
-    dicts.length === 39 && dicts.slice().sort().join(',') === expected.join(','),
+  const expected = DICT_FILES.concat(['common', 'admin', 'article']).sort(); // v0.2.55.0 +article.i18n.js
+  ok('S2 词典文件集恰 40 个（37 页 + common + admin + article，无杂散无缺失；auth 同域双页共用）',
+    dicts.length === 40 && dicts.slice().sort().join(',') === expected.join(','),
     '实际 ' + dicts.length + '：' + dicts.filter(d => expected.indexOf(d) === -1).join(',') + ' 缺：' + expected.filter(d => dicts.indexOf(d) === -1).join(','));
   let allEn = true, allHant = true, missEn = [], missHant = [];
   for (const f of dirFiles.filter(f => f.endsWith('.i18n.js'))) {
@@ -109,7 +109,7 @@ console.log('═══ S. 静态巡检 ═══');
   }
   ok('S8 i18n.js LANGS 12 码序列 zh→zh-Hant→en→de→ru→ms→th→vi→id→fr→es→pt', seqOk);
   const sconf = read('docs/assets/js/site-config.js');
-  ok('S9 site-config 版本 = v0.2.54.2', sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.54.6';") !== -1);
+  ok('S9 site-config 版本 = v0.2.54.2', sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.55.0';") !== -1);
   const common = fs.readFileSync(path.join(I18N_DIR, 'common.i18n.js'), 'utf8');
   ok('S10 common.i18n.js 键族齐（sidebar/settings/report/aichat 从 help 移入/verify 从 badge 共享）',
     ["'sidebar.", "'settings.", "'report.", "'aichat.", "'verify."].every(k => common.indexOf(k) !== -1));
@@ -330,8 +330,8 @@ async function launchChrome(lang, injectSession, suffix) {
     ok('D1 zh 活动流已翻译（以太共和国 + 2 小时前）', zh.act.indexOf('以太共和国') !== -1 && zh.act.indexOf('2 小时前') !== -1, zh.act.slice(0, 80));
     ok('D2 zh 公告已翻译（公开测试启动 + 官方）', zh.ann.indexOf('公开测试启动') !== -1 && zh.ann.indexOf('官方') !== -1, zh.ann.slice(0, 80));
     ok('D3 zh 订阅卡特性已翻译（高级分析）', zh.feats.indexOf('高级分析') !== -1, JSON.stringify(zh.feats));
-    ok('D4 zh 公告按钮/搜索框已翻译（查看全部公告/搜索世界、话题…）',
-      zh.annBtn === '查看全部公告' && zh.search === '搜索世界、话题…', zh.annBtn + '/' + zh.search);
+    ok('D4 zh 公告按钮/搜索框已翻译（查看全部公告/搜索文章…——v0.2.55.0 搜索改文章口径）',
+      zh.annBtn === '查看全部公告' && zh.search === '搜索文章…', zh.annBtn + '/' + zh.search);
     await cdp.evalJs('MN_I18N.setLang("de")');
     await waitFor(cdp, 'document.documentElement.getAttribute("lang") === "de"', 5000, '切 de');
     const de = await cdp.evalJs(`(function(){

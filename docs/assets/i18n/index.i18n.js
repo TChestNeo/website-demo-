@@ -538,7 +538,7 @@ window.MN_I18N
     'index.startFree': '免费开始创作',
     'index.heroTitle': '打造属于你的<br>架空国家',
     'index.heroSub': '硬核架空国家创作平台——共和、社会主义、民主主义……<br>从一张地图、一部宪法开始，建立你梦想中的国度。',
-    'index.searchPh': '搜索世界、话题…',
+    'index.searchPh': '搜索文章…',
     'index.viewAllAnnouncements': '查看全部公告',
     'index.premiumFeat.analytics': '高级分析',
     'index.premiumFeat.themes': '自定义国家主题',
@@ -554,7 +554,7 @@ window.MN_I18N
     'index.startFree': 'Start creating for free',
     'index.heroTitle': 'Build your own<br>fictional nation',
     'index.heroSub': 'A hardcore fictional nation platform — republics, socialism, democracy…<br>Start from a map and a constitution, and build the nation of your dreams.',
-    'index.searchPh': '搜索世界、话题…',
+    'index.searchPh': 'Search articles...',
     'index.viewAllAnnouncements': '查看全部公告',
     'index.premiumFeat.analytics': '高级分析',
     'index.premiumFeat.themes': '自定义国家主题',
@@ -570,7 +570,7 @@ window.MN_I18N
     'index.startFree': 'Kostenlos starten',
     'index.heroTitle': 'Erschaffe deine eigene<br>fiktive Nation',
     'index.heroSub': 'Eine Hardcore-Plattform für fiktive Nationen — Republik, Sozialismus, Demokratie…<br>Beginne mit einer Karte und einer Verfassung und erbaue die Nation deiner Träume.',
-    'index.searchPh': 'Welten, Themen durchsuchen...',
+    'index.searchPh': 'Artikel durchsuchen...',
     'index.viewAllAnnouncements': 'Alle Ankündigungen ansehen',
     'index.premiumFeat.analytics': 'Erweiterte Analysen',
     'index.premiumFeat.themes': 'Eigene Nationen-Themen',
@@ -586,7 +586,7 @@ window.MN_I18N
     'index.startFree': 'Начать бесплатно',
     'index.heroTitle': 'Создай свою<br>вымышленную нацию',
     'index.heroSub': 'Хардкорная платформа вымышленных наций — республики, социализм, демократия…<br>Начни с карты и конституции и построй нацию своей мечты.',
-    'index.searchPh': 'Поиск миров, тем...',
+    'index.searchPh': 'Поиск статей...',
     'index.viewAllAnnouncements': 'Все объявления',
     'index.premiumFeat.analytics': 'Расширенная аналитика',
     'index.premiumFeat.themes': 'Собственные темы наций',
@@ -602,7 +602,7 @@ window.MN_I18N
     'index.startFree': 'Mula mencipta secara percuma',
     'index.heroTitle': 'Cipta negara<br>fiksyen anda sendiri',
     'index.heroSub': 'Platform negara fiksyen hardcore — republik, sosialisme, demokrasi…<br>Bermula dari peta dan perlembagaan, bina negara impian anda.',
-    'index.searchPh': 'Cari dunia, topik...',
+    'index.searchPh': 'Cari artikel...',
     'index.viewAllAnnouncements': 'Lihat semua pengumuman',
     'index.premiumFeat.analytics': 'Analitik Lanjutan',
     'index.premiumFeat.themes': 'Tema Negara Tersuai',
@@ -618,7 +618,7 @@ window.MN_I18N
     'index.startFree': 'เริ่มสร้างฟรี',
     'index.heroTitle': 'สร้างชาติ<br>นิยายของคุณเอง',
     'index.heroSub': 'แพลตฟอร์มชาตินิยายสายฮาร์ดคอร์ — สาธารณรัฐ สังคมนิยม ประชาธิปไตย…<br>เริ่มจากแผนที่และรัฐธรรมนูญ สร้างชาติในฝันของคุณ',
-    'index.searchPh': 'ค้นหาโลก หัวข้อ...',
+    'index.searchPh': 'ค้นหาบทความ...',
     'index.viewAllAnnouncements': 'ดูประกาศทั้งหมด',
     'index.premiumFeat.analytics': 'การวิเคราะห์ขั้นสูง',
     'index.premiumFeat.themes': 'ธีมชาติแบบกำหนดเอง',
@@ -634,7 +634,7 @@ window.MN_I18N
     'index.startFree': 'Bắt đầu sáng tạo miễn phí',
     'index.heroTitle': 'Xây dựng quốc gia<br>hư cấu của riêng bạn',
     'index.heroSub': 'Nền tảng quốc gia hư cấu hardcore — cộng hòa, xã hội chủ nghĩa, dân chủ…<br>Bắt đầu từ một tấm bản đồ và một bản hiến pháp, xây dựng quốc gia trong mơ của bạn.',
-    'index.searchPh': 'Tìm kiếm thế giới, chủ đề...',
+    'index.searchPh': 'Tìm kiếm bài viết...',
     'index.viewAllAnnouncements': 'Xem tất cả thông báo',
     'index.premiumFeat.analytics': 'Phân tích nâng cao',
     'index.premiumFeat.themes': 'Chủ đề quốc gia tùy chỉnh',
@@ -650,7 +650,7 @@ window.MN_I18N
     'index.startFree': 'Mulai membuat secara gratis',
     'index.heroTitle': 'Bangun negara<br>fiksi milikmu',
     'index.heroSub': 'Platform negara fiksi hardcore — republik, sosialisme, demokrasi…<br>Mulai dari peta dan konstitusi, bangun negara impianmu.',
-    'index.searchPh': 'Cari dunia, topik...',
+    'index.searchPh': 'Cari artikel...',
     'index.viewAllAnnouncements': 'Lihat semua pengumuman',
     'index.premiumFeat.analytics': 'Analitik Lanjutan',
     'index.premiumFeat.themes': 'Tema Negara Kustom',
@@ -666,7 +666,7 @@ window.MN_I18N
     'index.startFree': 'Commencez gratuitement',
     'index.heroTitle': 'Bâtissez votre propre<br>nation fictive',
     'index.heroSub': 'Une plateforme hardcore de nations fictives — républiques, socialisme, démocratie…<br>Partez d\'une carte et d\'une constitution, et bâtissez la nation de vos rêves.',
-    'index.searchPh': 'Rechercher des mondes, des sujets...',
+    'index.searchPh': 'Rechercher des articles...',
     'index.viewAllAnnouncements': 'Voir toutes les annonces',
     'index.premiumFeat.analytics': 'Analyses avancées',
     'index.premiumFeat.themes': 'Thèmes de nation personnalisés',
@@ -682,7 +682,7 @@ window.MN_I18N
     'index.startFree': 'Empieza gratis',
     'index.heroTitle': 'Construye tu propia<br>nación ficticia',
     'index.heroSub': 'Una plataforma hardcore de naciones ficticias — repúblicas, socialismo, democracia…<br>Empieza por un mapa y una constitución, y construye la nación de tus sueños.',
-    'index.searchPh': 'Buscar mundos, temas...',
+    'index.searchPh': 'Buscar artículos...',
     'index.viewAllAnnouncements': 'Ver todos los anuncios',
     'index.premiumFeat.analytics': 'Analíticas avanzadas',
     'index.premiumFeat.themes': 'Temas de nación personalizados',
@@ -698,7 +698,7 @@ window.MN_I18N
     'index.startFree': 'Comece a criar gratuitamente',
     'index.heroTitle': 'Construa sua própria<br>nação fictícia',
     'index.heroSub': 'Uma plataforma hardcore de nações fictícias — repúblicas, socialismo, democracia…<br>Comece por um mapa e uma constituição, e construa a nação dos seus sonhos.',
-    'index.searchPh': 'Pesquisar mundos, tópicos...',
+    'index.searchPh': 'Pesquisar artigos...',
     'index.viewAllAnnouncements': 'Ver todos os anúncios',
     'index.premiumFeat.analytics': 'Análises avançadas',
     'index.premiumFeat.themes': 'Temas de nação personalizados',
@@ -710,6 +710,105 @@ window.MN_I18N
     'index.workbench.createTopic': 'Criar tópico',
     'index.workbench.openMessages': 'Abrir mensagens'
   });
+
+// v0.2.55.0 i18n 补：文章前端（最新文章区块/文章搜索下拉/文章评论通知；zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('zh', {
+  'index.latestArticles': '最新文章',
+  'index.search.searching': '搜索中…',
+  'index.search.noResults': '没有找到相关文章',
+  'index.search.unavailable': '搜索暂不可用，请稍后再试',
+  'index.notif.articleComment': '评论了你的文章'
+});
+
+// v0.2.55.0 i18n 补：文章前端（同上，en）
+window.MN_I18N.add('en', {
+  'index.latestArticles': 'Latest Articles',
+  'index.search.searching': 'Searching...',
+  'index.search.noResults': 'No matching articles found',
+  'index.search.unavailable': 'Search unavailable right now',
+  'index.notif.articleComment': 'commented on your article'
+});
+
+// v0.2.55.0 i18n 补：文章前端（同上，de）
+window.MN_I18N.add('de', {
+  'index.latestArticles': 'Neueste Artikel',
+  'index.search.searching': 'Suche...',
+  'index.search.noResults': 'Keine passenden Artikel gefunden',
+  'index.search.unavailable': 'Suche derzeit nicht verfügbar',
+  'index.notif.articleComment': 'hat deinen Artikel kommentiert'
+});
+
+// v0.2.55.0 i18n 补：文章前端（同上，ru）
+window.MN_I18N.add('ru', {
+  'index.latestArticles': 'Последние статьи',
+  'index.search.searching': 'Поиск...',
+  'index.search.noResults': 'Статьи не найдены',
+  'index.search.unavailable': 'Поиск временно недоступен',
+  'index.notif.articleComment': 'прокомментировал(а) вашу статью'
+});
+
+// v0.2.55.0 i18n 补：文章前端（同上，ms）
+window.MN_I18N.add('ms', {
+  'index.latestArticles': 'Artikel Terkini',
+  'index.search.searching': 'Mencari...',
+  'index.search.noResults': 'Tiada artikel sepadan dijumpai',
+  'index.search.unavailable': 'Carian tidak tersedia buat masa ini',
+  'index.notif.articleComment': 'mengulas artikel anda'
+});
+
+// v0.2.55.0 i18n 补：文章前端（同上，th）
+window.MN_I18N.add('th', {
+  'index.latestArticles': 'บทความล่าสุด',
+  'index.search.searching': 'กำลังค้นหา...',
+  'index.search.noResults': 'ไม่พบบทความที่ตรงกัน',
+  'index.search.unavailable': 'การค้นหาไม่พร้อมใช้งานในขณะนี้',
+  'index.notif.articleComment': 'แสดงความคิดเห็นในบทความของคุณ'
+});
+
+// v0.2.55.0 i18n 补：文章前端（同上，vi）
+window.MN_I18N.add('vi', {
+  'index.latestArticles': 'Bài viết mới nhất',
+  'index.search.searching': 'Đang tìm kiếm...',
+  'index.search.noResults': 'Không tìm thấy bài viết phù hợp',
+  'index.search.unavailable': 'Tìm kiếm tạm thời không khả dụng',
+  'index.notif.articleComment': 'đã bình luận bài viết của bạn'
+});
+
+// v0.2.55.0 i18n 补：文章前端（同上，id）
+window.MN_I18N.add('id', {
+  'index.latestArticles': 'Artikel Terbaru',
+  'index.search.searching': 'Mencari...',
+  'index.search.noResults': 'Tidak ada artikel yang cocok',
+  'index.search.unavailable': 'Pencarian sementara tidak tersedia',
+  'index.notif.articleComment': 'mengomentari artikel Anda'
+});
+
+// v0.2.55.0 i18n 补：文章前端（同上，fr）
+window.MN_I18N.add('fr', {
+  'index.latestArticles': 'Derniers articles',
+  'index.search.searching': 'Recherche...',
+  'index.search.noResults': 'Aucun article correspondant trouvé',
+  'index.search.unavailable': 'Recherche momentanément indisponible',
+  'index.notif.articleComment': 'a commenté votre article'
+});
+
+// v0.2.55.0 i18n 补：文章前端（同上，es）
+window.MN_I18N.add('es', {
+  'index.latestArticles': 'Últimos artículos',
+  'index.search.searching': 'Buscando...',
+  'index.search.noResults': 'No se encontraron artículos coincidentes',
+  'index.search.unavailable': 'Búsqueda no disponible por ahora',
+  'index.notif.articleComment': 'comentó tu artículo'
+});
+
+// v0.2.55.0 i18n 补：文章前端（同上，pt）
+window.MN_I18N.add('pt', {
+  'index.latestArticles': 'Artigos recentes',
+  'index.search.searching': 'A pesquisar...',
+  'index.search.noResults': 'Nenhum artigo correspondente encontrado',
+  'index.search.unavailable': 'Pesquisa indisponível de momento',
+  'index.notif.articleComment': 'comentou o seu artigo'
+});
 
 // v0.2.54.2 i18n 补：活动流 + 公告条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
 window.MN_I18N.add('zh', {
@@ -1124,7 +1223,7 @@ window.MN_I18N.add('zh-Hant', {
   "index.startFree": "免費開始創作",
   "index.heroTitle": "打造屬於你的<br>架空國家",
   "index.heroSub": "硬核架空國家創作平臺——共和、社會主義、民主主義……<br>從一張地圖、一部憲法開始，建立你夢想中的國度。",
-  "index.searchPh": "搜索世界、話題…",
+  "index.searchPh": "搜索文章…",
   "index.viewAllAnnouncements": "查看全部公告",
   "index.premiumFeat.analytics": "高級分析",
   "index.premiumFeat.themes": "自定義國家主題",
@@ -1135,6 +1234,11 @@ window.MN_I18N.add('zh-Hant', {
   "index.workbench.newWorld": "註冊新世界",
   "index.workbench.createTopic": "創建話題",
   "index.workbench.openMessages": "打開消息",
+  "index.latestArticles": "最新文章",
+  "index.search.searching": "搜索中…",
+  "index.search.noResults": "沒有找到相關文章",
+  "index.search.unavailable": "搜索暫不可用，請稍後再試",
+  "index.notif.articleComment": "評論了你的文章",
   "index.act.badge.nation": "國家",
   "index.act.badge.topic": "話題",
   "index.act.badge.wiki": "維基",

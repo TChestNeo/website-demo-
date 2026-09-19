@@ -78,7 +78,7 @@ test('post_like/post_favorite 事件：形状断言 + 排除自己 + 取消消�
   } finally { await t.close(); }
 });
 
-test('article_like/article_favorite 事件：hidden 文不浮现 + user_version 27 零迁移旁证', async () => {
+test('article_like/article_favorite 事件：hidden 文不浮现 + 复用 005 表旁证（028 只加评论表）', async () => {
   const t = await testApp();
   try {
     const { alice, bob, carol } = await setupTrio(t);
@@ -98,8 +98,8 @@ test('article_like/article_favorite 事件：hidden 文不浮现 + user_version 
     const after = await getNotifs(t, alice.cookie);
     assert.strictEqual(after.length, 0, 'hidden 文的互动事件不浮现');
 
-    // 零迁移旁证：user_version 仍 27（005 的 content_likes/favorites 直接复用 target_type=article）
-    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 27);
+    // 复用旁证：互动仍走 005 的 content_likes/favorites（v0.2.55.0 的 028 只加 article_comments 评论表）
+    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 28);
   } finally { await t.close(); }
 });
 

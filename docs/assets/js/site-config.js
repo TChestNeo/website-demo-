@@ -1074,7 +1074,21 @@ window.MN_SITE = window.MN_SITE || {};
 //     按钮/气泡/徽章族保持原行为；成员头像三元本就无 msg-acc 类天然豁免）；
 //   后端零改动（user_version 27/health 59 表不变）；FC v10.28.36.1 零改动；零草稿字段（v 保持 9）
 //   （rev 00265-hkt）
-window.MN_SITE_VERSION = 'v0.2.54.6';
+// v0.2.55.0 = 文章前端（平台侧文章阅读页 + 首页文章搜索/最新文章/评论通知；小改动位 54→55·新功能轮；2026-09-20）——用户「能不能把文章的前端做好？……搜索看不见有搜索不到我之前按过publish的文章」（问询钦定：①搜索只搜文章 ②首页活动流混入最新文章 ③wiki 普通文章阅读页「别那么复杂」④点赞+收藏+评论）：
+//   后端：028 迁移 article_comments 独立同构表（ACM- 前缀、一层无回复、FK 级联；health 59→60、user_version 27→28）；
+//     GET /api/articles?q= 标题模糊搜索（LIKE %/_ 转义、公开只搜 published、LIMIT 50、authorName 联查）；
+//     GET/POST /api/articles/:id/comments（先发后审 L0 同帖子口径、禁言/24h 去重 403、限流 commentWrite、作者 +10 XP）；
+//     测试 311→321/321（article-comments 10 测）；点赞/收藏复用 /api/social/articles/:id/*（零新端点）
+//   前端：首页搜索框接真文章搜索（300ms 防抖下拉面板三态）+ Recent Activity 下「最新文章」区块（最新 5 篇 published）；
+//     通知第八类 article_comment（文案+跳转 pages/article.html）；新建 pages/article.html wiki 式阅读页
+//     （标题/作者行（首字母圆头像+主页锚）/日期/浏览数/正文流按 draft v9 卡片 (row,col) 排序渲染
+//     content·img·flag·bitmap·text 四型/点赞乐观回滚/收藏无计数/评论区一层无回复/访客 ?next= 登录引导/
+//     卡片 HTML 轻量消毒去 script+on*）；新建 article.i18n.js（11 语言 23 键）+index.i18n.js 新键
+//     （latestArticles/search.*/notif.articleComment）+searchPh 全语言改文章搜索口径；OpenCC 重跑两文件；
+//     inline-css 重跑全站（article 首内联）
+//   FC v10.28.36.1 零改动；草稿字段零改动（v 保持 9）
+//   （rev 00266-rrq）
+window.MN_SITE_VERSION = 'v0.2.55.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

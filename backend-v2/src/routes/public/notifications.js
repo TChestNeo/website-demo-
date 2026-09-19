@@ -1,6 +1,7 @@
 'use strict';
-// 通知聚合（v0.2.52.0 首页铃铛聚合通知 + 文章点赞收藏）：GET /api/notifications 实时聚合七类事件
-// （post_like / post_favorite / article_like / article_favorite / post_comment / follow / friend_request）。
+// 通知聚合（v0.2.52.0 首页铃铛聚合通知 + 文章点赞收藏；v0.2.55.0 文章评论加第八类）：GET /api/notifications
+// 实时聚合八类事件（post_like / post_favorite / article_like / article_favorite / post_comment /
+// article_comment / follow / friend_request）。
 // 设计：零迁移（content_likes/favorites 的 target_type='article' 在 005 已预留且无 CHECK，文章互动直接复用）；
 // 不建事件表、不写 notifications 表（001 表仅审核管线在写、无读端点，不碰）；
 // 未读红点由前端 localStorage lastSeen 负责（按用户 id 隔离）。
@@ -66,6 +67,13 @@ function register(router, ctx) {
       SELECT c.id, c.post_id AS target_id, c.author_id AS actor_id, c.created_at, u.display_name, u.avatar_url, u.citizen_id
       FROM comments c JOIN posts p ON p.id = c.post_id JOIN users u ON u.id = c.author_id
       WHERE p.author_id = ? AND p.status = 'visible' AND c.status = 'visible' AND c.author_id != ?
+      ORDER BY c.created_at DESC, c.seq DESC LIMIT ?`).all(me, me, LIMIT), (r) => r.id, (r) => r.target_id);
+
+    // 3b) 谁评论了我的文章（v0.2.55.0；removed 不浮现；排除自己）
+    push('article_comment', db.prepare(`
+      SELECT c.id, c.article_id AS target_id, c.author_id AS actor_id, c.created_at, u.display_name, u.avatar_url, u.citizen_id
+      FROM article_comments c JOIN articles a ON a.id = c.article_id JOIN users u ON u.id = c.author_id
+      WHERE a.author_id = ? AND a.status = 'published' AND c.status = 'visible' AND c.author_id != ?
       ORDER BY c.created_at DESC, c.seq DESC LIMIT ?`).all(me, me, LIMIT), (r) => r.id, (r) => r.target_id);
 
     // 4) 谁关注了我（targetId = 关注者 id，前端跳其主页）

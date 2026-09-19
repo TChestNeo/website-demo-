@@ -2303,6 +2303,73 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   }
 }
 </style>
+<style>
+/* 文章搜索下拉 + 最新文章区块（v0.2.55.0）——页面专属 CSS，绝不入 ethereal 内联块 */
+#dashSearchPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 6px;
+  z-index: 900;
+}
+.dash-search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+.dash-search-item:hover { background: rgba(118, 117, 134, 0.08); }
+.dash-search-title {
+  display: block;
+  font-weight: 600;
+  font-size: var(--fs-label-md);
+  color: var(--color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-search-meta {
+  display: block;
+  font-size: 11px;
+  color: var(--color-outline);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dash-search-state {
+  padding: 20px 12px;
+  text-align: center;
+  color: var(--color-outline);
+  font-size: var(--fs-label-sm);
+}
+.latest-article { transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }
+.latest-article-title {
+  display: block;
+  font-weight: 600;
+  font-size: var(--fs-label-md);
+  color: var(--color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.latest-article-meta {
+  display: block;
+  font-size: 11px;
+  color: var(--color-outline);
+  margin-top: 2px;
+}
+</style>
 </head>
 <body class="pre-stagger mn-index">
 
@@ -2331,10 +2398,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <header class="flex-between" style="margin-bottom:var(--space-md)">
       <div class="search-capsule" style="position:relative">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search worlds, topics..." data-i18n-placeholder="index.searchPh">
+        <input type="text" id="dashSearchInput" placeholder="搜索文章…" data-i18n-placeholder="index.searchPh" autocomplete="off">
         <span style="width:1px;height:20px;background:var(--divider-line);flex-shrink:0;border-radius:1px"></span>
         <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);cursor:pointer" id="dashBellBtn" onclick="toggleDashNotifPopup()">notifications</span>
         <span id="dashBellBadge" style="position:absolute;top:-4px;right:-4px;background:var(--color-primary);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:var(--radius-full);min-width:16px;text-align:center;display:none;pointer-events:none;border:2px solid var(--card-bg)">0</span>
+        <!-- v0.2.55.0 文章搜索下拉（真搜索：GET /api/articles?q=，只搜文章） -->
+        <div id="dashSearchPanel" style="display:none"></div>
       </div>
     </header>
 
@@ -2356,6 +2425,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       <div>
         <h2 class="headline-md" style="margin-bottom:var(--space-sm)" data-i18n="index.recentActivity">Recent Activity</h2>
         <div id="activityFeed" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
+
+        <!-- v0.2.55.0 最新文章（用户钦定「首页活动流混入文章」：GET /api/articles 最新 5 篇 published；
+             后端不可达或零文章时整块隐藏） -->
+        <div id="latestArticlesSection" style="display:none;margin-top:var(--space-lg)">
+          <h2 class="headline-md" style="margin-bottom:var(--space-sm)" data-i18n="index.latestArticles">Latest Articles</h2>
+          <div id="latestArticles" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
+        </div>
 
         <h2 class="headline-md" style="margin:var(--space-lg) 0 var(--space-sm)" data-i18n="index.announcements">Announcements</h2>
         <div id="dashAnnouncements" style="display:flex;flex-direction:column;gap:2px"></div>
@@ -2539,6 +2615,107 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     window.addEventListener('resize', refresh);
   })();
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  ARTICLE SEARCH + LATEST ARTICLES（v0.2.55.0 用户「搜索不到我发布过的文章」）
+  //  搜索框 = 真文章搜索（GET /api/articles?q= 只搜文章，防抖 300ms 下拉建议，回车立即搜）；
+  //  「最新文章」区块 = GET /api/articles 最新 5 篇（后端不可达/零文章时整块隐藏）。
+  //  MN_API.get 网络失败永不 reject（返回 {ok:false,status:0}），直接按分支渲染，无需 probe。
+  // ═══════════════════════════════════════════════════════════════════════════
+  function dashEscapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function dashDateStr(iso) { return String(iso || '').slice(0, 10) || '—'; }
+
+  // ── 搜索下拉 ──
+  var dashSearchTimer = null;
+  function dashSearchPanel() { return document.getElementById('dashSearchPanel'); }
+  function dashSearchClose() {
+    if (dashSearchTimer) { clearTimeout(dashSearchTimer); dashSearchTimer = null; }
+    dashSearchPanel().style.display = 'none';
+  }
+  function dashSearchOpen(html) {
+    var p = dashSearchPanel();
+    p.innerHTML = html;
+    p.style.display = 'block';
+  }
+  function dashSearchRow(a) {
+    return '<a class="dash-search-item" href="pages/article.html?id=' + encodeURIComponent(a.id) + '">' +
+      '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary);flex-shrink:0">article</span>' +
+      '<span style="flex:1;min-width:0">' +
+        '<span class="dash-search-title">' + dashEscapeHtml(a.title) + '</span>' +
+        '<span class="dash-search-meta">' + dashEscapeHtml(a.authorName || 'Anonymous') + ' · ' + dashEscapeHtml(dashDateStr(a.createdAt)) + '</span>' +
+      '</span>' +
+    '</a>';
+  }
+  function doDashSearch(q) {
+    q = (q || '').trim();
+    if (!q) { dashSearchClose(); return; }
+    dashSearchOpen('<div class="dash-search-state">' + (T('index.search.searching') || '搜索中…') + '</div>');
+    MN_API.get('/articles?q=' + encodeURIComponent(q)).then(function (res) {
+      if (res && res.ok && res.data && Array.isArray(res.data.articles)) {
+        var list = res.data.articles;
+        if (!list.length) {
+          dashSearchOpen('<div class="dash-search-state">' + (T('index.search.noResults') || '没有找到相关文章') + '</div>');
+        } else {
+          dashSearchOpen(list.map(dashSearchRow).join(''));
+        }
+      } else {
+        dashSearchOpen('<div class="dash-search-state">' + (T('index.search.unavailable') || '搜索暂不可用，请稍后再试') + '</div>');
+      }
+    });
+  }
+
+  // ── 最新文章 ──
+  function loadLatestArticles() {
+    MN_API.get('/articles').then(function (res) {
+      if (!res || !res.ok || !res.data || !Array.isArray(res.data.articles)) return; // 后端不可达 → 整块隐藏
+      var top = res.data.articles.filter(function (a) { return a.status === 'published'; }).slice(0, 5);
+      if (!top.length) return;
+      var sec = document.getElementById('latestArticlesSection');
+      document.getElementById('latestArticles').innerHTML = top.map(function (a) {
+        return '<a class="card card-hover tilt-container latest-article" href="pages/article.html?id=' + encodeURIComponent(a.id) + '" style="display:flex;align-items:center;gap:10px;padding:10px 14px;text-decoration:none">' +
+          '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary);flex-shrink:0">description</span>' +
+          '<span style="flex:1;min-width:0">' +
+            '<span class="latest-article-title">' + dashEscapeHtml(a.title) + '</span>' +
+            '<span class="latest-article-meta">' + dashEscapeHtml(a.authorName || 'Anonymous') + ' · ' + dashEscapeHtml(dashDateStr(a.createdAt)) + '</span>' +
+          '</span>' +
+          '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline);flex-shrink:0">chevron_right</span>' +
+        '</a>';
+      }).join('');
+      sec.style.display = 'block';
+    });
+  }
+
+  (function wireDashSearch() {
+    var input = document.getElementById('dashSearchInput');
+    if (!input || !window.MN_API) return;
+    input.addEventListener('input', function () {
+      var q = input.value;
+      if (!q.trim()) { dashSearchClose(); return; }
+      if (dashSearchTimer) clearTimeout(dashSearchTimer);
+      dashSearchTimer = setTimeout(function () { doDashSearch(q); }, 300);
+    });
+    input.addEventListener('focus', function () {
+      if (input.value.trim()) doDashSearch(input.value); // 有词回焦点时立即重开（无防抖）
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (dashSearchTimer) { clearTimeout(dashSearchTimer); dashSearchTimer = null; }
+        doDashSearch(input.value); // 回车 = 立即搜（同防抖路径）
+      } else if (e.key === 'Escape') {
+        dashSearchClose();
+      }
+    });
+    document.addEventListener('click', function (e) {
+      var p = dashSearchPanel();
+      var cap = input.closest('.search-capsule');
+      if (p && p.style.display !== 'none' && cap && !cap.contains(e.target)) dashSearchClose();
+    });
+    loadLatestArticles();
+  })();
+
   // ── Network Metrics ──
   var onlineNow = 12847;
   var dailyPeak = 15420;
@@ -2717,7 +2894,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <script>
   // ═══════════════════════════════════════════════════════════════════════════
   //  NOTIFICATION BELL（v0.2.52.0 铃铛聚合通知）
-  //  Home 铃铛 = 全部通知（帖子赞/藏、文章赞/藏、帖子评论、关注、好友请求；
+  //  Home 铃铛 = 全部通知（帖子赞/藏、文章赞/藏、帖子评论、文章评论、关注、好友请求；
   //  公告是页面静态区块不进通知流，「除公告外」自动满足）；
   //  Messages 页铃铛保持只显示好友请求（特定页面筛选，messages.html 零改动）。
   //  未读红点 = 前端 localStorage lastSeen（按用户 id 隔离，服务端零事件表）。
@@ -2752,6 +2929,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       case 'article_like': return T('index.notif.articleLike') || '点赞了你的文章';
       case 'article_favorite': return T('index.notif.articleFavorite') || '收藏了你的文章';
       case 'post_comment': return T('index.notif.postComment') || '评论了你的帖子';
+      case 'article_comment': return T('index.notif.articleComment') || '评论了你的文章';
       case 'follow': return T('index.notif.follow') || '关注了你';
       default: return T('index.notif.friendRequest') || '想加你为好友';
     }
@@ -2913,8 +3091,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     closeDashNotifPopup();
     if (type === 'post_like' || type === 'post_favorite' || type === 'post_comment') {
       window.location.href = 'pages/community-post.html?id=' + encodeURIComponent(targetId);
-    } else if (type === 'article_like' || type === 'article_favorite') {
-      window.location.href = 'pages/fluidcanvas-editor.html?article=' + encodeURIComponent(targetId);
+    } else if (type === 'article_like' || type === 'article_favorite' || type === 'article_comment') {
+      // v0.2.55.0：文章类事件改跳 wiki 式阅读页（原跳 FC 编辑器——阅读与编辑分离）
+      window.location.href = 'pages/article.html?id=' + encodeURIComponent(targetId);
     } else if (type === 'follow') {
       window.location.href = 'pages/community-profile.html?id=' + encodeURIComponent(targetId);
     }
