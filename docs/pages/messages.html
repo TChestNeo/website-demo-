@@ -249,9 +249,9 @@
    60px 亮靛蓝横幅（sidebar.js 内联渐变无暗色覆写，暗色下全栏唯一实心亮块，扫描探针实证
    L=81.7 234×60）；暗色改极暗底与模块融为一体（横幅视觉消失，齿轮/火箭白图标仍可见），
    亮色保留原靛蓝渐变（!important 压过内联 style） */
-:root[data-theme="dark"] .user-banner {
-  background: rgba(255, 255, 255, 0.04) !important;
-}
+/* v0.2.54.6 用户「那个用户横幅和头像能不能不要被网页主题影响到？」（问询钦定「两处都要」）——
+   反转 09-10 隐藏决定：侧栏用户横幅/头像改主题无关（暗色也保留亮靛蓝横幅+白环头像），
+   本条暗色隐藏规则整体移除（sidebar.js 内联渐变与白描边任何主题原样生效） */
 /* 2026-09-10 用户「还是一样有啊，那个东西会不会是向内的阴影导致的？」——升级扫描（box-shadow
    顶层逗号切层 + 伪元素 + 边框全测）实证：全侧栏无任何 inset 内阴影（lg-static 环要求
    .liquid-glass.lg-static 双类，侧栏模块只有 lg-static 从未生效）；v0.2.28.10 横幅修复已生效
@@ -1844,9 +1844,8 @@ html[data-accent="mono"][data-theme="dark"] .text-gradient { background: linear-
 html[data-accent="mono"][data-theme="dark"] .team-avatar { background: linear-gradient(135deg, #3a3a44, #4a4a56); }
 html[data-accent="mono"][data-theme="dark"] .lift-info-btn { background: #1e1e2d; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }
 /* 深色 mono 发白渐变修复（sidebar.js/ai-chat.js 内联硬编码白→蓝/白→紫渐变，!important 压过内联 style）： */
-/* 用户 banner、头像白描边、AI 悬浮球/聊天头 */
-html[data-accent="mono"][data-theme="dark"] .user-banner { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }
-html[data-accent="mono"][data-theme="dark"] .user-module .avatar { border-color: rgba(255, 255, 255, 0.08) !important; }
+/* v0.2.54.6 用户横幅/头像改主题无关（横幅固定 #4648d4→#3b3dc4、头像恒白环——原两条
+   mono 暗色翻黑族/灰环规则已移除）；AI 悬浮球/聊天头保留 */
 html[data-accent="mono"][data-theme="dark"] .mn-ai-fab, html[data-accent="mono"][data-theme="dark"] .mn-ai-head { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }
 /* overview 特色国家头像圆（用户「卡片中间那个白色」真身）：内联主色→紫渐变，深色 mono 翻黑族 */
 html[data-accent="mono"][data-theme="dark"] .featured-nation-avatar { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }
@@ -2232,8 +2231,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   <style>
 /* 黑白主题暗色适配（2026-09-17）：mono dark 把主色/次色翻成浅灰白（#ececf2/#b0b0c2）——
    本页大量 JS 模板/按钮用 var(--color-primary)/var(--color-secondary) 作底 + 白字，
-   暗 mono 下变白底白字；统一给这些元素加 msg-acc 类翻深底（与 ethereal mono 活跃态 #32324a 同族） */
-html[data-accent="mono"][data-theme="dark"] .msg-acc {
+   暗 mono 下变白底白字；统一给这些元素加 msg-acc 类翻深底（与 ethereal mono 活跃态 #32324a 同族）。
+   v0.2.54.6（用户「还有message那边的头像」）：头像族加 msg-avatar 类豁免——头像固定亮色
+   （#4648d4/#8127cf）任何主题不变，按钮/气泡/徽章族保持 09-17 翻深底 */
+html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
   background: #32324a !important;
   border-color: #32324a !important;
   color: #ffffff !important;
@@ -2326,7 +2327,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0" id="chatArea">
           <div class="flex-between" style="padding-bottom:var(--space-sm);border-bottom:1px solid rgba(118,117,134,0.1);margin-bottom:var(--space-sm);display:none" id="chatHeader">
             <div class="flex-center gap-sm">
-              <div class="avatar-sm msg-acc" style="background:var(--color-primary);border-radius:50%"></div>
+              <div class="avatar-sm msg-acc msg-avatar" style="background:#4648d4;border-radius:50%"></div>
               <div>
                 <div style="font-weight:600;font-size:var(--fs-label-md)" id="chatName">Select a conversation</div>
                 <div class="label-sm" style="color:var(--color-outline)" id="chatStatus"></div>
@@ -2366,7 +2367,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         <div class="card" style="flex:1;display:flex;flex-direction:column;min-height:0" id="groupChatArea">
           <div class="flex-between" style="padding-bottom:var(--space-sm);border-bottom:1px solid rgba(118,117,134,0.1);margin-bottom:var(--space-sm);display:none" id="groupChatHeader">
             <div class="flex-center gap-sm">
-              <div class="avatar-sm msg-acc" style="background:var(--color-secondary);border-radius:var(--radius-DEFAULT);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px" id="groupAvatar"></div>
+              <div class="avatar-sm msg-acc msg-avatar" style="background:#8127cf;border-radius:var(--radius-DEFAULT);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:12px" id="groupAvatar"></div>
               <div>
                 <div style="font-weight:600;font-size:var(--fs-label-md)" id="groupChatName">Select a group</div>
                 <div class="label-sm" style="color:var(--color-outline)" id="groupChatMeta"></div>
@@ -2572,7 +2573,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   <div id="notifBody">
     <div id="notifListView" style="padding:0 12px 12px;max-height:280px;overflow-y:auto;box-sizing:border-box"></div>
     <div id="notifDecisionView" style="padding:8px 16px 20px;text-align:center;box-sizing:border-box">
-      <div id="notifDecisionAvatar" class="msg-acc" style="width:48px;height:48px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;margin:0 auto 10px"></div>
+      <div id="notifDecisionAvatar" class="msg-acc msg-avatar" style="width:48px;height:48px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;margin:0 auto 10px"></div>
       <div id="notifDecisionName" style="font-weight:700;font-size:var(--fs-label-lg)"></div>
       <div id="notifDecisionId" style="color:var(--color-outline);font-size:12px;margin-top:2px"></div>
       <div style="display:flex;gap:12px;margin-top:16px">
@@ -2683,7 +2684,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
 
     <!-- Top: avatar + name + bio -->
     <div style="padding:var(--space-lg);text-align:center;border-bottom:1px solid rgba(118,117,134,0.06)">
-      <div class="msg-acc" style="width:72px;height:72px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:24px;margin:0 auto var(--space-sm);letter-spacing:0.5px" id="infoAvatar">?</div>
+      <div class="msg-acc msg-avatar" style="width:72px;height:72px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:24px;margin:0 auto var(--space-sm);letter-spacing:0.5px" id="infoAvatar">?</div>
       <div style="font-weight:700;font-size:var(--fs-headline-sm);margin-bottom:4px" id="infoName">—</div>
       <div style="font-size:var(--fs-label-md);color:var(--color-on-surface-variant);line-height:1.5" id="infoBio">—</div>
     </div>
@@ -3186,7 +3187,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       if (q && c.name.toLowerCase().indexOf(q) === -1) return;
       var sel = findForwardIndex('private', c.id) !== -1;
       html += '<div style="display:flex;align-items:center;gap:var(--space-sm);padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;transition:background 0.12s' + (sel ? ';background:rgba(70,72,212,0.08)' : '') + '" onclick="selectForwardTarget(\'private\',\'' + c.id + '\')">' +
-        '<div class="msg-acc" style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0">' + c.avatar + '</div>' +
+        '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0">' + c.avatar + '</div>' +
         '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + c.name + '</span>' +
         '<span class="label-sm" style="color:var(--color-outline)">' + (T('messages.forward.tagPrivate') || 'Private') + '</span>' +
         (sel ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline-variant)">radio_button_unchecked</span>') +
@@ -3196,7 +3197,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       if (q && g.name.toLowerCase().indexOf(q) === -1) return;
       var sel = findForwardIndex('group', g.id) !== -1;
       html += '<div style="display:flex;align-items:center;gap:var(--space-sm);padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;transition:background 0.12s' + (sel ? ';background:rgba(22,163,74,0.08)' : '') + '" onclick="selectForwardTarget(\'group\',\'' + g.id + '\')">' +
-        '<div class="msg-acc" style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + g.avatar + '</div>' +
+        '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:#8127cf;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + g.avatar + '</div>' +
         '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + g.name + '</span>' +
         '<span class="label-sm" style="color:var(--color-outline)">' + (T('messages.forward.tagGroup') || 'Group') + '</span>' +
         (sel ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-secondary)">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline-variant)">radio_button_unchecked</span>') +
@@ -3564,7 +3565,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       members.forEach(function(m) {
         var isAdmin = m.role === 'Admin';
         html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0">' +
-          '<div style="width:36px;height:36px;border-radius:50%;background:' + (isAdmin ? 'var(--color-primary)' : 'var(--color-secondary)') + ';color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0">' + m.avatar + '</div>' +
+          '<div style="width:36px;height:36px;border-radius:50%;background:' + (isAdmin ? '#4648d4' : '#8127cf') + ';color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0">' + m.avatar + '</div>' +
           '<div style="flex:1;min-width:0">' +
             '<div style="font-weight:600;font-size:var(--fs-label-md)">' + m.name + (m.name === 'You' ? ' <span style="font-weight:400;font-size:10px;color:var(--color-outline)">' + (T('messages.members.you') || '(you)') + '</span>' : '') + '</div>' +
             '<div style="font-size:11px;color:' + (isAdmin ? 'var(--color-primary)' : 'var(--color-outline)') + ';font-weight:' + (isAdmin ? '600' : '400') + '">' + m.role + '</div>' +
@@ -3897,9 +3898,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     if (convCollapsed) {
       html = conversations.map(function(c) {
         var isActive = c.id === activeChat;
-        var ring = isActive ? '2px solid var(--color-primary)' : '2px solid transparent';
+        var ring = isActive ? '2px solid #4648d4' : '2px solid transparent';
         return '<div title="' + c.name + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openChat(\'' + c.id + '\')">' +
-          '<div class="msg-acc" style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
+          '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
             c.avatar +
             (c.online ? '<span class="status-dot status-dot-green" style="position:absolute;bottom:0;right:0;border:2px solid white"></span>' : '') +
           '</div>' +
@@ -3909,7 +3910,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       html = conversations.map(function(c) {
         return '<div class="card card-hover" style="cursor:pointer;padding:var(--space-sm)" onclick="openChat(\'' + c.id + '\')">' +
           '<div class="flex-center gap-sm">' +
-            '<div class="msg-acc" style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative">' +
+            '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative">' +
               c.avatar +
               (c.online ? '<span class="status-dot status-dot-green" style="position:absolute;bottom:0;right:0;border:2px solid white"></span>' : '') +
             '</div>' +
@@ -4238,11 +4239,11 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     if (groupCollapsed) {
       html = groups.map(function(g) {
         var isActive = g.id === activeGroup;
-        var ring = isActive ? '2px solid var(--color-secondary)' : '2px solid transparent';
+        var ring = isActive ? '2px solid #8127cf' : '2px solid transparent';
         return '<div title="' + g.name + (g.unread > 0 ? ' (' + g.unread + (T('messages.group.unread') || ' unread') + ')' : '') + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openGroupChat(\'' + g.id + '\')">' +
-          '<div class="msg-acc" style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
+          '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:#8127cf;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
             g.avatar +
-            (g.unread > 0 ? '<span style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:var(--color-primary);border-radius:50%;border:1px solid white"></span>' : '') +
+            (g.unread > 0 ? '<span style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:#4648d4;border-radius:50%;border:1px solid white"></span>' : '') +
           '</div>' +
         '</div>';
       }).join('');
@@ -4253,7 +4254,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           : '';
         return '<div class="card card-hover" style="cursor:pointer;padding:var(--space-sm)" onclick="openGroupChat(\'' + g.id + '\')">' +
           '<div class="flex-center gap-sm">' +
-            '<div class="msg-acc" style="width:40px;height:40px;border-radius:var(--radius-DEFAULT);background:var(--color-secondary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">' +
+            '<div class="msg-acc msg-avatar" style="width:40px;height:40px;border-radius:var(--radius-DEFAULT);background:#8127cf;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">' +
               g.avatar +
             '</div>' +
             '<div style="min-width:0;flex:1">' +
@@ -5057,7 +5058,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         var frPre = T('messages.notif.frNamePre');
         var frPost = T('messages.notif.frNamePost');
         return '<div class="notif-entry" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;cursor:pointer" onclick="openNotifDecision(\'' + inv.id + '\')">' +
-          '<div class="msg-acc" style="width:40px;height:40px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">' + inv.avatar + '</div>' +
+          '<div class="msg-acc msg-avatar" style="width:40px;height:40px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">' + inv.avatar + '</div>' +
           '<div style="flex:1;min-width:0">' +
             '<div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (frPre !== null ? frPre : '「') + inv.name + (frPost !== null ? frPost : '」想加你为好友') + '</div>' +
             '<div style="color:var(--color-outline);font-size:11px;margin-top:2px">' + inv.userId + '</div>' +

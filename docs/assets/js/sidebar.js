@@ -110,7 +110,7 @@
         '<div class="sidebar-module user-module" style="padding:0;overflow:hidden">' +
           '<!-- Banner -->' +
           '<div class="user-banner" style="height:60px;background:linear-gradient(135deg,' +
-            'var(--color-primary),#3b3dc4);position:relative">' +
+            '#4648d4,#3b3dc4);position:relative">' +
             '<button class="btn btn-ghost btn-icon btn-sm" style="position:absolute;top:4px;right:4px;color:rgba(255,255,255,0.7)" title="' + (T('sidebar.settingsTitle') || 'Settings') + '">' +
               '<span class="material-symbols-outlined" style="font-size:16px">settings</span>' +
             '</button>' +
@@ -134,7 +134,7 @@
       : '<!-- Guest Module（未登录） -->' +
         '<div class="sidebar-module user-module guest-module" style="padding:0;overflow:hidden">' +
           '<div class="user-banner" style="height:60px;background:linear-gradient(135deg,' +
-            'var(--color-primary),#3b3dc4);position:relative;display:flex;align-items:center;justify-content:center">' +
+            '#4648d4,#3b3dc4);position:relative;display:flex;align-items:center;justify-content:center">' +
             '<span class="material-symbols-outlined" style="font-size:22px;color:rgba(255,255,255,0.9)">rocket_launch</span>' +
           '</div>' +
           '<div class="user-info-bar" style="padding:var(--space-md);display:flex;flex-direction:column;gap:6px">' +

@@ -137,7 +137,7 @@ const SCAN = `(function(){
   const ethSrc = fs.readFileSync(path.join(DOCS, 'assets', 'css', 'ethereal.css'), 'utf8');
   const sconfSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   ok('F1 版本双线 v0.2.54.0 / v10.28.36.1 + 注释块（49.2→49.3 白底白字第二轮·按钮）',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.54.5';") !== -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.54.6';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.1';") !== -1 &&
     sconfSrc.indexOf('黑白主题') !== -1 && sconfSrc.indexOf('深色模式背景') !== -1 &&
     sconfSrc.indexOf('白底白字') !== -1 && sconfSrc.indexOf('msg-acc') !== -1 &&
@@ -259,9 +259,10 @@ const SCAN = `(function(){
     await preset({ theme: 'dark', accent: 'mono' });
     await nav(BASE + '/pages/messages.html', "document.getElementById('fabBtn')", 'messages');
     {
-      const r = await cdp.evalJs("(function(){var els=document.querySelectorAll('.msg-acc');var bad=[];for(var i=0;i<els.length;i++){var s=getComputedStyle(els[i]);if(s.backgroundColor!=='rgb(50, 50, 74)'||s.color!=='rgb(255, 255, 255)')bad.push(els[i].id||els[i].className)}return {n:els.length,bad:bad};})()");
-      ok('M5a messages .msg-acc 全翻 #32324a 白字（≥4 个）', r.n >= 4 && r.bad.length === 0,
-        'n=' + r.n + (r.bad.length ? ' bad:' + r.bad.join(',') : ''));
+      const r = await cdp.evalJs("(function(){var els=document.querySelectorAll('.msg-acc:not(.msg-avatar)');var bad=[];for(var i=0;i<els.length;i++){var s=getComputedStyle(els[i]);if(s.backgroundColor!=='rgb(50, 50, 74)'||s.color!=='rgb(255, 255, 255)')bad.push(els[i].id||els[i].className)}var avs=document.querySelectorAll('.msg-avatar');var abad=[];for(var j=0;j<avs.length;j++){var a=getComputedStyle(avs[j]);if(a.backgroundColor!=='rgb(70, 72, 212)'&&a.backgroundColor!=='rgb(129, 39, 207)')abad.push(avs[j].id||avs[j].className)}return {n:els.length,bad:bad,an:avs.length,abad:abad};})()");
+      ok('M5a messages 按钮/气泡族翻 #32324a 白字（≥4 个）+ msg-avatar 头像族恒亮固定色（4 个）',
+        r.n >= 4 && r.bad.length === 0 && r.an === 4 && r.abad.length === 0,
+        'n=' + r.n + (r.bad.length ? ' bad:' + r.bad.join(',') : '') + ' an=' + r.an + (r.abad.length ? ' abad:' + r.abad.join(',') : ''));
     }
     await nav(BASE + '/pages/explore.html', "document.querySelector('.world-code-chip')", 'explore');
     {

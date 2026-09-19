@@ -75,7 +75,7 @@ async function waitFor(cdp, expr, timeout, label) {
   const idxSrc = fs.readFileSync(path.join(DOCS, 'index.html'), 'utf8');
   const sconfSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   ok('F0 版本双线 v0.2.54.0 / v10.28.36.1 + 用户原话注释',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.54.5';") !== -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.54.6';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.1';") !== -1 &&
     sconfSrc.indexOf('douyin.com/user/self') !== -1);
   ok('F1 直达读取 showTab + 旧 tab 兼容',
@@ -87,7 +87,7 @@ async function waitFor(cdp, expr, timeout, label) {
   ok('F4 index 「View all announcements」用 ?showTab=announcements、旧 ?tab= 零残留',
     idxSrc.indexOf('pages/messages.html?showTab=announcements') !== -1 &&
     idxSrc.indexOf('messages.html?tab=') === -1);
-  ok('F5 首页公告卡 href 直达 announcements（v0.2.54.5 用户「点击后跳转是这个页面」）',
+  ok('F5 首页公告卡 href 直达 announcements（v0.2.54.6 用户「点击后跳转是这个页面」）',
     idxSrc.indexOf('pages/messages.html?showTab=announcements" class="card card-hover"') !== -1 &&
     idxSrc.indexOf('pages/messages.html" class="card card-hover"') === -1);
 

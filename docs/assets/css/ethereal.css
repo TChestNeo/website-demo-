@@ -212,9 +212,9 @@
    60px 亮靛蓝横幅（sidebar.js 内联渐变无暗色覆写，暗色下全栏唯一实心亮块，扫描探针实证
    L=81.7 234×60）；暗色改极暗底与模块融为一体（横幅视觉消失，齿轮/火箭白图标仍可见），
    亮色保留原靛蓝渐变（!important 压过内联 style） */
-:root[data-theme="dark"] .user-banner {
-  background: rgba(255, 255, 255, 0.04) !important;
-}
+/* v0.2.54.6 用户「那个用户横幅和头像能不能不要被网页主题影响到？」（问询钦定「两处都要」）——
+   反转 09-10 隐藏决定：侧栏用户横幅/头像改主题无关（暗色也保留亮靛蓝横幅+白环头像），
+   本条暗色隐藏规则整体移除（sidebar.js 内联渐变与白描边任何主题原样生效） */
 /* 2026-09-10 用户「还是一样有啊，那个东西会不会是向内的阴影导致的？」——升级扫描（box-shadow
    顶层逗号切层 + 伪元素 + 边框全测）实证：全侧栏无任何 inset 内阴影（lg-static 环要求
    .liquid-glass.lg-static 双类，侧栏模块只有 lg-static 从未生效）；v0.2.28.10 横幅修复已生效
@@ -1807,9 +1807,8 @@ html[data-accent="mono"][data-theme="dark"] .text-gradient { background: linear-
 html[data-accent="mono"][data-theme="dark"] .team-avatar { background: linear-gradient(135deg, #3a3a44, #4a4a56); }
 html[data-accent="mono"][data-theme="dark"] .lift-info-btn { background: #1e1e2d; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }
 /* 深色 mono 发白渐变修复（sidebar.js/ai-chat.js 内联硬编码白→蓝/白→紫渐变，!important 压过内联 style）： */
-/* 用户 banner、头像白描边、AI 悬浮球/聊天头 */
-html[data-accent="mono"][data-theme="dark"] .user-banner { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }
-html[data-accent="mono"][data-theme="dark"] .user-module .avatar { border-color: rgba(255, 255, 255, 0.08) !important; }
+/* v0.2.54.6 用户横幅/头像改主题无关（横幅固定 #4648d4→#3b3dc4、头像恒白环——原两条
+   mono 暗色翻黑族/灰环规则已移除）；AI 悬浮球/聊天头保留 */
 html[data-accent="mono"][data-theme="dark"] .mn-ai-fab, html[data-accent="mono"][data-theme="dark"] .mn-ai-head { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }
 /* overview 特色国家头像圆（用户「卡片中间那个白色」真身）：内联主色→紫渐变，深色 mono 翻黑族 */
 html[data-accent="mono"][data-theme="dark"] .featured-nation-avatar { background: linear-gradient(135deg, #1e1e2d, #32324a) !important; }

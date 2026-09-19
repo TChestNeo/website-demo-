@@ -1061,7 +1061,20 @@ window.MN_SITE = window.MN_SITE || {};
 //   showTab 直达 v0.2.50.8 已建成、「View all announcements」按钮早已是该链接，本轮只补公告卡这一个入口）；
 //   后端零改动（user_version 27/health 59 表不变）；FC v10.28.36.1 零改动；ethereal 零改动；零草稿字段（v 保持 9）
 //   （rev 00264-tcv）
-window.MN_SITE_VERSION = 'v0.2.54.5';
+// v0.2.54.6 = 用户横幅与头像不再受网页主题影响（补丁位 5→6·观感修复轮；2026-09-20）——用户「那个用户横幅和头像能不能不要被网页主题影响到？」（问询钦定「两处都要」）：
+//   ①侧栏用户卡：解除 09-10 暗色隐藏规则 + mono 暗色翻黑族/灰环规则（ethereal 两处移除；sidebar.js 内联
+//     var(--color-primary)→固定 #4648d4）——横幅任何主题恒亮靛蓝渐变、头像恒白环（含访客模块横幅同修）；
+//   ②Community 个人页：横幅 9 处垫底 var(--color-surface-container-high)→固定 #e6e8ea（默认/bg-default/6 玻璃
+//     预设/glass-bg 兜底）+3 处编辑弹窗预览兜底+边缘默认填充色块同修（边缘主题态半透明渐变与卡底复合，
+//     垫底固定不透明色才真正主题无关；glass-clear 无垫底=真液态玻璃按设计透明不在此列）、头像环
+//     var(--color-surface)→固定 #f7f9fb；ethereal 改动已重跑 inline-css（40 页+admin 刷新）；
+//   ③Messages 头像（用户中途追加「还有message那边的头像」）：15 处头像内联色固定（#4648d4×9/#8127cf×6，
+//     含 2 处 avatar-sm 静态头像+13 处 JS 模板头像/描边/未读圆点）+11 个 msg-acc 头像元素加 msg-avatar 类；
+//     09-17 mono 暗色 .msg-acc 翻深底规则改 :not(.msg-avatar) 豁免（头像族恒亮固定色任何主题不变、
+//     按钮/气泡/徽章族保持原行为；成员头像三元本就无 msg-acc 类天然豁免）；
+//   后端零改动（user_version 27/health 59 表不变）；FC v10.28.36.1 零改动；零草稿字段（v 保持 9）
+//   （rev 00265-hkt）
+window.MN_SITE_VERSION = 'v0.2.54.6';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
