@@ -15,12 +15,12 @@ window.MN_I18N
   // ═══ zh 简体（默认；值与页面原文逐字节一致——电池中文断言依赖）═══
   .add('zh', {
     // ── 静态节点（data-i18n）──
-    'wcr.badge': 'WORLD ENTRY ARCHIVED',
-    'wcr.processing.init': 'Finalizing archive entry...',
+    'wcr.badge': '世界档案已归档',
+    'wcr.processing.init': '正在完成档案条目…',
     'wcr.cta.goDashboard': '前往控制台',
     'wcr.cta.createAnother': '再创建一个',
-    'wcr.footer.bypass': 'Bypass to Dashboard',
-    'wcr.footer.protocol': 'Archive Protocol v1.0',
+    'wcr.footer.bypass': '前往仪表盘',
+    'wcr.footer.protocol': '归档协议 v1.0',
 
     // ── JS 动态文案（惰性 T() 键；无草稿兜底分支 + 拼接片段）──
     'wcr.hero.title': '世界创建成功',
@@ -28,7 +28,7 @@ window.MN_I18N
     'wcr.js.established': ' — 已建立',
     'wcr.js.type': '类型：',
     'wcr.js.archived': ' · 已收录进 M.NationWorld 世界档案。',
-    'wcr.js.complete': 'Archive entry complete'
+    'wcr.js.complete': '档案条目完成',
   })
   // ═══ en 英语（v0.2.54.0 用户钦定加英语）═══
   .add('en', {
@@ -182,16 +182,16 @@ window.MN_I18N
   });
 /* __ZH_HANT_AUTO__ — v0.2.54.0 zh-Hant 由 OpenCC cn→tw 自动生成（勿手改，重跑本脚本再生成） */
 window.MN_I18N.add('zh-Hant', {
-  "wcr.badge": "WORLD ENTRY ARCHIVED",
-  "wcr.processing.init": "Finalizing archive entry...",
+  "wcr.badge": "世界檔案已歸檔",
+  "wcr.processing.init": "正在完成檔案條目…",
   "wcr.cta.goDashboard": "前往控制台",
   "wcr.cta.createAnother": "再創建一個",
-  "wcr.footer.bypass": "Bypass to Dashboard",
-  "wcr.footer.protocol": "Archive Protocol v1.0",
+  "wcr.footer.bypass": "前往儀表盤",
+  "wcr.footer.protocol": "歸檔協議 v1.0",
   "wcr.hero.title": "世界創建成功",
   "wcr.hero.desc": "你的世界已收錄進 M.NationWorld 世界檔案。",
   "wcr.js.established": " — 已建立",
   "wcr.js.type": "類型：",
   "wcr.js.archived": " · 已收錄進 M.NationWorld 世界檔案。",
-  "wcr.js.complete": "Archive entry complete"
+  "wcr.js.complete": "檔案條目完成"
 });

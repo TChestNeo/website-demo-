@@ -2380,21 +2380,26 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
   // Recent contributions
   var contribs = [
-    { user: 'Alex Rivera', action: 'created article', target: 'Etheria Founding Charter', time: '2 hours ago' },
-    { user: 'Marcus Vane', action: 'updated lore for', target: 'Aethelgard', time: '5 hours ago' },
-    { user: 'Studio Prime', action: 'published', target: 'Digital Embassy Blueprint', time: '8 hours ago' },
-    { user: 'Neo-Venice Archive', action: 'revised', target: 'Aqua Centro History', time: '1 day ago' },
+    { user: 'Alex Rivera', actionKey: 'createdArticle', actionEn: 'created article', target: 'Etheria Founding Charter', timeKey: 'hours2', timeEn: '2 hours ago' },
+    { user: 'Marcus Vane', actionKey: 'updatedLoreFor', actionEn: 'updated lore for', target: 'Aethelgard', timeKey: 'hours5', timeEn: '5 hours ago' },
+    { user: 'Studio Prime', actionKey: 'published', actionEn: 'published', target: 'Digital Embassy Blueprint', timeKey: 'hours8', timeEn: '8 hours ago' },
+    { user: 'Neo-Venice Archive', actionKey: 'revised', actionEn: 'revised', target: 'Aqua Centro History', timeKey: 'day1', timeEn: '1 day ago' },
   ];
-  document.getElementById('recentContribs').innerHTML = contribs.map(function(c) {
-    return '<div style="padding:4px 0">' +
-      '<span style="font-weight:600;font-size:var(--fs-label-md)">' + c.user + '</span> ' +
-      '<span class="label-sm" style="color:var(--color-on-surface-variant)">' + c.action + '</span> ' +
-      '<span style="font-weight:500;font-size:var(--fs-label-md);color:var(--color-primary)">' + c.target + '</span>' +
-      '<div class="label-sm" style="color:var(--color-outline)">' + c.time + '</div>' +
-    '</div>';
-  }).join('');
+  function renderContribs() {
+    document.getElementById('recentContribs').innerHTML = contribs.map(function(c) {
+      return '<div style="padding:4px 0">' +
+        '<span style="font-weight:600;font-size:var(--fs-label-md)">' + c.user + '</span> ' +
+        '<span class="label-sm" style="color:var(--color-on-surface-variant)">' + (T('ov.contrib.action.' + c.actionKey) || c.actionEn) + '</span> ' +
+        '<span style="font-weight:500;font-size:var(--fs-label-md);color:var(--color-primary)">' + c.target + '</span>' +
+        '<div class="label-sm" style="color:var(--color-outline)">' + (T('ov.contrib.time.' + c.timeKey) || c.timeEn) + '</div>' +
+      '</div>';
+    }).join('');
+  }
+  renderContribs();
 
   if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+  // v0.2.54.2 i18n：动态区重渲染钩子（body 尾部 onChange 调用）
+  window.__mnI18nRerender = function () { renderContribs(); };
 </script>
 <script src="../assets/js/transitions.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
@@ -2409,6 +2414,7 @@ MN_I18N.apply();
 // v0.2.54.0：subnav 滑块克隆（DOMContentLoaded 建于 apply 之后，首建即翻译文字）；运行时切语言补一次同步
 if (window.MN_I18N && window.MN_I18N.onChange) {
   MN_I18N.onChange(function () {
+    if (window.__mnI18nRerender) window.__mnI18nRerender();
     var clones = document.querySelectorAll('.subnav-highlight-clone');
     var pills = document.querySelectorAll('.subnav-pill');
     for (var i = 0; i < clones.length && i < pills.length; i++) {

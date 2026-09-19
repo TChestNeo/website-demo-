@@ -3900,9 +3900,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
             '<div style="min-width:0;flex:1">' +
               '<div class="flex-between">' +
                 '<span style="font-weight:600;font-size:var(--fs-label-md)">' + c.name + '</span>' +
-                '<span class="label-sm" style="color:var(--color-outline)">' + c.time + '</span>' +
+                '<span class="label-sm" style="color:var(--color-outline)">' + (c.time || (T(c.timeKey) || c.timeEn || '')) + '</span>' +
               '</div>' +
-              '<div class="label-sm" style="color:var(--color-outline);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + c.lastMsg + '</div>' +
+              '<div class="label-sm" style="color:var(--color-outline);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (c.lastMsg || (T(c.lastMsgKey) || c.lastMsgEn || '')) + '</div>' +
             '</div>' +
           '</div>' +
         '</div>';
@@ -4243,7 +4243,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
             '<div style="min-width:0;flex:1">' +
               '<div class="flex-between">' +
                 '<span style="font-weight:600;font-size:var(--fs-label-md)">' + g.name + (g.isAnnouncement ? ' <span class="material-symbols-outlined" style="font-size:14px;color:var(--color-outline);vertical-align:middle">campaign</span>' : '') + '</span>' +
-                '<span class="label-sm" style="color:var(--color-outline)">' + g.time + '</span>' +
+                '<span class="label-sm" style="color:var(--color-outline)">' + (g.time || (T(g.timeKey) || g.timeEn || '')) + '</span>' +
               '</div>' +
               '<div class="flex-between">' +
                 '<span class="label-sm" style="color:var(--color-outline)">' + g.members + (T('messages.group.membersWord') || ' members · ') + g.online + (T('messages.group.onlineWord') || ' online') + '</span>' +
@@ -4507,8 +4507,10 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       conversations.push({
         id: 'c' + (conversations.length + 1),
         name: name,
-        lastMsg: 'Friend request accepted. Say hello!',
-        time: 'Now',
+        lastMsgKey: 'messages.demo.frAcceptedMsg',
+        lastMsgEn: 'Friend request accepted. Say hello!',
+        timeKey: 'messages.demo.time.now',
+        timeEn: 'Now',
         avatar: name.charAt(0).toUpperCase(),
         online: true
       });
@@ -4555,8 +4557,10 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
         id: 'g' + (groups.length + 1),
         name: name,
         members: 1,
-        lastMsg: 'Group created. Invite members to get started!',
-        time: 'Now',
+        lastMsgKey: 'messages.demo.groupCreatedMsg',
+        lastMsgEn: 'Group created. Invite members to get started!',
+        timeKey: 'messages.demo.time.now',
+        timeEn: 'Now',
         avatar: avatar,
         unread: 0
       });
@@ -4582,83 +4586,115 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
   var announcements = [
     {
       id: 'a1',
-      title: 'M.NationWorld Beta Launch — Welcome All Nations',
+      titleKey: 'messages.demo.a1.title',
+      titleEn: 'M.NationWorld Beta Launch — Welcome All Nations',
       category: 'official',
       icon: 'campaign',
       date: '2026-08-05',
-      author: 'Sovereign Council',
-      summary: 'The M.NationWorld platform officially enters its public beta phase. All registered nations now have access to the full suite of governance, worldbuilding, and diplomatic tools.',
-      content: 'After months of development, we are proud to announce the public beta launch of M.NationWorld — the premier platform for micronation governance and worldbuilding.\n\nWhat\'s included in the beta:\n• National Registry with verification system\n• Community Hub with topic discussions\n• FluidCanvas studio for content creation\n• Diplomatic messaging and embassy channels\n• Premium subscription tiers with advanced features\n\nWe welcome all existing and new nations to explore the platform. Feedback is highly encouraged — use the Help & Support channel for any questions.',
+      authorKey: 'messages.demo.author.sovereignCouncil',
+      authorEn: 'Sovereign Council',
+      summaryKey: 'messages.demo.a1.summary',
+      summaryEn: 'The M.NationWorld platform officially enters its public beta phase. All registered nations now have access to the full suite of governance, worldbuilding, and diplomatic tools.',
+      contentKey: 'messages.demo.a1.content',
+      contentEn: 'After months of development, we are proud to announce the public beta launch of M.NationWorld — the premier platform for micronation governance and worldbuilding.\n\nWhat\'s included in the beta:\n• National Registry with verification system\n• Community Hub with topic discussions\n• FluidCanvas studio for content creation\n• Diplomatic messaging and embassy channels\n• Premium subscription tiers with advanced features\n\nWe welcome all existing and new nations to explore the platform. Feedback is highly encouraged — use the Help & Support channel for any questions.',
     },
     {
       id: 'a2',
-      title: 'Governance Summit 2026 — Registration Open',
+      titleKey: 'messages.demo.a2.title',
+      titleEn: 'Governance Summit 2026 — Registration Open',
       category: 'official',
       icon: 'event',
       date: '2026-08-03',
-      author: 'Sovereign Council',
-      summary: 'The annual Governance Summit is now open for registration. This year\'s theme: "Digital Sovereignty in the Modern Age."',
-      content: 'Join us for the 2026 Governance Summit, a gathering of micronation leaders, diplomats, and worldbuilders from across the M.NationWorld community.\n\nEvent Details:\n• Date: September 15-17, 2026\n• Format: Virtual sessions + in-person meetups\n• Tracks: Governance Design, Diplomatic Relations, Legal Frameworks, Cultural Exchange\n\nEarly registration is now open. Reserve your nation\'s seat today.',
+      authorKey: 'messages.demo.author.sovereignCouncil',
+      authorEn: 'Sovereign Council',
+      summaryKey: 'messages.demo.a2.summary',
+      summaryEn: 'The annual Governance Summit is now open for registration. This year\'s theme: "Digital Sovereignty in the Modern Age."',
+      contentKey: 'messages.demo.a2.content',
+      contentEn: 'Join us for the 2026 Governance Summit, a gathering of micronation leaders, diplomats, and worldbuilders from across the M.NationWorld community.\n\nEvent Details:\n• Date: September 15-17, 2026\n• Format: Virtual sessions + in-person meetups\n• Tracks: Governance Design, Diplomatic Relations, Legal Frameworks, Cultural Exchange\n\nEarly registration is now open. Reserve your nation\'s seat today.',
     },
     {
       id: 'a3',
-      title: 'Cartography Guild — Monthly Map Contest',
+      titleKey: 'messages.demo.a3.title',
+      titleEn: 'Cartography Guild — Monthly Map Contest',
       category: 'community',
       icon: 'map',
       date: '2026-08-02',
-      author: 'Cartography Guild',
-      summary: 'Submit your best territorial maps for the August mapping contest. Theme: "Uncharted Territories." Prizes include Premium subscriptions.',
-      content: 'The Cartography Guild invites all nation cartographers to participate in the August Map Contest.\n\nTheme: "Uncharted Territories" — create a map depicting undiscovered or frontier regions of your nation.\n\nPrizes:\n• 1st Place: 6 months of Premium Ultra\n• 2nd Place: 3 months of Premium\n• 3rd Place: 1 month of Premium\n\nSubmissions close August 25. Voting runs August 26-31.',
+      authorKey: 'messages.demo.author.cartographyGuild',
+      authorEn: 'Cartography Guild',
+      summaryKey: 'messages.demo.a3.summary',
+      summaryEn: 'Submit your best territorial maps for the August mapping contest. Theme: "Uncharted Territories." Prizes include Premium subscriptions.',
+      contentKey: 'messages.demo.a3.content',
+      contentEn: 'The Cartography Guild invites all nation cartographers to participate in the August Map Contest.\n\nTheme: "Uncharted Territories" — create a map depicting undiscovered or frontier regions of your nation.\n\nPrizes:\n• 1st Place: 6 months of Premium Ultra\n• 2nd Place: 3 months of Premium\n• 3rd Place: 1 month of Premium\n\nSubmissions close August 25. Voting runs August 26-31.',
     },
     {
       id: 'a4',
-      title: 'New Feature: FluidCanvas Studio Now Live',
+      titleKey: 'messages.demo.a4.title',
+      titleEn: 'New Feature: FluidCanvas Studio Now Live',
       category: 'system',
       icon: 'draw',
       date: '2026-08-01',
-      author: 'M.NationWorld Team',
-      summary: 'FluidCanvas, our collaborative content studio, is now available to all users. Create articles, media galleries, and interactive content.',
-      content: 'FluidCanvas is M.NationWorld\'s integrated content creation platform, designed specifically for micronation storytelling and documentation.\n\nFeatures:\n• Rich text editor with markdown support\n• Media uploads and gallery management\n• Team collaboration with role-based permissions\n• Publishing workflow (draft → review → publish)\n• Analytics dashboard for content performance\n\nAccess FluidCanvas from the sidebar or dashboard. For tutorials, visit the Help Center.',
+      authorKey: 'messages.demo.author.mnTeam',
+      authorEn: 'M.NationWorld Team',
+      summaryKey: 'messages.demo.a4.summary',
+      summaryEn: 'FluidCanvas, our collaborative content studio, is now available to all users. Create articles, media galleries, and interactive content.',
+      contentKey: 'messages.demo.a4.content',
+      contentEn: 'FluidCanvas is M.NationWorld\'s integrated content creation platform, designed specifically for micronation storytelling and documentation.\n\nFeatures:\n• Rich text editor with markdown support\n• Media uploads and gallery management\n• Team collaboration with role-based permissions\n• Publishing workflow (draft → review → publish)\n• Analytics dashboard for content performance\n\nAccess FluidCanvas from the sidebar or dashboard. For tutorials, visit the Help Center.',
     },
     {
       id: 'a5',
-      title: 'New Nation Spotlight: Republic of Etheria',
+      titleKey: 'messages.demo.a5.title',
+      titleEn: 'New Nation Spotlight: Republic of Etheria',
       category: 'community',
       icon: 'emoji_flags',
       date: '2026-07-30',
-      author: 'Community Team',
-      summary: 'This week\'s spotlight features the Republic of Etheria, a floating city-state with a unique governance model blending direct democracy and AI-assisted administration.',
-      content: 'Every week, we highlight a nation that exemplifies the creativity and diversity of the M.NationWorld community.\n\nThis week: Republic of Etheria\n• Classification: Maritime City-State\n• Population: 2.4 million\n• Governance: Hybrid Direct Democracy with AI Advisory\n• Notable: The world\'s first fully modular floating district system\n\nRead the full profile on the MicroNationary Explore page. Want your nation featured? Submit a nomination through the Community Hub.',
+      authorKey: 'messages.demo.author.communityTeam',
+      authorEn: 'Community Team',
+      summaryKey: 'messages.demo.a5.summary',
+      summaryEn: 'This week\'s spotlight features the Republic of Etheria, a floating city-state with a unique governance model blending direct democracy and AI-assisted administration.',
+      contentKey: 'messages.demo.a5.content',
+      contentEn: 'Every week, we highlight a nation that exemplifies the creativity and diversity of the M.NationWorld community.\n\nThis week: Republic of Etheria\n• Classification: Maritime City-State\n• Population: 2.4 million\n• Governance: Hybrid Direct Democracy with AI Advisory\n• Notable: The world\'s first fully modular floating district system\n\nRead the full profile on the MicroNationary Explore page. Want your nation featured? Submit a nomination through the Community Hub.',
     },
     {
       id: 'a6',
-      title: 'Platform Update v1.2 — Sidebar & Navigation Improvements',
+      titleKey: 'messages.demo.a6.title',
+      titleEn: 'Platform Update v1.2 — Sidebar & Navigation Improvements',
       category: 'system',
       icon: 'update',
       date: '2026-07-28',
-      author: 'M.NationWorld Team',
-      summary: 'Version 1.2 brings a collapsible sidebar, smoother page transitions, and an improved navigation experience across all pages.',
-      content: 'M.NationWorld v1.2 Release Notes:\n\n✨ New Features:\n• Collapsible sidebar — toggle between expanded and icon-only mode\n• Direction-aware page transitions with staggered card animations\n• Persistent sidebar state across page loads\n• Improved responsive behavior for smaller screens\n\n🔧 Fixes:\n• Premium page pricing now correctly detects timezone for localization\n• Sidebar no longer flashes on page load\n• Various CSS and layout refinements\n\nUpdate is live now — no action needed on your part.',
+      authorKey: 'messages.demo.author.mnTeam',
+      authorEn: 'M.NationWorld Team',
+      summaryKey: 'messages.demo.a6.summary',
+      summaryEn: 'Version 1.2 brings a collapsible sidebar, smoother page transitions, and an improved navigation experience across all pages.',
+      contentKey: 'messages.demo.a6.content',
+      contentEn: 'M.NationWorld v1.2 Release Notes:\n\n✨ New Features:\n• Collapsible sidebar — toggle between expanded and icon-only mode\n• Direction-aware page transitions with staggered card animations\n• Persistent sidebar state across page loads\n• Improved responsive behavior for smaller screens\n\n🔧 Fixes:\n• Premium page pricing now correctly detects timezone for localization\n• Sidebar no longer flashes on page load\n• Various CSS and layout refinements\n\nUpdate is live now — no action needed on your part.',
     },
     {
       id: 'a7',
-      title: 'Call for Moderators — Join the Community Team',
+      titleKey: 'messages.demo.a7.title',
+      titleEn: 'Call for Moderators — Join the Community Team',
       category: 'community',
       icon: 'volunteer_activism',
       date: '2026-07-25',
-      author: 'Community Team',
-      summary: 'We\'re expanding our moderation team. If you\'re passionate about fostering a positive micronation community, apply today.',
-      content: 'As M.NationWorld grows, we need dedicated community members to help maintain a welcoming and constructive environment.\n\nModerator Responsibilities:\n• Review and approve topic posts in the Community Hub\n• Mediate disputes between nations\n• Help onboard new members\n• Flag and escalate policy violations\n\nRequirements:\n• Active M.NationWorld account (30+ days)\n• Good standing in the community\n• Available 3-5 hours per week\n\nApply via the Community Hub or message the Community Team directly.',
+      authorKey: 'messages.demo.author.communityTeam',
+      authorEn: 'Community Team',
+      summaryKey: 'messages.demo.a7.summary',
+      summaryEn: 'We\'re expanding our moderation team. If you\'re passionate about fostering a positive micronation community, apply today.',
+      contentKey: 'messages.demo.a7.content',
+      contentEn: 'As M.NationWorld grows, we need dedicated community members to help maintain a welcoming and constructive environment.\n\nModerator Responsibilities:\n• Review and approve topic posts in the Community Hub\n• Mediate disputes between nations\n• Help onboard new members\n• Flag and escalate policy violations\n\nRequirements:\n• Active M.NationWorld account (30+ days)\n• Good standing in the community\n• Available 3-5 hours per week\n\nApply via the Community Hub or message the Community Team directly.',
     },
     {
       id: 'a8',
-      title: 'Premium Ultra — Early Adopter Pricing Extended',
+      titleKey: 'messages.demo.a8.title',
+      titleEn: 'Premium Ultra — Early Adopter Pricing Extended',
       category: 'official',
       icon: 'rocket_launch',
       date: '2026-07-20',
-      author: 'M.NationWorld Team',
-      summary: 'The early adopter discount for Premium Ultra has been extended through August. Lock in reduced pricing for your first 12 months.',
-      content: 'Due to popular demand, we\'re extending the Premium Ultra early adopter pricing through August 31, 2026.\n\nPremium Ultra includes:\n• All Premium features\n• Advanced analytics with export\n• Custom domain for your nation page\n• Priority support with 4-hour response SLA\n• 4 team member slots for FluidCanvas\n• API access for nation data\n\nView the full comparison and subscribe on the Premium page.',
+      authorKey: 'messages.demo.author.mnTeam',
+      authorEn: 'M.NationWorld Team',
+      summaryKey: 'messages.demo.a8.summary',
+      summaryEn: 'The early adopter discount for Premium Ultra has been extended through August. Lock in reduced pricing for your first 12 months.',
+      contentKey: 'messages.demo.a8.content',
+      contentEn: 'Due to popular demand, we\'re extending the Premium Ultra early adopter pricing through August 31, 2026.\n\nPremium Ultra includes:\n• All Premium features\n• Advanced analytics with export\n• Custom domain for your nation page\n• Priority support with 4-hour response SLA\n• 4 team member slots for FluidCanvas\n• API access for nation data\n\nView the full comparison and subscribe on the Premium page.',
     },
   ];
 
@@ -4707,18 +4743,18 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           '<div class="flex-center gap-sm" style="justify-content:flex-start;min-width:0">' +
             '<span class="material-symbols-outlined" style="font-size:22px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +
             '<span class="label-sm" style="background:' + cs.bg + ';color:' + cs.color + ';padding:2px 8px;border-radius:var(--radius-full);font-weight:600;flex-shrink:0">' + cs.label + '</span>' +
-            '<span style="font-weight:600;font-size:var(--fs-label-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.title + '</span>' +
+            '<span style="font-weight:600;font-size:var(--fs-label-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (T(a.titleKey) || a.titleEn) + '</span>' +
           '</div>' +
           '<div class="flex-center gap-sm" style="flex-shrink:0">' +
             '<span class="label-sm" style="color:var(--color-outline)">' + formatDate(a.date) + '</span>' +
             '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);transition:transform 0.25s ease' + (isExpanded ? ';transform:rotate(180deg)' : '') + '">expand_more</span>' +
           '</div>' +
         '</div>' +
-        '<p style="font-size:var(--fs-label-md);color:var(--color-on-surface-variant);margin-top:6px;line-height:1.5;margin-left:30px">' + a.summary + '</p>' +
-        '<div class="label-sm" style="margin-left:30px;color:var(--color-outline);margin-top:2px">' + (T('messages.ann.by') || 'by ') + a.author + '</div>' +
+        '<p style="font-size:var(--fs-label-md);color:var(--color-on-surface-variant);margin-top:6px;line-height:1.5;margin-left:30px">' + (T(a.summaryKey) || a.summaryEn) + '</p>' +
+        '<div class="label-sm" style="margin-left:30px;color:var(--color-outline);margin-top:2px">' + (T('messages.ann.by') || 'by ') + (T(a.authorKey) || a.authorEn) + '</div>' +
         '<div style="margin-left:30px;overflow:hidden;transition:max-height 0.4s ease,opacity 0.4s ease,margin-top 0.4s ease' + (isExpanded ? ';max-height:600px;opacity:1;margin-top:var(--space-md)' : ';max-height:0;opacity:0;margin-top:0') + '">' +
           '<div style="border-top:1px solid rgba(118,117,134,0.1);padding-top:var(--space-md)">' +
-            '<p style="font-size:var(--fs-body-md);color:var(--color-on-surface);line-height:1.7;white-space:pre-line">' + a.content + '</p>' +
+            '<p style="font-size:var(--fs-body-md);color:var(--color-on-surface);line-height:1.7;white-space:pre-line">' + (T(a.contentKey) || a.contentEn) + '</p>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -4807,11 +4843,11 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
       }
       var q = query.toLowerCase();
       var results = announcements.filter(function(a) {
-        return a.title.toLowerCase().includes(q) ||
-               a.summary.toLowerCase().includes(q) ||
-               a.content.toLowerCase().includes(q) ||
+        return a.titleEn.toLowerCase().includes(q) ||
+               a.summaryEn.toLowerCase().includes(q) ||
+               a.contentEn.toLowerCase().includes(q) ||
                a.category.toLowerCase().includes(q) ||
-               a.author.toLowerCase().includes(q);
+               a.authorEn.toLowerCase().includes(q);
       });
       var saved = activeCategory;
       activeCategory = '__search__';
@@ -4841,18 +4877,18 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
           '<div class="flex-center gap-sm" style="justify-content:flex-start;min-width:0">' +
             '<span class="material-symbols-outlined" style="font-size:22px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +
             '<span class="label-sm" style="background:' + cs.bg + ';color:' + cs.color + ';padding:2px 8px;border-radius:var(--radius-full);font-weight:600;flex-shrink:0">' + cs.label + '</span>' +
-            '<span style="font-weight:600;font-size:var(--fs-label-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.title + '</span>' +
+            '<span style="font-weight:600;font-size:var(--fs-label-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (T(a.titleKey) || a.titleEn) + '</span>' +
           '</div>' +
           '<div class="flex-center gap-sm" style="flex-shrink:0">' +
             '<span class="label-sm" style="color:var(--color-outline)">' + formatDate(a.date) + '</span>' +
             '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline);transition:transform 0.25s ease' + (isExpanded ? ';transform:rotate(180deg)' : '') + '">expand_more</span>' +
           '</div>' +
         '</div>' +
-        '<p style="font-size:var(--fs-label-md);color:var(--color-on-surface-variant);margin-top:6px;line-height:1.5;margin-left:30px">' + a.summary + '</p>' +
-        '<div class="label-sm" style="margin-left:30px;color:var(--color-outline);margin-top:2px">' + (T('messages.ann.by') || 'by ') + a.author + '</div>' +
+        '<p style="font-size:var(--fs-label-md);color:var(--color-on-surface-variant);margin-top:6px;line-height:1.5;margin-left:30px">' + (T(a.summaryKey) || a.summaryEn) + '</p>' +
+        '<div class="label-sm" style="margin-left:30px;color:var(--color-outline);margin-top:2px">' + (T('messages.ann.by') || 'by ') + (T(a.authorKey) || a.authorEn) + '</div>' +
         '<div style="margin-left:30px;overflow:hidden;transition:max-height 0.4s ease,opacity 0.4s ease,margin-top 0.4s ease' + (isExpanded ? ';max-height:600px;opacity:1;margin-top:var(--space-md)' : ';max-height:0;opacity:0;margin-top:0') + '">' +
           '<div style="border-top:1px solid rgba(118,117,134,0.1);padding-top:var(--space-md)">' +
-            '<p style="font-size:var(--fs-body-md);color:var(--color-on-surface);line-height:1.7;white-space:pre-line">' + a.content + '</p>' +
+            '<p style="font-size:var(--fs-body-md);color:var(--color-on-surface);line-height:1.7;white-space:pre-line">' + (T(a.contentKey) || a.contentEn) + '</p>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -5108,8 +5144,10 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc {
     conversations.push({
       id: 'c' + (conversations.length + 1),
       name: inv.name,
-      lastMsg: 'Friend request accepted. Say hello!',
-      time: 'Now',
+      lastMsgKey: 'messages.demo.frAcceptedMsg',
+      lastMsgEn: 'Friend request accepted. Say hello!',
+      timeKey: 'messages.demo.time.now',
+      timeEn: 'Now',
       avatar: inv.avatar,
       online: true
     });
@@ -5246,6 +5284,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     applyMsgsDynamic();
   };
   applyMsgsDynamic();
+  MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); });
   MN_I18N.apply();
 })();
 </script>

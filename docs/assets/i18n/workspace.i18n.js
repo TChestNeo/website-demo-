@@ -4,7 +4,7 @@
  * 术语表见 common.i18n.js（品牌词不译：M.NationWorld / FluidCanvas）。
  * 页面原文为英文——zh 值为地道中文翻译（auth.i18n.js 先例），en 保持英文原文、HTML 兜底英文不动。
  * 示例数据不译：世界名 Etheria、编号 SEC-001-ALPHA、标签徽章、表格数据行、版本历史条目、
- * 资产列表数组、文章正文 textarea 内容。
+ * 文章正文 textarea 内容（资产列表数组自 v0.2.54.2 起翻译）。
  */
 window.MN_I18N
   // ═══ zh 简体（默认）═══
@@ -304,6 +304,292 @@ window.MN_I18N
     'ws.ph.tags': 'Pesquisar ou criar tags...',
     'ws.apply': 'Aplicar'
   });
+
+// v0.2.54.2 i18n 补：资产列表 demo 条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('zh', {
+  "workspace.assets.title.flag": "国旗卡",
+  "workspace.assets.title.emblem": "国徽卡",
+  "workspace.assets.title.audio": "音频播放器卡",
+  "workspace.assets.title.map": "领土地图卡",
+  "workspace.assets.title.population": "人口卡",
+  "workspace.assets.title.governance": "治理卡",
+  "workspace.assets.title.ledger": "经济台账卡",
+  "workspace.assets.title.military": "军队编制卡",
+  "workspace.assets.title.constitution": "宪法卡",
+  "workspace.assets.title.timeline": "时间线卡",
+  "workspace.assets.title.translation": "翻译卡",
+  "workspace.assets.title.gallery": "图库卡",
+  "workspace.assets.type.identity": "身份",
+  "workspace.assets.type.media": "媒体",
+  "workspace.assets.type.geography": "地理",
+  "workspace.assets.type.demographics": "人口统计",
+  "workspace.assets.type.politics": "政治",
+  "workspace.assets.type.economy": "经济",
+  "workspace.assets.type.defense": "国防",
+  "workspace.assets.type.legal": "法律",
+  "workspace.assets.type.history": "历史",
+  "workspace.assets.type.localization": "本地化"
+});
+
+// v0.2.54.2 i18n 补：资产列表 demo 条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('en', {
+  "workspace.assets.title.flag": "National Flag Card",
+  "workspace.assets.title.emblem": "Emblem Card",
+  "workspace.assets.title.audio": "Audio Player Card",
+  "workspace.assets.title.map": "Territorial Map Card",
+  "workspace.assets.title.population": "Population Card",
+  "workspace.assets.title.governance": "Governance Card",
+  "workspace.assets.title.ledger": "Economic Ledger Card",
+  "workspace.assets.title.military": "Military OOB Card",
+  "workspace.assets.title.constitution": "Constitution Card",
+  "workspace.assets.title.timeline": "Timeline Card",
+  "workspace.assets.title.translation": "Translation Card",
+  "workspace.assets.title.gallery": "Gallery Card",
+  "workspace.assets.type.identity": "Identity",
+  "workspace.assets.type.media": "Media",
+  "workspace.assets.type.geography": "Geography",
+  "workspace.assets.type.demographics": "Demographics",
+  "workspace.assets.type.politics": "Politics",
+  "workspace.assets.type.economy": "Economy",
+  "workspace.assets.type.defense": "Defense",
+  "workspace.assets.type.legal": "Legal",
+  "workspace.assets.type.history": "History",
+  "workspace.assets.type.localization": "Localization"
+});
+
+// v0.2.54.2 i18n 补：资产列表 demo 条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('de', {
+  "workspace.assets.title.flag": "Nationalflaggen-Karte",
+  "workspace.assets.title.emblem": "Emblem-Karte",
+  "workspace.assets.title.audio": "Audioplayer-Karte",
+  "workspace.assets.title.map": "Territorialkarte",
+  "workspace.assets.title.population": "Bevölkerungskarte",
+  "workspace.assets.title.governance": "Regierungskarte",
+  "workspace.assets.title.ledger": "Wirtschaftsbuch-Karte",
+  "workspace.assets.title.military": "Militär-Gliederungskarte",
+  "workspace.assets.title.constitution": "Verfassungskarte",
+  "workspace.assets.title.timeline": "Zeitleisten-Karte",
+  "workspace.assets.title.translation": "Übersetzungskarte",
+  "workspace.assets.title.gallery": "Galeriekarte",
+  "workspace.assets.type.identity": "Identität",
+  "workspace.assets.type.media": "Medien",
+  "workspace.assets.type.geography": "Geografie",
+  "workspace.assets.type.demographics": "Demografie",
+  "workspace.assets.type.politics": "Politik",
+  "workspace.assets.type.economy": "Wirtschaft",
+  "workspace.assets.type.defense": "Verteidigung",
+  "workspace.assets.type.legal": "Recht",
+  "workspace.assets.type.history": "Geschichte",
+  "workspace.assets.type.localization": "Lokalisierung"
+});
+
+// v0.2.54.2 i18n 补：资产列表 demo 条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('ru', {
+  "workspace.assets.title.flag": "Карточка государственного флага",
+  "workspace.assets.title.emblem": "Карточка герба",
+  "workspace.assets.title.audio": "Карточка аудиоплеера",
+  "workspace.assets.title.map": "Карточка карты территории",
+  "workspace.assets.title.population": "Карточка населения",
+  "workspace.assets.title.governance": "Карточка управления",
+  "workspace.assets.title.ledger": "Карточка экономического реестра",
+  "workspace.assets.title.military": "Карточка военной структуры",
+  "workspace.assets.title.constitution": "Карточка конституции",
+  "workspace.assets.title.timeline": "Карточка хронологии",
+  "workspace.assets.title.translation": "Карточка перевода",
+  "workspace.assets.title.gallery": "Карточка галереи",
+  "workspace.assets.type.identity": "Идентичность",
+  "workspace.assets.type.media": "Медиа",
+  "workspace.assets.type.geography": "География",
+  "workspace.assets.type.demographics": "Демография",
+  "workspace.assets.type.politics": "Политика",
+  "workspace.assets.type.economy": "Экономика",
+  "workspace.assets.type.defense": "Оборона",
+  "workspace.assets.type.legal": "Право",
+  "workspace.assets.type.history": "История",
+  "workspace.assets.type.localization": "Локализация"
+});
+
+// v0.2.54.2 i18n 补：资产列表 demo 条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('ms', {
+  "workspace.assets.title.flag": "Kad Bendera Negara",
+  "workspace.assets.title.emblem": "Kad Lambang",
+  "workspace.assets.title.audio": "Kad Pemain Audio",
+  "workspace.assets.title.map": "Kad Peta Wilayah",
+  "workspace.assets.title.population": "Kad Penduduk",
+  "workspace.assets.title.governance": "Kad Tadbir Urus",
+  "workspace.assets.title.ledger": "Kad Lejar Ekonomi",
+  "workspace.assets.title.military": "Kad Susunan Tentera",
+  "workspace.assets.title.constitution": "Kad Perlembagaan",
+  "workspace.assets.title.timeline": "Kad Garis Masa",
+  "workspace.assets.title.translation": "Kad Terjemahan",
+  "workspace.assets.title.gallery": "Kad Galeri",
+  "workspace.assets.type.identity": "Identiti",
+  "workspace.assets.type.media": "Media",
+  "workspace.assets.type.geography": "Geografi",
+  "workspace.assets.type.demographics": "Demografi",
+  "workspace.assets.type.politics": "Politik",
+  "workspace.assets.type.economy": "Ekonomi",
+  "workspace.assets.type.defense": "Pertahanan",
+  "workspace.assets.type.legal": "Undang-undang",
+  "workspace.assets.type.history": "Sejarah",
+  "workspace.assets.type.localization": "Penyetempatan"
+});
+
+// v0.2.54.2 i18n 补：资产列表 demo 条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('th', {
+  "workspace.assets.title.flag": "การ์ดธงชาติ",
+  "workspace.assets.title.emblem": "การ์ดตราสัญลักษณ์",
+  "workspace.assets.title.audio": "การ์ดเครื่องเล่นเสียง",
+  "workspace.assets.title.map": "การ์ดแผนที่ดินแดน",
+  "workspace.assets.title.population": "การ์ดประชากร",
+  "workspace.assets.title.governance": "การ์ดการปกครอง",
+  "workspace.assets.title.ledger": "การ์ดบัญชีเศรษฐกิจ",
+  "workspace.assets.title.military": "การ์ดโครงสร้างกองทัพ",
+  "workspace.assets.title.constitution": "การ์ดรัฐธรรมนูญ",
+  "workspace.assets.title.timeline": "การ์ดเส้นเวลา",
+  "workspace.assets.title.translation": "การ์ดการแปล",
+  "workspace.assets.title.gallery": "การ์ดแกลเลอรี",
+  "workspace.assets.type.identity": "อัตลักษณ์",
+  "workspace.assets.type.media": "สื่อ",
+  "workspace.assets.type.geography": "ภูมิศาสตร์",
+  "workspace.assets.type.demographics": "ประชากรศาสตร์",
+  "workspace.assets.type.politics": "การเมือง",
+  "workspace.assets.type.economy": "เศรษฐกิจ",
+  "workspace.assets.type.defense": "การป้องกัน",
+  "workspace.assets.type.legal": "กฎหมาย",
+  "workspace.assets.type.history": "ประวัติศาสตร์",
+  "workspace.assets.type.localization": "การแปลเป็นภาษาท้องถิ่น"
+});
+
+// v0.2.54.2 i18n 补：资产列表 demo 条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('vi', {
+  "workspace.assets.title.flag": "Thẻ Quốc kỳ",
+  "workspace.assets.title.emblem": "Thẻ Quốc huy",
+  "workspace.assets.title.audio": "Thẻ Trình phát âm thanh",
+  "workspace.assets.title.map": "Thẻ Bản đồ lãnh thổ",
+  "workspace.assets.title.population": "Thẻ Dân số",
+  "workspace.assets.title.governance": "Thẻ Quản trị",
+  "workspace.assets.title.ledger": "Thẻ Sổ cái kinh tế",
+  "workspace.assets.title.military": "Thẻ Biên chế quân đội",
+  "workspace.assets.title.constitution": "Thẻ Hiến pháp",
+  "workspace.assets.title.timeline": "Thẻ Dòng thời gian",
+  "workspace.assets.title.translation": "Thẻ Dịch thuật",
+  "workspace.assets.title.gallery": "Thẻ Thư viện ảnh",
+  "workspace.assets.type.identity": "Bản sắc",
+  "workspace.assets.type.media": "Truyền thông",
+  "workspace.assets.type.geography": "Địa lý",
+  "workspace.assets.type.demographics": "Nhân khẩu học",
+  "workspace.assets.type.politics": "Chính trị",
+  "workspace.assets.type.economy": "Kinh tế",
+  "workspace.assets.type.defense": "Quốc phòng",
+  "workspace.assets.type.legal": "Pháp lý",
+  "workspace.assets.type.history": "Lịch sử",
+  "workspace.assets.type.localization": "Bản địa hóa"
+});
+
+// v0.2.54.2 i18n 补：资产列表 demo 条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('id', {
+  "workspace.assets.title.flag": "Kartu Bendera Nasional",
+  "workspace.assets.title.emblem": "Kartu Lambang",
+  "workspace.assets.title.audio": "Kartu Pemutar Audio",
+  "workspace.assets.title.map": "Kartu Peta Wilayah",
+  "workspace.assets.title.population": "Kartu Populasi",
+  "workspace.assets.title.governance": "Kartu Pemerintahan",
+  "workspace.assets.title.ledger": "Kartu Buku Besar Ekonomi",
+  "workspace.assets.title.military": "Kartu Susunan Militer",
+  "workspace.assets.title.constitution": "Kartu Konstitusi",
+  "workspace.assets.title.timeline": "Kartu Linimasa",
+  "workspace.assets.title.translation": "Kartu Terjemahan",
+  "workspace.assets.title.gallery": "Kartu Galeri",
+  "workspace.assets.type.identity": "Identitas",
+  "workspace.assets.type.media": "Media",
+  "workspace.assets.type.geography": "Geografi",
+  "workspace.assets.type.demographics": "Demografi",
+  "workspace.assets.type.politics": "Politik",
+  "workspace.assets.type.economy": "Ekonomi",
+  "workspace.assets.type.defense": "Pertahanan",
+  "workspace.assets.type.legal": "Hukum",
+  "workspace.assets.type.history": "Sejarah",
+  "workspace.assets.type.localization": "Lokalisasi"
+});
+
+// v0.2.54.2 i18n 补：资产列表 demo 条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('fr', {
+  "workspace.assets.title.flag": "Carte du drapeau national",
+  "workspace.assets.title.emblem": "Carte de l'emblème",
+  "workspace.assets.title.audio": "Carte de lecteur audio",
+  "workspace.assets.title.map": "Carte territoriale",
+  "workspace.assets.title.population": "Carte de la population",
+  "workspace.assets.title.governance": "Carte de gouvernance",
+  "workspace.assets.title.ledger": "Carte du registre économique",
+  "workspace.assets.title.military": "Carte de l'ordre de bataille",
+  "workspace.assets.title.constitution": "Carte de la constitution",
+  "workspace.assets.title.timeline": "Carte chronologique",
+  "workspace.assets.title.translation": "Carte de traduction",
+  "workspace.assets.title.gallery": "Carte galerie",
+  "workspace.assets.type.identity": "Identité",
+  "workspace.assets.type.media": "Médias",
+  "workspace.assets.type.geography": "Géographie",
+  "workspace.assets.type.demographics": "Démographie",
+  "workspace.assets.type.politics": "Politique",
+  "workspace.assets.type.economy": "Économie",
+  "workspace.assets.type.defense": "Défense",
+  "workspace.assets.type.legal": "Droit",
+  "workspace.assets.type.history": "Histoire",
+  "workspace.assets.type.localization": "Localisation"
+});
+
+// v0.2.54.2 i18n 补：资产列表 demo 条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('es', {
+  "workspace.assets.title.flag": "Tarjeta de bandera nacional",
+  "workspace.assets.title.emblem": "Tarjeta de emblema",
+  "workspace.assets.title.audio": "Tarjeta de reproductor de audio",
+  "workspace.assets.title.map": "Tarjeta de mapa territorial",
+  "workspace.assets.title.population": "Tarjeta de población",
+  "workspace.assets.title.governance": "Tarjeta de gobernanza",
+  "workspace.assets.title.ledger": "Tarjeta de registro económico",
+  "workspace.assets.title.military": "Tarjeta de orden de batalla",
+  "workspace.assets.title.constitution": "Tarjeta de constitución",
+  "workspace.assets.title.timeline": "Tarjeta de línea de tiempo",
+  "workspace.assets.title.translation": "Tarjeta de traducción",
+  "workspace.assets.title.gallery": "Tarjeta de galería",
+  "workspace.assets.type.identity": "Identidad",
+  "workspace.assets.type.media": "Medios",
+  "workspace.assets.type.geography": "Geografía",
+  "workspace.assets.type.demographics": "Demografía",
+  "workspace.assets.type.politics": "Política",
+  "workspace.assets.type.economy": "Economía",
+  "workspace.assets.type.defense": "Defensa",
+  "workspace.assets.type.legal": "Derecho",
+  "workspace.assets.type.history": "Historia",
+  "workspace.assets.type.localization": "Localización"
+});
+
+// v0.2.54.2 i18n 补：资产列表 demo 条目（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('pt', {
+  "workspace.assets.title.flag": "Cartão da bandeira nacional",
+  "workspace.assets.title.emblem": "Cartão do emblema",
+  "workspace.assets.title.audio": "Cartão do reprodutor de áudio",
+  "workspace.assets.title.map": "Cartão do mapa territorial",
+  "workspace.assets.title.population": "Cartão de população",
+  "workspace.assets.title.governance": "Cartão de governança",
+  "workspace.assets.title.ledger": "Cartão do registro econômico",
+  "workspace.assets.title.military": "Cartão da ordem de batalha",
+  "workspace.assets.title.constitution": "Cartão da constituição",
+  "workspace.assets.title.timeline": "Cartão da linha do tempo",
+  "workspace.assets.title.translation": "Cartão de tradução",
+  "workspace.assets.title.gallery": "Cartão de galeria",
+  "workspace.assets.type.identity": "Identidade",
+  "workspace.assets.type.media": "Mídia",
+  "workspace.assets.type.geography": "Geografia",
+  "workspace.assets.type.demographics": "Demografia",
+  "workspace.assets.type.politics": "Política",
+  "workspace.assets.type.economy": "Economia",
+  "workspace.assets.type.defense": "Defesa",
+  "workspace.assets.type.legal": "Direito",
+  "workspace.assets.type.history": "História",
+  "workspace.assets.type.localization": "Localização"
+});
 /* __ZH_HANT_AUTO__ — v0.2.54.0 zh-Hant 由 OpenCC cn→tw 自动生成（勿手改，重跑本脚本再生成） */
 window.MN_I18N.add('zh-Hant', {
   "ws.ph.filterAssets": "篩選資產...",
@@ -329,5 +615,27 @@ window.MN_I18N.add('zh-Hant', {
   "ws.historyTitle": "版本歷史",
   "ws.tagsTitle": "管理標籤",
   "ws.ph.tags": "搜索或創建標籤...",
-  "ws.apply": "應用"
+  "ws.apply": "應用",
+  "workspace.assets.title.flag": "國旗卡",
+  "workspace.assets.title.emblem": "國徽卡",
+  "workspace.assets.title.audio": "音頻播放器卡",
+  "workspace.assets.title.map": "領土地圖卡",
+  "workspace.assets.title.population": "人口卡",
+  "workspace.assets.title.governance": "治理卡",
+  "workspace.assets.title.ledger": "經濟臺賬卡",
+  "workspace.assets.title.military": "軍隊編制卡",
+  "workspace.assets.title.constitution": "憲法卡",
+  "workspace.assets.title.timeline": "時間線卡",
+  "workspace.assets.title.translation": "翻譯卡",
+  "workspace.assets.title.gallery": "圖庫卡",
+  "workspace.assets.type.identity": "身份",
+  "workspace.assets.type.media": "媒體",
+  "workspace.assets.type.geography": "地理",
+  "workspace.assets.type.demographics": "人口統計",
+  "workspace.assets.type.politics": "政治",
+  "workspace.assets.type.economy": "經濟",
+  "workspace.assets.type.defense": "國防",
+  "workspace.assets.type.legal": "法律",
+  "workspace.assets.type.history": "歷史",
+  "workspace.assets.type.localization": "本地化"
 });

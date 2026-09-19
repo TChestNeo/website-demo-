@@ -5,9 +5,9 @@
  * 货币不译：$11.99 在 data-slati-price span 内不进词典）。
  * 页面原文为英文——en 值逐字节=页面原文；zh 值=地道中文翻译（本页无电池断言
  * 渲染文本，主会话补充口径 v0.2.54.0；zh-Hant 由 OpenCC 从 zh 生成）。
- * 演示/示例数据永不译（国家名 Republic of Etheria 等、milestones 的
- * title/desc/time、分类名 Governance 等、timeBlocks '00-04' 等、数值），
- * 均无对应键——JS 渲染处也不做 T()。
+ * 演示数据豁免：国家名（milestones 的 title、排行榜名）与 timeBlocks
+ * '00-04' 等、数值永不译；v0.2.54.2 起分类名（Governance 等）与
+ * milestones 的 desc/time 已 T() 化（activity.cat.* / activity.ms.* 键）。
  * 术语复用 index.i18n.js 同源文案（premiumUnlock / premiumFeat.* / metrics.activeNations）。
  */
 window.MN_I18N
@@ -535,6 +535,215 @@ window.MN_I18N
     'activity.heatmap.day.sat': 'Sáb',
     'activity.heatmap.day.sun': 'Dom'
   });
+
+// v0.2.54.2 i18n 补：分类名 + 里程碑 desc/time（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('zh', {
+  "activity.cat.governance": "治理",
+  "activity.cat.economy": "经济",
+  "activity.cat.culture": "文化",
+  "activity.cat.territory": "领土",
+  "activity.cat.diplomacy": "外交",
+  "activity.cat.technology": "科技",
+  "activity.ms.desc.anniv2": "建国 2 周年",
+  "activity.ms.desc.articles500": "发布文章突破 500 篇",
+  "activity.ms.desc.pop10k": "人口突破 10,000",
+  "activity.ms.desc.treaty50": "签署第 50 项双边条约",
+  "activity.ms.desc.score5k": "活跃度突破 5,000",
+  "activity.ms.time.t2d": "2 天前",
+  "activity.ms.time.t3d": "3 天前",
+  "activity.ms.time.t5d": "5 天前",
+  "activity.ms.time.t1w": "1 周前"
+});
+
+// v0.2.54.2 i18n 补：分类名 + 里程碑 desc/time（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('en', {
+  "activity.cat.governance": "Governance",
+  "activity.cat.economy": "Economy",
+  "activity.cat.culture": "Culture",
+  "activity.cat.territory": "Territory",
+  "activity.cat.diplomacy": "Diplomacy",
+  "activity.cat.technology": "Technology",
+  "activity.ms.desc.anniv2": "2-year founding anniversary",
+  "activity.ms.desc.articles500": "Reached 500 published articles",
+  "activity.ms.desc.pop10k": "Population surpassed 10,000",
+  "activity.ms.desc.treaty50": "50th bilateral treaty signed",
+  "activity.ms.desc.score5k": "Activity score surpassed 5,000",
+  "activity.ms.time.t2d": "2 days ago",
+  "activity.ms.time.t3d": "3 days ago",
+  "activity.ms.time.t5d": "5 days ago",
+  "activity.ms.time.t1w": "1 week ago"
+});
+
+// v0.2.54.2 i18n 补：分类名 + 里程碑 desc/time（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('de', {
+  "activity.cat.governance": "Verwaltung",
+  "activity.cat.economy": "Wirtschaft",
+  "activity.cat.culture": "Kultur",
+  "activity.cat.territory": "Territorium",
+  "activity.cat.diplomacy": "Diplomatie",
+  "activity.cat.technology": "Technologie",
+  "activity.ms.desc.anniv2": "2-jähriges Gründungsjubiläum",
+  "activity.ms.desc.articles500": "500 veröffentlichte Artikel erreicht",
+  "activity.ms.desc.pop10k": "Bevölkerung überstieg 10.000",
+  "activity.ms.desc.treaty50": "50. bilaterales Abkommen unterzeichnet",
+  "activity.ms.desc.score5k": "Aktivitätswert überstieg 5.000",
+  "activity.ms.time.t2d": "vor 2 Tagen",
+  "activity.ms.time.t3d": "vor 3 Tagen",
+  "activity.ms.time.t5d": "vor 5 Tagen",
+  "activity.ms.time.t1w": "vor 1 Woche"
+});
+
+// v0.2.54.2 i18n 补：分类名 + 里程碑 desc/time（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('ru', {
+  "activity.cat.governance": "Управление",
+  "activity.cat.economy": "Экономика",
+  "activity.cat.culture": "Культура",
+  "activity.cat.territory": "Территория",
+  "activity.cat.diplomacy": "Дипломатия",
+  "activity.cat.technology": "Технологии",
+  "activity.ms.desc.anniv2": "2-я годовщина основания",
+  "activity.ms.desc.articles500": "Достигнуто 500 опубликованных статей",
+  "activity.ms.desc.pop10k": "Население превысило 10 000",
+  "activity.ms.desc.treaty50": "Подписан 50-й двусторонний договор",
+  "activity.ms.desc.score5k": "Показатель активности превысил 5 000",
+  "activity.ms.time.t2d": "2 дня назад",
+  "activity.ms.time.t3d": "3 дня назад",
+  "activity.ms.time.t5d": "5 дней назад",
+  "activity.ms.time.t1w": "1 неделю назад"
+});
+
+// v0.2.54.2 i18n 补：分类名 + 里程碑 desc/time（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('ms', {
+  "activity.cat.governance": "Tadbir Urus",
+  "activity.cat.economy": "Ekonomi",
+  "activity.cat.culture": "Budaya",
+  "activity.cat.territory": "Wilayah",
+  "activity.cat.diplomacy": "Diplomasi",
+  "activity.cat.technology": "Teknologi",
+  "activity.ms.desc.anniv2": "Ulang tahun penubuhan ke-2",
+  "activity.ms.desc.articles500": "Mencapai 500 artikel diterbitkan",
+  "activity.ms.desc.pop10k": "Penduduk melebihi 10,000",
+  "activity.ms.desc.treaty50": "Perjanjian dua hala ke-50 ditandatangani",
+  "activity.ms.desc.score5k": "Skor aktiviti melebihi 5,000",
+  "activity.ms.time.t2d": "2 hari lalu",
+  "activity.ms.time.t3d": "3 hari lalu",
+  "activity.ms.time.t5d": "5 hari lalu",
+  "activity.ms.time.t1w": "1 minggu lalu"
+});
+
+// v0.2.54.2 i18n 补：分类名 + 里程碑 desc/time（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('th', {
+  "activity.cat.governance": "การปกครอง",
+  "activity.cat.economy": "เศรษฐกิจ",
+  "activity.cat.culture": "วัฒนธรรม",
+  "activity.cat.territory": "ดินแดน",
+  "activity.cat.diplomacy": "การทูต",
+  "activity.cat.technology": "เทคโนโลยี",
+  "activity.ms.desc.anniv2": "ครบรอบ 2 ปีแห่งการก่อตั้ง",
+  "activity.ms.desc.articles500": "บทความที่เผยแพร่ครบ 500 บทความ",
+  "activity.ms.desc.pop10k": "ประชากรเกิน 10,000 คน",
+  "activity.ms.desc.treaty50": "ลงนามสนธิสัญญาทวิภาคีฉบับที่ 50",
+  "activity.ms.desc.score5k": "คะแนนกิจกรรมเกิน 5,000",
+  "activity.ms.time.t2d": "2 วันที่แล้ว",
+  "activity.ms.time.t3d": "3 วันที่แล้ว",
+  "activity.ms.time.t5d": "5 วันที่แล้ว",
+  "activity.ms.time.t1w": "1 สัปดาห์ที่แล้ว"
+});
+
+// v0.2.54.2 i18n 补：分类名 + 里程碑 desc/time（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('vi', {
+  "activity.cat.governance": "Quản trị",
+  "activity.cat.economy": "Kinh tế",
+  "activity.cat.culture": "Văn hóa",
+  "activity.cat.territory": "Lãnh thổ",
+  "activity.cat.diplomacy": "Ngoại giao",
+  "activity.cat.technology": "Công nghệ",
+  "activity.ms.desc.anniv2": "Kỷ niệm 2 năm thành lập",
+  "activity.ms.desc.articles500": "Đạt 500 bài viết đã xuất bản",
+  "activity.ms.desc.pop10k": "Dân số vượt 10.000",
+  "activity.ms.desc.treaty50": "Ký kết hiệp ước song phương thứ 50",
+  "activity.ms.desc.score5k": "Điểm hoạt động vượt 5.000",
+  "activity.ms.time.t2d": "2 ngày trước",
+  "activity.ms.time.t3d": "3 ngày trước",
+  "activity.ms.time.t5d": "5 ngày trước",
+  "activity.ms.time.t1w": "1 tuần trước"
+});
+
+// v0.2.54.2 i18n 补：分类名 + 里程碑 desc/time（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('id', {
+  "activity.cat.governance": "Pemerintahan",
+  "activity.cat.economy": "Ekonomi",
+  "activity.cat.culture": "Budaya",
+  "activity.cat.territory": "Wilayah",
+  "activity.cat.diplomacy": "Diplomasi",
+  "activity.cat.technology": "Teknologi",
+  "activity.ms.desc.anniv2": "Ulang tahun ke-2 pendirian",
+  "activity.ms.desc.articles500": "Mencapai 500 artikel diterbitkan",
+  "activity.ms.desc.pop10k": "Populasi melampaui 10.000",
+  "activity.ms.desc.treaty50": "Perjanjian bilateral ke-50 ditandatangani",
+  "activity.ms.desc.score5k": "Skor aktivitas melampaui 5.000",
+  "activity.ms.time.t2d": "2 hari lalu",
+  "activity.ms.time.t3d": "3 hari lalu",
+  "activity.ms.time.t5d": "5 hari lalu",
+  "activity.ms.time.t1w": "1 minggu lalu"
+});
+
+// v0.2.54.2 i18n 补：分类名 + 里程碑 desc/time（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('fr', {
+  "activity.cat.governance": "Gouvernance",
+  "activity.cat.economy": "Économie",
+  "activity.cat.culture": "Culture",
+  "activity.cat.territory": "Territoire",
+  "activity.cat.diplomacy": "Diplomatie",
+  "activity.cat.technology": "Technologie",
+  "activity.ms.desc.anniv2": "2e anniversaire de fondation",
+  "activity.ms.desc.articles500": "500 articles publiés atteints",
+  "activity.ms.desc.pop10k": "Population dépassant 10 000",
+  "activity.ms.desc.treaty50": "50e traité bilatéral signé",
+  "activity.ms.desc.score5k": "Score d'activité dépassant 5 000",
+  "activity.ms.time.t2d": "il y a 2 jours",
+  "activity.ms.time.t3d": "il y a 3 jours",
+  "activity.ms.time.t5d": "il y a 5 jours",
+  "activity.ms.time.t1w": "il y a 1 semaine"
+});
+
+// v0.2.54.2 i18n 补：分类名 + 里程碑 desc/time（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('es', {
+  "activity.cat.governance": "Gobernanza",
+  "activity.cat.economy": "Economía",
+  "activity.cat.culture": "Cultura",
+  "activity.cat.territory": "Territorio",
+  "activity.cat.diplomacy": "Diplomacia",
+  "activity.cat.technology": "Tecnología",
+  "activity.ms.desc.anniv2": "2.º aniversario de fundación",
+  "activity.ms.desc.articles500": "Alcanzó 500 artículos publicados",
+  "activity.ms.desc.pop10k": "Población superó los 10.000",
+  "activity.ms.desc.treaty50": "Firmado el 50.º tratado bilateral",
+  "activity.ms.desc.score5k": "Puntaje de actividad superó 5.000",
+  "activity.ms.time.t2d": "hace 2 días",
+  "activity.ms.time.t3d": "hace 3 días",
+  "activity.ms.time.t5d": "hace 5 días",
+  "activity.ms.time.t1w": "hace 1 semana"
+});
+
+// v0.2.54.2 i18n 补：分类名 + 里程碑 desc/time（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('pt', {
+  "activity.cat.governance": "Governança",
+  "activity.cat.economy": "Economia",
+  "activity.cat.culture": "Cultura",
+  "activity.cat.territory": "Território",
+  "activity.cat.diplomacy": "Diplomacia",
+  "activity.cat.technology": "Tecnologia",
+  "activity.ms.desc.anniv2": "2.º aniversário de fundação",
+  "activity.ms.desc.articles500": "Atingiu 500 artigos publicados",
+  "activity.ms.desc.pop10k": "População ultrapassou 10.000",
+  "activity.ms.desc.treaty50": "50.º tratado bilateral assinado",
+  "activity.ms.desc.score5k": "Pontuação de atividade ultrapassou 5.000",
+  "activity.ms.time.t2d": "há 2 dias",
+  "activity.ms.time.t3d": "há 3 dias",
+  "activity.ms.time.t5d": "há 5 dias",
+  "activity.ms.time.t1w": "há 1 semana"
+});
 /* __ZH_HANT_AUTO__ — v0.2.54.0 zh-Hant 由 OpenCC cn→tw 自动生成（勿手改，重跑本脚本再生成） */
 window.MN_I18N.add('zh-Hant', {
   "activity.title": "活躍數據分析",
@@ -581,5 +790,20 @@ window.MN_I18N.add('zh-Hant', {
   "activity.heatmap.day.thu": "週四",
   "activity.heatmap.day.fri": "週五",
   "activity.heatmap.day.sat": "週六",
-  "activity.heatmap.day.sun": "週日"
+  "activity.heatmap.day.sun": "週日",
+  "activity.cat.governance": "治理",
+  "activity.cat.economy": "經濟",
+  "activity.cat.culture": "文化",
+  "activity.cat.territory": "領土",
+  "activity.cat.diplomacy": "外交",
+  "activity.cat.technology": "科技",
+  "activity.ms.desc.anniv2": "建國 2 週年",
+  "activity.ms.desc.articles500": "發佈文章突破 500 篇",
+  "activity.ms.desc.pop10k": "人口突破 10,000",
+  "activity.ms.desc.treaty50": "簽署第 50 項雙邊條約",
+  "activity.ms.desc.score5k": "活躍度突破 5,000",
+  "activity.ms.time.t2d": "2 天前",
+  "activity.ms.time.t3d": "3 天前",
+  "activity.ms.time.t5d": "5 天前",
+  "activity.ms.time.t1w": "1 周前"
 });

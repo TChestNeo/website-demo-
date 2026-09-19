@@ -1029,7 +1029,20 @@ window.MN_SITE = window.MN_SITE || {};
 //   限定，欧洲时区留给上方已命中的非欧分支/下方 EU_TZ 兜底；本地探针 de-DE/Berlin→eur + 6 场景零回归 +
 //   premium-multi 本地 106/106；电池锚 54.0→54.1（13 电池 15 处）
 //   （rev 00260-2jk）
-window.MN_SITE_VERSION = 'v0.2.54.1';
+// v0.2.54.2 = i18n 验收修复（补丁位 1→2·纯修复轮；2026-09-20）——用户「为什么在首页和MicroNationary 订阅卡片，和公告的部分还有其他部分都没有被翻译？」：
+//   两重根因：①B1 轮「zh 值逐字节=原文」口径下 index/premium/world-created/about/admin 等页 HTML 兜底本就是英文，
+//   zh 字典值照搬英文 → 中文浏览器自动选 zh 页面仍英文（index 57%→100%、premium 55%→97%、world-created 58%→100%、
+//   about 52 键、admin nav 15 键、全站 93%→97%）；②JS demo 数据数组硬编码英文 0% T() 化（任何语言都不翻译）：
+//   index 活动流 4 条 + 公告 10 条 key/En 函数化 + renderActivity/renderAnn/renderMetrics/renderMyWorlds +
+//   window.__mnI18nRerender 钩子（i18n.js apply() 触发 listeners，首屏与切语言都重渲染——页面主 script 先于
+//   i18n.js 执行的惰性 T() 首屏 fallback 解法）；同模式修复 overview recentContribs、community-hub feedData、
+//   messages 公告/好友/群组 demo、activity categories/milestones、following feed/discover/sidebar、workspace assets；
+//   新键 29+8+15+... × 11 语言手写 + zh-Hant OpenCC 重跑（幂等管线：哨兵段剥离→stub 捕获全部 add('zh')→cn→tw 转换→追加）；
+//   术语保留清单执行（M.NationWorld/MicroNationary/FluidCanvas/Slati Studio/SlatiControl/人名/GDP/USD/GIF/API/OC/
+//   代码标识符/althistory-en 英文优先类型全英文步骤=设计豁免）；ethereal/inline-css/entrypoint 零改动；
+//   后端零改动（user_version 27/health 59 表不变）；FC v10.28.36.1 零改动；零草稿字段（v 保持 9）
+//   （rev 00261-5nw）
+window.MN_SITE_VERSION = 'v0.2.54.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

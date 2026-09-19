@@ -16,7 +16,7 @@ window.MN_I18N
   .add('zh', {
     // ── 引擎通用 ──
     'wwz.selectEmpty': '请选择…',
-    'wwz.stepPrefix': 'Step ',
+    'wwz.stepPrefix': '第 ',
     'wwz.btnSubmit': '提交创建',
     'wwz.btnNextPrefix': '下一步：',
     'wwz.btnBackTypes': '返回类型选择',
@@ -491,7 +491,7 @@ window.MN_I18N
   .add('en', {
     // ── 引擎通用 ──
     'wwz.selectEmpty': 'Please select…',
-    'wwz.stepPrefix': 'Step ',
+    'wwz.stepPrefix': '第 ',
     'wwz.btnSubmit': 'Submit',
     'wwz.btnNextPrefix': 'Next: ',
     'wwz.btnBackTypes': 'Back to Types',
@@ -5241,7 +5241,7 @@ window.MN_I18N
 /* __ZH_HANT_AUTO__ — v0.2.54.0 zh-Hant 由 OpenCC cn→tw 自动生成（勿手改，重跑本脚本再生成） */
 window.MN_I18N.add('zh-Hant', {
   "wwz.selectEmpty": "請選擇…",
-  "wwz.stepPrefix": "Step ",
+  "wwz.stepPrefix": "第 ",
   "wwz.btnSubmit": "提交創建",
   "wwz.btnNextPrefix": "下一步：",
   "wwz.btnBackTypes": "返回類型選擇",

@@ -109,7 +109,7 @@ console.log('═══ S. 静态巡检 ═══');
   }
   ok('S8 i18n.js LANGS 12 码序列 zh→zh-Hant→en→de→ru→ms→th→vi→id→fr→es→pt', seqOk);
   const sconf = read('docs/assets/js/site-config.js');
-  ok('S9 site-config 版本 = v0.2.54.0', sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.54.1';") !== -1);
+  ok('S9 site-config 版本 = v0.2.54.2', sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.54.2';") !== -1);
   const common = fs.readFileSync(path.join(I18N_DIR, 'common.i18n.js'), 'utf8');
   ok('S10 common.i18n.js 键族齐（sidebar/settings/report/aichat 从 help 移入/verify 从 badge 共享）',
     ["'sidebar.", "'settings.", "'report.", "'aichat.", "'verify."].every(k => common.indexOf(k) !== -1));
@@ -309,6 +309,50 @@ async function launchChrome(lang, injectSession, suffix) {
   } catch (e) {
     fail++;
     console.error('  ❌ C 段异常：', e && e.message);
+  }
+
+  // ═══ D. Chrome zh-CN：index 页动态区双语断言（v0.2.54.2 用户「首页/公告/订阅卡没翻译」验收）═══
+  try {
+    console.log('═══ D. index 动态区双语（活动流/公告/订阅卡）═══');
+    const D = await launchChrome('zh-CN', false, 'D');
+    const cdp = D.cdp;
+    await cdp.send('Page.navigate', { url: BASE + '/index.html' });
+    await waitFor(cdp, 'document.documentElement.getAttribute("lang") === "zh" && !!document.getElementById("activityFeed") && document.getElementById("activityFeed").innerText.length > 10', 15000, 'index zh 动态区就绪');
+    const zh = await cdp.evalJs(`(function(){
+      return {
+        act:document.getElementById('activityFeed').innerText,
+        ann:document.getElementById('dashAnnouncements').innerText,
+        feats:[].slice.call(document.querySelectorAll('[data-i18n^="index.premiumFeat"]')).map(function(e){return e.textContent}),
+        annBtn:document.querySelector('[data-i18n="index.viewAllAnnouncements"]').textContent,
+        search:document.querySelector('[data-i18n-placeholder="index.searchPh"]').placeholder
+      };
+    })()`);
+    ok('D1 zh 活动流已翻译（以太共和国 + 2 小时前）', zh.act.indexOf('以太共和国') !== -1 && zh.act.indexOf('2 小时前') !== -1, zh.act.slice(0, 80));
+    ok('D2 zh 公告已翻译（公开测试启动 + 官方）', zh.ann.indexOf('公开测试启动') !== -1 && zh.ann.indexOf('官方') !== -1, zh.ann.slice(0, 80));
+    ok('D3 zh 订阅卡特性已翻译（高级分析）', zh.feats.indexOf('高级分析') !== -1, JSON.stringify(zh.feats));
+    ok('D4 zh 公告按钮/搜索框已翻译（查看全部公告/搜索世界、话题…）',
+      zh.annBtn === '查看全部公告' && zh.search === '搜索世界、话题…', zh.annBtn + '/' + zh.search);
+    await cdp.evalJs('MN_I18N.setLang("de")');
+    await waitFor(cdp, 'document.documentElement.getAttribute("lang") === "de"', 5000, '切 de');
+    const de = await cdp.evalJs(`(function(){
+      return {
+        act:document.getElementById('activityFeed').innerText,
+        ann:document.getElementById('dashAnnouncements').innerText,
+        feats:[].slice.call(document.querySelectorAll('[data-i18n^="index.premiumFeat"]')).map(function(e){return e.textContent})
+      };
+    })()`);
+    ok('D5 de 活动流已翻译（Republik Etheria + vor 2 Stunden）',
+      de.act.indexOf('Republik Etheria') !== -1 && de.act.indexOf('vor 2 Stunden') !== -1, de.act.slice(0, 80));
+    ok('D6 de 公告已翻译（Beta-Start + offiziell）', de.ann.indexOf('Beta-Start') !== -1 && de.ann.indexOf('offiziell') !== -1, de.ann.slice(0, 80));
+    ok('D7 de 订阅卡特性已翻译（Erweiterte Analysen）', de.feats.indexOf('Erweiterte Analysen') !== -1, JSON.stringify(de.feats));
+    await cdp.evalJs('MN_I18N.setLang("zh")');
+    await waitFor(cdp, 'document.documentElement.getAttribute("lang") === "zh"', 5000, '切回 zh');
+    const zh2 = await cdp.evalJs(`document.getElementById('activityFeed').innerText`);
+    ok('D8 切回 zh 重渲染恢复中文（以太共和国）', zh2.indexOf('以太共和国') !== -1, zh2.slice(0, 80));
+    cdp.close(); D.cleanup();
+  } catch (e) {
+    fail++;
+    console.error('  ❌ D 段异常：', e && e.message);
   }
 
   server.close();

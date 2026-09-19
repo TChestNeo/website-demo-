@@ -2558,20 +2558,22 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   var topics = SlatiDB.getTopics();
 
   // Feed content per tab
+  // v0.2.54.2 i18n：demo 卡文案 T() 化（badge/title/desc/time → key/En 对，键前缀 communityHub.feed.*；
+  // r/ 话题名（话题名不译）与作者人名保持原文；云帖（cloudPostItem）仍走已译字符串）
   var feedData = {
     recommend: [
-      { icon: 'person', badge: 'Sovereign Log', badgeClass: 'badge-primary', author: 'Marcus Vane', title: 'The Floating District Plans', desc: 'A comprehensive proposal for modular aquatic urbanism in micronation territories. Phase 1 blueprints attached.', time: '3 hours ago', likes: 47, comments: 12, views: 312 },
-      { icon: 'smart_display', badge: 'Video', badgeClass: 'badge-secondary', author: 'Studio Prime', title: 'Building Digital Embassies', desc: 'A visual guide to establishing virtual diplomatic missions across the M.NationWorld network.', time: '5 hours ago', likes: 128, comments: 34, views: 892 },
-      { icon: 'event', badge: 'Event', badgeClass: 'badge-warning', author: 'Council Admin', title: 'Governance Summit 2026', desc: 'Annual gathering of micronation leaders. Keynote: Direct Democracy at Scale.', time: 'Starts Jul 15', likes: 256, comments: 89, views: 1204 },
+      { icon: 'person', badgeKey: 'sovereignLog', badgeEn: 'Sovereign Log', badgeClass: 'badge-primary', author: 'Marcus Vane', titleKey: 'floatingDistrict', titleEn: 'The Floating District Plans', descKey: 'floatingDistrictDesc', descEn: 'A comprehensive proposal for modular aquatic urbanism in micronation territories. Phase 1 blueprints attached.', timeKey: 't3h', timeEn: '3 hours ago', likes: 47, comments: 12, views: 312 },
+      { icon: 'smart_display', badgeKey: 'video', badgeEn: 'Video', badgeClass: 'badge-secondary', author: 'Studio Prime', titleKey: 'digitalEmbassies', titleEn: 'Building Digital Embassies', descKey: 'digitalEmbassiesDesc', descEn: 'A visual guide to establishing virtual diplomatic missions across the M.NationWorld network.', timeKey: 't5h', timeEn: '5 hours ago', likes: 128, comments: 34, views: 892 },
+      { icon: 'event', badgeKey: 'event', badgeEn: 'Event', badgeClass: 'badge-warning', author: 'Council Admin', titleKey: 'govSummit', titleEn: 'Governance Summit 2026', descKey: 'govSummitDesc', descEn: 'Annual gathering of micronation leaders. Keynote: Direct Democracy at Scale.', timeKey: 'startsJul15', timeEn: 'Starts Jul 15', likes: 256, comments: 89, views: 1204 },
     ],
     following: [
-      { icon: 'shield', badge: 'Sovereign Log', badgeClass: 'badge-primary', author: 'Kingdom of Aethelgard', title: 'Royal Decree: Renewable Energy Initiative', desc: 'Mandating 80% renewable energy across all territories by 2030.', time: '1 hour ago', likes: 92, comments: 18, views: 421 },
-      { icon: 'edit_note', badge: 'Wiki Revision', badgeClass: 'badge-success', author: 'Neo-Venice Archive', title: 'Lore Update: Founding of Aqua Centro', desc: 'Revised historical account with new archival documents.', time: '4 hours ago', likes: 34, comments: 7, views: 187 },
+      { icon: 'shield', badgeKey: 'sovereignLog', badgeEn: 'Sovereign Log', badgeClass: 'badge-primary', author: 'Kingdom of Aethelgard', titleKey: 'renewableDecree', titleEn: 'Royal Decree: Renewable Energy Initiative', descKey: 'renewableDecreeDesc', descEn: 'Mandating 80% renewable energy across all territories by 2030.', timeKey: 't1h', timeEn: '1 hour ago', likes: 92, comments: 18, views: 421 },
+      { icon: 'edit_note', badgeKey: 'wikiRevision', badgeEn: 'Wiki Revision', badgeClass: 'badge-success', author: 'Neo-Venice Archive', titleKey: 'aquaCentro', titleEn: 'Lore Update: Founding of Aqua Centro', descKey: 'aquaCentroDesc', descEn: 'Revised historical account with new archival documents.', timeKey: 't4h', timeEn: '4 hours ago', likes: 34, comments: 7, views: 187 },
     ],
     topic: [
-      { icon: 'forum', badge: 'r/DigitalSovereignty', badgeClass: 'badge-primary', author: '', title: 'Standards for Digital-First Micronations', desc: '1,240 members · Active discussions on blockchain governance and digital identity protocols.', time: 'Trending', likes: 1240, comments: 89, views: 5400 },
-      { icon: 'forum', badge: 'r/MicroNationDesign', badgeClass: 'badge-secondary', author: '', title: 'Aesthetics & Architecture for New Nations', desc: '2,100 members · Flag design, capital planning, and cultural branding.', time: 'Popular', likes: 2100, comments: 156, views: 8100 },
-      { icon: 'forum', badge: 'r/GovernanceDesign', badgeClass: 'badge-success', author: '', title: 'Experimental Political Systems', desc: '3,400 members · Proposing and stress-testing novel constitutions.', time: 'Hot', likes: 3400, comments: 234, views: 12000 },
+      { icon: 'forum', badge: 'r/DigitalSovereignty', badgeClass: 'badge-primary', author: '', titleKey: 'standardsDigital', titleEn: 'Standards for Digital-First Micronations', descKey: 'standardsDigitalDesc', descEn: '1,240 members · Active discussions on blockchain governance and digital identity protocols.', timeKey: 'trending', timeEn: 'Trending', likes: 1240, comments: 89, views: 5400 },
+      { icon: 'forum', badge: 'r/MicroNationDesign', badgeClass: 'badge-secondary', author: '', titleKey: 'aestheticsNew', titleEn: 'Aesthetics & Architecture for New Nations', descKey: 'aestheticsNewDesc', descEn: '2,100 members · Flag design, capital planning, and cultural branding.', timeKey: 'popular', timeEn: 'Popular', likes: 2100, comments: 156, views: 8100 },
+      { icon: 'forum', badge: 'r/GovernanceDesign', badgeClass: 'badge-success', author: '', titleKey: 'experimentalPolitics', titleEn: 'Experimental Political Systems', descKey: 'experimentalPoliticsDesc', descEn: '3,400 members · Proposing and stress-testing novel constitutions.', timeKey: 'hot', timeEn: 'Hot', likes: 3400, comments: 234, views: 12000 },
     ]
   };
 
@@ -2900,14 +2902,14 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
             // v0.2.21.0 作者头像+徽章+名字包锚 → 个人主页（时间/report 留在锚外；演示卡无 authorId 不包）
             (item.cloudId && item.authorId ? '<a class="post-author-link" href="community-profile.html?id=' + encodeURIComponent(item.authorId) + '" title="' + (T('hub.viewProfile') || '查看主页') + '">' : '') +
             (item.avatarUrl ? '<img src="' + escapeHtml(item.avatarUrl) + '" alt="" class="avatar avatar-sm" style="margin-right:6px">' : '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + escapeHtml(item.icon) + '</span>') +
-            '<span class="badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.badge) + '</span>' +
+            '<span class="badge ' + escapeHtml(item.badgeClass) + '">' + escapeHtml(item.badgeKey ? (T('communityHub.feed.badge.' + item.badgeKey) || item.badgeEn) : item.badge) + '</span>' +
             (item.author ? '<span style="font-weight:600;font-size:var(--fs-label-md)">' + escapeHtml(item.author) + '</span>' : '') +
             (item.cloudId && item.authorId ? '</a>' : '') +
-            '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + escapeHtml(item.time) + '</span>' +
+            '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + escapeHtml(item.timeKey ? (T('communityHub.feed.time.' + item.timeKey) || item.timeEn) : item.time) + '</span>' +
             (item.cloudId ? '<button data-cloud-post="' + escapeHtml(item.cloudId) + '" title="' + (T('hub.report') || 'Report') + '" style="border:none;background:transparent;color:var(--color-outline);cursor:pointer;padding:2px;margin-left:4px"><span class="material-symbols-outlined" style="font-size:16px">flag</span></button>' : '') +
           '</div>' +
-          (item.title ? '<h4 style="font-weight:600;font-size:var(--fs-body-md);margin-bottom:4px">' + escapeHtml(item.title) + '</h4>' : '') +
-          (item.desc ? '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + escapeHtml(item.desc) + '</p>' : '') +
+          (item.titleKey || item.title ? '<h4 style="font-weight:600;font-size:var(--fs-body-md);margin-bottom:4px">' + escapeHtml(item.titleKey ? (T('communityHub.feed.title.' + item.titleKey) || item.titleEn) : item.title) + '</h4>' : '') +
+          (item.descKey || item.desc ? '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:8px">' + escapeHtml(item.descKey ? (T('communityHub.feed.desc.' + item.descKey) || item.descEn) : item.desc) + '</p>' : '') +
           (item.repostOfId ? repostEmbeddedHtml(item.repostOf) : '') +
           (item.media && item.media.length ? mediaGridHtml(item.media) : '') +
           // v0.2.20.0 操作行：[赞][评][转][浏览][☆收藏][⇧分享]——浏览替代旧分享位、星收藏+分享置最右、两个都不显示号码（用户「两个都不需要显示号码」）

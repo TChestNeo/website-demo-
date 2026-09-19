@@ -2294,46 +2294,55 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   // ═══════════════════════════════════════════
 
   // -- Seed feed items (from followed entities) --
+  // v0.2.54.2 i18n 补：badge/time/desc 改 key/En 对，渲染时 (T(key) || xxxEn) 取值；name 为专名不译
   var feedItems = [
-    { type:'nation', id:'NAT-demo-1', icon:'public', badge:'Nation', badgeClass:'badge-primary', name:'Republic of Etheria', desc:'Published a new territorial charter outlining maritime boundaries and resource zones.', time:'2 hours ago' },
-    { type:'topic', id:'TOP-demo-4', icon:'forum', badge:'Topic', badgeClass:'badge-secondary', name:'Governance Design Lab', desc:'New discussion thread: "Liquid Democracy — A Practical Framework for Digital Nations." 89 replies.', time:'3 hours ago' },
-    { type:'user', id:'Marcus Vane', icon:'person', badge:'User', badgeClass:'badge-warning', name:'Marcus Vane', desc:'Published a new sovereign log: "The Architecture of Floating Cities — Phase 2 Blueprints."', time:'5 hours ago' },
-    { type:'nation', id:'NAT-demo-2', icon:'shield', badge:'Nation', badgeClass:'badge-primary', name:'Kingdom of Aethelgard', desc:'Royal decree announced: Renewable Energy Initiative mandating 80% green energy by 2030.', time:'6 hours ago' },
-    { type:'user', id:'Lena Hartmann', icon:'person', badge:'User', badgeClass:'badge-warning', name:'Lena Hartmann', desc:'Contributed a new article to Neo-Venice Archive: "Aquatic Urban Planning — Lessons from the Adriatic."', time:'8 hours ago' },
-    { type:'topic', id:'TOP-demo-1', icon:'forum', badge:'Topic', badgeClass:'badge-secondary', name:'Digital Sovereignty Protocols', desc:'Updated standards for blockchain-based identity verification in micronation governance.', time:'12 hours ago' },
-    { type:'nation', id:'NAT-demo-3', icon:'water', badge:'Nation', badgeClass:'badge-primary', name:'Neo-Venice Collective', desc:'Completed Phase 3 of floating district construction — 2,400 new residential units.', time:'1 day ago' },
-    { type:'user', id:'Kai Zhang', icon:'person', badge:'User', badgeClass:'badge-warning', name:'Kai Zhang', desc:'Posted a detailed economic analysis: "Micro-GDP Growth Projections for Pacific Island Nations."', time:'1 day ago' },
+    { type:'nation', id:'NAT-demo-1', icon:'public', badgeKey:'nation', badgeEn:'Nation', badgeClass:'badge-primary', name:'Republic of Etheria', descKey:'etheriaDesc', descEn:'Published a new territorial charter outlining maritime boundaries and resource zones.', timeKey:'t2h', timeEn:'2 hours ago' },
+    { type:'topic', id:'TOP-demo-4', icon:'forum', badgeKey:'topic', badgeEn:'Topic', badgeClass:'badge-secondary', name:'Governance Design Lab', descKey:'govLabDesc', descEn:'New discussion thread: "Liquid Democracy — A Practical Framework for Digital Nations." 89 replies.', timeKey:'t3h', timeEn:'3 hours ago' },
+    { type:'user', id:'Marcus Vane', icon:'person', badgeKey:'user', badgeEn:'User', badgeClass:'badge-warning', name:'Marcus Vane', descKey:'marcusDesc', descEn:'Published a new sovereign log: "The Architecture of Floating Cities — Phase 2 Blueprints."', timeKey:'t5h', timeEn:'5 hours ago' },
+    { type:'nation', id:'NAT-demo-2', icon:'shield', badgeKey:'nation', badgeEn:'Nation', badgeClass:'badge-primary', name:'Kingdom of Aethelgard', descKey:'aethelgardDesc', descEn:'Royal decree announced: Renewable Energy Initiative mandating 80% green energy by 2030.', timeKey:'t6h', timeEn:'6 hours ago' },
+    { type:'user', id:'Lena Hartmann', icon:'person', badgeKey:'user', badgeEn:'User', badgeClass:'badge-warning', name:'Lena Hartmann', descKey:'lenaDesc', descEn:'Contributed a new article to Neo-Venice Archive: "Aquatic Urban Planning — Lessons from the Adriatic."', timeKey:'t8h', timeEn:'8 hours ago' },
+    { type:'topic', id:'TOP-demo-1', icon:'forum', badgeKey:'topic', badgeEn:'Topic', badgeClass:'badge-secondary', name:'Digital Sovereignty Protocols', descKey:'digSovDesc', descEn:'Updated standards for blockchain-based identity verification in micronation governance.', timeKey:'t12h', timeEn:'12 hours ago' },
+    { type:'nation', id:'NAT-demo-3', icon:'water', badgeKey:'nation', badgeEn:'Nation', badgeClass:'badge-primary', name:'Neo-Venice Collective', descKey:'neoVeniceDesc', descEn:'Completed Phase 3 of floating district construction — 2,400 new residential units.', timeKey:'t1d', timeEn:'1 day ago' },
+    { type:'user', id:'Kai Zhang', icon:'person', badgeKey:'user', badgeEn:'User', badgeClass:'badge-warning', name:'Kai Zhang', descKey:'kaiDesc', descEn:'Posted a detailed economic analysis: "Micro-GDP Growth Projections for Pacific Island Nations."', timeKey:'t1d', timeEn:'1 day ago' },
   ];
 
   // -- Discover recommendations --
+  // v0.2.54.2 i18n 补：desc/role 改 key/En 对；name 为专名不译
   var discoverNations = [
-    { id:'nat-disc-1', name:'Solarian Federation', abbr:'SF', color:'#f59e0b', desc:'A space-focused micronation with orbital habitat research programs.', followers: 4230 },
-    { id:'nat-disc-2', name:'Deepwater Accord', abbr:'DA', color:'#3b82f6', desc:'Sub-aquatic colony pioneering deep-sea sustainable living.', followers: 3180 },
-    { id:'nat-disc-3', name:'Skyward Dominion', abbr:'SD', color:'#6366f1', desc:'High-altitude aerostat cities with advanced atmospheric engineering.', followers: 5620 },
-    { id:'nat-disc-4', name:'Greenbelt Confederation', abbr:'GC', color:'#22c55e', desc:'Eco-nation spanning forest territories with zero-carbon infrastructure.', followers: 2890 },
+    { id:'nat-disc-1', name:'Solarian Federation', abbr:'SF', color:'#f59e0b', descKey:'solarian', descEn:'A space-focused micronation with orbital habitat research programs.', followers: 4230 },
+    { id:'nat-disc-2', name:'Deepwater Accord', abbr:'DA', color:'#3b82f6', descKey:'deepwater', descEn:'Sub-aquatic colony pioneering deep-sea sustainable living.', followers: 3180 },
+    { id:'nat-disc-3', name:'Skyward Dominion', abbr:'SD', color:'#6366f1', descKey:'skyward', descEn:'High-altitude aerostat cities with advanced atmospheric engineering.', followers: 5620 },
+    { id:'nat-disc-4', name:'Greenbelt Confederation', abbr:'GC', color:'#22c55e', descKey:'greenbelt', descEn:'Eco-nation spanning forest territories with zero-carbon infrastructure.', followers: 2890 },
   ];
   var discoverTopics = [
-    { id:'top-disc-1', name:'Micronation Economics', icon:'account_balance', members: 920, desc:'Currency design, trade agreements, and micro-GDP modeling.' },
-    { id:'top-disc-2', name:'Flag & Heraldry Guild', icon:'flag', members: 1150, desc:'Vexillology, coat-of-arms design, and national symbolism.' },
-    { id:'top-disc-3', name:'AI-Assisted Governance', icon:'smart_toy', members: 2340, desc:'Exploring LLMs and automation in legislative processes.' },
-    { id:'top-disc-4', name:'Treaty Drafting Lab', icon:'gavel', members: 680, desc:'Collaborative drafting and peer review of bilateral treaties.' },
+    { id:'top-disc-1', name:'Micronation Economics', icon:'account_balance', members: 920, descKey:'microEcon', descEn:'Currency design, trade agreements, and micro-GDP modeling.' },
+    { id:'top-disc-2', name:'Flag & Heraldry Guild', icon:'flag', members: 1150, descKey:'flagGuild', descEn:'Vexillology, coat-of-arms design, and national symbolism.' },
+    { id:'top-disc-3', name:'AI-Assisted Governance', icon:'smart_toy', members: 2340, descKey:'aiGov', descEn:'Exploring LLMs and automation in legislative processes.' },
+    { id:'top-disc-4', name:'Treaty Drafting Lab', icon:'gavel', members: 680, descKey:'treatyLab', descEn:'Collaborative drafting and peer review of bilateral treaties.' },
   ];
   var discoverUsers = [
-    { id:'user-disc-1', name:'Dr. Amina Okonkwo', avatar:'AO', role:'Political Theorist', color:'#4648d4' },
-    { id:'user-disc-2', name:'Yuki Tanaka', avatar:'YT', role:'Cartographer', color:'#16a34a' },
-    { id:'user-disc-3', name:'Omar Hassan', avatar:'OH', role:'Economic Advisor', color:'#ea580c' },
-    { id:'user-disc-4', name:'Sofia Reyes', avatar:'SR', role:'Cultural Historian', color:'#8127cf' },
+    { id:'user-disc-1', name:'Dr. Amina Okonkwo', avatar:'AO', roleKey:'politTheorist', roleEn:'Political Theorist', color:'#4648d4' },
+    { id:'user-disc-2', name:'Yuki Tanaka', avatar:'YT', roleKey:'cartographer', roleEn:'Cartographer', color:'#16a34a' },
+    { id:'user-disc-3', name:'Omar Hassan', avatar:'OH', roleKey:'econAdvisor', roleEn:'Economic Advisor', color:'#ea580c' },
+    { id:'user-disc-4', name:'Sofia Reyes', avatar:'SR', roleKey:'cultHistorian', roleEn:'Cultural Historian', color:'#8127cf' },
   ];
 
   // -- User/nation/topic name lookup (maps discover IDs → display names) --
   var nameLookup = { users: {}, nations: {}, topics: {} };
-  discoverNations.forEach(function(n) { nameLookup.nations[n.id] = { name:n.name, abbr:n.abbr, color:n.color, sub: n.followers.toLocaleString() + ' followers' }; });
-  discoverTopics.forEach(function(t) { nameLookup.topics[t.id] = { name:t.name, icon:t.icon, color:'#16a34a', sub: t.members.toLocaleString() + ' members' }; });
-  discoverUsers.forEach(function(u) { nameLookup.users[u.id] = { name:u.name, avatar:u.avatar, color:u.color, sub: u.role }; });
-  // Seed users
-  nameLookup.users['Marcus Vane'] = { name:'Marcus Vane', avatar:'MV', color:'#4648d4', sub:'Sovereign Log Author' };
-  nameLookup.users['Lena Hartmann'] = { name:'Lena Hartmann', avatar:'LH', color:'#16a34a', sub:'Aquatic Urbanist' };
-  nameLookup.users['Kai Zhang'] = { name:'Kai Zhang', avatar:'KZ', color:'#ea580c', sub:'Economic Analyst' };
+  // v0.2.54.2 i18n 补：lookup 的 sub 文案（计数后缀/角色）惰性 T()。首次构建在本 script
+  // 执行时（i18n.js 尚未加载，T 返回 null → 英文兜底）；apply() 触发 __mnI18nRerender
+  // 重建后换回译文。
+  function buildNameLookup() {
+    nameLookup = { users: {}, nations: {}, topics: {} };
+    discoverNations.forEach(function(n) { nameLookup.nations[n.id] = { name:n.name, abbr:n.abbr, color:n.color, sub: n.followers.toLocaleString() + (T('following.suffix.followers') || ' followers') }; });
+    discoverTopics.forEach(function(t) { nameLookup.topics[t.id] = { name:t.name, icon:t.icon, color:'#16a34a', sub: t.members.toLocaleString() + (T('following.suffix.members') || ' members') }; });
+    discoverUsers.forEach(function(u) { nameLookup.users[u.id] = { name:u.name, avatar:u.avatar, color:u.color, sub: (T('following.role.' + u.roleKey) || u.roleEn) }; });
+    // Seed users
+    nameLookup.users['Marcus Vane'] = { name:'Marcus Vane', avatar:'MV', color:'#4648d4', sub: (T('following.role.sovereignLog') || 'Sovereign Log Author') };
+    nameLookup.users['Lena Hartmann'] = { name:'Lena Hartmann', avatar:'LH', color:'#16a34a', sub: (T('following.role.aquaticUrbanist') || 'Aquatic Urbanist') };
+    nameLookup.users['Kai Zhang'] = { name:'Kai Zhang', avatar:'KZ', color:'#ea580c', sub: (T('following.role.econAnalyst') || 'Economic Analyst') };
+  }
+  buildNameLookup();
 
   // -- State --
   var currentTab = 'feed';
@@ -2383,11 +2392,11 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
       return '<div class="card card-hover tilt-container">' +
         '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:8px">' +
           '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + item.icon + '</span>' +
-          '<span class="badge ' + item.badgeClass + '">' + item.badge + '</span>' +
+          '<span class="badge ' + item.badgeClass + '">' + (T('following.feed.badge.' + item.badgeKey) || item.badgeEn) + '</span>' +
           '<span style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + item.name + '</span>' +
-          '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + item.time + '</span>' +
+          '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + (T('following.feed.time.' + item.timeKey) || item.timeEn) + '</span>' +
         '</div>' +
-        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + item.desc + '</p>' +
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + (T('following.feed.desc.' + item.descKey) || item.descEn) + '</p>' +
       '</div>';
     }).join('');
     if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('#feedPanel .tilt-container'));
@@ -2427,7 +2436,7 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
           items.push({ type:'topics', id:tid, title:tl.name, sub:tl.sub, icon:tl.icon, color:tl.color, isDiscover:true });
         } else {
           var t = topics.filter(function(x) { return x.id === tid; })[0];
-          if (t) items.push({ type:'topics', id:tid, title:t.name, sub:t.memberCount.toLocaleString() + ' members', icon:'forum', color:'#16a34a', isDiscover:false });
+          if (t) items.push({ type:'topics', id:tid, title:t.name, sub:t.memberCount.toLocaleString() + (T('following.suffix.members') || ' members'), icon:'forum', color:'#16a34a', isDiscover:false });
         }
       });
     }
@@ -2439,7 +2448,7 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
         if (ul) {
           items.push({ type:'users', id:uid, title:ul.name, sub:ul.sub, avatar:ul.avatar, color:ul.color, isDiscover:true });
         } else {
-          items.push({ type:'users', id:uid, title:uid, sub:'Citizen', avatar:uid.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase(), color:'#ea580c', isDiscover:false });
+          items.push({ type:'users', id:uid, title:uid, sub:(T('following.list.citizen') || 'Citizen'), avatar:uid.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase(), color:'#ea580c', isDiscover:false });
         }
       });
     }
@@ -2501,8 +2510,8 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
           '<span style="font-weight:800;font-size:18px;color:rgba(255,255,255,0.9);letter-spacing:0.08em">' + n.abbr + '</span>' +
         '</div>' +
         '<div style="font-weight:600;font-size:var(--fs-label-md);margin-bottom:2px;color:var(--color-on-surface)">' + n.name + '</div>' +
-        '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px;line-height:1.3">' + n.desc + '</p>' +
-        '<div class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + n.followers.toLocaleString() + ' followers</div>' +
+        '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px;line-height:1.3">' + (T('following.discover.natDesc.' + n.descKey) || n.descEn) + '</p>' +
+        '<div class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + n.followers.toLocaleString() + (T('following.suffix.followers') || ' followers') + '</div>' +
         '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="nations" data-id="' + n.id + '">' +
           (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following') : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow')) +
         '</button>' +
@@ -2516,9 +2525,9 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
           '<span class="material-symbols-outlined" style="font-size:24px;color:var(--color-primary)">' + t.icon + '</span>' +
           '<div><div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + t.name + '</div>' +
-          '<div class="label-sm" style="color:var(--color-outline)">' + t.members.toLocaleString() + ' members</div></div>' +
+          '<div class="label-sm" style="color:var(--color-outline)">' + t.members.toLocaleString() + (T('following.suffix.members') || ' members') + '</div></div>' +
         '</div>' +
-        '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px">' + t.desc + '</p>' +
+        '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px">' + (T('following.discover.topicDesc.' + t.descKey) || t.descEn) + '</p>' +
         '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="topics" data-id="' + t.id + '">' +
           (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following') : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow')) +
         '</button>' +
@@ -2531,7 +2540,7 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
       return '<div class="card tilt-container" style="padding:var(--space-md);text-align:center">' +
         '<div class="avatar" style="width:44px;height:44px;font-size:15px;background:linear-gradient(135deg,' + u.color + ',' + u.color + 'dd);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:white;font-weight:700">' + u.avatar + '</div>' +
         '<div style="font-weight:600;font-size:var(--fs-label-md);margin-bottom:2px;color:var(--color-on-surface)">' + u.name + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + u.role + '</div>' +
+        '<div class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + (T('following.role.' + u.roleKey) || u.roleEn) + '</div>' +
         '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="users" data-id="' + u.id + '">' +
           (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following') : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow')) +
         '</button>' +
@@ -2592,10 +2601,11 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
       '</div>';
     } else {
       // Recommendations (Feed tab)
+      // v0.2.54.2 i18n 补：sub 改 key/En 对；name 为专名不译
       var recItems = [
-        { icon:'public', name:'Solarian Federation', sub:'4,230 followers', color:'#4648d4' },
-        { icon:'forum', name:'AI-Assisted Governance', sub:'2,340 members', color:'#16a34a' },
-        { icon:'person', name:'Dr. Amina Okonkwo', sub:'Political Theorist', color:'#ea580c' },
+        { icon:'public', name:'Solarian Federation', subKey:'solarian', subEn:'4,230 followers', color:'#4648d4' },
+        { icon:'forum', name:'AI-Assisted Governance', subKey:'aiGov', subEn:'2,340 members', color:'#16a34a' },
+        { icon:'person', name:'Dr. Amina Okonkwo', subKey:'amina', subEn:'Political Theorist', color:'#ea580c' },
       ];
       slot.innerHTML = '<div class="card">' +
         '<h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">' +
@@ -2606,7 +2616,7 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
             '<span class="material-symbols-outlined" style="font-size:20px;color:' + r.color + ';flex-shrink:0">' + r.icon + '</span>' +
             '<div style="flex:1;min-width:0">' +
               '<div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + r.name + '</div>' +
-              '<div class="label-sm" style="color:var(--color-outline)">' + r.sub + '</div>' +
+              '<div class="label-sm" style="color:var(--color-outline)">' + (T('following.rec.sub.' + r.subKey) || r.subEn) + '</div>' +
             '</div>' +
             '<button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px;color:var(--color-primary)">' + (T('following.rec.followBtn') || '+ Follow') + '</button>' +
           '</div>';
@@ -2659,7 +2669,9 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
 
   // v0.2.54.0 i18n：重渲钩子——body 尾部三件套 apply（及语言切换）后按当前 tab 整刷
   // （Feed/Following/Discover 面板与右栏全部由 JS 渲染，switchTab 幂等可安全重跑）。
+  // v0.2.54.2：先重建 nameLookup（sub 文案惰性 T() 已在字典就绪后生效）再整刷。
   window.__mnI18nRerender = function () {
+    buildNameLookup();
     switchTab(currentTab);
   };
 

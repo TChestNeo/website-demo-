@@ -7,7 +7,7 @@
  */
 window.MN_I18N
   .add('zh', {
-    'edge.hero.title': 'Edge Themes Demo',
+    'edge.hero.title': '边缘主题演示',
     'edge.sub.intro': '两个独立卡片 CSS 组件类 · 纯 CSS + 内联矢量 SVG · 零外部图片 · 可直接提取进 Vue / React',
     'edge.principle.arch': '<b>架构总原则：</b>合成顺序是 <code>filter → clip-path → mask</code>——\n    <code>filter: drop-shadow</code> 与 <code>clip-path</code> 不能放在同一元素上\n    （阴影先画、随后整块被剪掉）。所以每个组件都分三层：<b>宿主元素</b>承载\n    <code>filter</code> 阴影栈（不剪）；<b><code>::before</code> 剪层</b>承载\n    <code>clip-path</code> 轮廓 + 底色 + 配方层；<b><code>::after</code> 覆盖层</b>\n    承载烧边/包角/扫描线（同剪、z 2、pointer-events:none）。全出血子元素（如\n    <code>&gt; img</code>）需要自己套同一剪——伪元素的 clip 管不到兄弟元素。',
     'edge.parchment.title': '① .card-parchment — 破旧的纸 / 藏宝图（褶皱折角 / 波浪边缘）',
@@ -83,7 +83,7 @@ window.MN_I18N
     'edge.foot': 'FluidCanvas v10.8 配套组件演示 · 所有效果由纯 CSS 与内联 SVG 实现，无外部图片、无字体依赖。\n    提取到 Vue / React：复制一个类 + 一个修饰符（或把旋钮映射为组件 props），其余规则原样可用。'
   })
   .add('en', {
-    'edge.hero.title': 'Edge Themes Demo',
+    'edge.hero.title': '边缘主题演示',
     'edge.sub.intro': 'Two standalone card CSS component classes · pure CSS + inline vector SVG · zero external images · directly extractable into Vue / React',
     'edge.principle.arch': '<b>Core architecture principle:</b> the compositing order is <code>filter → clip-path → mask</code> —\n    <code>filter: drop-shadow</code> and <code>clip-path</code> cannot sit on the same element\n    (the shadow is painted first, then clipped away entirely). So each component has three layers: the <b>host element</b> carries\n    the <code>filter</code> shadow stack (no clipping); the <b><code>::before</code> clip layer</b> carries\n    the <code>clip-path</code> outline + base color + recipe layers; the <b><code>::after</code> overlay layer</b>\n    carries the burned edge / corner brackets / scan lines (same clip, z 2, pointer-events:none). Full-bleed children (e.g.\n    <code>&gt; img</code>) must apply the same clip themselves — a pseudo-element\'s clip does not reach sibling elements.',
     'edge.parchment.title': '① .card-parchment — Worn Paper / Treasure Map (wrinkled fold corner / wave edge)',
@@ -844,7 +844,7 @@ window.MN_I18N
   });
 /* __ZH_HANT_AUTO__ — v0.2.54.0 zh-Hant 由 OpenCC cn→tw 自动生成（勿手改，重跑本脚本再生成） */
 window.MN_I18N.add('zh-Hant', {
-  "edge.hero.title": "Edge Themes Demo",
+  "edge.hero.title": "邊緣主題演示",
   "edge.sub.intro": "兩個獨立卡片 CSS 組件類 · 純 CSS + 內聯矢量 SVG · 零外部圖片 · 可直接提取進 Vue / React",
   "edge.principle.arch": "<b>架構總原則：</b>合成順序是 <code>filter → clip-path → mask</code>——\n    <code>filter: drop-shadow</code> 與 <code>clip-path</code> 不能放在同一元素上\n    （陰影先畫、隨後整塊被剪掉）。所以每個組件都分三層：<b>宿主元素</b>承載\n    <code>filter</code> 陰影棧（不剪）；<b><code>::before</code> 剪層</b>承載\n    <code>clip-path</code> 輪廓 + 底色 + 配方層；<b><code>::after</code> 覆蓋層</b>\n    承載燒邊/包角/掃描線（同剪、z 2、pointer-events:none）。全出血子元素（如\n    <code>&gt; img</code>）需要自己套同一剪——偽元素的 clip 管不到兄弟元素。",
   "edge.parchment.title": "① .card-parchment — 破舊的紙 / 藏寶圖（褶皺摺角 / 波浪邊緣）",

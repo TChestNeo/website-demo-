@@ -2333,33 +2333,37 @@ The capital city of Aether Prime was designed from the ground up as a "smart sov
 <script src="../assets/js/settings-modal.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
 <script>
+  // v0.2.54.2 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+
+  // v0.2.54.2 i18n 补：资产列表 demo 条目 T() 化（title/type 改 key/En 对；en 兜底保留）
   var assets = [
-    { icon: 'flag', title: 'National Flag Card', type: 'Identity' },
-    { icon: 'shield', title: 'Emblem Card', type: 'Identity' },
-    { icon: 'music_note', title: 'Audio Player Card', type: 'Media' },
-    { icon: 'map', title: 'Territorial Map Card', type: 'Geography' },
-    { icon: 'groups', title: 'Population Card', type: 'Demographics' },
-    { icon: 'account_balance', title: 'Governance Card', type: 'Politics' },
-    { icon: 'payments', title: 'Economic Ledger Card', type: 'Economy' },
-    { icon: 'military_tech', title: 'Military OOB Card', type: 'Defense' },
-    { icon: 'menu_book', title: 'Constitution Card', type: 'Legal' },
-    { icon: 'history_edu', title: 'Timeline Card', type: 'History' },
-    { icon: 'translate', title: 'Translation Card', type: 'Localization' },
-    { icon: 'image', title: 'Gallery Card', type: 'Media' },
+    { icon: 'flag', titleKey: 'workspace.assets.title.flag', titleEn: 'National Flag Card', typeKey: 'workspace.assets.type.identity', typeEn: 'Identity' },
+    { icon: 'shield', titleKey: 'workspace.assets.title.emblem', titleEn: 'Emblem Card', typeKey: 'workspace.assets.type.identity', typeEn: 'Identity' },
+    { icon: 'music_note', titleKey: 'workspace.assets.title.audio', titleEn: 'Audio Player Card', typeKey: 'workspace.assets.type.media', typeEn: 'Media' },
+    { icon: 'map', titleKey: 'workspace.assets.title.map', titleEn: 'Territorial Map Card', typeKey: 'workspace.assets.type.geography', typeEn: 'Geography' },
+    { icon: 'groups', titleKey: 'workspace.assets.title.population', titleEn: 'Population Card', typeKey: 'workspace.assets.type.demographics', typeEn: 'Demographics' },
+    { icon: 'account_balance', titleKey: 'workspace.assets.title.governance', titleEn: 'Governance Card', typeKey: 'workspace.assets.type.politics', typeEn: 'Politics' },
+    { icon: 'payments', titleKey: 'workspace.assets.title.ledger', titleEn: 'Economic Ledger Card', typeKey: 'workspace.assets.type.economy', typeEn: 'Economy' },
+    { icon: 'military_tech', titleKey: 'workspace.assets.title.military', titleEn: 'Military OOB Card', typeKey: 'workspace.assets.type.defense', typeEn: 'Defense' },
+    { icon: 'menu_book', titleKey: 'workspace.assets.title.constitution', titleEn: 'Constitution Card', typeKey: 'workspace.assets.type.legal', typeEn: 'Legal' },
+    { icon: 'history_edu', titleKey: 'workspace.assets.title.timeline', titleEn: 'Timeline Card', typeKey: 'workspace.assets.type.history', typeEn: 'History' },
+    { icon: 'translate', titleKey: 'workspace.assets.title.translation', titleEn: 'Translation Card', typeKey: 'workspace.assets.type.localization', typeEn: 'Localization' },
+    { icon: 'image', titleKey: 'workspace.assets.title.gallery', titleEn: 'Gallery Card', typeKey: 'workspace.assets.type.media', typeEn: 'Media' },
   ];
 
   function renderAssets(filter) {
     var filtered = filter ? assets.filter(function(a) {
-      return a.title.toLowerCase().includes(filter.toLowerCase()) ||
-             a.type.toLowerCase().includes(filter.toLowerCase());
+      return (T(a.titleKey) || a.titleEn).toLowerCase().includes(filter.toLowerCase()) ||
+             (T(a.typeKey) || a.typeEn).toLowerCase().includes(filter.toLowerCase());
     }) : assets;
     document.getElementById('assetList').innerHTML = filtered.map(function(a) {
       return '<div class="card card-hover" style="padding:var(--space-sm);cursor:pointer">' +
         '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
           '<span class="material-symbols-outlined" style="color:var(--color-primary);font-size:20px">' + a.icon + '</span>' +
           '<div>' +
-            '<div class="label-md" style="color:var(--color-on-surface)">' + a.title + '</div>' +
-            '<div class="label-sm" style="color:var(--color-outline)">' + a.type + '</div>' +
+            '<div class="label-md" style="color:var(--color-on-surface)">' + (T(a.titleKey) || a.titleEn) + '</div>' +
+            '<div class="label-sm" style="color:var(--color-outline)">' + (T(a.typeKey) || a.typeEn) + '</div>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -2384,6 +2388,13 @@ The capital city of Aether Prime was designed from the ground up as a "smart sov
   });
 
   renderAssets();
+
+  // v0.2.54.2 i18n：语言切换后重渲染动态区（body 尾部 onChange → 本钩子）
+  // 保留用户当前筛选词：按 data-i18n-placeholder 定位筛选输入框回读 value（不改 DOM 结构）
+  window.__mnI18nRerender = function () {
+    var fi = document.querySelector('input[data-i18n-placeholder="ws.ph.filterAssets"]');
+    renderAssets(fi ? fi.value : '');
+  };
 </script>
 <script src="../assets/js/transitions.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
@@ -2393,6 +2404,6 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <script src="../assets/js/i18n.js"></script>
 <script src="../assets/i18n/common.i18n.js"></script>
 <script src="../assets/i18n/workspace.i18n.js"></script>
-<script>MN_I18N.apply();</script>
+<script>MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); }); MN_I18N.apply();</script>
 </body>
 </html>

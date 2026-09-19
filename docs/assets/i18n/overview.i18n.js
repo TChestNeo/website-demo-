@@ -328,6 +328,138 @@ window.MN_I18N
     'ov.loreFallback': 'Um mundo no registro do M.NationWorld.',
     'ov.gdpPrefix': 'PIB '
   });
+
+// v0.2.54.2 i18n 补：最近贡献（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('zh', {
+  "ov.contrib.action.createdArticle": "创建了文章",
+  "ov.contrib.action.updatedLoreFor": "更新了设定：",
+  "ov.contrib.action.published": "发布了",
+  "ov.contrib.action.revised": "修订了",
+  "ov.contrib.time.hours2": "2 小时前",
+  "ov.contrib.time.hours5": "5 小时前",
+  "ov.contrib.time.hours8": "8 小时前",
+  "ov.contrib.time.day1": "1 天前"
+});
+
+// v0.2.54.2 i18n 补：最近贡献（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('en', {
+  "ov.contrib.action.createdArticle": "created article",
+  "ov.contrib.action.updatedLoreFor": "updated lore for",
+  "ov.contrib.action.published": "published",
+  "ov.contrib.action.revised": "revised",
+  "ov.contrib.time.hours2": "2 hours ago",
+  "ov.contrib.time.hours5": "5 hours ago",
+  "ov.contrib.time.hours8": "8 hours ago",
+  "ov.contrib.time.day1": "1 day ago"
+});
+
+// v0.2.54.2 i18n 补：最近贡献（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('de', {
+  "ov.contrib.action.createdArticle": "hat einen Artikel erstellt",
+  "ov.contrib.action.updatedLoreFor": "hat Lore aktualisiert für",
+  "ov.contrib.action.published": "hat veröffentlicht",
+  "ov.contrib.action.revised": "hat überarbeitet",
+  "ov.contrib.time.hours2": "vor 2 Stunden",
+  "ov.contrib.time.hours5": "vor 5 Stunden",
+  "ov.contrib.time.hours8": "vor 8 Stunden",
+  "ov.contrib.time.day1": "vor 1 Tag"
+});
+
+// v0.2.54.2 i18n 补：最近贡献（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('ru', {
+  "ov.contrib.action.createdArticle": "создал(а) статью",
+  "ov.contrib.action.updatedLoreFor": "обновил(а) лор для",
+  "ov.contrib.action.published": "опубликовал(а)",
+  "ov.contrib.action.revised": "исправил(а)",
+  "ov.contrib.time.hours2": "2 часа назад",
+  "ov.contrib.time.hours5": "5 часов назад",
+  "ov.contrib.time.hours8": "8 часов назад",
+  "ov.contrib.time.day1": "1 день назад"
+});
+
+// v0.2.54.2 i18n 补：最近贡献（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('ms', {
+  "ov.contrib.action.createdArticle": "mencipta artikel",
+  "ov.contrib.action.updatedLoreFor": "mengemas kini lore untuk",
+  "ov.contrib.action.published": "menerbitkan",
+  "ov.contrib.action.revised": "menyemak semula",
+  "ov.contrib.time.hours2": "2 jam lalu",
+  "ov.contrib.time.hours5": "5 jam lalu",
+  "ov.contrib.time.hours8": "8 jam lalu",
+  "ov.contrib.time.day1": "1 hari lalu"
+});
+
+// v0.2.54.2 i18n 补：最近贡献（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('th', {
+  "ov.contrib.action.createdArticle": "สร้างบทความ",
+  "ov.contrib.action.updatedLoreFor": "อัปเดตเนื้อเรื่องสำหรับ",
+  "ov.contrib.action.published": "เผยแพร่",
+  "ov.contrib.action.revised": "แก้ไข",
+  "ov.contrib.time.hours2": "2 ชั่วโมงที่แล้ว",
+  "ov.contrib.time.hours5": "5 ชั่วโมงที่แล้ว",
+  "ov.contrib.time.hours8": "8 ชั่วโมงที่แล้ว",
+  "ov.contrib.time.day1": "1 วันที่แล้ว"
+});
+
+// v0.2.54.2 i18n 补：最近贡献（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('vi', {
+  "ov.contrib.action.createdArticle": "đã tạo bài viết",
+  "ov.contrib.action.updatedLoreFor": "đã cập nhật lore cho",
+  "ov.contrib.action.published": "đã xuất bản",
+  "ov.contrib.action.revised": "đã chỉnh sửa",
+  "ov.contrib.time.hours2": "2 giờ trước",
+  "ov.contrib.time.hours5": "5 giờ trước",
+  "ov.contrib.time.hours8": "8 giờ trước",
+  "ov.contrib.time.day1": "1 ngày trước"
+});
+
+// v0.2.54.2 i18n 补：最近贡献（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('id', {
+  "ov.contrib.action.createdArticle": "membuat artikel",
+  "ov.contrib.action.updatedLoreFor": "memperbarui lore untuk",
+  "ov.contrib.action.published": "menerbitkan",
+  "ov.contrib.action.revised": "merevisi",
+  "ov.contrib.time.hours2": "2 jam lalu",
+  "ov.contrib.time.hours5": "5 jam lalu",
+  "ov.contrib.time.hours8": "8 jam lalu",
+  "ov.contrib.time.day1": "1 hari lalu"
+});
+
+// v0.2.54.2 i18n 补：最近贡献（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('fr', {
+  "ov.contrib.action.createdArticle": "a créé l'article",
+  "ov.contrib.action.updatedLoreFor": "a mis à jour le lore de",
+  "ov.contrib.action.published": "a publié",
+  "ov.contrib.action.revised": "a révisé",
+  "ov.contrib.time.hours2": "il y a 2 heures",
+  "ov.contrib.time.hours5": "il y a 5 heures",
+  "ov.contrib.time.hours8": "il y a 8 heures",
+  "ov.contrib.time.day1": "il y a 1 jour"
+});
+
+// v0.2.54.2 i18n 补：最近贡献（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('es', {
+  "ov.contrib.action.createdArticle": "creó el artículo",
+  "ov.contrib.action.updatedLoreFor": "actualizó el lore de",
+  "ov.contrib.action.published": "publicó",
+  "ov.contrib.action.revised": "revisó",
+  "ov.contrib.time.hours2": "hace 2 horas",
+  "ov.contrib.time.hours5": "hace 5 horas",
+  "ov.contrib.time.hours8": "hace 8 horas",
+  "ov.contrib.time.day1": "hace 1 día"
+});
+
+// v0.2.54.2 i18n 补：最近贡献（zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('pt', {
+  "ov.contrib.action.createdArticle": "criou o artigo",
+  "ov.contrib.action.updatedLoreFor": "atualizou a lore de",
+  "ov.contrib.action.published": "publicou",
+  "ov.contrib.action.revised": "revisou",
+  "ov.contrib.time.hours2": "há 2 horas",
+  "ov.contrib.time.hours5": "há 5 horas",
+  "ov.contrib.time.hours8": "há 8 horas",
+  "ov.contrib.time.day1": "há 1 dia"
+});
 /* __ZH_HANT_AUTO__ — v0.2.54.0 zh-Hant 由 OpenCC cn→tw 自动生成（勿手改，重跑本脚本再生成） */
 window.MN_I18N.add('zh-Hant', {
   "ov.nav.overview": "概覽",
@@ -355,5 +487,13 @@ window.MN_I18N.add('zh-Hant', {
   "ov.classFallback": "主權國家",
   "ov.since": " · 自 ",
   "ov.loreFallback": "M.NationWorld 登記名錄中的一個世界。",
-  "ov.gdpPrefix": "GDP "
+  "ov.gdpPrefix": "GDP ",
+  "ov.contrib.action.createdArticle": "創建了文章",
+  "ov.contrib.action.updatedLoreFor": "更新了設定：",
+  "ov.contrib.action.published": "發佈了",
+  "ov.contrib.action.revised": "修訂了",
+  "ov.contrib.time.hours2": "2 小時前",
+  "ov.contrib.time.hours5": "5 小時前",
+  "ov.contrib.time.hours8": "8 小時前",
+  "ov.contrib.time.day1": "1 天前"
 });

@@ -2427,37 +2427,41 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var nations = SlatiDB.getNations();
   var worlds = SlatiDB.getWorlds();
 
+  // v0.2.54.2 i18n 补：活动流 demo 文案 T() 化（badge/title/desc/time；en 兜底保留）
   var activityItems = [
-    { icon: 'language', badge: 'Nation', badgeClass: 'badge-primary', title: 'Republic of Etheria', desc: 'Updated territorial claims and governance charter.', time: '2 hours ago' },
-    { icon: 'groups', badge: 'Topic', badgeClass: 'badge-secondary', title: 'Governance Design Lab', desc: 'New discussion: Direct democracy in micronations.', time: '4 hours ago' },
-    { icon: 'edit_note', badge: 'Wiki', badgeClass: 'badge-success', title: 'Neo-Venice Archive', desc: 'Lore revision: Founding of Aqua Centro.', time: '6 hours ago' },
-    { icon: 'person', badge: 'Citizen', badgeClass: 'badge-warning', title: 'Marcus Vane', desc: 'Published a sovereign log on floating district plans.', time: '8 hours ago' },
+    { icon: 'language', badgeKey: 'nation', badgeEn: 'Nation', badgeClass: 'badge-primary', titleKey: 'etheria', titleEn: 'Republic of Etheria', descKey: 'etheriaDesc', descEn: 'Updated territorial claims and governance charter.', timeKey: 't2h', timeEn: '2 hours ago' },
+    { icon: 'groups', badgeKey: 'topic', badgeEn: 'Topic', badgeClass: 'badge-secondary', titleKey: 'govLab', titleEn: 'Governance Design Lab', descKey: 'govLabDesc', descEn: 'New discussion: Direct democracy in micronations.', timeKey: 't4h', timeEn: '4 hours ago' },
+    { icon: 'edit_note', badgeKey: 'wiki', badgeEn: 'Wiki', badgeClass: 'badge-success', titleKey: 'neoVenice', titleEn: 'Neo-Venice Archive', descKey: 'neoVeniceDesc', descEn: 'Lore revision: Founding of Aqua Centro.', timeKey: 't6h', timeEn: '6 hours ago' },
+    { icon: 'person', badgeKey: 'citizen', badgeEn: 'Citizen', badgeClass: 'badge-warning', titleKey: 'marcus', titleEn: 'Marcus Vane', descKey: 'marcusDesc', descEn: 'Published a sovereign log on floating district plans.', timeKey: 't8h', timeEn: '8 hours ago' },
   ];
 
-  document.getElementById('activityFeed').innerHTML = activityItems.map(function(item) {
-    return '<div class="card card-hover tilt-container">' +
-      '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
-        '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:24px">' + item.icon + '</span>' +
-        '<span class="badge ' + item.badgeClass + '">' + item.badge + '</span>' +
-        '<span style="flex:1;font-weight:600;color:var(--color-on-surface)">' + item.title + '</span>' +
-        '<span class="label-sm" style="color:var(--color-outline)">' + item.time + '</span>' +
-      '</div>' +
-      '<p style="margin-top:8px;color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + item.desc + '</p>' +
-    '</div>';
-  }).join('');
+  function renderActivity() {
+    document.getElementById('activityFeed').innerHTML = activityItems.map(function(item) {
+      return '<div class="card card-hover tilt-container">' +
+        '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
+          '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:24px">' + item.icon + '</span>' +
+          '<span class="badge ' + item.badgeClass + '">' + (T('index.act.badge.' + item.badgeKey) || item.badgeEn) + '</span>' +
+          '<span style="flex:1;font-weight:600;color:var(--color-on-surface)">' + (T('index.act.title.' + item.titleKey) || item.titleEn) + '</span>' +
+          '<span class="label-sm" style="color:var(--color-outline)">' + (T('index.act.time.' + item.timeKey) || item.timeEn) + '</span>' +
+        '</div>' +
+        '<p style="margin-top:8px;color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + (T('index.act.desc.' + item.descKey) || item.descEn) + '</p>' +
+      '</div>';
+    }).join('');
+  }
+  renderActivity();
 
-  // ── Dashboard Announcements ──
+  // ── Dashboard Announcements（v0.2.54.2 i18n 补：cat/title 惰性 T()；summary 未渲染不用译）──
   var dashAnnouncements = [
-    { id:'a1', cat:'official', icon:'campaign', title:'M.NationWorld Beta Launch — Welcome All Worldbuilders', date:'2026-08-05', summary:'The platform officially enters public beta. All registered creators now have full access.' },
-    { id:'a2', cat:'official', icon:'event', title:'Governance Summit 2026 — Registration Open', date:'2026-08-03', summary:'Theme: "Digital Sovereignty in the Modern Age." Early registration now open.' },
-    { id:'a3', cat:'community', icon:'map', title:'Cartography Guild — Monthly Map Contest', date:'2026-08-02', summary:'Theme: "Uncharted Territories." Prizes include Premium subscriptions.' },
-    { id:'a4', cat:'system', icon:'draw', title:'FluidCanvas Studio Now Live', date:'2026-08-01', summary:'Collaborative content studio available to all users.' },
-    { id:'a5', cat:'community', icon:'emoji_flags', title:'Nation Spotlight: Republic of Etheria', date:'2026-07-30', summary:'Floating city-state with direct democracy & AI-assisted administration.' },
-    { id:'a6', cat:'system', icon:'update', title:'Platform Update v1.2 — Sidebar & Navigation', date:'2026-07-28', summary:'Collapsible sidebar, smoother transitions, responsive improvements.' },
-    { id:'a7', cat:'community', icon:'volunteer_activism', title:'Call for Moderators — Join the Community Team', date:'2026-07-25', summary:'Help maintain a welcoming environment. Apply today.' },
-    { id:'a8', cat:'official', icon:'rocket_launch', title:'Premium Ultra Early Adopter Pricing Extended', date:'2026-07-20', summary:'Lock in reduced pricing through August.' },
-    { id:'a9', cat:'system', icon:'security', title:'Security Audit Complete — Platform Certification', date:'2026-07-15', summary:'Independent audit confirms platform meets all security standards.' },
-    { id:'a10', cat:'official', icon:'gavel', title:'Sovereign Council Charter Ratified', date:'2026-07-10', summary:'Founding document establishing the council\'s governance framework.' },
+    { id:'a1', cat:'official', icon:'campaign', titleKey:'a1', titleEn:'M.NationWorld Beta Launch — Welcome All Worldbuilders', date:'2026-08-05', summary:'The platform officially enters public beta. All registered creators now have full access.' },
+    { id:'a2', cat:'official', icon:'event', titleKey:'a2', titleEn:'Governance Summit 2026 — Registration Open', date:'2026-08-03', summary:'Theme: "Digital Sovereignty in the Modern Age." Early registration now open.' },
+    { id:'a3', cat:'community', icon:'map', titleKey:'a3', titleEn:'Cartography Guild — Monthly Map Contest', date:'2026-08-02', summary:'Theme: "Uncharted Territories." Prizes include Premium subscriptions.' },
+    { id:'a4', cat:'system', icon:'draw', titleKey:'a4', titleEn:'FluidCanvas Studio Now Live', date:'2026-08-01', summary:'Collaborative content studio available to all users.' },
+    { id:'a5', cat:'community', icon:'emoji_flags', titleKey:'a5', titleEn:'Nation Spotlight: Republic of Etheria', date:'2026-07-30', summary:'Floating city-state with direct democracy & AI-assisted administration.' },
+    { id:'a6', cat:'system', icon:'update', titleKey:'a6', titleEn:'Platform Update v1.2 — Sidebar & Navigation', date:'2026-07-28', summary:'Collapsible sidebar, smoother transitions, responsive improvements.' },
+    { id:'a7', cat:'community', icon:'volunteer_activism', titleKey:'a7', titleEn:'Call for Moderators — Join the Community Team', date:'2026-07-25', summary:'Help maintain a welcoming environment. Apply today.' },
+    { id:'a8', cat:'official', icon:'rocket_launch', titleKey:'a8', titleEn:'Premium Ultra Early Adopter Pricing Extended', date:'2026-07-20', summary:'Lock in reduced pricing through August.' },
+    { id:'a9', cat:'system', icon:'security', titleKey:'a9', titleEn:'Security Audit Complete — Platform Certification', date:'2026-07-15', summary:'Independent audit confirms platform meets all security standards.' },
+    { id:'a10', cat:'official', icon:'gavel', titleKey:'a10', titleEn:'Sovereign Council Charter Ratified', date:'2026-07-10', summary:'Founding document establishing the council\'s governance framework.' },
   ];
 
   var dashCatStyle = {
@@ -2466,15 +2470,18 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     system: { bg: 'rgba(234,88,12,0.1)', color: '#ea580c' },
   };
 
-  document.getElementById('dashAnnouncements').innerHTML = dashAnnouncements.map(function(a) {
-    var cs = dashCatStyle[a.cat] || dashCatStyle.system;
-    return '<a href="pages/messages.html" class="card card-hover" style="display:flex;align-items:center;gap:10px;padding:8px 12px;text-decoration:none;cursor:pointer">' +
-      '<span class="material-symbols-outlined" style="font-size:18px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +
-      '<span class="label-sm" style="background:' + cs.bg + ';color:' + cs.color + ';padding:1px 7px;border-radius:var(--radius-full);font-weight:600;font-size:9px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.03em">' + a.cat + '</span>' +
-      '<span style="flex:1;font-weight:500;font-size:var(--fs-label-sm);color:var(--color-on-surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.title + '</span>' +
-      '<span class="label-sm" style="color:var(--color-outline);flex-shrink:0;font-size:10px">' + a.date + '</span>' +
-    '</a>';
-  }).join('');
+  function renderAnn() {
+    document.getElementById('dashAnnouncements').innerHTML = dashAnnouncements.map(function(a) {
+      var cs = dashCatStyle[a.cat] || dashCatStyle.system;
+      return '<a href="pages/messages.html" class="card card-hover" style="display:flex;align-items:center;gap:10px;padding:8px 12px;text-decoration:none;cursor:pointer">' +
+        '<span class="material-symbols-outlined" style="font-size:18px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +
+        '<span class="label-sm" style="background:' + cs.bg + ';color:' + cs.color + ';padding:1px 7px;border-radius:var(--radius-full);font-weight:600;font-size:9px;flex-shrink:0;text-transform:uppercase;letter-spacing:0.03em">' + (T('index.ann.cat.' + a.cat) || a.cat) + '</span>' +
+        '<span style="flex:1;font-weight:500;font-size:var(--fs-label-sm);color:var(--color-on-surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (T('index.ann.t.' + a.titleKey) || a.titleEn) + '</span>' +
+        '<span class="label-sm" style="color:var(--color-outline);flex-shrink:0;font-size:10px">' + a.date + '</span>' +
+      '</a>';
+    }).join('');
+  }
+  renderAnn();
 
   // ── Announcements 邻近上浮（2026-09-03 用户「鼠标靠近时在范围内的都会上浮」）──
   // 光标在左侧列内移动：每项按与光标的距离算上浮量（≤240px 越近越高，最高 10px、二次缓降），范围外归零；移出列重置。
@@ -2544,12 +2551,16 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var todayIdx = barCount - 1;
 
   // Day labels: "Jul 18" through "Aug 6" going backward from today
+  // v0.2.54.2 i18n：日期 locale 跟随当前语言（zh→zh-CN、zh-Hant→zh-TW、其余语言原样）
   var todayDate = new Date();
   var dayLabels = [];
+  var i18nLoc = (window.MN_I18N && MN_I18N.getLang()) || 'en';
+  if (i18nLoc === 'zh') i18nLoc = 'zh-CN';
+  else if (i18nLoc === 'zh-Hant') i18nLoc = 'zh-TW';
   for (var dl = 0; dl < barCount; dl++) {
     var dd = new Date(todayDate);
     dd.setDate(dd.getDate() - (barCount - 1 - dl));
-    dayLabels.push(dd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    dayLabels.push(dd.toLocaleDateString(i18nLoc, { month: 'short', day: 'numeric' }));
   }
 
   var barRects = barPoints.map(function(v, i) {
@@ -2562,7 +2573,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     return '<rect class="metric-bar" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barWidth.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="' + rx + '" fill="' + fill + '" data-day="' + dayLabels[i] + '" data-val="' + v.toLocaleString() + '" data-idx="' + i + '"/>';
   }).join('');
 
-  document.getElementById('metricsCards').innerHTML =
+  function renderMetrics() {
+    document.getElementById('metricsCards').innerHTML =
     // ── Online Now hero section ──
     '<div style="text-align:center;padding:var(--space-sm) 0 var(--space-md);border-bottom:1px solid rgba(118,117,134,0.08);margin-bottom:var(--space-md)">' +
       '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px">' +
@@ -2626,26 +2638,40 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       bar.style.opacity = '1';
     });
   });
+  }
+  renderMetrics();
 
   // My Worlds = 国家（既有流程）+ 世界（22 类型向导）合并，按创建时间新→旧
-  var myWorldsList = nations.map(function (n) {
-    return { name: n.name, subtitle: n.classification, createdAt: n.createdAt || '' };
-  }).concat(worlds.map(function (w) {
-    return { name: w.name, subtitle: (w.emoji ? w.emoji + ' ' : '') + w.typeLabel, createdAt: w.createdAt || '' };
-  })).sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
+  function renderMyWorlds() {
+    var myWorldsList = nations.map(function (n) {
+      return { name: n.name, subtitle: n.classification, createdAt: n.createdAt || '' };
+    }).concat(worlds.map(function (w) {
+      return { name: w.name, subtitle: (w.emoji ? w.emoji + ' ' : '') + w.typeLabel, createdAt: w.createdAt || '' };
+    })).sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
 
-  var myWorldsHtml;
-  if (myWorldsList.length === 0) {
-    myWorldsHtml = '<p style="color:var(--color-outline);font-size:var(--fs-label-md);text-align:center;padding:var(--space-sm)">' + (T('index.noWorlds') || 'No worlds yet.') + '<br><a href="pages/create-world.html">' + (T('index.createFirst') || 'Create your first world →') + '</a></p>';
-  } else {
-    myWorldsHtml = myWorldsList.slice(0, 3).map(function (n) {
-      return '<div style="padding:8px 0;display:flex;align-items:center;gap:8px">' +
-        '<div style="width:32px;height:32px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + n.name.charAt(0) + '</div>' +
-        '<div style="min-width:0"><div style="font-weight:600;font-size:var(--fs-label-md)">' + n.name + '</div><div class="label-sm" style="color:var(--color-outline)">' + n.subtitle + '</div></div>' +
-      '</div>';
-    }).join('');
+    var myWorldsHtml;
+    if (myWorldsList.length === 0) {
+      myWorldsHtml = '<p style="color:var(--color-outline);font-size:var(--fs-label-md);text-align:center;padding:var(--space-sm)">' + (T('index.noWorlds') || 'No worlds yet.') + '<br><a href="pages/create-world.html">' + (T('index.createFirst') || 'Create your first world →') + '</a></p>';
+    } else {
+      myWorldsHtml = myWorldsList.slice(0, 3).map(function (n) {
+        return '<div style="padding:8px 0;display:flex;align-items:center;gap:8px">' +
+          '<div style="width:32px;height:32px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + n.name.charAt(0) + '</div>' +
+          '<div style="min-width:0"><div style="font-weight:600;font-size:var(--fs-label-md)">' + n.name + '</div><div class="label-sm" style="color:var(--color-outline)">' + n.subtitle + '</div></div>' +
+        '</div>';
+      }).join('');
+    }
+    document.getElementById('myWorlds').innerHTML = myWorldsHtml;
   }
-  document.getElementById('myWorlds').innerHTML = myWorldsHtml;
+  renderMyWorlds();
+
+  // v0.2.54.2 i18n：语言切换/字典就绪后重渲染动态区（apply() 触发 onChange → 本钩子）
+  window.__mnI18nRerender = function () {
+    renderActivity();
+    renderAnn();
+    renderMetrics();
+    renderMyWorlds();
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+  };
   if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
 </script>
 
@@ -2906,6 +2932,6 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <script src="assets/js/i18n.js"></script>
 <script src="assets/i18n/common.i18n.js"></script>
 <script src="assets/i18n/index.i18n.js"></script>
-<script>MN_I18N.apply();</script>
+<script>MN_I18N.onChange(function () { if (window.__mnI18nRerender) window.__mnI18nRerender(); }); MN_I18N.apply();</script>
 </body>
 </html>
