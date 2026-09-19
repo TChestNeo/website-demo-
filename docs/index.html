@@ -309,6 +309,22 @@ html[data-theme="dark"] .guest-module .btn-primary:hover {
   filter: none;
   backdrop-filter: none;
 }
+/* 2026-09-20 用户「能不能把首页的卡片背景都变成和之前那个左侧菜单一样啊？」——问询钦定「侧栏同款不透明底」：
+   首页卡片（问候/活动流/公告/工作台/指标/我的世界）·搜索胶囊·访客大卡铺满 --sidebar-bg 不透明底
+   （亮色近纯白 0.95 / 暗色 #1a1a2e / 深色 mono #101013 随 var() 自适应）＋灭玻璃注入层 .lg-backdrop
+   滤镜/磨砂（与 09-18 亮色侧栏修法同机制——三通道折射发黄/暗斑、半透明漏背景色一并消失）；
+   卡片自带 backdrop-filter 保留（底已不透明零可见效果，与侧栏模块保留 blur 同口径）；
+   订阅卡本就是深色不透明渐变底＋白字，不在此列 */
+body.mn-index .app-main .card,
+body.mn-index .app-main .search-capsule,
+body.mn-index .app-main .guest-hero {
+  background: var(--sidebar-bg);
+}
+body.mn-index .app-main .card > .lg-backdrop,
+body.mn-index .app-main .guest-hero > .lg-backdrop {
+  filter: none;
+  backdrop-filter: none;
+}
 
 /* ----- Reset & Base ----- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2289,7 +2305,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 }
 </style>
 </head>
-<body class="pre-stagger">
+<body class="pre-stagger mn-index">
 
 <div class="app-layout">
   <aside class="app-sidebar" id="slati-sidebar"></aside>
@@ -2323,7 +2339,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       </div>
     </header>
 
-    <div class="card tilt-container animate-fade-in-up" style="padding:var(--space-lg);margin-bottom:var(--space-md);background:linear-gradient(135deg,rgba(70,72,212,0.06),rgba(129,39,207,0.04)),var(--card-bg)">
+    <div class="card tilt-container animate-fade-in-up" style="padding:var(--space-lg);margin-bottom:var(--space-md);background:var(--sidebar-bg)">
       <div class="flex-between" style="flex-wrap:wrap;gap:var(--space-md)">
         <div>
           <span class="badge badge-primary" style="margin-bottom:8px" data-i18n="index.knowledgeBase">Knowledge Base</span>
