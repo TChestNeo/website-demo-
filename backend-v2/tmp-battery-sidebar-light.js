@@ -54,7 +54,7 @@ function ok(name, cond) {
 // 3. site-config 版本 + changelog 条目 + FC 零改动
 {
   const s = read(path.join(DOCS, 'assets/js/site-config.js'));
-  ok('site-config 版本 = v0.2.54.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.56.0';") !== -1);
+  ok('site-config 版本 = v0.2.54.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.56.2';") !== -1);
   ok('site-config changelog 含 v0.2.51.2 条目 + 用户原话 + 修法口径',
     s.indexOf('v0.2.51.2 = 亮色侧栏发黄/暗斑修复') !== -1 &&
     s.indexOf('为什么在亮色模式下平台的') !== -1 &&

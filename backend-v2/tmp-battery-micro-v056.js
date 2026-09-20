@@ -1,8 +1,8 @@
-// tmp-battery-micro-v056.js — v0.2.56.0 MicroNationary 真文章电池（用户「在MicroNationary看不见也搜索不到…
+// tmp-battery-micro-v056.js — v0.2.56.2 MicroNationary 真文章电池（用户「在MicroNationary看不见也搜索不到…
 // FC只是一个编辑器…」）：概览页（侧栏第一菜单项 MicroNationary = overview.html）真实文章接入 + 搜索胶囊 +
 // 首页活动流混入真实文章（55.0 钦定字面落地）+ FC 列表 View 云端→平台阅读页
 // 验证：B 浏览器（fetch 打桩）——概览页近期贡献=真文章（假数据 Alex Rivera 移除）、搜索三态、零文章空态、
-//       首页活动流首卡=真文章卡、双版本锚 v0.2.56.0/v10.28.36.3、全程零异常
+//       首页活动流首卡=真文章卡、双版本锚 v0.2.56.2/v10.28.36.3、全程零异常
 //       F FC 列表（?view=articles）云端行 View → article.html?id=、本地行 View → ?article=（编辑器预览保留）
 // （house CDP 模式；截图全黑纪律，无截图依赖）
 'use strict';
@@ -201,7 +201,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     // B6 双版本锚
     const ver = await cdp.evalJs("window.MN_SITE_VERSION");
     const fcVer = await cdp.evalJs("window.FLUIDCANVAS_VERSION");
-    ok('B6 站点号 v0.2.56.0', ver === 'v0.2.56.0', 'got=' + ver);
+    ok('B6 站点号 v0.2.56.2', ver === 'v0.2.56.2', 'got=' + ver);
     ok('B6b FC v10.28.36.3', fcVer === 'v10.28.36.3', 'got=' + fcVer);
 
     // ═══ F FC 列表 View 分流 ═══
@@ -210,7 +210,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     await sleep(4000); // 等云端行拉取+渲染
     const rows = await cdp.evalJs("(function(){ return Array.from(document.querySelectorAll('#artList .art-row')).map(function(r){ return { id: r.dataset.id, title: (r.querySelector('.art-title') ? r.querySelector('.art-title').textContent : ''), isCloud: (r.className.indexOf('cloud') !== -1) }; }); })()");
     ok('F1 FC 列表行渲染（含云端行）', Array.isArray(rows) && rows.length >= 1 && rows.some(r => r.id === 'ART-MICRO-1'), JSON.stringify(rows).slice(0, 200));
-    // 云端行 View → 平台阅读页（v0.2.56.0 口径：FC 只是编辑器）
+    // 云端行 View → 平台阅读页（v0.2.56.2 口径：FC 只是编辑器）
     await cdp.evalJs("(function(){ var row = Array.from(document.querySelectorAll('#artList .art-row')).find(function(r){ return r.dataset.id === 'ART-MICRO-1'; }); var btn = row.querySelector('.art-action-btn[title=\"View\"]'); btn.click(); })()");
     await sleep(800);
     const fUrl = await cdp.evalJs('location.href');

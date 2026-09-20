@@ -21,7 +21,7 @@ const { spawn } = require('child_process');
 
 const MODE = (process.argv[2] || 'after');
 const IS_AFTER = MODE === 'after';
-const EXPECT_VER = IS_AFTER ? 'v0.2.56.0' : 'v0.2.50.2';
+const EXPECT_VER = IS_AFTER ? 'v0.2.56.2' : 'v0.2.50.2';
 
 const DOCS = path.resolve(__dirname, '..', 'docs');
 const PORT = 4700 + Math.floor(Math.random() * 100);

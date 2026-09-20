@@ -2227,6 +2227,39 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 .art-emblem-label { font-size: var(--fs-label-md); font-weight: 600; color: var(--color-on-surface-variant); }
 .art-asset { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius-md); background: var(--color-surface-container-low); font-size: var(--fs-label-md); color: var(--color-on-surface-variant); }
 .art-asset .material-symbols-outlined { font-size: 22px; color: var(--color-primary); }
+/* v0.2.56.2: FC 1:1 画布渲染——卡片按编辑器画布绝对定位（bbox 裁剪空余+等比缩放到栏宽，相对位置严格 1:1） */
+.art-canvas { position: relative; width: 100%; overflow: hidden; }
+.art-canvas-inner { position: relative; transform-origin: top left; }
+.art-card { position: absolute; overflow: hidden; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.art-card.art-card-flow { justify-content: flex-start; }
+.art-card-img { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit;
+  -webkit-mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, #000 80%, transparent 96%);
+  mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, #000 80%, transparent 96%); }
+.art-card-stripes { position: absolute; inset: 0; z-index: 0; border-radius: inherit; }
+.art-card-label { position: relative; z-index: 1; font-size: 11px; font-weight: 500; text-align: center; min-width: 30px; max-width: 90%; padding: 2px 6px; border-radius: var(--radius-xs); color: var(--color-on-surface); }
+.art-card-hasimg .art-card-label { background: rgba(0,0,0,0.35); color: #fff; }
+.art-card-content { position: relative; z-index: 1; width: 100%; box-sizing: border-box; padding: 8px 10px; line-height: 1.5; word-break: break-word; }
+.art-card-content p { margin: 0 0 8px; }
+.art-card-content p:last-child { margin-bottom: 0; }
+.art-card-asset { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 8px 10px; color: var(--color-on-surface-variant); font-size: 12px; }
+.art-card-emblem { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px; }
+.art-card-emblem .material-symbols-outlined { font-size: 34px; color: var(--color-primary); }
+.art-card-emblem-label { font-size: 12px; font-weight: 600; color: var(--color-on-surface-variant); text-align: center; }
+/* caption 位置 12 值——与 FC 编辑器同款（absent = 卡 flexbox 居中）；outside 位置翻卡为 overflow:visible 与编辑器一致 */
+.art-card[data-caption-pos="top"] .art-card-label { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); }
+.art-card[data-caption-pos="bottom"] .art-card-label { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); }
+.art-card[data-caption-pos="left"] .art-card-label { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); }
+.art-card[data-caption-pos="right"] .art-card-label { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }
+.art-card[data-caption-pos="top-left"] .art-card-label { position: absolute; top: 6px; left: 6px; }
+.art-card[data-caption-pos="top-right"] .art-card-label { position: absolute; top: 6px; right: 6px; }
+.art-card[data-caption-pos="bottom-left"] .art-card-label { position: absolute; bottom: 6px; left: 6px; }
+.art-card[data-caption-pos="bottom-right"] .art-card-label { position: absolute; bottom: 6px; right: 6px; }
+.art-card[data-caption-pos="above"] .art-card-label { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); }
+.art-card[data-caption-pos="below"] .art-card-label { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); }
+.art-card[data-caption-pos="outside-left"] .art-card-label { position: absolute; right: calc(100% + 6px); top: 50%; transform: translateY(-50%); }
+.art-card[data-caption-pos="outside-right"] .art-card-label { position: absolute; left: calc(100% + 6px); top: 50%; transform: translateY(-50%); }
+.art-card[data-caption-pos="above"], .art-card[data-caption-pos="below"],
+.art-card[data-caption-pos="outside-left"], .art-card[data-caption-pos="outside-right"] { overflow: visible; }
 .comments-section { display: flex; flex-direction: column; gap: var(--space-sm); }
 .comment-item { display: flex; gap: 10px; align-items: flex-start; }
 .comment-body { flex: 1; min-width: 0; }
@@ -2359,6 +2392,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
   // ── 正文渲染：draft v9 cards 按 (row, col) 排序 → content 正文流 / img·bitmap·flag·shield 图 / text 便签 ──
   // v0.2.55.2: shield（国徽）卡入渲染（有图同国旗、无图盾徽块）；其余卡型兜底块不再静默丢弃
+  // v0.2.56.2: 有像素坐标的 v9 草稿改走 FC 1:1 画布渲染（renderBodyCanvas），旧草稿保持流式兜底
   function renderBody(cj) {
     var CARD_TYPE_ICONS = { map: 'map', account_balance: 'account_balance', payments: 'payments', menu_book: 'menu_book', history_edu: 'history_edu', image: 'image', character: 'person', stats: 'monitoring', timeline: 'history_edu', sheet: 'table' };
     function figureHtml(src, label) {
@@ -2375,6 +2409,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         '</div>';
     }
     var cards = (cj && Array.isArray(cj.cards) && cj.cards) || [];
+    var hasXY = cards.some(function (c) { return c && typeof c.x === 'number' && typeof c.y === 'number'; });
+    if (hasXY) { renderBodyCanvas(cj, cards); return; }
     var sorted = cards.slice().sort(function (a, b) {
       return ((a.row || 0) - (b.row || 0)) || ((a.col || 0) - (b.col || 0));
     });
@@ -2412,6 +2448,158 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       '<p class="label-sm" style="color:var(--color-outline)">' + (T('article.emptyBody') || '这篇文章还没有正文内容') + '</p>';
   }
 
+  // ── v0.2.56.2 FC 1:1 画布渲染——用户「我要的是FC里的1:1 文章内的卡片位置什么的都要1：1」：
+  // 卡片按编辑器画布绝对定位（x/y 像素 + span×cellSize 尺寸；aspect-lock 卡 fitW/fitH 取胜、
+  // content/text 高度自适应），bbox 裁剪空余后等比缩放到栏宽，相对位置与编辑器严格 1:1。
+  // 几何口径与 fluidcanvas-editor.html 恢复路径一致：cellSize = PRESETS[activePreset]||20、
+  // gap 2、宽 = span×cs+(span−1)×2、preset 存的位置优先于卡顶层（同 L5824 恢复逻辑）。
+  function renderBodyCanvas(cj, cards) {
+    var CARD_TYPE_ICONS = { map: 'map', account_balance: 'account_balance', payments: 'payments', menu_book: 'menu_book', history_edu: 'history_edu', image: 'image', character: 'person', stats: 'monitoring', timeline: 'history_edu', sheet: 'table' };
+    var PRESET_CS = { '169': 20, half: 24, tablet: 20, mobile: 18 };
+    var cs = PRESET_CS[(cj && cj.activePreset) || '169'] || 20;
+    var GAP = 2;
+    function spanPx(n) { return (n || 1) * cs + ((n || 1) - 1) * GAP; }
+    function hexA(hex, a) {
+      var m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
+      if (!m) return '';
+      var n = parseInt(m[1], 16);
+      return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+    }
+    function addLabel(el, card, pill) {
+      if (!card.label) return;
+      var lbl = document.createElement('div');
+      lbl.className = 'art-card-label';
+      lbl.textContent = card.label;
+      if (!pill && parseFloat(card.captionBgOpacity) > 0) {
+        lbl.style.background = hexA(card.captionBgColor, parseFloat(card.captionBgOpacity) / 100);
+      }
+      el.appendChild(lbl);
+    }
+
+    var body = document.getElementById('artBody');
+    var presetCards = (cj && cj.presets && cj.presets[(cj.activePreset || '169')] && cj.presets[(cj.activePreset || '169')].cards) || {};
+    var rects = [];
+    cards.forEach(function (card) {
+      if (!card) return;
+      if (card.hidden === '1' || card.hidden === 1 || card.hidden === true) return; // v10.27.1 眼睛开关
+      var pos = presetCards[card.id] || card; // 与 FC 恢复一致：preset 存的位置优先
+      var w, h, hAuto = false;
+      if (pos.aspectLock === '1' && pos.fitW && pos.fitH) { w = parseFloat(pos.fitW); h = parseFloat(pos.fitH); }
+      else {
+        w = card.w ? parseFloat(card.w) : spanPx(pos.colSpan);
+        h = spanPx(pos.rowSpan);
+        if (card.type === 'content' || card.type === 'text') hAuto = true;
+      }
+      var rad = ((parseFloat(card.rotate) || 0) * Math.PI) / 180;
+      var rw = w * Math.abs(Math.cos(rad)) + h * Math.abs(Math.sin(rad));
+      var rh = w * Math.abs(Math.sin(rad)) + h * Math.abs(Math.cos(rad));
+      var x = typeof card.x === 'number' ? card.x : 0;
+      var y = typeof card.y === 'number' ? card.y : 0;
+      rects.push({ card: card, x: x + w / 2 - rw / 2, y: y + h / 2 - rh / 2, w: rw, h: rh, w0: w, h0: h, hAuto: hAuto });
+    });
+    if (!rects.length) {
+      body.innerHTML = '<p class="label-sm" style="color:var(--color-outline)">' + (T('article.emptyBody') || '这篇文章还没有正文内容') + '</p>';
+      return;
+    }
+    var M = 24;
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    rects.forEach(function (r) {
+      minX = Math.min(minX, r.x); minY = Math.min(minY, r.y);
+      maxX = Math.max(maxX, r.x + r.w); maxY = Math.max(maxY, r.y + r.h);
+    });
+    var holder = document.createElement('div');
+    holder.className = 'art-canvas';
+    var inner = document.createElement('div');
+    inner.className = 'art-canvas-inner';
+    rects.forEach(function (r) {
+      var card = r.card;
+      var el = document.createElement('div');
+      el.className = 'art-card';
+      el.dataset.cardId = String(card.id || '');
+      var st = 'left:' + Math.round((r.x - minX + M) * 100) / 100 + 'px;top:' + Math.round((r.y - minY + M) * 100) / 100 + 'px;' +
+        'width:' + r.w0 + 'px;' + (r.hAuto ? 'min-height:' + r.h0 + 'px;' : 'height:' + r.h0 + 'px;') +
+        'z-index:' + (parseInt(card.z, 10) || 1) + ';';
+      if (card.rotate) { st += 'transform:rotate(' + parseFloat(card.rotate) + 'deg);'; el.dataset.rotate = parseFloat(card.rotate) || 0; }
+      var bw = (card.borderWidth != null && card.borderWidth !== '') ? card.borderWidth : 2;
+      st += 'border:' + bw + 'px ' + (card.borderStyle || 'solid') + ' ' + (card.borderColor || 'var(--divider-line)') + ';';
+      st += 'border-radius:' + ((card.borderRadius != null && card.borderRadius !== '') ? card.borderRadius : 8) + 'px;';
+      st += 'background:' + (card.background || 'var(--color-surface-container)') + ';';
+      if (card.captionPos) el.setAttribute('data-caption-pos', card.captionPos);
+      el.style.cssText = st;
+      var src = String(card.imgSrc || '');
+      if (src) {
+        el.classList.add('art-card-hasimg');
+        var im = document.createElement('img');
+        im.className = 'art-card-img';
+        im.src = src;
+        im.alt = String(card.label || '');
+        el.appendChild(im);
+      }
+      if (card.type === 'content' || card.type === 'text') {
+        el.classList.add('art-card-flow');
+        addLabel(el, card, false);
+        var cd = document.createElement('div');
+        cd.className = 'art-card-content';
+        if (card.baseFontSize) cd.style.fontSize = Math.max(10, Math.min(30, parseInt(card.baseFontSize, 10) || 16)) + 'px';
+        cd.innerHTML = sanitizeCardHtml(card.content || '');
+        el.appendChild(cd);
+      } else if (src) {
+        addLabel(el, card, true);
+      } else if (card.type === 'shield') {
+        var emb = document.createElement('div');
+        emb.className = 'art-card-emblem';
+        emb.innerHTML = '<span class="material-symbols-outlined">shield</span>';
+        if (card.label) {
+          var lb2 = document.createElement('span');
+          lb2.className = 'art-card-emblem-label';
+          lb2.textContent = card.label;
+          emb.appendChild(lb2);
+        }
+        el.appendChild(emb);
+      } else if (card.type === 'flag') {
+        el.classList.add('art-card-hasimg');
+        var fs = document.createElement('div');
+        fs.className = 'art-card-stripes';
+        fs.style.background = 'linear-gradient(90deg,#d43f3f 0 33.3%,#f5f0e6 33.3% 66.6%,#3b6cb5 66.6% 100%)';
+        el.appendChild(fs);
+        addLabel(el, card, true);
+      } else if (card.label) {
+        var as = document.createElement('div');
+        as.className = 'art-card-asset';
+        as.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px">' + (CARD_TYPE_ICONS[card.type] || 'widgets') + '</span><span>' + escapeHtml(card.label) + '</span>';
+        el.appendChild(as);
+      }
+      inner.appendChild(el);
+    });
+    holder.appendChild(inner);
+    body.innerHTML = '';
+    body.appendChild(holder);
+    // 两遍量盒：content/text 高度自适应可能撑过 span 估算 → 按渲染后的真实盒重定 bbox 与缩放；
+    // 旋转卡按旋转后外接盒量（offset* 是未旋转布局盒——rotated 视觉角会超出被 overflow 裁掉）
+    var avail = body.clientWidth || 656;
+    var minLX = Infinity, minLY = Infinity, maxRX = -Infinity, maxBY = -Infinity;
+    Array.prototype.forEach.call(inner.children, function (e) {
+      var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180);
+      var rw = e.offsetWidth * Math.abs(Math.cos(rad)) + e.offsetHeight * Math.abs(Math.sin(rad));
+      var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad));
+      var cx = e.offsetLeft + e.offsetWidth / 2, cy = e.offsetTop + e.offsetHeight / 2;
+      minLX = Math.min(minLX, cx - rw / 2); minLY = Math.min(minLY, cy - rh / 2);
+      maxRX = Math.max(maxRX, cx + rw / 2); maxBY = Math.max(maxBY, cy + rh / 2);
+    });
+    var shiftX = M - minLX, shiftY = M - minLY;
+    Array.prototype.forEach.call(inner.children, function (e) {
+      e.style.left = (e.offsetLeft + shiftX) + 'px';
+      e.style.top = (e.offsetTop + shiftY) + 'px';
+    });
+    var bboxW = (maxRX - minLX) + 2 * M;
+    var bboxH = (maxBY - minLY) + 2 * M;
+    var s = Math.min(1.6, Math.max(0.25, avail / bboxW));
+    inner.style.width = bboxW + 'px';
+    inner.style.height = bboxH + 'px';
+    inner.style.transform = 'scale(' + s + ')';
+    holder.style.height = Math.round(bboxH * s) + 'px';
+  }
+
   function renderArticle(a) {
     document.getElementById('artTitle').textContent = a.title || 'Untitled';
     var name = a.authorName || 'Anonymous';
@@ -2436,8 +2624,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     favBtn.classList.toggle('favorited', !!a.favoritedByMe);
     favBtn.querySelector('.material-symbols-outlined').textContent = a.favoritedByMe ? 'star' : 'star_border';
     favBtn.title = T('article.favorite') || '收藏';
-    renderBody(a.contentJson);
     document.getElementById('articleDetail').style.display = 'flex';
+    renderBody(a.contentJson); // 先 display 再渲染：1:1 画布要量栏宽定缩放
     document.getElementById('commentComposerBox').style.display = isGuest() ? 'none' : 'flex';
     document.getElementById('guestPrompt').style.display = isGuest() ? 'block' : 'none';
   }

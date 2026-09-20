@@ -2,8 +2,10 @@
 // 直接访问 https://mnationworld.com 真实页面+真实 API，验证：
 // S1 首页访客视角最新文章区块（应显示 ART-000004 Testing）
 // S2 首页搜索框输入 Testing → 下拉结果
-// S3 文章阅读页 article.html?id=ART-000004 正文渲染（shield 卡是否缺失）
+// S3 文章阅读页 article.html?id=ART-000004 正文渲染——v0.2.56.2 FC 1:1 画布：国旗/国徽并排不竖堆、
+//    尺寸 1:1（fit 264×174 / span 240×174）、国徽卡 Emblem 不丢
 // S4 全程零 JS 错误
+// S5 概览页真文章 / S6 explore 页文章搜索 / S7 阅读页版本锚 + 缩放自洽（v0.2.56.2）
 'use strict';
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -107,23 +109,34 @@ async function waitFor(cdp, expr, timeout, label) {
     const searchHref = await cdp.evalJs("(function(){ var r = document.querySelector('.dash-search-item'); return r ? r.getAttribute('href') : null; })()");
     ok('S2b 结果锚到 article.html?id=ART-000004', searchHref === 'pages/article.html?id=ART-000004', 'href=' + searchHref);
 
-    // S3 阅读页正文
+    // S3 阅读页正文——v0.2.56.2 FC 1:1 画布渲染（用户「我要的是FC里的1:1」）
     await cdp.send('Page.navigate', { url: BASE + '/pages/article.html?id=ART-000004' });
     await waitFor(cdp, "document.getElementById('articleDetail').style.display === 'flex'", 30000, '阅读页加载');
     await sleep(1500);
     const bodyHtml = await cdp.evalJs("document.getElementById('artBody').innerHTML");
-    const nFigures = (bodyHtml.match(/art-figure/g) || []).length;
+    const nCanvas = (bodyHtml.match(/art-canvas/g) || []).length;
     const nFlows = (bodyHtml.match(/art-flow/g) || []).length;
-    const nNotes = (bodyHtml.match(/art-note/g) || []).length;
     const emptyHint = bodyHtml.indexOf('这篇文章还没有正文内容') !== -1;
     ok('S3 阅读页正文有内容（非空提示）', !emptyHint);
-    ok('S3b 图卡渲染数', nFigures >= 1, 'figures=' + nFigures + ' flows=' + nFlows + ' notes=' + nNotes);
+    ok('S3b 1:1 画布在场（art-canvas ≥1、零竖堆 art-flow）', nCanvas >= 1 && nFlows === 0, 'canvas=' + nCanvas + ' flows=' + nFlows);
+    const geo = await cdp.evalJs("(function(){ var b8 = document.querySelector('#artBody .art-card[data-card-id=\"c8\"]'); var b1 = document.querySelector('#artBody .art-card[data-card-id=\"c1\"]'); if (!b8 || !b1) return null; return { l8: b8.offsetLeft, l1: b1.offsetLeft, t8: b8.offsetTop, t1: b1.offsetTop, w8: b8.offsetWidth, w1: b1.offsetWidth, h8: b8.offsetHeight, h1: b1.offsetHeight }; })()");
+    ok('S3c 国旗/国徽并排不竖堆（c8 左于 c1、顶对齐同 top）', !!geo && geo.l8 < geo.l1 && Math.abs(geo.t8 - geo.t1) <= 0.5, JSON.stringify(geo));
+    ok('S3d 卡尺寸 1:1（国旗 fit 264×174 / 国徽 span 240×174）',
+      !!geo && Math.abs(geo.w8 - 264) <= 1.5 && Math.abs(geo.h8 - 174) <= 1.5 && Math.abs(geo.w1 - 240) <= 1.5 && Math.abs(geo.h1 - 174) <= 1.5,
+      JSON.stringify(geo));
     const imgs = await cdp.evalJs("(function(){ return Array.from(document.querySelectorAll('#artBody img')).map(function(i){ return i.getAttribute('src') ? String(i.getAttribute('src')).slice(0, 40) : 'NO_SRC'; }); })()");
-    ok('S3c 图卡 img 有 src', Array.isArray(imgs) && imgs.length >= 1 && imgs.every(s => s !== 'NO_SRC'), JSON.stringify(imgs).slice(0, 200));
-    // v0.2.56.0：国徽卡必须渲染（用户文章 = shield Emblem 卡）
-    ok('S3d 国徽卡渲染：art-emblem + shield 图标 + Emblem 标签',
-      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-emblem'); return !!e && !!e.querySelector('.material-symbols-outlined') && !!e.querySelector('.art-emblem-label'); })()") === true &&
-      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-emblem'); return e.querySelector('.art-emblem-label').textContent === 'Emblem'; })()") === true);
+    ok('S3e 国旗图卡 img 有 src', Array.isArray(imgs) && imgs.length >= 1 && imgs.every(s => s !== 'NO_SRC'), JSON.stringify(imgs).slice(0, 200));
+    // v0.2.55.2 口径延续：国徽卡必须渲染（用户文章 = shield Emblem 卡）
+    ok('S3f 国徽卡渲染：art-card-emblem + shield 图标 + Emblem 标签',
+      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-card-emblem'); return !!e && !!e.querySelector('.material-symbols-outlined') && !!e.querySelector('.art-card-emblem-label'); })()") === true &&
+      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-card-emblem-label'); return e.textContent === 'Emblem'; })()") === true);
+
+    // S7 v0.2.56.2：版本锚 + 缩放自洽（仍在阅读页上）
+    const artVer = await cdp.evalJs("window.MN_SITE_VERSION");
+    ok('S7 阅读页线上版本 = v0.2.56.2', artVer === 'v0.2.56.2', 'ver=' + artVer);
+    ok('S7b 缩放自洽（inner scale ∈ (0.25,1.6] 且 holder 高 = bboxH×s）',
+      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var h = document.querySelector('#artBody .art-canvas'); return s > 0.25 && s <= 1.6 && Math.abs(h.clientHeight - e.offsetHeight * s) <= 1.5; })()") === true,
+      await cdp.evalJs("document.querySelector('#artBody .art-canvas-inner').style.transform"));
 
     // v0.2.56.0：MicroNationary 概览页真文章（用户「我在MicroNationary看不见也搜索不到」）
     await cdp.send('Page.navigate', { url: BASE + '/pages/overview.html' });
@@ -141,6 +154,24 @@ async function waitFor(cdp, expr, timeout, label) {
     ok('S5c 概览页搜索 Testing → 下拉结果', ovHit);
     const ovHref = await cdp.evalJs("(function(){ var r = document.querySelector('#ovSearchPanel .dash-search-item'); return r ? r.getAttribute('href') : null; })()");
     ok('S5d 概览搜索结果锚阅读页', ovHref && ovHref.indexOf('article.html?id=') !== -1, 'href=' + ovHref);
+
+    // v0.2.56.1：explore 页文章搜索（用户「我在 explore.html 搜索都搜索不到」）
+    await cdp.send('Page.navigate', { url: BASE + '/pages/explore.html' });
+    await waitFor(cdp, "document.readyState === 'complete' && !!document.getElementById('exSearchInput')", 30000, 'explore 页加载');
+    const exVer = await cdp.evalJs("window.MN_SITE_VERSION");
+    ok('S6 explore 页线上版本 = v0.2.56.2', exVer === 'v0.2.56.2', 'ver=' + exVer);
+    await cdp.evalJs("(function(){ var i = document.getElementById('exSearchInput'); i.value = 'Testing'; i.dispatchEvent(new Event('input')); })()");
+    let exHit = false;
+    try { exHit = await waitFor(cdp, "document.querySelectorAll('#exSearchPanel .dash-search-item').length >= 1", 10000, 'explore 下拉'); } catch (e) {}
+    ok('S6b explore 搜索 Testing → 下拉出文章', exHit);
+    const exTitle = await cdp.evalJs("document.querySelector('#exSearchPanel .dash-search-title').textContent");
+    ok('S6c 下拉文章 = Testing', exTitle === 'Testing', 'title=' + exTitle);
+    const exHref = await cdp.evalJs("(function(){ var r = document.querySelector('#exSearchPanel .dash-search-item'); return r ? r.getAttribute('href') : null; })()");
+    ok('S6d 下拉锚 article.html?id=ART-000004', exHref === 'article.html?id=ART-000004', 'href=' + exHref);
+    const exSec = await cdp.evalJs("document.getElementById('exArticleResults').style.display === 'block'");
+    ok('S6e 主区文章结果段显示', exSec === true);
+    const exSecHref = await cdp.evalJs("(function(){ var a = document.querySelector('#exArticleResults a'); return a ? a.getAttribute('href') : null; })()");
+    ok('S6f 主区段锚阅读页', exSecHref === 'article.html?id=ART-000004', 'href=' + exSecHref);
 
     // S4 零 JS 错误
     ok('S4 全程零 Runtime exception', cdp.errs.length === 0, cdp.errs.slice(0, 3).join(' | ') || '干净');

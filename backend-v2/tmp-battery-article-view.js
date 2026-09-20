@@ -138,8 +138,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const main = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas.html'), 'utf8');
   const sconf = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   const editor = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
-  ok('F0-1 版本双线 v0.2.56.0 / v10.28.36.3 + 文章查看器注释块 + 直接发布注释块',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.56.0';") !== -1 &&
+  ok('F0-1 版本双线 v0.2.56.2 / v10.28.36.3 + 文章查看器注释块 + 直接发布注释块',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.56.2';") !== -1 &&
     sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.3';") !== -1 &&
     sconf.indexOf('文章查看器') !== -1 && sconf.indexOf('提交审核') !== -1);
   ok('F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）',
@@ -213,7 +213,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-CLOUD-1\"] .art-action-btn.danger')") !== null &&
       await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-001\"] .art-action-btn.danger')") !== null);
     ok('A4 pending 云端行徽章 In Review', (await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-PENDING-1\"] .art-badge').className")).indexOf('review') !== -1);
-    // v0.2.56.0：View 按钮按云端/本地分流——云端（已发布）→ 平台阅读页（「FC只是一个编辑器」口径）；
+    // v0.2.56.2：View 按钮按云端/本地分流——云端（已发布）→ 平台阅读页（「FC只是一个编辑器」口径）；
     // 本地草稿 → 编辑器 ?article= 网格裁剪预览（v10.28.35.0 保留，编辑器本职）
     await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-CLOUD-1\"] .art-action-btn[title=\"View\"]').click()");
     await waitFor(cdp, "location.pathname.indexOf('article.html') !== -1", 20000, 'A5 云端 View → 平台阅读页');

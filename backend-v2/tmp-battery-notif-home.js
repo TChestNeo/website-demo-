@@ -120,10 +120,10 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
 
   console.log('═══ F0 双版本 + changelog ═══');
   ok('F0-1 site-config 双版本 v0.2.54.0 / v10.28.36.1 + changelog 标记',
-    count(sconf, "window.MN_SITE_VERSION = 'v0.2.56.0';") === 1 &&
+    count(sconf, "window.MN_SITE_VERSION = 'v0.2.56.2';") === 1 &&
     count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.3';") === 1 &&
     sconf.indexOf('通知铃铛聚合') !== -1 && sconf.indexOf('文章查看模式点赞/收藏操作条') !== -1,
-    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.56.0';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.3';"));
+    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.56.2';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.3';"));
 
   console.log('═══ F1 index.html 铃铛/灵动岛 ═══');
   ok('F1-1 铃铛按钮+红点徽章（唯一性 + search-capsule position:relative + 徽章在铃铛后）',
@@ -160,7 +160,7 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
     count(idx, 'function timeAgo') === 1,
     'get=' + count(idx, 'MN_API.get(\'/notifications\')') + ' poll=' + count(idx, 'setInterval(refreshDashNotifs, 15000)') +
     ' guest=' + count(idx, '登录后查看通知') + ' empty=' + count(idx, '暂无通知'));
-  ok('F1-5 跳转分发三类目标（帖子/文章/主页）——v0.2.55.0 文章跳转改阅读页 article.html（4 处：搜索行/最新文章/通知/活动流混入卡 v0.2.56.0）',
+  ok('F1-5 跳转分发三类目标（帖子/文章/主页）——v0.2.55.0 文章跳转改阅读页 article.html（4 处：搜索行/最新文章/通知/活动流混入卡 v0.2.56.2）',
     count(idx, "pages/community-post.html?id=") === 1 &&
     count(idx, "pages/article.html?id=") === 4 &&
     count(idx, "pages/community-profile.html?id=") === 1,

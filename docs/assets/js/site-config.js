@@ -1104,6 +1104,17 @@ window.MN_SITE = window.MN_SITE || {};
 //     （有图出图、无图出 art-asset 图标+标签块；CARD_TYPE_ICONS 映射）
 //   后端零改动；FC v10.28.36.2 零改动；电池 article-frontend 45→48（B4c/B4d/B4e 新场景）
 //   （rev 00268-tcv）
+// v0.2.56.2 = 文章阅读页 FC 1:1 画布渲染（补丁位 1→2·修复轮；2026-09-20）——用户「不是啊，我要的是FC里的1:1 文章内的卡片位置什么的都要1：1有那么难吗？？」（真身：阅读页 renderBody 把卡片按 row/col 排序后竖着堆成流——FC 里并排的两张卡在文章页变成上下叠，位置零还原）：
+//   article.html 新增 renderBodyCanvas：卡片按编辑器画布绝对定位——x/y 像素 + 宽=span×cellSize+(span−1)×2
+//     （cellSize 随 draft.activePreset：169=20/half=24/tablet=20/mobile=18，gap 2，与 FC 恢复路径同口径；
+//     preset 存的位置优先于卡顶层，同编辑器 L5824）；aspect-lock 卡 fitW/fitH 取胜、content/text 高度自适应
+//     （v10.28.15 w 精确宽优先）；rotate 绕中心转、z 按卡层级、hidden 眼睛开关跳过；
+//     bbox 裁剪空余（不是 2200px 空画布）+ 两遍量盒（content 撑高重定 bbox）+ 等比缩放到栏宽（≤1.6×），
+//     相对位置严格 1:1；卡面同款还原：图卡 object-fit cover+径向渐隐遮罩、国旗无图条纹、国徽无图盾徽块、
+//     label captionPos 12 值同编辑器 CSS（absent=flexbox 居中）、图卡 label 黑底白字药丸；
+//     无像素坐标的旧草稿保持流式兜底
+//   后端零改动；FC 零改动；零 i18n 新键
+//   （rev 00271-hsl）
 // v0.2.56.1 = explore 页文章搜索（补丁位 0→1·修复轮；2026-09-20）——用户「不是啊 我在 explore.html 搜索都搜索不到你在做什么？」（真身：56.0 把文章搜索接到了首页+概览页，但用户日常搜的地方是 explore.html；该页搜索框只调 filterNations 纯客户端筛世界，零文章接入）：
 //   explore 页：搜索胶囊接文章搜索（300ms 防抖下拉三态 + 回车立即搜 + Esc/点击外部关闭，与 overview 同口径）；
 //     结果双保险——下拉 .dash-search-item 行 + 主区「文章」结果段（#exArticleResults 卡片列表，均锚 article.html?id=）；
@@ -1122,7 +1133,7 @@ window.MN_SITE = window.MN_SITE || {};
 //   i18n：overview/index 新键 12 语言（ov.searchPh/search.*/contrib.published/empty、index.act.article）+ OpenCC 重生成
 //   后端零改动（GET /api/articles 已具备）；电池：新 tmp-battery-micro-v056 + article-view 补 View 锚
 //   （rev 00269-52s）
-window.MN_SITE_VERSION = 'v0.2.56.1';
+window.MN_SITE_VERSION = 'v0.2.56.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
