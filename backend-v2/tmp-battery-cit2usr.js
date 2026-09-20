@@ -24,7 +24,7 @@ for (const f of ['signup-and-login.html', 'assets/js/sidebar.js', 'assets/js/set
 // 2. site-config 版本锚 + changelog 新条目（changelog 注释里的 CIT- 历史说明是文档，不断言零）
 {
   const s = read(path.join(DOCS, 'assets/js/site-config.js'));
-  ok('site-config 版本 = v0.2.54.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.55.2';") !== -1);
+  ok('site-config 版本 = v0.2.54.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.56.0';") !== -1);
   ok('site-config changelog 含 v0.2.51.1 条目 + 用户原话',
     s.indexOf('v0.2.51.1 = 公民号前缀 CIT- → USR- 全栈统一') !== -1 && s.indexOf('能不能把CIT改成') !== -1);
 }
@@ -43,12 +43,12 @@ for (const f of ['signup-and-login.html', 'assets/js/sidebar.js', 'assets/js/set
     m.indexOf('UPDATE users SET citizen_id = id') !== -1 && m.indexOf('IS NULL OR citizen_id != id') !== -1);
 }
 
-// 5. 测试钉：health/migrations 版本 27 + auth/social-profile/mask 的 USR- 口径
+// 5. 测试钉：health/migrations 版本 28 + auth/social-profile/mask 的 USR- 口径
 {
   const h = read(path.join(BE, 'test/health.test.js'));
-  ok('health.test user_version 27 + 标题 001-027', h.indexOf('{ simple: true }), 27)') !== -1 && h.indexOf('迁移 001-027') !== -1);
+  ok('health.test user_version 28 + 标题 001-028', h.indexOf('{ simple: true }), 28)') !== -1 && h.indexOf('迁移 001-028') !== -1);
   const g = read(path.join(BE, 'test/migrations.test.js'));
-  ok('migrations.test user_version 27（主+幂等+017/022 补跑同步）', g.indexOf('{ simple: true }), 27)') !== -1);
+  ok('migrations.test user_version 28（主+幂等+017/022 补跑同步）', g.indexOf('{ simple: true }), 28)') !== -1);
   ok('migrations.test 新 026 测试在位（三态断言）',
     g.indexOf('迁移 026：citizen_id 统一 USR- 口径') !== -1 && g.indexOf("'USR-000001', '旧 CIT- 存量改写为 id'") !== -1);
   ok('auth.test USR- 前缀断言', read(path.join(BE, 'test/auth.test.js')).indexOf("startsWith('USR-')") !== -1);
@@ -59,7 +59,7 @@ for (const f of ['signup-and-login.html', 'assets/js/sidebar.js', 'assets/js/set
 // 6. 五锚电池版本同步 v0.2.54.0
 for (const f of ['tmp-battery-msglink.js', 'tmp-battery-mono-flash.js', 'tmp-battery-monodark-v0422.js',
                  'tmp-battery-fadefix.js', 'tmp-battery-pageswitch.js']) {
-  ok('电池锚 v0.2.54.0：' + f, read(path.join(BE, f)).indexOf('v0.2.55.2') !== -1);
+  ok('电池锚 v0.2.54.0：' + f, read(path.join(BE, f)).indexOf('v0.2.56.0') !== -1);
 }
 
 console.log('\ncit2usr 巡检：' + pass + ' 通过 / ' + fail + ' 失败');

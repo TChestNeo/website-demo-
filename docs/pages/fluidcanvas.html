@@ -4206,7 +4206,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       window.location.href = 'fluidcanvas-editor.html' + (isCloud ? '?edit=' + encodeURIComponent(id) : '');
       return;
     }
-    if (e.target.closest('.art-action-btn[title="View"]')) { window.location.href = 'fluidcanvas-editor.html?article=' + encodeURIComponent(id); return; } // v10.28.35.0: 文章查看器
+    if (e.target.closest('.art-action-btn[title="View"]')) {
+      // v0.2.56.0：云端（已发布）文章 View → 平台阅读页（用户钦定「FC只是一个编辑器…不是在编辑器上查看」）；
+      // 本地草稿保留编辑器 ?article= 查看器（v10.28.35.0 网格裁剪预览，编辑器本职）
+      var isCloud = cloudArticles.some(function (a) { return a.id === id; });
+      window.location.href = isCloud ? 'article.html?id=' + encodeURIComponent(id) : 'fluidcanvas-editor.html?article=' + encodeURIComponent(id);
+      return;
+    }
   });
 
   function applyState(filter, sort) {

@@ -6,7 +6,7 @@
 //   （FC 玻璃/倾斜设计不动）；plan-card/auth-card/modal-card/pv-card 均无 .card 类天然豁免
 // 断言：
 //   S  静态：ethereal 全站铺底+灭层规则在位（body:not(.fc-page) 三面）/ 旧 mn-index 规则零残留 /
-//       FC 两页 body 含 fc-page / 订阅卡深色渐变零触碰 / cp 钦定玻璃规则锚 / 40 页内联块含新规则 /
+//       FC 两页 body 含 fc-page / 订阅卡深色渐变零触碰 / cp 钦定玻璃规则锚 / 41 页内联块含新规则（55.0 article.html 入族） /
 //       site-config v0.2.55.0 + changelog 条目 + FC v10.28.36.1 保持 / 豁免卡锚（plan-card/auth-card）
 //   B1 浏览器（登录 index 亮色）：18 张 .card 全 0.95 不透明 / 层全灭 / 胶囊同底 / 订阅卡深色渐变白字仍在
 //   B2 浏览器（登录 index 暗色）：18 卡全 rgb(26,26,46)
@@ -75,19 +75,19 @@ console.log('═══ S. 静态巡检 ═══');
     }
   })(DOCS, '');
   const inlinePages = files.filter((f) => read(path.join(DOCS, f)).indexOf('lg-glass-filter') !== -1);
-  ok('S9 内联页总数 = 40（实测 ' + inlinePages.length + '）', inlinePages.length === 40);
+  ok('S9 内联页总数 = 41（55.0 article.html 入族，实测 ' + inlinePages.length + '）', inlinePages.length === 41);
   let bad = 0;
   for (const f of inlinePages) {
     if (read(path.join(DOCS, f)).indexOf('body:not(.fc-page) .card:not(.profile-header)') === -1) {
       bad++; fail++; console.log('  ❌ 内联块缺全站铺底规则：' + f);
     }
   }
-  if (bad === 0) { pass++; console.log('  ✅ S10 40 页内联块全部含全站铺底规则'); }
+  if (bad === 0) { pass++; console.log('  ✅ S10 41 页内联块全部含全站铺底规则'); }
   const s = read('docs/assets/js/site-config.js');
-  ok('S11 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.55.2';") !== -1);
+  ok('S11 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.56.0';") !== -1);
   ok('S12 site-config changelog 含 v0.2.55.0 条目 + 用户原话',
     s.indexOf('v0.2.55.0') !== -1 && s.indexOf('能不能把全部变成不透明的卡片') !== -1);
-  ok('S13 FC v10.28.36.1 保持', s.indexOf("'v10.28.36.2'") !== -1);
+  ok('S13 FC v10.28.36.1 保持', s.indexOf("'v10.28.36.3'") !== -1);
   const prem = read('docs/pages/premium.html');
   const auth = read('docs/signup-and-login.html');
   ok('S14 豁免卡零触碰锚（plan-card 深色 !important 仍在 + auth-card 仍在）',

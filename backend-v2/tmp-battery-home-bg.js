@@ -6,7 +6,7 @@
 // v0.2.55.0 起首页口径由全站规则承载（body:not(.fc-page) 三面 + 灭层），本电池静态锚同步全站规则
 // 断言：
 //   S  静态：ethereal 全站铺底+灭层规则在位（首页命中同口径）/ 旧 mn-index 规则零残留 / index body 有 mn-index 类 /
-//       问候卡内联 background:var(--sidebar-bg)（旧 tint 渐变已去）/ 40 页内联块全量含新规则 /
+//       问候卡内联 background:var(--sidebar-bg)（旧 tint 渐变已去）/ 41 页内联块全量含新规则（55.0 article.html 入族） /
 //       site-config v0.2.55.0 + changelog 条目 + FC 零改动
 //   B1 浏览器（zh-CN + 登录会话，亮色）：18 张 .card 全 rgba(255,255,255,0.95) 不透明 / 卡自带
 //       blur(24px) 保留 / .lg-backdrop computed filter+backdrop-filter 全 none / 搜索胶囊同底 /
@@ -63,21 +63,21 @@ console.log('═══ S. 静态巡检 ═══');
     }
   })(DOCS, '');
   const inlinePages = files.filter((f) => read(path.join(DOCS, f)).indexOf('lg-glass-filter') !== -1);
-  ok('S7 内联页总数 = 40（实测 ' + inlinePages.length + '）', inlinePages.length === 40);
+  ok('S7 内联页总数 = 41（55.0 article.html 入族，实测 ' + inlinePages.length + '）', inlinePages.length === 41);
   let bad = 0;
   for (const f of inlinePages) {
     if (read(path.join(DOCS, f)).indexOf('body:not(.fc-page) .card:not(.profile-header)') === -1) {
       bad++; fail++; console.log('  ❌ 内联块缺全站铺底规则：' + f);
     }
   }
-  if (bad === 0) { pass++; console.log('  ✅ S8 40 页内联块全部含全站铺底规则'); }
+  if (bad === 0) { pass++; console.log('  ✅ S8 41 页内联块全部含全站铺底规则'); }
   const s = read('docs/assets/js/site-config.js');
-  ok('S9 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.55.2';") !== -1);
+  ok('S9 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.56.0';") !== -1);
   ok('S10 site-config changelog 含 v0.2.54.3 条目 + 用户原话 + 侧栏同款口径',
     s.indexOf('v0.2.54.3 = 首页卡片背景换侧栏同款不透明底') !== -1 &&
     s.indexOf('能不能把首页的卡片背景都变成') !== -1);
-  ok('S11 后端零改动（user_version 27/health 59 表不变口径）', s.indexOf('user_version 27/health 59 表不变') !== -1);
-  ok('S12 FC v10.28.36.1 保持', s.indexOf("'v10.28.36.2'") !== -1);
+  ok('S11 本轮后端零改动（v0.2.56.0 条目口径「GET /api/articles 已具备」）', s.indexOf('v0.2.56.0') !== -1 && s.indexOf('后端零改动（GET /api/articles 已具备）') !== -1);
+  ok('S12 FC v10.28.36.1 保持', s.indexOf("'v10.28.36.3'") !== -1);
 }
 
 // ── house CDP 骨架 ────────────────────────────────────────────────

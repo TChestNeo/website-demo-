@@ -83,7 +83,7 @@ function ok(name, cond, detail) {
 }
 
 // ═══ fetch 打桩 fixture（模拟后端口径）：detail 7 卡（content 含富文本+注入弹、flag、text、乱序 row、
-// content 卡含 <script> 与 onerror 属性供消毒实证；v0.2.55.2 增 shield 无图国徽卡 + map 无图兜底卡 +
+// content 卡含 <script> 与 onerror 属性供消毒实证；v0.2.56.0 增 shield 无图国徽卡 + map 无图兜底卡 +
 // character 有图兜底卡）；likeCount 5 likedByMe true；评论 2 条 visible；
 // 提交含 'spam' → removed；POST like → {likeCount:7}（服务端口径覆盖乐观值）
 const FIXTURE_CONTENT = {
@@ -234,10 +234,10 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     (idxI18n.match(/'index\.notif\.articleComment'/g) || []).length >= 11 &&
     idxI18n.indexOf("'index.searchPh': '搜索文章…'") !== -1 && idxI18n.indexOf("'index.searchPh': 'Search articles...'") !== -1 &&
     idxI18n.indexOf('搜索世界、话题') === -1 && idxI18n.indexOf('__ZH_HANT_AUTO__') !== -1);
-  ok('S11 site-config：v0.2.55.2 + changelog 文章前端条目 + FC v10.28.36.2 保持',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.55.2';") !== -1 &&
+  ok('S11 site-config：v0.2.56.0 + changelog 文章前端条目 + FC v10.28.36.3',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.56.0';") !== -1 &&
     sconf.indexOf('文章前端') !== -1 && sconf.indexOf('article_comments') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.2';") !== -1);
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.3';") !== -1);
 
   // ── v0.2.55.1 发布去重复 + 删除 ──
   const editor = read(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'));
@@ -336,7 +336,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('B4b text 卡：art-note + 内联 rgba 底 + 富文本 b/br 保留',
       await cdp.evalJs("(function(){ var n = document.querySelector('#artBody .art-note'); return !!n && !!n.style.background && n.style.background.replace(/\\s/g, '').indexOf('rgba(108,92,231,0.08)') !== -1; })()") === true &&
       await cdp.evalJs("(function(){ var n = document.querySelector('#artBody .art-note'); return !!n && !!n.querySelector('b') && !!n.querySelector('br'); })()") === true);
-    ok('B4c shield 无图国徽卡：art-emblem + shield 图标 + Emblem 标签（v0.2.55.2 不再静默丢弃）',
+    ok('B4c shield 无图国徽卡：art-emblem + shield 图标 + Emblem 标签（v0.2.56.0 不再静默丢弃）',
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-emblem'); return !!e && !!e.querySelector('.material-symbols-outlined') && e.querySelector('.material-symbols-outlined').textContent === 'shield' && !!e.querySelector('.art-emblem-label'); })()") === true &&
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-emblem'); return e.querySelector('.art-emblem-label').textContent === 'Emblem'; })()") === true);
     ok('B4d map 无图兜底卡：art-asset + map 图标 + Territorial Map 标签',

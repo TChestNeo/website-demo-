@@ -1104,7 +1104,18 @@ window.MN_SITE = window.MN_SITE || {};
 //     （有图出图、无图出 art-asset 图标+标签块；CARD_TYPE_ICONS 映射）
 //   后端零改动；FC v10.28.36.2 零改动；电池 article-frontend 45→48（B4c/B4d/B4e 新场景）
 //   （rev 00268-tcv）
-window.MN_SITE_VERSION = 'v0.2.55.2';
+// v0.2.56.0 = MicroNationary 真文章（小改动位 55→56·新功能轮；2026-09-20）——用户「不是我现在在MicroNationary看不见也搜索不到啊……FC只是一个编辑器……你就不能想想我的MicroNationary吗？」（真身：MicroNationary=侧栏第一菜单项 overview.html，该页此前零后端接入——Recent Contributions 是 4 条假数据（Alex Rivera created article…）、无任何搜索入口；首页活动流 55.0 钦定「混入最新文章」实际只做了独立区块未混入；FC 列表 View 打开的是编辑器 ?article= 查看器）：
+//   概览页（MicroNationary）：接入 api.js；新增文章搜索胶囊（300ms 防抖下拉+回车立即搜+点击外部关闭，
+//     与首页同口径，结果锚 article.html?id=）；Recent Contributions 假数据整体移除 → 真实发布文章
+//     （GET /api/articles 最多 6 篇：作者·发布了·标题链接·日期；后端不可达/零文章静默空态，绝不回退假数据）
+//   首页：真实文章混入活动流（loadLatestArticles 渲染完区块后把最新 5 篇插入 activityFeed 顶部，
+//     badge Article + 标题 + 作者 + 日期，整卡锚阅读页；55.0 钦定「首页活动流混入最新文章」字面落地）
+//   FC v10.28.36.3（补丁位 2→3：列表 View 云端文章 → 平台阅读页 article.html?id=，
+//     本地草稿保留编辑器 ?article= 网格裁剪预览——「FC只是一个编辑器」口径落地）
+//   i18n：overview/index 新键 12 语言（ov.searchPh/search.*/contrib.published/empty、index.act.article）+ OpenCC 重生成
+//   后端零改动（GET /api/articles 已具备）；电池：新 tmp-battery-micro-v056 + article-view 补 View 锚
+//   （rev 00269-52s）
+window.MN_SITE_VERSION = 'v0.2.56.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1436,4 +1447,9 @@ window.MN_SITE_VERSION = 'v0.2.55.2';
 //   新增 ?edit=ART-xxx（列表 Edit 云端文章带 id 打开 → GET 拉原文 applyDraft 回填+内容落本地草稿重戳
 //   lastSaved）；与站点 v0.2.55.1 同轮；零草稿字段（v 保持 9）
 //   （rev 00267-9l4）
-window.FLUIDCANVAS_VERSION = 'v10.28.36.2';
+// v10.28.36.3 = 列表 View 云端文章 → 平台阅读页（补丁位 2→3·修复轮；2026-09-20）——用户「FC只是一个编辑器
+//   他的工作就只是一个编辑器和统计平台而不是点击发布后在他妈的编辑器上查看」：?view=articles 列表 View 按钮
+//   按云端/本地分流——云端（已发布）→ article.html?id= 平台阅读页；本地草稿保留 ?article= 编辑器查看器
+//   （v10.28.35.0 网格裁剪预览，编辑器本职）；与站点 v0.2.56.0 同轮；零草稿字段（v 保持 9）
+//   （rev 00269-52s）
+window.FLUIDCANVAS_VERSION = 'v10.28.36.3';

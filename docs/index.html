@@ -2684,6 +2684,23 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         '</a>';
       }).join('');
       sec.style.display = 'block';
+      // v0.2.56.0：真实文章混入活动流（55.0 钦定「首页活动流混入最新文章」字面落地——
+      // 此前只做了独立区块，活动流仍是 4 条 demo；用户「看不见」真身之一即活动流里没有自己的文章）
+      var feed = document.getElementById('activityFeed');
+      if (feed) {
+        var feedHtml = top.map(function (a) {
+          return '<a class="card card-hover" href="pages/article.html?id=' + encodeURIComponent(a.id) + '" style="display:block;text-decoration:none">' +
+            '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
+              '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:24px">edit_note</span>' +
+              '<span class="badge badge-success">' + (T('index.act.article') || 'Article') + '</span>' +
+              '<span style="flex:1;font-weight:600;color:var(--color-on-surface)">' + dashEscapeHtml(a.title) + '</span>' +
+              '<span class="label-sm" style="color:var(--color-outline)">' + dashEscapeHtml(dashDateStr(a.createdAt)) + '</span>' +
+            '</div>' +
+            '<p style="margin-top:8px;color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + dashEscapeHtml(a.authorName || 'Anonymous') + '</p>' +
+          '</a>';
+        }).join('');
+        feed.insertAdjacentHTML('afterbegin', feedHtml);
+      }
     });
   }
 

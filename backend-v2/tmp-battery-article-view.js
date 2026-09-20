@@ -138,9 +138,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const main = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas.html'), 'utf8');
   const sconf = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   const editor = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
-  ok('F0-1 版本双线 v0.2.54.0 / v10.28.36.1 + 文章查看器注释块 + 直接发布注释块',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.55.2';") !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.2';") !== -1 &&
+  ok('F0-1 版本双线 v0.2.56.0 / v10.28.36.3 + 文章查看器注释块 + 直接发布注释块',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.56.0';") !== -1 &&
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.3';") !== -1 &&
     sconf.indexOf('文章查看器') !== -1 && sconf.indexOf('提交审核') !== -1);
   ok('F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）',
     editor.indexOf('body.fc-viewmode') !== -1 && editor.indexOf('id="fcViewScaler"') === -1 && editor.indexOf("#fcViewScaler") !== -1 &&
@@ -213,14 +213,22 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-CLOUD-1\"] .art-action-btn.danger')") !== null &&
       await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-001\"] .art-action-btn.danger')") !== null);
     ok('A4 pending 云端行徽章 In Review', (await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-PENDING-1\"] .art-badge').className")).indexOf('review') !== -1);
+    // v0.2.56.0：View 按钮按云端/本地分流——云端（已发布）→ 平台阅读页（「FC只是一个编辑器」口径）；
+    // 本地草稿 → 编辑器 ?article= 网格裁剪预览（v10.28.35.0 保留，编辑器本职）
+    await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-CLOUD-1\"] .art-action-btn[title=\"View\"]').click()");
+    await waitFor(cdp, "location.pathname.indexOf('article.html') !== -1", 20000, 'A5 云端 View → 平台阅读页');
+    ok('A5 云端 View → 平台阅读页 article.html?id=ART-CLOUD-1', (await cdp.evalJs('location.href')).indexOf('article.html?id=ART-CLOUD-1') !== -1);
+    await nav(BASE + '/pages/fluidcanvas.html?view=articles', "document.querySelectorAll('#artList .art-row').length === 17", 'A 列表回来');
+    await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-001\"] .art-action-btn[title=\"View\"]').click()");
+    await waitFor(cdp, "location.pathname.indexOf('fluidcanvas-editor.html') !== -1 && location.search.indexOf('article=ART-001') !== -1", 20000, 'A5b 种子行 View → 编辑器');
+    ok('A5b 本地草稿 View → 编辑器 ?article=ART-001（预览保留）', (await cdp.evalJs('location.search')).indexOf('article=ART-001') !== -1);
+
+    // ── B 查看器渲染 + 只读硬化 + chrome 全隐 + 哨兵（直载 ?article=ART-CLOUD-1——
+    // 云端 id 直链查看仍保留，仅列表 View 按钮分流）──
     // 哨兵草稿：查看器绝不能覆盖本地草稿（B8 断言读取）
     await cdp.evalJs('localStorage.setItem("slati_fluidcanvas_draft", JSON.stringify({ sentinel: true }))');
-    await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-CLOUD-1\"] .art-action-btn[title=\"View\"]').click()");
-    await waitFor(cdp, "location.pathname.indexOf('fluidcanvas-editor.html') !== -1 && document.body.classList.contains('fc-viewmode') && document.querySelectorAll('.grid-card').length === 4", 20000, 'A5 View 导航+渲染');
+    await nav(BASE + '/pages/fluidcanvas-editor.html?article=ART-CLOUD-1', "document.body.classList.contains('fc-viewmode') && document.querySelectorAll('.grid-card').length === 4", 'B 查看器直载');
     await sleep(800);
-    ok('A5 View 按钮导航到 editor?article=ART-CLOUD-1', (await cdp.evalJs('location.search')).indexOf('article=ART-CLOUD-1') !== -1);
-
-    // ── B 查看器渲染 + 只读硬化 + chrome 全隐 + 哨兵 ──
     ok('B1 body.fc-viewmode 在场', await cdp.evalJs("document.body.classList.contains('fc-viewmode')") === true);
     ok('B2 fixture 4 卡全渲染', await cdp.evalJs("document.querySelectorAll('.grid-card').length") === 4);
     ok('B3 chrome 全隐（header/侧栏/状态栏/标题框）',

@@ -103,8 +103,8 @@ const SNAP = `(function(){
   const allHtml = []; readAll(DOCS, allHtml);
   const countHtml = (pred) => allHtml.filter(pred).length;
   ok('F0 版本双线 v0.2.54.0 / v10.28.36.1 + 用户原话注释（49.1 注释块保留）',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.55.2';") !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.2';") !== -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.56.0';") !== -1 &&
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.3';") !== -1 &&
     sconfSrc.indexOf('黑白主题') !== -1 && sconfSrc.indexOf('转变成黑白主题的颜色') !== -1);
   ok('F1 settings-modal.js 已无 mono 规则（迁出干净）+ 弹窗 UI 规则保留',
     smSrc.indexOf('0b0b0d') === -1 && smSrc.indexOf('32324a') === -1 &&
@@ -114,9 +114,9 @@ const SNAP = `(function(){
     ethSrc.indexOf('.grid-controls .col-btn.active') !== -1 &&
     ethSrc.indexOf('.migrate-pill::before') !== -1);
   ok('F3 theme-init.js 原版源含 data-accent 同步落', tiSrc.indexOf("setAttribute('data-accent', 'mono')") !== -1);
-  ok('F4 29 页 head 内联块含 accent + 40 页内联含 mono 令牌',
-    countHtml(s => s.indexOf("if (accent === 'mono')") !== -1) === 29 &&
-    countHtml(s => s.indexOf('--color-background: #0b0b0d') !== -1) === 40,
+  ok('F4 30 页 head 内联块含 accent + 41 页内联含 mono 令牌（55.0 article.html 入族）',
+    countHtml(s => s.indexOf("if (accent === 'mono')") !== -1) === 30 &&
+    countHtml(s => s.indexOf('--color-background: #0b0b0d') !== -1) === 41,
     countHtml(s => s.indexOf("if (accent === 'mono')") !== -1) + ' 页 accent / ' + countHtml(s => s.indexOf('--color-background: #0b0b0d') !== -1) + ' 页 mono');
 
   // ═══ 浏览器场景（settings-modal.js 全程屏蔽——mono 仍生效=静态路径实证）═══

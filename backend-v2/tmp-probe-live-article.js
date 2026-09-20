@@ -120,10 +120,27 @@ async function waitFor(cdp, expr, timeout, label) {
     ok('S3b 图卡渲染数', nFigures >= 1, 'figures=' + nFigures + ' flows=' + nFlows + ' notes=' + nNotes);
     const imgs = await cdp.evalJs("(function(){ return Array.from(document.querySelectorAll('#artBody img')).map(function(i){ return i.getAttribute('src') ? String(i.getAttribute('src')).slice(0, 40) : 'NO_SRC'; }); })()");
     ok('S3c 图卡 img 有 src', Array.isArray(imgs) && imgs.length >= 1 && imgs.every(s => s !== 'NO_SRC'), JSON.stringify(imgs).slice(0, 200));
-    // v0.2.55.2：国徽卡必须渲染（用户文章 = shield Emblem 卡）
+    // v0.2.56.0：国徽卡必须渲染（用户文章 = shield Emblem 卡）
     ok('S3d 国徽卡渲染：art-emblem + shield 图标 + Emblem 标签',
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-emblem'); return !!e && !!e.querySelector('.material-symbols-outlined') && !!e.querySelector('.art-emblem-label'); })()") === true &&
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-emblem'); return e.querySelector('.art-emblem-label').textContent === 'Emblem'; })()") === true);
+
+    // v0.2.56.0：MicroNationary 概览页真文章（用户「我在MicroNationary看不见也搜索不到」）
+    await cdp.send('Page.navigate', { url: BASE + '/pages/overview.html' });
+    await waitFor(cdp, "document.readyState === 'complete' && !!document.getElementById('ovSearchInput')", 30000, '概览页加载');
+    await sleep(3000); // 等 fetch 渲染
+    const hasFake = await cdp.evalJs("document.getElementById('recentContribs').textContent.indexOf('Alex Rivera') !== -1");
+    ok('S5 概览页假数据移除（contrib 列表无 Alex Rivera）', hasFake === false);
+    const contribLinks = await cdp.evalJs("(function(){ return Array.from(document.querySelectorAll('#recentContribs a')).map(function(a){ return a.getAttribute('href'); }); })()");
+    ok('S5b Recent Contributions 真文章链接（article.html?id=）',
+      Array.isArray(contribLinks) && contribLinks.length >= 1 && contribLinks.every(h => h && h.indexOf('article.html?id=') !== -1),
+      JSON.stringify(contribLinks).slice(0, 200));
+    await cdp.evalJs("(function(){ var i = document.getElementById('ovSearchInput'); i.value = 'Testing'; i.dispatchEvent(new Event('input')); })()");
+    let ovHit = false;
+    try { ovHit = await waitFor(cdp, "document.querySelectorAll('#ovSearchPanel .dash-search-item').length >= 1", 10000, '概览搜索下拉'); } catch (e) {}
+    ok('S5c 概览页搜索 Testing → 下拉结果', ovHit);
+    const ovHref = await cdp.evalJs("(function(){ var r = document.querySelector('#ovSearchPanel .dash-search-item'); return r ? r.getAttribute('href') : null; })()");
+    ok('S5d 概览搜索结果锚阅读页', ovHref && ovHref.indexOf('article.html?id=') !== -1, 'href=' + ovHref);
 
     // S4 零 JS 错误
     ok('S4 全程零 Runtime exception', cdp.errs.length === 0, cdp.errs.slice(0, 3).join(' | ') || '干净');

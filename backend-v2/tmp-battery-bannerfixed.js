@@ -1,6 +1,6 @@
 // tmp-battery-bannerfixed.js — v0.2.55.0 用户横幅/头像主题无关电池（用户「那个用户横幅和头像能不能不要被网页主题影响到？」问询钦定「两处都要」）
 // 断言：F 静态锚（ethereal 暗色隐藏规则+mono 黑族/灰环移除、sidebar 内联固定 #4648d4、个人页 9+3+1 处垫底固定
-//   #e6e8ea+头像环 #f7f9fb、40 页+admin 内联块刷新、site-config v0.2.55.0）
+//   #e6e8ea+头像环 #f7f9fb、41 页+admin 内联块刷新、site-config v0.2.55.0）
 // + S1-S5 侧栏横幅/头像 亮/暗/mono亮/mono暗 四主题 computed 样式恒同（含访客模块）+ P1-P6 个人页横幅/头像
 //   亮/暗/mono亮/mono暗 + glass-rose 预设 + edge paper 边缘态 computed 恒同 + Z 零 JS 错误
 'use strict';
@@ -89,7 +89,7 @@ const AVATAR_RING = "rgb(247, 249, 251)";
   ok('F1 ethereal 暗色隐藏规则整体移除（09-10 反转）+ 54.6 注释在位',
     css.indexOf(':root[data-theme="dark"] .user-banner') === -1 &&
     css.indexOf('rgba(255, 255, 255, 0.04) !important') === -1 &&
-    css.indexOf('v0.2.55.0 用户「那个用户横幅和头像能不能不要被网页主题影响到？」') !== -1 &&
+    css.indexOf('v0.2.54.6 用户「那个用户横幅和头像能不能不要被网页主题影响到？」') !== -1 &&
     css.indexOf('反转 09-10 隐藏决定') !== -1);
   ok('F2 ethereal mono 暗色横幅翻黑族+头像灰环规则移除、AI 悬浮球保留',
     css.indexOf('[data-theme="dark"] .user-banner { background: linear-gradient(135deg, #1e1e2d') === -1 &&
@@ -113,15 +113,15 @@ const AVATAR_RING = "rgb(247, 249, 251)";
   ok('F8 pagebg-custom 色块零触碰（全文件仅剩 1 处 var 垫底=页面背景示意块，非横幅）',
     countOcc(cpSrc, 'var(--color-surface-container-high); }') === 1 &&
     cpSrc.indexOf('.swatch-fill.pagebg-custom') !== -1);
-  ok('F9 40 页内联块刷新（index/个人页/admin 暗色隐藏规则+mono 黑族均无、54.6 注释在位）',
-    idxSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1 && idxSrc.indexOf('v0.2.55.0 用户「那个用户横幅') !== -1 &&
-    cpSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1 && cpSrc.indexOf('v0.2.55.0 用户「那个用户横幅') !== -1 &&
+  ok('F9 41 页内联块刷新（index/个人页/admin 暗色隐藏规则+mono 黑族均无、54.6 注释在位）',
+    idxSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1 && idxSrc.indexOf('v0.2.54.6 用户「那个用户横幅') !== -1 &&
+    cpSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1 && cpSrc.indexOf('v0.2.54.6 用户「那个用户横幅') !== -1 &&
     adminSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1);
   ok('F10 site-config v0.2.55.0 + changelog 用户原话 + FC v10.28.36.1 不动',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.55.2';") !== -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.56.0';") !== -1 &&
     sconfSrc.indexOf('用户横幅与头像不再受网页主题影响') !== -1 &&
     sconfSrc.indexOf('问询钦定「两处都要」') !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.2';") !== -1);
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.3';") !== -1);
   const msgAvLines = msgSrc.split('\n').filter(l => l.indexOf('msg-avatar') !== -1 && l.indexOf('style=') !== -1);
   ok('F11 messages 头像族 11 个 msg-avatar 类 + 头像行零 var(--color-) 残留',
     countOcc(msgSrc, 'msg-acc msg-avatar') === 11 &&

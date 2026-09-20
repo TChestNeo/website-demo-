@@ -460,6 +460,96 @@ window.MN_I18N.add('pt', {
   "ov.contrib.time.hours8": "há 8 horas",
   "ov.contrib.time.day1": "há 1 dia"
 });
+
+// v0.2.56.0：MicroNationary 真文章（搜索胶囊 + 近期贡献真实数据；zh-Hant 由 tmp-i18n-hant.js 重跑生成）
+window.MN_I18N.add('zh', {
+  "ov.searchPh": "搜索文章…",
+  "ov.search.searching": "搜索中…",
+  "ov.search.noResults": "没有找到相关文章",
+  "ov.search.unavailable": "搜索暂不可用，请稍后再试",
+  "ov.contrib.published": "发布了",
+  "ov.contrib.empty": "暂无贡献内容"
+});
+window.MN_I18N.add('en', {
+  "ov.searchPh": "Search articles…",
+  "ov.search.searching": "Searching…",
+  "ov.search.noResults": "No matching articles found",
+  "ov.search.unavailable": "Search is unavailable, please try again later",
+  "ov.contrib.published": "published",
+  "ov.contrib.empty": "No contributions yet"
+});
+window.MN_I18N.add('de', {
+  "ov.searchPh": "Artikel suchen…",
+  "ov.search.searching": "Suche…",
+  "ov.search.noResults": "Keine passenden Artikel gefunden",
+  "ov.search.unavailable": "Suche derzeit nicht verfügbar, bitte später erneut versuchen",
+  "ov.contrib.published": "veröffentlichte",
+  "ov.contrib.empty": "Noch keine Beiträge"
+});
+window.MN_I18N.add('ru', {
+  "ov.searchPh": "Поиск статей…",
+  "ov.search.searching": "Поиск…",
+  "ov.search.noResults": "Подходящие статьи не найдены",
+  "ov.search.unavailable": "Поиск недоступен, попробуйте позже",
+  "ov.contrib.published": "опубликовал(а)",
+  "ov.contrib.empty": "Пока нет материалов"
+});
+window.MN_I18N.add('ms', {
+  "ov.searchPh": "Cari artikel…",
+  "ov.search.searching": "Mencari…",
+  "ov.search.noResults": "Tiada artikel yang sepadan",
+  "ov.search.unavailable": "Carian tidak tersedia, sila cuba kemudian",
+  "ov.contrib.published": "menerbitkan",
+  "ov.contrib.empty": "Tiada sumbangan lagi"
+});
+window.MN_I18N.add('th', {
+  "ov.searchPh": "ค้นหาบทความ…",
+  "ov.search.searching": "กำลังค้นหา…",
+  "ov.search.noResults": "ไม่พบบทความที่ตรงกัน",
+  "ov.search.unavailable": "การค้นหาไม่พร้อมใช้งาน โปรดลองอีกครั้งภายหลัง",
+  "ov.contrib.published": "เผยแพร่",
+  "ov.contrib.empty": "ยังไม่มีการมีส่วนร่วม"
+});
+window.MN_I18N.add('vi', {
+  "ov.searchPh": "Tìm kiếm bài viết…",
+  "ov.search.searching": "Đang tìm…",
+  "ov.search.noResults": "Không tìm thấy bài viết phù hợp",
+  "ov.search.unavailable": "Tìm kiếm tạm thời không khả dụng, vui lòng thử lại sau",
+  "ov.contrib.published": "đã xuất bản",
+  "ov.contrib.empty": "Chưa có đóng góp nào"
+});
+window.MN_I18N.add('id', {
+  "ov.searchPh": "Cari artikel…",
+  "ov.search.searching": "Mencari…",
+  "ov.search.noResults": "Tidak ada artikel yang cocok",
+  "ov.search.unavailable": "Pencarian tidak tersedia, silakan coba lagi nanti",
+  "ov.contrib.published": "menerbitkan",
+  "ov.contrib.empty": "Belum ada kontribusi"
+});
+window.MN_I18N.add('fr', {
+  "ov.searchPh": "Rechercher des articles…",
+  "ov.search.searching": "Recherche…",
+  "ov.search.noResults": "Aucun article correspondant",
+  "ov.search.unavailable": "La recherche est indisponible, veuillez réessayer plus tard",
+  "ov.contrib.published": "a publié",
+  "ov.contrib.empty": "Aucune contribution pour le moment"
+});
+window.MN_I18N.add('es', {
+  "ov.searchPh": "Buscar artículos…",
+  "ov.search.searching": "Buscando…",
+  "ov.search.noResults": "No se encontraron artículos",
+  "ov.search.unavailable": "La búsqueda no está disponible, inténtalo más tarde",
+  "ov.contrib.published": "publicó",
+  "ov.contrib.empty": "Aún no hay contribuciones"
+});
+window.MN_I18N.add('pt', {
+  "ov.searchPh": "Pesquisar artigos…",
+  "ov.search.searching": "Pesquisando…",
+  "ov.search.noResults": "Nenhum artigo encontrado",
+  "ov.search.unavailable": "A pesquisa está indisponível, tente novamente mais tarde",
+  "ov.contrib.published": "publicou",
+  "ov.contrib.empty": "Ainda não há contribuições"
+});
 /* __ZH_HANT_AUTO__ — v0.2.54.0 zh-Hant 由 OpenCC cn→tw 自动生成（勿手改，重跑本脚本再生成） */
 window.MN_I18N.add('zh-Hant', {
   "ov.nav.overview": "概覽",
@@ -495,5 +585,11 @@ window.MN_I18N.add('zh-Hant', {
   "ov.contrib.time.hours2": "2 小時前",
   "ov.contrib.time.hours5": "5 小時前",
   "ov.contrib.time.hours8": "8 小時前",
-  "ov.contrib.time.day1": "1 天前"
+  "ov.contrib.time.day1": "1 天前",
+  "ov.searchPh": "搜索文章…",
+  "ov.search.searching": "搜索中…",
+  "ov.search.noResults": "沒有找到相關文章",
+  "ov.search.unavailable": "搜索暫不可用，請稍後再試",
+  "ov.contrib.published": "發佈了",
+  "ov.contrib.empty": "暫無貢獻內容"
 });
