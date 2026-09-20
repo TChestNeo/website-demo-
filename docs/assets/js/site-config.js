@@ -1104,6 +1104,13 @@ window.MN_SITE = window.MN_SITE || {};
 //     （有图出图、无图出 art-asset 图标+标签块；CARD_TYPE_ICONS 映射）
 //   后端零改动；FC v10.28.36.2 零改动；电池 article-frontend 45→48（B4c/B4d/B4e 新场景）
 //   （rev 00268-tcv）
+// v0.2.56.1 = explore 页文章搜索（补丁位 0→1·修复轮；2026-09-20）——用户「不是啊 我在 explore.html 搜索都搜索不到你在做什么？」（真身：56.0 把文章搜索接到了首页+概览页，但用户日常搜的地方是 explore.html；该页搜索框只调 filterNations 纯客户端筛世界，零文章接入）：
+//   explore 页：搜索胶囊接文章搜索（300ms 防抖下拉三态 + 回车立即搜 + Esc/点击外部关闭，与 overview 同口径）；
+//     结果双保险——下拉 .dash-search-item 行 + 主区「文章」结果段（#exArticleResults 卡片列表，均锚 article.html?id=）；
+//     placeholder 改「搜索世界、文章...」；api.js 静态入栈；MN_API 缺失时下拉明示「搜索暂不可用」不再无声
+//   i18n：explore 新键 4×12 语言（ex.search.articles/noArticles/searching/unavailable）+ ex.ph.search 全语言改文章口径 + OpenCC 重生成
+//   后端零改动；FC 零改动
+//   （rev 00270-vgf）
 // v0.2.56.0 = MicroNationary 真文章（小改动位 55→56·新功能轮；2026-09-20）——用户「不是我现在在MicroNationary看不见也搜索不到啊……FC只是一个编辑器……你就不能想想我的MicroNationary吗？」（真身：MicroNationary=侧栏第一菜单项 overview.html，该页此前零后端接入——Recent Contributions 是 4 条假数据（Alex Rivera created article…）、无任何搜索入口；首页活动流 55.0 钦定「混入最新文章」实际只做了独立区块未混入；FC 列表 View 打开的是编辑器 ?article= 查看器）：
 //   概览页（MicroNationary）：接入 api.js；新增文章搜索胶囊（300ms 防抖下拉+回车立即搜+点击外部关闭，
 //     与首页同口径，结果锚 article.html?id=）；Recent Contributions 假数据整体移除 → 真实发布文章
@@ -1115,7 +1122,7 @@ window.MN_SITE = window.MN_SITE || {};
 //   i18n：overview/index 新键 12 语言（ov.searchPh/search.*/contrib.published/empty、index.act.article）+ OpenCC 重生成
 //   后端零改动（GET /api/articles 已具备）；电池：新 tmp-battery-micro-v056 + article-view 补 View 锚
 //   （rev 00269-52s）
-window.MN_SITE_VERSION = 'v0.2.56.0';
+window.MN_SITE_VERSION = 'v0.2.56.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

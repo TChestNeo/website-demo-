@@ -2215,17 +2215,72 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
         <a href="explore.html" class="subnav-pill active" data-i18n="ex.nav.explore">Explore</a>
         <a href="guidelines.html" class="subnav-pill" data-i18n="ex.nav.guidelines">Guidelines</a>
       </div>
-      <div class="search-capsule" style="margin-left:auto">
+      <div class="search-capsule" style="margin-left:auto;position:relative">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search worlds, events..." oninput="filterNations(this.value)" data-i18n-placeholder="ex.ph.search">
+        <input type="text" id="exSearchInput" placeholder="Search worlds, articles..." oninput="filterNations(this.value)" data-i18n-placeholder="ex.ph.search" autocomplete="off">
+        <div id="exSearchPanel" style="display:none"></div>
       </div>
     </div>
+
+    <!-- v0.2.56.1 文章搜索下拉 CSS（与 overview #ovSearchPanel 同口径；页面专属 CSS 独立块，绝不入内联块） -->
+    <style>
+      #exSearchPanel {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        background: var(--card-bg);
+        border: var(--card-border);
+        border-radius: var(--radius-md);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
+        max-height: 320px;
+        overflow-y: auto;
+        padding: 6px;
+        z-index: 900;
+      }
+      #exSearchPanel .dash-search-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: background 0.15s ease;
+      }
+      #exSearchPanel .dash-search-item:hover { background: rgba(118, 117, 134, 0.08); }
+      #exSearchPanel .dash-search-title {
+        display: block;
+        font-weight: 600;
+        font-size: var(--fs-label-md);
+        color: var(--color-on-surface);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #exSearchPanel .dash-search-meta {
+        display: block;
+        font-size: 11px;
+        color: var(--color-outline);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #exSearchPanel .dash-search-state {
+        padding: 20px 12px;
+        text-align: center;
+        color: var(--color-outline);
+        font-size: var(--fs-label-sm);
+      }
+    </style>
 
     <!-- Main content: 2 columns -->
     <div style="display:grid;grid-template-columns:1fr 320px;gap:var(--space-md)">
 
       <!-- Left: Nation/Event article cards -->
       <div>
+        <!-- v0.2.56.1 搜索时文章结果段（用户「在 explore.html 搜索都搜索不到」——本页搜索此前只筛世界，零文章接入） -->
+        <div id="exArticleResults" style="display:none;margin-bottom:var(--space-sm)"></div>
         <h2 class="headline-md" style="margin-bottom:var(--space-sm)" data-i18n="ex.heading">All Worlds & Entities</h2>
         <div style="display:flex;flex-direction:column;gap:var(--space-sm)" id="nationCards"></div>
       </div>
@@ -2282,6 +2337,7 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/site-config.js"></script>
 <script src="../assets/js/storage.js"></script>
+<script src="../assets/js/api.js"></script>
 <script src="../assets/js/sidebar.js"></script>
 <script src="../assets/js/settings-modal.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
@@ -2405,6 +2461,110 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
   }).join('');
 
   renderNationCards(allNations);
+
+  // v0.2.56.1 文章搜索（用户「我在 explore.html 搜索都搜索不到」——本页搜索此前只筛世界；
+  // 与 overview ovDoSearch 同口径：300ms 防抖下拉、回车立即搜、Esc/点击外部关闭；
+  // 同时渲染主区文章结果段 #exArticleResults，双保险保证能看到）
+  var exSearchTimer = null;
+  var exLastQuery = '';
+  function exEsc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function exSearchPanel() { return document.getElementById('exSearchPanel'); }
+  function exSearchClose() {
+    if (exSearchTimer) { clearTimeout(exSearchTimer); exSearchTimer = null; }
+    var p = exSearchPanel(); if (p) p.style.display = 'none';
+  }
+  function exSearchOpen(html) {
+    var p = exSearchPanel();
+    p.innerHTML = html;
+    p.style.display = 'block';
+  }
+  function exSearchRow(a) {
+    return '<a class="dash-search-item" href="article.html?id=' + encodeURIComponent(a.id) + '">' +
+      '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary);flex-shrink:0">article</span>' +
+      '<span style="flex:1;min-width:0">' +
+        '<span class="dash-search-title">' + exEsc(a.title) + '</span>' +
+        '<span class="dash-search-meta">' + exEsc(a.authorName || 'Anonymous') + ' · ' + exEsc(String(a.createdAt || '').slice(0, 10) || '—') + '</span>' +
+      '</span>' +
+    '</a>';
+  }
+  function exRenderArticleSection(list) {
+    var sec = document.getElementById('exArticleResults');
+    if (!sec) return;
+    if (!list || !list.length) { sec.style.display = 'none'; sec.innerHTML = ''; return; }
+    sec.style.display = 'block';
+    sec.innerHTML =
+      '<div class="card" style="padding:var(--space-sm) var(--space-md)">' +
+        '<h3 class="label-md" style="margin-bottom:var(--space-xs);display:flex;align-items:center;gap:6px">' +
+          '<span class="material-symbols-outlined" style="font-size:16px;color:var(--color-primary)">article</span>' +
+          (T('ex.search.articles') || 'Articles') +
+        '</h3>' +
+        list.map(function (a) {
+          return '<a class="dash-search-item" href="article.html?id=' + encodeURIComponent(a.id) + '" style="margin:0 -6px">' +
+            '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary);flex-shrink:0">article</span>' +
+            '<span style="flex:1;min-width:0">' +
+              '<span class="dash-search-title">' + exEsc(a.title) + '</span>' +
+              '<span class="dash-search-meta">' + exEsc(a.authorName || 'Anonymous') + ' · ' + exEsc(String(a.createdAt || '').slice(0, 10) || '—') + '</span>' +
+            '</span>' +
+            '<span class="material-symbols-outlined" style="font-size:16px;color:var(--color-outline)">arrow_forward</span>' +
+          '</a>';
+        }).join('') +
+      '</div>';
+  }
+  function exDoSearch(q) {
+    q = (q || '').trim();
+    if (!q) { exSearchClose(); exRenderArticleSection(null); return; }
+    exLastQuery = q;
+    if (!window.MN_API) {
+      exSearchOpen('<div class="dash-search-state">' + (T('ex.search.unavailable') || '文章搜索暂不可用，请稍后再试') + '</div>');
+      exRenderArticleSection(null);
+      return;
+    }
+    exSearchOpen('<div class="dash-search-state">' + (T('ex.search.searching') || '搜索中…') + '</div>');
+    MN_API.get('/articles?q=' + encodeURIComponent(q)).then(function (res) {
+      if (exLastQuery !== q) return; // 防抖期间又改了词：丢弃过期响应
+      if (res && res.ok && res.data && Array.isArray(res.data.articles)) {
+        var list = res.data.articles;
+        if (!list.length) {
+          exSearchOpen('<div class="dash-search-state">' + (T('ex.search.noArticles') || '没有找到相关文章') + '</div>');
+        } else {
+          exSearchOpen(list.map(exSearchRow).join(''));
+        }
+        exRenderArticleSection(list);
+      } else {
+        exSearchOpen('<div class="dash-search-state">' + (T('ex.search.unavailable') || '文章搜索暂不可用，请稍后再试') + '</div>');
+        exRenderArticleSection(null);
+      }
+    });
+  }
+  (function wireExSearch() {
+    var input = document.getElementById('exSearchInput');
+    if (!input) return;
+    input.addEventListener('input', function () {
+      var q = input.value;
+      if (exSearchTimer) clearTimeout(exSearchTimer);
+      if (!q.trim()) { exSearchClose(); exRenderArticleSection(null); return; }
+      exSearchTimer = setTimeout(function () { exDoSearch(q); }, 300);
+    });
+    input.addEventListener('focus', function () {
+      if (input.value.trim()) exDoSearch(input.value); // 有词回焦点时立即重开（无防抖）
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (exSearchTimer) { clearTimeout(exSearchTimer); exSearchTimer = null; }
+        exDoSearch(input.value);
+      } else if (e.key === 'Escape') {
+        exSearchClose();
+      }
+    });
+    document.addEventListener('click', function (e) {
+      var p = exSearchPanel();
+      if (p && p.style.display !== 'none' && input && !input.closest('.search-capsule').contains(e.target)) exSearchClose();
+    });
+  })();
 </script>
 <script src="../assets/js/transitions.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */
