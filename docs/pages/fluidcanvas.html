@@ -4045,7 +4045,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         '<div class="art-actions">' +
           '<button class="art-action-btn" title="Edit"><span class="material-symbols-outlined" style="font-size:16px">edit</span></button>' +
           '<button class="art-action-btn" title="View"><span class="material-symbols-outlined" style="font-size:16px">visibility</span></button>' +
-          (a.cloud ? '' : '<button class="art-action-btn danger" title="Delete"><span class="material-symbols-outlined" style="font-size:16px">delete</span></button>') +
+          // v0.2.55.1: 云端文章也渲染删除按钮（用户「FC里无法删除我创建的文章没有删除按钮」）
+          '<button class="art-action-btn danger" title="Delete"><span class="material-symbols-outlined" style="font-size:16px">delete</span></button>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -4083,6 +4084,23 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function deleteArticle(id) {
     if (!confirm('Delete this article? This action cannot be undone.')) return;
+    var cloudHit = cloudArticles.some(function (a) { return a.id === id; });
+    if (cloudHit) {
+      // v0.2.55.1: 云端文章删除走 DELETE /api/articles/:id（本人可删；后端校验）
+      if (!window.MN_API || !window.MN_API.request) return;
+      MN_API.request('/articles/' + encodeURIComponent(id), { method: 'DELETE' }).then(function (res) {
+        if (res && res.ok) {
+          cloudArticles = cloudArticles.filter(function (a) { return a.id !== id; });
+          delete selectedIds[id];
+          renderArtStats();
+          renderArtList();
+          showToast('Article deleted', 'delete');
+        } else {
+          showToast('Delete failed. You can only delete your own articles.', 'error');
+        }
+      });
+      return;
+    }
     articles = articles.filter(function(a){ return a.id !== id; });
     delete selectedIds[id];
     renderArtStats();
@@ -4151,10 +4169,28 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var ids = Object.keys(selectedIds);
     if (ids.length === 0) return;
     if (!confirm('Delete ' + ids.length + ' article(s)? This cannot be undone.')) return;
-    articles = articles.filter(function(a){ return !selectedIds[a.id]; });
+    // v0.2.55.1: 云端文章逐个 DELETE（本人文章可删，失败保留）；本地直接过滤
+    var cloudIds = ids.filter(function (id) { return cloudArticles.some(function (a) { return a.id === id; }); });
+    var localIds = ids.filter(function (id) { return articles.some(function (a) { return a.id === id; }); });
+    articles = articles.filter(function(a){ return localIds.indexOf(a.id) === -1; });
     selectedIds = {};
     renderArtStats();
     renderArtList();
+    var pending = cloudIds.length;
+    if (!pending) return;
+    if (!window.MN_API || !window.MN_API.request) {
+      cloudArticles = cloudArticles.filter(function (a) { return cloudIds.indexOf(a.id) === -1; });
+      renderArtStats();
+      renderArtList();
+      return;
+    }
+    cloudIds.forEach(function (cid) {
+      MN_API.request('/articles/' + encodeURIComponent(cid), { method: 'DELETE' }).then(function (res) {
+        if (res && res.ok) cloudArticles = cloudArticles.filter(function (a) { return a.id !== cid; });
+        pending--;
+        if (!pending) { renderArtStats(); renderArtList(); }
+      });
+    });
   });
 
   // Row delegation: checkbox / title+edit / delete (inline onclick removed — v0.2.45.0 bugfix)
@@ -4164,7 +4200,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var id = row.dataset.id;
     if (e.target.closest('.art-checkbox')) { toggleSelect(id); return; }
     if (e.target.closest('.art-action-btn.danger')) { deleteArticle(id); return; }
-    if (e.target.closest('.art-title') || e.target.closest('.art-action-btn[title="Edit"]')) { window.location.href = 'fluidcanvas-editor.html'; return; }
+    if (e.target.closest('.art-title') || e.target.closest('.art-action-btn[title="Edit"]')) {
+      // v0.2.55.1: 云端文章 Edit 带 id 打开（编辑器 ?edit= 加载原文 + 再发布 = 更新）
+      var isCloud = cloudArticles.some(function (a) { return a.id === id; });
+      window.location.href = 'fluidcanvas-editor.html' + (isCloud ? '?edit=' + encodeURIComponent(id) : '');
+      return;
+    }
     if (e.target.closest('.art-action-btn[title="View"]')) { window.location.href = 'fluidcanvas-editor.html?article=' + encodeURIComponent(id); return; } // v10.28.35.0: 文章查看器
   });
 

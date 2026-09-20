@@ -1088,7 +1088,17 @@ window.MN_SITE = window.MN_SITE || {};
 //     inline-css 重跑全站（article 首内联）
 //   FC v10.28.36.1 零改动；草稿字段零改动（v 保持 9）
 //   （rev 00266-rrq）
-window.MN_SITE_VERSION = 'v0.2.55.0';
+// v0.2.55.1 = 文章发布去重复 + 云端文章可删（补丁位 0→1·修复轮；2026-09-20）——用户「为什么我点击public时他只是复制出新的一个文章？而不是发布？然后我在FC里无法删除我创建的文章没有删除按钮」：
+//   后端：PUT /api/articles/:id 本人更新（编辑器再发布 = 更新原文章不重复建文；非本人 403/不存在 404/校验同 POST）；
+//     DELETE /api/articles/:id 本人删除（article_comments FK 级联 + content_likes/favorites 互动行清理；非本人 403）；
+//     测试 321→325/325（article-write 4 测）
+//   前端：编辑器 localStorage slati_article_publish_id 记忆已发布 id（POST 成功存、再点 Publish 走 PUT 更新
+//     「已更新发布」、404/403 清 id 回退新建、草稿清空同步作废）；新增 ?edit=ART-xxx 编辑模式
+//     （列表 Edit 云端文章带 id 打开 → GET 拉原文 applyDraft 回填 + 设发布 id + 内容落本地草稿重戳 lastSaved
+//     防云端草稿弹窗覆盖）；FC 列表云端文章渲染删除按钮 + deleteArticle/bulkDelete 走 DELETE API（本人可删失败保留）
+//   FC v10.28.36.2（补丁位 1→2·修复轮：publishCloudArticle 更新分支 + ?edit= 加载 + 列表删除按钮）
+//   （rev 00267-9l4）
+window.MN_SITE_VERSION = 'v0.2.55.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1414,4 +1424,10 @@ window.MN_SITE_VERSION = 'v0.2.55.0';
 //   clip 裁回剪影内、卡身内容层零滤镜完全免疫，剪影边缘墨雾感由纹理特征位移×clip 交互保留（比旧版弱、内容
 //   优先）；hover/selected/dragging 三态同步去 url()；defs 零改动；与站点 v0.2.53.1 同轮同机制
 //   （rev 00256-6bg）
-window.FLUIDCANVAS_VERSION = 'v10.28.36.1';
+// v10.28.36.2 = 文章发布去重复 + ?edit= 编辑模式（补丁位 1→2·修复轮；2026-09-20）——用户「为什么我点击public时
+//   他只是复制出新的一个文章？而不是发布？」：publishCloudArticle 记忆 slati_article_publish_id——POST 成功存 id、
+//   再点 Publish 走 PUT /api/articles/:id 更新原文章（404/403 清 id 回退新建）；草稿清空同步作废 id；
+//   新增 ?edit=ART-xxx（列表 Edit 云端文章带 id 打开 → GET 拉原文 applyDraft 回填+内容落本地草稿重戳
+//   lastSaved）；与站点 v0.2.55.1 同轮；零草稿字段（v 保持 9）
+//   （rev 00267-9l4）
+window.FLUIDCANVAS_VERSION = 'v10.28.36.2';

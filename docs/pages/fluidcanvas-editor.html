@@ -6352,6 +6352,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // v0.2.49.0 文章 XP 旗子重置：标题空且无卡 = 草稿清空重写 → 下一篇文章算新（+120）
     if (window.SlatiDB && !draft.title && !(draft.cards && draft.cards.length)) {
       SlatiDB.set(SlatiDB.KEYS.ARTICLE_PUBLISHED, false);
+      setPublishId(null); // v0.2.55.1: 草稿清空 = 新文章起点，发布 id 一并作废
     }
     try {
       localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(draft));
@@ -6467,16 +6468,49 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     });
   }
 
-  function publishCloudArticle() {
-    var draft = buildDraft();
-    if (!draft.title) { showToast('请先填写标题再发布'); return; }
+  // v0.2.55.1: 已发布文章 id 记忆——再点 Publish = 更新原文章，不再重复建文
+  // （用户「为什么我点击public时他只是复制出新的一个文章？而不是发布？」）。
+  // 草稿清空（saveDraft 标题空且无卡）同步作废；404/403（线上被删）回退新建。
+  var PUBLISH_ID_KEY = 'slati_article_publish_id';
+  function getPublishId() {
+    try { return localStorage.getItem(PUBLISH_ID_KEY) || null; } catch (e) { return null; }
+  }
+  function setPublishId(id) {
+    try {
+      if (id) localStorage.setItem(PUBLISH_ID_KEY, id);
+      else localStorage.removeItem(PUBLISH_ID_KEY);
+    } catch (e) {}
+  }
+
+  function doCreatePublish(draft) {
     MN_API.post('/articles', { title: draft.title, contentJson: JSON.stringify(draft) }).then(function (res) {
       if (res.ok && res.data && res.data.article) {
+        setPublishId(res.data.article.id);
         // v10.28.35.1: 发布即公开（审核段已去除——后端 POST 直存 published）
         headerStatus.textContent = 'Published';
         headerStatus.className = 'badge badge-success';
         showToast('已发布');
         publishXPReward();
+      } else {
+        showToast('发布失败，请稍后重试');
+      }
+    });
+  }
+
+  function publishCloudArticle() {
+    var draft = buildDraft();
+    if (!draft.title) { showToast('请先填写标题再发布'); return; }
+    var id = getPublishId();
+    if (!id) { doCreatePublish(draft); return; }
+    MN_API.request('/articles/' + id, { method: 'PUT', body: { title: draft.title, contentJson: JSON.stringify(draft) } }).then(function (res) {
+      if (res.ok && res.data && res.data.article) {
+        headerStatus.textContent = 'Published';
+        headerStatus.className = 'badge badge-success';
+        showToast('已更新发布');
+        publishXPReward();
+      } else if (res.status === 404 || res.status === 403) {
+        setPublishId(null); // 文章已不存在/非本人 → 下次按新文章创建
+        doCreatePublish(draft);
       } else {
         showToast('发布失败，请稍后重试');
       }
@@ -14538,13 +14572,53 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     });
   }
 
+  // ── Article Edit Mode（v0.2.55.1）────────────────────────────────────────
+  // ?edit=ART-xxx：从 FC 列表 Edit 打开已发布文章继续编辑——加载云端内容进
+  // 编辑器（applyDraft 回填画布+标题）、记住发布 id（再点 Publish = 更新原文章
+  // 不重复建文）。内容同步落本地草稿并重戳 lastSaved：云端草稿同步（probe 回调）
+  // 不会把旧草稿弹窗覆盖回来。
+  function isEditParam() {
+    return /[?&]edit=([^&#]+)/.test(window.location.search);
+  }
+  function getEditParam() {
+    var m = window.location.search.match(/[?&]edit=([^&#]+)/);
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function loadArticleForEdit() {
+    var id = getEditParam();
+    if (!id) { showToast('缺少文章编号，无法打开'); loadDraft(); return; }
+    if (!window.MN_API) { showToast('无法连接文章服务，请稍后再试'); loadDraft(); return; }
+    MN_API.get('/articles/' + encodeURIComponent(id)).then(function (res) {
+      var art = (res && res.ok && res.data && res.data.article) ? res.data.article : null;
+      var cj = art ? (art.contentJson || art.content_json) : null;
+      var draft = null;
+      if (cj) {
+        try { draft = (typeof cj === 'string') ? JSON.parse(cj) : cj; } catch (e) {}
+      }
+      if (draft && Array.isArray(draft.cards)) {
+        setPublishId(id);
+        draft.lastSaved = Date.now(); // 重戳断开云端草稿弹窗循环（v10.28.15.2 口径）
+        try { localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(draft)); } catch (e) {}
+        applyDraft(draft);
+        showToast('正在编辑已发布文章');
+      } else {
+        // 拿不到正文（404/被删/未公开）→ 按空白编辑器处理，不设发布 id
+        showToast('文章不存在或已被删除');
+        loadDraft();
+      }
+    });
+  }
+
   // ── Init ──
   initPresetData();
   applyPreset('169');
   // v10.28.35.0: ?article= 查看模式——完全不碰本地草稿（不 loadDraft），
-  // 直接拉云端文章渲染；普通编辑路径照旧
+  // 直接拉云端文章渲染；v0.2.55.1: ?edit= 编辑模式——拉云端文章进编辑器
+  // 继续编辑（发布 id 记忆 → 再发布 = 更新原文章）；普通编辑路径照旧
   if (isArticleView()) {
     initArticleView();
+  } else if (isEditParam()) {
+    loadArticleForEdit();
   } else {
     loadDraft();
   }

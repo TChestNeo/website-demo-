@@ -125,9 +125,11 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   ' var FIX_COMMENTS = ' + JSON.stringify(FIXTURE_COMMENTS) + ';' +
   ' var FIX_LIST = ' + JSON.stringify(FIXTURE_LIST) + ';' +
   ' window.__stubLike = { liked: false, likeCount: 5 }; window.__stubFav = { favorited: false, favoriteCount: 2 };' +
+  ' window.__stubCalls = [];' +
   ' window.fetch = function (url, opts) {' +
   '  var u = String(url); var method = (opts && opts.method) || "GET";' +
   '  if (u.indexOf("/api/") === -1) return realFetch(url, opts);' +
+  '  if (u.indexOf("/api/health") === 0) return stubResponse(JSON.stringify({ status: "ok", db: "ok" }), 200);' +
   '  var id = "ART-X";' +
   '  if (u.indexOf("/api/articles?q=") !== -1) {' +
   '   var q = decodeURIComponent(u.split("q=")[1] || "").toLowerCase();' +
@@ -135,6 +137,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   '   return stubResponse(JSON.stringify({ articles: hit }), 200);' +
   '  }' +
   '  if (u.indexOf("/api/articles") === 0 && u.indexOf("/api/articles/") !== 0) {' +
+  '   if (method === "POST") { window.__stubCalls.push({ u: u, method: method }); return stubResponse(JSON.stringify({ article: { id: "ART-NEW1", title: "Fresh Article", status: "published", createdAt: new Date().toISOString() } }), 200); }' +
   '   return stubResponse(JSON.stringify(FIX_LIST), 200);' +
   '  }' +
   '  if (u.indexOf("/api/articles/") === 0) {' +
@@ -150,6 +153,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   '     return stubResponse(JSON.stringify({ comment: { id: "ACM-000100", articleId: "ART-X", authorId: "USR-000001", authorName: "Tester", avatarUrl: null, content: body.content, status: "visible", createdAt: new Date().toISOString() }, moderation: { verdict: "pass" } }), 200);' +
   '    }' +
   '   }' +
+  '   if (method === "PUT") { window.__stubCalls.push({ u: u, method: method }); return stubResponse(JSON.stringify({ article: { id: "ART-X", title: "Test Article Title", status: "published", updatedAt: new Date().toISOString() } }), 200); }' +
+  '   if (method === "DELETE") { window.__stubCalls.push({ u: u, method: method }); return stubResponse(JSON.stringify({ deleted: true, id: "ART-X" }), 200); }' +
   '   return stubResponse(JSON.stringify(FIX_DETAIL), 200);' +
   '  }' +
   '  if (u.indexOf("/api/social/articles/") === 0) {' +
@@ -224,9 +229,34 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     idxI18n.indexOf("'index.searchPh': '搜索文章…'") !== -1 && idxI18n.indexOf("'index.searchPh': 'Search articles...'") !== -1 &&
     idxI18n.indexOf('搜索世界、话题') === -1 && idxI18n.indexOf('__ZH_HANT_AUTO__') !== -1);
   ok('S11 site-config：v0.2.55.0 + changelog 文章前端条目 + FC v10.28.36.1 保持',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.55.0';") !== -1 &&
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.55.1';") !== -1 &&
     sconf.indexOf('文章前端') !== -1 && sconf.indexOf('article_comments') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.1';") !== -1);
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.2';") !== -1);
+
+  // ── v0.2.55.1 发布去重复 + 删除 ──
+  const editor = read(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'));
+  const fclist = read(path.join(DOCS, 'pages', 'fluidcanvas.html'));
+  const awTest = read(path.join(__dirname, 'test', 'article-write.test.js'));
+  ok('S12 articles.js PUT/DELETE 端点（本人校验/互动行清理/级联）+ article-write 4 测',
+    articlesJs.indexOf("router.add('PUT', '/api/articles/:id'") !== -1 &&
+    articlesJs.indexOf("router.add('DELETE', '/api/articles/:id'") !== -1 &&
+    articlesJs.indexOf('只能修改自己的文章') !== -1 && articlesJs.indexOf('只能删除自己的文章') !== -1 &&
+    articlesJs.indexOf("DELETE FROM content_likes WHERE target_type = 'article'") !== -1 &&
+    articlesJs.indexOf("DELETE FROM favorites WHERE target_type = 'article'") !== -1 &&
+    awTest.indexOf("PUT：本人更新") !== -1 && awTest.indexOf('DELETE：本人删除 + 评论级联') !== -1);
+  ok('S13 编辑器：publish id 记忆 + PUT 更新分支 + 404/403 回退 + 草稿清空作废 + ?edit= 加载 + boot 分支',
+    editor.indexOf("var PUBLISH_ID_KEY = 'slati_article_publish_id'") !== -1 &&
+    editor.indexOf("method: 'PUT'") !== -1 && editor.indexOf("'已更新发布'") !== -1 &&
+    editor.indexOf('doCreatePublish(draft)') !== -1 &&
+    editor.indexOf('setPublishId(null); // v0.2.55.1: 草稿清空') !== -1 &&
+    editor.indexOf('function isEditParam()') !== -1 && editor.indexOf('function loadArticleForEdit()') !== -1 &&
+    editor.indexOf("setPublishId(id);") !== -1 &&
+    editor.indexOf("} else if (isEditParam()) {") !== -1);
+  ok('S14 FC 列表：cloud 删除按钮无条件渲染 + DELETE API + bulk 逐个删 + Edit 带 ?edit=',
+    fclist.indexOf("a.cloud ? '' :") === -1 &&
+    fclist.indexOf("MN_API.request('/articles/' + encodeURIComponent(id), { method: 'DELETE' })") !== -1 &&
+    fclist.indexOf("'?edit=' + encodeURIComponent(id)") !== -1 &&
+    fclist.indexOf('cloudIds.forEach') !== -1);
 
   // ═══ 浏览器场景（登录态 Chrome #1）═══
   await new Promise(r => server.listen(PORT, r));
@@ -379,6 +409,40 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('B14d Escape 关闭面板',
       await cdp.evalJs("document.getElementById('dashSearchInput').dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))") !== undefined &&
       await cdp.evalJs("document.getElementById('dashSearchPanel').style.display") === 'none');
+
+    // ── B16-B19 编辑器发布去重复 + FC 列表删除（v0.2.55.1）──
+    await cdp.evalJs("try{localStorage.removeItem('slati_article_publish_id');localStorage.removeItem('slati_fluidcanvas_draft');}catch(e){}");
+    await nav(cdp, BASE + '/pages/fluidcanvas-editor.html?edit=ART-X',
+      "document.getElementById('titleInput').value === 'Test Article Title'", 'B16 edit 加载');
+    ok('B16 ?edit= 加载：标题回填 + publish id 记忆 + 画布卡片恢复',
+      await cdp.evalJs("document.getElementById('titleInput').value") === 'Test Article Title' &&
+      await cdp.evalJs("localStorage.getItem('slati_article_publish_id')") === 'ART-X' &&
+      await cdp.evalJs("document.querySelectorAll('.grid-card').length") > 0);
+    await cdp.evalJs("window.__stubCalls = []");
+    await cdp.evalJs("Array.from(document.querySelectorAll('button')).find(function(b){ return b.textContent.indexOf('Publish') !== -1; }).click()");
+    await waitFor(cdp, "document.getElementById('toast').textContent === '已更新发布'", 10000, 'B17 PUT 更新');
+    ok('B17 已发布文章再点 Publish = PUT 更新原文章（恰 1 次 PUT、零新 POST）',
+      await cdp.evalJs("window.__stubCalls.length") === 1 &&
+      await cdp.evalJs("window.__stubCalls[0].method") === 'PUT' &&
+      await cdp.evalJs("window.__stubCalls[0].u.indexOf('/api/articles/ART-X') === 0") === true);
+    await cdp.evalJs("try{localStorage.removeItem('slati_article_publish_id');localStorage.removeItem('slati_fluidcanvas_draft');}catch(e){}");
+    await nav(cdp, BASE + '/pages/fluidcanvas-editor.html',
+      "!!document.getElementById('titleInput')", 'B18 空白编辑器');
+    await cdp.evalJs("window.__stubCalls = []");
+    await cdp.evalJs("(function(){ var t = document.getElementById('titleInput'); t.value = 'Fresh Article'; })()");
+    await cdp.evalJs("Array.from(document.querySelectorAll('button')).find(function(b){ return b.textContent.indexOf('Publish') !== -1; }).click()");
+    await waitFor(cdp, "localStorage.getItem('slati_article_publish_id') === 'ART-NEW1'", 10000, 'B18 POST 创建');
+    ok('B18 无发布 id 时点 Publish = POST 创建 + id 记忆（后续再发布即更新）',
+      await cdp.evalJs("window.__stubCalls.some(function(c){ return c.method === 'POST' && c.u.indexOf('/api/articles') === 0; })") === true);
+    await cdp.evalJs("window.__stubCalls = []");
+    await nav(cdp, BASE + '/pages/fluidcanvas.html?view=articles',
+      "document.querySelectorAll('.art-row').length >= 1", 'B19 列表');
+    ok('B19a cloud 行删除按钮渲染（ART-X 有 danger 按钮）',
+      await cdp.evalJs("!!document.querySelector('.art-row[data-id=\"ART-X\"] .art-action-btn.danger')") === true);
+    await cdp.evalJs("document.querySelector('.art-row[data-id=\"ART-X\"] .art-action-btn.danger').click()");
+    await waitFor(cdp, "!document.querySelector('.art-row[data-id=\"ART-X\"]')", 10000, 'B19 删除');
+    ok('B19b 点击删除 → DELETE /api/articles/ART-X + 行从列表消失',
+      await cdp.evalJs("window.__stubCalls.some(function(c){ return c.method === 'DELETE' && c.u.indexOf('/api/articles/ART-X') === 0; })") === true);
 
     // ── G 全程零 Runtime exception + 零 console error（资源 404 豁免）──
     ok('G1 零 Runtime exception', cdp.errs.length === 0, cdp.errs.slice(0, 5).join(' | ') || '干净');

@@ -115,6 +115,38 @@ function register(router, ctx) {
     });
   });
 
+  // v0.2.55.1: PUT 更新（本人）——编辑器「已发布文章再发布 = 更新原文章」，不再重复建文
+  // （用户「为什么我点击public时他只是复制出新的一个文章？而不是发布？」）
+  router.add('PUT', '/api/articles/:id', requireSession(async (req, res, c) => {
+    const row = db.prepare('SELECT * FROM articles WHERE id = ?').get(req.params.id);
+    if (!row) throw new HttpError('NOT_FOUND', '文章不存在');
+    if (row.author_id !== c.user.id) throw new HttpError('FORBIDDEN', '只能修改自己的文章');
+    const body = await readJson(req, MAX_BYTES + 1024);
+    const title = String(body.title || '').trim();
+    if (!title || title.length > MAX_TITLE) throw new HttpError('VALIDATION', `标题需 1-${MAX_TITLE} 字`);
+    const contentJson = typeof body.contentJson === 'string'
+      ? body.contentJson : JSON.stringify(body.contentJson || {});
+    if (Buffer.byteLength(contentJson, 'utf8') > MAX_BYTES) throw new HttpError('VALIDATION', '内容超过 4MB');
+    const iso = new Date().toISOString();
+    db.prepare('UPDATE articles SET title = ?, content_json = ?, updated_at = ? WHERE id = ?')
+      .run(title, contentJson, iso, row.id);
+    sendJson(res, 200, { article: { id: row.id, title, status: row.status, updatedAt: iso } });
+  }));
+
+  // v0.2.55.1: DELETE 删除（本人）——FC 列表云端文章删除按钮（用户「我在FC里无法删除我创建的文章没有删除按钮」）。
+  // article_comments FK 级联随删；content_likes/favorites 无 FK 的互动行顺手清（防孤儿脏数据）。
+  router.add('DELETE', '/api/articles/:id', requireSession((req, res, c) => {
+    const row = db.prepare('SELECT * FROM articles WHERE id = ?').get(req.params.id);
+    if (!row) throw new HttpError('NOT_FOUND', '文章不存在');
+    if (row.author_id !== c.user.id) throw new HttpError('FORBIDDEN', '只能删除自己的文章');
+    db.transaction(() => {
+      db.prepare("DELETE FROM content_likes WHERE target_type = 'article' AND target_id = ?").run(row.id);
+      db.prepare("DELETE FROM favorites WHERE target_type = 'article' AND target_id = ?").run(row.id);
+      db.prepare('DELETE FROM articles WHERE id = ?').run(row.id);
+    })();
+    sendJson(res, 200, { deleted: true, id: row.id });
+  }));
+
   // ── 文章评论（v0.2.55.0：一层结构无回复；先发后审 L0 同帖子评论口径）──
   router.add('GET', '/api/articles/:id/comments', (req, res) => {
     const art = db.prepare('SELECT id, status FROM articles WHERE id = ?').get(req.params.id);
