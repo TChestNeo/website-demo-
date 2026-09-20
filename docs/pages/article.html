@@ -2221,6 +2221,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 .art-figure-sm img { max-width: 340px; max-height: none; }
 .art-figure figcaption { color: var(--color-outline); font-size: var(--fs-label-sm); }
 .art-note { padding: 12px 16px; border-radius: var(--radius-md); font-size: var(--fs-label-md); line-height: 1.6; }
+/* v0.2.55.2: 国徽（盾徽）卡与其余卡型兜底块——阅读页不再静默丢弃任何卡 */
+.art-emblem { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 24px 16px; border-radius: var(--radius-md); background: var(--color-surface-container-low); }
+.art-emblem .material-symbols-outlined { font-size: 40px; color: var(--color-primary); }
+.art-emblem-label { font-size: var(--fs-label-md); font-weight: 600; color: var(--color-on-surface-variant); }
+.art-asset { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius-md); background: var(--color-surface-container-low); font-size: var(--fs-label-md); color: var(--color-on-surface-variant); }
+.art-asset .material-symbols-outlined { font-size: 22px; color: var(--color-primary); }
 .comments-section { display: flex; flex-direction: column; gap: var(--space-sm); }
 .comment-item { display: flex; gap: 10px; align-items: flex-start; }
 .comment-body { flex: 1; min-width: 0; }
@@ -2351,8 +2357,23 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     box.querySelector('p').textContent = T(key) || '文章不存在或未公开';
   }
 
-  // ── 正文渲染：draft v9 cards 按 (row, col) 排序 → content 正文流 / img·flag·bitmap 图 / text 便签 ──
+  // ── 正文渲染：draft v9 cards 按 (row, col) 排序 → content 正文流 / img·bitmap·flag·shield 图 / text 便签 ──
+  // v0.2.55.2: shield（国徽）卡入渲染（有图同国旗、无图盾徽块）；其余卡型兜底块不再静默丢弃
   function renderBody(cj) {
+    var CARD_TYPE_ICONS = { map: 'map', account_balance: 'account_balance', payments: 'payments', menu_book: 'menu_book', history_edu: 'history_edu', image: 'image', character: 'person', stats: 'monitoring', timeline: 'history_edu', sheet: 'table' };
+    function figureHtml(src, label) {
+      var caption = label ? '<figcaption>' + escapeHtml(label) + '</figcaption>' : '';
+      return '<figure class="art-figure">' +
+        '<img src="' + escapeHtml(src) + '" alt="' + escapeHtml(label || '') + '" loading="lazy"' +
+        ' onload="if (this.naturalWidth && this.naturalWidth < 480) this.parentNode.classList.add(\'art-figure-sm\')">' +
+        caption + '</figure>';
+    }
+    function assetHtml(icon, label) {
+      return '<div class="art-asset">' +
+        '<span class="material-symbols-outlined">' + icon + '</span>' +
+        (label ? '<span>' + escapeHtml(label) + '</span>' : '') +
+        '</div>';
+    }
     var cards = (cj && Array.isArray(cj.cards) && cj.cards) || [];
     var sorted = cards.slice().sort(function (a, b) {
       return ((a.row || 0) - (b.row || 0)) || ((a.col || 0) - (b.col || 0));
@@ -2363,16 +2384,27 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       if (card.type === 'content') {
         var fs = Math.max(12, Math.min(28, parseInt(card.baseFontSize, 10) || 16));
         html += '<div class="art-flow" style="font-size:' + fs + 'px">' + sanitizeCardHtml(card.content) + '</div>';
-      } else if (card.type === 'img' || card.type === 'bitmap' || card.type === 'flag') {
+      } else if (card.type === 'img' || card.type === 'bitmap' || card.type === 'flag' || card.type === 'shield') {
         var src = String(card.imgSrc || '');
-        if (!src) return;
-        var caption = card.label ? '<figcaption>' + escapeHtml(card.label) + '</figcaption>' : '';
-        html += '<figure class="art-figure">' +
-          '<img src="' + escapeHtml(src) + '" alt="' + escapeHtml(card.label || '') + '" loading="lazy"' +
-          ' onload="if (this.naturalWidth && this.naturalWidth < 480) this.parentNode.classList.add(\'art-figure-sm\')">' +
-          caption + '</figure>';
+        if (src) {
+          html += figureHtml(src, card.label);
+        } else if (card.type === 'shield') {
+          html += '<div class="art-emblem">' +
+            '<span class="material-symbols-outlined">shield</span>' +
+            (card.label ? '<span class="art-emblem-label">' + escapeHtml(card.label) + '</span>' : '') +
+            '</div>';
+        } else if (card.type === 'flag') {
+          html += assetHtml('flag', card.label);
+        }
       } else if (card.type === 'text') {
         html += '<div class="art-note" style="background:' + safeBg(card.background) + '">' + sanitizeCardHtml(card.content) + '</div>';
+      } else {
+        var oSrc = String(card.imgSrc || '');
+        if (oSrc) {
+          html += figureHtml(oSrc, card.label);
+        } else if (card.label) {
+          html += assetHtml(CARD_TYPE_ICONS[card.type] || 'widgets', card.label);
+        }
       }
     });
     var body = document.getElementById('artBody');

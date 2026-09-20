@@ -139,7 +139,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const sconf = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   const editor = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
   ok('F0-1 版本双线 v0.2.54.0 / v10.28.36.1 + 文章查看器注释块 + 直接发布注释块',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.55.1';") !== -1 &&
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.55.2';") !== -1 &&
     sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.2';") !== -1 &&
     sconf.indexOf('文章查看器') !== -1 && sconf.indexOf('提交审核') !== -1);
   ok('F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）',
@@ -209,8 +209,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     await nav(BASE + '/pages/fluidcanvas.html?view=articles', "document.querySelectorAll('#artList .art-row').length === 17", 'A articles 17 行');
     ok('A1 17 行（15 种子+2 云端）', await cdp.evalJs("document.querySelectorAll('#artList .art-row').length") === 17);
     ok('A2 云端行置顶（首行 ART-CLOUD-1）', await cdp.evalJs("document.querySelector('#artList .art-row').dataset.id") === 'ART-CLOUD-1');
-    ok('A3 云端行无删除钮、种子行有',
-      await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-CLOUD-1\"] .art-action-btn.danger')") === null &&
+    ok('A3 云端行与种子行均有删除钮（v0.2.55.1 起云端行可删）',
+      await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-CLOUD-1\"] .art-action-btn.danger')") !== null &&
       await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-001\"] .art-action-btn.danger')") !== null);
     ok('A4 pending 云端行徽章 In Review', (await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-PENDING-1\"] .art-badge').className")).indexOf('review') !== -1);
     // 哨兵草稿：查看器绝不能覆盖本地草稿（B8 断言读取）

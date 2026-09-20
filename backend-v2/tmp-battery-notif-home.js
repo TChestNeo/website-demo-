@@ -120,10 +120,10 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
 
   console.log('═══ F0 双版本 + changelog ═══');
   ok('F0-1 site-config 双版本 v0.2.54.0 / v10.28.36.1 + changelog 标记',
-    count(sconf, "window.MN_SITE_VERSION = 'v0.2.55.1';") === 1 &&
+    count(sconf, "window.MN_SITE_VERSION = 'v0.2.55.2';") === 1 &&
     count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.2';") === 1 &&
     sconf.indexOf('通知铃铛聚合') !== -1 && sconf.indexOf('文章查看模式点赞/收藏操作条') !== -1,
-    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.55.1';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.2';"));
+    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.55.2';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.36.2';"));
 
   console.log('═══ F1 index.html 铃铛/灵动岛 ═══');
   ok('F1-1 铃铛按钮+红点徽章（唯一性 + search-capsule position:relative + 徽章在铃铛后）',

@@ -82,8 +82,9 @@ function ok(name, cond, detail) {
   else { FAIL++; console.log('  ❌ ' + name + (detail ? '  ' + detail : '')); }
 }
 
-// ═══ fetch 打桩 fixture（模拟后端口径）：detail 4 卡（content 含富文本+注入弹、flag、text、乱序 row、
-// content 卡含 <script> 与 onerror 属性供消毒实证）；likeCount 5 likedByMe true；评论 2 条 visible；
+// ═══ fetch 打桩 fixture（模拟后端口径）：detail 7 卡（content 含富文本+注入弹、flag、text、乱序 row、
+// content 卡含 <script> 与 onerror 属性供消毒实证；v0.2.55.2 增 shield 无图国徽卡 + map 无图兜底卡 +
+// character 有图兜底卡）；likeCount 5 likedByMe true；评论 2 条 visible；
 // 提交含 'spam' → removed；POST like → {likeCount:7}（服务端口径覆盖乐观值）
 const FIXTURE_CONTENT = {
   v: 9,
@@ -97,7 +98,11 @@ const FIXTURE_CONTENT = {
     { id: 'c-flag', type: 'flag', label: 'Test Flag', col: 16, row: 2, colSpan: 12, rowSpan: 7,
       imgSrc: 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20360%22%3E%3Crect%20width%3D%22600%22%20height%3D%22180%22%20fill%3D%22%232E5BFF%22%2F%3E%3Crect%20y%3D%22180%22%20width%3D%22600%22%20height%3D%22180%22%20fill%3D%22%23FFFFFF%22%2F%3E%3C%2Fsvg%3E' },
     { id: 'c-note', type: 'text', label: 'Note', col: 2, row: 12, colSpan: 10, rowSpan: 4,
-      content: '<b>Signatories</b><br>— Alice<br>— Bob', background: 'rgba(108,92,231,0.08)' }
+      content: '<b>Signatories</b><br>— Alice<br>— Bob', background: 'rgba(108,92,231,0.08)' },
+    { id: 'c-shield', type: 'shield', label: 'Emblem', col: 32, row: 2, colSpan: 8, rowSpan: 8 },
+    { id: 'c-map', type: 'map', label: 'Territorial Map', col: 2, row: 20, colSpan: 10, rowSpan: 6 },
+    { id: 'c-char', type: 'character', label: 'King', col: 16, row: 20, colSpan: 10, rowSpan: 6,
+      imgSrc: 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2230%22%20fill%3D%22%23EAB308%22%2F%3E%3C%2Fsvg%3E' }
   ],
   settings: { snapOn: true, alignOn: true },
   activePreset: '169', presets: {}, groupStyles: {}, pageBg: null, lastSaved: 1750000000000
@@ -214,9 +219,10 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     art.indexOf('id="commentsList"') !== -1 && art.indexOf('article.i18n.js') !== -1 &&
     art.indexOf('window.__articleI18nRefresh') !== -1 && art.indexOf('class="pre-stagger"') !== -1 &&
     art.indexOf('ethereal.css 内联') !== -1 && art.indexOf('Material Symbols Outlined') !== -1);
-  ok('S8 article.html：draft v9 四型卡渲染 + (row,col) 排序 + 消毒 + 互动端点 + 访客引导',
-    art.indexOf("card.type === 'content'") !== -1 && art.indexOf("card.type === 'img' || card.type === 'bitmap' || card.type === 'flag'") !== -1 &&
+  ok('S8 article.html：draft v9 卡渲染（四型+盾徽+兜底）+ (row,col) 排序 + 消毒 + 互动端点 + 访客引导',
+    art.indexOf("card.type === 'content'") !== -1 && art.indexOf("card.type === 'img' || card.type === 'bitmap' || card.type === 'flag' || card.type === 'shield'") !== -1 &&
     art.indexOf("card.type === 'text'") !== -1 && art.indexOf('a.row || 0) - (b.row || 0)') !== -1 &&
+    art.indexOf('CARD_TYPE_ICONS') !== -1 && art.indexOf('class="art-emblem"') !== -1 && art.indexOf('class="art-asset"') !== -1 &&
     art.indexOf('sanitizeCardHtml') !== -1 && art.indexOf('/social/articles/') !== -1 &&
     art.indexOf("'/articles/' + encodeURIComponent(articleId) + '/comments'") !== -1 &&
     art.indexOf('signup-and-login.html?next=') !== -1 && art.indexOf("SlatiDB.addXP('create_comment', 2)") !== -1);
@@ -228,8 +234,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     (idxI18n.match(/'index\.notif\.articleComment'/g) || []).length >= 11 &&
     idxI18n.indexOf("'index.searchPh': '搜索文章…'") !== -1 && idxI18n.indexOf("'index.searchPh': 'Search articles...'") !== -1 &&
     idxI18n.indexOf('搜索世界、话题') === -1 && idxI18n.indexOf('__ZH_HANT_AUTO__') !== -1);
-  ok('S11 site-config：v0.2.55.0 + changelog 文章前端条目 + FC v10.28.36.1 保持',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.55.1';") !== -1 &&
+  ok('S11 site-config：v0.2.55.2 + changelog 文章前端条目 + FC v10.28.36.2 保持',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.55.2';") !== -1 &&
     sconf.indexOf('文章前端') !== -1 && sconf.indexOf('article_comments') !== -1 &&
     sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.2';") !== -1);
 
@@ -330,6 +336,13 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('B4b text 卡：art-note + 内联 rgba 底 + 富文本 b/br 保留',
       await cdp.evalJs("(function(){ var n = document.querySelector('#artBody .art-note'); return !!n && !!n.style.background && n.style.background.replace(/\\s/g, '').indexOf('rgba(108,92,231,0.08)') !== -1; })()") === true &&
       await cdp.evalJs("(function(){ var n = document.querySelector('#artBody .art-note'); return !!n && !!n.querySelector('b') && !!n.querySelector('br'); })()") === true);
+    ok('B4c shield 无图国徽卡：art-emblem + shield 图标 + Emblem 标签（v0.2.55.2 不再静默丢弃）',
+      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-emblem'); return !!e && !!e.querySelector('.material-symbols-outlined') && e.querySelector('.material-symbols-outlined').textContent === 'shield' && !!e.querySelector('.art-emblem-label'); })()") === true &&
+      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-emblem'); return e.querySelector('.art-emblem-label').textContent === 'Emblem'; })()") === true);
+    ok('B4d map 无图兜底卡：art-asset + map 图标 + Territorial Map 标签',
+      await cdp.evalJs("(function(){ var a = document.querySelector('#artBody .art-asset'); return !!a && a.querySelector('.material-symbols-outlined').textContent === 'map' && a.textContent.indexOf('Territorial Map') !== -1; })()") === true);
+    ok('B4e character 有图兜底卡：第二个 figure + figcaption King',
+      await cdp.evalJs("(function(){ var fs = document.querySelectorAll('#artBody .art-figure'); return fs.length === 2 && !!fs[1].querySelector('figcaption') && fs[1].querySelector('figcaption').textContent === 'King'; })()") === true);
     ok('B5 卡序按 (row,col)：row2 的 content 卡先于 row30 的 Late card',
       await cdp.evalJs("(function(){ var fs = document.querySelectorAll('#artBody .art-flow'); return fs[0].textContent.indexOf('Heading Two') !== -1 && fs[1].textContent.indexOf('Late card') !== -1; })()") === true);
     ok('B6 点赞初始态（aria-pressed true + liked 类 + 计数 5）',

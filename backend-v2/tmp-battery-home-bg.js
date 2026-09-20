@@ -72,7 +72,7 @@ console.log('═══ S. 静态巡检 ═══');
   }
   if (bad === 0) { pass++; console.log('  ✅ S8 40 页内联块全部含全站铺底规则'); }
   const s = read('docs/assets/js/site-config.js');
-  ok('S9 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.55.1';") !== -1);
+  ok('S9 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.55.2';") !== -1);
   ok('S10 site-config changelog 含 v0.2.54.3 条目 + 用户原话 + 侧栏同款口径',
     s.indexOf('v0.2.54.3 = 首页卡片背景换侧栏同款不透明底') !== -1 &&
     s.indexOf('能不能把首页的卡片背景都变成') !== -1);

@@ -109,7 +109,7 @@ console.log('═══ S. 静态巡检 ═══');
   }
   ok('S8 i18n.js LANGS 12 码序列 zh→zh-Hant→en→de→ru→ms→th→vi→id→fr→es→pt', seqOk);
   const sconf = read('docs/assets/js/site-config.js');
-  ok('S9 site-config 版本 = v0.2.54.2', sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.55.1';") !== -1);
+  ok('S9 site-config 版本 = v0.2.54.2', sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.55.2';") !== -1);
   const common = fs.readFileSync(path.join(I18N_DIR, 'common.i18n.js'), 'utf8');
   ok('S10 common.i18n.js 键族齐（sidebar/settings/report/aichat 从 help 移入/verify 从 badge 共享）',
     ["'sidebar.", "'settings.", "'report.", "'aichat.", "'verify."].every(k => common.indexOf(k) !== -1));

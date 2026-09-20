@@ -1098,7 +1098,13 @@ window.MN_SITE = window.MN_SITE || {};
 //     防云端草稿弹窗覆盖）；FC 列表云端文章渲染删除按钮 + deleteArticle/bulkDelete 走 DELETE API（本人可删失败保留）
 //   FC v10.28.36.2（补丁位 1→2·修复轮：publishCloudArticle 更新分支 + ?edit= 加载 + 列表删除按钮）
 //   （rev 00267-9l4）
-window.MN_SITE_VERSION = 'v0.2.55.1';
+// v0.2.55.2 = 文章阅读页国徽卡渲染 + 全卡型兜底（补丁位 1→2·修复轮；2026-09-20）——用户「我在MicroNationary内没有看见啊，到底你有没有把发布做好？」（发布本身无误：线上实测首页最新文章+搜索均见文章；真身=阅读页 renderBody 只画 content·img·bitmap·flag·text，用户的国徽卡被静默丢弃）：
+//   阅读页：shield（国徽）卡入渲染（有图同国旗 figure、无图盾徽块 art-emblem 盾形图标+标签）；
+//     img·bitmap·flag 无图时 flag 兜底图标块；其余卡型（map/character/stats/timeline/sheet…）不再静默丢弃
+//     （有图出图、无图出 art-asset 图标+标签块；CARD_TYPE_ICONS 映射）
+//   后端零改动；FC v10.28.36.2 零改动；电池 article-frontend 45→48（B4c/B4d/B4e 新场景）
+//   （rev 00268-tcv）
+window.MN_SITE_VERSION = 'v0.2.55.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
