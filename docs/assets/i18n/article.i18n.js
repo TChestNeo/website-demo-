@@ -39,7 +39,12 @@ window.MN_I18N
 
     // ── 属性/兜底 ──
     'article.profile': '查看主页',
-    'article.favorite': '收藏'
+    'article.favorite': '收藏',
+    // ── v0.2.57.0 标签条 + 目录 ──
+    'article.tags.label': '标签',
+    'article.toc.toggle': '打开目录',
+    'article.toc.title': '目录',
+    'article.toc.close': '关闭目录'
   })
   .add('en', {
     'article.back': 'Back to Home',
@@ -64,7 +69,12 @@ window.MN_I18N
     'article.toast.session': 'Session expired, please log in again',
     'article.toast.opFail': 'Action failed, please try again later',
     'article.profile': 'View profile',
-    'article.favorite': 'Favorite'
+    'article.favorite': 'Favorite',
+    // ── v0.2.57.0 标签条 + 目录 ──
+    'article.tags.label': 'Tags',
+    'article.toc.toggle': 'Open table of contents',
+    'article.toc.title': 'Contents',
+    'article.toc.close': 'Close'
   })
   .add('de', {
     'article.back': 'Zurück zur Startseite',
@@ -89,7 +99,12 @@ window.MN_I18N
     'article.toast.session': 'Sitzung abgelaufen, bitte erneut anmelden',
     'article.toast.opFail': 'Aktion fehlgeschlagen, bitte später erneut versuchen',
     'article.profile': 'Profil ansehen',
-    'article.favorite': 'Favorit'
+    'article.favorite': 'Favorit',
+    // ── v0.2.57.0 标签条 + 目录 ──
+    'article.tags.label': 'Tags',
+    'article.toc.toggle': 'Inhaltsverzeichnis öffnen',
+    'article.toc.title': 'Inhaltsverzeichnis',
+    'article.toc.close': 'Schließen'
   })
   .add('ru', {
     'article.back': 'На главную',
@@ -114,7 +129,12 @@ window.MN_I18N
     'article.toast.session': 'Сессия истекла, войдите снова',
     'article.toast.opFail': 'Действие не удалось, попробуйте позже',
     'article.profile': 'Смотреть профиль',
-    'article.favorite': 'В избранное'
+    'article.favorite': 'В избранное',
+    // ── v0.2.57.0 标签条 + 目录 ──
+    'article.tags.label': 'Теги',
+    'article.toc.toggle': 'Открыть оглавление',
+    'article.toc.title': 'Оглавление',
+    'article.toc.close': 'Закрыть'
   })
   .add('ms', {
     'article.back': 'Kembali ke Laman Utama',
@@ -139,7 +159,12 @@ window.MN_I18N
     'article.toast.session': 'Sesi tamat, sila log masuk semula',
     'article.toast.opFail': 'Tindakan gagal, sila cuba kemudian',
     'article.profile': 'Lihat profil',
-    'article.favorite': 'Simpan'
+    'article.favorite': 'Simpan',
+    // ── v0.2.57.0 标签条 + 目录 ──
+    'article.tags.label': 'Tag',
+    'article.toc.toggle': 'Buka senarai kandungan',
+    'article.toc.title': 'Senarai kandungan',
+    'article.toc.close': 'Tutup'
   })
   .add('th', {
     'article.back': 'กลับสู่หน้าหลัก',
@@ -164,7 +189,12 @@ window.MN_I18N
     'article.toast.session': 'เซสชันหมดอายุ โปรดเข้าสู่ระบบอีกครั้ง',
     'article.toast.opFail': 'การดำเนินการล้มเหลว โปรดลองภายหลัง',
     'article.profile': 'ดูโปรไฟล์',
-    'article.favorite': 'บันทึก'
+    'article.favorite': 'บันทึก',
+    // ── v0.2.57.0 标签条 + 目录 ──
+    'article.tags.label': 'แท็ก',
+    'article.toc.toggle': 'เปิดสารบัญ',
+    'article.toc.title': 'สารบัญ',
+    'article.toc.close': 'ปิด'
   })
   .add('vi', {
     'article.back': 'Về Trang chủ',
@@ -189,7 +219,12 @@ window.MN_I18N
     'article.toast.session': 'Phiên đã hết hạn, vui lòng đăng nhập lại',
     'article.toast.opFail': 'Thao tác thất bại, vui lòng thử lại sau',
     'article.profile': 'Xem hồ sơ',
-    'article.favorite': 'Lưu'
+    'article.favorite': 'Lưu',
+    // ── v0.2.57.0 标签条 + 目录 ──
+    'article.tags.label': 'Thẻ',
+    'article.toc.toggle': 'Mở mục lục',
+    'article.toc.title': 'Mục lục',
+    'article.toc.close': 'Đóng'
   })
   .add('id', {
     'article.back': 'Kembali ke Beranda',
@@ -214,7 +249,12 @@ window.MN_I18N
     'article.toast.session': 'Sesi berakhir, silakan masuk kembali',
     'article.toast.opFail': 'Tindakan gagal, silakan coba lagi nanti',
     'article.profile': 'Lihat profil',
-    'article.favorite': 'Simpan'
+    'article.favorite': 'Simpan',
+    // ── v0.2.57.0 标签条 + 目录 ──
+    'article.tags.label': 'Tag',
+    'article.toc.toggle': 'Buka daftar isi',
+    'article.toc.title': 'Daftar isi',
+    'article.toc.close': 'Tutup'
   })
   .add('fr', {
     'article.back': 'Retour à l\'accueil',
@@ -239,7 +279,12 @@ window.MN_I18N
     'article.toast.session': 'Session expirée, veuillez vous reconnecter',
     'article.toast.opFail': 'Action échouée, veuillez réessayer plus tard',
     'article.profile': 'Voir le profil',
-    'article.favorite': 'Favori'
+    'article.favorite': 'Favori',
+    // ── v0.2.57.0 标签条 + 目录 ──
+    'article.tags.label': 'Tags',
+    'article.toc.toggle': 'Ouvrir la table des matières',
+    'article.toc.title': 'Table des matières',
+    'article.toc.close': 'Fermer'
   })
   .add('es', {
     'article.back': 'Volver al inicio',
@@ -264,7 +309,12 @@ window.MN_I18N
     'article.toast.session': 'Sesión caducada, vuelve a iniciar sesión',
     'article.toast.opFail': 'La acción falló, inténtalo de nuevo más tarde',
     'article.profile': 'Ver perfil',
-    'article.favorite': 'Guardar'
+    'article.favorite': 'Guardar',
+    // ── v0.2.57.0 标签条 + 目录 ──
+    'article.tags.label': 'Etiquetas',
+    'article.toc.toggle': 'Abrir tabla de contenidos',
+    'article.toc.title': 'Tabla de contenidos',
+    'article.toc.close': 'Cerrar'
   })
   .add('pt', {
     'article.back': 'Voltar ao início',
@@ -289,7 +339,12 @@ window.MN_I18N
     'article.toast.session': 'Sessão expirada, inicie sessão novamente',
     'article.toast.opFail': 'A ação falhou, tente novamente mais tarde',
     'article.profile': 'Ver perfil',
-    'article.favorite': 'Guardar'
+    'article.favorite': 'Guardar',
+    // ── v0.2.57.0 标签条 + 目录 ──
+    'article.tags.label': 'Tags',
+    'article.toc.toggle': 'Abrir índice',
+    'article.toc.title': 'Índice',
+    'article.toc.close': 'Fechar'
   });
 /* __ZH_HANT_AUTO__ — v0.2.54.0 zh-Hant 由 OpenCC cn→tw 自动生成（勿手改，重跑本脚本再生成） */
 window.MN_I18N.add('zh-Hant', {
@@ -315,5 +370,9 @@ window.MN_I18N.add('zh-Hant', {
   "article.toast.session": "登錄已過期，請重新登錄",
   "article.toast.opFail": "操作失敗，請稍後再試",
   "article.profile": "查看主頁",
-  "article.favorite": "收藏"
+  "article.favorite": "收藏",
+  "article.tags.label": "標籤",
+  "article.toc.toggle": "打開目錄",
+  "article.toc.title": "目錄",
+  "article.toc.close": "關閉目錄"
 });

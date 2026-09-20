@@ -214,10 +214,10 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     idx.indexOf("type === 'article_like' || type === 'article_favorite' || type === 'article_comment'") !== -1 &&
     idx.indexOf("T('index.search.searching')") !== -1 && idx.indexOf("T('index.search.noResults')") !== -1 &&
     idx.indexOf("T('index.search.unavailable')") !== -1);
-  ok('S7 article.html：阅读页骨架（wrap/title/meta/正文流/评论区）+ 三件套 + __articleI18nRefresh + pre-stagger',
+  ok('S7 article.html：阅读页骨架（wrap/title/meta/正文流/评论区）+ 三件套 + __articleI18nRefresh + pre-stagger art-present',
     art.indexOf('article-page-wrap') !== -1 && art.indexOf('id="artTitle"') !== -1 && art.indexOf('id="artBody"') !== -1 &&
     art.indexOf('id="commentsList"') !== -1 && art.indexOf('article.i18n.js') !== -1 &&
-    art.indexOf('window.__articleI18nRefresh') !== -1 && art.indexOf('class="pre-stagger"') !== -1 &&
+    art.indexOf('window.__articleI18nRefresh') !== -1 && art.indexOf('class="pre-stagger art-present"') !== -1 &&
     art.indexOf('ethereal.css 内联') !== -1 && art.indexOf('Material Symbols Outlined') !== -1);
   ok('S8 article.html：draft v9 卡渲染（四型+盾徽+兜底）+ (row,col) 排序 + 消毒 + 互动端点 + 访客引导',
     art.indexOf("card.type === 'content'") !== -1 && art.indexOf("card.type === 'img' || card.type === 'bitmap' || card.type === 'flag' || card.type === 'shield'") !== -1 &&
@@ -235,9 +235,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     idxI18n.indexOf("'index.searchPh': '搜索文章…'") !== -1 && idxI18n.indexOf("'index.searchPh': 'Search articles...'") !== -1 &&
     idxI18n.indexOf('搜索世界、话题') === -1 && idxI18n.indexOf('__ZH_HANT_AUTO__') !== -1);
   ok('S11 site-config：v0.2.56.2 + changelog 文章前端条目 + FC v10.28.36.3',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.56.2';") !== -1 &&
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.57.0';") !== -1 &&
     sconf.indexOf('文章前端') !== -1 && sconf.indexOf('article_comments') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.3';") !== -1);
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.37.0';") !== -1);
 
   // ── v0.2.55.1 发布去重复 + 删除 ──
   const editor = read(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'));

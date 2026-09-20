@@ -118,10 +118,10 @@ const AVATAR_RING = "rgb(247, 249, 251)";
     cpSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1 && cpSrc.indexOf('v0.2.54.6 用户「那个用户横幅') !== -1 &&
     adminSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1);
   ok('F10 site-config v0.2.55.0 + changelog 用户原话 + FC v10.28.36.1 不动',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.56.2';") !== -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.57.0';") !== -1 &&
     sconfSrc.indexOf('用户横幅与头像不再受网页主题影响') !== -1 &&
     sconfSrc.indexOf('问询钦定「两处都要」') !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.36.3';") !== -1);
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.37.0';") !== -1);
   const msgAvLines = msgSrc.split('\n').filter(l => l.indexOf('msg-avatar') !== -1 && l.indexOf('style=') !== -1);
   ok('F11 messages 头像族 11 个 msg-avatar 类 + 头像行零 var(--color-) 残留',
     countOcc(msgSrc, 'msg-acc msg-avatar') === 11 &&

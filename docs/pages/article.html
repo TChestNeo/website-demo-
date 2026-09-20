@@ -2268,9 +2268,48 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 .comment-empty { margin: 0; }
 .guest-prompt { padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md); background: var(--color-surface-container-low); font-size: var(--fs-label-md); }
 .guest-prompt a { color: var(--color-primary); font-weight: 600; }
+/* ===== v0.2.57.0 阅读页呈现界面统一：无全局侧栏（单列聚焦）+ 顶部标签条 + 左侧弹窗目录 + 窄窗维基式回流 ===== */
+body.art-present .app-sidebar { display: none !important; }
+body.art-present .app-main { margin-left: 0 !important; }
+.art-tags { display: flex; flex-wrap: wrap; gap: 6px; position: sticky; top: 0; z-index: 40; padding: 8px 2px; }
+.art-tag-chip { padding: 2px 10px; border-radius: var(--radius-full); background: var(--color-surface-container);
+  border: var(--card-border); font-size: var(--fs-label-sm); color: var(--color-on-surface-variant); }
+.art-toc-btn { position: fixed; left: 14px; top: 14px; z-index: 70; width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md);
+  border: var(--card-border); background: var(--card-bg); color: var(--color-primary); cursor: pointer; box-shadow: var(--shadow-md); }
+.art-toc-drawer { position: fixed; left: 0; top: 0; bottom: 0; width: 280px; z-index: 75; background: var(--card-bg);
+  border-right: var(--card-border); box-shadow: var(--shadow-lg); transform: translateX(-102%);
+  transition: transform 0.25s cubic-bezier(0.25,0.1,0.25,1); display: flex; flex-direction: column; }
+.art-toc-drawer.open { transform: translateX(0); }
+.art-toc-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px;
+  border-bottom: 1px solid var(--divider-line); }
+.art-toc-head .art-toc-title { font-weight: 700; font-size: var(--fs-body-md); }
+.art-toc-close { border: none; background: transparent; color: var(--color-outline); cursor: pointer; font-size: 16px; }
+.art-toc-list { flex: 1; overflow-y: auto; padding: 8px; }
+.art-toc-item { display: block; width: 100%; text-align: left; padding: 9px 12px; border: none; background: transparent;
+  border-radius: var(--radius-sm); font-size: var(--fs-label-md); color: var(--color-on-surface); cursor: pointer;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: inherit; }
+.art-toc-item:hover { background: rgba(70,72,212,0.08); color: var(--color-primary); }
+/* 窄窗回流：无缩放——y 重叠贪心分带、带内 flex-wrap 行，卡保持像素尺寸（排版只是被挤压改变位置）；
+   最窄自动全部上下单列；content/text 弹性换行、列表卡横向滚动、图卡等比收缩 */
+.art-canvas-reflow { overflow: visible; }
+.art-canvas-reflow .art-canvas-inner { display: flex; flex-direction: column; gap: 16px; transform: none !important; }
+.art-canvas-reflow .art-reflow-band { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
+.art-canvas-reflow .art-card { position: relative; }
+.art-canvas-reflow .art-card-flow.art-card-flexible { flex: 1 1 220px; width: auto !important; min-width: 0; }
+.art-canvas-reflow .art-card-shrink { flex: 0 1 auto; min-width: 0; max-width: 100%; height: auto !important;
+  aspect-ratio: var(--art-ar, auto); }
+.art-canvas-reflow .art-card-noshrink { flex: 0 0 auto; max-width: 100%; overflow-x: auto; }
+.art-card-toc-flash { animation: artTocFlash 0.8s ease-out 2; }
+@keyframes artTocFlash { 0%,100% { outline: 0 solid transparent; } 25% { outline: 3px solid var(--color-primary);
+  outline-offset: 2px; background: rgba(70,72,212,0.10); } }
+/* 最窄（≤560px 视口）：带内纵排——flex 弹性挤压只到中等窄窗，最窄一律上下单列（用户钦定） */
+@media (max-width: 560px) {
+  .art-canvas-reflow .art-reflow-band { flex-direction: column; }
+}
 </style>
 </head>
-<body class="pre-stagger">
+<body class="pre-stagger art-present">
 
 <div class="app-layout">
   <aside class="app-sidebar" id="slati-sidebar"></aside>
@@ -2282,6 +2321,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <p class="label-sm" id="article404Msg" style="color:var(--color-outline)">它可能已被作者删除或尚未发布。</p>
       </div>
       <div id="articleDetail" style="display:none;flex-direction:column;gap:var(--space-md)">
+        <div class="art-tags" id="artTags" style="display:none" aria-label="标签"></div>
         <div class="card art-head">
           <h1 class="art-title" id="artTitle"></h1>
           <div class="art-meta-row">
@@ -2369,6 +2409,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   var lastArticle = null;
   var lastComments = [];
   var last404Key = null;
+  // v0.2.57.0 画布状态缓存 {cj,bboxW}——resize 防抖仅在宽 1:1 ↔ 窄回流模式翻转时重渲染
+  var lastCanvasState = null;
 
   function parseArticleId() {
     try {
@@ -2394,6 +2436,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   // v0.2.55.2: shield（国徽）卡入渲染（有图同国旗、无图盾徽块）；其余卡型兜底块不再静默丢弃
   // v0.2.56.2: 有像素坐标的 v9 草稿改走 FC 1:1 画布渲染（renderBodyCanvas），旧草稿保持流式兜底
   function renderBody(cj) {
+    lastCanvasState = null; // 每次重渲染重置：流式兜底路径无画布，resize 监听据此跳过
     var CARD_TYPE_ICONS = { map: 'map', account_balance: 'account_balance', payments: 'payments', menu_book: 'menu_book', history_edu: 'history_edu', image: 'image', character: 'person', stats: 'monitoring', timeline: 'history_edu', sheet: 'table' };
     function figureHtml(src, label) {
       var caption = label ? '<figcaption>' + escapeHtml(label) + '</figcaption>' : '';
@@ -2516,6 +2559,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       var el = document.createElement('div');
       el.className = 'art-card';
       el.dataset.cardId = String(card.id || '');
+      el.dataset.cardType = String(card.type || ''); // v0.2.57.0 目录/回流分型用
       var st = 'left:' + Math.round((r.x - minX + M) * 100) / 100 + 'px;top:' + Math.round((r.y - minY + M) * 100) / 100 + 'px;' +
         'width:' + r.w0 + 'px;' + (r.hAuto ? 'min-height:' + r.h0 + 'px;' : 'height:' + r.h0 + 'px;') +
         'z-index:' + (parseInt(card.z, 10) || 1) + ';';
@@ -2593,14 +2637,109 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     });
     var bboxW = (maxRX - minLX) + 2 * M;
     var bboxH = (maxBY - minLY) + 2 * M;
-    var s = Math.min(1.6, Math.max(0.25, avail / bboxW));
+    // v0.2.57.0: 窄于画布 → 维基式回流（零缩放、卡片重排）；否则严格 1:1——缩放封顶 1，
+    // 不放大填满栏宽（作者看到什么读者看到什么）；bbox 裁剪空边 ≠ 拉伸填充
+    lastCanvasState = { cj: cj, bboxW: bboxW };
+    if (avail < bboxW) { applyReflow(holder, inner, rects); renderToc(); return; }
+    var s = Math.min(1, Math.max(0.25, avail / bboxW));
     inner.style.width = bboxW + 'px';
     inner.style.height = bboxH + 'px';
     inner.style.transform = 'scale(' + s + ')';
     holder.style.height = Math.round(bboxH * s) + 'px';
+    renderToc();
+  }
+
+  // ── v0.2.57.0 窄窗维基式回流：y 重叠贪心分带（卡顶 < 带底 → 同带），带内 x 升序 flex-wrap；
+  // 卡保持像素尺寸零缩放；content/text 弹性换行、stats/sheet/timeline 保自然宽横向滚动、图卡等比收缩
+  function applyReflow(holder, inner, rects) {
+    holder.classList.add('art-canvas-reflow');
+    var els = Array.prototype.slice.call(inner.children); // 与 rects 同序（同一次 forEach 构建）
+    var sorted = rects.map(function (r, i) { return { r: r, el: els[i] }; })
+      .sort(function (a, b) { return (a.r.y - b.r.y) || (a.r.x - b.r.x); });
+    var bands = [], cur = null, curBottom = 0;
+    sorted.forEach(function (p) {
+      if (!cur || p.r.y >= curBottom) { cur = []; bands.push(cur); curBottom = 0; }
+      cur.push(p);
+      curBottom = Math.max(curBottom, p.r.y + p.r.h);
+    });
+    bands.forEach(function (band) {
+      var row = document.createElement('div');
+      row.className = 'art-reflow-band';
+      band.forEach(function (p) {
+        var el = p.el, t = p.r.card.type;
+        el.style.left = 'auto';
+        el.style.top = 'auto';
+        if (t === 'content' || t === 'text') el.classList.add('art-card-flexible');
+        else if (t === 'stats' || t === 'sheet' || t === 'timeline') el.classList.add('art-card-noshrink');
+        else { el.classList.add('art-card-shrink'); el.style.setProperty('--art-ar', p.r.w0 + ' / ' + p.r.h0); }
+        row.appendChild(el);
+      });
+      inner.appendChild(row);
+    });
+  }
+
+  // ── v0.2.57.0 左侧弹窗目录：仅列 content/text 且 label 非空的卡；无条目不显示目录钮；
+  // 每次渲染先移除旧钮/旧抽屉重建（元素引用零残留）；点击 scrollIntoView 平滑滚动 + 闪烁高亮
+  function renderToc() {
+    var ob = document.getElementById('artTocBtn'); if (ob && ob.parentNode) ob.parentNode.removeChild(ob);
+    var od = document.getElementById('artTocDrawer'); if (od && od.parentNode) od.parentNode.removeChild(od);
+    var canvas = document.querySelector('#artBody .art-canvas');
+    if (!canvas) return;
+    var items = Array.prototype.filter.call(canvas.querySelectorAll('.art-card'), function (el) {
+      var t = el.getAttribute('data-card-type');
+      return (t === 'content' || t === 'text') && el.querySelector('.art-card-label');
+    });
+    if (!items.length) return;
+    var btn = document.createElement('button');
+    btn.id = 'artTocBtn'; btn.className = 'art-toc-btn';
+    btn.innerHTML = '<span class="material-symbols-outlined">toc</span>';
+    btn.title = T('article.toc.toggle') || '打开目录';
+    var drawer = document.createElement('div');
+    drawer.id = 'artTocDrawer'; drawer.className = 'art-toc-drawer';
+    var head = document.createElement('div'); head.className = 'art-toc-head';
+    var ti = document.createElement('span'); ti.className = 'art-toc-title';
+    ti.textContent = T('article.toc.title') || '目录';
+    var cl = document.createElement('button'); cl.className = 'art-toc-close'; cl.innerHTML = '&times;';
+    cl.title = T('article.toc.close') || '关闭目录';
+    cl.onclick = function () { drawer.classList.remove('open'); };
+    head.appendChild(ti); head.appendChild(cl); drawer.appendChild(head);
+    var list = document.createElement('div'); list.className = 'art-toc-list';
+    items.forEach(function (el) {
+      var item = document.createElement('button');
+      item.className = 'art-toc-item';
+      item.textContent = el.querySelector('.art-card-label').textContent.trim();
+      item.onclick = function () {
+        drawer.classList.remove('open');
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' }); // 宽/窄两模式同元素，天然通用
+        el.classList.add('art-card-toc-flash');
+        setTimeout(function () { el.classList.remove('art-card-toc-flash'); }, 1800);
+      };
+      list.appendChild(item);
+    });
+    drawer.appendChild(list);
+    btn.onclick = function () { drawer.classList.toggle('open'); };
+    document.body.appendChild(btn);
+    document.body.appendChild(drawer);
   }
 
   function renderArticle(a) {
+    // v0.2.57.0 顶部标签条：contentJson.tags（顶层草稿字段）——空则整条不显示；切语言重渲染走本函数天然刷新
+    var tagBox = document.getElementById('artTags');
+    tagBox.innerHTML = '';
+    tagBox.style.display = 'none';
+    var cjTags = a.contentJson;
+    if (cjTags && typeof cjTags === 'string') { try { cjTags = JSON.parse(cjTags); } catch (e) { cjTags = null; } }
+    var tags = (cjTags && Array.isArray(cjTags.tags)) ? cjTags.tags : [];
+    if (tags.length) {
+      tagBox.style.display = 'flex';
+      tagBox.setAttribute('aria-label', T('article.tags.label') || '标签');
+      tags.forEach(function (t) {
+        var chip = document.createElement('span');
+        chip.className = 'art-tag-chip';
+        chip.textContent = String(t);
+        tagBox.appendChild(chip);
+      });
+    }
     document.getElementById('artTitle').textContent = a.title || 'Untitled';
     var name = a.authorName || 'Anonymous';
     document.getElementById('artAuthorAvatar').textContent = name.charAt(0).toUpperCase();
@@ -2767,6 +2906,21 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     this.style.height = Math.max(baseH, Math.min(this.scrollHeight, maxH)) + 'px';
   });
   load();
+  // v0.2.57.0 窄窗回流：resize 防抖——仅宽 1:1 ↔ 窄回流模式翻转时重渲染（本地渲染不重复计数），同模式零动作
+  var artResizeTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(artResizeTimer);
+    artResizeTimer = setTimeout(function () {
+      if (!lastCanvasState) return;
+      var bodyEl = document.getElementById('artBody');
+      var holder = bodyEl && bodyEl.querySelector('.art-canvas');
+      if (!holder) return; // 流式兜底路径无需处理
+      var avail = bodyEl.clientWidth || 656;
+      var wasReflow = holder.classList.contains('art-canvas-reflow');
+      var isReflow = avail < lastCanvasState.bboxW;
+      if (isReflow !== wasReflow) renderBody(lastCanvasState.cj); // 重渲染即翻模式（含 TOC 重建）
+    }, 200);
+  });
 })();
 </script>
 <script src="../assets/js/transitions.js"></script>

@@ -1115,6 +1115,15 @@ window.MN_SITE = window.MN_SITE || {};
 //     无像素坐标的旧草稿保持流式兜底
 //   后端零改动；FC 零改动；零 i18n 新键
 //   （rev 00271-hsl）
+// v0.2.57.0 = 文章发布后呈现界面统一（小改动位 56→57·新功能轮；2026-09-20）——用户「反正就是在FC的编辑那边把顶部栏变成显示文章标签的小栏，然后去除下方的格子和左侧的菜单变成左侧弹窗目录……中间的那个画布内的内容排版位置一定是要1：1的……窗口宽度较窄那些排版就只是被挤压改变位置而已」（问询钦定：新界面=文章发布后的呈现界面、顶部小栏=真正的标签系统、目录只列文字卡标题、固定 16:9 只在编辑器侧）：
+//   阅读页：顶部标签条（contentJson.tags 顶层数组、空则整条不显示）、无全局侧栏（body.art-present 单列，
+//     sidebar.js 照常渲染进 display:none 容器零 JS 依赖）、左侧弹窗目录（仅 content/text 且 label 非空卡、
+//     点击 scrollIntoView+闪烁高亮）、宽窗严格 1:1（缩放封顶 1 不放大填空——作者看到什么读者看到什么）、
+//     窄窗维基式回流（avail<bboxW 时零缩放：y 重叠贪心分带 flex-wrap、content/text 卡弹性换行、
+//     stats/sheet/timeline 保自然宽横向滚动条、图卡等比收缩、最窄全上下单列）、防抖 resize 模式翻转重渲染
+//   FC 查看模式呈现统一（v10.28.37.0）：灭网格线、同款标签条+目录抽屉（中文）、1:1 bbox 裁剪滚动（scale 恒 1 不放大）
+//   后端零改动；ethereal 零改动（页面 CSS 全在 article.html 独立块 + FC head 查看块）；i18n 新键 4×12 + OpenCC
+//   （rev 00272-g99）
 // v0.2.56.1 = explore 页文章搜索（补丁位 0→1·修复轮；2026-09-20）——用户「不是啊 我在 explore.html 搜索都搜索不到你在做什么？」（真身：56.0 把文章搜索接到了首页+概览页，但用户日常搜的地方是 explore.html；该页搜索框只调 filterNations 纯客户端筛世界，零文章接入）：
 //   explore 页：搜索胶囊接文章搜索（300ms 防抖下拉三态 + 回车立即搜 + Esc/点击外部关闭，与 overview 同口径）；
 //     结果双保险——下拉 .dash-search-item 行 + 主区「文章」结果段（#exArticleResults 卡片列表，均锚 article.html?id=）；
@@ -1133,7 +1142,7 @@ window.MN_SITE = window.MN_SITE || {};
 //   i18n：overview/index 新键 12 语言（ov.searchPh/search.*/contrib.published/empty、index.act.article）+ OpenCC 重生成
 //   后端零改动（GET /api/articles 已具备）；电池：新 tmp-battery-micro-v056 + article-view 补 View 锚
 //   （rev 00269-52s）
-window.MN_SITE_VERSION = 'v0.2.56.2';
+window.MN_SITE_VERSION = 'v0.2.57.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1470,4 +1479,8 @@ window.MN_SITE_VERSION = 'v0.2.56.2';
 //   按云端/本地分流——云端（已发布）→ article.html?id= 平台阅读页；本地草稿保留 ?article= 编辑器查看器
 //   （v10.28.35.0 网格裁剪预览，编辑器本职）；与站点 v0.2.56.0 同轮；零草稿字段（v 保持 9）
 //   （rev 00269-52s）
-window.FLUIDCANVAS_VERSION = 'v10.28.36.3';
+// v10.28.37.0 = 查看模式呈现统一（小更新位 36→37·新功能轮；2026-09-20）：?article= 只读查看与平台阅读页同款呈现——
+//   灭网格线（fc-viewmode 覆写 background-image）、标签条 #fcViewTags + 目录抽屉（仅 content/text 有 label 卡、中文）、
+//   1:1 bbox 裁剪（量所有可见卡旋转外接盒，scale 恒 1 不放大填空、editor-body 滚动）；编辑模式网格自适应行为零改动
+//   （rev 00272-g99）
+window.FLUIDCANVAS_VERSION = 'v10.28.37.0';

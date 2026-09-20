@@ -153,9 +153,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     art.indexOf('data-caption-pos="outside-right"') !== -1 &&
     art.indexOf('两遍量盒') !== -1 &&
     art.indexOf('typeof c.x === \'number\'') !== -1);
-  ok('F0-2 版本 v0.2.56.2 + changelog 条目（rev 00271-XXX 占位）',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.56.2';") !== -1 &&
-    sconf.indexOf('FC 1:1 画布渲染') !== -1 && sconf.indexOf('00271-XXX') !== -1);
+  ok('F0-2 版本 v0.2.57.0 + changelog 条目（rev 00272-g99）',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.57.0';") !== -1 &&
+    sconf.indexOf('FC 1:1 画布渲染') !== -1 && sconf.indexOf('00272-g99') !== -1);
   ok('F0-3 渲染顺序修正（先 display:flex 再 renderBody——隐藏容器 clientWidth=0 缩放必错）',
     art.indexOf("document.getElementById('articleDetail').style.display = 'flex';") < art.indexOf('renderBody(a.contentJson)'));
 
@@ -243,8 +243,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('C1 inner 画布尺寸 = 渲染盒 bbox（564.39×524.97）',
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); return Math.abs(e.offsetWidth - 564.393) <= 1.5 && Math.abs(e.offsetHeight - 524.966) <= 1.5; })()") === true,
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); return e.offsetWidth + 'x' + e.offsetHeight; })()"));
-    ok('C2 缩放 s ∈ (0.25, 1.6] 且 holder 高 = bboxH×s',
-      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var h = document.querySelector('#artBody .art-canvas'); return s > 0.25 && s <= 1.6 && Math.abs(h.clientHeight - e.offsetHeight * s) <= 1.5; })()") === true,
+    ok('C2 缩放恒 =1（v0.2.57.0 不放大填空——所见即所得）且 holder 高 = bboxH',
+      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var h = document.querySelector('#artBody .art-canvas'); return s === 1 && Math.abs(h.clientHeight - e.offsetHeight * s) <= 1.5; })()") === true,
       await cdp.evalJs("document.querySelector('#artBody .art-canvas-inner').style.transform"));
 
     // ── D legacy 无 x/y 草稿 → 流式兜底 ──
