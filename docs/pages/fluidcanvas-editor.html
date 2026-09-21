@@ -14852,22 +14852,66 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   // 中键长按拖动 = 平移视口（preventDefault 关掉浏览器中键自动滚动；
   // 挂 .editor-body——padding 区与卡上中键拖同样平移）
+  // v10.28.39.1：起拖挂 fc-moving（玻璃暂离，同 45.2 五站点纪律——平移中
+  // 背底内容每帧变化，backdrop-filter 每帧重光栅是掉帧大头，探针
+  // tmp-probe-pan-jank 实证 60 事件直写 ≈20fps）+ rAF 合并（125Hz
+  // mousemove 直写 scrollLeft/scrollTop 每帧多写，合并后每帧一次）
   gridCanvas.parentElement.addEventListener('mousedown', function (e) {
     if (document.body.classList.contains('fc-viewmode')) return;
     if (e.button !== 1) return;
     e.preventDefault();
+    document.body.classList.add('fc-moving');
     var scrollEl = gridCanvas.parentElement;
-    viewPan = { sx: e.clientX, sy: e.clientY, sl: scrollEl.scrollLeft, st: scrollEl.scrollTop };
+    viewPan = { sx: e.clientX, sy: e.clientY, sl: scrollEl.scrollLeft, st: scrollEl.scrollTop, px: e.clientX, py: e.clientY, raf: 0 };
   });
   document.addEventListener('mousemove', function (e) {
     if (!viewPan) return;
+    var vp = viewPan;
+    // 中键在窗外松手（mouseup 收不到）——buttons 位 4=中键已松即收尾
+    if (!(e.buttons & 4)) { endViewPan(); return; }
+    vp.px = e.clientX;
+    vp.py = e.clientY;
+    if (vp.raf) return;
+    vp.raf = requestAnimationFrame(function () {
+      vp.raf = 0;
+      if (viewPan !== vp) return; // 已松手（mouseup 已同步落位）
+      var scrollEl = gridCanvas.parentElement;
+      scrollEl.scrollLeft = vp.sl - (vp.px - vp.sx);
+      scrollEl.scrollTop = vp.st - (vp.py - vp.sy);
+    });
+  });
+  // 松手收尾：挂起的最后一帧同步落位（合并后位置可能差一帧；落位提交
+  // 必须用最终位置），落位同帧仍无玻璃、下一帧还原——同 45.2 松手纪律
+  function endViewPan() {
+    var vp = viewPan;
+    if (!vp) return;
+    viewPan = null;
+    if (vp.raf) { cancelAnimationFrame(vp.raf); vp.raf = 0; }
     var scrollEl = gridCanvas.parentElement;
-    scrollEl.scrollLeft = viewPan.sl - (e.clientX - viewPan.sx);
-    scrollEl.scrollTop = viewPan.st - (e.clientY - viewPan.sy);
-  });
+    scrollEl.scrollLeft = vp.sl - (vp.px - vp.sx);
+    scrollEl.scrollTop = vp.st - (vp.py - vp.sy);
+    requestAnimationFrame(function () { document.body.classList.remove('fc-moving'); });
+  }
   document.addEventListener('mouseup', function (e) {
-    if (viewPan && e.button === 1) viewPan = null;
+    if (viewPan && e.button === 1) endViewPan();
   });
+
+  // v10.28.39.1：原生滚动（滚轮纵向/Shift 滚轮横向/触控板）期间同样挂
+  // fc-moving——滚动中背底每帧变化，玻璃面每帧重光栅（探针操作③实证同款
+  // ~20fps 慢帧）。150ms 防抖还原：滚动事件连续（滚轮 125Hz/触控板逐帧）
+  // 时 timer 永不到期、停滚后 150ms 玻璃回稳。不用 scrollend——headless/
+  // 部分浏览器每 tick 滚动完成即触发，把挂起瞬间拆掉（探针 mov=0 实证）。
+  // 运动中不可察、停滚瞬时回稳，同 45.2 纪律。
+  (function () {
+    var scrollEl = gridCanvas.parentElement;
+    var t = 0;
+    scrollEl.addEventListener('scroll', function () {
+      if (document.body.classList.contains('fc-viewmode')) return;
+      document.body.classList.add('fc-moving');
+      if (t) clearTimeout(t);
+      t = setTimeout(function () { t = 0; document.body.classList.remove('fc-moving'); }, 150);
+    });
+  })();
 
   // Expose
   window.saveDraft = saveDraft;

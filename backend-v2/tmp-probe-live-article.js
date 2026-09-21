@@ -7,7 +7,7 @@
 // S4 全程零 JS 错误
 // S5 概览页真文章 / S6 explore 页文章搜索 / S7 阅读页版本锚 + 宽窗完整格舞台投影（v0.2.58.0）
 // S8 v0.2.58.0 呈现界面：去侧栏 + 标签条 + 480 窄窗维基式回流往返 + 目录列全部卡（真文章 2 卡条目）
-// S9 v10.28.39.0 FC 编辑区固定 125 格横：线上 site-config 版本锚 + 门禁通过 + --grid-cols=125 + 画布盒 2748 全覆盖 + 底部横向拉条 + Ctrl+滚轮缩放 + 芯片重置 + Shift+滚轮横向 + 纯滚轮不缩放
+// S9 v10.28.39.1 FC 编辑区固定 125 格横：线上 site-config 版本锚 + 门禁通过 + --grid-cols=125 + 画布盒 2748 全覆盖 + 底部横向拉条 + Ctrl+滚轮缩放 + 芯片重置 + Shift+滚轮横向 + 纯滚轮不缩放 + 中键拖平移落点精确/平移中玻璃挂起/松手还原（39.1 掉帧修复行为锚）
 'use strict';
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -190,9 +190,9 @@ async function waitFor(cdp, expr, timeout, label) {
     const exSecHref = await cdp.evalJs("(function(){ var a = document.querySelector('#exArticleResults a'); return a ? a.getAttribute('href') : null; })()");
     ok('S6f 主区段锚阅读页', exSecHref === 'article.html?id=ART-000004', 'href=' + exSecHref);
 
-    // S9 v10.28.39.0 FC 编辑区固定 125 格横（用户「FC也是一样是125格横向，固定不会因窗口不够宽而缩小，最多底下横向拉条」）
+    // S9 v10.28.39.1 FC 编辑区固定 125 格横（用户「FC也是一样是125格横向，固定不会因窗口不够宽而缩小，最多底下横向拉条」）
     const scCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
-    ok('S9a 线上 site-config 含 FC v10.28.39.0 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.39.0') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
+    ok('S9a 线上 site-config 含 FC v10.28.39.1 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.39.1') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
       source: 'try{localStorage.setItem("slati_session", ' + JSON.stringify(JSON.stringify({ loggedIn: true })) + ');}catch(e){}'
     });
@@ -220,6 +220,35 @@ async function waitFor(cdp, expr, timeout, label) {
     await cdp.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 640, y: 500, deltaX: 0, deltaY: 120, modifiers: 0 });
     await sleep(400);
     ok('S9h 纯滚轮不缩放（zoom 仍 1）', await cdp.evalJs("document.getElementById('gridCanvas').style.zoom") === '');
+
+    // S9i/S9j v10.28.39.1 平移掉帧修复行为锚（真事件管线：落点精确 + 玻璃挂起/还原）
+    // S9h 滚轮平滑滚动尾部可能仍在飞（headless 慢滚动，会抢写 scrollTop）——先等
+    // st 稳定再平移；置位后的程序滚动 scroll 事件防抖 150ms 也先清场（按前 class 归零）。
+    // 按点 = editor-body +300/250（画布空区）——+10/+10 落在资产面板浮动按钮上
+    // （tmp-diag-live-pan 实证 elementFromPoint=asset-panel-toggle，中键按它不触发平移）
+    let st9 = -1, st9prev = -2, settleN = 0;
+    while (settleN < 12) {
+      st9prev = st9;
+      st9 = await cdp.evalJs("document.getElementById('gridCanvas').parentElement.scrollTop");
+      if (st9prev === st9) break;
+      settleN++;
+      await sleep(200);
+    }
+    await sleep(250);
+    await cdp.evalJs("(function(){ var body = document.getElementById('gridCanvas').parentElement; body.scrollLeft = 800; body.scrollTop = 400; })()");
+    await sleep(200);
+    const pt9 = await cdp.evalJs("(function(){ var r = document.getElementById('gridCanvas').parentElement.getBoundingClientRect(); return { x: r.left + 300, y: r.top + 250 }; })()");
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: pt9.x, y: pt9.y, button: 'middle', clickCount: 1, modifiers: 0 });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: pt9.x + 60, y: pt9.y + 30, button: 'middle', modifiers: 0 });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: pt9.x + 100, y: pt9.y + 60, button: 'middle', modifiers: 0 });
+    await sleep(120); // rAF 合并落位帧
+    const p9 = await cdp.evalJs("(function(){ var body = document.getElementById('gridCanvas').parentElement; return { sl: body.scrollLeft, st: body.scrollTop, mov: document.body.classList.contains('fc-moving') }; })()");
+    ok('S9i 中键长按拖 → 平移视口（右移 100 下移 60 → sl 800→700 / st 400→340）+ 平移中玻璃挂起',
+      Math.abs(p9.sl - 700) <= 2 && Math.abs(p9.st - 340) <= 2 && p9.mov === true, JSON.stringify(p9));
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: pt9.x + 100, y: pt9.y + 60, button: 'middle', clickCount: 1, modifiers: 0 });
+    await sleep(450);
+    const p9b = await cdp.evalJs("document.body.classList.contains('fc-moving')");
+    ok('S9j 松手后玻璃还原（fc-moving 已移除）', p9b === false, 'fc-moving=' + p9b);
 
     // S4 零 JS 错误
     ok('S4 全程零 Runtime exception', cdp.errs.length === 0, cdp.errs.slice(0, 3).join(' | ') || '干净');

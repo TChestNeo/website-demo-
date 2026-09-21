@@ -1,4 +1,4 @@
-// tmp-battery-fc-viewport.js — FC v10.28.39.0 编辑视口系统电池
+// tmp-battery-fc-viewport.js — FC v10.28.39.1 编辑视口系统电池（39.0 视口系统 + 39.1 平移掉帧修复）
 // 用户「现在是我希望FC也是一样是125格横向，然后这个值是固定的不会因为窗口不够宽而
 //   缩小，最多就只是变成底下有一个横向拉条可以移动然后用户可以通过Ctrl+滑鼠中键滚轮/
 //   加减 来放大缩小但是默认是前面说的那个大小保持但是有横向拉条，用户可以通过长按滑鼠
@@ -173,8 +173,8 @@ const FIXED_EXPR = "(function(){ var gc = document.getElementById('gridCanvas');
     // ── F0 静态锚：版本号 + 页面结构锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
-    ok('F1 site-config：FC v10.28.39.0 + rev 00277- 占位 + 站点版本恒 v0.2.58.0',
-      siteCfg.indexOf('v10.28.39.0') !== -1 && siteCfg.indexOf('00277-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
+    ok('F1 site-config：FC v10.28.39.1 + rev 00277- 占位 + 站点版本恒 v0.2.58.0',
+      siteCfg.indexOf('v10.28.39.1') !== -1 && siteCfg.indexOf('00277-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
     ok('F2 编辑器页静态锚：.grid-canvas width:max-content（画布盒全覆盖 125 列）+ computeCols 恒 return 125',
       editorHtml.indexOf('width: max-content') !== -1 && /function computeCols\(\)[\s\S]{0,80}return 125;/.test(editorHtml));
     ok('F3 编辑器页静态锚：zoomChip 按钮 + window.setViewZoom/resetViewZoom 导出',
@@ -303,10 +303,18 @@ const FIXED_EXPR = "(function(){ var gc = document.getElementById('gridCanvas');
     await mouse('mousePressed', bodyPt.x, bodyPt.y, { button: 'middle' });
     await mouse('mouseMoved', bodyPt.x + 60, bodyPt.y + 30, { button: 'middle' });
     await mouse('mouseMoved', bodyPt.x + 100, bodyPt.y + 60, { button: 'middle' });
+    await sleep(120); // v10.28.39.1：rAF 合并后等落位帧再读（同 D 段纪律）
     const p3 = await cdp.evalJs("(function(){ var se = document.getElementById('gridCanvas').parentElement; return { st: se.scrollTop, sl: se.scrollLeft }; })()");
+    const p5moving = await cdp.evalJs("document.body.classList.contains('fc-moving')");
+    ok('P5 平移期间玻璃挂起：body.fc-moving 在场（45.2 纪律——pan 中 backdrop-filter 暂离）',
+      p5moving === true, 'fc-moving=' + p5moving);
     await mouse('mouseReleased', bodyPt.x + 100, bodyPt.y + 60, { button: 'middle' });
     ok('P3 中键长按拖动 → 平移视口：右移 100 下移 60 → scrollLeft 800→700、scrollTop 400→340（反向拖动）',
       Math.abs(p3.sl - 700) <= 2 && Math.abs(p3.st - 340) <= 2, JSON.stringify(p3));
+    await sleep(400); // 还原玻璃走下一帧 rAF；flush 写引发的 scroll 事件防抖 150ms 也在内
+    const p6moving = await cdp.evalJs("document.body.classList.contains('fc-moving')");
+    ok('P6 松手后玻璃还原：fc-moving 已移除（滚动/平移收尾不残留挂起态）',
+      p6moving === false, 'fc-moving=' + p6moving);
     // 回卷原点（卡在画布左上角 44,44，P3 平移后已滚出视口）
     await cdp.evalJs("(function(){ var se = document.getElementById('gridCanvas').parentElement; se.scrollLeft = 0; se.scrollTop = 0; })()");
     await sleep(100);

@@ -157,7 +157,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     art.indexOf('typeof c.x === \'number\'') !== -1);
   ok('F0-2 版本 v0.2.58.0 + changelog 条目（58.0 rev 00276-nnx + 56.2 保留）',
     sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.0';") !== -1 &&
-    sconf.indexOf('FC 1:1 画布渲染') !== -1 && sconf.indexOf('00275-') !== -1 && sconf.indexOf('00272-g99') !== -1);
+    sconf.indexOf('FC 1:1 画布渲染') !== -1 && sconf.indexOf('00276-nnx') !== -1 && sconf.indexOf('00272-g99') !== -1);
   ok('F0-3 渲染顺序修正（先 display:flex 再 renderBody——隐藏容器 clientWidth=0 缩放必错）',
     art.indexOf("document.getElementById('articleDetail').style.display = 'flex';") < art.indexOf('renderBody(a.contentJson)'));
 

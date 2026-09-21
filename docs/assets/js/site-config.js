@@ -1517,4 +1517,14 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   fit1to1 零改动；坐标补丁 7 处（snapToGrid/dragFrame/onResizeMove/onGroupResizeMove/sheet 手柄/
 //   rotate 中心/statsEditPanel——屏幕px↔画布px 除乘 viewZoom，gBCR 屏幕盒锚定 UI 天然正确）
 //   （rev 00277-djl）
-window.FLUIDCANVAS_VERSION = 'v10.28.39.0';
+// v10.28.39.1 = 视口移动掉帧修复（补丁位 0→1·性能修复轮；2026-09-21）：用户「现在是我在移动视角时有明显
+//   出现掉帧能不能处理一下？」——探针 tmp-probe-pan-jank 实证三处 ~20fps 慢帧：①中键平移 mousemove 125Hz
+//   直写 scrollLeft/scrollTop 无合并（60 事件=60 写）+ 无玻璃挂起 ②原生滚轮纵向同样玻璃每帧重光栅
+//   （backdrop-filter 背底每帧变化）。修法：平移起拖挂 body.fc-moving（45.2 玻璃暂离纪律第 6 站点——运动
+//   中不可察、松手下一帧还原）+ rAF 合并每帧一次写（mouseup 同步 flush 落位最终帧、中键窗外松手 buttons
+//   位 4 收尾）；原生滚动 scroll 事件 150ms 防抖挂起玻璃（滚轮 125Hz 连续时 timer 永不到期、停滚 150ms
+//   回稳；不用 scrollend——headless/部分浏览器每 tick 即触发把挂起瞬间拆掉）。修后探针：pan@1× 手势期
+//   慢帧 11→0、写 60→32、落点逐像素不变；pan@2× 同（client px 直写滚距自洽）；滚轮 41→6 慢帧（余下
+//   全在停滚后玻璃还原段——headless 软件光栅 6 帧，真机 GPU 一帧，45.2 已实证可接受）
+//   （rev 00278-xpx）
+window.FLUIDCANVAS_VERSION = 'v10.28.39.1';

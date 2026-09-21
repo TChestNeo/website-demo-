@@ -160,10 +160,10 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     art.indexOf('<body class="pre-stagger art-present">') !== -1 &&
     art.indexOf('function applyReflow') !== -1 && art.indexOf('function renderToc') !== -1 &&
     art.indexOf('artResizeTimer') !== -1 && art.indexOf('max-width: 560px') !== -1);
-  ok('F0-2 版本 v0.2.58.0 + changelog（58.0 rev 00276-nnx + 57.1 rev 00274-xfl 保留）+ FC v10.28.39.0',
+  ok('F0-2 版本 v0.2.58.0 + changelog（58.0 rev 00276-nnx + 57.1 rev 00274-xfl 保留）+ FC v10.28.39.1',
     sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.0';") !== -1 &&
-    sconf.indexOf('00275-') !== -1 && sconf.indexOf('00274-xfl') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.39.0';") !== -1);
+    sconf.indexOf('00276-nnx') !== -1 && sconf.indexOf('00274-xfl') !== -1 &&
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.39.1';") !== -1);
   ok('F0-3 i18n 新键在场（article.tags.label/article.toc.title zh + zh-Hant 目錄）',
     i18n.indexOf("article.tags.label") !== -1 && i18n.indexOf("article.toc.title") !== -1 &&
     i18n.indexOf('目錄') !== -1);
@@ -175,10 +175,10 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     art.indexOf('function updateWideScale') !== -1 &&
     art.indexOf('--art-grid-alpha') !== -1 &&
     art.indexOf('.article-page-wrap { max-width: none;') !== -1);
-  ok('F0-5 FC 镜像在场（fit1to1 + renderViewPresentation + fcViewTocBtn）+ 编辑模式 125 上限锚',
+  ok('F0-5 FC 镜像在场（fit1to1 + renderViewPresentation + fcViewTocBtn）+ 编辑模式恒 125 锚（39.0 computeCols 恒 return 125）',
     fc.indexOf('function fit1to1') !== -1 && fc.indexOf('function renderViewPresentation') !== -1 &&
     fc.indexOf('fcViewTocBtn') !== -1 &&
-    fc.indexOf('Math.min(125, Math.max(12, Math.floor((avail + gap) / (cs + gap))))') !== -1);
+    fc.indexOf('return 125;') !== -1);
 
   // ═══ 浏览器场景（登录态 Chrome）═══
   await new Promise(r => server.listen(PORT, r));
