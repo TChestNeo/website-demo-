@@ -237,7 +237,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   ok('S11 site-config：v0.2.57.1 + changelog 文章前端条目 + FC v10.28.39.0',
     sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.0';") !== -1 &&
     sconf.indexOf('文章前端') !== -1 && sconf.indexOf('article_comments') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.40.0';") !== -1);
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.41.0';") !== -1);
 
   // ── v0.2.55.1 发布去重复 + 删除 ──
   const editor = read(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'));
@@ -433,8 +433,11 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       await cdp.evalJs("document.querySelectorAll('.grid-card').length") > 0);
     await cdp.evalJs("window.__stubCalls = []");
     await cdp.evalJs("Array.from(document.querySelectorAll('button')).find(function(b){ return b.textContent.indexOf('Publish') !== -1; }).click()");
+    await waitFor(cdp, "document.getElementById('modalBackdrop').classList.contains('active')", 10000, 'B17 发布日志弹窗');
+    await cdp.evalJs("(function(){ var ta=document.getElementById('pubLogInput'); ta.value='B17 更新日志'; ta.dispatchEvent(new Event('input',{bubbles:true})); })()");
+    await cdp.evalJs("Array.prototype.slice.call(document.querySelectorAll('#publishLogModal button')).filter(function(b){ return b.textContent.trim() === '确认发布'; })[0].click()");
     await waitFor(cdp, "document.getElementById('toast').textContent === '已更新发布'", 10000, 'B17 PUT 更新');
-    ok('B17 已发布文章再点 Publish = PUT 更新原文章（恰 1 次 PUT、零新 POST）',
+    ok('B17 已发布文章再点 Publish = 发布日志弹窗 → 确认 = PUT 更新原文章（恰 1 次 PUT、零新 POST）',
       await cdp.evalJs("window.__stubCalls.length") === 1 &&
       await cdp.evalJs("window.__stubCalls[0].method") === 'PUT' &&
       await cdp.evalJs("window.__stubCalls[0].u.indexOf('/api/articles/ART-X') === 0") === true);
@@ -444,8 +447,11 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     await cdp.evalJs("window.__stubCalls = []");
     await cdp.evalJs("(function(){ var t = document.getElementById('titleInput'); t.value = 'Fresh Article'; })()");
     await cdp.evalJs("Array.from(document.querySelectorAll('button')).find(function(b){ return b.textContent.indexOf('Publish') !== -1; }).click()");
+    await waitFor(cdp, "document.getElementById('modalBackdrop').classList.contains('active')", 10000, 'B18 发布日志弹窗');
+    await cdp.evalJs("(function(){ var ta=document.getElementById('pubLogInput'); ta.value='B18 首发日志'; ta.dispatchEvent(new Event('input',{bubbles:true})); })()");
+    await cdp.evalJs("Array.prototype.slice.call(document.querySelectorAll('#publishLogModal button')).filter(function(b){ return b.textContent.trim() === '确认发布'; })[0].click()");
     await waitFor(cdp, "localStorage.getItem('slati_article_publish_id') === 'ART-NEW1'", 10000, 'B18 POST 创建');
-    ok('B18 无发布 id 时点 Publish = POST 创建 + id 记忆（后续再发布即更新）',
+    ok('B18 无发布 id 时点 Publish = 发布日志弹窗 → 确认 = POST 创建 + id 记忆（后续再发布即更新）',
       await cdp.evalJs("window.__stubCalls.some(function(c){ return c.method === 'POST' && c.u.indexOf('/api/articles') === 0; })") === true);
     await cdp.evalJs("window.__stubCalls = []");
     await nav(cdp, BASE + '/pages/fluidcanvas.html?view=articles',

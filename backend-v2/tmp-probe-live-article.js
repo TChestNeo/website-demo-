@@ -9,6 +9,7 @@
 // S8 v0.2.58.0 呈现界面：去侧栏 + 标签条 + 480 窄窗维基式回流往返 + 目录列全部卡（真文章 2 卡条目）
 // S9 v10.28.40.0 FC 编辑区固定 125 格横：线上 site-config 版本锚 + 门禁通过 + --grid-cols=125 + 画布盒 2748 全覆盖 + 底部横向拉条 + Ctrl+滚轮缩放 + 芯片重置 + Shift+滚轮横向 + 纯滚轮不缩放 + 中键拖平移落点精确/平移中玻璃挂起/松手还原（39.1 掉帧修复行为锚）
 // S10 v10.28.40.0 SNE 格底随卡色 + 画布边缘淡淡阴影（用户「二级显示分数的卡片颜色根据卡片本身的颜色自动变化背景颜色融入背景主题；画布格子边缘加淡淡阴影」）：画布盒 box-shadow 逐字节 + 建卡读混色恒等 + tint 写入 62/38 混色，IIFE 内建读删零草稿污染
+// S11 v10.28.41.0 发布日志弹窗（用户「点击发布的时候先弹出一个弹窗填写日志…限制320字」）：弹窗 DOM 在场 + 打开固定初始高 + 按空格分词计数（"code"=1）+ 自动增长 220 上限内滚 + 321 词 .over 红字确认硬拦 + 取消放弃 + 演示路径确认落草稿 + 再开预填（全链零网络——guest 无 USR 用户 fcCloudMode 恒 false；草稿只落探针一次性档案）
 'use strict';
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -193,7 +194,7 @@ async function waitFor(cdp, expr, timeout, label) {
 
     // S9 v10.28.40.0 FC 编辑区固定 125 格横（用户「FC也是一样是125格横向，固定不会因窗口不够宽而缩小，最多底下横向拉条」）
     const scCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
-    ok('S9a 线上 site-config 含 FC v10.28.40.0 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.40.0') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
+    ok('S9a 线上 site-config 含 FC v10.28.41.0 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.41.0') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
       source: 'try{localStorage.setItem("slati_session", ' + JSON.stringify(JSON.stringify({ loggedIn: true })) + ');}catch(e){}'
     });
@@ -269,6 +270,46 @@ async function waitFor(cdp, expr, timeout, label) {
       s10 && near(parseColor(s10.cellDefault), parseColor(s10.faceDefault), 1), JSON.stringify(s10 && { cellDefault: s10.cellDefault, faceDefault: s10.faceDefault }));
     ok('S10c tint 写入 → 格底=62/38 纸上混色 rgb(221,128,128)（tint 变量字面在场）',
       s10 && s10.tintVar === 'rgba(212, 60, 60, 1)' && near(parseColor(s10.cellTint), [221, 128, 128], 1.5), JSON.stringify(s10 && { tintVar: s10.tintVar, cellTint: s10.cellTint }));
+
+    // S11 v10.28.41.0 发布日志弹窗（用户「点击发布的时候先弹出一个弹窗填写日志…限制320字」）
+    // 编辑器已在场（S9 加载）；guest 无 USR 用户 → fcCloudMode 恒 false：
+    // 演示确认全链零网络（saveDraft 只写探针一次性档案、publishXPReward 只动 localStorage）
+    const s11dom = await cdp.evalJs("(function(){ var cnt = document.getElementById('pubLogCount'); return { modal: !!document.getElementById('publishLogModal'), ta: !!document.getElementById('pubLogInput'), cnt: cnt ? cnt.textContent : null, btn: !!document.querySelector('#publishLogModal button[onclick=\"confirmPublish()\"]') }; })()");
+    ok('S11a 发布日志弹窗 DOM 在场（modal + 输入框 + 计数 0 / 320 + 确认发布按钮）',
+      s11dom && s11dom.modal === true && s11dom.ta === true && s11dom.cnt === '0 / 320' && s11dom.btn === true, JSON.stringify(s11dom));
+    await cdp.evalJs('window.openPublishLogModal()');
+    await sleep(200);
+    const s11o = await cdp.evalJs("(function(){ var ta = document.getElementById('pubLogInput'); return { open: document.getElementById('modalBackdrop').classList.contains('active') && document.querySelector('#publishLogModal .modal-card').classList.contains('active'), h: ta.offsetHeight, cnt: document.getElementById('pubLogCount').textContent }; })()");
+    ok('S11b 打开弹窗：遮罩+卡片 active + 输入框固定初始高 ~110 + 计数 0 / 320',
+      s11o && s11o.open === true && s11o.h >= 110 && s11o.h <= 120 && s11o.cnt === '0 / 320', JSON.stringify(s11o));
+    const s11c = await cdp.evalJs("(function(){ var ta = document.getElementById('pubLogInput'); ta.value = 'hello world'; ta.dispatchEvent(new Event('input',{bubbles:true})); var c1 = document.getElementById('pubLogCount').textContent; ta.value = 'code'; ta.dispatchEvent(new Event('input',{bubbles:true})); return { c1: c1, c2: document.getElementById('pubLogCount').textContent }; })()");
+    ok('S11c 计数按空格分词：hello world=2 / 320、code=1 / 320（用户钦定口径）',
+      s11c && s11c.c1 === '2 / 320' && s11c.c2 === '1 / 320', JSON.stringify(s11c));
+    const s11g = await cdp.evalJs("(function(){ var ta = document.getElementById('pubLogInput'); var h0 = ta.offsetHeight; ta.value = Array(8).fill('这是一行比较长的日志内容文字').join('\\n'); ta.dispatchEvent(new Event('input',{bubbles:true})); var h1 = ta.offsetHeight; ta.value = Array(120).fill('abcdefgh').join(' '); ta.dispatchEvent(new Event('input',{bubbles:true})); return { h0: h0, h1: h1, sh: ta.style.height, scrollH: ta.scrollHeight }; })()");
+    ok('S11d 输入框随日志自动增长（8 行长高）+ 超长恰达 220px 上限内滚',
+      s11g && s11g.h1 > s11g.h0 + 30 && s11g.sh === '220px' && s11g.scrollH > 220, JSON.stringify(s11g));
+    const s11l = await cdp.evalJs("(function(){ var ta = document.getElementById('pubLogInput'); ta.value = Array(321).fill('x').join(' '); ta.dispatchEvent(new Event('input',{bubbles:true})); var over = document.getElementById('pubLogCount').classList.contains('over'); window.confirmPublish(); return over; })()");
+    await sleep(200);
+    const s11b2 = await cdp.evalJs("(function(){ return { toast: document.getElementById('toast').textContent, open: document.getElementById('modalBackdrop').classList.contains('active'), cnt: document.getElementById('pubLogCount').textContent }; })()");
+    ok('S11e 321 词 → .over 红字 + 确认被硬拦（toast 超限提示 + 弹窗留 + 计数 321 / 320）',
+      s11l === true && s11b2 && s11b2.toast === '日志超过 320 词上限，请删减' && s11b2.open === true && s11b2.cnt === '321 / 320', JSON.stringify(s11b2));
+    await cdp.evalJs("(function(){ var b = Array.prototype.slice.call(document.querySelectorAll('#publishLogModal button')).filter(function(x){ return x.textContent.trim() === '取消'; })[0]; b.click(); })()");
+    await sleep(200);
+    ok('S11f 取消 → 弹窗关（发布未发生）',
+      await cdp.evalJs("document.getElementById('modalBackdrop').classList.contains('active')") === false);
+    await cdp.evalJs('window.openPublishLogModal()');
+    await sleep(150);
+    await cdp.evalJs("(function(){ var ta = document.getElementById('pubLogInput'); ta.value = '探针日志'; ta.dispatchEvent(new Event('input',{bubbles:true})); window.confirmPublish(); })()");
+    await sleep(250);
+    const s11p = await cdp.evalJs("(function(){ return { hs: document.getElementById('headerStatus').textContent, open: document.getElementById('modalBackdrop').classList.contains('active'), log: (function(){ try { return JSON.parse(localStorage.getItem('slati_fluidcanvas_draft')).log; } catch (e) { return null; } })() }; })()");
+    ok('S11g 演示路径确认 → 弹窗关 + 徽章 Published + 日志落草稿「探针日志」',
+      s11p && s11p.hs === 'Published' && s11p.open === false && s11p.log === '探针日志', JSON.stringify(s11p));
+    await cdp.evalJs('window.openPublishLogModal()');
+    await sleep(150);
+    ok('S11h 再开弹窗预填上一条日志（草稿 log 往返）',
+      await cdp.evalJs("document.getElementById('pubLogInput').value") === '探针日志');
+    await cdp.evalJs("(function(){ var b = Array.prototype.slice.call(document.querySelectorAll('#publishLogModal button')).filter(function(x){ return x.textContent.trim() === '取消'; })[0]; b.click(); })()");
+    await sleep(150);
 
     // S4 零 JS 错误
     ok('S4 全程零 Runtime exception', cdp.errs.length === 0, cdp.errs.slice(0, 3).join(' | ') || '干净');

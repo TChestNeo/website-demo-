@@ -2527,7 +2527,16 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   ];
 
   function renderActivity() {
-    document.getElementById('activityFeed').innerHTML = activityItems.map(function(item) {
+    var feed = document.getElementById('activityFeed');
+    // 混入守护（v0.2.58.0 轮 FC 发布日志伴行修）：i18n 重渲染整段重建 demo 项会把
+    // v0.2.56.0 混入的真实文章卡抹掉（fetch 先于 apply 落地的时序竞态，语言切换必现）——
+    // 重建前摘出文章卡、重建后放回顶部
+    var articleCards = [];
+    if (feed) {
+      var as = feed.querySelectorAll('a.activity-article');
+      for (var i = 0; i < as.length; i++) articleCards.push(as[i].outerHTML);
+    }
+    feed.innerHTML = activityItems.map(function(item) {
       return '<div class="card card-hover tilt-container">' +
         '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
           '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:24px">' + item.icon + '</span>' +
@@ -2538,6 +2547,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         '<p style="margin-top:8px;color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + (T('index.act.desc.' + item.descKey) || item.descEn) + '</p>' +
       '</div>';
     }).join('');
+    if (articleCards.length) feed.insertAdjacentHTML('afterbegin', articleCards.join(''));
   }
   renderActivity();
 

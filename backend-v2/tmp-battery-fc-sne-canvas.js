@@ -1,8 +1,8 @@
-// tmp-battery-fc-sne-canvas.js — FC v10.28.40.0 SNE 格底随卡色 + 画布边缘阴影电池
+// tmp-battery-fc-sne-canvas.js — FC v10.28.41.0 SNE 格底随卡色 + 画布边缘阴影电池
 // 用户「SNE Index Card 的二级显示分数的卡片颜色能不能根据卡片本身的颜色然后自动变化
 //   背景颜色融入背景主题，然后整个画布格子的边缘能不能加上一个淡淡的阴影因为现在
 //   边缘有点不明显」
-// 验证：F0 静态锚（FC 40.0 + rev 00279- 占位 + 站点 58.0 恒 + color-mix 格底规则 +
+// 验证：F0 静态锚（FC 41.0 + rev 00280- 占位 + 站点 58.0 恒 + color-mix 格底规则 +
 //         --sne-cell-tint 写点 + 画布 box-shadow 规则 + 查看模式显式关闭锚）
 //   / S 格底随卡色（S1 默认格底=卡面 surface 恒等零变化；S2 选色 #d43c3c 后格底=
 //         卡色 62%+surface 38% 纸上混色、tint 变量=rgba 字面、卡面变色；S3 清色
@@ -173,8 +173,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     // ── F0 静态锚：版本号 + 规则锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
-    ok('F1 site-config：FC v10.28.40.0 + rev 00279- 占位 + 站点版本恒 v0.2.58.0',
-      siteCfg.indexOf('v10.28.40.0') !== -1 && siteCfg.indexOf('00279-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
+    ok('F1 site-config：FC v10.28.41.0 + rev 00280- 占位 + 站点版本恒 v0.2.58.0',
+      siteCfg.indexOf('v10.28.41.0') !== -1 && siteCfg.indexOf('00280-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
     ok('F2 编辑器页静态锚：格底 color-mix(--sne-cell-tint 62%, surface) + applyCardBg 写 tint + 画布 box-shadow 细线勾边',
       editorHtml.indexOf('color-mix(in srgb, var(--sne-cell-tint') !== -1 &&
       editorHtml.indexOf("setProperty('--sne-cell-tint', rgba)") !== -1 &&

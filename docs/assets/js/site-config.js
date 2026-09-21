@@ -1543,4 +1543,16 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   冒烟 48/48（版本锚 15 文件 sed 39.1→40.0）；线上实机探针 43/43（新 S10 三项：画布盒 box-shadow 与
 //   本地逐字节同串、默认格底=卡面 surface 恒等、tint 写入 62/38 混色 rgb(221,128,128)——建卡读删全在一个
 //   IIFE 内、createSneCard 不触发 onContentChange 实机草稿零污染）；digest c715f99f；rev 00279-lk7
-window.FLUIDCANVAS_VERSION = 'v10.28.40.0';
+// v10.28.41.0 = 发布日志弹窗（小更新位 40→41·新功能轮；2026-09-21）：用户「点击发布的时候能不能先弹出一个
+//   弹窗填写日志 他的长度要是固定的会跟着日志长度变化，然后限制320字」——点击 Publish 先弹发布日志弹窗，
+//   填写后「确认发布」才走真发布（云端/演示分流）、取消/关闭=放弃本次发布；输入框固定初始高度 110px、
+//   随日志自动增长（JS 写 style.height，上限 220px 后内滚；resize:none）；按空格分词计数 320 词硬限
+//   （与 v10.28.28 图片描述同口径："code"=1 词）——实时计数 0 / 320、超限红字 .over + 确认拦截 toast
+//   「日志超过 320 词上限，请删减」；日志存草稿 log 字段（additive——buildDraft 读弹窗输入框、applyDraft
+//   恢复、再发布弹窗预填上一条可继续编辑）随 contentJson 进文章（后端零改动 325/325，文章页暂不渲染）；
+//   站点版本恒 v0.2.58.0（伴行隐形修：index.html 活动流混入守护——i18n 重渲染整段重建 demo 项会抹掉
+//   v0.2.56.0 混入的真实文章卡（fetch 先于 apply 落地的时序竞态、语言切换必现，micro-v056 B5 间歇红实证），
+//   renderActivity 重建前摘出 a.activity-article、重建后放回顶部；ethereal 零改动、i18n 零新键；
+//   电池 fc-publish-log 19/19（新）+舰队全绿（版本锚 sed 40.0→41.0；article-frontend B17/B18、
+//   xp-social 全发布点走发布日志弹窗确认管线）；线上实机探针 51/51（S11 新发布日志段 8 项）；rev 00280-xrd
+window.FLUIDCANVAS_VERSION = 'v10.28.41.0';
