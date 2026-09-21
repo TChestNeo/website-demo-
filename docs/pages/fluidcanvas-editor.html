@@ -2062,7 +2062,7 @@ body.fc-viewmode .asset-panel,
 body.fc-viewmode .asset-panel-toggle,
 body.fc-viewmode .editor-statusbar { display: none !important; }
 body.fc-viewmode .canvas-body { padding: 0; }
-/* v10.28.37.0 查看模式呈现统一：1:1 bbox 裁剪（scale 恒 1 不放大填空）+ editor-body 滚动 + 灭网格线 + 标签条 + 目录抽屉 */
+/* v10.28.37.1 查看模式呈现统一：bbox 裁剪 + contain fit 投影（随查看窗铺满、公式同阅读页宽窗）+ editor-body 滚动 + 灭网格线 + 标签条 + 目录抽屉 */
 body.fc-viewmode .editor-body {
   overflow: auto !important;
   padding: 16px !important;
@@ -14531,9 +14531,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     canvas.style.left = '0';
     canvas.style.top = '0';
     canvas.style.transformOrigin = 'top left';
-    // v10.28.37.0: 与阅读页同口径 bbox 裁剪——量所有可见卡旋转外接盒，canvas 平移 + scale 恒 1
-    // （不放大填空，所见即所得），scaler 收成 bbox、editor-body 滚动；canvas 像素宽仍是编辑器格宽
-    // （gridW）所以卡位 1:1 不动
+    // v10.28.37.1: 与阅读页同口径 bbox 裁剪 + 全屏投影——canvas 平移 + contain fit 缩放
+    // （随查看窗铺满、0.25 下限不缩没，公式同阅读页宽窗），scaler 收成缩放后 bbox、
+    // editor-body 滚动；canvas 像素宽仍是编辑器格宽（gridW）所以卡位 1:1 不动
     function fit1to1() {
       var any = false, minLX = Infinity, minLY = Infinity, maxRX = -Infinity, maxBY = -Infinity;
       getAllCards().forEach(function (e) {
@@ -14548,11 +14548,15 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       });
       if (!any) { minLX = 0; minLY = 0; maxRX = gridW; maxBY = gridH; }
       var M = 24;
-      canvas.style.transform = 'scale(1)';
+      var bboxW = (maxRX - minLX) + 2 * M, bboxH = (maxBY - minLY) + 2 * M;
       canvas.style.left = (M - minLX) + 'px';
       canvas.style.top = (M - minLY) + 'px';
-      scaler.style.width = Math.round((maxRX - minLX) + 2 * M) + 'px';
-      scaler.style.height = Math.round((maxBY - minLY) + 2 * M) + 'px';
+      var availW = Math.max(200, scaler.parentNode.clientWidth - 32); // editor-body padding 16×2
+      var availH = Math.max(200, scaler.parentNode.clientHeight - 32);
+      var s = Math.max(0.25, Math.min(availW / bboxW, availH / bboxH));
+      canvas.style.transform = 'scale(' + s + ')';
+      scaler.style.width = Math.round(bboxW * s) + 'px';
+      scaler.style.height = Math.round(bboxH * s) + 'px';
     }
     // 只读硬化：pointer-events:none 挡鼠标但挡不住 Tab 焦点——contentEditable
     // 卡/卡内输入框全部关闭编辑并移出 Tab 序（readOnly 不改样式不置灰）
@@ -14577,7 +14581,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       document.body.appendChild(chip);
     }
   }
-  // v10.28.37.0 查看模式呈现：标签条（draft.tags）+ 只读目录抽屉（仅 content/text 且 label 非空的卡；中文零 i18n）
+  // v10.28.37.0 查看模式呈现：标签条（draft.tags）+ 只读目录抽屉（content/text 卡；label 非空取 label、
+  // 无 label 从正文首行派生 18 字——与阅读页同口径；中文零 i18n）
   function renderViewPresentation(draft) {
     var tags = (draft && Array.isArray(draft.tags)) ? draft.tags : [];
     if (tags.length) {
@@ -14593,14 +14598,21 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       document.body.appendChild(bar);
     }
     var entries = [];
+    var TYPE_NAME = { shield: 'Emblem', img: 'Image', bitmap: 'Image', flag: 'Flag', map: 'Map', character: 'Character', stats: 'Stats', sheet: 'Sheet', timeline: 'Timeline', content: 'Text', text: 'Text' };
     if (draft && Array.isArray(draft.cards)) {
-      // 从草稿数据读 label（与阅读页 TOC 同源 card.label 字段）——FC content/text 卡
+      // 从草稿数据读 label（与阅读页 TOC 同源 card.label 字段）——FC 卡
       // 不建 .card-label DOM（content 卡无标签 UI、text 卡只有 dataset.label），
-      // 按 data-card-id 找回画布元素做滚动/闪烁
+      // 按 data-card-id 找回画布元素做滚动/闪烁；v10.28.37.1 列全部卡（label→正文派生→卡型名兜底）
       draft.cards.forEach(function (cData) {
-        if (!cData || (cData.type !== 'content' && cData.type !== 'text')) return;
+        if (!cData) return;
         if (cData.hidden === '1' || cData.hidden === 1 || cData.hidden === true) return;
         var lbl = String(cData.label || '').trim();
+        if (!lbl) {
+          // v10.28.37.1: 无 label 卡从正文首行派生目录条目（用户「把目录操作做好」）
+          lbl = String(cData.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 18);
+          if (lbl) lbl += '…';
+        }
+        if (!lbl) lbl = TYPE_NAME[cData.type] || (cData.type ? String(cData.type).charAt(0).toUpperCase() + String(cData.type).slice(1) : '');
         if (!lbl) return;
         var el = gridCanvas.querySelector('.grid-card[data-card-id="' + cData.id + '"]');
         if (el) entries.push({ label: lbl, el: el });

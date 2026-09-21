@@ -72,12 +72,12 @@ console.log('═══ S. 静态巡检 ═══');
   }
   if (bad === 0) { pass++; console.log('  ✅ S8 41 页内联块全部含全站铺底规则'); }
   const s = read('docs/assets/js/site-config.js');
-  ok('S9 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.57.0';") !== -1);
+  ok('S9 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.57.1';") !== -1);
   ok('S10 site-config changelog 含 v0.2.54.3 条目 + 用户原话 + 侧栏同款口径',
     s.indexOf('v0.2.54.3 = 首页卡片背景换侧栏同款不透明底') !== -1 &&
     s.indexOf('能不能把首页的卡片背景都变成') !== -1);
-  ok('S11 本轮后端零改动（v0.2.56.2 条目口径「GET /api/articles 已具备」）', s.indexOf('v0.2.57.0') !== -1 && s.indexOf('后端零改动（GET /api/articles 已具备）') !== -1);
-  ok('S12 FC v10.28.36.1 保持', s.indexOf("'v10.28.37.0'") !== -1);
+  ok('S11 本轮后端零改动（v0.2.56.2 条目口径「GET /api/articles 已具备」）', s.indexOf('v0.2.57.1') !== -1 && s.indexOf('后端零改动（GET /api/articles 已具备）') !== -1);
+  ok('S12 FC v10.28.36.1 保持', s.indexOf("'v10.28.37.1'") !== -1);
 }
 
 // ── house CDP 骨架 ────────────────────────────────────────────────

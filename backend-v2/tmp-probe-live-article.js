@@ -5,8 +5,8 @@
 // S3 文章阅读页 article.html?id=ART-000004 正文渲染——v0.2.56.2 FC 1:1 画布：国旗/国徽并排不竖堆、
 //    尺寸 1:1（fit 264×174 / span 240×174）、国徽卡 Emblem 不丢
 // S4 全程零 JS 错误
-// S5 概览页真文章 / S6 explore 页文章搜索 / S7 阅读页版本锚 + 宽窗缩放恒 1（v0.2.57.0）
-// S8 v0.2.57.0 呈现界面：去侧栏 + 标签条 + 480 窄窗维基式回流往返 + 目录自洽
+// S5 概览页真文章 / S6 explore 页文章搜索 / S7 阅读页版本锚 + 宽窗全屏投影（v0.2.57.1）
+// S8 v0.2.57.1 呈现界面：去侧栏 + 标签条 + 480 窄窗维基式回流往返 + 目录列全部卡（真文章 2 卡条目）
 'use strict';
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -132,12 +132,12 @@ async function waitFor(cdp, expr, timeout, label) {
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-card-emblem'); return !!e && !!e.querySelector('.material-symbols-outlined') && !!e.querySelector('.art-card-emblem-label'); })()") === true &&
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-card-emblem-label'); return e.textContent === 'Emblem'; })()") === true);
 
-    // S7 v0.2.57.0：版本锚 + 宽窗缩放恒 1 + S8 呈现界面（去侧栏 + 窄窗回流往返 + 标签条/目录）
+    // S7 v0.2.57.1：版本锚 + 宽窗全屏投影 + S8 呈现界面（去侧栏 + 窄窗回流往返 + 标签条/目录派生条目）
     const artVer = await cdp.evalJs("window.MN_SITE_VERSION");
-    ok('S7 阅读页线上版本 = v0.2.57.0', artVer === 'v0.2.57.0', 'ver=' + artVer);
-    ok('S7b 宽窗缩放恒 =1（v0.2.57.0 不放大填空——作者看到什么读者看到什么）',
-      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var h = document.querySelector('#artBody .art-canvas'); return s === 1 && Math.abs(h.clientHeight - e.offsetHeight * s) <= 1.5; })()") === true,
-      await cdp.evalJs("document.querySelector('#artBody .art-canvas-inner').style.transform"));
+    ok('S7 阅读页线上版本 = v0.2.57.1', artVer === 'v0.2.57.1', 'ver=' + artVer);
+    ok('S7b 宽窗全屏投影自洽：s=min(availW/bboxW,availH/bboxH)（封顶废除）+ holder=bbox×s',
+      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); if (!h) return false; var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); var exp = Math.max(0.25, Math.min(b.clientWidth / e.offsetWidth, availH / e.offsetHeight)); return Math.abs(s - exp) <= 0.005 && Math.abs(h.clientWidth - Math.round(e.offsetWidth * s)) <= 2 && s >= 0.25; })()") === true,
+      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); return 'avail=' + b.clientWidth + ' inner=' + e.offsetWidth + 'x' + e.offsetHeight + ' holder=' + h.clientWidth + ' ' + e.style.transform; })()"));
     ok('S8 站点侧栏灭（art-present 单列）+ 标签条容器在场',
       await cdp.evalJs("(function(){ return getComputedStyle(document.querySelector('.app-sidebar')).display === 'none' && getComputedStyle(document.querySelector('.app-main')).marginLeft === '0px' && !!document.getElementById('artTags'); })()") === true,
       await cdp.evalJs("getComputedStyle(document.querySelector('.app-sidebar')).display + '/' + getComputedStyle(document.querySelector('.app-main')).marginLeft"));
@@ -148,11 +148,11 @@ async function waitFor(cdp, expr, timeout, label) {
       await cdp.evalJs("(function(){ var h = document.querySelector('#artBody .art-canvas'); return h ? 'reflow=' + h.classList.contains('art-canvas-reflow') + ' avail=' + document.getElementById('artBody').clientWidth : 'NO_CANVAS'; })()"));
     await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
     await sleep(900);
-    ok('S8c 回 1280 → 1:1 还原（reflow 灭 + scale(1) 往返稳定）',
-      await cdp.evalJs("(function(){ var h = document.querySelector('#artBody .art-canvas'); if (!h) return false; var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); return !h.classList.contains('art-canvas-reflow') && m && parseFloat(m[1]) === 1; })()") === true);
-    ok('S8d 标签条/目录随内容自洽（有标签出 chip、有目录钮则可开抽屉）',
-      await cdp.evalJs("(function(){ var b = document.getElementById('artTags'); var chips = b.querySelectorAll('.art-tag-chip'); var tb = document.getElementById('artTocBtn'); if (tb) { tb.click(); var opened = document.getElementById('artTocDrawer').classList.contains('open'); document.getElementById('artTocDrawer').classList.remove('open'); return { chips: chips.length, toc: opened }; } return { chips: chips.length, toc: 'NO_TOC' }; })()").then(r => r && (r.toc === 'NO_TOC' || r.toc === true)),
-      await cdp.evalJs("(function(){ var b = document.getElementById('artTags'); return 'chips=' + b.querySelectorAll('.art-tag-chip').length + ' tocBtn=' + !!document.getElementById('artTocBtn'); })()"));
+    ok('S8c 回 1280 → 全屏投影还原（reflow 灭 + transform scale 恢复、往返稳定）',
+      await cdp.evalJs("(function(){ var h = document.querySelector('#artBody .art-canvas'); if (!h) return false; var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); return !h.classList.contains('art-canvas-reflow') && m && parseFloat(m[1]) >= 0.25; })()") === true);
+    ok('S8d 标签条/目录随内容自洽（有标签出 chip、目录钮必在——列全部卡：label→正文派生→卡型名兜底）',
+      await cdp.evalJs("(function(){ var b = document.getElementById('artTags'); var chips = b.querySelectorAll('.art-tag-chip'); var tb = document.getElementById('artTocBtn'); if (!tb) return { chips: chips.length, toc: false }; tb.click(); var opened = document.getElementById('artTocDrawer').classList.contains('open'); document.getElementById('artTocDrawer').classList.remove('open'); return { chips: chips.length, toc: opened }; })()").then(r => r && r.toc === true && r.chips >= 1),
+      await cdp.evalJs("(function(){ var b = document.getElementById('artTags'); var d = document.getElementById('artTocDrawer'); var items = d ? d.querySelectorAll('.art-toc-item').length : -1; return 'chips=' + b.querySelectorAll('.art-tag-chip').length + ' tocBtn=' + !!document.getElementById('artTocBtn') + ' items=' + items; })()"));
 
     // v0.2.56.0：MicroNationary 概览页真文章（用户「我在MicroNationary看不见也搜索不到」）
     await cdp.send('Page.navigate', { url: BASE + '/pages/overview.html' });
@@ -175,7 +175,7 @@ async function waitFor(cdp, expr, timeout, label) {
     await cdp.send('Page.navigate', { url: BASE + '/pages/explore.html' });
     await waitFor(cdp, "document.readyState === 'complete' && !!document.getElementById('exSearchInput')", 30000, 'explore 页加载');
     const exVer = await cdp.evalJs("window.MN_SITE_VERSION");
-    ok('S6 explore 页线上版本 = v0.2.56.2', exVer === 'v0.2.57.0', 'ver=' + exVer);
+    ok('S6 explore 页线上版本 = v0.2.57.1', exVer === 'v0.2.57.1', 'ver=' + exVer);
     await cdp.evalJs("(function(){ var i = document.getElementById('exSearchInput'); i.value = 'Testing'; i.dispatchEvent(new Event('input')); })()");
     let exHit = false;
     try { exHit = await waitFor(cdp, "document.querySelectorAll('#exSearchPanel .dash-search-item').length >= 1", 10000, 'explore 下拉'); } catch (e) {}

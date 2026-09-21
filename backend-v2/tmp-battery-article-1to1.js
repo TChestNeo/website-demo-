@@ -1,7 +1,8 @@
 // tmp-battery-article-1to1.js — v0.2.56.2 文章阅读页 FC 1:1 画布渲染电池
 // 用户「不是啊，我要的是FC里的1:1 文章内的卡片位置什么的都要1：1有那么难吗？？」
 // 验证：A 画布模式在场（.art-canvas、零 .art-flow）/ B 卡片绝对定位还原 FC 几何（并排不竖堆、
-//    fitW/fitH 取胜、span×cellSize 尺寸、z 层级、rotate、hidden 跳过）/ C bbox 裁剪+等比缩放自洽
+//    fitW/fitH 取胜、span×cellSize 尺寸、z 层级、rotate、hidden 跳过）/ C bbox 裁剪+宽窗全屏投影自洽
+//    （v0.2.57.1：s=min(availW/bboxW,availH/bboxH) 封顶废除，卡位 1:1 逻辑尺寸不动）
 //    / D legacy 无 x/y 草稿流式兜底 / E 零 Runtime exception + 零 console error / F0 静态锚
 // fixture 复刻线上 ART-000004 真实卡（c8 flag aspectLock fitW264.399 fitH174.347 x439 y8 z2 +
 //    c1 shield x703 y8 11×8 z1 label Emblem）+ c2 content（高度自适应）+ c5 text rotate 15 +
@@ -153,9 +154,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     art.indexOf('data-caption-pos="outside-right"') !== -1 &&
     art.indexOf('两遍量盒') !== -1 &&
     art.indexOf('typeof c.x === \'number\'') !== -1);
-  ok('F0-2 版本 v0.2.57.0 + changelog 条目（rev 00272-g99）',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.57.0';") !== -1 &&
-    sconf.indexOf('FC 1:1 画布渲染') !== -1 && sconf.indexOf('00272-g99') !== -1);
+  ok('F0-2 版本 v0.2.57.1 + changelog 条目（57.1 rev 00274-xfl + 57.0 保留）',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.57.1';") !== -1 &&
+    sconf.indexOf('FC 1:1 画布渲染') !== -1 && sconf.indexOf('00274-xfl') !== -1 && sconf.indexOf('00272-g99') !== -1);
   ok('F0-3 渲染顺序修正（先 display:flex 再 renderBody——隐藏容器 clientWidth=0 缩放必错）',
     art.indexOf("document.getElementById('articleDetail').style.display = 'flex';") < art.indexOf('renderBody(a.contentJson)'));
 
@@ -239,13 +240,14 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       !!b5 && b5.tf.indexOf('rotate(15deg)') !== -1 && approx(b5.left, 30.326, 1.5) && approx(b5.top, 420.267, 1.5),
       JSON.stringify(b5));
 
-    // ── C bbox 裁剪+等比缩放自洽（纸算：bboxW 564.393 bboxH 524.966——量盒遍按旋转外接盒）──
+    // ── C bbox 裁剪+全屏投影自洽（纸算：bboxW 564.393 bboxH 524.966——量盒遍按旋转外接盒；
+    //       v0.2.57.1 s=min(availW/bboxW,availH/bboxH) 封顶废除，缩放走 transform 卡位逻辑尺寸不动）──
     ok('C1 inner 画布尺寸 = 渲染盒 bbox（564.39×524.97）',
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); return Math.abs(e.offsetWidth - 564.393) <= 1.5 && Math.abs(e.offsetHeight - 524.966) <= 1.5; })()") === true,
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); return e.offsetWidth + 'x' + e.offsetHeight; })()"));
-    ok('C2 缩放恒 =1（v0.2.57.0 不放大填空——所见即所得）且 holder 高 = bboxH',
-      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var h = document.querySelector('#artBody .art-canvas'); return s === 1 && Math.abs(h.clientHeight - e.offsetHeight * s) <= 1.5; })()") === true,
-      await cdp.evalJs("document.querySelector('#artBody .art-canvas-inner').style.transform"));
+    ok('C2 宽窗全屏投影自洽：s=min(availW/bboxW,availH/bboxH)（封顶废除）+ holder=bbox×s',
+      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); var exp = Math.max(0.25, Math.min(b.clientWidth / e.offsetWidth, availH / e.offsetHeight)); return Math.abs(s - exp) <= 0.005 && Math.abs(h.clientWidth - Math.round(e.offsetWidth * s)) <= 2 && Math.abs(h.clientHeight - Math.round(e.offsetHeight * s)) <= 2; })()") === true,
+      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); return 'avail=' + b.clientWidth + 'x' + availH + ' ' + e.style.transform + ' holder=' + h.clientWidth + 'x' + h.clientHeight; })()"));
 
     // ── D legacy 无 x/y 草稿 → 流式兜底 ──
     await nav(BASE + '/pages/article.html?id=ART-LEGACY1',

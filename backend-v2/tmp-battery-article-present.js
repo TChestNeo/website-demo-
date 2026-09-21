@@ -1,15 +1,16 @@
-// tmp-battery-article-present.js — v0.2.57.0 文章呈现界面电池（标签条 + 去侧栏 + 左弹目录 + 窄窗重排）
-// 用户「FC 编辑那边顶部栏变成显示文章标签的小栏、去除左侧菜单变成左侧弹窗目录、中间画布 1:1、
-//   阅读者窗口窄时排版只是被挤压改变位置（最窄全部上下排列）」
-// 验证：F0 静态锚 / W 宽窗（标签条 2 chip、侧栏灭、TOC 2 条目点击闪烁、s 恒=1、空余不填）
+// tmp-battery-article-present.js — v0.2.57.1 文章呈现全屏投影电池（720 栏上限废除 + 宽窗 contain fit 铺满
+//   + 目录派生条目 + 窄窗重排口径不变）
+// 用户「还是一样不符合要求啊，还是你用镜像投影的方式把用户在FC编辑好的数据和一些目录操作做好？
+//   而且我的要求是覆盖全屏不是中间而已」
+// 验证：F0 静态锚 / W 宽窗（标签条 2 chip、侧栏灭、TOC 5 条目列全部卡（c2 正文派生 Hello present…、c8 Flag 卡型名兜底）、点击闪烁、
+//   contain fit 自洽 s=min(availW/639,availH/bboxH)、高窗 s>1 投影放大铺满、卡位 1:1 不动）
 //   / N 窄窗回流（reflow 类、3 带 y 重叠、content 弹性收缩 vs 列表卡保自然宽、图卡等比、
 //     320 最窄全部上下单列、页面无横向溢出、窄窗 TOC 可点）/ R resize 翻转往返（防抖监听）
 //   / L legacy 流式兜底（无标签条无目录钮）/ E 零 Runtime exception + 零 console error
 // fixture：ART-000004 tags['宪法','地理'] + c8 flag aspectLock(264.399×174.347) + c1 content(label Constitution)
-//   + c2 content(无 label) + s1 stats(colSpan18 列表卡) + c3 text(label Notes)；
-//   纸算（cellSize=20 gap=2 M=24；文章页内容栏上限 720）：minLX=439 maxRX=790+240=1030 → bboxW=639（<720 宽窗）；
-//   minLY=8 maxBY=520+64=584 → bboxH=624
-//   带：c8/c1 同带(y8)、c2/s1 同带(220 与 290<306 重叠)、c3 独带；宽窗 s=min(1,avail/639) 恒 1
+//   + c2 content(无 label→正文派生 Hello present…) + s1 stats(colSpan18 列表卡) + c3 text(label Notes)；
+//   纸算（cellSize=20 gap=2 M=24）：minLX=439 maxRX=790+240=1030 → bboxW=639；minLY=8 maxBY=584 → bboxH≈624
+//   带：c8/c1 同带(y8)、c2/s1 同带(220 与 290<306 重叠)、c3 独带；宽窗 s=min(availW/bboxW,availH/bboxH) 封顶废除
 // 窄窗走 Emulation.setDeviceMetricsOverride（同 Chrome 翻转，resize 监听 200ms 防抖实测）；
 //   640 带内同行（c8/c1）+ 换行下置（c2 撑满带宽 vs s1 保 394）、320 ≤560 媒体查询纵排（5 卡 offsetTop 严格递增）
 // （house CDP 模式；截图全黑纪律；断言走 offset* 布局值不受 transform 缩放干扰）
@@ -97,7 +98,7 @@ const FIXTURE_PRESENT = {
   activePreset: '169',
   presets: {
     '169': { cards: {
-      c8: { col: 21, row: 1, colSpan: 12, rowSpan: 8 },
+      c8: { col: 21, row: 1, colSpan: 12, rowSpan: 8, aspectLock: '1', aspectRatio: '1.5174603174603174', fitW: 264.39946285714285, fitH: 174.3470057142857 },
       c1: { col: 46, row: 1, colSpan: 11, rowSpan: 8 },
       c2: { col: 21, row: 11, colSpan: 12, rowSpan: 4 },
       s1: { col: 21, row: 15, colSpan: 18, rowSpan: 8 },
@@ -155,15 +156,18 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     art.indexOf('<body class="pre-stagger art-present">') !== -1 &&
     art.indexOf('function applyReflow') !== -1 && art.indexOf('function renderToc') !== -1 &&
     art.indexOf('artResizeTimer') !== -1 && art.indexOf('max-width: 560px') !== -1);
-  ok('F0-2 版本 v0.2.57.0 + changelog（rev 00272-g99）+ FC v10.28.37.0',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.57.0';") !== -1 &&
-    sconf.indexOf('00272-g99') !== -1 && sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.37.0';") !== -1);
+  ok('F0-2 版本 v0.2.57.1 + changelog（57.1 rev 00274-xfl + 57.0 rev 00272-g99 保留）+ FC v10.28.37.1',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.57.1';") !== -1 &&
+    sconf.indexOf('00274-xfl') !== -1 && sconf.indexOf('00272-g99') !== -1 &&
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.37.1';") !== -1);
   ok('F0-3 i18n 新键在场（article.tags.label/article.toc.title zh + zh-Hant 目錄）',
     i18n.indexOf("article.tags.label") !== -1 && i18n.indexOf("article.toc.title") !== -1 &&
     i18n.indexOf('目錄') !== -1);
-  ok('F0-4 窄窗分支 + 缩放封顶 1（不放大填空）在场',
+  ok('F0-4 窄窗分支 + 宽窗全屏投影（contain fit 封顶废除）+ updateWideScale 在场',
     art.indexOf('if (avail < bboxW) { applyReflow') !== -1 &&
-    art.indexOf('var s = Math.min(1, Math.max(0.25, avail / bboxW));') !== -1);
+    art.indexOf('var s = Math.max(0.25, Math.min(avail / bboxW, availH / bboxH));') !== -1 &&
+    art.indexOf('function updateWideScale') !== -1 &&
+    art.indexOf('.article-page-wrap { max-width: none;') !== -1);
   ok('F0-5 FC 镜像在场（fit1to1 + renderViewPresentation + fcViewTocBtn）',
     fc.indexOf('function fit1to1') !== -1 && fc.indexOf('function renderViewPresentation') !== -1 &&
     fc.indexOf('fcViewTocBtn') !== -1);
@@ -181,7 +185,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const chrome = spawn(chromePath, [
     '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
     '--window-size=1280,900', '--remote-debugging-port=' + CDP_PORT,
-    '--user-data-dir=' + USER_DATA, 'about:blank'
+    '--user-data-dir=' + USER_DATA, '--disable-features=ScrollAnchoring', 'about:blank'
   ], { stdio: 'ignore' });
   const connectCdp = async (port) => {
     let up = false;
@@ -216,7 +220,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       await sleep(700);
     };
 
-    // ── W 宽窗（1280）：标签条 + 去侧栏 + TOC + s 恒 1 + 空余不填 ──
+    // ── W 宽窗（1280）：标签条 + 去侧栏 + TOC 3 条目 + contain fit 全屏投影 ──
     await nav(BASE + '/pages/article.html?id=ART-000004',
       "document.querySelectorAll('#artBody .art-card').length === 5", 'W 5 卡画布');
     ok('W1 标签条显示 2 chip 宪法/地理（顺序保留）',
@@ -226,17 +230,29 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       await cdp.evalJs("getComputedStyle(document.querySelector('.app-sidebar')).display") === 'none' &&
       await cdp.evalJs("getComputedStyle(document.querySelector('.app-main')).marginLeft") === '0px',
       await cdp.evalJs("getComputedStyle(document.querySelector('.app-sidebar')).display + '/' + getComputedStyle(document.querySelector('.app-main')).marginLeft"));
-    ok('W3 目录钮在场 + 抽屉 2 条目（Constitution/Notes；stats·flag 不入）',
-      await cdp.evalJs("(function(){ var b = document.getElementById('artTocBtn'); var d = document.getElementById('artTocDrawer'); if (!b || !d) return false; var items = d.querySelectorAll('.art-toc-item'); return items.length === 2 && items[0].textContent === 'Constitution' && items[1].textContent === 'Notes'; })()") === true);
+    ok('W3 目录钮在场 + 抽屉 5 条目（Flag/Constitution/Hello present…/Stats/Notes；v0.2.57.1 列全部卡——label→正文派生→卡型名兜底）',
+      await cdp.evalJs("(function(){ var b = document.getElementById('artTocBtn'); var d = document.getElementById('artTocDrawer'); if (!b || !d) return false; var items = d.querySelectorAll('.art-toc-item'); return items.length === 5 && items[0].textContent === 'Flag' && items[1].textContent === 'Constitution' && items[2].textContent === 'Hello present…' && items[3].textContent === 'Stats' && items[4].textContent === 'Notes'; })()") === true,
+      await cdp.evalJs("(function(){ var d = document.getElementById('artTocDrawer'); var out = []; d.querySelectorAll('.art-toc-item').forEach(function(i){ out.push(i.textContent); }); return out.join(' | '); })()"));
     ok('W4 目录钮开抽屉 + 点击条目 → 抽屉关 + 目标卡闪烁',
       await cdp.evalJs("(function(){ document.getElementById('artTocBtn').click(); return document.getElementById('artTocDrawer').classList.contains('open'); })()") === true &&
-      await cdp.evalJs("(function(){ var d = document.getElementById('artTocDrawer'); d.querySelectorAll('.art-toc-item')[0].click(); var c = document.querySelector('#artBody .art-card[data-card-id=\"c1\"]'); return !d.classList.contains('open') && c.classList.contains('art-card-toc-flash'); })()") === true);
-    ok('W5 宽窗严格 1:1：inner 宽 639 缩放恒 =1 + holder 高 = 实测 bboxH（624~630，c3 高度自适应）',
-      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var h = document.querySelector('#artBody .art-canvas'); return s === 1 && Math.abs(e.offsetWidth - 639) <= 1.5 && e.offsetHeight > 600 && e.offsetHeight < 650 && Math.abs(h.clientHeight - e.offsetHeight) <= 1.5; })()") === true,
-      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); var h = document.querySelector('#artBody .art-canvas'); return e.offsetWidth + 'x' + e.offsetHeight + ' holder=' + h.clientHeight + ' ' + e.style.transform; })()"));
-    ok('W6 空余不填：栏宽 > 639 而画布恒 639（作者看到什么读者看到什么）',
-      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var e = b.querySelector('.art-canvas-inner'); return b.clientWidth >= 700 && Math.abs(e.offsetWidth - 639) <= 1.5; })()") === true,
-      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var e = b.querySelector('.art-canvas-inner'); return 'avail=' + b.clientWidth + ' inner=' + e.offsetWidth; })()"));
+      await cdp.evalJs("(function(){ var d = document.getElementById('artTocDrawer'); d.querySelectorAll('.art-toc-item')[1].click(); var c = document.querySelector('#artBody .art-card[data-card-id=\"c1\"]'); return !d.classList.contains('open') && c.classList.contains('art-card-toc-flash'); })()") === true);
+    ok('W5 宽窗全屏投影自洽：inner 逻辑 639×~624、s=min(availW/639,availH/bboxH)（封顶废除）+ holder=bbox×s',
+      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); var exp = Math.max(0.25, Math.min(b.clientWidth / e.offsetWidth, availH / e.offsetHeight)); return Math.abs(e.offsetWidth - 639) <= 1.5 && e.offsetHeight > 600 && e.offsetHeight < 660 && Math.abs(s - exp) <= 0.005 && Math.abs(h.clientWidth - Math.round(e.offsetWidth * s)) <= 2 && Math.abs(h.clientHeight - Math.round(e.offsetHeight * s)) <= 2; })()") === true,
+      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); return 'avail=' + b.clientWidth + 'x' + availH + ' inner=' + e.offsetWidth + 'x' + e.offsetHeight + ' holder=' + h.clientWidth + 'x' + h.clientHeight + ' ' + e.style.transform; })()"));
+    ok('W6 投影不改画布逻辑尺寸：c8 逻辑宽仍 264.4（fitW）——缩放只走 transform，卡位 1:1 不动',
+      await cdp.evalJs("(function(){ var c8 = document.querySelector('#artBody .art-card[data-card-id=\"c8\"]'); return Math.abs(c8.offsetWidth - 264.4) <= 2 && Math.abs(c8.offsetHeight - 174.4) <= 2; })()") === true,
+      await cdp.evalJs("(function(){ var c8 = document.querySelector('#artBody .art-card[data-card-id=\"c8\"]'); return 'c8=' + c8.offsetWidth + 'x' + c8.offsetHeight; })()"));
+    // ── W7 全屏实证：高窗 1400 → availH 变大 s>1 画布放大铺满（封顶 1 已废；resize 只重算缩放不重建）──
+    // 陷阱：W4 scrollIntoView 滚动后改窗口高会触发 Chrome 滚动锚定——holder.top 漂移致 availH 两次测量不一致；
+    // 先 scrollTo(0,0) 稳定再改高，落定后再派发一次 resize 让 updateWideScale 用同一稳定 top 重算
+    await cdp.evalJs("window.scrollTo(0, 0)");
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 1400, deviceScaleFactor: 1, mobile: false });
+    await sleep(700);
+    await cdp.evalJs("window.dispatchEvent(new Event('resize'))");
+    await sleep(700);
+    ok('W7 高窗投影放大：s>1.05 且自洽（铺满整屏、投影随窗）',
+      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); var exp = Math.max(0.25, Math.min(b.clientWidth / e.offsetWidth, availH / e.offsetHeight)); return s > 1.05 && Math.abs(s - exp) <= 0.005 && Math.abs(h.clientWidth - Math.round(e.offsetWidth * s)) <= 2; })()") === true,
+      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); return 'avail=' + b.clientWidth + 'x' + availH + ' s=' + e.style.transform + ' holder=' + h.clientWidth; })()"));
 
     // ── R1+N 窄窗 640（>560 媒体阈值）：行挤压回流 ──
     await setWidth(cdp, 640);
@@ -258,8 +274,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
 
     // ── R2 回宽窗 → R3 再窄：监听防抖往返 ──
     await setWidth(cdp, 1280);
-    ok('R2 回 1280 → 1:1 还原（reflow 灭 + scale(1) + TOC 钮重建）',
-      await cdp.evalJs("(function(){ var h = document.querySelector('#artBody .art-canvas'); var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); return !h.classList.contains('art-canvas-reflow') && m && parseFloat(m[1]) === 1 && !!document.getElementById('artTocBtn'); })()") === true,
+    ok('R2 回 1280 → 全屏投影还原（reflow 灭 + transform scale 恢复 + TOC 钮重建）',
+      await cdp.evalJs("(function(){ var h = document.querySelector('#artBody .art-canvas'); var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); return !h.classList.contains('art-canvas-reflow') && m && parseFloat(m[1]) >= 0.25 && !!document.getElementById('artTocBtn'); })()") === true,
       await cdp.evalJs("(function(){ var h = document.querySelector('#artBody .art-canvas'); var e = h.querySelector('.art-canvas-inner'); return 'reflow=' + h.classList.contains('art-canvas-reflow') + ' tf=' + e.style.transform; })()"));
     await setWidth(cdp, 640);
     ok('R3 再 640 → 回流复现（监听未死、往返稳定）',
@@ -273,8 +289,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('N6 320 页面无横向溢出（列表卡被钳住不撑破页）',
       await cdp.evalJs("(function(){ return document.documentElement.scrollWidth <= window.innerWidth + 1; })()") === true,
       await cdp.evalJs("'scrollW=' + document.documentElement.scrollWidth + ' innerW=' + window.innerWidth"));
-    ok('N7 窄窗 TOC 可点（开抽屉→点条目→闪烁 + 抽屉关）',
-      await cdp.evalJs("(function(){ var b = document.getElementById('artTocBtn'); var d = document.getElementById('artTocDrawer'); b.click(); if (!d.classList.contains('open')) return false; d.querySelectorAll('.art-toc-item')[1].click(); var c = document.querySelector('#artBody .art-card[data-card-id=\"c3\"]'); return !d.classList.contains('open') && c.classList.contains('art-card-toc-flash'); })()") === true);
+    ok('N7 窄窗 TOC 可点（开抽屉→点第 5 条 Notes→c3 闪烁 + 抽屉关）',
+      await cdp.evalJs("(function(){ var b = document.getElementById('artTocBtn'); var d = document.getElementById('artTocDrawer'); b.click(); if (!d.classList.contains('open')) return false; d.querySelectorAll('.art-toc-item')[4].click(); var c = document.querySelector('#artBody .art-card[data-card-id=\"c3\"]'); return !d.classList.contains('open') && c.classList.contains('art-card-toc-flash'); })()") === true);
 
     // ── L legacy 流式兜底（无标签、无目录钮）──
     await nav(BASE + '/pages/article.html?id=ART-LEGACY1',
@@ -285,7 +301,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('L2 legacy 正文渲染', (await cdp.evalJs("document.getElementById('artBody').textContent")).indexOf('legacy flow body') !== -1);
     ok('L3 无标签 → 标签条隐藏',
       await cdp.evalJs("document.getElementById('artTags').style.display") === 'none');
-    ok('L4 无 content/text 标签 → 零目录钮',
+    ok('L4 流式兜底零画布 → 零目录钮（renderToc 不跑）',
       await cdp.evalJs("document.getElementById('artTocBtn')") === null &&
       await cdp.evalJs("document.getElementById('artTocDrawer')") === null);
 

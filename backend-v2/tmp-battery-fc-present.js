@@ -2,7 +2,8 @@
 // 用户「FC 那边要做 16:9 固定值——编辑时窗口再小都不影响页面编辑」「固定比例是在编辑器那边才有」
 // 验证：E 编辑态自适应回归（169 预设 16:9 恒 20px 不被窗口缩放改动、computeCols 公式随窗口自洽、
 //       480→1280 往返零漂移零异常零自动建卡——证明未冻结画布）
-//   / V 查看镜像 resize 稳定性（fit1to1 重测 bbox 稳定 1102、canvas 平移 2px 恒 scale(1)、
+//   / V 查看镜像 resize 稳定性（fit1to1 contain fit 自洽：s=min(availW/bboxW,availH/bboxH)、
+//     bbox 稳定 1102、canvas 平移 2px 恒在、哨兵草稿不被 resize 触碰）
 //       草稿哨兵未被 resize 动、目录 3 条目 draft 数据口径——含 content 卡 label）
 // fetch 打桩：仅 /articles 拦截（ART-CLOUD-1 → 4 卡 contentJson + tags['宪法','官方']）；编辑态不发文章请求。
 // （house CDP 模式；截图全黑纪律；断言走 offset*/计算样式不受 transform 干扰）
@@ -191,20 +192,23 @@ const COLS_EXPR = "(function(){ var gc = document.getElementById('gridCanvas'); 
       await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length") === 0,
       JSON.stringify(e3) + ' cards=' + await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length"));
 
-    // ── V 查看镜像 resize 稳定性：fit1to1 重测 bbox 稳定 + 哨兵草稿不动 ──
+    // ── V 查看镜像 resize 稳定性：fit1to1 contain fit 自洽 + 哨兵草稿不动 ──
     await nav(BASE + '/pages/fluidcanvas-editor.html?article=ART-CLOUD-1',
       "document.querySelectorAll('#gridCanvas .grid-card').length === 4 && !!document.getElementById('fcViewScaler')", 'V 查看器加载');
     const draftBefore = await cdp.evalJs("localStorage.getItem('slati_fluidcanvas_draft') || ''");
+    const FIT_SELFCHECK = "(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); if (!m) return false; var sv = parseFloat(m[1]); var any = false, minLX = 1e9, minLY = 1e9, maxRX = -1e9, maxBY = -1e9; document.querySelectorAll('#gridCanvas .grid-card').forEach(function (e) { if (getComputedStyle(e).display === 'none') return; any = true; var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180); var rw = e.offsetWidth * Math.abs(Math.cos(rad)) + e.offsetHeight * Math.abs(Math.sin(rad)); var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad)); var cx = e.offsetLeft + e.offsetWidth / 2, cy = e.offsetTop + e.offsetHeight / 2; minLX = Math.min(minLX, cx - rw / 2); minLY = Math.min(minLY, cy - rh / 2); maxRX = Math.max(maxRX, cx + rw / 2); maxBY = Math.max(maxBY, cy + rh / 2); }); var bboxW = (maxRX - minLX) + 48, bboxH = (maxBY - minLY) + 48; var availW = Math.max(200, s.parentNode.clientWidth - 32); var availH = Math.max(200, s.parentNode.clientHeight - 32); var exp = Math.max(0.25, Math.min(availW / bboxW, availH / bboxH)); return Math.abs(sv - exp) <= 0.01 && Math.abs(s.clientWidth - Math.round(bboxW * sv)) <= 2 && g.style.left === '2px'; })()";
     await setWidth(cdp, 640);
-    ok('V1 查看态 640 窄窗：fit1to1 重测后 bbox 稳定（scaler 宽 1102±6、canvas 平移 2px、scale 恒 1）',
-      await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); return Math.abs(s.clientWidth - 1102) <= 6 && g.style.left === '2px' && g.style.transform === 'scale(1)' && document.querySelectorAll('#gridCanvas .grid-card').length === 4; })()") === true,
+    ok('V1 查看态 640 窄窗：fit1to1 contain fit 自洽（s=min(availW/bboxW,availH/bboxH)、scaler=bbox×s、canvas 平移 2px）',
+      await cdp.evalJs(FIT_SELFCHECK) === true &&
+      await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length") === 4,
       await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); return 'scaler.w=' + s.clientWidth + ' left=' + g.style.left + ' tf=' + g.style.transform; })()"));
     await setWidth(cdp, 1280);
-    ok('V2 回 1280：再 fit 稳定 + 哨兵草稿未被 resize 触碰（byte 相等）',
-      await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); return Math.abs(s.clientWidth - 1102) <= 6 && g.style.transform === 'scale(1)'; })()") === true &&
-      await cdp.evalJs("localStorage.getItem('slati_fluidcanvas_draft') || ''") === draftBefore);
-    ok('V3 查看镜像目录 3 条目（draft 数据口径：content c1 label + c3/c4 文字卡；flag 不入）',
-      await cdp.evalJs("(function(){ var d = document.getElementById('fcViewTocDrawer'); if (!d) return false; var items = d.querySelectorAll('.fcv-toc-item'); return items.length === 3 && items[0].textContent === 'Constitution' && items[1].textContent === 'OOB-Right' && items[2].textContent === 'OOB-Bottom'; })()") === true);
+    ok('V2 回 1280：再 fit 自洽 + 哨兵草稿未被 resize 触碰（byte 相等）',
+      await cdp.evalJs(FIT_SELFCHECK) === true &&
+      await cdp.evalJs("localStorage.getItem('slati_fluidcanvas_draft') || ''") === draftBefore,
+      await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); return 'scaler.w=' + s.clientWidth + ' tf=' + g.style.transform; })()"));
+    ok('V3 查看镜像目录 4 条目（v0.2.57.1 列全部卡：content c1 label + flag c2 label + c3/c4 文字卡）',
+      await cdp.evalJs("(function(){ var d = document.getElementById('fcViewTocDrawer'); if (!d) return false; var items = d.querySelectorAll('.fcv-toc-item'); return items.length === 4 && items[0].textContent === 'Constitution' && items[1].textContent === 'Fixture Flag' && items[2].textContent === 'OOB-Right' && items[3].textContent === 'OOB-Bottom'; })()") === true);
 
     // ── E 全程零 Runtime exception + 零 console error ──
     ok('E4 全程零 Runtime exception', cdp.errs.length === 0, cdp.errs.slice(0, 5).join(' | ') || '干净');
