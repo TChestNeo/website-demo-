@@ -1509,4 +1509,12 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   格子线代码层面保留、透明度放满（alpha 0 覆写编辑器网格线）；编辑模式 computeCols 上限 125 格
 //   （「16：9宽的格子数量是125个做一下这是最大值」——宽窗再多不超 125）
 //   （rev 00276-nnx）
-window.FLUIDCANVAS_VERSION = 'v10.28.38.0';
+// v10.28.39.0 = 编辑视口系统（小更新位 38→39·新功能轮；2026-09-21）：横向恒 125 格（computeCols 恒 125，
+//   窗口变窄不缩小不再自适应、窗口 resize 不再 refitColumns——卡片位置固定，不足部分由 .editor-body
+//   横向拉条承载）；视口缩放 Ctrl+滚轮 / Ctrl+加减号（CSS zoom 施加 .grid-canvas、默认 100%、0.25–4 倍、
+//   锚在光标下、缩放原点 0 0、zoomChip 百分比按钮点击复位）；中键长按拖动平移视口（preventDefault
+//   关浏览器自动滚动、中键不误触取消选中）；普通滚轮=纵向、Shift+滚轮=横向（浏览器原生）；查看模式
+//   fit1to1 零改动；坐标补丁 7 处（snapToGrid/dragFrame/onResizeMove/onGroupResizeMove/sheet 手柄/
+//   rotate 中心/statsEditPanel——屏幕px↔画布px 除乘 viewZoom，gBCR 屏幕盒锚定 UI 天然正确）
+//   （rev 00277-djl）
+window.FLUIDCANVAS_VERSION = 'v10.28.39.0';

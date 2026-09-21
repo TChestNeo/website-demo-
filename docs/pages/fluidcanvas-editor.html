@@ -2792,6 +2792,13 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       gap: 2px;
       min-height: 500px;
       position: relative;
+      /* v10.28.39.0: 视口缩放（Ctrl+滚轮）以左上角为缩放原点——锚点平移
+         算式 (sl+rel)*z'/z−rel 才成立；zoom 未施加时该属性惰性无副作用 */
+      transform-origin: 0 0;
+      /* v10.28.39.0: 横向恒 125 格——width:max-content 让画布盒覆盖全部 125 列
+         （2750px 级），网格线/背景跟着滚动到底，不只在窗口宽内画半截；
+         查看模式 fit1to1 写 inline width 恒覆盖本规则 */
+      width: max-content;
       border-radius: var(--radius-md);
       background-color: var(--color-surface-container-lowest);
       background-image:
@@ -4911,6 +4918,9 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       </button>
       <button class="col-btn active" id="snapToggle" onclick="toggleSnap()" title="拖拽时自动吸附到方格，关闭后自由移动">吸附</button>
       <button class="col-btn active" id="alignToggle" onclick="toggleAlign()" title="拖拽时吸附对齐到其他卡片与页面中线，并显示对齐线">对齐</button>
+      <!-- v10.28.39.0: 视口缩放百分比——Ctrl+滚轮 / Ctrl+加减号 缩放（默认 100%），
+           点击复位；中键长按拖动平移视口 -->
+      <button class="col-btn" id="zoomChip" onclick="resetViewZoom()" title="视口缩放：Ctrl+滚轮 / Ctrl+加减号 缩放，点击复位 100%；中键长按拖动平移视口">100%</button>
       <!-- v10.3 — 合并弹层：画面预设 / 列数 / 格子大小。position:fixed
            挂在 viewportBtn 正下方；display:none 时不影响 .grid-controls 布局。 -->
       <div class="radius-popover viewport-popover" id="viewportPopover">
@@ -5513,8 +5523,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var rect = gridCanvas.getBoundingClientRect();
     var cs = getCellSize();
     var gap = 2;
-    var x = clientX - rect.left;
-    var y = clientY - rect.top;
+    // v10.28.39.0: gBCR 是屏幕真实盒（缩放后），屏幕 px → 画布 px 要除 viewZoom
+    var x = (clientX - rect.left) / viewZoom;
+    var y = (clientY - rect.top) / viewZoom;
     var col = Math.max(1, Math.floor(x / (cs + gap)) + 1);
     var row = Math.max(1, Math.floor(y / (cs + gap)) + 1);
     var cols = getGridCols();
@@ -6214,6 +6225,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var k = (e.key || '').toLowerCase();
     if (k === 'z' && !e.shiftKey) { e.preventDefault(); historyUndoAction(); }
     else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); historyRedoAction(); }
+    // v10.28.39.0: Ctrl+加减号 = 视口缩放（与 Ctrl+滚轮同族；Ctrl+= 与 Shift+= 都到 '+'）
+    else if (k === '=' || k === '+') { e.preventDefault(); setViewZoom(viewZoom * VIEW_ZOOM_STEP); }
+    else if (k === '-') { e.preventDefault(); setViewZoom(viewZoom / VIEW_ZOOM_STEP); }
   });
 
   // 初始基线：脚本同步初始化（含草稿恢复）完成后拍下「刚打开时的样子」——
@@ -7556,8 +7570,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
             st.sizes[c.dataset.cardId] = { w: c.offsetWidth, h: c.offsetHeight };
           });
         }
-        var nx = st.origX + (clientX - st.startX);
-        var ny = st.origY + (clientY - st.startY);
+        // v10.28.39.0: 屏幕增量 → 画布增量要除 viewZoom（否则卡跑得比光标快）
+        var nx = st.origX + (clientX - st.startX) / viewZoom;
+        var ny = st.origY + (clientY - st.startY) / viewZoom;
         // v10.28.14 — wiki 吸合（合并）：未分组卡拖近目标卡 ≤12px 时贴齐，
         // 优先于网格/对齐吸附（贴齐位不是网格点，混用会在吸合点来回跳）。
         // 吸合成功记 mergeTarget，mouseup 校验仍在贴齐位 → 提交成组。
@@ -9162,12 +9177,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     statsEditPanel._owner = card;
     var cRect = card.getBoundingClientRect();
     var gRect = gridCanvas.getBoundingClientRect();
-    var x = cRect.right - gRect.left + 12;
+    // v10.28.39.0: 面板是 gridCanvas 子元素（画布本地定位）——屏幕差值除
+    // viewZoom 回画布 px，与 offsetWidth/offsetHeight（画布本地）口径一致
+    var x = (cRect.right - gRect.left) / viewZoom + 12;
     var pw = 200;
-    if (x + pw > gridCanvas.offsetWidth - 8) x = cRect.left - gRect.left - pw - 12; // 右侧放不下 → 翻到卡左侧
+    if (x + pw > gridCanvas.offsetWidth - 8) x = (cRect.left - gRect.left) / viewZoom - pw - 12; // 右侧放不下 → 翻到卡左侧
     x = Math.max(8, x);
-    var y = cRect.top - gRect.top;
-    y = Math.max(8, Math.min(y, Math.max(8, gridCanvas.offsetHeight - Math.max(160, cRect.height) - 12)));
+    var y = (cRect.top - gRect.top) / viewZoom;
+    y = Math.max(8, Math.min(y, Math.max(8, gridCanvas.offsetHeight - Math.max(160, cRect.height / viewZoom) - 12)));
     statsEditPanel.style.left = x + 'px';
     statsEditPanel.style.top = y + 'px';
     statsEditPanel.style.maxHeight = Math.max(160, cRect.height) + 'px';
@@ -9700,8 +9717,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // 重排+重绘，125Hz mousemove 下原实现每事件一次）；松手同步 flush 终值
     var gripRaf = null, gripLastEv = null;
     function applyMove(ev) {
-      var d = (mode === 'col' ? ev.clientX : ev.clientY) - startXY;
-      apply(Math.max(MIN, startSize + d));
+      // v10.28.39.0: startSize 来自 gBCR=屏幕 px、增量也是屏幕 px——合成后
+      // 整体除 viewZoom 回画布本地 px（col.style.width 是画布本地）
+      var raw = startSize + ((mode === 'col' ? ev.clientX : ev.clientY) - startXY);
+      apply(Math.max(MIN, raw / viewZoom));
     }
     function onMove(ev) {
       ev.preventDefault();
@@ -10955,9 +10974,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var y = parseFloat(card.style.top) || 0;
     // Card center in CLIENT coords (the canvas rect cancels the page
     // layout offset) — atan2 works in client space like every gesture.
+    // v10.28.39.0: x/y/w/h 是画布本地 px，换到 client 空间要 ×viewZoom。
     var rect = gridCanvas.getBoundingClientRect();
-    var ccx = rect.left + x + w / 2;
-    var ccy = rect.top + y + h / 2;
+    var ccx = rect.left + (x + w / 2) * viewZoom;
+    var ccy = rect.top + (y + h / 2) * viewZoom;
     rotateState = {
       card: card,
       startRot: parseFloat(card.dataset.rotate) || 0,
@@ -11248,7 +11268,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var cs = getCellSize(), gap = 2, step = cs + gap;
       var rad = (parseFloat(st.card.dataset.rotate) || 0) * Math.PI / 180;
       var cos = Math.cos(rad), sin = Math.sin(rad);
-      var dx = e.clientX - st.startX, dy = e.clientY - st.startY;
+      // v10.28.39.0: 屏幕增量 → 画布增量要除 viewZoom（st.box 等全是画布本地 px）
+      var dx = (e.clientX - st.startX) / viewZoom, dy = (e.clientY - st.startY) / viewZoom;
       // Client delta → local (unrotated) delta: R(−θ)·(dx,dy)
       var lx = dx * cos + dy * sin;
       var ly = -dx * sin + dy * cos;
@@ -11325,8 +11346,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function onGroupResizeMove(e) {
     var st = resizeState;
     var cs = getCellSize(), gap = 2, step = cs + gap;
-    // 组框轴对齐 → 客户区增量即局部增量（θ=0）
-    var dx = e.clientX - st.startX, dy = e.clientY - st.startY;
+    // 组框轴对齐 → 客户区增量即局部增量（θ=0）；v10.28.39.0: 屏幕增量 → 画布增量除 viewZoom
+    var dx = (e.clientX - st.startX) / viewZoom, dy = (e.clientY - st.startY) / viewZoom;
     var boxW = Math.max(cs, st.box.w + st.dirX * dx);
     var boxH = Math.max(cs, st.box.h + st.dirY * dy);
     var spanW = Math.max(1, Math.round((boxW + gap) / step));
@@ -14328,25 +14349,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     });
   }
 
-  // Calculate how many columns fit in the available width
+  // v10.28.39.0: 横向恒 125 格（用户「FC也是一样是125格横向…这个值是固定的
+  // 不会因为窗口不够宽而缩小，最多就只是变成底下有一个横向拉条」）——窗口不够宽
+  // 时 .editor-body（overflow:auto）出横向拉条，格子数不再随窗口自适应；窗口
+  // resize 也不再 refitColumns（卡片位置不动，编辑零影响）；视口缩放走
+  // viewZoom（CSS zoom），查看模式 fit1to1 不用本函数。
   function computeCols() {
-    var body = gridCanvas.parentElement; // .editor-body
-    var avail = body.clientWidth - 20; // padding buffer
-    // v10.28.35.0: 查看模式面板已 display:none——按作者编辑器口径（面板 260px 开放 +
-    // 1px 右缘 divider）重建格宽，否则查看器格子比作者格子宽、「超出格子」判定两处不一致
-    if (document.body.classList.contains('fc-viewmode')) {
-      var cb = document.querySelector('.canvas-body');
-      if (cb) {
-        var pw = parseInt(getComputedStyle(cb).getPropertyValue('--asset-panel-w'), 10);
-        if (isNaN(pw)) pw = 260;
-        avail -= pw + 1;
-      }
-    }
-    var cs = getCellSize();
-    var gap = 2;
-    // v10.28.38.0: 横向格子最大值 125（用户「16：9宽的格子数量是125个做一下这是最大值」——
-    // 16:9 满格 = 125×70，再外加 25 行预留；纵向按文章长度不限、卡片逼近底边自动增长）
-    return Math.min(125, Math.max(12, Math.floor((avail + gap) / (cs + gap))));
+    return 125;
   }
 
   function applyPreset(name) {
@@ -14770,17 +14779,19 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     window.addEventListener('pagehide', function () { autoSave(); });
   })();
 
-  // Refit on window resize
+  // v10.28.39.0: 窗口 resize 不再 refitColumns——横向恒 125 格（computeCols 恒
+  // 125），卡片位置在窗口变窄/变宽时保持不动（用户「这个值是固定的不会因为窗口
+  // 不够宽而缩小」，不足部分由 .editor-body 横向拉条 + 视口平移承载）；查看模式
+  // 依旧冻结（rescale 自管缩放）。refitColumns 函数保留（预设切换等显式路径仍用）。
   var resizeTimer;
   window.addEventListener('resize', function () {
-    if (document.body.classList.contains('fc-viewmode')) return; // v10.28.35.0: 查看模式列数/卡位冻结（rescale 自管缩放）
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(refitColumns, 250);
+    // 恒 125 格：无需任何重排。预留监听位仅注释说明，防后人误加回 refit。
   });
 
   // ── Click on empty canvas ──
   gridCanvas.addEventListener('mousedown', function (e) {
     if (e.target !== gridCanvas) return;
+    if (e.button === 1) return; // v10.28.39.0: 中键=视口平移，不误触取消选中
     hideContextMenu();
     deselectAll();
   });
@@ -14792,6 +14803,70 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       totalRows += 20;
       syncCanvasHeight();
     }
+  });
+
+  // ── v10.28.39.0: 编辑视口系统（125 格固定舞台 + 缩放/平移）──
+  // 缩放走 CSS zoom 施加在 .grid-canvas（默认 100%、0.25–4 倍）：布局盒在父级
+  // （.editor-body）按倍率放大 → 横向拉条自动正确；getBoundingClientRect 返回
+  // 屏幕真实盒 → 弹层/工具栏锚定天然正确；offsetWidth/left/top 全保持画布本地
+  // px 零污染——只有「屏幕px→画布px」的几处手势换算要除 viewZoom（snapToGrid/
+  // dragFrame/onResizeMove/onGroupResizeMove/sheet grip/rotate 中心/statsEditPanel）。
+  // 中键长按拖动=平移视口（scrollLeft/Top）；普通滚轮=纵向、Shift+滚轮=横向
+  // （浏览器原生，零代码）；Ctrl+滚轮/Ctrl+±=缩放（锚在光标下）。
+  var viewZoom = 1, VIEW_ZOOM_MIN = 0.25, VIEW_ZOOM_MAX = 4, VIEW_ZOOM_STEP = 1.1;
+  var viewPan = null;
+
+  function setViewZoom(z, cx, cy) {
+    if (document.body.classList.contains('fc-viewmode')) return; // 查看模式恒 fit1to1
+    z = Math.max(VIEW_ZOOM_MIN, Math.min(VIEW_ZOOM_MAX, z));
+    if (z === viewZoom) return;
+    var scrollEl = gridCanvas.parentElement;
+    var bodyRect = scrollEl.getBoundingClientRect();
+    var padL = parseInt(getComputedStyle(scrollEl).paddingLeft, 10) || 0;
+    var padT = parseInt(getComputedStyle(scrollEl).paddingTop, 10) || 0;
+    var px = cx == null ? (bodyRect.left + scrollEl.clientWidth / 2) : cx;
+    var py = cy == null ? (bodyRect.top + scrollEl.clientHeight / 2) : cy;
+    // 锚点不动：画布原点 = bodyRect.left + paddingLeft − scrollLeft，故画布本地坐标
+    // = (scrollLeft + px − bodyRect.left − paddingLeft) / zoom，缩放前后相等。
+    // padding 必须扣除——不扣会漂 pad×(1/z0 − 1/z1) 画布px（4 倍缩放漂 18px 可见）
+    var relX = px - bodyRect.left - padL, relY = py - bodyRect.top - padT;
+    var sl = scrollEl.scrollLeft, st = scrollEl.scrollTop, oldZ = viewZoom;
+    viewZoom = z;
+    gridCanvas.style.zoom = (z === 1) ? '' : String(z);
+    scrollEl.scrollLeft = Math.max(0, (sl + relX) * (z / oldZ) - relX);
+    scrollEl.scrollTop = Math.max(0, (st + relY) * (z / oldZ) - relY);
+    var chip = document.getElementById('zoomChip');
+    if (chip) chip.textContent = Math.round(z * 100) + '%';
+  }
+  window.setViewZoom = setViewZoom; // 电池/调试锚
+  window.resetViewZoom = function () { setViewZoom(1, null, null); };
+
+  // Ctrl+滚轮 = 缩放（锚在光标）；普通/Shift 滚轮不拦，走原生滚动。
+  // 挂在 .editor-body（画布含 padding 全区域都缩放；卡上 Ctrl+滚轮同样生效）
+  gridCanvas.parentElement.addEventListener('wheel', function (e) {
+    if (document.body.classList.contains('fc-viewmode')) return;
+    if (!e.ctrlKey) return;
+    e.preventDefault();
+    setViewZoom(viewZoom * (e.deltaY < 0 ? VIEW_ZOOM_STEP : 1 / VIEW_ZOOM_STEP), e.clientX, e.clientY);
+  }, { passive: false });
+
+  // 中键长按拖动 = 平移视口（preventDefault 关掉浏览器中键自动滚动；
+  // 挂 .editor-body——padding 区与卡上中键拖同样平移）
+  gridCanvas.parentElement.addEventListener('mousedown', function (e) {
+    if (document.body.classList.contains('fc-viewmode')) return;
+    if (e.button !== 1) return;
+    e.preventDefault();
+    var scrollEl = gridCanvas.parentElement;
+    viewPan = { sx: e.clientX, sy: e.clientY, sl: scrollEl.scrollLeft, st: scrollEl.scrollTop };
+  });
+  document.addEventListener('mousemove', function (e) {
+    if (!viewPan) return;
+    var scrollEl = gridCanvas.parentElement;
+    scrollEl.scrollLeft = viewPan.sl - (e.clientX - viewPan.sx);
+    scrollEl.scrollTop = viewPan.st - (e.clientY - viewPan.sy);
+  });
+  document.addEventListener('mouseup', function (e) {
+    if (viewPan && e.button === 1) viewPan = null;
   });
 
   // Expose

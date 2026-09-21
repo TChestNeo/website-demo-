@@ -1,8 +1,9 @@
-// tmp-battery-fc-present.js — v0.2.58.0 / FC v10.28.38.0 完整格子画布轮 FC 侧电池
+// tmp-battery-fc-present.js — v0.2.58.0 / FC v10.28.39.0 完整格子画布轮 FC 侧电池
 // 用户「16：9宽的格子数量是125个做一下这是最大值」（问询钦定「横向125格 长度不限」；
 //   纵向默认 16:9 125×70 再外加 25 行预留；卡片逼近底边按卡片底+25 行自动增长）
-// 验证：E 编辑态自适应回归（169 预设 16:9 恒 20px 不被窗口缩放改动、computeCols 公式随窗口自洽、
-//       480→1280→3840 往返零漂移零异常零自动建卡；3840 宽窗 cols 封顶 125——「这是最大值」）
+// 验证：E 编辑态固定 125 格回归（169 预设 16:9 恒 20px 不被窗口缩放改动、
+//       480→1280→3840 往返 cols 恒 125 不缩小（v10.28.39.0 视口系统后横向拉条承载）、
+//       画布盒 2748 全覆盖、零漂移零异常零自动建卡）
 //   / V 查看镜像完整舞台（fit1to1 自洽：s=min(availW/2750,availH/stageH)、
 //     canvas 0,0 零平移、哨兵草稿不被 resize 触碰）
 //       草稿哨兵未被 resize 动、目录 4 条目 draft 数据口径——含 content 卡 label）
@@ -118,13 +119,12 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   '  return realFetch(url, opts);' +
   ' };' +
   '})();}catch(e){}';
-// 编辑态格子公式（computeCols 复刻）：cols = min(125, max(12, floor((editor-body宽−20+2)/(cellSize+2))))（v10.28.38.0 上限 125）
+// 编辑态固定格子断言（v10.28.39.0 横向恒 125 格：computeCols 恒 125，窗口任意宽不缩小、
+// 不足部分由 .editor-body 横向拉条承载；画布盒 width:max-content 全覆盖 125 列）
 const COLS_EXPR = "(function(){ var gc = document.getElementById('gridCanvas'); var body = gc.parentElement;" +
-  " var avail = body.clientWidth - 20;" +
   " var cs = parseInt(getComputedStyle(gc).getPropertyValue('--cell-size').trim(), 10);" +
-  " var expected = Math.min(125, Math.max(12, Math.floor((avail + 2) / (cs + 2))));" +
   " var actual = parseInt(getComputedStyle(gc).getPropertyValue('--grid-cols').trim(), 10);" +
-  " return { actual: actual, expected: expected, cs: cs, avail: avail }; })()";
+  " return { actual: actual, cs: cs, canvasW: gc.offsetWidth, scrollW: body.scrollWidth, clientW: body.clientWidth }; })()";
 
 (async () => {
   await new Promise(r => server.listen(PORT, r));
@@ -174,28 +174,29 @@ const COLS_EXPR = "(function(){ var gc = document.getElementById('gridCanvas'); 
       await sleep(700);
     };
 
-    // ── E 编辑态自适应回归：169 预设 16:9 恒 20px、cols 随窗口自洽、往返零漂移 ──
+    // ── E 编辑态固定 125 格回归：169 预设 16:9 恒 20px、cols 恒 125 不随窗口缩、往返零漂移 ──
     await nav(BASE + '/pages/fluidcanvas-editor.html',
       "document.getElementById('undoBtn') && typeof window.historyUndoAction === 'function'", 'E 编辑器加载');
     const e1 = await cdp.evalJs(COLS_EXPR);
-    ok('E1 1280 编辑态：169 预设 cellSize=20 + cols 与公式自洽（上限 125 未触及）',
-      e1.cs === 20 && e1.actual === e1.expected && e1.expected >= 40,
+    ok('E1 1280 编辑态：169 预设 cellSize=20 + cols 恒 125 + 画布盒 2748 全覆盖 + 横向拉条（scrollW>clientW）',
+      e1.cs === 20 && e1.actual === 125 && e1.canvasW === 2748 && e1.scrollW > e1.clientW,
       JSON.stringify(e1));
     await setWidth(cdp, 480);
     const e2 = await cdp.evalJs(COLS_EXPR);
-    ok('E2 480 窄窗：cols 按公式重排（缩小、≥12 下限）+ cellSize 仍 20（16:9 不随窗口变）',
-      e2.cs === 20 && e2.actual === e2.expected && e2.actual < e1.actual && e2.actual >= 12,
-      JSON.stringify(e2) + ' ←前 ' + e1.actual);
+    const e2scroll = await cdp.evalJs("(function(){ var se = document.getElementById('gridCanvas').parentElement; se.scrollLeft = 200; return se.scrollLeft; })()");
+    ok('E2 480 窄窗：cols 仍恒 125 不缩小（v10.28.39.0 固定横向，旧自适应 12 格已死）+ 画布仍 2748 + 可横滚',
+      e2.cs === 20 && e2.actual === 125 && e2.canvasW === 2748 && e2.scrollW > e2.clientW && e2scroll === 200,
+      JSON.stringify(e2) + ' scrollLeft=' + e2scroll);
     await setWidth(cdp, 1280);
     const e3 = await cdp.evalJs(COLS_EXPR);
-    ok('E3 回 1280：cols 还原公式值（自适应往返零漂移）+ 零自动建卡（无冻结副作用）',
-      e3.actual === e3.expected && e3.actual >= e1.actual &&
+    ok('E3 回 1280：cols 恒 125（固定横向往返零漂移）+ 零自动建卡（无冻结副作用）',
+      e3.actual === 125 &&
       await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length") === 0,
       JSON.stringify(e3) + ' cards=' + await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length"));
     await setWidth(cdp, 3840);
     const e4 = await cdp.evalJs(COLS_EXPR);
-    ok('E4 3840 超宽窗：cols 封顶 125（无上限公式为 173——「这是最大值」实证）+ cellSize 仍 20',
-      e4.cs === 20 && e4.actual === 125 && e4.expected === 125 && e4.actual === e4.expected,
+    ok('E4 3840 超宽窗：cols 仍恒 125 不再增长（「这是最大值」实证）+ cellSize 仍 20',
+      e4.cs === 20 && e4.actual === 125 && e4.canvasW === 2748,
       JSON.stringify(e4));
     await setWidth(cdp, 1280);
 

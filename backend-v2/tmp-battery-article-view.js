@@ -138,9 +138,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const main = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas.html'), 'utf8');
   const sconf = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   const editor = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
-  ok('F0-1 版本双线 v0.2.58.0 / v10.28.38.0（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块',
+  ok('F0-1 版本双线 v0.2.58.0 / v10.28.39.0（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块',
     sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.0';") !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.38.0';") !== -1 &&
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.39.0';") !== -1 &&
     sconf.indexOf('00275-') !== -1 &&
     sconf.indexOf('文章查看器') !== -1 && sconf.indexOf('提交审核') !== -1);
   ok('F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）',
@@ -238,7 +238,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       await cdp.evalJs("getComputedStyle(document.querySelector('.editor-statusbar')).display") === 'none' &&
       await cdp.evalJs("getComputedStyle(document.getElementById('titleInput')).display") === 'none');
     ok('B4 #fcViewScaler 在场且 overflow hidden', await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); return !!s && getComputedStyle(s).overflow === 'hidden'; })()") === true);
-    ok('B5 完整舞台 contain fit 投影（v10.28.38.0：s=min(availW/2750,availH/stageH) 随查看窗铺满、下限 0.25）',
+    ok('B5 完整舞台 contain fit 投影（v10.28.39.0：s=min(availW/2750,availH/stageH) 随查看窗铺满、下限 0.25）',
       await cdp.evalJs("(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); if (!m) return false; var sv = parseFloat(m[1]); var any = false, maxBY = -1e9; document.querySelectorAll('#gridCanvas .grid-card').forEach(function (e) { if (getComputedStyle(e).display === 'none') return; any = true; var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180); var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad)); var cy = e.offsetTop + e.offsetHeight / 2; maxBY = Math.max(maxBY, cy + rh / 2); }); var contentRows = any ? Math.max(1, Math.ceil(maxBY / 22)) : 0; var stageW = 2750, stageH = (Math.max(70, contentRows) + 25) * 22; var availW = Math.max(200, s.parentNode.clientWidth - 32); var availH = Math.max(200, s.parentNode.clientHeight - 32); var exp = Math.max(0.25, Math.min(availW / stageW, availH / stageH)); return Math.abs(sv - exp) <= 0.01 && sv >= 0.25 && Math.abs(g.offsetWidth - stageW) <= 3 && Math.abs(g.offsetHeight - stageH) <= 5; })()") === true,
       await cdp.evalJs("(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); return g.style.transform + ' avail=' + (s.parentNode.clientWidth - 32) + 'x' + (s.parentNode.clientHeight - 32) + ' canvas=' + g.offsetWidth + 'x' + g.offsetHeight + ' scaler=' + s.clientWidth + 'x' + s.clientHeight; })()"));
     ok('B6 卡内零交互（pointer-events none）', await cdp.evalJs("getComputedStyle(document.querySelector('.grid-card')).pointerEvents") === 'none');
@@ -259,7 +259,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('C4 scaler 收成缩放后完整舞台（≈2750×s；canvas 0,0 零平移——不再 bbox 裁剪）', await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); var sv = parseFloat(m[1]); return Math.abs(s.clientWidth - 2750 * sv) <= 6 && g.style.left === '0px' && g.style.top === '0px'; })()") === true,
       await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); return 'scaler.w=' + s.clientWidth + ' canvas.left=' + g.style.left + ' ' + g.style.transform; })()"));
 
-    // ── V v10.28.38.0 查看模式呈现镜像（格子线代码在场透明度 0 + 标签条 + 目录抽屉 label 优先/正文派生）──
+    // ── V v10.28.39.0 查看模式呈现镜像（格子线代码在场透明度 0 + 标签条 + 目录抽屉 label 优先/正文派生）──
     ok('V1 格子线代码层面在场 + 透明度放满（background-image 两笔 linear-gradient + alpha 0、非 none）', await cdp.evalJs("(function(){ var bi = getComputedStyle(document.getElementById('gridCanvas')).backgroundImage; var t = bi.replace(/\\s+/g, ''); return bi !== 'none' && t.indexOf('linear-gradient') !== -1 && t.indexOf('rgba(120,120,120,0)') !== -1; })()") === true,
       await cdp.evalJs("getComputedStyle(document.getElementById('gridCanvas')).backgroundImage"));
     ok('V2 标签条 #fcViewTags 2 chip 宪法/官方', await cdp.evalJs("(function(){ var b = document.getElementById('fcViewTags'); if (!b) return false; var chips = b.querySelectorAll('.fcv-chip'); return chips.length === 2 && chips[0].textContent === '宪法' && chips[1].textContent === '官方'; })()") === true);

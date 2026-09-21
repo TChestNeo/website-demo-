@@ -7,6 +7,7 @@
 // S4 全程零 JS 错误
 // S5 概览页真文章 / S6 explore 页文章搜索 / S7 阅读页版本锚 + 宽窗完整格舞台投影（v0.2.58.0）
 // S8 v0.2.58.0 呈现界面：去侧栏 + 标签条 + 480 窄窗维基式回流往返 + 目录列全部卡（真文章 2 卡条目）
+// S9 v10.28.39.0 FC 编辑区固定 125 格横：线上 site-config 版本锚 + 门禁通过 + --grid-cols=125 + 画布盒 2748 全覆盖 + 底部横向拉条 + Ctrl+滚轮缩放 + 芯片重置 + Shift+滚轮横向 + 纯滚轮不缩放
 'use strict';
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -188,6 +189,37 @@ async function waitFor(cdp, expr, timeout, label) {
     ok('S6e 主区文章结果段显示', exSec === true);
     const exSecHref = await cdp.evalJs("(function(){ var a = document.querySelector('#exArticleResults a'); return a ? a.getAttribute('href') : null; })()");
     ok('S6f 主区段锚阅读页', exSecHref === 'article.html?id=ART-000004', 'href=' + exSecHref);
+
+    // S9 v10.28.39.0 FC 编辑区固定 125 格横（用户「FC也是一样是125格横向，固定不会因窗口不够宽而缩小，最多底下横向拉条」）
+    const scCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
+    ok('S9a 线上 site-config 含 FC v10.28.39.0 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.39.0') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
+    await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
+      source: 'try{localStorage.setItem("slati_session", ' + JSON.stringify(JSON.stringify({ loggedIn: true })) + ');}catch(e){}'
+    });
+    await cdp.send('Page.navigate', { url: BASE + '/pages/fluidcanvas-editor.html' });
+    let fcLoaded = false;
+    try { fcLoaded = await waitFor(cdp, "!!document.getElementById('gridCanvas')", 30000, 'FC 编辑器加载'); } catch (e) {}
+    ok('S9b 编辑器门禁通过（已登录种子）+ 画布在场', fcLoaded,
+      await cdp.evalJs("location.pathname + ' canvas=' + !!document.getElementById('gridCanvas')").catch(() => 'EVAL_FAIL'));
+    ok('S9c 固定 125 格：--grid-cols=125 + 画布盒宽 2748（max-content 全覆盖）+ 底部横向拉条在（scrollW>clientW）',
+      await cdp.evalJs("(function(){ var gc = document.getElementById('gridCanvas'); var body = gc.parentElement; var cols = parseInt(getComputedStyle(gc).getPropertyValue('--grid-cols').trim(), 10); var cs = parseInt(getComputedStyle(gc).getPropertyValue('--cell-size').trim(), 10); return cols === 125 && cs === 20 && gc.offsetWidth === 2748 && body.scrollWidth > body.clientWidth; })()") === true,
+      await cdp.evalJs("(function(){ var gc = document.getElementById('gridCanvas'); var body = gc.parentElement; return 'cols=' + getComputedStyle(gc).getPropertyValue('--grid-cols') + ' w=' + gc.offsetWidth + ' sw=' + body.scrollWidth + ' cw=' + body.clientWidth; })()"));
+    ok('S9d 缩放芯片按钮在场', await cdp.evalJs("!!document.getElementById('zoomChip')") === true);
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 640, y: 500, deltaX: 0, deltaY: -120, modifiers: 2 });
+    let z9 = false;
+    try { z9 = await waitFor(cdp, "document.getElementById('gridCanvas').style.zoom === '1.1'", 3000, 'Ctrl+滚轮放大'); } catch (e) {}
+    ok('S9e Ctrl+滚轮上 → 放大 1.1（style.zoom=1.1）', z9, await cdp.evalJs("document.getElementById('gridCanvas').style.zoom || '(none=1)'"));
+    ok('S9e2 芯片显示 110%', await cdp.evalJs("document.getElementById('zoomChip').textContent") === '110%');
+    await cdp.evalJs("document.getElementById('zoomChip').click()");
+    ok('S9f 点芯片 → 重置回 1（style.zoom 移除）', await cdp.evalJs("document.getElementById('gridCanvas').style.zoom") === '');
+    await cdp.evalJs("(function(){ var body = document.getElementById('gridCanvas').parentElement; body.scrollLeft = 0; body.scrollTop = 0; })()");
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 640, y: 500, deltaX: 240, deltaY: 0, modifiers: 8 });
+    let sl9 = 0;
+    try { await waitFor(cdp, "document.getElementById('gridCanvas').parentElement.scrollLeft > 0", 3000, 'Shift+滚轮横向'); sl9 = await cdp.evalJs("document.getElementById('gridCanvas').parentElement.scrollLeft"); } catch (e) {}
+    ok('S9g Shift+滚轮 → 横向移动（scrollLeft>0）', sl9 > 0, 'scrollLeft=' + sl9);
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 640, y: 500, deltaX: 0, deltaY: 120, modifiers: 0 });
+    await sleep(400);
+    ok('S9h 纯滚轮不缩放（zoom 仍 1）', await cdp.evalJs("document.getElementById('gridCanvas').style.zoom") === '');
 
     // S4 零 JS 错误
     ok('S4 全程零 Runtime exception', cdp.errs.length === 0, cdp.errs.slice(0, 3).join(' | ') || '干净');
