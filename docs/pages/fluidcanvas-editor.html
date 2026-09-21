@@ -2074,6 +2074,7 @@ body.fc-viewmode .grid-canvas {
   background-image:
     linear-gradient(to right, rgba(120,120,120,0) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(120,120,120,0) 1px, transparent 1px);
+  box-shadow: none; /* v10.28.40.0: 查看模式投影由 #fcViewScaler 承担（38.0），编辑态整盒阴影关闭 */
 }
 body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 #fcViewScaler {
@@ -2800,6 +2801,11 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
          查看模式 fit1to1 写 inline width 恒覆盖本规则 */
       width: max-content;
       border-radius: var(--radius-md);
+      /* v10.28.40.0: 画布整盒淡淡阴影（用户「整个画布格子的边缘能不能加上一个
+         淡淡的阴影因为现在边缘有点不明显」）——1px 主题细线勾边 + 主题投影，
+         格子区从编辑区背景里浮出来；查看模式显式关闭（38.0 起投影由
+         #fcViewScaler 承担） */
+      box-shadow: 0 0 0 1px var(--divider-line-strong), var(--shadow-md);
       background-color: var(--color-surface-container-lowest);
       background-image:
         linear-gradient(to right, var(--divider-line) 1px, transparent 1px),
@@ -3415,7 +3421,12 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       gap: 2px; min-width: 0; min-height: 0; padding: 4px 2px;
       border: 1px solid var(--divider-line-strong); border-radius: 8px;
-      background: var(--color-surface-container);
+      /* v10.28.40.0: 格底跟随卡片本身颜色（用户「SNE Index Card 的二级显示分数的
+         卡片颜色…根据卡片本身的颜色然后自动变化背景颜色融入背景主题」）——
+         applyCardBg 写 --sne-cell-tint（= 用户选色 rgba，plain 卡面/主题边缘 tint
+         两路同一来源），此处与主题 surface 62/38 混色；无选色时 var 落到
+         surface-container → 混色恒等，默认卡观感零变化 */
+      background: color-mix(in srgb, var(--sne-cell-tint, var(--color-surface-container)) 62%, var(--color-surface-container));
     }
     .grid-card.sne-card .sne-name {
       width: 100%; font-size: 10px; line-height: 1.25; color: var(--color-outline);
@@ -12939,6 +12950,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var tintEl = card.querySelector('.card-tint');
       if (tintEl) tintEl.remove();
     }
+    // v10.28.40.0: SNE 二级格底跟随卡色——plain 分支卡面=rgba、主题边缘分支
+    // tint=rgba，两路同一值喂 CSS color-mix；清色时移除让格底回落默认 surface
+    if (color) card.style.setProperty('--sne-cell-tint', rgba);
+    else card.style.removeProperty('--sne-cell-tint');
     // shadow into --card-shadow so .selected/.hover still compose; REMOVE
     // the property when empty (an empty var would kill the default shadow)
     var blur = parseInt(card.dataset.cardShadowBlur) || 0;
@@ -13282,6 +13297,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       // content/text cards: plain inline write, no dataset — keeps the
       // bgAlpha opacity system untouched across drafts (v10.1)
       selectedCard.style.background = hex;
+      // v10.28.40.0: SNE 二级格底跟随卡色——本分支不经 applyCardBg（数据卡
+      // 无 .card-label），直接写同一 --sne-cell-tint 喂 CSS color-mix；
+      // 其余卡型无 .sne-cell 消费者，零副作用；清色由 resetCardBg →
+      // applyCardBg(color='') 移除
+      selectedCard.style.setProperty('--sne-cell-tint', hexToRgba(hex, 1));
       document.getElementById('bgColorPicker').value = hex;
       onContentChange();
       return;

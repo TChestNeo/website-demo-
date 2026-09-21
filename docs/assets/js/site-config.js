@@ -1527,4 +1527,20 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   慢帧 11→0、写 60→32、落点逐像素不变；pan@2× 同（client px 直写滚距自洽）；滚轮 41→6 慢帧（余下
 //   全在停滚后玻璃还原段——headless 软件光栅 6 帧，真机 GPU 一帧，45.2 已实证可接受）
 //   （rev 00278-xpx）
-window.FLUIDCANVAS_VERSION = 'v10.28.39.1';
+// v10.28.40.0 = SNE 格底随卡色 + 画布边缘阴影（小更新位 39→40·新功能轮；2026-09-21）：用户「SNE Index Card
+//   的二级显示分数的卡片颜色能不能根据卡片本身的颜色然后自动变化背景颜色融入背景主题，然后整个画布格子的
+//   边缘能不能加上一个淡淡的阴影因为现在边缘有点不明显」——①SNE 卡 3×2 指标格背景从固定
+//   surface-container 改为 color-mix(--sne-cell-tint 62%, surface-container)：格底自动跟随卡色融入
+//   卡面；无选色时混色恒等、默认观感零变化。tint 写点两处：applyCardBg 统一写 --sne-cell-tint（= 用户选色
+//   rgba，plain 卡面/主题边缘 tint 两路同一来源）+ setCardBgColor 无 label 分支直写（SNE 卡无 .card-label
+//   ——电池首轮 S3/S5 tint='' 实证 applyCardBg 永不到达，v10.28.6/8 口径；清色由 resetCardBg→
+//   applyCardBg(color='') 移除）——两路色混输入全是 CSS var，深浅主题切换自动正确（JS 烤色会过期）②画布整盒
+//   加淡淡阴影（1px 主题细线勾边 + var(--shadow-md) 投影），格子区边缘从编辑区背景浮出；查看模式显式
+//   box-shadow:none（38.0 起投影由 #fcViewScaler 承担）。站点版本恒 v0.2.58.0；后端零改动 325/325、
+//   零草稿字段、ethereal 零改动、i18n 零新键；电池 fc-sne-canvas 12/12（新）+fc-viewport 29/29+fc-present
+//   9/9+micro-v056 21/21+article-frontend 48/48+article-present 29/29+article-view 45/45+article-1to1
+//   20/20+notif-home 23/23+home-bg 26/26+8 套小型舰队全绿+identity 38/38+cit2usr 21/21+i18n 34/34+
+//   冒烟 48/48（版本锚 15 文件 sed 39.1→40.0）；线上实机探针 43/43（新 S10 三项：画布盒 box-shadow 与
+//   本地逐字节同串、默认格底=卡面 surface 恒等、tint 写入 62/38 混色 rgb(221,128,128)——建卡读删全在一个
+//   IIFE 内、createSneCard 不触发 onContentChange 实机草稿零污染）；digest c715f99f；rev 00279-lk7
+window.FLUIDCANVAS_VERSION = 'v10.28.40.0';

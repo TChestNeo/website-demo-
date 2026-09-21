@@ -7,7 +7,8 @@
 // S4 全程零 JS 错误
 // S5 概览页真文章 / S6 explore 页文章搜索 / S7 阅读页版本锚 + 宽窗完整格舞台投影（v0.2.58.0）
 // S8 v0.2.58.0 呈现界面：去侧栏 + 标签条 + 480 窄窗维基式回流往返 + 目录列全部卡（真文章 2 卡条目）
-// S9 v10.28.39.1 FC 编辑区固定 125 格横：线上 site-config 版本锚 + 门禁通过 + --grid-cols=125 + 画布盒 2748 全覆盖 + 底部横向拉条 + Ctrl+滚轮缩放 + 芯片重置 + Shift+滚轮横向 + 纯滚轮不缩放 + 中键拖平移落点精确/平移中玻璃挂起/松手还原（39.1 掉帧修复行为锚）
+// S9 v10.28.40.0 FC 编辑区固定 125 格横：线上 site-config 版本锚 + 门禁通过 + --grid-cols=125 + 画布盒 2748 全覆盖 + 底部横向拉条 + Ctrl+滚轮缩放 + 芯片重置 + Shift+滚轮横向 + 纯滚轮不缩放 + 中键拖平移落点精确/平移中玻璃挂起/松手还原（39.1 掉帧修复行为锚）
+// S10 v10.28.40.0 SNE 格底随卡色 + 画布边缘淡淡阴影（用户「二级显示分数的卡片颜色根据卡片本身的颜色自动变化背景颜色融入背景主题；画布格子边缘加淡淡阴影」）：画布盒 box-shadow 逐字节 + 建卡读混色恒等 + tint 写入 62/38 混色，IIFE 内建读删零草稿污染
 'use strict';
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -190,9 +191,9 @@ async function waitFor(cdp, expr, timeout, label) {
     const exSecHref = await cdp.evalJs("(function(){ var a = document.querySelector('#exArticleResults a'); return a ? a.getAttribute('href') : null; })()");
     ok('S6f 主区段锚阅读页', exSecHref === 'article.html?id=ART-000004', 'href=' + exSecHref);
 
-    // S9 v10.28.39.1 FC 编辑区固定 125 格横（用户「FC也是一样是125格横向，固定不会因窗口不够宽而缩小，最多底下横向拉条」）
+    // S9 v10.28.40.0 FC 编辑区固定 125 格横（用户「FC也是一样是125格横向，固定不会因窗口不够宽而缩小，最多底下横向拉条」）
     const scCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
-    ok('S9a 线上 site-config 含 FC v10.28.39.1 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.39.1') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
+    ok('S9a 线上 site-config 含 FC v10.28.40.0 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.40.0') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
       source: 'try{localStorage.setItem("slati_session", ' + JSON.stringify(JSON.stringify({ loggedIn: true })) + ');}catch(e){}'
     });
@@ -249,6 +250,25 @@ async function waitFor(cdp, expr, timeout, label) {
     await sleep(450);
     const p9b = await cdp.evalJs("document.body.classList.contains('fc-moving')");
     ok('S9j 松手后玻璃还原（fc-moving 已移除）', p9b === false, 'fc-moving=' + p9b);
+
+    // S10 v10.28.40.0 SNE 格底随卡色 + 画布边缘淡淡阴影（用户「SNE Index Card 的二级
+    // 显示分数的卡片颜色根据卡片本身的颜色自动变化背景颜色融入背景主题；画布格子边缘
+    // 加淡淡阴影」）——建卡→读→移除全在一个 IIFE 内，createSneCard 不触发
+    // onContentChange、不写草稿，实机草稿零污染
+    const parseColor = (s) => {
+      const m = s && s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+      if (m) return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
+      const c = s && s.match(/color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)\)/);
+      return c ? [Math.round(c[1] * 255), Math.round(c[2] * 255), Math.round(c[3] * 255)] : null;
+    };
+    const near = (a, b, tol) => !!a && !!b && Math.abs(a[0] - b[0]) <= tol && Math.abs(a[1] - b[1]) <= tol && Math.abs(a[2] - b[2]) <= tol;
+    const s10 = await cdp.evalJs("(function(){ var gc = document.getElementById('gridCanvas'); var shadow = getComputedStyle(gc).boxShadow; var card = window.createSneCard(2, 2, 9, 12); var cell = card.querySelector('.sne-cell'); var cellDefault = getComputedStyle(cell).backgroundColor; var faceDefault = getComputedStyle(card).backgroundColor; card.style.setProperty('--sne-cell-tint', 'rgba(212, 60, 60, 1)'); var tintVar = card.style.getPropertyValue('--sne-cell-tint'); var cellTint = getComputedStyle(cell).backgroundColor; var faceTint = getComputedStyle(card).backgroundColor; card.remove(); return { shadow: shadow, cellDefault: cellDefault, faceDefault: faceDefault, tintVar: tintVar, cellTint: cellTint, faceTint: faceTint }; })()");
+    ok('S10a 编辑态画布盒 box-shadow=细线勾边+主题投影（与本地电池逐字节同串）',
+      s10 && s10.shadow === 'rgba(118, 117, 134, 0.14) 0px 0px 0px 1px, rgba(0, 0, 0, 0.06) 0px 4px 24px 0px', JSON.stringify(s10));
+    ok('S10b 默认无选色：格底=卡面 surface 恒等（混色恒等、默认观感零变化）',
+      s10 && near(parseColor(s10.cellDefault), parseColor(s10.faceDefault), 1), JSON.stringify(s10 && { cellDefault: s10.cellDefault, faceDefault: s10.faceDefault }));
+    ok('S10c tint 写入 → 格底=62/38 纸上混色 rgb(221,128,128)（tint 变量字面在场）',
+      s10 && s10.tintVar === 'rgba(212, 60, 60, 1)' && near(parseColor(s10.cellTint), [221, 128, 128], 1.5), JSON.stringify(s10 && { tintVar: s10.tintVar, cellTint: s10.cellTint }));
 
     // S4 零 JS 错误
     ok('S4 全程零 Runtime exception', cdp.errs.length === 0, cdp.errs.slice(0, 3).join(' | ') || '干净');
