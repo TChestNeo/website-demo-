@@ -1128,6 +1128,18 @@ window.MN_SITE = window.MN_SITE || {};
 //   FC 查看镜像同款（v10.28.37.1）：fit1to1 改 contain fit 随查看窗铺满 + 目录列全部卡
 //   后端零改动；ethereal 零改动；i18n 零新键
 //   （rev 00274-xfl；初部署 00273-qx2 线上 S8d 实测真文章目录钮缺失→列全部卡修正再部署）
+// v0.2.58.0 = 完整格子画布镜像（小改动位 57→58·新功能轮；2026-09-21）——用户「你是不是只是提取了卡片而已？你能不能这样就是你把FC编辑那边的格子画布完完整整搬到发布后出现的独立页面内但是透明度放满就是代码层面看是有格子的，这样应该可以直接取完整的内容了把？然后16：9宽的格子数量是125个做一下这是最大值」（问询钦定「横向125格 长度不限」；纵向三连补充：「纵向是根据文章长度变化的、卡片接近纵向边缘时卡片下边默认多出大概25格自动增长」+「默认纵向填满16:9=横向125格纵向70格，然后再外加25格做预留量」）：
+//   阅读页 renderBodyCanvas 不再 bbox 裁剪（58.0 前只提取卡片+裁空余=用户「只是提取了卡片」真身）——
+//     画布 = 完整格舞台：横向 125 格最大值（STAGE_COLS×cell+gap 像素）、纵向 stageRows=max(70,内容行数)+25
+//     （16:9 125×70 默认再外加 25 行预留；卡片逼近底边按卡片底+25 行自动增长）、格子线代码层面完整定义
+//     两笔 linear-gradient、透明度放满（--art-grid-alpha:0 读者看不见结构完整保留）；
+//     宽窗 contain fit 投影整个舞台（s=max(0.25,min(availW/stageW,availH/stageH)) 随窗铺满）、
+//     窄窗阈值仍按内容 bbox 宽（舞台恒 125 格宽>窗口宽不能拿舞台宽判回流）、回流/目录口径不变
+//   FC v10.28.38.0：编辑模式 computeCols 上限 125 格（「这是最大值」）；查看模式同款完整舞台——
+//     fit1to1 不再 bbox 裁剪（canvas 0,0 零平移、横向 125 格 × 纵向 max(70,内容行)+25 行 contain fit）、
+//     格子线 alpha 0 保留（覆写 2791-2793 编辑器网格线）；纵向自动增长与阅读页同公式
+//   后端零改动；ethereal 零改动；i18n 零新键
+//   （rev 00276-nnx）
 // v0.2.56.1 = explore 页文章搜索（补丁位 0→1·修复轮；2026-09-20）——用户「不是啊 我在 explore.html 搜索都搜索不到你在做什么？」（真身：56.0 把文章搜索接到了首页+概览页，但用户日常搜的地方是 explore.html；该页搜索框只调 filterNations 纯客户端筛世界，零文章接入）：
 //   explore 页：搜索胶囊接文章搜索（300ms 防抖下拉三态 + 回车立即搜 + Esc/点击外部关闭，与 overview 同口径）；
 //     结果双保险——下拉 .dash-search-item 行 + 主区「文章」结果段（#exArticleResults 卡片列表，均锚 article.html?id=）；
@@ -1146,7 +1158,7 @@ window.MN_SITE = window.MN_SITE || {};
 //   i18n：overview/index 新键 12 语言（ov.searchPh/search.*/contrib.published/empty、index.act.article）+ OpenCC 重生成
 //   后端零改动（GET /api/articles 已具备）；电池：新 tmp-battery-micro-v056 + article-view 补 View 锚
 //   （rev 00269-52s）
-window.MN_SITE_VERSION = 'v0.2.57.1';
+window.MN_SITE_VERSION = 'v0.2.58.0';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1491,4 +1503,10 @@ window.MN_SITE_VERSION = 'v0.2.57.1';
 //   fit1to1 改 contain fit（s=max(0.25,min(availW/bboxW,availH/bboxH))，avail=editor-body 内容区减 padding）
 //   随查看窗铺满不再恒 scale(1)；目录列全部卡（label→正文首行派生 18 字→卡型名兜底）；编辑模式零改动
 //   （rev 00274-xfl）
-window.FLUIDCANVAS_VERSION = 'v10.28.37.1';
+// v10.28.38.0 = 完整格子画布查看镜像（小更新位 37→38·新功能轮；2026-09-21）：与阅读页 v0.2.58.0 同口径——
+//   查看模式 fit1to1 不再 bbox 裁剪：canvas 0,0 零平移、横向 125 格最大值 × 纵向 max(70,内容行)+25 行
+//   （16:9 125×70 默认再外加 25 行预留；卡片逼近底边按卡片底+25 行自动增长）contain fit 随查看窗铺满；
+//   格子线代码层面保留、透明度放满（alpha 0 覆写编辑器网格线）；编辑模式 computeCols 上限 125 格
+//   （「16：9宽的格子数量是125个做一下这是最大值」——宽窗再多不超 125）
+//   （rev 00276-nnx）
+window.FLUIDCANVAS_VERSION = 'v10.28.38.0';

@@ -2231,6 +2231,16 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 /* v0.2.56.2: FC 1:1 画布渲染——卡片按编辑器画布绝对定位（bbox 裁剪空余+等比缩放到栏宽，相对位置严格 1:1） */
 .art-canvas { position: relative; width: 100%; overflow: hidden; margin: 0 auto; }
 .art-canvas-inner { position: relative; transform-origin: top left; }
+/* v0.2.58.0: 完整格子画布镜像——代码层面有格子（两笔 linear-gradient 网格线、
+   间隔随 preset 格宽 --art-cell-px），透明度放满（--art-grid-alpha: 0 读者看不见、
+   结构完整保留） */
+.art-canvas-inner {
+  background-image:
+    linear-gradient(to right, rgba(120,120,120,var(--art-grid-alpha,0)) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(120,120,120,var(--art-grid-alpha,0)) 1px, transparent 1px);
+  background-size: var(--art-cell-px,22px) var(--art-cell-px,22px);
+  background-position: 0 0;
+}
 .art-card { position: absolute; overflow: hidden; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .art-card.art-card-flow { justify-content: flex-start; }
 .art-card-img { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit;
@@ -2638,17 +2648,28 @@ body.art-present .app-main { margin-left: 0 !important; }
     });
     var bboxW = (maxRX - minLX) + 2 * M;
     var bboxH = (maxBY - minLY) + 2 * M;
-    // v0.2.57.1 全屏投影（用户「我的要求是覆盖全屏不是中间而已」）：宽窗缩放不再封顶 1——
-    // 画布 fit 窗口宽高（contain 无上限，投影仪铺满屏）；窄于画布仍走维基式回流零缩放
-    lastCanvasState = { cj: cj, bboxW: bboxW, bboxH: bboxH };
+    // v0.2.58.0 完整格子画布镜像（用户「你是不是只是提取了卡片而已？把FC编辑那边的
+    // 格子画布完完整整搬到发布后出现的独立页面内但是透明度放满」）：不再 bbox 裁剪——
+    // 画布 = 完整格舞台：横向 125 格最大值（「16：9宽的格子数量是125个这是最大值」）、
+    // 纵向默认 16:9 的 70 行再外加 25 行预留（「填满16:9 125×70 然后再外加25格做预留」）、
+    // 卡片逼近底边按卡片底 +25 行自动增长（stageRows = max(70, 内容行数) + 25）；
+    // 格子线代码层面完整定义、透明度放满读者不可见；宽窗 contain fit 投影整个舞台、
+    // 窄窗阈值仍按内容 bbox 宽（舞台恒 125 格宽 > 窗口宽，不能拿舞台宽判回流）
+    var STAGE_COLS = 125, STAGE_BASE_ROWS = 70, STAGE_GROW = 25;
+    var stageW = STAGE_COLS * (cs + GAP);
+    var contentRows = Math.max(1, Math.ceil((bboxH - M) / (cs + GAP))); // 平移后内容底 = bboxH − M
+    var stageRows = Math.max(STAGE_BASE_ROWS, contentRows) + STAGE_GROW;
+    var stageH = stageRows * (cs + GAP);
+    inner.style.setProperty('--art-cell-px', (cs + GAP) + 'px');
+    lastCanvasState = { cj: cj, bboxW: bboxW, bboxH: bboxH, stageW: stageW, stageH: stageH };
     if (avail < bboxW) { applyReflow(holder, inner, rects); renderToc(); return; }
     var availH = Math.max(200, window.innerHeight - holder.getBoundingClientRect().top - 24);
-    var s = Math.max(0.25, Math.min(avail / bboxW, availH / bboxH));
-    inner.style.width = bboxW + 'px';
-    inner.style.height = bboxH + 'px';
+    var s = Math.max(0.25, Math.min(avail / stageW, availH / stageH));
+    inner.style.width = stageW + 'px';
+    inner.style.height = stageH + 'px';
     inner.style.transform = 'scale(' + s + ')';
-    holder.style.width = Math.round(bboxW * s) + 'px';
-    holder.style.height = Math.round(bboxH * s) + 'px';
+    holder.style.width = Math.round(stageW * s) + 'px';
+    holder.style.height = Math.round(stageH * s) + 'px';
     renderToc();
   }
 
@@ -2923,15 +2944,16 @@ body.art-present .app-main { margin-left: 0 !important; }
   load();
   // v0.2.57.1 全屏投影 resize 防抖：宽↔窄回流模式翻转时重渲染；宽模式内窗口尺寸变化只重算缩放
   // （不重建 DOM、不丢 TOC/滚动位置——投影随窗口铺满屏）；同模式零动作
+  // v0.2.58.0: fit 对象改完整格舞台（stageW/stageH）
   function updateWideScale(holder, st) {
     var inner = holder.querySelector('.art-canvas-inner');
     if (!inner) return;
     var availW = document.getElementById('artBody').clientWidth || 656;
     var availH = Math.max(200, window.innerHeight - holder.getBoundingClientRect().top - 24);
-    var s = Math.max(0.25, Math.min(availW / st.bboxW, availH / st.bboxH));
+    var s = Math.max(0.25, Math.min(availW / st.stageW, availH / st.stageH));
     inner.style.transform = 'scale(' + s + ')';
-    holder.style.width = Math.round(st.bboxW * s) + 'px';
-    holder.style.height = Math.round(st.bboxH * s) + 'px';
+    holder.style.width = Math.round(st.stageW * s) + 'px';
+    holder.style.height = Math.round(st.stageH * s) + 'px';
   }
   var artResizeTimer = null;
   window.addEventListener('resize', function () {

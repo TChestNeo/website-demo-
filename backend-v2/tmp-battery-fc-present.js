@@ -1,10 +1,11 @@
-// tmp-battery-fc-present.js — v0.2.57.0 / FC v10.28.37.0 呈现轮 FC 侧电池
-// 用户「FC 那边要做 16:9 固定值——编辑时窗口再小都不影响页面编辑」「固定比例是在编辑器那边才有」
+// tmp-battery-fc-present.js — v0.2.58.0 / FC v10.28.38.0 完整格子画布轮 FC 侧电池
+// 用户「16：9宽的格子数量是125个做一下这是最大值」（问询钦定「横向125格 长度不限」；
+//   纵向默认 16:9 125×70 再外加 25 行预留；卡片逼近底边按卡片底+25 行自动增长）
 // 验证：E 编辑态自适应回归（169 预设 16:9 恒 20px 不被窗口缩放改动、computeCols 公式随窗口自洽、
-//       480→1280 往返零漂移零异常零自动建卡——证明未冻结画布）
-//   / V 查看镜像 resize 稳定性（fit1to1 contain fit 自洽：s=min(availW/bboxW,availH/bboxH)、
-//     bbox 稳定 1102、canvas 平移 2px 恒在、哨兵草稿不被 resize 触碰）
-//       草稿哨兵未被 resize 动、目录 3 条目 draft 数据口径——含 content 卡 label）
+//       480→1280→3840 往返零漂移零异常零自动建卡；3840 宽窗 cols 封顶 125——「这是最大值」）
+//   / V 查看镜像完整舞台（fit1to1 自洽：s=min(availW/2750,availH/stageH)、
+//     canvas 0,0 零平移、哨兵草稿不被 resize 触碰）
+//       草稿哨兵未被 resize 动、目录 4 条目 draft 数据口径——含 content 卡 label）
 // fetch 打桩：仅 /articles 拦截（ART-CLOUD-1 → 4 卡 contentJson + tags['宪法','官方']）；编辑态不发文章请求。
 // （house CDP 模式；截图全黑纪律；断言走 offset*/计算样式不受 transform 干扰）
 'use strict';
@@ -117,11 +118,11 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   '  return realFetch(url, opts);' +
   ' };' +
   '})();}catch(e){}';
-// 编辑态格子公式（computeCols 复刻）：cols = max(12, floor((editor-body宽−20+2)/(cellSize+2)))
+// 编辑态格子公式（computeCols 复刻）：cols = min(125, max(12, floor((editor-body宽−20+2)/(cellSize+2))))（v10.28.38.0 上限 125）
 const COLS_EXPR = "(function(){ var gc = document.getElementById('gridCanvas'); var body = gc.parentElement;" +
   " var avail = body.clientWidth - 20;" +
   " var cs = parseInt(getComputedStyle(gc).getPropertyValue('--cell-size').trim(), 10);" +
-  " var expected = Math.max(12, Math.floor((avail + 2) / (cs + 2)));" +
+  " var expected = Math.min(125, Math.max(12, Math.floor((avail + 2) / (cs + 2))));" +
   " var actual = parseInt(getComputedStyle(gc).getPropertyValue('--grid-cols').trim(), 10);" +
   " return { actual: actual, expected: expected, cs: cs, avail: avail }; })()";
 
@@ -177,7 +178,7 @@ const COLS_EXPR = "(function(){ var gc = document.getElementById('gridCanvas'); 
     await nav(BASE + '/pages/fluidcanvas-editor.html',
       "document.getElementById('undoBtn') && typeof window.historyUndoAction === 'function'", 'E 编辑器加载');
     const e1 = await cdp.evalJs(COLS_EXPR);
-    ok('E1 1280 编辑态：169 预设 cellSize=20（16:9 固定值在场）+ cols 与公式自洽',
+    ok('E1 1280 编辑态：169 预设 cellSize=20 + cols 与公式自洽（上限 125 未触及）',
       e1.cs === 20 && e1.actual === e1.expected && e1.expected >= 40,
       JSON.stringify(e1));
     await setWidth(cdp, 480);
@@ -191,14 +192,20 @@ const COLS_EXPR = "(function(){ var gc = document.getElementById('gridCanvas'); 
       e3.actual === e3.expected && e3.actual >= e1.actual &&
       await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length") === 0,
       JSON.stringify(e3) + ' cards=' + await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length"));
+    await setWidth(cdp, 3840);
+    const e4 = await cdp.evalJs(COLS_EXPR);
+    ok('E4 3840 超宽窗：cols 封顶 125（无上限公式为 173——「这是最大值」实证）+ cellSize 仍 20',
+      e4.cs === 20 && e4.actual === 125 && e4.expected === 125 && e4.actual === e4.expected,
+      JSON.stringify(e4));
+    await setWidth(cdp, 1280);
 
     // ── V 查看镜像 resize 稳定性：fit1to1 contain fit 自洽 + 哨兵草稿不动 ──
     await nav(BASE + '/pages/fluidcanvas-editor.html?article=ART-CLOUD-1',
       "document.querySelectorAll('#gridCanvas .grid-card').length === 4 && !!document.getElementById('fcViewScaler')", 'V 查看器加载');
     const draftBefore = await cdp.evalJs("localStorage.getItem('slati_fluidcanvas_draft') || ''");
-    const FIT_SELFCHECK = "(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); if (!m) return false; var sv = parseFloat(m[1]); var any = false, minLX = 1e9, minLY = 1e9, maxRX = -1e9, maxBY = -1e9; document.querySelectorAll('#gridCanvas .grid-card').forEach(function (e) { if (getComputedStyle(e).display === 'none') return; any = true; var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180); var rw = e.offsetWidth * Math.abs(Math.cos(rad)) + e.offsetHeight * Math.abs(Math.sin(rad)); var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad)); var cx = e.offsetLeft + e.offsetWidth / 2, cy = e.offsetTop + e.offsetHeight / 2; minLX = Math.min(minLX, cx - rw / 2); minLY = Math.min(minLY, cy - rh / 2); maxRX = Math.max(maxRX, cx + rw / 2); maxBY = Math.max(maxBY, cy + rh / 2); }); var bboxW = (maxRX - minLX) + 48, bboxH = (maxBY - minLY) + 48; var availW = Math.max(200, s.parentNode.clientWidth - 32); var availH = Math.max(200, s.parentNode.clientHeight - 32); var exp = Math.max(0.25, Math.min(availW / bboxW, availH / bboxH)); return Math.abs(sv - exp) <= 0.01 && Math.abs(s.clientWidth - Math.round(bboxW * sv)) <= 2 && g.style.left === '2px'; })()";
+    const FIT_SELFCHECK = "(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); if (!m) return false; var sv = parseFloat(m[1]); var any = false, maxBY = -1e9; document.querySelectorAll('#gridCanvas .grid-card').forEach(function (e) { if (getComputedStyle(e).display === 'none') return; any = true; var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180); var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad)); var cy = e.offsetTop + e.offsetHeight / 2; maxBY = Math.max(maxBY, cy + rh / 2); }); var contentRows = any ? Math.max(1, Math.ceil(maxBY / 22)) : 0; var stageW = 2750, stageH = (Math.max(70, contentRows) + 25) * 22; var availW = Math.max(200, s.parentNode.clientWidth - 32); var availH = Math.max(200, s.parentNode.clientHeight - 32); var exp = Math.max(0.25, Math.min(availW / stageW, availH / stageH)); return Math.abs(sv - exp) <= 0.01 && Math.abs(s.clientWidth - Math.round(stageW * sv)) <= 2 && g.style.left === '0px'; })()";
     await setWidth(cdp, 640);
-    ok('V1 查看态 640 窄窗：fit1to1 contain fit 自洽（s=min(availW/bboxW,availH/bboxH)、scaler=bbox×s、canvas 平移 2px）',
+    ok('V1 查看态 640 窄窗：fit1to1 完整舞台自洽（s=min(availW/2750,availH/stageH)、scaler=stage×s、canvas 0,0 零平移）',
       await cdp.evalJs(FIT_SELFCHECK) === true &&
       await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length") === 4,
       await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); return 'scaler.w=' + s.clientWidth + ' left=' + g.style.left + ' tf=' + g.style.transform; })()"));
@@ -207,7 +214,7 @@ const COLS_EXPR = "(function(){ var gc = document.getElementById('gridCanvas'); 
       await cdp.evalJs(FIT_SELFCHECK) === true &&
       await cdp.evalJs("localStorage.getItem('slati_fluidcanvas_draft') || ''") === draftBefore,
       await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); return 'scaler.w=' + s.clientWidth + ' tf=' + g.style.transform; })()"));
-    ok('V3 查看镜像目录 4 条目（v0.2.57.1 列全部卡：content c1 label + flag c2 label + c3/c4 文字卡）',
+    ok('V3 查看镜像目录 4 条目（v0.2.58.0 列全部卡：content c1 label + flag c2 label + c3/c4 文字卡）',
       await cdp.evalJs("(function(){ var d = document.getElementById('fcViewTocDrawer'); if (!d) return false; var items = d.querySelectorAll('.fcv-toc-item'); return items.length === 4 && items[0].textContent === 'Constitution' && items[1].textContent === 'Fixture Flag' && items[2].textContent === 'OOB-Right' && items[3].textContent === 'OOB-Bottom'; })()") === true);
 
     // ── E 全程零 Runtime exception + 零 console error ──

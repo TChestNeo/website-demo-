@@ -138,10 +138,10 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const main = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas.html'), 'utf8');
   const sconf = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   const editor = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
-  ok('F0-1 版本双线 v0.2.57.1 / v10.28.37.1（changelog rev 00274-xfl）+ 文章查看器注释块 + 直接发布注释块',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.57.1';") !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.37.1';") !== -1 &&
-    sconf.indexOf('00274-xfl') !== -1 &&
+  ok('F0-1 版本双线 v0.2.58.0 / v10.28.38.0（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.0';") !== -1 &&
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.38.0';") !== -1 &&
+    sconf.indexOf('00275-') !== -1 &&
     sconf.indexOf('文章查看器') !== -1 && sconf.indexOf('提交审核') !== -1);
   ok('F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）',
     editor.indexOf('body.fc-viewmode') !== -1 && editor.indexOf('id="fcViewScaler"') === -1 && editor.indexOf("#fcViewScaler") !== -1 &&
@@ -238,29 +238,29 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       await cdp.evalJs("getComputedStyle(document.querySelector('.editor-statusbar')).display") === 'none' &&
       await cdp.evalJs("getComputedStyle(document.getElementById('titleInput')).display") === 'none');
     ok('B4 #fcViewScaler 在场且 overflow hidden', await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); return !!s && getComputedStyle(s).overflow === 'hidden'; })()") === true);
-    ok('B5 画布 contain fit 投影（v10.28.37.1：s=min(availW/bboxW,availH/bboxH) 随查看窗铺满、封顶废除）',
-      await cdp.evalJs("(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); if (!m) return false; var sv = parseFloat(m[1]); var any = false, minLX = 1e9, minLY = 1e9, maxRX = -1e9, maxBY = -1e9; document.querySelectorAll('#gridCanvas .grid-card').forEach(function (e) { if (getComputedStyle(e).display === 'none') return; any = true; var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180); var rw = e.offsetWidth * Math.abs(Math.cos(rad)) + e.offsetHeight * Math.abs(Math.sin(rad)); var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad)); var cx = e.offsetLeft + e.offsetWidth / 2, cy = e.offsetTop + e.offsetHeight / 2; minLX = Math.min(minLX, cx - rw / 2); minLY = Math.min(minLY, cy - rh / 2); maxRX = Math.max(maxRX, cx + rw / 2); maxBY = Math.max(maxBY, cy + rh / 2); }); var bboxW = (maxRX - minLX) + 48, bboxH = (maxBY - minLY) + 48; var availW = Math.max(200, s.parentNode.clientWidth - 32); var availH = Math.max(200, s.parentNode.clientHeight - 32); var exp = Math.max(0.25, Math.min(availW / bboxW, availH / bboxH)); return Math.abs(sv - exp) <= 0.01 && sv >= 0.25; })()") === true,
-      await cdp.evalJs("(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); return g.style.transform + ' avail=' + (s.parentNode.clientWidth - 32) + 'x' + (s.parentNode.clientHeight - 32) + ' scaler=' + s.clientWidth + 'x' + s.clientHeight; })()"));
+    ok('B5 完整舞台 contain fit 投影（v10.28.38.0：s=min(availW/2750,availH/stageH) 随查看窗铺满、下限 0.25）',
+      await cdp.evalJs("(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); if (!m) return false; var sv = parseFloat(m[1]); var any = false, maxBY = -1e9; document.querySelectorAll('#gridCanvas .grid-card').forEach(function (e) { if (getComputedStyle(e).display === 'none') return; any = true; var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180); var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad)); var cy = e.offsetTop + e.offsetHeight / 2; maxBY = Math.max(maxBY, cy + rh / 2); }); var contentRows = any ? Math.max(1, Math.ceil(maxBY / 22)) : 0; var stageW = 2750, stageH = (Math.max(70, contentRows) + 25) * 22; var availW = Math.max(200, s.parentNode.clientWidth - 32); var availH = Math.max(200, s.parentNode.clientHeight - 32); var exp = Math.max(0.25, Math.min(availW / stageW, availH / stageH)); return Math.abs(sv - exp) <= 0.01 && sv >= 0.25 && Math.abs(g.offsetWidth - stageW) <= 3 && Math.abs(g.offsetHeight - stageH) <= 5; })()") === true,
+      await cdp.evalJs("(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); return g.style.transform + ' avail=' + (s.parentNode.clientWidth - 32) + 'x' + (s.parentNode.clientHeight - 32) + ' canvas=' + g.offsetWidth + 'x' + g.offsetHeight + ' scaler=' + s.clientWidth + 'x' + s.clientHeight; })()"));
     ok('B6 卡内零交互（pointer-events none）', await cdp.evalJs("getComputedStyle(document.querySelector('.grid-card')).pointerEvents") === 'none');
     ok('B7 contentEditable 关闭 + Tab 序移除', await cdp.evalJs("(function(){ var c = document.querySelector('[contenteditable]'); return !!c && c.getAttribute('contenteditable') === 'false' && c.tabIndex === -1; })()") === true);
     ok('B8 哨兵本地草稿未被覆盖（saveDraft/自动保存守卫实证）', await cdp.evalJs('localStorage.getItem("slati_fluidcanvas_draft")') === '{"sentinel":true}',
       await cdp.evalJs('localStorage.getItem("slati_fluidcanvas_draft")'));
     ok('B9 标题芯片 #fcViewTitle = fixture 标题', await cdp.evalJs("document.getElementById('fcViewTitle') !== null && document.getElementById('fcViewTitle').textContent") === 'Cloud Constitution');
 
-    // ── C bbox 裁剪+全屏投影：越界卡完整可见（v10.28.37.1 缩放走 transform——断言全部走缩放后视口盒）──
-    // 格=40×100×cellSize20(gap2)=880×2200；c3 右缘 (38−1)×22+12×22−2=1076>880、c4 下缘 (98−1)×22+8×22−2=2330>2200
-    ok('C1 右越界卡完整可见（card.right ≤ scaler.right 且越出格宽 880×s；旧口径为被裁）',
-      await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c3\"]'); var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); var sv = parseFloat(m[1]); var r = c.getBoundingClientRect(); var sr = s.getBoundingClientRect(); var gridRight = sr.left + (parseFloat(g.style.left) + g.offsetWidth) * sv; return r.right <= sr.right + 0.5 && r.right > gridRight + 1; })()") === true,
+    // ── C 完整格舞台：旧 40×100 格（880×2200）外的越界卡在新 125×131 舞台内完整可见（不再 bbox 裁剪）──
+    // 舞台=125×22=2750 横；c3 右缘 1076>880、c4 下缘 2330>2200 → contentRows=ceil(2330/22)=106 → stageRows=131（=2882px）
+    ok('C1 旧右越界卡（880 格宽外）在新 125 格舞台内完整可见且不超舞台右缘',
+      await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c3\"]'); var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); var sv = parseFloat(m[1]); var r = c.getBoundingClientRect(); var sr = s.getBoundingClientRect(); var gridRight = sr.left + (parseFloat(g.style.left) + g.offsetWidth) * sv; return r.right <= sr.right + 0.5 && r.right <= gridRight + 1 && r.right > (sr.left + 880 * sv) + 1; })()") === true,
       await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c3\"]'); var s = document.getElementById('fcViewScaler'); return 'card.right=' + c.getBoundingClientRect().right.toFixed(1) + ' scaler.right=' + s.getBoundingClientRect().right.toFixed(1); })()"));
-    ok('C2 下越界卡完整可见（card.bottom ≤ scaler.bottom 且越出格高 2200×s）',
-      await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c4\"]'); var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); var sv = parseFloat(m[1]); var r = c.getBoundingClientRect(); var sr = s.getBoundingClientRect(); var gridBottom = sr.top + (parseFloat(g.style.top) + g.offsetHeight) * sv; return r.bottom <= sr.bottom + 0.5 && r.bottom > gridBottom + 1; })()") === true,
+    ok('C2 旧下越界卡（2200 格高外）在新 max(70,内容行)+25 舞台内完整可见且不超舞台下缘',
+      await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c4\"]'); var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); var sv = parseFloat(m[1]); var r = c.getBoundingClientRect(); var sr = s.getBoundingClientRect(); var gridBottom = sr.top + (parseFloat(g.style.top) + g.offsetHeight) * sv; return r.bottom <= sr.bottom + 0.5 && r.bottom <= gridBottom + 1 && r.bottom > (sr.top + 2200 * sv) + 1; })()") === true,
       await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c4\"]'); var s = document.getElementById('fcViewScaler'); return 'card.bottom=' + c.getBoundingClientRect().bottom.toFixed(1) + ' scaler.bottom=' + s.getBoundingClientRect().bottom.toFixed(1); })()"));
     ok('C3 界内卡完整可见（c1 不越界）', await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c1\"]'); var s = document.getElementById('fcViewScaler'); var r = c.getBoundingClientRect(); return r.right <= s.getBoundingClientRect().right + 0.5 && r.bottom <= s.getBoundingClientRect().bottom + 0.5; })()") === true);
-    ok('C4 scaler 收成缩放后 bbox（≈1102×s；canvas 平移 +2px=24−minLX22 在场）', await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); var sv = parseFloat(m[1]); return Math.abs(s.clientWidth - 1102 * sv) <= 6 && g.style.left === '2px'; })()") === true,
+    ok('C4 scaler 收成缩放后完整舞台（≈2750×s；canvas 0,0 零平移——不再 bbox 裁剪）', await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); var sv = parseFloat(m[1]); return Math.abs(s.clientWidth - 2750 * sv) <= 6 && g.style.left === '0px' && g.style.top === '0px'; })()") === true,
       await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); return 'scaler.w=' + s.clientWidth + ' canvas.left=' + g.style.left + ' ' + g.style.transform; })()"));
 
-    // ── V v10.28.37.1 查看模式呈现镜像（格线灭 + 标签条 + 目录抽屉 label 优先/正文派生）──
-    ok('V1 格线灭（grid-canvas background-image none）', await cdp.evalJs("getComputedStyle(document.getElementById('gridCanvas')).backgroundImage") === 'none',
+    // ── V v10.28.38.0 查看模式呈现镜像（格子线代码在场透明度 0 + 标签条 + 目录抽屉 label 优先/正文派生）──
+    ok('V1 格子线代码层面在场 + 透明度放满（background-image 两笔 linear-gradient + alpha 0、非 none）', await cdp.evalJs("(function(){ var bi = getComputedStyle(document.getElementById('gridCanvas')).backgroundImage; var t = bi.replace(/\\s+/g, ''); return bi !== 'none' && t.indexOf('linear-gradient') !== -1 && t.indexOf('rgba(120,120,120,0)') !== -1; })()") === true,
       await cdp.evalJs("getComputedStyle(document.getElementById('gridCanvas')).backgroundImage"));
     ok('V2 标签条 #fcViewTags 2 chip 宪法/官方', await cdp.evalJs("(function(){ var b = document.getElementById('fcViewTags'); if (!b) return false; var chips = b.querySelectorAll('.fcv-chip'); return chips.length === 2 && chips[0].textContent === '宪法' && chips[1].textContent === '官方'; })()") === true);
     ok('V3 目录抽屉 4 条目（v0.2.57.1 列全部卡：c1 正文 + flag c2 + c3/c4 文字卡）', await cdp.evalJs("(function(){ var d = document.getElementById('fcViewTocDrawer'); return !!d && d.querySelectorAll('.fcv-toc-item').length === 4; })()") === true);
@@ -268,7 +268,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('V4 目录钮开抽屉（.open）', await cdp.evalJs("document.getElementById('fcViewTocDrawer').classList.contains('open')") === true);
     await cdp.evalJs("document.getElementById('fcViewTocDrawer').querySelectorAll('.fcv-toc-item')[0].click()");
     ok('V5 点击条目 → 目标卡闪烁 + 抽屉关闭', await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c1\"]'); var d = document.getElementById('fcViewTocDrawer'); return c.classList.contains('fcv-toc-flash') && !d.classList.contains('open'); })()") === true);
-    ok('V6 投影铺满不滚动：scaler=bbox×s 收进 editor-body 内容区（scrollHeight 不超 clientHeight+40）', await cdp.evalJs("(function(){ var b = document.querySelector('.editor-body'); return b.scrollHeight <= b.clientHeight + 40 && b.scrollWidth <= b.clientWidth + 40; })()") === true,
+    ok('V6 投影铺满不滚动：scaler=stage×s 收进 editor-body 内容区（scrollHeight 不超 clientHeight+40）', await cdp.evalJs("(function(){ var b = document.querySelector('.editor-body'); return b.scrollHeight <= b.clientHeight + 40 && b.scrollWidth <= b.clientWidth + 40; })()") === true,
       await cdp.evalJs("(function(){ var b = document.querySelector('.editor-body'); return 'scroll=' + b.scrollWidth + 'x' + b.scrollHeight + ' client=' + b.clientWidth + 'x' + b.clientHeight; })()"));
 
     // ── D 非公开/404 → 占位状态卡 ──

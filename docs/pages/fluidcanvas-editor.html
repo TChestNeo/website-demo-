@@ -2062,13 +2062,19 @@ body.fc-viewmode .asset-panel,
 body.fc-viewmode .asset-panel-toggle,
 body.fc-viewmode .editor-statusbar { display: none !important; }
 body.fc-viewmode .canvas-body { padding: 0; }
-/* v10.28.37.1 查看模式呈现统一：bbox 裁剪 + contain fit 投影（随查看窗铺满、公式同阅读页宽窗）+ editor-body 滚动 + 灭网格线 + 标签条 + 目录抽屉 */
+/* v10.28.38.0 查看模式呈现统一：完整格子画布（125 格横 × max(70,内容行)+25 行纵）+ contain fit 投影（随查看窗铺满、公式同阅读页宽窗）+ editor-body 滚动 + 透明格子线 + 标签条 + 目录抽屉 */
 body.fc-viewmode .editor-body {
   overflow: auto !important;
   padding: 16px !important;
   display: block;
 }
-body.fc-viewmode .grid-canvas { background-image: none; } /* 灭网格线（覆盖 2757-2784 两笔 linear-gradient） */
+/* v10.28.38.0 查看模式完整格子画布：格子线代码层面保留（两笔 linear-gradient 覆盖
+   2791-2793 编辑器网格线）、透明度放满（alpha 0）查看者不可见——与阅读页同口径 */
+body.fc-viewmode .grid-canvas {
+  background-image:
+    linear-gradient(to right, rgba(120,120,120,0) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(120,120,120,0) 1px, transparent 1px);
+}
 body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 #fcViewScaler {
   overflow: hidden;
@@ -14338,7 +14344,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     }
     var cs = getCellSize();
     var gap = 2;
-    return Math.max(12, Math.floor((avail + gap) / (cs + gap)));
+    // v10.28.38.0: 横向格子最大值 125（用户「16：9宽的格子数量是125个做一下这是最大值」——
+    // 16:9 满格 = 125×70，再外加 25 行预留；纵向按文章长度不限、卡片逼近底边自动增长）
+    return Math.min(125, Math.max(12, Math.floor((avail + gap) / (cs + gap))));
   }
 
   function applyPreset(name) {
@@ -14513,50 +14521,50 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (cb) cb.appendChild(holder);
   }
   function enterViewLayout() {
-    // 格范围 = 编辑器 boot 自身重建的格（cols/cellSize 与作者刷新编辑器看到的一致）：
-    // 宽 cols×(cell+2)、高 totalRows×(cell+2)——与 positionCard 像素数学同口径。
+    // v10.28.38.0 完整格子画布（用户「把FC编辑那边的格子画布完完整整搬到发布后
+    // 出现的独立页面内」）：格范围 = 横向 125 格最大值 × 纵向 max(70, 内容行)+25 行
+    // （16:9 125×70 默认再外加 25 行预留；卡片逼近底边按卡片底 +25 行自动增长）；
+    // 格子线代码层面保留、透明度放满（alpha 0）——与阅读页同口径，不再 bbox 裁剪
     var cs = getCellSize();
     var gap = 2;
-    var gridW = currentCols * (cs + gap);
-    var gridH = totalRows * (cs + gap);
+    var STAGE_COLS = 125, STAGE_BASE_ROWS = 70, STAGE_GROW = 25;
+    var stageW = STAGE_COLS * (cs + gap);
     var canvas = gridCanvas;
     var scaler = document.createElement('div');
     scaler.id = 'fcViewScaler';
     canvas.parentNode.insertBefore(scaler, canvas);
     scaler.appendChild(canvas);
-    canvas.style.width = gridW + 'px';
-    canvas.style.height = gridH + 'px';
+    canvas.style.width = stageW + 'px';
+    canvas.style.height = ((STAGE_BASE_ROWS + STAGE_GROW) * (cs + gap)) + 'px';
+    canvas.style.setProperty('--grid-cols', STAGE_COLS); // 代码层面完整 125 列格（卡 absolute 零位移影响）
     canvas.style.minHeight = '0';
     canvas.style.position = 'absolute';
     canvas.style.left = '0';
     canvas.style.top = '0';
     canvas.style.transformOrigin = 'top left';
-    // v10.28.37.1: 与阅读页同口径 bbox 裁剪 + 全屏投影——canvas 平移 + contain fit 缩放
-    // （随查看窗铺满、0.25 下限不缩没，公式同阅读页宽窗），scaler 收成缩放后 bbox、
-    // editor-body 滚动；canvas 像素宽仍是编辑器格宽（gridW）所以卡位 1:1 不动
+    // v10.28.38.0: 完整舞台 contain fit 投影（随查看窗铺满、0.25 下限不缩没，
+    // 公式同阅读页宽窗）——canvas 0,0 起零平移（无 bbox 裁剪），scaler 收成
+    // 缩放后舞台；canvas 像素宽恒为舞台宽所以卡位 1:1 不动
     function fit1to1() {
-      var any = false, minLX = Infinity, minLY = Infinity, maxRX = -Infinity, maxBY = -Infinity;
+      var any = false, maxBY = -Infinity;
       getAllCards().forEach(function (e) {
         if (getComputedStyle(e).display === 'none') return;
         any = true;
         var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180);
-        var rw = e.offsetWidth * Math.abs(Math.cos(rad)) + e.offsetHeight * Math.abs(Math.sin(rad));
         var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad));
-        var cx = e.offsetLeft + e.offsetWidth / 2, cy = e.offsetTop + e.offsetHeight / 2;
-        minLX = Math.min(minLX, cx - rw / 2); minLY = Math.min(minLY, cy - rh / 2);
-        maxRX = Math.max(maxRX, cx + rw / 2); maxBY = Math.max(maxBY, cy + rh / 2);
+        var cy = e.offsetTop + e.offsetHeight / 2;
+        maxBY = Math.max(maxBY, cy + rh / 2);
       });
-      if (!any) { minLX = 0; minLY = 0; maxRX = gridW; maxBY = gridH; }
-      var M = 24;
-      var bboxW = (maxRX - minLX) + 2 * M, bboxH = (maxBY - minLY) + 2 * M;
-      canvas.style.left = (M - minLX) + 'px';
-      canvas.style.top = (M - minLY) + 'px';
+      var contentRows = any ? Math.max(1, Math.ceil(maxBY / (cs + gap))) : 0;
+      var stageH = (Math.max(STAGE_BASE_ROWS, contentRows) + STAGE_GROW) * (cs + gap);
+      canvas.style.width = stageW + 'px';
+      canvas.style.height = stageH + 'px';
       var availW = Math.max(200, scaler.parentNode.clientWidth - 32); // editor-body padding 16×2
       var availH = Math.max(200, scaler.parentNode.clientHeight - 32);
-      var s = Math.max(0.25, Math.min(availW / bboxW, availH / bboxH));
+      var s = Math.max(0.25, Math.min(availW / stageW, availH / stageH));
       canvas.style.transform = 'scale(' + s + ')';
-      scaler.style.width = Math.round(bboxW * s) + 'px';
-      scaler.style.height = Math.round(bboxH * s) + 'px';
+      scaler.style.width = Math.round(stageW * s) + 'px';
+      scaler.style.height = Math.round(stageH * s) + 'px';
     }
     // 只读硬化：pointer-events:none 挡鼠标但挡不住 Tab 焦点——contentEditable
     // 卡/卡内输入框全部关闭编辑并移出 Tab 序（readOnly 不改样式不置灰）
