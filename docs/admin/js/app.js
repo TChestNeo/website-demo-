@@ -293,7 +293,7 @@
         href: it.route ? '#/' + it.route : '#/todo/' + it.todo
       },
         h('span', { class: 'material-symbols-outlined', text: sg.icon }),
-        h('span', { text: (T(it.k || g.kEn) || it.label) })
+        h('span', { text: (T(it.k || sg.kEn) || it.label) })
       )));
       return [title, ...items];
     })));

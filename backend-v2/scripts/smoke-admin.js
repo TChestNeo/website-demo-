@@ -298,6 +298,10 @@ async function main() {
       document.querySelectorAll('#navGroups .nav-group-title').length === 8 &&
       document.querySelectorAll('#navGroups .nav-item').length === 23 &&
       document.querySelectorAll('#navGroups .soon').length === 0`));
+    // 条目名各自正确（用户「Dashboard 标题内选项全部叫 dashboard」→ sg.kEn 修复；此前只数条目不查名，回归漏网）
+    ok('导航条目名各自正确（总览 5 条目 ≠ 全部 Dashboard）', await client.evalJs(`
+      JSON.stringify([...document.querySelectorAll('#navGroups .nav-item')].slice(0, 5).map((a) => a.children[1].textContent)) ===
+      JSON.stringify(['Dashboard', 'Analytics', 'Users', 'Content', 'Community'])`));
     await client.waitFor(`document.getElementById('pane-dashboard').style.display === 'block'`, 6000, '默认 dashboard 面板');
     ok('默认深链 → Dashboard 激活态', await client.evalJs(`
       document.querySelector('#navGroups a[href="#/dashboard"]').classList.contains('active')`));
