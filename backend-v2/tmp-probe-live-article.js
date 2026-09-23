@@ -10,6 +10,7 @@
 // S9 v10.28.40.0 FC 编辑区固定 125 格横：线上 site-config 版本锚 + 门禁通过 + --grid-cols=125 + 画布盒 2748 全覆盖 + 底部横向拉条 + Ctrl+滚轮缩放 + 芯片重置 + Shift+滚轮横向 + 纯滚轮不缩放 + 中键拖平移落点精确/平移中玻璃挂起/松手还原（39.1 掉帧修复行为锚）
 // S10 v10.28.40.0 SNE 格底随卡色 + 画布边缘淡淡阴影（用户「二级显示分数的卡片颜色根据卡片本身的颜色自动变化背景颜色融入背景主题；画布格子边缘加淡淡阴影」）：画布盒 box-shadow 逐字节 + 建卡读混色恒等 + tint 写入 62/38 混色，IIFE 内建读删零草稿污染
 // S11 v10.28.41.0 发布日志弹窗（用户「点击发布的时候先弹出一个弹窗填写日志…限制320字」）：弹窗 DOM 在场 + 打开固定初始高 + 按空格分词计数（"code"=1）+ 自动增长 220 上限内滚 + 321 词 .over 红字确认硬拦 + 取消放弃 + 演示路径确认落草稿 + 再开预填（全链零网络——guest 无 USR 用户 fcCloudMode 恒 false；草稿只落探针一次性档案）
+// S12 v10.28.42.0 全卡不透明（用户「把FC内的所有卡片变成不透明」——磨砂玻璃轮结束、08-17「100% 不透明」口径复活；也修「拖动时背景消失」）：编辑器 CSS 55% 配方撤下 + 内容卡面不透明 surface + 作者自选半透保留 + 选色纯色不透明 + paper/paint 填充层 opacity 1 + 合并组背景不透明/成员透明一体回归 + fc-moving 卡面逐字节不变/组背景 filter 挂起 + 注入层全灭 + SNE 62% 不动 + 0.55 仅剩 caption-edge-btn.locked
 'use strict';
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -194,7 +195,7 @@ async function waitFor(cdp, expr, timeout, label) {
 
     // S9 v10.28.40.0 FC 编辑区固定 125 格横（用户「FC也是一样是125格横向，固定不会因窗口不够宽而缩小，最多底下横向拉条」）
     const scCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
-    ok('S9a 线上 site-config 含 FC v10.28.41.0 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.41.0') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
+    ok('S9a 线上 site-config 含 FC v10.28.42.0 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.42.0') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
       source: 'try{localStorage.setItem("slati_session", ' + JSON.stringify(JSON.stringify({ loggedIn: true })) + ');}catch(e){}'
     });
@@ -310,6 +311,90 @@ async function waitFor(cdp, expr, timeout, label) {
       await cdp.evalJs("document.getElementById('pubLogInput').value") === '探针日志');
     await cdp.evalJs("(function(){ var b = Array.prototype.slice.call(document.querySelectorAll('#publishLogModal button')).filter(function(x){ return x.textContent.trim() === '取消'; })[0]; b.click(); })()");
     await sleep(150);
+
+    // S12 v10.28.42.0 全卡不透明（用户「把FC内的所有卡片变成不透明」——磨砂玻璃轮结束、
+    // 08-17「100% 不透明」口径复活；也修「拖动时背景消失」——面不透明后 fc-moving 挂起
+    // 对卡面成 no-op）。编辑器已在场；先归零滚动（S9 平移尾态清场），建卡→测→删段内完成。
+    // 点选卡必须在窗口可见区：编辑器 client 宽 ~1014px、sne 卡放 20/32 列（46/58 列
+    // x>1280 窗外 CDP 点击落空——首轮 S12d/e/f 红实证），与本地电池同位同口径
+    await cdp.evalJs("(function(){ var body = document.getElementById('gridCanvas').parentElement; body.scrollLeft = 0; body.scrollTop = 0; })()");
+    await sleep(400);
+    const edHtml12 = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n'); // CRLF 归一（多行锚）
+    ok('S12a 线上编辑器 CSS：55% 玻璃配方撤下（混色零在场）+ 卡面直用 --card-bg-color 不透明 + 卡身 blur 摘除',
+      edHtml12.indexOf('color-mix(in srgb, var(--card-bg-color) 55%, transparent)') === -1 &&
+      edHtml12.indexOf('--card-border-color: var(--divider-line);\n      background-color: var(--card-bg-color);\n    }') !== -1);
+    const lastOf = (sel) => "(function(){ var cs = document.querySelectorAll('" + sel + "'); return cs.length ? cs[cs.length - 1] : null; })()";
+    await cdp.evalJs('window.createContentCard(2, 40, 8, 4)');
+    await sleep(200);
+    let f12 = await cdp.evalJs("(function(){ var c = " + lastOf('#gridCanvas .content-card') + "; if (!c) return null; var cs = getComputedStyle(c); return { bg: cs.backgroundColor, blur: cs.backdropFilter || 'none', webkitBlur: cs.webkitBackdropFilter || 'none' }; })()");
+    ok('S12b 内容卡：卡面不透明 surface-container + blur 摘除（含 -webkit）',
+      f12 && f12.bg.replace(/\s/g, '') === 'rgb(236,238,240)' && f12.blur === 'none' && f12.webkitBlur === 'none', JSON.stringify(f12));
+    const d12 = await cdp.evalJs("(function(){ var c = " + lastOf('#gridCanvas .content-card') + "; if (!c) return null; c.style.setProperty('--card-bg-color', 'rgba(220, 38, 38, 0.15)'); var bg = getComputedStyle(c).backgroundColor; c.style.removeProperty('--card-bg-color'); return { bg: bg, after: getComputedStyle(c).backgroundColor }; })()");
+    ok('S12c 作者自选半透明背景原样保留（rgba(220,38,38,0.15) 用户选色通道不受玻璃轮影响、撤后回 surface）',
+      d12 && d12.bg.replace(/\s/g, '') === 'rgba(220,38,38,0.15)' && d12.after.replace(/\s/g, '') === 'rgb(236,238,240)', JSON.stringify(d12));
+    await cdp.evalJs('window.createSneCard(2, 20, 9, 12)');
+    await sleep(200);
+    const sel12 = await cdp.evalJs("(function(){ var c = " + lastOf('#gridCanvas .sne-card') + "; var r = c.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + 30 }; })()");
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: sel12.x, y: sel12.y, button: 'left', clickCount: 1, modifiers: 0 });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: sel12.x, y: sel12.y, button: 'left', clickCount: 1, modifiers: 0 });
+    await sleep(150);
+    await cdp.evalJs('window.setSubscriptionTestMode(true)');
+    await cdp.evalJs("window.setCardBgColor('#d43c3c')");
+    await sleep(150);
+    f12 = await cdp.evalJs("(function(){ var c = " + lastOf('#gridCanvas .sne-card') + "; if (!c) return null; var cs = getComputedStyle(c); return { bg: cs.backgroundColor, blur: cs.backdropFilter || 'none' }; })()");
+    ok('S12d 选色 #d43c3c：卡面=纯色 rgb(212,60,60) 不透明 + blur 仍无',
+      f12 && f12.bg.replace(/\s/g, '') === 'rgb(212,60,60)' && f12.blur === 'none', JSON.stringify(f12));
+    await cdp.evalJs("window.setCardEdge('paper')");
+    await sleep(150);
+    const paper12 = await cdp.evalJs("(function(){ var c = " + lastOf('#gridCanvas .sne-card') + "; if (!c) return null; var t = c.querySelector('.card-tint'); if (!t) return null; var cts = getComputedStyle(t); return { tintOp: cts.opacity, tintBg: cts.backgroundColor, tintImg: cts.backgroundImage.slice(0, 40), edge: c.className.indexOf('card-edge-paper') !== -1 }; })()");
+    ok('S12e 纸主题：tint 层 opacity 1 + 底色不透明 surface + 渐变层在位',
+      paper12 && paper12.edge && paper12.tintOp === '1' && paper12.tintBg.replace(/\s/g, '') === 'rgb(236,238,240)' &&
+      paper12.tintImg.indexOf('linear-gradient') !== -1, JSON.stringify(paper12));
+    await cdp.evalJs("window.setCardEdge('paint1')");
+    await sleep(150);
+    const paint12 = await cdp.evalJs("(function(){ var c = " + lastOf('#gridCanvas .sne-card') + "; if (!c) return null; var p = getComputedStyle(c, '::before'); return { op: p.opacity, img: p.backgroundImage.slice(0, 40), edge: c.className.indexOf('card-edge-paint') !== -1 }; })()");
+    ok('S12f 油漆主题：::before 填充 opacity 1 + 渐变在位',
+      paint12 && paint12.edge && paint12.op === '1' && paint12.img.indexOf('linear-gradient') !== -1, JSON.stringify(paint12));
+    await cdp.evalJs('window.createSneCard(2, 32, 9, 12)');
+    await sleep(200);
+    await cdp.evalJs("(function(){ var cards = document.querySelectorAll('#gridCanvas .sne-card'); window.mergeCards(cards[cards.length - 1], cards[cards.length - 2], 'right'); })()");
+    await sleep(250);
+    const grp12 = await cdp.evalJs("(function(){ var gb = document.querySelector('.grid-group-bg'); if (!gb) return null; var gcs = getComputedStyle(gb); var members = []; document.querySelectorAll('.grid-card[data-group-id]').forEach(function(c){ if (c.dataset.groupId) members.push({ bg: getComputedStyle(c).backgroundColor, blur: getComputedStyle(c).backdropFilter || 'none' }); }); return { gb: gcs.backgroundColor, gblur: gcs.backdropFilter || 'none', members: members }; })()");
+    ok('S12g 合并组背景：卡面不透明 surface + blur 摘除 + 成员面透明一体回归',
+      grp12 && grp12.gb.replace(/\s/g, '') === 'rgb(236,238,240)' && grp12.gblur === 'none' &&
+      grp12.members.length >= 2 && grp12.members.every(function (m) { return m.bg.replace(/\s/g, '') === 'rgba(0,0,0,0)' && m.blur === 'none'; }),
+      JSON.stringify(grp12));
+    const mv12 = async () => cdp.evalJs("(function(){ var c = " + lastOf('#gridCanvas .content-card') + "; if (!c) return null; var cs = getComputedStyle(c); return { bg: cs.backgroundColor, blur: cs.backdropFilter || 'none' }; })()");
+    const mBefore = await mv12();
+    await cdp.evalJs("document.body.classList.add('fc-moving')");
+    await sleep(60);
+    const mDuring = await mv12();
+    await cdp.evalJs("document.body.classList.remove('fc-moving')");
+    await sleep(60);
+    const mAfter = await mv12();
+    ok('S12h fc-moving 挂起：独立卡卡面 before=during=after 逐字节一致（拖动时背景不再「消失」）',
+      JSON.stringify(mBefore) === JSON.stringify(mDuring) && JSON.stringify(mBefore) === JSON.stringify(mAfter),
+      JSON.stringify({ before: mBefore, during: mDuring, after: mAfter }));
+    const gb12 = async () => cdp.evalJs("(function(){ var gb = document.querySelector('.grid-group-bg'); var cs = getComputedStyle(gb); return { bg: cs.backgroundColor, filter: cs.filter }; })()");
+    const gbB = await gb12();
+    await cdp.evalJs("document.body.classList.add('fc-moving')");
+    await sleep(60);
+    const gbD = await gb12();
+    await cdp.evalJs("document.body.classList.remove('fc-moving')");
+    await sleep(60);
+    const gbA = await gb12();
+    ok('S12i fc-moving 下组背景：底色 before=during=after 不变（面不消失）、filter 描边挂起为 none=45.2 纪律',
+      gbB && gbD && gbA && gbB.bg === gbD.bg && gbD.bg === gbA.bg &&
+      gbB.filter !== 'none' && gbD.filter === 'none' && gbA.filter === gbB.filter,
+      JSON.stringify({ before: gbB, during: gbD, after: gbA }));
+    const inj12 = await cdp.evalJs("(function(){ var out = []; document.querySelectorAll('#gridCanvas .grid-card > .lg-backdrop, #gridCanvas .grid-card > .lg-specular').forEach(function(l){ out.push(l.className + ':' + getComputedStyle(l).display); }); var gb = document.querySelector('.grid-group-bg'); if (gb) gb.querySelectorAll(':scope > .lg-backdrop, :scope > .lg-specular').forEach(function(l){ out.push(l.className + ':' + getComputedStyle(l).display); }); return out; })()");
+    ok('S12j 玻璃注入层：卡/组背景上不在场或 display:none（零可见注入层）',
+      inj12.every(function (s) { return s.indexOf(':none') !== -1; }), JSON.stringify(inj12));
+    ok('S12k 不动锚：SNE 格底 62% 混色保留（40.0 口径不受玻璃轮影响）',
+      edHtml12.indexOf('color-mix(in srgb, var(--sne-cell-tint') !== -1);
+    ok('S12l 编辑器 CSS opacity: 0.55 只剩 caption-edge-btn.locked 一处（主题卡/paint 的 0.55 已除）',
+      (edHtml12.match(/opacity: 0\.55/g) || []).length === 1 &&
+      edHtml12.split('\n').filter(function (l) { return l.indexOf('opacity: 0.55') !== -1; })[0].indexOf('.caption-edge-btn.locked') !== -1);
 
     // S4 零 JS 错误
     ok('S4 全程零 Runtime exception', cdp.errs.length === 0, cdp.errs.slice(0, 3).join(' | ') || '干净');

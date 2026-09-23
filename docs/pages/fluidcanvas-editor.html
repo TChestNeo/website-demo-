@@ -1754,7 +1754,8 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
-.grid-card .lg-backdrop, .stats-edit-panel .lg-backdrop, .grid-group-bg .lg-backdrop {
+/* 42.0: 卡面已不透明——卡上注入层整体退出，此 12px 配方只剩编辑面板用 */
+.stats-edit-panel .lg-backdrop {
   -webkit-backdrop-filter: blur(12px) saturate(1.4);
   backdrop-filter: blur(12px) saturate(1.4);
 }
@@ -1763,17 +1764,16 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   backdrop-filter: blur(40px);
 }
 
-/* 编辑器门控：玻璃族之外的卡 / 主题卡（card-edge）/ 外板 / 图底 → 层藏起
-   （v0.2.9.1 弹性下线后全部是 .lg-static，门控选择器同步换类）；组内成员卡面
-   由组背景接管（v10.28.17.2 口径：成员自身 backdrop-filter:none 管不到注入层，
-   漏门即回归用户 9-02「独立背景」投诉） */
-.grid-card.lg-static:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-backdrop,
-.grid-card.lg-static:not(.content-card):not(.stats-card):not(.asset-card):not([data-card-type="flag"]) > .lg-specular,
-.grid-card.lg-static.has-outer-bg > .lg-backdrop, .grid-card.lg-static.has-outer-bg > .lg-specular,
-.grid-card.lg-static.has-card-bg-img > .lg-backdrop, .grid-card.lg-static.has-card-bg-img > .lg-specular,
-.grid-card.lg-static[class*="card-edge-"] > .lg-backdrop, .grid-card.lg-static[class*="card-edge-"] > .lg-specular,
-.lg-static[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-backdrop,
-.lg-static[data-group-id]:not([data-group-id=""]):not(.group-single) > .lg-specular {
+/* 编辑器门控：卡上玻璃注入层全面退出（v10.28.42.0 全卡不透明钦定）——
+   卡面已 100% 不透明，.lg-backdrop 的模糊/折射与 .lg-specular 的镜面白光
+   零可见效果、留着白费每帧重光栅；且折射 filter 残留在不透明面上会像
+   09-18 侧栏那样产生色散边缘（用户「把FC内的所有卡片变成不透明」）。
+   此前门控只藏玻璃族之外的卡（外板/图底/主题/组内成员），玻璃族卡保留
+   注入层——v10.27 玻璃轮口径，随本轮一并作废（v0.2.9.1 弹性下线后
+   全部是 .lg-static，选择器直写 .grid-card 不挑类）；编辑面板
+   .stats-edit-panel 是浮动 UI 不是卡，玻璃保留（6.2 钦定）。 */
+.grid-card > .lg-backdrop, .grid-card > .lg-specular,
+.grid-group-bg > .lg-backdrop, .grid-group-bg > .lg-specular {
   display: none !important;
 }
 
@@ -2893,16 +2893,19 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
        createAssetCard 同一构造，加 .asset-card 类一次覆盖，不留同构造
        不一致卡）。仍排除 .has-outer-bg（外板几何按 2px 边宽调过）/
        .has-card-bg-img（图走 <img> 子层）/ [class*="card-edge-"]（主题卡
-       有板+剪影层——走下方 v10.28.6.2 主题卡玻璃规则）。 */
+       有板+剪影层——走下方 v10.28.6.2 主题卡玻璃规则）。
+       v10.28.42.0: 全卡不透明（用户「把FC内的所有卡片变成不透明」——
+       磨砂玻璃轮结束，08-17「100% 不透明」口径复活）：55% 半透混色撤下
+       直用 --card-bg-color（选色滑杆透明度照常生效），卡身 backdrop 模糊
+       摘除——面已不透明，模糊零可见效果、留着白费每帧重光栅；玻璃注入层
+       .lg-backdrop/.lg-specular 对卡全面退出（见下方门控区）。 */
     .grid-card.content-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]),
     .grid-card.stats-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]),
     .grid-card[data-card-type="flag"]:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]),
     .grid-card.asset-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"]) {
       --card-border-width: 1px;
       --card-border-color: var(--divider-line);
-      background-color: color-mix(in srgb, var(--card-bg-color) 55%, transparent);
-      backdrop-filter: blur(12px) saturate(1.4);
-      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      background-color: var(--card-bg-color);
     }
     .grid-card:hover { box-shadow: var(--card-shadow, var(--shadow-md)); border-color: var(--color-primary); }
     .grid-card.selected {
@@ -2915,7 +2918,9 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
        采样重光栅；探针 tmp-probe-editor-jank A/B 实证：全页禁玻璃后同一次
        拖拽 15 慢帧 → 2 慢帧（60fps，读取量反而更高）。拖拽/缩放/旋转/表格
        手柄期间全页玻璃暂离，提交后下一帧还原——运动中不可察、松手瞬时回稳。
-       组背景五连 drop-shadow 栈同为软件光栅化大头，一并挂起。 */
+       组背景五连 drop-shadow 栈同为软件光栅化大头，一并挂起。
+       v10.28.42.0：卡面已不透明、卡上无 backdrop-filter——本挂起对卡本身
+       已成 no-op，仍管编辑器镶边玻璃（头栏/面板）与组背景 filter 描边。 */
     body.fc-moving * {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
@@ -2937,13 +2942,13 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
          （见下方组内一体规则），组背景就是那一张「整卡」的卡面（用户
          「不存在任何独立的背景」）。
          --card-bg-color 定义在 .grid-card 上，组背景是卡的兄弟节点继承不到
-         （自定义属性只向下继承）——缺了它 color-mix 里的 var() 解析失败、
-         整条 background-color 作废变透明（电池实抓 rgba(0,0,0,0)），
-         这里补同款定义。 */
+         （自定义属性只向下继承）——缺了它 background-color 里的 var() 解析
+         失败、整条作废变透明（电池实抓 rgba(0,0,0,0)），这里补同款定义。
+         v10.28.42.0: 全卡不透明（用户「把FC内的所有卡片变成不透明」）——
+         组背景卡面同卡回 100% 不透明（55% 混色撤下直用 --card-bg-color、
+         backdrop 模糊摘除），拖动时卡面不再因玻璃挂起而观感变化。 */
       --card-bg-color: var(--color-surface-container);
-      background-color: color-mix(in srgb, var(--card-bg-color) 55%, transparent);
-      backdrop-filter: blur(12px) saturate(1.4);
-      -webkit-backdrop-filter: blur(12px) saturate(1.4);
+      background-color: var(--card-bg-color);
       /* v10.28.26 — 自由形状组：剪影由 JS 写 clip-path: path(...)（L 型/
          十字型并集轮廓，随组形状走）；描边/阴影改 filter drop-shadow 栈
          跟随剪影（border/box-shadow 只画 bbox 矩形，clip 会裁掉直边描边）。
@@ -3977,14 +3982,16 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
          v10.28.20.3: 高光条清除（用户「清除卡片右上角及整个外框所有的
          白色/浅色渐变高光线」）——列表退回纯 --card-layers。--card-layers
          为纯渐变无位置语法，longhand 合法（带位置语法的是 ::after 的
-         --card-overlay，须 shorthand，见上）。 */
+         --card-overlay，须 shorthand，见上）。
+         v10.28.42.0: 全卡不透明——层 opacity 0.55 撤下回 1（6.2 前口径）：
+         底色 base 不透明 + 渐变自带 alpha 叠在其上，卡面整体不透明且
+         剪影 clip 完好；色值观感同 6.2 前配方。 */
       background-image: var(--card-layers, none);
       background-size: auto;
       background-position: 0 0;
       background-repeat: repeat;
       clip-path: var(--card-clip, none);
       pointer-events: none;
-      opacity: 0.55;
     }
     /* v10.28.6.2 — 主题卡卡身玻璃感（用户「背景边缘的也是…检查一下是否
        一致」+ 问询钦定「统一玻璃感、外板保持不透明」）：卡身 backdrop 模糊
@@ -3992,25 +3999,16 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
        （纸/藏宝/科技，上方规则 opacity 0.55）+ 油漆 ::before 0.55（油漆
        无板无 tint，填充即上上方规则 678 画的剪影）；高光条进填充层
        background-image 列表（v10.28.20.3 已随用户「清除卡片右上角…所有的
-       白色/浅色渐变高光线」撤下）。外板（.card-outer-band 与板 ::before）不
-       透明不动（v10.21 口径）。legacy 油漆+外板组合除外板不透明也除外
-       （:not(.has-outer-bg)，油漆填充规则 721 优先级平本规则但本规则
-       更晚——不排除会连板一起半透明）。 */
-    .grid-card.card-edge-paper,
-    .grid-card.card-edge-treasure,
-    .grid-card.card-edge-tech,
-    .grid-card.card-edge-paint,
-    .grid-group-bg.card-edge-paper,
-    .grid-group-bg.card-edge-treasure,
-    .grid-group-bg.card-edge-tech,
-    .grid-group-bg.card-edge-paint {
-      backdrop-filter: blur(12px) saturate(1.4);
-      -webkit-backdrop-filter: blur(12px) saturate(1.4);
-    }
+       白色/浅色渐变高光线」撤下）。
+       v10.28.42.0: 全卡不透明（用户「把FC内的所有卡片变成不透明」）——
+       卡身 backdrop 模糊摘除：填充层已回不透明，模糊零可见效果、留着
+       白费每帧重光栅；外板（.card-outer-band 与板 ::before）不透明
+       不动（v10.21 口径）。 */
     .grid-card.card-edge-paint:not(.has-outer-bg)::before,
     .grid-group-bg.card-edge-paint:not(.has-outer-bg)::before {
-      opacity: 0.55;
-      /* v10.28.20.3: 高光条清除（同上，用户「清除卡片右上角…所有的
+      /* v10.28.42.0: 全卡不透明——油漆填充层 opacity 0.55 撤下回 1
+         （6.2 前口径，同 .card-tint；油漆填充渐变本身不透明双停）。
+         v10.28.20.3: 高光条清除（用户「清除卡片右上角…所有的
          白色/浅色渐变高光线」）。 */
       background-image: var(--card-layers, none);
       background-size: auto;
