@@ -47,9 +47,29 @@ const get = (mod, url, headers) => new Promise((resolve) => {
   const r4 = await get(https, ADMIN + '/js/app.js');
   ok('S4 子域 admin app.js 200 可加载', r4.status === 200 && r4.body.indexOf('location.hash') !== -1, 'status=' + r4.status);
 
-  // S5 主域 /admin/ 双入口照旧
+  // S5 主域 /admin/ 搬家：302 跳子域根（双入口退役——用户「把旧的全部搬到新的内」）
   const r5 = await get(https, MAIN + '/admin/');
-  ok('S5 主域 /admin/ 双入口照旧 200', r5.status === 200 && r5.body.indexOf('js/ui.js') !== -1, 'status=' + r5.status);
+  ok('S5 主域 /admin/ → 302 跳 https://admin.mnationworld.com/（搬家，旧书签自动指路）',
+    r5.status === 302 && String(r5.headers.location || '') === 'https://admin.mnationworld.com/',
+    'status=' + r5.status + ' loc=' + r5.headers.location);
+
+  // S5b /admin 无斜杠同跳根
+  const r5b = await get(https, MAIN + '/admin');
+  ok('S5b 主域 /admin（无斜杠）→ 302 跳子域根', r5b.status === 302 &&
+    String(r5b.headers.location || '') === 'https://admin.mnationworld.com/',
+    'status=' + r5b.status + ' loc=' + r5b.headers.location);
+
+  // S5c 路径映射：/admin/js/app.js → /js/app.js
+  const r5c = await get(https, MAIN + '/admin/js/app.js');
+  ok('S5c 路径映射：/admin/js/app.js → 302 跳子域 /js/app.js（去 /admin 前缀）', r5c.status === 302 &&
+    String(r5c.headers.location || '') === 'https://admin.mnationworld.com/js/app.js',
+    'status=' + r5c.status + ' loc=' + r5c.headers.location);
+
+  // S5d query 原样带上
+  const r5d = await get(https, MAIN + '/admin/?from=main');
+  ok('S5d query 保留：/admin/?from=main → Location 带 ?from=main', r5d.status === 302 &&
+    String(r5d.headers.location || '') === 'https://admin.mnationworld.com/?from=main',
+    'status=' + r5d.status + ' loc=' + r5d.headers.location);
 
   // S6 主站照旧
   const r6 = await get(https, MAIN + '/');

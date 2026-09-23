@@ -1,7 +1,7 @@
 # Cloud Run 部署（backend-v2）——发布底子加固版
 
 **线上地址（2026-08-27/28 已部署；服务名 08-28 由用户改名 mn-backend-v2 → mnationworld-web）**：https://mnationworld.com（自定义域名，08-28 接线；run.app 原址 https://mnationworld-web-641398703651.asia-southeast1.run.app 仍可用）
-- 公网站点：`/` ｜ 管理后台：`/admin/`（staff 邮箱 + **密码 + 邮件验证码**双因素，production 姿态）+ **admin.mnationworld.com 子域**（2026-09-23 接线，同一后台独立入口，详见下方「admin.mnationworld.com 子域」）｜ API：`/api/*`
+- 公网站点：`/` ｜ 管理后台：**admin.mnationworld.com 子域**（唯一入口——2026-09-23 接线并整体搬家：主域 `/admin/*` 全部 302 跳子域，staff 邮箱 + **密码 + 邮件验证码**双因素，production 姿态）｜ API：`/api/*`
 - 项目 `project-02d050ab-8105-448e-bac`（唯一挂了计费 016AE6-868F19-B356BA）；镜像 `asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend/mn-backend-v2:latest`
 - **改名教训**：Cloud Run 服务名决定 URL；用户在控制台改名 = 建了一个空配置新服务（只有镜像，env/卷全没）——发现后已把加固配置全套搬过去并线上 4/4 复验。控制台手建服务不会继承任何配置，必须用 deploy 命令带齐 env + 卷。
 - **数据持久化**：GCS 桶 `gs://mn-backend-data-641398703651`（FUSE 挂载 `/mnt/data`）+ 快照机制，实例重启/缩容/换版本数据不丢（详见下方「快照持久化」）。
@@ -87,9 +87,9 @@ gcloud run deploy mnationworld-web \
 用户要「把后端的 admin 改成 admin.mnationworld.com」——同一服务再挂一条域名映射 + entrypoint.js Host 路由，**admin 应用零改动**（已核实全相对路径 + hash 路由 `#/dashboard` + api.js base 默认 `'/api'` 同源，子域根直出零 CORS 零断链）。
 
 - **域名映射**：REST API 同主域套路，name 换成 `admin.mnationworld.com`。子域映射给出的 DNS 记录是**一条 CNAME**（`admin` → `ghs.googlehosted.com.`），不是 apex 的 4 A + 4 AAAA——已加入 Cloud DNS 区 `mnationworld-com`（change 14，TTL 300）。签发流程与 apex 相同：DomainRoutable=True → CertificateProvisioned=True → Ready=True（5–15 分钟）。
-- **Host 路由**（entrypoint.js）：`story.mnationworld.com → docs/story`、`admin.mnationworld.com → docs/admin`（根直出）、其余 → `docs/`。`split(':')[0]` + `toLowerCase` 同 story 口径。**`/api/*` 反代分支先于 Host 路由**——子域 API 同源直达后端。主域 `/admin/` 照旧可用（双入口并存，零回归）。
+- **Host 路由**（entrypoint.js）：`story.mnationworld.com → docs/story`、`admin.mnationworld.com → docs/admin`（根直出）、其余 → `docs/`。`split(':')[0]` + `toLowerCase` 同 story 口径。**`/api/*` 反代分支先于 Host 路由**——子域 API 同源直达后端。**admin 搬家（2026-09-23 晚，rev 00284-9mb）**：主域 `/admin` 与 `/admin/*` 全部 302 跳 `https://admin.mnationworld.com`（去 `/admin` 前缀：`/admin` → `/`、`/admin/xxx` → `/xxx`，query 原样带上；302 非 301——浏览器不缓存，回退路径不被锁死；adminHost 自身豁免防自跳死循环；story 主机名同样转跳）。子域 = 管理后台唯一入口，老书签自动指路，双入口退役。
 - **Cookie**：COOKIE_DOMAIN/CORS 留空（同源）→ host-only cookie → admin 子域独立登录会话（与主站/故事站互不共享；staff 密码+邮件码双因素不变，邮箱走同一 SMTP）。
-- **验证（2026-09-23）**：本地容器端到端测三路 Host（admin 根直出 admin 应用、子域 /api/health 200、story 标题、主域首页、主域 /admin/、隔离——主站页面在 admin 子域 404）；电池 admin-host 12/12 + 冒烟 48/48；线上探针 admin-subdomain 9/9（子域根/API/隔离/双入口/主站/story 回归/TLS SAN/http→https 跳转）。
+- **验证（2026-09-23）**：本地容器端到端测三路 Host + 搬家重定向（admin 根直出、子域 /api/health 200、story 标题、主域首页、四种 /admin 路径 302 映射 + query 保留 + story 主机转跳 + 子域无自跳 + 隔离——主站页面在 admin 子域 404）；电池 admin-host 18/18 + 冒烟 48/48；线上探针 admin-subdomain 12/12（子域根/API/隔离/搬家 302×4/主站/story 回归/TLS SAN/http→https 跳转）。
 - 坑：run.app 直连加自定义 Host 头会被 Google 前端 404（连 story 也 404）——**Host 路由验证只能走真域名或本地容器**，不能用 run.app + Host 头。
 
 ## 运维速查

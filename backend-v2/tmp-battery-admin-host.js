@@ -25,7 +25,7 @@ try {
   ok('S2 story Host 路由保留（story.mnationworld.com → docs/story 不受影响）',
     entry.indexOf("host === 'story.mnationworld.com'") !== -1 &&
     entry.indexOf("path.join(DOCS, 'story')") !== -1);
-  ok('S3 主域 docRoot 不变（mnationworld.com → docs/ 根，/admin/ 照旧可用双入口并存）',
+  ok('S3 主域 docRoot 不变（mnationworld.com → docs/ 根；/admin/* 已搬家为 302 跳子域，见 S13-S16）',
     entry.indexOf('const docRoot = storyHost ? path.join(DOCS, \'story\') : adminHost ? path.join(DOCS, \'admin\') : DOCS;') !== -1);
   ok('S4 /api 反代分支先于 Host 路由（admin 子域 /api/* 同源直达后端、零 CORS）',
     entry.indexOf("url.pathname.startsWith('/api/')") < entry.indexOf("adminHost"));
@@ -58,6 +58,21 @@ try {
     fs.existsSync(path.join(adminDir, 'index.html')) && fs.existsSync(path.join(adminDir, 'js/app.js')));
   ok('S12 cookie host-only 口径注释在场（各域独立登录，无跨域会话泄漏风险）',
     entry.indexOf('cookie host-only 各域独立登录') !== -1);
+
+  // ── S admin 搬家重定向（用户「把旧的全部搬到新的内」）──
+  ok('S13 重定向分支在位：/admin 与 /admin/* 命中（非 adminHost）',
+    entry.indexOf("!adminHost && (url.pathname === '/admin' || url.pathname.startsWith('/admin/'))") !== -1);
+  ok('S14 adminHost 自身豁免防自跳死循环（!adminHost 门控）',
+    entry.indexOf("if (!adminHost && (url.pathname === '/admin'") !== -1);
+  ok('S15 路径映射：/admin → / 根、/admin/xxx → /xxx 去前缀 + query 原样带上',
+    entry.indexOf("url.pathname === '/admin' ? '/' : url.pathname.slice('/admin'.length)") !== -1 &&
+    entry.indexOf("'https://admin.mnationworld.com' + target + (url.search || '')") !== -1);
+  ok('S16 302 非 301（浏览器不缓存，回退路径不被锁死）',
+    entry.indexOf("res.writeHead(302, { Location: 'https://admin.mnationworld.com'") !== -1);
+  ok('S17 重定向分支先于路径解析（/admin 旧文件不会被直接出，全部转跳）',
+    entry.indexOf('const target = url.pathname') < entry.indexOf('let p;'));
+  ok('S18 头部注释口径更新：管理后台唯一入口 = 子域、双入口退役',
+    entry.indexOf('管理后台唯一入口 = 子域') !== -1);
 
   console.log('');
   console.log('╭──────────────────────────────╮');
