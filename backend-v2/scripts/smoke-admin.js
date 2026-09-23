@@ -348,6 +348,28 @@ async function main() {
     const payRows = await client.evalJs(secOf('#pane-users .adm-card', '支付记录'));
     ok(`director 详情支付 2 笔（实际 ${payRows} 行）`, payRows === 2);
 
+    // ── 订阅发放（director subscriptions.manage；免费发放不经 Stripe，审计 staff_test_grant）──
+    ok('详情：订阅发放区块（director 可见）', await client.evalJs(`
+      (() => { const t = document.querySelector('#pane-users').textContent;
+        return t.includes('订阅发放') && t.includes('发放订阅'); })()`));
+    ok('发放表单：等级 3 档 + 月数 4 档', await client.evalJs(`
+      (() => { const s = [...document.querySelectorAll('#pane-users .adm-card')].find((x) => x.textContent.includes('订阅发放'));
+        const sels = s.querySelectorAll('select');
+        return sels.length === 2 && sels[0].options.length === 3 && sels[1].options.length === 4; })()`));
+    await client.evalJs(`
+      (() => { const s = [...document.querySelectorAll('#pane-users .adm-card')].find((x) => x.textContent.includes('订阅发放'));
+        const sels = s.querySelectorAll('select');
+        sels[0].value = 'ultra'; sels[1].value = '3';
+        [...s.querySelectorAll('button')].find((b) => b.textContent === '发放订阅').click(); })()`);
+    await client.waitFor(`document.getElementById('admToast').style.display === 'block' &&
+      document.getElementById('admToast').textContent.includes('已发放订阅')`, 8000, '发放 toast');
+    ok('发放成功 toast（已发放订阅）', true);
+    await client.waitFor(`[...document.querySelectorAll('#pane-users .chip')].some((c) => c.textContent === '旗舰')`, 8000, '详情刷新 chip 旗舰');
+    ok('beta premium → ultra（详情 chip 旗舰）', true);
+    ok('发放后层级到期顺延（非 —）', await client.evalJs(`
+      (() => { const t = document.querySelector('#pane-users').textContent;
+        const i = t.indexOf('层级到期'); return i >= 0 && t.slice(i + 4, i + 24).includes('202'); })()`));
+
     // ── Security：全局登录史 / 事件 + 标记按钮（director security.manage）──
     await client.evalJs(`document.querySelector('#navGroups a[href="#/security"]').click()`);
     await client.waitFor(`document.querySelectorAll('#pane-security .adm-table tbody tr').length >= 13`, 8000, '全局登录史 ≥13 行');
@@ -419,6 +441,9 @@ async function main() {
         return !t.includes('风险理由') && !t.includes('警告次数'); })()`));
     ok('cs 详情：无标记按钮（无 security.manage）', await client.evalJs(`
       ![...document.querySelectorAll('#pane-users button')].some((b) => b.textContent === '标记')`));
+    ok('cs 详情：订阅发放无权限文案（无 subscriptions.manage）', await client.evalJs(`
+      (() => { const t = document.querySelector('#pane-users').textContent;
+        return t.includes('无订阅发放权限') && !t.includes('发放订阅'); })()`));
 
     // ── W6：有密码 staff 错密码不消费码（同码改对重试）──
     await client.evalJs(`document.getElementById('logoutBtn').click()`);

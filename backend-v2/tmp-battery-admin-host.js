@@ -74,6 +74,15 @@ try {
   ok('S18 头部注释口径更新：管理后台唯一入口 = 子域、双入口退役',
     entry.indexOf('管理后台唯一入口 = 子域') !== -1);
 
+  // ── S admin 子域 /assets/ 回退（探针 S2 404 实证：../assets/* 在子域根解析为 /assets/*，docRoot docs/admin 下无 assets）──
+  ok('S19 /assets/ 回退分支在位（adminHost 且 /assets/ 前缀 → 主 DOCS 取共享资源）',
+    entry.indexOf("adminHost && p.startsWith('/assets/') ? DOCS : docRoot") !== -1);
+  ok('S20 回退仅 /assets/ 前缀（serveRoot 其余路径仍 docRoot——/pages 隔离保持、403 守卫口径同款）',
+    entry.indexOf('const serveRoot = adminHost') !== -1 &&
+    entry.indexOf("path.join(serveRoot, p)") !== -1 &&
+    entry.indexOf("!file.startsWith(serveRoot + path.sep)") !== -1 &&
+    entry.indexOf('子域隔离保持') !== -1);
+
   console.log('');
   console.log('╭──────────────────────────────╮');
   console.log('│  🎉 ' + PASS.n + ' ✅ / ' + FAIL.n + ' ❌  (admin-host)  │');

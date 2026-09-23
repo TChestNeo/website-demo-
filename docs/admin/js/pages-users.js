@@ -141,6 +141,36 @@
             h('div', { class: 'sub', text: (T('admin.users.paymentsSub') || 'Payments · 近 20 笔') }))),
         paymentsBody);
 
+      // 订阅发放（subscriptions.manage：finance / director）——免费发放测试通道：不经 Stripe、不扣款、
+      // 不记 payments；后端提升/顺延口径 max 不降级，审计 reason=staff_test_grant；无权限角色只见提示文案
+      const grantCard = h('section', { class: 'adm-card' },
+        h('div', { class: 'adm-card-title' },
+          h('div', {},
+            h('h3', { text: (T('admin.users.grantTitle') || '订阅发放') }),
+            h('div', { class: 'sub', text: (T('admin.users.grantSub') || 'Grant · 免费发放') }))),
+        SC.can('subscriptions.manage')
+          ? (() => {
+              const tierSel = h('select', { class: 'adm-select' },
+                ...[['basic', 'Basic'], ['premium', 'Premium'], ['ultra', 'Ultra']]
+                  .map(([k, label]) => h('option', { value: k, text: label })));
+              const monthsSel = h('select', { class: 'adm-select' },
+                ...[1, 3, 6, 12].map((m) => h('option', { value: String(m), text: String(m) })));
+              const btn = h('button', { class: 'btn', text: (T('admin.users.grantBtn') || '发放订阅'), onclick: () => {
+                btn.disabled = true;
+                SC.post('/staff/subscriptions/grant', { email: u.email, tierKey: tierSel.value, months: parseInt(monthsSel.value, 10) })
+                  .then((r) => {
+                    btn.disabled = false;
+                    if (r.ok) { toast((T('admin.users.grantDone') || '已发放订阅（写操作已审计）')); renderDetail(SC.pages.users._root); }
+                    else toast((T('admin.users.grantFail') || '发放失败：') + ((r.data && r.data.error && r.data.error.message) || r.status));
+                  });
+              } });
+              return h('div', { class: 'adm-form' },
+                h('span', { class: 'adm-meta', text: (T('admin.users.grantTier') || '等级') }), tierSel,
+                h('span', { class: 'adm-meta', text: (T('admin.users.grantMonths') || '月数') }), monthsSel,
+                btn);
+            })()
+          : h('p', { class: 'adm-meta', text: (T('admin.users.grantNoPerm') || '当前角色无订阅发放权限（subscriptions.manage）。') }));
+
       // 安全档案（users.view 可达：cs 掩码近 10 条；security 全量）
       let securityBody;
       if (!sec) {
@@ -191,7 +221,7 @@
             : null),
         securityBody);
 
-      box.replaceChildren(header, infoCard, statsStrip, paymentsCard, securityCard);
+      box.replaceChildren(header, infoCard, statsStrip, paymentsCard, grantCard, securityCard);
     });
   }
 
