@@ -1,20 +1,20 @@
 // tmp-battery-article-present.js — v0.2.58.0 完整格子画布镜像电池（阅读页不再 bbox 裁剪——
-//   画布 = 完整格舞台：横向 125 格最大值 × 纵向 max(70,内容行)+25 行；格子线代码层面定义、
+//   画布 = 完整格舞台：横向 115 格最大值 × 纵向 max(70,内容行)+25 行；格子线代码层面定义、
 //   透明度放满读者不可见；宽窗 contain fit 投影整个舞台、窄窗回流阈值仍按内容 bbox 宽）
 // 用户「你是不是只是提取了卡片而已？你能不能这样就是你把FC编辑那边的格子画布完完整整搬到
 //   发布后出现的独立页面内但是透明度放满就是代码层面看是有格子的，这样应该可以直接取完整的
-//   内容了把？然后16：9宽的格子数量是125个做一下这是最大值」（钦定「横向125格 长度不限」；
-//   纵向三连：默认 16:9 125×70 再外加 25 行预留；卡片逼近底边按卡片底+25 行自动增长）
+//   内容了把？然后16：9宽的格子数量是115个做一下这是最大值」（钦定「横向115格 长度不限」；
+//   纵向三连：默认 16:9 115×70 再外加 25 行预留；卡片逼近底边按卡片底+25 行自动增长）
 // 验证：F0 静态锚 / W 宽窗（标签条 2 chip、侧栏灭、TOC 5 条目列全部卡（c2 正文派生 Hello present…、c8 Flag 卡型名兜底）、点击闪烁、
-//   stage 2750×2090 在场、格子层代码在场透明度 0、contain fit 自洽 s=min(availW/stageW,availH/stageH)、卡位 1:1 不动）
+//   stage 2530×2090 在场、格子层代码在场透明度 0、contain fit 自洽 s=min(availW/stageW,availH/stageH)、卡位 1:1 不动）
 //   / N 窄窗回流（reflow 类、3 带 y 重叠、content 弹性收缩 vs 列表卡保自然宽、图卡等比、
 //     320 最窄全部上下单列、页面无横向溢出、窄窗 TOC 可点）/ R resize 翻转往返（防抖监听）
 //   / L legacy 流式兜底（无标签条无目录钮）/ E 零 Runtime exception + 零 console error
 // fixture：ART-000004 tags['宪法','地理'] + c8 flag aspectLock(264.399×174.347) + c1 content(label Constitution)
 //   + c2 content(无 label→正文派生 Hello present…) + s1 stats(colSpan18 列表卡) + c3 text(label Notes)；
 //   纸算（cellSize=20 gap=2 M=24）：内容 bboxW=639、bboxH≈624 → contentRows=ceil((624−24)/22)=28
-//   → stageRows=max(70,28)+25=95 → stageW=125×22=2750、stageH=95×22=2090；宽窗 s=min(availW/2750,availH/2090) 下限 0.25
-//   带：c8/c1 同带(y8)、c2/s1 同带(220 与 290<306 重叠)、c3 独带；回流阈值 avail<639（内容宽，舞台宽恒 2750>窗口宽不能拿来判回流）
+//   → stageRows=max(70,28)+25=95 → stageW=115×22=2530、stageH=95×22=2090；宽窗 s=min(availW/2530,availH/2090) 下限 0.25
+//   带：c8/c1 同带(y8)、c2/s1 同带(220 与 290<306 重叠)、c3 独带；回流阈值 avail<639（内容宽，舞台宽恒 2530>窗口宽不能拿来判回流）
 // 窄窗走 Emulation.setDeviceMetricsOverride（同 Chrome 翻转，resize 监听 200ms 防抖实测）；
 //   640 带内同行（c8/c1）+ 换行下置（c2 撑满带宽 vs s1 保 394）、320 ≤560 媒体查询纵排（5 卡 offsetTop 严格递增）
 // （house CDP 模式；截图全黑纪律；断言走 offset* 布局值不受 transform 缩放干扰）
@@ -160,25 +160,25 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     art.indexOf('<body class="pre-stagger art-present">') !== -1 &&
     art.indexOf('function applyReflow') !== -1 && art.indexOf('function renderToc') !== -1 &&
     art.indexOf('artResizeTimer') !== -1 && art.indexOf('max-width: 560px') !== -1);
-  ok('F0-2 版本 v0.2.58.0 + changelog（58.0 rev 00276-nnx + 57.1 rev 00274-xfl 保留）+ FC v10.28.44.2',
+  ok('F0-2 版本 v0.2.58.0 + changelog（58.0 rev 00276-nnx + 57.1 rev 00274-xfl 保留）+ FC v10.28.44.3',
     sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.0';") !== -1 &&
     sconf.indexOf('00276-nnx') !== -1 && sconf.indexOf('00274-xfl') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.2';") !== -1);
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.3';") !== -1);
   ok('F0-3 i18n 新键在场（article.tags.label/article.toc.title zh + zh-Hant 目錄）',
     i18n.indexOf("article.tags.label") !== -1 && i18n.indexOf("article.toc.title") !== -1 &&
     i18n.indexOf('目錄') !== -1);
   ok('F0-4 完整格舞台 + 窄窗分支 + 宽窗 contain fit + updateWideScale 在场（58.0 舞台公式锚）',
-    art.indexOf('var STAGE_COLS = 125, STAGE_BASE_ROWS = 70, STAGE_GROW = 25;') !== -1 &&
+    art.indexOf('var STAGE_COLS = 115, STAGE_BASE_ROWS = 70, STAGE_GROW = 25;') !== -1 &&
     art.indexOf('Math.max(STAGE_BASE_ROWS, contentRows) + STAGE_GROW') !== -1 &&
     art.indexOf('if (avail < bboxW) { applyReflow') !== -1 &&
     art.indexOf('var s = Math.max(0.25, Math.min(avail / stageW, availH / stageH));') !== -1 &&
     art.indexOf('function updateWideScale') !== -1 &&
     art.indexOf('--art-grid-alpha') !== -1 &&
     art.indexOf('.article-page-wrap { max-width: none;') !== -1);
-  ok('F0-5 FC 镜像在场（fit1to1 + renderViewPresentation + fcViewTocBtn）+ 编辑模式恒 125 锚（39.0 computeCols 恒 return 125）',
+  ok('F0-5 FC 镜像在场（fit1to1 + renderViewPresentation + fcViewTocBtn）+ 编辑模式恒 115 锚（39.0 computeCols 恒 return 115）',
     fc.indexOf('function fit1to1') !== -1 && fc.indexOf('function renderViewPresentation') !== -1 &&
     fc.indexOf('fcViewTocBtn') !== -1 &&
-    fc.indexOf('return 125;') !== -1);
+    fc.indexOf('return 115;') !== -1);
 
   // ═══ 浏览器场景（登录态 Chrome）═══
   await new Promise(r => server.listen(PORT, r));
@@ -244,8 +244,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('W4 目录钮开抽屉 + 点击条目 → 抽屉关 + 目标卡闪烁',
       await cdp.evalJs("(function(){ document.getElementById('artTocBtn').click(); return document.getElementById('artTocDrawer').classList.contains('open'); })()") === true &&
       await cdp.evalJs("(function(){ var d = document.getElementById('artTocDrawer'); d.querySelectorAll('.art-toc-item')[1].click(); var c = document.querySelector('#artBody .art-card[data-card-id=\"c1\"]'); return !d.classList.contains('open') && c.classList.contains('art-card-toc-flash'); })()") === true);
-    ok('W5 宽窗完整舞台自洽：inner 逻辑 2750×2090（125×22 / 95×22）、s=min(availW/2750,availH/2090) 下限 0.25 + holder=stage×s',
-      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); var exp = Math.max(0.25, Math.min(b.clientWidth / e.offsetWidth, availH / e.offsetHeight)); return Math.abs(e.offsetWidth - 2750) <= 3 && Math.abs(e.offsetHeight - 2090) <= 5 && Math.abs(s - exp) <= 0.005 && Math.abs(h.clientWidth - Math.round(e.offsetWidth * s)) <= 2 && Math.abs(h.clientHeight - Math.round(e.offsetHeight * s)) <= 2; })()") === true,
+    ok('W5 宽窗完整舞台自洽：inner 逻辑 2530×2090（115×22 / 95×22）、s=min(availW/2530,availH/2090) 下限 0.25 + holder=stage×s',
+      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); var exp = Math.max(0.25, Math.min(b.clientWidth / e.offsetWidth, availH / e.offsetHeight)); return Math.abs(e.offsetWidth - 2530) <= 3 && Math.abs(e.offsetHeight - 2090) <= 5 && Math.abs(s - exp) <= 0.005 && Math.abs(h.clientWidth - Math.round(e.offsetWidth * s)) <= 2 && Math.abs(h.clientHeight - Math.round(e.offsetHeight * s)) <= 2; })()") === true,
       await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); return 'avail=' + b.clientWidth + 'x' + availH + ' inner=' + e.offsetWidth + 'x' + e.offsetHeight + ' holder=' + h.clientWidth + 'x' + h.clientHeight + ' ' + e.style.transform; })()"));
     ok('W8 格子代码层面在场 + 透明度放满（两笔 linear-gradient + alpha 0 + 22px 间隔）',
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); var cs = getComputedStyle(e); var bi = cs.backgroundImage.replace(/\\s+/g, ''); var bs = cs.backgroundSize; return bi.indexOf('linear-gradient') !== -1 && bi.indexOf('rgba(120,120,120,0)') !== -1 && (bi.match(/linear-gradient/g) || []).length === 2 && bs.indexOf('22px') !== -1; })()") === true,
@@ -253,7 +253,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('W6 投影不改画布逻辑尺寸：c8 逻辑宽仍 264.4（fitW）——缩放只走 transform，卡位 1:1 不动',
       await cdp.evalJs("(function(){ var c8 = document.querySelector('#artBody .art-card[data-card-id=\"c8\"]'); return Math.abs(c8.offsetWidth - 264.4) <= 2 && Math.abs(c8.offsetHeight - 174.4) <= 2; })()") === true,
       await cdp.evalJs("(function(){ var c8 = document.querySelector('#artBody .art-card[data-card-id=\"c8\"]'); return 'c8=' + c8.offsetWidth + 'x' + c8.offsetHeight; })()"));
-    // ── W7 高窗：1400 → availH 变大但宽受限（2750 舞台恒宽于窗口）——s 宽度主导、随窗自洽（resize 只重算缩放不重建）──
+    // ── W7 高窗：1400 → availH 变大但宽受限（2530 舞台恒宽于窗口）——s 宽度主导、随窗自洽（resize 只重算缩放不重建）──
     // 陷阱：W4 scrollIntoView 滚动后改窗口高会触发 Chrome 滚动锚定——holder.top 漂移致 availH 两次测量不一致；
     // 先 scrollTo(0,0) 稳定再改高，落定后再派发一次 resize 让 updateWideScale 用同一稳定 top 重算
     await cdp.evalJs("window.scrollTo(0, 0)");
@@ -261,7 +261,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     await sleep(700);
     await cdp.evalJs("window.dispatchEvent(new Event('resize'))");
     await sleep(700);
-    ok('W7 高窗投影自洽：s 随窗重算（宽受限≈availW/2750、铺满窗宽）且 holder=stage×s',
+    ok('W7 高窗投影自洽：s 随窗重算（宽受限≈availW/2530、铺满窗宽）且 holder=stage×s',
       await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); var exp = Math.max(0.25, Math.min(b.clientWidth / e.offsetWidth, availH / e.offsetHeight)); return s > 0.4 && Math.abs(s - exp) <= 0.005 && Math.abs(h.clientWidth - Math.round(e.offsetWidth * s)) <= 2; })()") === true,
       await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); return 'avail=' + b.clientWidth + 'x' + availH + ' s=' + e.style.transform + ' holder=' + h.clientWidth; })()"));
 

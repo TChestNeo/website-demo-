@@ -2077,7 +2077,7 @@ body.fc-viewmode .asset-panel,
 body.fc-viewmode .asset-panel-toggle,
 body.fc-viewmode .editor-statusbar { display: none !important; }
 body.fc-viewmode .canvas-body { padding: 0; }
-/* v10.28.38.0 查看模式呈现统一：完整格子画布（125 格横 × max(70,内容行)+25 行纵）+ contain fit 投影（随查看窗铺满、公式同阅读页宽窗）+ editor-body 滚动 + 透明格子线 + 标签条 + 目录抽屉 */
+/* v10.28.38.0 查看模式呈现统一：完整格子画布（115 格横 × max(70,内容行)+25 行纵）+ contain fit 投影（随查看窗铺满、公式同阅读页宽窗）+ editor-body 滚动 + 透明格子线 + 标签条 + 目录抽屉 */
 body.fc-viewmode .editor-body {
   overflow: auto !important;
   padding: 16px !important;
@@ -2808,8 +2808,8 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       /* v10.28.39.0: 视口缩放（Ctrl+滚轮）以左上角为缩放原点——锚点平移
          算式 (sl+rel)*z'/z−rel 才成立；zoom 未施加时该属性惰性无副作用 */
       transform-origin: 0 0;
-      /* v10.28.39.0: 横向恒 125 格——width:max-content 让画布盒覆盖全部 125 列
-         （2750px 级），网格线/背景跟着滚动到底，不只在窗口宽内画半截；
+      /* v10.28.39.0: 横向恒 115 格（44.3 起 125→115）——width:max-content 让画布盒覆盖全部 115 列
+         （2528px 级），网格线/背景跟着滚动到底，不只在窗口宽内画半截；
          查看模式 fit1to1 写 inline width 恒覆盖本规则 */
       width: max-content;
       border-radius: var(--radius-md);
@@ -3151,6 +3151,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     /* 人物卡 */
     .grid-card.character-card { padding: 12px 10px; gap: 6px; justify-content: flex-start; overflow: hidden; }
     .grid-card .char-avatar {
+      position: relative; /* v10.28.44.3: fi 覆盖层定位基准 */
       width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0; cursor: pointer;
       background-color: var(--color-surface-container); background-size: cover; background-position: center;
       border: 1px dashed var(--divider-line-strong);
@@ -3174,6 +3175,18 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       border: 1px dashed var(--divider-line-strong); border-radius: 8px;
       color: var(--color-outline); font-size: 12px; text-align: center; padding: 10px; cursor: pointer;
     }
+    /* v10.28.44.3: 卡内上传输入覆盖层（触控上传修复）——fi 透明铺满头像/空图态
+       画布，tap/click 直击 input 本体（原生手势带用户激活 → 选择器可开；触控桥
+       合成 click 无激活会被浏览器静默拒绝，旧 div.click→fi.click 链在触屏全断）。
+       input 命中桥 inEditableZone 豁免（input 选择器），零桥改动；头像恒在、
+       地图有图态撤层（画布让位拖动/双击开区域编辑器）。 */
+    .grid-card .card-upload-input {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      opacity: 0; cursor: pointer; z-index: 2; margin: 0; padding: 0; border: 0;
+      font-size: 0; /* iOS 不因 font-size 参与布局 */
+    }
+    .grid-card .map-canvas .card-upload-input { z-index: 3; } /* 区域层(z1)之上 */
+    .grid-card .map-canvas:not(.map-empty) .card-upload-input { display: none; }
     /* v10.28.9 — 地图卡区域（用户「FluidCanva的那个地图卡片…框起来…设定每个
        区域的信息」）。卡面：SVG 100×100 视盒 + preserveAspectRatio none 随卡
        伸缩（卡背景 cover 与编辑器弹层 cover 同裁切，0-100 坐标两处一致）。
@@ -8077,7 +8090,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     avatar.title = '点击上传头像';
     avatar.innerHTML = '<span class="material-symbols-outlined">person</span>';
     var fi = document.createElement('input');
-    fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
+    fi.type = 'file'; fi.accept = 'image/*'; fi.className = 'card-upload-input';
+    fi.title = '点击上传头像';
+    // v10.28.44.3: 触控上传修复——fi 透明覆盖层盖住头像，tap 直击 input 本体
+    // （原生手势自带用户激活 → 文件选择器可开；触控桥合成 click 无激活会被
+    // 浏览器静默拒绝）。input 命中触控桥 inEditableZone 豁免（input 选择器），
+    // 触屏/桌面均走原生 input 点击；下方 avatar click 兜底仅在不命中覆盖层的
+    // 罕见路径（且排除 fi 冒泡防双开选择器）。
+    avatar.appendChild(fi);
     fi.addEventListener('change', function () {
       var file = fi.files && fi.files[0];
       if (!file) return;
@@ -8091,7 +8111,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           card.dataset.charAvatarDesc = meta.desc;
           card.dataset.charAvatarVisibility = meta.visibility;
           avatar.style.backgroundImage = 'url("' + e.target.result + '")';
-          avatar.innerHTML = '';
+          avatar.replaceChildren(fi); // 只清图标 span——fi 覆盖层必须保留（44.3 起 fi 是 avatar 子元素）
           onContentChange();
           showToast('头像已上传');
         }, { close: 'self' });
@@ -8099,7 +8119,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       reader.readAsDataURL(file);
       fi.value = '';
     });
-    avatar.addEventListener('click', function () { fi.click(); });
+    avatar.addEventListener('click', function (e) { if (e.target !== fi) fi.click(); });
     var nameEl = makeTextField('card-label card-edit-field', '');
     nameEl.placeholder = '姓名';
     setupCardLabelInput(card, nameEl);
@@ -8107,8 +8127,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     titleEl.placeholder = '头衔';
     var bioEl = makeTextField('char-bio card-edit-field', '', 'textarea');
     bioEl.placeholder = '简介…';
-    card.appendChild(fi);
-    card.appendChild(avatar);
+    card.appendChild(avatar); // fi 44.3 起挂在 avatar 内（覆盖层），不直挂卡
     card.appendChild(nameEl);
     card.appendChild(titleEl);
     card.appendChild(bioEl);
@@ -8127,7 +8146,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     canvas.className = 'map-canvas map-empty';
     canvas.textContent = '双击上传地图图片 · 再双击地图可框区域';
     var fi = document.createElement('input');
-    fi.type = 'file'; fi.accept = 'image/*'; fi.style.display = 'none';
+    fi.type = 'file'; fi.accept = 'image/*'; fi.className = 'card-upload-input';
+    // v10.28.44.3: 触控上传修复——fi 透明覆盖层盖住空图态画布（tap 直击 input
+    // 本体：原生手势自带用户激活 → 文件选择器可开；触控桥合成 click 无激活会
+    // 被浏览器静默拒绝）。input 命中桥 inEditableZone 豁免（input 选择器）零桥
+    // 改动；有图后 .map-canvas:not(.map-empty) 收层，画布承接拖动/双击开区域
+    // 编辑器（合成 dblclick 路径不受影响）。
+    canvas.appendChild(fi);
     fi.addEventListener('change', function () {
       var file = fi.files && fi.files[0];
       if (!file) return;
@@ -8158,8 +8183,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (card.dataset.mapImg) { openMapRegionEditor(card); }
       else { fi.click(); }
     });
-    card.appendChild(fi);
-    card.appendChild(canvas);
+    card.appendChild(canvas); // fi 44.3 起挂在 canvas 内（空图态覆盖层），不直挂卡
     return card;
   }
   window.createMapCard = createMapCard;
@@ -10486,39 +10510,46 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var g = target.dataset.groupId || makeGroupId();
     delete card.dataset.rowInGroup; // v10.28.25 行卡标记（legacy）——自由形状下无行卡语义，清理残留
     var tL = parseFloat(target.style.left) || 0, tT = parseFloat(target.style.top) || 0;
+    // v10.28.44.3: 触控合拼边缘不齐修复——落位统一用旋转感知包围盒（cardBBox）
+    // 口径。旧提交用未旋转 offsetWidth 整数边落位，而预览贴齐（findMergeSnap）
+    // 按 bbox 算边：带旋转的卡（平板旋转手柄是一等手势）合并后视觉错开可达卡宽
+    // 10-15%；捏合缩放产生任意浮点 viewZoom 时拖拽落位为浮点——bbox 落位几何
+    // 贴齐（视觉真相），浮点不可见；网格取整反而制造 ≤半格间隙。cb0 = 自身
+    // bbox 原点偏移，未旋转卡恒退化回旧算式（零行为变化）。
+    var tbb = cardBBox(target, tL, tT);
     if (side === 'top' || side === 'bottom') {
       // v10.28.26 — 接触面模型（用户「从上方/下方合并时只根据他动到的那一面
       // 的最宽值调整大小，不是整组最宽」）：面 = 组内（target 未分组则=[target]）
       // 「对边与卡对边距离 ≤12px（MERGE_THRESHOLD）且 x 范围与卡相交」的成员——
       // 倒 L 台阶底下方并入只匹配接触的那一列宽、平底跨两列=整面宽。空面退化
-      // 为 [target]（保 v10.28.20.4 方向感：贴齐边恒 flush）。
-      var cL0 = parseFloat(card.style.left) || 0, cT0 = parseFloat(card.style.top) || 0;
-      var cR0 = cL0 + card.offsetWidth, cB0 = cT0 + card.offsetHeight;
+      // 为 [target]（保 v10.28.20.4 方向感：贴齐边恒 flush）。44.3 起面判定与
+      // 并集换 bbox 口径（与预览贴齐同源）。
+      var cbb = cardBBox(card, parseFloat(card.style.left) || 0, parseFloat(card.style.top) || 0);
       var face = getAllCards().filter(function (c) {
         if (c === card) return false;
         if (target.dataset.groupId) { if (c.dataset.groupId !== g) return false; }
         else if (c !== target) return false;
-        var l = parseFloat(c.style.left) || 0, t = parseFloat(c.style.top) || 0;
-        var r = l + c.offsetWidth, b = t + c.offsetHeight;
-        if (r <= cL0 || l >= cR0) return false; // x 不相交（贴邻不算相交）
-        var gap = side === 'bottom' ? Math.abs(cT0 - b) : Math.abs(cB0 - t);
+        var bb = cardBBox(c, parseFloat(c.style.left) || 0, parseFloat(c.style.top) || 0);
+        if (bb.right <= cbb.left || bb.left >= cbb.right) return false; // x 不相交（贴邻不算相交）
+        var gap = side === 'bottom' ? Math.abs(cbb.top - bb.bottom) : Math.abs(cbb.bottom - bb.top);
         return gap <= MERGE_THRESHOLD;
       });
       if (face.length === 0) face = [target];
       var fL = Infinity, fT = Infinity, fR = -Infinity, fB = -Infinity;
       face.forEach(function (c) {
-        var l = parseFloat(c.style.left) || 0, t = parseFloat(c.style.top) || 0;
-        if (l < fL) fL = l;
-        if (t < fT) fT = t;
-        if (l + c.offsetWidth > fR) fR = l + c.offsetWidth;
-        if (t + c.offsetHeight > fB) fB = t + c.offsetHeight;
+        var bb = cardBBox(c, parseFloat(c.style.left) || 0, parseFloat(c.style.top) || 0);
+        if (bb.left < fL) fL = bb.left;
+        if (bb.top < fT) fT = bb.top;
+        if (bb.right > fR) fR = bb.right;
+        if (bb.bottom > fB) fB = bb.bottom;
       });
       // 宽=面并集跨度（normalizeCardWidth 等比锁卡高度随比例——复用单卡口径）；
-      // 左/顶按面对齐：贴面左缘、贴面外侧边；moveCardPx 落位同步 dataset.x/y
-      // （草稿序列化读 dataset.x——直写 style.left 会留下旧 dataset.x，重载
+      // 落位按自身 bbox 贴面 bbox 边（moveCardPx 落位同步 dataset.x/y——
+      // 草稿序列化读 dataset.x，直写 style.left 会留下旧 dataset.x，重载
       // 后卡片跳回旧位，探针 P7 实证）。
       normalizeCardWidth(card, Math.max(1, fR - fL));
-      moveCardPx(card, fL, (side === 'bottom' ? fB : (fT - card.offsetHeight)));
+      var cb0 = cardBBox(card, 0, 0);
+      moveCardPx(card, fL - cb0.left, (side === 'bottom' ? fB - cb0.top : fT - cb0.bottom));
       if (!target.dataset.groupId) target.dataset.groupId = g; // 面=[target]（未分组目标）时目标卡须同步入组——否则新组只有一张卡被 reflowGroup 解散、合并完全不成组（电池 S4 实证）
       card.dataset.groupId = g;
       reflowGroup(g);
@@ -10533,11 +10564,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // v10.28.26 — 左右并入保尺寸（用户「从左/右侧合并时不会因为长度不一样
     // 被拉长成一个长度，保持一样的大小但是合并」）：完全不做宽度归一（首并
     // 双方也各保原尺寸），只贴目标侧边 + 顶对齐目标（moveCardPx 落位同步
-    // dataset.x/y，防草稿重载跳位）。曾为行卡的卡清理标记。
+    // dataset.x/y，防草稿重载跳位）。44.3 起侧边按目标 bbox 边（未旋转退化
+    // 回 tL ± offsetWidth 零行为变化）、自身按 bbox 边贴齐。曾为行卡的卡清理标记。
+    var cb0 = cardBBox(card, 0, 0);
     if (side === 'left') {
-      moveCardPx(card, tL - card.offsetWidth, tT);
+      moveCardPx(card, tbb.left - cb0.right, tT);
     } else if (side === 'right') {
-      moveCardPx(card, tL + target.offsetWidth, tT);
+      moveCardPx(card, tbb.right - cb0.left, tT);
     }
     card.dataset.groupId = g;
     if (!target.dataset.groupId) target.dataset.groupId = g;
@@ -14562,8 +14595,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // 时 .editor-body（overflow:auto）出横向拉条，格子数不再随窗口自适应；窗口
   // resize 也不再 refitColumns（卡片位置不动，编辑零影响）；视口缩放走
   // viewZoom（CSS zoom），查看模式 fit1to1 不用本函数。
+  // v10.28.44.3: 125→115（用户「把125格宽减少一个10格」）——固定横向收窄 10 格，
+  // 舞台/查看模式/阅读页三处同源同步（115×22=2530 / 编辑 115×20+114×2=2528）。
   function computeCols() {
-    return 125;
+    return 115;
   }
 
   function applyPreset(name) {
@@ -14742,9 +14777,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // 出现的独立页面内」）：格范围 = 横向 125 格最大值 × 纵向 max(70, 内容行)+25 行
     // （16:9 125×70 默认再外加 25 行预留；卡片逼近底边按卡片底 +25 行自动增长）；
     // 格子线代码层面保留、透明度放满（alpha 0）——与阅读页同口径，不再 bbox 裁剪
+    // （v10.28.44.3: 125→115 与编辑态/阅读页同源同步）
     var cs = getCellSize();
     var gap = 2;
-    var STAGE_COLS = 125, STAGE_BASE_ROWS = 70, STAGE_GROW = 25;
+    var STAGE_COLS = 115, STAGE_BASE_ROWS = 70, STAGE_GROW = 25;
     var stageW = STAGE_COLS * (cs + gap);
     var canvas = gridCanvas;
     var scaler = document.createElement('div');
@@ -14753,7 +14789,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     scaler.appendChild(canvas);
     canvas.style.width = stageW + 'px';
     canvas.style.height = ((STAGE_BASE_ROWS + STAGE_GROW) * (cs + gap)) + 'px';
-    canvas.style.setProperty('--grid-cols', STAGE_COLS); // 代码层面完整 125 列格（卡 absolute 零位移影响）
+    canvas.style.setProperty('--grid-cols', STAGE_COLS); // 代码层面完整 115 列格（卡 absolute 零位移影响）
     canvas.style.minHeight = '0';
     canvas.style.position = 'absolute';
     canvas.style.left = '0';
@@ -14987,13 +15023,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     window.addEventListener('pagehide', function () { autoSave(); });
   })();
 
-  // v10.28.39.0: 窗口 resize 不再 refitColumns——横向恒 125 格（computeCols 恒
-  // 125），卡片位置在窗口变窄/变宽时保持不动（用户「这个值是固定的不会因为窗口
+  // v10.28.39.0: 窗口 resize 不再 refitColumns——横向恒 115 格（44.3 起 125→115；
+  // computeCols 恒 115），卡片位置在窗口变窄/变宽时保持不动（用户「这个值是固定的不会因为窗口
   // 不够宽而缩小」，不足部分由 .editor-body 横向拉条 + 视口平移承载）；查看模式
   // 依旧冻结（rescale 自管缩放）。refitColumns 函数保留（预设切换等显式路径仍用）。
   var resizeTimer;
   window.addEventListener('resize', function () {
-    // 恒 125 格：无需任何重排。预留监听位仅注释说明，防后人误加回 refit。
+    // 恒 115 格：无需任何重排。预留监听位仅注释说明，防后人误加回 refit。
   });
 
   // ── Click on empty canvas ──
@@ -15013,7 +15049,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     }
   });
 
-  // ── v10.28.39.0: 编辑视口系统（125 格固定舞台 + 缩放/平移）──
+  // ── v10.28.39.0: 编辑视口系统（115 格固定舞台 + 缩放/平移）──
   // 缩放走 CSS zoom 施加在 .grid-canvas（默认 100%、0.25–4 倍）：布局盒在父级
   // （.editor-body）按倍率放大 → 横向拉条自动正确；getBoundingClientRect 返回
   // 屏幕真实盒 → 弹层/工具栏锚定天然正确；offsetWidth/left/top 全保持画布本地

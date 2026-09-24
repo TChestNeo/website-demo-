@@ -138,9 +138,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const main = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas.html'), 'utf8');
   const sconf = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   const editor = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
-  ok('F0-1 版本双线 v0.2.58.0 / v10.28.44.2（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块',
+  ok('F0-1 版本双线 v0.2.58.0 / v10.28.44.3（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块',
     sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.0';") !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.2';") !== -1 &&
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.3';") !== -1 &&
     sconf.indexOf('00276-nnx') !== -1 &&
     sconf.indexOf('文章查看器') !== -1 && sconf.indexOf('提交审核') !== -1);
   ok('F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）',
@@ -238,8 +238,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       await cdp.evalJs("getComputedStyle(document.querySelector('.editor-statusbar')).display") === 'none' &&
       await cdp.evalJs("getComputedStyle(document.getElementById('titleInput')).display") === 'none');
     ok('B4 #fcViewScaler 在场且 overflow hidden', await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); return !!s && getComputedStyle(s).overflow === 'hidden'; })()") === true);
-    ok('B5 完整舞台 contain fit 投影（v10.28.39.0：s=min(availW/2750,availH/stageH) 随查看窗铺满、下限 0.25）',
-      await cdp.evalJs("(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); if (!m) return false; var sv = parseFloat(m[1]); var any = false, maxBY = -1e9; document.querySelectorAll('#gridCanvas .grid-card').forEach(function (e) { if (getComputedStyle(e).display === 'none') return; any = true; var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180); var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad)); var cy = e.offsetTop + e.offsetHeight / 2; maxBY = Math.max(maxBY, cy + rh / 2); }); var contentRows = any ? Math.max(1, Math.ceil(maxBY / 22)) : 0; var stageW = 2750, stageH = (Math.max(70, contentRows) + 25) * 22; var availW = Math.max(200, s.parentNode.clientWidth - 32); var availH = Math.max(200, s.parentNode.clientHeight - 32); var exp = Math.max(0.25, Math.min(availW / stageW, availH / stageH)); return Math.abs(sv - exp) <= 0.01 && sv >= 0.25 && Math.abs(g.offsetWidth - stageW) <= 3 && Math.abs(g.offsetHeight - stageH) <= 5; })()") === true,
+    ok('B5 完整舞台 contain fit 投影（v10.28.39.0：s=min(availW/2530,availH/stageH) 随查看窗铺满、下限 0.25）',
+      await cdp.evalJs("(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); if (!m) return false; var sv = parseFloat(m[1]); var any = false, maxBY = -1e9; document.querySelectorAll('#gridCanvas .grid-card').forEach(function (e) { if (getComputedStyle(e).display === 'none') return; any = true; var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180); var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad)); var cy = e.offsetTop + e.offsetHeight / 2; maxBY = Math.max(maxBY, cy + rh / 2); }); var contentRows = any ? Math.max(1, Math.ceil(maxBY / 22)) : 0; var stageW = 2530, stageH = (Math.max(70, contentRows) + 25) * 22; var availW = Math.max(200, s.parentNode.clientWidth - 32); var availH = Math.max(200, s.parentNode.clientHeight - 32); var exp = Math.max(0.25, Math.min(availW / stageW, availH / stageH)); return Math.abs(sv - exp) <= 0.01 && sv >= 0.25 && Math.abs(g.offsetWidth - stageW) <= 3 && Math.abs(g.offsetHeight - stageH) <= 5; })()") === true,
       await cdp.evalJs("(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); return g.style.transform + ' avail=' + (s.parentNode.clientWidth - 32) + 'x' + (s.parentNode.clientHeight - 32) + ' canvas=' + g.offsetWidth + 'x' + g.offsetHeight + ' scaler=' + s.clientWidth + 'x' + s.clientHeight; })()"));
     ok('B6 卡内零交互（pointer-events none）', await cdp.evalJs("getComputedStyle(document.querySelector('.grid-card')).pointerEvents") === 'none');
     ok('B7 contentEditable 关闭 + Tab 序移除', await cdp.evalJs("(function(){ var c = document.querySelector('[contenteditable]'); return !!c && c.getAttribute('contenteditable') === 'false' && c.tabIndex === -1; })()") === true);
@@ -247,16 +247,16 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       await cdp.evalJs('localStorage.getItem("slati_fluidcanvas_draft")'));
     ok('B9 标题芯片 #fcViewTitle = fixture 标题', await cdp.evalJs("document.getElementById('fcViewTitle') !== null && document.getElementById('fcViewTitle').textContent") === 'Cloud Constitution');
 
-    // ── C 完整格舞台：旧 40×100 格（880×2200）外的越界卡在新 125×131 舞台内完整可见（不再 bbox 裁剪）──
-    // 舞台=125×22=2750 横；c3 右缘 1076>880、c4 下缘 2330>2200 → contentRows=ceil(2330/22)=106 → stageRows=131（=2882px）
-    ok('C1 旧右越界卡（880 格宽外）在新 125 格舞台内完整可见且不超舞台右缘',
+    // ── C 完整格舞台：旧 40×100 格（880×2200）外的越界卡在新 115×131 舞台内完整可见（不再 bbox 裁剪）──
+    // 舞台=115×22=2530 横；c3 右缘 1076>880、c4 下缘 2330>2200 → contentRows=ceil(2330/22)=106 → stageRows=131（=2882px）
+    ok('C1 旧右越界卡（880 格宽外）在新 115 格舞台内完整可见且不超舞台右缘',
       await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c3\"]'); var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); var sv = parseFloat(m[1]); var r = c.getBoundingClientRect(); var sr = s.getBoundingClientRect(); var gridRight = sr.left + (parseFloat(g.style.left) + g.offsetWidth) * sv; return r.right <= sr.right + 0.5 && r.right <= gridRight + 1 && r.right > (sr.left + 880 * sv) + 1; })()") === true,
       await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c3\"]'); var s = document.getElementById('fcViewScaler'); return 'card.right=' + c.getBoundingClientRect().right.toFixed(1) + ' scaler.right=' + s.getBoundingClientRect().right.toFixed(1); })()"));
     ok('C2 旧下越界卡（2200 格高外）在新 max(70,内容行)+25 舞台内完整可见且不超舞台下缘',
       await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c4\"]'); var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); var sv = parseFloat(m[1]); var r = c.getBoundingClientRect(); var sr = s.getBoundingClientRect(); var gridBottom = sr.top + (parseFloat(g.style.top) + g.offsetHeight) * sv; return r.bottom <= sr.bottom + 0.5 && r.bottom <= gridBottom + 1 && r.bottom > (sr.top + 2200 * sv) + 1; })()") === true,
       await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c4\"]'); var s = document.getElementById('fcViewScaler'); return 'card.bottom=' + c.getBoundingClientRect().bottom.toFixed(1) + ' scaler.bottom=' + s.getBoundingClientRect().bottom.toFixed(1); })()"));
     ok('C3 界内卡完整可见（c1 不越界）', await cdp.evalJs("(function(){ var c = document.querySelector('.grid-card[data-card-id=\"c1\"]'); var s = document.getElementById('fcViewScaler'); var r = c.getBoundingClientRect(); return r.right <= s.getBoundingClientRect().right + 0.5 && r.bottom <= s.getBoundingClientRect().bottom + 0.5; })()") === true);
-    ok('C4 scaler 收成缩放后完整舞台（≈2750×s；canvas 0,0 零平移——不再 bbox 裁剪）', await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); var sv = parseFloat(m[1]); return Math.abs(s.clientWidth - 2750 * sv) <= 6 && g.style.left === '0px' && g.style.top === '0px'; })()") === true,
+    ok('C4 scaler 收成缩放后完整舞台（≈2530×s；canvas 0,0 零平移——不再 bbox 裁剪）', await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); var sv = parseFloat(m[1]); return Math.abs(s.clientWidth - 2530 * sv) <= 6 && g.style.left === '0px' && g.style.top === '0px'; })()") === true,
       await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); return 'scaler.w=' + s.clientWidth + ' canvas.left=' + g.style.left + ' ' + g.style.transform; })()"));
 
     // ── V v10.28.39.0 查看模式呈现镜像（格子线代码在场透明度 0 + 标签条 + 目录抽屉 label 优先/正文派生）──

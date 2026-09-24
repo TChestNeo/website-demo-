@@ -1,4 +1,4 @@
-// tmp-battery-fc-pillmenu.js — FC v10.28.44.2 触控长按药丸菜单进左侧菜单（面板内嵌）电池
+// tmp-battery-fc-pillmenu.js — FC v10.28.44.3 触控长按药丸菜单进左侧菜单（面板内嵌）电池
 // 用户「长按菜单能不能改成左边的小药丸」（44.0）→ 44.1 修正横药丸头 → 44.2 修正「怎么还是一样是
 //   竖着的药丸？我要的是直接就是在左侧菜单内不是单独的弹窗！！」+「那三粒点我要的是横向的不是
 //   纵向的」+「三粒点就是把左侧原本的卡片菜单折叠起来而已点击就是展开」——问询钦定：底部停靠
@@ -7,7 +7,7 @@
 //   radius-full、input-bg-focus 底、more_horiz 横向三点）、功能栏条目排在药丸下方、折叠只藏
 //   条目（容器透明化只留药丸）、三点只折叠/展开不关菜单、面板折叠时长按自动展开面板、
 //   桌面右键游标弹层原样不动（弹层搬回 body 贴指针）。
-// 验证：S 静态锚（site-config 44.2 + 进左侧菜单 changelog + 00292- / 编辑器 ctxPillDots 钮 +
+// 验证：S 静态锚（site-config 44.2 + 进左侧菜单 changelog + 00293- / 编辑器 ctxPillDots 钮 +
 //   placeCtxPillDots + @keyframes ctxPillUp + static/面板挂载锚 / fc-touch.js __fcTouchMenu 旗 /
 //   showContextMenu 药丸分支锚）/ B 药丸实测（CDP iPad 竖屏 834×1194 dsf2 + 5 触点：B0 门控自证；
 //   B1 长按现身——菜单在 .asset-panel 内 + static 定位 + 底部停靠（面板末子）+ 横药丸头 236×40
@@ -132,10 +132,10 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
-    ok('S1 site-config：FC v10.28.44.2 + 药丸菜单进左侧菜单 changelog + rev 00292- 占位 + 站点恒 v0.2.58.0',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.2';") !== -1 &&
+    ok('S1 site-config：FC v10.28.44.3 + 药丸菜单进左侧菜单 changelog + rev 00293- 占位 + 站点恒 v0.2.58.0',
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.3';") !== -1 &&
       siteCfg.indexOf('触控长按药丸菜单进左侧菜单') !== -1 &&
-      siteCfg.indexOf('00292-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
+      siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
     ok('S2 编辑器：ctxPillDots 三点钮 + 横向三点 more_horiz（more_vert 零在场）+ 面板内嵌 CSS（static/占满宽/真药丸规格）+ placeCtxPillDots + ctx-collapsed + ctxPillUp 动画锚在场 + 旧左下停靠 CSS 零在场',
       editorHtml.indexOf('id="ctxPillDots"') !== -1 &&
       editorHtml.indexOf('class="ctx-pill-dots"') !== -1 &&

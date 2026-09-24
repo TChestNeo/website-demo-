@@ -2655,7 +2655,8 @@ body.art-present .app-main { margin-left: 0 !important; }
     // 卡片逼近底边按卡片底 +25 行自动增长（stageRows = max(70, 内容行数) + 25）；
     // 格子线代码层面完整定义、透明度放满读者不可见；宽窗 contain fit 投影整个舞台、
     // 窄窗阈值仍按内容 bbox 宽（舞台恒 125 格宽 > 窗口宽，不能拿舞台宽判回流）
-    var STAGE_COLS = 125, STAGE_BASE_ROWS = 70, STAGE_GROW = 25;
+    // （v0.2.58.0 参数同步 FC 44.3: 125→115 用户「把125格宽减少一个10格」——与编辑态/查看模式同源）
+    var STAGE_COLS = 115, STAGE_BASE_ROWS = 70, STAGE_GROW = 25;
     var stageW = STAGE_COLS * (cs + GAP);
     var contentRows = Math.max(1, Math.ceil((bboxH - M) / (cs + GAP))); // 平移后内容底 = bboxH − M
     var stageRows = Math.max(STAGE_BASE_ROWS, contentRows) + STAGE_GROW;

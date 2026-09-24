@@ -2,7 +2,7 @@
 // 用户「不是啊，我要的是FC里的1:1 文章内的卡片位置什么的都要1：1有那么难吗？？」
 // 验证：A 画布模式在场（.art-canvas、零 .art-flow）/ B 卡片绝对定位还原 FC 几何（并排不竖堆、
 //    fitW/fitH 取胜、span×cellSize 尺寸、z 层级、rotate、hidden 跳过）/ C 完整格舞台投影自洽
-//    （v0.2.58.0：inner=125 格横×max(70,内容行)+25 行纵，s=min(availW/stageW,availH/stageH) 下限 0.25，
+//    （v0.2.58.0：inner=115 格横×max(70,内容行)+25 行纵，s=min(availW/stageW,availH/stageH) 下限 0.25，
 //    卡位 1:1 逻辑尺寸不动；不再 bbox 裁剪——用户「你是不是只是提取了卡片而已？」）
 //    / D legacy 无 x/y 草稿流式兜底 / E 零 Runtime exception + 零 console error / F0 静态锚
 // fixture 复刻线上 ART-000004 真实卡（c8 flag aspectLock fitW264.399 fitH174.347 x439 y8 z2 +
@@ -241,11 +241,11 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       !!b5 && b5.tf.indexOf('rotate(15deg)') !== -1 && approx(b5.left, 30.326, 1.5) && approx(b5.top, 420.267, 1.5),
       JSON.stringify(b5));
 
-    // ── C 完整格舞台投影自洽（v0.2.58.0：inner = 125 格横 × max(70,内容行)+25 行纵——纸算 contentRows=
-    //       ceil((524.966−24)/22)=23 → stageRows=95 → 2750×2090；s=min(availW/stageW,availH/stageH) 下限 0.25，
+    // ── C 完整格舞台投影自洽（v0.2.58.0：inner = 115 格横 × max(70,内容行)+25 行纵——纸算 contentRows=
+    //       ceil((524.966−24)/22)=23 → stageRows=95 → 2530×2090；s=min(availW/stageW,availH/stageH) 下限 0.25，
     //       缩放走 transform 卡位逻辑尺寸不动）──
-    ok('C1 inner 画布尺寸 = 完整格舞台（2750×2090；125×22 / 95×22）',
-      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); return Math.abs(e.offsetWidth - 2750) <= 3 && Math.abs(e.offsetHeight - 2090) <= 5; })()") === true,
+    ok('C1 inner 画布尺寸 = 完整格舞台（2530×2090；115×22 / 95×22）',
+      await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); return Math.abs(e.offsetWidth - 2530) <= 3 && Math.abs(e.offsetHeight - 2090) <= 5; })()") === true,
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-canvas-inner'); return e.offsetWidth + 'x' + e.offsetHeight; })()"));
     ok('C2 宽窗完整舞台投影自洽：s=min(availW/stageW,availH/stageH)（下限 0.25）+ holder=stage×s',
       await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); var exp = Math.max(0.25, Math.min(b.clientWidth / e.offsetWidth, availH / e.offsetHeight)); return Math.abs(s - exp) <= 0.005 && Math.abs(h.clientWidth - Math.round(e.offsetWidth * s)) <= 2 && Math.abs(h.clientHeight - Math.round(e.offsetHeight * s)) <= 2; })()") === true,

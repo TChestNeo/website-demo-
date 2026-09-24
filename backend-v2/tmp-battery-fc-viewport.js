@@ -1,12 +1,12 @@
 // tmp-battery-fc-viewport.js — FC v10.28.42.1 编辑视口系统电池（39.0 视口系统 + 39.1 平移掉帧修复）
-// 用户「现在是我希望FC也是一样是125格横向，然后这个值是固定的不会因为窗口不够宽而
+// 用户「现在是我希望FC也是一样是115格横向，然后这个值是固定的不会因为窗口不够宽而
 //   缩小，最多就只是变成底下有一个横向拉条可以移动然后用户可以通过Ctrl+滑鼠中键滚轮/
 //   加减 来放大缩小但是默认是前面说的那个大小保持但是有横向拉条，用户可以通过长按滑鼠
 //   中键进行一个视角的移动；滑鼠中建滚轮不长按的情况下滚动是纵向视角移动，如果中建滚轮
 //   加上长按Shift的话就是横向移动」
 // 验证：F0 静态锚（FC 39.0 + rev 00277 + 站点 58.0 不变 + width:max-content/computeCols
-//         return 125/zoomChip/setViewZoom 锚）
-//   / E 固定 125 格（1280/480/3840 全 125 不缩小；画布盒 2748 全覆盖；横向拉条
+//         return 115/zoomChip/setViewZoom 锚）
+//   / E 固定 115 格（1280/480/3840 全 115 不缩小；画布盒 2528 全覆盖；横向拉条
 //         scrollWidth>clientWidth；480 可横滚；resize 不 refit 卡片位置不动）
 //   / Z 缩放（Ctrl+滚轮 1.1 步进锚在光标下、缩放前后光标下画布本地坐标不变、
 //         Ctrl+=/Ctrl+- 键盘、0.25–4 钳制、zoomChip 点击复位 100%）
@@ -127,7 +127,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   '  return realFetch(url, opts);' +
   ' };' +
   '})();}catch(e){}';
-// 固定 125 格断言体：cols 恒 125、cellSize 20、画布盒宽 125×20+124×2=2748 全覆盖
+// 固定 115 格断言体：cols 恒 115、cellSize 20、画布盒宽 115×20+124×2=2528 全覆盖
 const FIXED_EXPR = "(function(){ var gc = document.getElementById('gridCanvas'); var body = gc.parentElement;" +
   " var cs = parseInt(getComputedStyle(gc).getPropertyValue('--cell-size').trim(), 10);" +
   " var cols = parseInt(getComputedStyle(gc).getPropertyValue('--grid-cols').trim(), 10);" +
@@ -173,10 +173,10 @@ const FIXED_EXPR = "(function(){ var gc = document.getElementById('gridCanvas');
     // ── F0 静态锚：版本号 + 页面结构锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
-    ok('F1 site-config：FC v10.28.44.2 + rev 00277- 占位 + 站点版本恒 v0.2.58.0',
-      siteCfg.indexOf('v10.28.44.2') !== -1 && siteCfg.indexOf('00280-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
-    ok('F2 编辑器页静态锚：.grid-canvas width:max-content（画布盒全覆盖 125 列）+ computeCols 恒 return 125',
-      editorHtml.indexOf('width: max-content') !== -1 && /function computeCols\(\)[\s\S]{0,80}return 125;/.test(editorHtml));
+    ok('F1 site-config：FC v10.28.44.3 + rev 00277- 占位 + 站点版本恒 v0.2.58.0',
+      siteCfg.indexOf('v10.28.44.3') !== -1 && siteCfg.indexOf('00280-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
+    ok('F2 编辑器页静态锚：.grid-canvas width:max-content（画布盒全覆盖 115 列）+ computeCols 恒 return 115',
+      editorHtml.indexOf('width: max-content') !== -1 && /function computeCols\(\)[\s\S]{0,80}return 115;/.test(editorHtml));
     ok('F3 编辑器页静态锚：zoomChip 按钮 + window.setViewZoom/resetViewZoom 导出',
       editorHtml.indexOf('id="zoomChip"') !== -1 && editorHtml.indexOf('window.setViewZoom') !== -1 && editorHtml.indexOf('window.resetViewZoom') !== -1);
 
@@ -195,25 +195,25 @@ const FIXED_EXPR = "(function(){ var gc = document.getElementById('gridCanvas');
     const key = async (type, k, code, vk, mods) =>
       cdp.send('Input.dispatchKeyEvent', { type: type, modifiers: mods || 0, key: k, code: code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, text: '' });
 
-    // ── E 固定 125 格：窗口任意宽恒 125 不缩小 + 横向拉条 ──
+    // ── E 固定 115 格：窗口任意宽恒 115 不缩小 + 横向拉条 ──
     await nav(BASE + '/pages/fluidcanvas-editor.html',
       "document.getElementById('undoBtn') && typeof window.historyUndoAction === 'function'", 'E 编辑器加载');
     const e1 = await cdp.evalJs(FIXED_EXPR);
-    ok('E1 1280 编辑态：cols 恒 125 + cellSize 20 + 画布盒 2748 全覆盖 + 横向拉条（scrollW>clientW）+ zoom 未施加 + chip 100%',
-      e1.cols === 125 && e1.cs === 20 && e1.canvasW === 2748 && e1.scrollW > e1.clientW && e1.zoom === '' &&
+    ok('E1 1280 编辑态：cols 恒 115 + cellSize 20 + 画布盒 2528 全覆盖 + 横向拉条（scrollW>clientW）+ zoom 未施加 + chip 100%',
+      e1.cols === 115 && e1.cs === 20 && e1.canvasW === 2528 && e1.scrollW > e1.clientW && e1.zoom === '' &&
       await cdp.evalJs("document.getElementById('zoomChip').textContent") === '100%' &&
       await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length") === 0,
       JSON.stringify(e1));
     await setWidth(cdp, 480);
     const e2 = await cdp.evalJs(FIXED_EXPR);
     const e2scroll = await cdp.evalJs("(function(){ var se = document.getElementById('gridCanvas').parentElement; se.scrollLeft = 200; return se.scrollLeft; })()");
-    ok('E2 480 窄窗：cols 仍恒 125 不缩小（旧自适应 12 格行为已死）+ 画布仍 2748 + 横向拉条 + 可横滚 200',
-      e2.cols === 125 && e2.cs === 20 && e2.canvasW === 2748 && e2.scrollW > e2.clientW && e2scroll === 200,
+    ok('E2 480 窄窗：cols 仍恒 115 不缩小（旧自适应 12 格行为已死）+ 画布仍 2528 + 横向拉条 + 可横滚 200',
+      e2.cols === 115 && e2.cs === 20 && e2.canvasW === 2528 && e2.scrollW > e2.clientW && e2scroll === 200,
       JSON.stringify(e2) + ' scrollLeft=' + e2scroll);
     await setWidth(cdp, 3840);
     const e3 = await cdp.evalJs(FIXED_EXPR);
-    ok('E3 3840 超宽窗：cols 仍恒 125（不再无限增长）+ 画布 2748',
-      e3.cols === 125 && e3.canvasW === 2748, JSON.stringify(e3));
+    ok('E3 3840 超宽窗：cols 仍恒 115（不再无限增长）+ 画布 2528',
+      e3.cols === 115 && e3.canvasW === 2528, JSON.stringify(e3));
     await setWidth(cdp, 1280);
     await cdp.evalJs("window.createAssetCard('content', 'T', 2, 2, 6, 4)");
     // 测试钩子建卡不触发内容变更钩子——手动触发一次历史快照提交（600ms 防抖），
@@ -233,9 +233,9 @@ const FIXED_EXPR = "(function(){ var gc = document.getElementById('gridCanvas');
     await mouse('mouseWheel', bodyPt.x, bodyPt.y, { deltaX: 0, deltaY: -120, modifiers: 2 });
     await sleep(250);
     const z1 = await cdp.evalJs(FIXED_EXPR);
-    ok('Z1 Ctrl+滚轮上（deltaY<0）→ 1.1 倍：style.zoom=1.1 + chip 110% + 画布盒随 zoom 放大（scrollW≈2748×1.1）',
+    ok('Z1 Ctrl+滚轮上（deltaY<0）→ 1.1 倍：style.zoom=1.1 + chip 110% + 画布盒随 zoom 放大（scrollW≈2528×1.1）',
       z1.zoom === '1.1' && await cdp.evalJs("document.getElementById('zoomChip').textContent") === '110%' &&
-      z1.scrollW > 2900 && z1.scrollW < 3100,
+      z1.scrollW > 2700 && z1.scrollW < 2900,
       JSON.stringify(z1));
     const z2 = await cdp.evalJs("(function(){ var gc = document.getElementById('gridCanvas'); var se = gc.parentElement;" +
       " var r = se.getBoundingClientRect(); var cs = getComputedStyle(se);" +
@@ -395,8 +395,8 @@ const FIXED_EXPR = "(function(){ var gc = document.getElementById('gridCanvas');
     // ── V 查看模式：fit1to1 零缩放守卫（Ctrl+滚轮/setViewZoom 全不生效）──
     await nav(BASE + '/pages/fluidcanvas-editor.html?article=ART-CLOUD-1',
       "document.querySelectorAll('#gridCanvas .grid-card').length === 4 && !!document.getElementById('fcViewScaler')", 'V 查看器加载');
-    const FIT_SELFCHECK = "(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); if (!m) return false; var sv = parseFloat(m[1]); var any = false, maxBY = -1e9; document.querySelectorAll('#gridCanvas .grid-card').forEach(function (e) { if (getComputedStyle(e).display === 'none') return; any = true; var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180); var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad)); var cy = e.offsetTop + e.offsetHeight / 2; maxBY = Math.max(maxBY, cy + rh / 2); }); var contentRows = any ? Math.max(1, Math.ceil(maxBY / 22)) : 0; var stageW = 2750, stageH = (Math.max(70, contentRows) + 25) * 22; var availW = Math.max(200, s.parentNode.clientWidth - 32); var availH = Math.max(200, s.parentNode.clientHeight - 32); var exp = Math.max(0.25, Math.min(availW / stageW, availH / stageH)); return Math.abs(sv - exp) <= 0.01 && Math.abs(s.clientWidth - Math.round(stageW * sv)) <= 2 && g.style.left === '0px'; })()";
-    ok('V1 查看模式 fit1to1 完整舞台自洽（s=min(availW/2750,availH/stageH)、scaler=stage×s、canvas 0,0 零平移）',
+    const FIT_SELFCHECK = "(function(){ var g = document.getElementById('gridCanvas'); var s = document.getElementById('fcViewScaler'); var m = g.style.transform.match(/scale\\(([\\d.]+)\\)/); if (!m) return false; var sv = parseFloat(m[1]); var any = false, maxBY = -1e9; document.querySelectorAll('#gridCanvas .grid-card').forEach(function (e) { if (getComputedStyle(e).display === 'none') return; any = true; var rad = ((parseFloat(e.dataset.rotate || 0) * Math.PI) / 180); var rh = e.offsetWidth * Math.abs(Math.sin(rad)) + e.offsetHeight * Math.abs(Math.cos(rad)); var cy = e.offsetTop + e.offsetHeight / 2; maxBY = Math.max(maxBY, cy + rh / 2); }); var contentRows = any ? Math.max(1, Math.ceil(maxBY / 22)) : 0; var stageW = 2530, stageH = (Math.max(70, contentRows) + 25) * 22; var availW = Math.max(200, s.parentNode.clientWidth - 32); var availH = Math.max(200, s.parentNode.clientHeight - 32); var exp = Math.max(0.25, Math.min(availW / stageW, availH / stageH)); return Math.abs(sv - exp) <= 0.01 && Math.abs(s.clientWidth - Math.round(stageW * sv)) <= 2 && g.style.left === '0px'; })()";
+    ok('V1 查看模式 fit1to1 完整舞台自洽（s=min(availW/2530,availH/stageH)、scaler=stage×s、canvas 0,0 零平移）',
       await cdp.evalJs(FIT_SELFCHECK) === true);
     const vPt = await cdp.evalJs("(function(){ var r = document.getElementById('gridCanvas').getBoundingClientRect(); return { x: r.left + 200, y: r.top + 200 }; })()");
     await mouse('mouseWheel', vPt.x, vPt.y, { deltaX: 0, deltaY: -120, modifiers: 2 });

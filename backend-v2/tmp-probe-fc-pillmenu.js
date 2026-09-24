@@ -1,8 +1,8 @@
-// tmp-probe-fc-pillmenu.js — FC v10.28.44.2 触控长按药丸菜单进左侧菜单（面板内嵌）上线实机探针
+// tmp-probe-fc-pillmenu.js — FC v10.28.44.3 触控长按药丸菜单进左侧菜单（面板内嵌）上线实机探针
 // 用户「怎么还是一样是竖着的药丸？我要的是直接就是在左侧菜单内不是单独的弹窗！！」+「那三粒点
 //   我要的是横向的不是纵向的」+「三粒点就是把左侧原本的卡片菜单折叠起来而已点击就是展开」——问询
 //   钦定：底部停靠（卡片列表保持在上方，菜单从面板底部向上滑出、停靠面板最底部）——44.2 线上实证：
-//   S 静态（线上 site-config 44.2+进左侧菜单 changelog+rev 00292-+站点 58.0 恒、编辑器 ctxPillDots
+//   S 静态（线上 site-config 44.2+进左侧菜单 changelog+rev 00293-+站点 58.0 恒、编辑器 ctxPillDots
 //   钮+面板内嵌 CSS+横向三点 more_horiz+_lastMoveEv 守卫锚、fc-touch.js __fcTouchMenu 旗）/
 //   B 实机触控（CDP iPad 仿真：长按现身菜单在面板内/药丸头首位/点 ⋯ 折叠/再点展开/空画布双消+
 //   重呼出/手柄纯 tap/真 tap 删卡/面板折叠自动展开）。
@@ -75,9 +75,9 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.44.2 + 触控长按药丸菜单进左侧菜单 changelog + rev 00292- + 站点恒 v0.2.58.0',
-    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.2';") !== -1 &&
-    sc.body.indexOf('触控长按药丸菜单进左侧菜单') !== -1 && sc.body.indexOf('rev 00292-') !== -1 &&
+  ok('S1 线上 site-config：FC v10.28.44.3 + 触控长按药丸菜单进左侧菜单 changelog + rev 00293- + 站点恒 v0.2.58.0',
+    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.3';") !== -1 &&
+    sc.body.indexOf('触控长按药丸菜单进左侧菜单') !== -1 && sc.body.indexOf('rev 00293-') !== -1 &&
     sc.body.indexOf('v0.2.58.0') !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const fc = await get(BASE + '/pages/fluidcanvas-editor.html');

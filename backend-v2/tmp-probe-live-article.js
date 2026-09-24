@@ -7,7 +7,7 @@
 // S4 全程零 JS 错误
 // S5 概览页真文章 / S6 explore 页文章搜索 / S7 阅读页版本锚 + 宽窗完整格舞台投影（v0.2.58.0）
 // S8 v0.2.58.0 呈现界面：去侧栏 + 标签条 + 480 窄窗维基式回流往返 + 目录列全部卡（真文章 2 卡条目）
-// S9 v10.28.40.0 FC 编辑区固定 125 格横：线上 site-config 版本锚 + 门禁通过 + --grid-cols=125 + 画布盒 2748 全覆盖 + 底部横向拉条 + Ctrl+滚轮缩放 + 芯片重置 + Shift+滚轮横向 + 纯滚轮不缩放 + 中键拖平移落点精确/平移中玻璃挂起/松手还原（39.1 掉帧修复行为锚）
+// S9 v10.28.40.0 FC 编辑区固定 115 格横：线上 site-config 版本锚 + 门禁通过 + --grid-cols=115 + 画布盒 2528 全覆盖 + 底部横向拉条 + Ctrl+滚轮缩放 + 芯片重置 + Shift+滚轮横向 + 纯滚轮不缩放 + 中键拖平移落点精确/平移中玻璃挂起/松手还原（39.1 掉帧修复行为锚）
 // S10 v10.28.40.0 SNE 格底随卡色 + 画布边缘淡淡阴影（用户「二级显示分数的卡片颜色根据卡片本身的颜色自动变化背景颜色融入背景主题；画布格子边缘加淡淡阴影」）：画布盒 box-shadow 逐字节 + 建卡读混色恒等 + tint 写入 62/38 混色，IIFE 内建读删零草稿污染
 // S11 v10.28.41.0 发布日志弹窗（用户「点击发布的时候先弹出一个弹窗填写日志…限制320字」）：弹窗 DOM 在场 + 打开固定初始高 + 按空格分词计数（"code"=1）+ 自动增长 220 上限内滚 + 321 词 .over 红字确认硬拦 + 取消放弃 + 演示路径确认落草稿 + 再开预填（全链零网络——guest 无 USR 用户 fcCloudMode 恒 false；草稿只落探针一次性档案）
 // S12 v10.28.42.0 全卡不透明（用户「把FC内的所有卡片变成不透明」——磨砂玻璃轮结束、08-17「100% 不透明」口径复活；也修「拖动时背景消失」）：编辑器 CSS 55% 配方撤下 + 内容卡面不透明 surface + 作者自选半透保留 + 选色纯色不透明 + paper/paint 填充层 opacity 1 + 合并组背景不透明/成员透明一体回归 + fc-moving 卡面逐字节不变/组背景 filter 挂起 + 注入层全灭 + SNE 62% 不动 + 0.55 仅剩 caption-edge-btn.locked
@@ -136,11 +136,11 @@ async function waitFor(cdp, expr, timeout, label) {
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-card-emblem'); return !!e && !!e.querySelector('.material-symbols-outlined') && !!e.querySelector('.art-card-emblem-label'); })()") === true &&
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-card-emblem-label'); return e.textContent === 'Emblem'; })()") === true);
 
-    // S7 v0.2.58.0：版本锚 + 宽窗完整格舞台投影（125 格横 + 格子线代码在场透明度 0）+ S8 呈现界面
+    // S7 v0.2.58.0：版本锚 + 宽窗完整格舞台投影（115 格横 + 格子线代码在场透明度 0）+ S8 呈现界面
     const artVer = await cdp.evalJs("window.MN_SITE_VERSION");
     ok('S7 阅读页线上版本 = v0.2.58.0', artVer === 'v0.2.58.0', 'ver=' + artVer);
-    ok('S7b 宽窗完整格舞台投影自洽：s=min(availW/stageW,availH/stageH)（下限 0.25）+ holder=stage×s + 125 格横 + 格子线代码在场透明度 0',
-      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); if (!h) return false; var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); var exp = Math.max(0.25, Math.min(b.clientWidth / e.offsetWidth, availH / e.offsetHeight)); var cs = getComputedStyle(e); var bi = cs.backgroundImage.replace(/\\s+/g, ''); return Math.abs(s - exp) <= 0.005 && Math.abs(h.clientWidth - Math.round(e.offsetWidth * s)) <= 2 && s >= 0.25 && Math.abs(e.offsetWidth / 22 - 125) <= 1 && bi.indexOf('linear-gradient') !== -1 && bi.indexOf('rgba(120,120,120,0)') !== -1; })()") === true,
+    ok('S7b 宽窗完整格舞台投影自洽：s=min(availW/stageW,availH/stageH)（下限 0.25）+ holder=stage×s + 115 格横 + 格子线代码在场透明度 0',
+      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); if (!h) return false; var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); var exp = Math.max(0.25, Math.min(b.clientWidth / e.offsetWidth, availH / e.offsetHeight)); var cs = getComputedStyle(e); var bi = cs.backgroundImage.replace(/\\s+/g, ''); return Math.abs(s - exp) <= 0.005 && Math.abs(h.clientWidth - Math.round(e.offsetWidth * s)) <= 2 && s >= 0.25 && Math.abs(e.offsetWidth / 22 - 115) <= 1 && bi.indexOf('linear-gradient') !== -1 && bi.indexOf('rgba(120,120,120,0)') !== -1; })()") === true,
       await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); return 'avail=' + b.clientWidth + ' inner=' + e.offsetWidth + 'x' + e.offsetHeight + ' holder=' + h.clientWidth + ' ' + e.style.transform; })()"));
     ok('S8 站点侧栏灭（art-present 单列）+ 标签条容器在场',
       await cdp.evalJs("(function(){ return getComputedStyle(document.querySelector('.app-sidebar')).display === 'none' && getComputedStyle(document.querySelector('.app-main')).marginLeft === '0px' && !!document.getElementById('artTags'); })()") === true,
@@ -193,9 +193,9 @@ async function waitFor(cdp, expr, timeout, label) {
     const exSecHref = await cdp.evalJs("(function(){ var a = document.querySelector('#exArticleResults a'); return a ? a.getAttribute('href') : null; })()");
     ok('S6f 主区段锚阅读页', exSecHref === 'article.html?id=ART-000004', 'href=' + exSecHref);
 
-    // S9 v10.28.40.0 FC 编辑区固定 125 格横（用户「FC也是一样是125格横向，固定不会因窗口不够宽而缩小，最多底下横向拉条」）
+    // S9 v10.28.40.0 FC 编辑区固定 115 格横（用户「FC也是一样是115格横向，固定不会因窗口不够宽而缩小，最多底下横向拉条」）
     const scCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
-    ok('S9a 线上 site-config 含 FC v10.28.44.2 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.44.2') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
+    ok('S9a 线上 site-config 含 FC v10.28.44.3 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.44.3') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
       source: 'try{localStorage.setItem("slati_session", ' + JSON.stringify(JSON.stringify({ loggedIn: true })) + ');}catch(e){}'
     });
@@ -204,8 +204,8 @@ async function waitFor(cdp, expr, timeout, label) {
     try { fcLoaded = await waitFor(cdp, "!!document.getElementById('gridCanvas')", 30000, 'FC 编辑器加载'); } catch (e) {}
     ok('S9b 编辑器门禁通过（已登录种子）+ 画布在场', fcLoaded,
       await cdp.evalJs("location.pathname + ' canvas=' + !!document.getElementById('gridCanvas')").catch(() => 'EVAL_FAIL'));
-    ok('S9c 固定 125 格：--grid-cols=125 + 画布盒宽 2748（max-content 全覆盖）+ 底部横向拉条在（scrollW>clientW）',
-      await cdp.evalJs("(function(){ var gc = document.getElementById('gridCanvas'); var body = gc.parentElement; var cols = parseInt(getComputedStyle(gc).getPropertyValue('--grid-cols').trim(), 10); var cs = parseInt(getComputedStyle(gc).getPropertyValue('--cell-size').trim(), 10); return cols === 125 && cs === 20 && gc.offsetWidth === 2748 && body.scrollWidth > body.clientWidth; })()") === true,
+    ok('S9c 固定 115 格：--grid-cols=115 + 画布盒宽 2528（max-content 全覆盖）+ 底部横向拉条在（scrollW>clientW）',
+      await cdp.evalJs("(function(){ var gc = document.getElementById('gridCanvas'); var body = gc.parentElement; var cols = parseInt(getComputedStyle(gc).getPropertyValue('--grid-cols').trim(), 10); var cs = parseInt(getComputedStyle(gc).getPropertyValue('--cell-size').trim(), 10); return cols === 115 && cs === 20 && gc.offsetWidth === 2528 && body.scrollWidth > body.clientWidth; })()") === true,
       await cdp.evalJs("(function(){ var gc = document.getElementById('gridCanvas'); var body = gc.parentElement; return 'cols=' + getComputedStyle(gc).getPropertyValue('--grid-cols') + ' w=' + gc.offsetWidth + ' sw=' + body.scrollWidth + ' cw=' + body.clientWidth; })()"));
     ok('S9d 缩放芯片按钮在场', await cdp.evalJs("!!document.getElementById('zoomChip')") === true);
     await cdp.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: 640, y: 500, deltaX: 0, deltaY: -120, modifiers: 2 });
