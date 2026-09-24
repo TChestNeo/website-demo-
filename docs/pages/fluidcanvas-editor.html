@@ -4637,6 +4637,31 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       font-size: 11px; color: var(--color-outline);
       margin-right: 6px; text-transform: uppercase; letter-spacing: 0.05em;
     }
+/* ── iPad 触控命中区（v10.28.43.0·粗指针门控，桌面零影响）── */
+@media (hover: none) and (pointer: coarse) {
+  body:not(.fc-viewmode) .editor-body { touch-action: none; overscroll-behavior: none; }
+  body:not(.fc-viewmode) .grid-card:not([contenteditable="true"]) { -webkit-user-select: none; touch-action: none; }
+  .context-menu-item { min-height: 44px; touch-action: manipulation; }
+  .context-menu { max-height: 60vh; overflow-y: auto; } /* 44px×10 条 > 380px 硬编码翻边预算 */
+  .editor-header .btn, .grid-controls .btn, .grid-controls .col-btn,
+  .tt-btn, .caption-pos-btn { min-width: 44px; min-height: 44px; touch-action: manipulation; }
+  .layer-row, .fp-row { min-height: 44px; }
+  .layer-row { touch-action: manipulation; }
+  .fcv-toc-btn { width: 44px; height: 44px; }
+  .mre-input-wrap .mre-cfg-btn { display: inline-flex; } /* hover 无意义 → 恒显 */
+  .resize-handle::after { content: ''; position: absolute; inset: -9px; } /* 10→28px 命中区 */
+  .resize-handle[data-dir="nw"], .resize-handle[data-dir="ne"],
+  .resize-handle[data-dir="se"], .resize-handle[data-dir="sw"] { z-index: 61; } /* 小卡相邻手柄重叠，角优先 */
+  .rotate-grip::after { content: ''; position: absolute; inset: -8px; }
+  .grid-card:not([contenteditable="true"]), .asset-panel, .grid-controls,
+  .editor-header, .resize-handle, .rotate-grip { -webkit-touch-callout: none; }
+  .resize-handle, .rotate-grip { touch-action: none; }
+  .asset-panel { touch-action: manipulation; } /* 双 tap 不缩页，面板滚动保持 */
+  .card-text-content, .card-edit-field, .card-label, [contenteditable="true"],
+  input, textarea, select { -webkit-user-select: text; -webkit-touch-callout: default; touch-action: auto; }
+  .grid-card, .editor-header .btn, .grid-controls .btn, .tt-btn,
+  .caption-pos-btn, .context-menu-item { -webkit-tap-highlight-color: transparent; }
+}
   </style>
 <style>
 /* Article View 操作条（v10.28.36.0 文章查看模式点赞/收藏）——独立样式块，
@@ -5296,6 +5321,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <script src="../assets/js/storage.js"></script>
 <script src="../assets/js/api.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
+<script src="../assets/js/fc-touch.js"></script>
 <script>
 (function () {
   'use strict';
@@ -7574,7 +7600,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       // v10.28.14: 组内长按 ≥600ms 且未移动 → 拆出该卡（钦定「长按拆分」）；
       // 拆后继续拖动就是单卡拖。移动 >3px 或松手都会取消计时（共享
       // mousemove/mouseup 清 timer）。
-      if (card.dataset.groupId) {
+      if (card.dataset.groupId && !window.__fcTouchGesture) {
         dragState.longPressTimer = setTimeout(function () {
           if (!dragState.dragging && !dragState.moved) {
             dragState.splitFired = true;

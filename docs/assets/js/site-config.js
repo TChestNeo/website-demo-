@@ -1583,4 +1583,20 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   口径同步）；站点版本恒 v0.2.58.0、后端零改动 325/325、零草稿字段、ethereal 零改动、i18n 零新键；
 //   电池 fc-all-opaque 24/24（新）+fc-opaque 21/21 面板锚更新+舰队 20 套全绿（版本锚 sed 42.0→42.1）+冒烟 55/55；
 //   线上实机探针 fc-all-opaque-live 14/14（新）；rev 00288-clj
-window.FLUIDCANVAS_VERSION = 'v10.28.42.1';
+// v10.28.43.0 = iPad 触控适配（小改动位 42→43·新功能轮；2026-09-24）：用户「能不能先对平板做一下FC的操作适配？」
+//   ——问询钦定：设备 iPad（Safari）、四类全要（拖卡片+拉手柄缩放/画布平移+捏合缩放/长按出菜单/按钮加大+
+//   去悬停依赖）、Apple Pencil 以后再说；真身：编辑器 16.5k 行 100% 鼠标事件——资产面板只有 HTML5 拖拽
+//   （触屏完全无效=无法建卡）、右键菜单是删除/旋转/图注/卡色唯一入口（iPad 无右键）、中键平移+Ctrl 滚轮
+//   缩放无触屏等价物、按钮意义全靠 title 悬停；修法：新增 docs/assets/js/fc-touch.js 触控桥（~300 行 ES5
+//   IIFE，matchMedia('(pointer: coarse)') 门控不符即整体 return——桌面字节恒同零影响）——touch 事件合成
+//   MouseEvent 喂现有监听链（document 级 move/up 收单、全站零 isTrusted 检查）：卡片拖动/拉手柄缩放/旋转/
+//   表格行列柄/长按 500ms 菜单（编辑器 600ms 组拆分计时器加 !window.__fcTouchGesture 守卫互斥——唯一 JS
+//   改动）/tap 点选+同卡双 tap 合成 dblclick 改名/空画布 tap 取消选中/单指平移+惯性（rAF 0.94 衰减）/双指
+//   捏合 setViewZoom+双指平移/资产面板 tap 建卡（span 表+cc/cr 偏移+类型分发+XP+落草稿同 13753-13830 链，
+//   不 preventDefault 保面板原生滚动、400ms 冷却防连点）；文字编辑保命：inEditableZone 豁免输入/按钮/
+//   标签区、查看模式全程 no-op；粗指针 CSS 块（@media (hover:none) and (pointer:coarse)）：手柄 ::after
+//   扩命中区 10→28px、角手柄 z-index 61、按钮/菜单项 44px 最小尺寸+touch-action:manipulation、卡片
+//   touch-action:none+去 callout/tap 高亮、菜单 60vh 内部滚动、touch-action 不继承故手势面各自带、文字区
+//   user-select:text 覆写；mre 地图编辑器本轮不做（记录为后续）；站点恒 v0.2.58.0、后端零改动 325/325、
+//   零草稿字段、ethereal 零改动、i18n 零新键；rev 00289-s6n
+window.FLUIDCANVAS_VERSION = 'v10.28.43.0';
