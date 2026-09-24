@@ -4266,6 +4266,33 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       border-top: 1px solid var(--divider-line); margin: 4px 0;
     }
 
+    /* v10.28.44.0: 触控长按药丸菜单（左缘底停靠 + 三点折叠）——桌面恒无 .ctx-pill，字节零影响 */
+    .ctx-pill-dots {
+      display: none; /* 桌面恒藏；仅药丸模式现身 */
+      align-items: center; justify-content: center;
+      width: 100%; padding: 4px 0; min-height: 32px;
+      border: none; background: transparent; cursor: pointer;
+      color: var(--color-outline);
+    }
+    .ctx-pill-dots .material-symbols-outlined { font-size: 22px; }
+    .context-menu.ctx-pill {
+      left: 14px; top: auto; bottom: 14px;
+      border-radius: 999px;
+      animation: ctxPillUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .context-menu.ctx-pill .ctx-pill-dots { display: flex; }
+    .context-menu.ctx-pill.ctx-collapsed {
+      width: 48px; min-width: 48px; padding: 2px;
+    }
+    /* 折叠态只留三点：条件项带内联 display:flex（showContextMenu 直写 11820-11869），
+       !important 压内联（同 3001/3008 分组规则口径）；隔线无内联普通规则即可 */
+    .context-menu.ctx-pill.ctx-collapsed .context-menu-item { display: none !important; }
+    .context-menu.ctx-pill.ctx-collapsed .context-menu-divider { display: none; }
+    @keyframes ctxPillUp {
+      from { transform: translateY(110%); opacity: 0.5; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
     /* ── Radius Popover ── */
     .radius-popover {
       position: fixed; z-index: 201;
@@ -4642,6 +4669,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
   body:not(.fc-viewmode) .editor-body { touch-action: none; overscroll-behavior: none; }
   body:not(.fc-viewmode) .grid-card:not([contenteditable="true"]) { -webkit-user-select: none; touch-action: none; }
   .context-menu-item { min-height: 44px; touch-action: manipulation; }
+  .ctx-pill-dots { min-height: 44px; } /* v10.28.44.0: 三点折叠钮触控命中区 */
   .context-menu { max-height: 60vh; overflow-y: auto; } /* 44px×10 条 > 380px 硬编码翻边预算 */
   .editor-header .btn, .grid-controls .btn, .grid-controls .col-btn,
   .tt-btn, .caption-pos-btn { min-width: 44px; min-height: 44px; touch-action: manipulation; }
@@ -11002,7 +11030,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     });
     document.addEventListener('mouseup', function (e) {
       if (_moveRaf) { cancelAnimationFrame(_moveRaf); _moveRaf = null; }
-      try { onResizeMove(_lastMoveEv); onRotateMove(_lastMoveEv); } catch (err) {}
+      // v10.28.44.0: 无移动纯点击（桌面点手柄/触控 tap 手柄）时 _lastMoveEv 为 null——
+      // flush 是空操作且 onResizeMove(null) 会走内部 catch 落一条 console.error（11472）
+      if (_lastMoveEv) {
+        try { onResizeMove(_lastMoveEv); onRotateMove(_lastMoveEv); } catch (err) {}
+      }
       onResizeUp(e); onRotateUp(e);
     });
     return resizeHandles;
@@ -11810,6 +11842,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     hideContextMenu();
     var contextMenu = getContextMenu();
     if (!contextMenu) return;
+    // v10.28.44.0: 触控长按 → 左侧药丸菜单（fc-touch.js 派发前置旗，同步一次性读走；
+    // 桌面右键旗恒无——游标弹层路径零变化）
+    var pillMode = !!window.__fcTouchMenu;
+    window.__fcTouchMenu = false;
+    contextMenu.classList.toggle('ctx-pill', pillMode);
     var menuW = 220;
     var menuH = 380; // v10.28.6: 10 items possible (透明背景·纸感 added)
     if (x + menuW > window.innerWidth) x = window.innerWidth - menuW - 10;
@@ -11868,14 +11905,50 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       scItem.style.display =
         (selectedCard && selectedCard.dataset.cardType === 'stats') ? 'flex' : 'none';
     }
-    contextMenu.style.left = x + 'px';
-    contextMenu.style.top = y + 'px';
+    if (pillMode) {
+      // 药丸模式：位置/入场全交 .ctx-pill CSS（底缘停靠）；清残留内联——内联 left/top
+      // 会压过样式表 left/bottom（先桌面右键后长按的串味路径）
+      contextMenu.style.left = '';
+      contextMenu.style.top = '';
+      placeCtxPillDots(contextMenu); // 三点折叠钮移到中部可见项之后（条件项显隐已就绪）
+    } else {
+      contextMenu.style.left = x + 'px';
+      contextMenu.style.top = y + 'px';
+    }
     contextMenu.classList.add('active');
+  }
+
+  // v10.28.44.0: 三点折叠钮插到中部可见项之后——每卡可见项数不同每次重排；
+  // insertBefore 对已挂载节点=移动无重复；scoped 到 contextMenu（mre 弹层有
+  // 同名类按钮在外层 DOM，绝不误捞）
+  function placeCtxPillDots(contextMenu) {
+    var dots = document.getElementById('ctxPillDots');
+    if (!dots) return;
+    var items = contextMenu.querySelectorAll('.context-menu-item');
+    var vis = [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].style.display !== 'none') vis.push(items[i]);
+    }
+    if (!vis.length) { contextMenu.appendChild(dots); return; }
+    var mid = Math.max(0, Math.floor(vis.length / 2) - 1);
+    var anchor = vis[mid];
+    if (anchor.nextSibling) contextMenu.insertBefore(dots, anchor.nextSibling);
+    else contextMenu.appendChild(dots);
+  }
+  // 折叠 ⇄ 展开（HTML inline onclick 全局钩子；桌面按钮恒 display:none 点不到，
+  // ctx-pill 守卫防程序化误触）
+  function toggleCtxPill() {
+    var m = getContextMenu();
+    if (!m || !m.classList.contains('ctx-pill')) return;
+    m.classList.toggle('ctx-collapsed');
   }
 
   function hideContextMenu() {
     var contextMenu = getContextMenu();
-    if (contextMenu) contextMenu.classList.remove('active');
+    if (contextMenu) {
+      contextMenu.classList.remove('active');
+      contextMenu.classList.remove('ctx-collapsed'); // v10.28.44.0: 折叠态随关闭清除（再开恒展开）
+    }
     var radiusPopover = getRadiusPopover();
     if (radiusPopover) radiusPopover.classList.remove('active');
     var rp = document.getElementById('rotatePopover');
@@ -11910,6 +11983,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (ip) ip.classList.remove('active');
   }
   window.hideContextMenu = hideContextMenu;
+  window.toggleCtxPill = toggleCtxPill; // v10.28.44.0: 三点折叠钮 inline onclick 钩子
 
   document.addEventListener('click', function (e) {
     // #viewportBtn 排除在外：按钮在弹层之外，onclick 打开弹层后 document
@@ -15205,6 +15279,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   <button class="context-menu-item" onclick="openRotateCardPopover()">
     <span class="material-symbols-outlined">rotate_right</span> Rotate card
   </button>
+  <button type="button" class="ctx-pill-dots" id="ctxPillDots" aria-label="折叠菜单" onclick="toggleCtxPill()"><span class="material-symbols-outlined">more_vert</span></button>
   <div class="context-menu-divider"></div>
   <button class="context-menu-item" onclick="saveCardAsTemplate()">
     <span class="material-symbols-outlined">bookmark</span> Save as template

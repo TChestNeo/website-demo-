@@ -1,0 +1,337 @@
+// tmp-battery-fc-pillmenu.js — FC v10.28.44.0 触控长按药丸菜单电池
+// 用户「长按菜单能不能改成左边的小药丸」——问询钦定：触屏长按卡片弹左侧药丸形菜单（底缘停靠、
+//   上滑入场）、药丸中部 ⋮ 三点折叠成小药丸（再点展开、仍停左下）、点空处展开态与折叠态全消、
+//   桌面右键游标弹层原样不动。
+// 验证：S 静态锚（site-config 44.0 + 药丸 changelog + 00290- / 编辑器 ctxPillDots 钮 + placeCtxPillDots
+//   + @keyframes ctxPillUp / fc-touch.js __fcTouchMenu 旗 / showContextMenu 药丸分支锚）/
+//   B 药丸实测（CDP iPad 竖屏 834×1194 dsf2 + 5 触点：B0 门控自证；B1 长按现身——fixed 左缘 14px
+//   底 14px + 999px 药丸 + 展开态；B2 三点钮在可见项中间 + display flex；B3 点 ⋮ 折叠——全项 none +
+//   48px 小药丸留左下；B4 再点展开；B5 空画布 tap 双消（菜单+选中）+ 重长按恒展开呼出；B6 真 tap
+//   删除项——卡数 -1 + 菜单关；B7 桌面右键零变化——游标弹层无 ctx-pill、三点钮 display none）/
+//   E 零异常。菜单内 tap 走原生 compat click（桥 inFloatExclude 豁免 .context-menu），断言前等待 +
+//   el.click() 兜底（headless 合成或飘）。
+// （house CDP 模式；判定看输出体 🎉/💔 行）
+'use strict';
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
+const { spawn } = require('child_process');
+
+const DOCS = path.resolve(__dirname, '..', 'docs');
+const PORT = 4900 + Math.floor(Math.random() * 80);
+const CDP_PORT = 5900 + Math.floor(Math.random() * 100);
+const USER_DATA = path.join(os.tmpdir(), 'mn-cdp-fcpill-' + Date.now());
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml' };
+const server = http.createServer((req, res) => {
+  const p = decodeURIComponent(req.url.split('?')[0]);
+  if (p.indexOf('/api/') === 0) { res.writeHead(404); res.end('{}'); return; }
+  let f = p === '/' ? '/index.html' : p;
+  const file = path.join(DOCS, f);
+  if (!file.startsWith(DOCS)) { res.writeHead(403); res.end(); return; }
+  fs.readFile(file, (err, buf) => {
+    if (err && path.extname(file) === '') {
+      fs.readFile(file + '.html', (e2, b2) => { if (e2) { res.writeHead(404); res.end(); return; } res.writeHead(200); res.end(b2); });
+      return;
+    }
+    if (err) { res.writeHead(404); res.end(); return; }
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' }); res.end(buf);
+  });
+});
+
+class CDP {
+  constructor(wsUrl) { this.wsUrl = wsUrl; this.id = 0; this.pending = new Map(); this.errs = []; this.consoleErrs = []; }
+  async connect() {
+    this.ws = new WebSocket(this.wsUrl);
+    await new Promise((res, rej) => { this.ws.onopen = res; this.ws.onerror = () => rej(new Error('ws error')); });
+    this.ws.onmessage = (ev) => {
+      const m = JSON.parse(ev.data);
+      if (m.id && this.pending.has(m.id)) {
+        const { res, rej, method } = this.pending.get(m.id); this.pending.delete(m.id);
+        m.error ? rej(new Error(method + ' 失败: ' + m.error.message)) : res(m.result);
+      } else if (m.method === 'Runtime.exceptionThrown') {
+        const d = (m.params && m.params.exceptionDetails) || {};
+        this.errs.push(JSON.stringify({ text: d.text, desc: d.exception && d.exception.description, url: d.url, line: d.lineNumber, raw: JSON.stringify(d).slice(0, 600) }).slice(0, 1000));
+      } else if (m.method === 'Runtime.consoleAPICalled' && m.params && m.params.type === 'error') {
+        const a = m.params.args || [];
+        const text = a.map(x => (x.value !== undefined ? x.value : (x.description || ''))).join(' ').slice(0, 200);
+        if (text.indexOf('Failed to load resource') === -1) this.consoleErrs.push(text);
+      } else if (m.method === 'Page.javascriptDialogOpening') {
+        this.send('Page.handleJavaScriptDialog', { accept: true }).catch(() => {});
+      }
+    };
+  }
+  send(method, params) { return new Promise((res, rej) => { const id = ++this.id; this.pending.set(id, { res, rej, method }); this.ws.send(JSON.stringify({ id, method, params: params || {} })); }); }
+  async evalJs(expr) {
+    const r = await this.send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true });
+    if (r.exceptionDetails) throw new Error('evalJs: ' + (r.exceptionDetails.exception && r.exceptionDetails.exception.description || r.exceptionDetails.text));
+    return r.result.value;
+  }
+  close() { try { this.ws.close(); } catch (e) {} }
+}
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+async function waitFor(cdp, expr, timeout, label) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < timeout) {
+    try { if (await cdp.evalJs('!!(' + expr + ')')) return true; } catch (e) {}
+    await sleep(150);
+  }
+  throw new Error('waitFor 超时: ' + label);
+}
+
+let PASS = 0, FAIL = 0;
+function ok(name, cond, detail) {
+  if (cond) { PASS++; console.log('  ✅ ' + name + (detail ? '  ' + detail : '')); }
+  else { FAIL++; console.log('  ❌ ' + name + (detail ? '  ' + detail : '')); }
+}
+
+(async () => {
+  await new Promise(r => server.listen(PORT, r));
+  const BASE = 'http://127.0.0.1:' + PORT;
+  let chromePath = null;
+  for (const p of [
+    'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+    process.env.LOCALAPPDATA + '/Google/Chrome/Application/chrome.exe'
+  ]) if (fs.existsSync(p)) { chromePath = p; break; }
+
+  const chrome = spawn(chromePath, [
+    '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
+    '--window-size=1280,900', '--remote-debugging-port=' + CDP_PORT,
+    '--user-data-dir=' + USER_DATA, 'about:blank'
+  ], { stdio: 'ignore' });
+  const connectCdp = async (port) => {
+    let up = false;
+    for (let i = 0; i < 80; i++) {
+      try { const r = await fetch('http://127.0.0.1:' + port + '/json/version'); if (r.ok) { up = true; break; } } catch (e) {}
+      await sleep(250);
+    }
+    if (!up) throw new Error('Chrome CDP 未就绪');
+    const pages = await (await fetch('http://127.0.0.1:' + port + '/json/list')).json();
+    const page = pages.find(x => x.type === 'page');
+    const cdp = new CDP(page.webSocketDebuggerUrl);
+    await cdp.connect();
+    await cdp.send('Page.enable'); await cdp.send('Runtime.enable');
+    await cdp.send('Page.bringToFront');
+    await cdp.send('Emulation.setFocusEmulationEnabled', { enabled: true });
+    // iPad 竖屏 + 5 点触控仿真——必须先于任何 navigate（触控仿真翻转 (pointer:coarse) 媒体查询）
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width: 834, height: 1194, deviceScaleFactor: 2, mobile: true });
+    await cdp.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+    return cdp;
+  };
+
+  try {
+    // ── S 静态锚 ──
+    const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
+    const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
+    const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
+    ok('S1 site-config：FC v10.28.44.0 + 药丸菜单 changelog + rev 00290- 占位 + 站点恒 v0.2.58.0',
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.0';") !== -1 &&
+      siteCfg.indexOf('触控长按药丸菜单') !== -1 &&
+      siteCfg.indexOf('00290-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
+    ok('S2 编辑器：ctxPillDots 三点钮 + ctx-pill-dots 类 + more_vert + placeCtxPillDots + ctx-collapsed + ctxPillUp 动画锚在场',
+      editorHtml.indexOf('id="ctxPillDots"') !== -1 &&
+      editorHtml.indexOf('class="ctx-pill-dots"') !== -1 &&
+      editorHtml.indexOf('more_vert') !== -1 &&
+      editorHtml.indexOf('placeCtxPillDots') !== -1 &&
+      editorHtml.indexOf('ctx-collapsed') !== -1 &&
+      editorHtml.indexOf('@keyframes ctxPillUp') !== -1 &&
+      editorHtml.indexOf('.ctx-pill-dots {') !== -1 &&
+      editorHtml.indexOf('display: none; /* 桌面恒藏') !== -1 &&
+      editorHtml.indexOf('display: none !important;') !== -1);
+    ok('S3 fc-touch.js：长按派发前置 __fcTouchMenu 旗在位',
+      touchJs.indexOf('window.__fcTouchMenu') !== -1);
+    ok('S4 showContextMenu 药丸分支：读旗 + toggle ctx-pill + toggleCtxPill 导出锚在场',
+      editorHtml.indexOf('var pillMode = !!window.__fcTouchMenu;') !== -1 &&
+      editorHtml.indexOf("classList.toggle('ctx-pill', pillMode)") !== -1 &&
+      editorHtml.indexOf('window.toggleCtxPill = toggleCtxPill;') !== -1);
+
+    const cdp = await connectCdp(CDP_PORT);
+    await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
+      source: 'try{localStorage.setItem("slati_session", ' + JSON.stringify(JSON.stringify({ loggedIn: true })) + ');}catch(e){}'
+    });
+    const nav = async (url, waitExpr, label) => {
+      await cdp.send('Page.navigate', { url });
+      await waitFor(cdp, waitExpr, 20000, label);
+      await sleep(700);
+    };
+
+    // ── 触控手势 helper（Input.dispatchTouchEvent：touchStart 带全部触点/touchMove 只发移动点/touchEnd 空数组）──
+    const tch = (type, pts) => cdp.send('Input.dispatchTouchEvent', { type: type, touchPoints: pts });
+    const tpoint = (id, x, y) => ({ x: Math.round(x), y: Math.round(y), radiusX: 2, radiusY: 2, force: 1, id: id });
+    const tapAt = async (x, y) => { await tch('touchStart', [tpoint(0, x, y)]); await sleep(50); await tch('touchEnd', []); await sleep(100); };
+    const holdTouch = async (x, y, ms) => { await tch('touchStart', [tpoint(0, x, y)]); await sleep(ms); await tch('touchEnd', []); await sleep(120); };
+    // 卡面取点：扫描避开可编辑区（SNE 卡中心是 sne-val 数字输入框——桥豁免正确；手势必须落在卡身非编辑区）
+    const cardPoint = () => cdp.evalJs("(function(){ var c = document.querySelector('#gridCanvas .sne-card');" +
+      " if (!c) return null; var r = c.getBoundingClientRect();" +
+      " var bad = 'input, textarea, select, button, a, [contenteditable=\"true\"], .card-text-content, .card-edit-field, .card-label, .resize-handle, .rotate-grip, .sheet-col-grip, .sheet-row-grip';" +
+      " for (var fy = 0.2; fy <= 0.85; fy += 0.15) for (var fx = 0.2; fx <= 0.85; fx += 0.15) {" +
+      "  var el = document.elementFromPoint(r.left + r.width * fx, r.top + r.height * fy);" +
+      "  if (el && el.closest('.grid-card') === c && !el.closest(bad)) return { x: Math.round(r.left + r.width * fx), y: Math.round(r.top + r.height * fy) };" +
+      " } return null; })()");
+    const menuState = () => cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
+      " if (!m) return { open: false };" +
+      " var cs = getComputedStyle(m); var vis = 0;" +
+      " document.querySelectorAll('.context-menu .context-menu-item').forEach(function (it) { if (getComputedStyle(it).display !== 'none') vis++; });" +
+      " var d = document.getElementById('ctxPillDots');" +
+      " return { open: cs.display !== 'none', pill: m.classList.contains('ctx-pill')," +
+      " collapsed: m.classList.contains('ctx-collapsed'), pos: cs.position, left: cs.left, bottom: cs.bottom," +
+      " radius: cs.borderRadius, w: m.offsetWidth, vis: vis, dotsDisplay: d ? getComputedStyle(d).display : 'none'," +
+      " inlineL: m.style.left, inlineT: m.style.top }; })()");
+
+    // ── B 药丸实测 ──
+    await nav(BASE + '/pages/fluidcanvas-editor.html',
+      "!!document.getElementById('gridCanvas') && !!window.createSneCard && !!window.__fcTouch", 'B 编辑器加载');
+
+    const gate = await cdp.evalJs("(function(){ return { coarse: matchMedia('(pointer: coarse)').matches, mtp: navigator.maxTouchPoints, bridge: !!window.__fcTouch }; })()");
+    ok('B0 门控自证：coarse 媒体查询翻转 + maxTouchPoints=5 + 触控桥在场',
+      gate && gate.coarse === true && gate.mtp === 5 && gate.bridge, JSON.stringify(gate));
+
+    // B1 长按 → 药丸菜单现身（底缘停靠 + 999px 药丸 + 展开态）
+    await cdp.evalJs('window.createSneCard(2, 2, 9, 12)');
+    await sleep(200);
+    const snePt = await cardPoint();
+    await holdTouch(snePt.x, snePt.y, 650);
+    const b1 = await menuState();
+    ok('B1 长按现身：菜单开 + ctx-pill 有 + 非折叠 + fixed 左缘 14px/底 14px + 999px 药丸 + ≥3 项可见',
+      b1.open === true && b1.pill === true && b1.collapsed === false &&
+      b1.pos === 'fixed' && b1.left === '14px' && b1.bottom === '14px' && b1.radius === '999px' && b1.vis >= 3,
+      JSON.stringify(b1));
+
+    // B2 三点钮：在菜单内 + display flex + 位于首末可见项之间（动态中部插入）
+    const b2 = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
+      " var d = document.getElementById('ctxPillDots');" +
+      " var items = m.querySelectorAll('.context-menu-item'); var vis = [];" +
+      " for (var i = 0; i < items.length; i++) if (items[i].style.display !== 'none') vis.push(items[i]);" +
+      " if (!vis.length) return { inMenu: m.contains(d), dots: getComputedStyle(d).display };" +
+      " return { inMenu: m.contains(d), dots: getComputedStyle(d).display," +
+      " dotsTop: d.offsetTop, firstTop: vis[0].offsetTop, lastTop: vis[vis.length - 1].offsetTop, n: vis.length }; })()");
+    ok('B2 三点中位：钮在菜单内 + display flex + offsetTop 严格介于首末可见项（可见 ' + (b2 && b2.n) + ' 项）',
+      b2 && b2.inMenu === true && b2.dots === 'flex' && b2.dotsTop > b2.firstTop && b2.dotsTop < b2.lastTop,
+      JSON.stringify(b2));
+
+    // B3 点 ⋮ → 折叠（全项 none + 48px 小药丸仍停左下）——原生 compat click，飘则 el.click() 兜底
+    const dotsPt = await cdp.evalJs("(function(){ var d = document.getElementById('ctxPillDots'); var r = d.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()");
+    await tapAt(dotsPt.x, dotsPt.y);
+    await sleep(300);
+    if (!(await cdp.evalJs("!!document.querySelector('.context-menu') && document.querySelector('.context-menu').classList.contains('ctx-collapsed')"))) {
+      await cdp.evalJs("document.getElementById('ctxPillDots').click()"); // 兜底
+      await sleep(150);
+    }
+    const b3 = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
+      " var cs = getComputedStyle(m); var allNone = true;" +
+      " document.querySelectorAll('.context-menu .context-menu-item').forEach(function (it) { if (getComputedStyle(it).display !== 'none') allNone = false; });" +
+      " var d = document.getElementById('ctxPillDots');" +
+      " return { collapsed: m.classList.contains('ctx-collapsed'), allNone: allNone, w: m.offsetWidth," +
+      " left: cs.left, bottom: cs.bottom, dots: getComputedStyle(d).display }; })()");
+    ok('B3 点 ⋮ 折叠：ctx-collapsed + 全项 display none + 宽 ≤56（≈48 小药丸）+ 仍停左下 + 三点 display flex',
+      b3 && b3.collapsed === true && b3.allNone === true && b3.w <= 56 &&
+      b3.left === '14px' && b3.bottom === '14px' && b3.dots === 'flex',
+      JSON.stringify(b3));
+
+    // B4 再点 ⋮ → 重新展开
+    const dotsPt2 = await cdp.evalJs("(function(){ var d = document.getElementById('ctxPillDots'); var r = d.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()");
+    await tapAt(dotsPt2.x, dotsPt2.y);
+    await sleep(300);
+    if (await cdp.evalJs("!!document.querySelector('.context-menu') && document.querySelector('.context-menu').classList.contains('ctx-collapsed')")) {
+      await cdp.evalJs("document.getElementById('ctxPillDots').click()"); // 兜底
+      await sleep(150);
+    }
+    const b4 = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu'); var vis = 0;" +
+      " document.querySelectorAll('.context-menu .context-menu-item').forEach(function (it) { if (getComputedStyle(it).display !== 'none') vis++; });" +
+      " return { collapsed: m.classList.contains('ctx-collapsed'), vis: vis, w: m.offsetWidth }; })()");
+    ok('B4 再点展开：ctx-collapsed 清 + ≥6 项可见 + 宽 ≥180（恢复药丸条）',
+      b4 && b4.collapsed === false && b4.vis >= 6 && b4.w >= 180, JSON.stringify(b4));
+
+    // B5 空画布 strict 空点 tap → 双消（菜单关 + 取消选中）；再长按 → 恒展开呼出
+    // 扫点必须避开卡片矩形 ±60：Chrome 触控目标命中会膨胀小目标（TouchAdjuster 滑移——
+    // elementFromPoint 报 gridCanvas 的点 touch 仍可能落手柄 ::after 区；实证 (300,240) 距
+    // 左上角手柄命中区 8px 仍被 touch 命中）；菜单矩形 ±30 同避
+    const strictEp = await cdp.evalJs("(function(){ var cv = document.getElementById('gridCanvas');" +
+      " var card = document.querySelector('#gridCanvas .grid-card'); var cr = card ? card.getBoundingClientRect() : null;" +
+      " var m = document.querySelector('.context-menu'); var mr = m ? m.getBoundingClientRect() : null;" +
+      " for (var y = 100; y <= 650; y += 20) for (var x = 300; x < 800; x += 20) {" +
+      "  if (document.elementFromPoint(x, y) !== cv) continue;" +
+      "  if (cr && x > cr.left - 60 && x < cr.right + 60 && y > cr.top - 60 && y < cr.bottom + 60) continue;" +
+      "  if (mr && x > mr.left - 30 && x < mr.right + 30 && y > mr.top - 30 && y < mr.bottom + 30) continue;" +
+      "  return { x: x, y: y }; } return null; })()");
+    await tapAt(strictEp.x, strictEp.y);
+    await sleep(250);
+    const b5a = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
+      " return { open: !!m && getComputedStyle(m).display !== 'none'," +
+      " sel: document.querySelectorAll('#gridCanvas .grid-card.selected').length }; })()");
+    ok('B5a 空画布 tap 双消：菜单关 + 选中清（' + JSON.stringify(strictEp) + '）',
+      strictEp !== null && b5a.open === false && b5a.sel === 0, JSON.stringify(b5a));
+    const snePt3 = await cardPoint();
+    await holdTouch(snePt3.x, snePt3.y, 650);
+    const b5b = await menuState();
+    ok('B5b 重长按：恒展开呼出（ctx-pill 有 + ctx-collapsed 已清——hideContextMenu 清理证明）',
+      b5b.open === true && b5b.pill === true && b5b.collapsed === false, JSON.stringify(b5b));
+
+    // B5c 手柄纯 tap（无移动）→ 菜单经 click 冒泡关 + 选中保持 + 卡尺寸零变化
+    // （v10.28.44.0 编辑器 mouseup flush 加 _lastMoveEv 空守卫——修桌面点手柄同款 console.error 噪音）
+    const hdlPt = await cdp.evalJs("(function(){ var h = document.querySelector('#gridCanvas .resize-handle');" +
+      " if (!h) return null; var r = h.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
+    const cardRectBefore = await cdp.evalJs("(function(){ var c = document.querySelector('#gridCanvas .grid-card');" +
+      " var r = c.getBoundingClientRect(); return { l: r.left, t: r.top, w: r.width, h: r.height }; })()");
+    await tapAt(hdlPt.x, hdlPt.y);
+    await sleep(250);
+    const b5c = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
+      " var c = document.querySelector('#gridCanvas .grid-card'); var r = c.getBoundingClientRect();" +
+      " return { open: !!m && getComputedStyle(m).display !== 'none'," +
+      " sel: document.querySelectorAll('#gridCanvas .grid-card.selected').length," +
+      " rect: { l: r.left, t: r.top, w: r.width, h: r.height } }; })()");
+    ok('B5c 手柄纯 tap：菜单关（click 冒泡）+ 选中保持 + 卡尺寸零变化（无移动不缩放）',
+      hdlPt !== null && b5c.open === false && b5c.sel === 1 &&
+      Math.abs(b5c.rect.l - cardRectBefore.l) < 1 && Math.abs(b5c.rect.t - cardRectBefore.t) < 1 &&
+      b5c.rect.w === cardRectBefore.w && b5c.rect.h === cardRectBefore.h, JSON.stringify(b5c));
+
+    // B6 菜单开着真 tap 删除项（danger）→ 卡数 -1 + 菜单关（deleteSelectedCard 先 hideContextMenu）
+    const snePtB6 = await cardPoint();
+    await holdTouch(snePtB6.x, snePtB6.y, 650); // B5c 手柄 tap 已关菜单——重长按再开
+    const countBeforeDel = await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length");
+    const delPt = await cdp.evalJs("(function(){ var d = document.querySelector('.context-menu .context-menu-item.danger');" +
+      " if (!d) return null; var r = d.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()");
+    await tapAt(delPt.x, delPt.y);
+    await sleep(300);
+    let stillOpen = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu'); return !!m && getComputedStyle(m).display !== 'none'; })()");
+    if (stillOpen) { // 兜底：原生合成 click 没接住 → 直接程序化点击
+      await cdp.evalJs("(function(){ var d = document.querySelector('.context-menu .context-menu-item.danger'); if (d) d.click(); })()");
+      await sleep(200);
+      stillOpen = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu'); return !!m && getComputedStyle(m).display !== 'none'; })()");
+    }
+    const countAfterDel = await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length");
+    ok('B6 真 tap 删除项：卡数 ' + countBeforeDel + '→' + countAfterDel + ' + 菜单关',
+      countAfterDel === countBeforeDel - 1 && stillOpen === false, JSON.stringify({ before: countBeforeDel, after: countAfterDel, open: stillOpen }));
+
+    // B7 桌面右键零变化（同一仿真页——CDP 鼠标输入完全不经触控桥）：游标弹层、无 ctx-pill、三点钮藏
+    await cdp.evalJs('window.createSneCard(5, 5, 9, 12)');
+    await sleep(200);
+    const snePt4 = await cardPoint();
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: snePt4.x, y: snePt4.y, button: 'right', buttons: 2, clickCount: 1 });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: snePt4.x, y: snePt4.y, button: 'right', buttons: 0, clickCount: 1 });
+    await sleep(250);
+    const b7 = await menuState();
+    ok('B7 桌面右键零变化：菜单开 + 无 ctx-pill/ctx-collapsed + 内联 left/top 非空（贴指针）+ 无底缘停靠 + 三点钮 display none + ≥3 项可见',
+      b7.open === true && b7.pill === false && b7.collapsed === false &&
+      b7.inlineL !== '' && b7.inlineT !== '' && b7.bottom !== '14px' && b7.dotsDisplay === 'none' && b7.vis >= 3,
+      JSON.stringify(b7));
+
+    ok('E1 全程零 Runtime.exceptionThrown + 零 console.error',
+      cdp.errs.length === 0 && cdp.consoleErrs.length === 0,
+      JSON.stringify({ errs: cdp.errs.slice(0, 3), cons: cdp.consoleErrs.slice(0, 3) }));
+    cdp.close();
+  } catch (e) {
+    console.error('💥 电池异常: ' + (e && e.stack || e));
+    FAIL++;
+  } finally {
+    server.close();
+    try { chrome.kill(); } catch (e) {}
+  }
+  console.log('');
+  console.log('╭────────────────────────────────────╮');
+  console.log('│  🎉 ' + PASS + ' ✅ / ' + FAIL + ' ❌  (fc-pillmenu)      │');
+  console.log('╰────────────────────────────────────╯');
+  if (FAIL > 0) process.exit(1);
+  else process.exit(0);
+})();

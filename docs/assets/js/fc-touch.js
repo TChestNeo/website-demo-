@@ -121,7 +121,9 @@
         suppressClick = true;
         window.__fcTouchGesture = false; // 先复位守卫再派发
         document.dispatchEvent(makeMouse('mouseup', g.x, g.y, { button: 0 })); // 干净撤销已 arm 拖拽
-        el.dispatchEvent(makeMouse('contextmenu', g.x, g.y, { button: 2 }));     // 7843 → showContextMenu
+        window.__fcTouchMenu = true;                                            // v10.28.44.0: 触控长按旗——showContextMenu 同步读走（药丸菜单）
+        el.dispatchEvent(makeMouse('contextmenu', g.x, g.y, { button: 2 }));    // 7869 → showContextMenu
+        window.__fcTouchMenu = false;                                           // dispatchEvent 同步已读完；兜底清零
         stats.longPress++;
       }, 500);
     }

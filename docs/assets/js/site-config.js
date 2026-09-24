@@ -1599,4 +1599,19 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   touch-action:none+去 callout/tap 高亮、菜单 60vh 内部滚动、touch-action 不继承故手势面各自带、文字区
 //   user-select:text 覆写；mre 地图编辑器本轮不做（记录为后续）；站点恒 v0.2.58.0、后端零改动 325/325、
 //   零草稿字段、ethereal 零改动、i18n 零新键；rev 00289-s6n
-window.FLUIDCANVAS_VERSION = 'v10.28.43.0';
+// v10.28.44.0 = 触控长按药丸菜单（小改动位 43→44·新功能轮；2026-09-24）：用户「长按菜单能不能改成
+//   左边的小药丸」——问询钦定：触屏长按卡片弹左侧药丸形菜单（底部左缘停靠、上滑入场）、药丸中部 ⋮
+//   三点折叠成小药丸（再点展开、仍停左下）、点空处展开态与折叠态全消、桌面右键游标弹层原样不动；
+//   修法：fc-touch.js 长按派发前置 window.__fcTouchMenu 旗（dispatchEvent 同步、编辑器读走即清零——
+//   桌面零影响）；编辑器 showContextMenu 读旗走 ctx-pill 分支（清内联 left/top 残留、三点钮插到中部
+//   可见项后、恒展开入场）；新增 #ctxPillDots 三点钮（toggleCtxPill 折叠/展开，window 导出同
+//   openBorderRadiusPopover 口径）+ CSS（.ctx-pill 底缘停靠 999px 药丸 + ctxPillUp 入场动画 +
+//   折叠态 48px 只留三点——!important 压条件项内联 display:flex 同 3001 分组口径）；伴行修复：缩放/旋转
+//   mouseup flush 加 _lastMoveEv 空守卫（无移动纯点击手柄时 onResizeMove(null) 原会在内部 catch 落一条
+//   console.error——桌面点手柄同款噪音，零行为变化）；站点恒 v0.2.58.0、
+//   后端零改动 325/325、零草稿字段、ethereal 零改动、i18n 零新键；电池 fc-pillmenu 15/15（新：S 静态
+//   +B 药丸实测：长按现身/三点中位/折叠缩点/再点展开/空画布双消/手柄纯 tap/真 tap 删卡/桌面右键零变化/
+//   E 零异常）；
+//   舰队全绿（版本锚 sed 43.0→44.0 共 23 文件）+冒烟 55/55+i18n 34/34；线上探针 fc-pillmenu-live
+//   12/12；rev 00290-8mn
+window.FLUIDCANVAS_VERSION = 'v10.28.44.0';
