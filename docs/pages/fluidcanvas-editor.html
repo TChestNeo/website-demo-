@@ -4266,29 +4266,40 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       border-top: 1px solid var(--divider-line); margin: 4px 0;
     }
 
-    /* v10.28.44.0: 触控长按药丸菜单（左缘底停靠 + 三点折叠）——桌面恒无 .ctx-pill，字节零影响 */
-    /* v10.28.44.1: 用户修正——药丸头改横长条（资产面板卡片搜索框同规格：40px 高、面板内宽
-       236px=260−2×12、radius-full），功能栏条目排在药丸下方；折叠只藏条目，药丸横卧左下恒在 */
+    /* v10.28.44.2: 用户修正——菜单直接放进左侧菜单（资产面板）内不再是独立弹窗（「直接就是
+       在左侧菜单内不是单独的弹窗」）；整体挂到面板最底部（flex 列末位）从面板底缘向上滑入
+       （面板 overflow-y:auto 裁切天然形成「从底部滑出」）；横药丸头=卡片搜索框同规格
+       （40px 高、radius-full、input-bg-focus 底）+ 横向三点 more_horiz（用户钦定）；
+       三点只做折叠/展开切换（再点展开，不关菜单）；功能栏条目排在药丸下方 */
     .ctx-pill-dots {
       display: none; /* 桌面恒藏；仅药丸模式现身 */
       align-items: center; justify-content: center;
       width: 100%; min-height: 40px; padding: 0;
-      border: none; background: transparent; cursor: pointer;
+      border: var(--card-border);
+      background: var(--input-bg-focus);
+      border-radius: var(--radius-full); /* 横长条药丸（搜索框同规格） */
+      cursor: pointer;
       color: var(--color-outline);
-      border-bottom: 1px solid var(--divider-line); /* 展开态：药丸头与下方功能栏分界 */
     }
-    .ctx-pill-dots .material-symbols-outlined { font-size: 22px; }
+    .ctx-pill-dots .material-symbols-outlined { font-size: 20px; }
     .context-menu.ctx-pill {
-      left: 14px; top: auto; bottom: 14px;
-      width: 236px; /* = 资产面板卡片搜索框实宽（260 − 2×12 面板内边距） */
-      border-radius: 999px;
+      /* 面板内嵌：脱离 fixed 定位（内联 left/top 已由 JS 清空）、占满面板内宽、
+         随面板 flex 列排在卡片列表下方（底部停靠） */
+      position: static;
+      left: auto; top: auto; bottom: auto;
+      width: 100%; min-width: 0;
+      margin-top: 8px;
+      padding: 6px; /* 药丸头与条目同箱 */
+      box-shadow: none;
       animation: ctxPillUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .context-menu.ctx-pill .ctx-pill-dots { display: flex; }
+    .context-menu.ctx-pill .ctx-pill-dots { display: flex; margin-bottom: 6px; }
+    .context-menu.ctx-pill .context-menu-item { border-radius: 6px; }
     .context-menu.ctx-pill.ctx-collapsed {
-      padding: 0; /* 折叠态只剩药丸头：40px 高横长条药丸（搜索框大小） */
+      /* 折叠态只剩横药丸头：容器透明化，药丸就是全部 */
+      background: transparent; border: none; padding: 0;
     }
-    .context-menu.ctx-pill.ctx-collapsed .ctx-pill-dots { border-bottom: none; }
+    .context-menu.ctx-pill.ctx-collapsed .ctx-pill-dots { margin-bottom: 0; }
     /* 折叠态只留三点：条件项带内联 display:flex（showContextMenu 直写 11820-11869），
        !important 压内联（同 3001/3008 分组规则口径）；隔线无内联普通规则即可 */
     .context-menu.ctx-pill.ctx-collapsed .context-menu-item { display: none !important; }
@@ -11910,17 +11921,27 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       scItem.style.display =
         (selectedCard && selectedCard.dataset.cardType === 'stats') ? 'flex' : 'none';
     }
+    var panel = document.querySelector('.asset-panel');
     if (pillMode) {
-      // 药丸模式：位置/入场全交 .ctx-pill CSS（底缘停靠）；清残留内联——内联 left/top
-      // 会压过样式表 left/bottom（先桌面右键后长按的串味路径）
+      // v10.28.44.2: 菜单挂进左侧菜单（资产面板）内——用户钦定「直接就是在左侧菜单内
+      // 不是单独的弹窗」；面板折叠时先展开（菜单在内不可见）；菜单追加到面板末位=
+      // 底部停靠；清内联 left/top（fixed 定位残值——先桌面右键后长按的串味路径）
+      if (panel && panel.classList.contains('collapsed')) toggleAssetPanel();
       contextMenu.style.left = '';
       contextMenu.style.top = '';
-      placeCtxPillDots(contextMenu); // 三点折叠钮移到中部可见项之后（条件项显隐已就绪）
+      if (panel && contextMenu.parentNode !== panel) panel.appendChild(contextMenu);
+      placeCtxPillDots(contextMenu); // 横药丸头恒居首位（44.1 口径：展开态药丸在上条目在下）
     } else {
+      // 桌面右键：弹层回 body 贴指针（药丸模式曾把菜单搬进面板——串味路径还原）
+      if (contextMenu.parentNode !== document.body) document.body.appendChild(contextMenu);
       contextMenu.style.left = x + 'px';
       contextMenu.style.top = y + 'px';
     }
     contextMenu.classList.add('active');
+    if (pillMode) {
+      // 条目多时确保面板滚到菜单可见（短屏）；block:nearest 只滚最小必要量
+      contextMenu.scrollIntoView({ block: 'nearest' });
+    }
   }
 
   // v10.28.44.1: 三点钮恒插首位——横长条药丸头在上、功能栏条目在其下方（用户修正：
@@ -15277,7 +15298,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   <button class="context-menu-item" onclick="openRotateCardPopover()">
     <span class="material-symbols-outlined">rotate_right</span> Rotate card
   </button>
-  <button type="button" class="ctx-pill-dots" id="ctxPillDots" aria-label="折叠菜单" onclick="toggleCtxPill()"><span class="material-symbols-outlined">more_vert</span></button>
+  <button type="button" class="ctx-pill-dots" id="ctxPillDots" aria-label="折叠菜单" onclick="toggleCtxPill()"><span class="material-symbols-outlined">more_horiz</span></button>
   <div class="context-menu-divider"></div>
   <button class="context-menu-item" onclick="saveCardAsTemplate()">
     <span class="material-symbols-outlined">bookmark</span> Save as template
