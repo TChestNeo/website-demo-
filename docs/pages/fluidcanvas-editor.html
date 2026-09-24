@@ -492,9 +492,7 @@ button { color: inherit; }
   font-family: var(--font-family);
   font-size: var(--fs-body-md);
   color: var(--color-on-surface);
-  background: var(--input-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--color-surface-container-low);
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-xl);
   outline: none;
@@ -624,9 +622,7 @@ textarea.input-glass {
   pointer-events: none;
 }
 .modal-card {
-  background: var(--modal-bg);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
+  background: var(--color-surface-container); /* 42.1 全不透明：FC 全部浮面铺不透明底（用户「我要全部 >:( 我说过了」） */
   border: var(--modal-border);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
@@ -1754,7 +1750,8 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
 }
-/* 42.0: 卡面已不透明——卡上注入层整体退出，此 12px 配方只剩编辑面板用 */
+/* 42.1: 编辑面板同轮铺不透明底——此配方已成死码（门控 display:none 先行，
+   配方留存无害）；glass-container 配方为全站共享 CSS 保留（FC 无此面） */
 .stats-edit-panel .lg-backdrop {
   -webkit-backdrop-filter: blur(12px) saturate(1.4);
   backdrop-filter: blur(12px) saturate(1.4);
@@ -1771,9 +1768,22 @@ html.mn-guest .guest-hero.liquid-glass.lg-static {
    此前门控只藏玻璃族之外的卡（外板/图底/主题/组内成员），玻璃族卡保留
    注入层——v10.27 玻璃轮口径，随本轮一并作废（v0.2.9.1 弹性下线后
    全部是 .lg-static，选择器直写 .grid-card 不挑类）；编辑面板
-   .stats-edit-panel 是浮动 UI 不是卡，玻璃保留（6.2 钦定）。 */
+   .stats-edit-panel 是浮动 UI 不是卡，玻璃保留（6.2 钦定）。
+   v10.28.42.1 全不透明（用户「我要全部 >:( 我说过了」）：编辑器镶边玻璃
+   （头栏/编辑面板/右键菜单/文字工具条/字体面板/地图区编辑器三面/弹窗）同
+   一轮铺不透明底——注入层对不透明面零可见效果且折射有 09-18 色散风险，
+   门控一并收编（与卡同机制 display:none）。 */
 .grid-card > .lg-backdrop, .grid-card > .lg-specular,
-.grid-group-bg > .lg-backdrop, .grid-group-bg > .lg-specular {
+.grid-group-bg > .lg-backdrop, .grid-group-bg > .lg-specular,
+.editor-header > .lg-backdrop, .editor-header > .lg-specular,
+.stats-edit-panel > .lg-backdrop, .stats-edit-panel > .lg-specular,
+.context-menu > .lg-backdrop, .context-menu > .lg-specular,
+.text-toolbar > .lg-backdrop, .text-toolbar > .lg-specular,
+.font-panel > .lg-backdrop, .font-panel > .lg-specular,
+.mre-stage > .lg-backdrop, .mre-stage > .lg-specular,
+.mre-side > .lg-backdrop, .mre-side > .lg-specular,
+.mre-panel > .lg-backdrop, .mre-panel > .lg-specular,
+.modal-card > .lg-backdrop, .modal-card > .lg-specular {
   display: none !important;
 }
 
@@ -2092,12 +2102,12 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
   background: var(--color-surface-container-lowest);
 }
 #fcViewTags { position: fixed; left: 72px; top: 18px; z-index: 60; display: flex; gap: 6px; flex-wrap: wrap; }
-.fcv-chip { padding: 2px 10px; border-radius: var(--radius-full); background: var(--card-bg);
+.fcv-chip { padding: 2px 10px; border-radius: var(--radius-full); background: var(--color-surface-container);
   border: var(--card-border); font-size: var(--fs-label-sm); color: var(--color-on-surface-variant); }
 .fcv-toc-btn { position: fixed; left: 20px; top: 18px; z-index: 60; width: 40px; height: 40px;
   display: flex; align-items: center; justify-content: center; border-radius: var(--radius-md);
-  border: var(--card-border); background: var(--card-bg); color: var(--color-primary); cursor: pointer; box-shadow: var(--shadow-md); }
-.fcv-toc-drawer { position: fixed; left: 0; top: 0; bottom: 0; width: 280px; z-index: 65; background: var(--card-bg);
+  border: var(--card-border); background: var(--color-surface-container); color: var(--color-primary); cursor: pointer; box-shadow: var(--shadow-md); }
+.fcv-toc-drawer { position: fixed; left: 0; top: 0; bottom: 0; width: 280px; z-index: 65; background: var(--color-surface-container);
   border-right: var(--card-border); box-shadow: var(--shadow-lg); transform: translateX(-102%);
   transition: transform 0.25s cubic-bezier(0.25,0.1,0.25,1); display: flex; flex-direction: column; }
 .fcv-toc-drawer.open { transform: translateX(0); }
@@ -2117,9 +2127,8 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
   max-width: min(60vw, 560px);
   padding: 10px 18px;
   border-radius: var(--radius-full);
-  background: var(--card-bg);
+  background: var(--color-surface-container);
   border: var(--card-border);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   box-shadow: var(--shadow-md);
   font-weight: 700; font-size: 14px; color: var(--color-on-surface);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -2135,7 +2144,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
   text-align: center;
   padding: 40px 32px;
   border-radius: var(--radius-lg);
-  background: var(--card-bg);
+  background: var(--color-surface-container);
   border: var(--card-border);
   box-shadow: var(--shadow-md);
 }
@@ -2704,9 +2713,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       display: flex; align-items: center; gap: var(--space-sm);
       padding: var(--space-sm) var(--space-md);
       border-bottom: 1px solid var(--divider-line);
-      background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: var(--color-surface-container); /* 42.1 全不透明：头栏铺不透明底+摘 16px 模糊 */
       position: sticky; top: 0; z-index: 10;
       flex-shrink: 0;
     }
@@ -2920,7 +2927,9 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
        手柄期间全页玻璃暂离，提交后下一帧还原——运动中不可察、松手瞬时回稳。
        组背景五连 drop-shadow 栈同为软件光栅化大头，一并挂起。
        v10.28.42.0：卡面已不透明、卡上无 backdrop-filter——本挂起对卡本身
-       已成 no-op，仍管编辑器镶边玻璃（头栏/面板）与组背景 filter 描边。 */
+       已成 no-op，仍管编辑器镶边玻璃（头栏/面板）与组背景 filter 描边。
+       v10.28.42.1 全不透明：头栏/面板/浮层模糊同轮摘除——本挂起只剩
+       组背景 filter 描边一个作用面。 */
     body.fc-moving * {
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
@@ -3213,10 +3222,8 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     #mapRegionOverlay.active .mre-shell { opacity: 1; transform: scale(1); }
     .mre-stage {
       flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px;
-      background: var(--modal-bg); border: var(--modal-border); border-radius: var(--radius-lg);
+      background: var(--color-surface-container); border: var(--modal-border); border-radius: var(--radius-lg);
       padding: 14px; box-shadow: var(--shadow-lg);
-      backdrop-filter: blur(32px);
-      -webkit-backdrop-filter: blur(32px);
     }
     .mre-head { display: flex; align-items: center; gap: 10px; }
     .mre-head > .material-symbols-outlined { color: var(--color-primary); }
@@ -3267,10 +3274,8 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     .mre-tip.hidden { opacity: 0; }
     .mre-side {
       width: 240px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;
-      background: var(--modal-bg); border: var(--modal-border); border-radius: var(--radius-lg);
+      background: var(--color-surface-container); border: var(--modal-border); border-radius: var(--radius-lg);
       padding: 12px; box-shadow: var(--shadow-lg);
-      backdrop-filter: blur(32px);
-      -webkit-backdrop-filter: blur(32px);
     }
     .mre-side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .mre-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
@@ -3294,11 +3299,9 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       transform: translateX(calc(100% + 24px));
       transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
       display: flex; flex-direction: column; gap: 10px; z-index: 5;
-      background: var(--modal-bg); border: var(--modal-border); border-radius: var(--radius-lg);
+      background: var(--color-surface-container); border: var(--modal-border); border-radius: var(--radius-lg);
       border-top-right-radius: 0; border-bottom-right-radius: 0;
       padding: 14px; box-shadow: var(--shadow-lg);
-      backdrop-filter: blur(32px);
-      -webkit-backdrop-filter: blur(32px);
     }
     .mre-panel.active { transform: translateX(0); }
     .mre-panel .headline-sm { margin: 0; }
@@ -3499,19 +3502,12 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     .stats-edit-panel {
       position: absolute; z-index: 100; width: 200px; display: none;
       flex-direction: column; gap: 6px; padding: 10px;
-      background: var(--card-bg); border: 1px solid rgba(125, 130, 140, 0.38);
+      background: var(--color-surface-container); border: 1px solid rgba(125, 130, 140, 0.38);
       border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
       overflow-y: auto;
-      /* v10.28.6.2: 编辑面板磨砂玻璃（用户「那个编辑卡片的背景做模糊和
-         高亮」——编辑卡片=编辑面板，问询钦定）——与内容卡同款：12px 模糊+
-         饱和、右上角 2px 高光条、1px 细灰边；底色本就 --card-bg（55% 半透
-         共享 token），不动 */
-      backdrop-filter: blur(12px) saturate(1.4);
-      -webkit-backdrop-filter: blur(12px) saturate(1.4);
-      background-image: linear-gradient(to left, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
-      background-size: 45% 2px;
-      background-position: top right;
-      background-repeat: no-repeat;
+      /* v10.28.42.1 全不透明（用户「我要全部 >:( 我说过了」）：6.2 磨砂玻璃轮作废——
+         不透明底 + 摘 12px 模糊/饱和 + 右上角白色高光条一并撤下（白光条 20.3 起
+         用户两轮要求清掉，随本轮一并解决）；细灰边保留（1px 边线非表面） */
     }
     .stats-edit-panel.active { display: flex; }
     .stats-edit-panel .stats-bar-track { display: none; } /* 面板里迷你条让位给图表 */
@@ -4241,8 +4237,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     /* ── Context Menu ── */
     .context-menu {
       position: fixed; z-index: 200;
-      background: var(--modal-bg, var(--card-bg));
-      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      background: var(--color-surface-container);
       border-radius: var(--radius-md);
       border: 1px solid var(--divider-line-strong);
       box-shadow: var(--shadow-lg);
@@ -4274,7 +4269,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     /* ── Radius Popover ── */
     .radius-popover {
       position: fixed; z-index: 201;
-      background: var(--card-bg); border-radius: var(--radius-md);
+      background: var(--color-surface-container); border-radius: var(--radius-md);
       border: 1px solid var(--divider-line-strong);
       box-shadow: var(--shadow-lg); padding: 12px 16px; min-width: 240px;
       display: none;
@@ -4316,8 +4311,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       position: fixed; z-index: 301; /* v10.28.10: 202→301 压过地图区域编辑器 overlay(z300) */
       display: none; align-items: center; gap: 6px;
       min-width: 400px;
-      background: var(--modal-bg, var(--card-bg));
-      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      background: var(--color-surface-container);
       border-radius: 20px;
       border: 1px solid var(--divider-line-strong);
       box-shadow: var(--shadow-lg);
@@ -4435,8 +4429,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     .font-panel {
       position: fixed; z-index: 302; /* v10.28.10: 203→302 */
       width: 680px; max-width: calc(100vw - 16px);
-      background: var(--modal-bg, var(--card-bg));
-      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      background: var(--color-surface-container);
       border-radius: var(--radius-md);
       border: 1px solid var(--divider-line-strong);
       box-shadow: var(--shadow-lg);
@@ -4451,7 +4444,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       position: sticky; top: 0;
       padding: 8px 14px 4px; font-size: 11px; font-weight: 600;
       color: var(--color-outline);
-      background: var(--modal-bg, var(--card-bg));
+      background: var(--color-surface-container);
     }
     .fp-row {
       display: block; width: 100%; text-align: left;
@@ -4655,12 +4648,10 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
   display: flex;
   gap: 8px;
   padding: 8px;
-  background: var(--card-bg);
+  background: var(--color-surface-container);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   z-index: 60;
 }
 #fcViewActions .fcva-pill {

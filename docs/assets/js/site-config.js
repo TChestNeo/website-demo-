@@ -1567,4 +1567,20 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   拖动时卡面不再因玻璃挂起而观感变化（用户前问「拖动时背景不见」随不透明一并解决）；站点版本恒 v0.2.58.0、
 //   后端零改动 325/325、零草稿字段、ethereal 零改动、i18n 零新键；电池 fc-opaque 21/21（新）+舰队全绿
 //   （版本锚 sed 41.0→42.0）；线上实机探针 63/63（新 S12 全卡不透明段 12 项）；rev 00282-2mz
-window.FLUIDCANVAS_VERSION = 'v10.28.42.0';
+// v10.28.42.1 = 编辑器镶边玻璃全灭（补丁位 42.0→42.1·观感修改轮；2026-09-24）：用户「我要全部 >:( 我说过了」——
+//   42.0 只把卡铺不透明，浮动面板/头栏仍是玻璃，用户钦定全部：①编辑器头栏 .editor-header 铺不透明底
+//   （surface-container）+摘 16px 模糊 ②stats-edit-panel 铺不透明底+摘 12px 模糊/饱和+右上角白色高光条
+//   撤下（6.2 磨砂玻璃轮作废；白光条 20.3 起用户两轮要求清掉，一并解决）③右键菜单/文字工具条/字体面板
+//   （含 .fp-group 分组头）铺不透明底+摘 24px 模糊 ④地图区编辑器 .mre-stage/.mre-side/.mre-panel 铺
+//   不透明底+摘 32px 模糊 ⑤.modal-card 弹窗（历史/标签/发布日志/迁移/旗库/画布底/图片元数据/图片信息 8 面）
+//   铺不透明底+摘 32px 模糊 ⑥.radius-popover 弹层族（视口/图层/多行/表格样式/统计图表/文字尺寸/文字颜色/
+//   圆角/旋转/图注位置/卡色 13 面）铺不透明底 ⑦查看模式 .fcv-chip/.fcv-toc-btn/.fcv-toc-drawer/.fcvp-card/
+//   #fcViewTitle/#fcViewActions 铺不透明底+摘 14px 模糊 ⑧.input-glass（标签/发布日志/迁移/图片元数据/
+//   地图区编辑器 9 个输入框）铺不透明底（surface-container-low）+摘 12px 模糊 ⑨玻璃注入层 .lg-backdrop/
+//   .lg-specular 门控（display:none）一并收编 8 个编辑器浮面（不透明面折射有 09-18 色散风险）；暗化遮罩
+//   （.modal-backdrop/.mre-backdrop 按设计压暗底层不是表面）与外板/SNE 格底 62% 混色（40.0 钦定、结果
+//   不透明）与作者自选透明度滑杆（卡片属性）不动；fc-moving 挂起只剩组背景 filter 描边一个作用面（注释
+//   口径同步）；站点版本恒 v0.2.58.0、后端零改动 325/325、零草稿字段、ethereal 零改动、i18n 零新键；
+//   电池 fc-all-opaque 24/24（新）+fc-opaque 21/21 面板锚更新+舰队 20 套全绿（版本锚 sed 42.0→42.1）+冒烟 55/55；
+//   线上实机探针 fc-all-opaque-live 14/14（新）；rev 00288-clj
+window.FLUIDCANVAS_VERSION = 'v10.28.42.1';

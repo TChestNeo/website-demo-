@@ -1,11 +1,12 @@
-// tmp-battery-fc-opaque.js — FC v10.28.42.0 全卡不透明电池
-// 用户「把FC内的所有卡片变成不透明」——磨砂玻璃轮（v10.27 55% 半透+blur）结束、
-//   08-17「100% 不透明」口径复活；拖动时卡面不再因玻璃挂起而观感变化
-// 验证：S 静态锚（FC 42.0 + rev 00282- 占位 + 站点 58.0 恒；普通卡/组背景 55% 混色
-//   与 blur 撤下直用 --card-bg-color；主题卡 blur 规则摘除；.card-tint 与油漆
-//   ::before opacity 0.55 撤下（全文件只剩 caption-edge-btn.locked 一处）；注入层
-//   门控收编全卡族+旧选择式门控零残留；12px 配方只剩编辑面板；fc-moving 挂起保留；
-//   SNE 62% 混色与外板 :not 排除不动）
+// tmp-battery-fc-opaque.js — FC v10.28.42.1 全卡不透明电池（42.0 全卡 + 42.1 编辑器镶边全不透明）
+// 用户「把FC内的所有卡片变成不透明」→ 42.0 磨砂玻璃轮（v10.27 55% 半透+blur）结束、
+//   08-17「100% 不透明」口径复活；42.1 用户「我要全部 >:( 我说过了」→ 头栏/面板/浮层同铺不透明底
+// 验证：S 静态锚（FC 42.1 + 42.0/42.1 changelog 条目 + rev 00282-/00288- 占位 + 站点 58.0 恒；
+//   普通卡/组背景 55% 混色与 blur 撤下直用 --card-bg-color；主题卡 blur 规则摘除；.card-tint 与油漆
+//   ::before opacity 0.55 撤下（全文件只剩 caption-edge-btn.locked 一处）；注入层门控收编全卡族+
+//   42.1 编辑器八浮面（头栏/编辑面板/右键菜单/文字工具条/字体面板/地图区三面/弹窗）+旧选择式门控
+//   零残留；12px 配方已成死码；fc-moving 挂起只剩组背景 filter 描边一个作用面；SNE 62% 混色与
+//   外板 :not 排除不动）
 //   / B 浏览器建卡实测（B1 SNE 卡面不透明+blur none；B2 内容卡同；B3 选色纯色
 //   不透明；B4 纸主题 tint 层 opacity 1+底色不透明；B5 油漆 ::before opacity 1；
 //   B6 组背景不透明+blur none+成员透明一体回归（mergeCards 真合并）；B7 fc-moving
@@ -180,9 +181,11 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     // ── S 静态锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n'); // CRLF 归一（多行锚）
-    ok('S1 site-config：FC v10.28.42.0 + changelog 全卡不透明条目 + rev 00282- 占位 + 站点版本恒 v0.2.58.0',
-      siteCfg.indexOf('v10.28.42.0') !== -1 && siteCfg.indexOf('把FC内的所有卡片变成不透明') !== -1 &&
-      siteCfg.indexOf('00282-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
+    ok('S1 site-config：FC v10.28.42.1 + changelog 42.0 全卡条目与 42.1 镶边全不透明条目 + rev 00282-/00288- 占位 + 站点版本恒 v0.2.58.0',
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.42.1';") !== -1 &&
+      siteCfg.indexOf('把FC内的所有卡片变成不透明') !== -1 &&
+      siteCfg.indexOf('编辑器镶边玻璃全灭') !== -1 &&
+      siteCfg.indexOf('00282-') !== -1 && siteCfg.indexOf('00288-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
     ok('S2 普通卡面：55% 混色撤下直用 --card-bg-color + 卡身 blur 摘除（规则内无 backdrop-filter）',
       editorHtml.indexOf('color-mix(in srgb, var(--card-bg-color) 55%, transparent)') === -1 &&
       editorHtml.indexOf('--card-border-color: var(--divider-line);\n      background-color: var(--card-bg-color);\n    }') !== -1);
@@ -197,18 +200,22 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       editorHtml.indexOf('.caption-edge-btn.locked') !== -1);
     ok('S6 .card-tint 注释含 42.0 不透明口径（层 opacity 回 1=6.2 前口径）',
       editorHtml.indexOf('v10.28.42.0: 全卡不透明——层 opacity 0.55 撤下回 1') !== -1);
-    ok('S7 注入层门控收编全卡族（blanket 规则在位 + 旧选择式门控零残留）',
+    ok('S7 注入层门控收编全卡族 + 42.1 收编编辑器八浮面（blanket 规则在位 + 旧选择式门控零残留）',
       editorHtml.indexOf('.grid-card > .lg-backdrop, .grid-card > .lg-specular,') !== -1 &&
-      editorHtml.indexOf('.grid-group-bg > .lg-backdrop, .grid-group-bg > .lg-specular {\n  display: none !important;') !== -1 &&
+      editorHtml.indexOf('.grid-group-bg > .lg-backdrop, .grid-group-bg > .lg-specular,') !== -1 &&
+      editorHtml.indexOf('.editor-header > .lg-backdrop, .editor-header > .lg-specular,') !== -1 &&
+      editorHtml.indexOf('.modal-card > .lg-backdrop, .modal-card > .lg-specular {\n  display: none !important;') !== -1 &&
       editorHtml.indexOf('.grid-card.lg-static:not(.content-card)') === -1);
-    ok('S8 12px 玻璃配方只剩编辑面板（面板是浮动 UI 不是卡、玻璃保留）',
+    ok('S8 12px 玻璃配方已成死码（42.1 编辑面板同轮铺不透明底、门控先行收编）',
       editorHtml.indexOf('.stats-edit-panel .lg-backdrop {') !== -1 &&
-      editorHtml.indexOf('.grid-card .lg-backdrop, .stats-edit-panel') === -1 &&
-      editorHtml.indexOf('42.0: 卡面已不透明——卡上注入层整体退出') !== -1);
-    ok('S9 fc-moving 玻璃挂起保留（对卡已 no-op、仍管镶边玻璃与组背景 filter）',
+      editorHtml.indexOf('.stats-edit-panel > .lg-backdrop, .stats-edit-panel > .lg-specular,') !== -1 &&
+      editorHtml.indexOf('此配方已成死码') !== -1 &&
+      editorHtml.indexOf('.grid-card .lg-backdrop, .stats-edit-panel') === -1);
+    ok('S9 fc-moving 挂起保留（对卡/镶边已全 no-op、只剩组背景 filter 描边一个作用面）',
       editorHtml.indexOf('body.fc-moving *') !== -1 &&
       editorHtml.indexOf('backdrop-filter: none !important;') !== -1 &&
-      editorHtml.indexOf('body.fc-moving .grid-group-bg') !== -1);
+      editorHtml.indexOf('body.fc-moving .grid-group-bg') !== -1 &&
+      editorHtml.indexOf('42.1 全不透明：头栏/面板/浮层模糊同轮摘除——本挂起只剩') !== -1);
     ok('S10 不动锚：SNE 格底 62% 混色保留 + 外板/图底/主题排除仍在普通卡规则（外板不透明口径 v10.21 不动）',
       editorHtml.indexOf('color-mix(in srgb, var(--sne-cell-tint') !== -1 &&
       editorHtml.indexOf('.grid-card.asset-card:not(.has-outer-bg):not(.has-card-bg-img):not([class*="card-edge-"])') !== -1);
