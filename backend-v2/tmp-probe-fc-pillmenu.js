@@ -1,8 +1,9 @@
-// tmp-probe-fc-pillmenu.js — FC v10.28.44.0 触控长按药丸菜单上线实机探针
-// 用户「长按菜单能不能改成左边的小药丸」——44.0 线上实证：S 静态（线上 site-config 44.0
-//   +药丸 changelog+rev 00290-+站点 58.0 恒、编辑器 ctxPillDots 钮+药丸 CSS+_lastMoveEv 守卫锚、
-//   fc-touch.js __fcTouchMenu 旗）/ B 实机触控（CDP iPad 仿真：长按现身/点 ⋮ 折叠/再点展开/
-//   空画布双消+重呼出/手柄纯 tap/真 tap 删卡）。
+// tmp-probe-fc-pillmenu.js — FC v10.28.44.1 触控长按药丸菜单（横药丸头）上线实机探针
+// 用户「那个左侧菜单不是我要的——折叠起来变成横着的长条药丸（平板左侧菜单卡片搜索框那种大小），
+//   下方就是自定义功能栏的内容」——44.1 线上实证：S 静态（线上 site-config 44.1
+//   +药丸 changelog+rev 00291-+站点 58.0 恒、编辑器 ctxPillDots 钮+横药丸头 CSS+_lastMoveEv 守卫锚、
+//   fc-touch.js __fcTouchMenu 旗）/ B 实机触控（CDP iPad 仿真：长按现身/药丸头首位/点 ⋮ 折叠/
+//   再点展开/空画布双消+重呼出/手柄纯 tap/真 tap 删卡）。
 // 全 Node 内置模块：https + ws CDP（登录态 stub 同 fc-tablet 探针口径）。
 'use strict';
 const https = require('https');
@@ -72,15 +73,18 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.44.0 + 触控长按药丸菜单 changelog + rev 00290- + 站点恒 v0.2.58.0',
-    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.0';") !== -1 &&
-    sc.body.indexOf('触控长按药丸菜单') !== -1 && sc.body.indexOf('rev 00290-') !== -1 &&
+  ok('S1 线上 site-config：FC v10.28.44.1 + 触控长按药丸菜单 changelog + rev 00291- + 站点恒 v0.2.58.0',
+    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.1';") !== -1 &&
+    sc.body.indexOf('触控长按药丸菜单') !== -1 && sc.body.indexOf('rev 00291-') !== -1 &&
     sc.body.indexOf('v0.2.58.0') !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const fc = await get(BASE + '/pages/fluidcanvas-editor.html');
-  ok('S2 线上编辑器页：ctxPillDots 三点钮 + 药丸 CSS/动画锚 + _lastMoveEv 空守卫锚在场',
+  ok('S2 线上编辑器页：ctxPillDots 三点钮 + 横药丸头 CSS（236px 宽/40px 高/分界线）+ 动画/内联压 !important + _lastMoveEv 守卫锚在场',
     fc.status === 200 &&
     fc.body.indexOf('id="ctxPillDots"') !== -1 &&
+    fc.body.indexOf('width: 236px;') !== -1 &&
+    fc.body.indexOf('min-height: 40px;') !== -1 &&
+    fc.body.indexOf('border-bottom: 1px solid var(--divider-line)') !== -1 &&
     fc.body.indexOf('@keyframes ctxPillUp') !== -1 &&
     fc.body.indexOf('display: none !important;') !== -1 &&
     fc.body.indexOf('placeCtxPillDots') !== -1 &&
@@ -148,8 +152,8 @@ async function waitFor(cdp, expr, timeout, label) {
       " var d = document.getElementById('ctxPillDots');" +
       " return { open: cs.display !== 'none', pill: m.classList.contains('ctx-pill')," +
       " collapsed: m.classList.contains('ctx-collapsed'), pos: cs.position, left: cs.left, bottom: cs.bottom," +
-      " radius: cs.borderRadius, w: m.offsetWidth, vis: vis, dotsDisplay: d ? getComputedStyle(d).display : 'none'," +
-      " inlineL: m.style.left, inlineT: m.style.top }; })()");
+      " radius: cs.borderRadius, w: m.offsetWidth, h: m.offsetHeight, vis: vis, dotsDisplay: d ? getComputedStyle(d).display : 'none'," +
+      " dh: d ? d.offsetHeight : 0, inlineL: m.style.left, inlineT: m.style.top }; })()");
 
     const gate = await cdp.evalJs("(function(){ return { coarse: matchMedia('(pointer: coarse)').matches, mtp: navigator.maxTouchPoints, bridge: !!window.__fcTouch }; })()");
     ok('B0 门控自证：coarse 媒体查询翻转 + maxTouchPoints=5 + 触控桥在场',
@@ -160,11 +164,26 @@ async function waitFor(cdp, expr, timeout, label) {
     const pt = await cardPoint();
     await holdTouch(pt.x, pt.y, 650);
     const b1 = await menuState();
-    ok('B1 长按现身：菜单开 + ctx-pill 有 + 非折叠 + fixed 左缘 14px/底 14px + 999px 药丸 + ≥3 项可见',
+    ok('B1 长按现身：菜单开 + ctx-pill 有 + 非折叠 + fixed 左缘 14px/底 14px + 999px 药丸 + 横药丸头 236×40 规格 + ≥3 项可见',
       b1.open === true && b1.pill === true && b1.collapsed === false &&
-      b1.pos === 'fixed' && b1.left === '14px' && b1.bottom === '14px' && b1.radius === '999px' && b1.vis >= 3,
+      b1.pos === 'fixed' && b1.left === '14px' && b1.bottom === '14px' && b1.radius === '999px' &&
+      b1.w >= 230 && b1.w <= 242 && b1.dh >= 38 && b1.dh <= 48 && b1.vis >= 3,
       JSON.stringify(b1));
 
+    // B2 三点钮：在菜单内 + display flex + 恒居首位（药丸头——44.1 用户修正，原中部插入作废）
+    const b2 = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
+      " var d = document.getElementById('ctxPillDots');" +
+      " var items = m.querySelectorAll('.context-menu-item'); var firstItem = null;" +
+      " for (var i = 0; i < items.length; i++) if (items[i].style.display !== 'none') { firstItem = items[i]; break; }" +
+      " var dd = getComputedStyle(d);" +
+      " return { inMenu: m.contains(d), dots: dd.display, firstChild: m.firstElementChild === d," +
+      " dotsTop: d.offsetTop, dotsH: d.offsetHeight, itemTop: firstItem ? firstItem.offsetTop : -1 }; })()");
+    ok('B2 药丸头首位：钮在菜单内 + display flex + 恒为首子元素 + 全部可见项在药丸下方（itemTop ≥ 药丸底）',
+      b2 && b2.inMenu === true && b2.dots === 'flex' && b2.firstChild === true &&
+      b2.itemTop >= b2.dotsTop + b2.dotsH - 1,
+      JSON.stringify(b2));
+
+    // B3 点 ⋮ → 折叠（全项 none + 横长条药丸 236×40 仍停左下——44.1：不缩宽不竖缩）——原生 compat click，飘则 el.click() 兜底
     const dotsPt = await cdp.evalJs("(function(){ var d = document.getElementById('ctxPillDots'); var r = d.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()");
     await tapAt(dotsPt.x, dotsPt.y);
     await sleep(300);
@@ -172,16 +191,20 @@ async function waitFor(cdp, expr, timeout, label) {
       await cdp.evalJs("document.getElementById('ctxPillDots').click()"); // 兜底
       await sleep(150);
     }
-    const b2 = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
+    const b3 = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
       " var cs = getComputedStyle(m); var allNone = true;" +
       " document.querySelectorAll('.context-menu .context-menu-item').forEach(function (it) { if (getComputedStyle(it).display !== 'none') allNone = false; });" +
       " var d = document.getElementById('ctxPillDots');" +
       " return { collapsed: m.classList.contains('ctx-collapsed'), allNone: allNone, w: m.offsetWidth," +
-      " left: cs.left, bottom: cs.bottom, dots: getComputedStyle(d).display }; })()");
-    ok('B2 点 ⋮ 折叠：ctx-collapsed + 全项 display none + 宽 ≤56（≈48 小药丸）+ 仍停左下 + 三点 display flex',
-      b2 && b2.collapsed === true && b2.allNone === true && b2.w <= 56 &&
-      b2.left === '14px' && b2.bottom === '14px' && b2.dots === 'flex', JSON.stringify(b2));
+      " h: m.offsetHeight, left: cs.left, bottom: cs.bottom, dots: getComputedStyle(d).display," +
+      " dbb: getComputedStyle(d).borderBottomWidth }; })()");
+    ok('B3 点 ⋮ 折叠：ctx-collapsed + 全项 display none + 横药丸 236×≤48（宽不缩、横卧）+ 仍停左下 + 三点 flex + 分界线撤',
+      b3 && b3.collapsed === true && b3.allNone === true && b3.w >= 230 && b3.w <= 242 &&
+      b3.h >= 38 && b3.h <= 48 && b3.w > b3.h &&
+      b3.left === '14px' && b3.bottom === '14px' && b3.dots === 'flex' && b3.dbb === '0px',
+      JSON.stringify(b3));
 
+    // B4 再点 ⋮ → 重新展开（条目回到药丸下方）
     const dotsPt2 = await cdp.evalJs("(function(){ var d = document.getElementById('ctxPillDots'); var r = d.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()");
     await tapAt(dotsPt2.x, dotsPt2.y);
     await sleep(300);
@@ -189,13 +212,18 @@ async function waitFor(cdp, expr, timeout, label) {
       await cdp.evalJs("document.getElementById('ctxPillDots').click()"); // 兜底
       await sleep(150);
     }
-    const b3 = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu'); var vis = 0;" +
+    const b4 = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu'); var vis = 0;" +
       " document.querySelectorAll('.context-menu .context-menu-item').forEach(function (it) { if (getComputedStyle(it).display !== 'none') vis++; });" +
-      " return { collapsed: m.classList.contains('ctx-collapsed'), vis: vis, w: m.offsetWidth }; })()");
-    ok('B3 再点展开：ctx-collapsed 清 + ≥6 项可见 + 宽 ≥180（恢复药丸条）',
-      b3 && b3.collapsed === false && b3.vis >= 6 && b3.w >= 180, JSON.stringify(b3));
+      " var d = document.getElementById('ctxPillDots'); var firstItem = null;" +
+      " var items = m.querySelectorAll('.context-menu-item');" +
+      " for (var i = 0; i < items.length; i++) if (getComputedStyle(items[i]).display !== 'none') { firstItem = items[i]; break; }" +
+      " return { collapsed: m.classList.contains('ctx-collapsed'), vis: vis, w: m.offsetWidth," +
+      " itemTop: firstItem ? firstItem.offsetTop : -1, dotsTop: d.offsetTop, dotsH: d.offsetHeight }; })()");
+    ok('B4 再点展开：ctx-collapsed 清 + ≥6 项可见 + 宽 ≥230 + 功能栏条目回到药丸下方（itemTop ≥ 药丸底）',
+      b4 && b4.collapsed === false && b4.vis >= 6 && b4.w >= 230 &&
+      b4.itemTop >= b4.dotsTop + b4.dotsH - 1, JSON.stringify(b4));
 
-    // B4 空画布 strict 空点 tap → 双消（避开卡缘 ±60：Chrome 触控命中膨胀小目标）；再长按恒展开
+    // B5 空画布 strict 空点 tap → 双消（避开卡缘 ±60：Chrome 触控命中膨胀小目标）；再长按恒展开
     const strictEp = await cdp.evalJs("(function(){ var cv = document.getElementById('gridCanvas');" +
       " var card = document.querySelector('#gridCanvas .grid-card'); var cr = card ? card.getBoundingClientRect() : null;" +
       " var m = document.querySelector('.context-menu'); var mr = m ? m.getBoundingClientRect() : null;" +
@@ -209,15 +237,15 @@ async function waitFor(cdp, expr, timeout, label) {
     const b4a = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
       " return { open: !!m && getComputedStyle(m).display !== 'none'," +
       " sel: document.querySelectorAll('#gridCanvas .grid-card.selected').length }; })()");
-    ok('B4 空画布 tap 双消：菜单关 + 选中清（' + JSON.stringify(strictEp) + '）',
+    ok('B5 空画布 tap 双消：菜单关 + 选中清（' + JSON.stringify(strictEp) + '）',
       strictEp !== null && b4a.open === false && b4a.sel === 0, JSON.stringify(b4a));
     const ptR = await cardPoint();
     await holdTouch(ptR.x, ptR.y, 650);
     const b4b = await menuState();
-    ok('B4b 重长按：恒展开呼出（ctx-pill 有 + ctx-collapsed 已清——hideContextMenu 清理证明）',
+    ok('B5b 重长按：恒展开呼出（ctx-pill 有 + ctx-collapsed 已清——hideContextMenu 清理证明）',
       b4b.open === true && b4b.pill === true && b4b.collapsed === false, JSON.stringify(b4b));
 
-    // B5 手柄纯 tap（无移动）→ 菜单经 click 冒泡关 + 选中保持 + 卡尺寸零变化
+    // B6 手柄纯 tap（无移动）→ 菜单经 click 冒泡关 + 选中保持 + 卡尺寸零变化
     const hdlPt = await cdp.evalJs("(function(){ var h = document.querySelector('#gridCanvas .resize-handle');" +
       " if (!h) return null; var r = h.getBoundingClientRect(); return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }; })()");
     const cardRectBefore = await cdp.evalJs("(function(){ var c = document.querySelector('#gridCanvas .grid-card');" +
@@ -229,14 +257,14 @@ async function waitFor(cdp, expr, timeout, label) {
       " return { open: !!m && getComputedStyle(m).display !== 'none'," +
       " sel: document.querySelectorAll('#gridCanvas .grid-card.selected').length," +
       " rect: { l: r.left, t: r.top, w: r.width, h: r.height } }; })()");
-    ok('B5 手柄纯 tap：菜单关（click 冒泡）+ 选中保持 + 卡尺寸零变化',
+    ok('B6 手柄纯 tap：菜单关（click 冒泡）+ 选中保持 + 卡尺寸零变化',
       hdlPt !== null && b5.open === false && b5.sel === 1 &&
       Math.abs(b5.rect.l - cardRectBefore.l) < 1 && Math.abs(b5.rect.t - cardRectBefore.t) < 1 &&
       b5.rect.w === cardRectBefore.w && b5.rect.h === cardRectBefore.h, JSON.stringify(b5));
 
-    // B6 菜单开着真 tap 删除项（danger）→ 卡数 -1 + 菜单关
+    // B7 菜单开着真 tap 删除项（danger）→ 卡数 -1 + 菜单关
     const ptB6 = await cardPoint();
-    await holdTouch(ptB6.x, ptB6.y, 650); // B5 手柄 tap 已关菜单——重长按再开
+    await holdTouch(ptB6.x, ptB6.y, 650); // B6 手柄 tap 已关菜单——重长按再开
     const countBeforeDel = await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length");
     const delPt = await cdp.evalJs("(function(){ var d = document.querySelector('.context-menu .context-menu-item.danger');" +
       " if (!d) return null; var r = d.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()");
@@ -249,7 +277,7 @@ async function waitFor(cdp, expr, timeout, label) {
       stillOpen = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu'); return !!m && getComputedStyle(m).display !== 'none'; })()");
     }
     const countAfterDel = await cdp.evalJs("document.querySelectorAll('#gridCanvas .grid-card').length");
-    ok('B6 真 tap 删除项：卡数 ' + countBeforeDel + '→' + countAfterDel + ' + 菜单关',
+    ok('B7 真 tap 删除项：卡数 ' + countBeforeDel + '→' + countAfterDel + ' + 菜单关',
       countAfterDel === countBeforeDel - 1 && stillOpen === false,
       JSON.stringify({ before: countBeforeDel, after: countAfterDel, open: stillOpen }));
 

@@ -1,7 +1,7 @@
-// tmp-battery-fc-tablet.js — FC v10.28.44.0 iPad 触控适配电池
+// tmp-battery-fc-tablet.js — FC v10.28.44.1 iPad 触控适配电池
 // 用户「能不能先对平板做一下FC的操作适配？」——触控桥（fc-touch.js 合成 MouseEvent 喂既有监听链）
 //   + 粗指针 CSS（44px 按钮/手柄命中区扩 28px/菜单 60vh 内部滚动）+ 7577 组拆分计时器守卫。
-// 验证：S 静态锚（site-config 43.0 + changelog + 00290- 占位 / fc-touch.js 在位可加载 / 7577 守卫
+// 验证：S 静态锚（site-config 44.1 + changelog + 00291- 占位 / fc-touch.js 在位可加载 / 7577 守卫
 //   / 粗指针 CSS 锚）/ B 触控实测（CDP touch 仿真——iPad 竖屏 834×1194 dsf2 + 5 触点：
 //   B0 门控自证 coarse+maxTouchPoints=5+桥在场；B1 tap 选中 8 手柄；B2 拖卡 60/40±2 + fc-moving
 //   中途 + justDragged 盖章；B3 se 手柄缩放 +26±6；B4 长按 650ms 菜单 + 组卡 groupId 不被拆
@@ -123,10 +123,10 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
-    ok('S1 site-config：FC v10.28.44.0 + changelog iPad 触控适配条目 + rev 00290- 占位 + 站点恒 v0.2.58.0',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.0';") !== -1 &&
+    ok('S1 site-config：FC v10.28.44.1 + changelog iPad 触控适配条目 + rev 00291- 占位 + 站点恒 v0.2.58.0',
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.1';") !== -1 &&
       siteCfg.indexOf('iPad 触控适配') !== -1 &&
-      siteCfg.indexOf('00290-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
+      siteCfg.indexOf('00291-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
     ok('S2 fc-touch.js：本地可加载 + 粗指针门控/测试钩/守卫旗在位 + 编辑器页 script 标签在位',
       touchJs.indexOf("matchMedia('(pointer: coarse)')") !== -1 &&
       touchJs.indexOf('window.__fcTouch') !== -1 &&
