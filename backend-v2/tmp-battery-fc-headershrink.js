@@ -1,6 +1,6 @@
-// tmp-battery-fc-headershrink.js — FC v10.28.47.3 编辑页顶部栏缩身+迁移按钮白底白字修复电池
+// tmp-battery-fc-headershrink.js — FC v10.28.47.4 编辑页顶部栏缩身+迁移按钮白底白字修复电池
 // 用户「能不能吧FC编辑页的顶部栏缩小一些太大了」+「还有顶部的迁移按钮为什么文字默认是白底白字的」
-// 验证：F 静态锚（site-config 45.1/00302-/58.0 恒 + 子代选择器在源 + 缩身规则在源）
+// 验证：F 静态锚（site-config 45.1/00303-/58.0 恒 + 子代选择器在源 + 缩身规则在源）
 //   / H 头栏缩身段（桌面 1280 窗口 computed）：
 //         H1 头栏纵向垫 5px + gap 8px；H2 头栏总高 ~42px（旧 ~64）
 //         H3 btn-sm 垫 3px 12px；H4 返回钮 btn-icon 30×30 + padding 0
@@ -108,8 +108,8 @@ function ok(name, cond, detail) {
     // ── F 静态锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
-    ok('F1 site-config：FC v10.28.47.3 + rev 00302- 占位 + 站点版本恒 v0.2.58.0',
-      siteCfg.indexOf('v10.28.47.3') !== -1 && siteCfg.indexOf('00302-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
+    ok('F1 site-config：FC v10.28.47.4 + rev 00303- 占位 + 站点版本恒 v0.2.58.0',
+      siteCfg.indexOf('v10.28.47.4') !== -1 && siteCfg.indexOf('00303-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
     ok('F2 迁移按钮子代选择器在源：.migrate-btn > span / hover > span + 后代选择器零残留',
       editorHtml.indexOf('.migrate-btn > span {') !== -1 &&
       editorHtml.indexOf('.migrate-btn:hover > span {') !== -1 &&

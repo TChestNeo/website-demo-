@@ -4358,6 +4358,18 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       from { opacity: 0; }
       to { opacity: 1; }
     }
+    /* v10.28.47.4: 折叠过渡平滑化（用户「折叠的过渡动画不顺畅 很割裂」）——
+       display:none 不可过渡，内容收起/展开改走 transform+opacity（fc-pill-fold-prep=
+       收起视觉态：内容上移淡出=把原本内容顶进药丸），门控 fc-pill-fold 延迟到内容
+       透明后才落（JS 250ms 计时器）；过渡挂粗指针限定=桌面零影响（长按本就只在触控） */
+    @media (pointer: coarse) {
+      .asset-panel > *:not(.ctx-pill-dots):not(.context-menu) {
+        transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.24s ease;
+      }
+      .asset-panel.fc-pill-fold-prep > *:not(.ctx-pill-dots):not(.context-menu) {
+        transform: translateY(-56px); opacity: 0; pointer-events: none;
+      }
+    }
     /* 折叠门控：菜单打开时面板只留药丸卡+弹窗卡，其余（搜索框+卡片列表=原本的左侧
        菜单内容）折叠进药丸内；!important 压内联 display（面板子项有 JS 直写 grid/flex） */
     .asset-panel.fc-pill-fold > *:not(.ctx-pill-dots):not(.context-menu) { display: none !important; }
@@ -4380,6 +4392,36 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       from { transform: translateY(110%); opacity: 0.4; }
       to { transform: translateY(0); opacity: 1; }
     }
+    /* v10.28.47.4: 关窗退出动画——弹窗卡向下滑出+药丸淡出（hideContextMenu 计时器
+       240ms 后收尾；与打开反向=一气呵成的向下运动，不再瞬间全消） */
+    @keyframes ctxPillFall {
+      from { transform: translateY(0); opacity: 1; }
+      to { transform: translateY(110%); opacity: 0; }
+    }
+    .context-menu.ctx-pill.ctx-pill-exit { animation: ctxPillFall 0.24s ease forwards; }
+    @keyframes ctxPillFadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    /* 药丸淡出盖过现身渐入（.asset-panel > .ctx-pill-dots 的 ctxPillFade 特异性
+       0,2,1 < 0,3,1 才压得住） */
+    .asset-panel > .ctx-pill-dots.ctx-pill-out { animation: ctxPillFadeOut 0.24s ease forwards; }
+    /* v10.28.47.4: 用户「还有列表的背景能不能是白色的？」——弹窗卡（三粒点下方
+       弹出的菜单列表）白底，深浅主题下恒白（暗主题 surface-container #202038 深蓝底
+       换白）；条目文字/悬停/分隔线/危险项/勾选项配套压暗可读；桌面右键弹层零变化
+       （只作用 .ctx-pill 药丸态） */
+    .context-menu.ctx-pill {
+      background: #ffffff;
+      border-color: #e3e5ec;
+      color: #1c1c2e;
+    }
+    .context-menu.ctx-pill .context-menu-item { color: #1c1c2e; }
+    .context-menu.ctx-pill .context-menu-item:hover { background: #f2f3f7; }
+    .context-menu.ctx-pill .context-menu-item.checked,
+    .context-menu.ctx-pill .context-menu-item.checked .material-symbols-outlined { color: #4648d4; }
+    .context-menu.ctx-pill .context-menu-item.danger,
+    .context-menu.ctx-pill .context-menu-item.danger .material-symbols-outlined { color: #d92d20; }
+    .context-menu.ctx-pill .context-menu-divider { border-top-color: #e3e5ec; }
 
     /* ── Radius Popover ── */
     .radius-popover {
@@ -12460,6 +12502,21 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         (selectedCard && selectedCard.dataset.cardType === 'map') ? 'flex' : 'none';
     }
     var panel = document.querySelector('.asset-panel');
+    // v10.28.47.4: 清上轮关窗动画残留（退出动画中重开的串味路径——hideContextMenu
+    // 在退出动画中早退，计时器/类/药丸回收在这里补清，否则 pending 收尾会杀掉新菜单
+    // 或残留 ctxPillFall 让桌面弹层隐形）
+    contextMenu.classList.remove('ctx-pill-exit');
+    var pillDots = document.getElementById('ctxPillDots');
+    if (pillDots) {
+      pillDots.classList.remove('ctx-pill-out');
+      if (pillDots.parentNode !== contextMenu) contextMenu.insertBefore(pillDots, contextMenu.firstChild);
+    }
+    if (panel) {
+      if (panel.__pillCloseTimer) { clearTimeout(panel.__pillCloseTimer); panel.__pillCloseTimer = null; }
+      if (panel.__foldTimer) { clearTimeout(panel.__foldTimer); panel.__foldTimer = null; }
+      panel.classList.remove('fc-pill-fold');
+      panel.classList.remove('fc-pill-fold-prep');
+    }
     if (pillMode) {
       // v10.28.44.2: 菜单挂进左侧菜单（资产面板）内——用户钦定「直接就是在左侧菜单内
       // 不是单独的弹窗」；v10.28.47.3: 用户纠正「三粒点独立一个 弹窗内容独立一个」——
@@ -12472,7 +12529,15 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       contextMenu.style.top = '';
       if (panel && contextMenu.parentNode !== panel) panel.insertBefore(contextMenu, panel.firstChild);
       placeCtxPillDots(panel); // 药丸独立卡片插面板首子（菜单之前）——两张卡不再同箱
-      if (panel) panel.classList.add('fc-pill-fold');
+      if (panel) {
+        // v10.28.47.4: 内容先收起（transform+opacity 过渡=把原本内容顶进药丸的视觉），
+        // 折叠门控延迟到内容透明后才落 display:none（display 不可过渡，避免瞬间消失割裂）
+        panel.classList.add('fc-pill-fold-prep');
+        panel.__foldTimer = setTimeout(function () {
+          panel.__foldTimer = null;
+          panel.classList.add('fc-pill-fold');
+        }, 250);
+      }
     } else {
       // 桌面右键：弹层回 body 贴指针（药丸模式曾把菜单搬进面板——串味路径还原）
       if (contextMenu.parentNode !== document.body) document.body.appendChild(contextMenu);
@@ -12504,18 +12569,51 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     hideContextMenu();
   }
 
+  // v10.28.47.4: 关窗平滑化——药丸态关窗带退出动画（弹窗卡向下滑出 ctxPillFall+
+  // 药丸淡出 ctxPillFadeOut+内容展开回来），计时器 240ms 后收尾；退出动画中的重复
+  // 调用早退（pending 计时器会收尾）；桌面右键/各弹层路径零变化（同步收尾）
   function hideContextMenu() {
+    var contextMenu = getContextMenu();
+    var panel = document.querySelector('.asset-panel');
+    var pillLive = contextMenu && panel && contextMenu.classList.contains('ctx-pill') &&
+      contextMenu.parentNode === panel;
+    if (pillLive && contextMenu.classList.contains('ctx-pill-exit')) return; // 已在退出动画中
+    if (pillLive) {
+      contextMenu.classList.add('ctx-pill-exit');
+      var dots = document.getElementById('ctxPillDots');
+      if (dots && dots.parentNode === panel) dots.classList.add('ctx-pill-out');
+      if (panel.__foldTimer) { clearTimeout(panel.__foldTimer); panel.__foldTimer = null; }
+      panel.classList.remove('fc-pill-fold'); // 门控即摘（内容仍在 prep 收起态=不可见零闪）
+      panel.__pillCloseTimer = setTimeout(function () {
+        panel.__pillCloseTimer = null;
+        panel.classList.remove('fc-pill-fold-prep'); // 内容展开回来（过渡）
+        finishHideContextMenu();
+      }, 240);
+      return;
+    }
+    finishHideContextMenu();
+  }
+
+  function finishHideContextMenu() {
     var contextMenu = getContextMenu();
     if (contextMenu) {
       contextMenu.classList.remove('active');
+      contextMenu.classList.remove('ctx-pill-exit');
       // v10.28.47.3: 药丸独立卡片随关回收回菜单箱（桌面路径需要菜单自持药丸；
       // insertBefore 对已挂载节点=移动无重复）
       var dots = document.getElementById('ctxPillDots');
-      if (dots && dots.parentNode !== contextMenu) contextMenu.insertBefore(dots, contextMenu.firstChild);
+      if (dots) {
+        dots.classList.remove('ctx-pill-out');
+        if (dots.parentNode !== contextMenu) contextMenu.insertBefore(dots, contextMenu.firstChild);
+      }
     }
     // v10.28.47.3: 折叠门控随关清除——原本的左侧菜单内容（搜索框+卡片列表）展开回来
     var panel = document.querySelector('.asset-panel');
-    if (panel) panel.classList.remove('fc-pill-fold');
+    if (panel) {
+      if (panel.__pillCloseTimer) { clearTimeout(panel.__pillCloseTimer); panel.__pillCloseTimer = null; }
+      panel.classList.remove('fc-pill-fold');
+      panel.classList.remove('fc-pill-fold-prep');
+    }
     var radiusPopover = getRadiusPopover();
     if (radiusPopover) radiusPopover.classList.remove('active');
     var rp = document.getElementById('rotatePopover');

@@ -1635,6 +1635,27 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   32 套全绿（版本锚 sed 44.3→45.0 共 32 文件——fc-publish-log/fc-viewport rev 锚同轮手工更新；
 //   article-view/notif-home 静态锚口径更新后独立复跑 45/45、23/23）+冒烟 60/60+i18n 34/34；线上探针
 //   fc-i18n-live 14/14；rev 00295-btc
+// v10.28.47.4 = 平板端药丸菜单平滑折叠过渡+白底列表（补丁位 47.3→47.4 调整轮；2026-09-26）：用户
+//   「折叠的过渡动画不顺畅 很割裂」+「列表的背景能不能是白色的？」；真身三连：①折叠用
+//   display:none !important——内容瞬间消失零过渡（display 不可 transition）；②关菜单（点药丸/删卡/
+//   空点 tap）hideContextMenu 瞬间全消零退出动画；③药丸 0.24s 渐现+弹窗 0.28s 上滑与内容瞬间消失
+//   不同步=割裂；修法①平滑折叠：内容收起/展开改走 transform translateY(-56px)+opacity 过渡
+//   （fc-pill-fold-prep=收起视觉态——内容上移淡出=把原本内容顶进药丸；过渡挂 @media (pointer:
+//   coarse) 限定桌面零影响——长按本就只在触控发生）；门控 fc-pill-fold 延迟 250ms 到内容透明后
+//   才落 display:none（JS 计时器，showContextMenu 公共清理块清双计时器+exit/out 类+药丸回收——
+//   退出动画中重开不串味）；修法②关窗退出动画：ctxPillFall 弹窗向下滑出+ctxPillFadeOut 药丸淡出
+//   （240ms forwards，特异性 .asset-panel > .ctx-pill-dots.ctx-pill-out 压过渐现）+240ms 计时器
+//   收尾 finishHideContextMenu（摘 active/exit/out/prep+药丸回收；hideContextMenu 拆出、退出动画中
+//   早退防重入）；修法③白底列表：药丸弹窗卡 .context-menu.ctx-pill 恒白 #ffffff（深浅同）+条目
+//   #1c1c2e 压暗/hover #f2f3f7/勾选 #4648d4/危险 #d92d20/分隔线 #e3e5ec（显式覆写压过 danger 泛化
+//   规则）——桌面右键弹层零变化（只作用 ctx-pill 药丸态）；两卡结构/药丸只做关闭/顶部停靠/
+//   桌面右键/面板折叠自动展开全部保持；站点恒 v0.2.58.0、后端零改动 334/334、零草稿字段、
+//   ethereal 零改动、i18n 零新键、10 分钟自动保存心跳零触碰；
+//   电池 fc-pilltop 11/11（新 B1 两段中态/B3 三段退出动画/B4 prep）+fc-pillmenu 16/16 口径随轮改
+//   平滑折叠+白底后全绿+舰队 38 套全绿（micro-v056 首跑 3 红=活动流时序 flake，独立复跑
+//   21/21 销账；grep exit=1|💥 复核零残留）+冒烟 60/60+i18n 34/34+后端 334/334；
+//   镜像内容验证 27/27；线上探针 fc-pillmenu-live 13/13（B3 三段退出动画实机实证）；
+//   rev 00303-kdj
 // v10.28.47.3 = 平板端药丸菜单两张独立卡片（补丁位 47.2→47.3 调整轮；2026-09-26）：用户「我要的是
 //   原本的那个左侧菜单内容被折叠进那个三粒点内，然后弹窗内容从下向上滑出然后把原本的内容顶进那个
 //   三粒点内，然后我原本的图片不是有两个独立的卡片吗三粒点独立一个 弹窗内容独立一个你怎么可以随便
@@ -1772,4 +1793,4 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   15/15（B1-B4 口径更新：药丸头首位/横药丸 236×40/折叠不缩宽/条目在药丸下方）+舰队全绿（版本锚 sed
 //   44.0→44.1 共 23 文件）+冒烟 55/55+i18n 34/34；线上探针 fc-pillmenu-live 13/13（新 B2 药丸头首位）；
 //   rev 00291-61e
-window.FLUIDCANVAS_VERSION = 'v10.28.47.3';
+window.FLUIDCANVAS_VERSION = 'v10.28.47.4';
