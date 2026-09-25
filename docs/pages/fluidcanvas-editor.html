@@ -2184,7 +2184,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
   height: 24px;
   margin-right: 8px;              /* 对齐 .btn gap: 8px */
 }
-.migrate-btn span {
+.migrate-btn > span {
   position: relative;
   z-index: 10;
   display: inline-flex;
@@ -2193,7 +2193,10 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
   filter: invert(1);              /* 静息：白色面板上黑字（黑白相反滤镜） */
   transition: filter 0.4s cubic-bezier(0.3, 1, 0.8, 1);  /* 与面板横扫同曲线，丝滑换色 */
 }
-.migrate-btn:hover span {
+/* v10.28.45.1：选择器改子代（> span）——FC 翻译轮把按钮文字包进内层 <span data-i18n>，
+   后代选择器连内层一起选中 → 双重 invert 文字反了两次=白字压白面板（用户「迁移按钮为什么
+   文字默认是白底白字的」）。子代只罩外层衬垫 span，整子树一次反转回原设计（静息黑字黑箭头）。 */
+.migrate-btn:hover > span {
   filter: invert(0);              /* 白面板滑离时同步翻回白字（紫底上） */
 }
 .migrate-btn::before,
@@ -2710,13 +2713,23 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 
     /* ── Sticky Header ── */
     .editor-header {
-      display: flex; align-items: center; gap: var(--space-sm);
-      padding: var(--space-sm) var(--space-md);
+      display: flex; align-items: center; gap: 8px;          /* v10.28.45.1 缩身：gap 12→8 */
+      padding: 5px var(--space-md);                          /* v10.28.45.1 缩身：纵向垫 12→5 */
       border-bottom: 1px solid var(--divider-line);
       background: var(--color-surface-container); /* 42.1 全不透明：头栏铺不透明底+摘 16px 模糊 */
       position: sticky; top: 0; z-index: 10;
       flex-shrink: 0;
     }
+    /* v10.28.45.1 顶部栏缩身（用户「FC编辑页的顶部栏缩小一些太大了」）：
+       钮 40/38px → ~28-30px 档（btn-sm 垫 6→3、icon 24→20、btn-icon 40→30×30、
+       Migrate svg 24→20 + 垫 7→4）；粗指针（iPad）44px 命中区由下方媒体查询
+       min-width/min-height 兜底不变。顺序敏感：.btn-icon 必须在 .btn-sm 之后
+       （同特异性 (0,2,0)，padding 0 压回 3px 垫——返回钮兼带两类的图标居中）。 */
+    .editor-header .btn-sm { padding: 3px 12px; }
+    .editor-header .btn-sm .material-symbols-outlined { font-size: 20px; }
+    .editor-header .btn-icon { width: 30px; height: 30px; padding: 0; }
+    .editor-header .migrate-btn svg { width: 20px; height: 20px; margin-right: 6px; }
+    .editor-header .migrate-btn > span { padding: 4px 12px; }
 
     /* ── Flex body: asset panel + editor ── */
     .canvas-body { flex: 1; display: flex; min-height: 0; position: relative; }
@@ -4700,7 +4713,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
   .context-menu-item { min-height: 44px; touch-action: manipulation; }
   .ctx-pill-dots { min-height: 44px; } /* v10.28.44.0: 三点折叠钮触控命中区 */
   .context-menu { max-height: 60vh; overflow-y: auto; } /* 44px×10 条 > 380px 硬编码翻边预算 */
-  .editor-header .btn, .grid-controls .btn, .grid-controls .col-btn,
+  .editor-header .btn, .editor-header .migrate-btn, .grid-controls .btn, .grid-controls .col-btn,
   .tt-btn, .caption-pos-btn { min-width: 44px; min-height: 44px; touch-action: manipulation; }
   .layer-row, .fp-row { min-height: 44px; }
   .layer-row { touch-action: manipulation; }
@@ -4892,7 +4905,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
   <a href="../index.html" class="btn btn-ghost btn-icon btn-sm" title="Back to Dashboard" data-i18n-title="fc.head.backDashboard">
     <span class="material-symbols-outlined">arrow_back</span>
   </a>
-  <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:22px">article</span>
+  <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:18px">article</span>
   <span style="font-weight:700;font-size:var(--fs-body-md)">FluidCanvas Editor</span>
   <span class="badge badge-secondary" id="headerStatus">Draft</span>
   <span style="flex:1"></span>

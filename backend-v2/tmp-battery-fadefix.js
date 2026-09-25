@@ -168,7 +168,7 @@ const FRAME_REC = `(function () {
   const sconfSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   ok('F0 版本双线 ' + EXPECT_VER + ' / v10.28.36.1 + changelog 标记',
     sconfSrc.indexOf("window.MN_SITE_VERSION = '" + EXPECT_VER + "';") !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.45.0';") !== -1 &&
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.45.1';") !== -1 &&
     (IS_AFTER ? sconfSrc.indexOf('进场帧健康隐形修复') !== -1 && sconfSrc.indexOf('守卫收窄修复') !== -1 : true));
   ok('F1 双模式入场串：原样渐隐+位移全串 + 轻量 transform-only 串都在',
     trSrc.indexOf("'opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1)'") !== -1 &&

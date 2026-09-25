@@ -1,4 +1,4 @@
-// tmp-run-fleet-593.js — v10.28.45.0 舰队顺序驱动器（25 套 + fc-tablet + fc-pillmenu + 新 fc-mergefix/fc-touch-uploads + smoke）
+// tmp-run-fleet-593.js — v10.28.45.1 舰队顺序驱动器（25 套 + fc-tablet + fc-pillmenu + 新 fc-mergefix/fc-touch-uploads + smoke）
 // 判定口径：输出体 ✅/❌（🎉/💔）行，exit code 仅旁证；每套输出落盘 tmp-batt-593-<name>.txt 供红时细查
 'use strict';
 const { spawnSync } = require('child_process');

@@ -1,4 +1,4 @@
-// tmp-probe-fc-tablet.js — FC v10.28.45.0 iPad 触控桥上线实机探针
+// tmp-probe-fc-tablet.js — FC v10.28.45.1 iPad 触控桥上线实机探针
 // 用户「能不能先对平板做一下FC的操作适配？」——43.0 线上实证：S 静态（线上 site-config 43.0
 //   +iPad 触控 changelog+站点 58.0 恒、编辑器页 script 标签+7577 守卫+粗指针 CSS 锚、
 //   fc-touch.js 可加载）/ B 实机触控（CDP iPad 仿真：tap 选中 / 拖卡 / 长按菜单 / 捏合 / 平移 / 资产建卡）。
@@ -71,8 +71,8 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.45.0 + iPad 触控 changelog 条目 + rev 00293- + 站点恒 v0.2.58.0',
-    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.45.0';") !== -1 &&
+  ok('S1 线上 site-config：FC v10.28.45.1 + iPad 触控 changelog 条目 + rev 00293- + 站点恒 v0.2.58.0',
+    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.45.1';") !== -1 &&
     sc.body.indexOf('iPad 触控适配') !== -1 && sc.body.indexOf('rev 00293-') !== -1 &&
     sc.body.indexOf('v0.2.58.0') !== -1,
     'status=' + sc.status + ' err=' + sc.error);
