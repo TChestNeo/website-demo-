@@ -1,13 +1,17 @@
-// tmp-battery-fc-pilltop.js — FC v10.28.47.2 平板端药丸菜单顶部停靠（rev 00301-）
-// 用户「然后平板端的FC编辑左侧菜单我要的是长这样的」+截图钦定：红带=折叠三粒点的位置在
-//   左侧菜单最顶部、蓝区=电脑端弹窗的内容在其下方——44.2 的「菜单挂在左侧菜单内」不变，
-//   只挪停靠位：面板末子（底部）→ 面板首子（顶部）；CSS margin-top→margin-bottom、
-//   动画 ctxPillUp 底部滑入 → ctxPillIn 顶部滑入；折叠/展开、⋮ 恒居菜单首位、桌面右键零变化。
-//   S 静态（site-config 47.2+顶部停靠 changelog+00301-+58.0 恒+旧 47.1 赋值零残留；编辑器页
-//     insertBefore 首子锚+ctxPillIn/translateY(-110%)/margin-bottom 8px 锚+旧 appendChild/
-//     ctxPillUp/旧 margin-top 规则零残留；fc-touch.js __fcTouchMenu 旗在场）/
-//   B 实机触控（CDP iPad 仿真：长按现身菜单在面板首子=顶部停靠+紧邻搜索框/药丸头首位/点 ⋯
-//     折叠后药丸仍留面板顶部/再点展开/桌面右键零变化/面板折叠时长按自动展开+菜单顶部停靠）/
+// tmp-battery-fc-pilltop.js — FC v10.28.47.3 平板端药丸菜单两张独立卡片（rev 00302-）
+// 用户「我要的是原本的那个左侧菜单内容被折叠进那个三粒点内，然后弹窗内容从下向上滑出然后把
+//   原本的内容顶进那个三粒点内…三粒点独立一个 弹窗内容独立一个你怎么可以随便整合」——47.2 的
+//   药丸头与弹窗条目同箱一体化作废：药丸=独立卡片①（面板首子=截图红带，恒全宽横条）、弹窗
+//   内容=独立卡片②（面板次子=截图蓝区，从下向上滑出 ctxPillRise）；原本的左侧菜单内容（搜索
+//   框+卡片列表）随菜单打开折叠进药丸内（fc-pill-fold 门控）；药丸只做关闭（点药丸=关弹窗+
+//   内容展开回来）；桌面右键零变化。
+//   S 静态（site-config 47.3+两卡 changelog（三粒点独立一个）+00302-+58.0 恒+旧 47.2 赋值零
+//     残留；编辑器页 两卡锚（placeCtxPillDots/fc-pill-fold/ctxPillRise/translateY(110%)/
+//     ctxPillFade/.asset-panel > .ctx-pill-dots）+旧一体化锚（ctxPillIn/translateY(-110%)/
+//     ctx-collapsed）零残留；fc-touch.js __fcTouchMenu 旗在场）/
+//   B 实机触控（CDP iPad 仿真：长按现身两卡结构——药丸卡首子+弹窗卡次子+面板内容折叠进药丸/
+//     药丸独立卡全宽 more_horiz+弹窗卡自带卡片底 shadow-lg/点药丸=关弹窗+内容展开回来/
+//     再长按重开两卡恒在/桌面右键零变化/面板折叠时长按自动展开+两卡结构）/
 //   E 零异常。
 // （house CDP 模式；判定看输出体 🎉/💔 行）
 'use strict';
@@ -124,23 +128,27 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
-    ok('S1 site-config：FC v10.28.47.2 + 顶部停靠 changelog（左侧菜单最顶部）+ rev 00301- + 站点恒 v0.2.58.0 + 旧 47.1 版本赋值锚零残留',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.2';") !== -1 &&
-      siteCfg.indexOf('左侧菜单最顶部') !== -1 &&
-      siteCfg.indexOf('rev 00301-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1 &&
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.1';") === -1);
-    ok('S2 编辑器页：顶部停靠锚（insertBefore 首子/margin-bottom 8px/flex-shrink 0 禁压/ctxPillIn/translateY(-110%)）在场 + 旧底停靠锚（appendChild/ctxPillUp/旧 margin-top 规则）零残留 + 药丸头/折叠锚在场',
-      editorHtml.indexOf('panel.insertBefore(contextMenu, panel.firstChild)') !== -1 &&
-      editorHtml.indexOf('margin-bottom: 8px;') !== -1 &&
+    ok('S1 site-config：FC v10.28.47.3 + 两卡 changelog（三粒点独立一个/从下向上滑出）+ rev 00302- + 站点恒 v0.2.58.0 + 旧 47.2 版本赋值锚零残留',
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.3';") !== -1 &&
+      siteCfg.indexOf('三粒点独立一个') !== -1 &&
+      siteCfg.indexOf('从下向上滑出') !== -1 &&
+      siteCfg.indexOf('rev 00302-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1 &&
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.2';") === -1);
+    ok('S2 编辑器页：两卡锚（placeCtxPillDots/fc-pill-fold/ctxPillRise/translateY(110%)/ctxPillFade/.asset-panel > .ctx-pill-dots/折叠门控 !important/药丸关窗 toggleCtxPill）在场 + 旧一体化锚（ctxPillIn/translateY(-110%)/ctx-collapsed）零残留 + flex-shrink 禁压保持 + 药丸钮/菜单首子挂载锚在场',
+      editorHtml.indexOf('placeCtxPillDots(panel)') !== -1 &&
+      editorHtml.indexOf('fc-pill-fold') !== -1 &&
+      editorHtml.indexOf('@keyframes ctxPillRise') !== -1 &&
+      editorHtml.indexOf('translateY(110%)') !== -1 &&
+      editorHtml.indexOf('@keyframes ctxPillFade') !== -1 &&
+      editorHtml.indexOf('.asset-panel > .ctx-pill-dots') !== -1 &&
+      editorHtml.indexOf('display: none !important;') !== -1 &&
+      editorHtml.indexOf('hideContextMenu();\n  }') !== -1 &&
       editorHtml.indexOf('flex-shrink: 0;') !== -1 &&
-      editorHtml.indexOf('@keyframes ctxPillIn') !== -1 &&
-      editorHtml.indexOf('translateY(-110%)') !== -1 &&
-      editorHtml.indexOf('panel.appendChild(contextMenu)') === -1 &&
-      editorHtml.indexOf('@keyframes ctxPillUp') === -1 &&
-      editorHtml.indexOf('width: 100%; min-width: 0;\n      margin-top: 8px;') === -1 &&
       editorHtml.indexOf('id="ctxPillDots"') !== -1 &&
-      editorHtml.indexOf('ctx-collapsed') !== -1 &&
-      editorHtml.indexOf('placeCtxPillDots') !== -1);
+      editorHtml.indexOf('panel.insertBefore(contextMenu, panel.firstChild)') !== -1 &&
+      editorHtml.indexOf('@keyframes ctxPillIn') === -1 &&
+      editorHtml.indexOf('translateY(-110%)') === -1 &&
+      editorHtml.indexOf('ctx-collapsed') === -1);
     ok('S3 fc-touch.js：长按派发前置 __fcTouchMenu 旗在位',
       touchJs.indexOf('window.__fcTouchMenu') !== -1);
 
@@ -167,22 +175,29 @@ function ok(name, cond, detail) {
       "  var el = document.elementFromPoint(r.left + r.width * fx, r.top + r.height * fy);" +
       "  if (el && el.closest('.grid-card') === c && !el.closest(bad)) return { x: Math.round(r.left + r.width * fx), y: Math.round(r.top + r.height * fy) };" +
       " } return null; })()");
+    // 两卡结构：药丸=面板首子独立卡片①、弹窗=次子独立卡片②；面板原本内容（搜索框代表）折叠进药丸
     const menuState = () => cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
       " if (!m) return { open: false };" +
+      " var p = document.querySelector('.asset-panel');" +
       " var cs = getComputedStyle(m); var vis = 0;" +
       " document.querySelectorAll('.context-menu .context-menu-item').forEach(function (it) { if (getComputedStyle(it).display !== 'none') vis++; });" +
       " var d = document.getElementById('ctxPillDots');" +
       " var inPanel = !!(m.parentNode && m.parentNode.classList && m.parentNode.classList.contains('asset-panel'));" +
+      " var fold = !!(p && p.classList.contains('fc-pill-fold'));" +
+      " var sc = p ? p.querySelector('.search-capsule') : null;" +
       " return { open: cs.display !== 'none', pill: m.classList.contains('ctx-pill')," +
-      " collapsed: m.classList.contains('ctx-collapsed'), pos: cs.position, left: cs.left, bottom: cs.bottom," +
-      " w: m.offsetWidth, h: m.offsetHeight, sh: m.scrollHeight, ch: m.clientHeight, vis: vis, dotsDisplay: d ? getComputedStyle(d).display : 'none'," +
+      " pos: cs.position, left: cs.left, bottom: cs.bottom," +
+      " w: m.offsetWidth, h: m.offsetHeight, sh: m.scrollHeight, ch: m.clientHeight, vis: vis," +
+      " dotsDisplay: d ? getComputedStyle(d).display : 'none'," +
       " dh: d ? d.offsetHeight : 0, inlineL: m.style.left, inlineT: m.style.top," +
-      " inPanel: inPanel, first: inPanel && m.parentNode.firstElementChild === m," +
-      " aboveSearch: inPanel && !!(m.nextElementSibling && m.nextElementSibling.classList.contains('search-capsule'))," +
+      " inPanel: inPanel, pillFirst: !!(p && p.firstElementChild === d)," +
+      " menuSecond: !!(p && d && d.parentNode === p && d.nextElementSibling === m)," +
+      " fold: fold, searchHidden: sc ? getComputedStyle(sc).display === 'none' : null," +
       " dRadius: d ? parseFloat(getComputedStyle(d).borderRadius) : 0," +
-      " dBg: d ? getComputedStyle(d).backgroundColor : '' }; })()");
+      " dBg: d ? getComputedStyle(d).backgroundColor : ''," +
+      " mShadow: cs.boxShadow, mBg: cs.backgroundColor, mBorder: cs.borderWidth, mRadius: cs.borderRadius }; })()");
 
-    // ── B 药丸实测 ──
+    // ── B 两卡药丸实测 ──
     await nav(BASE + '/pages/fluidcanvas-editor.html',
       "!!document.getElementById('gridCanvas') && !!window.createSneCard && !!window.__fcTouch", 'B 编辑器加载');
 
@@ -190,107 +205,101 @@ function ok(name, cond, detail) {
     ok('B0 门控自证：coarse 媒体查询翻转 + maxTouchPoints=5 + 触控桥在场',
       gate && gate.coarse === true && gate.mtp === 5 && gate.bridge, JSON.stringify(gate));
 
-    // B1 长按 → 药丸菜单现身（在资产面板内 + static 定位 + 首子=顶部停靠紧邻搜索框 + 真·横药丸头规格）
+    // B1 长按 → 两卡结构现身：药丸卡首子（顶部=红带）+弹窗卡次子（其下=蓝区）+面板原本内容折叠进药丸
     await cdp.evalJs('window.createSneCard(2, 2, 9, 12)');
     await sleep(200);
     const snePt = await cardPoint();
     await holdTouch(snePt.x, snePt.y, 650);
     const b1 = await menuState();
-    ok('B1 长按现身：菜单开 + ctx-pill 有 + 非折叠 + 在 .asset-panel 内（首子=顶部停靠+紧邻搜索框）+ static 定位 + 宽 228-242（面板内宽·滚条在时收窄）+ 完整内容零压缩（sh=ch、高 ≥350——7 项全展开=截图蓝区）+ 横药丸头 40px 真药丸（radius-full 大圆角 + 实底）+ ≥3 项可见',
-      b1.open === true && b1.pill === true && b1.collapsed === false &&
-      b1.inPanel === true && b1.first === true && b1.aboveSearch === true &&
+    ok('B1 长按现身两卡：菜单开 + ctx-pill 有 + 药丸卡=面板首子、弹窗卡=次子（两卡独立不再同箱）+ fc-pill-fold 门控在场 + 搜索框（原本内容代表）已折叠 display none + static 定位 + 弹窗卡宽 228-242 + 完整内容零压缩（sh=ch、高 ≥320——纯条目不再含 40px 药丸头）+ 药丸卡 40px 真药丸（radius-full 大圆角+实底）+ ≥3 项可见',
+      b1.open === true && b1.pill === true &&
+      b1.inPanel === true && b1.pillFirst === true && b1.menuSecond === true &&
+      b1.fold === true && b1.searchHidden === true &&
       b1.pos === 'static' && b1.left === 'auto' && b1.bottom === 'auto' &&
       b1.w >= 228 && b1.w <= 242 && b1.dh >= 38 && b1.dh <= 48 &&
-      b1.sh === b1.ch && b1.h >= 350 &&
+      b1.sh === b1.ch && b1.h >= 320 &&
       b1.dRadius >= 100 && b1.dBg !== 'rgba(0, 0, 0, 0)' && b1.dBg !== 'transparent' && b1.vis >= 3,
       JSON.stringify(b1));
 
-    // B2 三点钮：在菜单内 + display flex + 恒居首位（药丸头）+ 横向三点 more_horiz + 全部可见项在药丸下方
+    // B2 药丸=独立卡片①（不在弹窗内）+全宽+more_horiz；弹窗=独立卡片②（自带卡片底 shadow-lg+底+边+圆角）
+    await sleep(450); // 等 ctxPillRise 从下向上滑入动画 0.28s 落定再量位（动画中量位漂移）
     const b2 = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
-      " var d = document.getElementById('ctxPillDots');" +
-      " var items = m.querySelectorAll('.context-menu-item'); var firstItem = null;" +
-      " for (var i = 0; i < items.length; i++) if (items[i].style.display !== 'none') { firstItem = items[i]; break; }" +
-      " var dd = getComputedStyle(d); var ic = d.querySelector('.material-symbols-outlined');" +
-      " return { inMenu: m.contains(d), dots: dd.display, firstChild: m.firstElementChild === d," +
-      " icon: ic ? ic.textContent : ''," +
-      " dotsTop: d.offsetTop, dotsH: d.offsetHeight, itemTop: firstItem ? firstItem.offsetTop : -1 }; })()");
-    ok('B2 药丸头首位：钮在菜单内 + display flex + 恒为首子元素 + more_horiz 横向三点 + 全部可见项在药丸下方（itemTop ≥ 药丸底）',
-      b2 && b2.inMenu === true && b2.dots === 'flex' && b2.firstChild === true &&
-      b2.icon === 'more_horiz' &&
-      b2.itemTop >= b2.dotsTop + b2.dotsH - 1,
+      " var d = document.getElementById('ctxPillDots'); var p = document.querySelector('.asset-panel');" +
+      " var ic = d ? d.querySelector('.material-symbols-outlined') : null;" +
+      " var dr = d.getBoundingClientRect(); var mr = m.getBoundingClientRect();" +
+      " var cs = getComputedStyle(m);" +
+      " return { inMenu: m.contains(d), inPanel: d.parentNode === p, dots: getComputedStyle(d).display," +
+      " icon: ic ? ic.textContent : '', dw: d.offsetWidth, pw: p ? p.clientWidth : 0," +
+      " pillBottom: Math.round(dr.bottom), menuTop: Math.round(mr.top)," +
+      " mShadow: cs.boxShadow, mBg: cs.backgroundColor, mBorder: cs.borderWidth, mRadius: parseFloat(cs.borderRadius) }; })()");
+    ok('B2 两卡独立：药丸不在弹窗内 + 在面板内 display flex + 全宽（dw ≥ 面板内宽-10）+ more_horiz 横向三点 + 弹窗卡在药丸卡下方（menuTop ≥ 药丸底）+ 弹窗卡自带卡片底（shadow-lg 非 none + 实底 + 边 + 圆角 >8）',
+      b2 && b2.inMenu === false && b2.inPanel === true && b2.dots === 'flex' &&
+      b2.icon === 'more_horiz' && b2.dw >= b2.pw - 26 &&
+      b2.menuTop >= b2.pillBottom - 1 &&
+      b2.mShadow !== 'none' && b2.mBg !== 'rgba(0, 0, 0, 0)' && b2.mBorder !== '0px' && b2.mRadius > 8,
       JSON.stringify(b2));
 
-    // B3 点 ⋯ → 折叠（全项 none + 容器透明化只留横药丸）——药丸仍留面板顶部（红带位置）
+    // B3 点药丸 → 关弹窗+内容展开回来（47.3 药丸只做关闭——折叠/展开条目口径作废）
     const dotsPt = await cdp.evalJs("(function(){ var d = document.getElementById('ctxPillDots'); var r = d.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()");
     await tapAt(dotsPt.x, dotsPt.y);
     await sleep(300);
-    if (!(await cdp.evalJs("!!document.querySelector('.context-menu') && document.querySelector('.context-menu').classList.contains('ctx-collapsed')"))) {
+    if (await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu'); return !!m && getComputedStyle(m).display !== 'none'; })()")) {
       await cdp.evalJs("document.getElementById('ctxPillDots').click()"); // 兜底
-      await sleep(150);
+      await sleep(200);
     }
     const b3 = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu');" +
-      " var cs = getComputedStyle(m); var allNone = true;" +
-      " document.querySelectorAll('.context-menu .context-menu-item').forEach(function (it) { if (getComputedStyle(it).display !== 'none') allNone = false; });" +
+      " var p = document.querySelector('.asset-panel');" +
       " var d = document.getElementById('ctxPillDots');" +
-      " var inPanel = !!(m.parentNode && m.parentNode.classList && m.parentNode.classList.contains('asset-panel'));" +
-      " return { collapsed: m.classList.contains('ctx-collapsed'), allNone: allNone, w: m.offsetWidth," +
-      " h: m.offsetHeight, dots: getComputedStyle(d).display, mBg: cs.backgroundColor, mBw: cs.borderWidth," +
-      " inPanel: inPanel, first: inPanel && m.parentNode.firstElementChild === m }; })()");
-    ok('B3 点 ⋯ 折叠：ctx-collapsed + 全项 display none + 横药丸 236×≤48（宽不缩、横卧）+ 容器透明化（bg 透明+边 0）只留药丸 + 三点 flex + 药丸仍在面板顶部（红带位置）',
-      b3 && b3.collapsed === true && b3.allNone === true && b3.w >= 230 && b3.w <= 242 &&
-      b3.h >= 38 && b3.h <= 48 && b3.w > b3.h &&
-      b3.mBg === 'rgba(0, 0, 0, 0)' && b3.mBw === '0px' &&
-      b3.dots === 'flex' && b3.inPanel === true && b3.first === true,
+      " var sc = p ? p.querySelector('.search-capsule') : null;" +
+      " return { open: !!m && getComputedStyle(m).display !== 'none'," +
+      " fold: !!(p && p.classList.contains('fc-pill-fold'))," +
+      " searchHidden: sc ? getComputedStyle(sc).display === 'none' : null," +
+      " dotsInPanel: d.parentNode === p, dotsDisplay: getComputedStyle(d).display }; })()");
+    ok('B3 点药丸关窗：菜单关 + fc-pill-fold 门控清 + 搜索框（原本内容）展开回来（非 none）+ 药丸回收出面板（display none 恒藏）',
+      b3 && b3.open === false && b3.fold === false && b3.searchHidden === false &&
+      b3.dotsInPanel === false && b3.dotsDisplay === 'none',
       JSON.stringify(b3));
 
-    // B4 再点 ⋮ → 重新展开（条目回到药丸下方）
-    const dotsPt2 = await cdp.evalJs("(function(){ var d = document.getElementById('ctxPillDots'); var r = d.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()");
-    await tapAt(dotsPt2.x, dotsPt2.y);
-    await sleep(300);
-    if (await cdp.evalJs("!!document.querySelector('.context-menu') && document.querySelector('.context-menu').classList.contains('ctx-collapsed')")) {
-      await cdp.evalJs("document.getElementById('ctxPillDots').click()"); // 兜底
-      await sleep(150);
-    }
-    const b4 = await cdp.evalJs("(function(){ var m = document.querySelector('.context-menu'); var vis = 0;" +
-      " document.querySelectorAll('.context-menu .context-menu-item').forEach(function (it) { if (getComputedStyle(it).display !== 'none') vis++; });" +
-      " var d = document.getElementById('ctxPillDots'); var firstItem = null;" +
-      " var items = m.querySelectorAll('.context-menu-item');" +
-      " for (var i = 0; i < items.length; i++) if (getComputedStyle(items[i]).display !== 'none') { firstItem = items[i]; break; }" +
-      " return { collapsed: m.classList.contains('ctx-collapsed'), vis: vis, w: m.offsetWidth," +
-      " itemTop: firstItem ? firstItem.offsetTop : -1, dotsTop: d.offsetTop, dotsH: d.offsetHeight }; })()");
-    ok('B4 再点展开：ctx-collapsed 清 + ≥6 项可见 + 宽 ≥228 + 功能栏条目回到药丸下方（itemTop ≥ 药丸底）',
-      b4 && b4.collapsed === false && b4.vis >= 6 && b4.w >= 228 &&
-      b4.itemTop >= b4.dotsTop + b4.dotsH - 1, JSON.stringify(b4));
+    // B4 再长按 → 两卡结构重开（折叠门控重挂）
+    const snePt2 = await cardPoint();
+    await holdTouch(snePt2.x, snePt2.y, 650);
+    const b4 = await menuState();
+    ok('B4 再长按重开：菜单开 + 两卡结构重挂（药丸首子+弹窗次子）+ 折叠门控重挂 + 内容再折叠',
+      b4.open === true && b4.pill === true && b4.pillFirst === true && b4.menuSecond === true &&
+      b4.fold === true && b4.searchHidden === true,
+      JSON.stringify(b4));
 
-    // B5 桌面右键零变化（同一仿真页——CDP 鼠标输入完全不经触控桥）：游标弹层、无 ctx-pill、三点钮藏
+    // B5 桌面右键零变化（同一仿真页——CDP 鼠标输入完全不经触控桥）：游标弹层、无 ctx-pill、药丸藏、无折叠门控
     await cdp.evalJs('window.createSneCard(5, 5, 9, 12)');
     await sleep(200);
-    const snePt4 = await cardPoint();
-    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: snePt4.x, y: snePt4.y, button: 'right', buttons: 2, clickCount: 1 });
-    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: snePt4.x, y: snePt4.y, button: 'right', buttons: 0, clickCount: 1 });
+    const snePt3 = await cardPoint();
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: snePt3.x, y: snePt3.y, button: 'right', buttons: 2, clickCount: 1 });
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: snePt3.x, y: snePt3.y, button: 'right', buttons: 0, clickCount: 1 });
     await sleep(250);
     const b5 = await menuState();
-    ok('B5 桌面右键零变化：菜单开 + 无 ctx-pill/ctx-collapsed + 弹层回 body（不在面板内）+ 内联 left/top 非空（贴指针）+ 三点钮 display none + ≥3 项可见',
-      b5.open === true && b5.pill === false && b5.collapsed === false &&
+    ok('B5 桌面右键零变化：菜单开 + 无 ctx-pill + 弹层回 body（不在面板内）+ 内联 left/top 非空（贴指针）+ 药丸 display none + 折叠门控不在 + ≥3 项可见',
+      b5.open === true && b5.pill === false &&
       b5.inPanel === false && b5.pos === 'fixed' &&
-      b5.inlineL !== '' && b5.inlineT !== '' && b5.dotsDisplay === 'none' && b5.vis >= 3,
+      b5.inlineL !== '' && b5.inlineT !== '' && b5.dotsDisplay === 'none' && b5.fold === false && b5.vis >= 3,
       JSON.stringify(b5));
 
-    // B6 面板折叠态 → 长按 → 面板自动展开 + 菜单顶部停靠（首子）
+    // B6 面板折叠态 → 长按 → 面板自动展开 + 两卡结构（药丸首子+弹窗次子）
     await cdp.evalJs("document.querySelector('.asset-panel').classList.add('collapsed')");
     await sleep(400); // width 0.25s 过渡
-    const snePt5 = await cardPoint();
-    await holdTouch(snePt5.x, snePt5.y, 650);
+    const snePt4 = await cardPoint();
+    await holdTouch(snePt4.x, snePt4.y, 650);
     await sleep(400);
     const b6 = await cdp.evalJs("(function(){ var p = document.querySelector('.asset-panel');" +
       " var m = document.querySelector('.context-menu');" +
+      " var d = document.getElementById('ctxPillDots');" +
       " return { collapsed: p.classList.contains('collapsed'), pw: p.offsetWidth," +
-      " menuInPanel: !!m && m.parentNode === p, first: !!m && m.parentNode === p && p.firstElementChild === m," +
-      " open: !!m && getComputedStyle(m).display !== 'none'," +
-      " pill: !!m && m.classList.contains('ctx-pill') }; })()");
-    ok('B6 面板折叠时长按：面板自动展开（无 collapsed + 宽>0）+ 菜单开且在面板内顶部停靠（首子+ctx-pill）',
-      b6 && b6.collapsed === false && b6.pw > 0 && b6.menuInPanel === true && b6.first === true &&
-      b6.open === true && b6.pill === true,
+      " menuInPanel: !!m && m.parentNode === p, open: !!m && getComputedStyle(m).display !== 'none'," +
+      " pill: !!m && m.classList.contains('ctx-pill')," +
+      " pillFirst: p.firstElementChild === d, menuSecond: d.parentNode === p && d.nextElementSibling === m," +
+      " fold: p.classList.contains('fc-pill-fold') }; })()");
+    ok('B6 面板折叠时长按：面板自动展开（无 collapsed + 宽>0）+ 菜单开且在面板内 + 两卡结构（药丸首子+弹窗次子）+ 折叠门控在场',
+      b6 && b6.collapsed === false && b6.pw > 0 && b6.menuInPanel === true &&
+      b6.open === true && b6.pill === true && b6.pillFirst === true && b6.menuSecond === true && b6.fold === true,
       JSON.stringify(b6));
 
     ok('E1 全程零 Runtime.exceptionThrown + 零 console.error',

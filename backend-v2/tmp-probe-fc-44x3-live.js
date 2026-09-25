@@ -1,4 +1,4 @@
-// tmp-probe-fc-44x3-live.js — FC v10.28.47.2 上线实机探针（合拼边缘不齐修复 + 触控上传修复 + 125→115 格宽）
+// tmp-probe-fc-44x3-live.js — FC v10.28.47.3 上线实机探针（合拼边缘不齐修复 + 触控上传修复 + 125→115 格宽）
 // 用户「平板移动端在合拼卡片之后边缘会不齐，和无法点击上传图片」+「把125格宽减少一个10格」——44.3 线上实证：
 //   S 静态（线上 site-config 44.3 + 平板合拼/触控上传 changelog + rev 00293- + 站点 58.0 恒、
 //   编辑器 bbox 落位锚+computeCols 115+覆盖层挂载/CSS 锚、article.html STAGE_COLS 115、
@@ -77,8 +77,8 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.47.2 + 平板合拼边缘不齐/触控上传 changelog + rev 00293- + 站点恒 v0.2.58.0',
-    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.2';") !== -1 &&
+  ok('S1 线上 site-config：FC v10.28.47.3 + 平板合拼边缘不齐/触控上传 changelog + rev 00293- + 站点恒 v0.2.58.0',
+    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.3';") !== -1 &&
     sc.body.indexOf('平板合拼边缘不齐') !== -1 && sc.body.indexOf('触控上传修复') !== -1 &&
     sc.body.indexOf('rev 00293-') !== -1 && sc.body.indexOf('v0.2.58.0') !== -1,
     'status=' + sc.status + ' err=' + sc.error);

@@ -1,4 +1,4 @@
-// tmp-battery-fc-touch-uploads.js — FC v10.28.47.2 触控上传修复电池
+// tmp-battery-fc-touch-uploads.js — FC v10.28.47.3 触控上传修复电池
 // 用户「还有平板移动端在合拼卡片之后边缘会不齐，和无法点击上传图片」——真身：
 //   char-avatar（click→fi.click）/map-canvas（dblclick→fi.click）是 .grid-card 内
 //   普通 div → 触控桥 classify 归 CARD 手势 → preventDefault 杀掉原生 click →
@@ -135,7 +135,7 @@ function ok(name, cond, detail) {
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
     ok('S1 site-config 44.3 + rev 00293- 占位 + 站点恒 v0.2.58.0 + 编辑器覆盖层挂载/CSS 锚在位 + fc-touch.js 零改动（inEditableZone input 豁免复用）',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.2';") !== -1 &&
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.3';") !== -1 &&
       siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1 &&
       editorHtml.split("fi.className = 'card-upload-input'").length - 1 === 2 &&
       editorHtml.indexOf('avatar.replaceChildren(fi)') !== -1 &&
