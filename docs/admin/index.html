@@ -277,9 +277,13 @@ html[data-theme="dark"] .guest-module .btn-primary:hover {
    亮块无孔可入，从上到下底色统一干净深色；② 暗色下侧栏玻璃注入层灭滤镜灭磨砂
    （透明层零折射需求，杜绝 feImage 位移图/磨砂伪影）；③ .nav-item.active 高亮不动。
    亮色主题零触碰 */
-:root[data-theme="dark"] .app-sidebar {
-  background: var(--sidebar-bg);
-}
+/* 2026-09-26 用户「平台所有的左侧菜单底部不是有一个不透明背景吗能不能去掉他，我要完全的删除它」
+   （「注意我是指Z轴最底部的那一个不是我的卡片」）——真身=09-10/09-18 两轮铺的侧栏整列不透明底
+   （--sidebar-bg）：v0.2.53.3 菜单卡收为内容高后，卡下方剩一整块纯色不透明面板=用户指的
+   Z 轴最底部背景。修法：侧栏容器铺底规则整体移除（深浅两主题）——侧栏列全透明，卡下方不再有
+   任何面板（页面底色直接可见）；三张卡（logo/用户/菜单 .sidebar-module）零触碰；玻璃注入层
+   灭滤镜灭磨砂规则保留（防 09-10 亮块机制复活）；卡片/下拉的 --sidebar-bg 用法不动；
+   窄屏 floating 覆盖态同步透明（口径统一）。 */
 :root[data-theme="dark"] .app-sidebar .lg-backdrop {
   filter: none;
   backdrop-filter: none;
@@ -291,9 +295,6 @@ html[data-theme="dark"] .guest-module .btn-primary:hover {
    （灭滤镜灭磨砂+铺不透明底），当时注释「亮色主题零触碰」故亮色遗留至今。
    修法（问询钦定「彻底铺不透明白底」）：亮色侧栏同样铺满 --sidebar-bg（近纯白 0.95）
    不透明底 + 灭玻璃注入层滤镜/磨砂，与暗色同款同观感；亮色 mono 走 var() 自动适配 */
-:root:not([data-theme="dark"]) .app-sidebar {
-  background: var(--sidebar-bg);
-}
 :root:not([data-theme="dark"]) .app-sidebar .lg-backdrop {
   filter: none;
   backdrop-filter: none;

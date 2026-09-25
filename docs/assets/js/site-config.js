@@ -1124,6 +1124,15 @@ window.MN_SITE = window.MN_SITE || {};
 //   FC 查看模式呈现统一（v10.28.37.0）：灭网格线、同款标签条+目录抽屉（中文）、1:1 bbox 裁剪滚动（scale 恒 1 不放大）
 //   后端零改动；ethereal 零改动（页面 CSS 全在 article.html 独立块 + FC head 查看块）；i18n 新键 4×12 + OpenCC
 //   （rev 00272-g99）
+// v0.2.58.1 = 左侧菜单底部不透明背景完全删除（补丁位 0→1·调整轮；2026-09-26）——用户「平台所有的
+//   左侧菜单底部不是有一个不透明背景吗能不能去掉他，我要完全的删除它，注意我是指Z轴最底部的那一个
+//   不是我的卡片」（真身=v0.2.53.3 菜单卡收为内容高后，卡下方剩一整块纯色不透明面板——09-10/09-18
+//   两轮铺的侧栏整列不透明底 --sidebar-bg，即用户指的 Z 轴最底层背景；修法：侧栏容器铺底规则整体移除
+//   （深浅两主题）→ 侧栏列全透明、卡下方不再有任何面板、页面底色直接可见；三张卡（logo/用户/菜单
+//   .sidebar-module）零触碰；玻璃注入层灭滤镜灭磨砂规则保留（防 09-10 亮块机制复活）；卡片/下拉的
+//   --sidebar-bg 用法不动；窄屏 floating 覆盖态同步透明（口径统一）；41 页内联块全量刷新；
+//   FC 恒 v10.28.47.4、后端零改动、i18n 零新键）：
+//   （rev 00304-nzm）
 // v0.2.57.1 = 文章呈现全屏投影（补丁位 0→1·修复轮；2026-09-20）——用户「还是一样不符合要求啊，还是你用镜像投影的方式把用户在FC编辑好的数据和一些目录操作做好？而且我的要求是覆盖全屏不是中间而已」（真身：57.0 文章栏宽上限 720px 画布全挤在窗中间、目录只认有 label 的 content/text 卡——真文章只有 flag+shield 两卡时目录钮根本不出现；修法：720 上限废除；宽窗 contain fit 缩放不再封顶 1——s=max(0.25,min(availW/bboxW,availH/bboxH)) 投影仪铺满整屏、resize 宽模式只重算缩放不重建 DOM；目录列全部卡——label 优先→正文首行派生 18 字→卡型名兜底（shield=Emblem 等）；窄窗维基回流口径不变）：
 //   FC 查看镜像同款（v10.28.37.1）：fit1to1 改 contain fit 随查看窗铺满 + 目录列全部卡
 //   后端零改动；ethereal 零改动；i18n 零新键
@@ -1158,7 +1167,7 @@ window.MN_SITE = window.MN_SITE || {};
 //   i18n：overview/index 新键 12 语言（ov.searchPh/search.*/contrib.published/empty、index.act.article）+ OpenCC 重生成
 //   后端零改动（GET /api/articles 已具备）；电池：新 tmp-battery-micro-v056 + article-view 补 View 锚
 //   （rev 00269-52s）
-window.MN_SITE_VERSION = 'v0.2.58.0';
+window.MN_SITE_VERSION = 'v0.2.58.1';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

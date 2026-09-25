@@ -57,16 +57,24 @@ async function main() {
     // ① ethereal.css → <style>（两种属性顺序都认）
     // 已内联页（无 <link>）：按 CSS_MARK 定位内联块原位刷新为最新 ethereal.css——否则改动后重跑
     // 旧内联永不更新（08-29 教训：重跑只在 <link> 态页面生效）。块尾 = 标记后第一个 </style>。
-    const markIdx = text.indexOf(CSS_MARK);
-    if (markIdx !== -1) {
-      const start = text.lastIndexOf('<style>', markIdx);
-      const end = text.indexOf('</style>', markIdx) + '</style>'.length;
-      if (start !== -1) {
-        text = text.slice(0, start) + `<style>${eol}${CSS_MARK}${eol}${css}${eol}</style>` + text.slice(end);
+    // ⚠ FC 编辑器页豁免（09-17 + 09-26 两轮血证）：fluidcanvas-editor.html 的内联块含页面专属
+    // 覆写（42.0/42.1 全不透明门控/不透明底等——ethereal.css 本体没有），整块替换会把它们冲回
+    // 玻璃时代配方（09-26 复发：42.1 后首个 inliner 重跑把 .editor-header/.modal-card/.mre-*
+    // 门控冲掉 → 注入层复活吞掉拖拽/悬停事件，舰队 headershrink/touch-uploads 双双复现红）。
+    // 该页内联块不自动刷新——ethereal.css 改动时必须在同页内联块手工施加同款编辑（见块头注释）。
+    const SKIP_CSS_REFRESH = rel === 'pages/fluidcanvas-editor.html';
+    if (!SKIP_CSS_REFRESH) {
+      const markIdx = text.indexOf(CSS_MARK);
+      if (markIdx !== -1) {
+        const start = text.lastIndexOf('<style>', markIdx);
+        const end = text.indexOf('</style>', markIdx) + '</style>'.length;
+        if (start !== -1) {
+          text = text.slice(0, start) + `<style>${eol}${CSS_MARK}${eol}${css}${eol}</style>` + text.slice(end);
+        }
+      } else {
+        text = text.replace(/<link rel="stylesheet" href="[^"]*ethereal\.css">/g, () => `<style>${eol}${CSS_MARK}${eol}${css}${eol}</style>`);
+        text = text.replace(/<link href="[^"]*ethereal\.css" rel="stylesheet">/g, () => `<style>${eol}${CSS_MARK}${eol}${css}${eol}</style>`);
       }
-    } else {
-      text = text.replace(/<link rel="stylesheet" href="[^"]*ethereal\.css">/g, () => `<style>${eol}${CSS_MARK}${eol}${css}${eol}</style>`);
-      text = text.replace(/<link href="[^"]*ethereal\.css" rel="stylesheet">/g, () => `<style>${eol}${CSS_MARK}${eol}${css}${eol}</style>`);
     }
 
     // ② Google Fonts <link> → <style>（按 URL 抓取缓存）

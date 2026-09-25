@@ -1,6 +1,6 @@
 // tmp-probe-fc-headershrink.js — FC v10.28.47.4 顶部栏缩身+迁移按钮白底白字修复 上线实机探针
 // 用户「能不能吧FC编辑页的顶部栏缩小一些太大了」+「还有顶部的迁移按钮为什么文字默认是白底白字的」
-//   S 静态（线上 site-config 45.1 + rev 00303- + 站点 58.0 恒、编辑器页子代选择器+缩身规则锚）
+//   S 静态（线上 site-config 45.1 + rev 00304- + 站点 58.0 恒、编辑器页子代选择器+缩身规则锚）
 //   P 实机（桌面 CDP + 登录态 stub：P1 头栏 5px/8px/高 ≤48｜P2 钮 30×30/3px 12px/图标 20px｜
 //     P3 迁移钮单次反转（外层 invert(1)+内层 none）+ svg 20+白面板在位｜P4 悬停翻 invert(0)
 //     移开回 invert(1)｜P5 粗指针 44px 兜底（btn+migrate 双保）｜E1 零异常零 console error）。
@@ -73,9 +73,9 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.47.4 + rev 00303- + 站点恒 v0.2.58.0',
+  ok('S1 线上 site-config：FC v10.28.47.4 + rev 00304- + 站点恒 v0.2.58.1',
     sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
-    sc.body.indexOf('rev 00303-') !== -1 && sc.body.indexOf('v0.2.58.0') !== -1,
+    sc.body.indexOf('rev 00304-') !== -1 && sc.body.indexOf('v0.2.58.1') !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const ed = await get(BASE + '/pages/fluidcanvas-editor.html');
   ok('S2 线上编辑器页：子代选择器在源 + 后代零残留 + 缩身规则锚（5px 垫/gap 8px/btn-icon 30/migrate svg 20/18px/粗指针 migrate 入列）',
