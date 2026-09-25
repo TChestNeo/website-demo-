@@ -29,8 +29,8 @@ try {
   ok('S6 成功 → toast + renderDetail 刷新（chip 层级随刷新更新，同 flagEvent 口径）',
     users.indexOf("toast((T('admin.users.grantDone') || '已发放订阅（写操作已审计）'))") !== -1 &&
     users.indexOf('renderDetail(SC.pages.users._root)') !== -1);
-  ok('S7 卡片顺序：支付记录 → 订阅发放 → 安全档案',
-    users.indexOf('box.replaceChildren(header, infoCard, statsStrip, paymentsCard, grantCard, securityCard);') !== -1);
+  ok('S7 卡片顺序：支付记录 → 订阅发放 → 订阅发放记录 → 安全档案',
+    users.indexOf('box.replaceChildren(header, infoCard, statsStrip, paymentsCard, grantCard, recCard, securityCard);') !== -1);
   ok('S8 请求期间按钮禁用防连点（btn.disabled 双写：点击前置 true / 回执置 false）',
     users.indexOf('btn.disabled = true;') !== -1 && users.indexOf('btn.disabled = false;') !== -1);
 
@@ -52,12 +52,12 @@ try {
     });
   });
   ok('S9 8 新键 ×12 语言块全在位（zh-Hant 由 OpenCC 重生成）', missing.length === 0, missing.slice(0, 6).join(','));
-  ok('S10 i18n 文件可执行（链式 add ×12 语言，键数统一 292）',
+  ok('S10 i18n 文件可执行（链式 add ×12 语言，键数统一 307）',
     (function () {
       try {
         const MN = { dicts: [], add: function (k, d) { MN.dicts.push([k, d]); return MN; } };
         new Function('window', 'localStorage', i18n)({ MN_I18N: MN }, { getItem: function () { return null; }, setItem: function () {} });
-        return MN.dicts.length === 12 && MN.dicts.every(([, d]) => Object.keys(d).length === 292);
+        return MN.dicts.length === 12 && MN.dicts.every(([, d]) => Object.keys(d).length === 307);
       } catch (e) { return false; }
     })());
 

@@ -16,6 +16,13 @@
   const EVENT_ZH = { suspicious_login: '可疑登录', password_change: '密码修改', email_change: '邮箱修改', '2fa_change': '两步验证变更', new_device: '新设备', new_session: '新会话', account_recovery: '账号找回', security_settings_change: '安全设置变更' };
   const EVENT_KEY = { suspicious_login: 'admin.event.suspiciousLogin', password_change: 'admin.event.passwordChange', email_change: 'admin.event.emailChange', '2fa_change': 'admin.event.twoFaChange', new_device: 'admin.event.newDevice', new_session: 'admin.event.newSession', account_recovery: 'admin.event.accountRecovery', security_settings_change: 'admin.event.securitySettingsChange' };
   const RISK_ZH = { high: '高危', medium: '中危', low: '低危' };
+  // 订阅生效状态（用户详情「订阅发放记录」卡上方）：[原文, i18n 键, chip 类]
+  const SUB_STATUS = {
+    none: ['无订阅', 'admin.users.recStNone', 'neutral'],
+    active: ['生效中', 'admin.users.recStActive', 'ok'],
+    expired: ['已过期', 'admin.users.recStExpired', 'neutral'],
+    forever: ['永久', 'admin.users.recStForever', 'warn']
+  };
 
   const state = { q: '', filter: 'all', sort: 'created_desc', page: 1, view: 'list', userId: null };
 
@@ -83,13 +90,16 @@
     root.replaceChildren(box);
     Promise.all([
       SC.get('/staff/users/' + state.userId),
-      SC.get('/staff/users/' + state.userId + '/security')
-    ]).then(([ru, rs]) => {
+      SC.get('/staff/users/' + state.userId + '/security'),
+      // 无权限不请求发放记录：GET 403 会写 perm_denied 审计行（噪音）；有权限再取
+      SC.can('subscriptions.manage') ? SC.get('/staff/subscriptions/grants/' + state.userId) : Promise.resolve(null)
+    ]).then(([ru, rs, rg]) => {
       if (ru.networkError) return empty(box, (T('admin.network.unreachable') || '无法连接后端'));
       if (!ru.ok) { box.replaceChildren(deniedEl(ru.status, ru.data), h('button', { class: 'btn', text: (T('admin.users.backToList') || '← 返回列表'), onclick: () => { state.view = 'list'; renderList(root); } })); return; }
       const u = ru.data.user;
       const st = ru.data.stats;
       const sec = rs.ok ? rs.data : null;
+      const rec = rg && rg.ok ? rg.data : null;
 
       const header = h('div', { class: 'row', style: 'margin-bottom:var(--space-md)' },
         h('button', { class: 'btn', text: (T('admin.users.backToList') || '← 返回列表'), onclick: () => { state.view = 'list'; renderList(root); } }),
@@ -171,6 +181,51 @@
             })()
           : h('p', { class: 'adm-meta', text: (T('admin.users.grantNoPerm') || '当前角色无订阅发放权限（subscriptions.manage）。') }));
 
+      // 订阅发放记录（subscriptions.manage）：上方当前订阅状态（排列方式：生效 · 高级），下方发放记录
+      // （发放时间/开始/结束 + 总共发放了几次）；后端从审计链 staff_test_grant 读、按 生效·高级 排好序
+      let recBody;
+      if (!rec) {
+        recBody = h('p', { class: 'adm-meta', text: (T('admin.users.recLoadFail') || '发放记录加载失败或无权限。') });
+      } else {
+        const nowMs = Date.now();
+        let subStatus = 'none';
+        if (u.tier !== 'free') {
+          if (!u.tierExpiresAt) subStatus = 'forever';
+          else if (Date.parse(u.tierExpiresAt) <= nowMs) subStatus = 'expired';
+          else subStatus = 'active';
+        }
+        const rows = rec.grants || [];
+        recBody = h('div', {},
+          h('div', { class: 'row', style: 'margin-bottom:var(--space-sm)' },
+            h('span', { class: 'chip ' + SUB_STATUS[subStatus][2], text: (T(SUB_STATUS[subStatus][1]) || SUB_STATUS[subStatus][0]) }),
+            h('span', { class: 'adm-meta', text: '·' }),
+            chip('tier', u.tier),
+            h('span', { class: 'adm-meta', text: (T('admin.users.fTierExpires') || '层级到期') + '：' + fmtDateTime(u.tierExpiresAt) })),
+          h('div', { class: 'adm-meta', style: 'margin-bottom:var(--space-sm)', text: (T('admin.users.recTotal') || '总共发放了 {n} 次').replace('{n}', String(rows.length)) }),
+          rows.length
+            ? h('table', { class: 'adm-table' },
+              h('thead', {}, h('tr', {},
+                h('th', { text: (T('admin.users.recGrantedAt') || '发放时间') }), h('th', { text: (T('admin.users.thTier') || '等级') }), h('th', { text: (T('admin.users.recStart') || '开始时间') }), h('th', { text: (T('admin.users.recEnd') || '结束时间') }), h('th', { text: (T('admin.users.recEffect') || '是否生效') }))),
+              h('tbody', {},
+                ...rows.map((g) => h('tr', {},
+                  h('td', { text: fmtDateTime(g.grantedAt) }),
+                  h('td', {}, chip('tier', g.tier)),
+                  h('td', { text: fmtDateTime(g.start) }),
+                  h('td', { text: g.end ? fmtDateTime(g.end) : (g.end === null ? (T('admin.users.recStForever') || '永久') : '—') }),
+                  h('td', {}, g.effect === 'applied'
+                    ? h('span', { class: 'chip ok', text: (T('admin.users.recEffectApplied') || '生效') })
+                    : h('span', { class: 'chip neutral', text: (T('admin.users.recEffectNoop') || '无变化') }))))))
+            : h('div', { class: 'empty', text: (T('admin.users.recEmpty') || '暂无发放记录') }));
+      }
+      const recCard = SC.can('subscriptions.manage')
+        ? h('section', { class: 'adm-card' },
+            h('div', { class: 'adm-card-title' },
+              h('div', {},
+                h('h3', { text: (T('admin.users.recTitle') || '订阅发放记录') }),
+                h('div', { class: 'sub', text: (T('admin.users.recSub') || 'Grants · 生效状态与发放历史') }))),
+            recBody)
+        : null;
+
       // 安全档案（users.view 可达：cs 掩码近 10 条；security 全量）
       let securityBody;
       if (!sec) {
@@ -221,7 +276,7 @@
             : null),
         securityBody);
 
-      box.replaceChildren(header, infoCard, statsStrip, paymentsCard, grantCard, securityCard);
+      box.replaceChildren(header, infoCard, statsStrip, paymentsCard, grantCard, recCard, securityCard);
     });
   }
 

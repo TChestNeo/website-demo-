@@ -374,6 +374,21 @@ async function main() {
       (() => { const t = document.querySelector('#pane-users').textContent;
         const i = t.indexOf('层级到期'); return i >= 0 && t.slice(i + 4, i + 24).includes('202'); })()`));
 
+    // ── 订阅发放记录卡（director）：生效 · 高级 状态条 + 发放记录（发放时间/开始/结束 + 总共发放了几次）──
+    ok('详情：订阅发放记录卡（director 可见 + 总数 1 次）', await client.evalJs(`
+      (() => { const t = document.querySelector('#pane-users').textContent;
+        return t.includes('订阅发放记录') && t.includes('总共发放了 1 次'); })()`));
+    ok('生效 · 高级 状态条（生效中 + 旗舰 + 到期）', await client.evalJs(`
+      (() => { const s = [...document.querySelectorAll('#pane-users .adm-card')].find((x) => x.textContent.includes('订阅发放记录'));
+        const chips = [...s.querySelectorAll('.chip')].map((c) => c.textContent);
+        return chips.includes('生效中') && chips.includes('旗舰') && s.textContent.includes('层级到期：'); })()`));
+    const recRows = await client.evalJs(secOf('#pane-users .adm-card', '订阅发放记录'));
+    ok(`发放记录 1 行（实际 ${recRows} 行）`, recRows === 1);
+    ok('发放记录行：发放/开始/结束时间 + 生效 chip', await client.evalJs(`
+      (() => { const s = [...document.querySelectorAll('#pane-users .adm-card')].find((x) => x.textContent.includes('订阅发放记录'));
+        const t = s.textContent;
+        const i = t.indexOf('结束时间'); return i >= 0 && t.slice(i + 4, i + 28).includes('202') && t.includes('是否生效'); })()`));
+
     // ── Security：全局登录史 / 事件 + 标记按钮（director security.manage）──
     await client.evalJs(`document.querySelector('#navGroups a[href="#/security"]').click()`);
     await client.waitFor(`document.querySelectorAll('#pane-security .adm-table tbody tr').length >= 13`, 8000, '全局登录史 ≥13 行');
@@ -448,6 +463,8 @@ async function main() {
     ok('cs 详情：订阅发放无权限文案（无 subscriptions.manage）', await client.evalJs(`
       (() => { const t = document.querySelector('#pane-users').textContent;
         return t.includes('无订阅发放权限') && !t.includes('发放订阅'); })()`));
+    ok('cs 详情：无订阅发放记录卡（无 subscriptions.manage）', await client.evalJs(`
+      !document.querySelector('#pane-users').textContent.includes('订阅发放记录')`));
 
     // ── W6：有密码 staff 错密码不消费码（同码改对重试）──
     await client.evalJs(`document.getElementById('logoutBtn').click()`);
