@@ -4889,7 +4889,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 
 <!-- ═══ HEADER ═══ -->
 <div class="editor-header">
-  <a href="../index.html" class="btn btn-ghost btn-icon btn-sm" title="Back to Dashboard">
+  <a href="../index.html" class="btn btn-ghost btn-icon btn-sm" title="Back to Dashboard" data-i18n-title="fc.head.backDashboard">
     <span class="material-symbols-outlined">arrow_back</span>
   </a>
   <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:22px">article</span>
@@ -4898,17 +4898,17 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
   <span style="flex:1"></span>
   <span class="label-sm" style="color:var(--color-outline)" id="lastSavedLabel"></span>
   <!-- v10.28.20 — 撤回/恢复：快照式撤销栈（600ms 防抖自动记录，撤到哪一步恢复哪一步） -->
-  <button class="btn btn-outline btn-sm" id="undoBtn" onclick="historyUndoAction()" disabled title="撤回 (Ctrl+Z)">
+  <button class="btn btn-outline btn-sm" id="undoBtn" onclick="historyUndoAction()" disabled title="撤回 (Ctrl+Z)" data-i18n-title="fc.undo">
     <!-- v10.28.30.1: 用户「能不能把undo和redo的按钮只是保留icon不需要名称」——纯图标无文字，名称保留在 title 悬停提示 -->
     <span class="material-symbols-outlined">undo</span>
   </button>
-  <button class="btn btn-outline btn-sm" id="redoBtn" onclick="historyRedoAction()" disabled title="恢复 (Ctrl+Y)">
+  <button class="btn btn-outline btn-sm" id="redoBtn" onclick="historyRedoAction()" disabled title="恢复 (Ctrl+Y)" data-i18n-title="fc.redo">
     <span class="material-symbols-outlined">redo</span>
   </button>
   <button class="btn btn-outline btn-sm" onclick="openModal('historyModal')">
-    <span class="material-symbols-outlined">history</span> History
+    <span class="material-symbols-outlined">history</span> <span data-i18n="fc.chrome.history">History</span>
   </button>
-  <button class="btn btn-outline btn-sm" onclick="openModal('tagsModal')" title="Tags">
+  <button class="btn btn-outline btn-sm" onclick="openModal('tagsModal')" title="Tags" data-i18n-title="fc.chrome.tags">
     <!-- v10.28.30.2: 用户「设置和Tags能不能也是只有一个icon?」——纯图标无文字，名称保留在 title 悬停提示 -->
     <span class="material-symbols-outlined">sell</span>
   </button>
@@ -4921,19 +4921,19 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
         <path d="M0 0h24v24H0z" fill="none"></path>
         <path d="M24 12l-5.657 5.657-1.414-1.414L21.172 12l-4.243-4.243 1.414-1.414L24 12zM2.828 12l4.243 4.243-1.414 1.414L0 12l5.657-5.657L7.07 7.757 2.828 12zm6.96 9H7.66l6.552-18h2.128L9.788 21z" fill="currentColor"></path>
       </svg>
-      Migrate
+      <span data-i18n="fc.chrome.migrate">Migrate</span>
     </span>
   </button>
   <!-- v10.28.30.0 — 设置齿轮：直开平台设置弹窗（编辑器页默认落在「编辑器」区调自动保存频率） -->
-  <button class="btn btn-outline btn-sm" id="settingsBtn" onclick="window.SlatiSettings.open()" title="设置">
+  <button class="btn btn-outline btn-sm" id="settingsBtn" onclick="window.SlatiSettings.open()" title="设置" data-i18n-title="fc.chrome.settings">
     <!-- v10.28.30.2: 用户「设置和Tags能不能也是只有一个icon?」——纯图标无文字，名称保留在 title 悬停提示 -->
     <span class="material-symbols-outlined">settings</span>
   </button>
   <button class="btn btn-outline btn-sm" onclick="saveDraft()">
-    <span class="material-symbols-outlined">save</span> Save Draft
+    <span class="material-symbols-outlined">save</span> <span data-i18n="fc.chrome.saveDraft">Save Draft</span>
   </button>
   <button class="btn btn-primary btn-sm" onclick="publishArticle()">
-    <span class="material-symbols-outlined">publish</span> Publish
+    <span class="material-symbols-outlined">publish</span> <span data-i18n="fc.chrome.publish">Publish</span>
   </button>
 </div>
 
@@ -4941,91 +4941,91 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 <div class="canvas-body">
 
   <!-- Left Asset Panel -->
-  <button class="asset-panel-toggle" onclick="toggleAssetPanel()" title="Toggle asset panel">◂</button>
+  <button class="asset-panel-toggle" onclick="toggleAssetPanel()" title="Toggle asset panel" data-i18n-title="fc.assetPanel.toggle">◂</button>
   <div class="asset-panel custom-scrollbar">
     <div class="search-capsule" style="width:100%;margin-bottom:var(--space-sm)">
       <span class="material-symbols-outlined">search</span>
-      <input type="text" placeholder="Filter assets..." oninput="filterAssets(this.value)">
+      <input type="text" placeholder="Filter assets..." data-i18n-placeholder="fc.assetPanel.filter" oninput="filterAssets(this.value)">
     </div>
-    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em">Identity</div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="flag" data-label="National Flag"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">flag</span><span class="label-md">National Flag</span></div></div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="shield" data-label="Emblem"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">shield</span><span class="label-md">Emblem</span></div></div>
-    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">Geography</div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="map" data-label="Territorial Map"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">map</span><span class="label-md">Territorial Map</span></div></div>
-    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">Politics & Economy</div>
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em" data-i18n="fc.assetPanel.identity">Identity</div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="flag" data-label="National Flag"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">flag</span><span class="label-md" data-i18n="fc.asset.flag">National Flag</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="shield" data-label="Emblem"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">shield</span><span class="label-md" data-i18n="fc.asset.emblem">Emblem</span></div></div>
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px" data-i18n="fc.assetPanel.geography">Geography</div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="map" data-label="Territorial Map"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">map</span><span class="label-md" data-i18n="fc.asset.map">Territorial Map</span></div></div>
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px" data-i18n="fc.assetPanel.politics">Politics &amp; Economy</div>
     <!-- v10.28.8: Governance / Economic Ledger 模板移除（用户指令）——旧草稿
          里的这两类卡仍走 createAssetCard 兜底正常载入，只从库里拿掉入口 -->
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="sne" data-label="SNE Index"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">balance</span><span class="label-md">SNE Index</span></div></div>
-    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">People & Data</div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="character" data-label="Character Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">person</span><span class="label-md">Character Card</span></div></div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="stats" data-label="Stats Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">monitoring</span><span class="label-md">Stats Card</span></div></div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="sheet" data-label="Sheet Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">table</span><span class="label-md">Sheet Card</span></div></div>
-    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">Content</div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="menu_book" data-label="Constitution"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">menu_book</span><span class="label-md">Constitution</span></div></div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="history_edu" data-label="Timeline"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">history_edu</span><span class="label-md">Timeline</span></div></div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="image" data-label="Gallery"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">image</span><span class="label-md">Gallery</span></div></div>
-    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="content" data-label="Content Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">edit_note</span><span class="label-md">Content Card</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="sne" data-label="SNE Index"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">balance</span><span class="label-md" data-i18n="fc.asset.sne">SNE Index</span></div></div>
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px" data-i18n="fc.assetPanel.people">People &amp; Data</div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="character" data-label="Character Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">person</span><span class="label-md" data-i18n="fc.asset.character">Character Card</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="stats" data-label="Stats Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">monitoring</span><span class="label-md" data-i18n="fc.asset.stats">Stats Card</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="sheet" data-label="Sheet Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">table</span><span class="label-md" data-i18n="fc.asset.sheet">Sheet Card</span></div></div>
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px" data-i18n="fc.assetPanel.content">Content</div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="menu_book" data-label="Constitution"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">menu_book</span><span class="label-md" data-i18n="fc.asset.constitution">Constitution</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="history_edu" data-label="Timeline"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">history_edu</span><span class="label-md" data-i18n="fc.asset.timeline">Timeline</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="image" data-label="Gallery"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">image</span><span class="label-md" data-i18n="fc.asset.gallery">Gallery</span></div></div>
+    <div class="card card-hover" style="padding:var(--space-sm);cursor:grab" draggable="true" data-asset="content" data-label="Content Card"><div class="flex-center gap-sm"><span class="material-symbols-outlined" style="color:var(--color-primary)">edit_note</span><span class="label-md" data-i18n="fc.asset.contentCard">Content Card</span></div></div>
     <!-- v10.28.27: 页面背景入口——非 .card 类、无 draggable（filterAssets 只过滤
          .card；资产拖拽武装按 .card[draggable] 绑定），状态角标由 JS 回写 -->
-    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px">自定义</div>
+    <div style="font-size:var(--fs-label-sm);color:var(--color-outline);padding:4px 8px;text-transform:uppercase;letter-spacing:0.05em;margin-top:8px" data-i18n="fc.assetPanel.custom">自定义</div>
     <div class="asset-custom-entry" onclick="openPageBgModal()">
       <span class="material-symbols-outlined" style="color:var(--color-primary)">wallpaper</span>
-      <span class="label-md">页面背景</span>
+      <span class="label-md" data-i18n="fc.pbg.entry">页面背景</span>
       <span class="state" id="pageBgEntryState">未设置</span>
     </div>
     <!-- v10.28.31: 订阅锁——免费用户显示锁标 + 升级链接（updatePageBgEntryState 按订阅态显隐） -->
     <div id="pageBgEntryLock" style="display:none;align-items:center;justify-content:space-between;gap:6px;padding:6px 8px;border:1px dashed var(--divider-line-strong);border-radius:8px;background:var(--color-surface-container-low)">
       <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--color-on-surface)">
-        <span class="material-symbols-outlined" style="font-size:16px;color:var(--color-primary)">lock</span>页面背景
+        <span class="material-symbols-outlined" style="font-size:16px;color:var(--color-primary)">lock</span><span data-i18n="fc.pbg.entry">页面背景</span>
       </span>
-      <a href="premium.html" id="pageBgUpgradeLink" style="font-size:12px;color:var(--color-primary);text-decoration:none;white-space:nowrap">订阅后解锁 →</a>
+      <a href="premium.html" id="pageBgUpgradeLink" style="font-size:12px;color:var(--color-primary);text-decoration:none;white-space:nowrap" data-i18n="fc.pbg.upgradeLink">订阅后解锁 →</a>
     </div>
   </div>
 
   <!-- ═══ EDITOR BODY (grid canvas) ═══ -->
   <div class="editor-body custom-scrollbar">
-    <input type="text" class="title-input" id="titleInput" placeholder="Article Title" oninput="onContentChange()">
+    <input type="text" class="title-input" id="titleInput" placeholder="Article Title" data-i18n-placeholder="fc.chrome.titlePh" oninput="onContentChange()">
     <div class="grid-controls">
       <!-- v10.3 — Cols/Cell/Viewport 三组合并为一个按钮，点击弹出 viewportPopover。
            弹层放在 .grid-controls 内部（position:fixed 不影响布局），高亮循环
            选择器 .grid-controls .col-btn / .vp-presets .vp-btn 全部保持不变；
            class 带 radius-popover 即可复用外部点击/ESC/hideContextMenu 关闭机制。 -->
-      <button class="btn btn-ghost btn-sm" id="viewportBtn" onclick="toggleViewportPopover()" title="画面预设 / 列数 / 格子大小">
-        <span class="material-symbols-outlined">view_agenda</span> Viewport ·
+      <button class="btn btn-ghost btn-sm" id="viewportBtn" onclick="toggleViewportPopover()" title="画面预设 / 列数 / 格子大小" data-i18n-title="fc.viewport.title">
+        <span class="material-symbols-outlined">view_agenda</span> <span data-i18n="fc.chrome.viewport">Viewport ·</span>
         <span id="viewportBtnState">16:9</span>
         <span class="material-symbols-outlined">expand_more</span>
       </button>
       <span style="flex:1"></span>
       <button class="btn btn-ghost btn-sm" onclick="showTemplateLibrary()">
-        <span class="material-symbols-outlined">dashboard_customize</span> Templates
+        <span class="material-symbols-outlined">dashboard_customize</span> <span data-i18n="fc.chrome.templates">Templates</span>
       </button>
       <!-- v10.27.1 — Canva 式图层面板；快捷键 Ctrl+[ 下移一层 / Ctrl+] 上移一层 -->
-      <button class="btn btn-ghost btn-sm" id="layersBtn" onclick="toggleLayersPopover()" title="图层：Ctrl+[ 下移一层 · Ctrl+] 上移一层">
-        <span class="material-symbols-outlined">layers</span> Layers
+      <button class="btn btn-ghost btn-sm" id="layersBtn" onclick="toggleLayersPopover()" title="图层：Ctrl+[ 下移一层 · Ctrl+] 上移一层" data-i18n-title="fc.layers.title">
+        <span class="material-symbols-outlined">layers</span> <span data-i18n="fc.chrome.layers">Layers</span>
       </button>
-      <button class="col-btn active" id="snapToggle" onclick="toggleSnap()" title="拖拽时自动吸附到方格，关闭后自由移动">吸附</button>
-      <button class="col-btn active" id="alignToggle" onclick="toggleAlign()" title="拖拽时吸附对齐到其他卡片与页面中线，并显示对齐线">对齐</button>
+      <button class="col-btn active" id="snapToggle" onclick="toggleSnap()" title="拖拽时自动吸附到方格，关闭后自由移动" data-i18n-title="fc.snap.title" data-i18n="fc.chrome.snap">吸附</button>
+      <button class="col-btn active" id="alignToggle" onclick="toggleAlign()" title="拖拽时吸附对齐到其他卡片与页面中线，并显示对齐线" data-i18n-title="fc.align.title" data-i18n="fc.chrome.align">对齐</button>
       <!-- v10.28.39.0: 视口缩放百分比——Ctrl+滚轮 / Ctrl+加减号 缩放（默认 100%），
            点击复位；中键长按拖动平移视口 -->
-      <button class="col-btn" id="zoomChip" onclick="resetViewZoom()" title="视口缩放：Ctrl+滚轮 / Ctrl+加减号 缩放，点击复位 100%；中键长按拖动平移视口">100%</button>
+      <button class="col-btn" id="zoomChip" onclick="resetViewZoom()" title="视口缩放：Ctrl+滚轮 / Ctrl+加减号 缩放，点击复位 100%；中键长按拖动平移视口" data-i18n-title="fc.zoom.title">100%</button>
       <!-- v10.3 — 合并弹层：画面预设 / 列数 / 格子大小。position:fixed
            挂在 viewportBtn 正下方；display:none 时不影响 .grid-controls 布局。 -->
       <div class="radius-popover viewport-popover" id="viewportPopover">
-        <div class="label-sm" style="color:var(--color-outline);margin-bottom:6px">Viewport</div>
+        <div class="label-sm" style="color:var(--color-outline);margin-bottom:6px" data-i18n="fc.viewport.label">Viewport</div>
         <div class="vp-presets" id="vpPresets">
           <button class="vp-btn active" data-preset="169" onclick="switchPreset('169')">16:9</button>
           <button class="vp-btn" data-preset="half" onclick="switchPreset('half')">½ 16:9</button>
-          <button class="vp-btn" data-preset="tablet" onclick="switchPreset('tablet')">Tablet</button>
-          <button class="vp-btn" data-preset="mobile" onclick="switchPreset('mobile')">Mobile</button>
+          <button class="vp-btn" data-preset="tablet" onclick="switchPreset('tablet')" data-i18n="fc.viewport.tablet">Tablet</button>
+          <button class="vp-btn" data-preset="mobile" onclick="switchPreset('mobile')" data-i18n="fc.viewport.mobile">Mobile</button>
         </div>
-        <div class="label-sm" style="color:var(--color-outline);margin:10px 0 6px">Cols</div>
+        <div class="label-sm" style="color:var(--color-outline);margin:10px 0 6px" data-i18n="fc.viewport.cols">Cols</div>
         <div class="vp-pop-row">
           <button class="col-btn" onclick="setGridColumns(24)">24</button>
           <button class="col-btn active" onclick="setGridColumns(36)">36</button>
           <button class="col-btn" onclick="setGridColumns(48)">48</button>
           <button class="col-btn" onclick="setGridColumns(60)">60</button>
         </div>
-        <div class="label-sm" style="color:var(--color-outline);margin:10px 0 6px">Cell size</div>
+        <div class="label-sm" style="color:var(--color-outline);margin:10px 0 6px" data-i18n="fc.viewport.cellSize">Cell size</div>
         <div class="vp-pop-row">
           <button class="col-btn" onclick="setCellSize(16)">16px</button>
           <button class="col-btn active" onclick="setCellSize(24)">24px</button>
@@ -5036,7 +5036,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       </div>
       <!-- v10.27.1 — 图层面板：顶层在前，行点选卡片，眼睛显隐，↑↓ 移层 -->
       <div class="radius-popover layers-popover" id="layersPopover">
-        <div class="label-sm" style="color:var(--color-outline);margin-bottom:6px">Layers</div>
+        <div class="label-sm" style="color:var(--color-outline);margin-bottom:6px" data-i18n="fc.chrome.layers">Layers</div>
         <div id="layersList"></div>
       </div>
     </div>
@@ -5064,7 +5064,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 <div class="modal-container" id="historyModal">
   <div class="modal-card" id="historyCard">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">Version History</h3>
+      <h3 class="headline-md" data-i18n="fc.modal.historyTitle">Version History</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px" id="historyList">
@@ -5079,18 +5079,18 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 <div class="modal-container" id="tagsModal">
   <div class="modal-card" id="tagsCard">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">Manage Tags</h3>
+      <h3 class="headline-md" data-i18n="fc.modal.tagsTitle">Manage Tags</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:var(--space-sm)">
-      <input type="text" class="input-glass" placeholder="Add tag..." id="tagModalInput" onkeydown="if(event.key==='Enter'){addTagFromModal();event.preventDefault()}" style="flex:1">
-      <button class="btn btn-primary btn-sm" onclick="addTagFromModal()">Add</button>
+      <input type="text" class="input-glass" placeholder="Add tag..." data-i18n-placeholder="fc.modal.tagPh" id="tagModalInput" onkeydown="if(event.key==='Enter'){addTagFromModal();event.preventDefault()}" style="flex:1">
+      <button class="btn btn-primary btn-sm" onclick="addTagFromModal()" data-i18n="fc.modal.add">Add</button>
     </div>
     <div style="display:flex;gap:6px;flex-wrap:wrap" id="tagModalList">
       <span class="badge badge-primary">Sovereignty</span><span class="badge badge-secondary">Lore</span><span class="badge badge-success">Manifesto</span>
       <span class="badge badge-warning">Economy</span><span class="badge badge-primary">Governance</span><span class="badge badge-secondary">Culture</span>
     </div>
-    <button class="btn btn-primary btn-sm" style="margin-top:var(--space-md);width:100%" onclick="closeAllModals()">Apply Tags</button>
+    <button class="btn btn-primary btn-sm" style="margin-top:var(--space-md);width:100%" onclick="closeAllModals()" data-i18n="fc.modal.applyTags">Apply Tags</button>
   </div>
 </div>
 
@@ -5100,18 +5100,18 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 <div class="modal-container" id="publishLogModal">
   <div class="modal-card" style="max-width:480px">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">发布日志</h3>
+      <h3 class="headline-md" data-i18n="fc.publishLog.title">发布日志</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
     </div>
-    <label class="label-sm" style="display:block;margin-bottom:4px;color:var(--color-outline)" for="pubLogInput">这次发布改了什么（按空格分词计数，上限 320 词）</label>
-    <textarea class="input-glass custom-scrollbar pub-log-input" id="pubLogInput" placeholder="例如：初版发布 · 国旗与国徽上线" oninput="pubLogRefresh()"></textarea>
+    <label class="label-sm" style="display:block;margin-bottom:4px;color:var(--color-outline)" for="pubLogInput" data-i18n="fc.publishLog.label">这次发布改了什么（按空格分词计数，上限 320 词）</label>
+    <textarea class="input-glass custom-scrollbar pub-log-input" id="pubLogInput" placeholder="例如：初版发布 · 国旗与国徽上线" data-i18n-placeholder="fc.publishLog.ph" oninput="pubLogRefresh()"></textarea>
     <div class="flex-between" style="margin-top:6px">
-      <span class="label-sm" style="color:var(--color-outline)">按空格分词计数</span>
+      <span class="label-sm" style="color:var(--color-outline)" data-i18n="fc.publishLog.countLabel">按空格分词计数</span>
       <span class="label-sm imm-count" id="pubLogCount">0 / 320</span>
     </div>
     <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-md)">
-      <button class="btn btn-primary btn-sm" style="flex:1" onclick="confirmPublish()">确认发布</button>
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeAllModals()">取消</button>
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="confirmPublish()" data-i18n="fc.publishLog.confirm">确认发布</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeAllModals()" data-i18n="fc.common.cancel">取消</button>
     </div>
   </div>
 </div>
@@ -5120,16 +5120,16 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 <div class="modal-container" id="migrateModal">
   <div class="modal-card" id="migrateCard" style="max-width:560px">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">Migrate Content</h3>
+      <h3 class="headline-md" data-i18n="fc.migrate.title">Migrate Content</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
     </div>
-    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-sm)">Paste or upload an article — it is split into content cards automatically.</p>
+    <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-sm)" data-i18n="fc.migrate.hint">Paste or upload an article — it is split into content cards automatically.</p>
     <textarea class="input-glass custom-scrollbar" id="migrateText" rows="10" style="width:100%;resize:vertical"
-      placeholder="Paste your article here… Markdown headings (## Title) become card titles.&#10;&#10;Or drop a .txt / .md file anywhere in this box."></textarea>
+      placeholder="Paste your article here… Markdown headings (## Title) become card titles.&#10;&#10;Or drop a .txt / .md file anywhere in this box." data-i18n-placeholder="fc.migrate.ph"></textarea>
     <input type="file" id="migrateFileInput" accept=".txt,.md,text/plain,text/markdown" style="display:none" onchange="handleMigrateFile(this)">
     <div class="flex-between" style="margin-top:var(--space-sm)">
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('migrateFileInput').click()">
-        <span class="material-symbols-outlined">upload_file</span> Upload .txt / .md
+        <span class="material-symbols-outlined">upload_file</span> <span data-i18n="fc.migrate.upload">Upload .txt / .md</span>
       </button>
       <button class="migrate-pill" onclick="runMigration()">
         <div class="dots_border"></div>
@@ -5138,10 +5138,10 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
           <path class="path" stroke-linejoin="round" stroke-linecap="round" stroke="black" fill="black" d="M6 14.25L5.741 15.285C5.59267 15.8785 5.28579 16.4206 4.85319 16.8532C4.42059 17.2858 3.87853 17.5927 3.285 17.741L2.25 18L3.285 18.259C3.87853 18.4073 4.42059 18.7142 4.85319 19.1468C5.28579 19.5794 5.59267 20.1215 5.741 20.715L6 21.75L6.259 20.715C6.40725 20.1216 6.71398 19.5796 7.14639 19.147C7.5788 18.7144 8.12065 18.4075 8.714 18.259L9.75 18L8.714 17.741C8.12065 17.5925 7.5788 17.2856 7.14639 16.853C6.71398 16.4204 6.40725 15.8784 6.259 15.285L6 14.25Z"/>
           <path class="path" stroke-linejoin="round" stroke-linecap="round" stroke="black" fill="black" d="M6.5 4L6.303 4.5915C6.24777 4.75718 6.15472 4.90774 6.03123 5.03123C5.90774 5.15472 5.75718 5.24777 5.5915 5.303L5 5.5L5.5915 5.697C5.75718 5.75223 5.90774 5.84528 6.03123 5.96877C6.15472 6.09226 6.24777 6.24282 6.303 6.4085L6.5 7L6.697 6.4085C6.75223 6.24282 6.84528 6.09226 6.96877 5.96877C7.09226 5.84528 7.24282 5.75223 7.4085 5.697L8 5.5L7.4085 5.303C7.24282 5.24777 7.09226 5.15472 6.96877 5.03123C6.84528 4.90774 6.75223 4.75718 6.697 4.5915L6.5 4Z"/>
         </svg>
-        <span class="text_button">Migrate to Cards</span>
+        <span class="text_button" data-i18n="fc.migrate.pill">Migrate to Cards</span>
       </button>
     </div>
-    <p class="label-sm" style="color:var(--color-outline);margin-top:var(--space-sm)" id="migrateHint">Headings start new cards; paragraphs fill the current card. Max 24 cards per run.</p>
+    <p class="label-sm" style="color:var(--color-outline);margin-top:var(--space-sm)" id="migrateHint" data-i18n="fc.migrate.hintLine">Headings start new cards; paragraphs fill the current card. Max 24 cards per run.</p>
   </div>
 </div>
 
@@ -5150,27 +5150,27 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 <div class="modal-container" id="flagBrowserModal">
   <div class="modal-card" id="flagBrowserCard" style="max-width:640px">
     <div class="flex-between" style="margin-bottom:0">
-      <h3 class="headline-md">图片库</h3>
+      <h3 class="headline-md" data-i18n="fc.lib.title">图片库</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <!-- Tabs（v10.28.29）：左「全部」=内置旗+我的上传；右「我的图库」=仅自己上传（可编辑可删除） -->
     <div class="flag-browser-tabs">
-      <button class="flag-browser-tab active" data-tab="all" onclick="switchFlagTab('all')">全部</button>
-      <button class="flag-browser-tab" data-tab="mylib" onclick="switchFlagTab('mylib')">我的图库</button>
+      <button class="flag-browser-tab active" data-tab="all" onclick="switchFlagTab('all')" data-i18n="fc.lib.tabAll">全部</button>
+      <button class="flag-browser-tab" data-tab="mylib" onclick="switchFlagTab('mylib')" data-i18n="fc.lib.tabMine">我的图库</button>
     </div>
     <!-- Search Bar（v10.28.32：右侧上传按钮——用户「上传按钮放到搜索栏的右侧」） -->
     <div class="flag-search-bar">
       <span class="material-symbols-outlined" style="color:var(--color-outline);font-size:18px">search</span>
-      <input type="text" placeholder="搜索图片（名称/描述）…" id="flagSearchInput" oninput="filterFlags()">
+      <input type="text" placeholder="搜索图片（名称/描述）…" data-i18n-placeholder="fc.lib.searchPh" id="flagSearchInput" oninput="filterFlags()">
       <input type="file" id="flagBrowserFileInput" accept="image/*" style="display:none" onchange="handleFlagFileUpload(this)">
-      <button type="button" class="tim-search-btn" id="flagSearchUploadBtn" title="上传图片" onclick="document.getElementById('flagBrowserFileInput').click()"><span class="material-symbols-outlined">upload_file</span></button>
+      <button type="button" class="tim-search-btn" id="flagSearchUploadBtn" title="上传图片" data-i18n-title="fc.lib.uploadTitle" onclick="document.getElementById('flagBrowserFileInput').click()"><span class="material-symbols-outlined">upload_file</span></button>
     </div>
     <!-- Flag Grid -->
     <div class="flag-grid custom-scrollbar" id="flagGrid"></div>
     <div class="flex-between" style="margin-top:var(--space-md)">
       <span class="label-sm" style="color:var(--color-outline)" id="flagSelectCount">未选择</span>
       <button class="btn btn-primary btn-sm" onclick="confirmFlagSelection()">
-        <span class="material-symbols-outlined">check</span> 确认添加
+        <span class="material-symbols-outlined">check</span> <span data-i18n="fc.lib.confirmAdd">确认添加</span>
       </button>
     </div>
   </div>
@@ -5181,7 +5181,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 <div class="modal-container" id="pageBgModal">
   <div class="modal-card modal-card-preview" data-onclose="closePageBgModalCancel">
     <div class="flex-between" style="margin-bottom:var(--space-sm)">
-      <h3 class="headline-md">页面背景</h3>
+      <h3 class="headline-md" data-i18n="fc.pbg.modalTitle">页面背景</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closePageBgModalCancel()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div class="pbg-shell">
@@ -5191,16 +5191,16 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
           <span class="material-symbols-outlined">upload_file</span> 上传图片
         </button>
         <div class="pbg-list" id="pbgList"></div>
-        <div class="pbg-empty" id="pbgEmpty">还没有图片——上传后会按顺序纵向拼接（图2 接在图1 下方）。</div>
-        <div class="pbg-ratio-label">基础比例</div>
+        <div class="pbg-empty" id="pbgEmpty" data-i18n="fc.pbg.empty">还没有图片——上传后会按顺序纵向拼接（图2 接在图1 下方）。</div>
+        <div class="pbg-ratio-label" data-i18n="fc.pbg.baseRatio">基础比例</div>
         <div class="pbg-ratio-row" id="pbgRatioRow">
-          <button class="pbg-ratio-btn" data-ratio="1.6" onclick="pbgSetRatio('1.6', this)">平板 16:10</button>
-          <button class="pbg-ratio-btn" data-ratio="2.222" onclick="pbgSetRatio('2.222', this)">手机 20:9</button>
+          <button class="pbg-ratio-btn" data-ratio="1.6" onclick="pbgSetRatio('1.6', this)" data-i18n="fc.pbg.ratioTablet">平板 16:10</button>
+          <button class="pbg-ratio-btn" data-ratio="2.222" onclick="pbgSetRatio('2.222', this)" data-i18n="fc.pbg.ratioPhone">手机 20:9</button>
           <button class="pbg-ratio-btn active" data-ratio="1.778" onclick="pbgSetRatio('1.778', this)">16:9</button>
           <button class="pbg-ratio-btn" data-ratio="2.333" onclick="pbgSetRatio('2.333', this)">21:9</button>
         </div>
         <details class="pbg-details">
-          <summary>详细（折叠屏适配）</summary>
+          <summary data-i18n="fc.pbg.details">详细（折叠屏适配）</summary>
           <div class="pbg-ratio-row" style="margin-top:4px">
             <button class="pbg-ratio-btn" data-ratio="0.714" onclick="pbgSetRatio('0.714', this)">1:1.4</button>
             <button class="pbg-ratio-btn" data-ratio="1.333" onclick="pbgSetRatio('1.333', this)">4:3</button>
@@ -5209,9 +5209,9 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
         </details>
         <div class="pbg-hint" id="pbgRatioHint"></div>
         <div class="pbg-actions">
-          <button class="btn btn-primary btn-sm" onclick="closePageBgModal()">保存</button>
-          <button class="btn btn-ghost btn-sm" onclick="closePageBgModalCancel()">取消</button>
-          <button class="btn btn-ghost btn-sm" style="color:#e5484d" onclick="pbgRemoveAll()">移除背景</button>
+          <button class="btn btn-primary btn-sm" onclick="closePageBgModal()" data-i18n="fc.common.save">保存</button>
+          <button class="btn btn-ghost btn-sm" onclick="closePageBgModalCancel()" data-i18n="fc.common.cancel">取消</button>
+          <button class="btn btn-ghost btn-sm" style="color:#e5484d" onclick="pbgRemoveAll()" data-i18n="fc.pbg.remove">移除背景</button>
         </div>
       </div>
       <div class="pbg-preview">
@@ -5230,27 +5230,27 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 <div class="modal-container" id="imgMetaModal">
   <div class="modal-card" style="max-width:480px" data-onclose="imgMetaCancel">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">图片信息</h3>
+      <h3 class="headline-md" data-i18n="fc.imgMeta.title">图片信息</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeImgMetaModalCancel()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div class="imm-row">
-      <input type="text" class="input-glass imm-name" id="immName" placeholder="图片名称" maxlength="100">
+      <input type="text" class="input-glass imm-name" id="immName" placeholder="图片名称" data-i18n-placeholder="fc.imgMeta.namePh" maxlength="100">
       <img class="imm-preview" id="immPreview" alt="">
     </div>
-    <label class="label-sm" style="display:block;margin-top:10px;color:var(--color-outline)" for="immDesc">Description（按空格分词计数，上限 320 词）</label>
-    <textarea class="input-glass custom-scrollbar imm-desc" id="immDesc" placeholder="详细信息…" oninput="imgMetaRefreshCount()"></textarea>
+    <label class="label-sm" style="display:block;margin-top:10px;color:var(--color-outline)" for="immDesc" data-i18n="fc.imgMeta.descLabel">Description（按空格分词计数，上限 320 词）</label>
+    <textarea class="input-glass custom-scrollbar imm-desc" id="immDesc" placeholder="详细信息…" data-i18n-placeholder="fc.imgMeta.descPh" oninput="imgMetaRefreshCount()"></textarea>
     <div class="flex-between" style="margin-top:6px">
-      <span class="label-sm" style="color:var(--color-outline)">按空格分词计数</span>
+      <span class="label-sm" style="color:var(--color-outline)" data-i18n="fc.imgMeta.countLabel">按空格分词计数</span>
       <span class="label-sm imm-count" id="immCount">0 / 320</span>
     </div>
     <div class="segmented-control" style="margin-top:10px" id="immSeg">
-      <button class="segmented-option" data-vis="public" onclick="imgMetaSetVisibility('public')">Public</button>
-      <button class="segmented-option active" data-vis="private" onclick="imgMetaSetVisibility('private')">Private</button>
-      <button class="segmented-option" data-vis="team" onclick="imgMetaSetVisibility('team')">Team</button>
+      <button class="segmented-option" data-vis="public" onclick="imgMetaSetVisibility('public')" data-i18n="fc.imgMeta.visPublic">Public</button>
+      <button class="segmented-option active" data-vis="private" onclick="imgMetaSetVisibility('private')" data-i18n="fc.imgMeta.visPrivate">Private</button>
+      <button class="segmented-option" data-vis="team" onclick="imgMetaSetVisibility('team')" data-i18n="fc.imgMeta.visTeam">Team</button>
     </div>
     <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-md)">
-      <button class="btn btn-primary btn-sm" style="flex:1" onclick="imgMetaSave()">保存</button>
-      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeImgMetaModalCancel()">取消</button>
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="imgMetaSave()" data-i18n="fc.common.save">保存</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="closeImgMetaModalCancel()" data-i18n="fc.common.cancel">取消</button>
     </div>
   </div>
 </div>
@@ -5261,7 +5261,7 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
 <div class="modal-container" id="imgInfoModal">
   <div class="modal-card" style="max-width:480px">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">图片信息</h3>
+      <h3 class="headline-md" data-i18n="fc.imgInfo.title">图片信息</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeModalOnly('imgInfoModal')"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div class="imm-row" style="margin-bottom:var(--space-md)">
@@ -5271,10 +5271,10 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
         <div class="label-sm" style="color:var(--color-outline);margin-top:2px" id="iimSize">尺寸：—</div>
       </div>
     </div>
-    <div class="iim-row"><span class="iim-label">简介</span><span class="iim-value custom-scrollbar" id="iimDesc" style="max-height:180px;overflow-y:auto">暂无简介</span></div>
-    <div class="iim-row"><span class="iim-label">上传者</span><span class="iim-value" id="iimUploader">—</span></div>
-    <div class="iim-row"><span class="iim-label">上传时间</span><span class="iim-value" id="iimTs">—</span></div>
-    <div class="iim-row"><span class="iim-label">可见性</span><span class="iim-value" id="iimVis">—</span></div>
+    <div class="iim-row"><span class="iim-label" data-i18n="fc.imgInfo.desc">简介</span><span class="iim-value custom-scrollbar" id="iimDesc" style="max-height:180px;overflow-y:auto">暂无简介</span></div>
+    <div class="iim-row"><span class="iim-label" data-i18n="fc.imgInfo.uploader">上传者</span><span class="iim-value" id="iimUploader">—</span></div>
+    <div class="iim-row"><span class="iim-label" data-i18n="fc.imgInfo.ts">上传时间</span><span class="iim-value" id="iimTs">—</span></div>
+    <div class="iim-row"><span class="iim-label" data-i18n="fc.imgInfo.vis">可见性</span><span class="iim-value" id="iimVis">—</span></div>
   </div>
 </div>
 
@@ -5289,8 +5289,8 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       <div class="mre-head">
         <span class="material-symbols-outlined">polyline</span>
         <div class="mre-head-txt">
-          <h3 class="headline-md">区域编辑器</h3>
-          <p class="label-sm" style="color:var(--color-outline);margin:0">点击落点框区域 · 点回第一个点闭合（双击同效）· 右键撤销上一点 · Esc 取消 · 滚轮缩放 · 空格或中键拖动</p>
+          <h3 class="headline-md" data-i18n="fc.mre.editorTitle">区域编辑器</h3>
+          <p class="label-sm" style="color:var(--color-outline);margin:0" data-i18n="fc.mre.editorHint">点击落点框区域 · 点回第一个点闭合（双击同效）· 右键撤销上一点 · Esc 取消 · 滚轮缩放 · 空格或中键拖动</p>
         </div>
         <button class="btn btn-ghost btn-icon btn-sm" onclick="closeMapRegionEditor()"><span class="material-symbols-outlined">close</span></button>
       </div>
@@ -5312,30 +5312,30 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     </div>
     <aside class="mre-side">
       <div class="mre-side-head">
-        <span class="label-md" style="font-weight:600">区域</span>
-        <button class="btn btn-primary btn-sm" id="mreDrawBtn" onclick="startMapRegionDraw()"><span class="material-symbols-outlined">add</span>画区域</button>
+        <span class="label-md" style="font-weight:600" data-i18n="fc.mre.sideTitle">区域</span>
+        <button class="btn btn-primary btn-sm" id="mreDrawBtn" onclick="startMapRegionDraw()"><span class="material-symbols-outlined">add</span><span data-i18n="fc.mre.drawBtn">画区域</span></button>
       </div>
       <!-- v10.28.11: 区域列表迁入信息面板左栏（钦定「左右列表中间夹竖分割线」） -->
-      <p class="label-sm" style="color:var(--color-outline);margin:0">点区域多边形查看信息 · 列表在信息面板左栏</p>
+      <p class="label-sm" style="color:var(--color-outline);margin:0" data-i18n="fc.mre.sideHint">点区域多边形查看信息 · 列表在信息面板左栏</p>
       <!-- 信息设定面板：点区域/列表项时从屏幕右缘滑出（v10.28.9.1 起不再闭合自动滑出） -->
       <div class="mre-panel" id="mrePanel">
         <div class="flex-between" style="gap:8px">
           <h4 class="headline-sm" id="mrePanelTitle">区域信息</h4>
           <div style="display:flex;gap:4px;align-items:center">
             <!-- v10.28.11: ＋ 在 ✕ 左侧（钦定「打叉的左侧添加一个加」） -->
-            <button class="btn btn-ghost btn-icon btn-sm" id="mreAddBtn" onclick="mreOpenAddMenu(event)" title="添加内容"><span class="material-symbols-outlined">add</span></button>
+            <button class="btn btn-ghost btn-icon btn-sm" id="mreAddBtn" onclick="mreOpenAddMenu(event)" title="添加内容" data-i18n-title="fc.mre.addContent"><span class="material-symbols-outlined">add</span></button>
             <button class="btn btn-ghost btn-icon btn-sm" onclick="hideMapRegionPanel()"><span class="material-symbols-outlined">close</span></button>
           </div>
         </div>
-        <div class="mre-field">颜色
+        <div class="mre-field"><span data-i18n="fc.mre.color">颜色</span>
           <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
             <div class="mre-colors" id="mreColors"></div>
             <!-- v10.28.11: 自定义色钮（钦定「色块可以自定义颜色」） -->
-            <input type="color" id="mreCustomColor" class="tt-custom mre-custom" title="自定义颜色" value="#5b7cfa">
+            <input type="color" id="mreCustomColor" class="tt-custom mre-custom" title="自定义颜色" data-i18n-title="fc.mre.customColor" value="#5b7cfa">
           </div>
           <!-- v10.28.11: 中心填充/边缘描边两条独立透明度滑杆（钦定「单独调整边缘和中心颜色的透明度」） -->
-          <div class="caption-slider-row"><label>中心</label><input type="range" id="mreFillSlider" min="0" max="100" value="35" step="1" oninput="mreUpdateFillOpacity(this.value)"><output id="mreFillValue">35%</output></div>
-          <div class="caption-slider-row"><label>边缘</label><input type="range" id="mreStrokeSlider" min="0" max="100" value="90" step="1" oninput="mreUpdateStrokeOpacity(this.value)"><output id="mreStrokeValue">90%</output></div>
+          <div class="caption-slider-row"><label data-i18n="fc.mre.center">中心</label><input type="range" id="mreFillSlider" min="0" max="100" value="35" step="1" oninput="mreUpdateFillOpacity(this.value)"><output id="mreFillValue">35%</output></div>
+          <div class="caption-slider-row"><label data-i18n="fc.mre.stroke">边缘</label><input type="range" id="mreStrokeSlider" min="0" max="100" value="90" step="1" oninput="mreUpdateStrokeOpacity(this.value)"><output id="mreStrokeValue">90%</output></div>
         </div>
         <!-- v10.28.11: 下方左右列表夹竖分割线——左区域列表｜右区域信息（钦定） -->
         <div class="mre-columns">
@@ -5344,25 +5344,25 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
           <div class="mre-col-right" id="mreInfoCol"></div>
         </div>
         <div class="flex-between" style="margin-top:auto;gap:8px">
-          <button class="btn btn-ghost btn-sm mre-del" id="mreDeleteBtn" onclick="deleteMapRegionCurrent()"><span class="material-symbols-outlined">delete</span>删除区域</button>
-          <button class="btn btn-primary btn-sm" style="flex:1" onclick="hideMapRegionPanel()">完成</button>
+          <button class="btn btn-ghost btn-sm mre-del" id="mreDeleteBtn" onclick="deleteMapRegionCurrent()"><span class="material-symbols-outlined">delete</span><span data-i18n="fc.mre.deleteRegion">删除区域</span></button>
+          <button class="btn btn-primary btn-sm" style="flex:1" onclick="hideMapRegionPanel()" data-i18n="fc.mre.done">完成</button>
         </div>
       </div>
     </aside>
     <!-- v10.28.11: ＋添加菜单 / ☰输入框外观弹层——必须放 #mapRegionOverlay 内但 .mre-shell 外
          （.mre-shell 带 transform:scale(0.97)，fixed 定位会锚缩放盒；overlay z300 > radius-popover z201，放外面会被盖） -->
     <div class="radius-popover" id="mreAddPopover" style="min-width:200px;padding:4px 0">
-      <button class="context-menu-item" id="mreAddDescOpt" onclick="mreAddDesc()"><span class="material-symbols-outlined">notes</span>添加描述</button>
-      <button class="context-menu-item" id="mreAddInfoOpt" onclick="mreAddInfo()"><span class="material-symbols-outlined">view_list</span>添加两排信息</button>
+      <button class="context-menu-item" id="mreAddDescOpt" onclick="mreAddDesc()"><span class="material-symbols-outlined">notes</span><span data-i18n="fc.mre.addDesc">添加描述</span></button>
+      <button class="context-menu-item" id="mreAddInfoOpt" onclick="mreAddInfo()"><span class="material-symbols-outlined">view_list</span><span data-i18n="fc.mre.addInfo">添加两排信息</span></button>
     </div>
     <div class="radius-popover" id="mreStylePop" style="width:270px">
-      <span class="label-sm" style="color:var(--color-outline);display:block;margin-bottom:8px">输入框外观</span>
-      <div class="caption-slider-row"><label>背景</label><input type="color" id="mreStyleBgColor" class="tt-custom" value="#ffffff" onchange="mreStyleLive()"><output id="mreStyleBgColorV"></output></div>
-      <div class="caption-slider-row"><label>透明度</label><input type="range" id="mreStyleBgAlpha" min="0" max="100" value="100" step="1" oninput="mreStyleLive()"><output id="mreStyleBgAlphaV">100%</output></div>
-      <div class="caption-slider-row"><label>边缘色</label><input type="color" id="mreStyleEdgeColor" class="tt-custom" value="#cccccc" onchange="mreStyleLive()"><output id="mreStyleEdgeColorV"></output></div>
-      <div class="caption-slider-row"><label>粗细</label><input type="range" id="mreStyleEdgeW" min="0" max="8" value="1" step="1" oninput="mreStyleLive()"><output id="mreStyleEdgeWV">1px</output></div>
-      <div class="caption-slider-row"><label>圆角</label><input type="range" id="mreStyleRadius" min="0" max="20" value="8" step="1" oninput="mreStyleLive()"><output id="mreStyleRadiusV">8px</output></div>
-      <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px" onclick="mreStyleReset()">恢复默认</button>
+      <span class="label-sm" style="color:var(--color-outline);display:block;margin-bottom:8px" data-i18n="fc.mre.styleTitle">输入框外观</span>
+      <div class="caption-slider-row"><label data-i18n="fc.mre.styleBg">背景</label><input type="color" id="mreStyleBgColor" class="tt-custom" value="#ffffff" onchange="mreStyleLive()"><output id="mreStyleBgColorV"></output></div>
+      <div class="caption-slider-row"><label data-i18n="fc.mre.styleAlpha">透明度</label><input type="range" id="mreStyleBgAlpha" min="0" max="100" value="100" step="1" oninput="mreStyleLive()"><output id="mreStyleBgAlphaV">100%</output></div>
+      <div class="caption-slider-row"><label data-i18n="fc.mre.styleEdgeColor">边缘色</label><input type="color" id="mreStyleEdgeColor" class="tt-custom" value="#cccccc" onchange="mreStyleLive()"><output id="mreStyleEdgeColorV"></output></div>
+      <div class="caption-slider-row"><label data-i18n="fc.mre.styleEdgeW">粗细</label><input type="range" id="mreStyleEdgeW" min="0" max="8" value="1" step="1" oninput="mreStyleLive()"><output id="mreStyleEdgeWV">1px</output></div>
+      <div class="caption-slider-row"><label data-i18n="fc.mre.styleRadius">圆角</label><input type="range" id="mreStyleRadius" min="0" max="20" value="8" step="1" oninput="mreStyleLive()"><output id="mreStyleRadiusV">8px</output></div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:8px" onclick="mreStyleReset()" data-i18n="fc.mre.styleReset">恢复默认</button>
     </div>
   </div>
 </div>
@@ -5382,6 +5382,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <script>
 (function () {
   'use strict';
+
+  // v10.28.45.0: i18n——惰性 T（i18n 引擎晚于本脚本在 body 尾加载，运行时经
+  // window.MN_I18N 取；本脚本加载时引擎尚不存在故零影响）。R5/R6 独立 IIFE 经
+  // window.__fcT 取用。每个调用点保留当前中/英文字面量兜底（电池源锚存活）。
+  function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
+  window.__fcT = T;
 
   // ══════════════════════════════════════════════════════════════════
   //  FluidCanvas Editor v9 — resize handles + alignment guides
@@ -5604,9 +5610,34 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       while ((cur = walker.nextNode())) total += cur.nodeValue;
     });
     total = total.trim();
-    wordCountEl.textContent = (total ? total.split(/\s+/).length : 0) + ' words';
-    charCountEl.textContent = total.length + ' characters';
+    wordCountEl.textContent = (total ? total.split(/\s+/).length : 0) + ' ' + (T('fc.status.words') || 'words');
+    charCountEl.textContent = total.length + ' ' + (T('fc.status.characters') || 'characters');
   }
+
+  // v10.28.45.0: 保存状态统一出口——记住最后键与参数，语言切换时按原参数重涂
+  // （savedAgo 为带 %d 模板）；headerStatus 徽章同口径独立跟踪
+  // （Draft/Unsaved/Published 键各自落位）。
+  var lastSaveKey = 'fc.status.ready', lastSaveArg = null;
+  var lastHeaderKey = 'fc.status.draft';
+  function setSaveStatus(key, arg) {
+    lastSaveKey = key; lastSaveArg = arg;
+    var s = T(key) || (key === 'fc.status.savedAgo' ? 'Saved ' + arg + ' min ago'
+      : key === 'fc.status.savedNow' ? 'Saved just now'
+      : { 'fc.status.ready': 'Ready', 'fc.status.unsaved': 'Unsaved', 'fc.status.published': 'Published', 'fc.status.draft': 'Draft' }[key] || '');
+    s = String(s).replace('%d', String(arg == null ? '' : arg));
+    saveStatusEl.textContent = s;
+    return s;
+  }
+  function setHeaderStatus(key) {
+    lastHeaderKey = key;
+    headerStatus.textContent = T(key) || { 'fc.status.draft': 'Draft', 'fc.status.unsaved': 'Unsaved', 'fc.status.published': 'Published' }[key] || 'Draft';
+  }
+  function reapplySaveStatus() {
+    setSaveStatus(lastSaveKey, lastSaveArg);
+    setHeaderStatus(lastHeaderKey);
+  }
+  window.setSaveStatus = setSaveStatus;
+  window.reapplySaveStatus = reapplySaveStatus;
 
   function getOccupiedCells() {
     return getOccupiedCellsWithRotation();
@@ -6159,8 +6190,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
         if (draft.lastSaved) {
           var ago = Math.floor((Date.now() - draft.lastSaved) / 60000);
-          var text = ago < 1 ? 'Saved just now' : 'Saved ' + ago + ' min ago';
-          saveStatusEl.textContent = text;
+          var text = ago < 1 ? setSaveStatus('fc.status.savedNow') : setSaveStatus('fc.status.savedAgo', ago);
           lastSavedLabel.textContent = text;
         }
         syncCanvasHeight();
@@ -6258,7 +6288,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     refreshResizeHandles(); // content-card auto-grow keeps handles on the box
     var fp = getCardFingerprint();
     if (fp !== lastSavedContent && lastSavedContent !== '') {
-      headerStatus.textContent = 'Unsaved';
+      setHeaderStatus('fc.status.unsaved');
       headerStatus.className = 'badge badge-warning';
     }
     // v10.28.30.0: 不再重排 autosave——固定节拍心跳（init 已启动，见 scheduleAutoSaveTick）
@@ -6391,7 +6421,15 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         entry.w = parseFloat(c.style.width);
       }
       var lbl = c.querySelector('.card-label');
-      entry.label = lbl ? fieldHtml(lbl) : (c.dataset.label || '');
+      // v10.28.45.0: 未改名卡永远存 dataset.label 规范名 payload（语言切换
+      // 重建时卡面还显示旧语言文本，和 localizedTypeName 对比必然不等 → 显示
+      // 文本会被冻结进草稿，故不做对比）；用户改名过（labelEdited）的卡存
+      // 显示文本原样（历史口径不变）
+      if (!c.dataset.labelEdited && c.dataset.label) {
+        entry.label = c.dataset.label;
+      } else {
+        entry.label = lbl ? fieldHtml(lbl) : (c.dataset.label || '');
+      }
       if (c.dataset.captionPos) entry.captionPos = c.dataset.captionPos;
       if (c.dataset.captionVertical === '1') entry.captionVertical = '1';
       // v10.0: caption background (additive — legacy drafts omit all)
@@ -6514,20 +6552,20 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     try {
       localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(draft));
       lastSavedContent = getCardFingerprint();
-      saveStatusEl.textContent = 'Saved just now';
-      lastSavedLabel.textContent = 'Saved just now';
-      headerStatus.textContent = 'Draft';
+      saveStatusEl.textContent = setSaveStatus('fc.status.savedNow');
+      lastSavedLabel.textContent = saveStatusEl.textContent;
+      setHeaderStatus('fc.status.draft');
       headerStatus.className = 'badge badge-secondary';
-      showToast('Draft saved');
+      showToast(T('fc.toast.draftSaved') || 'Draft saved');
       putCloudDraft(draft); // P6: fire-and-forget 云端镜像（409 冲突在回调中处理）
     } catch (e) {
       if (e && e.name === 'QuotaExceededError') {
         // v10.0: draft exceeds the localStorage quota (usually a big
         // uploaded image) — say so once and sync lastSavedContent so
         // autoSave stops retrying each tick until the next real change (v10.28.30.0 周期制口径)
-        showToast('草稿过大，保存失败：请移除过大的背景图片');
+        showToast(T('fc.toast.draftTooBig') || '草稿过大，保存失败：请移除过大的背景图片');
         lastSavedContent = getCardFingerprint();
-      } else { showToast('Failed to save'); }
+      } else { showToast(T('fc.toast.saveFailed') || 'Failed to save'); }
     }
   }
   window.saveDraft = saveDraft;
@@ -6590,21 +6628,21 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var ta = document.getElementById('pubLogInput');
     if (imgMetaWordCount(ta.value) > PUB_LOG_LIMIT) {
       pubLogRefresh();
-      showToast('日志超过 320 词上限，请删减');
+      showToast(T('fc.toast.logOver320') || '日志超过 320 词上限，请删减');
       return;
     }
     // 标题校验提前到关窗前——弹窗留着，用户补标题/取消都顺手
     // （publishCloudArticle 内原校验保留为双保险）
     if (fcCloudMode && !titleInput.value.trim()) {
-      showToast('请先填写标题再发布');
+      showToast(T('fc.toast.needTitle') || '请先填写标题再发布');
       return;
     }
     closeAllModals();
     if (fcCloudMode) { publishCloudArticle(); return; }
     saveDraft(); // 演示路径再存一次：把弹窗里最终编辑的日志落进本地草稿
-    headerStatus.textContent = 'Published';
+    setHeaderStatus('fc.status.published');
     headerStatus.className = 'badge badge-success';
-    showToast('Article published successfully!');
+    showToast(T('fc.toast.publishSuccess') || 'Article published successfully!');
     publishXPReward();
   }
   window.confirmPublish = confirmPublish;
@@ -6626,7 +6664,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       } else if (res.status === 409) {
         var server = res.data && res.data.draft;
         var serverVersion = server ? server.version : cloudDraftVersion;
-        if (confirm('云端草稿有更新版本（可能在其他设备保存过）。\n「确定」加载云端版本；「取消」用本地版本覆盖云端。')) {
+        if (confirm(T('fc.confirm.cloudConflict') || '云端草稿有更新版本（可能在其他设备保存过）。\n「确定」加载云端版本；「取消」用本地版本覆盖云端。')) {
           if (server) {
             // v10.28.15.2: 采纳云端版重戳 lastSaved——否则本地仍旧于云端
             // updatedAt，下次保存又 409 再弹窗（弹窗循环）
@@ -6663,9 +6701,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         // 刷新后本地即最新不再弹窗）
         try { server.data.lastSaved = Date.now(); localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(server.data)); } catch (e) {}
         applyDraft(server.data);
-        showToast('已从云端恢复草稿');
+        showToast(T('fc.toast.cloudRestored') || '已从云端恢复草稿');
       } else if (cloudTs > localTs) {
-        if (confirm('云端有更新的草稿（可能在其他设备保存过）。是否加载云端版本？\n「取消」保留本地草稿。')) {
+        if (confirm(T('fc.confirm.cloudNewer') || '云端有更新的草稿（可能在其他设备保存过）。是否加载云端版本？\n「取消」保留本地草稿。')) {
           // v10.28.15.2: 重戳 lastSaved 断开弹窗循环（采纳前本地旧于云端，
           // 不重戳则每次刷新都比云端旧 → 再弹再叠）
           try { server.data.lastSaved = Date.now(); localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(server.data)); } catch (e) {}
@@ -6694,32 +6732,32 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (res.ok && res.data && res.data.article) {
         setPublishId(res.data.article.id);
         // v10.28.35.1: 发布即公开（审核段已去除——后端 POST 直存 published）
-        headerStatus.textContent = 'Published';
+        setHeaderStatus('fc.status.published');
         headerStatus.className = 'badge badge-success';
-        showToast('已发布');
+        showToast(T('fc.toast.published') || '已发布');
         publishXPReward();
       } else {
-        showToast('发布失败，请稍后重试');
+        showToast(T('fc.toast.publishFail') || '发布失败，请稍后重试');
       }
     });
   }
 
   function publishCloudArticle() {
     var draft = buildDraft();
-    if (!draft.title) { showToast('请先填写标题再发布'); return; }
+    if (!draft.title) { showToast(T('fc.toast.needTitle') || '请先填写标题再发布'); return; }
     var id = getPublishId();
     if (!id) { doCreatePublish(draft); return; }
     MN_API.request('/articles/' + id, { method: 'PUT', body: { title: draft.title, contentJson: JSON.stringify(draft) } }).then(function (res) {
       if (res.ok && res.data && res.data.article) {
-        headerStatus.textContent = 'Published';
+        setHeaderStatus('fc.status.published');
         headerStatus.className = 'badge badge-success';
-        showToast('已更新发布');
+        showToast(T('fc.toast.publishedUpdate') || '已更新发布');
         publishXPReward();
       } else if (res.status === 404 || res.status === 403) {
         setPublishId(null); // 文章已不存在/非本人 → 下次按新文章创建
         doCreatePublish(draft);
       } else {
-        showToast('发布失败，请稍后重试');
+        showToast(T('fc.toast.publishFail') || '发布失败，请稍后重试');
       }
     });
   }
@@ -6828,7 +6866,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     };
     if (imgMetaWordCount(meta.desc) > IMG_META_LIMIT) {
       imgMetaRefreshCount();  // 重刷 .over 红
-      showToast('描述超过 320 词上限，请删减');
+      showToast(T('fc.toast.descOver320') || '描述超过 320 词上限，请删减');
       return;                 // 不关窗
     }
     var p = IMG_META_PENDING;
@@ -7021,7 +7059,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function updatePageBgEntryState() {
     var el = document.getElementById('pageBgEntryState');
-    if (el) el.textContent = (PAGE_BG_STATE && PAGE_BG_STATE.imgs.length) ? PAGE_BG_STATE.imgs.length + ' 张' : '未设置';
+    if (el) el.textContent = (PAGE_BG_STATE && PAGE_BG_STATE.imgs.length) ? (T('fc.pbg.imgs') || '%d 张').replace('%d', PAGE_BG_STATE.imgs.length) : (T('fc.pbg.unset') || '未设置');
     // v10.28.31: 订阅锁标 + 升级链接显隐（免费=显示，订阅=隐藏）
     var lock = document.getElementById('pageBgEntryLock');
     if (lock) lock.style.display = isSubscriberUser() ? 'none' : 'flex';
@@ -7034,25 +7072,25 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var ok = !!(comp && comp.h / comp.w >= 9 / 16 - 1e-4);
     hint.classList.toggle('show', !ok);
     hint.textContent = comp
-      ? '当前背景比例约 ' + (comp.h / comp.w).toFixed(3) + ':1，未达 16:9 最低要求——请再上传图片加长（羽化重叠会降低总高）。'
-      : '高度不足 16:9——请上传图片（可多张纵向拼接加长）。';
+      ? (T('fc.pbg.ratioShort') || '当前背景比例约 %s:1，未达 16:9 最低要求——请再上传图片加长（羽化重叠会降低总高）。').replace('%s', (comp.h / comp.w).toFixed(3))
+      : (T('fc.pbg.heightShort') || '高度不足 16:9——请上传图片（可多张纵向拼接加长）。');
   }
 
   function handlePageBgUpload(input) {
     var file = input.files && input.files[0];
     if (!file) return;
-    if (!isSubscriberUser()) { input.value = ''; showToast('页面背景为订阅用户专属功能——订阅后解锁'); return; } // v10.28.31 订阅锁（belt-and-braces 防线）
+    if (!isSubscriberUser()) { input.value = ''; showToast(T('fc.toast.pageBgLocked') || '页面背景为订阅用户专属功能——订阅后解锁'); return; } // v10.28.31 订阅锁（belt-and-braces 防线）
     input.value = '';
     if (!PAGE_BG_WORKING) return;
-    if (!/^image\//.test(file.type)) { showToast('请选择图片文件'); return; }
-    if (file.size > 8 * 1024 * 1024) { showToast('图片超过 8MB，请换一张更小的'); return; }
-    if (PAGE_BG_WORKING.imgs.length >= PBG_MAX_IMGS) { showToast('最多 ' + PBG_MAX_IMGS + ' 张图片'); return; }
+    if (!/^image\//.test(file.type)) { showToast(T('fc.toast.chooseImage') || '请选择图片文件'); return; }
+    if (file.size > 8 * 1024 * 1024) { showToast(T('fc.toast.imgTooBig8') || '图片超过 8MB，请换一张更小的'); return; }
+    if (PAGE_BG_WORKING.imgs.length >= PBG_MAX_IMGS) { showToast((T('fc.toast.maxImgs') || '最多 %d 张图片').replace('%d', PBG_MAX_IMGS)); return; }
     var reader = new FileReader();
     reader.onload = function (e) {
       var raw = e.target.result;
       // 累积 dataURL 总长门禁（护 localStorage 配额，同 handleCardBgUpload 口径）
       if (raw.length + pbgTotalBytes(PAGE_BG_WORKING) > PBG_MAX_BYTES) {
-        showToast('背景图片总量过大（草稿存储限制），请移除旧图或换更小的图片');
+        showToast(T('fc.toast.pbgTooBig') || '背景图片总量过大（草稿存储限制），请移除旧图或换更小的图片');
         return;
       }
       var img = new Image();
@@ -7085,7 +7123,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           updatePbgRatioHint();
         }, { close: 'self' });
       };
-      img.onerror = function () { showToast('图片无法读取'); };
+      img.onerror = function () { showToast(T('fc.toast.imgUnreadable') || '图片无法读取'); };
       img.src = raw;
     };
     reader.readAsDataURL(file);
@@ -7109,12 +7147,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         '<div class="pbg-item-main">' +
         // v10.28.28: 名称行 + 编辑钮（重开图片信息弹窗编辑元数据）；
         // 名称是用户输入进字符串拼 HTML——必过 esc()（五转义防注入）
-        '<div class="pbg-name-row"><span class="pbg-name" title="' + esc(im.name || '未命名') + '">' + esc(im.name || '未命名') + '</span>' +
-        '<button class="pbg-edit" onclick="pbgEditImageMeta(\'' + id + '\')" title="编辑图片信息"><span class="material-symbols-outlined">edit</span></button></div>' +
-        '<div class="pbg-feather-row"><span>上</span><input type="range" min="0" max="' + FEATHER_MAX + '" step="10" value="' + f.top + '" oninput="pbgSetFeather(\'' + id + '\',\'top\',this.value)"><span class="pbg-fv" style="text-align:right">' + f.top + '</span></div>' +
-        '<div class="pbg-feather-row"><span>下</span><input type="range" min="0" max="' + FEATHER_MAX + '" step="10" value="' + f.bottom + '" oninput="pbgSetFeather(\'' + id + '\',\'bottom\',this.value)"><span class="pbg-fv" style="text-align:right">' + f.bottom + '</span></div>' +
+        '<div class="pbg-name-row"><span class="pbg-name" title="' + esc(im.name || (T('fc.common.unnamed') || '未命名')) + '">' + esc(im.name || (T('fc.common.unnamed') || '未命名')) + '</span>' +
+        '<button class="pbg-edit" onclick="pbgEditImageMeta(\'' + id + '\')" title="' + (T('fc.pbg.editMeta') || '编辑图片信息') + '"><span class="material-symbols-outlined">edit</span></button></div>' +
+        '<div class="pbg-feather-row"><span>' + (T('fc.pbg.top') || '上') + '</span><input type="range" min="0" max="' + FEATHER_MAX + '" step="10" value="' + f.top + '" oninput="pbgSetFeather(\'' + id + '\',\'top\',this.value)"><span class="pbg-fv" style="text-align:right">' + f.top + '</span></div>' +
+        '<div class="pbg-feather-row"><span>' + (T('fc.pbg.bottom') || '下') + '</span><input type="range" min="0" max="' + FEATHER_MAX + '" step="10" value="' + f.bottom + '" oninput="pbgSetFeather(\'' + id + '\',\'bottom\',this.value)"><span class="pbg-fv" style="text-align:right">' + f.bottom + '</span></div>' +
         '</div>' +
-        '<button class="pbg-del" onclick="pbgRemoveImage(\'' + id + '\')" title="删除"><span class="material-symbols-outlined">close</span></button>' +
+        '<button class="pbg-del" onclick="pbgRemoveImage(\'' + id + '\')" title="' + (T('fc.common.delete') || '删除') + '"><span class="material-symbols-outlined">close</span></button>' +
         '</div>';
     }).join('');
   }
@@ -7272,7 +7310,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function openPageBgModal() {
     // v10.28.31: 订阅锁——免费用户拦截（入口锁标 + 订阅后解锁链接在资产面板）
-    if (!isSubscriberUser()) { showToast('页面背景为订阅用户专属功能——订阅后解锁'); return; }
+    if (!isSubscriberUser()) { showToast(T('fc.toast.pageBgLocked') || '页面背景为订阅用户专属功能——订阅后解锁'); return; }
     // deepCopy(null)=null 时也要有空工作副本（上传/保存/取消都按非空会话走）
     PAGE_BG_WORKING = pbgDeepCopy(PAGE_BG_STATE) || { imgs: [], order: [], feathers: {} };
     renderPbgList();
@@ -7294,13 +7332,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       PAGE_BG_WORKING = null;
       updatePageBgEntryState();
       closeAllModals();
-      showToast('已移除页面背景');
+      showToast(T('fc.toast.pbgRemoved') || '已移除页面背景');
       return;
     }
     var comp = renderPageBgComposite();
     // 16:9 = 最低要求（compH/1600 ≥ 9/16）
     if (!comp || comp.h / comp.w < 9 / 16 - 1e-4) {
-      showToast('背景高度不足 16:9——请再上传图片加长');
+      showToast(T('fc.toast.pbgShort') || '背景高度不足 16:9——请再上传图片加长');
       updatePbgRatioHint();
       return; // 不关窗
     }
@@ -7319,7 +7357,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
 
   function pbgRemoveAll() {
-    if (!confirm('移除页面背景？')) return;
+    if (!confirm(T('fc.confirm.removePbg') || '移除页面背景？')) return;
     PAGE_BG_STATE = null;
     PAGE_BG_WORKING = null;
     PAGE_BG_COMPOSITE = null;
@@ -7423,9 +7461,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function runMigration() {
     var raw = document.getElementById('migrateText').value.trim();
-    if (!raw) { showToast('Nothing to migrate — paste an article first'); return; }
+    if (!raw) { showToast(T('fc.toast.migrateEmpty') || 'Nothing to migrate — paste an article first'); return; }
     var chunks = splitMigrateChunks(raw).slice(0, 24);
-    if (!chunks.length) { showToast('Nothing to migrate'); return; }
+    if (!chunks.length) { showToast(T('fc.toast.migrateNothing') || 'Nothing to migrate'); return; }
     chunks.forEach(function (c) {
       var pos = findFreeCell(8, 4);
       var card = createContentCard(pos.col, pos.row, 8, 4);
@@ -7441,18 +7479,18 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     onContentChange();
     closeAllModals();
     document.getElementById('migrateText').value = '';
-    showToast('Migrated ' + chunks.length + ' card' + (chunks.length > 1 ? 's' : ''));
+    showToast((T('fc.toast.migratedN') || 'Migrated %d cards').replace('%d', chunks.length));
   }
   window.runMigration = runMigration;
 
   function handleMigrateFile(input) {
     var file = input.files && input.files[0];
     if (!file) return;
-    if (file.size > 1024 * 1024) { showToast('File too large (max 1 MB)'); return; }
+    if (file.size > 1024 * 1024) { showToast(T('fc.toast.fileTooBig') || 'File too large (max 1 MB)'); return; }
     var reader = new FileReader();
     reader.onload = function () {
       document.getElementById('migrateText').value = String(reader.result || '');
-      showToast('Loaded ' + file.name);
+      showToast((T('fc.toast.loadedFile') || 'Loaded %s').replace('%s', file.name));
     };
     reader.readAsText(file);
     input.value = '';
@@ -7984,11 +8022,24 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (card.classList.contains('editing-label')) return;
       enterLabelEdit(card);
     };
-    labelEl.oninput = function () { autoSizeLabel(this); onContentChange(); };
+    labelEl.oninput = function () { card.dataset.labelEdited = '1'; autoSizeLabel(this); onContentChange(); }; // v10.28.45.0: 用户改过名才存显示文本（buildDraft 看此标记）
     labelEl.addEventListener('blur', function () { if (editingLabelCard === card) exitLabelEdit(); });
     labelEl.addEventListener('keydown', function (ev) {
       if (ev.key === 'Enter') { ev.preventDefault(); exitLabelEdit(); }
     });
+  }
+
+  // v10.28.45.0: 卡片类型名显示本地化——规范英文名（资产面板 data-label 与
+  // 创建器默认值）→ 当前语言显示；用户自取名原样过。dataset.label 恒存英文
+  // 规范名/用户原名（草稿数据零改动，payload 键不变）。
+  var ASSET_TYPE_KEY = { flag: 'fc.cardtype.flag', shield: 'fc.cardtype.emblem', map: 'fc.cardtype.map', sne: 'fc.cardtype.sne', character: 'fc.cardtype.character', stats: 'fc.cardtype.stats', sheet: 'fc.cardtype.sheet', menu_book: 'fc.cardtype.constitution', history_edu: 'fc.cardtype.timeline', image: 'fc.cardtype.gallery', content: 'fc.cardtype.content', img: 'fc.cardtype.image', bitmap: 'fc.cardtype.image', text: 'fc.cardtype.text' };
+  var ASSET_CANON_LABELS = { flag: ['Flag', 'National Flag'], shield: ['Emblem'], map: ['Territorial Map'], sne: ['SNE Index'], character: ['Character Card'], stats: ['Stats Card'], sheet: ['Sheet Card'], menu_book: ['Constitution'], history_edu: ['Timeline'], image: ['Gallery'], content: ['Content Card'], img: ['Image'], bitmap: ['Image'], text: ['Text'] };
+  function localizedTypeName(asset, label) {
+    var key = ASSET_TYPE_KEY[asset];
+    if (!key) return label;
+    var canon = ASSET_CANON_LABELS[asset] || [];
+    if (canon.indexOf(label) === -1) return label; // 用户自取名原样
+    return T(key) || label;
   }
 
   function createAssetCard(asset, label, col, row, spanW, spanH) {
@@ -7999,7 +8050,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var iconEl = document.createElement('span');
     iconEl.className = 'material-symbols-outlined card-icon';
     iconEl.textContent = icon;
-    var labelEl = makeTextField('card-label', label); // v10.28.24: 带标记草稿出生即富文本
+    var labelEl = makeTextField('card-label', localizedTypeName(asset, label)); // v10.28.24: 带标记草稿出生即富文本；v10.28.45.0: 规范名显示本地化（数据零改动）
     setupCardLabelInput(card, labelEl);
     card.appendChild(iconEl);
     card.appendChild(labelEl);
@@ -8032,7 +8083,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var iconEl = document.createElement('span');
     iconEl.className = 'material-symbols-outlined card-icon';
     iconEl.textContent = 'flag';
-    var labelEl = makeTextField('card-label', label || 'Flag'); // v10.28.24: 带标记草稿出生即富文本
+    var labelEl = makeTextField('card-label', localizedTypeName('flag', label || 'Flag')); // v10.28.24: 带标记草稿出生即富文本；v10.28.45.0: 规范名显示本地化（数据零改动）
     setupCardLabelInput(card, labelEl);
     card.appendChild(iconEl);
     card.appendChild(labelEl);
@@ -8087,11 +8138,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     card.classList.add('character-card');
     var avatar = document.createElement('div');
     avatar.className = 'char-avatar';
-    avatar.title = '点击上传头像';
+    avatar.title = T('fc.char.avatarTitle') || '点击上传头像';
     avatar.innerHTML = '<span class="material-symbols-outlined">person</span>';
     var fi = document.createElement('input');
     fi.type = 'file'; fi.accept = 'image/*'; fi.className = 'card-upload-input';
-    fi.title = '点击上传头像';
+    fi.title = T('fc.char.avatarTitle') || '点击上传头像';
     // v10.28.44.3: 触控上传修复——fi 透明覆盖层盖住头像，tap 直击 input 本体
     // （原生手势自带用户激活 → 文件选择器可开；触控桥合成 click 无激活会被
     // 浏览器静默拒绝）。input 命中触控桥 inEditableZone 豁免（input 选择器），
@@ -8113,7 +8164,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           avatar.style.backgroundImage = 'url("' + e.target.result + '")';
           avatar.replaceChildren(fi); // 只清图标 span——fi 覆盖层必须保留（44.3 起 fi 是 avatar 子元素）
           onContentChange();
-          showToast('头像已上传');
+          showToast(T('fc.toast.avatarUploaded') || '头像已上传');
         }, { close: 'self' });
       };
       reader.readAsDataURL(file);
@@ -8121,12 +8172,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     });
     avatar.addEventListener('click', function (e) { if (e.target !== fi) fi.click(); });
     var nameEl = makeTextField('card-label card-edit-field', '');
-    nameEl.placeholder = '姓名';
+    nameEl.placeholder = T('fc.char.namePh') || '姓名';
     setupCardLabelInput(card, nameEl);
     var titleEl = makeTextField('char-title card-edit-field', '');
-    titleEl.placeholder = '头衔';
+    titleEl.placeholder = T('fc.char.titlePh') || '头衔';
     var bioEl = makeTextField('char-bio card-edit-field', '', 'textarea');
-    bioEl.placeholder = '简介…';
+    bioEl.placeholder = T('fc.char.bioPh') || '简介…';
     card.appendChild(avatar); // fi 44.3 起挂在 avatar 内（覆盖层），不直挂卡
     card.appendChild(nameEl);
     card.appendChild(titleEl);
@@ -8144,7 +8195,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     card.classList.add('map-card');
     var canvas = document.createElement('div');
     canvas.className = 'map-canvas map-empty';
-    canvas.textContent = '双击上传地图图片 · 再双击地图可框区域';
+    canvas.textContent = T('fc.map.emptyHint') || '双击上传地图图片 · 再双击地图可框区域';
     var fi = document.createElement('input');
     fi.type = 'file'; fi.accept = 'image/*'; fi.className = 'card-upload-input';
     // v10.28.44.3: 触控上传修复——fi 透明覆盖层盖住空图态画布（tap 直击 input
@@ -8169,7 +8220,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           canvas.classList.remove('map-empty');
           canvas.textContent = '';
           onContentChange();
-          showToast('地图已上传 · 再双击地图可框区域'); // v10.28.9: 提示第二击开区域编辑器
+          showToast(T('fc.toast.mapUploaded') || '地图已上传 · 再双击地图可框区域'); // v10.28.9: 提示第二击开区域编辑器
         }, { close: 'self' });
       };
       reader.readAsDataURL(file);
@@ -8296,7 +8347,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       mreCancelPanelDrag(); // v10.28.12: 面板拖拽手势同取消
       hideContextMenu();    // v10.28.11: ＋/☰ 弹层状态清零
       mreSyncToCard();
-      if (st.regions.length) showToast('区域已保存到地图卡');
+      if (st.regions.length) showToast(T('fc.mre.toastSaved') || '区域已保存到地图卡');
     }
     ov.classList.remove('active');
     ov.setAttribute('aria-hidden', 'true');
@@ -8342,7 +8393,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (pts.length < 3) {
       st.drawing = null;
       mreRenderPts(); mreRenderPreview(); mreUpdateTip();
-      showToast('至少 3 个点才能围成区域');
+      showToast(T('fc.mre.toastNeed3') || '至少 3 个点才能围成区域');
       return;
     }
     var region = {
@@ -8361,7 +8412,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // 显示」问询钦定「框完自动弹面板」——v10.28.9.1「点区域或列表才滑出」
     // 口径翻回 v10.28.9 原钦定；mreName 随面板聚焦，直接输名字）。
     openMapRegionPanel(region.id);
-    showToast('区域已框好 · 填个名字吧');
+    showToast(T('fc.mre.toastFramed') || '区域已框好 · 填个名字吧');
   }
   function mreCurrentRegion() {
     var st = mapRegionState;
@@ -8493,7 +8544,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!r) return;
     if (d.movedFar) { mreSyncToCard(); return; }
     // 单击＝删除该点（钦定「单点删除该点」；至少 3 个点才能围成区域）
-    if (r.pts.length <= 3) { showToast('至少 3 个点才能围成区域'); mreRerender(); return; }
+    if (r.pts.length <= 3) { showToast(T('fc.mre.toastNeed3') || '至少 3 个点才能围成区域'); mreRerender(); return; }
     r.pts.splice(d.idx, 1);
     mreRerender();
     mreSyncToCard();
@@ -8588,7 +8639,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!st.regions.length) {
       var empty = document.createElement('div');
       empty.className = 'mre-empty';
-      empty.textContent = '还没有区域 · 点「画区域」开始框';
+      empty.textContent = T('fc.mre.empty') || '还没有区域 · 点「画区域」开始框';
       list.appendChild(empty);
       return;
     }
@@ -8600,7 +8651,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       sw.style.background = r.color;
       var nm = document.createElement('span');
       nm.className = 'mre-item-name';
-      nm.textContent = r.name || '未命名区域';
+      nm.textContent = r.name || (T('fc.mre.unnamed') || '未命名区域');
       item.appendChild(sw);
       item.appendChild(nm);
       item.addEventListener('click', function () { openMapRegionPanel(r.id); });
@@ -8612,10 +8663,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var st = mapRegionState;
     if (!st) { tip.classList.add('hidden'); return; }
     if (st.drawing) {
-      tip.textContent = '逐个点击落点 · 点回第一个点闭合区域 · 右键撤销 · Esc 取消 · 滚轮缩放 · 空格/中键拖动';
+      tip.textContent = T('fc.mre.tipDraw') || '逐个点击落点 · 点回第一个点闭合区域 · 右键撤销 · Esc 取消 · 滚轮缩放 · 空格/中键拖动';
       tip.classList.remove('hidden');
     } else if (!st.regions.length) {
-      tip.textContent = '点击右侧「＋ 画区域」开始框区域';
+      tip.textContent = T('fc.mre.tipIdle') || '点击右侧「＋ 画区域」开始框区域';
       tip.classList.remove('hidden');
     } else {
       tip.classList.add('hidden');
@@ -8630,7 +8681,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     st.currentId = rid;
     st.forceDesc = null;
     hideContextMenu();
-    document.getElementById('mrePanelTitle').textContent = region.name ? '区域信息 · ' + region.name : '区域信息';
+    document.getElementById('mrePanelTitle').textContent = region.name ? (T('fc.mre.panelTitle') || '区域信息 · %s').replace('%s', region.name) : (T('fc.mre.panelTitlePlain') || '区域信息');
     // v10.28.11: 透明度滑杆按区域字段回显（旧草稿缺省 35/90）
     var fill = region.fillOpacity !== undefined ? region.fillOpacity : 35;
     var stroke = region.strokeOpacity !== undefined ? region.strokeOpacity : 90;
@@ -8677,11 +8728,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // 名称
     var block = document.createElement('div'); block.className = 'mre-info-block';
     var lab = document.createElement('span'); lab.className = 'label-sm';
-    lab.style.color = 'var(--color-on-surface-variant)'; lab.textContent = '名称';
+    lab.style.color = 'var(--color-on-surface-variant)'; lab.textContent = T('fc.mre.name') || '名称';
     var wrap = document.createElement('div'); wrap.className = 'mre-input-wrap';
     var nm = document.createElement('input');
     nm.type = 'text'; nm.id = 'mreName'; nm.className = 'input-glass';
-    nm.placeholder = '区域名'; nm.maxLength = 24; nm.value = r.name || '';
+    nm.placeholder = T('fc.mre.namePh') || '区域名'; nm.maxLength = 24; nm.value = r.name || '';
     nm.style.fontWeight = '700';
     // v10.28.10.1: 名称框回显该区域字体家族/字号（工具栏同步态从 computed 读，
     // 无字体区域清空回 CSS 默认）
@@ -8695,12 +8746,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (r.desc || st.forceDesc === r.id) {
       var dblock = document.createElement('div'); dblock.className = 'mre-info-block';
       var dhead = document.createElement('div'); dhead.className = 'mre-info-head';
-      var dlab = document.createElement('span'); dlab.textContent = '描述';
+      var dlab = document.createElement('span'); dlab.textContent = T('fc.mre.desc') || '描述';
       dhead.appendChild(dlab); dhead.appendChild(mreBlockDelBtn('mreDeleteDesc()'));
       var dwrap = document.createElement('div'); dwrap.className = 'mre-input-wrap';
       var dta = document.createElement('textarea');
       dta.id = 'mreDesc'; dta.className = 'input-glass'; dta.rows = 3;
-      dta.placeholder = '这个区域的说明…'; dta.value = r.desc || '';
+      dta.placeholder = T('fc.mre.descPh') || '这个区域的说明…'; dta.value = r.desc || '';
       dta.style.fontWeight = '700';
       dta.oninput = function () { r.desc = dta.value; mreSyncToCard(); };
       dwrap.appendChild(dta); dwrap.appendChild(mreCfgBtn('desc'));
@@ -8711,19 +8762,19 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     (r.info || []).forEach(function (it) {
       var iblock = document.createElement('div'); iblock.className = 'mre-info-block';
       var ihead = document.createElement('div'); ihead.className = 'mre-info-head';
-      var ilab = document.createElement('span'); ilab.textContent = '两排信息';
+      var ilab = document.createElement('span'); ilab.textContent = T('fc.mre.infoTwoRows') || '两排信息';
       ihead.appendChild(ilab); ihead.appendChild(mreBlockDelBtn('mreDeleteInfo(\'' + it.uid + '\')'));
       var twrap = document.createElement('div'); twrap.className = 'mre-input-wrap';
       var ti = document.createElement('input');
       ti.type = 'text'; ti.id = 'mreInfoTitle_' + it.uid; ti.className = 'input-glass';
-      ti.placeholder = '标题'; ti.value = it.title || ''; ti.style.fontWeight = '700';
+      ti.placeholder = T('fc.mre.infoTitle') || '标题'; ti.value = it.title || ''; ti.style.fontWeight = '700';
       ti.oninput = function () { mreInfoInput(it.uid, 'title', ti); };
       twrap.appendChild(ti); twrap.appendChild(mreCfgBtn('info:' + it.uid + ':title'));
       mreApplyInputStyle(ti, 'info:' + it.uid + ':title');
       var cwrap = document.createElement('div'); cwrap.className = 'mre-input-wrap';
       var ci = document.createElement('input');
       ci.type = 'text'; ci.id = 'mreInfoContent_' + it.uid; ci.className = 'input-glass';
-      ci.placeholder = '内容'; ci.value = it.content || ''; ci.style.fontWeight = '700';
+      ci.placeholder = T('fc.mre.infoContent') || '内容'; ci.value = it.content || ''; ci.style.fontWeight = '700';
       ci.oninput = function () { mreInfoInput(it.uid, 'content', ci); };
       cwrap.appendChild(ci); cwrap.appendChild(mreCfgBtn('info:' + it.uid + ':content'));
       mreApplyInputStyle(ci, 'info:' + it.uid + ':content');
@@ -8735,7 +8786,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   function mreCfgBtn(key) {
     var b = document.createElement('button');
-    b.type = 'button'; b.className = 'mre-cfg-btn'; b.title = '点击自定义外观 · 按住拖动信息面板'; // v10.28.12: 双手势
+    b.type = 'button'; b.className = 'mre-cfg-btn'; b.title = T('fc.mre.dragHint') || '点击自定义外观 · 按住拖动信息面板'; // v10.28.12: 双手势
     b.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">menu</span>';
     b.onclick = function (e) {
       // v10.28.12: 拖动松手补发的 click 抑制（600ms 时间戳消费式——mouseup 落在
@@ -8841,7 +8892,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   function mreBlockDelBtn(onclick) {
     var b = document.createElement('button');
-    b.type = 'button'; b.className = 'mre-del-block'; b.title = '删除';
+    b.type = 'button'; b.className = 'mre-del-block'; b.title = T('fc.common.delete') || '删除';
     b.innerHTML = '<span class="material-symbols-outlined">close</span>';
     b.setAttribute('onclick', onclick);
     return b;
@@ -8849,7 +8900,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function mreNameInput(el) {
     var r = mreCurrentRegion(); if (!r) return;
     r.name = el.value;
-    document.getElementById('mrePanelTitle').textContent = r.name ? '区域信息 · ' + r.name : '区域信息';
+    document.getElementById('mrePanelTitle').textContent = r.name ? (T('fc.mre.panelTitle') || '区域信息 · %s').replace('%s', r.name) : (T('fc.mre.panelTitlePlain') || '区域信息');
     mreRenderLabels(); mreRenderList(); mreSyncToCard();
   }
   function mreInfoInput(uid, which, el) {
@@ -8918,7 +8969,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var st = mapRegionState, r = mreCurrentRegion();
     hideContextMenu();
     if (!st || !r) return;
-    if (r.desc) { showToast('该区域已有描述'); return; }
+    if (r.desc) { showToast(T('fc.mre.toastHasDesc') || '该区域已有描述'); return; }
     r.desc = '';
     st.forceDesc = r.id; // 空框也保持可见，可立即输入
     mreRenderInfoCol();
@@ -9048,7 +9099,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     mreRerender();
     mreUpdateTip();
     mreSyncToCard();
-    showToast('区域已删除');
+    showToast(T('fc.mre.toastDeleted') || '区域已删除');
   }
   window.deleteMapRegionCurrent = deleteMapRegionCurrent;
 
@@ -9200,7 +9251,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         st.drawing = null;
         document.getElementById('mreCanvas').classList.remove('drawing'); // v10.28.11: 退十字
         mreRenderPts(); mreRenderPreview(); mreUpdateTip();
-        showToast('已取消绘制');
+        showToast(T('fc.mre.toastCancelled') || '已取消绘制');
       } else {
         closeMapRegionEditor();
       }
@@ -9256,7 +9307,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var row = document.createElement('div');
     row.className = 'stats-row';
     var l = makeTextField('stats-label card-edit-field', label || '');
-    l.placeholder = '指标';
+    l.placeholder = T('fc.stats.metricPh') || '指标';
     var v = document.createElement('input');
     v.className = 'stats-value card-edit-field';
     v.type = 'number'; v.placeholder = '0'; v.value = value != null ? value : '';
@@ -9264,7 +9315,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     track.className = 'stats-bar-track';
     track.innerHTML = '<div class="stats-bar"></div>';
     var del = document.createElement('button');
-    del.className = 'row-del'; del.textContent = '✕'; del.title = '删除此行';
+    del.className = 'row-del'; del.textContent = '✕'; del.title = T('fc.stats.delRow') || '删除此行';
     del.addEventListener('click', function () {
       row.remove();
       if (!statsRootOf(card).querySelector('.stats-row')) addStatsRow(card, '', '');
@@ -9286,7 +9337,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     chart.className = 'stats-chart'; // v10.28.5: 图表容器（chart-mode 才显示）
     var addBtn = document.createElement('button');
     addBtn.className = 'row-add';
-    addBtn.textContent = '+ 添加指标';
+    addBtn.textContent = T('fc.stats.addMetric') || '+ 添加指标';
     addBtn.addEventListener('click', function () {
       addStatsRow(card, '', '');
     });
@@ -9408,7 +9459,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   function scEmpty(svg, x, y) {
     var t = scEl('text', { x: x, y: y, 'font-size': 11, 'text-anchor': 'middle', fill: 'var(--color-outline)' });
-    t.textContent = '无数据 — 切回「列表」添加指标';
+    t.textContent = T('fc.stats.noData') || '无数据 — 切回「列表」添加指标';
     svg.appendChild(t);
   }
   function scGrid(svg, x0, x1, y0, y1) {
@@ -9515,7 +9566,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     });
     if (donut) {
       svg.appendChild(scEl('circle', { cx: cx, cy: cy, r: R * 0.55, fill: 'var(--card-bg)' }));
-      scText(svg, cx, cy - 2, '总计', 'mid');
+      scText(svg, cx, cy - 2, T('fc.stats.total') || '总计', 'mid');
       scText(svg, cx, cy + 10, String(total), 'mid');
     }
   }
@@ -9610,7 +9661,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var vmin = vals[0], vq1 = q(0.25), vmed = q(0.5), vq3 = q(0.75), vmax = vals[vals.length - 1];
     var span = (vmax - vmin) || 1;
     function px(v) { return x0 + ((v - vmin) / span) * (x1 - x0); }
-    scText(svg, (x0 + x1) / 2, y - boxH / 2 - 10, 'min / Q1 / 中位数 / Q3 / max', 'mid');
+    scText(svg, (x0 + x1) / 2, y - boxH / 2 - 10, T('fc.stats.boxLabels') || 'min / Q1 / 中位数 / Q3 / max', 'mid');
     svg.appendChild(scEl('line', { x1: px(vmin), y1: y, x2: px(vmax), y2: y, stroke: 'var(--color-on-surface-variant)' }));
     svg.appendChild(scEl('rect', { x: px(vq1), y: y - boxH / 2, width: Math.max(px(vq3) - px(vq1), 2), height: boxH, fill: 'var(--color-primary)', 'fill-opacity': 0.25, stroke: 'var(--color-primary)' }));
     svg.appendChild(scEl('line', { x1: px(vmed), y1: y - boxH / 2, x2: px(vmed), y2: y + boxH / 2, stroke: 'var(--color-primary)', 'stroke-width': 2 }));
@@ -9705,13 +9756,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var ev = document.createElement('div');
     ev.className = 'tl-event';
     var y = makeTextField('tl-year card-edit-field', year || '');
-    y.placeholder = '年份';
+    y.placeholder = T('fc.tl.yearPh') || '年份';
     var t = makeTextField('tl-title card-edit-field', title || '');
-    t.placeholder = '事件';
+    t.placeholder = T('fc.tl.eventPh') || '事件';
     var d = makeTextField('tl-desc card-edit-field', desc || '', 'textarea');
-    d.placeholder = '描述…';
+    d.placeholder = T('fc.tl.descPh') || '描述…';
     var del = document.createElement('button');
-    del.className = 'row-del'; del.textContent = '✕'; del.title = '删除此事件';
+    del.className = 'row-del'; del.textContent = '✕'; del.title = T('fc.tl.delEvent') || '删除此事件';
     del.addEventListener('click', function () {
       ev.remove();
       if (!card.querySelector('.tl-event')) addTimelineEvent(card, '', '', '');
@@ -9732,7 +9783,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     list.className = 'tl-list';
     var addBtn = document.createElement('button');
     addBtn.className = 'row-add';
-    addBtn.textContent = '+ 添加事件';
+    addBtn.textContent = T('fc.tl.addEvent') || '+ 添加事件';
     addBtn.addEventListener('click', function () {
       addTimelineEvent(card, '', '', '');
     });
@@ -9749,11 +9800,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     tracks.className = 'tl-chart-tracks';
     var editRow = document.createElement('div');
     editRow.className = 'tc-edit-row';
-    editRow.innerHTML = '<span class="tc-edit-hint">点一个色块选中，再改年份</span>' +
-      '<span class="tc-fields"><span>开始年</span><input type="number" class="tc-start card-edit-field" placeholder="-221"><span>结束年</span><input type="number" class="tc-end card-edit-field" placeholder="220"><button class="tc-del" title="删除这条">✕</button></span>';
+    editRow.innerHTML = '<span class="tc-edit-hint">' + (T('fc.tl.editHint') || '点一个色块选中，再改年份') + '</span>' +
+      '<span class="tc-fields"><span>' + (T('fc.tl.startYear') || '开始年') + '</span><input type="number" class="tc-start card-edit-field" placeholder="-221"><span>' + (T('fc.tl.endYear') || '结束年') + '</span><input type="number" class="tc-end card-edit-field" placeholder="220"><button class="tc-del" title="' + (T('fc.tl.delBand') || '删除这条') + '">✕</button></span>';
     var chartAdd = document.createElement('button');
     chartAdd.className = 'row-add';
-    chartAdd.textContent = '+ 添加朝代';
+    chartAdd.textContent = T('fc.tl.addDynasty') || '+ 添加朝代';
     chart.appendChild(axis);
     chart.appendChild(tracks);
     chart.appendChild(editRow);
@@ -9796,17 +9847,17 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     tr.className = 'sheet-body-row';
     var gripTd = document.createElement('td');
     gripTd.className = 'sheet-row-grip';
-    gripTd.appendChild(sheetGripCell('swap_vert', '按住拖动调整该行高度'));
+    gripTd.appendChild(sheetGripCell('swap_vert', T('fc.sheet.dragRow') || '按住拖动调整该行高度'));
     tr.appendChild(gripTd);
     for (var i = 0; i < cols; i++) {
       var td = document.createElement('td');
       td.className = 'sheet-cell-td';
-      td.appendChild(sheetNewCell(card, '单元格', values && values[i]));
+      td.appendChild(sheetNewCell(card, T('fc.sheet.cell') || '单元格', values && values[i]));
       tr.appendChild(td);
     }
     var delTd = document.createElement('td');
     delTd.className = 'sheet-del-cell';
-    delTd.innerHTML = '<button class="row-del" title="删除此行">✕</button>';
+    delTd.innerHTML = '<button class="row-del" title="' + (T('fc.sheet.delRow') || '删除此行') + '">✕</button>';
     delTd.querySelector('.row-del').addEventListener('click', function () {
       tr.remove();
       if (!tbody.querySelector('.sheet-body-row')) sheetAddRow(card, null);
@@ -9822,7 +9873,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var isHead = tr.classList.contains('sheet-head-row');
       var td = document.createElement('td');
       td.className = 'sheet-cell-td';
-      td.appendChild(sheetNewCell(card, isHead ? '表头' : '单元格', isHead && label != null ? label : null));
+      td.appendChild(sheetNewCell(card, isHead ? (T('fc.sheet.header') || '表头') : (T('fc.sheet.cell') || '单元格'), isHead && label != null ? label : null));
       tr.insertBefore(td, tr.querySelector('.sheet-del-cell')); // 删除列恒在最后
     });
     // colgroup 同步插一列（✕ 列恒最后）+ 手柄行插一个新 ↔ 手柄
@@ -9832,7 +9883,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (gripRow) {
       var gth = document.createElement('th');
       gth.className = 'sheet-col-grip';
-      gth.appendChild(sheetGripCell('swap_horiz', '按住拖动调整该列宽度'));
+      gth.appendChild(sheetGripCell('swap_horiz', T('fc.sheet.dragCol') || '按住拖动调整该列宽度'));
       gripRow.insertBefore(gth, gripRow.querySelector('.sheet-del-cell'));
     }
     sheetSerialize(card); onContentChange();
@@ -9951,7 +10002,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     for (var gi = 0; gi < 2; gi++) {
       var gth = document.createElement('th');
       gth.className = 'sheet-col-grip';
-      gth.appendChild(sheetGripCell('swap_horiz', '按住拖动调整该列宽度'));
+      gth.appendChild(sheetGripCell('swap_horiz', T('fc.sheet.dragCol') || '按住拖动调整该列宽度'));
       gripTr.appendChild(gth);
     }
     var gDel = document.createElement('th');
@@ -9963,7 +10014,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // 表头行左侧也放 ↕ 行高手柄（表头行高同样可调）
     var headGrip = document.createElement('th');
     headGrip.className = 'sheet-row-grip';
-    headGrip.appendChild(sheetGripCell('swap_vert', '按住拖动调整该行高度'));
+    headGrip.appendChild(sheetGripCell('swap_vert', T('fc.sheet.dragRow') || '按住拖动调整该行高度'));
     headTr.appendChild(headGrip);
     for (var i = 0; i < 2; i++) {
       var th = document.createElement('th');
@@ -9985,10 +10036,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var controls = document.createElement('div');
     controls.className = 'sheet-controls';
     var addRow = document.createElement('button');
-    addRow.className = 'row-add'; addRow.textContent = '+ 添加行';
+    addRow.className = 'row-add'; addRow.textContent = T('fc.sheet.addRow') || '+ 添加行';
     addRow.addEventListener('click', function () { sheetAddRow(card, null, true); }); // 点 +添加行 → 卡片自动变长
     var addCol = document.createElement('button');
-    addCol.className = 'row-add'; addCol.textContent = '+ 添加列';
+    addCol.className = 'row-add'; addCol.textContent = T('fc.sheet.addCol') || '+ 添加列';
     addCol.addEventListener('click', function () { sheetAddCol(card, null, true); }); // 点 +添加列 → 卡片自动变宽
     controls.appendChild(addRow); controls.appendChild(addCol);
     card.appendChild(scroll); card.appendChild(controls);
@@ -10139,7 +10190,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     head.className = 'sne-head';
     var title = document.createElement('div');
     title.className = 'sne-title';
-    title.textContent = 'SNE Index · 斯拉蒂国家平衡指数';
+    title.textContent = T('fc.sne.title') || 'SNE Index · 斯拉蒂国家平衡指数';
     var total = document.createElement('div');
     total.className = 'sne-total'; total.textContent = '0';
     head.appendChild(title); head.appendChild(total);
@@ -10558,7 +10609,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       // mousedownAlreadySelected「再次点击」切换链整体移除，此处沿用不自动选中）。
       deselectAll();
       onContentChange();
-      showToast('卡片已合并成一组');
+      showToast(T('fc.toast.groupMerged') || '卡片已合并成一组');
       return;
     }
     // v10.28.26 — 左右并入保尺寸（用户「从左/右侧合并时不会因为长度不一样
@@ -10580,7 +10631,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // mousedownAlreadySelected「再次点击」切换链整体移除，此处沿用不自动选中）。
     deselectAll();
     onContentChange();
-    showToast('卡片已合并成一组');
+    showToast(T('fc.toast.groupMerged') || '卡片已合并成一组');
   }
 
   function splitCardFromGroup(card) {
@@ -10592,7 +10643,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // v10.28.15: 拆出后剩余组 reflow 塌合（不留洞，规整）；<2 张自动解散
     reflowGroup(g);
     onContentChange();
-    showToast('已从分组拆出');
+    showToast(T('fc.toast.groupSplit') || '已从分组拆出');
   }
 
   // v10.28.16 — 组整体主题化（钦定「组整体像一张大卡」）：组样式表
@@ -10992,7 +11043,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var empty = document.createElement('div');
       empty.className = 'label-sm';
       empty.style.cssText = 'color:var(--color-outline);padding:4px 6px';
-      empty.textContent = '暂无卡片——从左侧拖入';
+      empty.textContent = T('fc.layers.empty') || '暂无卡片——从左侧拖入';
       list.appendChild(empty);
       return;
     }
@@ -11000,11 +11051,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var hidden = card.classList.contains('layer-hidden');
       var row = document.createElement('div');
       row.className = 'layer-row' + (card === selectedCard ? ' active' : '');
-      row.title = hidden ? '已隐藏' : '点击选中卡片';
+      row.title = hidden ? (T('fc.layers.hidden') || '已隐藏') : (T('fc.layers.selectHint') || '点击选中卡片');
 
       var eye = document.createElement('button');
       eye.className = 'layer-btn';
-      eye.title = hidden ? '显示' : '隐藏';
+      eye.title = hidden ? (T('fc.layers.show') || '显示') : (T('fc.layers.hide') || '隐藏');
       eye.innerHTML = '<span class="material-symbols-outlined">' + (hidden ? 'visibility_off' : 'visibility') + '</span>';
       eye.onclick = function (e) { e.stopPropagation(); setCardLayerVisible(card, hidden); };
 
@@ -11015,18 +11066,18 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var name = document.createElement('span');
       name.className = 'layer-name' + (hidden ? ' hidden' : '');
       var lbl = card.querySelector('.card-label');
-      name.textContent = fieldText(lbl) || card.dataset.label || icon.textContent;
+      name.textContent = fieldText(lbl) || localizedTypeName(card.dataset.cardType, card.dataset.label) || icon.textContent;
 
       var up = document.createElement('button');
       up.className = 'layer-btn';
-      up.title = '上移一层 (Ctrl+])';
+      up.title = T('fc.layers.up') || '上移一层 (Ctrl+])';
       up.innerHTML = '<span class="material-symbols-outlined">keyboard_arrow_up</span>';
       up.disabled = !nextCardSibling(card);
       up.onclick = function (e) { e.stopPropagation(); moveCardLayer(card, 1); };
 
       var down = document.createElement('button');
       down.className = 'layer-btn';
-      down.title = '下移一层 (Ctrl+[)';
+      down.title = T('fc.layers.down') || '下移一层 (Ctrl+[)';
       down.innerHTML = '<span class="material-symbols-outlined">keyboard_arrow_down</span>';
       down.disabled = !prevCardSibling(card);
       down.onclick = function (e) { e.stopPropagation(); moveCardLayer(card, -1); };
@@ -11926,7 +11977,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       cardBgItem.style.display = (groupMenu ||
         (selectedCard && (selectedCard.querySelector('.card-label') || selectedCard.dataset.cardType === 'stats' || selectedCard.dataset.cardType === 'sne'))) ? 'flex' : 'none';
       var cbgLabel = document.getElementById('cardBgMenuLabel');
-      if (cbgLabel) cbgLabel.textContent = groupMenu ? '分组外观' : '卡片背景';
+      if (cbgLabel) cbgLabel.textContent = groupMenu ? (T('fc.ctx.groupAppearance') || '分组外观') : (T('fc.ctx.cardBg') || '卡片背景');
     }
     // v10.28.6: 透明背景（纸感）— 数据卡 + 外板式边缘（纸/藏宝图/科技）
     // 才显示（油漆剪影填充即边缘本体、无独立背景可透明；无边缘时无边缘可留）
@@ -12212,7 +12263,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!selectedCard) return;
     hideContextMenu();
     var rect = selectedCard.getBoundingClientRect();
-    document.getElementById('bgCardDims').textContent = 'Card size: ' + Math.round(rect.width) + 'px × ' + Math.round(rect.height) + 'px';
+    document.getElementById('bgCardDims').textContent = (T('fc.bgModal.sizePh') || 'Card size: ') + Math.round(rect.width) + 'px × ' + Math.round(rect.height) + 'px';
     var presets = ['#ffffff', '#f7f9fb', '#e1e0ff', '#c0c1ff', '#1e1c32', '#fef3c7', '#dcfce7', '#fce7f3'];
     var html = '';
     presets.forEach(function (c) {
@@ -12481,8 +12532,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   function tlChartYear(y) {
     y = Math.round(y);
-    if (y < 0) return '前' + (-y);
-    if (y === 0) return '元年';
+    if (y < 0) return (T('fc.tl.bce') || '前%d').replace('%d', -y);
+    if (y === 0) return T('fc.tl.yearOne') || '元年';
     return String(y);
   }
   function tlChartSyncEditRow(card) {
@@ -12564,7 +12615,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     chart.querySelector('.row-add').addEventListener('click', function () {
       var bars = tlChartBars(card);
       var last = bars.length ? Math.max.apply(null, bars.map(function (b) { return b.end; })) : 2000;
-      bars.push({ name: '新朝代', start: last, end: last + 100 });
+      bars.push({ name: T('fc.tl.newDynasty') || '新朝代', start: last, end: last + 100 });
       card.dataset.tlChartSel = String(bars.length - 1);
       tlChartSerialize(card); // 立即序列化（v10.28.0 教训：追加后不存会丢末条）
       renderTlChart(card);
@@ -12919,15 +12970,15 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var edgeWrap = document.getElementById('captionEdgeButtons');
     var sub = isSubscriberUser();
     var curEdge = card.dataset.captionEdge || '';
-    var edges = [['', '无'], ['paper', '破旧的纸'], ['treasure', '藏宝图'], ['tech', '科技']];
+    var edges = [['', T('fc.edge.none') || '无'], ['paper', T('fc.edge.paper') || '破旧的纸'], ['treasure', T('fc.edge.treasure') || '藏宝图'], ['tech', T('fc.edge.tech') || '科技']];
     var icons = ['block', 'description', 'map', 'memory'];
     var html = '';
     edges.forEach(function (pair, i) {
       var locked = pair[0] !== '' && !sub;
       html += '<button class="caption-edge-btn' + (curEdge === pair[0] ? ' active' : '') + (locked ? ' locked' : '') + '" data-edge="' + pair[0] + '"' +
-        (locked ? ' title="订阅后可用"' : '') + '>' +
+        (locked ? ' title="' + (T('fc.edge.lockedHint') || '订阅后可用') + '"' : '') + '>' +
         '<span class="material-symbols-outlined">' + (locked ? 'lock' : icons[i]) + '</span>' + pair[1] +
-        (locked ? '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">订阅</span>' : '') +
+        (locked ? '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + (T('fc.edge.lockedLabel') || '订阅') + '</span>' : '') +
         '</button>';
     });
     edgeWrap.innerHTML = html;
@@ -13018,7 +13069,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var file = input.files && input.files[0];
     if (!file || !selectedCard) return;
     if (file.size > 1.5 * 1024 * 1024) { // keep the draft inside the localStorage quota
-      showToast('图片超过 1.5MB，请换一张更小的');
+      showToast(T('fc.toast.imgTooBig15') || '图片超过 1.5MB，请换一张更小的');
       input.value = '';
       return;
     }
@@ -13059,7 +13110,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     }
     if (!EDGE_STYLES[name]) return;
     if (!isSubscriberUser()) { // UI-only gate — renderer never checks subscription
-      showToast('背景边缘为订阅用户专属功能');
+      showToast(T('fc.toast.edgeLocked') || '背景边缘为订阅用户专属功能');
       return;
     }
     selectedCard.dataset.captionEdge = name;
@@ -13415,11 +13466,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   // v10.7/v10.8 — 边缘按钮列表：卡片 = 科技1~6 六款剪影。外缘底板
   // 不再是独立功能（v10.8 移除标签页）——选主题自动带 16px 外板。
-  var CARD_EDGE_BUTTONS = [['', '无'], ['paper', '破旧的纸'], ['treasure', '藏宝图'],
-    ['tech1', '科技1'], ['tech2', '科技2'], ['tech3', '科技3'],
-    ['tech4', '科技4'], ['tech5', '科技5'], ['tech6', '科技6'],
-    ['paint1', '油漆1'], ['paint2', '油漆2'], ['paint3', '油漆3'],
-    ['paint4', '油漆4'], ['paint5', '油漆5'], ['paint6', '油漆6']];
+  var CARD_EDGE_BUTTONS = [['', T('fc.edge.none') || '无'], ['paper', T('fc.edge.paper') || '破旧的纸'], ['treasure', T('fc.edge.treasure') || '藏宝图'],
+    ['tech1', (T('fc.edge.techN') || '科技%d').replace('%d', 1)], ['tech2', (T('fc.edge.techN') || '科技%d').replace('%d', 2)], ['tech3', (T('fc.edge.techN') || '科技%d').replace('%d', 3)],
+    ['tech4', (T('fc.edge.techN') || '科技%d').replace('%d', 4)], ['tech5', (T('fc.edge.techN') || '科技%d').replace('%d', 5)], ['tech6', (T('fc.edge.techN') || '科技%d').replace('%d', 6)],
+    ['paint1', (T('fc.edge.paintN') || '油漆%d').replace('%d', 1)], ['paint2', (T('fc.edge.paintN') || '油漆%d').replace('%d', 2)], ['paint3', (T('fc.edge.paintN') || '油漆%d').replace('%d', 3)],
+    ['paint4', (T('fc.edge.paintN') || '油漆%d').replace('%d', 4)], ['paint5', (T('fc.edge.paintN') || '油漆%d').replace('%d', 5)], ['paint6', (T('fc.edge.paintN') || '油漆%d').replace('%d', 6)]];
 
   function refreshCardBgPopoverState() {
     var pop = document.getElementById('cardBgPopover');
@@ -13484,9 +13535,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       wrap.innerHTML = edges.map(function (pair, i) {
         var locked = pair[0] !== '' && !sub;
         return '<button class="caption-edge-btn' + (curEdge === pair[0] ? ' active' : '') + (locked ? ' locked' : '') + '" data-edge="' + pair[0] + '"' +
-          (locked ? ' title="订阅后可用"' : '') + '>' +
+          (locked ? ' title="' + (T('fc.edge.lockedHint') || '订阅后可用') + '"' : '') + '>' +
           '<span class="material-symbols-outlined">' + (locked ? 'lock' : icons[i]) + '</span>' + pair[1] +
-          (locked ? '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">订阅</span>' : '') +
+          (locked ? '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + (T('fc.edge.lockedLabel') || '订阅') + '</span>' : '') +
           '</button>';
       }).join('');
       wrap.querySelectorAll('.caption-edge-btn').forEach(function (b) {
@@ -13504,7 +13555,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // ── card background (inner) setters ──
   function setCardBgColor(hex) {
     if (!selectedCard) return;
-    if (!isSubscriberUser()) { showToast('卡片背景为订阅用户专属功能'); return; } // v10.28.31 订阅锁（UI 防线，渲染器不查订阅）
+    if (!isSubscriberUser()) { showToast(T('fc.toast.cardBgLocked') || '卡片背景为订阅用户专属功能'); return; } // v10.28.31 订阅锁（UI 防线，渲染器不查订阅）
     if (!hex || !/^#[0-9a-fA-F]{6}$/.test(hex)) return;
     var img = selectedCard.querySelector('.card-img-bg');
     var stripes = selectedCard.querySelector('.card-stripes');
@@ -13538,7 +13589,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function updateCardBgOpacity(v) {
     if (!selectedCard || !selectedCard.dataset.cardBgColor) return; // color-only control
-    if (!isSubscriberUser()) { showToast('卡片背景为订阅用户专属功能'); return; } // v10.28.31 订阅锁（UI 防线）
+    if (!isSubscriberUser()) { showToast(T('fc.toast.cardBgLocked') || '卡片背景为订阅用户专属功能'); return; } // v10.28.31 订阅锁（UI 防线）
     var val = Math.max(0, Math.min(100, parseInt(v) || 0));
     selectedCard.dataset.cardBgOpacity = val;
     applyCardBg(selectedCard);
@@ -13573,9 +13624,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function handleCardBgUpload(input) {
     var file = input.files && input.files[0];
     if (!file || !selectedCard) return;
-    if (!isSubscriberUser()) { input.value = ''; showToast('卡片背景为订阅用户专属功能'); return; } // v10.28.31 订阅锁（UI 防线）
+    if (!isSubscriberUser()) { input.value = ''; showToast(T('fc.toast.cardBgLocked') || '卡片背景为订阅用户专属功能'); return; } // v10.28.31 订阅锁（UI 防线）
     if (file.size > 1.5 * 1024 * 1024) { // keep the draft inside the localStorage quota
-      showToast('图片超过 1.5MB，请换一张更小的');
+      showToast(T('fc.toast.imgTooBig15') || '图片超过 1.5MB，请换一张更小的');
       input.value = '';
       return;
     }
@@ -13633,7 +13684,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       }
       if (!EDGE_STYLES[name]) return;
       if (!isSubscriberUser()) { // UI-only gate — renderer never checks subscription
-        showToast('背景边缘为订阅用户专属功能');
+        showToast(T('fc.toast.edgeLocked') || '背景边缘为订阅用户专属功能');
         return;
       }
       if (!groupStyles[g]) groupStyles[g] = {};
@@ -13667,7 +13718,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     }
     if (!EDGE_STYLES[name]) return;
     if (!isSubscriberUser()) { // UI-only gate — renderer never checks subscription
-      showToast('背景边缘为订阅用户专属功能');
+      showToast(T('fc.toast.edgeLocked') || '背景边缘为订阅用户专属功能');
       return;
     }
     selectedCard.dataset.cardEdge = name;
@@ -13777,8 +13828,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var templates = JSON.parse(localStorage.getItem('slati_fluidcanvas_templates') || '[]');
       templates.push(tpl);
       localStorage.setItem('slati_fluidcanvas_templates', JSON.stringify(templates));
-      showToast('Template saved: ' + name);
-    } catch (e) { showToast('Failed to save template'); }
+      showToast((T('fc.toast.tplSaved') || 'Template saved: %s').replace('%s', name));
+    } catch (e) { showToast(T('fc.toast.tplSaveFailed') || 'Failed to save template'); }
   }
   window.saveCardAsTemplate = saveCardAsTemplate;
 
@@ -13824,7 +13875,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         selectedCard.style.transform = 'rotate(' + t.rotate + 'deg)';
       }
       closeAllModals();
-      showToast('Template applied: ' + t.name);
+      showToast((T('fc.toast.tplApplied') || 'Template applied: %s').replace('%s', t.name));
       refreshResizeHandles();
       onContentChange();
     } catch (e) { /* ignore */ }
@@ -14075,14 +14126,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           var noun = card.dataset.cardType === 'shield' ? 'Emblem' : 'Flag'; // v10.28.7: 国徽卡提示语适配
           showToast(noun + ' uploaded: ' + file.name);
         } else {
-          showToast('已上传到我的图库：' + meta.name);
+          showToast((T('fc.toast.libUploaded') || '已上传到我的图库：%s').replace('%s', meta.name));
         }
         // 图库网格即时刷新 + 新图自动选中（imgMetaSave 已先把 src 写进持久库）
         refreshLibGrid();
         var hit = currentTabItems().find(function (f) { return f.src === e.target.result; });
         if (hit) {
           selectedFlagId = hit.id;
-          document.getElementById('flagSelectCount').textContent = '已选：' + hit.name;
+          document.getElementById('flagSelectCount').textContent = (T('fc.lib.selected') || '已选：%s').replace('%s', hit.name);
           document.querySelectorAll('.flag-card-item').forEach(function (c) {
             c.classList.toggle('selected', c.dataset.flagId === hit.id);
           });
@@ -14137,7 +14188,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   // v10.28.33: 上传者（纯前端先做；未来真库=后端 Cloud Storage+DB 就绪后自然对接）
   function libUserName() {
-    try { var u = SlatiDB.getUser(); return (u && u.displayName) || '你'; } catch (e) { return '你'; }
+    try { var u = SlatiDB.getUser(); return (u && u.displayName) || (T('fc.lib.you') || '你'); } catch (e) { return T('fc.lib.you') || '你'; }
   }
   function libUploaderDefault(src) {
     return /^https:\/\/upload\.wikimedia\.org\//i.test(src || '') ? 'Wikimedia Commons' : libUserName();
@@ -14164,7 +14215,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       }
       if (imgLibBytes(list) > IMG_LIB_MAX_BYTES) {
         // 单图仍超限：不入库（卡上照常应用），旧 store 原样保留
-        showToast('图片过大…未存入我的图库');
+        showToast(T('fc.toast.libTooBig') || '图片过大…未存入我的图库');
         return false;
       }
       return imgLibSave(list);
@@ -14243,7 +14294,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function renderFlagGrid(items) {
     var grid = document.getElementById('flagGrid');
     if (!items.length) {
-      grid.innerHTML = '<div class="flag-grid-empty">还没有上传过图片——你上传的国旗、背景、头像、地图都会出现在这里</div>';
+      grid.innerHTML = '<div class="flag-grid-empty">' + (T('fc.lib.empty') || '还没有上传过图片——你上传的国旗、背景、头像、地图都会出现在这里') + '</div>';
       return;
     }
     grid.innerHTML = items.map(function (f) {
@@ -14255,11 +14306,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         '<div class="lib-thumb-wrap">' +
         '<img class="flag-thumb" src="' + esc(f.src) + '" alt="">' +
         '<span class="lib-vis">' + libVisLabel(f.visibility) + '</span>' +
-        '<button class="lib-icon lib-edit" title="编辑图片信息（同步所有使用处）" onclick="event.stopPropagation();editLibImg(' + f.li + ')"><span class="material-symbols-outlined">edit</span></button>' +
-        '<button class="lib-icon lib-del" title="删除（从所有使用处移除）" onclick="event.stopPropagation();delLibImg(' + f.li + ')"><span class="material-symbols-outlined">delete</span></button>' +
+        '<button class="lib-icon lib-edit" title="' + (T('fc.lib.editTitle') || '编辑图片信息（同步所有使用处）') + '" onclick="event.stopPropagation();editLibImg(' + f.li + ')"><span class="material-symbols-outlined">edit</span></button>' +
+        '<button class="lib-icon lib-del" title="' + (T('fc.lib.delTitle') || '删除（从所有使用处移除）') + '" onclick="event.stopPropagation();delLibImg(' + f.li + ')"><span class="material-symbols-outlined">delete</span></button>' +
         // v10.28.33: info 图标仅「别人看得见」的图显示（public/team）；private 不渲染
         (f.visibility && f.visibility !== 'private' ?
-          '<button class="lib-icon lib-info" title="查看图片信息" onclick="event.stopPropagation();showLibImgInfo(' + f.li + ')"><span class="material-symbols-outlined">info</span></button>' : '') +
+          '<button class="lib-icon lib-info" title="' + (T('fc.lib.infoTitle') || '查看图片信息') + '" onclick="event.stopPropagation();showLibImgInfo(' + f.li + ')"><span class="material-symbols-outlined">info</span></button>' : '') +
         '</div>' +
         '<div class="flag-name" title="' + esc(f.desc) + '">' + esc(f.name) + '</div>' +
       '</div>';
@@ -14274,7 +14325,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       t.classList.toggle('active', t.dataset.tab === 'all');
     });
     document.getElementById('flagSearchInput').value = '';
-    document.getElementById('flagSelectCount').textContent = '未选择';
+    document.getElementById('flagSelectCount').textContent = T('fc.lib.noneSelected') || '未选择';
     renderFlagGrid(currentTabItems());
     openModal('flagBrowserModal');
     // v10.28.32: 弹窗出现即焦点落搜索框——用户「弹窗出现时直接打开搜索」
@@ -14292,7 +14343,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       t.classList.toggle('active', t.dataset.tab === tab);
     });
     selectedFlagId = null;
-    document.getElementById('flagSelectCount').textContent = '未选择';
+    document.getElementById('flagSelectCount').textContent = T('fc.lib.noneSelected') || '未选择';
     document.getElementById('flagSearchInput').value = '';
     renderFlagGrid(currentTabItems());
   }
@@ -14301,7 +14352,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function selectFlag(id) {
     selectedFlagId = id;
     var item = currentTabItems().find(function (f) { return f.id === id; });
-    document.getElementById('flagSelectCount').textContent = item ? '已选：' + item.name : '未选择';
+    document.getElementById('flagSelectCount').textContent = item ? (T('fc.lib.selected') || '已选：%s').replace('%s', item.name) : (T('fc.lib.noneSelected') || '未选择');
     document.querySelectorAll('.flag-card-item').forEach(function (c) {
       c.classList.toggle('selected', c.dataset.flagId === id);
     });
@@ -14329,7 +14380,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     currentFlagCard.dataset.imgVisibility = item.visibility;
     closeAllModals();
     onContentChange();
-    showToast('图片已添加：' + item.name);
+    showToast((T('fc.toast.libAdded') || '图片已添加：%s').replace('%s', item.name));
   }
   window.confirmFlagSelection = confirmFlagSelection;
 
@@ -14419,17 +14470,17 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!it) return;
     document.getElementById('iimPreview').src = it.src;
     document.getElementById('iimPreview').alt = it.name || '';
-    document.getElementById('iimName').textContent = it.name || '未命名图片';
-    document.getElementById('iimDesc').textContent = it.desc || '暂无简介';
+    document.getElementById('iimName').textContent = it.name || (T('fc.lib.unnamed') || '未命名图片');
+    document.getElementById('iimDesc').textContent = it.desc || (T('fc.lib.noDesc') || '暂无简介');
     document.getElementById('iimUploader').textContent = it.uploader || '—';
     document.getElementById('iimTs').textContent = fmtTs(it.ts);
     document.getElementById('iimVis').textContent = libVisLabel(it.visibility);
     var sizeEl = document.getElementById('iimSize');
-    sizeEl.textContent = '尺寸：读取中…';
+    sizeEl.textContent = T('fc.lib.sizeLoading') || '尺寸：读取中…';
     var token = ++IIN_LOAD_TOKEN;
     var im = new Image();
-    im.onload = function () { if (token === IIN_LOAD_TOKEN && im.naturalWidth) sizeEl.textContent = '尺寸：' + im.naturalWidth + ' × ' + im.naturalHeight; };
-    im.onerror = function () { if (token === IIN_LOAD_TOKEN) sizeEl.textContent = '尺寸：—'; };
+    im.onload = function () { if (token === IIN_LOAD_TOKEN && im.naturalWidth) sizeEl.textContent = (T('fc.lib.size') || '尺寸：%d × %d').replace('%d', im.naturalWidth).replace('%d', im.naturalHeight); };
+    im.onerror = function () { if (token === IIN_LOAD_TOKEN) sizeEl.textContent = T('fc.lib.sizeNa') || '尺寸：—'; };
     im.src = it.src;
     openModal('imgInfoModal'); // backdrop 已 active 幂等；本卡压最上（DOM 序）
   }
@@ -14458,11 +14509,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!it) return;
     var n = countLibUsages(it.src);
     // 站内原生 confirm 惯例（pbgRemoveAll 同款）——报使用数让用户知道影响面
-    if (!confirm('删除「' + (it.name || '未命名图片') + '」？它正用在 ' + n + ' 处（卡片/背景/文字），删除后所有地方都会移除。')) return;
+    if (!confirm((T('fc.confirm.deleteImg') || '删除「%s」？它正用在 %d 处（卡片/背景/文字），删除后所有地方都会移除。').replace('%s', it.name || '未命名图片').replace('%d', n))) return;
     removeLibUsages(it.src);
     refreshLibGrid();
     onContentChange();
-    showToast('已删除：' + it.name);
+    showToast((T('fc.toast.libDeleted') || '已删除：%s').replace('%s', it.name));
   }
   window.delLibImg = delLibImg;
 
@@ -14538,7 +14589,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         delete card.dataset.mapImg;
         delete card.dataset.mapImgName; delete card.dataset.mapImgDesc; delete card.dataset.mapImgVisibility;
         var mc = card.querySelector('.map-canvas');
-        if (mc) { mc.style.backgroundImage = ''; mc.classList.add('map-empty'); mc.textContent = '双击上传地图图片 · 再双击地图可框区域'; }
+        if (mc) { mc.style.backgroundImage = ''; mc.classList.add('map-empty'); mc.textContent = T('fc.map.emptyHint') || '双击上传地图图片 · 再双击地图可框区域'; }
       }
     });
     // ③ 内联图：删除后 rich 字段同步序列化（fieldHtml 与 DOM 保持一致）
@@ -14765,9 +14816,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     holder.innerHTML =
       '<div class="fcvp-card">' +
         '<span class="material-symbols-outlined fcvp-icon">article</span>' +
-        '<h2>' + escArticleText(title || 'Article unavailable') + '</h2>' +
+        '<h2>' + escArticleText(title || (T('fc.viewer.unavailable') || 'Article unavailable')) + '</h2>' +
         '<p>' + escArticleText(reason) + '</p>' +
-        '<a class="btn btn-primary btn-sm" href="fluidcanvas.html?view=articles">← Back to Articles</a>' +
+        '<a class="btn btn-primary btn-sm" href="fluidcanvas.html?view=articles">← ' + (T('fc.viewer.backToArticles') || 'Back to Articles') + '</a>' +
       '</div>';
     var cb = document.querySelector('.canvas-body');
     if (cb) cb.appendChild(holder);
@@ -14849,7 +14900,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (tags.length) {
       var bar = document.createElement('div');
       bar.id = 'fcViewTags';
-      bar.setAttribute('aria-label', '标签');
+      bar.setAttribute('aria-label', T('fc.viewer.tags') || '标签');
       tags.forEach(function (t) {
         var chip = document.createElement('span');
         chip.className = 'fcv-chip';
@@ -14859,7 +14910,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       document.body.appendChild(bar);
     }
     var entries = [];
-    var TYPE_NAME = { shield: 'Emblem', img: 'Image', bitmap: 'Image', flag: 'Flag', map: 'Map', character: 'Character', stats: 'Stats', sheet: 'Sheet', timeline: 'Timeline', content: 'Text', text: 'Text' };
+    var TYPE_NAME = { shield: T('fc.cardtype.emblem') || 'Emblem', img: T('fc.cardtype.image') || 'Image', bitmap: T('fc.cardtype.image') || 'Image', flag: T('fc.cardtype.flag') || 'Flag', map: T('fc.cardtype.map') || 'Map', character: T('fc.cardtype.character') || 'Character', stats: T('fc.cardtype.stats') || 'Stats', sheet: T('fc.cardtype.sheet') || 'Sheet', timeline: T('fc.cardtype.timeline') || 'Timeline', content: T('fc.cardtype.text') || 'Text', text: T('fc.cardtype.text') || 'Text' };
     if (draft && Array.isArray(draft.cards)) {
       // 从草稿数据读 label（与阅读页 TOC 同源 card.label 字段）——FC 卡
       // 不建 .card-label DOM（content 卡无标签 UI、text 卡只有 dataset.label），
@@ -14868,6 +14919,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         if (!cData) return;
         if (cData.hidden === '1' || cData.hidden === 1 || cData.hidden === true) return;
         var lbl = String(cData.label || '').trim();
+        lbl = localizedTypeName(cData.type, lbl); // v10.28.45.0: 规范名目录条目显示本地化（数据零改动）
         if (!lbl) {
           // v10.28.37.1: 无 label 卡从正文首行派生目录条目（用户「把目录操作做好」）
           lbl = String(cData.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 18);
@@ -14881,11 +14933,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     }
     if (!entries.length) return;
     var btn = document.createElement('button');
-    btn.id = 'fcViewTocBtn'; btn.className = 'fcv-toc-btn'; btn.title = '目录';
+    btn.id = 'fcViewTocBtn'; btn.className = 'fcv-toc-btn'; btn.title = T('fc.viewer.toc') || '目录';
     btn.innerHTML = '<span class="material-symbols-outlined">toc</span>';
     var drawer = document.createElement('div');
     drawer.id = 'fcViewTocDrawer'; drawer.className = 'fcv-toc-drawer';
-    drawer.innerHTML = '<div class="fcv-toc-head"><span>目录</span>' +
+    drawer.innerHTML = '<div class="fcv-toc-head"><span>' + (T('fc.viewer.toc') || '目录') + '</span>' +
       '<button class="fcv-toc-close" onclick="document.getElementById(\'fcViewTocDrawer\').classList.remove(\'open\')">&times;</button></div>';
     var list = document.createElement('div'); list.className = 'fcv-toc-list';
     entries.forEach(function (entry) {
@@ -14908,8 +14960,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function initArticleView() {
     var id = getArticleParam();
     document.body.classList.add('fc-viewmode');
-    if (!id) { showArticlePlaceholder('', '缺少文章编号，无法打开。'); return; }
-    if (!window.MN_API) { showArticlePlaceholder(id, '无法连接文章服务，请稍后再试。'); return; }
+    if (!id) { showArticlePlaceholder('', T('fc.viewer.noIdReason') || '缺少文章编号，无法打开。'); return; }
+    if (!window.MN_API) { showArticlePlaceholder(id, T('fc.viewer.noServiceReason') || '无法连接文章服务，请稍后再试。'); return; }
     MN_API.get('/articles/' + encodeURIComponent(id)).then(function (res) {
       var art = (res && res.ok && res.data && res.data.article) ? res.data.article : null;
       var cj = art ? (art.contentJson || art.content_json) : null;
@@ -14917,7 +14969,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         var draft = null;
         try { draft = (typeof cj === 'string') ? JSON.parse(cj) : cj; } catch (e) {}
         if (draft && Array.isArray(draft.cards)) { renderArticleDraft(draft); renderArticleActions(art); return; }
-        showArticlePlaceholder(art.title || id, '这篇文章的正文内容无法读取。');
+        showArticlePlaceholder(art.title || id, T('fc.viewer.unreadable') || '这篇文章的正文内容无法读取。');
         return;
       }
       // 云端没有 → demo 种子兜底（fluidcanvas.html ?view=articles 首访时写入
@@ -14932,8 +14984,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         }
       } catch (e) {}
       var reason = (res && res.status === 404)
-        ? '这篇文章不存在，或已被删除。'
-        : '这篇文章暂未公开，或没有正文内容。'; // v10.28.35.1: 审核段已去除，提示同步去掉「审核中」
+        ? (T('fc.viewer.notFound') || '这篇文章不存在，或已被删除。')
+        : (T('fc.viewer.notPublic') || '这篇文章暂未公开，或没有正文内容。'); // v10.28.35.1: 审核段已去除，提示同步去掉「审核中」
       showArticlePlaceholder(art ? art.title : id, reason);
     });
   }
@@ -14952,8 +15004,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   function loadArticleForEdit() {
     var id = getEditParam();
-    if (!id) { showToast('缺少文章编号，无法打开'); loadDraft(); return; }
-    if (!window.MN_API) { showToast('无法连接文章服务，请稍后再试'); loadDraft(); return; }
+    if (!id) { showToast(T('fc.viewer.toastNoId') || '缺少文章编号，无法打开'); loadDraft(); return; }
+    if (!window.MN_API) { showToast(T('fc.viewer.toastNoService') || '无法连接文章服务，请稍后再试'); loadDraft(); return; }
     MN_API.get('/articles/' + encodeURIComponent(id)).then(function (res) {
       var art = (res && res.ok && res.data && res.data.article) ? res.data.article : null;
       var cj = art ? (art.contentJson || art.content_json) : null;
@@ -14966,10 +15018,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         draft.lastSaved = Date.now(); // 重戳断开云端草稿弹窗循环（v10.28.15.2 口径）
         try { localStorage.setItem('slati_fluidcanvas_draft', JSON.stringify(draft)); } catch (e) {}
         applyDraft(draft);
-        showToast('正在编辑已发布文章');
+        showToast(T('fc.viewer.toastEditing') || '正在编辑已发布文章');
       } else {
         // 拿不到正文（404/被删/未公开）→ 按空白编辑器处理，不设发布 id
-        showToast('文章不存在或已被删除');
+        showToast(T('fc.viewer.toastMissing') || '文章不存在或已被删除');
         loadDraft();
       }
     });
@@ -14991,7 +15043,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   syncCanvasHeight();
   updateWordCount();
   if (!titleInput.value) {
-    saveStatusEl.textContent = 'Ready';
+    setSaveStatus('fc.status.ready');
   }
 
   // P6: 云端草稿同步（仅 USR- 云用户；demo 用户零请求）
@@ -15236,6 +15288,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // v10.28.31: 资产面板「页面背景」订阅锁标首绘（订阅态与入口状态角标同轮刷新）
   updatePageBgEntryState();
 
+  // v10.28.45.0 i18n：语言切换 onChange 重渲染入口（挂载脚本经 window 取用）
+  window.updateWordCount = updateWordCount;
+  window.buildDraft = buildDraft;
+  window.applyDraft = applyDraft;
+  window.renderViewPresentation = renderViewPresentation;
+  window.getAllCards = getAllCards;
+
   // Self-check log — paste this into the chat if something looks wrong:
   // shows total/content card counts and the snap/align toggle state.
   var cardCount = getAllCards().length;
@@ -15262,116 +15321,116 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
 <!-- ═══ RIGHT-CLICK CONTEXT MENU ═══ -->
 <div class="radius-popover" id="tlStylePopover">
-  <span class="label-sm" style="color:var(--color-outline);display:block;margin-bottom:8px">时间线种类</span>
+  <span class="label-sm" style="color:var(--color-outline);display:block;margin-bottom:8px" data-i18n="fc.ctx.tlStyle">时间线种类</span>
   <div style="display:flex;gap:8px">
     <button class="tl-style-opt active" id="tlStyleClassic" onclick="applyTlStyle(null,'classic')">
-      <span class="tl-style-preview tl-preview-classic"></span>经典
+      <span class="tl-style-preview tl-preview-classic"></span><span data-i18n="fc.tl.classic">经典</span>
     </button>
     <button class="tl-style-opt" id="tlStyleHistory" onclick="applyTlStyle(null,'history')">
-      <span class="tl-style-preview tl-preview-history"></span>历史标图
+      <span class="tl-style-preview tl-preview-history"></span><span data-i18n="fc.tl.history">历史标图</span>
     </button>
   </div>
 </div>
 <!-- v10.28.5: 数据卡图表种类弹层（4 类 11 图 + 列表编辑模式） -->
 <div class="radius-popover stats-chart-pop" id="statsChartPopover">
-  <span class="label-sm" style="color:var(--color-outline);display:block;margin-bottom:8px">图表种类</span>
+  <span class="label-sm" style="color:var(--color-outline);display:block;margin-bottom:8px" data-i18n="fc.ctx.statsChart">图表种类</span>
   <button class="sc-opt sc-opt-rows active" data-sc-type="rows" onclick="applyStatsChart(null,'rows')">
-    <span class="material-symbols-outlined">table_rows</span>列表（编辑数据）
+    <span class="material-symbols-outlined">table_rows</span><span data-i18n="fc.statsChart.rows">列表（编辑数据）</span>
   </button>
-  <div class="sc-group">比较类 · 对比差异</div>
+  <div class="sc-group" data-i18n="fc.statsChart.compare">比较类 · 对比差异</div>
   <div class="sc-grid">
-    <button class="sc-opt" data-sc-type="column" onclick="applyStatsChart(null,'column')"><span class="material-symbols-outlined">bar_chart</span>柱状图</button>
-    <button class="sc-opt" data-sc-type="bar" onclick="applyStatsChart(null,'bar')"><span class="material-symbols-outlined">ssid_chart</span>条形图</button>
-    <button class="sc-opt" data-sc-type="radar" onclick="applyStatsChart(null,'radar')"><span class="material-symbols-outlined">radar</span>雷达图</button>
+    <button class="sc-opt" data-sc-type="column" onclick="applyStatsChart(null,'column')"><span class="material-symbols-outlined">bar_chart</span><span data-i18n="fc.statsChart.column">柱状图</span></button>
+    <button class="sc-opt" data-sc-type="bar" onclick="applyStatsChart(null,'bar')"><span class="material-symbols-outlined">ssid_chart</span><span data-i18n="fc.statsChart.bar">条形图</span></button>
+    <button class="sc-opt" data-sc-type="radar" onclick="applyStatsChart(null,'radar')"><span class="material-symbols-outlined">radar</span><span data-i18n="fc.statsChart.radar">雷达图</span></button>
   </div>
-  <div class="sc-group">趋势类 · 时间变化</div>
+  <div class="sc-group" data-i18n="fc.statsChart.trend">趋势类 · 时间变化</div>
   <div class="sc-grid">
-    <button class="sc-opt" data-sc-type="line" onclick="applyStatsChart(null,'line')"><span class="material-symbols-outlined">show_chart</span>折线图</button>
-    <button class="sc-opt" data-sc-type="area" onclick="applyStatsChart(null,'area')"><span class="material-symbols-outlined">area_chart</span>面积图</button>
+    <button class="sc-opt" data-sc-type="line" onclick="applyStatsChart(null,'line')"><span class="material-symbols-outlined">show_chart</span><span data-i18n="fc.statsChart.line">折线图</span></button>
+    <button class="sc-opt" data-sc-type="area" onclick="applyStatsChart(null,'area')"><span class="material-symbols-outlined">area_chart</span><span data-i18n="fc.statsChart.area">面积图</span></button>
   </div>
-  <div class="sc-group">构成类 · 部分与整体</div>
+  <div class="sc-group" data-i18n="fc.statsChart.composition">构成类 · 部分与整体</div>
   <div class="sc-grid">
-    <button class="sc-opt" data-sc-type="pie" onclick="applyStatsChart(null,'pie')"><span class="material-symbols-outlined">pie_chart</span>饼图</button>
-    <button class="sc-opt" data-sc-type="donut" onclick="applyStatsChart(null,'donut')"><span class="material-symbols-outlined">donut_large</span>环形图</button>
-    <button class="sc-opt" data-sc-type="treemap" onclick="applyStatsChart(null,'treemap')"><span class="material-symbols-outlined">view_quilt</span>矩形树图</button>
-    <button class="sc-opt" data-sc-type="waterfall" onclick="applyStatsChart(null,'waterfall')"><span class="material-symbols-outlined">waterfall_chart</span>瀑布图</button>
+    <button class="sc-opt" data-sc-type="pie" onclick="applyStatsChart(null,'pie')"><span class="material-symbols-outlined">pie_chart</span><span data-i18n="fc.statsChart.pie">饼图</span></button>
+    <button class="sc-opt" data-sc-type="donut" onclick="applyStatsChart(null,'donut')"><span class="material-symbols-outlined">donut_large</span><span data-i18n="fc.statsChart.donut">环形图</span></button>
+    <button class="sc-opt" data-sc-type="treemap" onclick="applyStatsChart(null,'treemap')"><span class="material-symbols-outlined">view_quilt</span><span data-i18n="fc.statsChart.treemap">矩形树图</span></button>
+    <button class="sc-opt" data-sc-type="waterfall" onclick="applyStatsChart(null,'waterfall')"><span class="material-symbols-outlined">waterfall_chart</span><span data-i18n="fc.statsChart.waterfall">瀑布图</span></button>
   </div>
-  <div class="sc-group">分布类 · 数据离散与频率</div>
+  <div class="sc-group" data-i18n="fc.statsChart.dist">分布类 · 数据离散与频率</div>
   <div class="sc-grid">
-    <button class="sc-opt" data-sc-type="histogram" onclick="applyStatsChart(null,'histogram')"><span class="material-symbols-outlined">analytics</span>直方图</button>
-    <button class="sc-opt" data-sc-type="box" onclick="applyStatsChart(null,'box')"><span class="material-symbols-outlined">candlestick_chart</span>箱线图</button>
-    <button class="sc-opt" data-sc-type="scatter" onclick="applyStatsChart(null,'scatter')"><span class="material-symbols-outlined">scatter_plot</span>散点图</button>
+    <button class="sc-opt" data-sc-type="histogram" onclick="applyStatsChart(null,'histogram')"><span class="material-symbols-outlined">analytics</span><span data-i18n="fc.statsChart.histogram">直方图</span></button>
+    <button class="sc-opt" data-sc-type="box" onclick="applyStatsChart(null,'box')"><span class="material-symbols-outlined">candlestick_chart</span><span data-i18n="fc.statsChart.box">箱线图</span></button>
+    <button class="sc-opt" data-sc-type="scatter" onclick="applyStatsChart(null,'scatter')"><span class="material-symbols-outlined">scatter_plot</span><span data-i18n="fc.statsChart.scatter">散点图</span></button>
   </div>
 </div>
 <div class="context-menu" id="contextMenu">
   <button class="context-menu-item" onclick="openBorderRadiusPopover()">
-    <span class="material-symbols-outlined">rounded_corner</span> Adjust border radius
+    <span class="material-symbols-outlined">rounded_corner</span> <span data-i18n="fc.ctx.borderRadius">Adjust border radius</span>
   </button>
   <button class="context-menu-item" onclick="openCardBackgroundModal()">
-    <span class="material-symbols-outlined">palette</span> Custom card background
+    <span class="material-symbols-outlined">palette</span> <span data-i18n="fc.ctx.cardBackground">Custom card background</span>
   </button>
   <button class="context-menu-item" id="cardBgMenuItem" style="display:none" onclick="openCardBgPopover()">
-    <span class="material-symbols-outlined">wallpaper</span><span id="cardBgMenuLabel">卡片背景</span>
+    <span class="material-symbols-outlined">wallpaper</span><span id="cardBgMenuLabel" data-i18n="fc.ctx.cardBg">卡片背景</span>
   </button>
   <button class="context-menu-item" id="edgeClearMenuItem" style="display:none" onclick="toggleStatsEdgeClear()">
-    <span class="material-symbols-outlined" id="edgeClearCheck">check_box_outline_blank</span> 透明背景（纸感）
+    <span class="material-symbols-outlined" id="edgeClearCheck">check_box_outline_blank</span> <span data-i18n="fc.ctx.edgeClear">透明背景（纸感）</span>
   </button>
   <button class="context-menu-item" id="statsChartMenuItem" style="display:none" onclick="openStatsChartPopover()">
-    <span class="material-symbols-outlined">monitoring</span> 图表种类
+    <span class="material-symbols-outlined">monitoring</span> <span data-i18n="fc.ctx.statsChart">图表种类</span>
   </button>
   <button class="context-menu-item" id="tlStyleMenuItem" style="display:none" onclick="openTlStylePopover()">
-    <span class="material-symbols-outlined">style</span> 时间线种类
+    <span class="material-symbols-outlined">style</span> <span data-i18n="fc.ctx.tlStyle">时间线种类</span>
   </button>
   <button class="context-menu-item" onclick="openBorderStyleModal()">
-    <span class="material-symbols-outlined">border_style</span> Select border edge style
+    <span class="material-symbols-outlined">border_style</span> <span data-i18n="fc.ctx.borderStyle">Select border edge style</span>
   </button>
   <button class="context-menu-item" id="bgOpacityMenuItem" style="display:none" onclick="openBgOpacityPopover()">
-    <span class="material-symbols-outlined">opacity</span> 背景卡片性质
+    <span class="material-symbols-outlined">opacity</span> <span data-i18n="fc.ctx.bgOpacity">背景卡片性质</span>
   </button>
   <button class="context-menu-item" id="captionPosMenuItem" style="display:none" onclick="openCaptionPosPopover()">
-    <span class="material-symbols-outlined">subtitles</span> 名称位置
+    <span class="material-symbols-outlined">subtitles</span> <span data-i18n="fc.ctx.captionPos">名称位置</span>
   </button>
   <button class="context-menu-item" onclick="openRotateCardPopover()">
-    <span class="material-symbols-outlined">rotate_right</span> Rotate card
+    <span class="material-symbols-outlined">rotate_right</span> <span data-i18n="fc.ctx.rotate">Rotate card</span>
   </button>
   <button type="button" class="ctx-pill-dots" id="ctxPillDots" aria-label="折叠菜单" onclick="toggleCtxPill()"><span class="material-symbols-outlined">more_horiz</span></button>
   <div class="context-menu-divider"></div>
   <button class="context-menu-item" onclick="saveCardAsTemplate()">
-    <span class="material-symbols-outlined">bookmark</span> Save as template
+    <span class="material-symbols-outlined">bookmark</span> <span data-i18n="fc.ctx.saveTemplate">Save as template</span>
   </button>
   <div class="context-menu-divider"></div>
   <button class="context-menu-item danger" onclick="deleteSelectedCard()">
-    <span class="material-symbols-outlined">delete</span> Delete
+    <span class="material-symbols-outlined">delete</span> <span data-i18n="fc.ctx.delete">Delete</span>
   </button>
 </div>
 
 <!-- ═══ v10.27 TEXT FORMAT TOOLBAR (Canva 式悬浮细长横杆：字体 ▾｜字号 ▾｜8 色点+取色器｜B I U S) ═══ -->
 <div class="text-toolbar" id="textToolbar" style="display:none">
-  <button type="button" class="tt-fontbtn" id="ttFontBtn" title="Font">Font</button>
+  <button type="button" class="tt-fontbtn" id="ttFontBtn" title="Font" data-i18n-title="fc.tt.font">Font</button>
   <!-- v10.28.4: 字号 = 按钮 + 弹层（预设档位下拉 + 自定义输入框） -->
-  <button type="button" class="tt-sizebtn" id="ttSizeBtn" title="Font size">13</button>
+  <button type="button" class="tt-sizebtn" id="ttSizeBtn" title="Font size" data-i18n-title="fc.tt.fontSize">13</button>
   <div class="tt-colors" id="ttColors">
-    <button type="button" class="tt-swatch" data-color="#ffffff" title="White" style="background:#ffffff"></button>
-    <button type="button" class="tt-swatch" data-color="#000000" title="Black" style="background:#000000"></button>
-    <button type="button" class="tt-swatch" data-color="#8b8b8b" title="Grey" style="background:#8b8b8b"></button>
-    <button type="button" class="tt-swatch" data-color="#4648d4" title="Primary" style="background:#4648d4"></button>
-    <button type="button" class="tt-swatch" data-color="#e02424" title="Red" style="background:#e02424"></button>
-    <button type="button" class="tt-swatch" data-color="#f59e0b" title="Amber" style="background:#f59e0b"></button>
-    <button type="button" class="tt-swatch" data-color="#16a34a" title="Green" style="background:#16a34a"></button>
-    <button type="button" class="tt-swatch" data-color="#0ea5e9" title="Sky" style="background:#0ea5e9"></button>
-    <input type="color" id="ttCustomColor" class="tt-custom" title="Custom color" value="#4648d4">
+    <button type="button" class="tt-swatch" data-color="#ffffff" title="White" data-i18n-title="fc.tt.white" style="background:#ffffff"></button>
+    <button type="button" class="tt-swatch" data-color="#000000" title="Black" data-i18n-title="fc.tt.black" style="background:#000000"></button>
+    <button type="button" class="tt-swatch" data-color="#8b8b8b" title="Grey" data-i18n-title="fc.tt.grey" style="background:#8b8b8b"></button>
+    <button type="button" class="tt-swatch" data-color="#4648d4" title="Primary" data-i18n-title="fc.tt.primary" style="background:#4648d4"></button>
+    <button type="button" class="tt-swatch" data-color="#e02424" title="Red" data-i18n-title="fc.tt.red" style="background:#e02424"></button>
+    <button type="button" class="tt-swatch" data-color="#f59e0b" title="Amber" data-i18n-title="fc.tt.amber" style="background:#f59e0b"></button>
+    <button type="button" class="tt-swatch" data-color="#16a34a" title="Green" data-i18n-title="fc.tt.green" style="background:#16a34a"></button>
+    <button type="button" class="tt-swatch" data-color="#0ea5e9" title="Sky" data-i18n-title="fc.tt.sky" style="background:#0ea5e9"></button>
+    <input type="color" id="ttCustomColor" class="tt-custom" title="Custom color" data-i18n-title="fc.tt.customColor" value="#4648d4">
   </div>
   <div class="tt-sep"></div>
-  <button type="button" class="tt-btn" data-fmt="bold" title="Bold">
+  <button type="button" class="tt-btn" data-fmt="bold" title="Bold" data-i18n-title="fc.tt.bold">
     <span class="material-symbols-outlined">format_bold</span>
   </button>
-  <button type="button" class="tt-btn" data-fmt="italic" title="Italic">
+  <button type="button" class="tt-btn" data-fmt="italic" title="Italic" data-i18n-title="fc.tt.italic">
     <span class="material-symbols-outlined">format_italic</span>
   </button>
-  <button type="button" class="tt-btn" data-fmt="underline" title="Underline">
+  <button type="button" class="tt-btn" data-fmt="underline" title="Underline" data-i18n-title="fc.tt.underline">
     <span class="material-symbols-outlined">format_underlined</span>
   </button>
-  <button type="button" class="tt-btn" data-fmt="strike" title="Strikethrough">
+  <button type="button" class="tt-btn" data-fmt="strike" title="Strikethrough" data-i18n-title="fc.tt.strike">
     <span class="material-symbols-outlined">format_strikethrough</span>
   </button>
   <!-- v10.28.22: 添加图像（用户「在工具栏的右侧那边再增加一个按钮叫添加图像…
@@ -15380,7 +15439,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
        v10.28.23: 钮不再置灰（用户「为什么该按钮没办法点击？」——输入框态置灰是
        设计却成了事故；任何态可点，插入时无内容卡光标会 toast 引导） -->
   <div class="tt-sep"></div>
-  <button type="button" class="tt-btn" id="ttImgBtn" title="添加图像">
+  <button type="button" class="tt-btn" id="ttImgBtn" title="添加图像" data-i18n-title="fc.tt.addImage">
     <span class="material-symbols-outlined">image</span>
   </button>
 </div>
@@ -15388,8 +15447,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <!-- ═══ v10.28.4 SIZE POPOVER（字号下拉 + 自定义输入框） ═══ -->
 <div class="radius-popover tt-size-pop" id="ttSizePop">
   <div class="tsz-custom-row">
-    <input type="number" id="ttSizeCustom" class="tsz-input" min="4" max="400" placeholder="自定义 px">
-    <button type="button" class="btn btn-primary btn-sm" id="ttSizeApply" title="应用自定义字号">✓</button>
+    <input type="number" id="ttSizeCustom" class="tsz-input" min="4" max="400" placeholder="自定义 px" data-i18n-placeholder="fc.tt.sizePh">
+    <button type="button" class="btn btn-primary btn-sm" id="ttSizeApply" title="应用自定义字号" data-i18n-title="fc.tt.sizeApply">✓</button>
   </div>
   <div class="tsz-grid" id="ttSizeGrid"></div>
 </div>
@@ -15401,10 +15460,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
      免费免密钥、CORS origin=*）+ 上传保留 ═══ -->
 <div class="radius-popover tt-img-pop" id="ttImgPop">
   <div class="tim-search">
-    <input type="text" id="ttImgSearch" placeholder="搜索图片（维基图库）…">
-    <button type="button" class="tim-search-btn" id="ttImgSearchBtn" title="搜索"><span class="material-symbols-outlined">search</span></button>
+    <input type="text" id="ttImgSearch" placeholder="搜索图片（维基图库）…" data-i18n-placeholder="fc.tt.searchPh">
+    <button type="button" class="tim-search-btn" id="ttImgSearchBtn" title="搜索" data-i18n-title="fc.tt.search"><span class="material-symbols-outlined">search</span></button>
   </div>
-  <div class="tim-head"><span id="ttImgHead">图片</span><span class="tim-clear" id="ttImgClear" hidden>清除搜索</span></div>
+  <div class="tim-head"><span id="ttImgHead" data-i18n="fc.img.head">图片</span><span class="tim-clear" id="ttImgClear" hidden data-i18n="fc.tt.clearSearch">清除搜索</span></div>
   <div class="tim-grid" id="ttImgGrid"></div>
   <input type="file" id="ttInlineFileInput" accept="image/*" style="display:none">
 </div>
@@ -15417,7 +15476,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <!-- ═══ RADIUS POPOVER ═══ -->
 <div class="radius-popover" id="radiusPopover">
   <div style="display:flex;flex-direction:column;gap:8px">
-    <span class="label-sm" style="color:var(--color-outline)">Corner radius: <strong id="radiusValue">8px</strong></span>
+    <span class="label-sm" style="color:var(--color-outline)"><span data-i18n="fc.radius.label">Corner radius: </span><strong id="radiusValue">8px</strong></span>
     <input type="range" id="radiusSlider" min="0" max="90" value="8" step="1" oninput="updateCardBorderRadius(this.value)" style="width:100%;accent-color:var(--color-primary)">
     <div style="display:flex;gap:4px">
       <button class="btn btn-ghost btn-sm" onclick="updateCardBorderRadius(0)" style="flex:1">0°</button>
@@ -15432,7 +15491,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <!-- ═══ ROTATE POPOVER ═══ -->
 <div class="radius-popover" id="rotatePopover">
   <div style="display:flex;flex-direction:column;gap:8px">
-    <span class="label-sm" style="color:var(--color-outline)">Rotation: <strong id="rotateValue">0°</strong></span>
+    <span class="label-sm" style="color:var(--color-outline)"><span data-i18n="fc.rotate.label">Rotation: </span><strong id="rotateValue">0°</strong></span>
     <input type="range" id="rotateSlider" min="-180" max="180" value="0" step="1" oninput="rotateCard(this.value)" style="width:100%;accent-color:var(--color-primary)">
     <div style="display:flex;gap:4px">
       <button class="btn btn-ghost btn-sm" onclick="rotateCard(-90)" style="flex:1">-90°</button>
@@ -15447,70 +15506,70 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <!-- ═══ CAPTION POSITION POPOVER (v9.5 positions + v10.0 background panel, flag/asset cards) ═══ -->
 <div class="radius-popover" id="captionPosPopover">
   <div class="caption-tabs">
-    <button class="caption-tab active" id="captionTabPos" onclick="switchCaptionTab('pos')">位置</button>
-    <button class="caption-tab" id="captionTabBg" onclick="switchCaptionTab('bg')">背景</button>
+    <button class="caption-tab active" id="captionTabPos" onclick="switchCaptionTab('pos')" data-i18n="fc.caption.tabPos">位置</button>
+    <button class="caption-tab" id="captionTabBg" onclick="switchCaptionTab('bg')" data-i18n="fc.caption.tabBg">背景</button>
   </div>
   <div id="captionPosPanel">
-    <span class="label-sm" style="color:var(--color-outline);display:block;margin-bottom:8px">名称位置</span>
+    <span class="label-sm" style="color:var(--color-outline);display:block;margin-bottom:8px" data-i18n="fc.ctx.captionPos">名称位置</span>
     <div class="caption-pos-grid">
-      <button class="caption-pos-btn" data-pos="above" title="上方（图外）" onclick="setCaptionPos('above')"><span class="material-symbols-outlined">arrow_upward</span></button>
-      <button class="caption-pos-btn" data-pos="top-left" title="左上角" onclick="setCaptionPos('top-left')"><span class="material-symbols-outlined">north_west</span></button>
-      <button class="caption-pos-btn" data-pos="top" title="上方" onclick="setCaptionPos('top')"><span class="material-symbols-outlined">north</span></button>
-      <button class="caption-pos-btn" data-pos="top-right" title="右上角" onclick="setCaptionPos('top-right')"><span class="material-symbols-outlined">north_east</span></button>
-      <button class="caption-pos-btn" data-pos="left" title="左侧" onclick="setCaptionPos('left')"><span class="material-symbols-outlined">west</span></button>
-      <button class="caption-pos-btn" data-pos="center" title="中间" onclick="setCaptionPos('center')"><span class="material-symbols-outlined">filter_center_focus</span></button>
-      <button class="caption-pos-btn" data-pos="right" title="右侧" onclick="setCaptionPos('right')"><span class="material-symbols-outlined">east</span></button>
-      <button class="caption-pos-btn" data-pos="bottom-left" title="左下角" onclick="setCaptionPos('bottom-left')"><span class="material-symbols-outlined">south_west</span></button>
-      <button class="caption-pos-btn" data-pos="bottom" title="下方" onclick="setCaptionPos('bottom')"><span class="material-symbols-outlined">south</span></button>
-      <button class="caption-pos-btn" data-pos="bottom-right" title="右下角" onclick="setCaptionPos('bottom-right')"><span class="material-symbols-outlined">south_east</span></button>
-      <button class="caption-pos-btn" data-pos="outside-left" title="左侧（图外）" onclick="setCaptionPos('outside-left')"><span class="material-symbols-outlined">arrow_back</span></button>
-      <button class="caption-pos-btn" data-pos="outside-right" title="右侧（图外）" onclick="setCaptionPos('outside-right')"><span class="material-symbols-outlined">arrow_forward</span></button>
-      <button class="caption-pos-btn" data-pos="below" title="下方（图外）" onclick="setCaptionPos('below')"><span class="material-symbols-outlined">arrow_downward</span></button>
+      <button class="caption-pos-btn" data-pos="above" title="上方（图外）" data-i18n-title="fc.caption.posAboveOut" onclick="setCaptionPos('above')"><span class="material-symbols-outlined">arrow_upward</span></button>
+      <button class="caption-pos-btn" data-pos="top-left" title="左上角" data-i18n-title="fc.caption.posTopLeft" onclick="setCaptionPos('top-left')"><span class="material-symbols-outlined">north_west</span></button>
+      <button class="caption-pos-btn" data-pos="top" title="上方" data-i18n-title="fc.caption.posTop" onclick="setCaptionPos('top')"><span class="material-symbols-outlined">north</span></button>
+      <button class="caption-pos-btn" data-pos="top-right" title="右上角" data-i18n-title="fc.caption.posTopRight" onclick="setCaptionPos('top-right')"><span class="material-symbols-outlined">north_east</span></button>
+      <button class="caption-pos-btn" data-pos="left" title="左侧" data-i18n-title="fc.caption.posLeft" onclick="setCaptionPos('left')"><span class="material-symbols-outlined">west</span></button>
+      <button class="caption-pos-btn" data-pos="center" title="中间" data-i18n-title="fc.caption.posCenter" onclick="setCaptionPos('center')"><span class="material-symbols-outlined">filter_center_focus</span></button>
+      <button class="caption-pos-btn" data-pos="right" title="右侧" data-i18n-title="fc.caption.posRight" onclick="setCaptionPos('right')"><span class="material-symbols-outlined">east</span></button>
+      <button class="caption-pos-btn" data-pos="bottom-left" title="左下角" data-i18n-title="fc.caption.posBottomLeft" onclick="setCaptionPos('bottom-left')"><span class="material-symbols-outlined">south_west</span></button>
+      <button class="caption-pos-btn" data-pos="bottom" title="下方" data-i18n-title="fc.caption.posBottom" onclick="setCaptionPos('bottom')"><span class="material-symbols-outlined">south</span></button>
+      <button class="caption-pos-btn" data-pos="bottom-right" title="右下角" data-i18n-title="fc.caption.posBottomRight" onclick="setCaptionPos('bottom-right')"><span class="material-symbols-outlined">south_east</span></button>
+      <button class="caption-pos-btn" data-pos="outside-left" title="左侧（图外）" data-i18n-title="fc.caption.posLeftOut" onclick="setCaptionPos('outside-left')"><span class="material-symbols-outlined">arrow_back</span></button>
+      <button class="caption-pos-btn" data-pos="outside-right" title="右侧（图外）" data-i18n-title="fc.caption.posRightOut" onclick="setCaptionPos('outside-right')"><span class="material-symbols-outlined">arrow_forward</span></button>
+      <button class="caption-pos-btn" data-pos="below" title="下方（图外）" data-i18n-title="fc.caption.posBelowOut" onclick="setCaptionPos('below')"><span class="material-symbols-outlined">arrow_downward</span></button>
     </div>
     <button class="caption-vertical-toggle" id="captionVerticalToggle" onclick="toggleCaptionVertical()">
-      <span class="material-symbols-outlined">text_rotate_vertical</span> 竖排
+      <span class="material-symbols-outlined">text_rotate_vertical</span> <span data-i18n="fc.caption.vertical">竖排</span>
     </button>
   </div>
   <div id="captionBgPanel" style="display:none">
-    <span class="label-sm" style="color:var(--color-outline);display:block">选择名称背景</span>
+    <span class="label-sm" style="color:var(--color-outline);display:block" data-i18n="fc.caption.bgLabel">选择名称背景</span>
     <div id="captionColorPresets" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"></div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-      <span class="label-sm" style="color:var(--color-on-surface-variant)">色盘:</span>
+      <span class="label-sm" style="color:var(--color-on-surface-variant)" data-i18n="fc.caption.colorWheel">色盘:</span>
       <input type="color" id="captionColorPicker" onchange="setCaptionBgColor(this.value)" style="width:32px;height:32px;border:none;cursor:pointer;border-radius:50%;padding:0;background:none">
     </div>
     <div class="caption-slider-row">
-      <label>透明度</label>
+      <label data-i18n="fc.slider.opacity">透明度</label>
       <input type="range" id="captionBgOpacitySlider" min="0" max="100" value="100" step="1" oninput="updateCaptionBgOpacity(this.value)">
       <output id="captionBgOpacityValue">100%</output>
     </div>
-    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">阴影</span>
+    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px" data-i18n="fc.slider.shadow">阴影</span>
     <div class="caption-slider-row">
-      <label>大小</label>
+      <label data-i18n="fc.slider.size">大小</label>
       <input type="range" id="captionShadowBlurSlider" min="0" max="30" value="0" step="1" oninput="updateCaptionShadowBlur(this.value)">
       <output id="captionShadowBlurValue">0px</output>
     </div>
     <div class="caption-slider-row">
-      <label>范围</label>
+      <label data-i18n="fc.slider.spread">范围</label>
       <input type="range" id="captionShadowSpreadSlider" min="-10" max="20" value="0" step="1" oninput="updateCaptionShadowSpread(this.value)">
       <output id="captionShadowSpreadValue">0px</output>
     </div>
     <div class="caption-slider-row">
-      <label>透明度</label>
+      <label data-i18n="fc.slider.opacity">透明度</label>
       <input type="range" id="captionShadowOpacitySlider" min="0" max="100" value="0" step="1" oninput="updateCaptionShadowOpacity(this.value)">
       <output id="captionShadowOpacityValue">0%</output>
     </div>
-    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">自定义名称背景</span>
+    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px" data-i18n="fc.caption.customBg">自定义名称背景</span>
     <div style="display:flex;gap:6px;margin-top:6px">
       <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('captionBgFileInput').click()">
-        <span class="material-symbols-outlined" style="font-size:16px">upload_file</span> 上传图片
+        <span class="material-symbols-outlined" style="font-size:16px">upload_file</span> <span data-i18n="fc.common.uploadImage">上传图片</span>
       </button>
-      <button class="btn btn-ghost btn-sm" id="captionBgRemoveBtn" style="display:none" onclick="clearCaptionBgImage()">移除</button>
+      <button class="btn btn-ghost btn-sm" id="captionBgRemoveBtn" style="display:none" onclick="clearCaptionBgImage()" data-i18n="fc.common.remove">移除</button>
     </div>
     <input type="file" id="captionBgFileInput" accept="image/*" style="display:none" onchange="handleCaptionBgUpload(this)">
-    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">背景边缘</span>
+    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px" data-i18n="fc.bg.edge">背景边缘</span>
     <div id="captionEdgeButtons" style="display:flex;flex-direction:column"></div>
-    <a href="premium.html" id="captionEdgeUpgradeLink" style="display:none;font-size:12px;color:var(--color-primary);text-decoration:none;margin-top:6px">订阅后解锁背景边缘 →</a>
-    <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:10px" onclick="resetCaptionBg()">恢复默认</button>
+    <a href="premium.html" id="captionEdgeUpgradeLink" style="display:none;font-size:12px;color:var(--color-primary);text-decoration:none;margin-top:6px" data-i18n="fc.bg.edgeLocked">订阅后解锁背景边缘 →</a>
+    <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:10px" onclick="resetCaptionBg()" data-i18n="fc.common.resetDefault">恢复默认</button>
   </div>
 </div>
 
@@ -15523,7 +15582,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
          主题，组整体像一张大卡；卡片模式隐藏） -->
     <div id="cardBgGroupTitle" style="display:none;align-items:center;gap:8px;margin-bottom:10px">
       <span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)">dashboard_customize</span>
-      <span class="label-md">分组外观</span>
+      <span class="label-md" data-i18n="fc.ctx.groupAppearance">分组外观</span>
     </div>
     <!-- v10.3 — 预设色块已按用户要求删除（用户将自行提供预设背景）。
          将来加预设背景时在此处放一个容器，由 refreshCardBgPopoverState 填充。 -->
@@ -15531,58 +15590,58 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
          （显隐由 refreshCardBgPopoverState 按 isSubscriberUser() 切换） -->
     <div id="cardBgLockRow" style="display:none;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;margin-bottom:8px;border:1px dashed var(--divider-line-strong);border-radius:8px;background:var(--color-surface-container-low)">
       <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--color-on-surface)">
-        <span class="material-symbols-outlined" style="font-size:16px;color:var(--color-primary)">lock</span>卡片背景为订阅用户专属功能
+        <span class="material-symbols-outlined" style="font-size:16px;color:var(--color-primary)">lock</span><span data-i18n="fc.bg.locked">卡片背景为订阅用户专属功能</span>
       </span>
-      <a href="premium.html" id="cardBgUpgradeLink" style="font-size:12px;color:var(--color-primary);text-decoration:none;white-space:nowrap">订阅解锁 →</a>
+      <a href="premium.html" id="cardBgUpgradeLink" style="font-size:12px;color:var(--color-primary);text-decoration:none;white-space:nowrap" data-i18n="fc.common.subscribeUnlock">订阅解锁 →</a>
     </div>
     <div id="cardBgColorRow" style="display:flex;align-items:center;gap:8px">
-      <span class="label-sm" style="color:var(--color-on-surface-variant)">色盘:</span>
+      <span class="label-sm" style="color:var(--color-on-surface-variant)" data-i18n="fc.caption.colorWheel">色盘:</span>
       <input type="color" id="cardColorPicker" onchange="setCardBgColor(this.value)" style="width:32px;height:32px;border:none;cursor:pointer;border-radius:50%;padding:0;background:none">
     </div>
     <div id="cardBgOpacityRow" class="caption-slider-row">
-      <label>透明度</label>
+      <label data-i18n="fc.slider.opacity">透明度</label>
       <input type="range" id="cardBgOpacitySlider" min="0" max="100" value="100" step="1" oninput="updateCardBgOpacity(this.value)">
       <output id="cardBgOpacityValue">100%</output>
     </div>
     <div id="cardBgShadowBlock">
-      <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">阴影</span>
+      <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px" data-i18n="fc.slider.shadow">阴影</span>
       <div class="caption-slider-row">
-        <label>大小</label>
+        <label data-i18n="fc.slider.size">大小</label>
         <input type="range" id="cardShadowBlurSlider" min="0" max="30" value="0" step="1" oninput="updateCardShadowBlur(this.value)">
         <output id="cardShadowBlurValue">0px</output>
       </div>
       <div class="caption-slider-row">
-        <label>范围</label>
+        <label data-i18n="fc.slider.spread">范围</label>
         <input type="range" id="cardShadowSpreadSlider" min="-10" max="20" value="0" step="1" oninput="updateCardShadowSpread(this.value)">
         <output id="cardShadowSpreadValue">0px</output>
       </div>
       <div class="caption-slider-row">
-        <label>透明度</label>
+        <label data-i18n="fc.slider.opacity">透明度</label>
         <input type="range" id="cardShadowOpacitySlider" min="0" max="100" value="0" step="1" oninput="updateCardShadowOpacity(this.value)">
         <output id="cardShadowOpacityValue">0%</output>
       </div>
     </div>
     <div id="cardBgUploadBlock">
-      <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">自定义卡片背景</span>
+      <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px" data-i18n="fc.bg.custom">自定义卡片背景</span>
       <div style="display:flex;gap:6px;margin-top:6px">
         <button class="btn btn-ghost btn-sm" style="flex:1" onclick="document.getElementById('cardBgFileInput').click()">
-          <span class="material-symbols-outlined" style="font-size:16px">upload_file</span> 上传图片
+          <span class="material-symbols-outlined" style="font-size:16px">upload_file</span> <span data-i18n="fc.common.uploadImage">上传图片</span>
         </button>
-        <button class="btn btn-ghost btn-sm" id="cardBgRemoveBtn" style="display:none" onclick="removeCardBgImage()">移除</button>
+        <button class="btn btn-ghost btn-sm" id="cardBgRemoveBtn" style="display:none" onclick="removeCardBgImage()" data-i18n="fc.common.remove">移除</button>
       </div>
       <input type="file" id="cardBgFileInput" accept="image/*" style="display:none" onchange="handleCardBgUpload(this)">
     </div>
-    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">背景边缘</span>
+    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px" data-i18n="fc.bg.edge">背景边缘</span>
     <div id="cardEdgeButtons" style="display:flex;flex-direction:column"></div>
-    <a href="premium.html" id="cardEdgeUpgradeLink" style="display:none;font-size:12px;color:var(--color-primary);text-decoration:none;margin-top:6px">订阅后解锁背景边缘 →</a>
+    <a href="premium.html" id="cardEdgeUpgradeLink" style="display:none;font-size:12px;color:var(--color-primary);text-decoration:none;margin-top:6px" data-i18n="fc.bg.edgeLocked">订阅后解锁背景边缘 →</a>
     <!-- v10.18 — 外板边距：固定档位下拉 0/8/16/24/32/40/48/56/64（默认 16，
          v10.27.1.1 起 0 = 外板整个消失；此前 0 = 贴卡。用户要求，替换
          v10.10 的 0-40 自由滑杆）。无外板（未选边缘主题）时禁用。 -->
-    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px">外板边距</span>
+    <span class="label-sm" style="color:var(--color-outline);display:block;margin-top:12px" data-i18n="fc.bg.outerGap">外板边距</span>
     <div class="caption-slider-row">
-      <label>间距</label>
+      <label data-i18n="fc.slider.gap">间距</label>
       <select id="outerGapSlider" onchange="updateOuterGap(this.value)">
-        <option value="0">0px（无外板）</option>
+        <option value="0" data-i18n="fc.bg.gapNone">0px（无外板）</option>
         <option value="8">8px</option>
         <option value="16" selected>16px</option>
         <option value="24">24px</option>
@@ -15594,19 +15653,19 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       </select>
       <output id="outerGapValue">16px</output>
     </div>
-    <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:10px" onclick="resetCardBg()">恢复默认</button>
+    <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:10px" onclick="resetCardBg()" data-i18n="fc.common.resetDefault">恢复默认</button>
   </div>
 </div>
 
 <!-- ═══ BG OPACITY POPOVER (content cards) ═══ -->
 <div class="radius-popover" id="bgOpacityPopover">
   <div style="display:flex;flex-direction:column;gap:8px">
-    <span class="label-sm" style="color:var(--color-outline)">背景不透明度: <strong id="bgOpacityValue">100%</strong></span>
+    <span class="label-sm" style="color:var(--color-outline)"><span data-i18n="fc.bg.opacityLabel">背景不透明度: </span><strong id="bgOpacityValue">100%</strong></span>
     <input type="range" id="bgOpacitySlider" min="0" max="100" value="100" step="1" oninput="updateBgOpacity(this.value)" style="width:100%;accent-color:var(--color-primary)">
     <div style="display:flex;gap:4px">
-      <button class="btn btn-ghost btn-sm" onclick="updateBgOpacity(100)" style="flex:1">不透明</button>
+      <button class="btn btn-ghost btn-sm" onclick="updateBgOpacity(100)" style="flex:1" data-i18n="fc.bg.opaque">不透明</button>
       <button class="btn btn-ghost btn-sm" onclick="updateBgOpacity(50)" style="flex:1">50%</button>
-      <button class="btn btn-ghost btn-sm" onclick="updateBgOpacity(0)" style="flex:1">纯透明</button>
+      <button class="btn btn-ghost btn-sm" onclick="updateBgOpacity(0)" style="flex:1" data-i18n="fc.bg.clear">纯透明</button>
     </div>
   </div>
 </div>
@@ -15615,34 +15674,34 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <div class="modal-container" id="bgModal">
   <div class="modal-card" style="max-width:480px">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">Custom Card Background</h3>
+      <h3 class="headline-md" data-i18n="fc.bgModal.title">Custom Card Background</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:var(--space-sm)" id="bgCardDims">Card size: 200px × 200px</p>
     <div style="margin-bottom:var(--space-md)">
-      <span class="label-md">Preset colors</span>
+      <span class="label-md" data-i18n="fc.bgModal.presets">Preset colors</span>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px" id="colorPresets"></div>
     </div>
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:var(--space-md)">
-      <span class="label-md">Color wheel:</span>
+      <span class="label-md" data-i18n="fc.bgModal.colorWheel">Color wheel:</span>
       <input type="color" id="bgColorPicker" onchange="applyCardBackgroundColor(this.value)" style="width:40px;height:40px;border:none;cursor:pointer;border-radius:50%;padding:0">
     </div>
     <div class="flag-source-options">
       <button class="flag-source-btn" onclick="document.getElementById('bgFileInput').click()">
         <span class="material-symbols-outlined">upload_file</span>
-        <span class="source-title">Upload from file</span>
-        <span class="source-desc">Use an image as background</span>
+        <span class="source-title" data-i18n="fc.bgModal.uploadTitle">Upload from file</span>
+        <span class="source-desc" data-i18n="fc.bgModal.uploadDesc">Use an image as background</span>
       </button>
       <input type="file" id="bgFileInput" accept="image/*" style="display:none" onchange="handleBgFileUpload(this)">
       <button class="flag-source-btn" onclick="searchBgImage()">
         <span class="material-symbols-outlined">search</span>
-        <span class="source-title">Search on web</span>
-        <span class="source-desc">Find images online</span>
+        <span class="source-title" data-i18n="fc.bgModal.searchTitle">Search on web</span>
+        <span class="source-desc" data-i18n="fc.bgModal.searchDesc">Find images online</span>
       </button>
     </div>
     <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-md)">
-      <button class="btn btn-outline btn-sm" style="flex:1" onclick="clearCardBackground()">Clear background</button>
-      <button class="btn btn-primary btn-sm" style="flex:1" onclick="closeAllModals()">Done</button>
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="clearCardBackground()" data-i18n="fc.bgModal.clear">Clear background</button>
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="closeAllModals()" data-i18n="fc.common.done">Done</button>
     </div>
   </div>
 </div>
@@ -15651,20 +15710,20 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <div class="modal-container" id="borderStyleModal">
   <div class="modal-card" style="max-width:420px">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">Border Edge Style</h3>
+      <h3 class="headline-md" data-i18n="fc.borderModal.title">Border Edge Style</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div style="display:flex;flex-direction:column;gap:4px" id="borderStyleOptions"></div>
     <div style="margin-top:var(--space-md);display:flex;align-items:center;gap:12px">
-      <span class="label-md">Width:</span>
+      <span class="label-md" data-i18n="fc.borderModal.width">Width:</span>
       <input type="range" id="borderWidthSlider" min="0" max="8" value="2" oninput="updateCardBorderWidth(this.value)" style="flex:1;accent-color:var(--color-primary)">
       <span id="borderWidthVal" class="label-md">2px</span>
     </div>
     <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
-      <span class="label-md">Color:</span>
+      <span class="label-md" data-i18n="fc.borderModal.color">Color:</span>
       <input type="color" id="borderColorPicker" value="#c8c8d0" onchange="updateCardBorderColor(this.value)" style="width:32px;height:32px;border:none;cursor:pointer;border-radius:50%;padding:0">
     </div>
-    <button class="btn btn-primary btn-sm" style="margin-top:var(--space-md);width:100%" onclick="closeAllModals()">Done</button>
+    <button class="btn btn-primary btn-sm" style="margin-top:var(--space-md);width:100%" onclick="closeAllModals()" data-i18n="fc.common.done">Done</button>
   </div>
 </div>
 
@@ -15672,11 +15731,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <div class="modal-container" id="templateModal">
   <div class="modal-card" style="max-width:560px">
     <div class="flex-between" style="margin-bottom:var(--space-md)">
-      <h3 class="headline-md">Card Templates</h3>
+      <h3 class="headline-md" data-i18n="fc.template.title">Card Templates</h3>
       <button class="btn btn-ghost btn-icon btn-sm" onclick="closeAllModals()"><span class="material-symbols-outlined">close</span></button>
     </div>
     <div class="flag-grid custom-scrollbar" id="templateGrid" style="max-height:320px"></div>
-    <p class="label-sm" style="color:var(--color-outline);text-align:center;margin-top:var(--space-sm)" id="noTemplatesMsg">No saved templates yet. Right-click a card → Save as template.</p>
+    <p class="label-sm" style="color:var(--color-outline);text-align:center;margin-top:var(--space-sm)" id="noTemplatesMsg" data-i18n="fc.template.empty">No saved templates yet. Right-click a card → Save as template.</p>
   </div>
 </div>
 
@@ -15687,6 +15746,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 <script>
 (function () {
   if (!window.FLUIDCANVAS_FONTS) return;
+
+  // i18n（v10.28.45.0）：本 IIFE 在 R3 作用域外，T 经 window.__fcT 取
+  function T(k) { return (window.__fcT ? window.__fcT(k) : null); }
 
   var FMT_CMD = { bold: 'bold', italic: 'italic', underline: 'underline', strike: 'strikeThrough' };
   var FC_SIZES = [10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48, 56, 64, 72];
@@ -16137,7 +16199,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       if (!inEl) inEl = (textSelInInput() || {}).inputEl || null;
       if (inEl && inEl.isConnected && inEl.closest && inEl.closest('.grid-card')) {
         if (typeof inEl.selectionStart !== 'number' || (inEl.classList && inEl.classList.contains('tl-year'))) {
-          showToast('数字或年份字段不能插图');
+          showToast(T('fc.img.toastNoNumber') || '数字或年份字段不能插图');
           return false;
         }
         var caret = { s: inEl.selectionStart, e: inEl.selectionEnd };
@@ -16158,7 +16220,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         selx.addRange(r);
         info = textSelInCard() || textCaretInCard();
       }
-      if (!info) { showToast('图像只能插进文字里（内容卡或卡内输入框）'); return false; }
+      if (!info) { showToast(T('fc.img.toastTextOnly') || '图像只能插进文字里（内容卡或卡内输入框）'); return false; }
     }
     var img = document.createElement('img');
     img.className = 'tt-inline-img';
@@ -16240,8 +16302,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var up = document.createElement('button');
     up.type = 'button';
     up.className = 'tim-tile tim-upload';
-    up.title = '上传图片（国徽等任意图）';
-    up.innerHTML = '<span class="material-symbols-outlined">upload_file</span><span>上传</span>';
+    up.title = T('fc.img.uploadTitle') || '上传图片（国徽等任意图）';
+    up.innerHTML = '<span class="material-symbols-outlined">upload_file</span><span>' + (T('fc.img.upload') || '上传') + '</span>';
     up.addEventListener('click', function () {
       var fi = document.getElementById('ttInlineFileInput');
       if (fi) fi.click();
@@ -16252,7 +16314,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var grid = document.getElementById('ttImgGrid');
     if (grid) { grid.innerHTML = ''; grid.classList.remove('tim-search-mode'); renderLibTiles(grid); }
     var head = document.getElementById('ttImgHead');
-    if (head) head.textContent = '图片';
+    if (head) head.textContent = T('fc.img.head') || '图片';
     var clear = document.getElementById('ttImgClear');
     if (clear) clear.hidden = true;
     if (!keepQuery) {
@@ -16267,10 +16329,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!q) return;
     var grid = document.getElementById('ttImgGrid');
     if (!grid) return;
-    grid.innerHTML = '<div class="tim-loading">搜索中…</div>';
+    grid.innerHTML = '<div class="tim-loading">' + (T('fc.img.searching') || '搜索中…') + '</div>';
     grid.classList.add('tim-search-mode');
     var head = document.getElementById('ttImgHead');
-    if (head) head.textContent = '搜索：' + (q.length > 12 ? q.slice(0, 12) + '…' : q);
+    if (head) head.textContent = (T('fc.img.searchingQ') || '搜索：%s').replace('%s', q.length > 12 ? q.slice(0, 12) + '…' : q);
     var clear = document.getElementById('ttImgClear');
     if (clear) clear.hidden = false;
     var api = window.FC_IMG_SEARCH_API || 'https://commons.wikimedia.org/w/api.php';
@@ -16282,7 +16344,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     }).then(function (j) {
       renderImgResults((j && j.query && j.query.pages) || {});
     }).catch(function () {
-      showToast('搜索失败，请检查网络后重试');
+      showToast(T('fc.img.toastSearchFail') || '搜索失败，请检查网络后重试');
       showLibView(true); // 保留用户输入的词，方便改词重试
     });
   }
@@ -16294,7 +16356,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       .sort(function (a, b) { return (a.index || 0) - (b.index || 0); });
     grid.innerHTML = '';
     if (!items.length) {
-      grid.innerHTML = '<div class="tim-loading">没有找到图片，换个词试试</div>';
+      grid.innerHTML = '<div class="tim-loading">' + (T('fc.img.noResults') || '没有找到图片，换个词试试') + '</div>';
       return;
     }
     items.forEach(function (p) {
@@ -16302,7 +16364,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'tim-tile tim-thumb-tile';
-      b.title = (p.title || '').replace(/^File:/, '') + '（维基共享资源）';
+      b.title = (p.title || '').replace(/^File:/, '') + (T('fc.img.wikiAttr') || '（维基共享资源）');
       var im = document.createElement('img');
       im.loading = 'lazy';
       im.alt = p.title || '';
@@ -16340,10 +16402,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         // （本块是独立 IIFE——openImgMetaModal 走 window 跨块）
         window.openImgMetaModal(e.target.result, file.name.replace(/\.[^.]+$/, ''), function (meta) {
           if (insertInlineImage(e.target.result, file.name.replace(/\.[^.]+$/, ''), meta)) {
-            showToast('图片已插入：' + file.name);
+            showToast((T('fc.img.toastInserted') || '图片已插入：%s').replace('%s', file.name));
             return true;
           }
-          showToast('图像只能插进文字里（内容卡或卡内输入框）');
+          showToast(T('fc.img.toastTextOnly') || '图像只能插进文字里（内容卡或卡内输入框）');
           return false;
         }, { close: 'self' });
       };
@@ -16426,9 +16488,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         var lock = document.createElement('a');
         lock.className = 'fp-lock';
         lock.href = 'premium.html';
-        lock.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">lock</span> 剩余 ' +
-          (group.fonts.length - FREE_FONT_CAP_PER_LANG) + ' 个字体 · 订阅解锁 →';
-        lock.title = '订阅后解锁全部 ' + group.fonts.length + ' 个字体';
+        lock.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px">lock</span> ' + (T('fc.font.lockedLeft') || '剩余 %d 个字体 · 订阅解锁 →').replace('%d', group.fonts.length - FREE_FONT_CAP_PER_LANG);
+        lock.title = (T('fc.font.lockedAll') || '订阅后解锁全部 %d 个字体').replace('%d', group.fonts.length);
         FONT_LIST.appendChild(lock);
       }
     });
@@ -16561,7 +16622,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var sizeCustom = document.getElementById('ttSizeCustom');
   function applyCustomSize() {
     var px = parseInt(sizeCustom.value, 10);
-    if (isNaN(px) || px < 4 || px > 400) { showToast('字号范围 4–400px'); return; }
+    if (isNaN(px) || px < 4 || px > 400) { showToast(T('fc.font.toastRange') || '字号范围 4–400px'); return; }
     setFontSize(px);
     hideSizePop();
   }
@@ -16636,7 +16697,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var bar = document.getElementById('fcViewActions');
     var id = bar && bar.dataset.articleId;
     if (!id) return;
-    if (!fcvaIsCloudUser()) { window.showToast('登录后才能' + (kind === 'like' ? '点赞' : '收藏')); return; }
+    if (!fcvaIsCloudUser()) { window.showToast((window.__fcT('fc.viewer.toastLogin') || '登录后才能%s').replace('%s', kind === 'like' ? '点赞' : '收藏')); return; }
     var isLike = kind === 'like';
     var wasOn = btn.getAttribute('aria-pressed') === 'true';
     var next = !wasOn;
@@ -16660,10 +16721,43 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       btn.classList.toggle(isLike ? 'liked' : 'favorited', wasOn);
       if (iconEl) iconEl.textContent = isLike ? (wasOn ? 'favorite' : 'favorite_border') : (wasOn ? 'star' : 'star_border');
       countEl.textContent = before;
-      if (r.status === 401) window.showToast('登录已过期，请重新登录');
-      else window.showToast('操作失败，请稍后再试');
+      if (r.status === 401) window.showToast(window.__fcT('fc.viewer.toastExpired') || '登录已过期，请重新登录');
+      else window.showToast(window.__fcT('fc.viewer.toastFailed') || '操作失败，请稍后再试');
     });
   }
+</script>
+
+<!-- v10.28.45.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/fluidcanvas.i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  if (!window.MN_I18N) return;
+  // v10.28.45.0：语言切换重渲染——词数/图层/保存状态/字体工具栏恒跑；
+  // 查看模式重跑呈现+操作条；编辑模式守卫（输入中/拖拽中/无卡片跳过）后重建画布
+  MN_I18N.onChange(function () {
+    try { if (window.updateWordCount) window.updateWordCount(); } catch (e) {}
+    try { if (window.renderLayersList) window.renderLayersList(); } catch (e) {}
+    try { if (window.reapplySaveStatus) window.reapplySaveStatus(); } catch (e) {}
+    try { if (window.refreshTextToolbar) window.refreshTextToolbar(); } catch (e) {}
+    if (document.body.classList.contains('fc-viewmode')) {
+      try { if (window.renderViewPresentation) window.renderViewPresentation(); } catch (e) {}
+      try { if (window.renderArticleActions) window.renderArticleActions(); } catch (e) {}
+      return;
+    }
+    var ae = document.activeElement;
+    if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA' || ae.isContentEditable)) return;
+    if (document.querySelector('.fc-moving')) return;
+    try {
+      if (window.getAllCards && window.getAllCards().length && window.buildDraft && window.applyDraft) {
+        window.applyDraft(window.buildDraft());
+      }
+    } catch (e) {}
+  });
+  MN_I18N.apply();
+})();
 </script>
 
 </body>

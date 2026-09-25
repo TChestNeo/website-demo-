@@ -138,9 +138,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const main = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas.html'), 'utf8');
   const sconf = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   const editor = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
-  ok('F0-1 版本双线 v0.2.58.0 / v10.28.44.3（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块',
+  ok('F0-1 版本双线 v0.2.58.0 / v10.28.45.0（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块',
     sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.0';") !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.44.3';") !== -1 &&
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.45.0';") !== -1 &&
     sconf.indexOf('00276-nnx') !== -1 &&
     sconf.indexOf('文章查看器') !== -1 && sconf.indexOf('提交审核') !== -1);
   ok('F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）',
@@ -158,7 +158,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     main.indexOf("type: 'content'") !== -1 && main.indexOf("type: 'flag'") !== -1 && main.indexOf("type: 'text'") !== -1);
   ok('F0-6 发布即公开在场（badge-success Published + 已发布 toast + 占位文案无「审核中」）',
     editor.indexOf("headerStatus.className = 'badge badge-success'") !== -1 &&
-    editor.indexOf("showToast('已发布')") !== -1 &&
+    editor.indexOf("showToast(T('fc.toast.published') || '已发布')") !== -1 &&
     editor.indexOf('可能仍在审核中') === -1 && editor.indexOf('已提交审核') === -1);
 
   // ═══ 浏览器场景（登录态 Chrome #1）═══

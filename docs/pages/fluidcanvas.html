@@ -2544,15 +2544,15 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <span id="fcVersion" style="font-size:10px;color:var(--color-outline);opacity:0.45;letter-spacing:0.03em;line-height:1.2">v10.28.18.1</span>
   </div>
   <span style="flex:1"></span>
-  <a href="fluidcanvas-editor.html" id="openEditorCta" class="btn btn-primary"><span class="material-symbols-outlined">edit</span> Open Editor</a>
+  <a href="fluidcanvas-editor.html" id="openEditorCta" class="btn btn-primary"><span class="material-symbols-outlined">edit</span> <span data-i18n="fc.landing.openEditor">Open Editor</span></a>
 </div>
 
 <!-- 登录引导卡（未登录时 CSS 互斥显示；编辑器 head 门禁也送回本页 ?locked=1） -->
 <section class="fc-locked-hero liquid-glass">
   <span class="material-symbols-outlined" style="font-size:64px;color:var(--color-primary);opacity:0.9">lock</span>
-  <h1 style="font-weight:700;font-size:26px;color:var(--color-on-surface);margin:8px 0">登录后开始创作</h1>
-  <p style="color:var(--color-on-surface-variant);font-size:14px;line-height:1.6;margin-bottom:20px;text-align:center">FluidCanvas 是 M.NationWorld 的无限画布工作室——<br>地图、国旗、数据卡、时间线……登录后免费使用。</p>
-  <a href="../signup-and-login?next=%2Fpages%2Ffluidcanvas.html" class="btn btn-primary btn-lg" style="min-width:200px;justify-content:center"><span class="material-symbols-outlined">rocket_launch</span> 注册 / 登录</a>
+  <h1 style="font-weight:700;font-size:26px;color:var(--color-on-surface);margin:8px 0" data-i18n="fc.landing.loginTitle">登录后开始创作</h1>
+  <p style="color:var(--color-on-surface-variant);font-size:14px;line-height:1.6;margin-bottom:20px;text-align:center" data-i18n-html="fc.landing.loginDesc">FluidCanvas 是 M.NationWorld 的无限画布工作室——<br>地图、国旗、数据卡、时间线……登录后免费使用。</p>
+  <a href="../signup-and-login?next=%2Fpages%2Ffluidcanvas.html" class="btn btn-primary btn-lg" style="min-width:200px;justify-content:center"><span class="material-symbols-outlined">rocket_launch</span> <span data-i18n="fc.landing.signupLogin">注册 / 登录</span></a>
 </section>
 
 <div style="padding:var(--space-lg)" class="studio-main">
@@ -2575,16 +2575,16 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     </a>
     <div class="divider"></div>
     <nav style="display:flex;flex-direction:column;gap:2px">
-      <a href="fluidcanvas.html" class="nav-item active" style="border-radius:var(--radius-md)" data-view="dashboard"><span class="material-symbols-outlined">dashboard</span> Dashboard</a>
-      <a href="fluidcanvas.html?view=analytics" class="nav-item" style="border-radius:var(--radius-md)" data-view="analytics"><span class="material-symbols-outlined">analytics</span> Analytics</a>
-      <a href="fluidcanvas.html?view=content" class="nav-item" style="border-radius:var(--radius-md)" data-view="content"><span class="material-symbols-outlined">article</span> Content</a>
-      <a href="fluidcanvas.html?view=upload" class="nav-item" style="border-radius:var(--radius-md)" data-view="upload"><span class="material-symbols-outlined">cloud_upload</span> Upload</a>
-      <a href="fluidcanvas.html?view=articles" class="nav-item" style="border-radius:var(--radius-md)" data-view="articles"><span class="material-symbols-outlined">edit_note</span> Articles</a>
+      <a href="fluidcanvas.html" class="nav-item active" style="border-radius:var(--radius-md)" data-view="dashboard"><span class="material-symbols-outlined">dashboard</span> <span data-i18n="fc.landing.dashboard">Dashboard</span></a>
+      <a href="fluidcanvas.html?view=analytics" class="nav-item" style="border-radius:var(--radius-md)" data-view="analytics"><span class="material-symbols-outlined">analytics</span> <span data-i18n="fc.landing.analytics">Analytics</span></a>
+      <a href="fluidcanvas.html?view=content" class="nav-item" style="border-radius:var(--radius-md)" data-view="content"><span class="material-symbols-outlined">article</span> <span data-i18n="fc.landing.content">Content</span></a>
+      <a href="fluidcanvas.html?view=upload" class="nav-item" style="border-radius:var(--radius-md)" data-view="upload"><span class="material-symbols-outlined">cloud_upload</span> <span data-i18n="fc.landing.upload">Upload</span></a>
+      <a href="fluidcanvas.html?view=articles" class="nav-item" style="border-radius:var(--radius-md)" data-view="articles"><span class="material-symbols-outlined">edit_note</span> <span data-i18n="fc.landing.articles">Articles</span></a>
     </nav>
     <div class="divider"></div>
     <nav style="display:flex;flex-direction:column;gap:2px">
-      <a href="#" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">settings</span> Settings</a>
-      <a href="../index.html" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">arrow_back</span> Back to Console</a>
+      <a href="#" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">settings</span> <span data-i18n="fc.landing.settings">Settings</span></a>
+      <a href="../index.html" class="nav-item" style="border-radius:var(--radius-md)"><span class="material-symbols-outlined">arrow_back</span> <span data-i18n="fc.landing.backConsole">Back to Console</span></a>
     </nav>
   </div>
 
@@ -2620,8 +2620,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
   <!-- === Content tabs + lists === -->
   <div class="subnav" style="margin-bottom:var(--space-md)" id="contentTabs">
-    <button class="subnav-pill active" data-tab="articles">Articles</button>
-    <button class="subnav-pill" data-tab="media">Media</button>
+    <button class="subnav-pill active" data-tab="articles" data-i18n="fc.landing.tabArticles">Articles</button>
+    <button class="subnav-pill" data-tab="media" data-i18n="fc.landing.tabMedia">Media</button>
   </div>
   <div style="overflow:hidden;position:relative">
     <div id="slideTrack" style="display:flex;transition:transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)"></div>
@@ -2633,11 +2633,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   <div class="content-lib-view" id="contentView">
     <div class="content-lib-header">
       <div>
-        <h2 class="headline-md" style="margin-bottom:2px">Content Library</h2>
-        <p class="label-sm" style="color:var(--color-outline)">Manage all your published content</p>
+        <h2 class="headline-md" style="margin-bottom:2px" data-i18n="fc.cl.title">Content Library</h2>
+        <p class="label-sm" style="color:var(--color-outline)" data-i18n="fc.cl.subtitle">Manage all your published content</p>
       </div>
       <a href="fluidcanvas-editor.html" class="btn btn-primary">
-        <span class="material-symbols-outlined">add</span> New Article
+        <span class="material-symbols-outlined">add</span> <span data-i18n="fc.landing.newArticle">New Article</span>
       </a>
     </div>
 
@@ -2647,20 +2647,20 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Filters -->
     <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-md);flex-wrap:wrap">
       <div class="subnav" data-slider id="clFilterPills">
-        <button class="subnav-pill active" data-filter="all">All</button>
-        <button class="subnav-pill" data-filter="article">Articles</button>
-        <button class="subnav-pill" data-filter="sovereign">Sovereign Logs</button>
-        <button class="subnav-pill" data-filter="community">Community Posts</button>
+        <button class="subnav-pill active" data-filter="all" data-i18n="fc.cl.filterAll">All</button>
+        <button class="subnav-pill" data-filter="article" data-i18n="fc.cl.filterArticles">Articles</button>
+        <button class="subnav-pill" data-filter="sovereign" data-i18n="fc.cl.filterSovereign">Sovereign Logs</button>
+        <button class="subnav-pill" data-filter="community" data-i18n="fc.cl.filterCommunity">Community Posts</button>
       </div>
       <div class="subnav" data-slider id="clSubFilter" style="opacity:0.4;pointer-events:none">
-        <button class="subnav-pill active" data-subfilter="all">All</button>
-        <button class="subnav-pill" data-subfilter="post">Post</button>
-        <button class="subnav-pill" data-subfilter="images">Images</button>
-        <button class="subnav-pill" data-subfilter="video">Video</button>
+        <button class="subnav-pill active" data-subfilter="all" data-i18n="fc.cl.subAll">All</button>
+        <button class="subnav-pill" data-subfilter="post" data-i18n="fc.cl.subPost">Post</button>
+        <button class="subnav-pill" data-subfilter="images" data-i18n="fc.cl.subImages">Images</button>
+        <button class="subnav-pill" data-subfilter="video" data-i18n="fc.cl.subVideo">Video</button>
       </div>
       <div class="search-capsule" style="margin-left:auto">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search content..." id="clSearch">
+        <input type="text" placeholder="Search content..." id="clSearch" data-i18n-placeholder="fc.cl.searchPh">
       </div>
     </div>
 
@@ -2673,8 +2673,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Upload Zone -->
     <div class="upload-zone" id="uploadZone" style="margin-bottom:var(--space-md)">
       <span class="material-symbols-outlined upload-zone-icon">cloud_upload</span>
-      <div class="upload-zone-text">Drop files here or click to browse</div>
-      <p class="upload-zone-hint">Supports images, documents, archives, and more</p>
+      <div class="upload-zone-text" data-i18n="fc.upload.dropText">Drop files here or click to browse</div>
+      <p class="upload-zone-hint" data-i18n="fc.upload.dropHint">Supports images, documents, archives, and more</p>
     </div>
 
     <!-- File Info Bar -->
@@ -2684,28 +2684,28 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <div class="file-info-name" id="fileInfoName"></div>
         <div class="file-info-size" id="fileInfoSize"></div>
       </div>
-      <button class="file-info-remove" id="fileRemoveBtn" title="Remove file">
+      <button class="file-info-remove" id="fileRemoveBtn" title="Remove file" data-i18n-title="fc.upload.removeTitle">
         <span class="material-symbols-outlined" style="font-size:16px">close</span>
       </button>
     </div>
 
     <!-- Publish Target -->
     <div class="card" style="margin-top:var(--space-md)">
-      <h3 class="label-md" style="margin-bottom:var(--space-sm)">Select Publish Target</h3>
+      <h3 class="label-md" style="margin-bottom:var(--space-sm)" data-i18n="fc.upload.targetTitle">Select Publish Target</h3>
       <div class="target-grid" id="targetGrid"></div>
     </div>
 
     <!-- Publish Button -->
     <button class="publish-btn" id="publishBtn" disabled style="margin-top:var(--space-md)">
       <span class="material-symbols-outlined" style="font-size:20px">publish</span>
-      Publish Now
+      <span data-i18n="fc.upload.publishNow">Publish Now</span>
     </button>
 
     <!-- Recent Uploads -->
     <div class="card" style="margin-top:var(--space-md)">
       <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
         <span class="material-symbols-outlined" style="font-size:18px">history</span>
-        Recent Uploads
+        <span data-i18n="fc.upload.recent">Recent Uploads</span>
       </h3>
       <div class="recent-list" id="recentList"></div>
     </div>
@@ -2718,9 +2718,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   <div class="flex-between" style="margin-bottom:var(--space-md)">
     <h1 class="headline-lg" id="analyticsTitle">Content Analytics</h1>
     <div class="subnav" id="periodTabs">
-      <button class="subnav-pill" data-period="7d">Last 7 days</button>
-      <button class="subnav-pill active" data-period="28d">Last 28 days</button>
-      <button class="subnav-pill" data-period="month">vs Last Month</button>
+      <button class="subnav-pill" data-period="7d" data-i18n="fc.analytics.period7d">Last 7 days</button>
+      <button class="subnav-pill active" data-period="28d" data-i18n="fc.analytics.period28d">Last 28 days</button>
+      <button class="subnav-pill" data-period="month" data-i18n="fc.analytics.periodMonth">vs Last Month</button>
     </div>
   </div>
 
@@ -2732,8 +2732,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
   <!-- Detailed breakdown -->
   <div class="subnav" style="margin-bottom:var(--space-md)" id="detailTabs">
-    <button class="subnav-pill active" data-tab="articles">Article Analytics</button>
-    <button class="subnav-pill" data-tab="media">Media Analytics</button>
+    <button class="subnav-pill active" data-tab="articles" data-i18n="fc.analytics.tabArticles">Article Analytics</button>
+    <button class="subnav-pill" data-tab="media" data-i18n="fc.analytics.tabMedia">Media Analytics</button>
   </div>
 
   <div style="overflow:hidden"><div id="detailSlide" style="display:flex;transition:transform 0.6s cubic-bezier(0.25,0.1,0.25,1)"></div></div>
@@ -2748,11 +2748,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Header -->
     <div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-md);margin-bottom:var(--space-md);flex-wrap:wrap">
       <div>
-        <h1 class="headline-lg" style="margin-bottom:2px">Articles Manager</h1>
-        <p class="label-md" style="color:var(--color-outline)">Manage, edit, and publish all your articles</p>
+        <h1 class="headline-lg" style="margin-bottom:2px" data-i18n="fc.articles.title">Articles Manager</h1>
+        <p class="label-md" style="color:var(--color-outline)" data-i18n="fc.articles.subtitle">Manage, edit, and publish all your articles</p>
       </div>
       <a href="fluidcanvas-editor.html" class="btn btn-primary btn-lg">
-        <span class="material-symbols-outlined">add</span> New Article
+        <span class="material-symbols-outlined">add</span> <span data-i18n="fc.landing.newArticle">New Article</span>
       </a>
     </div>
 
@@ -2762,22 +2762,22 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Toolbar -->
     <div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-md);flex-wrap:wrap">
       <div class="subnav" data-slider id="artFilterPills">
-        <button class="subnav-pill active" data-filter="all">All</button>
-        <button class="subnav-pill" data-filter="published">Published</button>
-        <button class="subnav-pill" data-filter="draft">Drafts</button>
-        <button class="subnav-pill" data-filter="review">In Review</button>
+        <button class="subnav-pill active" data-filter="all" data-i18n="fc.articles.fAll">All</button>
+        <button class="subnav-pill" data-filter="published" data-i18n="fc.articles.fPublished">Published</button>
+        <button class="subnav-pill" data-filter="draft" data-i18n="fc.articles.fDrafts">Drafts</button>
+        <button class="subnav-pill" data-filter="review" data-i18n="fc.articles.fReview">In Review</button>
       </div>
       <div style="margin-left:auto;display:flex;gap:var(--space-sm);align-items:center">
         <select id="artSort" style="padding:6px 10px;border:1px solid rgba(118,117,134,0.15);border-radius:var(--radius-md);font-size:12px;background:var(--card-bg);color:var(--color-on-surface);cursor:pointer">
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
-          <option value="views">Most Viewed</option>
-          <option value="bookmarks">Most Bookmarked</option>
-          <option value="title">A–Z</option>
+          <option value="newest" data-i18n="fc.articles.sortNewest">Newest First</option>
+          <option value="oldest" data-i18n="fc.articles.sortOldest">Oldest First</option>
+          <option value="views" data-i18n="fc.articles.sortViews">Most Viewed</option>
+          <option value="bookmarks" data-i18n="fc.articles.sortBookmarks">Most Bookmarked</option>
+          <option value="title" data-i18n="fc.articles.sortTitle">A–Z</option>
         </select>
         <div class="search-capsule">
           <span class="material-symbols-outlined">search</span>
-          <input type="text" placeholder="Search articles..." id="artSearch">
+          <input type="text" placeholder="Search articles..." id="artSearch" data-i18n-placeholder="fc.articles.searchPh">
         </div>
       </div>
     </div>
@@ -2785,10 +2785,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <!-- Bulk Actions Bar (hidden by default) -->
     <div class="bulk-bar" id="bulkBar" style="display:none">
       <span style="font-weight:600;font-size:13px" id="bulkCount">0 selected</span>
-      <button class="btn btn-ghost btn-sm" id="bulkSelectAll">Select All</button>
+      <button class="btn btn-ghost btn-sm" id="bulkSelectAll" data-i18n="fc.articles.selectAll">Select All</button>
       <span style="flex:1"></span>
-      <button class="btn btn-outline btn-sm" id="bulkPublish"><span class="material-symbols-outlined" style="font-size:16px">publish</span> Publish</button>
-      <button class="btn btn-ghost btn-sm" style="color:#dc2626" id="bulkDelete"><span class="material-symbols-outlined" style="font-size:16px">delete</span> Delete</button>
+      <button class="btn btn-outline btn-sm" id="bulkPublish"><span class="material-symbols-outlined" style="font-size:16px">publish</span> <span data-i18n="fc.articles.publish">Publish</span></button>
+      <button class="btn btn-ghost btn-sm" style="color:#dc2626" id="bulkDelete"><span class="material-symbols-outlined" style="font-size:16px">delete</span> <span data-i18n="fc.articles.delete">Delete</span></button>
     </div>
 
     <!-- Articles List -->
@@ -2824,6 +2824,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var hasTeams = teams.length > 0;
   var activeTeam = (activeAccount !== 'personal') ? teams.find(function(t) { return t.id === activeAccount; }) : null;
 
+  // --- i18n lazy-T（字典挂载后生效；挂载前回落英文字面量） ---
+  var FT = function (k) { return (window.__fcT ? window.__fcT(k) : null); };
+
   // --- Account selector ---
   document.getElementById('personalAvatar').src = user.avatarUrl || 'https://ui-avatars.com/api/?name=S&background=4648d4&color=fff&size=80';
   document.getElementById('personalName').textContent = user.displayName || 'Sovereign';
@@ -2839,7 +2842,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       teamContent.innerHTML =
         '<div class="no-teams-cta">' +
           '<span class="material-symbols-outlined" style="font-size:28px">group_add</span>' +
-          '<span class="label-sm">Create Team</span>' +
+          '<span class="label-sm">' + (FT('fc.landing.createTeam') || 'Create Team') + '</span>' +
         '</div>';
     } else {
       teamWrap.classList.add('has-teams');
@@ -2850,7 +2853,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         var sel = t.id === selectedId ? ' selected' : '';
         return '<div class="team-card-item' + sel + '" data-team-id="' + t.id + '" onclick="event.stopPropagation();selectAccount(\'' + t.id + '\')">' +
           '<div style="width:32px;height:32px;border-radius:50%;background:' + t.color + ';color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0">' + t.avatar + '</div>' +
-          '<div style="min-width:0;flex:1"><div style="font-weight:600;font-size:var(--fs-label-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + t.name + '</div><div class="label-sm" style="color:var(--color-outline)">' + t.role + ' · ' + t.members + ' members</div></div>' +
+          '<div style="min-width:0;flex:1"><div style="font-weight:600;font-size:var(--fs-label-md);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + t.name + '</div><div class="label-sm" style="color:var(--color-outline)">' + t.role + ' · ' + t.members + ' ' + (FT('fc.landing.members') || 'members') + '</div></div>' +
           '<span class="check-icon" style="margin-left:auto;flex-shrink:0">' + (t.id === selectedId ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">check_circle</span>' : '') + '</span>' +
         '</div>';
       }).join('');
@@ -3037,27 +3040,27 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (isPersonal) {
       label = user.displayName || 'Sovereign';
       avatar = (user.displayName || 'S').charAt(0);
-      subtitle = '@' + (user.displayName || 'Sovereign').replace(/\s+/g, '') + ' · Personal Studio · 6 articles · 12 media';
-      stats = '<span><strong style="color:var(--color-on-surface)">2.4K</strong> Followers</span><span><strong style="color:var(--color-on-surface)">48.2K</strong> Total Views</span><span><strong style="color:var(--color-on-surface)">1.8K</strong> Interactions</span>';
-      btnHtml = '<a href="fluidcanvas-editor.html" class="btn btn-outline btn-lg"><span class="material-symbols-outlined">add</span> New Article</a>';
+      subtitle = '@' + (user.displayName || 'Sovereign').replace(/\s+/g, '') + ' · ' + (FT('fc.landing.demoSub') || 'Personal Studio · 6 articles · 12 media');
+      stats = '<span><strong style="color:var(--color-on-surface)">2.4K</strong> ' + (FT('fc.landing.followers') || 'Followers') + '</span><span><strong style="color:var(--color-on-surface)">48.2K</strong> ' + (FT('fc.landing.totalViews') || 'Total Views') + '</span><span><strong style="color:var(--color-on-surface)">1.8K</strong> ' + (FT('fc.landing.interactions') || 'Interactions') + '</span>';
+      btnHtml = '<a href="fluidcanvas-editor.html" class="btn btn-outline btn-lg"><span class="material-symbols-outlined">add</span> ' + (FT('fc.landing.newArticle') || 'New Article') + '</a>';
     } else if (activeTeam) {
       label = activeTeam.name;
       avatar = activeTeam.avatar;
-      subtitle = '@' + activeTeam.name.replace(/\s+/g, '') + ' · ' + activeTeam.role + ' · ' + activeTeam.members + ' members';
-      stats = '<span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 320) + '</strong> Followers</span><span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 6200) + '</strong> Total Views</span><span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 240) + '</strong> Interactions</span>';
-      btnHtml = '<a href="fluidcanvas-editor.html" class="btn btn-outline btn-lg"><span class="material-symbols-outlined">add</span> Team Article</a>';
+      subtitle = '@' + activeTeam.name.replace(/\s+/g, '') + ' · ' + activeTeam.role + ' · ' + activeTeam.members + ' ' + (FT('fc.landing.members') || 'members');
+      stats = '<span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 320) + '</strong> ' + (FT('fc.landing.followers') || 'Followers') + '</span><span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 6200) + '</strong> ' + (FT('fc.landing.totalViews') || 'Total Views') + '</span><span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 240) + '</strong> ' + (FT('fc.landing.interactions') || 'Interactions') + '</span>';
+      btnHtml = '<a href="fluidcanvas-editor.html" class="btn btn-outline btn-lg"><span class="material-symbols-outlined">add</span> ' + (FT('fc.landing.teamArticle') || 'Team Article') + '</a>';
     } else {
-      label = 'FluidCanvas Studio'; avatar = 'FC'; subtitle = 'No team selected';
+      label = 'FluidCanvas Studio'; avatar = 'FC'; subtitle = (FT('fc.landing.noTeam') || 'No team selected');
       stats = ''; btnHtml = '';
     }
     document.getElementById('channelOverview').innerHTML = makeChannelCard(label, avatar, subtitle, stats, btnHtml);
 
     // Stats row
     document.getElementById('quickStats').innerHTML =
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + (isPersonal ? '48.2K' : (activeTeam ? (activeTeam.members * 6.2).toFixed(1) + 'K' : '0')) + '</div><div class="metric-label">Total Views</div><div class="metric-change" style="color:#22c55e">↑ ' + (isPersonal ? '12.4' : (activeTeam ? '8.7' : '0')) + '%</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + (isPersonal ? '3,842' : (activeTeam ? activeTeam.members * 510 : '0')) + '</div><div class="metric-label">Bookmarks</div><div class="metric-change" style="color:#22c55e">↑ ' + (isPersonal ? '8.1' : '5.2') + '%</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + (isPersonal ? '1,256' : (activeTeam ? activeTeam.members * 170 : '0')) + '</div><div class="metric-label">Shares</div><div class="metric-change" style="color:#22c55e">↑ 21.7%</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + (isPersonal ? '892' : (activeTeam ? activeTeam.members * 120 : '0')) + '</div><div class="metric-label">New Followers</div><div class="metric-change" style="color:#dc2626">↓ 3.2%</div></div>';
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + (isPersonal ? '48.2K' : (activeTeam ? (activeTeam.members * 6.2).toFixed(1) + 'K' : '0')) + '</div><div class="metric-label">' + (FT('fc.metrics.totalViews') || 'Total Views') + '</div><div class="metric-change" style="color:#22c55e">↑ ' + (isPersonal ? '12.4' : (activeTeam ? '8.7' : '0')) + '%</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + (isPersonal ? '3,842' : (activeTeam ? activeTeam.members * 510 : '0')) + '</div><div class="metric-label">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</div><div class="metric-change" style="color:#22c55e">↑ ' + (isPersonal ? '8.1' : '5.2') + '%</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + (isPersonal ? '1,256' : (activeTeam ? activeTeam.members * 170 : '0')) + '</div><div class="metric-label">' + (FT('fc.metrics.shares') || 'Shares') + '</div><div class="metric-change" style="color:#22c55e">↑ 21.7%</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + (isPersonal ? '892' : (activeTeam ? activeTeam.members * 120 : '0')) + '</div><div class="metric-label">' + (FT('fc.metrics.newFollowers') || 'New Followers') + '</div><div class="metric-change" style="color:#dc2626">↓ 3.2%</div></div>';
     // v0.2.9.0：动态 metric-card 挂液态玻璃；v0.2.45.2：切场期间延后扫描——
     // SVG 滤镜/backdrop 层注入在入场动画窗口内会逐帧重绘（切场掉帧主因之一）
     if (window.LG) {
@@ -3074,7 +3077,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function renderContentTables() {
     var isPersonal = activeAccount === 'personal';
-    var aLabel = isPersonal ? 'Your' : (activeTeam ? activeTeam.name : 'Team');
+    var aLabel = isPersonal ? (FT('fc.landing.your') || 'Your') : (activeTeam ? activeTeam.name : (FT('fc.landing.team') || 'Team'));
     var track = document.getElementById('slideTrack');
 
     var articleRows = [
@@ -3091,21 +3094,21 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     ];
 
     function makeArticlePanel(rows) {
-      var hdr = '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.03em"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:140px">Article</span><span class="mini-stat">Views</span><span class="mini-stat">Bookmarks</span><span class="mini-stat">Shares</span><span class="mini-stat" style="width:80px">Trend</span></div>';
+      var hdr = '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.03em"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:140px">' + (FT('fc.landing.articles') || 'Article') + '</span><span class="mini-stat">' + (FT('fc.metrics.views') || 'Views') + '</span><span class="mini-stat">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><span class="mini-stat">' + (FT('fc.metrics.shares') || 'Shares') + '</span><span class="mini-stat" style="width:80px">' + (FT('fc.metrics.trend') || 'Trend') + '</span></div>';
       var body = rows.map(function(r, i) {
         var rankColors = ['var(--color-primary)', 'var(--color-outline)', '#ea580c', 'var(--color-outline)'];
         return '<div class="content-row"><span style="width:36px;text-align:center;font-weight:800;font-size:var(--fs-body-md);color:' + rankColors[i] + '">' + (i + 1) + '</span><span style="flex:1;min-width:140px;font-weight:600">' + r.name + '</span><span class="mini-stat"><span style="font-weight:600">' + r.views + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 40 + 5)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.bookmarks + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 30 + 3)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.shares + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 50 + 5)) + '%</span></span><span class="mini-stat" style="width:80px"><span class="badge ' + r.trendClass + '">' + r.trend + '</span></span></div>';
       }).join('');
-      return '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">Top Articles — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">Last 28 days</span></div>' + hdr + body + '</div>';
+      return '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.landing.topArticles') || 'Top Articles') + ' — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">' + (FT('fc.analytics.period28d') || 'Last 28 days') + '</span></div>' + hdr + body + '</div>';
     }
 
     function makeMediaPanel(rows) {
-      var hdr = '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.03em"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:160px">Media</span><span style="width:44px;text-align:center">Type</span><span class="mini-stat">Views</span><span class="mini-stat">Likes</span><span class="mini-stat">Bookmarks</span><span class="mini-stat">Shares</span></div>';
+      var hdr = '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.03em"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:160px">' + (FT('fc.landing.media') || 'Media') + '</span><span style="width:44px;text-align:center">' + (FT('fc.metrics.type') || 'Type') + '</span><span class="mini-stat">' + (FT('fc.metrics.views') || 'Views') + '</span><span class="mini-stat">' + (FT('fc.metrics.likes') || 'Likes') + '</span><span class="mini-stat">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><span class="mini-stat">' + (FT('fc.metrics.shares') || 'Shares') + '</span></div>';
       var body = rows.map(function(r, i) {
         var rankColors = ['var(--color-primary)', 'var(--color-outline)', '#ea580c', 'var(--color-outline)'];
         return '<div class="content-row"><span style="width:36px;text-align:center;font-weight:800;font-size:var(--fs-body-md);color:' + rankColors[i] + '">' + (i + 1) + '</span><span style="flex:1;min-width:160px;font-weight:600">' + r.name + '</span><span style="width:44px;text-align:center">' + r.type + '</span><span class="mini-stat"><span style="font-weight:600">' + r.views + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 60 + 5)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.likes + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 50 + 5)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.bookmarks + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 35 + 3)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.shares + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 70 + 5)) + '%</span></span></div>';
       }).join('');
-      return '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">Top Media — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">Last 28 days</span></div>' + hdr + body + '</div>';
+      return '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.landing.topMedia') || 'Top Media') + ' — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">' + (FT('fc.analytics.period28d') || 'Last 28 days') + '</span></div>' + hdr + body + '</div>';
     }
 
     track.innerHTML = makeArticlePanel(articleRows) + makeMediaPanel(mediaRows);
@@ -3324,11 +3327,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
 
   function renderTargets() {
+    var tKeys = { article: 'fc.upload.targetArticle', sovereign: 'fc.upload.targetSovereign', community: 'fc.upload.targetCommunity' };
+    var dKeys = { article: 'fc.upload.descArticle', sovereign: 'fc.upload.descSovereign', community: 'fc.upload.descCommunity' };
     document.getElementById('targetGrid').innerHTML = PUBLISH_TARGETS.map(function(t) {
       return '<div class="target-card" data-target="' + t.id + '">' +
         '<span class="material-symbols-outlined target-icon">' + t.icon + '</span>' +
-        '<div class="target-title">' + t.title + '</div>' +
-        '<div class="target-desc">' + t.desc + '</div></div>';
+        '<div class="target-title">' + (FT(tKeys[t.id]) || t.title) + '</div>' +
+        '<div class="target-desc">' + (FT(dKeys[t.id]) || t.desc) + '</div></div>';
     }).join('');
   }
 
@@ -3363,8 +3368,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         '<span class="material-symbols-outlined recent-file-icon">' + icon + '</span>' +
         '<span class="recent-file-name" title="' + item.file + '">' + item.file + '</span>' +
         '<span class="recent-target-badge">' + item.targetLabel + '</span>' +
-        '<span class="recent-time">' + item.time + '</span>' +
-        '<span class="recent-status">' + item.status + '</span></div>';
+        '<span class="recent-time">' + (FT('fc.upload.justNow') || item.time) + '</span>' +
+        '<span class="recent-status">' + (FT('fc.upload.statusPublished') || item.status) + '</span></div>';
     }).join('');
   }
 
@@ -3382,7 +3387,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!currentFile || !currentTarget) return;
     var info = PUBLISH_TARGETS.find(function(t) { return t.id === currentTarget; });
     addToRecent(currentFile, currentTarget);
-    showToast('Published to ' + (info ? info.title : currentTarget) + '!', 'check_circle');
+    showToast((FT('fc.upload.toastPublished') || 'Published to ') + (info ? info.title : currentTarget) + '!', 'check_circle');
     removeFile();
     currentTarget = null;
     document.querySelectorAll('#uploadView .target-card').forEach(function(c) { c.classList.remove('selected'); });
@@ -3469,10 +3474,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var images = contentLibrary.filter(function(c){ return c.subtype==='images'; }).length;
     var videos = contentLibrary.filter(function(c){ return c.subtype==='video'; }).length;
     document.getElementById('clStats').innerHTML =
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + total + '</div><div class="metric-label">Total Items</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + articles + '</div><div class="metric-label">Articles</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + sovereigns + '</div><div class="metric-label">Sovereign Logs</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + communities + '</div><div class="metric-label">Community Posts</div></div>';
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + total + '</div><div class="metric-label">' + (FT('fc.cl.statTotal') || 'Total Items') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + articles + '</div><div class="metric-label">' + (FT('fc.cl.statArticles') || 'Articles') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + sovereigns + '</div><div class="metric-label">' + (FT('fc.cl.statSovereign') || 'Sovereign Logs') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + communities + '</div><div class="metric-label">' + (FT('fc.cl.statCommunity') || 'Community Posts') + '</div></div>';
     if (window.LG) LG.scan(document); // v0.2.9.0：动态 metric-card 挂液态玻璃
   }
 
@@ -3493,17 +3498,19 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     }
 
     if (items.length === 0) {
-      list.innerHTML = '<div class="cl-empty"><span class="material-symbols-outlined cl-empty-icon">inventory_2</span><p style="font-weight:600;margin-bottom:4px">No content found</p><p style="font-size:12px">Try adjusting your filters or create new content</p></div>';
+      list.innerHTML = '<div class="cl-empty"><span class="material-symbols-outlined cl-empty-icon">inventory_2</span><p style="font-weight:600;margin-bottom:4px">' + (FT('fc.cl.emptyTitle') || 'No content found') + '</p><p style="font-size:12px">' + (FT('fc.cl.emptyHint') || 'Try adjusting your filters or create new content') + '</p></div>';
       return;
     }
 
     list.innerHTML = items.map(function(c) {
       var meta = TYPE_META[c.type] || TYPE_META.article;
+      var typeKeys = { article: 'fc.cl.typeArticle', sovereign: 'fc.cl.typeSovereign', community: 'fc.cl.typeCommunity' };
+      var subKeys = { post: 'fc.cl.subPost', images: 'fc.cl.subImages', video: 'fc.cl.subVideo' };
       var statusClass = c.status === 'Draft' ? 'style="background:rgba(234,179,8,0.1);color:#b45309"' : 'style="background:rgba(22,163,74,0.08);color:#16a34a"';
       var subtypeHTML = '';
       if (c.type === 'community' && c.subtype) {
         var sub = SUBTYPE_META[c.subtype];
-        if (sub) subtypeHTML = '<span class="cl-badge" style="background:' + meta.bg + ';color:' + meta.color + ';margin-right:4px"><span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle">' + sub.icon + '</span> ' + sub.label + '</span>';
+        if (sub) subtypeHTML = '<span class="cl-badge" style="background:' + meta.bg + ';color:' + meta.color + ';margin-right:4px"><span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle">' + sub.icon + '</span> ' + (FT(subKeys[c.subtype]) || sub.label) + '</span>';
       }
       return '<div class="content-lib-card">' +
         '<div class="cl-type-icon" style="background:' + meta.bg + ';color:' + meta.color + '">' +
@@ -3514,13 +3521,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           '<div class="cl-meta">' +
             '<span>' + c.author + '</span>' +
             '<span>' + c.date + '</span>' +
-            '<span>' + c.views.toLocaleString() + ' views</span>' +
-            '<span>' + c.bookmarks.toLocaleString() + ' bookmarks</span>' +
+            '<span>' + c.views.toLocaleString() + ' ' + (FT('fc.cl.views') || 'views') + '</span>' +
+            '<span>' + c.bookmarks.toLocaleString() + ' ' + (FT('fc.cl.bookmarks') || 'bookmarks') + '</span>' +
           '</div>' +
         '</div>' +
         subtypeHTML +
-        '<span class="cl-badge ' + c.type + '">' + meta.label + '</span>' +
-        '<span class="cl-badge" ' + statusClass + '>' + c.status + '</span>' +
+        '<span class="cl-badge ' + c.type + '">' + (FT(typeKeys[c.type]) || meta.label) + '</span>' +
+        '<span class="cl-badge" ' + statusClass + '>' + (FT(c.status === 'Draft' ? 'fc.cl.statusDraft' : 'fc.cl.statusPublished') || c.status) + '</span>' +
         '<div class="cl-actions">' +
           '<button class="cl-action-btn" title="Edit"><span class="material-symbols-outlined" style="font-size:16px">edit</span></button>' +
           '<button class="cl-action-btn" title="View"><span class="material-symbols-outlined" style="font-size:16px">visibility</span></button>' +
@@ -3682,7 +3689,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var aLabel = isPersonal ? (user.displayName || 'Personal') : (activeTeam ? activeTeam.name : 'Team');
     var mult = isPersonal ? 1 : (activeTeam ? activeTeam.members : 1);
 
-    document.getElementById('analyticsTitle').textContent = aLabel + ' — Content Analytics';
+    document.getElementById('analyticsTitle').textContent = aLabel + ' — ' + (FT('fc.analytics.title') || 'Content Analytics');
 
     // Overview cards — data differs per period
     var pData = {
@@ -3691,14 +3698,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       'month':{ views: 195.0, bm: 15200, shares: 5100, readMin: 4.5, viewsPct: 14.3, bmPct: 9.8, sharesPct: 18.2, readPct: -1.8 },
     };
     var pd = pData[currentPeriod] || pData['28d'];
-    var periodLabel = currentPeriod === '7d' ? 'Last 7 days' : currentPeriod === '28d' ? 'Last 28 days' : 'vs Last Month';
+    var periodLabel = currentPeriod === '7d' ? (FT('fc.analytics.period7d') || 'Last 7 days') : currentPeriod === '28d' ? (FT('fc.analytics.period28d') || 'Last 28 days') : (FT('fc.analytics.periodMonth') || 'vs Last Month');
     var vc = pd.viewsPct >= 0 ? '↑ ' : '↓ ';
     var rc = pd.readPct >= 0 ? '↑ ' : '↓ ';
     document.getElementById('overviewCards').innerHTML =
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + (pd.views * mult).toFixed(1) + 'K</div><div class="metric-label">Total Views</div><div class="metric-change" style="color:' + (pd.viewsPct>=0?'#22c55e':'#dc2626') + '">' + vc + Math.abs(pd.viewsPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + Math.round(pd.bm * mult).toLocaleString() + '</div><div class="metric-label">Total Bookmarks</div><div class="metric-change" style="color:' + (pd.bmPct>=0?'#22c55e':'#dc2626') + '">' + (pd.bmPct>=0?'↑ ':'↓ ') + Math.abs(pd.bmPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + Math.round(pd.shares * mult).toLocaleString() + '</div><div class="metric-label">Total Shares</div><div class="metric-change" style="color:' + (pd.sharesPct>=0?'#22c55e':'#dc2626') + '">' + (pd.sharesPct>=0?'↑ ':'↓ ') + Math.abs(pd.sharesPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + (pd.readMin * mult).toFixed(1) + ' min</div><div class="metric-label">Avg. Read Time</div><div class="metric-change" style="color:' + (pd.readPct>=0?'#22c55e':'#dc2626') + '">' + rc + Math.abs(pd.readPct).toFixed(1) + '% ' + periodLabel + '</div></div>';
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + (pd.views * mult).toFixed(1) + 'K</div><div class="metric-label">' + (FT('fc.metrics.totalViews') || 'Total Views') + '</div><div class="metric-change" style="color:' + (pd.viewsPct>=0?'#22c55e':'#dc2626') + '">' + vc + Math.abs(pd.viewsPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + Math.round(pd.bm * mult).toLocaleString() + '</div><div class="metric-label">' + (FT('fc.metrics.totalBookmarks') || 'Total Bookmarks') + '</div><div class="metric-change" style="color:' + (pd.bmPct>=0?'#22c55e':'#dc2626') + '">' + (pd.bmPct>=0?'↑ ':'↓ ') + Math.abs(pd.bmPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + Math.round(pd.shares * mult).toLocaleString() + '</div><div class="metric-label">' + (FT('fc.metrics.totalShares') || 'Total Shares') + '</div><div class="metric-change" style="color:' + (pd.sharesPct>=0?'#22c55e':'#dc2626') + '">' + (pd.sharesPct>=0?'↑ ':'↓ ') + Math.abs(pd.sharesPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + (pd.readMin * mult).toFixed(1) + ' ' + (FT('fc.metrics.minUnit') || 'min') + '</div><div class="metric-label">' + (FT('fc.metrics.avgRead') || 'Avg. Read Time') + '</div><div class="metric-change" style="color:' + (pd.readPct>=0?'#22c55e':'#dc2626') + '">' + rc + Math.abs(pd.readPct).toFixed(1) + '% ' + periodLabel + '</div></div>';
 
     // Channel summary — data per period
     var sData = {
@@ -3711,19 +3718,19 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       '<div style="display:flex;align-items:center;gap:var(--space-lg);flex-wrap:wrap">' +
         '<div style="flex:1;min-width:240px">' +
           '<span class="badge badge-primary" style="margin-bottom:8px">' + periodLabel + '</span>' +
-          '<h2 class="headline-md" style="margin-bottom:4px">Performance Overview</h2>' +
+          '<h2 class="headline-md" style="margin-bottom:4px">' + (FT('fc.analytics.perfOverview') || 'Performance Overview') + '</h2>' +
           '<p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:12px">' +
-            'Total content reach: <strong style="color:var(--color-on-surface)">' + (sd.reach * mult).toFixed(1) + 'K</strong> views · ' +
-            '<strong style="color:#22c55e">' + sd.pct + '</strong> vs previous period' +
+            (FT('fc.analytics.reach') || 'Total content reach: ') + '<strong style="color:var(--color-on-surface)">' + (sd.reach * mult).toFixed(1) + 'K</strong> ' + (FT('fc.metrics.views') || 'views') + ' · ' +
+            '<strong style="color:#22c55e">' + sd.pct + '</strong> ' + (FT('fc.analytics.vsPrev') || 'vs previous period') +
           '</p>' +
-          '<div class="compare-bar" style="margin-bottom:4px"><span class="label-sm" style="width:60px">Views</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.reach/sd.viewsMax*100) + '%;background:var(--color-primary)"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.reach*mult).toFixed(1) + 'K</span></div>' +
-          '<div class="compare-bar" style="margin-bottom:4px"><span class="label-sm" style="width:60px">Bookmarks</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.bm/sd.bmMax*100) + '%;background:var(--color-secondary)"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.bm*mult).toFixed(1) + 'K</span></div>' +
-          '<div class="compare-bar"><span class="label-sm" style="width:60px">Shares</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.shares/sd.sharesMax*100) + '%;background:#16a34a"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.shares*mult).toFixed(1) + 'K</span></div>' +
+          '<div class="compare-bar" style="margin-bottom:4px"><span class="label-sm" style="width:60px">' + (FT('fc.metrics.views') || 'Views') + '</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.reach/sd.viewsMax*100) + '%;background:var(--color-primary)"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.reach*mult).toFixed(1) + 'K</span></div>' +
+          '<div class="compare-bar" style="margin-bottom:4px"><span class="label-sm" style="width:60px">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.bm/sd.bmMax*100) + '%;background:var(--color-secondary)"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.bm*mult).toFixed(1) + 'K</span></div>' +
+          '<div class="compare-bar"><span class="label-sm" style="width:60px">' + (FT('fc.metrics.shares') || 'Shares') + '</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.shares/sd.sharesMax*100) + '%;background:#16a34a"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.shares*mult).toFixed(1) + 'K</span></div>' +
         '</div>' +
         '<div style="text-align:center;min-width:160px">' +
-          '<div style="margin-bottom:4px" class="label-sm">View Trend (' + (currentPeriod==='7d'?'7':'14') + ' days)</div>' +
+          '<div style="margin-bottom:4px" class="label-sm">' + (FT('fc.analytics.viewTrend') || 'View Trend') + ' (' + (currentPeriod==='7d'?'7':'14') + ' ' + (FT('fc.analytics.days') || 'days') + ')</div>' +
           makeSparkline(sd.trend.map(function(v){return v*mult;}), 'var(--color-primary)') +
-          '<div style="margin-top:8px" class="label-sm">Previous period</div>' +
+          '<div style="margin-top:8px" class="label-sm">' + (FT('fc.analytics.prevPeriod') || 'Previous period') + '</div>' +
           '<div style="margin-top:4px">' + makeSparkline(sd.prev.map(function(v){return v*mult;}), 'var(--color-outline-variant)') + '</div>' +
         '</div>' +
       '</div>';
@@ -3749,15 +3756,15 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     function pct(a,b) { var p=((a-b)/b*100); return (p>=0?'↑ ':'↓ ')+Math.abs(p).toFixed(1)+'%'; }
     function color(a,b) { return a>=b?'#22c55e':'#dc2626'; }
 
-    var articleHTML = '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">Article Performance — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">Current vs Last Month</span></div>' +
-      '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase"><span style="flex:1;min-width:160px">Article</span><span class="mini-stat">Views</span><span class="mini-stat">vs Prev</span><span class="mini-stat">Bookmarks</span><span class="mini-stat">vs Prev</span><span class="mini-stat">Shares</span><span class="mini-stat">Read Time</span><span style="width:80px">Trend</span></div>' +
+    var articleHTML = '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.analytics.articlePerf') || 'Article Performance') + ' — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">' + (FT('fc.analytics.vsLastMonth') || 'Current vs Last Month') + '</span></div>' +
+      '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase"><span style="flex:1;min-width:160px">' + (FT('fc.landing.articles') || 'Article') + '</span><span class="mini-stat">' + (FT('fc.metrics.views') || 'Views') + '</span><span class="mini-stat">' + (FT('fc.analytics.vsPrevShort') || 'vs Prev') + '</span><span class="mini-stat">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><span class="mini-stat">' + (FT('fc.analytics.vsPrevShort') || 'vs Prev') + '</span><span class="mini-stat">' + (FT('fc.metrics.shares') || 'Shares') + '</span><span class="mini-stat">' + (FT('fc.metrics.readTime') || 'Read Time') + '</span><span style="width:80px">' + (FT('fc.metrics.trend') || 'Trend') + '</span></div>' +
       articles.map(function(a,i) { return '<div class="content-row"><span style="flex:1;min-width:160px;font-weight:600">'+a.name+'</span>' +
         '<span class="mini-stat"><span style="font-weight:600">'+a.viewsNow.toLocaleString()+'</span></span>' +
         '<span class="mini-stat"><span style="font-size:11px;color:'+color(a.viewsNow,a.viewsPrev)+'">'+pct(a.viewsNow,a.viewsPrev)+'</span></span>' +
         '<span class="mini-stat"><span style="font-weight:600">'+a.bmNow.toLocaleString()+'</span></span>' +
         '<span class="mini-stat"><span style="font-size:11px;color:'+color(a.bmNow,a.bmPrev)+'">'+pct(a.bmNow,a.bmPrev)+'</span></span>' +
         '<span class="mini-stat"><span style="font-weight:600">'+a.sharesNow.toLocaleString()+'</span></span>' +
-        '<span class="mini-stat"><span style="font-weight:600">'+a.readMin+' min</span></span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+a.readMin+' ' + (FT('fc.metrics.minUnit') || 'min') + '</span></span>' +
         '<span style="width:80px">'+makeSparkline(a.trend, i===1?'#ea580c':'var(--color-primary)')+'</span>' +
       '</div>'; }).join('') + '</div>';
 
@@ -3769,8 +3776,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       { name:'National Anthem — Recording', type:'🎵', viewsNow:9620, viewsPrev:9080, likesNow:5340, likesPrev:4760, bmNow:3210, bmPrev:2700, sharesNow:1540, sharesPrev:1570 },
     ];
 
-    var mediaHTML = '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">Media Performance — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">Current vs Last Month</span></div>' +
-      '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase"><span style="flex:1;min-width:160px">Media</span><span style="width:44px;text-align:center">Type</span><span class="mini-stat">Views</span><span class="mini-stat">vs Prev</span><span class="mini-stat">Likes</span><span class="mini-stat">vs Prev</span><span class="mini-stat">Bookmarks</span><span class="mini-stat">Shares</span></div>' +
+    var mediaHTML = '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.analytics.mediaPerf') || 'Media Performance') + ' — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">' + (FT('fc.analytics.vsLastMonth') || 'Current vs Last Month') + '</span></div>' +
+      '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase"><span style="flex:1;min-width:160px">' + (FT('fc.landing.media') || 'Media') + '</span><span style="width:44px;text-align:center">' + (FT('fc.metrics.type') || 'Type') + '</span><span class="mini-stat">' + (FT('fc.metrics.views') || 'Views') + '</span><span class="mini-stat">' + (FT('fc.analytics.vsPrevShort') || 'vs Prev') + '</span><span class="mini-stat">' + (FT('fc.metrics.likes') || 'Likes') + '</span><span class="mini-stat">' + (FT('fc.analytics.vsPrevShort') || 'vs Prev') + '</span><span class="mini-stat">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><span class="mini-stat">' + (FT('fc.metrics.shares') || 'Shares') + '</span></div>' +
       media.map(function(m,i) { return '<div class="content-row"><span style="flex:1;min-width:160px;font-weight:600">'+m.name+'</span><span style="width:44px;text-align:center">'+m.type+'</span>' +
         '<span class="mini-stat"><span style="font-weight:600">'+(m.viewsNow/1000).toFixed(1)+'K</span></span>' +
         '<span class="mini-stat"><span style="font-size:11px;color:'+color(m.viewsNow,m.viewsPrev)+'">'+pct(m.viewsNow,m.viewsPrev)+'</span></span>' +
@@ -3992,10 +3999,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var drafts = articles.filter(function(a){ return a.status==='draft'; }).length;
     var totalViews = articles.reduce(function(s, a){ return s + a.views; }, 0);
     document.getElementById('artStats').innerHTML =
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + total + '</div><div class="metric-label">Total Articles</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + published + '</div><div class="metric-label">Published</div><div class="metric-change" style="color:#22c55e">↑ 3 this week</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + drafts + '</div><div class="metric-label">Drafts</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#8127cf">' + (totalViews/1000).toFixed(1) + 'K</div><div class="metric-label">Total Views</div><div class="metric-change" style="color:#22c55e">↑ 18.4%</div></div>';
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + total + '</div><div class="metric-label">' + (FT('fc.articles.statTotal') || 'Total Articles') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + published + '</div><div class="metric-label">' + (FT('fc.articles.fPublished') || 'Published') + '</div><div class="metric-change" style="color:#22c55e">' + (FT('fc.articles.statThisWeek') || '↑ 3 this week') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + drafts + '</div><div class="metric-label">' + (FT('fc.articles.fDrafts') || 'Drafts') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#8127cf">' + (totalViews/1000).toFixed(1) + 'K</div><div class="metric-label">' + (FT('fc.metrics.totalViews') || 'Total Views') + '</div><div class="metric-change" style="color:#22c55e">↑ 18.4%</div></div>';
   }
 
   // ═══════════════════════════════════════════
@@ -4026,22 +4033,23 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var list = document.getElementById('artList');
 
     if (items.length === 0) {
-      list.innerHTML = '<div class="art-empty"><span class="material-symbols-outlined art-empty-icon">article</span><p style="font-weight:600;margin-bottom:4px">No articles found</p><p style="font-size:12px">Try adjusting filters or create a new article</p></div>';
+      list.innerHTML = '<div class="art-empty"><span class="material-symbols-outlined art-empty-icon">article</span><p style="font-weight:600;margin-bottom:4px">' + (FT('fc.articles.emptyTitle') || 'No articles found') + '</p><p style="font-size:12px">' + (FT('fc.articles.emptyHint') || 'Try adjusting filters or create a new article') + '</p></div>';
       return;
     }
 
     list.innerHTML = items.map(function(a) {
       var checked = !!selectedIds[a.id];
-      var statusLabel = { published:'Published', draft:'Draft', review:'In Review' };
+      var statusKeys = { published: 'fc.articles.fPublished', draft: 'fc.articles.fDrafts', review: 'fc.articles.fReview' };
+      var statusLabel = { published: 'Published', draft: 'Draft', review: 'In Review' };
       return '<div class="art-row' + (checked ? ' selected' : '') + '" data-id="' + a.id + '">' +
         '<div class="art-checkbox' + (checked ? ' checked' : '') + '" data-id="' + a.id + '"></div>' +
         '<span class="art-title" title="Edit: ' + a.title + '">' + a.title + '</span>' +
         '<span class="art-col" style="min-width:100px;text-align:left">' + a.author + '</span>' +
         '<span class="art-col">' + a.date + '</span>' +
-        '<span class="art-col"><strong>' + (a.views >= 1000 ? (a.views/1000).toFixed(1)+'K' : a.views) + '</strong> views</span>' +
-        '<span class="art-col"><strong>' + (a.bookmarks >= 1000 ? (a.bookmarks/1000).toFixed(1)+'K' : a.bookmarks) + '</strong> saves</span>' +
-        '<span class="art-col" style="min-width:56px">' + (a.words >= 1000 ? (a.words/1000).toFixed(1)+'K' : a.words) + ' words</span>' +
-        '<span class="art-badge ' + a.status + '">' + (statusLabel[a.status] || a.status) + '</span>' +
+        '<span class="art-col"><strong>' + (a.views >= 1000 ? (a.views/1000).toFixed(1)+'K' : a.views) + '</strong> ' + (FT('fc.cl.views') || 'views') + '</span>' +
+        '<span class="art-col"><strong>' + (a.bookmarks >= 1000 ? (a.bookmarks/1000).toFixed(1)+'K' : a.bookmarks) + '</strong> ' + (FT('fc.articles.saves') || 'saves') + '</span>' +
+        '<span class="art-col" style="min-width:56px">' + (a.words >= 1000 ? (a.words/1000).toFixed(1)+'K' : a.words) + ' ' + (FT('fc.status.words') || 'words') + '</span>' +
+        '<span class="art-badge ' + a.status + '">' + (FT(statusKeys[a.status]) || statusLabel[a.status] || a.status) + '</span>' +
         '<div class="art-actions">' +
           '<button class="art-action-btn" title="Edit"><span class="material-symbols-outlined" style="font-size:16px">edit</span></button>' +
           '<button class="art-action-btn" title="View"><span class="material-symbols-outlined" style="font-size:16px">visibility</span></button>' +
@@ -4076,14 +4084,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var count = Object.keys(selectedIds).length;
     if (count > 0) {
       bar.style.display = 'flex';
-      document.getElementById('bulkCount').textContent = count + ' selected';
+      document.getElementById('bulkCount').textContent = count + ' ' + (FT('fc.articles.selected') || 'selected');
     } else {
       bar.style.display = 'none';
     }
   }
 
   function deleteArticle(id) {
-    if (!confirm('Delete this article? This action cannot be undone.')) return;
+    if (!confirm(FT('fc.articles.confirmDelete') || 'Delete this article? This action cannot be undone.')) return;
     var cloudHit = cloudArticles.some(function (a) { return a.id === id; });
     if (cloudHit) {
       // v0.2.55.1: 云端文章删除走 DELETE /api/articles/:id（本人可删；后端校验）
@@ -4094,9 +4102,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           delete selectedIds[id];
           renderArtStats();
           renderArtList();
-          showToast('Article deleted', 'delete');
+          showToast(FT('fc.articles.toastDeleted') || 'Article deleted', 'delete');
         } else {
-          showToast('Delete failed. You can only delete your own articles.', 'error');
+          showToast(FT('fc.articles.toastDeleteFail') || 'Delete failed. You can only delete your own articles.', 'error');
         }
       });
       return;
@@ -4161,14 +4169,14 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     selectedIds = {};
     renderArtStats();
     renderArtList();
-    showToast('Published ' + ids.length + ' article(s)', 'publish');
+    showToast((FT('fc.articles.toastBulkPublished') || 'Published %d article(s)').replace('%d', ids.length), 'publish');
   });
 
   // Bulk delete
   document.getElementById('bulkDelete').addEventListener('click', function() {
     var ids = Object.keys(selectedIds);
     if (ids.length === 0) return;
-    if (!confirm('Delete ' + ids.length + ' article(s)? This cannot be undone.')) return;
+    if (!confirm((FT('fc.articles.confirmBulkDelete') || 'Delete %d article(s)? This cannot be undone.').replace('%d', ids.length))) return;
     // v0.2.55.1: 云端文章逐个 DELETE（本人文章可删，失败保留）；本地直接过滤
     var cloudIds = ids.filter(function (id) { return cloudArticles.some(function (a) { return a.id === id; }); });
     var localIds = ids.filter(function (id) { return articles.some(function (a) { return a.id === id; }); });
@@ -4226,10 +4234,43 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     renderArtList();
   }
 
-  return { init: function() { seedDemoArticleContent(); loadCloudArticles(); renderArtStats(); renderArtList(); }, applyState: applyState };
+  // v10.28.45.0 i18n：纯重渲染入口（不触发网络/种子——语言切换 onChange 用）
+  return { init: function() { seedDemoArticleContent(); loadCloudArticles(); renderArtStats(); renderArtList(); }, applyState: applyState, render: function() { renderArtStats(); renderArtList(); } };
   })();
 
   initURLSync();
+</script>
+<!-- v10.28.45.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/i18n/common.i18n.js"></script>
+<script src="../assets/i18n/fluidcanvas.i18n.js"></script>
+<script>
+(function () {
+  'use strict';
+  if (!window.MN_I18N) return;
+  // v10.28.45.0 i18n：惰性 T（本页渲染器 FT 经 window.__fcT 取）
+  window.__fcT = function (k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; };
+  // 语言切换重渲染：纯渲染集重跑（不动网络/监听器）；subnav 克隆只跟 class，
+  // data-i18n 换字会留旧克隆 → 逐字拷回 + resize 重测宽度
+  MN_I18N.onChange(function () {
+    try { renderTeamSection(); } catch (e) {}
+    try { renderContent(); } catch (e) {}
+    try { renderContentTables(); } catch (e) {}
+    try { renderTargets(); } catch (e) {}
+    try { renderCLStats(); } catch (e) {}
+    try { renderCLList(); } catch (e) {}
+    try { renderRecentUploads(); } catch (e) {}
+    try { if (window.FC_ANALYTICS) window.FC_ANALYTICS.render(); } catch (e) {}
+    try { if (window.FC_ARTICLES) window.FC_ARTICLES.render(); } catch (e) {}
+    try {
+      var clones = document.querySelectorAll('.subnav-highlight-clone');
+      var pills = document.querySelectorAll('.subnav-pill');
+      for (var i = 0; i < clones.length && i < pills.length; i++) clones[i].textContent = pills[i].textContent;
+      window.dispatchEvent(new Event('resize'));
+    } catch (e) {}
+  });
+  MN_I18N.apply();
+})();
 </script>
 </body>
 </html>

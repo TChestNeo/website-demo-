@@ -1614,6 +1614,27 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   E 零异常）；
 //   舰队全绿（版本锚 sed 43.0→44.0 共 23 文件）+冒烟 55/55+i18n 34/34；线上探针 fc-pillmenu-live
 //   12/12；rev 00290-8mn
+// v10.28.45.0 = FC 两页接入全站 12 语言 i18n（小改动位 44→45·新功能轮；2026-09-25）：
+//   用户「还有 FC还没有做翻译」——问询钦定：范围=编辑器页+落地页两页一起翻；卡片类型名=翻译成和平台
+//   一样的（显示层本地化，草稿存储的 dataset.label 英文规范名零改动）；
+//   修法：新共享字典 docs/assets/i18n/fluidcanvas.i18n.js（505 键 ×12 语言：zh/en/de/ru/ms/th/vi/id/
+//   fr/es/pt + zh-Hant OpenCC 自动段，结构与 explore.i18n.js 同款）；i18n.js 引擎加法 data-i18n-title
+//   扫描（纯加法，其余 39 页零影响，元素保留原 title 作 zh 兜底）；两页挂字典三件套 + 惰性 T
+//   （window.__fcT；每个调用点保留当前中/英文字面量兜底——电池源锚存活）；zh UI 英文 chrome 顺带换中文
+//   （视口/模板/图层/历史/保存草稿/发布/草稿/就绪/词/字符，用户钦定意图自然延伸）；语言切换 onChange
+//   重渲染：编辑器词数/图层/保存状态徽章（setSaveStatus 统一出口收编 6 处直写）+字体工具栏恒跑、查看
+//   模式重跑呈现+操作条、编辑模式守卫（输入中/拖拽中/无卡片跳过）后 applyDraft(buildDraft()) 重建
+//   （撤销栈 JSON 快照串 + historyRestore 同路径——历史零重置）；落地页纯渲染集重跑+subnav 克隆逐字同步
+//   +resize 重测；卡片类型名显示层本地化（创建器/图层面板/查看目录 TYPE_NAME 经 localizedTypeName
+//   规范名映射）；委托陷阱守约：Edit/View/Delete 按钮 title 恒英文绝不挂 data-i18n-title（隐形 tooltip
+//   不在钦定 chrome 列表）；数据安全：buildDraft 未改名卡永远存 dataset.label 英文规范名 payload（不做
+//   显示文本对比——语言切换重建时卡面还显示旧语言文本，对比必然不等会冻结旧显示文本进草稿；
+//   labelEdited 标记用户改名——自取名原样过，存→重载 label 恒等）；站点恒 v0.2.58.0、后端零改动
+//   327/327、零草稿字段、ethereal 零改动、i18n.js 引擎 6 行加法（title 扫描）、common.i18n.js 零新键；
+//   电池 fc-i18n 20/20（新）+fc-publish-log/fc-viewport 口径更新（徽章/toast zh+rev 锚 00295-）+舰队
+//   32 套全绿（版本锚 sed 44.3→45.0 共 32 文件——fc-publish-log/fc-viewport rev 锚同轮手工更新；
+//   article-view/notif-home 静态锚口径更新后独立复跑 45/45、23/23）+冒烟 60/60+i18n 34/34；线上探针
+//   fc-i18n-live 14/14；rev 00295-btc
 // v10.28.44.3 = 平板合拼边缘不齐+触控上传修复+125→115 格宽（补丁位 2→3·用户反馈修正轮；2026-09-25）：
 //   用户「平板移动端在合拼卡片之后边缘会不齐，和无法点击上传图片」+「把125格宽减少一个10格」；
 //   修法①合拼落位统一旋转感知包围盒（cardBBox）口径：预览贴齐（findMergeSnap）按 bbox 算边、旧提交用
@@ -1656,4 +1677,4 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   15/15（B1-B4 口径更新：药丸头首位/横药丸 236×40/折叠不缩宽/条目在药丸下方）+舰队全绿（版本锚 sed
 //   44.0→44.1 共 23 文件）+冒烟 55/55+i18n 34/34；线上探针 fc-pillmenu-live 13/13（新 B2 药丸头首位）；
 //   rev 00291-61e
-window.FLUIDCANVAS_VERSION = 'v10.28.44.3';
+window.FLUIDCANVAS_VERSION = 'v10.28.45.0';

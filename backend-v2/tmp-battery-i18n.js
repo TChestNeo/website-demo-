@@ -35,19 +35,20 @@ const ok = (name, cond, detail) => {
 // ── 全貌表（v0.2.54.0 定案）────────────────────────────────────────
 const DICT_FILES = ['about', 'activity', 'auth', 'badge', 'community-hub', 'community-post',
   'community-profile', 'community-rules', 'construction', 'create-topic-step-1', 'create-topic-step-2',
-  'create-topic-step-3', 'create-world', 'edge', 'explore', 'financial-terms', 'following',
+  'create-topic-step-3', 'create-world', 'edge', 'explore', 'financial-terms', 'fluidcanvas', 'following',
   'guidelines', 'help', 'index', 'messages', 'onboarding-complete',
   'onboarding-identity', 'overview', 'platform-responsibility', 'premium', 'privacy',
   'registry-step-1', 'registry-step-2', 'registry-step-3', 'sovereignty-ratified', 'terms', 'ticket',
-  'transitioning', 'workspace', 'world-created', 'world-wizard']; // 37 页词典（auth 同域双页共用）
+  'transitioning', 'workspace', 'world-created', 'world-wizard']; // 38 页词典（auth 同域双页共用；v10.28.45.0 +fluidcanvas 两页共享）
 const PAGE_HTML = {
   'index': ['docs/index.html'],
   'auth': ['docs/signup-and-login.html', 'docs/forgot-password.html'], // 同域双页共用 auth.i18n.js
   'edge': ['docs/pages/edge-themes-demo.html'],
-  'admin': ['docs/admin/index.html']
+  'admin': ['docs/admin/index.html'],
+  'fluidcanvas': ['docs/pages/fluidcanvas.html', 'docs/pages/fluidcanvas-editor.html'] // v10.28.45.0 FC 两页共享
 }; // 其余 → docs/pages/<name>.html
-const EXCLUDED = new Set(['fluidcanvas', 'fluidcanvas-editor', 'fluidcanvas-analytics',
-  'fluidcanvas-articles', 'blackhole-demo', 'cyberfall-demo']); // FC 两页+重定向 stub×2+纯英文 demo×2
+const EXCLUDED = new Set(['fluidcanvas-analytics',
+  'fluidcanvas-articles', 'blackhole-demo', 'cyberfall-demo']); // 重定向 stub×2+纯英文 demo×2
 const LANG_CODES = ['zh', 'zh-Hant', 'en', 'de', 'ru', 'ms', 'th', 'vi', 'id', 'fr', 'es', 'pt'];
 const LANG_NAMES = ['中文', '繁體中文', 'English', 'Deutsch', 'Русский', 'Bahasa Melayu', 'ไทย',
   'Tiếng Việt', 'Bahasa Indonesia', 'Français', 'Español', 'Português'];
@@ -64,8 +65,8 @@ console.log('═══ S. 静态巡检 ═══');
     legacy.length === 0, legacy.join(','));
   const dicts = dirFiles.filter(f => f.endsWith('.i18n.js')).map(f => f.replace('.i18n.js', ''));
   const expected = DICT_FILES.concat(['common', 'admin', 'article']).sort(); // v0.2.55.0 +article.i18n.js
-  ok('S2 词典文件集恰 40 个（37 页 + common + admin + article，无杂散无缺失；auth 同域双页共用）',
-    dicts.length === 40 && dicts.slice().sort().join(',') === expected.join(','),
+  ok('S2 词典文件集恰 41 个（38 页 + common + admin + article，无杂散无缺失；auth/fluidcanvas 各同域双页共用）',
+    dicts.length === 41 && dicts.slice().sort().join(',') === expected.join(','),
     '实际 ' + dicts.length + '：' + dicts.filter(d => expected.indexOf(d) === -1).join(',') + ' 缺：' + expected.filter(d => dicts.indexOf(d) === -1).join(','));
   let allEn = true, allHant = true, missEn = [], missHant = [];
   for (const f of dirFiles.filter(f => f.endsWith('.i18n.js'))) {
@@ -82,7 +83,7 @@ console.log('═══ S. 静态巡检 ═══');
       if (html.indexOf(d + '.i18n.js') === -1) { mapOk = false; mapBad.push(d + ' → ' + p); }
     }
   }
-  ok('S5 38 页↔词典挂载逐一接通（HTML 加载自身 .i18n.js）', mapOk, mapBad.slice(0, 5).join('；'));
+  ok('S5 40 页↔词典挂载逐一接通（HTML 加载自身 .i18n.js）', mapOk, mapBad.slice(0, 5).join('；'));
   let trioOk = true, trioBad = [];
   for (const d of DICT_FILES.concat(['admin'])) {
     for (const p of pagesOf(d)) {
@@ -93,13 +94,13 @@ console.log('═══ S. 静态巡检 ═══');
       if (!(hasEngine && hasApply && hasCommon)) { trioOk = false; trioBad.push(p + '(引擎' + hasEngine + '/apply' + hasApply + '/common' + hasCommon + ')'); }
     }
   }
-  ok('S6 38 接入页三件套（i18n.js + apply() + common.i18n.js，admin 免 common）', trioOk, trioBad.slice(0, 6).join('；'));
+  ok('S6 40 接入页三件套（i18n.js + apply() + common.i18n.js，admin 免 common）', trioOk, trioBad.slice(0, 6).join('；'));
   let exclOk = true, exclBad = [];
   for (const p of EXCLUDED) {
     const html = read('docs/pages/' + p + '.html');
     if (html.indexOf('i18n.js') !== -1) { exclOk = false; exclBad.push(p); }
   }
-  ok('S7 6 排除页零 i18n（FC 两页+stub×2+demo×2 一个 i18n script 都没有）', exclOk, exclBad.join(','));
+  ok('S7 4 排除页零 i18n（重定向 stub×2+demo×2 一个 i18n script 都没有）', exclOk, exclBad.join(','));
   const engine = read('docs/assets/js/i18n.js');
   let seqOk = true, last = -1;
   for (const c of LANG_CODES) {
@@ -236,20 +237,23 @@ async function launchChrome(lang, injectSession, suffix) {
     st = await cdp.evalJs(`(function(){var exp=MN_I18N.t('badge.meta.title');return {title:document.title,exp:exp,lang:document.documentElement.getAttribute('lang')};})()`);
     ok('A6 xx 无字典回落浏览器语言 zh（标题=zh 值）', st.lang === 'zh' && st.title === st.exp, st.title);
 
-    console.log('═══ A\'. FC 编辑器页零 i18n ═══');
+    console.log('═══ A\'. FC 编辑器页 i18n 接入（v10.28.45.0）═══');
     await cdp.send('Page.navigate', { url: BASE + '/pages/fluidcanvas-editor.html' });
-    await waitFor(cdp, 'typeof window.SlatiSettings === "object" && location.pathname.indexOf("fluidcanvas-editor") !== -1', 20000, 'FC 编辑器页');
+    await waitFor(cdp, 'typeof window.MN_I18N === "object" && typeof window.__fcT === "function"', 20000, 'FC 编辑器页');
     const fc = await cdp.evalJs(`(function(){return {i18n:typeof window.MN_I18N,lang:document.documentElement.getAttribute('lang')};})()`);
-    ok('A7 FC 编辑器页零 i18n 引擎（MN_I18N undefined）', fc.i18n === 'undefined', fc.i18n);
+    ok('A7 FC 编辑器页引擎接入（MN_I18N + 默认解析 zh）', fc.i18n === 'object' && fc.lang === 'zh', fc.i18n + '/' + fc.lang);
     await cdp.evalJs('window.SlatiSettings.open()');
     await waitFor(cdp, '!!document.getElementById("langSubnav")', 5000, 'FC 弹窗语言区');
     const fcPills = await cdp.evalJs(`(function(){var bs=[].slice.call(document.querySelectorAll('#langSubnav .subnav-pill'));return bs.map(function(b){return b.textContent});})()`);
-    ok('A8 FC 页无字典时 12 pill 兜底序列（settings-modal 硬编码清单）',
+    ok('A8 FC 弹窗 12 pill 来自 MN_I18N.LANGS（唯一来源）',
       JSON.stringify(fcPills) === JSON.stringify(LANG_NAMES), JSON.stringify(fcPills));
-    await cdp.evalJs('(function(){var b=document.querySelector(\'#langSubnav .subnav-pill[data-lang="de"]\');b.click();})()');
     const fc2 = await cdp.evalJs(`(function(){var h=document.querySelector('[data-i18n="settings.sec.language"]');return {slatiLang:localStorage.getItem('slati_lang'),h3:h?h.textContent:null};})()`);
-    ok('A9 FC 点 de pill 仍落 localStorage slati_lang=de（无字典也记住选择）', fc2.slatiLang === 'de', fc2.slatiLang);
-    ok('A10 FC 弹窗文案英文保持（无字典 data-i18n 不渲染）', fc2.h3 === 'Language', fc2.h3);
+    ok('A9 FC 设置弹窗 h3 显示 语言（zh 默认，data-i18n 渲染）', fc2.h3 === '语言', fc2.h3);
+    await cdp.evalJs('(function(){var b=document.querySelector(\'#langSubnav .subnav-pill[data-lang="de"]\');b.click();})()');
+    await waitFor(cdp, 'document.documentElement.getAttribute("lang") === "de"', 8000, 'FC 切 de 即时重渲染');
+    const fc3 = await cdp.evalJs(`(function(){var el=document.querySelector('[data-i18n="fc.chrome.saveDraft"]');return {slatiLang:localStorage.getItem('slati_lang'),save:el?el.textContent:null,exp:MN_I18N.t('fc.chrome.saveDraft')};})()`);
+    ok('A10 FC 切 de 后重渲染：slati_lang=de + chrome 元素=de 字典值（非中文）',
+      fc3.slatiLang === 'de' && fc3.save === fc3.exp && fc3.save !== '保存草稿', fc3.slatiLang + '/' + fc3.save);
     cdp.close(); A.cleanup();
   } catch (e) {
     fail++;

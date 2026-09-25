@@ -1,7 +1,7 @@
 // tmp-battery-fc-publish-log.js — FC v10.28.42.1 发布日志弹窗电池
 // 用户「点击发布的时候能不能先弹出一个弹窗填写日志 他的长度要是固定的会跟着
 //   日志长度变化，然后限制320字」
-// 验证：F0 静态锚（FC 41.0 + rev 00280- 占位 + 站点 58.0 恒 + 弹窗 DOM/
+// 验证：F0 静态锚（FC v10.28.45.0 + rev 00295- 占位 + 站点 58.0 恒 + 弹窗 DOM/
 //         确认发布按钮 + buildDraft log 字段 + applyDraft 恢复 + CSS 固定初始高）
 //   / P 演示段（api.js 原样、/api/health 404 → fcCloudMode=false）：
 //         P1 点真发布按钮弹窗开+空日志+0/320+初始固定高 ~110
@@ -136,8 +136,8 @@ function ok(name, cond, detail) {
     // ── F0 静态锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
-    ok('F1 site-config：FC v10.28.44.3 + rev 00280- 占位 + 站点版本恒 v0.2.58.0',
-      siteCfg.indexOf('v10.28.44.3') !== -1 && siteCfg.indexOf('00280-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
+    ok('F1 site-config：FC v10.28.45.0 + rev 00295- 占位 + 站点版本恒 v0.2.58.0',
+      siteCfg.indexOf('v10.28.45.0') !== -1 && siteCfg.indexOf('00295-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
     ok('F2 编辑器页静态锚：发布日志弹窗 DOM + 计数 0 / 320 + 确认发布/取消按钮',
       editorHtml.indexOf('id="publishLogModal"') !== -1 &&
       editorHtml.indexOf('id="pubLogInput"') !== -1 &&
@@ -201,14 +201,14 @@ function ok(name, cond, detail) {
     await cdp.evalJs('window.confirmPublish()');
     await sleep(200);
     s = await state();
-    ok('P7 超限确认被硬拦：toast「日志超过 320 词上限」+ 弹窗仍开 + 状态徽章未变 Published',
-      s.toast === '日志超过 320 词上限，请删减' && s.backdrop === true && s.card === true && s.hs !== 'Published',
+    ok('P7 超限确认被硬拦：toast「日志超过 320 词上限」+ 弹窗仍开 + 状态徽章未变 已发布',
+      s.toast === '日志超过 320 词上限，请删减' && s.backdrop === true && s.card === true && s.hs !== '已发布',
       JSON.stringify({ toast: s.toast, hs: s.hs, backdrop: s.backdrop }));
 
     await clickBtn('publishLogModal', '取消');
     await sleep(200);
     s = await state();
-    ok('P8 取消 → 弹窗关 + 发布未发生（徽章仍 Draft）', s.backdrop === false && s.card === false && s.hs !== 'Published',
+    ok('P8 取消 → 弹窗关 + 发布未发生（徽章仍 草稿）', s.backdrop === false && s.card === false && s.hs === '草稿',
       JSON.stringify({ backdrop: s.backdrop, hs: s.hs }));
 
     await cdp.evalJs('window.publishArticle()');
@@ -217,8 +217,8 @@ function ok(name, cond, detail) {
     await cdp.evalJs('window.confirmPublish()');
     await sleep(200);
     s = await state();
-    ok('P9 演示路径确认 → 弹窗关 + 徽章 Published + toast Article published successfully!',
-      s.backdrop === false && s.card === false && s.hs === 'Published' && s.toast === 'Article published successfully!',
+    ok('P9 演示路径确认 → 弹窗关 + 徽章 已发布 + toast 文章发布成功！',
+      s.backdrop === false && s.card === false && s.hs === '已发布' && s.toast === '文章发布成功！',
       JSON.stringify({ hs: s.hs, toast: s.toast, backdrop: s.backdrop }));
 
     const draftLog = await cdp.evalJs("(function(){ try { return JSON.parse(localStorage.getItem('slati_fluidcanvas_draft')).log; } catch (e) { return null; } })()");
@@ -253,8 +253,8 @@ function ok(name, cond, detail) {
     await cdp.evalJs('window.confirmPublish()');
     await sleep(350);
     const c1 = await cdp.evalJs("(function(){ var arts = window.__publishCalls.filter(function (c) { return c.p.indexOf('/articles') !== -1; }); var last = arts[arts.length - 1]; var lg = null; try { lg = JSON.parse(last.body.contentJson).log; } catch (e) {} return { n: arts.length, m: last.m, p: last.p, log: lg, pubId: localStorage.getItem('slati_article_publish_id'), hs: document.getElementById('headerStatus').textContent }; })()");
-    ok('C2 云端创建：POST /articles + contentJson.log 骑草稿「云端首版」+ 发布 id 记忆 + 徽章 Published',
-      c1.n === 1 && c1.m === 'POST' && c1.p === '/articles' && c1.log === '云端首版' && c1.pubId === 'ART-NEW-1' && c1.hs === 'Published',
+    ok('C2 云端创建：POST /articles + contentJson.log 骑草稿「云端首版」+ 发布 id 记忆 + 徽章 已发布',
+      c1.n === 1 && c1.m === 'POST' && c1.p === '/articles' && c1.log === '云端首版' && c1.pubId === 'ART-NEW-1' && c1.hs === '已发布',
       JSON.stringify(c1));
 
     await clickPublishBtn();

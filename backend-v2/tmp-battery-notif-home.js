@@ -121,9 +121,9 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
   console.log('═══ F0 双版本 + changelog ═══');
   ok('F0-1 site-config 双版本 v0.2.54.0 / v10.28.36.1 + changelog 标记',
     count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.0';") === 1 &&
-    count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.44.3';") === 1 &&
+    count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.45.0';") === 1 &&
     sconf.indexOf('通知铃铛聚合') !== -1 && sconf.indexOf('文章查看模式点赞/收藏操作条') !== -1,
-    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.0';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.44.3';"));
+    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.0';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.45.0';"));
 
   console.log('═══ F1 index.html 铃铛/灵动岛 ═══');
   ok('F1-1 铃铛按钮+红点徽章（唯一性 + search-capsule position:relative + 徽章在铃铛后）',
@@ -181,7 +181,7 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
     count(editor, 'renderArticleActions(art)') === 2 && // 定义 + initArticleView 调用
     count(editor, 'function fcvaToggle') === 1 &&
     count(editor, "'/social/articles/'") === 1 &&
-    count(editor, "window.showToast('登录后才能'") === 1,
+    count(editor, "window.showToast((window.__fcT('fc.viewer.toastLogin') || '登录后才能%s'") === 1,
     'bar=' + count(editor, "bar.id = 'fcViewActions';") + ' css=' + count(editor, '#fcViewActions {') +
     ' fn=' + count(editor, 'renderArticleActions(art)') + ' ep=' + count(editor, "'/social/articles/'"));
   ok('F3-2 demo 种子/404 路径不建条 + 查看模式守卫/标题保留',

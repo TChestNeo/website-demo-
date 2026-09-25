@@ -22,6 +22,7 @@
  *   data-i18n              → element textContent
  *   data-i18n-html         → element innerHTML (only when markup is needed)
  *   data-i18n-placeholder  → input placeholder
+ *   data-i18n-title        → element title (v0.2.58.0 FC 轮；元素保留原 title 作回落)
  */
 (function () {
   'use strict';
@@ -75,6 +76,11 @@
     document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
       var ph = t(lang, el.getAttribute('data-i18n-placeholder'));
       if (ph != null) el.setAttribute('placeholder', ph);
+    });
+
+    document.querySelectorAll('[data-i18n-title]').forEach(function (el) {
+      var tt = t(lang, el.getAttribute('data-i18n-title'));
+      if (tt != null) el.setAttribute('title', tt);
     });
 
     listeners.forEach(function (fn) { try { fn(lang); } catch (e) {} });
