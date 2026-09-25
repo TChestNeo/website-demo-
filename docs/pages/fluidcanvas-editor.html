@@ -4482,7 +4482,9 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
        报「按钮没办法点击」——任何态可点，插入时无内容卡光标会 toast 引导）、弹层
        挂工具栏上方直接预览 + 网页搜索（维基图库） */
     .tt-btn.tt-disabled { opacity: 0.35; pointer-events: none; } /* v10.28.23: 图像钮不再使用 */
-    .radius-popover.tt-img-pop { z-index: 302; width: 280px; padding: 10px; }
+    /* v10.28.47.1: 弹层加大 280→440px（用户「那个添加图像的窗口能不能做大些？」钦定 440·3 列），padding 10→12；
+       max-width 小屏收窄（桌面零影响，手机不溢出视口） */
+    .radius-popover.tt-img-pop { z-index: 302; width: 440px; max-width: calc(100vw - 16px); padding: 12px; }
     .tim-search { display: flex; gap: 6px; margin-bottom: 8px; }
     .tim-search input {
       flex: 1; min-width: 0; height: 28px; padding: 0 8px;
@@ -4502,8 +4504,10 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       margin-bottom: 6px; font-size: 11px; color: var(--color-outline);
     }
     .tim-clear { cursor: pointer; color: var(--color-primary); }
-    .tim-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-    .tim-grid.tim-search-mode { grid-template-columns: repeat(2, 1fr); }
+    /* v10.28.47.1: 网格超高滚动（380px 上限，库长不再无限拉长弹层） */
+    .tim-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-height: 380px; overflow-y: auto; }
+    /* v10.28.47.1: 维基结果同 3 列（大窗比例更佳） */
+    .tim-grid.tim-search-mode { grid-template-columns: repeat(3, 1fr); }
     .tim-tile {
       position: relative; height: 46px; padding: 0;
       border: 1px solid var(--divider-line); border-radius: 8px;
@@ -4523,7 +4527,8 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       font-size: 12px; color: var(--color-outline);
     }
     /* ── v10.28.47.0 弹层图库同步：筛选行/下拉多选/两列库格（镜像主图库 flag-filter-*，tt 前缀；
-         两列格=缩略图+名称+chips，与主图库 flag-card-item 同构；chips 样式复用 .flag-tag-chip） ── */
+         两列格=缩略图+名称+chips，与主图库 flag-card-item 同构；chips 样式复用 .flag-tag-chip）
+         v10.28.47.1 弹层加大：库格 2→3 列、缩略图 44→60、图名 10→11px 两行截断 ── */
     .tt-filter-row {
       display: flex; align-items: center; gap: var(--space-sm);
       margin-bottom: 6px;
@@ -4577,21 +4582,22 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
     .tt-filter-empty {
       padding: 8px 6px; font-size: var(--fs-label-sm); color: var(--color-outline);
     }
-    .tim-grid.tt-lib-mode { grid-template-columns: repeat(2, 1fr); }
+    .tim-grid.tt-lib-mode { grid-template-columns: repeat(3, 1fr); }
     .tim-tile.tt-lib-tile {
-      height: auto; min-height: 46px; padding: 5px;
-      display: flex; gap: 6px; align-items: flex-start;
+      height: auto; min-height: 46px; padding: 6px;
+      display: flex; gap: 8px; align-items: flex-start;
     }
     .tt-lib-thumb {
-      width: 44px; height: 44px; flex: none; border-radius: 5px;
+      width: 60px; height: 60px; flex: none; border-radius: 6px;
       overflow: hidden; border: 1px solid var(--divider-line);
       background: var(--color-surface-container-low);
     }
     .tt-lib-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .tt-lib-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
     .tt-lib-name {
-      font-size: 10px; line-height: 1.3; color: var(--color-on-surface);
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-size: 11px; line-height: 1.35; color: var(--color-on-surface);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden; word-break: break-all;
     }
     .tt-lib-tile .flag-tags { display: flex; flex-wrap: wrap; gap: 3px; }
     .card-text-content img.tt-inline-img,

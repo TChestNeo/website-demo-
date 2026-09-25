@@ -175,8 +175,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     // ── S 静态锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n'); // CRLF 归一（多行锚）
-    ok('S1 site-config：FC v10.28.47.0 + changelog 编辑器镶边玻璃全灭条目 + rev 00288- 占位 + 站点版本恒 v0.2.58.0',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.0';") !== -1 &&
+    ok('S1 site-config：FC v10.28.47.1 + changelog 编辑器镶边玻璃全灭条目 + rev 00288- 占位 + 站点版本恒 v0.2.58.0',
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.1';") !== -1 &&
       siteCfg.indexOf('编辑器镶边玻璃全灭') !== -1 &&
       siteCfg.indexOf('00288-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
     ok('S2 编辑器头栏：铺 surface-container 不透明底 + 旧 16px 模糊写法零残留（门控死码配方除外）',

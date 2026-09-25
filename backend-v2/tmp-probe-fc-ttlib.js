@@ -76,10 +76,10 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.47.0 + rev 00299- 前缀 + 站点恒 v0.2.58.0 + 同步图库 changelog + 旧 46.0 版本赋值锚零残留',
-    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.0';") !== -1 &&
-    sc.body.indexOf('rev 00299-') !== -1 && sc.body.indexOf('v0.2.58.0') !== -1 &&
-    sc.body.indexOf('同步图库') !== -1 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.46.0';") === -1,
+  ok('S1 线上 site-config：FC v10.28.47.1 + rev 00300- 前缀 + 站点恒 v0.2.58.0 + 同步图库 changelog + 旧 47.0 版本赋值锚零残留',
+    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.1';") !== -1 &&
+    sc.body.indexOf('rev 00300-') !== -1 && sc.body.indexOf('v0.2.58.0') !== -1 &&
+    sc.body.indexOf('同步图库') !== -1 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.0';") === -1,
     'status=' + sc.status + ' err=' + sc.error);
   const ed = await get(BASE + '/pages/fluidcanvas-editor.html');
   ok('S2 线上编辑器页：弹层筛选/管理锚 + TT_FILTER_TAG_IDS + 桥 exports + 钩子 ≥5',
