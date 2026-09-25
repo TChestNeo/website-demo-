@@ -195,7 +195,7 @@ async function waitFor(cdp, expr, timeout, label) {
 
     // S9 v10.28.40.0 FC 编辑区固定 115 格横（用户「FC也是一样是115格横向，固定不会因窗口不够宽而缩小，最多底下横向拉条」）
     const scCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
-    ok('S9a 线上 site-config 含 FC v10.28.46.0 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.46.0') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
+    ok('S9a 线上 site-config 含 FC v10.28.47.0 + 站点 v0.2.58.0', scCfg.indexOf('v10.28.47.0') !== -1 && scCfg.indexOf('v0.2.58.0') !== -1);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
       source: 'try{localStorage.setItem("slati_session", ' + JSON.stringify(JSON.stringify({ loggedIn: true })) + ');}catch(e){}'
     });

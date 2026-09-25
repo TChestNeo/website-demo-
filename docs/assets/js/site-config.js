@@ -1635,6 +1635,21 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   32 套全绿（版本锚 sed 44.3→45.0 共 32 文件——fc-publish-log/fc-viewport rev 锚同轮手工更新；
 //   article-view/notif-home 静态锚口径更新后独立复跑 45/45、23/23）+冒烟 60/60+i18n 34/34；线上探针
 //   fc-i18n-live 14/14；rev 00295-btc
+// v10.28.47.0 = 文字工具栏添加图像弹层图库同步（小改动位 46→47 新功能轮；2026-09-26）：用户
+//   「文字的工具栏那边的添加图像的图库有没有做好同步图库？」+「能不能同步一下？」；真身：v10.28.22 弹层
+//   （#ttImgPop）库视图只渲染 FC_FLAG_LIBRARY（29.1 起空数组）+上传格，从不显示「我的图库」——反向
+//   （弹层上传→图库）早经 imgMetaSave choke point 单向通，缺的只是弹层 UI；两问钦定：搜索框保持搜维基
+//   （行为不变）/全部同步（库条目+标签筛选下拉多选+标签管理按钮，两入口与主图库同口径）；
+//   修法：主 IIFE 两桥+四钩（window.esc/window.currentTabItems 导出；imgMetaSave 入库后与 tagManage
+//   合并/新建/删除后 __ttOnTagsChanged 弹层即时重绘——弹层未开时无消费者 no-op）；弹层加 .tt-filter-row
+//   （筛选钮+计数徽章+下拉多选菜单全选/清空+标签管理钮复用 #tagManageModal 叠层幂等、关窗 closeModalOnly
+//   弹层不坏）；库视图 renderTTLib 两列格（缩略图+名称+chips 复用 renderFlagTagChips 内部转义）+上传格
+//   恒尾位；筛选 TT_FILTER_TAG_IDS 每次打开重置、会话内跨搜索/清除保持（runImgSearch 摘 tt-lib-mode
+//   搜索态干净）；点库格=先关弹层再 insertInlineImage 镜像维基格路径（插不进 toast 提示；上传流留窗语义
+//   属 meta 弹窗）；mousedown 守卫豁免 .tt-filter-row（checkbox 可正常点击）；站点恒 v0.2.58.0、后端
+//   零改动 334/334、零草稿字段、ethereal 零改动、i18n 零新键（fc.tag.* 12 语言全复用）；
+//   电池 fc-ttlib 23/23（新）+舰队 36 套全绿+冒烟 60/60+i18n 34/34；线上探针 fc-ttlib-live 12/12；
+//   rev 00299-dxx
 // v10.28.46.0 = 图库标签系统+头像/地图图库桥+AI 混合查重（小改动位 45→46 新功能轮；2026-09-25）：用户
 //   「那么之前已经上传了的你能不能补上？」+「做！但是再添加一个标签分类例如默认标配 国旗 国徽 地图 这三个其他
 //   用户可以自己创建，但是为了减少重复出现所以需要用Ai检查一下 是否有重复的标签 不同语言可以通过翻译搜索搜索到
@@ -1717,4 +1732,4 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   15/15（B1-B4 口径更新：药丸头首位/横药丸 236×40/折叠不缩宽/条目在药丸下方）+舰队全绿（版本锚 sed
 //   44.0→44.1 共 23 文件）+冒烟 55/55+i18n 34/34；线上探针 fc-pillmenu-live 13/13（新 B2 药丸头首位）；
 //   rev 00291-61e
-window.FLUIDCANVAS_VERSION = 'v10.28.46.0';
+window.FLUIDCANVAS_VERSION = 'v10.28.47.0';

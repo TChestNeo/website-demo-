@@ -104,11 +104,11 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     const i18nTxt = await (await fetch(BASE + '/assets/i18n/fluidcanvas.i18n.js')).text();
-    ok('S1 site-config：FC v10.28.46.0 + rev 00298- 占位 + 站点恒 v0.2.58.0 + 旧 45.2 版本锚零残留',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.46.0';") !== -1 &&
-      siteCfg.indexOf('00298-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1 &&
+    ok('S1 site-config：FC v10.28.47.0 + rev 00299- 占位 + 站点恒 v0.2.58.0 + 旧 46.0 版本锚零残留',
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.0';") !== -1 &&
+      siteCfg.indexOf('00299-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1 &&
       siteCfg.indexOf('v10.28.46.0 = 图库标签系统') !== -1 &&
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.45.2';") === -1);
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.46.0';") === -1);
     ok('S2 标签 store 锚在源：IMG_TAG_KEY/SYS_TAG_IDS/惰性播种/窗口导出（tagLoad/tagCreate/tagDelete/localTagDedup/tagDisplayName）',
       editorHtml.indexOf("var IMG_TAG_KEY = 'slati_img_tags';") !== -1 &&
       editorHtml.indexOf("var SYS_TAG_IDS = ['sys-flag', 'sys-emblem', 'sys-map'];") !== -1 &&

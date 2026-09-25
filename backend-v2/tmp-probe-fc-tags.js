@@ -1,4 +1,4 @@
-// tmp-probe-fc-tags.js — FC v10.28.46.0 图库标签+图库桥+AI 混合查重 上线实机探针（rev 00298-）
+// tmp-probe-fc-tags.js — FC v10.28.47.0 图库标签+图库桥+AI 混合查重 上线实机探针（rev 00299-）
 // 用户「做！但是再添加一个标签分类例如默认标配 国旗 国徽 地图…用AI检查一下是否有重复的标签…」
 //   S 静态（线上 site-config 46.0 + rev 00298- + 站点 58.0 恒、编辑器页标签 store/桥/筛选/管理锚）
 //   P 实机（桌面 CDP + 一次性临时 profile）：P1 惰性播种 3 sys 标签+上传带标签+条目 tags 在位｜
@@ -76,10 +76,10 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.46.0 + rev 00298- 前缀 + 站点恒 v0.2.58.0 + 图库标签 changelog + 旧 45.2 版本赋值锚零残留',
-    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.46.0';") !== -1 &&
-    sc.body.indexOf('rev 00298-') !== -1 && sc.body.indexOf('v0.2.58.0') !== -1 &&
-    sc.body.indexOf('图库标签') !== -1 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.45.2';") === -1,
+  ok('S1 线上 site-config：FC v10.28.47.0 + rev 00299- 前缀 + 站点恒 v0.2.58.0 + 图库标签 changelog + 旧 46.0 版本赋值锚零残留',
+    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.0';") !== -1 &&
+    sc.body.indexOf('rev 00299-') !== -1 && sc.body.indexOf('v0.2.58.0') !== -1 &&
+    sc.body.indexOf('图库标签') !== -1 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.46.0';") === -1,
     'status=' + sc.status + ' err=' + sc.error);
   const ed = await get(BASE + '/pages/fluidcanvas-editor.html');
   ok('S2 线上编辑器页：标签 store/桥菜单项/筛选钮/标签管理/桥入口锚在位',
