@@ -33,7 +33,9 @@ const config = {
 
   deepseek: {
     apiKey: process.env.DEEPSEEK_API_KEY || '',
-    baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com'
+    baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
+    // 留空 = 端点各自默认（chat=deepseek-chat；图库标签查重=deepseek-v4-flash）；配了则共用
+    model: process.env.DEEPSEEK_MODEL || ''
   },
 
   tencent: {

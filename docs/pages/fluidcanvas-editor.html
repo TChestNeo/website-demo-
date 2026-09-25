@@ -1974,6 +1974,43 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 }
 .imm-count { font-variant-numeric: tabular-nums; }
 .imm-count.over { color: #e5484d; font-weight: 600; }
+/* ── v10.28.46.0 图库标签：图片信息弹窗标签选择器（chips/新建面板/查重建议行）── */
+.imm-tag-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.imm-tag-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: var(--radius-full);
+  border: 1px solid var(--divider-line);
+  background: transparent; color: var(--color-on-surface-variant);
+  font-size: var(--fs-label-md); font-weight: 500; cursor: pointer;
+  transition: all 0.2s; white-space: nowrap;
+}
+.imm-tag-chip:hover { border-color: var(--color-outline); }
+.imm-tag-chip.selected {
+  background: var(--color-primary-container);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary-container);
+  font-weight: 600;
+}
+.imm-tag-info {
+  font-size: 15px; color: var(--color-outline); cursor: help;
+}
+.imm-tag-create {
+  margin-top: 10px; padding: 10px; border: 1px dashed var(--divider-line);
+  border-radius: var(--radius-md);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.tag-dedup-pending { opacity: 0.5; }
+.imm-tag-suggest { margin-top: 10px; }
+.imm-tag-suggest-label { font-size: var(--fs-label-sm); color: var(--color-outline); margin-bottom: 4px; }
+.imm-tag-suggest-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 4px;
+  padding: 6px 10px; border-radius: var(--radius-sm);
+  background: var(--color-surface-container-lowest);
+}
+.imm-tag-suggest-name {
+  flex: 1; min-width: 0; font-size: var(--fs-label-md);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 /* ── v10.28.41 发布日志弹窗 ── */
 textarea.pub-log-input {                     /* 同款双类选择器压过 textarea.input-glass 的 min-height:100px/resize:vertical */
   width: 100%; min-height: 110px;          /* 固定初始高度，随日志自动增长（JS 写 style.height，上限 220px） */
@@ -4616,6 +4653,95 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       color: var(--color-on-surface); text-align: center;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    /* ── v10.28.46.0 图库标签：slot 提示/筛选行+下拉多选/格子标签 chips/标签管理弹窗 ── */
+    .flag-slot-hint {
+      margin-bottom: var(--space-md); padding: 6px 12px;
+      border-radius: var(--radius-md);
+      background: var(--color-primary-container);
+      color: var(--color-on-primary-container);
+      font-size: var(--fs-label-sm); font-weight: 500;
+    }
+    .flag-filter-row {
+      display: flex; align-items: center; gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+    }
+    .flag-filter-wrap { position: relative; }
+    .flag-filter-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: var(--radius-full);
+      border: 1px solid var(--divider-line-strong);
+      background: var(--input-bg);
+      color: var(--color-on-surface-variant);
+      font-size: var(--fs-label-md); font-family: var(--font-family);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .flag-filter-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    .flag-filter-btn .material-symbols-outlined { font-size: 18px; }
+    .flag-filter-count {
+      min-width: 16px; height: 16px; padding: 0 4px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary);
+      color: var(--color-on-primary);
+      font-size: 10px; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .flag-filter-menu {
+      position: absolute; top: calc(100% + 4px); left: 0; z-index: 115;
+      min-width: 200px; max-height: 240px; overflow-y: auto;
+      padding: 6px; border-radius: var(--radius-md);
+      border: 1px solid var(--divider-line-strong);
+      background: var(--color-surface-container-high);
+      box-shadow: var(--shadow-md);
+    }
+    .flag-filter-head {
+      display: flex; justify-content: space-between; gap: 8px;
+      padding: 2px 4px 6px; margin-bottom: 4px;
+      border-bottom: 1px solid var(--divider-line);
+    }
+    .flag-filter-head button {
+      border: none; background: none; padding: 2px 4px; cursor: pointer;
+      font-size: var(--fs-label-sm); font-family: var(--font-family);
+      color: var(--color-primary);
+    }
+    .flag-filter-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 6px; border-radius: var(--radius-sm);
+      cursor: pointer; font-size: var(--fs-label-md);
+      color: var(--color-on-surface);
+    }
+    .flag-filter-item:hover { background: var(--btn-ghost-hover); }
+    .flag-filter-item input { accent-color: var(--color-primary); }
+    .flag-filter-empty {
+      padding: 8px 6px; font-size: var(--fs-label-sm); color: var(--color-outline);
+    }
+    .flag-card-item .flag-tags {
+      display: flex; flex-wrap: wrap; gap: 3px; justify-content: center;
+      padding: 0 6px 6px;
+    }
+    .flag-tag-chip {
+      padding: 1px 6px; border-radius: var(--radius-full);
+      border: 1px solid var(--divider-line);
+      background: transparent;
+      font-size: 9px; font-weight: 500; color: var(--color-on-surface-variant);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 58px;
+    }
+    .flag-tag-chip.sys { border-color: var(--color-primary); color: var(--color-primary); }
+    .flag-tag-chip.more { cursor: help; }
+    .tag-manage-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; margin-top: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--divider-line);
+      background: var(--color-surface-container-low);
+    }
+    .tag-manage-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+    .tag-manage-name {
+      font-size: var(--fs-label-md); font-weight: 600; color: var(--color-on-surface);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .tag-manage-usage { font-size: var(--fs-label-sm); color: var(--color-outline); white-space: nowrap; }
+    .tag-manage-lock { font-size: 18px; color: var(--color-outline); }
+    .tag-manage-actions { display: flex; gap: 4px; }
     /* ── 我的图库 (v10.28.29)：上传图 tile = 缩略图 + 可见性徽章 + 铅笔/垃圾桶（右上角）── */
     .flag-card-item .lib-thumb-wrap { position: relative; }
     .flag-card-item .lib-vis {
@@ -5171,12 +5297,29 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       <button class="flag-browser-tab active" data-tab="all" onclick="switchFlagTab('all')" data-i18n="fc.lib.tabAll">全部</button>
       <button class="flag-browser-tab" data-tab="mylib" onclick="switchFlagTab('mylib')" data-i18n="fc.lib.tabMine">我的图库</button>
     </div>
+    <!-- Slot 提示（v10.28.46.0 图库桥：头像/地图卡经 openLibForSlot 打开时显示所选图片去向） -->
+    <div class="flag-slot-hint" id="flagSlotHint" style="display:none"></div>
     <!-- Search Bar（v10.28.32：右侧上传按钮——用户「上传按钮放到搜索栏的右侧」） -->
     <div class="flag-search-bar">
       <span class="material-symbols-outlined" style="color:var(--color-outline);font-size:18px">search</span>
       <input type="text" placeholder="搜索图片（名称/描述）…" data-i18n-placeholder="fc.lib.searchPh" id="flagSearchInput" oninput="filterFlags()">
       <input type="file" id="flagBrowserFileInput" accept="image/*" style="display:none" onchange="handleFlagFileUpload(this)">
       <button type="button" class="tim-search-btn" id="flagSearchUploadBtn" title="上传图片" data-i18n-title="fc.lib.uploadTitle" onclick="document.getElementById('flagBrowserFileInput').click()"><span class="material-symbols-outlined">upload_file</span></button>
+    </div>
+    <!-- 筛选+标签管理行（v10.28.46.0 图库标签：搜索栏本体逐字节不动，加法行在下方） -->
+    <div class="flag-filter-row">
+      <div class="flag-filter-wrap">
+        <button type="button" class="flag-filter-btn" id="flagFilterBtn" onclick="toggleFlagFilterMenu()">
+          <span class="material-symbols-outlined">filter_list</span>
+          <span data-i18n="fc.tag.filterBtn">筛选</span>
+          <span class="flag-filter-count" id="flagFilterCount" style="display:none"></span>
+        </button>
+        <div class="flag-filter-menu custom-scrollbar" id="flagFilterMenu" style="display:none"></div>
+      </div>
+      <button type="button" class="flag-filter-btn" id="flagTagManageBtn" onclick="openTagManage()">
+        <span class="material-symbols-outlined">sell</span>
+        <span data-i18n="fc.tag.manageBtn">标签管理</span>
+      </button>
     </div>
     <!-- Flag Grid -->
     <div class="flag-grid custom-scrollbar" id="flagGrid"></div>
@@ -5186,6 +5329,31 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
         <span class="material-symbols-outlined">check</span> <span data-i18n="fc.lib.confirmAdd">确认添加</span>
       </button>
     </div>
+  </div>
+</div>
+
+<!-- 图库标签管理弹窗（v10.28.46.0：两处建标签之二——行列表+用量+info 介绍+编辑/删除；系统标签锁定不可删改） -->
+<div class="modal-container" id="tagManageModal">
+  <div class="modal-card" style="max-width:480px">
+    <div class="flex-between" style="margin-bottom:var(--space-md)">
+      <h3 class="headline-md" data-i18n="fc.tag.manageTitle">标签管理</h3>
+      <button class="btn btn-ghost btn-icon btn-sm" onclick="closeTagManage()"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="flex-between">
+      <span class="label-sm" style="color:var(--color-outline)" data-i18n="fc.tag.pickLabel">标签</span>
+      <button class="btn btn-ghost btn-sm" id="tagManageNewBtn" onclick="tagManageOpenCreate()" data-i18n="fc.tag.newBtn">＋ 新建标签</button>
+    </div>
+    <div class="tag-manage-list" id="tagManageList" style="max-height:260px;overflow-y:auto;margin-top:6px"></div>
+    <div class="imm-tag-create" id="tagManageCreate" style="display:none">
+      <input type="text" class="input-glass" id="tagManageOrig" placeholder="标签原文" data-i18n-placeholder="fc.tag.origPh" maxlength="60">
+      <input type="text" class="input-glass" id="tagManageEn" placeholder="英文名（可留空，系统翻译）" data-i18n-placeholder="fc.tag.enPh" maxlength="120">
+      <input type="text" class="input-glass" id="tagManageDesc" placeholder="标签介绍（可选）" data-i18n-placeholder="fc.tag.descPh" maxlength="200">
+      <div class="flex-between" style="margin-top:2px">
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="tagManageSubmitCreate()" data-i18n="fc.tag.createTitle">新建标签</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="tagManageCloseCreate()" data-i18n="fc.common.cancel">取消</button>
+      </div>
+    </div>
+    <div class="imm-tag-suggest" id="tagManageSuggest" style="display:none"></div>
   </div>
 </div>
 
@@ -5260,6 +5428,23 @@ body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
       <button class="segmented-option" data-vis="public" onclick="imgMetaSetVisibility('public')" data-i18n="fc.imgMeta.visPublic">Public</button>
       <button class="segmented-option active" data-vis="private" onclick="imgMetaSetVisibility('private')" data-i18n="fc.imgMeta.visPrivate">Private</button>
       <button class="segmented-option" data-vis="team" onclick="imgMetaSetVisibility('team')" data-i18n="fc.imgMeta.visTeam">Team</button>
+    </div>
+    <div class="imm-tag-row" style="margin-top:10px">
+      <div class="flex-between">
+        <span class="label-sm" style="color:var(--color-outline)" data-i18n="fc.tag.pickLabel">标签</span>
+        <button class="btn btn-ghost btn-sm" id="immNewTagBtn" onclick="imgMetaOpenTagCreate()" data-i18n="fc.tag.newBtn">＋ 新建标签</button>
+      </div>
+      <div class="imm-tag-chips" id="immTagChips"></div>
+      <div class="imm-tag-create" id="immTagCreate" style="display:none">
+        <input type="text" class="input-glass" id="immTagOrig" placeholder="标签原文" data-i18n-placeholder="fc.tag.origPh" maxlength="60">
+        <input type="text" class="input-glass" id="immTagEn" placeholder="英文名（可留空，系统翻译）" data-i18n-placeholder="fc.tag.enPh" maxlength="120">
+        <input type="text" class="input-glass" id="immTagDesc" placeholder="标签介绍（可选）" data-i18n-placeholder="fc.tag.descPh" maxlength="200">
+        <div class="flex-between" style="margin-top:2px">
+          <button class="btn btn-primary btn-sm" style="flex:1" onclick="imgMetaSubmitTagCreate()" data-i18n="fc.tag.createTitle">新建标签</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="imgMetaCloseTagCreate()" data-i18n="fc.common.cancel">取消</button>
+        </div>
+      </div>
+      <div class="imm-tag-suggest" id="immTagSuggest" style="display:none"></div>
     </div>
     <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-md)">
       <button class="btn btn-primary btn-sm" style="flex:1" onclick="imgMetaSave()" data-i18n="fc.common.save">保存</button>
@@ -6833,6 +7018,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // 读图完成后不再立即应用，改为开本弹窗（预览+名称+描述+可见性），保存才落地。
   // 计数口径=按空格分词（用户钦定）："code"=1、「你好世界」=1、「我的 code 很好」=3。
   var IMG_META_PENDING = null;  // { apply: fn(meta)→false 时窗留着, close: 'self'|'all' }
+  var IMG_META_TAGS = [];       // v10.28.46.0 图库标签：本弹窗会话选中的标签 id（保存时收进 meta）
+  var TAG_CREATE_PENDING = false; // v10.28.46.0 远端查重进行中——防连点双发
   var IMG_META_LIMIT = 320;
 
   function esc(s) {
@@ -6874,6 +7061,10 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     imgMetaSetVisibility(initial.visibility || 'private');
     imgMetaRefreshCount();
     IMG_META_PENDING = { apply: applyFn, close: o.close || 'self', src: previewDataURL }; // v10.28.32: src 供 imgMetaSave 入库
+    // v10.28.46.0: 标签选择器初始化（编辑路径带已有 tags，上传路径空选）
+    IMG_META_TAGS = ((opts && opts.initial && opts.initial.tags) || []).slice();
+    renderImgMetaTags();
+    imgMetaCloseTagCreate(); // 清新建面板/建议行（上次会话残留）
     // 遮罩只挡鼠标不挡键盘——blur 防聚焦中的卡内输入框打字漂移真实画布
     try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {}
     openModal('imgMetaModal');   // backdrop 已 active 幂等；meta 卡压最上
@@ -6884,7 +7075,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var meta = {
       name: document.getElementById('immName').value.trim(),
       desc: document.getElementById('immDesc').value.trim(),
-      visibility: imgMetaCurrentVisibility()
+      visibility: imgMetaCurrentVisibility(),
+      tags: IMG_META_TAGS.slice() // v10.28.46.0 图库标签：选中标签随 meta 入库
     };
     if (imgMetaWordCount(meta.desc) > IMG_META_LIMIT) {
       imgMetaRefreshCount();  // 重刷 .over 红
@@ -6907,6 +7099,140 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
   function imgMetaCancel() { IMG_META_PENDING = null; }
   function closeImgMetaModalCancel() { closeModalOnly('imgMetaModal'); }
+
+  // ── v10.28.46.0 图库标签：图片信息弹窗内的标签选择器（两处建标签之一）──
+  // 混合双查（用户钦定）：本地智能先查（归一+12 语言字典等价）→ 未命中才后端
+  // DeepSeek 语义查重（POST /api/tags/dedup）。建议行=合并到既有/仍要新建；
+  // 远端 404/503/超时/故障静默降级直建（零报错零打扰，只损失查重建议）。
+  function renderImgMetaTags() {
+    var box = document.getElementById('immTagChips');
+    if (!box) return;
+    box.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    tagLoad().forEach(function (t) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'imm-tag-chip' + (IMG_META_TAGS.indexOf(t.id) >= 0 ? ' selected' : '');
+      var label = document.createElement('span');
+      label.textContent = tagDisplayName(t); // 用户内容 textContent 渲染，绝不挂 data-i18n
+      chip.appendChild(label);
+      var desc = t.desc || (t.sys ? (T(SYS_TAG_DESC_KEY[t.id]) || '') : '');
+      if (desc) {
+        var info = document.createElement('span');
+        info.className = 'imm-tag-info material-symbols-outlined';
+        info.textContent = 'info';
+        info.title = desc;
+        info.onclick = function (ev) {
+          ev.stopPropagation();
+          showToast(desc);
+        };
+        chip.appendChild(info);
+      }
+      chip.onclick = function () { imgMetaToggleTag(t.id); };
+      frag.appendChild(chip);
+    });
+    box.appendChild(frag);
+  }
+  window.renderImgMetaTags = renderImgMetaTags; // 电池探针
+  function imgMetaToggleTag(id) {
+    var i = IMG_META_TAGS.indexOf(id);
+    if (i >= 0) IMG_META_TAGS.splice(i, 1); else IMG_META_TAGS.push(id);
+    renderImgMetaTags();
+  }
+  window.imgMetaToggleTag = imgMetaToggleTag; // 电池探针
+  function imgMetaOpenTagCreate() {
+    var c = document.getElementById('immTagCreate');
+    var s = document.getElementById('immTagSuggest');
+    if (c) c.style.display = '';
+    if (s) { s.innerHTML = ''; s.style.display = 'none'; }
+    try { document.getElementById('immTagOrig').focus(); } catch (e) {}
+  }
+  window.imgMetaOpenTagCreate = imgMetaOpenTagCreate; // 电池探针
+  function imgMetaCloseTagCreate() {
+    var c = document.getElementById('immTagCreate');
+    var s = document.getElementById('immTagSuggest');
+    if (c) c.style.display = 'none';
+    if (s) { s.innerHTML = ''; s.style.display = 'none'; }
+    ['immTagOrig', 'immTagEn', 'immTagDesc'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    var pane = document.getElementById('immTagCreate');
+    if (pane) pane.classList.remove('tag-dedup-pending');
+    TAG_CREATE_PENDING = false;
+  }
+  window.imgMetaCloseTagCreate = imgMetaCloseTagCreate; // 电池探针
+  function imgMetaShowSuggest(matches, original, enName, desc) {
+    var box = document.getElementById('immTagSuggest');
+    if (!box) return;
+    box.innerHTML = '';
+    var label = document.createElement('div');
+    label.className = 'imm-tag-suggest-label';
+    label.textContent = T('fc.tag.dedupSuggest') || '已有相似标签：';
+    box.appendChild(label);
+    matches.slice(0, 5).forEach(function (m) {
+      var t = tagById(m.id) || m;
+      var row = document.createElement('div');
+      row.className = 'imm-tag-suggest-row';
+      var nm = document.createElement('span');
+      nm.className = 'imm-tag-suggest-name';
+      nm.textContent = tagDisplayName(t) || m.id;
+      row.appendChild(nm);
+      var mergeBtn = document.createElement('button');
+      mergeBtn.type = 'button';
+      mergeBtn.className = 'btn btn-ghost btn-sm';
+      mergeBtn.textContent = T('fc.tag.dedupMerge') || '合并到它';
+      mergeBtn.onclick = function () { imgMetaMergeTo(m.id); };
+      row.appendChild(mergeBtn);
+      var keepBtn = document.createElement('button');
+      keepBtn.type = 'button';
+      keepBtn.className = 'btn btn-primary btn-sm';
+      keepBtn.textContent = T('fc.tag.dedupKeep') || '仍要新建';
+      keepBtn.onclick = function () { imgMetaCommitCreate(original, enName, desc); };
+      row.appendChild(keepBtn);
+      box.appendChild(row);
+    });
+    box.style.display = '';
+  }
+  window.imgMetaShowSuggest = imgMetaShowSuggest; // 电池探针
+  function imgMetaMergeTo(id) {
+    imgMetaCloseTagCreate();
+    if (IMG_META_TAGS.indexOf(id) < 0) IMG_META_TAGS.push(id); // 合并=勾选既有，不新建
+    renderImgMetaTags();
+  }
+  window.imgMetaMergeTo = imgMetaMergeTo; // 电池探针
+  function imgMetaCommitCreate(original, enName, desc) {
+    var t = tagCreate(original, enName || '', desc);
+    imgMetaCloseTagCreate();
+    if (IMG_META_TAGS.indexOf(t.id) < 0) IMG_META_TAGS.push(t.id); // 新建即勾选
+    renderImgMetaTags();
+    showToast(String(T('fc.tag.created') || '已创建标签：%s').split('%s').join(tagDisplayName(t)));
+  }
+  window.imgMetaCommitCreate = imgMetaCommitCreate; // 电池探针
+  function imgMetaSubmitTagCreate() {
+    if (TAG_CREATE_PENDING) return;
+    var origEl = document.getElementById('immTagOrig');
+    var enEl = document.getElementById('immTagEn');
+    var descEl = document.getElementById('immTagDesc');
+    var original = (origEl.value || '').trim();
+    if (!original) { showToast(T('fc.tag.needOrig') || '请先填写标签原文'); return; }
+    var enName = (enEl.value || '').trim();
+    var desc = (descEl.value || '').trim();
+    var local = localTagDedup(original, enName);
+    if (local.length) { imgMetaShowSuggest(local, original, enName, desc); return; }
+    // 远端查重期间新建面板半透明防连点（TAG_CREATE_PENDING 双保险）；取消钮不受 pointer-events 约束
+    TAG_CREATE_PENDING = true;
+    var pane = document.getElementById('immTagCreate');
+    if (pane) pane.classList.add('tag-dedup-pending');
+    remoteTagDedup(original, enName).then(function (r) {
+      TAG_CREATE_PENDING = false;
+      if (pane) pane.classList.remove('tag-dedup-pending');
+      if (r && r.matches && r.matches.length) { imgMetaShowSuggest(r.matches, original, enName, desc); return; }
+      // 零命中或远端不可用：直建（AI suggestedEn 兜底补英文名）
+      imgMetaCommitCreate(original, enName || ((r && r.suggestedEn) || ''), desc);
+    });
+  }
+  window.imgMetaSubmitTagCreate = imgMetaSubmitTagCreate; // 电池探针
 
   // 只摘本卡 .active + 跑本卡 data-onclose 钩子 + 已无 active 卡再摘 backdrop
   // （与 closeAllModals 同「先摘再钩子」序，无递归）
@@ -12032,6 +12358,17 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       scItem.style.display =
         (selectedCard && selectedCard.dataset.cardType === 'stats') ? 'flex' : 'none';
     }
+    // v10.28.46.0: 图库桥 — character/map cards only（从图库选图补头像/地图）
+    var avItem = document.getElementById('avatarLibMenuItem');
+    if (avItem) {
+      avItem.style.display =
+        (selectedCard && selectedCard.dataset.cardType === 'character') ? 'flex' : 'none';
+    }
+    var mpItem = document.getElementById('mapLibMenuItem');
+    if (mpItem) {
+      mpItem.style.display =
+        (selectedCard && selectedCard.dataset.cardType === 'map') ? 'flex' : 'none';
+    }
     var panel = document.querySelector('.asset-panel');
     if (pillMode) {
       // v10.28.44.2: 菜单挂进左侧菜单（资产面板）内——用户钦定「直接就是在左侧菜单内
@@ -14124,8 +14461,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   // ── Current flag card (for flag selection flow) ──
   var currentFlagCard = null;
-  function setCurrentFlagCard(card) {
+  function setCurrentFlagCard(card, slot) {
     currentFlagCard = card;
+    currentFlagSlot = slot || currentFlagSlot || 'img'; // v10.28.46.0 图库桥：缺省 'img'——现有国旗/国徽调用零改动
   }
   window.setCurrentFlagCard = setCurrentFlagCard;
 
@@ -14145,13 +14483,22 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       // 无目标卡时只入库+刷新网格（图库随时可开）。
       openImgMetaModal(e.target.result, file.name.replace(/\.[^.]+$/, ''), function (meta) {
         if (card && card.isConnected) {
-          setCardImage(card, e.target.result, meta.name); // name 同步进卡 label
-          card.dataset.imgName = meta.name;
-          card.dataset.imgDesc = meta.desc;
-          card.dataset.imgVisibility = meta.visibility;
+          // v10.28.46.0 图库桥：图库内上传跟随所开 slot（头像/地图桥同款 apply）
+          if (currentFlagSlot === 'avatar') {
+            applyLibAvatar(card, e.target.result, meta);
+            showToast(T('fc.toast.avatarUploaded') || '头像已上传');
+          } else if (currentFlagSlot === 'map') {
+            applyLibMap(card, e.target.result, meta);
+            showToast(T('fc.toast.mapUploaded') || '地图已上传 · 再双击地图可框区域');
+          } else {
+            setCardImage(card, e.target.result, meta.name); // name 同步进卡 label
+            card.dataset.imgName = meta.name;
+            card.dataset.imgDesc = meta.desc;
+            card.dataset.imgVisibility = meta.visibility;
+            var noun = card.dataset.cardType === 'shield' ? 'Emblem' : 'Flag'; // v10.28.7: 国徽卡提示语适配
+            showToast(noun + ' uploaded: ' + file.name);
+          }
           onContentChange();
-          var noun = card.dataset.cardType === 'shield' ? 'Emblem' : 'Flag'; // v10.28.7: 国徽卡提示语适配
-          showToast(noun + ' uploaded: ' + file.name);
         } else {
           showToast((T('fc.toast.libUploaded') || '已上传到我的图库：%s').replace('%s', meta.name));
         }
@@ -14181,6 +14528,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   var selectedFlagId = null;
   var currentFlagTab = 'all';
+  var currentFlagSlot = 'img'; // v10.28.46.0 图库桥：'img'|'avatar'|'map'——确认添加/图库内上传按此分支
+  var FILTER_TAG_IDS = [];     // v10.28.46.0 标签筛选多选（任选命中=OR 并集，越选越多；与搜索词 AND 叠加）
 
   // ── 我的图库 (v10.28.29, v10.28.32 持久化) ──
   // v10.28.29：图库=画布扫描派生视图（8 个上传入口的图都落在 dataset/结构里）。
@@ -14196,6 +14545,112 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // 不压缩：透明 PNG 压 JPEG 会毁 alpha（真实上传=旗/徽小图，dataURL 可接受）。
   var IMG_LIB_KEY = 'slati_img_library';
   var IMG_LIB_MAX_BYTES = 2.5e6; // 2.5MB 上限（草稿也要用同一配额，让出空间）
+
+  // ── 图库标签 store（v10.28.46.0）──
+  // 系统标签 3 枚惰性播种（固定 id，不可删）：显示名走 i18n fc.tag.name.*，介绍走 fc.tag.desc.*。
+  // 自建标签 {id, original, enName, desc, sys:false, ts, creator}；双语并排显示（原文 · 英文名）。
+  // 查重=混合双查：本地（归一+字典等价）先行，未命中调后端 /api/tags/dedup（DeepSeek V4 Flash 语义近似）。
+  var IMG_TAG_KEY = 'slati_img_tags';
+  var SYS_TAG_IDS = ['sys-flag', 'sys-emblem', 'sys-map'];
+  // 跨语言搜索索引：12 语言 ×3 系统标签名（与字典 fc.tag.name.* 逐字对齐；zh-Hant=OpenCC 值）
+  var SYS_TAG_NAMES = {
+    'sys-flag': ['国旗', '國旗', 'Flag', 'Flagge', 'Флаг', 'Bendera', 'ธง', 'Cờ', 'Bendera', 'Drapeau', 'Bandera', 'Bandeira'],
+    'sys-emblem': ['国徽', '國徽', 'Emblem', 'Emblem', 'Эмблема', 'Lambang', 'ตราสัญลักษณ์', 'Huy hiệu', 'Lambang', 'Emblème', 'Emblema', 'Emblema'],
+    'sys-map': ['地图', '地圖', 'Map', 'Landkarte', 'Карта', 'Peta', 'แผนที่', 'Bản đồ', 'Peta', 'Carte', 'Mapa', 'Mapa']
+  };
+  var SYS_TAG_DESC_KEY = { 'sys-flag': 'fc.tag.desc.flag', 'sys-emblem': 'fc.tag.desc.emblem', 'sys-map': 'fc.tag.desc.map' };
+  function tagSeed() {
+    var now = Date.now();
+    return [
+      { id: 'sys-flag', original: '国旗', enName: 'Flag', desc: '', sys: true, ts: now, creator: 'system' },
+      { id: 'sys-emblem', original: '国徽', enName: 'Emblem', desc: '', sys: true, ts: now, creator: 'system' },
+      { id: 'sys-map', original: '地图', enName: 'Map', desc: '', sys: true, ts: now, creator: 'system' }
+    ];
+  }
+  function tagLoad() {
+    try {
+      var raw = localStorage.getItem(IMG_TAG_KEY);
+      var arr = raw ? JSON.parse(raw) : null;
+      if (!Array.isArray(arr)) { var seeded = tagSeed(); tagSave(seeded); return seeded; }
+      // 惰性补齐：缺失的系统标签补种（旧 store / 部分损坏也自愈）
+      SYS_TAG_IDS.forEach(function (id) {
+        if (!arr.some(function (t) { return t && t.id === id; })) {
+          var s = tagSeed().find(function (x) { return x.id === id; });
+          if (s) arr.push(s);
+        }
+      });
+      return arr.filter(function (t) { return t && typeof t.id === 'string' && t.id; });
+    } catch (e) { return tagSeed(); }
+  }
+  function tagSave(list) {
+    try { localStorage.setItem(IMG_TAG_KEY, JSON.stringify(list.slice(0, 200))); return true; } catch (e) { return false; }
+  }
+  function tagById(id) {
+    var hits = tagLoad().filter(function (x) { return x.id === id; });
+    return hits[0] || null;
+  }
+  function tagDisplayName(t) {
+    if (!t) return '';
+    if (t.sys) return (T('fc.tag.name.' + t.id.slice(4)) || t.original); // 系统标签随界面语言
+    return (t.original || '') + ((t.enName && t.enName !== t.original) ? ' · ' + t.enName : ''); // 自建双语并排
+  }
+  function tagSearchStrings(t) {
+    if (!t) return [];
+    if (t.sys) return SYS_TAG_NAMES[t.id] || [t.original];
+    return [t.original, t.enName].filter(Boolean);
+  }
+  function tagNorm(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+  function localTagDedup(original, enName) {
+    var o = tagNorm(original), e = tagNorm(enName);
+    if (!o && !e) return [];
+    return tagLoad().filter(function (t) {
+      return tagSearchStrings(t).some(function (n) {
+        var nn = tagNorm(n);
+        return nn && ((o && nn === o) || (e && nn === e));
+      });
+    });
+  }
+  function remoteTagDedup(original, enName) {
+    return new Promise(function (resolve) {
+      var finish = function (r) { resolve(r); };
+      if (!window.MN_API || !window.MN_API.request) { finish({ unavailable: true }); return; }
+      var existing = tagLoad().map(function (t) {
+        return { id: t.id, original: t.original, enName: t.enName || '', sys: !!t.sys };
+      });
+      var guard = setTimeout(function () { finish({ unavailable: true }); }, 8000);
+      try {
+        window.MN_API.request('/tags/dedup', { method: 'POST', body: { original: original, enName: enName, existing: existing } })
+          .then(function (res) { clearTimeout(guard); finish(res && res.data ? res.data : { unavailable: true }); })
+          .catch(function () { clearTimeout(guard); finish({ unavailable: true }); });
+      } catch (e) { clearTimeout(guard); finish({ unavailable: true }); }
+    });
+  }
+  function tagCreate(original, enName, desc) {
+    var t = {
+      id: 't' + Date.now().toString(36) + Math.floor(Math.random() * 46656).toString(36),
+      original: original, enName: enName || '', desc: desc || '', sys: false, ts: Date.now(), creator: libUserName()
+    };
+    tagSave(tagLoad().concat([t]));
+    return t;
+  }
+  function tagDelete(id) {
+    var t = tagById(id);
+    if (!t || t.sys) return false;
+    tagSave(tagLoad().filter(function (x) { return x.id !== id; }));
+    stripTagFromEntries(id);
+    return true;
+  }
+  function stripTagFromEntries(id) {
+    imgLibSave(imgLibLoad().map(function (it) {
+      if (it.tags && it.tags.indexOf(id) !== -1) it.tags = it.tags.filter(function (x) { return x !== id; });
+      return it;
+    }));
+  }
+  function tagUsageCount(id) {
+    return imgLibLoad().filter(function (it) { return it.tags && it.tags.indexOf(id) !== -1; }).length;
+  }
+  window.tagLoad = tagLoad; window.tagSave = tagSave; window.tagCreate = tagCreate; window.tagDelete = tagDelete;
+  window.localTagDedup = localTagDedup; window.tagDisplayName = tagDisplayName; // 电池探针
 
   function imgLibBytes(list) {
     try { return JSON.stringify(list).length; } catch (e) { return Infinity; }
@@ -14232,7 +14687,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         desc: (meta && meta.desc) || '',
         visibility: (meta && meta.visibility) || 'private',
         ts: Date.now(),
-        uploader: (meta && meta.uploader) || libUploaderDefault(src)
+        uploader: (meta && meta.uploader) || libUploaderDefault(src),
+        tags: (meta && meta.tags) || (i >= 0 ? (list[i].tags || []) : []) // 无 tags 的编辑路径沿用旧值不洗
       };
       if (i >= 0) list[i] = entry; else list.push(entry);
       while (imgLibBytes(list) > IMG_LIB_MAX_BYTES && list.length > 1) { // FIFO：ts 最旧先删
@@ -14257,7 +14713,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function collectImgLibrary() {
     var bySrc = {};
-    function put(src, name, desc, vis, uploader, ts) {
+    function put(src, name, desc, vis, uploader, ts, tags) {
       if (!src || typeof src !== 'string' || !/^(data:|blob:|https?:)/i.test(src.trim())) return;
       var it = bySrc[src];
       if (it) { // 同图多处用：更具体的 meta 优先（非空覆盖空）
@@ -14265,13 +14721,16 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         if (!it.desc && desc) it.desc = desc;
         if (!it.uploader && uploader) it.uploader = uploader;
         if (!it.ts && ts) it.ts = ts;
+        if (!it.tags && tags) it.tags = tags;
         return;
       }
-      bySrc[src] = { src: src, name: name || '未命名图片', desc: desc || '', visibility: vis || 'private', uploader: uploader || libUploaderDefault(src), ts: ts || null };
+      bySrc[src] = { src: src, name: name || '未命名图片', desc: desc || '', visibility: vis || 'private', uploader: uploader || libUploaderDefault(src), ts: ts || null, tags: tags || [] };
     }
     // ⓪ v10.28.32: 持久库条目先入（跨文章/新画布可见——用户撞的「看不见」真身），
     // canvas 扫描后入；同 src 时 canvas 只补 store 的空 meta（store 权威，编辑名不丢）
     imgLibLoad().forEach(function (it) { put(it.src, it.name, it.desc, it.visibility, it.uploader, it.ts); });
+    // v10.28.46.0: 标签只活在 store——上面那行是电池逐字节锚不能动，tags 走这条加法合并
+    imgLibLoad().forEach(function (it) { if (it.tags && it.tags.length && bySrc[it.src]) bySrc[it.src].tags = it.tags; });
     // ① 页面背景（WORKING 优先——弹窗会话里看到的才是最新的）
     var pbg = PAGE_BG_WORKING || PAGE_BG_STATE;
     (pbg && pbg.imgs || []).forEach(function (im) { put(im.dataURL, im.name, im.desc, im.visibility); });
@@ -14298,7 +14757,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // v10.28.29.1: 样本旗撤除后 all/mylib 数据同源（=真实上传派生）；页签结构保留——
     // 全部=将来平台共享图的位置，现在只有自己的上传
     return LIB_ITEMS.map(function (it, i) {
-      return { id: 'lib' + i, kind: 'lib', li: i, name: it.name, desc: it.desc, visibility: it.visibility, uploader: it.uploader, ts: it.ts, src: it.src };
+      return { id: 'lib' + i, kind: 'lib', li: i, name: it.name, desc: it.desc, visibility: it.visibility, uploader: it.uploader, ts: it.ts, src: it.src, tags: it.tags || [] };
     });
   }
 
@@ -14317,6 +14776,22 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var stripesHtml = renderFlagStripes(colors);
     setCardStripes(card, stripesHtml, name);
   }
+
+  // v10.28.46.0 图库格子标签 chips：前 2 个 + '+n' 溢出（title 全量）；用户内容经 esc
+  function renderFlagTagChips(tagIds) {
+    var ids = (tagIds || []).filter(function (id) { return tagById(id); });
+    if (!ids.length) return '';
+    var shown = ids.slice(0, 2).map(function (id) {
+      var t = tagById(id);
+      return '<span class="flag-tag-chip' + (t.sys ? ' sys' : '') + '">' + esc(tagDisplayName(t)) + '</span>';
+    }).join('');
+    if (ids.length > 2) {
+      var rest = ids.slice(2).map(function (id) { return esc(tagDisplayName(tagById(id))); }).join(' · ');
+      shown += '<span class="flag-tag-chip more" title="' + rest + '">+' + (ids.length - 2) + '</span>';
+    }
+    return '<div class="flag-tags">' + shown + '</div>';
+  }
+  window.renderFlagTagChips = renderFlagTagChips; // 电池探针
 
   function renderFlagGrid(items) {
     var grid = document.getElementById('flagGrid');
@@ -14340,19 +14815,24 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           '<button class="lib-icon lib-info" title="' + (T('fc.lib.infoTitle') || '查看图片信息') + '" onclick="event.stopPropagation();showLibImgInfo(' + f.li + ')"><span class="material-symbols-outlined">info</span></button>' : '') +
         '</div>' +
         '<div class="flag-name" title="' + esc(f.desc) + '">' + esc(f.name) + '</div>' +
+        renderFlagTagChips(f.tags) + // v10.28.46.0 标签 chips 行
       '</div>';
     }).join('');
   }
 
-  function openFlagBrowser() {
+  function openFlagBrowser(slot) {
+    currentFlagSlot = slot || currentFlagSlot || 'img'; // 无参调用（电池动态探针）保持上次 slot
     selectedFlagId = null;
     currentFlagTab = 'all';
+    FILTER_TAG_IDS = [];
     LIB_ITEMS = collectImgLibrary();
     document.querySelectorAll('.flag-browser-tab').forEach(function (t) {
       t.classList.toggle('active', t.dataset.tab === 'all');
     });
     document.getElementById('flagSearchInput').value = '';
     document.getElementById('flagSelectCount').textContent = T('fc.lib.noneSelected') || '未选择';
+    renderTagFilterMenu();
+    renderFlagSlotHint();
     renderFlagGrid(currentTabItems());
     openModal('flagBrowserModal');
     // v10.28.32: 弹窗出现即焦点落搜索框——用户「弹窗出现时直接打开搜索」
@@ -14362,9 +14842,20 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     }, 50);
   }
   window.openFlagBrowser = openFlagBrowser;
+  function renderFlagSlotHint() {
+    var el = document.getElementById('flagSlotHint');
+    if (!el) return;
+    if (currentFlagSlot === 'avatar') el.textContent = T('fc.lib.slotAvatarHint') || '正在为头像卡选图——所选图片将补到该头像上';
+    else if (currentFlagSlot === 'map') el.textContent = T('fc.lib.slotMapHint') || '正在为地图卡选图——所选图片将补到该地图上';
+    else el.textContent = '';
+    el.style.display = el.textContent ? '' : 'none';
+  }
+  window.renderFlagSlotHint = renderFlagSlotHint; // 电池探针
 
   function switchFlagTab(tab) {
     currentFlagTab = tab;
+    FILTER_TAG_IDS = []; // v10.28.46.0: 换页签重置标签筛选（列表已换，旧勾选无意义）
+    renderTagFilterMenu();
     LIB_ITEMS = collectImgLibrary();
     document.querySelectorAll('.flag-browser-tab').forEach(function (t) {
       t.classList.toggle('active', t.dataset.tab === tab);
@@ -14389,7 +14880,15 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function filterFlags() {
     var q = document.getElementById('flagSearchInput').value.toLowerCase();
     var filtered = currentTabItems().filter(function (f) {
-      return (f.name || '').toLowerCase().includes(q) || (f.desc || '').toLowerCase().includes(q);
+      var qOk = !q || (f.name || '').toLowerCase().includes(q) || (f.desc || '').toLowerCase().includes(q);
+      // v10.28.46.0: 搜索词同时匹配标签名——跨语言（sys 走 12 语言索引、自建走原文+英文名）
+      var qTagOk = !q || (f.tags || []).some(function (tid) {
+        var t = tagById(tid);
+        return t && tagSearchStrings(t).some(function (n) { return (n || '').toLowerCase().includes(q); });
+      });
+      // v10.28.46.0 筛选多选：任选命中（OR 并集，越选越多）；与搜索条件 AND 叠加
+      var tOk = !FILTER_TAG_IDS.length || (f.tags || []).some(function (tid) { return FILTER_TAG_IDS.indexOf(tid) !== -1; });
+      return (qOk || qTagOk) && tOk;
     });
     renderFlagGrid(filtered);
   }
@@ -14400,16 +14899,60 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!currentFlagCard.isConnected) return; // 浏览期间卡片被删（与上传路径同款守卫）
     var item = currentTabItems().find(function (f) { return f.id === selectedFlagId; });
     if (!item) return;
-    // 复用 flag 上传落地路径：setCardImage（label=名称）+ meta 三件套
-    setCardImage(currentFlagCard, item.src, item.name);
-    currentFlagCard.dataset.imgName = item.name;
-    currentFlagCard.dataset.imgDesc = item.desc;
-    currentFlagCard.dataset.imgVisibility = item.visibility;
+    // v10.28.46.0 图库桥：按打开时的 slot 分支——img=原 flag 落地路径；avatar/map=镜像 44.3 上传 apply
+    if (currentFlagSlot === 'avatar') {
+      if (!applyLibAvatar(currentFlagCard, item.src, item)) return;
+    } else if (currentFlagSlot === 'map') {
+      if (!applyLibMap(currentFlagCard, item.src, item)) return;
+    } else {
+      // 复用 flag 上传落地路径：setCardImage（label=名称）+ meta 三件套
+      setCardImage(currentFlagCard, item.src, item.name);
+      currentFlagCard.dataset.imgName = item.name;
+      currentFlagCard.dataset.imgDesc = item.desc;
+      currentFlagCard.dataset.imgVisibility = item.visibility;
+    }
     closeAllModals();
     onContentChange();
+    saveDraft(true); // v10.28.46.0: 桥=上传同款「落地即存」（round 14 政策，静默）
     showToast((T('fc.toast.libAdded') || '图片已添加：%s').replace('%s', item.name));
   }
   window.confirmFlagSelection = confirmFlagSelection;
+
+  // ── v10.28.46.0 图库桥：图库选图补到头像/地图卡（镜像 44.3 上传 apply，fi 覆盖层保留）──
+  function applyLibAvatar(card, dataURL, meta) {
+    var avatar = card.querySelector('.char-avatar');
+    if (!avatar) return false;
+    var fi = avatar.querySelector('.card-upload-input');
+    card.dataset.charAvatar = dataURL;
+    card.dataset.charAvatarName = meta.name;
+    card.dataset.charAvatarDesc = meta.desc;
+    card.dataset.charAvatarVisibility = meta.visibility;
+    avatar.style.backgroundImage = 'url("' + dataURL + '")';
+    if (fi) avatar.replaceChildren(fi); // 只清图标 span——fi 覆盖层必须保留（44.3 起 fi 是 avatar 子元素）
+    return true;
+  }
+  window.applyLibAvatar = applyLibAvatar; // 电池探针
+  function applyLibMap(card, dataURL, meta) {
+    var canvas = card.querySelector('.map-canvas');
+    if (!canvas) return false;
+    card.dataset.mapImg = dataURL;
+    card.dataset.mapImgName = meta.name;
+    card.dataset.mapImgDesc = meta.desc;
+    card.dataset.mapImgVisibility = meta.visibility;
+    canvas.style.backgroundImage = 'url("' + dataURL + '")';
+    canvas.classList.remove('map-empty');
+    canvas.textContent = '';
+    return true;
+  }
+  window.applyLibMap = applyLibMap; // 电池探针
+  function openLibForSlot(slot) {
+    // 图库桥入口（v10.28.46.0）：右键卡→从图库选择头像/地图。
+    // 带参调用绝不新增无参 openFlagBrowser()（imglib-v2 F4 断言恰好 2 处是红线）
+    if (!selectedCard) { showToast(T('fc.toast.noCard') || '请先选择卡片'); return; }
+    setCurrentFlagCard(selectedCard, slot);
+    openFlagBrowser(slot);
+  }
+  window.openLibForSlot = openLibForSlot; // 电池探针
 
   // ── 图库编辑：铅笔 → 图片信息弹窗（叠层，只关 meta、browser 保持）；保存
   // 按 dataURL 同步所有使用处（不动卡 label——卡名是卡自己的）
@@ -14418,7 +14961,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (!it) return;
     openImgMetaModal(it.src, it.name, function (meta) {
       syncLibMeta(it.src, meta);
-    }, { initial: { name: it.name, desc: it.desc, visibility: it.visibility }, close: 'self' });
+    }, { initial: { name: it.name, desc: it.desc, visibility: it.visibility, tags: it.tags || [] }, close: 'self' });
   }
   window.editLibImg = editLibImg;
 
@@ -14477,9 +15020,284 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function refreshLibGrid() {
     LIB_ITEMS = collectImgLibrary();
     var q = document.getElementById('flagSearchInput').value;
-    if (q && q.trim()) filterFlags();
+    if ((q && q.trim()) || FILTER_TAG_IDS.length) filterFlags(); // v10.28.46.0: 标签筛选激活时也走过滤
     else renderFlagGrid(currentTabItems());
   }
+
+  // ── v10.28.46.0 图库标签：筛选按钮→下拉多选菜单（任选命中=OR 并集，越选越多）──
+  function renderTagFilterMenu() {
+    var box = document.getElementById('flagFilterMenu');
+    var count = document.getElementById('flagFilterCount');
+    if (!box) return;
+    box.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    var head = document.createElement('div');
+    head.className = 'flag-filter-head';
+    var all = document.createElement('button');
+    all.type = 'button';
+    all.textContent = T('fc.tag.filterAll') || '全选';
+    all.onclick = function () {
+      FILTER_TAG_IDS = tagLoad().map(function (t) { return t.id; });
+      renderTagFilterMenu();
+      filterFlags();
+    };
+    var none = document.createElement('button');
+    none.type = 'button';
+    none.textContent = T('fc.tag.filterNone') || '清空';
+    none.onclick = function () {
+      FILTER_TAG_IDS = [];
+      renderTagFilterMenu();
+      filterFlags();
+    };
+    head.appendChild(all);
+    head.appendChild(none);
+    frag.appendChild(head);
+    tagLoad().forEach(function (t) {
+      var row = document.createElement('label');
+      row.className = 'flag-filter-item';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = FILTER_TAG_IDS.indexOf(t.id) !== -1;
+      cb.onchange = function () { filterTagToggle(t.id, cb.checked); };
+      var nm = document.createElement('span');
+      nm.textContent = tagDisplayName(t); // 用户内容 textContent 渲染
+      row.appendChild(cb);
+      row.appendChild(nm);
+      frag.appendChild(row);
+    });
+    if (!tagLoad().length) {
+      var empty = document.createElement('div');
+      empty.className = 'flag-filter-empty';
+      empty.textContent = T('fc.tag.none') || '暂无标签';
+      frag.appendChild(empty);
+    }
+    box.appendChild(frag);
+    count.style.display = FILTER_TAG_IDS.length ? '' : 'none';
+    count.textContent = FILTER_TAG_IDS.length;
+  }
+  window.renderTagFilterMenu = renderTagFilterMenu; // 电池探针
+  function filterTagToggle(id, on) {
+    var i = FILTER_TAG_IDS.indexOf(id);
+    if (on && i < 0) FILTER_TAG_IDS.push(id);
+    if (!on && i >= 0) FILTER_TAG_IDS.splice(i, 1);
+    renderTagFilterMenu(); // 徽章 + 勾态
+    filterFlags();
+  }
+  window.filterTagToggle = filterTagToggle; // 电池探针
+  function toggleFlagFilterMenu() {
+    var menu = document.getElementById('flagFilterMenu');
+    if (!menu) return;
+    menu.style.display = menu.style.display === 'none' ? '' : 'none';
+  }
+  window.toggleFlagFilterMenu = toggleFlagFilterMenu; // 电池探针
+
+  // ── v10.28.46.0 图库标签管理弹窗（两处建标签之二：行列表+用量+info+编辑/删除）──
+  var TAG_MANAGE_EDIT = null; // 编辑中的标签 id（编辑=改名原文/英文名/介绍，仍走本地查重）
+  function openTagManage() {
+    renderTagManage();
+    openModal('tagManageModal'); // backdrop 已 active 幂等；本卡压最上（DOM 序在 flagBrowser 后）
+  }
+  window.openTagManage = openTagManage; // 电池探针
+  function closeTagManage() {
+    tagManageCloseCreate();
+    closeModalOnly('tagManageModal');
+  }
+  window.closeTagManage = closeTagManage; // 电池探针
+  function renderTagManage() {
+    var box = document.getElementById('tagManageList');
+    if (!box) return;
+    box.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    tagLoad().forEach(function (t) {
+      var row = document.createElement('div');
+      row.className = 'tag-manage-row' + (t.sys ? ' sys' : '');
+      var main = document.createElement('div');
+      main.className = 'tag-manage-main';
+      var nm = document.createElement('span');
+      nm.className = 'tag-manage-name';
+      nm.textContent = tagDisplayName(t);
+      main.appendChild(nm);
+      var usage = document.createElement('span');
+      usage.className = 'tag-manage-usage';
+      usage.textContent = String(T('fc.tag.usage') || '%d 张图片').replace('%d', tagUsageCount(t.id));
+      main.appendChild(usage);
+      var desc = t.desc || (t.sys ? (T(SYS_TAG_DESC_KEY[t.id]) || '') : '');
+      if (desc) {
+        var icon = document.createElement('span');
+        icon.className = 'imm-tag-info material-symbols-outlined';
+        icon.textContent = 'info';
+        icon.title = desc;
+        icon.onclick = function (ev) { ev.stopPropagation(); showToast(desc); };
+        main.appendChild(icon);
+      }
+      row.appendChild(main);
+      if (t.sys) {
+        var lock = document.createElement('span');
+        lock.className = 'tag-manage-lock material-symbols-outlined';
+        lock.textContent = 'lock';
+        lock.title = T('fc.tag.sysLock') || '系统标签不可删除';
+        row.appendChild(lock);
+      } else {
+        var btns = document.createElement('div');
+        btns.className = 'tag-manage-actions';
+        var edit = document.createElement('button');
+        edit.type = 'button';
+        edit.className = 'btn btn-ghost btn-sm';
+        edit.textContent = T('fc.common.edit') || '编辑';
+        edit.onclick = function () { tagManageEdit(t.id); };
+        var del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'btn btn-ghost btn-sm';
+        del.textContent = T('fc.common.delete') || '删除';
+        del.onclick = function () { tagManageDelete(t.id); };
+        btns.appendChild(edit);
+        btns.appendChild(del);
+        row.appendChild(btns);
+      }
+      frag.appendChild(row);
+    });
+    box.appendChild(frag);
+  }
+  window.renderTagManage = renderTagManage; // 电池探针
+  function tagManageOpenCreate() {
+    TAG_MANAGE_EDIT = null;
+    var c = document.getElementById('tagManageCreate');
+    var s = document.getElementById('tagManageSuggest');
+    if (c) c.style.display = '';
+    if (s) { s.innerHTML = ''; s.style.display = 'none'; }
+    try { document.getElementById('tagManageOrig').focus(); } catch (e) {}
+  }
+  window.tagManageOpenCreate = tagManageOpenCreate; // 电池探针
+  function tagManageCloseCreate() {
+    TAG_MANAGE_EDIT = null;
+    var c = document.getElementById('tagManageCreate');
+    var s = document.getElementById('tagManageSuggest');
+    if (c) c.style.display = 'none';
+    if (s) { s.innerHTML = ''; s.style.display = 'none'; }
+    ['tagManageOrig', 'tagManageEn', 'tagManageDesc'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    var pane = document.getElementById('tagManageCreate');
+    if (pane) pane.classList.remove('tag-dedup-pending');
+    TAG_CREATE_PENDING = false;
+  }
+  window.tagManageCloseCreate = tagManageCloseCreate; // 电池探针
+  function tagManageEdit(id) {
+    var t = tagById(id);
+    if (!t || t.sys) return;
+    TAG_MANAGE_EDIT = id;
+    document.getElementById('tagManageOrig').value = t.original;
+    document.getElementById('tagManageEn').value = t.enName || '';
+    document.getElementById('tagManageDesc').value = t.desc || '';
+    document.getElementById('tagManageCreate').style.display = '';
+    document.getElementById('tagManageSuggest').style.display = 'none';
+  }
+  window.tagManageEdit = tagManageEdit; // 电池探针
+  function tagManageShowSuggest(matches, original, enName, desc) {
+    var box = document.getElementById('tagManageSuggest');
+    if (!box) return;
+    box.innerHTML = '';
+    var label = document.createElement('div');
+    label.className = 'imm-tag-suggest-label';
+    label.textContent = T('fc.tag.dedupSuggest') || '已有相似标签：';
+    box.appendChild(label);
+    matches.slice(0, 5).forEach(function (m) {
+      var t = tagById(m.id) || m;
+      var row = document.createElement('div');
+      row.className = 'imm-tag-suggest-row';
+      var nm = document.createElement('span');
+      nm.className = 'imm-tag-suggest-name';
+      nm.textContent = tagDisplayName(t) || m.id;
+      row.appendChild(nm);
+      var mergeBtn = document.createElement('button');
+      mergeBtn.type = 'button';
+      mergeBtn.className = 'btn btn-ghost btn-sm';
+      mergeBtn.textContent = T('fc.tag.dedupMerge') || '合并到它';
+      mergeBtn.onclick = function () { tagManageMergeTo(m.id); };
+      row.appendChild(mergeBtn);
+      var keepBtn = document.createElement('button');
+      keepBtn.type = 'button';
+      keepBtn.className = 'btn btn-primary btn-sm';
+      keepBtn.textContent = T('fc.tag.dedupKeep') || '仍要新建';
+      keepBtn.onclick = function () { tagManageCommitCreate(original, enName, desc); };
+      row.appendChild(keepBtn);
+      box.appendChild(row);
+    });
+    box.style.display = '';
+  }
+  window.tagManageShowSuggest = tagManageShowSuggest; // 电池探针
+  function tagManageMergeTo(id) {
+    if (TAG_MANAGE_EDIT && TAG_MANAGE_EDIT !== id) {
+      // 编辑态合并：原标签上的图片改挂到目标标签，原标签删除（自建标签间合并）
+      imgLibSave(imgLibLoad().map(function (it) {
+        if (it.tags && it.tags.indexOf(TAG_MANAGE_EDIT) !== -1 && it.tags.indexOf(id) === -1) {
+          it.tags = it.tags.map(function (x) { return x === TAG_MANAGE_EDIT ? id : x; });
+        }
+        return it;
+      }));
+      tagDelete(TAG_MANAGE_EDIT);
+    }
+    tagManageCloseCreate();
+    renderTagManage();
+    refreshLibGrid();
+  }
+  window.tagManageMergeTo = tagManageMergeTo; // 电池探针
+  function tagManageCommitCreate(original, enName, desc) {
+    if (TAG_MANAGE_EDIT) {
+      // 编辑态提交：改名走 tagUpdate（本地查重已在提交前跑过；仍要新建=保存新名字）
+      var t = tagById(TAG_MANAGE_EDIT);
+      if (t) {
+        var list = tagLoad().map(function (x) {
+          if (x.id === TAG_MANAGE_EDIT) { x.original = original; x.enName = enName || ''; x.desc = desc || ''; }
+          return x;
+        });
+        tagSave(list);
+        showToast(String(T('fc.tag.saved') || '标签已保存：%s').split('%s').join(original));
+      }
+    } else {
+      var nt = tagCreate(original, enName || '', desc);
+      showToast(String(T('fc.tag.created') || '已创建标签：%s').split('%s').join(tagDisplayName(nt)));
+    }
+    tagManageCloseCreate();
+    renderTagManage();
+    refreshLibGrid();
+  }
+  window.tagManageCommitCreate = tagManageCommitCreate; // 电池探针
+  function tagManageSubmitCreate() {
+    if (TAG_CREATE_PENDING) return;
+    var origEl = document.getElementById('tagManageOrig');
+    var enEl = document.getElementById('tagManageEn');
+    var descEl = document.getElementById('tagManageDesc');
+    var original = (origEl.value || '').trim();
+    if (!original) { showToast(T('fc.tag.needOrig') || '请先填写标签原文'); return; }
+    var enName = (enEl.value || '').trim();
+    var desc = (descEl.value || '').trim();
+    var local = localTagDedup(original, enName);
+    // 编辑态：排除自己（改名不与自己撞重）
+    if (TAG_MANAGE_EDIT) local = local.filter(function (t) { return t.id !== TAG_MANAGE_EDIT; });
+    if (local.length) { tagManageShowSuggest(local, original, enName, desc); return; }
+    TAG_CREATE_PENDING = true;
+    var pane = document.getElementById('tagManageCreate');
+    if (pane) pane.classList.add('tag-dedup-pending');
+    remoteTagDedup(original, enName).then(function (r) {
+      TAG_CREATE_PENDING = false;
+      if (pane) pane.classList.remove('tag-dedup-pending');
+      if (r && r.matches && r.matches.length) { tagManageShowSuggest(r.matches, original, enName, desc); return; }
+      tagManageCommitCreate(original, enName || ((r && r.suggestedEn) || ''), desc);
+    });
+  }
+  window.tagManageSubmitCreate = tagManageSubmitCreate; // 电池探针
+  function tagManageDelete(id) {
+    var t = tagById(id);
+    if (!t || t.sys) return;
+    if (!confirm(String(T('fc.tag.delConfirm') || '删除标签「%s」？将从所有图片上移除。').split('%s').join(tagDisplayName(t)))) return;
+    tagDelete(id);
+    renderTagManage();
+    refreshLibGrid();
+    showToast(String(T('fc.tag.deleted') || '已删除标签：%s').split('%s').join(tagDisplayName(t)));
+  }
+  window.tagManageDelete = tagManageDelete; // 电池探针
 
   // ═══ 图片信息弹窗 (v10.28.33) ═══
   // 图库 info 图标（仅 public/team）→ 只读二级弹窗：上传者/简介/时间/可见性/尺寸。
@@ -15404,6 +16222,12 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   </button>
   <button class="context-menu-item" id="statsChartMenuItem" style="display:none" onclick="openStatsChartPopover()">
     <span class="material-symbols-outlined">monitoring</span> <span data-i18n="fc.ctx.statsChart">图表种类</span>
+  </button>
+  <button class="context-menu-item" id="avatarLibMenuItem" style="display:none" onclick="openLibForSlot('avatar')">
+    <span class="material-symbols-outlined">account_circle</span> <span data-i18n="fc.ctx.avatarFromLib">从图库选择头像</span>
+  </button>
+  <button class="context-menu-item" id="mapLibMenuItem" style="display:none" onclick="openLibForSlot('map')">
+    <span class="material-symbols-outlined">map</span> <span data-i18n="fc.ctx.mapFromLib">从图库选择地图</span>
   </button>
   <button class="context-menu-item" id="tlStyleMenuItem" style="display:none" onclick="openTlStylePopover()">
     <span class="material-symbols-outlined">style</span> <span data-i18n="fc.ctx.tlStyle">时间线种类</span>

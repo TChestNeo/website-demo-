@@ -1635,6 +1635,31 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   32 套全绿（版本锚 sed 44.3→45.0 共 32 文件——fc-publish-log/fc-viewport rev 锚同轮手工更新；
 //   article-view/notif-home 静态锚口径更新后独立复跑 45/45、23/23）+冒烟 60/60+i18n 34/34；线上探针
 //   fc-i18n-live 14/14；rev 00295-btc
+// v10.28.46.0 = 图库标签系统+头像/地图图库桥+AI 混合查重（小改动位 45→46 新功能轮；2026-09-25）：用户
+//   「那么之前已经上传了的你能不能补上？」+「做！但是再添加一个标签分类例如默认标配 国旗 国徽 地图 这三个其他
+//   用户可以自己创建，但是为了减少重复出现所以需要用Ai检查一下 是否有重复的标签 不同语言可以通过翻译搜索搜索到
+//   一个标签上为了减少重复出现，然后标签的语言是一个原文一个翻译成英文的英文名称 默认展示系统翻译或者用户提供的
+//   英文名称点击旁边的info icon可以查看标签介绍，然后在图库那么提供一个筛选按钮可以搜索筛选选项的下拉可多选菜单」；
+//   四问钦定：AI 查重=混合双查（本地智能先查+后端 DeepSeek V4 Flash 非 Pro，用户供 key）/标签创建查看=两处都要
+//   （图片信息弹窗+图库标签管理弹窗）/筛选多选=任选命中 OR 并集（与搜索框条件 AND 叠加）/自建标签显示=双语并排
+//   （原文 · 英文名；系统标签随界面语言）；
+//   修法：标签 store localStorage slati_img_tags（sys-flag/sys-emblem/sys-map 惰性播种不可删+自建时间戳 id、
+//   显示名走 i18n fc.cardtype.* 随界面语言、介绍走 fc.tag.desc.*）；图库条目加 tags:[tagId]（imgMetaSave 唯一
+//   choke point 收标签、editLibImg/syncLibMeta 透传、旧条目 it.tags||[] 全路径容忍、草稿格式零改动标签不入草稿）；
+//   两处建标签：图片信息弹窗内标签行（chips 多选+info ⓘ 看介绍+新建面板 原文/英文名/介绍三输入）与图库弹窗内
+//   「标签管理」弹窗（行列表+用量计数+自建可编辑/删除、系统标签锁）；AI 混合查重：本地归一+12 语言字典等价先查
+//   →命中弹「已有相似标签：X——合并到它/仍要新建」（合并=选既有 id 不新建）；未命中后端 POST /api/tags/dedup
+//   （DeepSeek v4-flash、temperature 0、60s 超时重试 2 次、matches 只回真实存在 id、无 key 503/故障 200 空
+//   全静默降级本地-only 零打扰）；跨语言搜索：filterFlags 搜索词同时匹配名称/介绍/标签名（sys 标签 3×12 语言
+//   硬编码表与字典逐字对齐含 OpenCC 繁体）；图库筛选钮→下拉多选菜单（全选/清空+计数徽章）；图库桥：右键菜单
+//   新增「从图库选择头像/地图」两项（openLibForSlot 带参调用、confirmFlagSelection 按 slot 分支、apply 镜像
+//   上传路径 fi 覆盖层 replaceChildren 保留/map-empty 移除、apply 后 onContentChange+saveDraft(true) 静默=
+//   上传即已保存口径、图库内上传跟随所开 slot）；连带效应：DEEPSEEK_API_KEY 使 AI 客服转活（deepseek-chat
+//   已退役路由同 v4-flash 行为等价、budgets.chat 20 元/月硬上限兜底）；站点恒 v0.2.58.0、后端 327→334
+//   （新端点+7 用例）、零草稿字段、ethereal 零改动、i18n 新键 34×12+zh-Hant OpenCC 重生成 539 键；电池
+//   fc-tags 31/31（新）+舰队 35 套全绿（版本锚 sed 45.2→46.0 共 35 文件+00297-→00298- 共 23 文件；
+//   fc-opaque 首跑 1 红=新 CSS opacity:0.55 撞其 S5 计数断言→改 0.5 独立复跑 21/21 销账）+冒烟 60/60+
+//   i18n 34/34；线上探针 fc-tags-live 14/14（S1/S2 静态+P1-P7 实机+E1）；rev 00298-4qj
 // v10.28.45.2 = 上传图片落地即存草稿（补丁位 1→2·用户反馈修复轮；2026-09-25）：用户「还有为什么我上传的图片需要自己按保存？上传就上传了怎么会不见？？」；真身=图片落地（元数据弹窗保存成功）后只进画布内存+「我的图库」持久库，草稿持久化只靠 10 分钟自动保存心跳（用户钦定周期，最快 5 分钟）和 pagehide 关页兜底——中途关页/切后台（iPad Safari pagehide 不可靠）草稿从没写过 → 刷新图片没了，手动按「保存草稿」立刻写库所以不丢；修法①：imgMetaSave（8+ 上传入口唯一 choke point）apply 成功后立刻 saveDraft(true) 静默落草稿——上传=已保存；saveDraft 加 silent 参数只压成功 toast（状态徽章照常 Saved just now、失败 toast 恒弹），10 分钟心跳周期不动；修法②：getCardFingerprint 补 charAvatar/mapImg dataURL 摘要（length+tail 与 cardBgImg 同口径）——同文件名换图不再骗过心跳/pagehide 脏守卫（此前指纹只有元数据）；站点恒 v0.2.58.0、后端零改动 327/327、零草稿字段、ethereal 零改动、i18n 零新键；电池 fc-uploadsave 13/13（新：上传→弹窗保存→草稿立即含 charAvatar 零心跳等待/silent 静默末次 toast 头像已上传非草稿已保存/图库持久库同写/同文件名换图指纹 av:length:tail 精确在场+autoSave 脏守卫放行落新图/地图卡同链/取消弹窗零写入）+舰队 34 套全绿（版本锚 sed 45.1→45.2 共 40 文件+00296-→00297- 共 7 文件）+冒烟 60/60+i18n 34/34；线上探针 fc-uploadsave-live 10/10；rev 00297-gfn
 // v10.28.45.1 = 编辑页顶部栏缩身+迁移按钮白底白字修复（补丁位 0→1·用户反馈修正轮；2026-09-25）：用户
 //   「能不能吧FC编辑页的顶部栏缩小一些太大了」+「还有顶部的迁移按钮为什么文字默认是白底白字的」；
@@ -1692,4 +1717,4 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   15/15（B1-B4 口径更新：药丸头首位/横药丸 236×40/折叠不缩宽/条目在药丸下方）+舰队全绿（版本锚 sed
 //   44.0→44.1 共 23 文件）+冒烟 55/55+i18n 34/34；线上探针 fc-pillmenu-live 13/13（新 B2 药丸头首位）；
 //   rev 00291-61e
-window.FLUIDCANVAS_VERSION = 'v10.28.45.2';
+window.FLUIDCANVAS_VERSION = 'v10.28.46.0';

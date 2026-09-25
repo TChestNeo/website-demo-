@@ -60,13 +60,14 @@ gcloud run deploy mnationworld-web \
   --memory 512Mi --min-instances 0 --max-instances 1 --execution-environment gen2 \
   --add-volume=name=mn-data,type=cloud-storage,bucket=mn-backend-data-641398703651 \
   --add-volume-mount=volume=mn-data,mount-path=/mnt/data \
-  --set-env-vars "NODE_ENV=production,ADMIN_EMAIL=microcountry2677@gmail.com,SEED_ON_BOOT=1,SEED_DEMO_STAFF=false,DEV_LOGIN_CODE=691032,SNAPSHOT_PATH=/mnt/data/mn-v2.sqlite.snap,SNAPSHOT_INTERVAL_MS=60000,SMTP_HOST=smtp.gmail.com,SMTP_PORT=465,SMTP_SECURE=true,SMTP_USER=slati.official@gmail.com,SMTP_PASS=<Gmail 应用专用密码 16 位无空格>,MAIL_FROM=M.NationWorld <slati.official@gmail.com>"
+  --set-env-vars "NODE_ENV=production,ADMIN_EMAIL=microcountry2677@gmail.com,SEED_ON_BOOT=1,SEED_DEMO_STAFF=false,DEV_LOGIN_CODE=691032,SNAPSHOT_PATH=/mnt/data/mn-v2.sqlite.snap,SNAPSHOT_INTERVAL_MS=60000,SMTP_HOST=smtp.gmail.com,SMTP_PORT=465,SMTP_SECURE=true,SMTP_USER=slati.official@gmail.com,SMTP_PASS=<Gmail 应用专用密码 16 位无空格>,MAIL_FROM=M.NationWorld <slati.official@gmail.com>,DEEPSEEK_API_KEY=<DeepSeek 平台 API key 不进 git>,DEEPSEEK_MODEL=deepseek-v4-flash"
 ```
 
 - ⚠ **2026-09-14 起一律用 `gcloud.ps1` 而不是 `gcloud.cmd`**：cmd 是批处理，PowerShell 调它走 cmd.exe /c——Windows 命令行 8191 字符上限，STRIPE_CATALOG_B64 单值 9.3KB 的 28 env 拼串必然报「The command line is too long」（rev 00071-qjb 实测）。gcloud.ps1 在进程内用 $args 数组直调 python（CreateProcess 32K 足够）：`& "…\google-cloud-sdk\bin\gcloud.ps1" run deploy … "--set-env-vars=$envArg"`。其余不变。
 - `ADMIN_EMAIL`：seed 据此建 project_director（Neo）；改邮箱 + 重跑 seed = 再建一行（按邮箱幂等）。**必须是能收信的真实邮箱**（production 下登录码发到它，假域名=锁死）。W6：seed 不种密码（011 加列后 password_hash NULL）→ **首登走仅码登录 + 设密引导**，设密后每次密码+码。
 - `DEV_LOGIN_CODE`：production 下 config.js 强制失效（留着当回退开关——出问题把 NODE_ENV 改回 development 即可用固定码救急；dev 模式固定码直登且跳过密码校验）。
 - **SMTP 四件套 + MAIL_FROM**：Gmail 应用专用密码（myaccount.google.com → 安全性 → 两步验证 → 应用专用密码；16 位不带空格）。**发信人 = slati.official@gmail.com（站务号）；管理员收码 = ADMIN_EMAIL（主号）——两账号分开**。品牌域名邮箱（service@mnationworld.com）路线：Zoho 免费版无 SMTP 不可用（webmail only）、Workspace/Zoho Lite 付费绑卡；免费可发 = Brevo（300 封/天、不绑卡，域名验证走 Cloud DNS）——用户要真正自有域名发件人时再走 Brevo，只改这几个 env。
+- **DeepSeek 二件套（2026-09-26，rev 00298- 图库标签 AI 查重）**：`DEEPSEEK_API_KEY` = DeepSeek 平台 API key（**值只进未跟踪部署脚本 tmp-deploy-*.ps1，绝不入 commit**，SMTP_PASS 同款纪律）；`DEEPSEEK_MODEL=deepseek-v4-flash`（用户钦定「用 DeepSeek V4 Flash 不要用 Pro」——API 也接受 `deepseek-v4-flash` 别名，两者实测 200 同模型）。**连带效应（已接受）**：同一 key 让 AI 客服 chat 端点从无 key 降级态转活——`deepseek-chat` 已退役路由到 v4-flash 行为等价；成本有 `budgets.chat` 20 元/月硬上限保护。用途：`POST /api/tags/dedup`（FC 图库自建标签语义查重；无 key 时 503 `{unavailable:true}` 前端静默本地-only）。
 - 邮箱每天发送上限 ~500 封（Gmail 常规账号），试用期绰绰有余。
 - `SEED_DEMO_STAFF=false`：只 seed director Neo，不建演示 staff。
 - GCS FUSE 卷要求 gen2 执行环境 + 同项目桶 + 计算服务账号 storage.objectAdmin（已配：`641398703651-compute@developer.gserviceaccount.com`）。

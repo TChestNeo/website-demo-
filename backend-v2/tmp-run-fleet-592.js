@@ -1,4 +1,4 @@
-// tmp-run-fleet-592.js — v10.28.45.2 舰队顺序驱动器（25 套 + fc-tablet + 新 fc-pillmenu + smoke）
+// tmp-run-fleet-592.js — v10.28.46.0 舰队顺序驱动器（25 套 + fc-tablet + 新 fc-pillmenu + smoke）
 // 判定口径：输出体 ✅/❌（🎉/💔）行，exit code 仅旁证；每套输出落盘 tmp-batt-592-<name>.txt 供红时细查
 'use strict';
 const { spawnSync } = require('child_process');

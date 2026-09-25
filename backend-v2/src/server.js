@@ -26,6 +26,7 @@ const { register: registerDrafts } = require('./routes/public/drafts');
 const { register: registerArticles } = require('./routes/public/articles');
 const { register: registerReports } = require('./routes/public/reports');
 const { register: registerChat } = require('./routes/public/chat');
+const { register: registerTags } = require('./routes/public/tags');
 const { register: registerAnalyticsEvents } = require('./routes/public/analytics-events');
 const { register: registerStaffDashboard } = require('./routes/staff/dashboard');
 const { register: registerStaffAnalytics } = require('./routes/staff/analytics');
@@ -87,6 +88,7 @@ function createServer(deps = {}) {
   registerArticles(router, ctx);
   registerReports(router, ctx);
   registerChat(router, ctx);
+  registerTags(router, ctx);
   registerAnalyticsEvents(router, ctx);
   registerStaffDashboard(router, ctx);
   registerStaffAnalytics(router, ctx);

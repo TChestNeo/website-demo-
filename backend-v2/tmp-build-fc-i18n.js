@@ -64,7 +64,7 @@ const block = (lang, dict) =>
 const header = `/**
  * M.NationWorld i18n — FluidCanvas 两页共享字典（fluidcanvas.html + fluidcanvas-editor.html）。
  *
- * v10.28.45.2（rev 00297-XXX）：FC 两页接入全站 12 语言。zh 块值 = 当前已渲染文本
+ * v10.28.46.0（rev 00298-XXX）：FC 两页接入全站 12 语言。zh 块值 = 当前已渲染文本
  * （英文 chrome 按用户钦定换中文）；en 块值 = 英文原文/译文逐字；其余语言为翻译。
  * zh-Hant 由 tmp-i18n-hant.js OpenCC cn→tw 自动生成（文件尾 __ZH_HANT_AUTO__ 段，勿手改）。
  * 卡片类型名显示层本地化：草稿存储的 dataset.label 英文规范名不动。
