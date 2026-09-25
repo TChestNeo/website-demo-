@@ -75,10 +75,10 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.47.1 + rev 00300- 前缀 + 站点恒 v0.2.58.0 + 做大些 changelog + 旧 47.0 版本赋值锚零残留',
-    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.1';") !== -1 &&
-    sc.body.indexOf('rev 00300-') !== -1 && sc.body.indexOf('v0.2.58.0') !== -1 &&
-    sc.body.indexOf('做大些') !== -1 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.0';") === -1,
+  ok('S1 线上 site-config：FC v10.28.47.2 + rev 00301- 前缀 + 站点恒 v0.2.58.0 + 做大些 changelog + 旧 47.1 版本赋值锚零残留',
+    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.2';") !== -1 &&
+    sc.body.indexOf('rev 00301-') !== -1 && sc.body.indexOf('v0.2.58.0') !== -1 &&
+    sc.body.indexOf('做大些') !== -1 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.1';") === -1,
     'status=' + sc.status + ' err=' + sc.error);
   const ed = await get(BASE + '/pages/fluidcanvas-editor.html');
   ok('S2 线上编辑器页：新几何锚（440px 宽/3 列×2/380px 滚动/60px 缩略图/11px 图名两行截断）+ 旧弹层整条规则零残留',

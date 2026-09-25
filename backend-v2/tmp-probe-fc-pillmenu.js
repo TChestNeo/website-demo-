@@ -1,7 +1,9 @@
-// tmp-probe-fc-pillmenu.js — FC v10.28.47.1 触控长按药丸菜单进左侧菜单（面板内嵌）上线实机探针
+// tmp-probe-fc-pillmenu.js — FC v10.28.47.2 触控长按药丸菜单进左侧菜单（面板内嵌）上线实机探针
 // 用户「怎么还是一样是竖着的药丸？我要的是直接就是在左侧菜单内不是单独的弹窗！！」+「那三粒点
 //   我要的是横向的不是纵向的」+「三粒点就是把左侧原本的卡片菜单折叠起来而已点击就是展开」——问询
-//   钦定：底部停靠（卡片列表保持在上方，菜单从面板底部向上滑出、停靠面板最底部）——44.2 线上实证：
+//   钦定：底部停靠（卡片列表保持在上方，菜单从面板底部向上滑出、停靠面板最底部）；47.2 改轮：
+//   用户截图钦定顶部停靠（红带=折叠三粒点位置在左侧菜单最顶、蓝区=电脑端弹窗内容）——B1/B3
+//   断言随轮改首子=顶部停靠——44.2 线上实证：
 //   S 静态（线上 site-config 44.2+进左侧菜单 changelog+rev 00293-+站点 58.0 恒、编辑器 ctxPillDots
 //   钮+面板内嵌 CSS+横向三点 more_horiz+_lastMoveEv 守卫锚、fc-touch.js __fcTouchMenu 旗）/
 //   B 实机触控（CDP iPad 仿真：长按现身菜单在面板内/药丸头首位/点 ⋯ 折叠/再点展开/空画布双消+
@@ -22,7 +24,7 @@ const ok = (name, cond, detail) => {
 const get = (url) => new Promise((resolve) => {
   const req = https.request(url, { headers: { 'User-Agent': 'mn-probe' }, timeout: 30000 }, (res) => {
     let body = '';
-    res.on('data', (c) => { body += c; if (body.length > 800000) req.destroy(); });
+    res.on('data', (c) => { body += c; if (body.length > 2000000) req.destroy(); });
     res.on('end', () => resolve({ status: res.statusCode, body }));
   });
   req.on('error', (e) => resolve({ status: 0, error: String(e && e.message || e) }));
@@ -75,23 +77,28 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.47.1 + 触控长按药丸菜单进左侧菜单 changelog + rev 00293- + 站点恒 v0.2.58.0',
-    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.1';") !== -1 &&
-    sc.body.indexOf('触控长按药丸菜单进左侧菜单') !== -1 && sc.body.indexOf('rev 00293-') !== -1 &&
+  ok('S1 线上 site-config：FC v10.28.47.2 + 触控长按药丸菜单进左侧菜单 changelog + 47.2 顶部停靠 changelog + rev 00293- + 站点恒 v0.2.58.0',
+    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.2';") !== -1 &&
+    sc.body.indexOf('触控长按药丸菜单进左侧菜单') !== -1 && sc.body.indexOf('左侧菜单最顶部') !== -1 &&
+    sc.body.indexOf('rev 00293-') !== -1 &&
     sc.body.indexOf('v0.2.58.0') !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const fc = await get(BASE + '/pages/fluidcanvas-editor.html');
-  ok('S2 线上编辑器页：ctxPillDots 三点钮 + 横向三点 more_horiz + 面板内嵌 CSS（static/占满宽/真药丸规格/面板挂载锚）+ 动画/内联压 !important + _lastMoveEv 守卫锚在场 + 旧左下停靠 CSS 零在场',
+  ok('S2 线上编辑器页：ctxPillDots 三点钮 + 横向三点 more_horiz + 面板内嵌 CSS（static/占满宽/真药丸规格/顶部停靠锚）+ ctxPillIn 顶滑入动画/内联压 !important + _lastMoveEv 守卫锚在场 + 旧底停靠锚（appendChild/ctxPillUp）零在场 + 旧左下停靠 CSS 零在场',
     fc.status === 200 &&
     fc.body.indexOf('id="ctxPillDots"') !== -1 &&
     fc.body.indexOf('more_horiz') !== -1 &&
     fc.body.indexOf('position: static;') !== -1 &&
     fc.body.indexOf('width: 100%; min-width: 0;') !== -1 &&
     fc.body.indexOf('border-radius: var(--radius-full);') !== -1 &&
-    fc.body.indexOf('panel.appendChild(contextMenu)') !== -1 &&
+    fc.body.indexOf('panel.insertBefore(contextMenu, panel.firstChild)') !== -1 &&
+    fc.body.indexOf('margin-bottom: 8px;') !== -1 &&
+    fc.body.indexOf('panel.appendChild(contextMenu)') === -1 &&
     fc.body.indexOf('min-height: 40px;') !== -1 &&
     fc.body.indexOf('left: 14px; top: auto; bottom: 14px;') === -1 &&
-    fc.body.indexOf('@keyframes ctxPillUp') !== -1 &&
+    fc.body.indexOf('@keyframes ctxPillIn') !== -1 &&
+    fc.body.indexOf('translateY(-110%)') !== -1 &&
+    fc.body.indexOf('@keyframes ctxPillUp') === -1 &&
     fc.body.indexOf('display: none !important;') !== -1 &&
     fc.body.indexOf('placeCtxPillDots') !== -1 &&
     fc.body.indexOf('if (_lastMoveEv) {') !== -1,
@@ -161,7 +168,8 @@ async function waitFor(cdp, expr, timeout, label) {
       " collapsed: m.classList.contains('ctx-collapsed'), pos: cs.position, left: cs.left, bottom: cs.bottom," +
       " radius: cs.borderRadius, w: m.offsetWidth, h: m.offsetHeight, vis: vis, dotsDisplay: d ? getComputedStyle(d).display : 'none'," +
       " dh: d ? d.offsetHeight : 0, inlineL: m.style.left, inlineT: m.style.top," +
-      " inPanel: inPanel, last: inPanel && m.parentNode.lastElementChild === m," +
+      " inPanel: inPanel, first: inPanel && m.parentNode.firstElementChild === m," +
+      " aboveSearch: inPanel && !!(m.nextElementSibling && m.nextElementSibling.classList.contains('search-capsule'))," +
       " dRadius: d ? parseFloat(getComputedStyle(d).borderRadius) : 0," +
       " dBg: d ? getComputedStyle(d).backgroundColor : '' }; })()");
 
@@ -174,11 +182,11 @@ async function waitFor(cdp, expr, timeout, label) {
     const pt = await cardPoint();
     await holdTouch(pt.x, pt.y, 650);
     const b1 = await menuState();
-    ok('B1 长按现身：菜单开 + ctx-pill 有 + 非折叠 + 在 .asset-panel 内（末子=底部停靠）+ static 定位 + 宽 230-242（面板内宽）+ 横药丸头 236×40 真药丸（radius-full 大圆角 + 实底）+ ≥3 项可见',
+    ok('B1 长按现身：菜单开 + ctx-pill 有 + 非折叠 + 在 .asset-panel 内（首子=顶部停靠+紧邻搜索框）+ static 定位 + 宽 228-242（面板内宽·滚条在时收窄）+ 横药丸头 236×40 真药丸（radius-full 大圆角 + 实底）+ ≥3 项可见',
       b1.open === true && b1.pill === true && b1.collapsed === false &&
-      b1.inPanel === true && b1.last === true &&
+      b1.inPanel === true && b1.first === true && b1.aboveSearch === true &&
       b1.pos === 'static' && b1.left === 'auto' && b1.bottom === 'auto' &&
-      b1.w >= 230 && b1.w <= 242 && b1.dh >= 38 && b1.dh <= 48 &&
+      b1.w >= 228 && b1.w <= 242 && b1.dh >= 38 && b1.dh <= 48 &&
       b1.dRadius >= 100 && b1.dBg !== 'rgba(0, 0, 0, 0)' && b1.dBg !== 'transparent' && b1.vis >= 3,
       JSON.stringify(b1));
 
@@ -212,12 +220,12 @@ async function waitFor(cdp, expr, timeout, label) {
       " var inPanel = !!(m.parentNode && m.parentNode.classList && m.parentNode.classList.contains('asset-panel'));" +
       " return { collapsed: m.classList.contains('ctx-collapsed'), allNone: allNone, w: m.offsetWidth," +
       " h: m.offsetHeight, dots: getComputedStyle(d).display, mBg: cs.backgroundColor, mBw: cs.borderWidth," +
-      " inPanel: inPanel, last: inPanel && m.parentNode.lastElementChild === m }; })()");
-    ok('B3 点 ⋯ 折叠：ctx-collapsed + 全项 display none + 横药丸 236×≤48（宽不缩、横卧）+ 容器透明化（bg 透明+边 0）只留药丸 + 三点 flex + 仍在面板底部',
-      b3 && b3.collapsed === true && b3.allNone === true && b3.w >= 230 && b3.w <= 242 &&
+      " inPanel: inPanel, first: inPanel && m.parentNode.firstElementChild === m }; })()");
+    ok('B3 点 ⋯ 折叠：ctx-collapsed + 全项 display none + 横药丸 236×≤48（宽不缩、横卧）+ 容器透明化（bg 透明+边 0）只留药丸 + 三点 flex + 仍在面板顶部',
+      b3 && b3.collapsed === true && b3.allNone === true && b3.w >= 228 && b3.w <= 242 &&
       b3.h >= 38 && b3.h <= 48 && b3.w > b3.h &&
       b3.mBg === 'rgba(0, 0, 0, 0)' && b3.mBw === '0px' &&
-      b3.dots === 'flex' && b3.inPanel === true && b3.last === true,
+      b3.dots === 'flex' && b3.inPanel === true && b3.first === true,
       JSON.stringify(b3));
 
     // B4 再点 ⋮ → 重新展开（条目回到药丸下方）
@@ -235,8 +243,8 @@ async function waitFor(cdp, expr, timeout, label) {
       " for (var i = 0; i < items.length; i++) if (getComputedStyle(items[i]).display !== 'none') { firstItem = items[i]; break; }" +
       " return { collapsed: m.classList.contains('ctx-collapsed'), vis: vis, w: m.offsetWidth," +
       " itemTop: firstItem ? firstItem.offsetTop : -1, dotsTop: d.offsetTop, dotsH: d.offsetHeight }; })()");
-    ok('B4 再点展开：ctx-collapsed 清 + ≥6 项可见 + 宽 ≥230 + 功能栏条目回到药丸下方（itemTop ≥ 药丸底）',
-      b4 && b4.collapsed === false && b4.vis >= 6 && b4.w >= 230 &&
+    ok('B4 再点展开：ctx-collapsed 清 + ≥6 项可见 + 宽 ≥228 + 功能栏条目回到药丸下方（itemTop ≥ 药丸底）',
+      b4 && b4.collapsed === false && b4.vis >= 6 && b4.w >= 228 &&
       b4.itemTop >= b4.dotsTop + b4.dotsH - 1, JSON.stringify(b4));
 
     // B5 空画布 strict 空点 tap → 双消（避开卡缘 ±60：Chrome 触控命中膨胀小目标）；再长按恒展开

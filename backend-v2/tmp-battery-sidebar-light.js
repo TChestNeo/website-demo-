@@ -60,7 +60,7 @@ function ok(name, cond) {
     s.indexOf('为什么在亮色模式下平台的') !== -1 &&
     s.indexOf('彻底铺不透明白底') !== -1);
   ok('site-config 51.1 changelog 历史条目保留', s.indexOf('v0.2.51.1 = 公民号前缀 CIT- → USR- 全栈统一') !== -1);
-  ok('FC v10.28.36.1 保持', s.indexOf("'v10.28.47.1'") !== -1);
+  ok('FC v10.28.36.1 保持', s.indexOf("'v10.28.47.2'") !== -1);
 }
 
 console.log('\nsidebar-light 巡检：' + pass + ' 通过 / ' + fail + ' 失败');

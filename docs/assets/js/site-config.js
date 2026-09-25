@@ -1635,6 +1635,20 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   32 套全绿（版本锚 sed 44.3→45.0 共 32 文件——fc-publish-log/fc-viewport rev 锚同轮手工更新；
 //   article-view/notif-home 静态锚口径更新后独立复跑 45/45、23/23）+冒烟 60/60+i18n 34/34；线上探针
 //   fc-i18n-live 14/14；rev 00295-btc
+// v10.28.47.2 = 平板端药丸菜单顶部停靠（补丁位 47.1→47.2 调整轮；2026-09-26）：用户「然后平板端的
+//   FC编辑左侧菜单我要的是长这样的」+截图钦定（红带=折叠三粒点的位置在左侧菜单最顶部、蓝区=电脑端
+//   弹窗的内容在其下方）；修法：药丸菜单停靠点从面板末位（底部）改为面板首子（顶部）——insertBefore
+//   (contextMenu, panel.firstChild)（44.2 的「挂在左侧菜单内」不变，只挪停靠位）；CSS margin-top 8px→
+//   margin-bottom 8px（菜单与下方搜索框间隔）；入场动画 ctxPillUp 底部滑入 → ctxPillIn 顶部滑入
+//   （translateY 110%→-110%）；折叠/展开、⋮ 恒居菜单首位横药丸头、桌面右键弹窗零变化；面板折叠时长按
+//   自动展开、scrollIntoView nearest 照常；顺带修复 44.2 遗留压缩 bug——面板是 scrollable flex 列、粗指针
+//   媒体查询给菜单 overflow-y:auto → 自动最小尺寸=0 → flex-shrink 把菜单压成只露药丸头+2 条的小缝；
+//   加 flex-shrink:0 菜单全展开（7 项 390px=截图蓝区口径，面板自行滚动、菜单内宽 235→229）；站点恒
+//   v0.2.58.0、后端零改动 334/334、零草稿字段、ethereal 零改动、i18n 零新键；
+//   电池 fc-pilltop 11/11（新）+fc-pillmenu 16/16 口径随轮改顶停靠后全绿+舰队 38 套全绿（all-opaque 首跑
+//   1 红=Chrome 未起来 flake，独立复跑 34/34 销账）+冒烟 60/60+i18n 34/34；
+//   镜像内容验证 12/12；线上探针 fc-pillmenu-live 14/14；
+//   rev 00301-gsh
 // v10.28.47.1 = 添加图像弹层加大（补丁位 47.0→47.1 调整轮；2026-09-26）：用户「那个添加图像的窗口
 //   能不能做大些？」；一问钦定：440px·3 列（推荐档）——明显变大一圈、图名可读、网格超高滚动不再无限拉长；
 //   修法：.tt-img-pop 280→440px 宽（padding 10→12）；库格 2→3 列（.tim-grid.tt-lib-mode repeat(3,1fr)）；
@@ -1742,4 +1756,4 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   15/15（B1-B4 口径更新：药丸头首位/横药丸 236×40/折叠不缩宽/条目在药丸下方）+舰队全绿（版本锚 sed
 //   44.0→44.1 共 23 文件）+冒烟 55/55+i18n 34/34；线上探针 fc-pillmenu-live 13/13（新 B2 药丸头首位）；
 //   rev 00291-61e
-window.FLUIDCANVAS_VERSION = 'v10.28.47.1';
+window.FLUIDCANVAS_VERSION = 'v10.28.47.2';

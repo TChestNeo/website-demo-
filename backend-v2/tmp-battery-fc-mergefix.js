@@ -1,4 +1,4 @@
-// tmp-battery-fc-mergefix.js — FC v10.28.47.1 触控合拼边缘不齐修复电池
+// tmp-battery-fc-mergefix.js — FC v10.28.47.2 触控合拼边缘不齐修复电池
 // 用户「还有平板移动端在合拼卡片之后边缘会不齐」——真身：预览贴齐（findMergeSnap）
 //   按旋转感知 bbox 算边，提交落位（mergeCards）旧用未旋转 offsetWidth 整数边——
 //   带旋转的卡合并后视觉错开可达卡宽 10-15%（30° 9×12 sne 卡 ≈52px）；捏合缩放
@@ -166,7 +166,7 @@ const CHECK_FLUSH = "(function(){ var cards = document.querySelectorAll('#gridCa
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     ok('S1 site-config 44.3 + rev 00293- 占位 + 站点恒 v0.2.58.0 + 编辑器 bbox 落位锚在场（tbb/cb0/面并集）＋旧 offsetWidth 落位锚零残留',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.1';") !== -1 &&
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.2';") !== -1 &&
       siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1 &&
       editorHtml.indexOf('var tbb = cardBBox(target, tL, tT);') !== -1 &&
       editorHtml.indexOf('tbb.left - cb0.right') !== -1 &&

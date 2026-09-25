@@ -202,7 +202,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     const ver = await cdp.evalJs("window.MN_SITE_VERSION");
     const fcVer = await cdp.evalJs("window.FLUIDCANVAS_VERSION");
     ok('B6 站点号 v0.2.57.1', ver === 'v0.2.58.0', 'got=' + ver);
-    ok('B6b FC v10.28.39.0', fcVer === 'v10.28.47.1', 'got=' + fcVer);
+    ok('B6b FC v10.28.39.0', fcVer === 'v10.28.47.2', 'got=' + fcVer);
 
     // ═══ F FC 列表 View 分流 ═══
     await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/pages/fluidcanvas.html?view=articles' });
