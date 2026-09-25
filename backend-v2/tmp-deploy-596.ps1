@@ -1,4 +1,4 @@
-# tmp-deploy-596.ps1 — 顶部栏缩身+迁移按钮白底白字修复 round (user: 「FC编辑页的顶部栏缩小一些太大了」+「迁移按钮为什么文字默认是白底白字的」). Frontend-only: docs/pages/fluidcanvas-editor.html (.editor-header 缩身 scoped 规则 + .migrate-btn 子代选择器双重 invert 修复) + docs/assets/js/site-config.js (45.1 changelog). Site version unchanged v0.2.58.0; FC v10.28.45.0 → v10.28.45.1; env fully from describe, never printed
+# tmp-deploy-596.ps1 — 顶部栏缩身+迁移按钮白底白字修复 round (user: 「FC编辑页的顶部栏缩小一些太大了」+「迁移按钮为什么文字默认是白底白字的」). Frontend-only: docs/pages/fluidcanvas-editor.html (.editor-header 缩身 scoped 规则 + .migrate-btn 子代选择器双重 invert 修复) + docs/assets/js/site-config.js (45.1 changelog). Site version unchanged v0.2.58.0; FC v10.28.45.0 → v10.28.45.2; env fully from describe, never printed
 $ErrorActionPreference = 'Stop'
 $gcloud = (Get-Command gcloud.ps1).Source
 $img = 'asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend/mn-backend-v2:latest'

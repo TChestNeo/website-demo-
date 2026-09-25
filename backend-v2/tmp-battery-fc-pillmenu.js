@@ -1,4 +1,4 @@
-// tmp-battery-fc-pillmenu.js — FC v10.28.45.1 触控长按药丸菜单进左侧菜单（面板内嵌）电池
+// tmp-battery-fc-pillmenu.js — FC v10.28.45.2 触控长按药丸菜单进左侧菜单（面板内嵌）电池
 // 用户「长按菜单能不能改成左边的小药丸」（44.0）→ 44.1 修正横药丸头 → 44.2 修正「怎么还是一样是
 //   竖着的药丸？我要的是直接就是在左侧菜单内不是单独的弹窗！！」+「那三粒点我要的是横向的不是
 //   纵向的」+「三粒点就是把左侧原本的卡片菜单折叠起来而已点击就是展开」——问询钦定：底部停靠
@@ -132,8 +132,8 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
-    ok('S1 site-config：FC v10.28.45.1 + 药丸菜单进左侧菜单 changelog + rev 00293- 占位 + 站点恒 v0.2.58.0',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.45.1';") !== -1 &&
+    ok('S1 site-config：FC v10.28.45.2 + 药丸菜单进左侧菜单 changelog + rev 00293- 占位 + 站点恒 v0.2.58.0',
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.45.2';") !== -1 &&
       siteCfg.indexOf('触控长按药丸菜单进左侧菜单') !== -1 &&
       siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
     ok('S2 编辑器：ctxPillDots 三点钮 + 横向三点 more_horiz（more_vert 零在场）+ 面板内嵌 CSS（static/占满宽/真药丸规格）+ placeCtxPillDots + ctx-collapsed + ctxPillUp 动画锚在场 + 旧左下停靠 CSS 零在场',

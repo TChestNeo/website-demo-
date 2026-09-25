@@ -1635,6 +1635,7 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   32 套全绿（版本锚 sed 44.3→45.0 共 32 文件——fc-publish-log/fc-viewport rev 锚同轮手工更新；
 //   article-view/notif-home 静态锚口径更新后独立复跑 45/45、23/23）+冒烟 60/60+i18n 34/34；线上探针
 //   fc-i18n-live 14/14；rev 00295-btc
+// v10.28.45.2 = 上传图片落地即存草稿（补丁位 1→2·用户反馈修复轮；2026-09-25）：用户「还有为什么我上传的图片需要自己按保存？上传就上传了怎么会不见？？」；真身=图片落地（元数据弹窗保存成功）后只进画布内存+「我的图库」持久库，草稿持久化只靠 10 分钟自动保存心跳（用户钦定周期，最快 5 分钟）和 pagehide 关页兜底——中途关页/切后台（iPad Safari pagehide 不可靠）草稿从没写过 → 刷新图片没了，手动按「保存草稿」立刻写库所以不丢；修法①：imgMetaSave（8+ 上传入口唯一 choke point）apply 成功后立刻 saveDraft(true) 静默落草稿——上传=已保存；saveDraft 加 silent 参数只压成功 toast（状态徽章照常 Saved just now、失败 toast 恒弹），10 分钟心跳周期不动；修法②：getCardFingerprint 补 charAvatar/mapImg dataURL 摘要（length+tail 与 cardBgImg 同口径）——同文件名换图不再骗过心跳/pagehide 脏守卫（此前指纹只有元数据）；站点恒 v0.2.58.0、后端零改动 327/327、零草稿字段、ethereal 零改动、i18n 零新键；电池 fc-uploadsave 13/13（新：上传→弹窗保存→草稿立即含 charAvatar 零心跳等待/silent 静默末次 toast 头像已上传非草稿已保存/图库持久库同写/同文件名换图指纹 av:length:tail 精确在场+autoSave 脏守卫放行落新图/地图卡同链/取消弹窗零写入）+舰队 34 套全绿（版本锚 sed 45.1→45.2 共 40 文件+00296-→00297- 共 7 文件）+冒烟 60/60+i18n 34/34；线上探针 fc-uploadsave-live 10/10；rev 00297-gfn
 // v10.28.45.1 = 编辑页顶部栏缩身+迁移按钮白底白字修复（补丁位 0→1·用户反馈修正轮；2026-09-25）：用户
 //   「能不能吧FC编辑页的顶部栏缩小一些太大了」+「还有顶部的迁移按钮为什么文字默认是白底白字的」；
 //   修法①顶部栏缩身：.editor-header 纵向垫 12→5px + gap 12→8px（~64→~42px 高）、作用域化 .btn-sm
@@ -1691,4 +1692,4 @@ window.MN_SITE_VERSION = 'v0.2.58.0';
 //   15/15（B1-B4 口径更新：药丸头首位/横药丸 236×40/折叠不缩宽/条目在药丸下方）+舰队全绿（版本锚 sed
 //   44.0→44.1 共 23 文件）+冒烟 55/55+i18n 34/34；线上探针 fc-pillmenu-live 13/13（新 B2 药丸头首位）；
 //   rev 00291-61e
-window.FLUIDCANVAS_VERSION = 'v10.28.45.1';
+window.FLUIDCANVAS_VERSION = 'v10.28.45.2';

@@ -1,7 +1,7 @@
 // tmp-battery-fc-publish-log.js — FC v10.28.42.1 发布日志弹窗电池
 // 用户「点击发布的时候能不能先弹出一个弹窗填写日志 他的长度要是固定的会跟着
 //   日志长度变化，然后限制320字」
-// 验证：F0 静态锚（FC v10.28.45.1 + rev 00296- 占位 + 站点 58.0 恒 + 弹窗 DOM/
+// 验证：F0 静态锚（FC v10.28.45.2 + rev 00297- 占位 + 站点 58.0 恒 + 弹窗 DOM/
 //         确认发布按钮 + buildDraft log 字段 + applyDraft 恢复 + CSS 固定初始高）
 //   / P 演示段（api.js 原样、/api/health 404 → fcCloudMode=false）：
 //         P1 点真发布按钮弹窗开+空日志+0/320+初始固定高 ~110
@@ -136,8 +136,8 @@ function ok(name, cond, detail) {
     // ── F0 静态锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
-    ok('F1 site-config：FC v10.28.45.1 + rev 00296- 占位 + 站点版本恒 v0.2.58.0',
-      siteCfg.indexOf('v10.28.45.1') !== -1 && siteCfg.indexOf('00296-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
+    ok('F1 site-config：FC v10.28.45.2 + rev 00297- 占位 + 站点版本恒 v0.2.58.0',
+      siteCfg.indexOf('v10.28.45.2') !== -1 && siteCfg.indexOf('00297-') !== -1 && siteCfg.indexOf('v0.2.58.0') !== -1);
     ok('F2 编辑器页静态锚：发布日志弹窗 DOM + 计数 0 / 320 + 确认发布/取消按钮',
       editorHtml.indexOf('id="publishLogModal"') !== -1 &&
       editorHtml.indexOf('id="pubLogInput"') !== -1 &&

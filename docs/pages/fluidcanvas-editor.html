@@ -5597,6 +5597,13 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         c.dataset.captionBgName || '', c.dataset.captionBgDesc || '', c.dataset.captionBgVisibility || '',
         c.dataset.charAvatarName || '', c.dataset.charAvatarDesc || '', c.dataset.charAvatarVisibility || '',
         c.dataset.mapImgName || '', c.dataset.mapImgDesc || '', c.dataset.mapImgVisibility || '');
+      // v10.28.45.2: 头像/地图图 dataURL 摘要也入指纹——同文件名换图必须触发
+      // 自动保存（此前指纹只有元数据：同名覆盖的新图在心跳/pagehide 守卫眼里
+      // 「没变化」→ 刷新回旧图）。与 cardBgImg 同口径：length+tail 摘要，
+      // 绝不把 dataURL 放进每键都跑的指纹。
+      var av = c.dataset.charAvatar || '';
+      var mi = c.dataset.mapImg || '';
+      parts.push(av ? 'av:' + av.length + ':' + av.slice(-24) : '', mi ? 'map:' + mi.length + ':' + mi.slice(-24) : '');
     });
     // v10.28.27: 自定义页面背景——保存/撤销/移除都必须触发自动保存
     // （线上电池抓出 draftHas:false：指纹不含 pageBg → autosave 守卫
@@ -6554,7 +6561,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     return draft;
   }
 
-  function saveDraft() {
+  function saveDraft(silent) {
     if (document.body.classList.contains('fc-viewmode')) return; // v10.28.35.0: 查看模式绝不写本地草稿
     var draft = buildDraft();
     // v0.2.49.0 文章 XP 旗子重置：标题空且无卡 = 草稿清空重写 → 下一篇文章算新（+120）
@@ -6569,7 +6576,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       lastSavedLabel.textContent = saveStatusEl.textContent;
       setHeaderStatus('fc.status.draft');
       headerStatus.className = 'badge badge-secondary';
-      showToast(T('fc.toast.draftSaved') || 'Draft saved');
+      // v10.28.45.2: silent 静默保存（上传落地即存用）——只压成功 toast，
+      // 状态徽章照常显示「Saved just now」；失败 toast（配额/保存失败）恒弹
+      if (!silent) showToast(T('fc.toast.draftSaved') || 'Draft saved');
       putCloudDraft(draft); // P6: fire-and-forget 云端镜像（409 冲突在回调中处理）
     } catch (e) {
       if (e && e.name === 'QuotaExceededError') {
@@ -6888,6 +6897,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (ok === false) { IMG_META_PENDING = p; return; }  // 应用失败（如内联图无插入目标）：窗留着可改可取消
     // v10.28.32: 所有上传入口的 choke point——apply 成功后图进持久库（8+ 入口一处覆盖）
     if (p && p.src) imgLibPut(p.src, meta);
+    // v10.28.45.2: 上传落地即存（用户「上传就上传了怎么会不见」）——自动保存是
+    // 10 分钟心跳（用户钦定周期），上传等不起：中途关页/切后台（iPad Safari
+    // pagehide 不可靠）草稿从没写过图片就没了。8+ 上传入口都经本 choke point，
+    // apply 成功后立刻静默落草稿（不弹「Draft saved」打扰、失败 toast 照常）。
+    saveDraft(true);
     if (p && p.close === 'all') closeAllModals();        // flag：连图源弹窗一起关（钩子幂等）
     else closeModalOnly('imgMetaModal');                 // pageBg/bgModal/弹层宿主：只关 meta
   }
