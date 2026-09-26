@@ -92,16 +92,32 @@
     if (loggedIn) {
       try {
         var st = window.SlatiDB.getLevelState();
+        var ringPct = Math.round(st.progress * 100);
+        // v0.2.58.2 用户「折叠起来是变成一个纵向的药丸形然后那个显示经验的条把药丸围起来这样
+        //   然后药丸中间显示等级就就可以了」（折叠侧栏等级纵向药丸+经验环）：
+        //   展开态视图 .mn-lv-normal（原徽章原样）+ 折叠态视图 .mn-lv-pill（纵向药丸，外环=XP 进度
+        //   conic-gradient 环形包裹药丸，药丸中间只显示等级）——两视图显隐由 CSS 按折叠态切换；
+        //   药丸固定 28×48 不随内容伸缩（根治折叠下文本换行挤压头像）。
         levelBadgeHTML =
           '<div class="mn-lv-badge" style="margin-top:8px">' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
-              '<span style="font-weight:600;font-size:11px;color:var(--color-on-surface)">Lv.' + st.lv + ' · ' + st.name + '</span>' +
-              '<span style="font-size:10px;color:var(--color-outline)">' + (st.isMax ? (st.xp + ' XP') : (st.xp + ' / ' + st.nextNeed + ' XP')) + '</span>' +
+            '<div class="mn-lv-normal">' +
+              '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">' +
+                '<span style="font-weight:600;font-size:11px;color:var(--color-on-surface)">Lv.' + st.lv + ' · ' + st.name + '</span>' +
+                '<span style="font-size:10px;color:var(--color-outline)">' + (st.isMax ? (st.xp + ' XP') : (st.xp + ' / ' + st.nextNeed + ' XP')) + '</span>' +
+              '</div>' +
+              (st.isMax ? '' :
+                '<div style="height:5px;border-radius:999px;background:rgba(128,128,140,0.25);overflow:hidden">' +
+                  '<div style="width:' + Math.round(st.progress * 100) + '%;height:100%;background:var(--color-primary);border-radius:999px;transition:width 0.4s ease"></div>' +
+                '</div>') +
             '</div>' +
-            (st.isMax ? '' :
-              '<div style="height:5px;border-radius:999px;background:rgba(128,128,140,0.25);overflow:hidden">' +
-                '<div style="width:' + Math.round(st.progress * 100) + '%;height:100%;background:var(--color-primary);border-radius:999px;transition:width 0.4s ease"></div>' +
-              '</div>') +
+            '<div class="mn-lv-pill">' +
+              '<div class="mn-lv-ring" style="background:conic-gradient(var(--color-primary) ' + ringPct + '%, rgba(128,128,140,0.25) 0)">' +
+                '<div class="mn-lv-pill-core">' +
+                  '<span class="mn-lv-pill-tag">LV</span>' +
+                  '<span class="mn-lv-pill-num">' + st.lv + '</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
           '</div>';
       } catch (e) { levelBadgeHTML = ''; }
     }

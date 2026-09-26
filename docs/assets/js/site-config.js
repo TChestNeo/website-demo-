@@ -1133,6 +1133,15 @@ window.MN_SITE = window.MN_SITE || {};
 //   --sidebar-bg 用法不动；窄屏 floating 覆盖态同步透明（口径统一）；41 页内联块全量刷新；
 //   FC 恒 v10.28.47.4、后端零改动、i18n 零新键）：
 //   （rev 00304-nzm）
+// v0.2.58.2 = 折叠侧栏等级纵向药丸+经验环（补丁位 1→2·调整轮；2026-09-26）——用户「然后是平台的
+//   左侧菜单折叠起来的时候那个显示的等级我希望折叠起来是变成一个纵向的药丸形然后那个显示经验的条
+//   把药丸围起来这样 然后药丸中间显示等级就就可以了，还有现在这个显示等级的在折叠的情况下它挤压到了
+//   用户头像」（真身：折叠侧栏 72px 列内原等级徽章（Lv·称号+XP 文本+横向条）文本换行堆叠成高块挤压
+//   头像；修法：徽章拆成双视图——展开态 .mn-lv-normal（原徽章原样）+折叠态 .mn-lv-pill 纵向药丸
+//   28×48 固定尺寸上阵（零挤压）；XP 条化为药丸外环（.mn-lv-ring conic-gradient 进度环环形包裹药丸，
+//   百分比 sidebar.js 内联写入）；药丸中间只显示等级（LV 标签+数字）；折叠切换带 0.3s 淡入动画；
+//   40 页内联块全量刷新；FC 恒 v10.28.47.4、后端零改动、i18n 零新键）：
+//   （rev 00305-wvr）
 // v0.2.57.1 = 文章呈现全屏投影（补丁位 0→1·修复轮；2026-09-20）——用户「还是一样不符合要求啊，还是你用镜像投影的方式把用户在FC编辑好的数据和一些目录操作做好？而且我的要求是覆盖全屏不是中间而已」（真身：57.0 文章栏宽上限 720px 画布全挤在窗中间、目录只认有 label 的 content/text 卡——真文章只有 flag+shield 两卡时目录钮根本不出现；修法：720 上限废除；宽窗 contain fit 缩放不再封顶 1——s=max(0.25,min(availW/bboxW,availH/bboxH)) 投影仪铺满整屏、resize 宽模式只重算缩放不重建 DOM；目录列全部卡——label 优先→正文首行派生 18 字→卡型名兜底（shield=Emblem 等）；窄窗维基回流口径不变）：
 //   FC 查看镜像同款（v10.28.37.1）：fit1to1 改 contain fit 随查看窗铺满 + 目录列全部卡
 //   后端零改动；ethereal 零改动；i18n 零新键
@@ -1167,7 +1176,7 @@ window.MN_SITE = window.MN_SITE || {};
 //   i18n：overview/index 新键 12 语言（ov.searchPh/search.*/contrib.published/empty、index.act.article）+ OpenCC 重生成
 //   后端零改动（GET /api/articles 已具备）；电池：新 tmp-battery-micro-v056 + article-view 补 View 锚
 //   （rev 00269-52s）
-window.MN_SITE_VERSION = 'v0.2.58.1';
+window.MN_SITE_VERSION = 'v0.2.58.2';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）

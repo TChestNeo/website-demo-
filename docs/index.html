@@ -1345,6 +1345,52 @@ body.pre-stagger .auth-card { opacity: 0; }
   font-size: 20px;
 }
 
+/* 折叠态等级纵向药丸+经验环（v0.2.58.2 用户「然后是平台的左侧菜单折叠起来的时候那个显示的等级我希望
+   折叠起来是变成一个纵向的药丸形然后那个显示经验的条把药丸围起来这样 然后药丸中间显示等级就就可以了，
+   还有现在这个显示等级的在折叠的情况下它挤压到了用户头像」）：
+   折叠态下展开视图（Lv·称号+横向经验条）整体隐藏；纵向药丸 28×48 固定尺寸上阵（原徽章文本在 40px
+   折叠列里换行堆叠挤压头像——固定药丸根治）；XP 条化为药丸外环（.mn-lv-ring conic-gradient 进度环
+   环形包裹药丸，进度百分比由 sidebar.js 内联写入）；药丸中间只显示等级（LV 标签+数字）。
+   展开态药丸默认隐藏（.mn-lv-badge .mn-lv-pill display:none）——展开侧栏零变化。 */
+.mn-lv-badge .mn-lv-pill { display: none; }
+.app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
+.app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
+.app-sidebar.collapsed .mn-lv-badge .mn-lv-pill {
+  display: flex; justify-content: center;
+  animation: mn-lv-pill-in 0.3s ease;
+}
+@keyframes mn-lv-pill-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+.mn-lv-ring {
+  width: 28px; height: 48px; padding: 3px; border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.mn-lv-pill-core {
+  width: 100%; height: 100%; border-radius: 999px;
+  background: var(--card-bg, #ffffff);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  line-height: 1;
+}
+.mn-lv-pill-tag {
+  font-size: 6px; font-weight: 700; letter-spacing: 0.06em;
+  color: var(--color-outline);
+}
+.mn-lv-pill-num {
+  font-size: 13px; font-weight: 700; color: var(--color-primary);
+  margin-top: 1px;
+}
+/* 同轮折叠态头像间距归整（根治「挤压到了用户头像」的两处真身）：
+   ①头像 img 是行内元素——行基线给父 div 加 8px 下坠空隙（折叠后视觉死隙）→ display:block 消除；
+   ②isRealUser 时头像 div 包在个人主页锚内（非 user-info-bar 首子）——既有
+   .user-info-bar > div:first-child 归零规则落空、margin-bottom:8px 残留 → 补锚内变体归零。 */
+.app-sidebar.collapsed .user-info-bar .avatar { display: block; }
+.app-sidebar.collapsed .user-info-bar > a:first-child > div:first-child {
+  margin-top: 0 !important; margin-bottom: 0 !important;
+}
+
 /* Floating overlay mode */
 .app-sidebar.floating {
   transform: translateX(-100%);
