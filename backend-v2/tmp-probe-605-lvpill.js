@@ -1,7 +1,7 @@
-// tmp-probe-605-lvpill.js — v0.2.58.8 折叠侧栏等级纵向药丸+经验环 线上实机探针
+// tmp-probe-605-lvpill.js — v0.2.58.9 折叠侧栏等级纵向药丸+经验环 线上实机探针
 // 用户「然后是平台的左侧菜单折叠起来的时候那个显示的等级我希望折叠起来是变成一个纵向的药丸形然后
 //   那个显示经验的条把药丸围起来这样 然后药丸中间显示等级就就可以了，还有现在这个显示等级的在折叠的
-//   情况下它挤压到了用户头像」。S 静态（线上 site-config 58.2+changelog+rev 00312-+旧 58.1 赋值零残留
+//   情况下它挤压到了用户头像」。S 静态（线上 site-config 58.2+changelog+rev 00313-+旧 58.1 赋值零残留
 //   +FC 47.4 恒；ethereal.css/index.html 药丸规则在位）；P 实机（demo 用户种子——id 无 USR- 前缀 →
 //   hasCloudUser false 零 API 调用，杜绝服务端 401 清会话；每日登录日期键预写今天 → +5 不触发；
 //   展开药丸隐藏/折叠药丸上阵/几何零挤压/满级环 100%/窄列零溢出）；E 零异常。
@@ -76,13 +76,13 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：58.2 赋值+changelog 标题/用户原话+rev 00312-+旧 58.1 赋值零残留+FC 47.4 恒',
+  ok('S1 线上 site-config：58.2 赋值+changelog 标题/用户原话+rev 00313-+旧 58.1 赋值零残留+FC 47.4 恒',
     sc.status === 200 &&
-    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.8';") !== -1 &&
+    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.9';") !== -1 &&
     sc.body.indexOf('v0.2.58.3 = 折叠侧栏等级水位环+双层水波') !== -1 &&
     sc.body.indexOf('变成一个纵向的药丸形') !== -1 &&
     sc.body.indexOf('挤压到了') !== -1 &&
-    sc.body.indexOf('rev 00312-') !== -1 &&
+    sc.body.indexOf('rev 00313-') !== -1 &&
     sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.1';") === -1 &&
     sc.body.indexOf("'v10.28.47.4'") !== -1,
     'status=' + sc.status + ' err=' + sc.error);

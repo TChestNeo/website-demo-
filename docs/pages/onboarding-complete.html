@@ -1343,8 +1343,13 @@ body.pre-stagger .auth-card { opacity: 0; }
    58.7 药丸 64px 宽比折叠栏卡片（56px）每边溢出 4px；修法：药丸 64→48、水杯胶囊 56→44
    （border-radius:999px 不变、LV 号码居中不变、杯内宽 52→40=恰好一个波长——波浪 40×32/32px 带高/
    平移 40px/顶线 -16px 全零改动；LV 标签 14px/LV 号码 28px/药丸高 116px 不动）；药丸 48px=桌面折叠栏
-   菜单按钮行宽、floating 窄列卡片宽——两边都对齐零越界；两层结构/两速 1.6s/2.2s 相位漂移/水位从底
-   往上灌/0.5s 过渡全保持。 */
+   用户卡内容宽（模块 56−垫 8）与内容列齐平零溢出；floating 64px 列右边线 1px 致模块 47、药丸右溢 1px
+   可忽略仍收在列内；两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s 过渡全保持。
+   v0.2.58.9 用户「那个波浪能不能不要那么尖？让他平一些更加宽一些」（一问钦定「高度减半+宽度翻倍」——
+   浪高 32→16px、波长 40→80px）——mask SVG viewBox 40×32→80×16（波长翻倍+振幅减半，正弦路径 x 全翻倍
+   y 全减半）、波浪带高 32px→16px、两波顶线随半高同步（calc(40% - 16px)→calc(40% - 8px) / -16px→-8px）、
+   无缝循环 translateX 40px→80px 恰好一个波长、strip 300%→400%（160px=4×40，循环末帧右缘恰好盖住窗口
+   零缺口）；两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s 过渡全保持。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1384,27 +1389,27 @@ body.pre-stagger .auth-card { opacity: 0; }
   background: var(--mn-lv-light); opacity: 0.65;
 }
 .mn-lv-wdeepwave, .mn-lv-wlightwave {
-  position: absolute; left: -100%; width: 300%; height: 32px;
+  position: absolute; left: -100%; width: 400%; height: 16px;
   background-color: var(--mn-lv-wave-c);
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 32'%3E%3Cpath d='M0 16 Q10 0 20 16 Q30 32 40 16 V32 H0 Z' fill='black'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 32'%3E%3Cpath d='M0 16 Q10 0 20 16 Q30 32 40 16 V32 H0 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
   -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
-  -webkit-mask-size: 40px 32px; mask-size: 40px 32px;
+  -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
   pointer-events: none;
 }
 .mn-lv-wdeepwave {
   --mn-lv-wave-c: var(--color-primary);
-  top: calc(40% - 16px);
+  top: calc(40% - 8px);
   animation: mn-lv-wave 1.6s linear infinite;
 }
 .mn-lv-wlightwave {
   --mn-lv-wave-c: var(--mn-lv-light);
-  top: -16px;
+  top: -8px;
   animation: mn-lv-wave 2.2s linear infinite;
 }
 @keyframes mn-lv-wave {
   from { transform: translateX(0); }
-  to { transform: translateX(-40px); }
+  to { transform: translateX(-80px); }
 }
 .mn-lv-pill-tag {
   font-size: 14px; font-weight: 700; letter-spacing: 0.06em;

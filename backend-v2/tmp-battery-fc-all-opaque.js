@@ -175,10 +175,10 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     // ── S 静态锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n'); // CRLF 归一（多行锚）
-    ok('S1 site-config：FC v10.28.47.4 + changelog 编辑器镶边玻璃全灭条目 + rev 00288- 占位 + 站点版本恒 v0.2.58.8',
+    ok('S1 site-config：FC v10.28.47.4 + changelog 编辑器镶边玻璃全灭条目 + rev 00288- 占位 + 站点版本恒 v0.2.58.9',
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
       siteCfg.indexOf('编辑器镶边玻璃全灭') !== -1 &&
-      siteCfg.indexOf('00288-') !== -1 && siteCfg.indexOf('v0.2.58.8') !== -1);
+      siteCfg.indexOf('00288-') !== -1 && siteCfg.indexOf('v0.2.58.9') !== -1);
     ok('S2 编辑器头栏：铺 surface-container 不透明底 + 旧 16px 模糊写法零残留（门控死码配方除外）',
       editorHtml.indexOf('background: var(--color-surface-container); /* 42.1 全不透明：头栏铺不透明底+摘 16px 模糊 */') !== -1 &&
       editorHtml.indexOf('background: var(--card-bg);\n      backdrop-filter: blur(16px);') === -1);

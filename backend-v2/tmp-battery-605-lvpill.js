@@ -1,15 +1,16 @@
-// tmp-battery-605-lvpill.js — v0.2.58.8 折叠侧栏等级药丸收窄对齐菜单按钮电池（58.7 药丸水杯电池同文件
-//   口径随轮改：用户「能不能把他的宽度变成和其他按钮一样？」——一问钦定「和菜单按钮一样 48px」。
-//   58.7 药丸 64px 宽比折叠栏卡片（56px）每边溢出 4px；修法：药丸 64→48、水杯胶囊 56→44（border-radius:999px
-//   不变、LV 号码居中不变、杯内宽 52→40=恰好一个波长——波浪 40×32 mask/32px 带高/平移 40px/顶线 -16px
-//   全零改动；LV 标签 14px/LV 号码 28px/药丸高 116px 不动）。药丸 48px=桌面折叠栏菜单按钮行宽、
-//   floating 64px 列右边线 1px 致模块 47、右溢 1px 可忽略仍收列内（S3 桌面 inMod true+与用户卡内容列齐平、
-//   S6 floating 收列内）。
+// tmp-battery-605-lvpill.js — v0.2.58.9 折叠侧栏等级药丸波浪改平改宽电池（58.8 药丸收窄电池同文件
+//   口径随轮改：用户「那个波浪能不能不要那么尖？让他平一些更加宽一些」——一问钦定「高度减半+宽度翻倍」
+//   （浪高 32→16px、波长 40→80px）。58.8 正弦水面一个波长 40px 挤在 40px 杯内宽里、浪高 32px 峰谷很陡；
+//   修法：mask SVG viewBox 40×32→80×16（波长翻倍+振幅减半，正弦路径 x 全翻倍 y 全减半）、波浪带高
+//   32px→16px、两波顶线随半高同步（calc(40% - 16px)→calc(40% - 8px) / -16px→-8px）、无缝循环
+//   translateX 40px→80px 恰好一个波长、strip 300%→400%（160px=4×40，循环末帧右缘恰好盖住窗口零缺口）；
+//   两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s 过渡全保持；药丸 48×116/水杯 44×84/LV 标签
+//   14px/号码 28px 零改动；sidebar.js 零改动（纯 CSS 零 JS）。
 //   折叠态等级徽章=纵向药丸 48×116（LV 小字在上）+ 药丸水杯 44×84 只围号码；经验进度=水位从杯底往上灌
 //   （.mn-lv-fill 内联 height 百分比）；水动效两层——底层主色 .mn-lv-wdeep + 上层浅色 .mn-lv-wlight
 //   （主色兑白 55%+半透明叠层次），两层各带正弦水面波形（1.6s/2.2s 纯 CSS 零 JS）；
 //   号码 z 上浮+白色描边晕影水位高时仍可读。展开态 .mn-lv-normal 原徽章原样零变化。
-// F 静态：site-config 58.8+changelog+rev 00312-、sidebar.js 新结构、ethereal.css 药丸规则+内联块同步；
+// F 静态：site-config 58.9+changelog+rev 00313-、sidebar.js 新结构、ethereal.css 药丸规则+内联块同步；
 // S 浏览器：展开零变化/折叠切换/药丸几何与菜单按钮同宽/水位进度刷新/满级/窄列 floating 与卡片齐平/展开恢复；E 零异常。
 // /api 全 404（demo 模式，同 xp-rebalance 口径）；会话+XP 本地种子。
 'use strict';
@@ -102,25 +103,24 @@ const cnt = (s, sub) => s.split(sub).length - 1;
   const indexSrc = fs.readFileSync(path.join(DOCS, 'index.html'), 'utf8');
   const editorSrc = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
 
-  ok('F1 静态：58.8 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话+一问钦定 48px + rev 00312- + 瞬态注记 00311-wkw + rev 00311- 零残留 + 58.7 赋值零残留 + 58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.8';") !== -1 &&
+  ok('F1 静态：58.9 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话+一问钦定「高度减半+宽度翻倍」+ rev 00313- + 58.8 赋值零残留 + 58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.9';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
+    sconfSrc.indexOf('v0.2.58.9 = 折叠侧栏等级药丸波浪改平改宽') !== -1 &&
+    sconfSrc.indexOf('那个波浪能不能') !== -1 &&
+    sconfSrc.indexOf('不要那么尖') !== -1 &&
+    sconfSrc.indexOf('平一些更加宽一些') !== -1 &&
+    sconfSrc.indexOf('一问钦定') !== -1 &&
+    sconfSrc.indexOf('高度减半+宽度翻倍') !== -1 &&
+    sconfSrc.indexOf('rev 00313-') !== -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.8';") === -1 &&
     sconfSrc.indexOf('v0.2.58.8 = 折叠侧栏等级药丸收窄对齐菜单按钮') !== -1 &&
     sconfSrc.indexOf('能不能把他的') !== -1 &&
     sconfSrc.indexOf('宽度变成和其他按钮一样') !== -1 &&
-    sconfSrc.indexOf('一问钦定') !== -1 &&
-    sconfSrc.indexOf('和菜单按钮一样 48px') !== -1 &&
-    sconfSrc.indexOf('rev 00312-') !== -1 &&
-    sconfSrc.indexOf('同轮首部署瞬态 00311-wkw 已取代') !== -1 &&
-    sconfSrc.indexOf('rev 00311-') === -1 &&
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.7';") === -1 &&
     sconfSrc.indexOf('v0.2.58.7 = 折叠侧栏等级药丸与水波全翻倍') !== -1 &&
     sconfSrc.indexOf('那个波浪能不能大2倍啊') !== -1 &&
-    sconfSrc.indexOf('还有那个药丸能不能大1倍啊') !== -1 &&
     sconfSrc.indexOf('v0.2.58.6 = 折叠侧栏等级水杯药丸与波浪再放大') !== -1 &&
-    sconfSrc.indexOf('再大宽一些还有那个药丸也是再大些') !== -1 &&
     sconfSrc.indexOf('v0.2.58.5 = 折叠侧栏等级水杯改药丸形+波浪加大') !== -1 &&
-    sconfSrc.indexOf('药丸形不是圆形') !== -1 &&
     sconfSrc.indexOf('v0.2.58.4 = 折叠侧栏等级水位环波纹改正弦水面') !== -1 &&
     sconfSrc.indexOf('v0.2.58.3 = 折叠侧栏等级水位环+双层水波') !== -1 &&
     sconfSrc.indexOf('v0.2.58.2 = 折叠侧栏等级纵向药丸+经验环') !== -1 &&
@@ -146,7 +146,7 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     sidebarSrc.indexOf('display:flex;align-items:center;justify-content:space-between;margin-bottom:4px') !== -1 &&
     sidebarSrc.indexOf('height:5px;border-radius:999px;background:rgba(128,128,140,0.25)') !== -1);
 
-  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 48×116 + 水杯 44×84 胶囊 + 浅色 color-mix + 正弦水面 mask 件套 40×32/300% strip 32px/平移 40px/两速动画 + LV 标签 14px/号码 28px）+ 旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧 16px 波形/旧平移 20px/旧顶线 -8px/旧花边/7px 7px/conic/pill-core 零残留 + index/editor 内联块同款同步',
+  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 48×116 + 水杯 44×84 胶囊 + 浅色 color-mix + 正弦水面 mask 件套 80×16 新路径/400% strip 16px/平移 80px/两速动画 + LV 标签 14px/号码 28px）+ 旧 40×32 路径/旧 300% strip 32px/旧顶线 calc(40% - 16px)/-16px/旧平移 40px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧 16px 波形/旧平移 20px/旧顶线 -8px 旧代/旧花边/7px 7px/conic/pill-core 零残留 + index/editor 内联块同款同步',
     etherealSrc.indexOf('.mn-lv-badge .mn-lv-pill { display: none; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }') !== -1 &&
@@ -163,27 +163,35 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     etherealSrc.indexOf('width: 24px; height: 24px; border-radius: 50%;') === -1 &&
     etherealSrc.indexOf('--mn-lv-light: color-mix(in srgb, var(--color-primary) 55%, #ffffff);') !== -1 &&
     cnt(etherealSrc, 'mask-image: url("data:image/svg+xml') === 2 &&
-    cnt(etherealSrc, "viewBox='0 0 40 32'") === 2 &&
+    cnt(etherealSrc, "viewBox='0 0 80 16'") === 2 &&
+    cnt(etherealSrc, 'M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z') === 2 &&
+    cnt(etherealSrc, "viewBox='0 0 40 32'") === 0 &&
     cnt(etherealSrc, "viewBox='0 0 20 16'") === 0 &&
     cnt(etherealSrc, "viewBox='0 0 16 12'") === 0 &&
     cnt(etherealSrc, "viewBox='0 0 12 8'") === 0 &&
-    cnt(etherealSrc, 'mask-size: 40px 32px') === 2 &&
-    cnt(etherealSrc, 'mask-size: 20px 16px') === 0 &&
-    cnt(etherealSrc, 'mask-size: 16px 12px') === 0 &&
-    cnt(etherealSrc, 'mask-size: 12px 8px') === 0 &&
-    etherealSrc.indexOf('position: absolute; left: -100%; width: 300%; height: 32px;') !== -1 &&
+    cnt(etherealSrc, 'M0 16 Q10 0 20 16 Q30 32 40 16') === 0 &&
+    cnt(etherealSrc, 'M0 8 Q10 0 20 8 Q30 16 40 8') === 0 &&
+    cnt(etherealSrc, 'mask-size: 80px 16px;') === 2 &&
+    cnt(etherealSrc, 'mask-size: 40px 32px;') === 0 &&
+    cnt(etherealSrc, 'mask-size: 20px 16px;') === 0 &&
+    cnt(etherealSrc, 'mask-size: 16px 12px;') === 0 &&
+    cnt(etherealSrc, 'mask-size: 12px 8px;') === 0 &&
+    etherealSrc.indexOf('position: absolute; left: -100%; width: 400%; height: 16px;') !== -1 &&
+    etherealSrc.indexOf('position: absolute; left: -100%; width: 300%; height: 32px;') === -1 &&
     etherealSrc.indexOf('position: absolute; left: -100%; width: 300%; height: 16px;') === -1 &&
     etherealSrc.indexOf('position: absolute; left: -100%; width: 300%; height: 12px;') === -1 &&
+    etherealSrc.indexOf('position: absolute; left: -100%; width: 200%; height: 8px;') === -1 &&
     etherealSrc.indexOf('background-color: var(--mn-lv-wave-c);') !== -1 &&
-    etherealSrc.indexOf('top: calc(40% - 16px);') !== -1 &&
-    etherealSrc.indexOf('top: -16px;') !== -1 &&
-    etherealSrc.indexOf('top: calc(40% - 8px);') === -1 &&
-    etherealSrc.indexOf('top: -8px;') === -1 &&
+    etherealSrc.indexOf('top: calc(40% - 8px);') !== -1 &&
+    etherealSrc.indexOf('top: -8px;') !== -1 &&
+    etherealSrc.indexOf('top: calc(40% - 16px);') === -1 &&
+    etherealSrc.indexOf('top: -16px;') === -1 &&
     etherealSrc.indexOf('top: calc(40% - 6px);') === -1 &&
     etherealSrc.indexOf('top: -6px;') === -1 &&
     etherealSrc.indexOf('top: calc(40% - 4px);') === -1 &&
     etherealSrc.indexOf('top: -4px;') === -1 &&
-    etherealSrc.indexOf('translateX(-40px)') !== -1 &&
+    etherealSrc.indexOf('translateX(-80px)') !== -1 &&
+    etherealSrc.indexOf('translateX(-40px)') === -1 &&
     etherealSrc.indexOf('translateX(-20px)') === -1 &&
     etherealSrc.indexOf('translateX(-16px)') === -1 &&
     etherealSrc.indexOf('translateX(-12px)') === -1 &&
@@ -199,10 +207,12 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     cnt(indexSrc, '.mn-lv-badge .mn-lv-pill { display: none; }') === 1 &&
     cnt(indexSrc, 'mn-lv-pill-in') === 2 &&
     cnt(indexSrc, '.mn-lv-wdeepwave {') === 1 &&
-    cnt(indexSrc, 'mask-size: 40px 32px') === 2 &&
-    cnt(indexSrc, 'mask-size: 20px 16px') === 0 &&
-    cnt(indexSrc, 'mask-size: 16px 12px') === 0 &&
-    cnt(indexSrc, 'left: -100%; width: 300%') === 1 &&
+    cnt(indexSrc, 'mask-size: 80px 16px;') === 2 &&
+    cnt(indexSrc, 'mask-size: 40px 32px;') === 0 &&
+    cnt(indexSrc, 'mask-size: 20px 16px;') === 0 &&
+    cnt(indexSrc, 'mask-size: 16px 12px;') === 0 &&
+    cnt(indexSrc, 'left: -100%; width: 400%') === 1 &&
+    cnt(indexSrc, 'left: -100%; width: 300%') === 0 &&
     cnt(indexSrc, 'width: 48px; height: 116px; border-radius: 999px;') === 1 &&
     cnt(indexSrc, 'width: 64px; height: 116px; border-radius: 999px;') === 0 &&
     cnt(indexSrc, 'width: 44px; height: 84px; border-radius: 999px;') === 1 &&
@@ -213,10 +223,12 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     cnt(indexSrc, 'animation: mn-lv-wave ') === 2 &&
     cnt(editorSrc, 'mn-lv-pill-in') === 2 &&
     cnt(editorSrc, '.mn-lv-wdeepwave, .mn-lv-wlightwave {') === 1 &&
-    cnt(editorSrc, 'mask-size: 40px 32px') === 2 &&
-    cnt(editorSrc, 'mask-size: 20px 16px') === 0 &&
-    cnt(editorSrc, 'mask-size: 16px 12px') === 0 &&
-    cnt(editorSrc, 'left: -100%; width: 300%') === 1 &&
+    cnt(editorSrc, 'mask-size: 80px 16px;') === 2 &&
+    cnt(editorSrc, 'mask-size: 40px 32px;') === 0 &&
+    cnt(editorSrc, 'mask-size: 20px 16px;') === 0 &&
+    cnt(editorSrc, 'mask-size: 16px 12px;') === 0 &&
+    cnt(editorSrc, 'left: -100%; width: 400%') === 1 &&
+    cnt(editorSrc, 'left: -100%; width: 300%') === 0 &&
     cnt(editorSrc, 'width: 48px; height: 116px; border-radius: 999px;') === 1 &&
     cnt(editorSrc, 'width: 64px; height: 116px; border-radius: 999px;') === 0 &&
     cnt(editorSrc, 'width: 44px; height: 84px; border-radius: 999px;') === 1 &&
@@ -338,14 +350,14 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     await sleep(500);
     r = await pillNow();
     const s2 = JSON.parse(r);
-    ok('S2 折叠切换：normal 隐藏 + 药丸 flex + 水位 8% + 中间 LV/1 + 双层正弦水面（mask 40px 32px repeat-x + 波形 32px 高 + strip 300%=120px + 两速 1.6s/2.2s）+ 波形色与水面层同色（深=主色/浅=浅色且两色不同）+ 浅层半透明 0.65 + LV 在杯上方',
+    ok('S2 折叠切换：normal 隐藏 + 药丸 flex + 水位 8% + 中间 LV/1 + 双层正弦水面改平改宽（mask 80px 16px repeat-x + 波形 16px 高 + strip 400%=160px + 两速 1.6s/2.2s）+ 波形色与水面层同色（深=主色/浅=浅色且两色不同）+ 浅层半透明 0.65 + LV 在杯上方',
       s2.nDisplay === 'none' && s2.pDisplay === 'flex' &&
       s2.fillStyle === 'height:8%' &&
       s2.num === '1' && s2.tag === 'LV' && s2.waveKids === 4 &&
       s2.dwAnim === 'mn-lv-wave/1.6s' && s2.lwAnim === 'mn-lv-wave/2.2s' &&
-      s2.dwMask === '40px 32px' && s2.dwRepeat === 'repeat-x' &&
+      s2.dwMask === '80px 16px' && s2.dwRepeat === 'repeat-x' &&
       s2.dwMaskImg && s2.dwMaskImg !== 'none' &&
-      s2.dwH === 32 && s2.dwW === 120 &&
+      s2.dwH === 16 && s2.dwW === 160 &&
       s2.dwEdgeBg !== null && s2.dwEdgeBg === s2.deepBg && s2.lwEdgeBg === s2.lightBg && s2.dwEdgeBg !== s2.lwEdgeBg &&
       s2.lightOpacity === '0.65' && s2.lightBg !== null && s2.lightBg !== s2.deepBg &&
       s2.tagAbove === true, r);
