@@ -1363,7 +1363,22 @@ body.pre-stagger .auth-card { opacity: 0; }
    只加高拉长，LV 号码居中不变）；波浪加大——mask SVG 12×8→16×12（波长 12→16+振幅 4→6 双加）、
    波浪带高 8px→12px、两波顶线随半高同步（calc(40% - 4px)→-6px / -4px→-6px）、无缝循环
    translateX 12px→16px 恰好一个波长，strip 200%→300%（左右余量=杯内宽 20px ≥ 16px 波长，
-   循环末帧不露缺口）；两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s 过渡全保持。 */
+   循环末帧不露缺口）；两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s 过渡全保持。
+   v0.2.58.6 用户「那个波浪能不能再大宽一些还有那个药丸也是再大些」——
+   药丸再大：药丸 28×48→32×58、水杯胶囊 24×32→28×42（border-radius:999px 不变，LV 号码居中不变，
+   杯内宽 20→24；LV 标签 6→7px、LV 号码 12→14px 同步放大）；波浪再大再宽——mask SVG viewBox
+   16×12→20×16（波长 16→20+振幅 6→8 双加）、波浪带高 12px→16px、两波顶线随半高同步
+   （calc(40% - 6px)→-8px / -6px→-8px）、无缝循环 translateX 16px→20px 恰好一个波长、strip 恒 300%
+   （左右余量=杯内宽 24px ≥ 20px 波长，循环末帧不露缺口）；两层结构/两速 1.6s/2.2s 相位漂移/
+   水位从底往上灌/0.5s 过渡全保持。
+   v0.2.58.7 用户「那个波浪能不能大2倍啊？还有那个药丸能不能大1倍啊」（两问钦定：波浪全翻倍×2·
+   药丸长宽都×2）——药丸再放大：药丸 32×58→64×116、水杯胶囊 28×42→56×84（border-radius:999px
+   不变，LV 号码居中不变，杯内宽 24→52；LV 标签 7→14px、LV 号码 14→28px 同步放大；药丸 64 宽 > 用户卡内容 46px——折叠 72px 列与最窄 floating
+   64px 列均溢出用户卡各 4px/边、仍收在侧栏列内零越界=用户钦定取舍）；波浪全翻倍——mask SVG viewBox 20×16→40×32（波长 20→40+
+   振幅 8→16 双翻倍）、波浪带高 16px→32px、两波顶线随半高同步（calc(40% - 8px)→-16px /
+   -8px→-16px）、无缝循环 translateX 20px→40px 恰好一个波长、strip 恒 300%（左右余量=杯内宽
+   52px ≥ 40px 波长，循环末帧不露缺口）；两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s
+   过渡全保持。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1376,14 +1391,14 @@ body.pre-stagger .auth-card { opacity: 0; }
   to { opacity: 1; transform: none; }
 }
 .mn-lv-pill {
-  width: 28px; height: 48px; border-radius: 999px;
+  width: 64px; height: 116px; border-radius: 999px;
   background: var(--card-bg, #ffffff);
   flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   flex-shrink: 0;
 }
 .mn-lv-ring {
   position: relative;
-  width: 24px; height: 32px; border-radius: 999px;
+  width: 56px; height: 84px; border-radius: 999px;
   border: 2px solid rgba(128,128,140,0.28);
   box-sizing: border-box;
   flex-shrink: 0;
@@ -1403,37 +1418,37 @@ body.pre-stagger .auth-card { opacity: 0; }
   background: var(--mn-lv-light); opacity: 0.65;
 }
 .mn-lv-wdeepwave, .mn-lv-wlightwave {
-  position: absolute; left: -100%; width: 300%; height: 12px;
+  position: absolute; left: -100%; width: 300%; height: 32px;
   background-color: var(--mn-lv-wave-c);
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 12'%3E%3Cpath d='M0 6 Q4 0 8 6 Q12 12 16 6 V12 H0 Z' fill='black'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 12'%3E%3Cpath d='M0 6 Q4 0 8 6 Q12 12 16 6 V12 H0 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 32'%3E%3Cpath d='M0 16 Q10 0 20 16 Q30 32 40 16 V32 H0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 32'%3E%3Cpath d='M0 16 Q10 0 20 16 Q30 32 40 16 V32 H0 Z' fill='black'/%3E%3C/svg%3E");
   -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
-  -webkit-mask-size: 16px 12px; mask-size: 16px 12px;
+  -webkit-mask-size: 40px 32px; mask-size: 40px 32px;
   pointer-events: none;
 }
 .mn-lv-wdeepwave {
   --mn-lv-wave-c: var(--color-primary);
-  top: calc(40% - 6px);
+  top: calc(40% - 16px);
   animation: mn-lv-wave 1.6s linear infinite;
 }
 .mn-lv-wlightwave {
   --mn-lv-wave-c: var(--mn-lv-light);
-  top: -6px;
+  top: -16px;
   animation: mn-lv-wave 2.2s linear infinite;
 }
 @keyframes mn-lv-wave {
   from { transform: translateX(0); }
-  to { transform: translateX(-16px); }
+  to { transform: translateX(-40px); }
 }
 .mn-lv-pill-tag {
-  font-size: 6px; font-weight: 700; letter-spacing: 0.06em;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.06em;
   color: var(--color-outline);
 }
 .mn-lv-pill-num {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
   z-index: 5;
-  font-size: 12px; font-weight: 700; color: var(--color-primary);
+  font-size: 28px; font-weight: 700; color: var(--color-primary);
   text-shadow: 0 0 2px rgba(255,255,255,0.9), 0 0 3px rgba(255,255,255,0.9);
 }
 /* 同轮折叠态头像间距归整（根治「挤压到了用户头像」的两处真身）：
