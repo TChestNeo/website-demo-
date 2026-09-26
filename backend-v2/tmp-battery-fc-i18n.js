@@ -1,7 +1,7 @@
 // tmp-battery-fc-i18n.js — FC v10.28.47.4 两页接入 12 语言 i18n 电池
 // 用户「还有 FC还没有做翻译」——编辑器页+落地页共享 fluidcanvas.i18n.js 字典
 // （zh 英文 chrome 换中文；卡片类型名显示层本地化、dataset.label 英文 payload 零改动）。
-// 验证：F0 管道（site-config 45.0/00315- 占位 + 两页字典三件套挂载 + data-i18n 规模 +
+// 验证：F0 管道（site-config 45.0/00317- 占位 + 两页字典三件套挂载 + data-i18n 规模 +
 //   zh 默认解析）/ F1 zh chrome 逐字（视口/模板/图层/历史/保存草稿/发布 + 状态栏四格）
 //   / F2 资产面板 zh 标签 + data-asset/data-label 英文 payload 恒在
 //   / F3 setLang 实时切换（en→zh 双向 + lang 属性 + 持久化）
@@ -125,8 +125,8 @@ function ok(name, cond, detail) {
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     const landingHtml = await (await fetch(BASE + '/pages/fluidcanvas.html')).text();
     const countAttr = (html, attr) => (html.match(new RegExp(attr + '=', 'g')) || []).length;
-    ok('F0a site-config：FC v10.28.47.4 + rev 00315- 占位 + 站点版本恒 v0.2.58.10',
-      siteCfg.indexOf('v10.28.47.4') !== -1 && siteCfg.indexOf('00315-') !== -1 && siteCfg.indexOf('v0.2.58.10') !== -1);
+    ok('F0a site-config：FC v10.28.47.4 + rev 00317- 占位 + 站点版本恒 v0.2.58.11',
+      siteCfg.indexOf('v10.28.47.4') !== -1 && siteCfg.indexOf('00317-') !== -1 && siteCfg.indexOf('v0.2.58.11') !== -1);
     ok('F0b 编辑器页字典三件套挂载 + data-i18n 规模（≥180 文本 + ≥40 title + ≥8 placeholder）',
       editorHtml.indexOf('assets/js/i18n.js') !== -1 &&
       editorHtml.indexOf('assets/i18n/common.i18n.js') !== -1 &&

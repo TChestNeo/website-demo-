@@ -100,16 +100,19 @@ const cnt = (s, sub) => s.split(sub).length - 1;
   const indexSrc = fs.readFileSync(path.join(DOCS, 'index.html'), 'utf8');
   const editorSrc = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
 
-  ok('F1 静态：58.10 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话+一问钦定「只有主色水+一道浅浪」+ rev 00315- + 58.9 赋值零残留 + 58.9/58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.10';") !== -1 &&
+  ok('F1 静态：58.11 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话（倒反/互换一下颜色）+ rev 00317- + 58.10 赋值零残留 + 58.10/58.9/58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.11';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
+    sconfSrc.indexOf('v0.2.58.11 = 折叠侧栏等级水杯两色互换') !== -1 &&
+    sconfSrc.indexOf('波浪和深蓝色倒反') !== -1 &&
+    sconfSrc.indexOf('就只是互换一下颜色而已') !== -1 &&
+    sconfSrc.indexOf('rev 00317-') !== -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.10';") === -1 &&
     sconfSrc.indexOf('v0.2.58.10 = 折叠侧栏等级水杯收成两层') !== -1 &&
     sconfSrc.indexOf('为什么是四层颜色') !== -1 &&
     sconfSrc.indexOf('能不能只有两层') !== -1 &&
     sconfSrc.indexOf('一问钦定') !== -1 &&
     sconfSrc.indexOf('只有主色水+一道浅浪') !== -1 &&
-    sconfSrc.indexOf('rev 00315-') !== -1 &&
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.9';") === -1 &&
     sconfSrc.indexOf('v0.2.58.9 = 折叠侧栏等级药丸波浪改平改宽') !== -1 &&
     sconfSrc.indexOf('那个波浪能不能') !== -1 &&
     sconfSrc.indexOf('高度减半+宽度翻倍') !== -1 &&
@@ -145,7 +148,7 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     sidebarSrc.indexOf('display:flex;align-items:center;justify-content:space-between;margin-bottom:4px') !== -1 &&
     sidebarSrc.indexOf('height:5px;border-radius:999px;background:rgba(128,128,140,0.25)') !== -1);
 
-  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 48×116 + 水杯 44×84 胶囊 + 浅色 color-mix + 单层水件套——主色水 wdeep+浅色浪 wlightwave 单规则 80×16 新路径/400% strip 16px/平移 80px/2.2s + LV 标签 14px/号码 28px）+ 旧浅水层/旧深浪/旧 --mn-lv-wave-c 赋值/旧 1.6s/旧顶线 calc(40% - 8px)/旧 opacity 0.65/旧 height 40%/旧 40×32 路径/旧 300% strip/旧平移 40px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧平移 20px/旧顶线 -16px 旧代/旧花边/7px 7px/conic/pill-core 零残留 + 58.10 注释在位 + index/editor 内联块同款同步',
+  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 48×116 + 水杯 44×84 胶囊 + 浅色 color-mix + 单层水件套——浅水 wdeep+深浪 wlightwave（58.11 两色互换：wdeep 背景 var(--mn-lv-light)+wlightwave 背景 var(--color-primary)）单规则 80×16 新路径/400% strip 16px/平移 80px/2.2s + LV 标签 14px/号码 28px）+ 旧浅水层/旧深浪/旧 --mn-lv-wave-c 赋值/旧 1.6s/旧顶线 calc(40% - 8px)/旧 opacity 0.65/旧 height 40%/旧 40×32 路径/旧 300% strip/旧平移 40px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧平移 20px/旧顶线 -16px 旧代/旧花边/7px 7px/conic/pill-core 零残留 + 58.10/58.11 注释在位 + 旧色值组合（wdeep primary/wlightwave light）零残留 + index/editor 内联块同款同步',
     etherealSrc.indexOf('.mn-lv-badge .mn-lv-pill { display: none; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }') !== -1 &&
@@ -161,12 +164,14 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     etherealSrc.indexOf('width: 24px; height: 32px;') === -1 &&
     etherealSrc.indexOf('width: 24px; height: 24px; border-radius: 50%;') === -1 &&
     etherealSrc.indexOf('--mn-lv-light: color-mix(in srgb, var(--color-primary) 55%, #ffffff);') !== -1 &&
-    etherealSrc.indexOf('.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); }') !== -1 &&
+    etherealSrc.indexOf('.mn-lv-wdeep { position: absolute; inset: 0; background: var(--mn-lv-light); }') !== -1 &&
     etherealSrc.indexOf('.mn-lv-wlightwave {') !== -1 &&
     etherealSrc.indexOf('.mn-lv-wlight {') === -1 &&
     etherealSrc.indexOf('.mn-lv-wdeepwave {') === -1 &&
     etherealSrc.indexOf('.mn-lv-wdeepwave, .mn-lv-wlightwave {') === -1 &&
-    etherealSrc.indexOf('background-color: var(--mn-lv-light);') !== -1 &&
+    etherealSrc.indexOf('background-color: var(--color-primary);') !== -1 &&
+    etherealSrc.indexOf('background-color: var(--mn-lv-light);') === -1 &&
+    etherealSrc.indexOf('.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); }') === -1 &&
     etherealSrc.indexOf('--mn-lv-wave-c:') === -1 &&
     etherealSrc.indexOf('opacity: 0.65;') === -1 &&
     etherealSrc.indexOf('height: 40%;') === -1 &&
@@ -207,6 +212,8 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     etherealSrc.indexOf('@keyframes mn-lv-wave') !== -1 &&
     etherealSrc.indexOf('v0.2.58.10 用户「为什么是四层颜色？') !== -1 &&
     etherealSrc.indexOf('只有主色水+一道浅浪') !== -1 &&
+    etherealSrc.indexOf('v0.2.58.11 用户「能不能把那个浅蓝色波浪和深蓝色倒反？') !== -1 &&
+    etherealSrc.indexOf('就只是互换一下颜色而已') !== -1 &&
     etherealSrc.indexOf('font-size: 14px; font-weight: 700; letter-spacing: 0.06em;') !== -1 &&
     etherealSrc.indexOf('font-size: 28px; font-weight: 700; color: var(--color-primary);') !== -1 &&
     etherealSrc.indexOf('background: radial-gradient(circle at 50% 0, transparent 3.5px, var(--mn-lv-wave-c) 3.5px) repeat-x;') === -1 &&
@@ -223,6 +230,10 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     cnt(indexSrc, 'mask-size: 40px 32px;') === 0 &&
     cnt(indexSrc, 'mask-size: 20px 16px;') === 0 &&
     cnt(indexSrc, 'mask-size: 16px 12px;') === 0 &&
+    cnt(indexSrc, 'background: var(--mn-lv-light);') === 1 &&
+    cnt(indexSrc, 'background-color: var(--color-primary);') === 1 &&
+    cnt(indexSrc, '.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); }') === 0 &&
+    cnt(indexSrc, 'background-color: var(--mn-lv-light);') === 0 &&
     cnt(indexSrc, 'left: -100%; width: 400%') === 1 &&
     cnt(indexSrc, 'left: -100%; width: 300%') === 0 &&
     cnt(indexSrc, 'width: 48px; height: 116px; border-radius: 999px;') === 1 &&
@@ -242,6 +253,10 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     cnt(editorSrc, 'mask-size: 40px 32px;') === 0 &&
     cnt(editorSrc, 'mask-size: 20px 16px;') === 0 &&
     cnt(editorSrc, 'mask-size: 16px 12px;') === 0 &&
+    cnt(editorSrc, 'background: var(--mn-lv-light);') === 1 &&
+    cnt(editorSrc, 'background-color: var(--color-primary);') === 1 &&
+    cnt(editorSrc, '.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); }') === 0 &&
+    cnt(editorSrc, 'background-color: var(--mn-lv-light);') === 0 &&
     cnt(editorSrc, 'left: -100%; width: 400%') === 1 &&
     cnt(editorSrc, 'left: -100%; width: 300%') === 0 &&
     cnt(editorSrc, 'width: 48px; height: 116px; border-radius: 999px;') === 1 &&

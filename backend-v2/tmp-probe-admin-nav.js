@@ -74,7 +74,7 @@ const get = (url) => new Promise((resolve) => {
 
   // S4 主站照旧
   const r4 = await get(MAIN + '/');
-  ok('S4 主站照旧 200 + v0.2.58.10 在场', r4.status === 200 && r4.body.indexOf('v0.2.58.10') !== -1, 'status=' + r4.status);
+  ok('S4 主站照旧 200 + v0.2.58.11 在场', r4.status === 200 && r4.body.indexOf('v0.2.58.11') !== -1, 'status=' + r4.status);
 
   // S5 子域 /api/health 同源回归
   const r5 = await get(ADMIN + '/api/health');

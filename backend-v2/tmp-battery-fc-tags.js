@@ -104,9 +104,9 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     const i18nTxt = await (await fetch(BASE + '/assets/i18n/fluidcanvas.i18n.js')).text();
-    ok('S1 site-config：FC v10.28.47.4 + rev 00315- 占位 + 站点恒 v0.2.58.10 + 旧 47.3 版本锚零残留',
+    ok('S1 site-config：FC v10.28.47.4 + rev 00317- 占位 + 站点恒 v0.2.58.11 + 旧 47.3 版本锚零残留',
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
-      siteCfg.indexOf('00315-') !== -1 && siteCfg.indexOf('v0.2.58.10') !== -1 &&
+      siteCfg.indexOf('00317-') !== -1 && siteCfg.indexOf('v0.2.58.11') !== -1 &&
       siteCfg.indexOf('v10.28.46.0 = 图库标签系统') !== -1 &&
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.3';") === -1);
     ok('S2 标签 store 锚在源：IMG_TAG_KEY/SYS_TAG_IDS/惰性播种/窗口导出（tagLoad/tagCreate/tagDelete/localTagDedup/tagDisplayName）',

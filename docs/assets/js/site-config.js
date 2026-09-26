@@ -1150,6 +1150,14 @@ window.MN_SITE = window.MN_SITE || {};
 //   与内容列齐平零溢出；floating 64px 列右边线 1px 致模块 47、药丸右溢 1px 可忽略仍收在列内；两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s 过渡全保持；
 //   40 页内联块全量刷新+编辑器页手工同款；FC 恒 v10.28.47.4、后端零改动、i18n 零新键）：
 //   （rev 00312-2n7；同轮首部署瞬态 00311-wkw 已取代——rev 文本先占位后填真值、二次构建烘焙成此终态）
+// v0.2.58.11 = 折叠侧栏等级水杯两色互换（补丁位 10→11·调整轮；2026-09-27）——用户「能不能把那个浅蓝色
+//   波浪和深蓝色倒反？」「就只是互换一下颜色而已」：58.10 深水+浅浪两色互换（类名保持不动）——主色水
+//   .mn-lv-wdeep 背景 var(--color-primary)→var(--mn-lv-light) 变浅水、浅浪 .mn-lv-wlightwave 背景
+//   var(--mn-lv-light)→var(--color-primary) 变深浪；两层结构/80×16 mask/16px 带高/400% strip/平移
+//   80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84/LV 标签 14px/号码 28px 全零改动；
+//   sidebar.js 零改动（纯 CSS 零 JS）；40 页内联块全量刷新+编辑器页手工同款（inliner SKIP_CSS_REFRESH
+//   豁免）；FC 恒 v10.28.47.4、后端零改动、i18n 零新键）：
+//   （rev 00317-ht9 瞬态占位上直播；二次烘焙重部署终态 rev 00318-2vk——live 文本 00317-ht9 滞后一部署=58.10 同款下轮烘焙）
 // v0.2.58.10 = 折叠侧栏等级水杯收成两层（补丁位 9→10·调整轮；2026-09-27）——用户「为什么是四层颜色？
 //   能不能只有两层？」（一问钦定「只有主色水+一道浅浪」）：58.9 杯里 4 件套（深水+浅水半透明叠层+深浪
 //   压交界线+浅浪）视觉上四段颜色；修法：删浅水层 .mn-lv-wlight 与深浪 .mn-lv-wdeepwave，只留主色水
@@ -1246,7 +1254,7 @@ window.MN_SITE = window.MN_SITE || {};
 //   i18n：overview/index 新键 12 语言（ov.searchPh/search.*/contrib.published/empty、index.act.article）+ OpenCC 重生成
 //   后端零改动（GET /api/articles 已具备）；电池：新 tmp-battery-micro-v056 + article-view 补 View 锚
 //   （rev 00269-52s）
-window.MN_SITE_VERSION = 'v0.2.58.10';
+window.MN_SITE_VERSION = 'v0.2.58.11';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
