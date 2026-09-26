@@ -51,7 +51,7 @@ const get = (mod, url, opts) => new Promise((resolve) => {
 
   // S4 主站照旧
   const r4 = await get(https, MAIN + '/');
-  ok('S4 主站照旧 200 + v0.2.58.4 在场', r4.status === 200 && r4.body.indexOf('v0.2.58.4') !== -1, 'status=' + r4.status);
+  ok('S4 主站照旧 200 + v0.2.58.5 在场', r4.status === 200 && r4.body.indexOf('v0.2.58.5') !== -1, 'status=' + r4.status);
 
   // S5 主域 /admin/ 搬家 302 回归（上轮功能不回归）
   const r5 = await get(https, MAIN + '/admin/');
