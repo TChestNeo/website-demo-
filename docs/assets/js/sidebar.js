@@ -98,8 +98,8 @@
         //   浅有点的颜色增加层次感」（折叠侧栏等级水位环+双层水波）：
         //   58.2 的 conic 进度环从 12 点顺时针扫像时钟指针——废弃；环改成正圆「水杯」只围等级号码
         //   （LV 小字移到杯上方）；经验进度=水位从杯底往上灌（.mn-lv-fill 内联 height 百分比）；
-        //   水两层——底层主色 .mn-lv-wdeep + 上层浅色 .mn-lv-wlight（半透明叠层次），
-        //   两层各带波浪花边 .mn-lv-wdeepwave/.mn-lv-wlightwave 反向相位平移飘动（纯 CSS 动画零 JS）；
+        //   水单层——主色水 .mn-lv-wdeep + 杯顶一道浅色浪 .mn-lv-wlightwave（v0.2.58.10 用户「为什么是四层
+        //   颜色？能不能只有两层？」一问钦定「只有主色水+一道浅浪」——删浅水层与深浪，纯 CSS 动画零 JS）；
         //   展开态视图 .mn-lv-normal 原徽章原样不变。
         levelBadgeHTML =
           '<div class="mn-lv-badge" style="margin-top:8px">' +
@@ -119,8 +119,6 @@
                 '<div class="mn-lv-cup">' +
                   '<div class="mn-lv-fill" style="height:' + fillPct + '%">' +
                     '<div class="mn-lv-wdeep"></div>' +
-                    '<div class="mn-lv-wlight"></div>' +
-                    '<div class="mn-lv-wdeepwave"></div>' +
                     '<div class="mn-lv-wlightwave"></div>' +
                   '</div>' +
                 '</div>' +

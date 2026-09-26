@@ -1340,7 +1340,11 @@ body.pre-stagger .auth-card { opacity: 0; }
    浪高 32→16px、波长 40→80px）——mask SVG viewBox 40×32→80×16（波长翻倍+振幅减半，正弦路径 x 全翻倍
    y 全减半）、波浪带高 32px→16px、两波顶线随半高同步（calc(40% - 16px)→calc(40% - 8px) / -16px→-8px）、
    无缝循环 translateX 40px→80px 恰好一个波长、strip 300%→400%（160px=4×40，循环末帧右缘恰好盖住窗口
-   零缺口）；两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s 过渡全保持。 */
+   零缺口）；两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s 过渡全保持。
+   v0.2.58.10 用户「为什么是四层颜色？能不能只有两层？」（一问钦定「只有主色水+一道浅浪」）——58.9 杯里
+   4 件套（深水+浅水半透明叠层+深浪压交界线+浅浪）视觉上四段颜色；修法：删浅水层 .mn-lv-wlight 与深浪
+   .mn-lv-wdeepwave，只留主色水 .mn-lv-wdeep+杯顶一道浅色浪 .mn-lv-wlightwave（80×16 mask/16px 带高/
+   400% strip/平移 80px/2.2s 全零改动）；水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全保持。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1375,26 +1379,14 @@ body.pre-stagger .auth-card { opacity: 0; }
   transition: height 0.5s ease;
 }
 .mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); }
-.mn-lv-wlight {
-  position: absolute; left: 0; right: 0; top: 0; height: 40%;
-  background: var(--mn-lv-light); opacity: 0.65;
-}
-.mn-lv-wdeepwave, .mn-lv-wlightwave {
+.mn-lv-wlightwave {
   position: absolute; left: -100%; width: 400%; height: 16px;
-  background-color: var(--mn-lv-wave-c);
+  background-color: var(--mn-lv-light);
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
   -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
   -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
   pointer-events: none;
-}
-.mn-lv-wdeepwave {
-  --mn-lv-wave-c: var(--color-primary);
-  top: calc(40% - 8px);
-  animation: mn-lv-wave 1.6s linear infinite;
-}
-.mn-lv-wlightwave {
-  --mn-lv-wave-c: var(--mn-lv-light);
   top: -8px;
   animation: mn-lv-wave 2.2s linear infinite;
 }

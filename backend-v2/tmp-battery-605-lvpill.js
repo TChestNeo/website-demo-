@@ -1,16 +1,13 @@
-// tmp-battery-605-lvpill.js — v0.2.58.9 折叠侧栏等级药丸波浪改平改宽电池（58.8 药丸收窄电池同文件
-//   口径随轮改：用户「那个波浪能不能不要那么尖？让他平一些更加宽一些」——一问钦定「高度减半+宽度翻倍」
-//   （浪高 32→16px、波长 40→80px）。58.8 正弦水面一个波长 40px 挤在 40px 杯内宽里、浪高 32px 峰谷很陡；
-//   修法：mask SVG viewBox 40×32→80×16（波长翻倍+振幅减半，正弦路径 x 全翻倍 y 全减半）、波浪带高
-//   32px→16px、两波顶线随半高同步（calc(40% - 16px)→calc(40% - 8px) / -16px→-8px）、无缝循环
-//   translateX 40px→80px 恰好一个波长、strip 300%→400%（160px=4×40，循环末帧右缘恰好盖住窗口零缺口）；
-//   两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s 过渡全保持；药丸 48×116/水杯 44×84/LV 标签
-//   14px/号码 28px 零改动；sidebar.js 零改动（纯 CSS 零 JS）。
+// tmp-battery-605-lvpill.js — v0.2.58.10 折叠侧栏等级水杯收成两层电池（58.9 波浪改平改宽电池同文件
+//   口径随轮改：用户「为什么是四层颜色？能不能只有两层？」——一问钦定「只有主色水+一道浅浪」。
+//   58.9 杯里 4 件套（深水+浅水半透明叠层+深浪压交界线+浅浪）视觉上四段颜色；
+//   修法：删浅水层 .mn-lv-wlight 与深浪 .mn-lv-wdeepwave，只留主色水 .mn-lv-wdeep+杯顶一道浅色浪
+//   .mn-lv-wlightwave（80×16 mask/16px 带高/400% strip/平移 80px/2.2s 全零改动）；sidebar.js 模板删两 div；
+//   水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84/LV 标签 14px/号码 28px 全保持。
 //   折叠态等级徽章=纵向药丸 48×116（LV 小字在上）+ 药丸水杯 44×84 只围号码；经验进度=水位从杯底往上灌
-//   （.mn-lv-fill 内联 height 百分比）；水动效两层——底层主色 .mn-lv-wdeep + 上层浅色 .mn-lv-wlight
-//   （主色兑白 55%+半透明叠层次），两层各带正弦水面波形（1.6s/2.2s 纯 CSS 零 JS）；
+//   （.mn-lv-fill 内联 height 百分比）；水单层——主色水 + 杯顶一道浅色正弦浪（2.2s 纯 CSS 零 JS）；
 //   号码 z 上浮+白色描边晕影水位高时仍可读。展开态 .mn-lv-normal 原徽章原样零变化。
-// F 静态：site-config 58.9+changelog+rev 00313-、sidebar.js 新结构、ethereal.css 药丸规则+内联块同步；
+// F 静态：site-config 58.10+changelog+rev 00315-、sidebar.js 新结构、ethereal.css 药丸规则+内联块同步；
 // S 浏览器：展开零变化/折叠切换/药丸几何与菜单按钮同宽/水位进度刷新/满级/窄列 floating 与卡片齐平/展开恢复；E 零异常。
 // /api 全 404（demo 模式，同 xp-rebalance 口径）；会话+XP 本地种子。
 'use strict';
@@ -103,17 +100,19 @@ const cnt = (s, sub) => s.split(sub).length - 1;
   const indexSrc = fs.readFileSync(path.join(DOCS, 'index.html'), 'utf8');
   const editorSrc = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
 
-  ok('F1 静态：58.9 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话+一问钦定「高度减半+宽度翻倍」+ rev 00313- + 58.8 赋值零残留 + 58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.9';") !== -1 &&
+  ok('F1 静态：58.10 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话+一问钦定「只有主色水+一道浅浪」+ rev 00315- + 58.9 赋值零残留 + 58.9/58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.10';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
+    sconfSrc.indexOf('v0.2.58.10 = 折叠侧栏等级水杯收成两层') !== -1 &&
+    sconfSrc.indexOf('为什么是四层颜色') !== -1 &&
+    sconfSrc.indexOf('能不能只有两层') !== -1 &&
+    sconfSrc.indexOf('一问钦定') !== -1 &&
+    sconfSrc.indexOf('只有主色水+一道浅浪') !== -1 &&
+    sconfSrc.indexOf('rev 00315-') !== -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.9';") === -1 &&
     sconfSrc.indexOf('v0.2.58.9 = 折叠侧栏等级药丸波浪改平改宽') !== -1 &&
     sconfSrc.indexOf('那个波浪能不能') !== -1 &&
-    sconfSrc.indexOf('不要那么尖') !== -1 &&
-    sconfSrc.indexOf('平一些更加宽一些') !== -1 &&
-    sconfSrc.indexOf('一问钦定') !== -1 &&
     sconfSrc.indexOf('高度减半+宽度翻倍') !== -1 &&
-    sconfSrc.indexOf('rev 00313-') !== -1 &&
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.8';") === -1 &&
     sconfSrc.indexOf('v0.2.58.8 = 折叠侧栏等级药丸收窄对齐菜单按钮') !== -1 &&
     sconfSrc.indexOf('能不能把他的') !== -1 &&
     sconfSrc.indexOf('宽度变成和其他按钮一样') !== -1 &&
@@ -126,15 +125,15 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     sconfSrc.indexOf('v0.2.58.2 = 折叠侧栏等级纵向药丸+经验环') !== -1 &&
     sconfSrc.indexOf('v0.2.58.1 = 左侧菜单底部不透明背景完全删除') !== -1);
 
-  ok('F2 静态：sidebar.js 新结构（normal 原徽章字节原样 + 药丸/水杯/水位/双层水波件套 + fillPct + conic/ringPct/pill-core 零残留）',
+  ok('F2 静态：sidebar.js 新结构（normal 原徽章字节原样 + 药丸/水杯/水位/单层水件套 + fillPct + wlight/wdeepwave 零残留 + conic/ringPct/pill-core 零残留）',
     cnt(sidebarSrc, 'class="mn-lv-normal"') === 1 &&
     cnt(sidebarSrc, 'class="mn-lv-pill"') === 1 &&
     cnt(sidebarSrc, 'class="mn-lv-ring"') === 1 &&
     cnt(sidebarSrc, 'class="mn-lv-cup"') === 1 &&
     cnt(sidebarSrc, 'class="mn-lv-fill"') === 1 &&
     cnt(sidebarSrc, 'class="mn-lv-wdeep"') === 1 &&
-    cnt(sidebarSrc, 'class="mn-lv-wlight"') === 1 &&
-    cnt(sidebarSrc, 'class="mn-lv-wdeepwave"') === 1 &&
+    cnt(sidebarSrc, 'class="mn-lv-wlight"') === 0 &&
+    cnt(sidebarSrc, 'class="mn-lv-wdeepwave"') === 0 &&
     cnt(sidebarSrc, 'class="mn-lv-wlightwave"') === 1 &&
     cnt(sidebarSrc, 'class="mn-lv-pill-tag"') === 1 &&
     cnt(sidebarSrc, 'class="mn-lv-pill-num"') === 1 &&
@@ -146,7 +145,7 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     sidebarSrc.indexOf('display:flex;align-items:center;justify-content:space-between;margin-bottom:4px') !== -1 &&
     sidebarSrc.indexOf('height:5px;border-radius:999px;background:rgba(128,128,140,0.25)') !== -1);
 
-  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 48×116 + 水杯 44×84 胶囊 + 浅色 color-mix + 正弦水面 mask 件套 80×16 新路径/400% strip 16px/平移 80px/两速动画 + LV 标签 14px/号码 28px）+ 旧 40×32 路径/旧 300% strip 32px/旧顶线 calc(40% - 16px)/-16px/旧平移 40px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧 16px 波形/旧平移 20px/旧顶线 -8px 旧代/旧花边/7px 7px/conic/pill-core 零残留 + index/editor 内联块同款同步',
+  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 48×116 + 水杯 44×84 胶囊 + 浅色 color-mix + 单层水件套——主色水 wdeep+浅色浪 wlightwave 单规则 80×16 新路径/400% strip 16px/平移 80px/2.2s + LV 标签 14px/号码 28px）+ 旧浅水层/旧深浪/旧 --mn-lv-wave-c 赋值/旧 1.6s/旧顶线 calc(40% - 8px)/旧 opacity 0.65/旧 height 40%/旧 40×32 路径/旧 300% strip/旧平移 40px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧平移 20px/旧顶线 -16px 旧代/旧花边/7px 7px/conic/pill-core 零残留 + 58.10 注释在位 + index/editor 内联块同款同步',
     etherealSrc.indexOf('.mn-lv-badge .mn-lv-pill { display: none; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }') !== -1 &&
@@ -162,6 +161,23 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     etherealSrc.indexOf('width: 24px; height: 32px;') === -1 &&
     etherealSrc.indexOf('width: 24px; height: 24px; border-radius: 50%;') === -1 &&
     etherealSrc.indexOf('--mn-lv-light: color-mix(in srgb, var(--color-primary) 55%, #ffffff);') !== -1 &&
+    etherealSrc.indexOf('.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); }') !== -1 &&
+    etherealSrc.indexOf('.mn-lv-wlightwave {') !== -1 &&
+    etherealSrc.indexOf('.mn-lv-wlight {') === -1 &&
+    etherealSrc.indexOf('.mn-lv-wdeepwave {') === -1 &&
+    etherealSrc.indexOf('.mn-lv-wdeepwave, .mn-lv-wlightwave {') === -1 &&
+    etherealSrc.indexOf('background-color: var(--mn-lv-light);') !== -1 &&
+    etherealSrc.indexOf('--mn-lv-wave-c:') === -1 &&
+    etherealSrc.indexOf('opacity: 0.65;') === -1 &&
+    etherealSrc.indexOf('height: 40%;') === -1 &&
+    etherealSrc.indexOf('top: calc(40% - 8px);') === -1 &&
+    etherealSrc.indexOf('top: calc(40% - 16px);') === -1 &&
+    etherealSrc.indexOf('top: -16px;') === -1 &&
+    etherealSrc.indexOf('top: calc(40% - 6px);') === -1 &&
+    etherealSrc.indexOf('top: -6px;') === -1 &&
+    etherealSrc.indexOf('top: calc(40% - 4px);') === -1 &&
+    etherealSrc.indexOf('top: -4px;') === -1 &&
+    etherealSrc.indexOf('top: -8px;') !== -1 &&
     cnt(etherealSrc, 'mask-image: url("data:image/svg+xml') === 2 &&
     cnt(etherealSrc, "viewBox='0 0 80 16'") === 2 &&
     cnt(etherealSrc, 'M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z') === 2 &&
@@ -176,28 +192,21 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     cnt(etherealSrc, 'mask-size: 20px 16px;') === 0 &&
     cnt(etherealSrc, 'mask-size: 16px 12px;') === 0 &&
     cnt(etherealSrc, 'mask-size: 12px 8px;') === 0 &&
-    etherealSrc.indexOf('position: absolute; left: -100%; width: 400%; height: 16px;') !== -1 &&
+    cnt(etherealSrc, 'position: absolute; left: -100%; width: 400%; height: 16px;') === 1 &&
     etherealSrc.indexOf('position: absolute; left: -100%; width: 300%; height: 32px;') === -1 &&
     etherealSrc.indexOf('position: absolute; left: -100%; width: 300%; height: 16px;') === -1 &&
     etherealSrc.indexOf('position: absolute; left: -100%; width: 300%; height: 12px;') === -1 &&
     etherealSrc.indexOf('position: absolute; left: -100%; width: 200%; height: 8px;') === -1 &&
-    etherealSrc.indexOf('background-color: var(--mn-lv-wave-c);') !== -1 &&
-    etherealSrc.indexOf('top: calc(40% - 8px);') !== -1 &&
-    etherealSrc.indexOf('top: -8px;') !== -1 &&
-    etherealSrc.indexOf('top: calc(40% - 16px);') === -1 &&
-    etherealSrc.indexOf('top: -16px;') === -1 &&
-    etherealSrc.indexOf('top: calc(40% - 6px);') === -1 &&
-    etherealSrc.indexOf('top: -6px;') === -1 &&
-    etherealSrc.indexOf('top: calc(40% - 4px);') === -1 &&
-    etherealSrc.indexOf('top: -4px;') === -1 &&
     etherealSrc.indexOf('translateX(-80px)') !== -1 &&
     etherealSrc.indexOf('translateX(-40px)') === -1 &&
     etherealSrc.indexOf('translateX(-20px)') === -1 &&
     etherealSrc.indexOf('translateX(-16px)') === -1 &&
     etherealSrc.indexOf('translateX(-12px)') === -1 &&
-    etherealSrc.indexOf('animation: mn-lv-wave 1.6s linear infinite;') !== -1 &&
     etherealSrc.indexOf('animation: mn-lv-wave 2.2s linear infinite;') !== -1 &&
+    etherealSrc.indexOf('animation: mn-lv-wave 1.6s linear infinite;') === -1 &&
     etherealSrc.indexOf('@keyframes mn-lv-wave') !== -1 &&
+    etherealSrc.indexOf('v0.2.58.10 用户「为什么是四层颜色？') !== -1 &&
+    etherealSrc.indexOf('只有主色水+一道浅浪') !== -1 &&
     etherealSrc.indexOf('font-size: 14px; font-weight: 700; letter-spacing: 0.06em;') !== -1 &&
     etherealSrc.indexOf('font-size: 28px; font-weight: 700; color: var(--color-primary);') !== -1 &&
     etherealSrc.indexOf('background: radial-gradient(circle at 50% 0, transparent 3.5px, var(--mn-lv-wave-c) 3.5px) repeat-x;') === -1 &&
@@ -206,7 +215,10 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     etherealSrc.indexOf('mn-lv-pill-core') === -1 &&
     cnt(indexSrc, '.mn-lv-badge .mn-lv-pill { display: none; }') === 1 &&
     cnt(indexSrc, 'mn-lv-pill-in') === 2 &&
-    cnt(indexSrc, '.mn-lv-wdeepwave {') === 1 &&
+    cnt(indexSrc, '.mn-lv-wlightwave {') === 1 &&
+    cnt(indexSrc, '.mn-lv-wdeepwave {') === 0 &&
+    cnt(indexSrc, '.mn-lv-wdeepwave, .mn-lv-wlightwave {') === 0 &&
+    cnt(indexSrc, '.mn-lv-wlight {') === 0 &&
     cnt(indexSrc, 'mask-size: 80px 16px;') === 2 &&
     cnt(indexSrc, 'mask-size: 40px 32px;') === 0 &&
     cnt(indexSrc, 'mask-size: 20px 16px;') === 0 &&
@@ -220,9 +232,12 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     cnt(indexSrc, 'width: 32px; height: 58px; border-radius: 999px;') === 0 &&
     cnt(indexSrc, 'width: 28px; height: 42px; border-radius: 999px;') === 0 &&
     cnt(indexSrc, '@keyframes mn-lv-wave') === 1 &&
-    cnt(indexSrc, 'animation: mn-lv-wave ') === 2 &&
+    cnt(indexSrc, 'animation: mn-lv-wave ') === 1 &&
     cnt(editorSrc, 'mn-lv-pill-in') === 2 &&
-    cnt(editorSrc, '.mn-lv-wdeepwave, .mn-lv-wlightwave {') === 1 &&
+    cnt(editorSrc, '.mn-lv-wlightwave {') === 1 &&
+    cnt(editorSrc, '.mn-lv-wdeepwave {') === 0 &&
+    cnt(editorSrc, '.mn-lv-wdeepwave, .mn-lv-wlightwave {') === 0 &&
+    cnt(editorSrc, '.mn-lv-wlight {') === 0 &&
     cnt(editorSrc, 'mask-size: 80px 16px;') === 2 &&
     cnt(editorSrc, 'mask-size: 40px 32px;') === 0 &&
     cnt(editorSrc, 'mask-size: 20px 16px;') === 0 &&
@@ -236,7 +251,7 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     cnt(editorSrc, 'width: 32px; height: 58px; border-radius: 999px;') === 0 &&
     cnt(editorSrc, 'width: 28px; height: 42px; border-radius: 999px;') === 0 &&
     cnt(editorSrc, '@keyframes mn-lv-wave') === 1 &&
-    cnt(editorSrc, 'animation: mn-lv-wave ') === 2,
+    cnt(editorSrc, 'animation: mn-lv-wave ') === 1,
     'index-pill=' + cnt(indexSrc, 'mn-lv-pill-in') + ' editor-pill=' + cnt(editorSrc, 'mn-lv-pill-in'));
 
   // ═══ 浏览器场景 ═══
@@ -285,27 +300,24 @@ const cnt = (s, sub) => s.split(sub).length - 1;
       "var n = b.querySelector('.mn-lv-normal'); var p = b.querySelector('.mn-lv-pill'); " +
       "var fill = b.querySelector('.mn-lv-fill'); var num = b.querySelector('.mn-lv-pill-num'); " +
       "var tag = b.querySelector('.mn-lv-pill-tag'); " +
-      "var dw = b.querySelector('.mn-lv-wdeepwave'); var lw = b.querySelector('.mn-lv-wlightwave'); " +
-      "var wl = b.querySelector('.mn-lv-wlight'); var wd = b.querySelector('.mn-lv-wdeep'); " +
+      "var lw = b.querySelector('.mn-lv-wlightwave'); var wd = b.querySelector('.mn-lv-wdeep'); " +
       "var tagR = tag ? tag.getBoundingClientRect() : null; var ring = b.querySelector('.mn-lv-ring'); " +
       "var ringR = ring ? ring.getBoundingClientRect() : null; " +
-      "var dwR = dw ? dw.getBoundingClientRect() : null; " +
+      "var lwR = lw ? lw.getBoundingClientRect() : null; " +
       "return JSON.stringify({ txt: b.textContent, nDisplay: n ? getComputedStyle(n).display : null, " +
       "pDisplay: p ? getComputedStyle(p).display : null, fillStyle: fill ? fill.getAttribute('style') : null, " +
       "num: num ? num.textContent : null, tag: tag ? tag.textContent : null, " +
       "waveKids: fill ? fill.children.length : -1, " +
-      "dwAnim: dw ? getComputedStyle(dw).animationName + '/' + getComputedStyle(dw).animationDuration : null, " +
       "lwAnim: lw ? getComputedStyle(lw).animationName + '/' + getComputedStyle(lw).animationDuration : null, " +
-      "dwMask: dw ? getComputedStyle(dw).maskSize : null, " +
-      "dwRepeat: dw ? getComputedStyle(dw).maskRepeat : null, " +
-      "dwMaskImg: dw ? (getComputedStyle(dw).maskImage || '') : null, " +
-      "dwH: dw ? Math.round(dwR.height) : -1, " +
-      "dwW: dw ? Math.round(dwR.width) : -1, " +
-      "dwEdgeBg: dw ? getComputedStyle(dw).backgroundColor : null, " +
-      "lwEdgeBg: lw ? getComputedStyle(lw).backgroundColor : null, " +
-      "lightOpacity: wl ? getComputedStyle(wl).opacity : null, " +
-      "lightBg: wl ? getComputedStyle(wl).backgroundColor : null, " +
+      "lwMask: lw ? getComputedStyle(lw).maskSize : null, " +
+      "lwRepeat: lw ? getComputedStyle(lw).maskRepeat : null, " +
+      "lwMaskImg: lw ? (getComputedStyle(lw).maskImage || '') : null, " +
+      "lwH: lw ? Math.round(lwR.height) : -1, " +
+      "lwW: lw ? Math.round(lwR.width) : -1, " +
+      "lwBg: lw ? getComputedStyle(lw).backgroundColor : null, " +
       "deepBg: wd ? getComputedStyle(wd).backgroundColor : null, " +
+      "dwAbsent: !b.querySelector('.mn-lv-wdeepwave'), " +
+      "wlAbsent: !b.querySelector('.mn-lv-wlight'), " +
       "tagAbove: (tagR && ringR) ? tagR.bottom <= ringR.top + 0.5 : null, " +
       "barKids: n ? n.children.length : -1, xp: JSON.parse(localStorage.getItem('slati_xp') || '0') }); })()");
     const geoNow = () => cdp.evalJs("(function(){ var pill = document.querySelector('#slati-sidebar .mn-lv-pill'); " +
@@ -350,16 +362,16 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     await sleep(500);
     r = await pillNow();
     const s2 = JSON.parse(r);
-    ok('S2 折叠切换：normal 隐藏 + 药丸 flex + 水位 8% + 中间 LV/1 + 双层正弦水面改平改宽（mask 80px 16px repeat-x + 波形 16px 高 + strip 400%=160px + 两速 1.6s/2.2s）+ 波形色与水面层同色（深=主色/浅=浅色且两色不同）+ 浅层半透明 0.65 + LV 在杯上方',
+    ok('S2 折叠切换：normal 隐藏 + 药丸 flex + 水位 8% + 中间 LV/1 + 单层水件套——主色水 wdeep+杯顶一道浅色浪 wlightwave（mask 80px 16px repeat-x + 波形 16px 高 + strip 400%=160px + 单速 2.2s）+ 浅浪色与主色水不同 + 浅水层/深浪已删零残留 + LV 在杯上方',
       s2.nDisplay === 'none' && s2.pDisplay === 'flex' &&
       s2.fillStyle === 'height:8%' &&
-      s2.num === '1' && s2.tag === 'LV' && s2.waveKids === 4 &&
-      s2.dwAnim === 'mn-lv-wave/1.6s' && s2.lwAnim === 'mn-lv-wave/2.2s' &&
-      s2.dwMask === '80px 16px' && s2.dwRepeat === 'repeat-x' &&
-      s2.dwMaskImg && s2.dwMaskImg !== 'none' &&
-      s2.dwH === 16 && s2.dwW === 160 &&
-      s2.dwEdgeBg !== null && s2.dwEdgeBg === s2.deepBg && s2.lwEdgeBg === s2.lightBg && s2.dwEdgeBg !== s2.lwEdgeBg &&
-      s2.lightOpacity === '0.65' && s2.lightBg !== null && s2.lightBg !== s2.deepBg &&
+      s2.num === '1' && s2.tag === 'LV' && s2.waveKids === 2 &&
+      s2.lwAnim === 'mn-lv-wave/2.2s' &&
+      s2.lwMask === '80px 16px' && s2.lwRepeat === 'repeat-x' &&
+      s2.lwMaskImg && s2.lwMaskImg !== 'none' &&
+      s2.lwH === 16 && s2.lwW === 160 &&
+      s2.lwBg !== null && s2.lwBg !== s2.deepBg &&
+      s2.dwAbsent === true && s2.wlAbsent === true &&
       s2.tagAbove === true, r);
     const clsOk = await cdp.evalJs("document.querySelector('#slati-sidebar').classList.contains('collapsed')");
     ok('S2b .app-sidebar.collapsed 类在位', clsOk === true);
