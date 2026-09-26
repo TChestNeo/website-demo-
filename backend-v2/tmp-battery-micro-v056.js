@@ -201,7 +201,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     // B6 双版本锚
     const ver = await cdp.evalJs("window.MN_SITE_VERSION");
     const fcVer = await cdp.evalJs("window.FLUIDCANVAS_VERSION");
-    ok('B6 站点号 v0.2.58.3', ver === 'v0.2.58.3', 'got=' + ver);
+    ok('B6 站点号 v0.2.58.4', ver === 'v0.2.58.4', 'got=' + ver);
     ok('B6b FC v10.28.39.0', fcVer === 'v10.28.47.4', 'got=' + fcVer);
 
     // ═══ F FC 列表 View 分流 ═══

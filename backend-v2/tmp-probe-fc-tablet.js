@@ -71,10 +71,10 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.47.4 + iPad 触控 changelog 条目 + rev 00293- + 站点恒 v0.2.58.3',
+  ok('S1 线上 site-config：FC v10.28.47.4 + iPad 触控 changelog 条目 + rev 00293- + 站点恒 v0.2.58.4',
     sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
     sc.body.indexOf('iPad 触控适配') !== -1 && sc.body.indexOf('rev 00293-') !== -1 &&
-    sc.body.indexOf('v0.2.58.3') !== -1,
+    sc.body.indexOf('v0.2.58.4') !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const fc = await get(BASE + '/pages/fluidcanvas-editor.html');
   ok('S2 线上编辑器页：fc-touch.js script 标签 + 7577 守卫 + 粗指针 CSS 锚在场',

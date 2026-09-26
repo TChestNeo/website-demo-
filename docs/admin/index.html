@@ -1340,10 +1340,13 @@ body.pre-stagger .auth-card { opacity: 0; }
    58.2 的 conic 进度环从 12 点顺时针扫像时钟指针——废弃；环改成正圆「水杯」只围等级号码
    （LV 小字移到杯上方）；经验进度=水位从杯底往上灌（.mn-lv-fill 内联 height 百分比，sidebar.js 写入，
    加 0.5s 过渡平滑上涨）；水动效两层——底层主色 .mn-lv-wdeep + 上层浅色 .mn-lv-wlight
-   （主色兑白 55%+半透明叠出层次感），两层各带波浪花边 .mn-lv-wdeepwave/.mn-lv-wlightwave
-   （radial-gradient 花边纹+translateX 平移一个花边周期无缝循环，两速 1.6s/2.2s 相位漂移更自然）；
+   （主色兑白 55%+半透明叠出层次感），两层各带波浪花边 .mn-lv-wdeepwave/.mn-lv-wlightwave；
    号码 z 上浮+白色描边晕影保证水位高时依然可读。
-   展开态药丸默认隐藏（.mn-lv-badge .mn-lv-pill display:none）——展开侧栏零变化。 */
+   展开态药丸默认隐藏（.mn-lv-badge .mn-lv-pill display:none）——展开侧栏零变化。
+   v0.2.58.4 用户「那个水波能不能参考这个（贴了 wave.png 水杯代码）我要你参考他的波纹不是动画」——
+   波纹形状从 58.3 的圆点花边改正弦水面：mask SVG 正弦路径（12×8 一个波长，水面线下实填）+背景色
+   var(--mn-lv-wave-c) 着色，translateX 平移一个波长 12px 无缝循环；两层结构/两速 1.6s/2.2s 相位漂移/
+   水位从底往上灌/0.5s 过渡全保持——只换波纹形状，动画节奏零改动。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1383,24 +1386,27 @@ body.pre-stagger .auth-card { opacity: 0; }
   background: var(--mn-lv-light); opacity: 0.65;
 }
 .mn-lv-wdeepwave, .mn-lv-wlightwave {
-  position: absolute; left: -50%; width: 200%; height: 7px;
-  background: radial-gradient(circle at 50% 0, transparent 3.5px, var(--mn-lv-wave-c) 3.5px) repeat-x;
-  background-size: 7px 7px;
+  position: absolute; left: -50%; width: 200%; height: 8px;
+  background-color: var(--mn-lv-wave-c);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M0 4 Q3 0 6 4 Q9 8 12 4 V8 H0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M0 4 Q3 0 6 4 Q9 8 12 4 V8 H0 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  -webkit-mask-size: 12px 8px; mask-size: 12px 8px;
   pointer-events: none;
 }
 .mn-lv-wdeepwave {
   --mn-lv-wave-c: var(--color-primary);
-  top: calc(40% - 3px);
+  top: calc(40% - 4px);
   animation: mn-lv-wave 1.6s linear infinite;
 }
 .mn-lv-wlightwave {
   --mn-lv-wave-c: var(--mn-lv-light);
-  top: -3px;
+  top: -4px;
   animation: mn-lv-wave 2.2s linear infinite;
 }
 @keyframes mn-lv-wave {
   from { transform: translateX(0); }
-  to { transform: translateX(-7px); }
+  to { transform: translateX(-12px); }
 }
 .mn-lv-pill-tag {
   font-size: 6px; font-weight: 700; letter-spacing: 0.06em;
