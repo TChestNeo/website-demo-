@@ -1,7 +1,7 @@
 // tmp-probe-fc-i18n.js — FC v10.28.47.4 翻译轮上线实机探针（两页 12 语言接入）
 // 用户「还有 FC还没有做翻译」——钦定：两页一起翻、卡片类型名翻译成和平台一样的
 // （显示层本地化，草稿 dataset.label 英文规范名零改动）。
-//   S 静态（线上 site-config 45.0 + FC 翻译 changelog + rev 00305- + 站点 58.0 恒、
+//   S 静态（线上 site-config 45.0 + FC 翻译 changelog + rev 00306- + 站点 58.0 恒、
 //   两页 i18n 三件套挂载 + data-i18n-title 扫描 + __fcT + labelEdited payload 分支锚、
 //   字典 12 语言 + zh-Hant 自动段）/ P 实机（桌面 CDP + 登录态 stub：
 //   P1 zh 默认 chrome 逐字｜P2 资产面板 zh+英文属性｜P3 设置弹窗切语言实时重渲染｜
@@ -77,10 +77,10 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.47.4 + FC 翻译 changelog + rev 00305- + 站点恒 v0.2.58.2',
+  ok('S1 线上 site-config：FC v10.28.47.4 + FC 翻译 changelog + rev 00306- + 站点恒 v0.2.58.3',
     sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
-    sc.body.indexOf('FC还没有做翻译') !== -1 && sc.body.indexOf('rev 00305-') !== -1 &&
-    sc.body.indexOf('v0.2.58.2') !== -1,
+    sc.body.indexOf('FC还没有做翻译') !== -1 && sc.body.indexOf('rev 00306-') !== -1 &&
+    sc.body.indexOf('v0.2.58.3') !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const ed = await get(BASE + '/pages/fluidcanvas-editor.html');
   ok('S2 线上编辑器页：i18n 三件套挂载 + __fcT + labelEdited payload 分支 + 设置钮 data-i18n-title',

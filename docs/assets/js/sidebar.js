@@ -92,12 +92,15 @@
     if (loggedIn) {
       try {
         var st = window.SlatiDB.getLevelState();
-        var ringPct = Math.round(st.progress * 100);
-        // v0.2.58.2 用户「折叠起来是变成一个纵向的药丸形然后那个显示经验的条把药丸围起来这样
-        //   然后药丸中间显示等级就就可以了」（折叠侧栏等级纵向药丸+经验环）：
-        //   展开态视图 .mn-lv-normal（原徽章原样）+ 折叠态视图 .mn-lv-pill（纵向药丸，外环=XP 进度
-        //   conic-gradient 环形包裹药丸，药丸中间只显示等级）——两视图显隐由 CSS 按折叠态切换；
-        //   药丸固定 28×48 不随内容伸缩（根治折叠下文本换行挤压头像）。
+        var fillPct = Math.round(st.progress * 100);
+        // v0.2.58.3 用户「呃那个等级的进度条能不能是一个环围着中间的等级号码而不是这种像时间一样的」
+        //   +「从底部上灌的时候我希望你添加一个水的飘动动效分成两层这样」+「就是一层主要颜色另一层用一个
+        //   浅有点的颜色增加层次感」（折叠侧栏等级水位环+双层水波）：
+        //   58.2 的 conic 进度环从 12 点顺时针扫像时钟指针——废弃；环改成正圆「水杯」只围等级号码
+        //   （LV 小字移到杯上方）；经验进度=水位从杯底往上灌（.mn-lv-fill 内联 height 百分比）；
+        //   水两层——底层主色 .mn-lv-wdeep + 上层浅色 .mn-lv-wlight（半透明叠层次），
+        //   两层各带波浪花边 .mn-lv-wdeepwave/.mn-lv-wlightwave 反向相位平移飘动（纯 CSS 动画零 JS）；
+        //   展开态视图 .mn-lv-normal 原徽章原样不变。
         levelBadgeHTML =
           '<div class="mn-lv-badge" style="margin-top:8px">' +
             '<div class="mn-lv-normal">' +
@@ -111,11 +114,17 @@
                 '</div>') +
             '</div>' +
             '<div class="mn-lv-pill">' +
-              '<div class="mn-lv-ring" style="background:conic-gradient(var(--color-primary) ' + ringPct + '%, rgba(128,128,140,0.25) 0)">' +
-                '<div class="mn-lv-pill-core">' +
-                  '<span class="mn-lv-pill-tag">LV</span>' +
-                  '<span class="mn-lv-pill-num">' + st.lv + '</span>' +
+              '<span class="mn-lv-pill-tag">LV</span>' +
+              '<div class="mn-lv-ring">' +
+                '<div class="mn-lv-cup">' +
+                  '<div class="mn-lv-fill" style="height:' + fillPct + '%">' +
+                    '<div class="mn-lv-wdeep"></div>' +
+                    '<div class="mn-lv-wlight"></div>' +
+                    '<div class="mn-lv-wdeepwave"></div>' +
+                    '<div class="mn-lv-wlightwave"></div>' +
+                  '</div>' +
                 '</div>' +
+                '<span class="mn-lv-pill-num">' + st.lv + '</span>' +
               '</div>' +
             '</div>' +
           '</div>';
