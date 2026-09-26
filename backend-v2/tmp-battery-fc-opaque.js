@@ -181,11 +181,11 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     // ── S 静态锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n'); // CRLF 归一（多行锚）
-    ok('S1 site-config：FC v10.28.47.4 + changelog 42.0 全卡条目与 42.1 镶边全不透明条目 + rev 00282-/00288- 占位 + 站点版本恒 v0.2.58.7',
+    ok('S1 site-config：FC v10.28.47.4 + changelog 42.0 全卡条目与 42.1 镶边全不透明条目 + rev 00282-/00288- 占位 + 站点版本恒 v0.2.58.8',
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
       siteCfg.indexOf('把FC内的所有卡片变成不透明') !== -1 &&
       siteCfg.indexOf('编辑器镶边玻璃全灭') !== -1 &&
-      siteCfg.indexOf('00282-') !== -1 && siteCfg.indexOf('00288-') !== -1 && siteCfg.indexOf('v0.2.58.7') !== -1);
+      siteCfg.indexOf('00282-') !== -1 && siteCfg.indexOf('00288-') !== -1 && siteCfg.indexOf('v0.2.58.8') !== -1);
     ok('S2 普通卡面：55% 混色撤下直用 --card-bg-color + 卡身 blur 摘除（规则内无 backdrop-filter）',
       editorHtml.indexOf('color-mix(in srgb, var(--card-bg-color) 55%, transparent)') === -1 &&
       editorHtml.indexOf('--card-border-color: var(--divider-line);\n      background-color: var(--card-bg-color);\n    }') !== -1);

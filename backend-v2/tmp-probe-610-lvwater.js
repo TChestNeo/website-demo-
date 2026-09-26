@@ -1,11 +1,12 @@
-// tmp-probe-610-lvwater.js — v0.2.58.7 折叠侧栏等级药丸与水波全翻倍 线上实机探针
+// tmp-probe-610-lvwater.js — v0.2.58.8 后归档（58.7 轮探针；S1 静态口径随 58.8 部署更新：58.8 赋值+58.7 历史标题+
+// 烘焙 rev 00310-pbk 文本；S2/P1/P2 几何场景属 58.7 药丸 64×116 时代、由 tmp-probe-613-* 接替不再复跑）
 // 用户「那个波浪能不能大2倍啊？还有那个药丸能不能大1倍啊」——两问钦定：波浪全翻倍×2·药丸长宽都×2。
 //   药丸再放大：药丸 32×58→64×116、水杯胶囊 28×42→56×84（杯内宽 24→52）；LV 标签 7→14px、号码 14→28px；
 //   药丸 64 宽 > 用户卡内容 46px——折叠 72px 列与最窄 floating 64px 列均溢出用户卡各 4px/边、仍收在侧栏列内
 //   零越界=用户钦定取舍。波浪全翻倍——mask SVG viewBox 20×16→40×32（波长 20→40+振幅 8→16）、波浪带高
 //   16px→32px、两波顶线随半高同步、无缝循环平移 20px→40px、strip 恒 300%（余量 52px ≥ 40px 波长末帧不露缺口）。
 //   两层结构/两速 1.6s/2.2s/水位从底往上灌/0.5s 过渡全保持。
-// S 静态（线上 site-config 58.7+changelog+rev 00310-+旧 58.6 赋值零残留+58.6/58.5/58.4/58.3/58.2/58.1 历史标题保留
+// S 静态（线上 site-config 58.8+changelog 58.7 历史标题+烘焙 rev 00310-pbk 文本+旧 58.6 赋值零残留+58.6/58.5/58.4/58.3/58.2/58.1 历史标题保留
 //   +FC 47.4 恒；ethereal.css/index.html 药丸水杯+大波浪规则在位、旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/
 //   旧 20×16/旧 16×12/旧 12×8/旧 16px 波形/旧平移 20px/旧顶线 -8px/旧花边/7px 7px/conic/pill-core 零残留）；
 //   P 实机（demo 用户种子——id 无 USR- 前缀 → hasCloudUser false 零 API 调用，杜绝服务端 401 清会话；
@@ -82,9 +83,9 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：58.7 赋值+changelog 标题/用户原话（换行拆两锚）+两问钦定+rev 00309-jbl（live 文本滞后一部署：终态服务 rev=00310-pbk、repo 已记 00310-pbk 下轮烘焙）+旧 58.6 赋值零残留+58.6/58.5/58.4/58.3/58.2/58.1 历史标题保留+FC 47.4 恒',
+  ok('S1 线上 site-config（58.8 轮口径）：58.8 赋值+58.7 历史标题/用户原话（换行拆两锚）+两问钦定+烘焙 rev 00310-pbk 文本在位（58.8 部署烘焙 repo 58.7 条目文本、00309-jbl 滞后注记随轮退役）+旧 58.6 赋值零残留+58.6/58.5/58.4/58.3/58.2/58.1 历史标题保留+FC 47.4 恒',
     sc.status === 200 &&
-    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.7';") !== -1 &&
+    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.8';") !== -1 &&
     sc.body.indexOf('v0.2.58.7 = 折叠侧栏等级药丸与水波全翻倍') !== -1 &&
     sc.body.indexOf('那个波浪能不能大2倍啊') !== -1 &&
     sc.body.indexOf('还有那个药丸能不能大1倍啊') !== -1 &&
@@ -95,7 +96,7 @@ async function waitFor(cdp, expr, timeout, label) {
     sc.body.indexOf('v0.2.58.3 = 折叠侧栏等级水位环+双层水波') !== -1 &&
     sc.body.indexOf('药丸形不是圆形') !== -1 &&
     sc.body.indexOf('波浪能不能大一些') !== -1 &&
-    sc.body.indexOf('rev 00309-jbl') !== -1 &&
+    sc.body.indexOf('rev 00310-pbk') !== -1 &&
     sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.6';") === -1 &&
     sc.body.indexOf('v0.2.58.2 = 折叠侧栏等级纵向药丸+经验环') !== -1 &&
     sc.body.indexOf('v0.2.58.1 = 左侧菜单底部不透明背景完全删除') !== -1 &&

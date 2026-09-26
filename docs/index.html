@@ -1378,7 +1378,13 @@ body.pre-stagger .auth-card { opacity: 0; }
    振幅 8→16 双翻倍）、波浪带高 16px→32px、两波顶线随半高同步（calc(40% - 8px)→-16px /
    -8px→-16px）、无缝循环 translateX 20px→40px 恰好一个波长、strip 恒 300%（左右余量=杯内宽
    52px ≥ 40px 波长，循环末帧不露缺口）；两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s
-   过渡全保持。 */
+   过渡全保持。
+   v0.2.58.8 用户「能不能把他的宽度变成和其他按钮一样？」（一问钦定「和菜单按钮一样 48px」）——
+   58.7 药丸 64px 宽比折叠栏卡片（56px）每边溢出 4px；修法：药丸 64→48、水杯胶囊 56→44
+   （border-radius:999px 不变、LV 号码居中不变、杯内宽 52→40=恰好一个波长——波浪 40×32/32px 带高/
+   平移 40px/顶线 -16px 全零改动；LV 标签 14px/LV 号码 28px/药丸高 116px 不动）；药丸 48px=桌面折叠栏
+   菜单按钮行宽、floating 窄列卡片宽——两边都对齐零越界；两层结构/两速 1.6s/2.2s 相位漂移/水位从底
+   往上灌/0.5s 过渡全保持。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1391,14 +1397,14 @@ body.pre-stagger .auth-card { opacity: 0; }
   to { opacity: 1; transform: none; }
 }
 .mn-lv-pill {
-  width: 64px; height: 116px; border-radius: 999px;
+  width: 48px; height: 116px; border-radius: 999px;
   background: var(--card-bg, #ffffff);
   flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   flex-shrink: 0;
 }
 .mn-lv-ring {
   position: relative;
-  width: 56px; height: 84px; border-radius: 999px;
+  width: 44px; height: 84px; border-radius: 999px;
   border: 2px solid rgba(128,128,140,0.28);
   box-sizing: border-box;
   flex-shrink: 0;

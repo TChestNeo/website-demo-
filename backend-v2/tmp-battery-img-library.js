@@ -95,8 +95,8 @@ function ok(name, cond, detail) {
     fceSrc.indexOf('.flag-grid-empty') !== -1 &&
     fceSrc.indexOf("T('fc.pbg.editMeta') || '编辑图片信息'") !== -1 &&
     fceSrc.indexOf("T('fc.lib.delTitle') || '删除（从所有使用处移除）'") !== -1);
-  ok('F3 版本 v0.2.58.7 / v10.28.47.4 + 进位注释（新轮 42→43/32→33 + 旧轮 41→42/31→32 仍在）',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.7';") !== -1 &&
+  ok('F3 版本 v0.2.58.8 / v10.28.47.4 + 进位注释（新轮 42→43/32→33 + 旧轮 41→42/31→32 仍在）',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.8';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
     sconfSrc.indexOf('42→43') !== -1 && sconfSrc.indexOf('32→33') !== -1 &&
     sconfSrc.indexOf('41→42') !== -1 && sconfSrc.indexOf('31→32') !== -1);
@@ -536,10 +536,10 @@ function ok(name, cond, detail) {
     await cdp.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); true");
     await sleep(200);
 
-    // ── S11: 版本（site v0.2.58.7 + FC v10.28.47.4 + 页面徽章） ──
+    // ── S11: 版本（site v0.2.58.8 + FC v10.28.47.4 + 页面徽章） ──
     const ver11 = await cdp.evalJs("JSON.stringify({ mn: window.MN_SITE_VERSION, fc: window.FLUIDCANVAS_VERSION, badge: document.body.innerText.indexOf('v10.28.47.4') !== -1 })");
     const v11 = JSON.parse(ver11);
-    ok('S11 版本 v0.2.58.7 + FC v10.28.47.4 + 徽章', v11.mn === 'v0.2.58.7' && v11.fc === 'v10.28.47.4' && v11.badge, ver11);
+    ok('S11 版本 v0.2.58.8 + FC v10.28.47.4 + 徽章', v11.mn === 'v0.2.58.8' && v11.fc === 'v10.28.47.4' && v11.badge, ver11);
 
     // ── Z: 零 console error ──
     await sleep(400);

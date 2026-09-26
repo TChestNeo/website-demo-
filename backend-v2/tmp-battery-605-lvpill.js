@@ -1,17 +1,16 @@
-// tmp-battery-605-lvpill.js — v0.2.58.7 折叠侧栏等级药丸与水波全翻倍电池（58.6 药丸水杯电池同文件
-//   口径随轮改：用户「那个波浪能不能大2倍啊？还有那个药丸能不能大1倍啊」——两问钦定：波浪全翻倍×2·
-//   药丸长宽都×2。药丸再放大：药丸 32×58→64×116、水杯胶囊 28×42→56×84（border-radius:999px 不变，
-//   LV 号码居中不变，杯内宽 24→52）；LV 标签 7→14px、LV 号码 14→28px 同步放大；最窄 floating 64px
-//   列药丸溢出 8px=用户钦定取舍（S6 口径）。波浪全翻倍——mask SVG viewBox 20×16→40×32（波长 20→40+
-//   振幅 8→16 双翻倍）、波浪带高 16px→32px、两波顶线随半高同步（calc(40% - 8px)→-16px / -8px→-16px）、
-//   无缝循环 translateX 20px→40px 恰好一个波长、strip 恒 300%（左右余量=杯内宽 52px ≥ 40px 波长，
-//   循环末帧不露缺口）。两层结构/两速 1.6s/2.2s 相位漂移/水位从底往上灌/0.5s 过渡全保持。
-//   折叠态等级徽章=纵向药丸 64×116（LV 小字在上）+ 药丸水杯 56×84 只围号码；经验进度=水位从杯底往上灌
+// tmp-battery-605-lvpill.js — v0.2.58.8 折叠侧栏等级药丸收窄对齐菜单按钮电池（58.7 药丸水杯电池同文件
+//   口径随轮改：用户「能不能把他的宽度变成和其他按钮一样？」——一问钦定「和菜单按钮一样 48px」。
+//   58.7 药丸 64px 宽比折叠栏卡片（56px）每边溢出 4px；修法：药丸 64→48、水杯胶囊 56→44（border-radius:999px
+//   不变、LV 号码居中不变、杯内宽 52→40=恰好一个波长——波浪 40×32 mask/32px 带高/平移 40px/顶线 -16px
+//   全零改动；LV 标签 14px/LV 号码 28px/药丸高 116px 不动）。药丸 48px=桌面折叠栏菜单按钮行宽、
+//   floating 64px 列右边线 1px 致模块 47、右溢 1px 可忽略仍收列内（S3 桌面 inMod true+与用户卡内容列齐平、
+//   S6 floating 收列内）。
+//   折叠态等级徽章=纵向药丸 48×116（LV 小字在上）+ 药丸水杯 44×84 只围号码；经验进度=水位从杯底往上灌
 //   （.mn-lv-fill 内联 height 百分比）；水动效两层——底层主色 .mn-lv-wdeep + 上层浅色 .mn-lv-wlight
 //   （主色兑白 55%+半透明叠层次），两层各带正弦水面波形（1.6s/2.2s 纯 CSS 零 JS）；
 //   号码 z 上浮+白色描边晕影水位高时仍可读。展开态 .mn-lv-normal 原徽章原样零变化。
-// F 静态：site-config 58.7+changelog+rev 00310-、sidebar.js 新结构、ethereal.css 药丸规则+内联块同步；
-// S 浏览器：展开零变化/折叠切换/药丸几何零挤压/水位进度刷新/满级/窄列 floating 溢出=钦定取舍/展开恢复；E 零异常。
+// F 静态：site-config 58.8+changelog+rev 00312-、sidebar.js 新结构、ethereal.css 药丸规则+内联块同步；
+// S 浏览器：展开零变化/折叠切换/药丸几何与菜单按钮同宽/水位进度刷新/满级/窄列 floating 与卡片齐平/展开恢复；E 零异常。
 // /api 全 404（demo 模式，同 xp-rebalance 口径）；会话+XP 本地种子。
 'use strict';
 const http = require('http');
@@ -103,21 +102,25 @@ const cnt = (s, sub) => s.split(sub).length - 1;
   const indexSrc = fs.readFileSync(path.join(DOCS, 'index.html'), 'utf8');
   const editorSrc = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
 
-  ok('F1 静态：58.7 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话（换行拆两锚）+ 两问钦定 + rev 00310- + 58.6 赋值零残留 + 58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.7';") !== -1 &&
+  ok('F1 静态：58.8 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话+一问钦定 48px + rev 00312- + 瞬态注记 00311-wkw + rev 00311- 零残留 + 58.7 赋值零残留 + 58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.8';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
+    sconfSrc.indexOf('v0.2.58.8 = 折叠侧栏等级药丸收窄对齐菜单按钮') !== -1 &&
+    sconfSrc.indexOf('能不能把他的') !== -1 &&
+    sconfSrc.indexOf('宽度变成和其他按钮一样') !== -1 &&
+    sconfSrc.indexOf('一问钦定') !== -1 &&
+    sconfSrc.indexOf('和菜单按钮一样 48px') !== -1 &&
+    sconfSrc.indexOf('rev 00312-') !== -1 &&
+    sconfSrc.indexOf('同轮首部署瞬态 00311-wkw 已取代') !== -1 &&
+    sconfSrc.indexOf('rev 00311-') === -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.7';") === -1 &&
     sconfSrc.indexOf('v0.2.58.7 = 折叠侧栏等级药丸与水波全翻倍') !== -1 &&
     sconfSrc.indexOf('那个波浪能不能大2倍啊') !== -1 &&
     sconfSrc.indexOf('还有那个药丸能不能大1倍啊') !== -1 &&
-    sconfSrc.indexOf('两问钦定') !== -1 &&
-    sconfSrc.indexOf('rev 00310-pbk') !== -1 &&
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.6';") === -1 &&
     sconfSrc.indexOf('v0.2.58.6 = 折叠侧栏等级水杯药丸与波浪再放大') !== -1 &&
-    sconfSrc.indexOf('那个波浪能不能') !== -1 &&
     sconfSrc.indexOf('再大宽一些还有那个药丸也是再大些') !== -1 &&
     sconfSrc.indexOf('v0.2.58.5 = 折叠侧栏等级水杯改药丸形+波浪加大') !== -1 &&
     sconfSrc.indexOf('药丸形不是圆形') !== -1 &&
-    sconfSrc.indexOf('波浪能不能大一些') !== -1 &&
     sconfSrc.indexOf('v0.2.58.4 = 折叠侧栏等级水位环波纹改正弦水面') !== -1 &&
     sconfSrc.indexOf('v0.2.58.3 = 折叠侧栏等级水位环+双层水波') !== -1 &&
     sconfSrc.indexOf('v0.2.58.2 = 折叠侧栏等级纵向药丸+经验环') !== -1 &&
@@ -143,14 +146,16 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     sidebarSrc.indexOf('display:flex;align-items:center;justify-content:space-between;margin-bottom:4px') !== -1 &&
     sidebarSrc.indexOf('height:5px;border-radius:999px;background:rgba(128,128,140,0.25)') !== -1);
 
-  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 64×116 + 水杯 56×84 胶囊 + 浅色 color-mix + 正弦水面 mask 件套 40×32/300% strip 32px/平移 40px/两速动画 + LV 标签 14px/号码 28px）+ 旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧 16px 波形/旧平移 20px/旧顶线 -8px/旧花边/7px 7px/conic/pill-core 零残留 + index/editor 内联块同款同步',
+  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 48×116 + 水杯 44×84 胶囊 + 浅色 color-mix + 正弦水面 mask 件套 40×32/300% strip 32px/平移 40px/两速动画 + LV 标签 14px/号码 28px）+ 旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧 16px 波形/旧平移 20px/旧顶线 -8px/旧花边/7px 7px/conic/pill-core 零残留 + index/editor 内联块同款同步',
     etherealSrc.indexOf('.mn-lv-badge .mn-lv-pill { display: none; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }') !== -1 &&
     etherealSrc.indexOf('animation: mn-lv-pill-in 0.3s ease;') !== -1 &&
     etherealSrc.indexOf('@keyframes mn-lv-pill-in') !== -1 &&
-    etherealSrc.indexOf('width: 64px; height: 116px; border-radius: 999px;') !== -1 &&
-    etherealSrc.indexOf('width: 56px; height: 84px; border-radius: 999px;') !== -1 &&
+    etherealSrc.indexOf('width: 48px; height: 116px; border-radius: 999px;') !== -1 &&
+    etherealSrc.indexOf('width: 44px; height: 84px; border-radius: 999px;') !== -1 &&
+    etherealSrc.indexOf('width: 64px; height: 116px; border-radius: 999px;') === -1 &&
+    etherealSrc.indexOf('width: 56px; height: 84px; border-radius: 999px;') === -1 &&
     etherealSrc.indexOf('width: 32px; height: 58px; border-radius: 999px;') === -1 &&
     etherealSrc.indexOf('width: 28px; height: 42px; border-radius: 999px;') === -1 &&
     etherealSrc.indexOf('width: 28px; height: 48px;') === -1 &&
@@ -198,8 +203,10 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     cnt(indexSrc, 'mask-size: 20px 16px') === 0 &&
     cnt(indexSrc, 'mask-size: 16px 12px') === 0 &&
     cnt(indexSrc, 'left: -100%; width: 300%') === 1 &&
-    cnt(indexSrc, 'width: 64px; height: 116px; border-radius: 999px;') === 1 &&
-    cnt(indexSrc, 'width: 56px; height: 84px; border-radius: 999px;') === 1 &&
+    cnt(indexSrc, 'width: 48px; height: 116px; border-radius: 999px;') === 1 &&
+    cnt(indexSrc, 'width: 64px; height: 116px; border-radius: 999px;') === 0 &&
+    cnt(indexSrc, 'width: 44px; height: 84px; border-radius: 999px;') === 1 &&
+    cnt(indexSrc, 'width: 56px; height: 84px; border-radius: 999px;') === 0 &&
     cnt(indexSrc, 'width: 32px; height: 58px; border-radius: 999px;') === 0 &&
     cnt(indexSrc, 'width: 28px; height: 42px; border-radius: 999px;') === 0 &&
     cnt(indexSrc, '@keyframes mn-lv-wave') === 1 &&
@@ -210,8 +217,10 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     cnt(editorSrc, 'mask-size: 20px 16px') === 0 &&
     cnt(editorSrc, 'mask-size: 16px 12px') === 0 &&
     cnt(editorSrc, 'left: -100%; width: 300%') === 1 &&
-    cnt(editorSrc, 'width: 64px; height: 116px; border-radius: 999px;') === 1 &&
-    cnt(editorSrc, 'width: 56px; height: 84px; border-radius: 999px;') === 1 &&
+    cnt(editorSrc, 'width: 48px; height: 116px; border-radius: 999px;') === 1 &&
+    cnt(editorSrc, 'width: 64px; height: 116px; border-radius: 999px;') === 0 &&
+    cnt(editorSrc, 'width: 44px; height: 84px; border-radius: 999px;') === 1 &&
+    cnt(editorSrc, 'width: 56px; height: 84px; border-radius: 999px;') === 0 &&
     cnt(editorSrc, 'width: 32px; height: 58px; border-radius: 999px;') === 0 &&
     cnt(editorSrc, 'width: 28px; height: 42px; border-radius: 999px;') === 0 &&
     cnt(editorSrc, '@keyframes mn-lv-wave') === 1 &&
@@ -291,7 +300,7 @@ const cnt = (s, sub) => s.split(sub).length - 1;
       "var ring = document.querySelector('#slati-sidebar .mn-lv-ring'); " +
       "var av = document.querySelector('#slati-sidebar .user-info-bar .avatar'); " +
       "var mod = document.querySelector('#slati-sidebar .user-module'); var bd = document.querySelector('#slati-sidebar .mn-lv-badge'); " +
-      "var sb = document.querySelector('#slati-sidebar'); " +
+      "var sb = document.querySelector('#slati-sidebar'); var nav = document.querySelector('#slati-sidebar .nav-item'); " +
       "if (!pill || !ring || !av || !mod || !bd || !sb) return JSON.stringify({ absent: true }); " +
       "var p = pill.getBoundingClientRect(), r = ring.getBoundingClientRect(), a = av.getBoundingClientRect(), m = mod.getBoundingClientRect(); " +
       "var s = sb.getBoundingClientRect(); " +
@@ -299,7 +308,9 @@ const cnt = (s, sub) => s.split(sub).length - 1;
       "return JSON.stringify({ pw: Math.round(p.width), ph: Math.round(p.height), rw: Math.round(r.width), rh: Math.round(r.height), " +
       "aw: Math.round(a.width), ah: Math.round(a.height), gap: Math.round((p.top - a.bottom) * 10) / 10, " +
       "inMod: p.left >= m.left && p.right <= m.right, inSidebar: p.left >= s.left - 0.5 && p.right <= s.right + 0.5, overlap: overlap, " +
-      "ringRadius: getComputedStyle(ring).borderRadius, badgeMarginTop: getComputedStyle(bd).marginTop }); })()");
+      "alignMod: Math.round(p.left - m.left) + '/' + Math.round(m.right - p.right), " +
+      "ringRadius: getComputedStyle(ring).borderRadius, badgeMarginTop: getComputedStyle(bd).marginTop, " +
+      "navW: nav ? Math.round(nav.getBoundingClientRect().width) : -1 }); })()");
 
     // ── 种子：先让页面写下每日登录日期键（+5），再固定 XP=100 ──
     await setLS([
@@ -327,14 +338,14 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     await sleep(500);
     r = await pillNow();
     const s2 = JSON.parse(r);
-    ok('S2 折叠切换：normal 隐藏 + 药丸 flex + 水位 8% + 中间 LV/1 + 双层正弦水面（mask 40px 32px repeat-x + 波形 32px 高 + strip 300%=156px + 两速 1.6s/2.2s）+ 波形色与水面层同色（深=主色/浅=浅色且两色不同）+ 浅层半透明 0.65 + LV 在杯上方',
+    ok('S2 折叠切换：normal 隐藏 + 药丸 flex + 水位 8% + 中间 LV/1 + 双层正弦水面（mask 40px 32px repeat-x + 波形 32px 高 + strip 300%=120px + 两速 1.6s/2.2s）+ 波形色与水面层同色（深=主色/浅=浅色且两色不同）+ 浅层半透明 0.65 + LV 在杯上方',
       s2.nDisplay === 'none' && s2.pDisplay === 'flex' &&
       s2.fillStyle === 'height:8%' &&
       s2.num === '1' && s2.tag === 'LV' && s2.waveKids === 4 &&
       s2.dwAnim === 'mn-lv-wave/1.6s' && s2.lwAnim === 'mn-lv-wave/2.2s' &&
       s2.dwMask === '40px 32px' && s2.dwRepeat === 'repeat-x' &&
       s2.dwMaskImg && s2.dwMaskImg !== 'none' &&
-      s2.dwH === 32 && s2.dwW === 156 &&
+      s2.dwH === 32 && s2.dwW === 120 &&
       s2.dwEdgeBg !== null && s2.dwEdgeBg === s2.deepBg && s2.lwEdgeBg === s2.lightBg && s2.dwEdgeBg !== s2.lwEdgeBg &&
       s2.lightOpacity === '0.65' && s2.lightBg !== null && s2.lightBg !== s2.deepBg &&
       s2.tagAbove === true, r);
@@ -344,10 +355,11 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     // ── S3 药丸几何零挤压 ──
     g = await geoNow();
     const g2 = JSON.parse(g);
-    ok('S3 药丸几何：药丸 64×116 + 水杯 56×84 胶囊（border-radius 999px）+ 头像 32×32 不挤压 + 上下间距 8px（margin-top 0 生效）+ 零重叠 + 药丸宽 64 > 用户卡内容 46（inMod false=58.7 ×2 钦定取舍）但仍收在 72px 侧栏列内零越界',
-      g2.pw === 64 && g2.ph === 116 && g2.rw === 56 && g2.rh === 84 && g2.ringRadius === '999px' &&
+    ok('S3 药丸几何：药丸 48×116 + 水杯 44×84 胶囊（border-radius 999px）+ 头像 32×32 不挤压 + 上下间距 8px（margin-top 0 生效）+ 零重叠 + 药丸 48=用户卡内容宽（模块 56−垫 8）与内容列齐平（alignMod 4/4）+ 收在 72px 侧栏列内零越界',
+      g2.pw === 48 && g2.ph === 116 && g2.rw === 44 && g2.rh === 84 && g2.ringRadius === '999px' &&
       g2.aw === 32 && g2.ah === 32 &&
-      g2.gap >= 7 && g2.gap <= 9 && g2.inMod === false && g2.inSidebar === true && g2.overlap === false && g2.badgeMarginTop === '0px', g);
+      g2.gap >= 7 && g2.gap <= 9 && g2.inMod === true && g2.inSidebar === true && g2.overlap === false && g2.badgeMarginTop === '0px' &&
+      g2.alignMod === '4/4', g);
 
     // ── S4 水位进度刷新（折叠态保持）──
     await cdp.evalJs("window.SlatiDB.addXP('batt', 600)");
@@ -370,13 +382,13 @@ const cnt = (s, sub) => s.split(sub).length - 1;
       s5.barKids === 1 && s5.fillStyle === 'height:100%' && s5.num === '12' &&
       await cdp.evalJs("document.querySelector('#slati-sidebar').classList.contains('collapsed')") === true, r);
 
-    // ── S6 窄列 floating（64px 列）药丸 64×116 溢出用户卡=用户钦定取舍，仍收在列内 ──
+    // ── S6 窄列 floating（64px 列）药丸 48 收列内（右边线 1px 致模块 47→右溢 1px 可忽略）──
     await cdp.evalJs("document.querySelector('#slati-sidebar').classList.add('floating')");
     await sleep(400);
     g = await geoNow();
     const g3 = JSON.parse(g);
-    ok('S6 floating 折叠 64px 列：药丸 64×116 溢出用户卡（inMod false=钦定取舍）+ 仍收在 64px 列内零越界 + 与头像零重叠',
-      g3.pw === 64 && g3.ph === 116 && g3.inMod === false && g3.inSidebar === true && g3.overlap === false, g);
+    ok('S6 floating 折叠 64px 列：药丸 48×116（floating 右边线 1px 致模块 47→右溢 1px 可忽略=inMod false）+ 仍收在 64px 列内零越界 + 与头像零重叠',
+      g3.pw === 48 && g3.ph === 116 && g3.inMod === false && g3.inSidebar === true && g3.overlap === false, g);
 
     // ── S7 展开恢复 ──
     await cdp.evalJs("document.querySelector('#slati-sidebar').classList.remove('floating'); window._slatiToggleSidebar()");
