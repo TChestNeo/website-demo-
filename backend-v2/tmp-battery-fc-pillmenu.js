@@ -5,7 +5,7 @@
 //   卡片①面板首子、弹窗=独立卡片②面板次子 ctxPillRise 从下向上滑出）；47.4 折叠/展开/关窗全走
 //   过渡（fc-pill-fold-prep 收起视觉态+门控 250ms 延迟落+退出动画 240ms+收尾计时器 240ms）；
 //   药丸弹窗卡列表恒白底 #ffffff+条目压暗；桌面右键游标弹层原样不动（弹层搬回 body 贴指针）。
-// 验证：S 静态锚（site-config 47.4 + 平滑折叠 changelog + 00319- / 编辑器两卡锚（fc-pill-fold/
+// 验证：S 静态锚（site-config 47.4 + 平滑折叠 changelog + 00321- / 编辑器两卡锚（fc-pill-fold/
 //   ctxPillRise/translateY(110%)/.asset-panel > .ctx-pill-dots/placeCtxPillDots）+47.4 锚
 //   （fc-pill-fold-prep/ctxPillFall/ctxPillFadeOut/ctx-pill-exit/__pillCloseTimer/__foldTimer/
 //   finishHideContextMenu/translateY(-56px)/#ffffff）+旧一体化锚（ctx-collapsed/ctxPillIn/
@@ -132,13 +132,13 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
-    ok('S1 site-config：FC v10.28.47.4 + 平滑折叠 changelog（折叠的过渡动画不顺畅/列表的背景能不能是白色的）+ 两卡 changelog（三粒点独立一个）+ 47.2 顶部停靠 changelog + rev 00319- 占位 + 站点恒 v0.2.58.12 + 旧 47.3 赋值零残留',
+    ok('S1 site-config：FC v10.28.47.4 + 平滑折叠 changelog（折叠的过渡动画不顺畅/列表的背景能不能是白色的）+ 两卡 changelog（三粒点独立一个）+ 47.2 顶部停靠 changelog + rev 00321- 占位 + 站点恒 v0.2.58.13 + 旧 47.3 赋值零残留',
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
       siteCfg.indexOf('折叠的过渡动画不顺畅') !== -1 &&
       siteCfg.indexOf('列表的背景能不能是白色的') !== -1 &&
       siteCfg.indexOf('三粒点独立一个') !== -1 &&
       siteCfg.indexOf('左侧菜单最顶部') !== -1 &&
-      siteCfg.indexOf('rev 00319-') !== -1 && siteCfg.indexOf('v0.2.58.12') !== -1 &&
+      siteCfg.indexOf('rev 00321-') !== -1 && siteCfg.indexOf('v0.2.58.13') !== -1 &&
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.3';") === -1);
     ok('S2 编辑器：ctxPillDots 三点钮 + 横向三点 more_horiz（more_vert 零在场）+ 两卡 CSS（fc-pill-fold 门控/.asset-panel > .ctx-pill-dots/ctxPillRise/translateY(110%)/static/占满宽/真药丸规格）+ 47.4 平滑折叠锚（fc-pill-fold-prep/ctxPillFall/ctxPillFadeOut/ctx-pill-exit/__pillCloseTimer/__foldTimer/finishHideContextMenu/translateY(-56px)/白底 #ffffff）+ 旧一体化锚（ctx-collapsed/ctxPillIn/translateY(-110%)）零在场 + flex-shrink 禁压保持 + 顶部挂载锚（insertBefore 首子/margin-bottom）',
       editorHtml.indexOf('id="ctxPillDots"') !== -1 &&
