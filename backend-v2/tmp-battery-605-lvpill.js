@@ -1,14 +1,13 @@
-// tmp-battery-605-lvpill.js — v0.2.58.13 折叠侧栏等级水杯双浪同色深蓝+慢浪 z-1 层电池（58.10 收成两层/
-//   58.11 两色互换/58.12 浪位抬高电池同文件口径随轮改：用户「然后把两个颜色改成一样的深蓝色，然后在那个
-//   波浪Z轴的-1那边再添加一个慢0.3s的波浪」——①水和浪两色统一深蓝（wdeep 背景 var(--mn-lv-light)→
-//   var(--color-primary)、--mn-lv-light 赋值整体删除）；②新慢浪 .mn-lv-wlightwave2 与快浪全同款几何
-//   （80×16 mask/16px 带高/400% strip/平移 80px/top -12px 全同）置 z 轴 -1 层+2.5s（慢 0.3s）；
-//   z 层级：fill z-index:0 建 stacking context→水 -2→慢浪 -1→快浪 0。
+// tmp-battery-605-lvpill.js — v0.2.58.14 折叠侧栏等级水杯慢浪改浅色电池（58.10 收成两层/58.11 两色互换/
+//   58.12 浪位抬高/58.13 双浪同色深蓝电池同文件口径随轮改：用户「那个刚才提出添加的第二个波浪我希望是
+//   浅色的」——慢浪 .mn-lv-wlightwave2 背景 var(--color-primary)→var(--mn-lv-light)（58.11 浅水同款浅色
+//   公式 color-mix 55%+白；赋值挂 .mn-lv-ring 恢复——58.13 整体删除后本轮复活）；快浪/水深蓝/几何/
+//   z 层级/动画全零改动。
 //   折叠态等级徽章=纵向药丸 48×116（LV 小字在上）+ 药丸水杯 44×84 只围号码；经验进度=水位从杯底往上灌
-//   （.mn-lv-fill 内联 height 百分比）；深蓝水+杯顶两道同色正弦浪（快 2.2s/慢 2.5s 相位漂移，慢浪浪峰
-//   周期性从快浪浪谷透明区透出=两道浪峰不同速叠加，纯 CSS 零 JS）；
+//   （.mn-lv-fill 内联 height 百分比）；深蓝水+杯顶两道正弦浪（快 2.2s 深蓝/慢 2.5s 浅色相位漂移，慢浪
+//   浪峰周期性从快浪浪谷透明区透出=浅色幽灵浪峰在深浪下流动，纯 CSS 零 JS）；
 //   号码 z 上浮+白色描边晕影水位高时仍可读。展开态 .mn-lv-normal 原徽章原样零变化。
-// F 静态：site-config 58.13+changelog+rev 00321-、sidebar.js 三层结构、ethereal.css 药丸规则+内联块同步；
+// F 静态：site-config 58.14+changelog+rev 00323-、sidebar.js 三层结构、ethereal.css 药丸规则+内联块同步；
 // S 浏览器：展开零变化/折叠切换/药丸几何与菜单按钮同宽/水位进度刷新/满级/窄列 floating 与卡片齐平/展开恢复；E 零异常。
 // /api 全 404（demo 模式，同 xp-rebalance 口径）；会话+XP 本地种子。
 'use strict';
@@ -92,6 +91,14 @@ function ok(name, cond, detail) {
   else { FAIL++; console.log('  ❌ ' + name + (detail ? '  ' + detail : '')); }
 }
 const cnt = (s, sub) => s.split(sub).length - 1;
+const rgbSum = (s) => {
+  const t = String(s || '');
+  let m = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(t);
+  if (m) return (+m[1] + +m[2] + +m[3]);
+  m = /color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)/.exec(t);
+  if (m) return Math.round((+m[1] + +m[2] + +m[3]) * 255);
+  return -1;
+};
 
 (async () => {
   // ═══ F 静态检查 ═══
@@ -101,15 +108,18 @@ const cnt = (s, sub) => s.split(sub).length - 1;
   const indexSrc = fs.readFileSync(path.join(DOCS, 'index.html'), 'utf8').replace(/\r\n/g, '\n');
   const editorSrc = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8').replace(/\r\n/g, '\n');
 
-  ok('F1 静态：58.13 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话（然后把两个颜色改成一样的深蓝色/波浪Z轴的-1/慢0.3s）+ rev 00321- + 58.12 赋值零残留 + 58.12/58.11/58.10/58.9/58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.13';") !== -1 &&
+  ok('F1 静态：58.14 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话（第二个波浪我希望是浅色的）+ rev 00323- + 58.13 赋值零残留 + 58.13/58.12/58.11/58.10/58.9/58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.14';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
+    sconfSrc.indexOf('v0.2.58.14 = 折叠侧栏等级水杯慢浪改浅色') !== -1 &&
+    sconfSrc.indexOf('第二个波浪我希望是浅色的') !== -1 &&
+    sconfSrc.indexOf('rev 00323-') !== -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.13';") === -1 &&
     sconfSrc.indexOf('v0.2.58.13 = 折叠侧栏等级水杯双浪同色深蓝+慢浪 z-1 层') !== -1 &&
     sconfSrc.indexOf('然后把两个颜色改成一样的深蓝色') !== -1 &&
     sconfSrc.indexOf('波浪Z轴的-1') !== -1 &&
     sconfSrc.indexOf('慢0.3s') !== -1 &&
     sconfSrc.indexOf('rev 00321-') !== -1 &&
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.12';") === -1 &&
     sconfSrc.indexOf('v0.2.58.12 = 折叠侧栏等级水杯波浪位置抬高 4px') !== -1 &&
     sconfSrc.indexOf('波浪的位置抬高4px') !== -1 &&
     sconfSrc.indexOf('位置抬高 4px') !== -1 &&
@@ -160,7 +170,7 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     sidebarSrc.indexOf('display:flex;align-items:center;justify-content:space-between;margin-bottom:4px') !== -1 &&
     sidebarSrc.indexOf('height:5px;border-radius:999px;background:rgba(128,128,140,0.25)') !== -1);
 
-  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 48×116 + 水杯 44×84 胶囊 + 58.13 双浪同色深蓝件套——水 wdeep 背景 var(--color-primary)+z-index:-2、快浪 wlightwave 80×16 新路径/400% strip 16px/平移 80px/2.2s+top -12px+z-index:0、慢浪 wlightwave2 全同款几何+z-index:-1+2.5s、fill z-index:0 建 stacking context、--mn-lv-light 赋值整体删除零残留 + LV 标签 14px/号码 28px）+ 旧浅水层/旧深浪/旧 --mn-lv-wave-c 赋值/旧 1.6s/旧顶线 calc(40% - 8px)/旧 opacity 0.65/旧 height 40%/旧 40×32 路径/旧 300% strip/旧平移 40px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧平移 20px/旧顶线 -16px 旧代/旧花边/7px 7px/conic/pill-core 零残留 + 58.10/58.11/58.12/58.13 注释在位 + 旧色值组合（wdeep light 背景/--mn-lv-light 赋值）零残留 + index/editor 内联块同款同步',
+  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 48×116 + 水杯 44×84 胶囊 + 58.14 慢浪改浅色件套——水 wdeep 背景 var(--color-primary)+z-index:-2、快浪 wlightwave 深蓝 80×16 新路径/400% strip 16px/平移 80px/2.2s+top -12px+z-index:0、慢浪 wlightwave2 浅色 var(--mn-lv-light) 全同款几何+z-index:-1+2.5s、fill z-index:0 建 stacking context、--mn-lv-light 赋值挂 .mn-lv-ring 恢复在位 + LV 标签 14px/号码 28px）+ 旧浅水层/旧深浪/旧 --mn-lv-wave-c 赋值/旧 1.6s/旧顶线 calc(40% - 8px)/旧 opacity 0.65/旧 height 40%/旧 40×32 路径/旧 300% strip/旧平移 40px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧平移 20px/旧顶线 -16px 旧代/旧花边/7px 7px/conic/pill-core 零残留 + 58.10/58.11/58.12/58.13/58.14 注释在位 + 旧慢浪同色注释零残留 + index/editor 内联块同款同步',
     etherealSrc.indexOf('.mn-lv-badge .mn-lv-pill { display: none; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }') !== -1 &&
@@ -175,7 +185,7 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     etherealSrc.indexOf('width: 28px; height: 48px;') === -1 &&
     etherealSrc.indexOf('width: 24px; height: 32px;') === -1 &&
     etherealSrc.indexOf('width: 24px; height: 24px; border-radius: 50%;') === -1 &&
-    etherealSrc.indexOf('--mn-lv-light:') === -1 &&
+    cnt(etherealSrc, '--mn-lv-light: color-mix(in srgb, var(--color-primary) 55%, #ffffff);') === 1 &&
     etherealSrc.indexOf('.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); z-index: -2; }') !== -1 &&
     etherealSrc.indexOf('.mn-lv-wdeep { position: absolute; inset: 0; background: var(--mn-lv-light); }') === -1 &&
     etherealSrc.indexOf('z-index: 0; /* 建 stacking context') !== -1 &&
@@ -184,8 +194,8 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     etherealSrc.indexOf('.mn-lv-wlight {') === -1 &&
     etherealSrc.indexOf('.mn-lv-wdeepwave {') === -1 &&
     etherealSrc.indexOf('.mn-lv-wdeepwave, .mn-lv-wlightwave {') === -1 &&
-    cnt(etherealSrc, 'background-color: var(--color-primary);') === 2 &&
-    etherealSrc.indexOf('background-color: var(--mn-lv-light);') === -1 &&
+    cnt(etherealSrc, 'background-color: var(--color-primary);') === 1 &&
+    cnt(etherealSrc, 'background-color: var(--mn-lv-light);') === 1 &&
     etherealSrc.indexOf('--mn-lv-wave-c:') === -1 &&
     etherealSrc.indexOf('opacity: 0.65;') === -1 &&
     etherealSrc.indexOf('height: 40%;') === -1 &&
@@ -237,6 +247,9 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     etherealSrc.indexOf('位置抬高 4px') !== -1 &&
     etherealSrc.indexOf('v0.2.58.13 用户「然后把两个颜色改成一样的深蓝色') !== -1 &&
     etherealSrc.indexOf('波浪Z轴的-1') !== -1 &&
+    etherealSrc.indexOf('v0.2.58.14 用户「那个刚才提出添加的第二个波浪我希望是浅色的') !== -1 &&
+    etherealSrc.indexOf('浅色幽灵浪峰在深浪下流动') !== -1 &&
+    etherealSrc.indexOf('透出=两道浪峰不同速叠加 */') === -1 &&
     etherealSrc.indexOf('font-size: 14px; font-weight: 700; letter-spacing: 0.06em;') !== -1 &&
     etherealSrc.indexOf('font-size: 28px; font-weight: 700; color: var(--color-primary);') !== -1 &&
     etherealSrc.indexOf('background: radial-gradient(circle at 50% 0, transparent 3.5px, var(--mn-lv-wave-c) 3.5px) repeat-x;') === -1 &&
@@ -257,11 +270,11 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     cnt(indexSrc, 'top: -12px;') === 2 &&
     cnt(indexSrc, 'top: -8px;') === 0 &&
     cnt(indexSrc, 'background: var(--mn-lv-light);') === 0 &&
-    cnt(indexSrc, '--mn-lv-light:') === 0 &&
-    cnt(indexSrc, 'background-color: var(--color-primary);') === 2 &&
+    cnt(indexSrc, '--mn-lv-light: color-mix(in srgb, var(--color-primary) 55%, #ffffff);') === 1 &&
+    cnt(indexSrc, 'background-color: var(--color-primary);') === 1 &&
     cnt(indexSrc, '.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); z-index: -2; }') === 1 &&
     indexSrc.indexOf('z-index: -1;\n  animation: mn-lv-wave 2.5s linear infinite;') !== -1 &&
-    cnt(indexSrc, 'background-color: var(--mn-lv-light);') === 0 &&
+    cnt(indexSrc, 'background-color: var(--mn-lv-light);') === 1 &&
     cnt(indexSrc, 'left: -100%; width: 400%') === 2 &&
     cnt(indexSrc, 'left: -100%; width: 300%') === 0 &&
     cnt(indexSrc, 'width: 48px; height: 116px; border-radius: 999px;') === 1 &&
@@ -285,11 +298,11 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     cnt(editorSrc, 'top: -12px;') === 2 &&
     cnt(editorSrc, 'top: -8px;') === 0 &&
     cnt(editorSrc, 'background: var(--mn-lv-light);') === 0 &&
-    cnt(editorSrc, '--mn-lv-light:') === 0 &&
-    cnt(editorSrc, 'background-color: var(--color-primary);') === 2 &&
+    cnt(editorSrc, '--mn-lv-light: color-mix(in srgb, var(--color-primary) 55%, #ffffff);') === 1 &&
+    cnt(editorSrc, 'background-color: var(--color-primary);') === 1 &&
     cnt(editorSrc, '.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); z-index: -2; }') === 1 &&
     editorSrc.indexOf('z-index: -1;\n  animation: mn-lv-wave 2.5s linear infinite;') !== -1 &&
-    cnt(editorSrc, 'background-color: var(--mn-lv-light);') === 0 &&
+    cnt(editorSrc, 'background-color: var(--mn-lv-light);') === 1 &&
     cnt(editorSrc, 'left: -100%; width: 400%') === 2 &&
     cnt(editorSrc, 'left: -100%; width: 300%') === 0 &&
     cnt(editorSrc, 'width: 48px; height: 116px; border-radius: 999px;') === 1 &&
@@ -375,6 +388,7 @@ const cnt = (s, sub) => s.split(sub).length - 1;
       "deepZ: wd ? getComputedStyle(wd).zIndex : null, " +
       "fillZ: fill ? getComputedStyle(fill).zIndex : null, " +
       "lwBg: lw ? getComputedStyle(lw).backgroundColor : null, " +
+      "lw2Bg: lw2 ? getComputedStyle(lw2).backgroundColor : null, " +
       "deepBg: wd ? getComputedStyle(wd).backgroundColor : null, " +
       "dwAbsent: !b.querySelector('.mn-lv-wdeepwave'), " +
       "wlAbsent: !b.querySelector('.mn-lv-wlight'), " +
@@ -422,7 +436,7 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     await sleep(500);
     r = await pillNow();
     const s2 = JSON.parse(r);
-    ok('S2 折叠切换：normal 隐藏 + 药丸 flex + 水位 8% + 中间 LV/1 + 三层水件套——深蓝水 wdeep（z:-2）+慢浪 wlightwave2（z:-1/2.5s）+快浪 wlightwave（z:0/2.2s，mask 80px 16px repeat-x + 波形 16px 高 + strip 400%=160px）+ 两浪同顶 -12px（浪位抬高 4px 保持）+ 水浪两色统一深蓝（lwBg === deepBg）+ fill z:0 stacking context + 浅水层/深浪已删零残留 + LV 在杯上方',
+    ok('S2 折叠切换：normal 隐藏 + 药丸 flex + 水位 8% + 中间 LV/1 + 三层水件套——深蓝水 wdeep（z:-2）+慢浪 wlightwave2（z:-1/2.5s/浅色）+快浪 wlightwave（z:0/2.2s/深蓝，mask 80px 16px repeat-x + 波形 16px 高 + strip 400%=160px）+ 两浪同顶 -12px（浪位抬高 4px 保持）+ 水深蓝+快浪深蓝（lwBg === deepBg）+慢浪浅色（lw2Bg 不同色且亮于 deepBg）+ fill z:0 stacking context + 浅水层/深浪已删零残留 + LV 在杯上方',
       s2.nDisplay === 'none' && s2.pDisplay === 'flex' &&
       s2.fillStyle === 'height:8%' &&
       s2.num === '1' && s2.tag === 'LV' && s2.waveKids === 3 &&
@@ -435,6 +449,7 @@ const cnt = (s, sub) => s.split(sub).length - 1;
       s2.lw2H === 16 && s2.lw2W === 160 &&
       s2.lwRelFill === -12 && s2.lw2RelFill === -12 &&
       s2.lwBg !== null && s2.lwBg === s2.deepBg &&
+      s2.lw2Bg !== null && s2.lw2Bg !== s2.deepBg && rgbSum(s2.lw2Bg) > rgbSum(s2.deepBg) &&
       s2.lw2Z === '-1' && s2.lwZ === '0' && s2.deepZ === '-2' && s2.fillZ === '0' &&
       s2.dwAbsent === true && s2.wlAbsent === true &&
       s2.tagAbove === true, r);

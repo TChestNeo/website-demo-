@@ -76,9 +76,9 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.47.4 + rev 00321- 前缀 + 站点恒 v0.2.58.13 + 图库标签 changelog + 旧 47.3 版本赋值锚零残留',
+  ok('S1 线上 site-config：FC v10.28.47.4 + rev 00323- 前缀 + 站点恒 v0.2.58.14 + 图库标签 changelog + 旧 47.3 版本赋值锚零残留',
     sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
-    sc.body.indexOf('rev 00321-') !== -1 && sc.body.indexOf('v0.2.58.13') !== -1 &&
+    sc.body.indexOf('rev 00323-') !== -1 && sc.body.indexOf('v0.2.58.14') !== -1 &&
     sc.body.indexOf('图库标签') !== -1 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.3';") === -1,
     'status=' + sc.status + ' err=' + sc.error);
   const ed = await get(BASE + '/pages/fluidcanvas-editor.html');

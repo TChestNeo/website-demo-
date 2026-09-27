@@ -120,9 +120,9 @@ function ok(name, cond, detail) {
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     const i18nJs = await (await fetch(BASE + '/assets/i18n/fluidcanvas.i18n.js')).text();
     const occ = (s, sub) => s.split(sub).length - 1;
-    ok('S1 site-config：FC v10.28.47.4 + rev 00321- 占位 + 站点恒 v0.2.58.13 + 「同步图库」在 changelog + 旧赋值零残留',
-      siteCfg.indexOf('v10.28.47.4') !== -1 && siteCfg.indexOf('00321-') !== -1 &&
-      siteCfg.indexOf('v0.2.58.13') !== -1 && siteCfg.indexOf('同步图库') !== -1 &&
+    ok('S1 site-config：FC v10.28.47.4 + rev 00323- 占位 + 站点恒 v0.2.58.14 + 「同步图库」在 changelog + 旧赋值零残留',
+      siteCfg.indexOf('v10.28.47.4') !== -1 && siteCfg.indexOf('00323-') !== -1 &&
+      siteCfg.indexOf('v0.2.58.14') !== -1 && siteCfg.indexOf('同步图库') !== -1 &&
       siteCfg.indexOf("'v10.28.47.2';") === -1);
     ok('S2 弹层锚：4 新 id + TT_FILTER_TAG_IDS + 两桥两导出（currentTabItems/refreshLibItems/esc）+ 钩子 4 处+赋值 1 处',
       editorHtml.indexOf('id="ttFilterBtn"') !== -1 && editorHtml.indexOf('id="ttFilterMenu"') !== -1 &&

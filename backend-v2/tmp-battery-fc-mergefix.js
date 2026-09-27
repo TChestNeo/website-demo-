@@ -165,9 +165,9 @@ const CHECK_FLUSH = "(function(){ var cards = document.querySelectorAll('#gridCa
     // ── S1 静态锚：版本 + bbox 落位锚在场 + 旧 offsetWidth 落位锚零残留 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
-    ok('S1 site-config 44.3 + rev 00293- 占位 + 站点恒 v0.2.58.13 + 编辑器 bbox 落位锚在场（tbb/cb0/面并集）＋旧 offsetWidth 落位锚零残留',
+    ok('S1 site-config 44.3 + rev 00293- 占位 + 站点恒 v0.2.58.14 + 编辑器 bbox 落位锚在场（tbb/cb0/面并集）＋旧 offsetWidth 落位锚零残留',
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
-      siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.13') !== -1 &&
+      siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.14') !== -1 &&
       editorHtml.indexOf('var tbb = cardBBox(target, tL, tT);') !== -1 &&
       editorHtml.indexOf('tbb.left - cb0.right') !== -1 &&
       editorHtml.indexOf('tbb.right - cb0.left') !== -1 &&

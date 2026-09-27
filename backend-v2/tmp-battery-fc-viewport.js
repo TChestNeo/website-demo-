@@ -173,8 +173,8 @@ const FIXED_EXPR = "(function(){ var gc = document.getElementById('gridCanvas');
     // ── F0 静态锚：版本号 + 页面结构锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
-    ok('F1 site-config：FC v10.28.47.4 + rev 00321- 占位 + 站点版本恒 v0.2.58.13',
-      siteCfg.indexOf('v10.28.47.4') !== -1 && siteCfg.indexOf('00321-') !== -1 && siteCfg.indexOf('v0.2.58.13') !== -1);
+    ok('F1 site-config：FC v10.28.47.4 + rev 00323- 占位 + 站点版本恒 v0.2.58.14',
+      siteCfg.indexOf('v10.28.47.4') !== -1 && siteCfg.indexOf('00323-') !== -1 && siteCfg.indexOf('v0.2.58.14') !== -1);
     ok('F2 编辑器页静态锚：.grid-canvas width:max-content（画布盒全覆盖 115 列）+ computeCols 恒 return 115',
       editorHtml.indexOf('width: max-content') !== -1 && /function computeCols\(\)[\s\S]{0,80}return 115;/.test(editorHtml));
     ok('F3 编辑器页静态锚：zoomChip 按钮 + window.setViewZoom/resetViewZoom 导出',

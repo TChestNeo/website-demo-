@@ -5,8 +5,8 @@
 // S3 文章阅读页 article.html?id=ART-000004 正文渲染——v0.2.56.2 FC 1:1 画布：国旗/国徽并排不竖堆、
 //    尺寸 1:1（fit 264×174 / span 240×174）、国徽卡 Emblem 不丢
 // S4 全程零 JS 错误
-// S5 概览页真文章 / S6 explore 页文章搜索 / S7 阅读页版本锚 + 宽窗完整格舞台投影（v0.2.58.13）
-// S8 v0.2.58.13 呈现界面：去侧栏 + 标签条 + 480 窄窗维基式回流往返 + 目录列全部卡（真文章 2 卡条目）
+// S5 概览页真文章 / S6 explore 页文章搜索 / S7 阅读页版本锚 + 宽窗完整格舞台投影（v0.2.58.14）
+// S8 v0.2.58.14 呈现界面：去侧栏 + 标签条 + 480 窄窗维基式回流往返 + 目录列全部卡（真文章 2 卡条目）
 // S9 v10.28.40.0 FC 编辑区固定 115 格横：线上 site-config 版本锚 + 门禁通过 + --grid-cols=115 + 画布盒 2528 全覆盖 + 底部横向拉条 + Ctrl+滚轮缩放 + 芯片重置 + Shift+滚轮横向 + 纯滚轮不缩放 + 中键拖平移落点精确/平移中玻璃挂起/松手还原（39.1 掉帧修复行为锚）
 // S10 v10.28.40.0 SNE 格底随卡色 + 画布边缘淡淡阴影（用户「二级显示分数的卡片颜色根据卡片本身的颜色自动变化背景颜色融入背景主题；画布格子边缘加淡淡阴影」）：画布盒 box-shadow 逐字节 + 建卡读混色恒等 + tint 写入 62/38 混色，IIFE 内建读删零草稿污染
 // S11 v10.28.41.0 发布日志弹窗（用户「点击发布的时候先弹出一个弹窗填写日志…限制320字」）：弹窗 DOM 在场 + 打开固定初始高 + 按空格分词计数（"code"=1）+ 自动增长 220 上限内滚 + 321 词 .over 红字确认硬拦 + 取消放弃 + 演示路径确认落草稿 + 再开预填（全链零网络——guest 无 USR 用户 fcCloudMode 恒 false；草稿只落探针一次性档案）
@@ -136,9 +136,9 @@ async function waitFor(cdp, expr, timeout, label) {
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-card-emblem'); return !!e && !!e.querySelector('.material-symbols-outlined') && !!e.querySelector('.art-card-emblem-label'); })()") === true &&
       await cdp.evalJs("(function(){ var e = document.querySelector('#artBody .art-card-emblem-label'); return e.textContent === 'Emblem'; })()") === true);
 
-    // S7 v0.2.58.13：版本锚 + 宽窗完整格舞台投影（115 格横 + 格子线代码在场透明度 0）+ S8 呈现界面
+    // S7 v0.2.58.14：版本锚 + 宽窗完整格舞台投影（115 格横 + 格子线代码在场透明度 0）+ S8 呈现界面
     const artVer = await cdp.evalJs("window.MN_SITE_VERSION");
-    ok('S7 阅读页线上版本 = v0.2.58.13', artVer === 'v0.2.58.13', 'ver=' + artVer);
+    ok('S7 阅读页线上版本 = v0.2.58.14', artVer === 'v0.2.58.14', 'ver=' + artVer);
     ok('S7b 宽窗完整格舞台投影自洽：s=min(availW/stageW,availH/stageH)（下限 0.25）+ holder=stage×s + 115 格横 + 格子线代码在场透明度 0',
       await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); if (!h) return false; var e = h.querySelector('.art-canvas-inner'); var m = e.style.transform.match(/scale\\(([\\d.]+)\\)/); var s = m ? parseFloat(m[1]) : 0; var availH = Math.max(200, window.innerHeight - h.getBoundingClientRect().top - 24); var exp = Math.max(0.25, Math.min(b.clientWidth / e.offsetWidth, availH / e.offsetHeight)); var cs = getComputedStyle(e); var bi = cs.backgroundImage.replace(/\\s+/g, ''); return Math.abs(s - exp) <= 0.005 && Math.abs(h.clientWidth - Math.round(e.offsetWidth * s)) <= 2 && s >= 0.25 && Math.abs(e.offsetWidth / 22 - 115) <= 1 && bi.indexOf('linear-gradient') !== -1 && bi.indexOf('rgba(120,120,120,0)') !== -1; })()") === true,
       await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var h = b.querySelector('.art-canvas'); var e = h.querySelector('.art-canvas-inner'); return 'avail=' + b.clientWidth + ' inner=' + e.offsetWidth + 'x' + e.offsetHeight + ' holder=' + h.clientWidth + ' ' + e.style.transform; })()"));
@@ -179,7 +179,7 @@ async function waitFor(cdp, expr, timeout, label) {
     await cdp.send('Page.navigate', { url: BASE + '/pages/explore.html' });
     await waitFor(cdp, "document.readyState === 'complete' && !!document.getElementById('exSearchInput')", 30000, 'explore 页加载');
     const exVer = await cdp.evalJs("window.MN_SITE_VERSION");
-    ok('S6 explore 页线上版本 = v0.2.58.13', exVer === 'v0.2.58.13', 'ver=' + exVer);
+    ok('S6 explore 页线上版本 = v0.2.58.14', exVer === 'v0.2.58.14', 'ver=' + exVer);
     await cdp.evalJs("(function(){ var i = document.getElementById('exSearchInput'); i.value = 'Testing'; i.dispatchEvent(new Event('input')); })()");
     let exHit = false;
     try { exHit = await waitFor(cdp, "document.querySelectorAll('#exSearchPanel .dash-search-item').length >= 1", 10000, 'explore 下拉'); } catch (e) {}
@@ -195,7 +195,7 @@ async function waitFor(cdp, expr, timeout, label) {
 
     // S9 v10.28.40.0 FC 编辑区固定 115 格横（用户「FC也是一样是115格横向，固定不会因窗口不够宽而缩小，最多底下横向拉条」）
     const scCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
-    ok('S9a 线上 site-config 含 FC v10.28.47.4 + 站点 v0.2.58.13', scCfg.indexOf('v10.28.47.4') !== -1 && scCfg.indexOf('v0.2.58.13') !== -1);
+    ok('S9a 线上 site-config 含 FC v10.28.47.4 + 站点 v0.2.58.14', scCfg.indexOf('v10.28.47.4') !== -1 && scCfg.indexOf('v0.2.58.14') !== -1);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
       source: 'try{localStorage.setItem("slati_session", ' + JSON.stringify(JSON.stringify({ loggedIn: true })) + ');}catch(e){}'
     });
