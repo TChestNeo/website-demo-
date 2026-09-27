@@ -1,7 +1,7 @@
-// tmp-probe-606-lvwater.js — v0.2.58.11 折叠侧栏等级水位环+双层水波 线上实机探针
+// tmp-probe-606-lvwater.js — v0.2.58.12 折叠侧栏等级水位环+双层水波 线上实机探针
 // 用户「呃那个等级的进度条能不能是一个环围着中间的等级号码而不是这种像时间一样的」+「从底部上灌的时候
 //   我希望你添加一个水的飘动动效分成两层这样」+「就是一层主要颜色另一层用一个浅有点的颜色增加层次感」。
-// S 静态（线上 site-config 58.3+changelog+rev 00317-+旧 58.2 赋值零残留+58.2/58.1 历史标题保留+FC 47.4 恒；
+// S 静态（线上 site-config 58.3+changelog+rev 00319-+旧 58.2 赋值零残留+58.2/58.1 历史标题保留+FC 47.4 恒；
 //   ethereal.css/index.html 水位环规则在位、旧 conic/pill-core 零残留）；P 实机（demo 用户种子——id 无 USR-
 //   前缀 → hasCloudUser false 零 API 调用，杜绝服务端 401 清会话；两段式种子让页面自写每日登录日期键再覆写
 //   XP → +5 跳过；折叠药丸上阵/水位 8%/双层水波动效/几何零挤压/满级 100%/窄列零溢出）；E 零异常。
@@ -76,13 +76,13 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：58.3 赋值+changelog 标题/用户原话+rev 00317-+旧 58.2 赋值零残留+58.2/58.1 历史标题保留+FC 47.4 恒',
+  ok('S1 线上 site-config：58.3 赋值+changelog 标题/用户原话+rev 00319-+旧 58.2 赋值零残留+58.2/58.1 历史标题保留+FC 47.4 恒',
     sc.status === 200 &&
-    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.11';") !== -1 &&
+    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.12';") !== -1 &&
     sc.body.indexOf('v0.2.58.3 = 折叠侧栏等级水位环+双层水波') !== -1 &&
     sc.body.indexOf('像时间一样的') !== -1 &&
     sc.body.indexOf('飘动动效') !== -1 &&
-    sc.body.indexOf('rev 00317-') !== -1 &&
+    sc.body.indexOf('rev 00319-') !== -1 &&
     sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.2';") === -1 &&
     sc.body.indexOf('v0.2.58.2 = 折叠侧栏等级纵向药丸+经验环') !== -1 &&
     sc.body.indexOf('v0.2.58.1 = 左侧菜单底部不透明背景完全删除') !== -1 &&

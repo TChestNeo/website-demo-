@@ -160,8 +160,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     art.indexOf('<body class="pre-stagger art-present">') !== -1 &&
     art.indexOf('function applyReflow') !== -1 && art.indexOf('function renderToc') !== -1 &&
     art.indexOf('artResizeTimer') !== -1 && art.indexOf('max-width: 560px') !== -1);
-  ok('F0-2 版本 v0.2.58.11 + changelog（58.0 rev 00276-nnx + 57.1 rev 00274-xfl 保留）+ FC v10.28.47.4',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.11';") !== -1 &&
+  ok('F0-2 版本 v0.2.58.12 + changelog（58.0 rev 00276-nnx + 57.1 rev 00274-xfl 保留）+ FC v10.28.47.4',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.12';") !== -1 &&
     sconf.indexOf('00276-nnx') !== -1 && sconf.indexOf('00274-xfl') !== -1 &&
     sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1);
   ok('F0-3 i18n 新键在场（article.tags.label/article.toc.title zh + zh-Hant 目錄）',

@@ -1,4 +1,4 @@
-// tmp-battery-sidebar-light.js — v0.2.58.11 左侧菜单底部不透明背景完全删除静态巡检电池（纯文件 grep，无浏览器）
+// tmp-battery-sidebar-light.js — v0.2.58.12 左侧菜单底部不透明背景完全删除静态巡检电池（纯文件 grep，无浏览器）
 // 断言：ethereal.css 侧栏容器铺底规则零残留（深浅两主题）/ 玻璃注入层灭滤镜灭磨砂规则在位 /
 // 41 页内联块全量已刷新（凡含 lg-glass-filter 内联块的页面必含新轮注释且零铺底规则）/ 三张卡零触碰
 // （.sidebar-module --card-bg+blur 原样）/ dropdown 与全站卡片的 --sidebar-bg 用法不动（计数=2）/
@@ -67,12 +67,12 @@ function ok(name, cond) {
 // 3. site-config 版本 + changelog 新条目 + 历史条目保留 + FC 零改动
 {
   const s = read(path.join(DOCS, 'assets/js/site-config.js'));
-  ok('site-config 版本 = v0.2.58.11', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.11';") !== -1);
+  ok('site-config 版本 = v0.2.58.12', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.12';") !== -1);
   ok('site-config 旧版本赋值零残留', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.0';") === -1);
-  ok('site-config changelog 含 v0.2.58.11 条目 + 用户原话 + 修法口径',
+  ok('site-config changelog 含 v0.2.58.12 条目 + 用户原话 + 修法口径',
     s.indexOf('v0.2.58.3 = 折叠侧栏等级水位环+双层水波') !== -1 &&
     s.indexOf('我要完全的删除它') !== -1 && s.indexOf('不是我的卡片') !== -1 &&
-    s.indexOf('rev 00317-') !== -1);
+    s.indexOf('rev 00319-') !== -1);
   ok('site-config 58.0 历史条目保留', s.indexOf('v0.2.58.0 = 完整格子画布镜像') !== -1);
   const sj = read(path.join(DOCS, 'assets/js/sidebar.js'));
   ok('sidebar.js 53.3 历史注释保留', sj.indexOf('那个左侧菜单的底部背景能不能去掉') !== -1);
