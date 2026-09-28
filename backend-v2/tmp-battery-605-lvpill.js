@@ -1,15 +1,18 @@
-// tmp-battery-605-lvpill.js — v0.2.58.14 折叠侧栏等级水杯慢浪改浅色电池（58.10 收成两层/58.11 两色互换/
-//   58.12 浪位抬高/58.13 双浪同色深蓝电池同文件口径随轮改：用户「那个刚才提出添加的第二个波浪我希望是
-//   浅色的」——慢浪 .mn-lv-wlightwave2 背景 var(--color-primary)→var(--mn-lv-light)（58.11 浅水同款浅色
-//   公式 color-mix 55%+白；赋值挂 .mn-lv-ring 恢复——58.13 整体删除后本轮复活）；快浪/水深蓝/几何/
-//   z 层级/动画全零改动。
+// tmp-battery-605-lvpill.js — v0.2.58.15 折叠侧栏等级药丸悬停放大+右侧滑出等级信息卡电池（58.10 收成两层/
+//   58.11 两色互换/58.12 浪位抬高/58.13 双浪同色深蓝/58.14 慢浪改浅色电池同文件口径随轮改：用户「那么
+//   能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出 一个卡片完整的显示等级信息
+//   和经验条」——折叠态药丸悬停（.mn-lv-badge 整块=悬停区）scale(1.12)+右侧滑出 .mn-lv-hovercard
+//   （position:fixed 挂 body 逃双裁剪，z-index 150；内容=每次 show 从活的 .mn-lv-normal clone 最新
+//   innerHTML 零陈旧；200ms 宽限防缝隙闪烁；matchMedia(hover+fine) 门控触屏零行为）；展开态原徽章可见
+//   零卡片；药丸/水杯/水位/两浪 58.14 全零改动。
 //   折叠态等级徽章=纵向药丸 48×116（LV 小字在上）+ 药丸水杯 44×84 只围号码；经验进度=水位从杯底往上灌
 //   （.mn-lv-fill 内联 height 百分比）；深蓝水+杯顶两道正弦浪（快 2.2s 深蓝/慢 2.5s 浅色相位漂移，慢浪
 //   浪峰周期性从快浪浪谷透明区透出=浅色幽灵浪峰在深浪下流动，纯 CSS 零 JS）；
 //   号码 z 上浮+白色描边晕影水位高时仍可读。展开态 .mn-lv-normal 原徽章原样零变化。
-// F 静态：site-config 58.14+changelog+rev 00323-、sidebar.js 三层结构、ethereal.css 药丸规则+内联块同步；
-// S 浏览器：展开零变化/折叠切换/药丸几何与菜单按钮同宽/水位进度刷新/满级/窄列 floating 与卡片齐平/展开恢复；E 零异常。
-// /api 全 404（demo 模式，同 xp-rebalance 口径）；会话+XP 本地种子。
+// F 静态：site-config 58.15+changelog+rev 00325-/00326-、sidebar.js 三层结构+悬停块、ethereal.css 药丸规则+
+//   悬停卡规则+内联块同步；S 浏览器：展开零变化/折叠切换/药丸几何与菜单按钮同宽/水位进度刷新/满级/
+//   narrow 列 floating 与卡片齐平/展开恢复 + 悬停开卡/驻留/收卡/重渲染重开/折叠切换收卡/floating 开卡/展开零卡；
+//   E 零异常。/api 全 404（demo 模式，同 xp-rebalance 口径）；会话+XP 本地种子。
 'use strict';
 const http = require('http');
 const fs = require('fs');
@@ -108,13 +111,19 @@ const rgbSum = (s) => {
   const indexSrc = fs.readFileSync(path.join(DOCS, 'index.html'), 'utf8').replace(/\r\n/g, '\n');
   const editorSrc = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8').replace(/\r\n/g, '\n');
 
-  ok('F1 静态：58.14 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话（第二个波浪我希望是浅色的）+ rev 00323- + 58.13 赋值零残留 + 58.13/58.12/58.11/58.10/58.9/58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.14';") !== -1 &&
+  ok('F1 静态：58.15 赋值 + FC 恒 47.4 + changelog 新条目标题+用户原话三片断（滑鼠靠近/向右滑出/显示等级信息和经验条）+ rev 00325-/00326- 各 1 + 58.14 赋值零残留 + 58.14 标题与原话保留 + 58.13/58.12/58.11/58.10/58.9/58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.15';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
+    sconfSrc.indexOf('v0.2.58.15 = 折叠侧栏等级药丸悬停放大+右侧滑出等级信息卡') !== -1 &&
+    sconfSrc.indexOf('滑鼠靠近') !== -1 &&
+    sconfSrc.indexOf('向右滑出') !== -1 &&
+    sconfSrc.indexOf('显示等级信息和经验条') !== -1 &&
+    cnt(sconfSrc, 'rev 00325-') === 1 &&
+    cnt(sconfSrc, 'rev 00326-') === 1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.14';") === -1 &&
     sconfSrc.indexOf('v0.2.58.14 = 折叠侧栏等级水杯慢浪改浅色') !== -1 &&
     sconfSrc.indexOf('第二个波浪我希望是浅色的') !== -1 &&
     sconfSrc.indexOf('rev 00323-') !== -1 &&
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.13';") === -1 &&
     sconfSrc.indexOf('v0.2.58.13 = 折叠侧栏等级水杯双浪同色深蓝+慢浪 z-1 层') !== -1 &&
     sconfSrc.indexOf('然后把两个颜色改成一样的深蓝色') !== -1 &&
     sconfSrc.indexOf('波浪Z轴的-1') !== -1 &&
@@ -147,7 +156,7 @@ const rgbSum = (s) => {
     sconfSrc.indexOf('v0.2.58.2 = 折叠侧栏等级纵向药丸+经验环') !== -1 &&
     sconfSrc.indexOf('v0.2.58.1 = 左侧菜单底部不透明背景完全删除') !== -1);
 
-  ok('F2 静态：sidebar.js 新结构（normal 原徽章字节原样 + 药丸/水杯/水位/三层水件套 wdeep→wlightwave2→wlightwave 序 + fillPct + wlight/wdeepwave 零残留 + conic/ringPct/pill-core 零残留）',
+  ok('F2 静态：sidebar.js 新结构（normal 原徽章字节原样 + 药丸/水杯/水位/三层水件套 wdeep→wlightwave2→wlightwave 序 + fillPct + wlight/wdeepwave 零残留 + conic/ringPct/pill-core 零残留）+ 58.15 悬停块（function initLevelHover ×1/initLevelHover(); ×1/lvHoverHide ×6/matchMedia 门控 ×1/className mn-lv-hovercard ×1/mn-lv-hover ×2/normal.innerHTML 克隆在位/cloneNode 零/getBoundingClientRect ×1）',
     cnt(sidebarSrc, 'class="mn-lv-normal"') === 1 &&
     cnt(sidebarSrc, 'class="mn-lv-pill"') === 1 &&
     cnt(sidebarSrc, 'class="mn-lv-ring"') === 1 &&
@@ -168,9 +177,18 @@ const rgbSum = (s) => {
     sidebarSrc.indexOf('ringPct') === -1 &&
     sidebarSrc.indexOf('mn-lv-pill-core') === -1 &&
     sidebarSrc.indexOf('display:flex;align-items:center;justify-content:space-between;margin-bottom:4px') !== -1 &&
-    sidebarSrc.indexOf('height:5px;border-radius:999px;background:rgba(128,128,140,0.25)') !== -1);
+    sidebarSrc.indexOf('height:5px;border-radius:999px;background:rgba(128,128,140,0.25)') !== -1 &&
+    cnt(sidebarSrc, 'function initLevelHover') === 1 &&
+    cnt(sidebarSrc, 'initLevelHover();') === 1 &&
+    cnt(sidebarSrc, 'lvHoverHide') === 6 &&
+    cnt(sidebarSrc, "matchMedia('(hover: hover) and (pointer: fine)')") === 1 &&
+    cnt(sidebarSrc, "className = 'mn-lv-hovercard'") === 1 &&
+    cnt(sidebarSrc, "'mn-lv-hover'") === 2 &&
+    sidebarSrc.indexOf('lvHoverCard.innerHTML = normal.innerHTML') !== -1 &&
+    cnt(sidebarSrc, 'cloneNode') === 0 &&
+    cnt(sidebarSrc, 'getBoundingClientRect()') === 1);
 
-  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 48×116 + 水杯 44×84 胶囊 + 58.14 慢浪改浅色件套——水 wdeep 背景 var(--color-primary)+z-index:-2、快浪 wlightwave 深蓝 80×16 新路径/400% strip 16px/平移 80px/2.2s+top -12px+z-index:0、慢浪 wlightwave2 浅色 var(--mn-lv-light) 全同款几何+z-index:-1+2.5s、fill z-index:0 建 stacking context、--mn-lv-light 赋值挂 .mn-lv-ring 恢复在位 + LV 标签 14px/号码 28px）+ 旧浅水层/旧深浪/旧 --mn-lv-wave-c 赋值/旧 1.6s/旧顶线 calc(40% - 8px)/旧 opacity 0.65/旧 height 40%/旧 40×32 路径/旧 300% strip/旧平移 40px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧平移 20px/旧顶线 -16px 旧代/旧花边/7px 7px/conic/pill-core 零残留 + 58.10/58.11/58.12/58.13/58.14 注释在位 + 旧慢浪同色注释零残留 + index/editor 内联块同款同步',
+  ok('F3 静态：ethereal.css 药丸规则在位（默认隐藏/折叠三规则+keyframes pill-in + 药丸 48×116 + 水杯 44×84 胶囊 + 58.14 慢浪改浅色件套——水 wdeep 背景 var(--color-primary)+z-index:-2、快浪 wlightwave 深蓝 80×16 新路径/400% strip 16px/平移 80px/2.2s+top -12px+z-index:0、慢浪 wlightwave2 浅色 var(--mn-lv-light) 全同款几何+z-index:-1+2.5s、fill z-index:0 建 stacking context、--mn-lv-light 赋值挂 .mn-lv-ring 恢复在位 + LV 标签 14px/号码 28px）+ 旧浅水层/旧深浪/旧 --mn-lv-wave-c 赋值/旧 1.6s/旧顶线 calc(40% - 8px)/旧 opacity 0.65/旧 height 40%/旧 40×32 路径/旧 300% strip/旧平移 40px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧平移 20px/旧顶线 -16px 旧代/旧花边/7px 7px/conic/pill-core 零残留 + 58.10/58.11/58.12/58.13/58.14 注释在位 + 旧慢浪同色注释零残留 + 58.15 悬停卡块（media 门控 ×1/transition transform 0.18s ×1/scale 1.12 ×1/.mn-lv-hovercard 两规则/z-index 150 ×1/translateX(-10px) scale(0.98) ×1/opacity+transform 过渡 ×1/transform-origin left center ×1/中文注释两片断）+ index/editor 内联块同款同步（media ×1/hovercard ×2/scale ×1/transition ×1；index z-index 150 与页本地样式撞车不计数）',
     etherealSrc.indexOf('.mn-lv-badge .mn-lv-pill { display: none; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }') !== -1 &&
     etherealSrc.indexOf('.app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }') !== -1 &&
@@ -256,6 +274,18 @@ const rgbSum = (s) => {
     etherealSrc.indexOf('background-size: 7px 7px') === -1 &&
     etherealSrc.indexOf('conic-gradient') === -1 &&
     etherealSrc.indexOf('mn-lv-pill-core') === -1 &&
+    etherealSrc.indexOf('v0.2.58.15 用户「那么能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出') !== -1 &&
+    etherealSrc.indexOf('一个卡片完整的显示等级信息和经验条」：折叠态药丸悬停放大+右侧滑出等级信息卡。') !== -1 &&
+    cnt(etherealSrc, '@media (hover: hover) and (pointer: fine)') === 1 &&
+    cnt(etherealSrc, 'transition: transform 0.18s ease;') === 1 &&
+    cnt(etherealSrc, 'transform: scale(1.12);') === 1 &&
+    cnt(etherealSrc, '.mn-lv-hovercard {') === 1 &&
+    cnt(etherealSrc, '.mn-lv-hovercard.active {') === 1 &&
+    cnt(etherealSrc, 'z-index: 150;') === 1 &&
+    cnt(etherealSrc, 'transform: translateX(-10px) scale(0.98);') === 1 &&
+    cnt(etherealSrc, 'transition: opacity 0.2s ease, transform 0.2s ease;') === 1 &&
+    cnt(etherealSrc, 'transform-origin: left center;') === 1 &&
+    cnt(etherealSrc, 'pointer-events: none;') >= 1 &&
     cnt(indexSrc, '.mn-lv-badge .mn-lv-pill { display: none; }') === 1 &&
     cnt(indexSrc, 'mn-lv-pill-in') === 2 &&
     cnt(indexSrc, '.mn-lv-wlightwave {') === 1 &&
@@ -285,6 +315,11 @@ const rgbSum = (s) => {
     cnt(indexSrc, 'width: 28px; height: 42px; border-radius: 999px;') === 0 &&
     cnt(indexSrc, '@keyframes mn-lv-wave') === 1 &&
     cnt(indexSrc, 'animation: mn-lv-wave ') === 2 &&
+    cnt(indexSrc, '@media (hover: hover) and (pointer: fine)') === 1 &&
+    cnt(indexSrc, '.mn-lv-hovercard {') === 1 &&
+    cnt(indexSrc, '.mn-lv-hovercard.active {') === 1 &&
+    cnt(indexSrc, 'transform: scale(1.12);') === 1 &&
+    cnt(indexSrc, 'transition: transform 0.18s ease;') === 1 &&
     cnt(editorSrc, 'mn-lv-pill-in') === 2 &&
     cnt(editorSrc, '.mn-lv-wlightwave {') === 1 &&
     cnt(editorSrc, '.mn-lv-wlightwave2 {') === 1 &&
@@ -312,7 +347,12 @@ const rgbSum = (s) => {
     cnt(editorSrc, 'width: 32px; height: 58px; border-radius: 999px;') === 0 &&
     cnt(editorSrc, 'width: 28px; height: 42px; border-radius: 999px;') === 0 &&
     cnt(editorSrc, '@keyframes mn-lv-wave') === 1 &&
-    cnt(editorSrc, 'animation: mn-lv-wave ') === 2,
+    cnt(editorSrc, 'animation: mn-lv-wave ') === 2 &&
+    cnt(editorSrc, '@media (hover: hover) and (pointer: fine)') === 1 &&
+    cnt(editorSrc, '.mn-lv-hovercard {') === 1 &&
+    cnt(editorSrc, '.mn-lv-hovercard.active {') === 1 &&
+    cnt(editorSrc, 'transform: scale(1.12);') === 1 &&
+    cnt(editorSrc, 'transition: transform 0.18s ease;') === 1,
     'index-pill=' + cnt(indexSrc, 'mn-lv-pill-in') + ' editor-pill=' + cnt(editorSrc, 'mn-lv-pill-in'));
 
   // ═══ 浏览器场景 ═══
@@ -356,6 +396,33 @@ const rgbSum = (s) => {
       const r = await cdp.evalJs("(function(){ try { " + body + "; return 'ok'; } catch(e){ return 'ERR ' + e.message; } })()");
       if (r !== 'ok') throw new Error('setLS 失败: ' + r);
     };
+    // 悬停模拟（announce-hover 先例）：必须先 move 到 (5,5) 再移到目标中心，否则 mouseenter 不触发
+    const move = async (x, y) => { await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y }); await sleep(80); };
+    const rectCenter = async (sel) => {
+      const s = await cdp.evalJs("(function(){ var el = document.querySelector(" + JSON.stringify(sel) + "); " +
+        "if (!el) return JSON.stringify({ absent: true }); var r = el.getBoundingClientRect(); " +
+        "return JSON.stringify({ x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) }); })()");
+      const o = JSON.parse(s);
+      if (o.absent) throw new Error('rectCenter 元素缺失: ' + sel);
+      return o;
+    };
+    const hoverNow = () => cdp.evalJs("(function(){ var card = document.querySelector('.mn-lv-hovercard'); " +
+      "var pill = document.querySelector('#slati-sidebar .mn-lv-pill'); var badge = document.querySelector('#slati-sidebar .mn-lv-badge'); " +
+      "if (!pill || !badge) return JSON.stringify({ absent: true }); " +
+      "var pr = pill.getBoundingClientRect(); " +
+      "var cr = card ? card.getBoundingClientRect() : null; " +
+      "var tf = new DOMMatrixReadOnly(getComputedStyle(pill).transform); " +
+      "var bar = card ? card.querySelector('div[style*=\"width\"]') : null; " +
+      "return JSON.stringify({ cardExists: !!card, active: card ? card.classList.contains('active') : false, " +
+      "opacity: card ? getComputedStyle(card).opacity : null, " +
+      "badgeHover: badge.classList.contains('mn-lv-hover'), " +
+      "pillScaleA: Math.round(tf.a * 1000) / 1000, pillScaleD: Math.round(tf.d * 1000) / 1000, " +
+      "cardLeft: cr ? Math.round(cr.left) : null, cardRight: cr ? Math.round(cr.right) : null, " +
+      "cardTop: cr ? Math.round(cr.top) : null, cardBottom: cr ? Math.round(cr.bottom) : null, " +
+      "cardW: card ? card.offsetWidth : null, " +
+      "pillRight: Math.round(pr.right), pillURight: Math.round(pr.right - (tf.a - 1) * pill.offsetWidth / 2), pillTop: Math.round(pr.top), pillH: Math.round(pr.height), " +
+      "txt: card ? card.textContent : null, barWidth: bar ? bar.style.width : null, " +
+      "vpW: window.innerWidth, vpH: window.innerHeight }); })()");
     const pillNow = () => cdp.evalJs("(function(){ var b = document.querySelector('#slati-sidebar .mn-lv-badge'); " +
       "if (!b) return JSON.stringify({ absent: true }); " +
       "var n = b.querySelector('.mn-lv-normal'); var p = b.querySelector('.mn-lv-pill'); " +
@@ -430,6 +497,8 @@ const rgbSum = (s) => {
     let g = await geoNow();
     const g1 = JSON.parse(g);
     ok('S1b 展开态头像 40×40（折叠前基准）', g1.aw === 40 && g1.ah === 40 && g1.badgeMarginTop === '8px', g);
+    ok('H0 悬停门控：headless 桌面 matchMedia(hover:hover)+(pointer:fine) === true（整组悬停案前置条件）',
+      await cdp.evalJs("!!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches)") === true);
 
     // ── S2 折叠切换 ──
     await cdp.evalJs("window._slatiToggleSidebar()");
@@ -474,6 +543,81 @@ const rgbSum = (s) => {
       s4.fillStyle === 'height:58%' && s4.num === '1' && s4.xp === 700 &&
       await cdp.evalJs("document.querySelector('#slati-sidebar').classList.contains('collapsed')") === true, r);
 
+    // ── S8 悬停开卡（XP=700）──
+    await move(5, 5);
+    let pc = await rectCenter('#slati-sidebar .mn-lv-pill');
+    await move(pc.x, pc.y);
+    await waitFor(cdp, "document.querySelector('.mn-lv-hovercard') && document.querySelector('.mn-lv-hovercard').classList.contains('active')", 1500, '悬停卡出现');
+    await sleep(450);
+    r = await hoverNow();
+    const h8 = JSON.parse(r);
+    ok('S8 悬停开卡：卡片 active+opacity 1+徽章 hover 类+药丸 scale(1.12)（a/d∈[1.115,1.125]）+ 卡片左=药丸未缩放右缘+10 ±2（pillURight 按 transform 外扩反算）+视口内（右≤vpW/顶≥8/底≤vpH-8）+ 宽 200 + 内容 Lv.1 · 旅行者/700 / 1200 XP + 经验条 58%',
+      h8.cardExists === true && h8.active === true && h8.opacity === '1' && h8.badgeHover === true &&
+      h8.pillScaleA >= 1.115 && h8.pillScaleA <= 1.125 && h8.pillScaleD >= 1.115 && h8.pillScaleD <= 1.125 &&
+      Math.abs(h8.cardLeft - (h8.pillURight + 10)) <= 2 &&
+      h8.cardRight <= h8.vpW && h8.cardTop >= 8 && h8.cardBottom <= h8.vpH - 8 &&
+      h8.cardW === 200 &&
+      h8.txt !== null && h8.txt.indexOf('Lv.1 · 旅行者') !== -1 && h8.txt.indexOf('700 / 1200 XP') !== -1 &&
+      h8.barWidth === '58%', r);
+
+    // ── S9 卡片驻留（防缝隙闪烁）──
+    await move(Math.round(h8.cardLeft + h8.cardW / 2), Math.round((h8.cardTop + h8.cardBottom) / 2));
+    await sleep(350);
+    r = await hoverNow();
+    const h9 = JSON.parse(r);
+    ok('S9 卡片驻留：鼠标移到卡片上 >200ms 宽限后卡片仍 active+opacity 1（badge→卡片 10px 缝隙零闪烁）',
+      h9.active === true && h9.opacity === '1' && h9.badgeHover === true, r);
+
+    // ── S10 离开收卡 ──
+    await move(5, 5);
+    await sleep(450);
+    r = await hoverNow();
+    const h10 = JSON.parse(r);
+    ok('S10 离开收卡：active 摘除+opacity 0+徽章 hover 类摘除+药丸 transform 回单位矩阵（a/d=1）',
+      h10.active === false && h10.opacity === '0' && h10.badgeHover === false &&
+      h10.pillScaleA === 1 && h10.pillScaleD === 1, r);
+
+    // ── S11 重渲染重开 + 内容新鲜 ──
+    await move(pc.x, pc.y);
+    await waitFor(cdp, "document.querySelector('.mn-lv-hovercard') && document.querySelector('.mn-lv-hovercard').classList.contains('active')", 1500, '悬停卡再开(S11)');
+    await sleep(450);
+    await cdp.evalJs("window.SlatiDB.addXP('batt', 300)");
+    await sleep(400);
+    r = await hoverNow();
+    const h11a = JSON.parse(r);
+    // Chrome 静止指针下 DOM 替换会合成 mouseenter 自动重开卡（renderSidebar 先收后开）——
+    // 关键守卫=若开则内容必新鲜（1000 / 83%）；陈旧（700 / 58%）即真红
+    const h11aFresh = h11a.active === false ||
+      (h11a.txt !== null && h11a.txt.indexOf('1000 / 1200 XP') !== -1 && h11a.barWidth === '83%');
+    await move(5, 5);
+    await sleep(450);
+    r = await hoverNow();
+    const h11b = JSON.parse(r);
+    const h11bHidden = h11b.active === false && h11b.badgeHover === false;
+    await move(pc.x, pc.y);
+    await waitFor(cdp, "document.querySelector('.mn-lv-hovercard') && document.querySelector('.mn-lv-hovercard').classList.contains('active')", 1500, '悬停卡三开(S11)');
+    await sleep(450);
+    r = await hoverNow();
+    const h11c = JSON.parse(r);
+    ok('S11 重渲染重开+内容新鲜：addXP +300（700→1000=83%）后若合成 mouseenter 重开卡则内容必新鲜（1000/83%）→ 移开必收（active false）→ 再悬停重开内容新鲜 Lv.1 · 旅行者/1000 / 1200 XP + 83%',
+      h11aFresh === true &&
+      h11bHidden === true &&
+      h11c.active === true && h11c.badgeHover === true &&
+      h11c.txt !== null && h11c.txt.indexOf('Lv.1 · 旅行者') !== -1 && h11c.txt.indexOf('1000 / 1200 XP') !== -1 &&
+      h11c.barWidth === '83%', r);
+
+    // ── S12 折叠切换收卡 ──
+    await cdp.evalJs("window._slatiToggleSidebar()");
+    await sleep(300);
+    r = await hoverNow();
+    const h12 = JSON.parse(r);
+    const h12Gone = h12.active === false && h12.badgeHover === false;
+    await cdp.evalJs("window._slatiToggleSidebar()");
+    await sleep(500);
+    ok('S12 折叠切换收卡：展开时卡片收+徽章类摘；再切回折叠态（collapsed 在位）',
+      h12Gone === true &&
+      await cdp.evalJs("document.querySelector('#slati-sidebar').classList.contains('collapsed')") === true, r);
+
     // ── S5 满级 ──
     await cdp.evalJs("localStorage.setItem('slati_xp', '1228800')");
     await cdp.send('Page.reload');
@@ -494,6 +638,24 @@ const rgbSum = (s) => {
     ok('S6 floating 折叠 64px 列：药丸 48×116（floating 右边线 1px 致模块 47→右溢 1px 可忽略=inMod false）+ 仍收在 64px 列内零越界 + 与头像零重叠',
       g3.pw === 48 && g3.ph === 116 && g3.inMod === false && g3.inSidebar === true && g3.overlap === false, g);
 
+    // ── S13 floating 悬停开卡（满级）──
+    await move(5, 5);
+    pc = await rectCenter('#slati-sidebar .mn-lv-pill');
+    await move(pc.x, pc.y);
+    await waitFor(cdp, "document.querySelector('.mn-lv-hovercard') && document.querySelector('.mn-lv-hovercard').classList.contains('active')", 1500, 'floating 悬停卡出现');
+    await sleep(450);
+    r = await hoverNow();
+    const h13 = JSON.parse(r);
+    ok('S13 floating 悬停开卡：卡片 active+左=药丸右+10 ±2+视口内+药丸 scale ≈1.12+内容 Lv.12 · 传奇/1228800 XP（满级无条）',
+      h13.active === true && h13.badgeHover === true &&
+      h13.pillScaleA >= 1.115 && h13.pillScaleA <= 1.125 &&
+      Math.abs(h13.cardLeft - (h13.pillURight + 10)) <= 2 &&
+      h13.cardRight <= h13.vpW && h13.cardTop >= 8 && h13.cardBottom <= h13.vpH - 8 &&
+      h13.txt !== null && h13.txt.indexOf('Lv.12 · 传奇') !== -1 && h13.txt.indexOf('1228800 XP') !== -1 &&
+      h13.barWidth === null, r);
+    await move(5, 5);
+    await sleep(450);
+
     // ── S7 展开恢复 ──
     await cdp.evalJs("document.querySelector('#slati-sidebar').classList.remove('floating'); window._slatiToggleSidebar()");
     await sleep(500);
@@ -502,6 +664,17 @@ const rgbSum = (s) => {
     ok('S7 展开恢复：normal 复显 + 药丸回隐藏 + margin-top 回 8px',
       s7.nDisplay !== 'none' && s7.pDisplay === 'none' && s7.txt.indexOf('Lv.12 · 传奇') !== -1 &&
       await cdp.evalJs("getComputedStyle(document.querySelector('#slati-sidebar .mn-lv-badge')).marginTop") === '8px', r);
+
+    // ── S14 展开态零卡片 ──
+    await move(5, 5);
+    pc = await rectCenter('#slati-sidebar .mn-lv-badge');
+    await move(pc.x, pc.y);
+    await sleep(300);
+    r = await hoverNow();
+    const h14 = JSON.parse(r);
+    ok('S14 展开态零卡片：悬停展开徽章 → 卡片不激活+徽章无 hover 类（原徽章已可见，零卡片）',
+      h14.active === false && h14.badgeHover === false, r);
+    await move(5, 5);
 
     ok('E1 全程零 Runtime exception + 零 console error',
       cdp.errs.length === 0 && cdp.consoleErrs.length === 0,
