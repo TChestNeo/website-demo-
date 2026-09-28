@@ -16,6 +16,7 @@ const {
 } = require('../../moderation/pipeline');
 const { hashOf } = require('../../moderation/rules');
 const queue = require('../../moderation/queue');
+const { ipOf } = require('../../middleware/ratelimit');
 
 const MAX_POST_LEN = 2000;
 const MAX_COMMENT_LEN = 2000; // comments.content ≤2000（写入层校验，同 005 注释）
@@ -728,6 +729,84 @@ function register(router, ctx) {
     })();
     sendJson(res, 200, clean);
   }));
+
+  // ── 关注页动态流（v0.2.58.17 关注页真实数据接入）：followed users 的帖 + followed topics 的帖 ──
+  // topic_id 为 NULL 的行自然不入话题子句（NULL IN (...) = NULL 假值），只走作者子句判定。
+  router.add('GET', '/api/social/feed', requireSession((req, res, c) => {
+    const rows = c.db.prepare(
+      "SELECT * FROM posts WHERE status = 'visible' AND (" +
+      "author_id IN (SELECT target_id FROM following WHERE user_id = ? AND target_type = 'user') OR " +
+      "topic_id IN (SELECT target_id FROM following WHERE user_id = ? AND target_type = 'topic')) " +
+      'ORDER BY seq DESC LIMIT 100'
+    ).all(c.user.id, c.user.id);
+    sendJson(res, 200, { posts: rows.map(r => postRow(c.db, r, c.user.id)) });
+  }));
+
+  // ── 关注页关注列表详情（v0.2.58.17）：三类目标解析成可渲染行 ──
+  // created_at DESC + rowid DESC 破平局（PUT 全量替换同时间戳）；已删目标静默丢弃；
+  // teams 与 GET /following 契约一致：忽略不发。nations 数据 JSON 无 emoji/粉丝数——followerCount 现算。
+  router.add('GET', '/api/social/following/detail', requireSession((req, res, c) => {
+    const rows = c.db.prepare('SELECT target_type, target_id, created_at, rowid AS rid FROM following WHERE user_id = ? ORDER BY created_at DESC, rid DESC').all(c.user.id);
+    const out = { nations: [], topics: [], users: [] };
+    const stNation = c.db.prepare("SELECT data FROM nations WHERE id = ? AND status = 'visible'");
+    const stTopic = c.db.prepare("SELECT data FROM topics WHERE id = ? AND status = 'visible'");
+    const stUser = c.db.prepare("SELECT id, display_name, avatar_url, citizen_id FROM users WHERE id = ? AND status = 'active'");
+    for (const r of rows) {
+      if (r.target_type === 'nation') {
+        const row = stNation.get(r.target_id);
+        if (!row) continue;
+        const d = parseJson(row.data) || {};
+        const followerCount = c.db.prepare("SELECT count(*) AS n FROM following WHERE target_type = 'nation' AND target_id = ?").get(r.target_id).n;
+        out.nations.push({
+          id: r.target_id, name: d.name || r.target_id, moniker: d.moniker || '',
+          classification: d.classification || '', capital: d.capital || '',
+          followerCount, followedAt: r.created_at
+        });
+      } else if (r.target_type === 'topic') {
+        const row = stTopic.get(r.target_id);
+        if (!row) continue;
+        const d = parseJson(row.data) || {};
+        out.topics.push({
+          id: r.target_id, name: d.name || r.target_id, description: d.description || '',
+          memberCount: d.memberCount || 0, followedAt: r.created_at
+        });
+      } else if (r.target_type === 'user') {
+        const row = stUser.get(r.target_id);
+        if (!row) continue;
+        out.users.push({
+          id: row.id, displayName: row.display_name, avatarUrl: row.avatar_url,
+          citizenId: row.citizen_id, followedAt: r.created_at
+        });
+      }
+    }
+    sendJson(res, 200, out);
+  }));
+
+  // ── 公网用户发现（v0.2.58.17 关注页 Discover「发现·用户」+ 推荐关注数据源）──
+  // PII 口径与 GET /api/social/users/:id 公共曝光对齐：只发 id/displayName/avatarUrl/citizenId；
+  // 绝不带 email/bio/gender。followedByMe 仅 viewer 随行（匿名省略键）。限流 pu:ip: 30/min。
+  router.add('GET', '/api/public/users', (req, res, c) => {
+    const w = (ctx.config.rateLimits || {}).publicUsers || { max: 30, windowMs: 60000 };
+    if (!ctx.limiter('pu:ip:' + ipOf(req), w.max, w.windowMs)) throw new HttpError('RATE_LIMITED', '请求过于频繁');
+    const viewerId = optionalViewer(req, c);
+    const rows = c.db.prepare(
+      'SELECT u.id, u.display_name, u.avatar_url, u.citizen_id, u.seq, ' +
+      "(SELECT count(*) FROM following f WHERE f.target_type = 'user' AND f.target_id = u.id) AS followerCount " +
+      "FROM users u WHERE u.status = 'active' ORDER BY followerCount DESC, u.seq ASC LIMIT 20"
+    ).all();
+    sendJson(res, 200, {
+      users: rows.map((u) => ({
+        id: u.id,
+        displayName: u.display_name,
+        avatarUrl: u.avatar_url,
+        citizenId: u.citizen_id,
+        followerCount: u.followerCount,
+        ...(viewerId ? {
+          followedByMe: !!c.db.prepare("SELECT 1 FROM following WHERE user_id = ? AND target_type = 'user' AND target_id = ?").get(viewerId, u.id)
+        } : {})
+      }))
+    });
+  });
 }
 
 module.exports = { register, TEAM_SEED };
