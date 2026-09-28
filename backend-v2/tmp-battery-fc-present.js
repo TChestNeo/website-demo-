@@ -1,4 +1,4 @@
-// tmp-battery-fc-present.js — v0.2.58.15 / FC v10.28.39.0 完整格子画布轮 FC 侧电池
+// tmp-battery-fc-present.js — v0.2.58.16 / FC v10.28.39.0 完整格子画布轮 FC 侧电池
 // 用户「16：9宽的格子数量是115个做一下这是最大值」（问询钦定「横向115格 长度不限」；
 //   纵向默认 16:9 115×70 再外加 25 行预留；卡片逼近底边按卡片底+25 行自动增长）
 // 验证：E 编辑态固定 115 格回归（169 预设 16:9 恒 20px 不被窗口缩放改动、
@@ -215,7 +215,7 @@ const COLS_EXPR = "(function(){ var gc = document.getElementById('gridCanvas'); 
       await cdp.evalJs(FIT_SELFCHECK) === true &&
       await cdp.evalJs("localStorage.getItem('slati_fluidcanvas_draft') || ''") === draftBefore,
       await cdp.evalJs("(function(){ var s = document.getElementById('fcViewScaler'); var g = document.getElementById('gridCanvas'); return 'scaler.w=' + s.clientWidth + ' tf=' + g.style.transform; })()"));
-    ok('V3 查看镜像目录 4 条目（v0.2.58.15 列全部卡：content c1 label + flag c2 label + c3/c4 文字卡）',
+    ok('V3 查看镜像目录 4 条目（v0.2.58.16 列全部卡：content c1 label + flag c2 label + c3/c4 文字卡）',
       await cdp.evalJs("(function(){ var d = document.getElementById('fcViewTocDrawer'); if (!d) return false; var items = d.querySelectorAll('.fcv-toc-item'); return items.length === 4 && items[0].textContent === 'Constitution' && items[1].textContent === 'Fixture Flag' && items[2].textContent === 'OOB-Right' && items[3].textContent === 'OOB-Bottom'; })()") === true);
 
     // ── E 全程零 Runtime exception + 零 console error ──
