@@ -246,8 +246,14 @@ function register(router, deps) {
       prev.displayName = ctx.user.display_name;
       if (!ctx.user.avatar_url) push('avatar_url = ?', avatarFor(name));
     }
+    // v0.2.58.18 加固（029 轮）：null = 清除头像，显式 null 合法（修 String(null) 写 "null" 串缺陷）；
+    // 仅本站上传路径或 http(s) 外链（PAGE_BG_IMAGE_RE 同款）——注册默认 ui-avatars https / 上传路径全过验
     if (body.avatarUrl !== undefined) {
-      push('avatar_url = ?', String(body.avatarUrl).slice(0, 500));
+      const avatarUrl = body.avatarUrl === null ? null : String(body.avatarUrl).slice(0, 500);
+      if (avatarUrl !== null && !PAGE_BG_IMAGE_RE.test(avatarUrl)) {
+        throw new HttpError('VALIDATION', '头像需为 http(s) 链接或本站上传图片');
+      }
+      push('avatar_url = ?', avatarUrl);
       prev.avatarUrl = ctx.user.avatar_url;
     }
     if (body.language !== undefined) {
@@ -299,6 +305,15 @@ function register(router, deps) {
       push('page_bg_image = ?', pageBgImage);
       prev.pageBgImage = ctx.user.page_bg_image;
     }
+    // v0.2.58.18 个人资料横幅（029 列；null = 移除恢复默认预设渐变，显式 null 合法；仅本站上传路径或 http(s) 外链）
+    if (body.bannerUrl !== undefined) {
+      const bannerUrl = body.bannerUrl === null ? null : String(body.bannerUrl).slice(0, 500);
+      if (bannerUrl !== null && !PAGE_BG_IMAGE_RE.test(bannerUrl)) {
+        throw new HttpError('VALIDATION', '横幅需为 http(s) 链接或本站上传图片');
+      }
+      push('banner_url = ?', bannerUrl);
+      prev.bannerUrl = ctx.user.banner_url;
+    }
     // v0.2.53.0 卡片边缘主题（027 列；null = 恢复默认圆角卡，显式 null 合法；白名单 14 键）
     if (body.cardEdge !== undefined) {
       const cardEdge = body.cardEdge === null ? null : String(body.cardEdge);
@@ -321,7 +336,7 @@ function register(router, deps) {
         next: {
           displayName: next.display_name, avatarUrl: next.avatar_url, language: next.language,
           country: next.country, bio: next.bio, dob: next.dob, gender: next.gender, cardBg: next.card_bg,
-          cardPlate: next.card_plate, pageBgImage: next.page_bg_image, cardEdge: next.card_edge
+          cardPlate: next.card_plate, pageBgImage: next.page_bg_image, bannerUrl: next.banner_url, cardEdge: next.card_edge
         }
       });
       sendJson(res, 200, { user: publicUser(next) });

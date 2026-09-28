@@ -1,6 +1,6 @@
 // tmp-battery-article-frontend.js — v0.2.55.0 文章前端电池（用户「能不能把文章的前端做好？……搜索看不见有搜索不到我之前按过publish的文章」）
 // 问询钦定：①搜索只搜文章 ②首页活动流混入最新文章 ③wiki 普通文章阅读页 ④点赞+收藏+评论
-// 验证：S 静态（028 迁移/articles.js q+评论/notifications 三事件/health 60 表 28 版/index 搜索面板+最新文章区块+
+// 验证：S 静态（028 迁移/articles.js q+评论/notifications 三事件/health 60 表 29 版/index 搜索面板+最新文章区块+
 //       article.html 四型卡渲染与互动接线/双 i18n 词典 12 语言/site-config 双版本）
 //       B 浏览器（fetch 打桩）：阅读页标题+作者行+正文流渲染、卡片 (row,col) 排序、script/on* 消毒实证、
 //       flag/text 卡渲染、点赞乐观+同步、收藏、评论列表+提交+removed 不追加、guest 门禁+登录引导 toast、
@@ -201,9 +201,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     articlesJs.indexOf('avatarUrl') !== -1 && articlesJs.indexOf("'acw:user:'") !== -1);
   ok('S3 notifications.js：article_comment 事件从 article_comments 联查',
     notifJs.indexOf("push('article_comment'") !== -1 && notifJs.indexOf('FROM article_comments c JOIN articles a') !== -1);
-  ok('S4 测试锚：health 60 表 + user_version 28 + migrations 头注释 028',
-    healthTest.indexOf('data.tables, 60') !== -1 && healthTest.indexOf("user_version', { simple: true }), 28") !== -1 &&
-    migTest.indexOf('028') !== -1);
+  ok('S4 测试锚：health 60 表 + user_version 29 + migrations 头注释 029',
+    healthTest.indexOf('data.tables, 60') !== -1 && healthTest.indexOf("user_version', { simple: true }), 29") !== -1 &&
+    migTest.indexOf('029') !== -1);
   ok('S5 index.html：搜索输入+面板+防抖三态+最新文章区块+article 跳转锚（搜索行/最新文章/通知三处）',
     idx.indexOf('id="dashSearchInput"') !== -1 && idx.indexOf('id="dashSearchPanel"') !== -1 &&
     idx.indexOf('dashSearchTimer') !== -1 && idx.indexOf('id="latestArticlesSection"') !== -1 &&
@@ -235,7 +235,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     idxI18n.indexOf("'index.searchPh': '搜索文章…'") !== -1 && idxI18n.indexOf("'index.searchPh': 'Search articles...'") !== -1 &&
     idxI18n.indexOf('搜索世界、话题') === -1 && idxI18n.indexOf('__ZH_HANT_AUTO__') !== -1);
   ok('S11 site-config：v0.2.57.1 + changelog 文章前端条目 + FC v10.28.39.0',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.17';") !== -1 &&
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.18';") !== -1 &&
     sconf.indexOf('文章前端') !== -1 && sconf.indexOf('article_comments') !== -1 &&
     sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1);
 

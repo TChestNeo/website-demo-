@@ -448,6 +448,8 @@ function register(router, ctx) {
         cardPlate: CARD_BG_KEYS.includes(row.card_plate) ? row.card_plate : null,
         // v0.2.25.0 页面背景图片（020 列；NULL=无背景，公开——他人主页也渲染你的整页背景图；口径与 PATCH 校验同）
         pageBgImage: (typeof row.page_bg_image === 'string' && PAGE_BG_IMAGE_RE.test(row.page_bg_image)) ? row.page_bg_image : null,
+        // v0.2.58.18 横幅（029 列；NULL=默认预设渐变，公开——他人主页也渲染你的横幅；口径与 PATCH 校验同）
+        bannerUrl: (typeof row.banner_url === 'string' && PAGE_BG_IMAGE_RE.test(row.banner_url)) ? row.banner_url : null,
         // v0.2.53.0 卡片边缘主题（027 列；NULL=默认圆角卡，公开——他人主页也渲染你的边缘剪影）
         cardEdge: CARD_EDGE_KEYS.includes(row.card_edge) ? row.card_edge : null,
         isSelf,

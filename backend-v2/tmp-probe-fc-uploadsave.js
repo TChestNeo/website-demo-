@@ -1,6 +1,6 @@
 // tmp-probe-fc-uploadsave.js — FC v10.28.47.4 上传图片落地即存草稿 上线实机探针
 // 用户「还有为什么我上传的图片需要自己按保存？上传就上传了怎么会不见？？」
-//   S 静态（线上 site-config 45.2 + rev 00329- 前缀 + 站点 58.0 恒、编辑器页上传即存/静默/silent 签名/指纹摘要锚）
+//   S 静态（线上 site-config 45.2 + rev 00331- 前缀 + 站点 58.0 恒、编辑器页上传即存/静默/silent 签名/指纹摘要锚）
 //   P 实机（桌面 CDP + 一次性临时 profile）：P1 头像上传→弹窗保存→草稿 localStorage 立即含
 //     charAvatar（零心跳等待）｜P2 静默：末次 toast=头像已上传非草稿已保存｜P3 图库同写｜
 //     P4 同文件名换图指纹前后不同 + av: 摘要｜P5 autoSave 脏守卫放行落新图｜P6 地图卡同链｜
@@ -74,9 +74,9 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.47.4 + rev 00329- 前缀 + 站点恒 v0.2.58.17',
+  ok('S1 线上 site-config：FC v10.28.47.4 + rev 00331- 前缀 + 站点恒 v0.2.58.18',
     sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
-    sc.body.indexOf('rev 00329-') !== -1 && sc.body.indexOf('v0.2.58.17') !== -1,
+    sc.body.indexOf('rev 00331-') !== -1 && sc.body.indexOf('v0.2.58.18') !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const ed = await get(BASE + '/pages/fluidcanvas-editor.html');
   ok('S2 线上编辑器页：上传落地即存锚 + saveDraft(silent) 签名 + 静默压 toast 守卫 + 指纹 av:/map: 摘要锚在位',

@@ -398,3 +398,52 @@ test('可选鉴权不记 activity：公共 profile/tab GET 不刷 DAU', async ()
     assert.strictEqual(t.db.prepare('SELECT count(*) AS n FROM activity_daily WHERE user_id = ?').get(bob.user.id).n, before);
   } finally { await t.close(); }
 });
+
+test('v0.2.58.18 个人资料横幅：bannerUrl 落库 + 非法值 400 + null 移除 + 公开渲染 + 超长截断', async () => {
+  const t = await testApp();
+  try {
+    const alice = t.loginAs('alice@x.com');
+    const prof = (cookie) => t.request('GET', '/api/social/users/' + alice.user.id, undefined, cookie ? { cookie } : undefined).then((r) => r.json());
+    assert.strictEqual((await prof()).user.bannerUrl, null, '默认 NULL');
+    const r1 = await t.request('PATCH', '/api/auth/me', { bannerUrl: '/uploads/UPL-X0001.jpg' }, { cookie: alice.cookie });
+    assert.strictEqual(r1.status, 200, '本站上传路径合法');
+    assert.ok(!('bannerUrl' in (await r1.json()).user), 'PATCH 响应经 publicUser 不含 bannerUrl（主页端点权威）');
+    assert.strictEqual((await prof()).user.bannerUrl, '/uploads/UPL-X0001.jpg', '本人主页返回落库值');
+    const anon = await t.request('GET', '/api/social/users/' + alice.user.id);
+    assert.strictEqual((await anon.json()).user.bannerUrl, '/uploads/UPL-X0001.jpg', '他人（匿名）也看到横幅——公开');
+    const r2 = await t.request('PATCH', '/api/auth/me', { bannerUrl: 'javascript:alert(1)' }, { cookie: alice.cookie });
+    assert.strictEqual(r2.status, 400, 'javascript: 伪协议 400');
+    assert.strictEqual((await r2.json()).error.code, 'VALIDATION');
+    assert.strictEqual((await prof()).user.bannerUrl, '/uploads/UPL-X0001.jpg', '非法值不落库');
+    const longUrl = 'https://img.example.com/' + 'a'.repeat(600) + '.jpg';
+    const r3 = await t.request('PATCH', '/api/auth/me', { bannerUrl: longUrl }, { cookie: alice.cookie });
+    assert.strictEqual(r3.status, 200, '超长截断后前缀仍过');
+    const got = (await prof()).user.bannerUrl;
+    assert.strictEqual(got.length, 500, '截断口径与 avatarUrl 一致（500）');
+    const r4 = await t.request('PATCH', '/api/auth/me', { bannerUrl: null }, { cookie: alice.cookie });
+    assert.strictEqual(r4.status, 200, '显式 null = 移除横幅恢复预设渐变');
+    assert.strictEqual((await prof()).user.bannerUrl, null);
+  } finally { await t.close(); }
+});
+
+test('v0.2.58.18 头像加固：avatarUrl 非法值 400 + null 清除 + 合法直传/ui-avatars 通过', async () => {
+  const t = await testApp();
+  try {
+    const alice = t.loginAs('alice@x.com');
+    const prof = (cookie) => t.request('GET', '/api/social/users/' + alice.user.id, undefined, cookie ? { cookie } : undefined).then((r) => r.json());
+    const defaultAvatar = (await prof()).user.avatarUrl;
+    assert.ok(/^https:\/\//.test(defaultAvatar), '注册默认 ui-avatars 外链');
+    const r1 = await t.request('PATCH', '/api/auth/me', { avatarUrl: 'javascript:alert(1)' }, { cookie: alice.cookie });
+    assert.strictEqual(r1.status, 400, 'javascript: 伪协议 400');
+    assert.strictEqual((await r1.json()).error.code, 'VALIDATION');
+    assert.strictEqual((await prof()).user.avatarUrl, defaultAvatar, '非法值不落库');
+    const r2 = await t.request('PATCH', '/api/auth/me', { avatarUrl: '/uploads/UPL-X0009.png' }, { cookie: alice.cookie });
+    assert.strictEqual(r2.status, 200, '本站上传路径合法');
+    assert.strictEqual((await prof()).user.avatarUrl, '/uploads/UPL-X0009.png');
+    const r3 = await t.request('PATCH', '/api/auth/me', { avatarUrl: 'https://ui-avatars.com/api/?name=A&background=4648d4&color=fff&size=80' }, { cookie: alice.cookie });
+    assert.strictEqual(r3.status, 200, 'ui-avatars https 外链合法（mirrorProfile 兼容口径）');
+    const r4 = await t.request('PATCH', '/api/auth/me', { avatarUrl: null }, { cookie: alice.cookie });
+    assert.strictEqual(r4.status, 200, '显式 null = 清除头像');
+    assert.strictEqual(t.db.prepare('SELECT avatar_url FROM users WHERE id = ?').get(alice.user.id).avatar_url, null, '落库 NULL 而非 "null" 串');
+  } finally { await t.close(); }
+});
