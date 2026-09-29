@@ -39,13 +39,13 @@ const DICT_FILES = ['about', 'activity', 'auth', 'badge', 'community-hub', 'comm
   'guidelines', 'help', 'index', 'messages', 'onboarding-complete',
   'onboarding-identity', 'overview', 'platform-responsibility', 'premium', 'privacy',
   'registry-step-1', 'registry-step-2', 'registry-step-3', 'sovereignty-ratified', 'terms', 'ticket',
-  'transitioning', 'workspace', 'world-created', 'world-wizard']; // 38 页词典（auth 同域双页共用；v10.28.47.4 +fluidcanvas 两页共享）
+  'transitioning', 'workspace', 'world-created', 'world-wizard']; // 38 页词典（auth 同域双页共用；v10.28.48.0 +fluidcanvas 两页共享）
 const PAGE_HTML = {
   'index': ['docs/index.html'],
   'auth': ['docs/signup-and-login.html', 'docs/forgot-password.html'], // 同域双页共用 auth.i18n.js
   'edge': ['docs/pages/edge-themes-demo.html'],
   'admin': ['docs/admin/index.html'],
-  'fluidcanvas': ['docs/pages/fluidcanvas.html', 'docs/pages/fluidcanvas-editor.html'] // v10.28.47.4 FC 两页共享
+  'fluidcanvas': ['docs/pages/fluidcanvas.html', 'docs/pages/fluidcanvas-editor.html'] // v10.28.48.0 FC 两页共享
 }; // 其余 → docs/pages/<name>.html
 const EXCLUDED = new Set(['fluidcanvas-analytics',
   'fluidcanvas-articles', 'blackhole-demo', 'cyberfall-demo']); // 重定向 stub×2+纯英文 demo×2
@@ -110,7 +110,7 @@ console.log('═══ S. 静态巡检 ═══');
   }
   ok('S8 i18n.js LANGS 12 码序列 zh→zh-Hant→en→de→ru→ms→th→vi→id→fr→es→pt', seqOk);
   const sconf = read('docs/assets/js/site-config.js');
-  ok('S9 site-config 版本 = v0.2.54.2', sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.19';") !== -1);
+  ok('S9 site-config 版本 = v0.2.54.2', sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.20';") !== -1);
   const common = fs.readFileSync(path.join(I18N_DIR, 'common.i18n.js'), 'utf8');
   ok('S10 common.i18n.js 键族齐（sidebar/settings/report/aichat 从 help 移入/verify 从 badge 共享）',
     ["'sidebar.", "'settings.", "'report.", "'aichat.", "'verify."].every(k => common.indexOf(k) !== -1));
@@ -237,7 +237,7 @@ async function launchChrome(lang, injectSession, suffix) {
     st = await cdp.evalJs(`(function(){var exp=MN_I18N.t('badge.meta.title');return {title:document.title,exp:exp,lang:document.documentElement.getAttribute('lang')};})()`);
     ok('A6 xx 无字典回落浏览器语言 zh（标题=zh 值）', st.lang === 'zh' && st.title === st.exp, st.title);
 
-    console.log('═══ A\'. FC 编辑器页 i18n 接入（v10.28.47.4）═══');
+    console.log('═══ A\'. FC 编辑器页 i18n 接入（v10.28.48.0）═══');
     await cdp.send('Page.navigate', { url: BASE + '/pages/fluidcanvas-editor.html' });
     await waitFor(cdp, 'typeof window.MN_I18N === "object" && typeof window.__fcT === "function"', 20000, 'FC 编辑器页');
     const fc = await cdp.evalJs(`(function(){return {i18n:typeof window.MN_I18N,lang:document.documentElement.getAttribute('lang')};})()`);

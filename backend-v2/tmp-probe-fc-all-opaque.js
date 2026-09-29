@@ -89,9 +89,9 @@ function isOpaque(s) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.47.4 + 42.1 changelog 条目 + 站点恒 v0.2.58.19',
-    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
-    sc.body.indexOf('编辑器镶边玻璃全灭') !== -1 && sc.body.indexOf('v0.2.58.19') !== -1,
+  ok('S1 线上 site-config：FC v10.28.48.0 + 42.1 changelog 条目 + 站点恒 v0.2.58.20',
+    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") !== -1 &&
+    sc.body.indexOf('编辑器镶边玻璃全灭') !== -1 && sc.body.indexOf('v0.2.58.20') !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const fc = await get(BASE + '/pages/fluidcanvas-editor.html');
   ok('S2 线上编辑器页：42.1 浮面锚在场 + 旧玻璃写法零残留（头栏/弹窗/面板/菜单/输入框全灭）',

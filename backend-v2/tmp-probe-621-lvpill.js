@@ -1,11 +1,11 @@
-// tmp-probe-621-lvpill.js — v0.2.58.19 折叠侧栏等级药丸悬停放大+右侧滑出等级信息卡线上探针（rev 00334- 瞬态注记→00335- 终态）
+// tmp-probe-621-lvpill.js — v0.2.58.20 折叠侧栏等级药丸悬停放大+右侧滑出等级信息卡线上探针（rev 00336- 瞬态注记→00337- 终态）
 // 用户「那么能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出 一个卡片完整的显示等级信息和经验条」。
 //   真身：折叠态（72px/64px 列）药丸只有 LV 标签+水杯+号码，等级信息在展开态 .mn-lv-normal 里；修法：桌面鼠标悬停
 //   .mn-lv-badge → 药丸 scale(1.12) + 右侧滑出 .mn-lv-hovercard（position:fixed 挂 body 逃侧栏 overflow-x:hidden+用户卡
 //   overflow:hidden 双裁剪；z-index 150；内容每次 show 从活的 .mn-lv-normal clone 最新 innerHTML；200ms 宽限防缝隙闪烁；
 //   触屏门控 matchMedia(hover+fine)+CSS @media 双保险）；展开态零卡片（原徽章已可见）；renderSidebar 尾部每轮重挂监听。
-// S 静态（线上 site-config 58.15+changelog 58.15 标题/用户原话三片断（滑鼠靠近/向右滑出/显示等级信息和经验条）+rev 00334-/
-//   00335- 前缀在位（live 文本滞后一部署：探针时 00334- 已烘焙真值×2+00335-XXX 占位；repo 终态填终值——本探针按前缀
+// S 静态（线上 site-config 58.15+changelog 58.15 标题/用户原话三片断（滑鼠靠近/向右滑出/显示等级信息和经验条）+rev 00336-/
+//   00337- 前缀在位（live 文本滞后一部署：探针时 00336- 已烘焙真值×2+00337-XXX 占位；repo 终态填终值——本探针按前缀
 //   容断言两种形态均通过）+58.14 赋值零残留+58.14 标题与原话保留+58.14 rev 行 00323-qsz+00324-xr2 终态注记+58.13 rev 行
 //   00321-jbh+00322-cv4 终态注记+58.12 rev 行 00319-mw5+00320-wl8 终态注记+58.11 rev 行 00317-ht9+00318-2vk 终态注记+
 //   58.10 rev 行 00315-bm6+00316-s6b 终态注记+58.9 rev 行 00314-sw5+瞬态 00313-xjs 烘焙文本+00312-2n7+00311-wkw+
@@ -101,15 +101,15 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config（58.15 轮口径）：58.15 赋值+58.15 标题/用户原话三片断（滑鼠靠近/向右滑出/显示等级信息和经验条）+rev 00334-/00335- 前缀在位（live 文本滞后一部署：探针时 00334- 已烘焙真值×2+00335-XXX 占位、repo 终态填终值——前缀容断言两种形态均通过）+58.14 赋值零残留+58.14 标题与原话保留+58.14 rev 行 00323-qsz+00324-xr2 终态注记+58.13 rev 行 00321-jbh+00322-cv4 终态注记+58.12 rev 行 00319-mw5+00320-wl8 终态注记+58.11 rev 行 00317-ht9+00318-2vk 终态注记+58.10 rev 行 00315-bm6+00316-s6b 终态注记+58.9 rev 行 00314-sw5+瞬态 00313-xjs 烘焙文本+00312-2n7+00311-wkw+00310-pbk×2+00309-jbl 历史注记在位+旧 58.13/58.12/58.11/58.10 赋值零残留+58.13-58.1 历史标题保留+FC 47.4 恒',
+  ok('S1 线上 site-config（58.15 轮口径）：58.15 赋值+58.15 标题/用户原话三片断（滑鼠靠近/向右滑出/显示等级信息和经验条）+rev 00336-/00337- 前缀在位（live 文本滞后一部署：探针时 00336- 已烘焙真值×2+00337-XXX 占位、repo 终态填终值——前缀容断言两种形态均通过）+58.14 赋值零残留+58.14 标题与原话保留+58.14 rev 行 00323-qsz+00324-xr2 终态注记+58.13 rev 行 00321-jbh+00322-cv4 终态注记+58.12 rev 行 00319-mw5+00320-wl8 终态注记+58.11 rev 行 00317-ht9+00318-2vk 终态注记+58.10 rev 行 00315-bm6+00316-s6b 终态注记+58.9 rev 行 00314-sw5+瞬态 00313-xjs 烘焙文本+00312-2n7+00311-wkw+00310-pbk×2+00309-jbl 历史注记在位+旧 58.13/58.12/58.11/58.10 赋值零残留+58.13-58.1 历史标题保留+FC 47.4 恒',
     sc.status === 200 &&
-    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.19';") !== -1 &&
+    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.20';") !== -1 &&
     sc.body.indexOf('v0.2.58.15 = 折叠侧栏等级药丸悬停放大+右侧滑出等级信息卡') !== -1 &&
     sc.body.indexOf('滑鼠靠近') !== -1 &&
     sc.body.indexOf('向右滑出') !== -1 &&
     sc.body.indexOf('显示等级信息和经验条') !== -1 &&
-    sc.body.indexOf('rev 00334-') !== -1 &&
-    sc.body.indexOf('rev 00335-') !== -1 &&
+    sc.body.indexOf('rev 00336-') !== -1 &&
+    sc.body.indexOf('rev 00337-') !== -1 &&
     sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.14';") === -1 &&
     sc.body.indexOf('v0.2.58.14 = 折叠侧栏等级水杯慢浪改浅色') !== -1 &&
     sc.body.indexOf('第二个波浪我希望是浅色的') !== -1 &&
@@ -155,7 +155,7 @@ async function waitFor(cdp, expr, timeout, label) {
     sc.body.indexOf('v0.2.58.3 = 折叠侧栏等级水位环+双层水波') !== -1 &&
     sc.body.indexOf('v0.2.58.2 = 折叠侧栏等级纵向药丸+经验环') !== -1 &&
     sc.body.indexOf('v0.2.58.1 = 左侧菜单底部不透明背景完全删除') !== -1 &&
-    sc.body.indexOf("'v10.28.47.4'") !== -1,
+    sc.body.indexOf("'v10.28.48.0'") !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const ec = await get(BASE + '/assets/css/ethereal.css');
   ok('S2 线上 ethereal.css：58.14 慢浪浅色件套全锚保留（--mn-lv-light 赋值复活、深蓝水 wdeep 单规则 background var(--color-primary)+z-index:-2、快浪 wlightwave 单选择器 background-color var(--color-primary)×1+top -12px+z-index:0+2.2s、慢浪 wlightwave2 单选择器 background-color var(--mn-lv-light)×1+全同款几何+z-index:-1+2.5s、fill z-index:0 stacking context、mask-image ×4+viewBox 80×16+新路径 M0 8 Q20 0 40 8 Q60 16 80 8+mask-size 80px 16px ×2+400% strip 16px ×2+平移 80px+LV 标签 14px/号码 28px+旧色值组合/旧浅水层/旧深浪/旧合写选择器/旧 --mn-lv-wave-c 赋值/旧 1.6s/旧顶线 calc(40% - 8px)/旧 opacity 0.65/旧 height 40%/旧 top -8px/旧 40×32 路径/旧 300% strip 32px/旧平移 40px/旧顶线 calc(40% - 16px)/-16px/-6px/-4px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧平移 20px/旧花边/7px 7px/conic/pill-core 零残留）+58.15 悬停卡块（@media(hover:hover)+(pointer:fine) ×1/transition transform 0.18s ×1/scale(1.12) ×1/.mn-lv-hovercard 两规则/z-index 150 ×1/translateX(-10px) scale(0.98) ×1/opacity+transform 过渡 ×1/transform-origin left center ×1/中文注释片断：滑鼠靠近/向右滑出）+药丸 48×116/水杯 44×84 恒',

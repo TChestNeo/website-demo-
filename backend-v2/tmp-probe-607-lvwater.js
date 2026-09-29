@@ -1,8 +1,8 @@
-// tmp-probe-607-lvwater.js — v0.2.58.19 折叠侧栏等级水位环波纹改正弦水面 线上实机探针
+// tmp-probe-607-lvwater.js — v0.2.58.20 折叠侧栏等级水位环波纹改正弦水面 线上实机探针
 // 用户「那个水波能不能参考这个（贴 wave.png 水杯代码）我要你参考他的波纹不是动画」——波纹形状从 58.3 的
 //   圆点花边改成参考图的正弦水面（mask SVG 正弦路径 12×8+背景色 var(--mn-lv-wave-c) 着色+平移 12px 无缝循环），
 //   两层结构/两速 1.6s/2.2s/水位从底往上灌/0.5s 过渡全保持——动画节奏零改动。
-// S 静态（线上 site-config 58.4+changelog+rev 00334-+旧 58.3 赋值零残留+58.3/58.2/58.1 历史标题保留+FC 47.4 恒；
+// S 静态（线上 site-config 58.4+changelog+rev 00336-+旧 58.3 赋值零残留+58.3/58.2/58.1 历史标题保留+FC 47.4 恒；
 //   ethereal.css/index.html mask 正弦水面规则在位、旧花边/7px 7px/conic/pill-core 零残留）；P 实机（demo 用户种子
 //   ——id 无 USR- 前缀 → hasCloudUser false 零 API 调用，杜绝服务端 401 清会话；两段式种子让页面自写每日登录
 //   日期键再覆写 XP → +5 跳过；折叠药丸上阵/水位 8%/双层正弦水面/几何零挤压/满级 100%/窄列零溢出）；E 零异常。
@@ -77,18 +77,18 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：58.4 赋值+changelog 标题/用户原话+rev 00334-+旧 58.3 赋值零残留+58.3/58.2/58.1 历史标题保留+FC 47.4 恒',
+  ok('S1 线上 site-config：58.4 赋值+changelog 标题/用户原话+rev 00336-+旧 58.3 赋值零残留+58.3/58.2/58.1 历史标题保留+FC 47.4 恒',
     sc.status === 200 &&
-    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.19';") !== -1 &&
+    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.20';") !== -1 &&
     sc.body.indexOf('v0.2.58.4 = 折叠侧栏等级水位环波纹改正弦水面') !== -1 &&
     sc.body.indexOf('v0.2.58.3 = 折叠侧栏等级水位环+双层水波') !== -1 &&
     sc.body.indexOf('参考这个') !== -1 &&
     sc.body.indexOf('波纹不是动画') !== -1 &&
-    sc.body.indexOf('rev 00334-') !== -1 &&
+    sc.body.indexOf('rev 00336-') !== -1 &&
     sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.3';") === -1 &&
     sc.body.indexOf('v0.2.58.2 = 折叠侧栏等级纵向药丸+经验环') !== -1 &&
     sc.body.indexOf('v0.2.58.1 = 左侧菜单底部不透明背景完全删除') !== -1 &&
-    sc.body.indexOf("'v10.28.47.4'") !== -1,
+    sc.body.indexOf("'v10.28.48.0'") !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const ec = await get(BASE + '/assets/css/ethereal.css');
   ok('S2 线上 ethereal.css：正弦水面 mask 件套在位（mask-image ×2+viewBox 12×8+mask-size+背景色 var(--mn-lv-wave-c)+平移 12px+两速动画+新轮注释）+ 旧花边/7px 7px/conic/pill-core 零残留',

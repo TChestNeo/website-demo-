@@ -132,7 +132,7 @@ async function waitFor(cdp, expr, timeout, label) {
     sc.body.indexOf('v0.2.58.3 = 折叠侧栏等级水位环+双层水波') !== -1 &&
     sc.body.indexOf('v0.2.58.2 = 折叠侧栏等级纵向药丸+经验环') !== -1 &&
     sc.body.indexOf('v0.2.58.1 = 左侧菜单底部不透明背景完全删除') !== -1 &&
-    sc.body.indexOf("'v10.28.47.4'") !== -1,
+    sc.body.indexOf("'v10.28.48.0'") !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const ec = await get(BASE + '/assets/css/ethereal.css');
   ok('S2 线上 ethereal.css：双浪同色件套在位（深蓝水 wdeep 单规则 background var(--color-primary)+z-index:-2、快浪 wlightwave 单选择器 background-color var(--color-primary)+top -12px+z-index:0+2.2s、慢浪 wlightwave2 单选择器全同款几何+z-index:-1+2.5s、fill z-index:0 stacking context、mask-image ×4+viewBox 80×16+新路径 M0 8 Q20 0 40 8 Q60 16 80 8+mask-size 80px 16px ×2+400% strip 16px ×2+平移 80px+LV 标签 14px/号码 28px+新轮注释：然后把两个颜色改成一样的深蓝色/波浪Z轴的-1+58.12 注释：波浪的位置抬高4px/位置抬高 4px+58.11 注释：波浪和深蓝色倒反/就只是互换一下颜色而已）+ 药丸 48×116/水杯 44×84 恒 + 旧色值组合（wdeep light/wlightwave light/--mn-lv-light 赋值）/旧浅水层 .mn-lv-wlight/旧深浪 .mn-lv-wdeepwave/旧合写选择器/旧 --mn-lv-wave-c 赋值/旧 1.6s/旧顶线 calc(40% - 8px)/旧 opacity 0.65/旧 height 40%/旧 top -8px/旧 40×32 路径/旧 300% strip 32px/旧平移 40px/旧顶线 calc(40% - 16px)/-16px/-6px/-4px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧平移 20px/旧花边/7px 7px/conic/pill-core 零残留',

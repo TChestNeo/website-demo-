@@ -235,9 +235,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     idxI18n.indexOf("'index.searchPh': '搜索文章…'") !== -1 && idxI18n.indexOf("'index.searchPh': 'Search articles...'") !== -1 &&
     idxI18n.indexOf('搜索世界、话题') === -1 && idxI18n.indexOf('__ZH_HANT_AUTO__') !== -1);
   ok('S11 site-config：v0.2.57.1 + changelog 文章前端条目 + FC v10.28.39.0',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.19';") !== -1 &&
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.20';") !== -1 &&
     sconf.indexOf('文章前端') !== -1 && sconf.indexOf('article_comments') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1);
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") !== -1);
 
   // ── v0.2.55.1 发布去重复 + 删除 ──
   const editor = read(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'));

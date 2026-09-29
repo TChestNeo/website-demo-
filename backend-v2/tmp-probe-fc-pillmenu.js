@@ -1,11 +1,11 @@
-// tmp-probe-fc-pillmenu.js — FC v10.28.47.4 平板端触控长按药丸菜单·平滑折叠+白底列表上线实机探针
+// tmp-probe-fc-pillmenu.js — FC v10.28.48.0 平板端触控长按药丸菜单·平滑折叠+白底列表上线实机探针
 // 用户「折叠的过渡动画不顺畅 很割裂」+「列表的背景能不能是白色的？」——47.3 两卡结构保持（药丸=
 //   独立卡片①面板首子、弹窗=独立卡片②面板次子，ctxPillRise translateY(110%)→0 从下向上滑出）；
 //   47.4 折叠/展开/关窗全走过渡（fc-pill-fold-prep 收起视觉态 translateY(-56px)+opacity、门控
 //   fc-pill-fold 延迟 250ms 落 display:none、关窗退出动画 ctxPillFall 240ms+收尾计时器 240ms 后
 //   内容展开回来）；药丸弹窗卡列表恒白底 #ffffff（深浅同）+条目压暗；桌面右键零变化；药丸只在菜单
 //   打开时出现（用户钦定，平时左侧菜单原样）。
-//   S 静态（线上 site-config 47.4+平滑折叠 changelog+rev 00334-+站点 58.0 恒+旧 47.3 赋值零残留、
+//   S 静态（线上 site-config 47.4+平滑折叠 changelog+rev 00336-+站点 58.0 恒+旧 47.3 赋值零残留、
 //   编辑器页 两卡锚（placeCtxPillDots/fc-pill-fold/ctxPillRise/translateY(110%)/ctxPillFade/
 //   .asset-panel > .ctx-pill-dots）在场+47.4 锚（fc-pill-fold-prep/ctxPillFall/ctxPillFadeOut/
 //   ctx-pill-exit/__pillCloseTimer/__foldTimer/finishHideContextMenu/translateY(-56px)/#ffffff）
@@ -81,14 +81,14 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：FC v10.28.47.4 + 平滑折叠 changelog（折叠的过渡动画不顺畅/列表的背景能不能是白色的）+ 两卡 changelog（三粒点独立一个/从下向上滑出）+ rev 00334- + 站点恒 v0.2.58.19 + 旧 47.3 版本赋值锚零残留',
-    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
+  ok('S1 线上 site-config：FC v10.28.48.0 + 平滑折叠 changelog（折叠的过渡动画不顺畅/列表的背景能不能是白色的）+ 两卡 changelog（三粒点独立一个/从下向上滑出）+ rev 00336- + 站点恒 v0.2.58.20 + 旧 47.3 版本赋值锚零残留',
+    sc.status === 200 && sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") !== -1 &&
     sc.body.indexOf('折叠的过渡动画不顺畅') !== -1 &&
     sc.body.indexOf('列表的背景能不能是白色的') !== -1 &&
     sc.body.indexOf('三粒点独立一个') !== -1 &&
     sc.body.indexOf('从下向上滑出') !== -1 &&
-    sc.body.indexOf('rev 00334-') !== -1 &&
-    sc.body.indexOf('v0.2.58.19') !== -1 &&
+    sc.body.indexOf('rev 00336-') !== -1 &&
+    sc.body.indexOf('v0.2.58.20') !== -1 &&
     sc.body.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.3';") === -1,
     'status=' + sc.status + ' err=' + sc.error);
   const fc = await get(BASE + '/pages/fluidcanvas-editor.html');

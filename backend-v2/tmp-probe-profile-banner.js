@@ -83,10 +83,10 @@ class CDP {
   const scCount = (s) => scSrc.split(s).length - 1;
   ok('S1 site-config：58.18 赋值在位 + FC 47.4 恒 + changelog 58.18 标题 + rev 00331-g9b/00333- 前缀',
     scCount("window.MN_SITE_VERSION = 'v0.2.58.18';") === 1 &&
-    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") === 1 &&
+    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 &&
     scCount('// v0.2.58.18 = ') === 1 && scCount('00331-g9b') === 1 && scCount('00333-') >= 1,
     'v58.18=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.18';") + ' fc=' +
-    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") + ' cl=' + scCount('// v0.2.58.18 = ') +
+    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") + ' cl=' + scCount('// v0.2.58.18 = ') +
     ' r31=' + scCount('00331-g9b') + ' r33=' + scCount('00333-'));
 
   console.log('═══ S2 端点形状（匿名面）═══');

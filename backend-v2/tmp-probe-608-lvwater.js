@@ -92,7 +92,7 @@ async function waitFor(cdp, expr, timeout, label) {
     sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.4';") === -1 &&
     sc.body.indexOf('v0.2.58.2 = 折叠侧栏等级纵向药丸+经验环') !== -1 &&
     sc.body.indexOf('v0.2.58.1 = 左侧菜单底部不透明背景完全删除') !== -1 &&
-    sc.body.indexOf("'v10.28.47.4'") !== -1,
+    sc.body.indexOf("'v10.28.48.0'") !== -1,
     'status=' + sc.status + ' err=' + sc.error);
   const ec = await get(BASE + '/assets/css/ethereal.css');
   ok('S2 线上 ethereal.css：药丸水杯+大波浪件套在位（药丸 28×48+水杯 24×32 胶囊+mask-image ×2+viewBox 16×12+mask-size 16px 12px+300% strip+背景色 var+平移 16px+两速动画+新轮注释）+ 旧正圆/旧 12×8/旧平移 12px/旧花边/7px 7px/conic/pill-core 零残留',

@@ -1,4 +1,4 @@
-// tmp-probe-profile-subtier.js — v0.2.58.19 个人资料横幅/头像订阅分层线上探针（mnationworld.com 匿名面）
+// tmp-probe-profile-subtier.js — v0.2.58.20 个人资料横幅/头像订阅分层线上探针（mnationworld.com 匿名面）
 // 注记：门禁写操作线上无法无凭证探（锁 UI/toast/上传拦截=登录态+个人数据）——由电池 tmp-battery-profile-subtier.js 覆盖
 //   （D1 锁 UI/D2-D3 图库拦截/D4-D5 gif 拦截/D6 静态放行/D7 订阅全解锁/D8 祖父全 21 项）。
 //   S1 页面静态锚+site-config 58.19/rev → S2 端点形状（public users 200 → 真 id 主页 GET 含 bannerUrl 键+
@@ -86,13 +86,13 @@ class CDP {
   const sc = await fetch(SITE + '/assets/js/site-config.js');
   const scSrc = (await sc.text()).replace(/\r\n/g, '\n');
   const scCount = (s) => scSrc.split(s).length - 1;
-  ok('S1 site-config：58.19 赋值在位 + FC 47.4 恒 + changelog 58.19 标题 + rev 00334-/00335- 前缀 + 58.18 条目烘焙 00331-g9b 保留',
-    scCount("window.MN_SITE_VERSION = 'v0.2.58.19';") === 1 &&
-    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") === 1 &&
-    scCount('// v0.2.58.19 = ') === 1 && scCount('00334-') >= 1 && scCount('00335-') >= 1 && scCount('00331-g9b') === 1,
-    'v58.19=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.19';") + ' fc=' +
-    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") + ' cl=' + scCount('// v0.2.58.19 = ') +
-    ' r34=' + scCount('00334-') + ' r35=' + scCount('00335-') + ' r31=' + scCount('00331-g9b'));
+  ok('S1 site-config：58.19 赋值在位 + FC 47.4 恒 + changelog 58.19 标题 + rev 00336-/00337- 前缀 + 58.18 条目烘焙 00331-g9b 保留',
+    scCount("window.MN_SITE_VERSION = 'v0.2.58.20';") === 1 &&
+    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 &&
+    scCount('// v0.2.58.20 = ') === 1 && scCount('00336-') >= 1 && scCount('00337-') >= 1 && scCount('00331-g9b') === 1,
+    'v58.19=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.20';") + ' fc=' +
+    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") + ' cl=' + scCount('// v0.2.58.20 = ') +
+    ' r34=' + scCount('00336-') + ' r35=' + scCount('00337-') + ' r31=' + scCount('00331-g9b'));
 
   console.log('═══ S2 端点形状（匿名面）═══');
   const health = await get('/api/health');

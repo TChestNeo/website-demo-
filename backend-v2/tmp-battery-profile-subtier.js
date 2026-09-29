@@ -1,4 +1,4 @@
-// tmp-battery-profile-subtier.js — v0.2.58.19 个人资料横幅/头像订阅分层电池（克隆 tmp-battery-profile-banner.js 壳，D 组专项）
+// tmp-battery-profile-subtier.js — v0.2.58.20 个人资料横幅/头像订阅分层电池（克隆 tmp-battery-profile-banner.js 壳，D 组专项）
 // 用户：「能不能在个人资料设置内也添加这个功能类似discord那种分成基本和付费，还有这个和用户的频道主页的横幅是不互通的」
 //   三项钦定：①分层=免费（静态图 jpg/png/webp 上传）vs 付费（gif 动图+FC 图库来源，tier∈{basic,premium,ultra}）
 //   ②纯前端门禁（锁 UI+点击 toast 不生效+premium.html 升级链接；后端零改动）③资料横幅与 FC 频道主页横幅不互通（FC 零改动）。
@@ -203,9 +203,9 @@ async function main() {
     cnt(i18nSrc, 'prof.toast.gifLocked') === 12 && cnt(i18nSrc, 'prof.toast.libLocked') === 12 && cnt(i18nSrc, 'prof.edit.gifUpgrade') === 12,
     'gifLocked=' + cnt(i18nSrc, 'prof.toast.gifLocked') + ' libLocked=' + cnt(i18nSrc, 'prof.toast.libLocked') + ' gifUpgrade=' + cnt(i18nSrc, 'prof.edit.gifUpgrade'));
   const siteSrc = readNorm('assets/js/site-config.js');
-  check('D0 site-config：版本赋值 v0.2.58.19 + FC 47.4 恒 + changelog rev 00334- 前缀 ×1',
-    cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.19'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.47.4'") === 1 && cnt(siteSrc, '00334-') === 1,
-    'v58.19=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.19'") + ' r334=' + cnt(siteSrc, '00334-'));
+  check('D0 site-config：版本赋值 v0.2.58.20 + FC 48.0 在位 + changelog rev 00336- 前缀 ×2（站点+FC 双条目）',
+    cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.20'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") === 1 && cnt(siteSrc, '00336-') === 2,
+    'v58.20=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.20'") + ' fc48=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") + ' r36=' + cnt(siteSrc, '00336-'));
   const fcSrc = readNorm('pages/fluidcanvas.html');
   check('D9 FC 不互通（钦定③铁证）：fluidcanvas.html 源零 bannerUrl/banner_url（FC 频道主页不读 users.banner_url）',
     fcSrc.indexOf('bannerUrl') === -1 && fcSrc.indexOf('banner_url') === -1, 'bannerUrl=' + fcSrc.indexOf('bannerUrl') + ' banner_url=' + fcSrc.indexOf('banner_url'));
