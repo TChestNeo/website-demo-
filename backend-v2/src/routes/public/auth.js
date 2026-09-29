@@ -34,7 +34,8 @@ const RESEND_MS = 60 * 1000;       // 发码重发间隔
 const PASSWORD_MIN = 8;            // W6 密码策略（路由层校验，策略是 HTTP 契约）
 const PASSWORD_MAX = 72;
 // v0.2.23.0 卡片背景预设白名单（迁移 018 users.card_bg；social.js 主页端点同名单校验，两处须同步）
-const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear'];
+// v0.2.58.22 追加 6 单色/黑白系预设（免费层横幅颜色：solid-* 单色 + mono-* 黑白渐变）
+const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear', 'solid-black', 'solid-white', 'solid-gray', 'mono-bw', 'mono-silver', 'mono-charcoal'];
 // v0.2.53.0 卡片边缘主题（迁移 027 users.card_edge；FC 14 键；social.js 必须同步）
 const CARD_EDGE_KEYS = ['paper', 'treasure', 'tech1', 'tech2', 'tech3', 'tech4', 'tech5', 'tech6', 'paint1', 'paint2', 'paint3', 'paint4', 'paint5', 'paint6'];
 // v0.2.25.0 页面背景图片（020 列）：仅本站直传路径（/uploads/UPL-*）或 http(s) 外链——防 CSS 注入等杂值

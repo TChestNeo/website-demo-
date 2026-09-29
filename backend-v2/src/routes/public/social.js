@@ -22,7 +22,8 @@ const MAX_POST_LEN = 2000;
 const MAX_COMMENT_LEN = 2000; // comments.content ≤2000（写入层校验，同 005 注释）
 const MAX_MEDIA = 3;
 // v0.2.23.0 卡片背景预设白名单（迁移 018 users.card_bg；auth.js PATCH /auth/me 同名单校验，两处须同步）
-const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear'];
+// v0.2.58.22 追加 6 单色/黑白系预设（免费层横幅颜色：solid-* 单色 + mono-* 黑白渐变）
+const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear', 'solid-black', 'solid-white', 'solid-gray', 'mono-bw', 'mono-silver', 'mono-charcoal'];
 // v0.2.53.0 卡片边缘主题（迁移 027 users.card_edge；FC 14 键；auth.js 必须同步）
 const CARD_EDGE_KEYS = ['paper', 'treasure', 'tech1', 'tech2', 'tech3', 'tech4', 'tech5', 'tech6', 'paint1', 'paint2', 'paint3', 'paint4', 'paint5', 'paint6'];
 // v0.2.25.0 页面背景图片（020 列）校验口径：仅本站直传路径或 http(s) 外链（与 auth.js 同）

@@ -110,13 +110,13 @@ const cnt = (s, sub) => s.split(sub).length - 1;
     fceSrc.indexOf('id="pageBgUpgradeLink"') !== -1 &&
     cnt(fceSrc, '页面背景为订阅用户专属功能——订阅后解锁') >= 2);
 
-  ok('F2c 静态：XP 钩子（发文章 publishXPReward ×3 接线=演示发布/新建/更新三路径/建卡 drop ×1）+ 边缘守卫保留 + 设置弹窗订阅仅限资料区 gif 门禁 ×5（Appearance 平台主题仍免费无锁）',
+  ok('F2c 静态：XP 钩子（发文章 publishXPReward ×3 接线=演示发布/新建/更新三路径/建卡 drop ×1）+ 边缘守卫保留 + 设置弹窗订阅仅限资料区三层门禁 ×9（Appearance 平台主题仍免费无锁）',
     cnt(fceSrc, 'publishXPReward();') === 3 &&
     cnt(fceSrc, "addXP('publish_article', published ? 5 : 120);") === 1 &&
     cnt(fceSrc, "SlatiDB.addXP('card_create', 10)") === 1 &&
     fceSrc.indexOf('背景边缘为订阅用户专属功能') !== -1 &&
     smSrc.indexOf('Appearance') !== -1 &&
-    cnt(smSrc, '订阅') === 5); // 58.21 口径更新：资料区 gif/图库门禁 5 处（toast 兜底 ×2+订阅谓词注释+渲染注释+升级链接兜底）——原「零订阅」断言随 58.21 资料区门禁失效
+    cnt(smSrc, '订阅') === 9); // 58.22 口径更新：三层门禁 9 处（gif/lib/banner 锁定 toast 兜底 ×3+stCanImg/stCanGif 注释 ×2+订阅谓词注释+升级链接兜底 ×3）——58.21 的 ×5 随新增 stCanImg/stCanGif/bannerLocked/imgUpgrade/premGifUpgrade 失效
 
   ok('F3a 静态：storage.js 等级模块（LEVELS 旅行者→君主/addXP/getLevelState/每日登录/事件/话题 30 天结算队列）',
     storageSrc.indexOf('XP: \'slati_xp\'') !== -1 &&

@@ -1,13 +1,17 @@
-// tmp-battery-settings-profilecust.js — v0.2.58.21 设置弹窗资料区头像/横幅完整自定义电池
-// 用户「你根本就没有在设置里完成我要的用户头像和横幅的自定义功能 >:(」
-// 钦定：①设置弹窗资料区直接放完整控件（头像预览+上传+FC 图库；横幅预览+上传+图库+移除；同步勾选；
-//   免费/付费 gif 门禁同款）改完即时生效不跳页 ②侧栏卡片弹完整信息卡 ③弹窗「编辑资料」就地开设置弹窗
-// 验证：S0 静态锚（settings-modal.js 控件 id/上传链/图库件计数 + sidebar.js 弹窗件计数 + common.i18n
-//   21 键计数 + site-config 58.21/00338-）；S1 真用户开弹窗六件在位；S2 头像上传→PATCH 恰 1 体 {avatarUrl}→
-//   预览变→同步 ON slati_user 合并写；S3 同步 OFF PATCH 照发但 slati_user 零写；S4 gif+free→锁 toast+升级
-//   链接显+零上传零 PATCH；S5 gif+premium 放行；S6a 图库 free 锁/S6b prem 选 data: 格→上传+PATCH；S7 横幅
-//   上传/移除 PATCH {bannerUrl}/{bannerUrl:null}+移除按钮显隐；S8 同步 toggle 写 '1'/'0'；S9 演示用户控件
-//   隐藏；E 全程零异常零 console error。（house CDP 模式；判定看输出体 🎉/💔 行）
+// tmp-battery-settings-profilecust.js — v0.2.58.22 设置弹窗资料区头像/横幅三层订阅门禁电池（58.21 母本 + S10-S12 新段）
+// 用户「横幅的从图库中选择和上传图片只限于基础订阅项；动图要高级订阅；没有订阅的只能调整横幅的单色和渐变颜色；
+//   图库弹窗大点；被锁按钮用金色罩子盖住而不是点击后才出现提示反馈」
+// 钦定：①两处一起改（设置弹窗+资料页编辑弹窗同口径）②免费层=扩展预设色卡（6 玻璃+6 单色/黑白系=13 格点选即存
+//   cardBg 落库）③金罩=所有被锁按钮+相邻按钮共用一个罩 ④头像保持现状（free 静态头像上传仍可用）
+// 验证：S0 静态锚（settings-modal.js 58.22 件计数 + common.i18n 26 键计数 + site-config 58.22/00340-/00341-）；
+//   S1 真用户开弹窗六件在位+金罩在位；S2 头像上传→PATCH 恰 1 体 {avatarUrl}→预览变→同步 ON slati_user 合并写；
+//   S3 同步 OFF PATCH 照发但 slati_user 零写；S4 gif+free→锁 toast+升级链接显+零上传零 PATCH；S5 gif+premium 放行
+//   +零金罩；S6a 图库 free 锁/S6b prem 选 data: 格→上传+PATCH；S7 横幅上传/移除 PATCH {bannerUrl}/{bannerUrl:null}
+//   （prem 种子——free 横幅上传已锁）；S8 同步 toggle 写 '1'/'0'；S9 演示用户控件隐藏+settingsBgGrid 缺席；
+//   S10 free 横幅上传门禁（金罩包 upload+lib 同罩+移除钮罩外+toast 精确串+零上传零 PATCH+imgUpgrade 链接）；
+//   S11 free 预设点选 mono-bw（PATCH 体恰 {cardBg}+合并写+预览类+active 换位+13 格+toast）；S12 basic（零金罩+
+//   静态横幅上传放行+gif 锁 premGifUpgrade 链接+图库浮层 400px 4 列）；E 全程零异常零 console error。
+//   （house CDP 模式；判定看输出体 🎉/💔 行）
 'use strict';
 const http = require('http');
 const fs = require('fs');
@@ -23,7 +27,7 @@ const PIXEL_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC
 const PIXEL_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
 // ── document-start 种子：URL 标记矩阵 → session/user/旗标/图库 ──
-//   nov=头像 null；banner=横幅预设；prem=订阅；demo=无 USR- id（守卫隐藏控件）；lib=种 data: 图库
+//   nov=头像 null；banner=横幅预设；prem=高级订阅；basic=基础订阅；demo=无 USR- id（守卫隐藏控件）；lib=种 data: 图库
 const SEED = `try{(function(){
   var q = location.search || '';
   if (q.indexOf('guest') !== -1) {
@@ -35,7 +39,7 @@ const SEED = `try{(function(){
   var u = q.indexOf('demo') !== -1
     ? { displayName: '演示用户', citizenId: 'CIT-000099' } // 无 USR- id——stReal 守卫隐藏控件
     : { id: 'USR-000101', displayName: '电池用户', citizenId: 'CIT-000101', bio: '本地简介', gender: 'Male',
-        tier: q.indexOf('prem') !== -1 ? 'premium' : 'free',
+        tier: q.indexOf('prem') !== -1 ? 'premium' : (q.indexOf('basic') !== -1 ? 'basic' : 'free'),
         avatarUrl: q.indexOf('nov') !== -1 ? null : '/uploads/UPL-DEMO01.jpg',
         bannerUrl: q.indexOf('banner') !== -1 ? '/uploads/UPL-DEMO01.jpg' : null };
   localStorage.setItem('slati_user', JSON.stringify(u));
@@ -190,32 +194,44 @@ function ok(name, cond, detail) {
     const setSrc = await get('/assets/js/settings-modal.js');
     const sbSrc = await get('/assets/js/sidebar.js');
     const comI18n = await get('/assets/i18n/common.i18n.js');
-    ok('S0a site-config：58.21 赋值 1 + 58.20 赋值零残留 + changelog 标题 58.21 1 + rev 00338-/00339- 各 1（单条目口径）+ FC 48.0 不动',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.21'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.20'") === 0 &&
-      cnt(siteSrc, '// v0.2.58.21 = ') === 1 && cnt(siteSrc, '00338-') === 1 && cnt(siteSrc, '00339-') === 1 &&
+    ok('S0a site-config：58.22 赋值 1 + 58.21 赋值零残留 + changelog 标题 58.22 1 + rev 00340-/00341- 各 1（单条目口径）+ FC 48.0 不动',
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.22'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.21'") === 0 &&
+      cnt(siteSrc, '// v0.2.58.22 = ') === 1 && cnt(siteSrc, '00340-') === 1 && cnt(siteSrc, '00341-') === 1 &&
       cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") === 1,
-      '58.21=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.21'") + ' r38=' + cnt(siteSrc, '00338-') + ' r39=' + cnt(siteSrc, '00339-'));
-    ok('S0b settings-modal 控件件：六 id 族（avatarBtn/preview/libBtn 各 2、bannerPreview 3、upload/lib/remove 2/2/4、file ×2 各、upgradeLink ×3 各）+ sub-locked ×3 + stUpload ×5 + stPickFromLibrary ×3 + stRawMergeUser ×4 + bannerUrl: null ×2 + slati_avatar_sync ×4 + toast 件 ×2',
+      '58.22=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.22'") + ' r40=' + cnt(siteSrc, '00340-') + ' r41=' + cnt(siteSrc, '00341-'));
+    ok('S0b settings-modal 控件件：六 id 族（avatarBtn/preview/libBtn 各 2、bannerPreview 4、upload/lib/remove 2/2/4、file ×2 各、avatarUpgradeLink ×3、bannerUpgradeLink ×4）+ sub-locked ×4 + stUpload ×5 + stPickFromLibrary ×3 + stRawMergeUser ×5 + bannerUrl: null ×2 + slati_avatar_sync ×4 + toast 件 ×2',
       cnt(setSrc, 'settingsAvatarBtn') === 2 && cnt(setSrc, 'settingsAvatarPreview') === 2 && cnt(setSrc, 'settingsAvatarLibBtn') === 2 &&
-      cnt(setSrc, 'settingsBannerPreview') === 3 && cnt(setSrc, 'settingsBannerUploadBtn') === 2 && cnt(setSrc, 'settingsBannerLibBtn') === 2 &&
+      cnt(setSrc, 'settingsBannerPreview') === 4 && cnt(setSrc, 'settingsBannerUploadBtn') === 2 && cnt(setSrc, 'settingsBannerLibBtn') === 2 &&
       cnt(setSrc, 'settingsBannerRemoveBtn') === 4 && cnt(setSrc, 'settingsAvatarFile') === 2 && cnt(setSrc, 'settingsBannerFile') === 2 &&
-      cnt(setSrc, 'settingsAvatarGifUpgradeLink') === 3 && cnt(setSrc, 'settingsBannerGifUpgradeLink') === 3 &&
-      cnt(setSrc, 'sub-locked') === 3 && cnt(setSrc, 'stUpload') === 5 && cnt(setSrc, 'stPickFromLibrary') === 3 &&
-      cnt(setSrc, 'stRawMergeUser') === 4 && cnt(setSrc, 'bannerUrl: null') === 2 && cnt(setSrc, 'slati_avatar_sync') === 4 &&
+      cnt(setSrc, 'settingsAvatarGifUpgradeLink') === 3 && cnt(setSrc, 'settingsBannerGifUpgradeLink') === 4 &&
+      cnt(setSrc, 'sub-locked') === 4 && cnt(setSrc, 'stUpload') === 5 && cnt(setSrc, 'stPickFromLibrary') === 3 &&
+      cnt(setSrc, 'stRawMergeUser') === 5 && cnt(setSrc, 'bannerUrl: null') === 2 && cnt(setSrc, 'slati_avatar_sync') === 4 &&
       cnt(setSrc, 'settingsProfileToast') === 2,
       'btn=' + cnt(setSrc, 'settingsAvatarBtn') + ' lib=' + cnt(setSrc, 'settingsAvatarLibBtn') + ' banner=' + cnt(setSrc, 'settingsBannerPreview'));
+    ok('S0b2 settings-modal 58.22 新件：settingsBgGrid ×2 + settings-bg-grid ×2 + settings-bg-swatch ×6 + ST_BG_DEFS ×2 + stCanGif ×3 + stCanImg ×4 + gold-lock-group ×5 + mono-bw ×3 + toast.bannerLocked/toast.bgUpdated/imgUpgrade/premGifUpgrade 各 ×1 + width: 400px ×1 + repeat(4, 1fr) ×1',
+      cnt(setSrc, 'settingsBgGrid') === 2 && cnt(setSrc, 'settings-bg-grid') === 2 && cnt(setSrc, 'settings-bg-swatch') === 6 &&
+      cnt(setSrc, 'ST_BG_DEFS') === 2 && cnt(setSrc, 'stCanGif') === 3 && cnt(setSrc, 'stCanImg') === 4 &&
+      cnt(setSrc, 'gold-lock-group') === 5 && cnt(setSrc, 'mono-bw') === 3 &&
+      cnt(setSrc, 'settings.profile.toast.bannerLocked') === 1 && cnt(setSrc, 'settings.profile.toast.bgUpdated') === 1 &&
+      cnt(setSrc, 'settings.profile.imgUpgrade') === 1 && cnt(setSrc, 'settings.profile.premGifUpgrade') === 1 &&
+      cnt(setSrc, 'width: 400px') === 1 && cnt(setSrc, 'repeat(4, 1fr)') === 1,
+      'grid=' + cnt(setSrc, 'settingsBgGrid') + ' gold=' + cnt(setSrc, 'gold-lock-group') + ' canGif=' + cnt(setSrc, 'stCanGif'));
     ok('S0c sidebar 弹窗件：function openUserPop ×1 + slati-user-pop-style ×2 + preventDefault ×2（代码+注释）+ e.stopPropagation() ×1 + .user-info-bar a ×1 + initUserPopWiring ×2 + SlatiSettings.open ×3',
       cnt(sbSrc, 'function openUserPop') === 1 && cnt(sbSrc, 'slati-user-pop-style') === 2 && cnt(sbSrc, 'preventDefault') === 2 &&
       cnt(sbSrc, 'e.stopPropagation()') === 1 &&
       cnt(sbSrc, '.user-info-bar a') === 1 && cnt(sbSrc, 'initUserPopWiring') === 2 && cnt(sbSrc, 'SlatiSettings.open') === 3,
       'pop=' + cnt(sbSrc, 'function openUserPop') + ' wire=' + cnt(sbSrc, 'initUserPopWiring'));
-    ok('S0d common.i18n 21 键：sidebar.pop 6 键单引号 ×11 + settings.profile 15 键单引号 ×11 + zh-Hant 双引号 ×1 各 + 生成标记 ×1',
+    ok('S0d common.i18n 21+5 键：sidebar.pop 6 键单引号 ×11 + settings.profile 15 键单引号 ×11 + 58.22 新 5 键（bannerColor/imgUpgrade/premGifUpgrade/toast.bannerLocked/toast.bgUpdated）单引号 ×11 各 + zh-Hant 双引号 ×1 各 + 生成标记 ×1',
       cnt(comI18n, "'sidebar.pop.editProfile'") === 11 && cnt(comI18n, "'sidebar.pop.joined'") === 11 &&
       cnt(comI18n, "'settings.profile.banner'") === 11 && cnt(comI18n, "'settings.profile.avatarSync'") === 11 &&
       cnt(comI18n, "'settings.profile.toast.imgTooBig10'") === 11 &&
+      cnt(comI18n, "'settings.profile.bannerColor'") === 11 && cnt(comI18n, "'settings.profile.imgUpgrade'") === 11 &&
+      cnt(comI18n, "'settings.profile.premGifUpgrade'") === 11 && cnt(comI18n, "'settings.profile.toast.bannerLocked'") === 11 &&
+      cnt(comI18n, "'settings.profile.toast.bgUpdated'") === 11 &&
       cnt(comI18n, '"sidebar.pop.editProfile"') === 1 && cnt(comI18n, '"settings.profile.banner"') === 1 &&
+      cnt(comI18n, '"settings.profile.bannerColor"') === 1 && cnt(comI18n, '"settings.profile.toast.bannerLocked"') === 1 &&
       cnt(comI18n, '__ZH_HANT_AUTO__') === 1,
-      'sp=' + cnt(comI18n, "'sidebar.pop.editProfile'") + ' ba=' + cnt(comI18n, "'settings.profile.banner'"));
+      'sp=' + cnt(comI18n, "'sidebar.pop.editProfile'") + ' bc=' + cnt(comI18n, "'settings.profile.bannerColor'") + ' bl=' + cnt(comI18n, "'settings.profile.toast.bannerLocked'"));
 
     const cdp = await connectCdp(CDP_PORT);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: SEED });
@@ -285,14 +301,15 @@ function ok(name, cond, detail) {
     const s4t = await toastText();
     ok('S4 gif+free：锁 toast 文案 + 升级链接可见 + 零上传零 PATCH', s4t && s4t.text === 'GIF 动图为订阅用户专属功能' && s4t.active && s.up === 0 && s.patch === 0, JSON.stringify({ t: s4t, up: s.up, patch: s.patch }));
 
-    // ── S5：gif + premium → 放行 ──
+    // ── S5：gif + premium → 放行 + 零金罩 ──
     await nav(BASE + '/index.html?nov&prem', "!!document.querySelector('#slati-sidebar .user-module')", 'S5 重载（prem）');
     await openSettings();
     const s5upgrade = await cdp.evalJs("!!document.getElementById('settingsAvatarGifUpgradeLink')");
     await setFile('#settingsAvatarFile', tmpGif);
     await sleep(800);
     s = await counts();
-    ok('S5 gif+premium：升级链接不渲染 + 上传恰 1 + PATCH 恰 1', s5upgrade === false && s.up === 1 && s.patch === 1, JSON.stringify({ upgrade: s5upgrade, up: s.up, patch: s.patch }));
+    const s5gold = await cdp.evalJs("!!document.querySelector('#settingsCard .gold-lock-group')");
+    ok('S5 gif+premium：升级链接不渲染 + 上传恰 1 + PATCH 恰 1 + 零金罩（prem 无锁钮）', s5upgrade === false && s.up === 1 && s.patch === 1 && s5gold === false, JSON.stringify({ upgrade: s5upgrade, up: s.up, patch: s.patch, gold: s5gold }));
 
     // ── S6a：图库 free → libLocked 锁零 DOM 零上传 ──
     await nav(BASE + '/index.html?nov&lib', "!!document.querySelector('#slati-sidebar .user-module')", 'S6a 重载（free+lib）');
@@ -316,8 +333,8 @@ function ok(name, cond, detail) {
       s.up === 1 && s.patch === 1 && s.patched && s.patched.avatarUrl === '/uploads/UPL-DEMO02.jpg' && s6u && s6u.avatarUrl === '/uploads/UPL-DEMO02.jpg',
       JSON.stringify({ up: s.up, patch: s.patch, ls: s6u && s6u.avatarUrl }));
 
-    // ── S7：横幅上传 → PATCH {bannerUrl} + 预览/移除按钮 + 移除 → PATCH {bannerUrl:null} ──
-    await nav(BASE + '/index.html?nov&banner', "!!document.querySelector('#slati-sidebar .user-module')", 'S7 重载（banner 预设）');
+    // ── S7：横幅上传 → PATCH {bannerUrl} + 预览/移除按钮 + 移除 → PATCH {bannerUrl:null}（prem 种子——free 横幅上传已锁 58.22） ──
+    await nav(BASE + '/index.html?nov&banner&prem', "!!document.querySelector('#slati-sidebar .user-module')", 'S7 重载（banner 预设+prem）');
     await openSettings();
     let s7 = await cdp.evalJs("(function(){ var bp = document.getElementById('settingsBannerPreview'); var rm = document.getElementById('settingsBannerRemoveBtn'); return { hasImg: bp.classList.contains('has-img'), bg: bp.style.backgroundImage, rmShown: getComputedStyle(rm).display !== 'none' }; })()");
     ok('S7a 横幅预设：预览 has-img + 背景图 + 移除按钮可见', s7.hasImg && s7.bg.indexOf('UPL-DEMO01') !== -1 && s7.rmShown, JSON.stringify(s7));
@@ -351,8 +368,69 @@ function ok(name, cond, detail) {
     // ── S9：演示用户（无 USR- id）控件隐藏 ──
     await nav(BASE + '/index.html?demo', "!!document.querySelector('#slati-sidebar .user-module')", 'S9 重载（demo）');
     await openSettings();
-    const s9 = await cdp.evalJs("(function(){ return { av: !!document.getElementById('settingsAvatarBtn'), lib: !!document.getElementById('settingsAvatarLibBtn'), bu: !!document.getElementById('settingsBannerUploadBtn'), rm: !!document.getElementById('settingsBannerRemoveBtn'), toggle: !!document.querySelector('[data-sec=\"profile\"] .toggle-switch'), pv: !!document.getElementById('settingsAvatarPreview') }; })()");
-    ok('S9 演示用户：上传/图库/移除/toggle 全隐藏 + 预览仍只读展示', s9.av === false && s9.lib === false && s9.bu === false && s9.rm === false && s9.toggle === false && s9.pv === true, JSON.stringify(s9));
+    const s9 = await cdp.evalJs("(function(){ return { av: !!document.getElementById('settingsAvatarBtn'), lib: !!document.getElementById('settingsAvatarLibBtn'), bu: !!document.getElementById('settingsBannerUploadBtn'), rm: !!document.getElementById('settingsBannerRemoveBtn'), toggle: !!document.querySelector('[data-sec=\"profile\"] .toggle-switch'), pv: !!document.getElementById('settingsAvatarPreview'), grid: !!document.getElementById('settingsBgGrid') }; })()");
+    ok('S9 演示用户：上传/图库/移除/toggle 全隐藏 + 预览仍只读展示 + settingsBgGrid 缺席（stReal 门内）', s9.av === false && s9.lib === false && s9.bu === false && s9.rm === false && s9.toggle === false && s9.pv === true && s9.grid === false, JSON.stringify(s9));
+
+    // ── S10：free 横幅上传门禁（金罩包 upload+lib 同罩+移除钮罩外+toast 精确串+零上传零 PATCH+imgUpgrade 链接） ──
+    await nav(BASE + '/index.html?nov', "!!document.querySelector('#slati-sidebar .user-module')", 'S10 重载（free）');
+    await openSettings();
+    let s10 = await cdp.evalJs("(function(){ var up = document.getElementById('settingsBannerUploadBtn'); var lib = document.getElementById('settingsBannerLibBtn'); var rm = document.getElementById('settingsBannerRemoveBtn'); var g = up && up.closest('.gold-lock-group'); return { upIn: !!g, libIn: !!(lib && lib.closest('.gold-lock-group') === g), rmOut: !(rm && rm.closest('.gold-lock-group')), goldCount: document.querySelectorAll('#settingsCard .gold-lock-group').length, shroud: g ? getComputedStyle(g, '::after').content : null, upLocked: up.classList.contains('sub-locked'), avFree: !!document.getElementById('settingsAvatarBtn') && !document.getElementById('settingsAvatarBtn').closest('.gold-lock-group') }; })()");
+    ok('S10a free 金罩结构：横幅 upload+lib 同罩（goldCount 2=头像图库罩+横幅罩）+ 移除钮罩外 + 头像上传钮自由（钦定④）+ ::after 真渲染 + upload 带 sub-locked',
+      s10.upIn && s10.libIn && s10.rmOut && s10.goldCount === 2 && s10.shroud !== 'none' && s10.upLocked && s10.avFree, JSON.stringify(s10));
+    await cdp.evalJs("document.getElementById('settingsBannerUploadBtn').click()");
+    await sleep(500);
+    s = await counts();
+    let s10t = await toastText();
+    const s10upL = await cdp.evalJs("(function(){ var a = document.getElementById('settingsBannerGifUpgradeLink'); return a ? { text: a.textContent.trim(), shown: getComputedStyle(a).display !== 'none' } : null; })()");
+    ok('S10b free 点横幅上传：toast 精确串 + 零上传零 PATCH + imgUpgrade 链接可见文案精确（含图标 ligature 字形名）',
+      s10t && s10t.text === '横幅图片为订阅用户专属功能' && s10t.active && s.up === 0 && s.patch === 0 &&
+      s10upL && s10upL.shown && s10upL.text === 'workspace_premium订阅后解锁横幅图片与 GIF 动图',
+      JSON.stringify({ t: s10t, up: s.up, patch: s.patch, link: s10upL }));
+    await cdp.evalJs("document.getElementById('settingsBannerLibBtn').click()");
+    await sleep(500);
+    s = await counts();
+    s10t = await toastText();
+    const s10grid = await cdp.evalJs("!!document.querySelector('.settings-lib-pop')");
+    ok('S10c free 点横幅图库：libLocked toast + 零浮层零上传零 PATCH（金罩点击穿透反馈仍在）',
+      s10t && s10t.text === '图库为订阅用户专属功能' && s10grid === false && s.up === 0 && s.patch === 0,
+      JSON.stringify({ t: s10t, grid: s10grid, up: s.up, patch: s.patch }));
+
+    // ── S11：free 预设点选 mono-bw（PATCH 体恰 {cardBg}+合并写+预览类+active 换位+13 格+toast） ──
+    await nav(BASE + '/index.html?nov', "!!document.querySelector('#slati-sidebar .user-module')", 'S11 重载（free）');
+    await openSettings();
+    let s11 = await cdp.evalJs("(function(){ var g = document.getElementById('settingsBgGrid'); var ss = g.querySelectorAll('.settings-bg-swatch'); return { count: ss.length, defActive: !!g.querySelector('[data-bg=\"\"].active'), bw: !!g.querySelector('[data-bg=\"mono-bw\"]') }; })()");
+    ok('S11a free 预设网格：13 格 + 默认格 active（无 cardBg）+ mono-bw 格在位', s11.count === 13 && s11.defActive && s11.bw, JSON.stringify(s11));
+    await cdp.evalJs("document.querySelector('#settingsBgGrid [data-bg=\"mono-bw\"]').click()");
+    await sleep(800);
+    s = await counts();
+    const s11u = await readUserLs();
+    s11 = await cdp.evalJs("(function(){ var g = document.getElementById('settingsBgGrid'); var bp = document.getElementById('settingsBannerPreview'); return { bwActive: !!g.querySelector('[data-bg=\"mono-bw\"].active'), defActive: !!g.querySelector('[data-bg=\"\"].active'), prevCls: bp.className, toast: (function(){ var t = document.getElementById('settingsProfileToast'); return t ? t.textContent : null; })() }; })()");
+    ok('S11b free 点 mono-bw：PATCH 恰 1 体恰 {cardBg:"mono-bw"} + slati_user 合并写（bannerUrl 仍 null 字段保留）+ 预览类含 mono-bw 无 has-img + active 换位 + toast 精确串',
+      s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'cardBg' && s.patched.cardBg === 'mono-bw' &&
+      s11u && s11u.cardBg === 'mono-bw' && s11u.bannerUrl === null && s11u.displayName === '电池用户' &&
+      s11.bwActive && s11.defActive === false && s11.prevCls.indexOf('mono-bw') !== -1 && s11.prevCls.indexOf('has-img') === -1 &&
+      s11.toast === '横幅颜色已更新',
+      JSON.stringify({ patch: s.patch, keys: s.patched && Object.keys(s.patched).join(','), ls: s11u, s11 }));
+
+    // ── S12：basic（零金罩+静态横幅上传放行+gif 锁 premGifUpgrade 链接+图库浮层 400px 4 列） ──
+    await nav(BASE + '/index.html?nov&basic&lib', "!!document.querySelector('#slati-sidebar .user-module')", 'S12 重载（basic+lib）');
+    await openSettings();
+    const s12gold = await cdp.evalJs("(function(){ var up = document.getElementById('settingsBannerUploadBtn'); return { gold: !!document.querySelector('#settingsCard .gold-lock-group'), upLocked: up.classList.contains('sub-locked'), upL: (function(){ var a = document.getElementById('settingsBannerGifUpgradeLink'); return a ? a.textContent.trim() : null; })() }; })()");
+    ok('S12a basic：零金罩 + 横幅上传不带 sub-locked + premGifUpgrade 链接文案精确（含图标 ligature 字形名）', s12gold.gold === false && s12gold.upLocked === false && s12gold.upL === 'workspace_premium升级到高级订阅可上传 GIF 动图', JSON.stringify(s12gold));
+    await setFile('#settingsBannerFile', tmpAv);
+    await sleep(800);
+    s = await counts();
+    const s12u = await readUserLs();
+    ok('S12b basic 静态横幅上传：上传恰 1 + PATCH 恰 1 体 {bannerUrl} + slati_user 写 DEMO02', s.up === 1 && s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'bannerUrl' && s.patched.bannerUrl === '/uploads/UPL-DEMO02.jpg' && s12u && s12u.bannerUrl === '/uploads/UPL-DEMO02.jpg', JSON.stringify({ up: s.up, patch: s.patch, keys: s.patched && Object.keys(s.patched).join(','), ls: s12u && s12u.bannerUrl }));
+    await setFile('#settingsBannerFile', tmpGif);
+    await sleep(600);
+    s = await counts();
+    const s12t = await toastText();
+    ok('S12c basic gif 横幅：锁 toast 精确串 + 零新增上传零新增 PATCH（仍 1/1）', s12t && s12t.text === 'GIF 动图为订阅用户专属功能' && s12t.active && s.up === 1 && s.patch === 1, JSON.stringify({ t: s12t, up: s.up, patch: s.patch }));
+    await cdp.evalJs("document.getElementById('settingsBannerLibBtn').click()");
+    await waitFor(cdp, "!!document.querySelector('.settings-lib-pop')", 5000, 'S12 图库浮层');
+    const s12pop = await cdp.evalJs("(function(){ var p = document.querySelector('.settings-lib-pop'); var g = p.querySelector('.settings-lib-grid'); return { w: getComputedStyle(p).width, cols: getComputedStyle(g).gridTemplateColumns.split(' ').length, cells: g.querySelectorAll('.settings-lib-cell').length }; })()");
+    ok('S12d basic 图库浮层：400px 宽 + 4 列 + 种子 data: 格 1（加大弹窗钦定）', s12pop.w === '400px' && s12pop.cols === 4 && s12pop.cells === 1, JSON.stringify(s12pop));
 
     // ── E：零异常 ──
     const noise = /favicon|fonts\.googleapis|fonts\.gstatic|^data:|Failed to load resource|slati_entrance|404|429/i;
