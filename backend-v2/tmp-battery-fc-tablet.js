@@ -123,10 +123,10 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
-    ok('S1 site-config：FC v10.28.47.4 + changelog iPad 触控适配条目 + rev 00293- 占位 + 站点恒 v0.2.58.18',
+    ok('S1 site-config：FC v10.28.47.4 + changelog iPad 触控适配条目 + rev 00293- 占位 + 站点恒 v0.2.58.19',
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") !== -1 &&
       siteCfg.indexOf('iPad 触控适配') !== -1 &&
-      siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.18') !== -1);
+      siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.19') !== -1);
     ok('S2 fc-touch.js：本地可加载 + 粗指针门控/测试钩/守卫旗在位 + 编辑器页 script 标签在位',
       touchJs.indexOf("matchMedia('(pointer: coarse)')") !== -1 &&
       touchJs.indexOf('window.__fcTouch') !== -1 &&

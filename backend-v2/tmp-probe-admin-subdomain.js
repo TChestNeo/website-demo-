@@ -73,7 +73,7 @@ const get = (mod, url, headers) => new Promise((resolve) => {
 
   // S6 主站照旧
   const r6 = await get(https, MAIN + '/');
-  ok('S6 主站照旧 200 + v0.2.58.18 在场', r6.status === 200 && r6.body.indexOf('v0.2.58.18') !== -1, 'status=' + r6.status);
+  ok('S6 主站照旧 200 + v0.2.58.19 在场', r6.status === 200 && r6.body.indexOf('v0.2.58.19') !== -1, 'status=' + r6.status);
 
   // S7 story 子域回归
   const r7 = await get(https, STORY + '/');

@@ -305,7 +305,7 @@ async function main() {
     const ver = await t.evalJs('window.MN_SITE_VERSION');
     const s1 = await t.evalJs("(() => { var a = document.querySelector('.user-module a[href*=\"community-profile.html\"]');" +
       " return { href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && !!a.querySelector('.user-name')) : false }; })()");
-    check('S1 版本 v0.2.58.18', ver === 'v0.2.58.18', 'ver=' + ver);
+    check('S1 版本 v0.2.58.19', ver === 'v0.2.58.19', 'ver=' + ver);
     check('S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）', s1.href === '../pages/community-profile.html?id=USR-000101' && s1.wrapped, s1.href);
 
     // S2 点侧栏锚 → 真导航到自己主页
@@ -1001,12 +1001,14 @@ async function main() {
     const b1Keys = ['bannerImg', 'bannerUpload', 'bannerLib', 'bannerRemove', 'bannerReady', 'bannerUploading', 'bannerUploadFail', 'bannerHint', 'avatarLib', 'libTitle', 'libEmpty'];
     const b1BadKeys = b1Keys.filter(function (k) { var re = new RegExp("'prof\\.edit\\." + k + "'", 'g'); return (b1I18n.match(re) || []).length !== 11; });
     check('B1 i18n 11 新键 × 11 语块全在位（与老键 imgTooBig 同 11 语块口径）', b1BadKeys.length === 0 && (b1I18n.match(/'prof\.edit\.imgTooBig'/g) || []).length === 11, '缺=' + b1BadKeys.join(','));
-    check('B1 site-config：版本赋值 v0.2.58.18 + changelog rev 00331- 前缀', b1Site.indexOf("window.MN_SITE_VERSION = 'v0.2.58.18'") !== -1 && b1Site.indexOf('00331-') !== -1, '');
+    check('B1 site-config：版本赋值 v0.2.58.19 + changelog rev 00334- 前缀', b1Site.indexOf("window.MN_SITE_VERSION = 'v0.2.58.19'") !== -1 && b1Site.indexOf('00334-') !== -1, '');
 
     // B 组前置：O 段末尾停在他人主页（USR-000303）且账号已清 → 回自己主页 + 种子登录（isSelf 门控）
     await nav(t, BASE + '/pages/community-profile.html?id=USR-000101');
     await waitFor(t, "document.getElementById('profileMain').style.display === 'flex'", 10000, '自己主页渲染');
     await seedUser(t);
+    // v0.2.58.19 订阅分层：B 组图库链（B2/B3/B6）需订阅身份解锁——种 tier（isSubscriberUser 每次开弹窗即时读）
+    await t.evalJs("localStorage.setItem('slati_user', JSON.stringify({ id: 'USR-000101', name: '电池用户', avatarUrl: null, tier: 'premium' }));");
     await waitFor(t, "document.getElementById('profileEditBtn')", 10000, '编辑钮就位');
 
     // B2 图库空态：无 slati_img_library → 选择器空态文案 + 零上传调用
@@ -1146,7 +1148,7 @@ async function main() {
     // L1 hub 首卡作者锚 → 个人主页（href 形状断言）
     const l1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]'); var a = c ? c.querySelector('.post-author-link') : null;" +
       " return { ver: window.MN_SITE_VERSION, href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && a.textContent.length > 0) : false }; })()");
-    check('L1 版本 v0.2.58.18', l1.ver === 'v0.2.58.18', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.58.19', l1.ver === 'v0.2.58.19', 'ver=' + l1.ver);
     check('L1 云卡作者锚 → profile（id=USR- 形状 + 头像+名字在内）', l1.href && /^community-profile\.html\?id=USR-\d{6}$/.test(l1.href) && l1.wrapped, l1.href);
 
     // L2 点作者锚 → 真导航 → 头部渲染（真数据）+ 几何 + 关注钮
