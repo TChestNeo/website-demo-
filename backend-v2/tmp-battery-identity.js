@@ -176,7 +176,7 @@ async function main() {
   await sleep(500); // pre-stagger / tilt settle
 
   // ════ A0：版本（v0.2.54.0 i18n 轮同步；原 v0.2.7.0 起陈旧） ════
-  check('A0 站点号 v0.2.54.0', (await t.evalJs('window.MN_SITE_VERSION')) === 'v0.2.58.20',
+  check('A0 站点号 v0.2.54.0', (await t.evalJs('window.MN_SITE_VERSION')) === 'v0.2.58.21',
     String(await t.evalJs('window.MN_SITE_VERSION')));
 
   // ════ A：结构 ════

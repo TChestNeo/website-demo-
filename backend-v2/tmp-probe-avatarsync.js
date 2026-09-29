@@ -1,8 +1,8 @@
-// tmp-probe-avatarsync.js — v0.2.58.20 个人资料头像 ↔ FC 频道主页头像双向同步线上探针（mnationworld.com 匿名面）
+// tmp-probe-avatarsync.js — v0.2.58.21 个人资料头像 ↔ FC 频道主页头像双向同步线上探针（mnationworld.com 匿名面）
 // 注记：写路径（勾选旗标/上传/PATCH 头像）线上无法无凭证探——由电池 tmp-battery-profile-avatarsync.js 覆盖
 //   （P 组资料页 8 项+F 组 FC 页 8 项+E 组全 25 项）。
 //   S1 页面静态锚（资料页 toggle/slati_avatar_sync + FC 页 fc-avatar-editable/fcAvatarFile/fcEnsureApi/PATCH 体纯度/bannerUrl 零）+
-//   site-config 58.20/48.0 赋值+旧版零残留+双 changelog 标题+rev 00336-/00337- 真值 ×2+占位零残留 →
+//   site-config 58.20/48.0 赋值+旧版零残留+双 changelog 标题+rev 00338-/00339- 真值 ×2+占位零残留 →
 //   S2 两词典新键在位（profile 1 键×11 单引号+zh-Hant 双引号×1、FC 六键×12、生成标记）→
 //   P1 CDP 匿名 FC 渲染（fc-guest 客人英雄可见+studio-main 隐藏+零异常）→ E1 零异常。
 'use strict';
@@ -81,19 +81,19 @@ class CDP {
   const scSrc = (await sc.text()).replace(/\r\n/g, '\n');
   const scCount = (s) => scSrc.split(s).length - 1;
   ok('S1d site-config：58.20/48.0 赋值在位 + 旧版赋值零残留 + 双 changelog 标题',
-    scCount("window.MN_SITE_VERSION = 'v0.2.58.20';") === 1 && scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 &&
+    scCount("window.MN_SITE_VERSION = 'v0.2.58.21';") === 1 && scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 &&
     scCount("window.MN_SITE_VERSION = 'v0.2.58.19';") === 0 && scCount("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") === 0 &&
-    scCount('// v0.2.58.20 = ') === 1 && scCount('// v10.28.48.0 = ') === 1,
-    'v58.20=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.20';") + ' fc48=' +
+    scCount('// v0.2.58.21 = ') === 1 && scCount('// v10.28.48.0 = ') === 1,
+    'v58.20=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.21';") + ' fc48=' +
     scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") + ' v58.19=' +
     scCount("window.MN_SITE_VERSION = 'v0.2.58.19';") + ' fc47=' +
-    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") + ' cl=' + scCount('// v0.2.58.20 = ') +
+    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.47.4';") + ' cl=' + scCount('// v0.2.58.21 = ') +
     ' fcl=' + scCount('// v10.28.48.0 = '));
-  ok('S1e site-config rev 口径：00336-7gr 真值烘焙 ×2 + 00336-XXX 占位零残留 + 00337-??? 占位 ×2（live 文本滞后一部署=惯例，下轮烘焙前保持）+ 58.19 条目 00334-tz6 保留',
-    scCount('00336-') === 2 && scCount('00337-') === 2 && scCount('00336-XXX') === 0 &&
-    scCount('00336-7gr') === 2 && scCount('00337-???') === 2 && scCount('00334-tz6') === 1,
-    'r36=' + scCount('00336-') + ' r37=' + scCount('00337-') + ' x36=' + scCount('00336-XXX') +
-    ' g36=' + scCount('00336-7gr') + ' q37=' + scCount('00337-???') + ' r34=' + scCount('00334-tz6'));
+  ok('S1e site-config rev 口径：00338- 真值烘焙 ×1 + 00338-XXX 占位零残留 + 00339-??? 占位 ×1（live 文本滞后一部署=惯例）+ 58.19 条目 00334-tz6 保留',
+    scCount('00338-') === 1 && scCount('00339-') === 1 && scCount('00338-XXX') === 0 &&
+    scCount('00339-???') === 1 && scCount('00334-tz6') === 1,
+    'r38=' + scCount('00338-') + ' r39=' + scCount('00339-') + ' x38=' + scCount('00338-XXX') +
+    ' q39=' + scCount('00339-???') + ' r34=' + scCount('00334-tz6'));
 
   console.log('═══ S2 两词典新键在位 ═══');
   const pi = await fetch(SITE + '/assets/i18n/community-profile.i18n.js');

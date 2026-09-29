@@ -2,7 +2,7 @@
 // 用户「不是啊，我要的是FC里的1:1 文章内的卡片位置什么的都要1：1有那么难吗？？」
 // 验证：A 画布模式在场（.art-canvas、零 .art-flow）/ B 卡片绝对定位还原 FC 几何（并排不竖堆、
 //    fitW/fitH 取胜、span×cellSize 尺寸、z 层级、rotate、hidden 跳过）/ C 完整格舞台投影自洽
-//    （v0.2.58.20：inner=115 格横×max(70,内容行)+25 行纵，s=min(availW/stageW,availH/stageH) 下限 0.25，
+//    （v0.2.58.21：inner=115 格横×max(70,内容行)+25 行纵，s=min(availW/stageW,availH/stageH) 下限 0.25，
 //    卡位 1:1 逻辑尺寸不动；不再 bbox 裁剪——用户「你是不是只是提取了卡片而已？」）
 //    / D legacy 无 x/y 草稿流式兜底 / E 零 Runtime exception + 零 console error / F0 静态锚
 // fixture 复刻线上 ART-000004 真实卡（c8 flag aspectLock fitW264.399 fitH174.347 x439 y8 z2 +
@@ -155,8 +155,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     art.indexOf('data-caption-pos="outside-right"') !== -1 &&
     art.indexOf('两遍量盒') !== -1 &&
     art.indexOf('typeof c.x === \'number\'') !== -1);
-  ok('F0-2 版本 v0.2.58.20 + changelog 条目（58.0 rev 00276-nnx + 56.2 保留）',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.20';") !== -1 &&
+  ok('F0-2 版本 v0.2.58.21 + changelog 条目（58.0 rev 00276-nnx + 56.2 保留）',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.21';") !== -1 &&
     sconf.indexOf('FC 1:1 画布渲染') !== -1 && sconf.indexOf('00276-nnx') !== -1 && sconf.indexOf('00272-g99') !== -1);
   ok('F0-3 渲染顺序修正（先 display:flex 再 renderBody——隐藏容器 clientWidth=0 缩放必错）',
     art.indexOf("document.getElementById('articleDetail').style.display = 'flex';") < art.indexOf('renderBody(a.contentJson)'));
@@ -241,7 +241,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       !!b5 && b5.tf.indexOf('rotate(15deg)') !== -1 && approx(b5.left, 30.326, 1.5) && approx(b5.top, 420.267, 1.5),
       JSON.stringify(b5));
 
-    // ── C 完整格舞台投影自洽（v0.2.58.20：inner = 115 格横 × max(70,内容行)+25 行纵——纸算 contentRows=
+    // ── C 完整格舞台投影自洽（v0.2.58.21：inner = 115 格横 × max(70,内容行)+25 行纵——纸算 contentRows=
     //       ceil((524.966−24)/22)=23 → stageRows=95 → 2530×2090；s=min(availW/stageW,availH/stageH) 下限 0.25，
     //       缩放走 transform 卡位逻辑尺寸不动）──
     ok('C1 inner 画布尺寸 = 完整格舞台（2530×2090；115×22 / 95×22）',

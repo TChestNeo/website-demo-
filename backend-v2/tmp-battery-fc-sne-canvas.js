@@ -173,8 +173,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     // ── F0 静态锚：版本号 + 规则锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
-    ok('F1 site-config：FC v10.28.48.0 + rev 00280- 占位 + 站点版本恒 v0.2.58.20',
-      siteCfg.indexOf('v10.28.48.0') !== -1 && siteCfg.indexOf('00280-') !== -1 && siteCfg.indexOf('v0.2.58.20') !== -1);
+    ok('F1 site-config：FC v10.28.48.0 + rev 00280- 占位 + 站点版本恒 v0.2.58.21',
+      siteCfg.indexOf('v10.28.48.0') !== -1 && siteCfg.indexOf('00280-') !== -1 && siteCfg.indexOf('v0.2.58.21') !== -1);
     ok('F2 编辑器页静态锚：格底 color-mix(--sne-cell-tint 62%, surface) + applyCardBg 写 tint + 画布 box-shadow 细线勾边',
       editorHtml.indexOf('color-mix(in srgb, var(--sne-cell-tint') !== -1 &&
       editorHtml.indexOf("setProperty('--sne-cell-tint', rgba)") !== -1 &&
