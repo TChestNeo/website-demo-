@@ -1,5 +1,9 @@
-// tmp-battery-community-post.js — v0.2.17.0 Community 头像/点赞/评论 + 独立帖页电池（2026-09-05）
+// tmp-battery-community-post.js — v0.2.58.24 Community 头像/点赞/评论 + 独立帖页电池（2026-09-30；2026-09-05 起）
 // 用户：「那个为什么没有头像，然后点赞按钮没有功能，评论也是，然后我希望做成点击帖子查看评论就是和Twitter一样的那种」→ 钦定独立帖子页。
+// v0.2.58.24 演示样本全移除：本地 A 段 hub 面 seeded 仍走真云卡（罐头 /api/health 200 点 cloudMode，云卡断言不变）；
+//   A1 demo 口径改「#feedContent 非云卡恰 1=composer 零演示卡」（页面另有 discovery 卡必须 feedContent 作用域）；
+//   线上 L 段 hub 面=登录引导卡（fake-login /social/feed 401 整流零云卡），真帖断言改 Node 侧直取 /api/social/posts 首个 id 导航帖页；
+//   L3 点赞 401 → L4 评论 401 边界补 seedUser+reload（mn:unauthorized 清了 session）。
 // 本地：静态壳 + document-start fetch 罐头（每次导航新文档生效——MN_API 底层走 fetch，罐头统一从 fetch 层拦；
 //   /api/health 200 点亮 cloudMode、posts/单帖/评论/点赞/发评论全罐头；唯一真资源 = /uploads/UPL-DEMO01.jpg 1x1 PNG 供瓦片+灯箱）。
 // 线上（LIVE_BASE）：只读侧断言（真帖渲染/头像/计数/整卡跳转/帖页渲染/评论列表/404）+ 点赞/评论 401 回滚链
@@ -198,7 +202,11 @@ async function main() {
     await seedUser(t);
     await t.send('Page.reload');
     await sleep(800);
-    await waitFor(t, "document.querySelectorAll('[data-cloud-id]').length >= 1", LIVE ? 30000 : 20000, 'hub 云卡渲染');
+    if (LIVE) {
+      await waitFor(t, "document.getElementById('hubLoginCard')", 30000, 'hub 登录引导卡');
+    } else {
+      await waitFor(t, "document.querySelectorAll('[data-cloud-id]').length >= 1", 20000, 'hub 云卡渲染');
+    }
     await waitFor(t, 'window.MN_Report && window.MN_Report.toast', 10000, 'MN_Report 就绪');
     await patchToast(t);
   }
@@ -218,7 +226,7 @@ async function main() {
   async function runLocal(t) {
     console.log('── A. Hub 头像/计数/点赞/跳转（本地罐头）──');
 
-    // A1 版本 + 云卡形态（头像 img/计数文本/data-cloud-id/post-card-click）+ demo 卡零属性
+    // A1 版本 + 云卡形态（头像 img/计数文本/data-cloud-id/post-card-click）+ 非云卡恰 1（composer，零演示卡）
     const ver = await t.evalJs('window.MN_SITE_VERSION');
     const a1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]');" +
       " var like = c.querySelector('[data-like-post]');" +
@@ -226,13 +234,13 @@ async function main() {
       " hasAvatar: !!c.querySelector('img.avatar'), avatarSrc: (c.querySelector('img.avatar') || {}).src || ''," +
       " likeCount: like ? like.querySelector('[data-like-count]').textContent : null, pressed: like.getAttribute('aria-pressed')," +
       " text: c.textContent }; })()");
-    const demoNoAttr = await t.evalJs("document.querySelectorAll('.card:not([data-cloud-id])').length");
-    check('A1 版本 v0.2.17.0', ver === 'v0.2.17.0', 'ver=' + ver);
+    const demoNoAttr = await t.evalJs("document.querySelectorAll('#feedContent .card:not([data-cloud-id])').length");
+    check('A1 版本 v0.2.58.24', ver === 'v0.2.58.24', 'ver=' + ver);
     check('A1 云卡整卡跳转属性（data-cloud-id + post-card-click）', a1.id === 'PST-000101' && a1.cls.indexOf('post-card-click') !== -1, a1.id + ' / ' + a1.cls);
     check('A1 帖子卡真头像 img.avatar', a1.hasAvatar && a1.avatarSrc.indexOf('data:image/svg') === 0, a1.avatarSrc.slice(0, 40));
     check('A1 点赞钮真实计数 + 未点赞态', a1.likeCount === '3' && a1.pressed === 'false', a1.likeCount + ' / ' + a1.pressed);
     check('A1 评论数真实计数 5', a1.text.indexOf('5') !== -1, a1.text.slice(0, 60));
-    check('A1 demo 卡无跳转属性', demoNoAttr >= 1, 'n=' + demoNoAttr);
+    check('A1 非云卡恰 1=composer（零演示卡）', demoNoAttr === 1, 'n=' + demoNoAttr);
 
     // A2 点赞链：POST → 乐观 +1 → 罐头真值；再点 → DELETE → 乐观 -1
     const likeSel = '[data-like-post="' + a1.id + '"]';
@@ -369,33 +377,38 @@ async function main() {
   async function runLive(t) {
     console.log('── L. 线上只读侧 + 401 回滚链 ──');
 
-    // L1 云卡形态（真数据：头像/计数/属性）
-    const l1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]');" +
-      " var like = c.querySelector('[data-like-post]');" +
-      " return { ver: window.MN_SITE_VERSION, id: c.getAttribute('data-cloud-id'), cls: c.className," +
-      " hasAvatar: !!c.querySelector('img.avatar')," +
-      " likeCount: like ? like.querySelector('[data-like-count]').textContent : null," +
-      " pressed: like.getAttribute('aria-pressed') }; })()");
-    check('L1 版本 v0.2.17.0', l1.ver === 'v0.2.17.0', 'ver=' + l1.ver);
-    check('L1 云卡跳转属性 + 真头像', l1.cls.indexOf('post-card-click') !== -1 && l1.hasAvatar && /^PST-/.test(l1.id), l1.id);
-    check('L1 点赞钮真计数 + 未点赞态', /^\d+$/.test(l1.likeCount) && l1.pressed === 'false', l1.likeCount + ' / ' + l1.pressed);
+    // L1 hub 访客面：boot 401 整流终态=登录引导卡（零云卡零演示）+ 版本
+    const l1 = await t.evalJs("(() => { return { ver: window.MN_SITE_VERSION," +
+      " loginCard: !!document.getElementById('hubLoginCard')," +
+      " cloud: document.querySelectorAll('[data-cloud-id]').length," +
+      " guest: document.querySelectorAll('[data-guest-like],[data-guest-repost],[data-guest-favorite],[data-guest-share]').length }; })()");
+    check('L1 版本 v0.2.58.24', l1.ver === 'v0.2.58.24', 'ver=' + l1.ver);
+    check('L1 登录引导卡在位 + 零云卡 + 零演示钮', l1.loginCard && l1.cloud === 0 && l1.guest === 0, JSON.stringify(l1));
 
-    // L2 点赞 401 回滚链：点击 → 服务端 401 → 乐观回滚 + toast「登录已过期」
-    await t.evalJs("document.querySelector('[data-cloud-id] [data-like-post]').click()");
-    await sleep(800);
-    const l2 = await t.evalJs("(() => { var b = document.querySelector('[data-cloud-id] [data-like-post]');" +
-      " return { pressed: b.getAttribute('aria-pressed'), liked: b.classList.contains('liked')," +
-      " count: b.querySelector('[data-like-count]').textContent, toasts: window.__toasts.join('|') }; })()");
-    check('L2 401 回滚：计数复原 + 未赞态 + toast 登录已过期', l2.count === l1.likeCount && l2.pressed === 'false' && !l2.liked && l2.toasts.indexOf('登录已过期') !== -1, JSON.stringify(l2));
-    await seedUser(t); // unauthorized 清了 session，重种保持后续状态
+    // 真帖 id：Node 侧直取线上帖表（hub 面已无云卡可点，帖页断言改直导航）
+    let livePostId = null;
+    try {
+      const pr = await fetch(LIVE + '/api/social/posts');
+      const pj = await pr.json();
+      if (pj && Array.isArray(pj.posts) && pj.posts.length) livePostId = pj.posts[0].id;
+    } catch (e) {}
+    if (!livePostId) {
+      check('⏭ L2-L5 跳过：线上无帖', true, '');
+      await nav(t, BASE + '/pages/community-post.html?id=PST-999999999');
+      await sleep(1500);
+      const l6 = await t.evalJs("(() => { var b = document.getElementById('postState404'); var d = document.getElementById('postDetail');" +
+        " return { s404: b.style.display, detail: d.style.display, text: b.querySelector('p').textContent }; })()");
+      check('L6 404 态：提示可见 + 详情藏', l6.s404 === 'block' && l6.detail === 'none' && l6.text.length > 0, l6.text);
+      check('L8 全程 0 console error', errs.length === 0, errs.slice(0, 3).join(' | '));
+      return;
+    }
 
-    // L3 整卡点击 → 真导航 → 帖页渲染（真帖）
-    await t.evalJs("document.querySelector('[data-cloud-id] h4').click()");
-    await waitFor(t, "window.location.pathname.indexOf('community-post.html') !== -1", 15000, '整卡跳转');
+    // L2 真帖：直接导航帖页 → 渲染断言（返回链/头像/全文/计数/评论列表）
+    await nav(t, BASE + '/pages/community-post.html?id=' + encodeURIComponent(livePostId));
     await waitFor(t, "(document.getElementById('postDetail').style.display === 'flex') || (document.getElementById('postState404').style.display === 'block')", 20000, '帖页渲染');
     await waitFor(t, 'window.MN_Report && window.MN_Report.toast', 10000, 'MN_Report 就绪');
     await patchToast(t);
-    const l3 = await t.evalJs("(() => { var back = document.querySelector('.back-link'); var wrap = document.getElementById('postCardWrap');" +
+    const l2 = await t.evalJs("(() => { var back = document.querySelector('.back-link'); var wrap = document.getElementById('postCardWrap');" +
       " var s404 = document.getElementById('postState404').style.display;" +
       " return { s404: s404, backHref: back ? back.getAttribute('href') : null," +
       " hasAvatar: !!wrap.querySelector('img.avatar')," +
@@ -403,11 +416,29 @@ async function main() {
       " likeCount: (wrap.querySelector('[data-like-count]') || {}).textContent || null," +
       " tiles: wrap.querySelectorAll('.pm-tile').length," +
       " commentsRendered: document.getElementById('commentsList').textContent.length > 0 }; })()");
-    check('L3 真帖渲染：返回链 + 头像 + 全文 + 计数 + 评论列表', l3.s404 === 'none' && l3.backHref === 'community-hub.html' && l3.hasAvatar && l3.contentLen > 0 && /^\d+$/.test(l3.likeCount) && l3.commentsRendered, 'len=' + l3.contentLen + ' likes=' + l3.likeCount);
-    check('L3 帖页点赞计数与 feed 一致', l3.likeCount === l1.likeCount, l1.likeCount + ' = ' + l3.likeCount);
+    check('L2 真帖渲染：返回链 + 头像 + 全文 + 计数 + 评论列表', l2.s404 === 'none' && l2.backHref === 'community-hub.html' && l2.hasAvatar && l2.contentLen > 0 && /^\d+$/.test(l2.likeCount) && l2.commentsRendered, 'len=' + l2.contentLen + ' likes=' + l2.likeCount);
+
+    // L3 点赞 401 回滚链：点击 → 服务端 401 → 乐观回滚 + toast「登录已过期」→ 边界补 seedUser+reload
+    await t.evalJs("document.querySelector('#postCardWrap [data-like-post]').click()");
+    await sleep(800);
+    const l3 = await t.evalJs("(() => { var b = document.querySelector('#postCardWrap [data-like-post]');" +
+      " return { pressed: b.getAttribute('aria-pressed'), liked: b.classList.contains('liked')," +
+      " count: b.querySelector('[data-like-count]').textContent, toasts: window.__toasts.join('|') }; })()");
+    check('L3 401 回滚：计数复原 + 未赞态 + toast 登录已过期', l3.count === l2.likeCount && l3.pressed === 'false' && !l3.liked && l3.toasts.indexOf('登录已过期') !== -1, JSON.stringify(l3));
+    await seedUser(t); // unauthorized 清了 session，重种
+    await t.send('Page.reload');
+    await sleep(1500);
+    await waitFor(t, "document.getElementById('postDetail').style.display === 'flex'", 20000, '重种后帖页渲染');
+    await patchToast(t);
+
+    // L4 评论提交 401（真后端无 cookie → 拦截 toast）
+    await t.evalJs("document.getElementById('commentInput').value = '线上电池评论'; document.getElementById('commentSubmit').click()");
+    await sleep(800);
+    const l4 = await t.evalJs("window.__toasts.join('|')");
+    check('L4 评论提交 401 → toast 登录已过期', l4.indexOf('登录已过期') !== -1, l4.slice(0, 60));
 
     // L7 灯箱（有媒体才测；无媒体跳过）
-    if (l3.tiles > 0) {
+    if (l2.tiles > 0) {
       await t.evalJs("document.querySelector('#postCardWrap .pm-tile').click()");
       await sleep(400);
       const o = await t.evalJs("!!document.querySelector('.modal-backdrop.active')");
@@ -417,12 +448,6 @@ async function main() {
     } else {
       check('L7 无媒体帖跳过灯箱（真数据无附件）', true, 'tiles=0');
     }
-
-    // L4 评论提交 401（真后端无 cookie → 拦截 toast）
-    await t.evalJs("document.getElementById('commentInput').value = '线上电池评论'; document.getElementById('commentSubmit').click()");
-    await sleep(800);
-    const l4 = await t.evalJs("window.__toasts.join('|')");
-    check('L4 评论提交 401 → toast 登录已过期', l4.indexOf('登录已过期') !== -1, l4.slice(0, 60));
 
     // L5 访客态（真访客：清两键 → 重载）
     await clearUser(t);

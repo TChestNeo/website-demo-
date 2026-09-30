@@ -10,6 +10,9 @@
 // 本地：静态壳 + document-start fetch 罐头（feed 两卡：LIKED 已赞+已转+已收藏 / ORIG 未互动；like/repost/favorite POST/DELETE 有状态翻转 +
 //   __forceRepostRemoved 测转发 removed 拦截分支 + __forceFavoriteFail 测收藏 500 回滚；粒子对齐/实心爱心回归 = v0.2.19.0 同款 CSSOM + 几何断言）。
 // 线上（LIVE_BASE）：真卡六件齐 + 分享弹窗 URL 含帖 id + 转发/收藏假会话 401 回滚实测 + 访客演示卡引导 toast + 帖页实心态/星态一致。
+// v0.2.58.24（社区页演示样本全移除）：A1/L1 版本锚 58.24；boot 假登录 401 整流终态=登录引导卡（hub 云卡不可得→六件行断言
+//   全部迁真帖页直达）；G 段重写=访客登录引导卡（三 tab 恒引导卡+发现引导行+零 API 含零 probe+零演示签名）；
+//   L 段重写=假登录 boot 整流终态登录卡+公共端点取真 id 帖页六件齐+分享弹窗同 id+访客点赞/转发 toast+假登录 401 回滚链+访客 hub 面。
 // 跑法：node tmp-battery-community-action-row.js（LIVE_BASE=<完整站点 URL> 跑线上）
 'use strict';
 const http = require('http');
@@ -243,7 +246,12 @@ async function main() {
     await seedUser(t);
     await t.send('Page.reload');
     await sleep(800);
-    await waitFor(t, "document.querySelectorAll('[data-cloud-id]').length >= 1", LIVE ? 30000 : 20000, 'hub 云卡渲染');
+    if (LIVE) {
+      // 假登录 boot：/social/posts 公共 200 先渲染真卡 → /social/feed 401 → mn:unauthorized 整流 → 终态登录引导卡
+      await waitFor(t, "document.getElementById('hubLoginCard')", 30000, 'hub 登录引导卡');
+    } else {
+      await waitFor(t, "document.querySelectorAll('[data-cloud-id]').length >= 1", 20000, 'hub 云卡渲染');
+    }
     await waitFor(t, 'window.MN_Report && window.MN_Report.toast', 10000, 'MN_Report 就绪');
     await patchToast(t);
   }
@@ -264,7 +272,7 @@ async function main() {
     console.log('── A. Hub 粒子对齐 + 操作行（本地罐头）──');
 
     const ver = await t.evalJs('window.MN_SITE_VERSION');
-    check('A1 版本 v0.2.20.4', ver === 'v0.2.20.4', 'ver=' + ver);
+    check('A1 版本 v0.2.58.24', ver === 'v0.2.58.24', 'ver=' + ver);
     const cardN = await t.evalJs("document.querySelectorAll('[data-cloud-id]').length");
     check('A1 feed 两卡渲染', cardN === 2, 'n=' + cardN);
 
@@ -546,181 +554,157 @@ async function main() {
     await t.evalJs("document.querySelector('#postCardWrap [data-repost-post]').click()");
     await sleep(400);
 
-    console.log('── G. 访客演示卡：转发 toast + 分享弹窗（本地罐头）──');
+    console.log('── G. 访客登录引导卡（v0.2.58.24 演示样本全移除）──');
     await clearUser(t);
     await nav(t, BASE + '/pages/community-hub.html');
-    await sleep(1200);
-    await waitFor(t, "document.querySelectorAll('[data-guest-like]').length >= 1", 15000, '演示卡渲染');
-    await waitFor(t, 'window.MN_Report && window.MN_Report.toast', 10000, 'MN_Report 就绪');
-    await patchToast(t);
-    await patchClipboard(t);
-    const g1 = await t.evalJs("(() => { var feed = document.getElementById('feedContent');" +
-      " var sh = feed.querySelector('[data-guest-share]'); var ic = sh ? sh.querySelector('.material-symbols-outlined') : null;" +
-      " var vw = null; Array.prototype.forEach.call(feed.querySelectorAll('.post-action-btn-static'), function (b) { var i = b.querySelector('.material-symbols-outlined'); if (i && i.textContent === 'visibility') vw = b; });" +
-      " return { guestLike: feed.querySelectorAll('[data-guest-like]').length," +
+    await sleep(500);
+    await waitFor(t, "document.getElementById('hubLoginCard')", 15000, '访客登录引导卡渲染');
+    const g1 = await t.evalJs("(() => { var feed = document.getElementById('feedContent'); var card = document.getElementById('hubLoginCard');" +
+      " return { loginCard: !!card, lockIcon: card ? (card.querySelector('.material-symbols-outlined') || {}).textContent : null," +
+      " btnText: card ? ((card.querySelector('button') || {}).textContent || '') : ''," +
+      " cards: feed.querySelectorAll('.card').length," +
+      " cloud: feed.querySelectorAll('[data-cloud-id]').length," +
+      " guestLike: feed.querySelectorAll('[data-guest-like]').length," +
       " guestRepost: feed.querySelectorAll('[data-guest-repost]').length," +
       " guestShare: feed.querySelectorAll('[data-guest-share]').length," +
       " guestFav: feed.querySelectorAll('[data-guest-favorite]').length," +
-      " shareIcon: ic ? ic.textContent : null," +
-      " viewText: vw ? (vw.textContent.match(/\\d+/) || [null])[0] : null," +
-      " rightEdge: sh ? Math.round(sh.parentElement.getBoundingClientRect().right - sh.getBoundingClientRect().right) : null," +
-      " cloud: feed.querySelectorAll('[data-cloud-id]').length }; })()");
-    check('G1 访客演示卡四钮齐（爱心/转发/星收藏/分享真按钮 + 零云卡）', g1 && g1.guestLike >= 1 && g1.guestRepost >= 1 && g1.guestShare >= 1 && g1.guestFav >= 1 && g1.cloud === 0, JSON.stringify(g1));
-    check('G1 v0.2.20.1 演示卡星+分享顶贴行最右缘（≤1px）', g1 && g1.rightEdge <= 1, 'rightEdge=' + (g1 && g1.rightEdge));
-    check('G1 演示卡分享钮 icon=upload（v0.2.19.2 口径）+ 浏览量数字渲染（演示卡 views 字段）', g1 && g1.shareIcon === 'upload' && /^\d+$/.test(g1.viewText || ''), 'icon=' + (g1 && g1.shareIcon) + ' view=' + (g1 && g1.viewText));
-    // 转发 toast（演示卡无真帖可转，保持引导登录）
-    await t.evalJs("window.__toasts = []");
-    await t.evalJs("document.querySelector('[data-guest-repost]').click()");
-    await sleep(300);
-    const g2 = await t.evalJs("window.__toasts.join('|')");
-    check('G2 演示卡转发 toast 登录后才能转发', g2.indexOf('登录后才能转发') !== -1, g2);
-    // v0.2.20.0 演示卡星收藏 = 引导登录 toast（与爱心同口径不装死）
-    await t.evalJs("document.querySelector('[data-guest-favorite]').click()");
-    await sleep(300);
-    const g2b = await t.evalJs("window.__toasts.join('|')");
-    check('G2 演示卡星收藏 toast 登录后才能收藏', g2b.indexOf('登录后才能收藏') !== -1, g2b);
-    // v0.2.19.1 演示卡分享也弹分享弹窗（用户「为什么分享按钮点击后没有弹窗」根因修复）
-    const expHubShare = new URL('community-hub.html', BASE + '/pages/community-hub.html').href;
-    await t.evalJs("document.querySelector('[data-guest-share]').click()");
-    await sleep(400);
-    const g3 = await t.evalJs("(() => { var inp = document.querySelector('#shareUrlInput');" +
-      " var h3 = document.querySelector('.modal-card h3');" +
-      " var card = inp ? inp.closest('.modal-card') : null;" +
-      " return { dlg: !!inp, val: inp ? inp.value : null, title: h3 ? h3.textContent : null, copied: window.__copied," +
-      " cardOpacity: card ? getComputedStyle(card).opacity : null }; })()");
-    check('G3 演示卡分享也弹弹窗 + 标题 分享社区 + URL = 社区页链接 + 打开即复制',
-      g3.dlg && g3.title === '分享社区' && g3.val === expHubShare && g3.copied === expHubShare, JSON.stringify(g3));
-    check('G3 弹窗卡片真正可见（opacity=1——v0.2.19.2 隐形弹窗回归断言）', g3.cardOpacity === '1', 'opacity=' + g3.cardOpacity);
-    await t.evalJs("document.querySelector('#shareClose').click()");
-    await sleep(300);
-    check('G3 关闭钮关弹窗', await t.evalJs("!document.querySelector('#shareUrlInput')"), '');
-    // 演示卡互动零 API 调用
-    const g4 = await t.evalJs("window.__fetchCalls.filter(function (c) { return c.url.indexOf('/repost') !== -1 || c.url.indexOf('/social') !== -1; }).length");
-    check('G4 演示卡互动零 API 调用', g4 === 0, 'calls=' + g4);
-    check('G5 全程 0 console 错误', errs.length === 0, errs.slice(0, 2).join(' | '));
+      " likeBtn: feed.querySelectorAll('[data-like-post]').length," +
+      " static: feed.querySelectorAll('.post-action-btn-static').length }; })()");
+    check('G1 访客=登录引导卡（锁图标+去登录按钮）且零云卡零演示四钮零 composer', g1 && g1.loginCard && g1.lockIcon === 'lock' && g1.btnText.indexOf('去登录') !== -1 && g1.cards === 1 && g1.cloud === 0 && g1.guestLike === 0 && g1.guestRepost === 0 && g1.guestShare === 0 && g1.guestFav === 0 && g1.likeBtn === 0 && g1.static === 0, JSON.stringify(g1));
+
+    // G2/G3 切 tab 恒登录引导卡（云模式短路在绑定之前——访客零 composer 零云卡）
+    await t.evalJs("document.querySelector('[data-tab=\"following\"]').click()");
+    await sleep(200);
+    const g2 = await t.evalJs("(() => { var feed = document.getElementById('feedContent');" +
+      " return { loginCard: !!document.getElementById('hubLoginCard'), cloud: feed.querySelectorAll('[data-cloud-id]').length }; })()");
+    check('G2 following tab 恒登录引导卡（切 tab 零云卡）', g2 && g2.loginCard && g2.cloud === 0, JSON.stringify(g2));
+    await t.evalJs("document.querySelector('[data-tab=\"topic\"]').click()");
+    await sleep(200);
+    const g3 = await t.evalJs("(() => { var feed = document.getElementById('feedContent');" +
+      " return { loginCard: !!document.getElementById('hubLoginCard'), cloud: feed.querySelectorAll('[data-cloud-id]').length }; })()");
+    check('G3 topic tab 恒登录引导卡（切 tab 零云卡）', g3 && g3.loginCard && g3.cloud === 0, JSON.stringify(g3));
+
+    // G4 发现中心+热门双引导行
+    const g4 = await t.evalJs("(() => { var d = document.getElementById('discoveryList'); var tr = document.getElementById('trendingList');" +
+      " return { guest: d.textContent.indexOf('登录后探索话题与频道') !== -1, trendGuest: tr.textContent.indexOf('登录后探索话题与频道') !== -1 }; })()");
+    check('G4 发现中心+热门双引导行', g4 && g4.guest && g4.trendGuest, JSON.stringify(g4));
+
+    // G5 访客零 API（连 probe 都不发）
+    const g5 = await t.evalJs('window.__fetchCalls.length');
+    check('G5 访客零 API 调用（含零 probe）', g5 === 0, 'calls=' + g5);
+
+    check('G6 全程 0 console 错误', errs.length === 0, errs.slice(0, 2).join(' | '));
   }
 
   // ──────────────────────────────────────────────
-  // 线上：真卡三钮齐 + 分享弹窗 URL + 转发免弹窗（401 回滚实测）+ 访客演示卡转发 toast/分享弹窗 + 帖页实心态一致
+  // 线上（v0.2.58.24）：假登录 boot 401 整流终态=登录引导卡 + 真帖页六件齐 + 分享弹窗同 id +
+  //   访客点赞/转发 toast + 假登录 401 回滚链 + 访客 hub 面
   // ──────────────────────────────────────────────
   async function runLive(t) {
-    console.log('── L. 线上操作行 + 分享弹窗 ──');
+    console.log('── L. 线上（假登录 boot 401 整流）──');
 
-    const l1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]');" +
-      " var b = c && c.querySelector('[data-like-post]'); var rp = c && c.querySelector('[data-repost-post]'); var sh = c && c.querySelector('[data-share-post]');" +
-      " var fav = c && c.querySelector('[data-favorite-post]'); var fi = fav ? fav.querySelector('.material-symbols-outlined') : null;" +
-      " var ic = sh ? sh.querySelector('.material-symbols-outlined') : null;" +
-      " var vw = null; if (c) Array.prototype.forEach.call(c.querySelectorAll('.post-action-btn-static'), function (x) { var i = x.querySelector('.material-symbols-outlined'); if (i && i.textContent === 'visibility') vw = x; });" +
-      " return { ver: window.MN_SITE_VERSION, id: c ? c.getAttribute('data-cloud-id') : null," +
-      " hasBtn: !!b, hasFx: b ? !!b.querySelector('.like-fx') : false," +
-      " hasRepost: !!rp, hasShare: !!sh, hasFav: !!fav, repostCount: rp ? (rp.querySelector('[data-repost-count]') || {}).textContent : null," +
-      " shareIcon: ic ? ic.textContent : null, shareText: sh ? sh.textContent : null," +
-      " favIcon: fi ? fi.textContent : null, favText: fav ? fav.textContent : null, favP: fav ? fav.getAttribute('aria-pressed') : null," +
-      " favConsistent: fav ? (fav.getAttribute('aria-pressed') === 'true') === (fi && fi.textContent === 'star') : false," +
-      " viewText: vw ? (vw.textContent.match(/\\d+/) || [null])[0] : null, order: sh && fav ? sh.parentElement.lastElementChild === sh && sh.parentElement.children[sh.parentElement.children.length - 2] === fav : false," +
-      " rightEdge: sh ? Math.round(sh.parentElement.getBoundingClientRect().right - sh.getBoundingClientRect().right) : null }; })()");
-    check('L1 版本 v0.2.20.4', l1.ver === 'v0.2.20.4', 'ver=' + l1.ver);
-    check('L1 真卡六件齐（赞带 .like-fx / 转带计数 / 浏览 / 星 / 分享）', l1.hasBtn && l1.hasFx && l1.hasRepost && l1.hasShare && l1.hasFav && /^PST-/.test(l1.id) && l1.repostCount != null && /^\d+$/.test(l1.viewText || ''), JSON.stringify(l1));
-    check('L1 分享钮纯图标 icon=upload 无「分享」文字（v0.2.19.2 口径）', l1.shareIcon === 'upload' && l1.shareText.indexOf('分享') === -1, 'icon=' + l1.shareIcon + ' text=' + l1.shareText);
-    check('L1 星收藏态一致（star ⇔ aria=true）+ 星/分享无号码 + 分享最右·星居左邻', l1.favConsistent && !/\d/.test(l1.favText) && !/\d/.test(l1.shareText) && l1.order, JSON.stringify(l1));
-    check('L1 v0.2.20.1 线上星+分享顶贴行最右缘（≤1px）', l1.rightEdge <= 1, 'rightEdge=' + l1.rightEdge);
-    // v0.2.19.3 线上操作行放大+间距拉开（v0.2.20.0 六件行口径：点赞钮高≥36px + 点赞→分享横距≥250px；v0.2.20.1 分享贴行右缘）
-    const l1geo = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]');" +
-      " var l = c.querySelector('[data-like-post]').getBoundingClientRect();" +
-      " var shE = c.querySelector('[data-share-post]'); var sh = shE.getBoundingClientRect();" +
-      " return { lh: Math.round(l.height), span: Math.round(sh.left - l.right), rightEdge: Math.round(shE.parentElement.getBoundingClientRect().right - sh.right) }; })()");
-    check('L1 操作行六件放大+间距拉开（点赞钮高≥36px + 点赞→分享横距≥250px）+ 分享贴行右缘', l1geo.lh >= 36 && l1geo.span >= 250 && l1geo.rightEdge <= 1, JSON.stringify(l1geo));
+    const l1 = await t.evalJs("(() => { var feed = document.getElementById('feedContent');" +
+      " return { ver: window.MN_SITE_VERSION, loginCard: !!document.getElementById('hubLoginCard')," +
+      " cloud: feed.querySelectorAll('[data-cloud-id]').length," +
+      " guestLike: feed.querySelectorAll('[data-guest-like]').length," +
+      " likeBtn: feed.querySelectorAll('[data-like-post]').length }; })()");
+    check('L1 版本 v0.2.58.24', l1.ver === 'v0.2.58.24', 'ver=' + l1.ver);
+    check('L1 假登录 boot 终态=登录引导卡（401 整流零云卡零演示签名）', l1 && l1.loginCard && l1.cloud === 0 && l1.guestLike === 0 && l1.likeBtn === 0, JSON.stringify(l1));
 
-    // L2 hub 分享弹窗：URL 含帖 id + 关闭钮关
-    await t.evalJs("document.querySelector('[data-share-post]').click()");
-    await sleep(600);
-    const l2 = await t.evalJs("(() => { var inp = document.querySelector('#shareUrlInput');" +
-      " var card = inp ? inp.closest('.modal-card') : null;" +
-      " return { dlg: !!inp, val: inp ? inp.value : null, id: document.querySelector('[data-share-post]').getAttribute('data-share-post')," +
-      " cardOpacity: card ? getComputedStyle(card).opacity : null }; })()");
-    check('L2 hub 分享弹窗打开 + URL 指向该帖独立帖页（含帖 id）', l2.dlg && l2.val && l2.val.indexOf('community-post.html?id=' + l2.id) !== -1, JSON.stringify(l2));
-    check('L2 弹窗卡片真正可见（opacity=1——v0.2.19.2 隐形弹窗回归断言）', l2.cardOpacity === '1', 'opacity=' + l2.cardOpacity);
-    await t.evalJs("document.querySelector('#shareClose').click()");
-    await sleep(300);
-    check('L2 关闭钮关弹窗', await t.evalJs("!document.querySelector('#shareUrlInput')"), '');
+    // L2-L5 真帖页链：公共端点取真帖 id 直达（hub 云卡不可得→六件行断言全部迁帖页）
+    let livePostId = null;
+    try {
+      const pr = await fetch(LIVE + '/api/social/posts');
+      const pj = await pr.json();
+      if (pj && Array.isArray(pj.posts) && pj.posts.length) livePostId = pj.posts[0].id;
+    } catch (e) {}
+    if (!livePostId) {
+      console.log('  ⏭ L2-L5 跳过：线上无帖');
+    } else {
+      await nav(t, BASE + '/pages/community-post.html?id=' + encodeURIComponent(livePostId));
+      await waitFor(t, "(document.getElementById('postDetail').style.display === 'flex') || (document.getElementById('postState404').style.display === 'block')", 20000, '帖页渲染');
+      await waitFor(t, 'window.MN_Report && window.MN_Report.toast', 10000, 'MN_Report 就绪');
+      await patchToast(t);
+      await patchClipboard(t);
+      const l2 = await t.evalJs("(() => { var b = document.querySelector('#postCardWrap [data-like-post]'); var rp = document.querySelector('#postCardWrap [data-repost-post]');" +
+        " var sh = document.querySelector('#postCardWrap [data-share-post]'); var fav = document.querySelector('#postCardWrap [data-favorite-post]');" +
+        " var ic = sh ? sh.querySelector('.material-symbols-outlined') : null; var fi = fav ? fav.querySelector('.material-symbols-outlined') : null;" +
+        " var vw = null; Array.prototype.forEach.call(document.querySelectorAll('#postCardWrap .post-action-btn-static'), function (x) { var i = x.querySelector('.material-symbols-outlined'); if (i && i.textContent === 'visibility') vw = x; });" +
+        " return { hasBtn: !!b, hasFx: b ? !!b.querySelector('.like-fx') : false, hasRepost: !!rp, hasShare: !!sh, hasFav: !!fav," +
+        " repostCount: rp ? (rp.querySelector('[data-repost-count]') || {}).textContent : null," +
+        " shareIcon: ic ? ic.textContent : null, shareText: sh ? sh.textContent : null," +
+        " favConsistent: fav ? (fav.getAttribute('aria-pressed') === 'true') === (fi && fi.textContent === 'star') : false," +
+        " viewText: vw ? (vw.textContent.match(/\\d+/) || [null])[0] : null," +
+        " order: sh && fav ? sh.parentElement.lastElementChild === sh && sh.parentElement.children[sh.parentElement.children.length - 2] === fav : false," +
+        " rightEdge: sh ? Math.round(sh.parentElement.getBoundingClientRect().right - sh.getBoundingClientRect().right) : null," +
+        " s404: document.getElementById('postState404').style.display }; })()");
+      check('L2 真帖页六件齐（赞带 .like-fx / 转带计数 / 浏览数字 / 星 / 分享）', l2.s404 === 'none' && l2.hasBtn && l2.hasFx && l2.hasRepost && l2.hasShare && l2.hasFav && l2.repostCount != null && /^\d+$/.test(l2.viewText || ''), JSON.stringify(l2));
+      check('L2 分享钮纯图标 icon=upload 无「分享」文字 + 星收藏态一致（star ⇔ aria=true）+ 分享最右·星居左邻贴右缘',
+        l2.shareIcon === 'upload' && l2.shareText.indexOf('分享') === -1 && l2.favConsistent && l2.order && l2.rightEdge <= 1, JSON.stringify(l2));
 
-    // L2b v0.2.19.1 转发免弹窗：点击零弹窗（对话框已整体删除）；假会话 POST 401 → 乐观回滚 + toast 登录已过期分支实测
-    await t.evalJs("document.querySelector('[data-repost-post]').click()");
-    await sleep(600);
-    const l2b = await t.evalJs("(() => { var b = document.querySelector('[data-repost-post]');" +
-      " return { backdrops: document.querySelectorAll('.modal-backdrop').length," +
-      " pressed: b.getAttribute('aria-pressed'), reposted: b.classList.contains('reposted')," +
-      " toast: window.__toasts.join('|') }; })()");
-    check('L2b 转发点击零弹窗（对话框已删）+ 401 回滚不置位 + toast 登录已过期',
-      l2b.backdrops === 0 && l2b.pressed === 'false' && !l2b.reposted && l2b.toast.indexOf('登录已过期') !== -1, JSON.stringify(l2b));
+      // L3 帖页分享弹窗：URL 与本页同 id + 关闭钮关
+      await t.evalJs("document.querySelector('#postCardWrap [data-share-post]').click()");
+      await sleep(600);
+      const l3 = await t.evalJs("(() => { var inp = document.querySelector('#shareUrlInput');" +
+        " var q = window.location.search || '';" +
+        " var card = inp ? inp.closest('.modal-card') : null;" +
+        " return { dlg: !!inp, val: inp ? inp.value : null," +
+        " sameId: inp ? inp.value.indexOf(window.location.pathname) !== -1 && inp.value.indexOf(q.slice(1)) !== -1 : false," +
+        " cardOpacity: card ? getComputedStyle(card).opacity : null }; })()");
+      check('L3 帖页分享弹窗 URL 与本页同 id + 弹窗卡片真正可见（opacity=1）', l3.dlg && l3.sameId && l3.cardOpacity === '1', JSON.stringify(l3));
+      await t.evalJs("document.querySelector('#shareClose').click()");
+      await sleep(300);
+      check('L3 关闭钮关弹窗', await t.evalJs("!document.querySelector('#shareUrlInput')"), '');
 
-    // L2c v0.2.20.0 收藏假会话 401 → 乐观回滚 + toast 登录已过期分支实测（与点赞/转发同口径）
-    await t.evalJs("window.__toasts = []");
-    await t.evalJs("document.querySelector('[data-favorite-post]').click()");
-    await sleep(600);
-    const l2c = await t.evalJs("(() => { var b = document.querySelector('[data-favorite-post]'); var i = b.querySelector('.material-symbols-outlined');" +
-      " return { pressed: b.getAttribute('aria-pressed'), fav: b.classList.contains('favorited'), icon: i.textContent, toast: window.__toasts.join('|') }; })()");
-    check('L2c 收藏 401 回滚：star_border 复原不置位 + toast 登录已过期',
-      l2c.pressed === 'false' && !l2c.fav && l2c.icon === 'star_border' && l2c.toast.indexOf('登录已过期') !== -1, JSON.stringify(l2c));
+      // L4 真访客：点赞/转发拦截 toast + 零状态变化（boot 整流已清会话→访客；再显式清一次防竞速）
+      await clearUser(t);
+      await t.send('Page.reload');
+      await sleep(1800);
+      await waitFor(t, "(document.getElementById('postDetail').style.display === 'flex') || (document.getElementById('postState404').style.display === 'block')", 20000, '访客重载渲染');
+      await waitFor(t, 'window.MN_Report && window.MN_Report.toast', 10000, 'MN_Report 就绪');
+      await patchToast(t);
+      await t.evalJs("document.querySelector('#postCardWrap [data-like-post]').click()");
+      await sleep(300);
+      await t.evalJs("document.querySelector('#postCardWrap [data-repost-post]').click()");
+      await sleep(300);
+      const l4 = await t.evalJs("(() => { var b = document.querySelector('#postCardWrap [data-like-post]'); var rp = document.querySelector('#postCardWrap [data-repost-post]');" +
+        " return { pressed: b.getAttribute('aria-pressed'), pop: b.classList.contains('like-pop'), reposted: rp.classList.contains('reposted')," +
+        " backdrops: document.querySelectorAll('.modal-backdrop').length, toasts: window.__toasts.join('|') }; })()");
+      check('L4 真访客：点赞 toast 登录后才能点赞 + 转发 toast 登录后才能转发（零动画类零弹窗零置位）',
+        l4.pressed === 'false' && !l4.pop && !l4.reposted && l4.backdrops === 0 && l4.toasts.indexOf('登录后才能点赞') !== -1 && l4.toasts.indexOf('登录后才能转发') !== -1, JSON.stringify(l4));
 
-    // L3 访客演示卡：转发 toast + 分享弹窗（v0.2.19.1 演示卡分享也弹窗——「为什么分享按钮点击后没有弹窗」根因修复）
+      // L5 假登录真 401 回滚链（与点赞同口径：乐观置位 → 回滚 + toast 登录已过期）
+      await seedUser(t);
+      await t.send('Page.reload');
+      await sleep(1800);
+      await waitFor(t, "(document.getElementById('postDetail').style.display === 'flex') || (document.getElementById('postState404').style.display === 'block')", 20000, '假登录重载渲染');
+      await waitFor(t, 'window.MN_Report && window.MN_Report.toast', 10000, 'MN_Report 就绪');
+      await patchToast(t);
+      await t.evalJs("document.querySelector('#postCardWrap [data-like-post]').click()");
+      await sleep(1400);
+      const l5 = await t.evalJs("(() => { var b = document.querySelector('#postCardWrap [data-like-post]');" +
+        " return { pressed: b.getAttribute('aria-pressed'), liked: b.classList.contains('liked')," +
+        " pop: b.classList.contains('like-pop'), toasts: window.__toasts.join('|') }; })()");
+      check('L5 假登录 401 回滚：实心回退 + like-pop 摘除 + toast 登录已过期', l5.pressed === 'false' && !l5.liked && !l5.pop && l5.toasts.indexOf('登录已过期') !== -1, JSON.stringify(l5));
+    }
+
+    // L6 访客 hub 面：登录卡 + 三 tab 恒引导卡 + 发现引导行 + 零云卡零演示签名
     await clearUser(t);
-    await t.send('Page.reload');
-    await sleep(1800);
-    await waitFor(t, "document.querySelectorAll('[data-guest-repost]').length >= 1", 20000, '访客演示卡渲染');
-    await waitFor(t, 'window.MN_Report && window.MN_Report.toast', 10000, 'MN_Report 就绪');
-    await patchToast(t);
-    await patchClipboard(t);
-    await t.evalJs("document.querySelector('[data-guest-repost]').click()");
-    await sleep(300);
-    await t.evalJs("document.querySelector('[data-guest-share]').click()");
-    await sleep(400);
-    const l3 = await t.evalJs("(() => { var inp = document.querySelector('#shareUrlInput');" +
-      " var h3 = document.querySelector('.modal-card h3');" +
-      " var card = inp ? inp.closest('.modal-card') : null;" +
-      " return { toasts: window.__toasts.join('|'), dlg: !!inp, val: inp ? inp.value : null, title: h3 ? h3.textContent : null, copied: window.__copied," +
-      " cardOpacity: card ? getComputedStyle(card).opacity : null }; })()");
-    check('L3 访客演示卡：转发 toast 登录后才能转发 + 分享弹窗打开（标题 分享社区 + URL 社区页 + 自动复制）',
-      l3.toasts.indexOf('登录后才能转发') !== -1 && l3.dlg && l3.title === '分享社区' && l3.val && l3.val.indexOf('community-hub.html') !== -1 && l3.copied === l3.val, JSON.stringify(l3));
-    check('L3 弹窗卡片真正可见（opacity=1——v0.2.19.2 隐形弹窗回归断言）', l3.cardOpacity === '1', 'opacity=' + l3.cardOpacity);
-    await t.evalJs("document.querySelector('#shareClose').click()");
-    await sleep(300);
-    check('L3 关闭钮关弹窗', await t.evalJs("!document.querySelector('#shareUrlInput')"), '');
-
-    // L4 帖页：实心态与 aria 一致（不点不发请求，线上零改动）+ 分享弹窗 URL 与当前页同 id + .like-fx 在场
-    await seedUser(t);
     await nav(t, BASE + '/pages/community-hub.html');
-    await waitFor(t, "document.querySelectorAll('[data-cloud-id]').length >= 1", 30000, '云卡渲染');
-    await t.evalJs("document.querySelector('[data-cloud-id] h4, [data-cloud-id] p').click()");
-    await waitFor(t, "window.location.pathname.indexOf('community-post.html') !== -1", 15000, '整卡跳转');
-    await waitFor(t, "(document.getElementById('postDetail').style.display === 'flex') || (document.getElementById('postState404').style.display === 'block')", 20000, '帖页渲染');
-    await waitFor(t, 'window.MN_Report && window.MN_Report.toast', 10000, 'MN_Report 就绪');
-    await patchToast(t);
-    const l4 = await t.evalJs("(() => { var b = document.querySelector('#postCardWrap [data-like-post]');" +
-      " if (!b) return { noBtn: true };" +
-      " var icon = b.querySelector('.material-symbols-outlined');" +
-      " var fav = document.querySelector('#postCardWrap [data-favorite-post]'); var fi = fav ? fav.querySelector('.material-symbols-outlined') : null;" +
-      " var vw = null; Array.prototype.forEach.call(document.querySelectorAll('#postCardWrap .post-action-btn-static'), function (x) { var i = x.querySelector('.material-symbols-outlined'); if (i && i.textContent === 'visibility') vw = x; });" +
-      " return { pressed: b.getAttribute('aria-pressed'), icon: icon ? icon.textContent : null," +
-      " consistent: (b.getAttribute('aria-pressed') === 'true') === (icon && icon.textContent === 'favorite')," +
-      " hasFx: !!b.querySelector('.like-fx'), s404: document.getElementById('postState404').style.display," +
-      " favConsistent: fav ? (fav.getAttribute('aria-pressed') === 'true') === (fi && fi.textContent === 'star') : false," +
-      " viewText: vw ? (vw.textContent.match(/\\d+/) || [null])[0] : null }; })()");
-    check('L4 帖页实心态与点赞态一致（favorite ⇔ aria=true）+ .like-fx 在场', l4.s404 === 'none' && l4.consistent && l4.hasFx, JSON.stringify(l4));
-    check('L4 帖页星收藏态一致（star ⇔ aria=true）+ 浏览量数字渲染', l4.s404 === 'none' && l4.favConsistent && /^\d+$/.test(l4.viewText || ''), JSON.stringify(l4));
-    await t.evalJs("document.querySelector('#postCardWrap [data-share-post]').click()");
-    await sleep(600);
-    const l5 = await t.evalJs("(() => { var inp = document.querySelector('#shareUrlInput');" +
-      " var q = window.location.search || '';" +
-      " var card = inp ? inp.closest('.modal-card') : null;" +
-      " return { dlg: !!inp, val: inp ? inp.value : null, sameId: inp ? inp.value.indexOf(window.location.pathname) !== -1 && inp.value.indexOf(q.slice(1)) !== -1 : false," +
-      " cardOpacity: card ? getComputedStyle(card).opacity : null }; })()");
-    check('L5 帖页分享弹窗 URL 与本页同 id', l5.dlg && l5.sameId, JSON.stringify(l5));
-    check('L5 弹窗卡片真正可见（opacity=1——v0.2.19.2 隐形弹窗回归断言）', l5.cardOpacity === '1', 'opacity=' + l5.cardOpacity);
-    await t.evalJs("document.querySelector('#shareClose').click()");
-    await sleep(300);
+    await waitFor(t, "document.getElementById('hubLoginCard')", 30000, '访客登录引导卡');
+    await sleep(500);
+    const l6 = await t.evalJs("(() => { var feed = document.getElementById('feedContent');" +
+      " return { loginCard: !!document.getElementById('hubLoginCard'), cloud: feed.querySelectorAll('[data-cloud-id]').length," +
+      " guestLike: feed.querySelectorAll('[data-guest-like]').length, likeBtn: feed.querySelectorAll('[data-like-post]').length," +
+      " disc: document.getElementById('discoveryList').textContent.indexOf('登录后探索话题与频道') !== -1 }; })()");
+    check('L6 访客 hub 面：登录卡 + 零云卡零演示签名 + 发现引导行', l6 && l6.loginCard && l6.cloud === 0 && l6.guestLike === 0 && l6.likeBtn === 0 && l6.disc, JSON.stringify(l6));
+    await t.evalJs("document.querySelector('[data-tab=\"topic\"]').click()");
+    await sleep(200);
+    const l6b = await t.evalJs("(() => { var feed = document.getElementById('feedContent');" +
+      " return { loginCard: !!document.getElementById('hubLoginCard'), cloud: feed.querySelectorAll('[data-cloud-id]').length }; })()");
+    check('L6b 访客切 topic tab 恒登录引导卡', l6b && l6b.loginCard && l6b.cloud === 0, JSON.stringify(l6b));
 
-    check('L6 全程 0 console 错误', errs.length === 0, errs.slice(0, 2).join(' | '));
+    check('L7 全程 0 console 错误', errs.length === 0, errs.slice(0, 2).join(' | '));
   }
 }
 

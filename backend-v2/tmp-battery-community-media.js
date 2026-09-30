@@ -141,18 +141,18 @@ async function main() {
   fs.writeFileSync(tmpPng, Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x01, 0x02, 0x03, 0x04]));
 
   console.log('── B. Community 帖子媒体（v0.2.16.0）──');
+  // v0.2.58.24：演示样本全移除——访客 boot 终态=登录引导卡（零演示卡）；手动注入云模式罐头再渲染（删旧探针静置）
   await nav(t, BASE + '/pages/community-hub');
-  await waitFor(t, "document.querySelectorAll('#feedContent > .card').length >= 3", 15000, 'feed boot');
-  await sleep(600); // 等 initCloudFeed 的 probe 落定（demo 路径 cloudMode=false）
+  await waitFor(t, "document.getElementById('hubLoginCard')", 15000, '访客登录引导卡');
   await t.evalJs(
     'window.cloudMode = true; window.cloudPosts = ' + JSON.stringify(FAKE_POSTS) + '; renderFeed();');
   await waitFor(t, "document.getElementById('postComposer')", 10000, 'composer 渲染');
   await waitFor(t, "document.querySelectorAll('#feedContent .post-media').length === 4", 10000, '画廊渲染');
 
-  // B1 版本 + 卡片结构（composer + 5 云帖 + 3 demo）
+  // B1 版本 + 卡片结构（composer + 5 云帖）
   const ver = await t.evalJs('window.MN_SITE_VERSION');
   const cards = await t.evalJs("document.querySelectorAll('#feedContent > .card').length");
-  check('B1 版本 v0.2.16.0 / 9 卡（composer+5 云帖+3 demo）', ver === 'v0.2.16.0' && cards === 9, 'ver=' + ver + ' n=' + cards);
+  check('B1 版本 v0.2.58.24 / 6 卡（composer+5 云帖）', ver === 'v0.2.58.24' && cards === 6, 'ver=' + ver + ' n=' + cards);
 
   // B2 画廊网格形状：P1 .pm-3（2 IMG + 1 VIDEO）、P2 .pm-1、P3 .pm-2（IMG + VIDEO）、P5 过滤后 .pm-1、P4 无网格
   const g0 = await t.evalJs(`(() => { const g = document.querySelectorAll('#feedContent .post-media')[0];

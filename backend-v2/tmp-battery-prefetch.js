@@ -1,8 +1,8 @@
-// tmp-battery-prefetch.js — v0.2.58.23 悬停预加载电池（Round 43 新轮）
+// tmp-battery-prefetch.js — v0.2.58.24 悬停预加载电池（Round 43 新轮）
 // 用户「为什么我在切换页面的时候会闪一下 然而我在抖音或者Youtube切换页面的时候并不会闪烁一下
 //   是不是没有做预先加载？」→ 钦定 A=悬停预加载：悬停站内链接 65ms 后 <link rel="prefetch"
 //   as="document"> 预下载目标页；点击导航命中预取缓存消除切页白闪。
-// 验证：S0 静态锚（transitions.js 预取块件计数 + site-config 58.23/00342-/00343-/FC 48.0）；
+// 验证：S0 静态锚（transitions.js 预取块件计数 + site-config 58.23/00344-/00345-/FC 48.0）；
 //   S1 悬停内链 ≥65ms → 恰 1 link[rel=prefetch] href/as 精确；S2 快速扫过（<65ms 移开）零预取；
 //   S3 外链/mailto/javascript 零预取；S4 #hash 零预取；S5 同页链接零预取（isSamePage 复用）；
 //   S6 同链接再悬停仍恰 1（dataset 一次性守卫）；S7 预取后点击导航正常（切页动画/点击劫持零干扰）；
@@ -140,11 +140,11 @@ function ok(name, cond, detail) {
       cnt(trSrc, ', 65)') === 1 && cnt(trSrc, '{ once: true }') === 1 &&
       cnt(trSrc, "addEventListener('mouseover'") === 1 && cnt(trSrc, "addEventListener('click'") === 1,
       'pf=' + cnt(trSrc, "l.rel = 'prefetch'") + ' done=' + cnt(trSrc, 'prefetchDone') + ' timer=' + cnt(trSrc, 'prefetchTimer'));
-    ok('S0b site-config：58.23 赋值 1 + 58.22 赋值零残留 + changelog 标题 58.23 1 + rev 00342-/00343- 各 1（占位口径）+ FC 48.0 不动',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.23'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.22'") === 0 &&
-      cnt(siteSrc, '// v0.2.58.23 = ') === 1 && cnt(siteSrc, '00342-') === 1 && cnt(siteSrc, '00343-') === 1 &&
+    ok('S0b site-config：58.23 赋值 1 + 58.22 赋值零残留 + changelog 标题 58.23 1 + rev 00344-/00345- 各 1（占位口径）+ FC 48.0 不动',
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.24'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.22'") === 0 &&
+      cnt(siteSrc, '// v0.2.58.24 = ') === 1 && cnt(siteSrc, '00344-') === 1 && cnt(siteSrc, '00345-') === 1 &&
       cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") === 1,
-      '23=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.23'") + ' r42=' + cnt(siteSrc, '00342-') + ' r43=' + cnt(siteSrc, '00343-'));
+      '23=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.24'") + ' r42=' + cnt(siteSrc, '00344-') + ' r43=' + cnt(siteSrc, '00345-'));
 
     const cdp = await connectCdp(CDP_PORT);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: SEED });

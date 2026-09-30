@@ -1,4 +1,4 @@
-// tmp-battery-profile-subtier.js — v0.2.58.23 个人资料横幅/头像三层订阅门禁电池（克隆 tmp-battery-profile-banner.js 壳，D 组专项）
+// tmp-battery-profile-subtier.js — v0.2.58.24 个人资料横幅/头像三层订阅门禁电池（克隆 tmp-battery-profile-banner.js 壳，D 组专项）
 // 用户：「横幅的从图库中选择和上传图片只限于基础订阅项；动图要高级订阅；没有订阅的只能调整横幅的单色和渐变颜色」
 // 钦定：①两处一起改（设置弹窗+资料页编辑弹窗同口径）②免费层=扩展预设色卡（6 玻璃+6 单色/黑白系=13 格点选即存 cardBg）
 //   ③金罩=所有被锁按钮+相邻按钮共用一个罩（不两个）④头像保持现状（free 静态头像上传仍可用）。
@@ -53,7 +53,7 @@ const DOC_START_SRC = `
       var key = method + ' ' + u;
       if (key === 'GET /api/health') return Promise.resolve(res(200, { status: 'ok', version: '2.0.0', tables: 60 }));
       if (key === 'GET /api/social/users/USR-000101') {
-        // v0.2.58.23 canGif 谓词读服务端 u.tier——罐头按请求时 localStorage 同步（真后端读 DB 同义）
+        // v0.2.58.24 canGif 谓词读服务端 u.tier——罐头按请求时 localStorage 同步（真后端读 DB 同义）
         var lu = {}; try { lu = JSON.parse(localStorage.getItem('slati_user') || '{}'); } catch (e) {}
         if (lu.tier) ME.tier = lu.tier; else delete ME.tier;
         return Promise.resolve(res(200, { user: ME }));
@@ -166,7 +166,7 @@ async function seedSub(t) {
   await t.evalJs("localStorage.setItem('slati_session', JSON.stringify({ loggedIn: true, at: new Date().toISOString() }));" +
     "localStorage.setItem('slati_user', JSON.stringify({ id: 'USR-000101', name: '电池用户', avatarUrl: null, tier: 'premium' }));");
 }
-async function seedBasic(t) { // v0.2.58.23 三层门禁：basic=静态图/图库放行、gif 仍锁（canGif 谓词拦）
+async function seedBasic(t) { // v0.2.58.24 三层门禁：basic=静态图/图库放行、gif 仍锁（canGif 谓词拦）
   await t.evalJs("localStorage.setItem('slati_session', JSON.stringify({ loggedIn: true, at: new Date().toISOString() }));" +
     "localStorage.setItem('slati_user', JSON.stringify({ id: 'USR-000101', name: '电池用户', avatarUrl: null, tier: 'basic' }));");
 }
@@ -220,9 +220,9 @@ async function main() {
     'gifLocked=' + cnt(i18nSrc, 'prof.toast.gifLocked') + ' libLocked=' + cnt(i18nSrc, 'prof.toast.libLocked') + ' gifUpgrade=' + cnt(i18nSrc, 'prof.edit.gifUpgrade') +
     ' bannerLocked=' + cnt(i18nSrc, 'prof.toast.bannerLocked') + ' imgUpgrade=' + cnt(i18nSrc, 'prof.edit.imgUpgrade') + ' prem=' + cnt(i18nSrc, 'prof.edit.premGifUpgrade'));
   const siteSrc = readNorm('assets/js/site-config.js');
-  check('D0 site-config：版本赋值 v0.2.58.23 + FC 48.0 在位 + changelog rev 00342-/00343- 各 ×1（58.22 单条目）',
-    cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.23'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") === 1 && cnt(siteSrc, '00342-') === 1 && cnt(siteSrc, '00343-') === 1,
-    'v58.22=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.23'") + ' fc48=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") + ' r40=' + cnt(siteSrc, '00342-') + ' r41=' + cnt(siteSrc, '00343-'));
+  check('D0 site-config：版本赋值 v0.2.58.24 + FC 48.0 在位 + changelog rev 00344-/00345- 各 ×1（58.22 单条目）',
+    cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.24'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") === 1 && cnt(siteSrc, '00344-') === 1 && cnt(siteSrc, '00345-') === 1,
+    'v58.22=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.24'") + ' fc48=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") + ' r40=' + cnt(siteSrc, '00344-') + ' r41=' + cnt(siteSrc, '00345-'));
   const fcSrc = readNorm('pages/fluidcanvas.html');
   check('D9 FC 不互通（钦定③铁证）：fluidcanvas.html 源零 bannerUrl/banner_url（FC 频道主页不读 users.banner_url）',
     fcSrc.indexOf('bannerUrl') === -1 && fcSrc.indexOf('banner_url') === -1, 'bannerUrl=' + fcSrc.indexOf('bannerUrl') + ' banner_url=' + fcSrc.indexOf('banner_url'));
@@ -425,7 +425,7 @@ async function main() {
   // ── D7 订阅全解锁：两钮零锁+链接隐藏+图库 gif 条目放行+文件 gif 放行 ──
   console.log('── D7. 订阅全解锁 ──');
   await seedSub(t);
-  await t.send('Page.reload'); // v0.2.58.23 canGif 读 profileUser.tier（页载时 GET 罐头）——重载让 GET 按新 localStorage 同步 tier
+  await t.send('Page.reload'); // v0.2.58.24 canGif 读 profileUser.tier（页载时 GET 罐头）——重载让 GET 按新 localStorage 同步 tier
   await sleep(800);
   await waitFor(t, "document.getElementById('profileMain').style.display === 'flex'", 15000, '主页渲染（订阅）');
   await waitFor(t, "document.getElementById('profileEditBtn')", 10000, '编辑钮就位');
