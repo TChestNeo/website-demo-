@@ -118,7 +118,7 @@ const AVATAR_RING = "rgb(247, 249, 251)";
     cpSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1 && cpSrc.indexOf('v0.2.54.6 用户「那个用户横幅') !== -1 &&
     adminSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1);
   ok('F10 site-config v0.2.55.0 + changelog 用户原话 + FC v10.28.36.1 不动',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.22';") !== -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.23';") !== -1 &&
     sconfSrc.indexOf('用户横幅与头像不再受网页主题影响') !== -1 &&
     sconfSrc.indexOf('问询钦定「两处都要」') !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") !== -1);

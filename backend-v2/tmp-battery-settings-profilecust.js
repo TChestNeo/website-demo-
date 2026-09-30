@@ -1,9 +1,9 @@
-// tmp-battery-settings-profilecust.js — v0.2.58.22 设置弹窗资料区头像/横幅三层订阅门禁电池（58.21 母本 + S10-S12 新段）
+// tmp-battery-settings-profilecust.js — v0.2.58.23 设置弹窗资料区头像/横幅三层订阅门禁电池（58.21 母本 + S10-S12 新段）
 // 用户「横幅的从图库中选择和上传图片只限于基础订阅项；动图要高级订阅；没有订阅的只能调整横幅的单色和渐变颜色；
 //   图库弹窗大点；被锁按钮用金色罩子盖住而不是点击后才出现提示反馈」
 // 钦定：①两处一起改（设置弹窗+资料页编辑弹窗同口径）②免费层=扩展预设色卡（6 玻璃+6 单色/黑白系=13 格点选即存
 //   cardBg 落库）③金罩=所有被锁按钮+相邻按钮共用一个罩 ④头像保持现状（free 静态头像上传仍可用）
-// 验证：S0 静态锚（settings-modal.js 58.22 件计数 + common.i18n 26 键计数 + site-config 58.22/00340-/00341-）；
+// 验证：S0 静态锚（settings-modal.js 58.22 件计数 + common.i18n 26 键计数 + site-config 58.22/00342-/00343-）；
 //   S1 真用户开弹窗六件在位+金罩在位；S2 头像上传→PATCH 恰 1 体 {avatarUrl}→预览变→同步 ON slati_user 合并写；
 //   S3 同步 OFF PATCH 照发但 slati_user 零写；S4 gif+free→锁 toast+升级链接显+零上传零 PATCH；S5 gif+premium 放行
 //   +零金罩；S6a 图库 free 锁/S6b prem 选 data: 格→上传+PATCH；S7 横幅上传/移除 PATCH {bannerUrl}/{bannerUrl:null}
@@ -194,11 +194,11 @@ function ok(name, cond, detail) {
     const setSrc = await get('/assets/js/settings-modal.js');
     const sbSrc = await get('/assets/js/sidebar.js');
     const comI18n = await get('/assets/i18n/common.i18n.js');
-    ok('S0a site-config：58.22 赋值 1 + 58.21 赋值零残留 + changelog 标题 58.22 1 + rev 00340-/00341- 各 1（单条目口径）+ FC 48.0 不动',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.22'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.21'") === 0 &&
-      cnt(siteSrc, '// v0.2.58.22 = ') === 1 && cnt(siteSrc, '00340-') === 1 && cnt(siteSrc, '00341-') === 1 &&
+    ok('S0a site-config：58.22 赋值 1 + 58.21 赋值零残留 + changelog 标题 58.22 1 + rev 00342-/00343- 各 1（单条目口径）+ FC 48.0 不动',
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.23'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.21'") === 0 &&
+      cnt(siteSrc, '// v0.2.58.23 = ') === 1 && cnt(siteSrc, '00342-') === 1 && cnt(siteSrc, '00343-') === 1 &&
       cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") === 1,
-      '58.22=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.22'") + ' r40=' + cnt(siteSrc, '00340-') + ' r41=' + cnt(siteSrc, '00341-'));
+      '58.22=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.23'") + ' r40=' + cnt(siteSrc, '00342-') + ' r41=' + cnt(siteSrc, '00343-'));
     ok('S0b settings-modal 控件件：六 id 族（avatarBtn/preview/libBtn 各 2、bannerPreview 4、upload/lib/remove 2/2/4、file ×2 各、avatarUpgradeLink ×3、bannerUpgradeLink ×4）+ sub-locked ×4 + stUpload ×5 + stPickFromLibrary ×3 + stRawMergeUser ×5 + bannerUrl: null ×2 + slati_avatar_sync ×4 + toast 件 ×2',
       cnt(setSrc, 'settingsAvatarBtn') === 2 && cnt(setSrc, 'settingsAvatarPreview') === 2 && cnt(setSrc, 'settingsAvatarLibBtn') === 2 &&
       cnt(setSrc, 'settingsBannerPreview') === 4 && cnt(setSrc, 'settingsBannerUploadBtn') === 2 && cnt(setSrc, 'settingsBannerLibBtn') === 2 &&

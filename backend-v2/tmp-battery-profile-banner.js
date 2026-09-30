@@ -305,7 +305,7 @@ async function main() {
     const ver = await t.evalJs('window.MN_SITE_VERSION');
     const s1 = await t.evalJs("(() => { var a = document.querySelector('.user-module a[href*=\"community-profile.html\"]');" +
       " return { href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && !!a.querySelector('.user-name')) : false }; })()");
-    check('S1 版本 v0.2.58.22', ver === 'v0.2.58.22', 'ver=' + ver);
+    check('S1 版本 v0.2.58.23', ver === 'v0.2.58.23', 'ver=' + ver);
     check('S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）', s1.href === '../pages/community-profile.html?id=USR-000101' && s1.wrapped, s1.href);
 
     // S2 点侧栏锚 → 弹信息卡（58.21 口径：不跳页）→ 弹窗内「查看主页」→ 真导航到自己主页
@@ -487,7 +487,7 @@ async function main() {
       " pvCardBgColor: getComputedStyle(pvCard).backgroundColor," +
       " pgN: pgSw.length, pgLabels: Array.prototype.map.call(pgSw, function (x) { return x.querySelector('.swatch-label').textContent; }).join('|')," +
       " pgFirstActive: pgSw[0].classList.contains('active') }; })()");
-    check('E6 切自定义：互斥显示 + 五组（横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景——v0.2.58.18 新横幅图片组）+ 横幅 13 预设（v0.2.58.22 免费层扩展 6 单色/黑白系）+ v0.2.24.1 卡片背景只 2 选项（默认|标准液态玻璃）默认选中 + v0.2.25.0 页面背景 2 选项（默认|自定义图片）默认选中', e6b.active === 'custom' && e6b.basicVis === 'none' && e6b.customVis !== 'none' && e6b.labels === '横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景' && e6b.bgN === 13 && e6b.bgLabels === '默认|磨砂|深海|薰衣草|樱花|薄荷|落日|墨黑|纯白|石板灰|黑白渐变|银灰渐变|炭黑渐变' && e6b.bgFirstActive && e6b.plN === 2 && e6b.plLabels === '默认|标准液态玻璃' && e6b.plFirstActive && e6b.pgN === 2 && e6b.pgLabels === '默认|自定义图片' && e6b.pgFirstActive, JSON.stringify(e6b));
+    check('E6 切自定义：互斥显示 + 五组（横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景——v0.2.58.18 新横幅图片组）+ 横幅 13 预设（v0.2.58.23 免费层扩展 6 单色/黑白系）+ v0.2.24.1 卡片背景只 2 选项（默认|标准液态玻璃）默认选中 + v0.2.25.0 页面背景 2 选项（默认|自定义图片）默认选中', e6b.active === 'custom' && e6b.basicVis === 'none' && e6b.customVis !== 'none' && e6b.labels === '横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景' && e6b.bgN === 13 && e6b.bgLabels === '默认|磨砂|深海|薰衣草|樱花|薄荷|落日|墨黑|纯白|石板灰|黑白渐变|银灰渐变|炭黑渐变' && e6b.bgFirstActive && e6b.plN === 2 && e6b.plLabels === '默认|标准液态玻璃' && e6b.plFirstActive && e6b.pgN === 2 && e6b.pgLabels === '默认|自定义图片' && e6b.pgFirstActive, JSON.stringify(e6b));
     check('E6 v0.2.24.0 预览默认：横幅条=品牌渐变 + 卡片背景预览无 has-plate 无背景 + 迷你透明卡身', e6b.flatCls === 'edit-bg-flat bg-default' && e6b.flatBg.indexOf('linear-gradient') !== -1 && e6b.pvCls === 'edit-bg-preview' && e6b.pvBg === 'none' && e6b.pvCardBgColor === 'rgba(0, 0, 0, 0)', 'flat=' + e6b.flatCls + ' pvCls=' + e6b.pvCls + ' pvBg=' + e6b.pvBg + ' pvCard=' + e6b.pvCardBgColor);
 
     // E6c 横幅组点深海：active 唯一互斥 + 横幅条换类换渐变
@@ -1008,7 +1008,7 @@ async function main() {
     const b1Keys = ['bannerImg', 'bannerUpload', 'bannerLib', 'bannerRemove', 'bannerReady', 'bannerUploading', 'bannerUploadFail', 'bannerHint', 'avatarLib', 'libTitle', 'libEmpty'];
     const b1BadKeys = b1Keys.filter(function (k) { var re = new RegExp("'prof\\.edit\\." + k + "'", 'g'); return (b1I18n.match(re) || []).length !== 11; });
     check('B1 i18n 11 新键 × 11 语块全在位（与老键 imgTooBig 同 11 语块口径）', b1BadKeys.length === 0 && (b1I18n.match(/'prof\.edit\.imgTooBig'/g) || []).length === 11, '缺=' + b1BadKeys.join(','));
-    check('B1 site-config：版本赋值 v0.2.58.22 + changelog rev 00340- 前缀', b1Site.indexOf("window.MN_SITE_VERSION = 'v0.2.58.22'") !== -1 && b1Site.indexOf('00340-') !== -1, '');
+    check('B1 site-config：版本赋值 v0.2.58.23 + changelog rev 00342- 前缀', b1Site.indexOf("window.MN_SITE_VERSION = 'v0.2.58.23'") !== -1 && b1Site.indexOf('00342-') !== -1, '');
 
     // B 组前置：O 段末尾停在他人主页（USR-000303）且账号已清 → 回自己主页 + 种子登录（isSelf 门控）
     await nav(t, BASE + '/pages/community-profile.html?id=USR-000101');
@@ -1155,7 +1155,7 @@ async function main() {
     // L1 hub 首卡作者锚 → 个人主页（href 形状断言）
     const l1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]'); var a = c ? c.querySelector('.post-author-link') : null;" +
       " return { ver: window.MN_SITE_VERSION, href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && a.textContent.length > 0) : false }; })()");
-    check('L1 版本 v0.2.58.22', l1.ver === 'v0.2.58.22', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.58.23', l1.ver === 'v0.2.58.23', 'ver=' + l1.ver);
     check('L1 云卡作者锚 → profile（id=USR- 形状 + 头像+名字在内）', l1.href && /^community-profile\.html\?id=USR-\d{6}$/.test(l1.href) && l1.wrapped, l1.href);
 
     // L2 点作者锚 → 真导航 → 头部渲染（真数据）+ 几何 + 关注钮

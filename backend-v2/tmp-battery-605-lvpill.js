@@ -1,5 +1,5 @@
 // tmp-battery-605-lvpill.js — v0.2.58.15 折叠侧栏等级药丸悬停放大+右侧滑出等级信息卡电池（58.16 轮 sed-622
-//   扫版：版本赋值锚=58.16/rev 00340-/00341- 新入口，58.15 轮 ethereal 注释锚按历史前缀保留；58.10 收成两层/
+//   扫版：版本赋值锚=58.16/rev 00342-/00343- 新入口，58.15 轮 ethereal 注释锚按历史前缀保留；58.10 收成两层/
 //   58.11 两色互换/58.12 浪位抬高/58.13 双浪同色深蓝/58.14 慢浪改浅色电池同文件口径随轮改：用户「那么
 //   能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出 一个卡片完整的显示等级信息
 //   和经验条」——折叠态药丸悬停（.mn-lv-badge 整块=悬停区）scale(1.12)+右侧滑出 .mn-lv-hovercard
@@ -10,7 +10,7 @@
 //   （.mn-lv-fill 内联 height 百分比）；深蓝水+杯顶两道正弦浪（快 2.2s 深蓝/慢 2.5s 浅色相位漂移，慢浪
 //   浪峰周期性从快浪浪谷透明区透出=浅色幽灵浪峰在深浪下流动，纯 CSS 零 JS）；
 //   号码 z 上浮+白色描边晕影水位高时仍可读。展开态 .mn-lv-normal 原徽章原样零变化。
-// F 静态：site-config 58.15+changelog+rev 00340-/00341-、sidebar.js 三层结构+悬停块、ethereal.css 药丸规则+
+// F 静态：site-config 58.15+changelog+rev 00342-/00343-、sidebar.js 三层结构+悬停块、ethereal.css 药丸规则+
 //   悬停卡规则+内联块同步；S 浏览器：展开零变化/折叠切换/药丸几何与菜单按钮同宽/水位进度刷新/满级/
 //   narrow 列 floating 与卡片齐平/展开恢复 + 悬停开卡/驻留/收卡/重渲染重开/折叠切换收卡/floating 开卡/展开零卡；
 //   E 零异常。/api 全 404（demo 模式，同 xp-rebalance 口径）；会话+XP 本地种子。
@@ -112,15 +112,15 @@ const rgbSum = (s) => {
   const indexSrc = fs.readFileSync(path.join(DOCS, 'index.html'), 'utf8').replace(/\r\n/g, '\n');
   const editorSrc = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8').replace(/\r\n/g, '\n');
 
-  ok('F1 静态：58.16 赋值 + FC 48.0 在位 + changelog 新条目标题（58.15 悬停卡标题按历史前缀保留）+用户原话三片断（滑鼠靠近/向右滑出/显示等级信息和经验条）+ rev 00340-/00341- 各 1（58.21 单 changelog 条目）+ 58.14 赋值零残留 + 58.14 标题与原话保留 + 58.13/58.12/58.11/58.10/58.9/58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.22';") !== -1 &&
+  ok('F1 静态：58.16 赋值 + FC 48.0 在位 + changelog 新条目标题（58.15 悬停卡标题按历史前缀保留）+用户原话三片断（滑鼠靠近/向右滑出/显示等级信息和经验条）+ rev 00342-/00343- 各 1（58.21 单 changelog 条目）+ 58.14 赋值零残留 + 58.14 标题与原话保留 + 58.13/58.12/58.11/58.10/58.9/58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.23';") !== -1 &&
     sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") !== -1 &&
     sconfSrc.indexOf('v0.2.58.15 = 折叠侧栏等级药丸悬停放大+右侧滑出等级信息卡') !== -1 &&
     sconfSrc.indexOf('滑鼠靠近') !== -1 &&
     sconfSrc.indexOf('向右滑出') !== -1 &&
     sconfSrc.indexOf('显示等级信息和经验条') !== -1 &&
-    cnt(sconfSrc, 'rev 00340-') === 1 &&
-    cnt(sconfSrc, 'rev 00341-') === 1 &&
+    cnt(sconfSrc, 'rev 00342-') === 1 &&
+    cnt(sconfSrc, 'rev 00343-') === 1 &&
     sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.14';") === -1 &&
     sconfSrc.indexOf('v0.2.58.14 = 折叠侧栏等级水杯慢浪改浅色') !== -1 &&
     sconfSrc.indexOf('第二个波浪我希望是浅色的') !== -1 &&
