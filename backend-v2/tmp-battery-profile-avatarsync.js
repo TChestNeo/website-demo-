@@ -1,8 +1,9 @@
-// tmp-battery-profile-avatarsync.js — v0.2.58.24 个人资料头像 ↔ FC 频道主页头像双向同步电池
+// tmp-battery-profile-avatarsync.js — v0.2.58.25 个人资料头像 ↔ FC 频道主页头像双向同步电池
 // 用户「还有个人资料设置里的头像你没有做更换头像是和频道主页同步的当然用户可以勾选是否要同步」
 //   边界「还有用户个人资料的自我介绍和频道主页的bio是不互通的」
-// 钦定：①勾选框默认勾选（键缺失=ON）②双向同步·资料页权威（FC 侧点频道卡头像可换，同 PATCH 链）③bio 绝不互通（FC PATCH 只发 avatarUrl）
-// 验证：P0 静态锚（资料页 toggle/slati_avatar_sync 计数 + 两词典键计数 + site-config 58.20/48.0/00344-/00345- + FC 页锚 + bannerUrl 零）
+// 钦定：①勾选框默认勾选（键缺失=ON）②双向同步·资料页权威（FC 侧点频道卡头像可换，同 PATCH 链）③bio 绝不互通（FC PATCH 只发 avatarUrl+avatarCrop）
+// 58.25：上传链加裁切弹窗（confirmCrop 不交互 rect 恒 {0,0,1,1}）；PATCH 体 keys 均 +avatarCrop
+// 验证：P0 静态锚（资料页 toggle/slati_avatar_sync 计数 + 两词典键计数 + site-config 58.20/48.0/00346-/00347- + FC 页锚 + bannerUrl 零）
 //   / P 组（资料页 seed session+USR-000101 avatarUrl null）：P1 缺键默认勾选｜P2 取消勾选→保存→slati_user 零写入+旗标 '0'+PATCH 恰 1（无 mirrorProfile 二写）
 //       P3 默认 ON 保存→raw 合并 slati_user.avatarUrl=上传路径+其余字段保留+PATCH 恰 1+旗标键仍缺席｜P4a/P4b 重载持久化（OFF/ON）
 //   / F 组（FC 页 seed avatarUrl UPL-DEMO01 tier free）：F1 默认 ON 卡内 img+editable+title 更换头像+#personalAvatar 同源
@@ -195,20 +196,20 @@ function ok(name, cond, detail) {
     const fcSrc = await get('/pages/fluidcanvas.html');
     const profI18n = await get('/assets/i18n/community-profile.i18n.js');
     const fcI18n = await get('/assets/i18n/fluidcanvas.i18n.js');
-    ok('P0 site-config：版本赋值 58.20/48.0 各 1 + rev 00344-/00345- 各 1（58.21 单 changelog 条目）',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.24'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") === 1 &&
-      cnt(siteSrc, '00344-') === 1 && cnt(siteSrc, '00345-') === 1,
-      '58.20=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.24'") + ' 48.0=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") + ' r36=' + cnt(siteSrc, '00344-') + ' r37=' + cnt(siteSrc, '00345-'));
+    ok('P0 site-config：版本赋值 58.25/48.1 各 1 + rev 00346-/00347- 各 2（58.25 双 changelog 条目：站点+FC 48.1 同轮）',
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.25'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1'") === 1 &&
+      cnt(siteSrc, '00346-') === 2 && cnt(siteSrc, '00347-') === 2,
+      '58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.25'") + ' 48.1=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1'") + ' r36=' + cnt(siteSrc, '00346-') + ' r37=' + cnt(siteSrc, '00347-'));
     ok('P0 资料页静态锚：toggle id ×4（模板+label for+F3+F4 选择器）+ slati_avatar_sync ×2（F1 读+F3 写）+ T 调用 ×2（label+aria-label）',
       cnt(profileSrc, 'editAvatarSyncToggle') === 4 && cnt(profileSrc, 'slati_avatar_sync') === 2 && cnt(profileSrc, "T('prof.edit.avatarSync')") === 2,
       'toggle=' + cnt(profileSrc, 'editAvatarSyncToggle') + ' key=' + cnt(profileSrc, 'slati_avatar_sync'));
     ok('P0 资料页 i18n：prof.edit.avatarSync 单引号 ×11 手工块 + 双引号 ×1（zh-Hant OpenCC 自动块）',
       cnt(profI18n, "'prof.edit.avatarSync'") === 11 && cnt(profI18n, '"prof.edit.avatarSync"') === 1,
       "single=" + cnt(profI18n, "'prof.edit.avatarSync'") + ' double=' + cnt(profI18n, '"prof.edit.avatarSync"'));
-    ok('P0 FC 页静态锚：fc-avatar-editable ×6 + fcAvatarFile ×18 + fcEnsureApi ×2 + slati_avatar_sync ×1 + PATCH 体锚 avatarUrl: data.url ×1 + bannerUrl ×0（58.19 边界保留）+ bio ×3（双注释非体）',
-      cnt(fcSrc, 'fc-avatar-editable') === 6 && cnt(fcSrc, 'fcAvatarFile') === 18 && cnt(fcSrc, 'fcEnsureApi') === 2 &&
+    ok('P0 FC 页静态锚：fc-avatar-editable ×5 + fcAvatarFile ×19 + fcEnsureApi ×3（48.1 弹窗回调+1）+ slati_avatar_sync ×1 + PATCH 体锚 avatarUrl: data.url ×1 + bannerUrl ×0（58.19 边界保留）+ bio ×4（48.1 注释——体仍绝不入包）',
+      cnt(fcSrc, 'fc-avatar-editable') === 5 && cnt(fcSrc, 'fcAvatarFile') === 19 && cnt(fcSrc, 'fcEnsureApi') === 3 &&
       cnt(fcSrc, 'slati_avatar_sync') === 1 && cnt(fcSrc, 'avatarUrl: data.url') === 1 &&
-      cnt(fcSrc, 'bannerUrl') === 0 && cnt(fcSrc, 'bio') === 3,
+      cnt(fcSrc, 'bannerUrl') === 0 && cnt(fcSrc, 'bio') === 4,
       'editable=' + cnt(fcSrc, 'fc-avatar-editable') + ' file=' + cnt(fcSrc, 'fcAvatarFile') + ' bannerUrl=' + cnt(fcSrc, 'bannerUrl') + ' bio=' + cnt(fcSrc, 'bio'));
     ok('P0 FC i18n：六新键双引号 ×12 各（11 手工块+zh-Hant 自动块；625 教训实测口径）',
       cnt(fcI18n, '"fc.landing.changeAvatar"') === 12 && cnt(fcI18n, '"fc.toast.avatarUpdated"') === 12 &&
@@ -229,6 +230,12 @@ function ok(name, cond, detail) {
       const docNode = await cdp.send('DOM.getDocument', { depth: -1 });
       const fileNode = await cdp.send('DOM.querySelector', { nodeId: docNode.root.nodeId, selector: selector });
       await cdp.send('DOM.setFileInputFiles', { nodeId: fileNode.nodeId, files: [tmpFile] });
+    };
+    // 58.25 裁切弹窗：上传链先弹 .mn-crop-stage → confirm 不交互 rect 恒 {0,0,1,1}（tmp-battery-crop 27/27 实证）
+    const confirmCrop = async (label) => {
+      await waitFor(cdp, "!!document.querySelector('.mn-crop-stage')", 25000, label);
+      await cdp.evalJs("document.querySelector('.mn-crop-confirm').click()");
+      await sleep(500);
     };
     const readLs = (k) => cdp.evalJs("(function(){ try { return localStorage.getItem(" + JSON.stringify(k) + "); } catch (e) { return null; } })()");
     const readUserLs = () => cdp.evalJs("(function(){ try { return JSON.parse(localStorage.getItem('slati_user') || 'null') || null; } catch (e) { return null; } })()");
@@ -257,16 +264,18 @@ function ok(name, cond, detail) {
     s = await cdp.evalJs("(function(){ var t = document.getElementById('editAvatarSyncToggle'); return { active: t.classList.contains('active'), checked: t.getAttribute('aria-checked'), flag: localStorage.getItem('slati_avatar_sync') }; })()");
     ok('P2 取消勾选：即时落 localStorage 旗标 "0"（权威设置，不经保存事务）+ 类/aria 同步', s.active === false && s.checked === 'false' && s.flag === '0', JSON.stringify(s));
     await setFile('#editAvatarFile', tmpAv);
-    await sleep(700);
+    await confirmCrop('P2 裁切弹窗');
+    await sleep(400);
     s = await cdp.evalJs("(function(){ var img = document.getElementById('editAvatarPreview'); return { src: img.getAttribute('src'), st: document.getElementById('editSaveState').textContent }; })()");
-    ok('P2 上传预览：直传罐头 → 预览 /uploads/UPL-DEMO02.jpg（与种子 DEMO01 可区分）', s.src === '/uploads/UPL-DEMO02.jpg' && s.st.indexOf('就绪') !== -1, JSON.stringify(s));
+    ok('P2 上传预览：裁切弹窗 confirm → 直传罐头 → 预览 /uploads/UPL-DEMO02.jpg（与种子 DEMO01 可区分）', s.src === '/uploads/UPL-DEMO02.jpg' && s.st.indexOf('就绪') !== -1, JSON.stringify(s));
     await cdp.evalJs("document.getElementById('editSaveBtn').click()");
     await sleep(800);
     s = await counts();
     const p2u = await readUserLs();
     const p2flag = await readLs('slati_avatar_sync');
-    ok('P2 保存（旗标 OFF）：PATCH 恰 1 次（无 mirrorProfile 二写）+ body 恰 {avatarUrl} + slati_user 零写入（avatarUrl 仍 null）+ 旗标仍 "0"',
-      s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'avatarUrl' && s.patched.avatarUrl === '/uploads/UPL-DEMO02.jpg' &&
+    ok('P2 保存（旗标 OFF）：PATCH 恰 1 次（无 mirrorProfile 二写）+ body 恰 {avatarUrl,avatarCrop}（58.25 裁切）+ slati_user 零写入（avatarUrl 仍 null）+ 旗标仍 "0"',
+      s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'avatarUrl,avatarCrop' && s.patched.avatarUrl === '/uploads/UPL-DEMO02.jpg' &&
+      JSON.stringify(s.patched.avatarCrop) === '{"x":0,"y":0,"w":1,"h":1}' &&
       p2u && p2u.avatarUrl === null && p2flag === '0',
       JSON.stringify({ patch: s.patch, keys: s.patched && Object.keys(s.patched).join(','), lsAvatar: p2u && p2u.avatarUrl, flag: p2flag }));
 
@@ -274,7 +283,8 @@ function ok(name, cond, detail) {
     await nav(BASE + '/pages/community-profile.html?id=USR-000101&nov', "!!document.getElementById('profileEditBtn')", 'P3 资料页重载（缺键默认 ON）');
     await openModal();
     await setFile('#editAvatarFile', tmpAv);
-    await sleep(700);
+    await confirmCrop('P3 裁切弹窗');
+    await sleep(400);
     await cdp.evalJs("document.getElementById('editSaveBtn').click()");
     await sleep(800);
     s = await counts();
@@ -323,12 +333,14 @@ function ok(name, cond, detail) {
     await cdp.evalJs("document.querySelector('#channelOverview .channel-avatar').click()");
     await sleep(200);
     await setFile('#fcAvatarFile', tmpAv);
-    await sleep(900);
+    await confirmCrop('F3 裁切弹窗');
+    await sleep(400);
     s = await counts();
     const f3u = await readUserLs();
     const f3dom = await cdp.evalJs("(function(){ var av = document.querySelector('#channelOverview .channel-avatar'); var img = av ? av.querySelector('img.fc-ch-avatar-img') : null; return { imgSrc: img ? img.getAttribute('src') : null, paSrc: document.getElementById('personalAvatar').getAttribute('src'), toast: document.getElementById('toast').textContent }; })()");
-    ok('F3 点卡换头像：上传恰 1 + PATCH 恰 1 + body 恰 {avatarUrl} 无 bio（边界铁证）',
-      s.up === 1 && s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'avatarUrl' && s.patched.avatarUrl === '/uploads/UPL-DEMO02.jpg',
+    ok('F3 点卡换头像：上传恰 1 + PATCH 恰 1 + body 恰 {avatarUrl,avatarCrop} 无 bio（边界铁证：48.1 追加 avatarCrop 仍绝不入 bio）',
+      s.up === 1 && s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'avatarUrl,avatarCrop' && s.patched.avatarUrl === '/uploads/UPL-DEMO02.jpg' &&
+      JSON.stringify(s.patched.avatarCrop) === '{"x":0,"y":0,"w":1,"h":1}',
       JSON.stringify({ up: s.up, patch: s.patch, keys: s.patched && Object.keys(s.patched).join(',') }));
     ok('F3 成功态：卡重渲染新 src DEMO02 + #personalAvatar 同源 + slati_user raw 合并（其余字段保留）+ toast 头像已更新',
       f3dom.imgSrc === '/uploads/UPL-DEMO02.jpg' && f3dom.paSrc === '/uploads/UPL-DEMO02.jpg' &&
@@ -336,18 +348,20 @@ function ok(name, cond, detail) {
       f3dom.toast.indexOf('头像已更新') !== -1,
       JSON.stringify({ img: f3dom.imgSrc, pa: f3dom.paSrc, ls: f3u && f3u.avatarUrl, toast: f3dom.toast }));
 
-    // F4：gif + free → 锁 toast + 零上传零 PATCH
+    // F4：gif + free → 锁 toast + 零上传零 PATCH（门禁在弹窗前——零弹窗）
     await nav(BASE + '/pages/fluidcanvas.html', "!!document.querySelector('#channelOverview .channel-avatar')", 'F4 FC 页加载');
     await setFile('#fcAvatarFile', tmpGif);
     await sleep(400);
     s = await counts();
     const f4toast = await cdp.evalJs("document.getElementById('toast').textContent");
-    ok('F4 gif+free：toast 锁文案 + 零上传零 PATCH', f4toast.indexOf('GIF 动图为订阅用户专属功能') !== -1 && s.up === 0 && s.patch === 0, JSON.stringify({ toast: f4toast, up: s.up, patch: s.patch }));
+    const f4dlg = await cdp.evalJs("!!document.querySelector('.mn-crop-stage')");
+    ok('F4 gif+free：toast 锁文案 + 零上传零 PATCH + 弹窗未开（门禁先于裁切弹窗）', f4toast.indexOf('GIF 动图为订阅用户专属功能') !== -1 && s.up === 0 && s.patch === 0 && f4dlg === false, JSON.stringify({ toast: f4toast, up: s.up, patch: s.patch, dlg: f4dlg }));
 
-    // F5：gif + premium 放行
+    // F5：gif + premium 放行（走裁切弹窗）
     await nav(BASE + '/pages/fluidcanvas.html?prem', "!!document.querySelector('#channelOverview .channel-avatar')", 'F5 FC 页加载');
     await setFile('#fcAvatarFile', tmpGif);
-    await sleep(900);
+    await confirmCrop('F5 裁切弹窗');
+    await sleep(400);
     s = await counts();
     const f5dom = await cdp.evalJs("(function(){ var av = document.querySelector('#channelOverview .channel-avatar'); var img = av ? av.querySelector('img.fc-ch-avatar-img') : null; return { imgSrc: img ? img.getAttribute('src') : null, toast: document.getElementById('toast').textContent }; })()");
     ok('F5 gif+premium：放行（上传 1 + PATCH 1 + 卡换 DEMO02 + toast 头像已更新）',

@@ -28,6 +28,23 @@ const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose'
 const CARD_EDGE_KEYS = ['paper', 'treasure', 'tech1', 'tech2', 'tech3', 'tech4', 'tech5', 'tech6', 'paint1', 'paint2', 'paint3', 'paint4', 'paint5', 'paint6'];
 // v0.2.25.0 页面背景图片（020 列）校验口径：仅本站直传路径或 http(s) 外链（与 auth.js 同）
 const PAGE_BG_IMAGE_RE = /^(\/uploads\/UPL-[A-Za-z0-9]+\.(jpg|jpeg|png|gif|webp)|https?:\/\/.)/i;
+// v0.2.58.25 裁切矩形校验（030 列，与 auth.js 同款复制——58.22 CARD_BG_KEYS 双处先例）：归一化 {x,y,w,h} 0..1；
+// GET 只读侧用 parseCropSafe（坏值宽容回 null）；写侧严格版在 auth.js PATCH
+function parseCrop(v) {
+  if (v === null) return null;
+  if (!v || typeof v !== 'object' || Array.isArray(v)) throw new HttpError('VALIDATION', '裁切参数无效');
+  const { x, y, w, h } = v;
+  if (![x, y, w, h].every((n) => typeof n === 'number' && Number.isFinite(n))) throw new HttpError('VALIDATION', '裁切参数无效');
+  if (x < 0 || y < 0 || x > 1 || y > 1 || w <= 0 || h <= 0 || w > 1 || h > 1) throw new HttpError('VALIDATION', '裁切参数无效');
+  if (x + w > 1 + 1e-6 || y + h > 1 + 1e-6) throw new HttpError('VALIDATION', '裁切参数无效');
+  return { x, y, w, h };
+}
+function parseCropSafe(raw) {
+  if (raw === null || raw === undefined) return null;
+  let v = raw;
+  if (typeof raw === 'string') { try { v = JSON.parse(raw); } catch (e) { return null; } }
+  try { return parseCrop(v); } catch (e) { return null; }
+}
 
 // ── v0.2.16.0 帖子媒体上传（社区多图/视频）──
 // 大小上限：图片 10MB（腾讯 IMS base64 上限）；视频 30MB（Cloud Run 请求 32MiB 硬顶留边距）。
@@ -451,6 +468,9 @@ function register(router, ctx) {
         pageBgImage: (typeof row.page_bg_image === 'string' && PAGE_BG_IMAGE_RE.test(row.page_bg_image)) ? row.page_bg_image : null,
         // v0.2.58.18 横幅（029 列；NULL=默认预设渐变，公开——他人主页也渲染你的横幅；口径与 PATCH 校验同）
         bannerUrl: (typeof row.banner_url === 'string' && PAGE_BG_IMAGE_RE.test(row.banner_url)) ? row.banner_url : null,
+        // v0.2.58.25 裁切元数据（030 列；NULL=默认 {0,0,1,1} 整图 cover，公开——他人主页/FC 频道卡也渲染你的裁切效果；坏值宽容回 null）
+        bannerCrop: parseCropSafe(row.banner_crop),
+        avatarCrop: parseCropSafe(row.avatar_crop),
         // v0.2.53.0 卡片边缘主题（027 列；NULL=默认圆角卡，公开——他人主页也渲染你的边缘剪影）
         cardEdge: CARD_EDGE_KEYS.includes(row.card_edge) ? row.card_edge : null,
         isSelf,

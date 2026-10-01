@@ -1,4 +1,4 @@
-// tmp-battery-following.js — v0.2.58.24 关注页真实数据接入电池
+// tmp-battery-following.js — v0.2.58.25 关注页真实数据接入电池
 // 用户「那么关注页面的也做一下」——5 组种子全删、三端点接入、登录引导卡、离线卡、搜索过滤、真关注调用。
 // 断言面：F1-1 页面静态 → F1-2 种子零残留 → F1-3 i18n 键族 → F1-4 site-config 版本 → F1-5 后端源码
 //        → R7 匿名无桩（引导卡+发现离线卡+零种子）→ R6 匿名有桩（引导卡+发现真数据+零 authed 调用）
@@ -292,14 +292,14 @@ const SEED_SESSION = 'try{(function(){' +
 
   console.log('═══ F1-4 site-config.js 版本 ═══');
   ok('F1-4 版本 58.17 在位/58.16 赋值零残留/FC 恒 47.4/changelog（标题+原话+rev 对）',
-    count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.24';") === 1 &&
+    count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.25';") === 1 &&
     count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.16';") === 0 &&
-    count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 &&
-    count(sconf, '// v0.2.58.24 = ') === 1 && count(sconf, '那么关注页面的也做一下') === 1 &&
-    count(sconf, 'rev 00344-ntt') === 1 && count(sconf, 'rev 00345-vhw') === 1,
-    'v17=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.24';") +
+    count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") === 1 &&
+    count(sconf, '// v0.2.58.25 = ') === 1 && count(sconf, '那么关注页面的也做一下') === 1 &&
+    count(sconf, 'rev 00346-') === 2 && count(sconf, 'rev 00347-') === 2,
+    'v17=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.25';") +
     ' v16res=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.16';") +
-    ' title=' + count(sconf, '// v0.2.58.24 = ') + ' quote=' + count(sconf, '那么关注页面的也做一下'));
+    ' title=' + count(sconf, '// v0.2.58.25 = ') + ' quote=' + count(sconf, '那么关注页面的也做一下'));
 
   console.log('═══ F1-5 后端源码（social.js 三新端点）═══');
   ok('F1-5 端点串 + SQL 片断 + 限流键 + LIMIT（各 ×1）',

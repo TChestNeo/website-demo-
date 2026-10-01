@@ -102,8 +102,8 @@ const AVATAR_RING = "rgb(247, 249, 251)";
     sbSrc.indexOf('border:3px solid white') !== -1);
   ok('F4 个人页横幅 9 处垫底固定 #e6e8ea（默认/bg-default/6 玻璃预设/glass-bg 兜底）',
     countOcc(cpSrc, '#e6e8ea; }') === 9 &&
-    cpSrc.indexOf('.profile-banner { height: 140px') !== -1 && cpSrc.indexOf('.profile-banner { height: 140px') < cpSrc.indexOf('transparent 40%), #e6e8ea; }'),
-    '9 处：8 横幅垫底+1 边缘默认填充色块');
+    cpSrc.indexOf('.profile-banner { height: 210px') !== -1 && cpSrc.indexOf('.profile-banner { height: 210px') < cpSrc.indexOf('transparent 40%), #e6e8ea; }'),
+    '9 处：8 横幅垫底+1 边缘默认填充色块（58.25 横幅加高 140→210px）');
   ok('F5 6 玻璃预设逐个固定垫底', ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset']
     .every(c => { const i = cpSrc.indexOf('.' + c + ' {'); return i !== -1 && cpSrc.indexOf('#e6e8ea', i) !== -1 && cpSrc.indexOf('#e6e8ea', i) < cpSrc.indexOf('}', i) + 30; }));
   ok('F6 编辑弹窗 3 处预览兜底固定（var(--lg-bg, #e6e8ea) ×4 含 glass-bg 兜底）',
@@ -117,11 +117,11 @@ const AVATAR_RING = "rgb(247, 249, 251)";
     idxSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1 && idxSrc.indexOf('v0.2.54.6 用户「那个用户横幅') !== -1 &&
     cpSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1 && cpSrc.indexOf('v0.2.54.6 用户「那个用户横幅') !== -1 &&
     adminSrc.indexOf(':root[data-theme="dark"] .user-banner') === -1);
-  ok('F10 site-config v0.2.55.0 + changelog 用户原话 + FC v10.28.36.1 不动',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.24';") !== -1 &&
+  ok('F10 site-config v0.2.55.0 + changelog 用户原话 + FC 48.1 在位（58.25 同轮）',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.25';") !== -1 &&
     sconfSrc.indexOf('用户横幅与头像不再受网页主题影响') !== -1 &&
     sconfSrc.indexOf('问询钦定「两处都要」') !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") !== -1);
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") !== -1);
   const msgAvLines = msgSrc.split('\n').filter(l => l.indexOf('msg-avatar') !== -1 && l.indexOf('style=') !== -1);
   ok('F11 messages 头像族 11 个 msg-avatar 类 + 头像行零 var(--color-) 残留',
     countOcc(msgSrc, 'msg-acc msg-avatar') === 11 &&

@@ -201,9 +201,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     articlesJs.indexOf('avatarUrl') !== -1 && articlesJs.indexOf("'acw:user:'") !== -1);
   ok('S3 notifications.js：article_comment 事件从 article_comments 联查',
     notifJs.indexOf("push('article_comment'") !== -1 && notifJs.indexOf('FROM article_comments c JOIN articles a') !== -1);
-  ok('S4 测试锚：health 60 表 + user_version 29 + migrations 头注释 029',
-    healthTest.indexOf('data.tables, 60') !== -1 && healthTest.indexOf("user_version', { simple: true }), 29") !== -1 &&
-    migTest.indexOf('029') !== -1);
+  ok('S4 测试锚：health 60 表 + user_version 30 + migrations 头注释 030',
+    healthTest.indexOf('data.tables, 60') !== -1 && healthTest.indexOf("user_version', { simple: true }), 30") !== -1 &&
+    migTest.indexOf('030') !== -1);
   ok('S5 index.html：搜索输入+面板+防抖三态+最新文章区块+article 跳转锚（搜索行/最新文章/通知三处）',
     idx.indexOf('id="dashSearchInput"') !== -1 && idx.indexOf('id="dashSearchPanel"') !== -1 &&
     idx.indexOf('dashSearchTimer') !== -1 && idx.indexOf('id="latestArticlesSection"') !== -1 &&
@@ -235,9 +235,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     idxI18n.indexOf("'index.searchPh': '搜索文章…'") !== -1 && idxI18n.indexOf("'index.searchPh': 'Search articles...'") !== -1 &&
     idxI18n.indexOf('搜索世界、话题') === -1 && idxI18n.indexOf('__ZH_HANT_AUTO__') !== -1);
   ok('S11 site-config：v0.2.57.1 + changelog 文章前端条目 + FC v10.28.39.0',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.24';") !== -1 &&
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.25';") !== -1 &&
     sconf.indexOf('文章前端') !== -1 && sconf.indexOf('article_comments') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") !== -1);
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") !== -1);
 
   // ── v0.2.55.1 发布去重复 + 删除 ──
   const editor = read(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'));

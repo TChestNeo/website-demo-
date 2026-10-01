@@ -201,8 +201,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     // B6 双版本锚
     const ver = await cdp.evalJs("window.MN_SITE_VERSION");
     const fcVer = await cdp.evalJs("window.FLUIDCANVAS_VERSION");
-    ok('B6 站点号 v0.2.58.24', ver === 'v0.2.58.24', 'got=' + ver);
-    ok('B6b FC v10.28.39.0', fcVer === 'v10.28.48.0', 'got=' + fcVer);
+    ok('B6 站点号 v0.2.58.25', ver === 'v0.2.58.25', 'got=' + ver);
+    ok('B6b FC v10.28.39.0', fcVer === 'v10.28.48.1', 'got=' + fcVer);
 
     // ═══ F FC 列表 View 分流 ═══
     await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/pages/fluidcanvas.html?view=articles' });

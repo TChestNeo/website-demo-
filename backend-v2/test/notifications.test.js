@@ -98,8 +98,8 @@ test('article_like/article_favorite 事件：hidden 文不浮现 + 复用 005 �
     const after = await getNotifs(t, alice.cookie);
     assert.strictEqual(after.length, 0, 'hidden 文的互动事件不浮现');
 
-    // 复用旁证：互动仍走 005 的 content_likes/favorites（029 只加 users.banner_url 列）
-    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 29);
+    // 复用旁证：互动仍走 005 的 content_likes/favorites（030 只加 users.avatar_crop/banner_crop 列）
+    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 30);
   } finally { await t.close(); }
 });
 

@@ -84,10 +84,10 @@ console.log('═══ S. 静态巡检 ═══');
   }
   if (bad === 0) { pass++; console.log('  ✅ S10 41 页内联块全部含全站铺底规则'); }
   const s = read('docs/assets/js/site-config.js');
-  ok('S11 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.24';") !== -1);
+  ok('S11 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.25';") !== -1);
   ok('S12 site-config changelog 含 v0.2.55.0 条目 + 用户原话',
     s.indexOf('v0.2.55.0') !== -1 && s.indexOf('能不能把全部变成不透明的卡片') !== -1);
-  ok('S13 FC v10.28.36.1 保持', s.indexOf("'v10.28.48.0'") !== -1);
+  ok('S13 FC v10.28.36.1 保持', s.indexOf("'v10.28.48.1'") !== -1);
   const prem = read('docs/pages/premium.html');
   const auth = read('docs/signup-and-login.html');
   ok('S14 豁免卡零触碰锚（plan-card 深色 !important 仍在 + auth-card 仍在）',

@@ -1,16 +1,20 @@
-// tmp-battery-settings-profilecust.js — v0.2.58.24 设置弹窗资料区头像/横幅三层订阅门禁电池（58.21 母本 + S10-S12 新段）
+// tmp-battery-settings-profilecust.js — v0.2.58.25 设置弹窗资料区头像/横幅三层订阅门禁电池（58.21 母本 + S10-S12 新段 + 58.25 裁切弹窗）
 // 用户「横幅的从图库中选择和上传图片只限于基础订阅项；动图要高级订阅；没有订阅的只能调整横幅的单色和渐变颜色；
 //   图库弹窗大点；被锁按钮用金色罩子盖住而不是点击后才出现提示反馈」
 // 钦定：①两处一起改（设置弹窗+资料页编辑弹窗同口径）②免费层=扩展预设色卡（6 玻璃+6 单色/黑白系=13 格点选即存
 //   cardBg 落库）③金罩=所有被锁按钮+相邻按钮共用一个罩 ④头像保持现状（free 静态头像上传仍可用）
-// 验证：S0 静态锚（settings-modal.js 58.22 件计数 + common.i18n 26 键计数 + site-config 58.22/00344-/00345-）；
-//   S1 真用户开弹窗六件在位+金罩在位；S2 头像上传→PATCH 恰 1 体 {avatarUrl}→预览变→同步 ON slati_user 合并写；
-//   S3 同步 OFF PATCH 照发但 slati_user 零写；S4 gif+free→锁 toast+升级链接显+零上传零 PATCH；S5 gif+premium 放行
-//   +零金罩；S6a 图库 free 锁/S6b prem 选 data: 格→上传+PATCH；S7 横幅上传/移除 PATCH {bannerUrl}/{bannerUrl:null}
-//   （prem 种子——free 横幅上传已锁）；S8 同步 toggle 写 '1'/'0'；S9 演示用户控件隐藏+settingsBgGrid 缺席；
-//   S10 free 横幅上传门禁（金罩包 upload+lib 同罩+移除钮罩外+toast 精确串+零上传零 PATCH+imgUpgrade 链接）；
+// 58.25 裁切弹窗：上传链 setFile 后先弹 .mn-crop-stage → confirm 不交互 rect 恒 {0,0,1,1}（tmp-battery-crop 27/27 实证）；
+//   PATCH 键加 crop（头像 avatarUrl,avatarCrop/横幅 bannerUrl,bannerCrop）；移除体恒 {bannerUrl:null} 不带 crop；
+//   门禁（gif/free/图库锁）先于弹窗→门禁触发时弹窗未开负断言。
+// 验证：S0 静态锚（settings-modal.js 58.22+58.25 件计数 + common.i18n 键计数 + site-config 58.25 双 changelog rev ×2）；
+//   S1 真用户开弹窗六件在位+金罩在位；S2 头像上传→弹窗 confirm→PATCH 恰 1 体 {avatarUrl,avatarCrop}→预览变→同步 ON
+//   slati_user 合并写（含 crop）；S3 同步 OFF PATCH 照发但 slati_user 零写；S4 gif+free→锁 toast+升级链接显+零上传零
+//   PATCH+弹窗未开；S5 gif+premium 放行+零金罩；S6a 图库 free 锁/S6b prem 选 data: 格→上传+PATCH（弹窗 confirm）；
+//   S7 横幅上传/移除 PATCH {bannerUrl,bannerCrop}/{bannerUrl:null}（prem 种子——free 横幅上传已锁）+预览内嵌 img 读法；
+//   S8 同步 toggle 写 '1'/'0'；S9 演示用户控件隐藏+settingsBgGrid 缺席；
+//   S10 free 横幅上传门禁（金罩包 upload+lib 同罩+移除钮罩外+toast 精确串+零上传零 PATCH+imgUpgrade 链接+弹窗未开）；
 //   S11 free 预设点选 mono-bw（PATCH 体恰 {cardBg}+合并写+预览类+active 换位+13 格+toast）；S12 basic（零金罩+
-//   静态横幅上传放行+gif 锁 premGifUpgrade 链接+图库浮层 400px 4 列）；E 全程零异常零 console error。
+//   静态横幅上传放行（弹窗 confirm）+gif 锁 premGifUpgrade 链接+弹窗未开+图库浮层 400px 4 列）；E 全程零异常零 console error。
 //   （house CDP 模式；判定看输出体 🎉/💔 行）
 'use strict';
 const http = require('http');
@@ -194,23 +198,24 @@ function ok(name, cond, detail) {
     const setSrc = await get('/assets/js/settings-modal.js');
     const sbSrc = await get('/assets/js/sidebar.js');
     const comI18n = await get('/assets/i18n/common.i18n.js');
-    ok('S0a site-config：58.22 赋值 1 + 58.21 赋值零残留 + changelog 标题 58.22 1 + rev 00344-/00345- 各 1（单条目口径）+ FC 48.0 不动',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.24'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.21'") === 0 &&
-      cnt(siteSrc, '// v0.2.58.24 = ') === 1 && cnt(siteSrc, '00344-') === 1 && cnt(siteSrc, '00345-') === 1 &&
-      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") === 1,
-      '58.22=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.24'") + ' r40=' + cnt(siteSrc, '00344-') + ' r41=' + cnt(siteSrc, '00345-'));
-    ok('S0b settings-modal 控件件：六 id 族（avatarBtn/preview/libBtn 各 2、bannerPreview 4、upload/lib/remove 2/2/4、file ×2 各、avatarUpgradeLink ×3、bannerUpgradeLink ×4）+ sub-locked ×4 + stUpload ×5 + stPickFromLibrary ×3 + stRawMergeUser ×5 + bannerUrl: null ×2 + slati_avatar_sync ×4 + toast 件 ×2',
-      cnt(setSrc, 'settingsAvatarBtn') === 2 && cnt(setSrc, 'settingsAvatarPreview') === 2 && cnt(setSrc, 'settingsAvatarLibBtn') === 2 &&
-      cnt(setSrc, 'settingsBannerPreview') === 4 && cnt(setSrc, 'settingsBannerUploadBtn') === 2 && cnt(setSrc, 'settingsBannerLibBtn') === 2 &&
+    ok('S0a site-config：58.25 赋值 1 + 58.21 赋值零残留 + changelog 标题 58.25 1 + rev 00346-/00347- 各 2（58.25 双 changelog：站点+FC 48.1 同轮）+ FC 48.1 1/48.0 零残留',
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.25'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.21'") === 0 &&
+      cnt(siteSrc, '// v0.2.58.25 = ') === 1 && cnt(siteSrc, '00346-') === 2 && cnt(siteSrc, '00347-') === 2 &&
+      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") === 0,
+      '58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.25'") + ' r46=' + cnt(siteSrc, '00346-') + ' r47=' + cnt(siteSrc, '00347-'));
+    ok('S0b settings-modal 控件件：六 id 族（avatarBtn/libBtn 各 2、avatarPreview 4（58.25 wrapper+applyCrop+2）、bannerPreview 6（58.25 内嵌 img+applyCrop+2）、upload/lib/remove 2/2/4、file ×2 各、avatarUpgradeLink ×3、bannerUpgradeLink ×4）+ sub-locked ×4 + stUpload ×5 + stPickFromLibrary ×3 + stRawMergeUser ×7（58.25 连带 crop 合并+2）+ bannerUrl: null ×2 + slati_avatar_sync ×4 + toast 件 ×2 + 58.25 重裁钮 ×2 各 + mn-crop-stage ×5',
+      cnt(setSrc, 'settingsAvatarBtn') === 2 && cnt(setSrc, 'settingsAvatarPreview') === 4 && cnt(setSrc, 'settingsAvatarLibBtn') === 2 &&
+      cnt(setSrc, 'settingsBannerPreview') === 6 && cnt(setSrc, 'settingsBannerUploadBtn') === 2 && cnt(setSrc, 'settingsBannerLibBtn') === 2 &&
       cnt(setSrc, 'settingsBannerRemoveBtn') === 4 && cnt(setSrc, 'settingsAvatarFile') === 2 && cnt(setSrc, 'settingsBannerFile') === 2 &&
       cnt(setSrc, 'settingsAvatarGifUpgradeLink') === 3 && cnt(setSrc, 'settingsBannerGifUpgradeLink') === 4 &&
       cnt(setSrc, 'sub-locked') === 4 && cnt(setSrc, 'stUpload') === 5 && cnt(setSrc, 'stPickFromLibrary') === 3 &&
-      cnt(setSrc, 'stRawMergeUser') === 5 && cnt(setSrc, 'bannerUrl: null') === 2 && cnt(setSrc, 'slati_avatar_sync') === 4 &&
-      cnt(setSrc, 'settingsProfileToast') === 2,
+      cnt(setSrc, 'stRawMergeUser') === 7 && cnt(setSrc, 'bannerUrl: null') === 2 && cnt(setSrc, 'slati_avatar_sync') === 4 &&
+      cnt(setSrc, 'settingsProfileToast') === 2 &&
+      cnt(setSrc, 'settingsAvatarReCropBtn') === 2 && cnt(setSrc, 'settingsBannerReCropBtn') === 2 && cnt(setSrc, 'mn-crop-stage') === 5,
       'btn=' + cnt(setSrc, 'settingsAvatarBtn') + ' lib=' + cnt(setSrc, 'settingsAvatarLibBtn') + ' banner=' + cnt(setSrc, 'settingsBannerPreview'));
-    ok('S0b2 settings-modal 58.22 新件：settingsBgGrid ×2 + settings-bg-grid ×2 + settings-bg-swatch ×6 + ST_BG_DEFS ×2 + stCanGif ×3 + stCanImg ×4 + gold-lock-group ×5 + mono-bw ×3 + toast.bannerLocked/toast.bgUpdated/imgUpgrade/premGifUpgrade 各 ×1 + width: 400px ×1 + repeat(4, 1fr) ×1',
+    ok('S0b2 settings-modal 58.22 新件：settingsBgGrid ×2 + settings-bg-grid ×2 + settings-bg-swatch ×6 + ST_BG_DEFS ×2 + stCanGif ×4（58.25 视频门复用+1）+ stCanImg ×4 + gold-lock-group ×5 + mono-bw ×3 + toast.bannerLocked/toast.bgUpdated/imgUpgrade/premGifUpgrade 各 ×1 + width: 400px ×1 + repeat(4, 1fr) ×1',
       cnt(setSrc, 'settingsBgGrid') === 2 && cnt(setSrc, 'settings-bg-grid') === 2 && cnt(setSrc, 'settings-bg-swatch') === 6 &&
-      cnt(setSrc, 'ST_BG_DEFS') === 2 && cnt(setSrc, 'stCanGif') === 3 && cnt(setSrc, 'stCanImg') === 4 &&
+      cnt(setSrc, 'ST_BG_DEFS') === 2 && cnt(setSrc, 'stCanGif') === 4 && cnt(setSrc, 'stCanImg') === 4 &&
       cnt(setSrc, 'gold-lock-group') === 5 && cnt(setSrc, 'mono-bw') === 3 &&
       cnt(setSrc, 'settings.profile.toast.bannerLocked') === 1 && cnt(setSrc, 'settings.profile.toast.bgUpdated') === 1 &&
       cnt(setSrc, 'settings.profile.imgUpgrade') === 1 && cnt(setSrc, 'settings.profile.premGifUpgrade') === 1 &&
@@ -232,6 +237,15 @@ function ok(name, cond, detail) {
       cnt(comI18n, '"settings.profile.bannerColor"') === 1 && cnt(comI18n, '"settings.profile.toast.bannerLocked"') === 1 &&
       cnt(comI18n, '__ZH_HANT_AUTO__') === 1,
       'sp=' + cnt(comI18n, "'sidebar.pop.editProfile'") + ' bc=' + cnt(comI18n, "'settings.profile.bannerColor'") + ' bl=' + cnt(comI18n, "'settings.profile.toast.bannerLocked'"));
+    ok('S0d2 common.i18n 58.25 新 12 键：crop.titleAvatar/titleBanner/hint/confirm/cancel/loadFail + settings.profile.reCropAvatar/reCropBanner + videoLocked/videoCompressing/avatarNoVideo/videoFail 单引号 ×11 各 + zh-Hant 双引号 ×1 各',
+      cnt(comI18n, "'crop.titleAvatar'") === 11 && cnt(comI18n, "'crop.titleBanner'") === 11 && cnt(comI18n, "'crop.hint'") === 11 &&
+      cnt(comI18n, "'crop.confirm'") === 11 && cnt(comI18n, "'crop.cancel'") === 11 && cnt(comI18n, "'crop.loadFail'") === 11 &&
+      cnt(comI18n, "'settings.profile.reCropAvatar'") === 11 && cnt(comI18n, "'settings.profile.reCropBanner'") === 11 &&
+      cnt(comI18n, "'settings.profile.videoLocked'") === 11 && cnt(comI18n, "'settings.profile.videoCompressing'") === 11 &&
+      cnt(comI18n, "'settings.profile.avatarNoVideo'") === 11 && cnt(comI18n, "'settings.profile.videoFail'") === 11 &&
+      cnt(comI18n, '"crop.titleAvatar"') === 1 && cnt(comI18n, '"crop.confirm"') === 1 &&
+      cnt(comI18n, '"settings.profile.reCropBanner"') === 1 && cnt(comI18n, '"settings.profile.videoLocked"') === 1,
+      'ct=' + cnt(comI18n, "'crop.titleAvatar'") + ' rc=' + cnt(comI18n, "'settings.profile.reCropAvatar'") + ' vl=' + cnt(comI18n, "'settings.profile.videoLocked'"));
 
     const cdp = await connectCdp(CDP_PORT);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: SEED });
@@ -246,6 +260,12 @@ function ok(name, cond, detail) {
       const docNode = await cdp.send('DOM.getDocument', { depth: -1 });
       const fileNode = await cdp.send('DOM.querySelector', { nodeId: docNode.root.nodeId, selector: selector });
       await cdp.send('DOM.setFileInputFiles', { nodeId: fileNode.nodeId, files: [tmpFile] });
+    };
+    // 58.25 裁切弹窗：上传链先弹 .mn-crop-stage → confirm 不交互 rect 恒 {0,0,1,1}（tmp-battery-crop 27/27 实证）
+    const confirmCrop = async (label) => {
+      await waitFor(cdp, "!!document.querySelector('.mn-crop-stage')", 25000, label);
+      await cdp.evalJs("document.querySelector('.mn-crop-confirm').click()");
+      await sleep(500);
     };
     const readUserLs = () => cdp.evalJs("(function(){ try { return JSON.parse(localStorage.getItem('slati_user') || 'null') || null; } catch (e) { return null; } })()");
     const counts = () => cdp.evalJs("(function(){ var up = window.__fetchCalls.filter(function (c) { return c.method === 'POST' && c.url.indexOf('/social/uploads') !== -1; }).length; return { up: up, patch: window.__patchCount || 0, patched: window.__patchedMe }; })()");
@@ -266,16 +286,19 @@ function ok(name, cond, detail) {
     let s = await cdp.evalJs("(function(){ return { av: !!document.getElementById('settingsAvatarBtn'), pv: !!document.getElementById('settingsAvatarPreview'), lib: !!document.getElementById('settingsAvatarLibBtn'), bp: !!document.getElementById('settingsBannerPreview'), bu: !!document.getElementById('settingsBannerUploadBtn'), bl: !!document.getElementById('settingsBannerLibBtn'), rm: !!document.getElementById('settingsBannerRemoveBtn'), rmHidden: document.getElementById('settingsBannerRemoveBtn') ? getComputedStyle(document.getElementById('settingsBannerRemoveBtn')).display === 'none' : null, toggle: !!document.querySelector('[data-sec=\"profile\"] .toggle-switch'), upgrade: !!document.getElementById('settingsAvatarGifUpgradeLink') }; })()");
     ok('S1 真用户开弹窗：六件在位 + 移除按钮隐藏（无横幅）+ 同步 toggle 在位 + 免费升级链接在位', s.av && s.pv && s.lib && s.bp && s.bu && s.bl && s.rm && s.rmHidden === true && s.toggle && s.upgrade, JSON.stringify(s));
 
-    // ── S2：头像上传（同步 ON 默认）→ PATCH 恰 1 体 {avatarUrl} → 预览变 → slati_user 合并写 ──
+    // ── S2：头像上传（同步 ON 默认）→ 弹窗 confirm → PATCH 恰 1 体 {avatarUrl,avatarCrop} → 预览变 → slati_user 合并写 ──
     await setFile('#settingsAvatarFile', tmpAv);
-    await sleep(800);
+    await confirmCrop('S2 裁切弹窗');
+    await sleep(400);
     s = await counts();
     const s2u = await readUserLs();
     const s2prev = await cdp.evalJs("document.getElementById('settingsAvatarPreview').getAttribute('src')");
-    ok('S2 头像上传（同步 ON）：上传恰 1 + PATCH 恰 1 + 体恰 {avatarUrl} + 预览 src 变 DEMO02 + slati_user.avatarUrl 合并写 + 其余字段保留',
-      s.up === 1 && s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'avatarUrl' && s.patched.avatarUrl === '/uploads/UPL-DEMO02.jpg' &&
-      s2prev === '/uploads/UPL-DEMO02.jpg' && s2u && s2u.avatarUrl === '/uploads/UPL-DEMO02.jpg' && s2u.displayName === '电池用户',
-      JSON.stringify({ up: s.up, patch: s.patch, keys: s.patched && Object.keys(s.patched).join(','), prev: s2prev, lsAvatar: s2u && s2u.avatarUrl }));
+    ok('S2 头像上传（同步 ON）：上传恰 1 + PATCH 恰 1 + 体恰 {avatarUrl,avatarCrop} rect {0,0,1,1} + 预览 src 变 DEMO02 + slati_user.avatarUrl+avatarCrop 合并写 + 其余字段保留',
+      s.up === 1 && s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'avatarUrl,avatarCrop' && s.patched.avatarUrl === '/uploads/UPL-DEMO02.jpg' &&
+      JSON.stringify(s.patched.avatarCrop) === '{"x":0,"y":0,"w":1,"h":1}' &&
+      s2prev === '/uploads/UPL-DEMO02.jpg' && s2u && s2u.avatarUrl === '/uploads/UPL-DEMO02.jpg' &&
+      JSON.stringify(s2u.avatarCrop) === '{"x":0,"y":0,"w":1,"h":1}' && s2u.displayName === '电池用户',
+      JSON.stringify({ up: s.up, patch: s.patch, keys: s.patched && Object.keys(s.patched).join(','), crop: s.patched && JSON.stringify(s.patched.avatarCrop), prev: s2prev, lsAvatar: s2u && s2u.avatarUrl, lsCrop: s2u && JSON.stringify(s2u.avatarCrop) }));
 
     // ── S3：同步 OFF → PATCH 照发但 slati_user 零写 ──
     await nav(BASE + '/index.html?nov', "!!document.querySelector('#slati-sidebar .user-module')", 'S3 重载');
@@ -284,13 +307,15 @@ function ok(name, cond, detail) {
     await sleep(200);
     const s3flag = await cdp.evalJs("localStorage.getItem('slati_avatar_sync')");
     await setFile('#settingsAvatarFile', tmpAv);
-    await sleep(800);
+    await confirmCrop('S3 裁切弹窗');
+    await sleep(400);
     s = await counts();
     const s3u = await readUserLs();
-    ok('S3 同步 OFF：旗标 "0" + PATCH 照发恰 1 + slati_user.avatarUrl 零写（仍 null）+ 预览仍更新（PATCH ok 改 UI 不受旗标约束）',
-      s3flag === '0' && s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'avatarUrl' &&
-      s3u && s3u.avatarUrl === null,
-      JSON.stringify({ flag: s3flag, patch: s.patch, lsAvatar: s3u && s3u.avatarUrl }));
+    ok('S3 同步 OFF：旗标 "0" + PATCH 照发恰 1 体 {avatarUrl,avatarCrop} + slati_user.avatarUrl 零写（仍 null）+ avatarCrop 零写 + 预览仍更新（PATCH ok 改 UI 不受旗标约束）',
+      s3flag === '0' && s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'avatarUrl,avatarCrop' &&
+      JSON.stringify(s.patched.avatarCrop) === '{"x":0,"y":0,"w":1,"h":1}' &&
+      s3u && s3u.avatarUrl === null && s3u.avatarCrop == null,
+      JSON.stringify({ flag: s3flag, patch: s.patch, lsAvatar: s3u && s3u.avatarUrl, lsCrop: s3u && s3u.avatarCrop }));
 
     // ── S4：gif + free → 锁 toast + 升级链接显 + 零上传零 PATCH ──
     await nav(BASE + '/index.html?nov', "!!document.querySelector('#slati-sidebar .user-module')", 'S4 重载（free）');
@@ -299,17 +324,19 @@ function ok(name, cond, detail) {
     await sleep(600);
     s = await counts();
     const s4t = await toastText();
-    ok('S4 gif+free：锁 toast 文案 + 升级链接可见 + 零上传零 PATCH', s4t && s4t.text === 'GIF 动图为订阅用户专属功能' && s4t.active && s.up === 0 && s.patch === 0, JSON.stringify({ t: s4t, up: s.up, patch: s.patch }));
+    const s4dlg = await cdp.evalJs("!!document.querySelector('.mn-crop-stage')");
+    ok('S4 gif+free：锁 toast 文案 + 升级链接可见 + 零上传零 PATCH + 弹窗未开（门禁先于弹窗）', s4t && s4t.text === 'GIF 动图为订阅用户专属功能' && s4t.active && s.up === 0 && s.patch === 0 && s4dlg === false, JSON.stringify({ t: s4t, up: s.up, patch: s.patch, dlg: s4dlg }));
 
     // ── S5：gif + premium → 放行 + 零金罩 ──
     await nav(BASE + '/index.html?nov&prem', "!!document.querySelector('#slati-sidebar .user-module')", 'S5 重载（prem）');
     await openSettings();
     const s5upgrade = await cdp.evalJs("!!document.getElementById('settingsAvatarGifUpgradeLink')");
     await setFile('#settingsAvatarFile', tmpGif);
-    await sleep(800);
+    await confirmCrop('S5 裁切弹窗');
+    await sleep(400);
     s = await counts();
     const s5gold = await cdp.evalJs("!!document.querySelector('#settingsCard .gold-lock-group')");
-    ok('S5 gif+premium：升级链接不渲染 + 上传恰 1 + PATCH 恰 1 + 零金罩（prem 无锁钮）', s5upgrade === false && s.up === 1 && s.patch === 1 && s5gold === false, JSON.stringify({ upgrade: s5upgrade, up: s.up, patch: s.patch, gold: s5gold }));
+    ok('S5 gif+premium：升级链接不渲染 + 上传恰 1 + PATCH 恰 1 体 {avatarUrl,avatarCrop} + 零金罩（prem 无锁钮）', s5upgrade === false && s.up === 1 && s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'avatarUrl,avatarCrop' && s5gold === false, JSON.stringify({ upgrade: s5upgrade, up: s.up, patch: s.patch, gold: s5gold }));
 
     // ── S6a：图库 free → libLocked 锁零 DOM 零上传 ──
     await nav(BASE + '/index.html?nov&lib', "!!document.querySelector('#slati-sidebar .user-module')", 'S6a 重载（free+lib）');
@@ -326,25 +353,32 @@ function ok(name, cond, detail) {
     await cdp.evalJs("document.getElementById('settingsAvatarLibBtn').click()");
     await waitFor(cdp, "!!document.querySelector('.settings-lib-grid')", 5000, 'S6b 图库网格');
     await cdp.evalJs("document.querySelector('.settings-lib-cell').click()");
-    await sleep(900);
+    await confirmCrop('S6b 裁切弹窗');
+    await sleep(400);
     s = await counts();
     const s6u = await readUserLs();
-    ok('S6b 图库 prem：点 data: 格 → 转 Blob 走同链 → 上传恰 1 + PATCH 恰 1 + slati_user.avatarUrl 写 DEMO02',
-      s.up === 1 && s.patch === 1 && s.patched && s.patched.avatarUrl === '/uploads/UPL-DEMO02.jpg' && s6u && s6u.avatarUrl === '/uploads/UPL-DEMO02.jpg',
+    ok('S6b 图库 prem：点 data: 格 → 转 Blob 走同链（弹窗 confirm）→ 上传恰 1 + PATCH 恰 1 体 {avatarUrl,avatarCrop} + slati_user.avatarUrl 写 DEMO02',
+      s.up === 1 && s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'avatarUrl,avatarCrop' && s.patched.avatarUrl === '/uploads/UPL-DEMO02.jpg' &&
+      JSON.stringify(s.patched.avatarCrop) === '{"x":0,"y":0,"w":1,"h":1}' && s6u && s6u.avatarUrl === '/uploads/UPL-DEMO02.jpg',
       JSON.stringify({ up: s.up, patch: s.patch, ls: s6u && s6u.avatarUrl }));
 
     // ── S7：横幅上传 → PATCH {bannerUrl} + 预览/移除按钮 + 移除 → PATCH {bannerUrl:null}（prem 种子——free 横幅上传已锁 58.22） ──
     await nav(BASE + '/index.html?nov&banner&prem', "!!document.querySelector('#slati-sidebar .user-module')", 'S7 重载（banner 预设+prem）');
     await openSettings();
-    let s7 = await cdp.evalJs("(function(){ var bp = document.getElementById('settingsBannerPreview'); var rm = document.getElementById('settingsBannerRemoveBtn'); return { hasImg: bp.classList.contains('has-img'), bg: bp.style.backgroundImage, rmShown: getComputedStyle(rm).display !== 'none' }; })()");
-    ok('S7a 横幅预设：预览 has-img + 背景图 + 移除按钮可见', s7.hasImg && s7.bg.indexOf('UPL-DEMO01') !== -1 && s7.rmShown, JSON.stringify(s7));
+    let s7 = await cdp.evalJs("(function(){ var bp = document.getElementById('settingsBannerPreview'); var rm = document.getElementById('settingsBannerRemoveBtn'); var img = bp ? bp.querySelector('img.settings-banner-img') : null; return { hasImg: bp.classList.contains('has-img'), bg: img ? img.getAttribute('src') : null, rmShown: getComputedStyle(rm).display !== 'none' }; })()");
+    ok('S7a 横幅预设：预览 has-img + 内嵌 img src 含 DEMO01（58.25 背景改 img）+ 移除按钮可见', s7.hasImg && s7.bg && s7.bg.indexOf('UPL-DEMO01') !== -1 && s7.rmShown, JSON.stringify(s7));
     await setFile('#settingsBannerFile', tmpAv);
-    await sleep(800);
+    await confirmCrop('S7b 裁切弹窗');
+    await sleep(400);
     s = await counts();
     const s7u = await readUserLs();
-    ok('S7b 横幅上传：PATCH 恰 1 体恰 {bannerUrl} + slati_user.bannerUrl 写 DEMO02（无旗标恒写）+ 预览换图',
-      s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'bannerUrl' && s.patched.bannerUrl === '/uploads/UPL-DEMO02.jpg' && s7u && s7u.bannerUrl === '/uploads/UPL-DEMO02.jpg',
-      JSON.stringify({ patch: s.patch, keys: s.patched && Object.keys(s.patched).join(','), ls: s7u && s7u.bannerUrl }));
+    const s7prev = await cdp.evalJs("(function(){ var i = document.querySelector('#settingsBannerPreview img.settings-banner-img'); return i ? i.getAttribute('src') : null; })()");
+    ok('S7b 横幅上传：PATCH 恰 1 体恰 {bannerUrl,bannerCrop} rect {0,0,1,1} + slati_user.bannerUrl 写 DEMO02 + bannerCrop 合并写（无旗标恒写）+ 预览换图',
+      s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'bannerUrl,bannerCrop' && s.patched.bannerUrl === '/uploads/UPL-DEMO02.jpg' &&
+      JSON.stringify(s.patched.bannerCrop) === '{"x":0,"y":0,"w":1,"h":1}' &&
+      s7u && s7u.bannerUrl === '/uploads/UPL-DEMO02.jpg' && JSON.stringify(s7u.bannerCrop) === '{"x":0,"y":0,"w":1,"h":1}' &&
+      s7prev === '/uploads/UPL-DEMO02.jpg',
+      JSON.stringify({ patch: s.patch, keys: s.patched && Object.keys(s.patched).join(','), crop: s.patched && JSON.stringify(s.patched.bannerCrop), ls: s7u && s7u.bannerUrl, prev: s7prev }));
     await cdp.evalJs("document.getElementById('settingsBannerRemoveBtn').click()");
     await sleep(800);
     s = await counts();
@@ -382,10 +416,11 @@ function ok(name, cond, detail) {
     s = await counts();
     let s10t = await toastText();
     const s10upL = await cdp.evalJs("(function(){ var a = document.getElementById('settingsBannerGifUpgradeLink'); return a ? { text: a.textContent.trim(), shown: getComputedStyle(a).display !== 'none' } : null; })()");
-    ok('S10b free 点横幅上传：toast 精确串 + 零上传零 PATCH + imgUpgrade 链接可见文案精确（含图标 ligature 字形名）',
+    const s10dlg = await cdp.evalJs("!!document.querySelector('.mn-crop-stage')");
+    ok('S10b free 点横幅上传：toast 精确串 + 零上传零 PATCH + imgUpgrade 链接可见文案精确（含图标 ligature 字形名）+ 弹窗未开',
       s10t && s10t.text === '横幅图片为订阅用户专属功能' && s10t.active && s.up === 0 && s.patch === 0 &&
-      s10upL && s10upL.shown && s10upL.text === 'workspace_premium订阅后解锁横幅图片与 GIF 动图',
-      JSON.stringify({ t: s10t, up: s.up, patch: s.patch, link: s10upL }));
+      s10upL && s10upL.shown && s10upL.text === 'workspace_premium订阅后解锁横幅图片与 GIF 动图' && s10dlg === false,
+      JSON.stringify({ t: s10t, up: s.up, patch: s.patch, link: s10upL, dlg: s10dlg }));
     await cdp.evalJs("document.getElementById('settingsBannerLibBtn').click()");
     await sleep(500);
     s = await counts();
@@ -418,15 +453,17 @@ function ok(name, cond, detail) {
     const s12gold = await cdp.evalJs("(function(){ var up = document.getElementById('settingsBannerUploadBtn'); return { gold: !!document.querySelector('#settingsCard .gold-lock-group'), upLocked: up.classList.contains('sub-locked'), upL: (function(){ var a = document.getElementById('settingsBannerGifUpgradeLink'); return a ? a.textContent.trim() : null; })() }; })()");
     ok('S12a basic：零金罩 + 横幅上传不带 sub-locked + premGifUpgrade 链接文案精确（含图标 ligature 字形名）', s12gold.gold === false && s12gold.upLocked === false && s12gold.upL === 'workspace_premium升级到高级订阅可上传 GIF 动图', JSON.stringify(s12gold));
     await setFile('#settingsBannerFile', tmpAv);
-    await sleep(800);
+    await confirmCrop('S12b 裁切弹窗');
+    await sleep(400);
     s = await counts();
     const s12u = await readUserLs();
-    ok('S12b basic 静态横幅上传：上传恰 1 + PATCH 恰 1 体 {bannerUrl} + slati_user 写 DEMO02', s.up === 1 && s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'bannerUrl' && s.patched.bannerUrl === '/uploads/UPL-DEMO02.jpg' && s12u && s12u.bannerUrl === '/uploads/UPL-DEMO02.jpg', JSON.stringify({ up: s.up, patch: s.patch, keys: s.patched && Object.keys(s.patched).join(','), ls: s12u && s12u.bannerUrl }));
+    ok('S12b basic 静态横幅上传：上传恰 1 + PATCH 恰 1 体 {bannerUrl,bannerCrop} rect {0,0,1,1} + slati_user 写 DEMO02', s.up === 1 && s.patch === 1 && s.patched && Object.keys(s.patched).join(',') === 'bannerUrl,bannerCrop' && s.patched.bannerUrl === '/uploads/UPL-DEMO02.jpg' && JSON.stringify(s.patched.bannerCrop) === '{"x":0,"y":0,"w":1,"h":1}' && s12u && s12u.bannerUrl === '/uploads/UPL-DEMO02.jpg', JSON.stringify({ up: s.up, patch: s.patch, keys: s.patched && Object.keys(s.patched).join(','), ls: s12u && s12u.bannerUrl }));
     await setFile('#settingsBannerFile', tmpGif);
     await sleep(600);
     s = await counts();
     const s12t = await toastText();
-    ok('S12c basic gif 横幅：锁 toast 精确串 + 零新增上传零新增 PATCH（仍 1/1）', s12t && s12t.text === 'GIF 动图为订阅用户专属功能' && s12t.active && s.up === 1 && s.patch === 1, JSON.stringify({ t: s12t, up: s.up, patch: s.patch }));
+    const s12dlg = await cdp.evalJs("!!document.querySelector('.mn-crop-stage')");
+    ok('S12c basic gif 横幅：锁 toast 精确串 + 零新增上传零新增 PATCH（仍 1/1）+ 弹窗未开', s12t && s12t.text === 'GIF 动图为订阅用户专属功能' && s12t.active && s.up === 1 && s.patch === 1 && s12dlg === false, JSON.stringify({ t: s12t, up: s.up, patch: s.patch, dlg: s12dlg }));
     await cdp.evalJs("document.getElementById('settingsBannerLibBtn').click()");
     await waitFor(cdp, "!!document.querySelector('.settings-lib-pop')", 5000, 'S12 图库浮层');
     const s12pop = await cdp.evalJs("(function(){ var p = document.querySelector('.settings-lib-pop'); var g = p.querySelector('.settings-lib-grid'); return { w: getComputedStyle(p).width, cols: getComputedStyle(g).gridTemplateColumns.split(' ').length, cells: g.querySelectorAll('.settings-lib-cell').length }; })()");

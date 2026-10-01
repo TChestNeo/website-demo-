@@ -1,4 +1,4 @@
-// tmp-battery-profile-subtier.js — v0.2.58.24 个人资料横幅/头像三层订阅门禁电池（克隆 tmp-battery-profile-banner.js 壳，D 组专项）
+// tmp-battery-profile-subtier.js — v0.2.58.25 个人资料横幅/头像三层订阅门禁电池（克隆 tmp-battery-profile-banner.js 壳，D 组专项）
 // 用户：「横幅的从图库中选择和上传图片只限于基础订阅项；动图要高级订阅；没有订阅的只能调整横幅的单色和渐变颜色」
 // 钦定：①两处一起改（设置弹窗+资料页编辑弹窗同口径）②免费层=扩展预设色卡（6 玻璃+6 单色/黑白系=13 格点选即存 cardBg）
 //   ③金罩=所有被锁按钮+相邻按钮共用一个罩（不两个）④头像保持现状（free 静态头像上传仍可用）。
@@ -53,7 +53,7 @@ const DOC_START_SRC = `
       var key = method + ' ' + u;
       if (key === 'GET /api/health') return Promise.resolve(res(200, { status: 'ok', version: '2.0.0', tables: 60 }));
       if (key === 'GET /api/social/users/USR-000101') {
-        // v0.2.58.24 canGif 谓词读服务端 u.tier——罐头按请求时 localStorage 同步（真后端读 DB 同义）
+        // v0.2.58.25 canGif 谓词读服务端 u.tier——罐头按请求时 localStorage 同步（真后端读 DB 同义）
         var lu = {}; try { lu = JSON.parse(localStorage.getItem('slati_user') || '{}'); } catch (e) {}
         if (lu.tier) ME.tier = lu.tier; else delete ME.tier;
         return Promise.resolve(res(200, { user: ME }));
@@ -166,7 +166,7 @@ async function seedSub(t) {
   await t.evalJs("localStorage.setItem('slati_session', JSON.stringify({ loggedIn: true, at: new Date().toISOString() }));" +
     "localStorage.setItem('slati_user', JSON.stringify({ id: 'USR-000101', name: '电池用户', avatarUrl: null, tier: 'premium' }));");
 }
-async function seedBasic(t) { // v0.2.58.24 三层门禁：basic=静态图/图库放行、gif 仍锁（canGif 谓词拦）
+async function seedBasic(t) { // v0.2.58.25 三层门禁：basic=静态图/图库放行、gif 仍锁（canGif 谓词拦）
   await t.evalJs("localStorage.setItem('slati_session', JSON.stringify({ loggedIn: true, at: new Date().toISOString() }));" +
     "localStorage.setItem('slati_user', JSON.stringify({ id: 'USR-000101', name: '电池用户', avatarUrl: null, tier: 'basic' }));");
 }
@@ -192,6 +192,13 @@ async function feedFile(t, selector, filePath) {
   await t.send('DOM.setFileInputFiles', { nodeId: fileNode.nodeId, files: [filePath] });
   await sleep(800);
 }
+// 58.25 裁切弹窗：上传链先弹 .mn-crop-stage → confirm 不交互 rect 恒 {0,0,1,1}（tmp-battery-crop 27/27 实证）
+async function confirmCrop(t, label) {
+  await waitFor(t, "!!document.querySelector('.mn-crop-stage')", 25000, label);
+  await t.evalJs("document.querySelector('.mn-crop-confirm').click()");
+  await sleep(500);
+}
+const cropOpen = t => t.evalJs("!!document.querySelector('.mn-crop-stage')");
 const upCount = t => t.evalJs("window.__fetchCalls.filter(function (c) { return c.method === 'POST' && c.url.indexOf('/uploads') !== -1; }).length");
 const patchCount = t => t.evalJs("window.__fetchCalls.filter(function (c) { return c.method === 'PATCH'; }).length");
 const readNorm = f => fs.readFileSync(path.join(DOCS, f), 'utf8').replace(/\r\n/g, '\n');
@@ -204,25 +211,36 @@ async function main() {
   console.log('── D0. 静态锚（页面/i18n/site-config/FC 不互通）──');
   const pageSrc = readNorm('pages/community-profile.html');
   const cnt = (s, sub) => s.split(sub).length - 1;
-  check('D0 页面 58.22 件：sub-locked ×4（头像图库钮+横幅上传钮+横幅图库钮+CSS）+ blockGif ×4（声明+三拦截）+ 升级链接 id（头像 ×1/横幅 ×2 含 click 门查询）+ premium.html href ×3 + 金罩族（gold-lock-group ×4/gold-locked ×3/goldShimmer ×3）+ canGif ×7 + 三新键引用（bannerLocked ×2/imgUpgrade ×1/premGifUpgrade ×2）+ FC 图库弹窗加大（680px ×1/80px ×1）+ mono-charcoal ×3',
+  check('D0 页面 58.22 件：sub-locked ×4（头像图库钮+横幅上传钮+横幅图库钮+CSS）+ blockGif ×4（声明+三拦截）+ 升级链接 id（头像 ×1/横幅 ×3 含 click 门查询）+ premium.html href ×3 + 金罩族（gold-lock-group ×4/gold-locked ×3/goldShimmer ×3）+ canGif ×9（58.25 视频门复用+2）+ 三新键引用（bannerLocked ×2/imgUpgrade ×1/premGifUpgrade ×2）+ FC 图库弹窗加大（680px ×1/80px ×1）+ mono-charcoal ×3',
     cnt(pageSrc, 'sub-locked') === 4 && cnt(pageSrc, 'blockGif') === 4 &&
-    cnt(pageSrc, 'avatarGifUpgradeLink') === 1 && cnt(pageSrc, 'bannerGifUpgradeLink') === 2 && cnt(pageSrc, 'href="premium.html"') === 3 &&
+    cnt(pageSrc, 'avatarGifUpgradeLink') === 1 && cnt(pageSrc, 'bannerGifUpgradeLink') === 3 && cnt(pageSrc, 'href="premium.html"') === 3 &&
     cnt(pageSrc, 'gold-lock-group') === 4 && cnt(pageSrc, 'gold-locked') === 3 && cnt(pageSrc, 'goldShimmer') === 3 &&
-    cnt(pageSrc, 'canGif') === 7 && cnt(pageSrc, 'prof.toast.bannerLocked') === 2 &&
+    cnt(pageSrc, 'canGif') === 9 && cnt(pageSrc, 'prof.toast.bannerLocked') === 2 &&
     cnt(pageSrc, 'prof.edit.imgUpgrade') === 1 && cnt(pageSrc, 'prof.edit.premGifUpgrade') === 2 &&
     cnt(pageSrc, "maxWidth = '680px'") === 1 && cnt(pageSrc, 'height: 80px') === 1 && cnt(pageSrc, 'mono-charcoal') === 3,
     'sub-locked=' + cnt(pageSrc, 'sub-locked') + ' goldGrp=' + cnt(pageSrc, 'gold-lock-group') + ' goldLocked=' + cnt(pageSrc, 'gold-locked') +
     ' canGif=' + cnt(pageSrc, 'canGif') + ' bnLink=' + cnt(pageSrc, 'bannerGifUpgradeLink') + ' bannerLocked=' + cnt(pageSrc, 'prof.toast.bannerLocked'));
+  check('D0 页面 58.25 新件：profile-banner-img ×3 + 重裁钮（editAvatarReCropBtn ×2/editBannerReCropBtn ×3）+ MN_CropDialog.open ×5 + 视频件（videoLocked ×1/videoCompressing ×1/avatarNoVideo ×1/videoFail ×2）+ 210px ×12 + 140px 残留 ×1（注释字样，实测口径）',
+    cnt(pageSrc, 'profile-banner-img') === 3 && cnt(pageSrc, 'editAvatarReCropBtn') === 2 && cnt(pageSrc, 'editBannerReCropBtn') === 3 &&
+    cnt(pageSrc, 'MN_CropDialog.open') === 5 && cnt(pageSrc, 'videoLocked') === 1 && cnt(pageSrc, 'videoCompressing') === 1 &&
+    cnt(pageSrc, 'avatarNoVideo') === 1 && cnt(pageSrc, 'videoFail') === 2 && cnt(pageSrc, '210px') === 12 && cnt(pageSrc, 'height: 140px') === 1,
+    'bnImg=' + cnt(pageSrc, 'profile-banner-img') + ' rcBtn=' + cnt(pageSrc, 'editBannerReCropBtn') + ' cropOpen=' + cnt(pageSrc, 'MN_CropDialog.open') +
+    ' 210=' + cnt(pageSrc, '210px') + ' 140=' + cnt(pageSrc, 'height: 140px'));
   const i18nSrc = readNorm('assets/i18n/community-profile.i18n.js');
   check('D0 i18n 6 新键 × 12 语块（gifLocked/libLocked/gifUpgrade/bannerLocked/imgUpgrade/premGifUpgrade 各 12）',
     cnt(i18nSrc, 'prof.toast.gifLocked') === 12 && cnt(i18nSrc, 'prof.toast.libLocked') === 12 && cnt(i18nSrc, 'prof.edit.gifUpgrade') === 12 &&
     cnt(i18nSrc, 'prof.toast.bannerLocked') === 12 && cnt(i18nSrc, 'prof.edit.imgUpgrade') === 12 && cnt(i18nSrc, 'prof.edit.premGifUpgrade') === 12,
     'gifLocked=' + cnt(i18nSrc, 'prof.toast.gifLocked') + ' libLocked=' + cnt(i18nSrc, 'prof.toast.libLocked') + ' gifUpgrade=' + cnt(i18nSrc, 'prof.edit.gifUpgrade') +
     ' bannerLocked=' + cnt(i18nSrc, 'prof.toast.bannerLocked') + ' imgUpgrade=' + cnt(i18nSrc, 'prof.edit.imgUpgrade') + ' prem=' + cnt(i18nSrc, 'prof.edit.premGifUpgrade'));
+  check('D0 i18n 58.25 新 8 键 × 12 语块（reCropAvatar/reCropBanner/videoLocked/videoCompressing/avatarNoVideo/videoFail 各 12）',
+    cnt(i18nSrc, 'prof.edit.reCropAvatar') === 12 && cnt(i18nSrc, 'prof.edit.reCropBanner') === 12 &&
+    cnt(i18nSrc, 'prof.toast.videoLocked') === 12 && cnt(i18nSrc, 'prof.edit.videoCompressing') === 12 &&
+    cnt(i18nSrc, 'prof.edit.avatarNoVideo') === 12 && cnt(i18nSrc, 'prof.edit.videoFail') === 12,
+    'rcA=' + cnt(i18nSrc, 'prof.edit.reCropAvatar') + ' rcB=' + cnt(i18nSrc, 'prof.edit.reCropBanner') + ' vl=' + cnt(i18nSrc, 'prof.toast.videoLocked'));
   const siteSrc = readNorm('assets/js/site-config.js');
-  check('D0 site-config：版本赋值 v0.2.58.24 + FC 48.0 在位 + changelog rev 00344-/00345- 各 ×1（58.22 单条目）',
-    cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.24'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") === 1 && cnt(siteSrc, '00344-') === 1 && cnt(siteSrc, '00345-') === 1,
-    'v58.22=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.24'") + ' fc48=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") + ' r40=' + cnt(siteSrc, '00344-') + ' r41=' + cnt(siteSrc, '00345-'));
+  check('D0 site-config：版本赋值 v0.2.58.25 + FC 48.1 在位 + changelog rev 00346-/00347- 各 ×2（58.25 双 changelog：站点+FC 同轮）',
+    cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.25'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1'") === 1 && cnt(siteSrc, '00346-') === 2 && cnt(siteSrc, '00347-') === 2,
+    'v58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.25'") + ' fc48=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1'") + ' r46=' + cnt(siteSrc, '00346-') + ' r47=' + cnt(siteSrc, '00347-'));
   const fcSrc = readNorm('pages/fluidcanvas.html');
   check('D9 FC 不互通（钦定③铁证）：fluidcanvas.html 源零 bannerUrl/banner_url（FC 频道主页不读 users.banner_url）',
     fcSrc.indexOf('bannerUrl') === -1 && fcSrc.indexOf('banner_url') === -1, 'bannerUrl=' + fcSrc.indexOf('bannerUrl') + ' banner_url=' + fcSrc.indexOf('banner_url'));
@@ -347,9 +365,9 @@ async function main() {
     " return { toasts: window.__toasts.join('|'), state: document.getElementById('editBannerState').textContent, pvBg: pv.style.backgroundImage," +
     " ups: window.__fetchCalls.filter(function (c) { return c.method === 'POST' && c.url.indexOf('/uploads') !== -1; }).length," +
     " pts: window.__fetchCalls.filter(function (c) { return c.method === 'PATCH'; }).length }; })()");
-  check('D4b 免费直喂 gif 文件（change 双保险门禁）：toast 精确「横幅图片为订阅用户专属功能」+ 零上传零 PATCH + state/预览不变',
+  check('D4b 免费直喂 gif 文件（change 双保险门禁）：toast 精确「横幅图片为订阅用户专属功能」+ 零上传零 PATCH + state/预览不变 + 弹窗未开（门禁先于弹窗）',
     d4b.toasts === '横幅图片为订阅用户专属功能' && d4b.ups === d4Before.up && d4b.pts === d4Before.pt &&
-    d4b.state.indexOf('上传中') === -1 && d4b.state.indexOf('已就绪') === -1 && d4b.pvBg === '', JSON.stringify(d4b));
+    d4b.state.indexOf('上传中') === -1 && d4b.state.indexOf('已就绪') === -1 && d4b.pvBg === '' && !(await cropOpen(t)), JSON.stringify(d4b));
   await pressEsc(t);
   const tmpAgif = path.join(__dirname, 'tmp-subtier-avatar.gif');
   fs.writeFileSync(tmpAgif, PIXEL_PNG);
@@ -360,9 +378,9 @@ async function main() {
     " return { toasts: window.__toasts.join('|'), state: document.getElementById('editSaveState').textContent, src: img.getAttribute('src')," +
     " ups: window.__fetchCalls.filter(function (c) { return c.method === 'POST' && c.url.indexOf('/uploads') !== -1; }).length," +
     " pts: window.__fetchCalls.filter(function (c) { return c.method === 'PATCH'; }).length }; })()");
-  check('D5 免费传 gif 头像：toast「GIF 动图为订阅用户专属功能」+ 零上传 + 零 PATCH + state 无「上传中/已就绪」+ 头像预览不变',
+  check('D5 免费传 gif 头像：toast「GIF 动图为订阅用户专属功能」+ 零上传 + 零 PATCH + state 无「上传中/已就绪」+ 头像预览不变 + 弹窗未开',
     d5.toasts.indexOf('GIF 动图为订阅用户专属功能') !== -1 && d5.ups === d5Before.up && d5.pts === d5Before.pt &&
-    d5.state.indexOf('上传中') === -1 && d5.state.indexOf('已就绪') === -1 && d5.src === AVATAR_URI, JSON.stringify(d5));
+    d5.state.indexOf('上传中') === -1 && d5.state.indexOf('已就绪') === -1 && d5.src === AVATAR_URI && !(await cropOpen(t)), JSON.stringify(d5));
   await pressEsc(t);
 
   // ── D6 free 唯一横幅功能=预设点选（mono-bw→PATCH {cardBg}）+ basic 静态放行/gif 锁/premGifUpgrade 链接/零金罩 ──
@@ -398,34 +416,35 @@ async function main() {
     d6b0.linkText === '升级到高级订阅可上传 GIF 动图 →' && d6b0.avLinkText === '升级到高级订阅可上传 GIF 动图 →', JSON.stringify(d6b0));
   const d6UpBefore = await upCount(t);
   await feedFile(t, '#editBannerFile', tmpJpg);
-  const d6b1 = await t.evalJs("(() => { var pv = document.getElementById('editBannerPreview');" +
-    " return { state: document.getElementById('editBannerState').textContent, pvBg: pv.style.backgroundImage," +
+  await confirmCrop(t, 'D6b1 裁切弹窗');
+  const d6b1 = await t.evalJs("(() => { var pv = document.getElementById('editBannerPreview'); var img = pv ? pv.querySelector('img') : null;" +
+    " return { state: document.getElementById('editBannerState').textContent, pvBg: img ? img.getAttribute('src') : null," +
     " ups: window.__fetchCalls.filter(function (c) { return c.method === 'POST' && c.url.indexOf('/uploads') !== -1; }).length }; })()");
-  check('D6b1 basic 传静态 jpg 横幅：上传恰 1 次 + 预览挂图 + 就绪文案「横幅已就绪，点保存生效」',
-    d6b1.ups === d6UpBefore + 1 && d6b1.pvBg.indexOf('UPL-DEMO01') !== -1 && d6b1.state.indexOf('横幅已就绪') !== -1, JSON.stringify(d6b1));
+  check('D6b1 basic 传静态 jpg 横幅：弹窗 confirm → 上传恰 1 次 + 预览内嵌 img 挂图（58.25 背景改 img）+ 就绪文案「横幅已就绪，点保存生效」',
+    d6b1.ups === d6UpBefore + 1 && d6b1.pvBg && d6b1.pvBg.indexOf('UPL-DEMO01') !== -1 && d6b1.state.indexOf('横幅已就绪') !== -1, JSON.stringify(d6b1));
   await t.evalJs("window.__toasts = []");
   await feedFile(t, '#editBannerFile', tmpBgif);
   const d6b2 = await t.evalJs("(() => { return { toasts: window.__toasts.join('|')," +
     " ups: window.__fetchCalls.filter(function (c) { return c.method === 'POST' && c.url.indexOf('/uploads') !== -1; }).length }; })()");
-  check('D6b2 basic 传 gif 横幅：toast 精确「GIF 动图为订阅用户专属功能」+ 零新增上传（canGif 谓词拦 basic）',
-    d6b2.toasts === 'GIF 动图为订阅用户专属功能' && d6b2.ups === d6UpBefore + 1, JSON.stringify(d6b2));
+  check('D6b2 basic 传 gif 横幅：toast 精确「GIF 动图为订阅用户专属功能」+ 零新增上传（canGif 谓词拦 basic）+ 弹窗未开',
+    d6b2.toasts === 'GIF 动图为订阅用户专属功能' && d6b2.ups === d6UpBefore + 1 && !(await cropOpen(t)), JSON.stringify(d6b2));
   await t.evalJs("document.getElementById('editSaveBtn').click()");
   await sleep(800);
   const d6b3 = await t.evalJs("(() => { var bn = document.querySelector('.profile-banner');" +
     " var rawCalls = window.__fetchCalls.filter(function (c) { return c.method === 'PATCH'; }).map(function (c) { return c.body; });" +
-    " return { rawCalls: rawCalls, hasImg: bn.classList.contains('has-img'), bnBg: getComputedStyle(bn).backgroundImage," +
+    " return { rawCalls: rawCalls, hasImg: bn.classList.contains('has-img'), bnImg: (function(){ var i = bn ? bn.querySelector('img.profile-banner-img') : null; return i ? i.getAttribute('src') : null; })()," +
     " cardGone: !document.querySelector('.modal-card') || !document.querySelector('.modal-card').parentNode }; })()");
   console.log('D6b3 raw PATCH bodies:', JSON.stringify(d6b3.rawCalls));
   const d6BannerCalls = d6b3.rawCalls.filter(function (b) { return b.indexOf('bannerUrl') !== -1; });
-  check('D6b3 basic 保存 → PATCH 含 bannerUrl 恰 1 次且 body 精确 ={"bannerUrl":"/uploads/UPL-DEMO01.jpg"} + 弹窗关 + 头部 has-img（含 UPL-DEMO01）',
-    d6BannerCalls.length === 1 && d6BannerCalls[0] === '{"bannerUrl":"/uploads/UPL-DEMO01.jpg"}' && d6b3.cardGone &&
-    d6b3.hasImg && d6b3.bnBg.indexOf('UPL-DEMO01') !== -1, JSON.stringify(d6BannerCalls));
+  check('D6b3 basic 保存 → PATCH 含 bannerUrl 恰 1 次且 body 精确 ={"bannerUrl":"/uploads/UPL-DEMO01.jpg","bannerCrop":{"x":0,"y":0,"w":1,"h":1}} + 弹窗关 + 头部 has-img + 内嵌 img 含 UPL-DEMO01',
+    d6BannerCalls.length === 1 && d6BannerCalls[0] === '{"bannerUrl":"/uploads/UPL-DEMO01.jpg","bannerCrop":{"x":0,"y":0,"w":1,"h":1}}' && d6b3.cardGone &&
+    d6b3.hasImg && d6b3.bnImg && d6b3.bnImg.indexOf('UPL-DEMO01') !== -1, JSON.stringify(d6BannerCalls));
   fs.unlinkSync(tmpBgif); fs.unlinkSync(tmpAgif); fs.unlinkSync(tmpJpg);
 
   // ── D7 订阅全解锁：两钮零锁+链接隐藏+图库 gif 条目放行+文件 gif 放行 ──
   console.log('── D7. 订阅全解锁 ──');
   await seedSub(t);
-  await t.send('Page.reload'); // v0.2.58.24 canGif 读 profileUser.tier（页载时 GET 罐头）——重载让 GET 按新 localStorage 同步 tier
+  await t.send('Page.reload'); // v0.2.58.25 canGif 读 profileUser.tier（页载时 GET 罐头）——重载让 GET 按新 localStorage 同步 tier
   await sleep(800);
   await waitFor(t, "document.getElementById('profileMain').style.display === 'flex'", 15000, '主页渲染（订阅）');
   await waitFor(t, "document.getElementById('profileEditBtn')", 10000, '编辑钮就位');
@@ -450,20 +469,22 @@ async function main() {
     " return { itemN: g ? g.children.length : 0, img: it ? it.querySelector('img').getAttribute('src') : null, label: it ? it.querySelector('.label-sm').textContent : null }; })()");
   check('D7 订阅开横幅图库：选择器开 + 预种 1 gif 条目（缩略图+名称）', d7b.itemN === 1 && d7b.img === GIF_DATAURL && d7b.label === '电池动图', JSON.stringify(d7b));
   await t.evalJs("document.querySelector('.fc-lib-pick-item').click()");
-  await sleep(800);
-  const d7c = await t.evalJs("(() => { var pv = document.getElementById('editBannerPreview');" +
-    " return { state: document.getElementById('editBannerState').textContent, pvBg: pv.style.backgroundImage," +
+  await confirmCrop(t, 'D7 图库 gif 裁切弹窗');
+  const d7c = await t.evalJs("(() => { var pv = document.getElementById('editBannerPreview'); var img = pv ? pv.querySelector('img') : null;" +
+    " return { state: document.getElementById('editBannerState').textContent, pvBg: img ? img.getAttribute('src') : null," +
     " ups: window.__fetchCalls.filter(function (c) { return c.method === 'POST' && c.url.indexOf('/uploads') !== -1; }).length }; })()");
-  check('D7 图库 gif 条目点选 → 上传恰 1 次（gif 对订阅放行）+ 预览挂图 + 就绪文案',
-    d7c.ups === d7UpBase + 1 && d7c.pvBg.indexOf('UPL-DEMO01') !== -1 && d7c.state.indexOf('横幅已就绪') !== -1, JSON.stringify(d7c));
+  check('D7 图库 gif 条目点选 → 弹窗 confirm → 上传恰 1 次（gif 对订阅放行）+ 预览内嵌 img 挂图 + 就绪文案',
+    d7c.ups === d7UpBase + 1 && d7c.pvBg && d7c.pvBg.indexOf('UPL-DEMO01') !== -1 && d7c.state.indexOf('横幅已就绪') !== -1, JSON.stringify(d7c));
   const tmpBgif2 = path.join(__dirname, 'tmp-subtier-banner2.gif');
   fs.writeFileSync(tmpBgif2, PIXEL_PNG);
   await feedFile(t, '#editBannerFile', tmpBgif2);
+  await confirmCrop(t, 'D7 横幅 gif 文件裁切弹窗');
   const tmpAgif2 = path.join(__dirname, 'tmp-subtier-avatar2.gif');
   fs.writeFileSync(tmpAgif2, PIXEL_PNG);
   await t.evalJs("document.querySelector('#editNavBtns [data-edit-tab=\"basic\"]').click()");
   await sleep(300);
   await feedFile(t, '#editAvatarFile', tmpAgif2);
+  await confirmCrop(t, 'D7 头像 gif 文件裁切弹窗');
   const d7d = await t.evalJs("(() => { var img = document.getElementById('editAvatarPreview');" +
     " return { ups: window.__fetchCalls.filter(function (c) { return c.method === 'POST' && c.url.indexOf('/uploads') !== -1; }).length," +
     " avSrc: img.getAttribute('src'), avState: document.getElementById('editSaveState').textContent }; })()");
@@ -484,33 +505,33 @@ async function main() {
   await patchToast(t);
   await waitFor(t, "document.getElementById('profileEditBtn')", 10000, '编辑钮就位');
   const d8a = await t.evalJs("(() => { var bn = document.querySelector('.profile-banner');" +
-    " return { hasImg: bn.classList.contains('has-img'), bnBg: getComputedStyle(bn).backgroundImage }; })()");
-  check('D8 祖父显示：免费用户已有 gif 横幅 → 头部仍 has-img + computed 背景含 GRANDPA（渲染无 tier 检查）',
-    d8a.hasImg && d8a.bnBg.indexOf('GRANDPA') !== -1, JSON.stringify(d8a));
+    " return { hasImg: bn.classList.contains('has-img'), bnImg: (function(){ var i = bn ? bn.querySelector('img.profile-banner-img') : null; return i ? i.getAttribute('src') : null; })() }; })()");
+  check('D8 祖父显示：免费用户已有 gif 横幅 → 头部仍 has-img + 内嵌 img 含 GRANDPA（渲染无 tier 检查）',
+    d8a.hasImg && d8a.bnImg && d8a.bnImg.indexOf('GRANDPA') !== -1, JSON.stringify(d8a));
   await openEdit(t, 'custom');
-  const d8b = await t.evalJs("(() => { var pv = document.getElementById('editBannerPreview'); var b = document.getElementById('editBannerLibBtn');" +
+  const d8b = await t.evalJs("(() => { var pv = document.getElementById('editBannerPreview'); var img = pv ? pv.querySelector('img') : null; var b = document.getElementById('editBannerLibBtn');" +
     " var l = document.getElementById('bannerGifUpgradeLink'); var up = document.getElementById('editBannerUploadBtn'); var rm = document.getElementById('editBannerRemoveBtn');" +
-    " return { pvBg: pv.style.backgroundImage, locked: b.classList.contains('sub-locked'), linkVis: getComputedStyle(l).display, linkText: l.textContent.trim()," +
+    " return { pvBg: img ? img.getAttribute('src') : null, locked: b.classList.contains('sub-locked'), linkVis: getComputedStyle(l).display, linkText: l.textContent.trim()," +
     " upGold: !!up.closest('.gold-lock-group'), rmGold: !!rm.closest('.gold-lock-group') }; })()");
-  check('D8 祖父编辑：预览预填原图（GRANDPA）+ 免费锁 UI 在位（sub-locked+升级链接可见文案精确）+ 金罩在位（upload 罩内/移除钮罩外）',
-    d8b.pvBg.indexOf('GRANDPA') !== -1 && d8b.locked && d8b.linkVis === 'inline-block' &&
+  check('D8 祖父编辑：预览内嵌 img 预填原图（GRANDPA）+ 免费锁 UI 在位（sub-locked+升级链接可见文案精确）+ 金罩在位（upload 罩内/移除钮罩外）',
+    d8b.pvBg && d8b.pvBg.indexOf('GRANDPA') !== -1 && d8b.locked && d8b.linkVis === 'inline-block' &&
     d8b.linkText === '订阅后解锁横幅图片与 GIF →' && d8b.upGold && !d8b.rmGold, JSON.stringify(d8b));
   await t.evalJs("document.getElementById('editBannerRemoveBtn').click()");
   await sleep(300);
-  const d8c0 = await t.evalJs("(() => { var pv = document.getElementById('editBannerPreview');" +
-    " return { pvBg: pv.style.backgroundImage, state: document.getElementById('editBannerState').textContent }; })()");
-  check('D8 点移除 → 预览清图 + 提示文案「上传图片或从图库选择，点保存生效」（移除按钮永可用）',
-    d8c0.pvBg === '' && d8c0.state.indexOf('上传图片或从图库选择') !== -1, JSON.stringify(d8c0));
+  const d8c0 = await t.evalJs("(() => { var pv = document.getElementById('editBannerPreview'); var img = pv ? pv.querySelector('img') : null;" +
+    " return { pvBg: img ? img.getAttribute('src') : null, state: document.getElementById('editBannerState').textContent }; })()");
+  check('D8 点移除 → 预览清图（内嵌 img 撤）+ 提示文案「上传图片或从图库选择，点保存生效」（移除按钮永可用）',
+    d8c0.pvBg === null && d8c0.state.indexOf('上传图片或从图库选择') !== -1, JSON.stringify(d8c0));
   await t.evalJs("document.getElementById('editSaveBtn').click()");
   await sleep(800);
   const d8c = await t.evalJs("(() => { var bn = document.querySelector('.profile-banner');" +
     " var rawCalls = window.__fetchCalls.filter(function (c) { return c.method === 'PATCH'; }).map(function (c) { return c.body; });" +
-    " return { rawCalls: rawCalls, hasImg: bn.classList.contains('has-img'), bnBg: getComputedStyle(bn).backgroundImage }; })()");
+    " return { rawCalls: rawCalls, hasImg: bn.classList.contains('has-img'), bnImg: (function(){ var i = bn ? bn.querySelector('img.profile-banner-img') : null; return i ? i.getAttribute('src') : null; })(), bnBg: getComputedStyle(bn).backgroundImage }; })()");
   console.log('D8 raw PATCH bodies:', JSON.stringify(d8c.rawCalls));
   const d8BannerCalls = d8c.rawCalls.filter(function (b) { return b.indexOf('bannerUrl') !== -1; });
-  check('D8 保存 → PATCH 含 bannerUrl 恰 1 次且 body 精确 ={"bannerUrl":null}（显式移除语义）+ 头部回渐变（无 has-img/无 GRANDPA/linear-gradient 在）',
+  check('D8 保存 → PATCH 含 bannerUrl 恰 1 次且 body 精确 ={"bannerUrl":null}（显式移除语义）+ 头部回渐变（无 has-img/内嵌 img 撤/linear-gradient 在）',
     d8BannerCalls.length === 1 && d8BannerCalls[0] === '{"bannerUrl":null}' && !d8c.hasImg &&
-    d8c.bnBg.indexOf('GRANDPA') === -1 && d8c.bnBg.indexOf('linear-gradient') !== -1, JSON.stringify(d8BannerCalls));
+    d8c.bnImg === null && d8c.bnBg.indexOf('linear-gradient') !== -1, JSON.stringify(d8BannerCalls));
 
   check('D10 全链 0 console error', errs.length === 0, errs.slice(0, 3).join(' | '));
 

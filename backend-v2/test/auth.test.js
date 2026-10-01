@@ -93,7 +93,7 @@ test('verify：新邮箱建号 status=new + user 形状（camel）+ Set-Cookie m
   const body = await res.json();
   assert.strictEqual(body.status, 'new');
   assert.deepStrictEqual(Object.keys(body.user).sort(), [
-    'avatarUrl', 'citizenId', 'createdAt', 'displayName', 'email', 'gender', 'hasPassword', 'id', 'role', 'status', 'student', 'tier', 'tierExpiresAt', 'xpGained'
+    'avatarCrop', 'avatarUrl', 'bannerCrop', 'citizenId', 'createdAt', 'displayName', 'email', 'gender', 'hasPassword', 'id', 'role', 'status', 'student', 'tier', 'tierExpiresAt', 'xpGained'
   ].sort());
   assert.strictEqual(body.user.gender, null); // 013：未填写 NULL
   assert.strictEqual(body.user.displayName, 'Neo');

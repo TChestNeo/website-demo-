@@ -30,7 +30,7 @@ const DOC_START_SRC = `
     id: 'USR-000101', displayName: '电池用户', avatarUrl: ${JSON.stringify(AVATAR_URI)},
     bio: '电池用户简介', gender: 'Male', citizenId: 'CIT-000101', createdAt: '2026-08-01T00:00:00.000Z',
     isSelf: true, followedByMe: false, followerCount: 2, followingCount: 3,
-    cardBg: null, cardPlate: null, pageBgImage: null, cardEdge: null, // v0.2.25.0 页面背景图片（null = 无整页背景）；v0.2.53.1 卡片边缘（null = 默认圆角卡）
+    cardBg: null, cardPlate: null, pageBgImage: null, cardEdge: null, avatarCrop: null, bannerCrop: null, // v0.2.25.0 页面背景图片（null = 无整页背景）；v0.2.53.1 卡片边缘（null = 默认圆角卡）；v0.2.58.25 裁切元数据（030 列，null = 默认整图）
     stats: { postCount: 1, repostCount: 1, likeReceivedCount: 1, likeCount: 2, favoriteCount: 1 }
   };
   // 他人（USR-000202，bio 空 → 兜底文案；Female → 女；零帖 → 空态；关注链目标；v0.2.23.0 cardBg='glass-rose' 公开渲染他人背景；v0.2.24.1/2 cardPlate='glass-clear' 标准液态玻璃（纯透明）独立背景层）
@@ -40,6 +40,7 @@ const DOC_START_SRC = `
     isSelf: false, followedByMe: false, followerCount: 0, followingCount: 5,
     cardBg: 'glass-rose', cardPlate: 'glass-clear',
     pageBgImage: '/uploads/UPL-DEMO01.jpg', // v0.2.25.0 他人主页公开渲染整页背景（访客也看到本人设置的图）
+    avatarCrop: null, bannerCrop: null,
     stats: { postCount: 0, repostCount: 0, likeReceivedCount: 0, likeCount: null, favoriteCount: null }
   };
   // 他人二（USR-000303，v0.2.53.1 cardEdge='paper' 破旧的纸——访客可见链目标；OTHER 保持不动保护 O1 断言）
@@ -49,6 +50,7 @@ const DOC_START_SRC = `
     isSelf: false, followedByMe: false, followerCount: 0, followingCount: 0,
     cardBg: null, cardPlate: null, pageBgImage: null,
     cardEdge: 'paper', // v0.2.53.1 他人主页公开渲染边缘剪影（访客也看到本人设置的主题）
+    avatarCrop: null, bannerCrop: null,
     stats: { postCount: 0, repostCount: 0, likeReceivedCount: 0, likeCount: null, favoriteCount: null }
   };
   var BASE_POST = {
@@ -131,7 +133,10 @@ const DOC_START_SRC = `
         if (pb.pageBgImage !== undefined) ME.pageBgImage = pb.pageBgImage;
         // v0.2.53.1 卡片边缘（null 显式入 body → 恢复默认圆角卡）
         if (pb.cardEdge !== undefined) ME.cardEdge = pb.cardEdge;
-        return Promise.resolve(res(200, { user: { id: ME.id, displayName: ME.displayName, avatarUrl: ME.avatarUrl, citizenId: ME.citizenId, bio: ME.bio, gender: ME.gender, createdAt: ME.createdAt } }));
+        // v0.2.58.25 裁切元数据（含 null 显式清空）
+        if (pb.avatarCrop !== undefined) ME.avatarCrop = pb.avatarCrop;
+        if (pb.bannerCrop !== undefined) ME.bannerCrop = pb.bannerCrop;
+        return Promise.resolve(res(200, { user: { id: ME.id, displayName: ME.displayName, avatarUrl: ME.avatarUrl, citizenId: ME.citizenId, bio: ME.bio, gender: ME.gender, createdAt: ME.createdAt, avatarCrop: ME.avatarCrop, bannerCrop: ME.bannerCrop } }));
       }
       // 头像直传罐头 → /uploads/UPL-DEMO01.jpg（静态壳已有真图防 404 图片日志）
       if (method === 'POST' && u.indexOf('/api/social/uploads?ext=') === 0) return Promise.resolve(res(200, { url: '/uploads/UPL-DEMO01.jpg' }));
@@ -204,6 +209,12 @@ async function waitFor(cdp, expr, timeout, label) {
   throw new Error('waitFor 超时: ' + label);
 }
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+// 58.25 裁切弹窗：上传/图库链先弹 .mn-crop-stage → confirm 不交互 rect 恒 {0,0,1,1}（tmp-battery-crop 27/27 实证）
+async function confirmCrop(t, label) {
+  await waitFor(t, "!!document.querySelector('.mn-crop-stage')", 25000, label);
+  await t.evalJs("document.querySelector('.mn-crop-confirm').click()");
+  await sleep(500);
+}
 
 const pass = [], fail = [];
 function check(name, cond, detail) {
@@ -300,7 +311,7 @@ async function main() {
     const ver = await t.evalJs('window.MN_SITE_VERSION');
     const s1 = await t.evalJs("(() => { var a = document.querySelector('.user-module a[href*=\"community-profile.html\"]');" +
       " return { href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && !!a.querySelector('.user-name')) : false }; })()");
-    check('S1 版本 v0.2.54.0', ver === 'v0.2.58.24', 'ver=' + ver);
+    check('S1 版本 v0.2.54.0', ver === 'v0.2.58.25', 'ver=' + ver);
     check('S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）', s1.href === '../pages/community-profile.html?id=USR-000101' && s1.wrapped, s1.href);
 
     // S2 点侧栏锚 → 弹信息卡（58.21 口径：不跳页）→ 弹窗内「查看主页」→ 真导航到自己主页
@@ -340,7 +351,7 @@ async function main() {
       " var ptEl = h.querySelector('.profile-top'); var bb = ptEl ? getComputedStyle(ptEl).borderBottomWidth : null;" +
       " return { text: h.textContent, nums: nums, counts: counts, badgeSrc: bImg ? bImg.getAttribute('src') : null," +
       " hasEdit: !!document.getElementById('profileEditBtn'), hasFollow: !!document.getElementById('profileFollowBtn')," +
-      " avatar: h.querySelector('.profile-avatar').getAttribute('src')," +
+      " avatar: (h.querySelector('.profile-avatar-img') || {}).getAttribute('src')," +
       " avL: av.left, avR: av.right, avT: av.top, avB: av.bottom, nmL: nm.left, nmT: nm.top, nmB: nm.bottom," +
       " pcL: pc.left, pcR: pc.right, ptR: pt.right," +
       " bnH: bnR ? bnR.height : 0, bnB: bnR ? bnR.bottom : 0, bb: bb }; })()");
@@ -402,7 +413,7 @@ async function main() {
     check('E1 保存 → 弹窗关 + toast 资料已保存 + 头部重拉（改名/♀svg/新简介）', e1.cardGone && e1.toasts.indexOf('资料已保存') !== -1 && e1.hText.indexOf('电池用户改') !== -1 && e1.badgeSrc && e1.badgeSrc.indexOf('female_24dp_F18AFF') !== -1 && e1.hText.indexOf('新简介') !== -1, (e1.badgeSrc || '') + ' ' + e1.hText.slice(0, 70));
     check('E1 侧栏同页即时更新为 电池用户改', e1.sideName === '电池用户改', 'side=' + e1.sideName);
 
-    // E2 头像上传：CDP setFileInputFiles → 直传罐头 → 预览换图 → 保存 PATCH 带 avatarUrl → 头部头像换新
+    // E2 头像上传：CDP setFileInputFiles → 58.25 裁切弹窗 confirm → 直传罐头 → 预览换图 → 保存 PATCH 带 avatarUrl+avatarCrop → 头部头像换新
     const tmpAv = path.join(__dirname, 'tmp-avatar-test.jpg');
     fs.writeFileSync(tmpAv, PIXEL_PNG); // 客户端只查扩展名+大小，罐头端点不看魔数
     await t.evalJs("document.getElementById('profileEditBtn').click()");
@@ -411,16 +422,21 @@ async function main() {
     const docNode = await t.send('DOM.getDocument', { depth: -1 });
     const fileNode = await t.send('DOM.querySelector', { nodeId: docNode.root.nodeId, selector: '#editAvatarFile' });
     await t.send('DOM.setFileInputFiles', { nodeId: fileNode.nodeId, files: [tmpAv] });
-    await sleep(700);
+    await confirmCrop(t, 'E2 裁切弹窗');
+    await sleep(300);
     const e2a = await t.evalJs("(() => { var img = document.getElementById('editAvatarPreview');" +
       " var st = document.getElementById('editSaveState'); return { src: img ? img.getAttribute('src') : null, st: st ? st.textContent : null }; })()");
-    check('E2 选头像 → 直传 + 预览换图 + 状态提示', e2a.src === '/uploads/UPL-DEMO01.jpg' && e2a.st.indexOf('新头像已就绪') !== -1, JSON.stringify(e2a));
+    check('E2 选头像 → 裁切弹窗 confirm → 直传 + 预览换图 + 状态提示', e2a.src === '/uploads/UPL-DEMO01.jpg' && e2a.st.indexOf('新头像已就绪') !== -1, JSON.stringify(e2a));
     await t.evalJs("document.getElementById('editSaveBtn').click()");
     await sleep(800);
     const e2b = await t.evalJs("(() => { var h = document.getElementById('profileHeader');" +
-      " return { patchedAvatar: window.__patchedMe ? window.__patchedMe.avatarUrl : null, hAvatar: h.querySelector('.profile-avatar').getAttribute('src')," +
-      " uploadCalls: window.__fetchCalls.filter(function (c) { return c.method === 'POST' && c.url.indexOf('/uploads') !== -1; }).length }; })()");
-    check('E2 保存 → PATCH 带 avatarUrl + 头部头像换新 + 直传调用 1 次', e2b.patchedAvatar === '/uploads/UPL-DEMO01.jpg' && e2b.hAvatar === '/uploads/UPL-DEMO01.jpg' && e2b.uploadCalls === 1, JSON.stringify(e2b));
+      " var rawCalls = window.__fetchCalls.filter(function (c) { return c.method === 'PATCH'; }).map(function (c) { return c.body; });" +
+      " return { patchedAvatar: window.__patchedMe ? window.__patchedMe.avatarUrl : null, hAvatar: (h.querySelector('.profile-avatar-img') || {}).getAttribute('src')," +
+      " uploadCalls: window.__fetchCalls.filter(function (c) { return c.method === 'POST' && c.url.indexOf('/uploads') !== -1; }).length, rawCalls: rawCalls }; })()");
+    console.log('E2 raw PATCH bodies:', JSON.stringify(e2b.rawCalls));
+    const e2AvatarCalls = e2b.rawCalls.filter(function (b) { return b.indexOf('avatarUrl') !== -1; });
+    check('E2 保存 → PATCH 含 avatarUrl 恰 1 次且 body 精确 ={"avatarUrl":"/uploads/UPL-DEMO01.jpg","avatarCrop":{"x":0,"y":0,"w":1,"h":1}}（58.25 裁切默认整图恒入体）+ 头部头像换新 + 直传调用 1 次',
+      e2AvatarCalls.length === 1 && e2AvatarCalls[0] === '{"avatarUrl":"/uploads/UPL-DEMO01.jpg","avatarCrop":{"x":0,"y":0,"w":1,"h":1}}' && e2b.patchedAvatar === '/uploads/UPL-DEMO01.jpg' && e2b.hAvatar === '/uploads/UPL-DEMO01.jpg' && e2b.uploadCalls === 1, JSON.stringify({ calls: e2AvatarCalls, patched: e2b.patchedAvatar, h: e2b.hAvatar, up: e2b.uploadCalls }));
     fs.unlinkSync(tmpAv);
 
     // E3 空显示名拦截：不发 PATCH + toast + 弹窗还在
@@ -482,7 +498,7 @@ async function main() {
       " pvCardBgColor: getComputedStyle(pvCard).backgroundColor," +
       " pgN: pgSw.length, pgLabels: Array.prototype.map.call(pgSw, function (x) { return x.querySelector('.swatch-label').textContent; }).join('|')," +
       " pgFirstActive: pgSw[0].classList.contains('active') }; })()");
-    check('E6 切自定义：互斥显示 + 五组（横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景——v0.2.53.1 新边缘组+v0.2.58.18 新横幅图片组）+ 横幅 13 预设（v0.2.58.24 免费层扩展 6 单色/黑白系）+ v0.2.24.1 卡片背景只 2 选项（默认|标准液态玻璃）默认选中 + v0.2.25.0 页面背景 2 选项（默认|自定义图片）默认选中', e6b.active === 'custom' && e6b.basicVis === 'none' && e6b.customVis !== 'none' && e6b.labels === '横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景' && e6b.bgN === 13 && e6b.bgLabels === '默认|磨砂|深海|薰衣草|樱花|薄荷|落日|墨黑|纯白|石板灰|黑白渐变|银灰渐变|炭黑渐变' && e6b.bgFirstActive && e6b.plN === 2 && e6b.plLabels === '默认|标准液态玻璃' && e6b.plFirstActive && e6b.pgN === 2 && e6b.pgLabels === '默认|自定义图片' && e6b.pgFirstActive, JSON.stringify(e6b));
+    check('E6 切自定义：互斥显示 + 五组（横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景——v0.2.53.1 新边缘组+v0.2.58.18 新横幅图片组）+ 横幅 13 预设（v0.2.58.25 免费层扩展 6 单色/黑白系）+ v0.2.24.1 卡片背景只 2 选项（默认|标准液态玻璃）默认选中 + v0.2.25.0 页面背景 2 选项（默认|自定义图片）默认选中', e6b.active === 'custom' && e6b.basicVis === 'none' && e6b.customVis !== 'none' && e6b.labels === '横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景' && e6b.bgN === 13 && e6b.bgLabels === '默认|磨砂|深海|薰衣草|樱花|薄荷|落日|墨黑|纯白|石板灰|黑白渐变|银灰渐变|炭黑渐变' && e6b.bgFirstActive && e6b.plN === 2 && e6b.plLabels === '默认|标准液态玻璃' && e6b.plFirstActive && e6b.pgN === 2 && e6b.pgLabels === '默认|自定义图片' && e6b.pgFirstActive, JSON.stringify(e6b));
     check('E6 v0.2.24.0 预览默认：横幅条=品牌渐变 + 卡片背景预览无 has-plate 无背景 + 迷你透明卡身', e6b.flatCls === 'edit-bg-flat bg-default' && e6b.flatBg.indexOf('linear-gradient') !== -1 && e6b.pvCls === 'edit-bg-preview' && e6b.pvBg === 'none' && e6b.pvCardBgColor === 'rgba(0, 0, 0, 0)', 'flat=' + e6b.flatCls + ' pvCls=' + e6b.pvCls + ' pvBg=' + e6b.pvBg + ' pvCard=' + e6b.pvCardBgColor);
 
     // E6c 横幅组点深海：active 唯一互斥 + 横幅条换类换渐变
@@ -997,7 +1013,7 @@ async function main() {
     // L1 hub 首卡作者锚 → 个人主页（href 形状断言）
     const l1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]'); var a = c ? c.querySelector('.post-author-link') : null;" +
       " return { ver: window.MN_SITE_VERSION, href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && a.textContent.length > 0) : false }; })()");
-    check('L1 版本 v0.2.54.0', l1.ver === 'v0.2.58.24', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.54.0', l1.ver === 'v0.2.58.25', 'ver=' + l1.ver);
     check('L1 云卡作者锚 → profile（id=USR- 形状 + 头像+名字在内）', l1.href && /^community-profile\.html\?id=USR-\d{6}$/.test(l1.href) && l1.wrapped, l1.href);
 
     // L2 点作者锚 → 真导航 → 头部渲染（真数据）+ 几何 + 关注钮

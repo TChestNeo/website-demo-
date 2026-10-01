@@ -53,6 +53,22 @@ function normalizeEmail(v) {
 function avatarFor(name) {
   return 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=4648d4&color=fff&size=80';
 }
+// v0.2.58.25 裁切矩形校验（030 列）：归一化 {x,y,w,h} 0..1（x+w≤1、y+h≤1）；写侧严格（坏值 400）、读侧宽容（坏值回 null）
+function parseCrop(v) {
+  if (v === null) return null;
+  if (!v || typeof v !== 'object' || Array.isArray(v)) throw new HttpError('VALIDATION', '裁切参数无效');
+  const { x, y, w, h } = v;
+  if (![x, y, w, h].every((n) => typeof n === 'number' && Number.isFinite(n))) throw new HttpError('VALIDATION', '裁切参数无效');
+  if (x < 0 || y < 0 || x > 1 || y > 1 || w <= 0 || h <= 0 || w > 1 || h > 1) throw new HttpError('VALIDATION', '裁切参数无效');
+  if (x + w > 1 + 1e-6 || y + h > 1 + 1e-6) throw new HttpError('VALIDATION', '裁切参数无效');
+  return { x, y, w, h };
+}
+function parseCropSafe(raw) {
+  if (raw === null || raw === undefined) return null;
+  let v = raw;
+  if (typeof raw === 'string') { try { v = JSON.parse(raw); } catch (e) { return null; } }
+  try { return parseCrop(v); } catch (e) { return null; }
+}
 
 // users 行 → 前端 slati_user 形状（snake→camel）
 function publicUser(row) {
@@ -70,6 +86,9 @@ function publicUser(row) {
     gender: row.gender || null, // 013：Male/Female/Other（注册第二页下拉），NULL = 未填写
     student: studentShape(row), // v0.2.44.0：认证有效 → {email, verifiedAt, expiresAt, source}，否则 null
     xpGained: row.xp_gained || 0, // v0.2.49.0 获得类经验（粉丝/赞/评论/收藏，后端实时累加；前端登录同步进徽章）
+    // v0.2.58.25 裁切元数据（030 列；坏值宽容回 null——settings 弹窗全站读 slati_user 需要；mirrorProfile 白名单不含此二键）
+    avatarCrop: parseCropSafe(row.avatar_crop),
+    bannerCrop: parseCropSafe(row.banner_crop),
     createdAt: row.created_at
   };
 }
@@ -256,6 +275,14 @@ function register(router, deps) {
       }
       push('avatar_url = ?', avatarUrl);
       prev.avatarUrl = ctx.user.avatar_url;
+      // v0.2.58.25 连带清（030 列）：url 变更未带新裁切（含置 null）→ 裁切重置（防旧裁切错配新图）
+      if (body.avatarCrop === undefined || avatarUrl === null) { push('avatar_crop = ?', null); prev.avatarCrop = ctx.user.avatar_crop; }
+    }
+    // v0.2.58.25 头像裁切（030 列；null = 恢复默认整图 cover，显式 null 合法；url 置 null 时不落裁切——连带清已收编）
+    if (body.avatarCrop !== undefined && !(body.avatarUrl !== undefined && body.avatarUrl === null)) {
+      const crop = body.avatarCrop === null ? null : parseCrop(body.avatarCrop);
+      push('avatar_crop = ?', crop ? JSON.stringify(crop) : null);
+      prev.avatarCrop = ctx.user.avatar_crop;
     }
     if (body.language !== undefined) {
       push('language = ?', String(body.language).slice(0, 10));
@@ -314,6 +341,14 @@ function register(router, deps) {
       }
       push('banner_url = ?', bannerUrl);
       prev.bannerUrl = ctx.user.banner_url;
+      // v0.2.58.25 连带清（030 列）：url 变更未带新裁切（含置 null）→ 裁切重置（防旧裁切错配新图）
+      if (body.bannerCrop === undefined || bannerUrl === null) { push('banner_crop = ?', null); prev.bannerCrop = ctx.user.banner_crop; }
+    }
+    // v0.2.58.25 横幅裁切（030 列；null = 恢复默认整图 cover，显式 null 合法；url 置 null 时不落裁切——连带清已收编）
+    if (body.bannerCrop !== undefined && !(body.bannerUrl !== undefined && body.bannerUrl === null)) {
+      const crop = body.bannerCrop === null ? null : parseCrop(body.bannerCrop);
+      push('banner_crop = ?', crop ? JSON.stringify(crop) : null);
+      prev.bannerCrop = ctx.user.banner_crop;
     }
     // v0.2.53.0 卡片边缘主题（027 列；null = 恢复默认圆角卡，显式 null 合法；白名单 14 键）
     if (body.cardEdge !== undefined) {
@@ -337,7 +372,8 @@ function register(router, deps) {
         next: {
           displayName: next.display_name, avatarUrl: next.avatar_url, language: next.language,
           country: next.country, bio: next.bio, dob: next.dob, gender: next.gender, cardBg: next.card_bg,
-          cardPlate: next.card_plate, pageBgImage: next.page_bg_image, bannerUrl: next.banner_url, cardEdge: next.card_edge
+          cardPlate: next.card_plate, pageBgImage: next.page_bg_image, bannerUrl: next.banner_url, cardEdge: next.card_edge,
+          avatarCrop: next.avatar_crop, bannerCrop: next.banner_crop
         }
       });
       sendJson(res, 200, { user: publicUser(next) });

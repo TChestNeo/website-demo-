@@ -426,6 +426,81 @@ test('v0.2.58.18 个人资料横幅：bannerUrl 落库 + 非法值 400 + null �
   } finally { await t.close(); }
 });
 
+test('v0.2.58.25 显示范围裁切：合法落库 + 公开暴露 + 非法族 400 + 连带清 + 坏库值宽容', async () => {
+  const t = await testApp();
+  try {
+    const alice = t.loginAs('alice@x.com');
+    const prof = (cookie) => t.request('GET', '/api/social/users/' + alice.user.id, undefined, cookie ? { cookie } : undefined).then((r) => r.json());
+    const row = () => t.db.prepare('SELECT avatar_crop, banner_crop FROM users WHERE id = ?').get(alice.user.id);
+
+    // 默认 NULL（爷爷辈整图 cover 零回归）
+    assert.strictEqual((await prof()).user.avatarCrop, null);
+    assert.strictEqual((await prof()).user.bannerCrop, null);
+
+    // 合法对象落库 + GET 公开暴露（他人匿名也看到裁切元数据）
+    const r1 = await t.request('PATCH', '/api/auth/me', { avatarCrop: { x: 0.1, y: 0.2, w: 0.5, h: 0.6 } }, { cookie: alice.cookie });
+    assert.strictEqual(r1.status, 200);
+    assert.deepStrictEqual((await r1.json()).user.avatarCrop, { x: 0.1, y: 0.2, w: 0.5, h: 0.6 }, 'PATCH 响应经 publicUser 含新裁切（加性字段）');
+    assert.deepStrictEqual((await prof()).user.avatarCrop, { x: 0.1, y: 0.2, w: 0.5, h: 0.6 });
+    assert.deepStrictEqual((await t.request('GET', '/api/social/users/' + alice.user.id)).status, 200);
+    assert.deepStrictEqual(JSON.parse(row().avatar_crop), { x: 0.1, y: 0.2, w: 0.5, h: 0.6 }, '落库为 JSON 串');
+    const r2 = await t.request('PATCH', '/api/auth/me', { bannerCrop: { x: 0.25, y: 0, w: 0.5, h: 0.75 } }, { cookie: alice.cookie });
+    assert.strictEqual(r2.status, 200);
+    assert.deepStrictEqual((await prof()).user.bannerCrop, { x: 0.25, y: 0, w: 0.5, h: 0.75 });
+
+    // 边界合法：整图 + 贴边
+    assert.strictEqual((await t.request('PATCH', '/api/auth/me', { avatarCrop: { x: 0, y: 0, w: 1, h: 1 } }, { cookie: alice.cookie })).status, 200);
+    assert.strictEqual((await t.request('PATCH', '/api/auth/me', { avatarCrop: { x: 0.5, y: 0.5, w: 0.5, h: 0.5 } }, { cookie: alice.cookie })).status, 200, 'x+w=1 贴边合法');
+
+    // 非法族 400（参数化）：w=0、x 越界、x+w>1、串值、缺键、非数
+    for (const bad of [
+      { x: 0, y: 0, w: 0, h: 0.5 },
+      { x: 1.5, y: 0, w: 0.2, h: 0.5 },
+      { x: 0.9, y: 0, w: 0.2, h: 0.5 },
+      '{"x":0.1,"y":0.2,"w":0.5,"h":0.6}',
+      { x: 0.1, y: 0.2, w: 0.5 },
+      { x: 'a', y: 0.2, w: 0.5, h: 0.6 }
+    ]) {
+      const r = await t.request('PATCH', '/api/auth/me', { avatarCrop: bad }, { cookie: alice.cookie });
+      assert.strictEqual(r.status, 400, '非法裁切必 400: ' + JSON.stringify(bad));
+      assert.strictEqual((await r.json()).error.code, 'VALIDATION');
+    }
+    assert.deepStrictEqual((await prof()).user.avatarCrop, { x: 0.5, y: 0.5, w: 0.5, h: 0.5 }, '非法值不落库');
+
+    // null 清空
+    assert.strictEqual((await t.request('PATCH', '/api/auth/me', { avatarCrop: null }, { cookie: alice.cookie })).status, 200);
+    assert.strictEqual((await prof()).user.avatarCrop, null);
+
+    // 连带清：url 置 null → crop 清（即使请求里带 crop 也不复活——url 权威）
+    await t.request('PATCH', '/api/auth/me', { avatarUrl: '/uploads/UPL-X0009.png', avatarCrop: { x: 0.1, y: 0.1, w: 0.5, h: 0.5 } }, { cookie: alice.cookie });
+    assert.deepStrictEqual((await prof()).user.avatarCrop, { x: 0.1, y: 0.1, w: 0.5, h: 0.5 });
+    const rn = await t.request('PATCH', '/api/auth/me', { avatarUrl: null, avatarCrop: { x: 0, y: 0, w: 0.5, h: 0.5 } }, { cookie: alice.cookie });
+    assert.strictEqual(rn.status, 200);
+    assert.strictEqual((await prof()).user.avatarCrop, null, 'url 置 null 连带清 crop（url 权威）');
+
+    // 连带清：换 url 未带 crop → crop 重置
+    await t.request('PATCH', '/api/auth/me', { avatarUrl: '/uploads/UPL-X0009.png', avatarCrop: { x: 0.1, y: 0.1, w: 0.5, h: 0.5 } }, { cookie: alice.cookie });
+    assert.deepStrictEqual((await prof()).user.avatarCrop, { x: 0.1, y: 0.1, w: 0.5, h: 0.5 });
+    await t.request('PATCH', '/api/auth/me', { avatarUrl: '/uploads/UPL-X0010.png' }, { cookie: alice.cookie });
+    assert.strictEqual((await prof()).user.avatarCrop, null, '换 url 未带 crop → 重置（防旧裁切错配新图）');
+
+    // 横幅同款连带清 ×2
+    await t.request('PATCH', '/api/auth/me', { bannerUrl: '/uploads/UPL-X0001.jpg', bannerCrop: { x: 0.2, y: 0, w: 0.6, h: 1 } }, { cookie: alice.cookie });
+    assert.deepStrictEqual((await prof()).user.bannerCrop, { x: 0.2, y: 0, w: 0.6, h: 1 });
+    await t.request('PATCH', '/api/auth/me', { bannerUrl: null }, { cookie: alice.cookie });
+    assert.strictEqual((await prof()).user.bannerCrop, null, 'bannerUrl null 连带清');
+    await t.request('PATCH', '/api/auth/me', { bannerUrl: '/uploads/UPL-X0001.jpg', bannerCrop: { x: 0.2, y: 0, w: 0.6, h: 1 } }, { cookie: alice.cookie });
+    await t.request('PATCH', '/api/auth/me', { bannerUrl: '/uploads/UPL-X0002.jpg' }, { cookie: alice.cookie });
+    assert.strictEqual((await prof()).user.bannerCrop, null, 'bannerUrl 换值未带 crop 重置');
+
+    // 坏库值宽容回 null（parseCropSafe）——直接写坏 JSON 进库
+    t.db.prepare('UPDATE users SET avatar_crop = ? WHERE id = ?').run('{bad json', alice.user.id);
+    assert.strictEqual((await prof()).user.avatarCrop, null, '坏 JSON 宽容回 null');
+    t.db.prepare('UPDATE users SET avatar_crop = ? WHERE id = ?').run('{"x":2,"y":0,"w":0.5,"h":0.5}', alice.user.id);
+    assert.strictEqual((await prof()).user.avatarCrop, null, '越界矩形宽容回 null');
+  } finally { await t.close(); }
+});
+
 test('v0.2.58.18 头像加固：avatarUrl 非法值 400 + null 清除 + 合法直传/ui-avatars 通过', async () => {
   const t = await testApp();
   try {
