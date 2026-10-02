@@ -198,11 +198,12 @@ function ok(name, cond, detail) {
     const setSrc = await get('/assets/js/settings-modal.js');
     const sbSrc = await get('/assets/js/sidebar.js');
     const comI18n = await get('/assets/i18n/common.i18n.js');
-    ok('S0a site-config：58.25 赋值 1 + 58.21 赋值零残留 + changelog 标题 58.25 1 + rev 00348-/00349- 各 2（58.25 双 changelog：站点+FC 48.1 同轮）+ FC 48.1 1/48.0 零残留',
+    ok('S0a site-config：58.26 赋值 1 + 58.21 赋值零残留 + changelog 标题 58.26 1 + rev 00348-/00349- 各 2 + FC 49.0 1/48.2 赋值零残留',
       cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.21'") === 0 &&
       cnt(siteSrc, '// v0.2.58.26 = ') === 1 && cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2 &&
-      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.0'") === 0,
-      '58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") + ' r46=' + cnt(siteSrc, '00348-') + ' r47=' + cnt(siteSrc, '00349-'));
+      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.49.0'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2'") === 0,
+      '58.26=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") + ' r48=' + cnt(siteSrc, '00348-') + ' r49=' + cnt(siteSrc, '00349-') +
+      ' fc49=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.49.0'") + ' fc482=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2'"));
     ok('S0b settings-modal 控件件：六 id 族（avatarBtn/libBtn 各 2、avatarPreview 4（58.25 wrapper+applyCrop+2）、bannerPreview 6（58.25 内嵌 img+applyCrop+2）、upload/lib/remove 2/2/4、file ×2 各、avatarUpgradeLink ×3、bannerUpgradeLink ×4）+ sub-locked ×4 + stUpload ×5 + stPickFromLibrary ×3 + stRawMergeUser ×7（58.25 连带 crop 合并+2）+ bannerUrl: null ×2 + slati_avatar_sync ×4 + toast 件 ×2 + 58.25 重裁钮 ×2 各 + mn-crop-stage ×5',
       cnt(setSrc, 'settingsAvatarBtn') === 2 && cnt(setSrc, 'settingsAvatarPreview') === 4 && cnt(setSrc, 'settingsAvatarLibBtn') === 2 &&
       cnt(setSrc, 'settingsBannerPreview') === 6 && cnt(setSrc, 'settingsBannerUploadBtn') === 2 && cnt(setSrc, 'settingsBannerLibBtn') === 2 &&

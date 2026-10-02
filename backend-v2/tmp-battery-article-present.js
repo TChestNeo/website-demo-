@@ -163,22 +163,24 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   ok('F0-2 版本 v0.2.58.26 + changelog（58.0 rev 00276-nnx + 57.1 rev 00274-xfl 保留）+ FC v10.28.48.0',
     sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.26';") !== -1 &&
     sconf.indexOf('00276-nnx') !== -1 && sconf.indexOf('00274-xfl') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") !== -1);
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.49.0';") !== -1);
   ok('F0-3 i18n 新键在场（article.tags.label/article.toc.title zh + zh-Hant 目錄）',
     i18n.indexOf("article.tags.label") !== -1 && i18n.indexOf("article.toc.title") !== -1 &&
     i18n.indexOf('目錄') !== -1);
-  ok('F0-4 完整格舞台 + 窄窗分支 + 宽窗 contain fit + updateWideScale 在场（58.0 舞台公式锚）',
-    art.indexOf('var STAGE_COLS = 115, STAGE_BASE_ROWS = 70, STAGE_GROW = 25;') !== -1 &&
+  ok('F0-4 完整格舞台 + 窄窗分支 + 宽窗 contain fit + updateWideScale 在场（49.0 逐布局舞台公式锚）',
+    art.indexOf('var STAGE_GROW = 25;') !== -1 &&
+    art.indexOf('var STAGE_COLS = LAYOUT_COLS[layout] || 115;') !== -1 &&
+    art.indexOf('var STAGE_BASE_ROWS = LAYOUT_ROWS[layout] || 70;') !== -1 &&
     art.indexOf('Math.max(STAGE_BASE_ROWS, contentRows) + STAGE_GROW') !== -1 &&
     art.indexOf('if (avail < bboxW) { applyReflow') !== -1 &&
     art.indexOf('var s = Math.max(0.25, Math.min(avail / stageW, availH / stageH));') !== -1 &&
     art.indexOf('function updateWideScale') !== -1 &&
     art.indexOf('--art-grid-alpha') !== -1 &&
     art.indexOf('.article-page-wrap { max-width: none;') !== -1);
-  ok('F0-5 FC 镜像在场（fit1to1 + renderViewPresentation + fcViewTocBtn）+ 编辑模式恒 115 锚（39.0 computeCols 恒 return 115）',
+  ok('F0-5 FC 镜像在场（fit1to1 + renderViewPresentation + fcViewTocBtn）+ computeCols preset 感知（49.0）',
     fc.indexOf('function fit1to1') !== -1 && fc.indexOf('function renderViewPresentation') !== -1 &&
     fc.indexOf('fcViewTocBtn') !== -1 &&
-    fc.indexOf('return 115;') !== -1);
+    /function computeCols\(\)[\s\S]{0,140}return \(p && p\.cols\) \? p\.cols : 115;/.test(fc));
 
   // ═══ 浏览器场景（登录态 Chrome）═══
   await new Promise(r => server.listen(PORT, r));
@@ -192,7 +194,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
 
   const chrome = spawn(chromePath, [
     '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-    '--window-size=1280,900', '--remote-debugging-port=' + CDP_PORT,
+    '--window-size=1320,900', '--remote-debugging-port=' + CDP_PORT,
     '--user-data-dir=' + USER_DATA, '--disable-features=ScrollAnchoring', 'about:blank'
   ], { stdio: 'ignore' });
   const connectCdp = async (port) => {
@@ -270,15 +272,15 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('R1 640 窄窗 → 回流模式翻转（reflow 类 + inner transform none）',
       await cdp.evalJs("(function(){ var h = document.querySelector('#artBody .art-canvas'); var e = h.querySelector('.art-canvas-inner'); return h.classList.contains('art-canvas-reflow') && getComputedStyle(e).transform === 'none'; })()") === true,
       await cdp.evalJs("(function(){ var h = document.querySelector('#artBody .art-canvas'); return 'reflow=' + h.classList.contains('art-canvas-reflow') + ' avail=' + document.getElementById('artBody').clientWidth; })()"));
-    ok('N1 3 条回流带（c8/c1 同带、c2/s1 y 重叠同带、c3 独带）',
-      await cdp.evalJs("document.querySelectorAll('#artBody .art-reflow-band').length") === 3,
+    ok('N1 5 条回流带（49.0 手机视口自动排列：每卡一行全宽 → c8/c1/c2/s1/c3 各一带）',
+      await cdp.evalJs("(function(){ var bs = document.querySelectorAll('#artBody .art-reflow-band'); var out = []; for (var i = 0; i < bs.length; i++) { var ids = []; bs[i].querySelectorAll('.art-card').forEach(function(c){ ids.push(c.dataset.cardId); }); out.push(ids.join('+')); } return bs.length === 5 && out.join('|') === 'c8|c1|c2|s1|c3'; })()") === true,
       await cdp.evalJs("(function(){ var bs = document.querySelectorAll('#artBody .art-reflow-band'); var out = []; for (var i = 0; i < bs.length; i++) { var ids = []; bs[i].querySelectorAll('.art-card').forEach(function(c){ ids.push(c.dataset.cardId); }); out.push(ids.join('+')); } return out.join(' | '); })()"));
-    ok('N2 c2 content 弹性撑满带宽 + s1 stats 保自然宽 394 换行下置（列表卡不被挤压）',
-      await cdp.evalJs("(function(){ var c2 = document.querySelector('#artBody .art-card[data-card-id=\"c2\"]'); var s1 = document.querySelector('#artBody .art-card[data-card-id=\"s1\"]'); return c2.offsetWidth > 400 && c2.offsetTop < s1.offsetTop && Math.abs(s1.offsetWidth - 394) <= 2; })()") === true,
+    ok('N2 c2 content 弹性撑满带宽 + s1 stats 钳制不溢出（列表卡不被撑破）+ 纵向顺序 c2<s1',
+      await cdp.evalJs("(function(){ var b = document.getElementById('artBody'); var c2 = document.querySelector('#artBody .art-card[data-card-id=\"c2\"]'); var s1 = document.querySelector('#artBody .art-card[data-card-id=\"s1\"]'); return c2.offsetWidth > 400 && s1.offsetWidth <= b.clientWidth + 2 && c2.offsetTop < s1.offsetTop; })()") === true,
       await cdp.evalJs("(function(){ var c2 = document.querySelector('#artBody .art-card[data-card-id=\"c2\"]'); var s1 = document.querySelector('#artBody .art-card[data-card-id=\"s1\"]'); return 'c2=' + c2.offsetWidth + '@' + c2.offsetTop + ' s1=' + s1.offsetWidth + '@' + s1.offsetTop; })()"));
-    ok('N3 c8/c1 同带同行（top 相等）',
-      await cdp.evalJs("(function(){ var c8 = document.querySelector('#artBody .art-card[data-card-id=\"c8\"]'); var c1 = document.querySelector('#artBody .art-card[data-card-id=\"c1\"]'); return Math.abs(c8.offsetTop - c1.offsetTop) <= 2; })()") === true,
-      await cdp.evalJs("(function(){ var c8 = document.querySelector('#artBody .art-card[data-card-id=\"c8\"]'); var c1 = document.querySelector('#artBody .art-card[data-card-id=\"c1\"]'); return 'c8.top=' + c8.offsetTop + ' c1.top=' + c1.offsetTop; })()"));
+    ok('N3 c8 图卡 shrink 保等比 + s1 stats 非弹性（列表卡不被挤压）',
+      await cdp.evalJs("(function(){ var c8 = document.querySelector('#artBody .art-card[data-card-id=\"c8\"]'); var s1 = document.querySelector('#artBody .art-card[data-card-id=\"s1\"]'); var ar = c8.style.getPropertyValue('--art-ar').trim(); return c8.classList.contains('art-card-shrink') && ar.indexOf('264.39946285714285') === 0 && !s1.classList.contains('art-card-flexible'); })()") === true,
+      await cdp.evalJs("(function(){ var c8 = document.querySelector('#artBody .art-card[data-card-id=\"c8\"]'); var s1 = document.querySelector('#artBody .art-card[data-card-id=\"s1\"]'); return 'c8shrink=' + c8.classList.contains('art-card-shrink') + ' ar=' + c8.style.getPropertyValue('--art-ar') + ' s1flex=' + s1.classList.contains('art-card-flexible'); })()"));
     ok('N4 图卡等比收缩：c8 aspect-ratio ≈ 264.399/174.347',
       await cdp.evalJs("(function(){ var c8 = document.querySelector('#artBody .art-card[data-card-id=\"c8\"]'); var v = getComputedStyle(c8).aspectRatio; if (!v || v === 'auto') return false; var p = v.split('/'); var r = parseFloat(p[0]) / parseFloat(p[1]); return Math.abs(r - 1.5174603174603174) < 0.02; })()") === true,
       await cdp.evalJs("(function(){ var c8 = document.querySelector('#artBody .art-card[data-card-id=\"c8\"]'); return getComputedStyle(c8).aspectRatio + ' ' + c8.offsetWidth + 'x' + c8.offsetHeight; })()"));
@@ -290,7 +292,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       await cdp.evalJs("(function(){ var h = document.querySelector('#artBody .art-canvas'); var e = h.querySelector('.art-canvas-inner'); return 'reflow=' + h.classList.contains('art-canvas-reflow') + ' tf=' + e.style.transform; })()"));
     await setWidth(cdp, 640);
     ok('R3 再 640 → 回流复现（监听未死、往返稳定）',
-      await cdp.evalJs("(function(){ var h = document.querySelector('#artBody .art-canvas'); return h.classList.contains('art-canvas-reflow') && document.querySelectorAll('#artBody .art-reflow-band').length === 3 && !!document.getElementById('artTocBtn'); })()") === true);
+      await cdp.evalJs("(function(){ var h = document.querySelector('#artBody .art-canvas'); return h.classList.contains('art-canvas-reflow') && document.querySelectorAll('#artBody .art-reflow-band').length === 5 && !!document.getElementById('artTocBtn'); })()") === true);
 
     // ── N5-7 最窄 320（≤560 媒体查询纵排）──
     await setWidth(cdp, 320);

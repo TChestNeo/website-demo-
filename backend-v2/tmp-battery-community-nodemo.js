@@ -179,7 +179,7 @@ function runStatic() {
   const c = (s, a) => s.split(a).length - 1;
 
   // F1 site-config：58.26 恰 3（版本行+站点 changelog 头+FC 条目正文提及）+ 58.23 历史条目保留 + rev 占位双锚
-  check('F1 site-config v0.2.58.26 恰 3 处（版本行+站点头+FC 条目正文提及）', c(cfg, 'v0.2.58.26') === 3, 'n=' + c(cfg, 'v0.2.58.26'));
+  check('F1 site-config v0.2.58.26 恰 5 处（版本行+站点头+49.0 条目头/正文+FC 条目正文提及——633 轮 +2）', c(cfg, 'v0.2.58.26') === 5, 'n=' + c(cfg, 'v0.2.58.26'));
   check('F1 site-config 58.23 历史条目保留 ×1', c(cfg, 'v0.2.58.23') === 1, 'n=' + c(cfg, 'v0.2.58.23'));
   check('F1 rev 占位双锚（00348-XXX + 00349-??? 各 2，部署后终态同数）', c(cfg, 'rev 00348-') === 2 && c(cfg, 'rev 00349-') === 2, c(cfg, 'rev 00348-') + ' / ' + c(cfg, 'rev 00349-'));
 

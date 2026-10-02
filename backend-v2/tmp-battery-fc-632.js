@@ -151,15 +151,19 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const fci18n = fs.readFileSync(path.join(DOCS, 'assets', 'i18n', 'fluidcanvas.i18n.js'), 'utf8');
   const cnt = (s, needle) => s.split(needle).length - 1;
 
-  ok('S1 site-config 版本双线 58.26/48.2 + rev 双占位 ×2 + 58.25/48.1 赋值零残留',
+  // S1 rev 口径：632 终态烘焙已填真值——00348-t8b/00349-hgc 各 ×2（633 轮改锚）
+  ok('S1 site-config 版本双线 58.26/49.0 + rev 真值 ×2 + 58.25/48.1/48.2 赋值零残留',
     cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") === 1 &&
-    cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") === 1 &&
-    cnt(sconf, '00348-XXX') === 2 && cnt(sconf, '00349-???') === 2 &&
+    cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.49.0';") === 1 &&
+    cnt(sconf, '00348-t8b') === 2 && cnt(sconf, '00349-hgc') === 2 &&
     cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.25';") === 0 &&
-    cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") === 0,
-    '58.26=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") + ' 48.2=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") +
-    ' 00348-XXX=' + cnt(sconf, '00348-XXX') + ' 00349-???=' + cnt(sconf, '00349-???') +
-    ' 58.25=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.25';") + ' 48.1=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1';"));
+    cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") === 0 &&
+    cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") === 0,
+    '58.26=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") + ' 49.0=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.49.0';") +
+    ' 00348-t8b=' + cnt(sconf, '00348-t8b') + ' 00349-hgc=' + cnt(sconf, '00349-hgc') +
+    ' 58.25=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.25';") +
+    ' 48.1=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") +
+    ' 48.2=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2';"));
 
   ok('S2 后端 fc-overview 路由（GET /api/fc/overview+requireSession+wordCount）+ server.js 挂载（require 解构+调用）',
     cnt(fcOv, "'/api/fc/overview'") >= 1 && cnt(fcOv, 'requireSession') >= 1 && cnt(fcOv, 'wordCount') >= 1 &&

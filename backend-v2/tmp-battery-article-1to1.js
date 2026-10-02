@@ -173,7 +173,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
 
   const chrome = spawn(chromePath, [
     '--headless=new', '--lang=zh-CN', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-    '--window-size=1280,900', '--remote-debugging-port=' + CDP_PORT,
+    '--window-size=1320,900', '--remote-debugging-port=' + CDP_PORT,
     '--user-data-dir=' + USER_DATA, 'about:blank'
   ], { stdio: 'ignore' });
   const connectCdp = async (port) => {
