@@ -236,7 +236,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     const ver = await cdp.evalJs("window.MN_SITE_VERSION");
     const fcVer = await cdp.evalJs("window.FLUIDCANVAS_VERSION");
     ok('B6 站点号 v0.2.58.26', ver === 'v0.2.58.26', 'got=' + ver);
-    ok('B6b FC v10.28.39.0', fcVer === 'v10.28.49.0', 'got=' + fcVer);
+    ok('B6b FC v10.28.39.0', fcVer === 'v10.28.49.1', 'got=' + fcVer);
 
     // ═══ F FC 列表 View 分流（v0.2.58.26 Round 46：清单=FC_OVERVIEW 真数据，访客零 API）═══
     // F0 访客：锁定英雄卡显示 + studio 隐藏 + 零 API（Round 46 访客零 API 连 fc/overview 都不发）

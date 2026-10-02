@@ -106,7 +106,7 @@ function ok(name, cond, detail) {
     fceSrc.indexOf('e.isComposing') !== -1);
   ok('F7 版本 v0.2.58.26 / v10.28.48.0 + 进位注释（新轮 41→42/31→32 + 旧轮 40→41/30→31 仍在）',
     sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.26';") !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.49.0';") !== -1 &&
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") !== -1 &&
     sconfSrc.indexOf('41→42') !== -1 && sconfSrc.indexOf('31→32') !== -1 &&
     sconfSrc.indexOf('40→41') !== -1 && sconfSrc.indexOf('30→31') !== -1);
 
@@ -405,9 +405,9 @@ function ok(name, cond, detail) {
     ok('S12c 编辑自动落草稿（名称/描述/可见性）', draft12 === '{"name":"改名","desc":"three words now","vis":"private"}', draft12);
 
     // ── S13: 版本（site v0.2.58.26 + FC v10.28.48.0 + 页面徽章） ──
-    const ver13 = await cdp.evalJs("JSON.stringify({ mn: window.MN_SITE_VERSION, fc: window.FLUIDCANVAS_VERSION, badge: document.body.innerText.indexOf('v10.28.49.0') !== -1 })");
+    const ver13 = await cdp.evalJs("JSON.stringify({ mn: window.MN_SITE_VERSION, fc: window.FLUIDCANVAS_VERSION, badge: document.body.innerText.indexOf('v10.28.49.1') !== -1 })");
     const v13 = JSON.parse(ver13);
-    ok('S13 版本 v0.2.58.26 + FC v10.28.48.0 + 徽章', v13.mn === 'v0.2.58.26' && v13.fc === 'v10.28.49.0' && v13.badge, ver13);
+    ok('S13 版本 v0.2.58.26 + FC v10.28.48.0 + 徽章', v13.mn === 'v0.2.58.26' && v13.fc === 'v10.28.49.1' && v13.badge, ver13);
 
     // ── Z: 零 console error ──
     await sleep(400);
