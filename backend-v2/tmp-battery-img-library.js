@@ -95,9 +95,9 @@ function ok(name, cond, detail) {
     fceSrc.indexOf('.flag-grid-empty') !== -1 &&
     fceSrc.indexOf("T('fc.pbg.editMeta') || '编辑图片信息'") !== -1 &&
     fceSrc.indexOf("T('fc.lib.delTitle') || '删除（从所有使用处移除）'") !== -1);
-  ok('F3 版本 v0.2.58.25 / v10.28.48.0 + 进位注释（新轮 42→43/32→33 + 旧轮 41→42/31→32 仍在）',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.25';") !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") !== -1 &&
+  ok('F3 版本 v0.2.58.26 / v10.28.48.0 + 进位注释（新轮 42→43/32→33 + 旧轮 41→42/31→32 仍在）',
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.26';") !== -1 &&
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") !== -1 &&
     sconfSrc.indexOf('42→43') !== -1 && sconfSrc.indexOf('32→33') !== -1 &&
     sconfSrc.indexOf('41→42') !== -1 && sconfSrc.indexOf('31→32') !== -1);
   ok('F3b 持久库静态钉：IMG_LIB_KEY=slati_img_library+2.5e6 上限+imgLibPut/imgLibRemove 导出+imgMetaSave choke point+store 先入合并',
@@ -536,10 +536,10 @@ function ok(name, cond, detail) {
     await cdp.evalJs("document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); true");
     await sleep(200);
 
-    // ── S11: 版本（site v0.2.58.25 + FC v10.28.48.0 + 页面徽章） ──
+    // ── S11: 版本（site v0.2.58.26 + FC v10.28.48.0 + 页面徽章） ──
     const ver11 = await cdp.evalJs("JSON.stringify({ mn: window.MN_SITE_VERSION, fc: window.FLUIDCANVAS_VERSION, badge: document.body.innerText.indexOf('v10.28.48.0') !== -1 })");
     const v11 = JSON.parse(ver11);
-    ok('S11 版本 v0.2.58.25 + FC v10.28.48.0 + 徽章', v11.mn === 'v0.2.58.25' && v11.fc === 'v10.28.48.1' && v11.badge, ver11);
+    ok('S11 版本 v0.2.58.26 + FC v10.28.48.0 + 徽章', v11.mn === 'v0.2.58.26' && v11.fc === 'v10.28.48.2' && v11.badge, ver11);
 
     // ── Z: 零 console error ──
     await sleep(400);

@@ -3,7 +3,8 @@
 // 首页活动流混入真实文章（55.0 钦定字面落地）+ FC 列表 View 云端→平台阅读页
 // 验证：B 浏览器（fetch 打桩）——概览页近期贡献=真文章（假数据 Alex Rivera 移除）、搜索三态、零文章空态、
 //       首页活动流首卡=真文章卡、双版本锚 v0.2.56.2/v10.28.36.3、全程零异常
-//       F FC 列表（?view=articles）云端行 View → article.html?id=、本地行 View → ?article=（编辑器预览保留）
+//       F FC 列表（?view=articles，58.26 Round 46）：访客锁定卡+零 API；清单=FC_OVERVIEW 真数据
+//       （已发布 View → article.html?id=、pending→review 徽章 View → ?article= 编辑器预览；artStats 真统计）
 // （house CDP 模式；截图全黑纪律，无截图依赖）
 'use strict';
 const http = require('http');
@@ -85,16 +86,48 @@ const FIX_LIST = { articles: [
   { id: 'ART-MICRO-1', title: 'Founding Charter', status: 'published', authorId: 'USR-000001', authorName: 'Neo', createdAt: '2026-09-20T08:00:00.000Z', updatedAt: '2026-09-20T08:00:00.000Z' },
   { id: 'ART-MICRO-2', title: 'Trade Treaty Notes', status: 'published', authorId: 'USR-000002', authorName: 'Vela', createdAt: '2026-09-19T10:00:00.000Z', updatedAt: '2026-09-19T10:00:00.000Z' }
 ] };
+// v0.2.58.26 Round 46：FC 首页接 /api/fc/overview 真聚合——F 段罐头（ART-MICRO-1 published→阅读页、
+// ART-MICRO-2 pending→review 徽章→编辑器 ?article= 查看器）
+const FIX_OVERVIEW = {
+  stats: { followers: 4, following: 2, articles: 2, articlesPublished: 1, articleViews: 0, articleLikes: 0,
+    articleFavorites: 0, articleShares: 0, posts: 0, postViews: 0, postLikes: 0, postFavorites: 0, postShares: 0,
+    repostsReceived: 0, media: 0 },
+  windows: {
+    '7d': { from: '2026-09-26T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 1, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] },
+    '28d': { from: '2026-09-05T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 2, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] },
+    'month': { from: '2026-09-02T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 2, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] }
+  },
+  articles: [
+    { id: 'ART-MICRO-1', title: 'Founding Charter', status: 'published', createdAt: '2026-09-20T08:00:00.000Z', updatedAt: '2026-09-20T08:00:00.000Z', viewCount: 0, likeCount: 0, favoriteCount: 0, shareCount: 0, wordCount: 120 },
+    { id: 'ART-MICRO-2', title: 'Trade Treaty Notes', status: 'pending', createdAt: '2026-09-19T10:00:00.000Z', updatedAt: '2026-09-19T10:00:00.000Z', viewCount: 0, likeCount: 0, favoriteCount: 0, shareCount: 0, wordCount: 80 }
+  ],
+  media: [],
+  posts: []
+};
+const FC_SEED = `try{(function(){
+  if (location.pathname.indexOf('fluidcanvas.html') === -1) return;
+  var q = location.search || '';
+  if (q.indexOf('guest') !== -1) {
+    try { localStorage.removeItem('slati_session'); localStorage.removeItem('slati_user'); } catch (e) {}
+    return;
+  }
+  try {
+    localStorage.setItem('slati_session', '{"loggedIn":true}');
+    localStorage.setItem('slati_user', JSON.stringify({ id: 'USR-000001', displayName: 'Neo', citizenId: 'CIT-000001', avatarUrl: null }));
+  } catch (e) {}
+})();}catch(e){}`;
 const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window.__slatiFetchStub = true;' +
   ' var realFetch = window.fetch.bind(window);' +
   ' var stubResponse = function (body, status) { return new Promise(function (resolve) { setTimeout(function () { resolve(new Response(body, { status: status, headers: { "Content-Type": "application/json" } })); }, 0); }); };' +
   ' var FIX_LIST = ' + JSON.stringify(FIX_LIST) + ';' +
+  ' var FIX_OVERVIEW = ' + JSON.stringify(FIX_OVERVIEW) + ';' +
   ' var isStubEmpty = function () { try { return sessionStorage.getItem("__stubEmptyArticles") === "1"; } catch (e) { return false; } };' +
   ' window.__stubCalls = [];' +
   ' window.fetch = function (url, opts) {' +
   '  var u = String(url); var method = (opts && opts.method) || "GET";' +
   '  if (u.indexOf("/api/") === -1) return realFetch(url, opts);' +
   '  window.__stubCalls.push({ u: u, method: method });' +
+  '  if (u.indexOf("/api/fc/overview") === 0) return stubResponse(JSON.stringify(FIX_OVERVIEW), 200);' +
   '  if (u.indexOf("/api/health") === 0) return stubResponse(JSON.stringify({ status: "ok", db: "ok" }), 200);' +
   '  if (u.indexOf("/api/articles?q=") !== -1) {' +
   '   var q = decodeURIComponent(u.split("q=")[1] || "").toLowerCase();' +
@@ -137,6 +170,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     await cdp.connect();
     await cdp.send('Page.enable'); await cdp.send('Runtime.enable');
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: FETCH_STUB });
+    await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: FC_SEED });
     await cdp.send('Emulation.setFocusEmulationEnabled', { enabled: true });
 
     // ═══ B 概览页（MicroNationary）═══
@@ -201,28 +235,65 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     // B6 双版本锚
     const ver = await cdp.evalJs("window.MN_SITE_VERSION");
     const fcVer = await cdp.evalJs("window.FLUIDCANVAS_VERSION");
-    ok('B6 站点号 v0.2.58.25', ver === 'v0.2.58.25', 'got=' + ver);
-    ok('B6b FC v10.28.39.0', fcVer === 'v10.28.48.1', 'got=' + fcVer);
+    ok('B6 站点号 v0.2.58.26', ver === 'v0.2.58.26', 'got=' + ver);
+    ok('B6b FC v10.28.39.0', fcVer === 'v10.28.48.2', 'got=' + fcVer);
 
-    // ═══ F FC 列表 View 分流 ═══
-    await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/pages/fluidcanvas.html?view=articles' });
+    // ═══ F FC 列表 View 分流（v0.2.58.26 Round 46：清单=FC_OVERVIEW 真数据，访客零 API）═══
+    // F0 访客：锁定英雄卡显示 + studio 隐藏 + 零 API（Round 46 访客零 API 连 fc/overview 都不发）
+    await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/pages/fluidcanvas.html?view=articles&guest=1' });
     await waitFor(cdp, "document.readyState === 'complete' && !!document.getElementById('artList')", 30000, 'FC 列表加载');
-    await sleep(4000); // 等云端行拉取+渲染
-    const rows = await cdp.evalJs("(function(){ return Array.from(document.querySelectorAll('#artList .art-row')).map(function(r){ return { id: r.dataset.id, title: (r.querySelector('.art-title') ? r.querySelector('.art-title').textContent : ''), isCloud: (r.className.indexOf('cloud') !== -1) }; }); })()");
-    ok('F1 FC 列表行渲染（含云端行）', Array.isArray(rows) && rows.length >= 1 && rows.some(r => r.id === 'ART-MICRO-1'), JSON.stringify(rows).slice(0, 200));
-    // 云端行 View → 平台阅读页（v0.2.56.2 口径：FC 只是编辑器）
+    await waitFor(cdp, "document.documentElement.classList.contains('fc-guest')", 5000, 'fc-guest 挂载');
+    const guestState = await cdp.evalJs(`(function(){
+      return {
+        locked: getComputedStyle(document.querySelector('.fc-locked-hero')).display,
+        studio: getComputedStyle(document.querySelector('.studio-main')).display,
+        apiCalls: (window.__stubCalls || []).slice().map(function(c){ return c.method + ' ' + c.u; })
+      };
+    })()`);
+    ok('F0 访客 FC 页：锁定英雄卡显示 + studio 隐藏', guestState.locked !== 'none' && guestState.studio === 'none',
+      JSON.stringify({ locked: guestState.locked, studio: guestState.studio }));
+    ok('F0b 访客零 API（Round 46 演示/访客零 API）', guestState.apiCalls.length === 0, guestState.apiCalls.join(' | ') || '干净');
+
+    // F1 登录 USR- 用户：清单 2 行全来自 FC_OVERVIEW.articles（零种子零 demo）
+    await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/pages/fluidcanvas.html?view=articles' });
+    await waitFor(cdp, "document.readyState === 'complete' && !!document.getElementById('artList')", 30000, 'FC 列表重载');
+    let cloudRendered = false;
+    try {
+      cloudRendered = await waitFor(cdp, "document.querySelectorAll('#artList .art-row').length === 2", 12000, '云端 2 行渲染');
+    } catch (e) {}
+    const rows = await cdp.evalJs("(function(){ return Array.from(document.querySelectorAll('#artList .art-row')).map(function(r){ return { id: r.dataset.id, title: r.querySelector('.art-title') ? r.querySelector('.art-title').textContent : '', badge: r.querySelector('.art-badge') ? r.querySelector('.art-badge').className : '' }; }); })()");
+    ok('F1 FC 列表 2 行全云端（FC_OVERVIEW.articles，零种子零 demo）',
+      cloudRendered && rows.length === 2 && rows.every(r => r.id === 'ART-MICRO-1' || r.id === 'ART-MICRO-2'), JSON.stringify(rows).slice(0, 220));
+    const apiCalls = await cdp.evalJs("(window.__stubCalls || []).map(function(c){ return c.method + ' ' + c.u; })");
+    ok('F1b 恰 1 次 GET /api/fc/overview + 零旧 /api/articles 链',
+      apiCalls.filter(c => c.indexOf('/api/fc/overview') !== -1).length === 1 && apiCalls.every(c => c.indexOf('/api/articles') === -1),
+      JSON.stringify(apiCalls));
+    ok('F1c 状态徽章：published + review（pending 映射审核）',
+      rows.some(r => r.badge.indexOf('published') !== -1) && rows.some(r => r.badge.indexOf('review') !== -1),
+      JSON.stringify(rows.map(r => r.badge)));
+
+    // F2 已发布行 View → 平台阅读页（v0.2.56.2 口径：FC 只是编辑器）
     await cdp.evalJs("(function(){ var row = Array.from(document.querySelectorAll('#artList .art-row')).find(function(r){ return r.dataset.id === 'ART-MICRO-1'; }); var btn = row.querySelector('.art-action-btn[title=\"View\"]'); btn.click(); })()");
     await sleep(800);
     const fUrl = await cdp.evalJs('location.href');
-    ok('F2 云端文章 View → 平台阅读页 article.html?id=', fUrl.indexOf('article.html?id=ART-MICRO-1') !== -1, fUrl);
-    // 回到列表；本地行 View → 编辑器 ?article=（v10.28.35.0 预览保留）
+    ok('F2 云端已发布 View → 平台阅读页 article.html?id=', fUrl.indexOf('article.html?id=ART-MICRO-1') !== -1, fUrl);
+
+    // F3 审核行 View → 编辑器 ?article=（草稿/审核 → 编辑器查看器，v10.28.35.0 预览保留）
     await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/pages/fluidcanvas.html?view=articles' });
     await waitFor(cdp, "document.readyState === 'complete' && !!document.getElementById('artList')", 30000, 'FC 列表重载');
-    await sleep(4000);
-    const localRow = await cdp.evalJs("(function(){ var row = Array.from(document.querySelectorAll('#artList .art-row')).find(function(r){ return r.dataset.id !== 'ART-MICRO-1' && r.dataset.id !== 'ART-MICRO-2'; }); if (!row) return null; var btn = row.querySelector('.art-action-btn[title=\"View\"]'); if (!btn) return 'NO_VIEW_BTN'; btn.click(); return 'clicked'; })()");
+    try { await waitFor(cdp, "document.querySelectorAll('#artList .art-row').length === 2", 12000, '云端 2 行渲染'); } catch (e) {}
+    await cdp.evalJs("(function(){ var row = Array.from(document.querySelectorAll('#artList .art-row')).find(function(r){ return r.dataset.id === 'ART-MICRO-2'; }); var btn = row.querySelector('.art-action-btn[title=\"View\"]'); btn.click(); })()");
     await sleep(800);
     const fUrl2 = await cdp.evalJs('location.href');
-    ok('F3 本地草稿 View → 编辑器 ?article=（预览保留）', localRow === 'clicked' && fUrl2.indexOf('fluidcanvas-editor.html?article=') !== -1, localRow + ' / ' + fUrl2);
+    ok('F3 审核草稿 View → 编辑器 ?article=', fUrl2.indexOf('fluidcanvas-editor.html?article=ART-MICRO-2') !== -1, fUrl2);
+
+    // F4 artStats 真实统计（FC_OVERVIEW.stats：总数 2/已发布 1/草稿 0）
+    await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/pages/fluidcanvas.html?view=articles' });
+    await waitFor(cdp, "document.readyState === 'complete' && !!document.getElementById('artStats')", 30000, 'FC 列表重载');
+    try { await waitFor(cdp, "document.querySelectorAll('#artList .art-row').length === 2", 12000, '云端 2 行渲染'); } catch (e) {}
+    const statsVals = await cdp.evalJs("(function(){ return Array.from(document.querySelectorAll('#artStats .metric-value')).map(function(v){ return v.textContent.trim(); }); })()");
+    ok('F4 artStats 真实统计 [Total=2, Published=1, Drafts=0, …]（零假数据）',
+      statsVals.length === 4 && statsVals[0] === '2' && statsVals[1] === '1' && statsVals[2] === '0', JSON.stringify(statsVals));
 
     // S 全程零 JS 错误
     ok('S1 全程零 Runtime exception', cdp.errs.length === 0, cdp.errs.slice(0, 3).join(' | ') || '干净');

@@ -1,4 +1,4 @@
-// tmp-battery-community-nodemo.js — v0.2.58.25 社区页演示样本全移除 + 三 tab 全接真数据电池（2026-09-30）
+// tmp-battery-community-nodemo.js — v0.2.58.26 社区页演示样本全移除 + 三 tab 全接真数据电池（2026-09-30）
 // 用户：「能不能把社区页面的所有测试使用的样本信息都去除掉」
 // 四项钦定：①只删页面假样本（后端库数据不动）②匿名访客看登录引导卡（58.17 following 先例）
 //   ③三 tab 全接真数据（recommend=/api/social/posts、following=/api/social/feed、topic=/api/social/topics）
@@ -178,10 +178,10 @@ function runStatic() {
   const i18n = fs.readFileSync(path.join(DOCS, 'assets', 'i18n', 'community-hub.i18n.js'), 'utf8');
   const c = (s, a) => s.split(a).length - 1;
 
-  // F1 site-config：58.24 恰 2（版本行+changelog 头）+ 58.23 历史条目保留 + rev 占位双锚
-  check('F1 site-config v0.2.58.25 恰 4 处（版本行+双 changelog 头）', c(cfg, 'v0.2.58.25') === 4, 'n=' + c(cfg, 'v0.2.58.25'));
+  // F1 site-config：58.26 恰 3（版本行+站点 changelog 头+FC 条目正文提及）+ 58.23 历史条目保留 + rev 占位双锚
+  check('F1 site-config v0.2.58.26 恰 3 处（版本行+站点头+FC 条目正文提及）', c(cfg, 'v0.2.58.26') === 3, 'n=' + c(cfg, 'v0.2.58.26'));
   check('F1 site-config 58.23 历史条目保留 ×1', c(cfg, 'v0.2.58.23') === 1, 'n=' + c(cfg, 'v0.2.58.23'));
-  check('F1 rev 占位双锚（00346-XXX + 00347-??? 各 2，部署后终态同数）', c(cfg, 'rev 00346-') === 2 && c(cfg, 'rev 00347-') === 2, c(cfg, 'rev 00346-') + ' / ' + c(cfg, 'rev 00347-'));
+  check('F1 rev 占位双锚（00348-XXX + 00349-??? 各 2，部署后终态同数）', c(cfg, 'rev 00348-') === 2 && c(cfg, 'rev 00349-') === 2, c(cfg, 'rev 00348-') + ' / ' + c(cfg, 'rev 00349-'));
 
   // F2 hub 演示零残留全表（16 锚=0）
   const ZERO = ['var feedData', 'Marcus Vane', 'Sovereign Council', 'Cartography Guild', 'Neural Architects',
@@ -450,7 +450,7 @@ async function main() {
       " guest: document.querySelectorAll('[data-guest-like],[data-guest-repost],[data-guest-favorite],[data-guest-share]').length," +
       " composer: !!document.getElementById('postComposer')," +
       " disc: document.getElementById('discoveryList').textContent.indexOf('登录后探索话题与频道') !== -1 }; })()");
-    check('L1 版本 v0.2.58.25', l1.ver === 'v0.2.58.25', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.58.26', l1.ver === 'v0.2.58.26', 'ver=' + l1.ver);
     check('L1 访客=登录引导卡 + 零云卡零演示签名零 composer + 发现引导行', l1 && l1.loginCard && l1.cloud === 0 && l1.guest === 0 && !l1.composer && l1.disc, JSON.stringify(l1));
     await t.evalJs("document.querySelector('[data-tab=\"topic\"]').click()");
     await sleep(200);

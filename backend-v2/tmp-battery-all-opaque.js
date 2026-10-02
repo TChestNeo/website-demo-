@@ -15,7 +15,9 @@
 //   B5 浏览器（messages）：页面卡全 0.95 + 层灭（全站化实证）
 //   B6 浏览器（community-profile）：profile-header 玻璃保留（bg 0.55 + 层 filter 含 glass-distortion）
 //       + 其余普通卡全 0.95 + 层灭（钦定豁免 + 全站化并证）
-//   B7 浏览器（fluidcanvas FC 页）：body.fc-page + 动态插卡 bg 仍 0.55 玻璃原值（fc-page 豁免实证）
+//   B6 浏览器（fluidcanvas FC 页）：58.26 页面专属规则——.card 底 0.95 不透明 + 自身 blur 保留 + 层灭 +
+//       真实卡全 0.95（channelOverview/Summary !important 渐变同底）+ 暗色 rgb(26,26,46) +
+//       搜索胶囊玻璃保留（钦定③：按钮/搜索胶囊保持玻璃）
 'use strict';
 const http = require('http');
 const fs = require('fs');
@@ -84,10 +86,10 @@ console.log('═══ S. 静态巡检 ═══');
   }
   if (bad === 0) { pass++; console.log('  ✅ S10 41 页内联块全部含全站铺底规则'); }
   const s = read('docs/assets/js/site-config.js');
-  ok('S11 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.25';") !== -1);
+  ok('S11 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.26';") !== -1);
   ok('S12 site-config changelog 含 v0.2.55.0 条目 + 用户原话',
     s.indexOf('v0.2.55.0') !== -1 && s.indexOf('能不能把全部变成不透明的卡片') !== -1);
-  ok('S13 FC v10.28.36.1 保持', s.indexOf("'v10.28.48.1'") !== -1);
+  ok('S13 FC v10.28.36.1 保持', s.indexOf("'v10.28.48.2'") !== -1);
   const prem = read('docs/pages/premium.html');
   const auth = read('docs/signup-and-login.html');
   ok('S14 豁免卡零触碰锚（plan-card 深色 !important 仍在 + auth-card 仍在）',
@@ -349,32 +351,57 @@ const SNAP_CARDS = `(function(){
     B.cleanup();
   } catch (e) { fail++; console.log('  ❌ B5 段异常：' + e.message); }
 
-  // ═══ B6. fluidcanvas FC 页（fc-page 豁免实证）═══
+  // ═══ B6. fluidcanvas FC 页（58.26 钦定③：首页卡片玻璃→不透明，按钮/搜索胶囊保持玻璃）═══
   try {
-    console.log('═══ B6. FC 页 fc-page 豁免 ═══');
+    console.log('═══ B6. FC 页首页卡片不透明化 ═══');
     const B = await launchChrome('B6');
     const cdp = B.cdp;
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: SESSION });
     await cdp.send('Page.navigate', { url: BASE + '/pages/fluidcanvas.html' });
     await waitFor(cdp, 'document.body && document.body.classList.contains("fc-page")', 30000, 'FC 页 body 就绪');
+    await waitFor(cdp, 'document.querySelectorAll(".card").length >= 2', 15000, 'FC 页真实卡渲染');
     const probe = await cdp.evalJs(`(function(){
       var d = document.createElement('div');
       d.className = 'card'; d.id = '__battProbe';
-      document.body.appendChild(d);
+      var l = document.createElement('div'); l.className = 'lg-backdrop';
+      d.appendChild(l); document.body.appendChild(d);
       var cs = getComputedStyle(d);
-      var out = { bg: cs.backgroundColor, bf: cs.backdropFilter, fc: document.body.classList.contains('fc-page') };
+      var out = { bg: cs.backgroundColor, bf: cs.backdropFilter,
+        layer: { f: getComputedStyle(l).filter, bf: getComputedStyle(l).backdropFilter },
+        fc: document.body.classList.contains('fc-page') };
       d.remove();
-      var real = document.querySelector('.card');
-      if (real) out.realBg = getComputedStyle(real).backgroundColor;
       return out;
     })()`);
-    ok('B17 FC 页 body 挂 fc-page 类（排除标记在位）', probe.fc === true);
-    ok('B18 FC 页 .card 背景仍 var(--card-bg) 0.55 玻璃原值（全站规则死规则）',
-      probe.bg === 'rgba(255, 255, 255, 0.55)' && probe.bf === 'blur(24px)',
-      probe.bg + ' / ' + probe.bf);
-    ok('B19 FC 页真实卡（若有）同样非 0.95 不透明底',
-      probe.realBg === undefined || probe.realBg !== 'rgba(255, 255, 255, 0.95)',
-      probe.realBg === undefined ? '页面无真实 .card（动态插卡已证）' : probe.realBg);
+    ok('B17 FC 页 body 挂 fc-page 类（58.26 页面专属规则作用域标记）', probe.fc === true);
+    ok('B18 FC 页 .card 底改 --sidebar-bg 0.95 不透明 + 自身 backdropFilter 保留 + .lg-backdrop 层灭',
+      probe.bg === 'rgba(255, 255, 255, 0.95)' && probe.bf === 'blur(24px)' &&
+      probe.layer.f === 'none' && probe.layer.bf === 'none',
+      probe.bg + ' / ' + probe.bf + ' / ' + JSON.stringify(probe.layer));
+    const s = await cdp.evalJs(SNAP_CARDS);
+    ok('B19 FC 页真实卡全 0.95 不透明底（channelOverview/Summary !important 渐变同底）',
+      s.n >= 2 && s.cards.every(c => c.bg === 'rgba(255, 255, 255, 0.95)'),
+      s.cards.map(c => c.bg).filter((v, i, a) => a.indexOf(v) === i).join('/'));
+    const wl = s.cards.filter(c => c.layer);
+    ok('B20 FC 页挂层卡 .lg-backdrop 全灭（filter=none + backdropFilter=none）',
+      wl.every(c => c.layer.f === 'none' && c.layer.bf === 'none'),
+      '挂层 ' + wl.length + '/' + JSON.stringify(wl.filter(c => c.layer.f !== 'none').slice(0, 2)));
+    // 钦定③玻璃保留实证：搜索胶囊非卡片——blur(16px) 滤镜原值 + 非 0.95 不透明底
+    const cap = await cdp.evalJs(`(function(){
+      var el = document.querySelector('.search-capsule');
+      if (!el) return null;
+      var cs = getComputedStyle(el);
+      return { bg: cs.backgroundColor, bf: cs.backdropFilter };
+    })()`);
+    ok('B21 搜索胶囊玻璃保留（非 0.95 底 + blur(16px) 原值——钦定③按钮/胶囊不在不透明范围）',
+      cap && cap.bg !== 'rgba(255, 255, 255, 0.95)' && cap.bf === 'blur(16px)',
+      cap && (cap.bg + ' / ' + cap.bf));
+    await cdp.evalJs('document.documentElement.setAttribute("data-theme","dark")');
+    await waitFor(cdp, 'getComputedStyle(document.querySelector(".card")).backgroundColor === "rgb(26, 26, 46)"', 5000, '暗色卡底');
+    ok('B22 暗色 FC 页 .card 底全 rgb(26,26,46)（侧栏暗色同底）',
+      await cdp.evalJs(`(function(){
+        var cards = [].slice.call(document.querySelectorAll('.card'));
+        return cards.length >= 2 && cards.every(function(c){ return getComputedStyle(c).backgroundColor === 'rgb(26, 26, 46)'; });
+      })()`));
     B.cleanup();
   } catch (e) { fail++; console.log('  ❌ B6 段异常：' + e.message); }
 

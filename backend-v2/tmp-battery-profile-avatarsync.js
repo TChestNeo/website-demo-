@@ -1,9 +1,9 @@
-// tmp-battery-profile-avatarsync.js — v0.2.58.25 个人资料头像 ↔ FC 频道主页头像双向同步电池
+// tmp-battery-profile-avatarsync.js — v0.2.58.26 个人资料头像 ↔ FC 频道主页头像双向同步电池
 // 用户「还有个人资料设置里的头像你没有做更换头像是和频道主页同步的当然用户可以勾选是否要同步」
 //   边界「还有用户个人资料的自我介绍和频道主页的bio是不互通的」
 // 钦定：①勾选框默认勾选（键缺失=ON）②双向同步·资料页权威（FC 侧点频道卡头像可换，同 PATCH 链）③bio 绝不互通（FC PATCH 只发 avatarUrl+avatarCrop）
 // 58.25：上传链加裁切弹窗（confirmCrop 不交互 rect 恒 {0,0,1,1}）；PATCH 体 keys 均 +avatarCrop
-// 验证：P0 静态锚（资料页 toggle/slati_avatar_sync 计数 + 两词典键计数 + site-config 58.20/48.0/00346-/00347- + FC 页锚 + bannerUrl 零）
+// 验证：P0 静态锚（资料页 toggle/slati_avatar_sync 计数 + 两词典键计数 + site-config 58.20/48.0/00348-/00349- + FC 页锚 + bannerUrl 零）
 //   / P 组（资料页 seed session+USR-000101 avatarUrl null）：P1 缺键默认勾选｜P2 取消勾选→保存→slati_user 零写入+旗标 '0'+PATCH 恰 1（无 mirrorProfile 二写）
 //       P3 默认 ON 保存→raw 合并 slati_user.avatarUrl=上传路径+其余字段保留+PATCH 恰 1+旗标键仍缺席｜P4a/P4b 重载持久化（OFF/ON）
 //   / F 组（FC 页 seed avatarUrl UPL-DEMO01 tier free）：F1 默认 ON 卡内 img+editable+title 更换头像+#personalAvatar 同源
@@ -196,10 +196,10 @@ function ok(name, cond, detail) {
     const fcSrc = await get('/pages/fluidcanvas.html');
     const profI18n = await get('/assets/i18n/community-profile.i18n.js');
     const fcI18n = await get('/assets/i18n/fluidcanvas.i18n.js');
-    ok('P0 site-config：版本赋值 58.25/48.1 各 1 + rev 00346-/00347- 各 2（58.25 双 changelog 条目：站点+FC 48.1 同轮）',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.25'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1'") === 1 &&
-      cnt(siteSrc, '00346-') === 2 && cnt(siteSrc, '00347-') === 2,
-      '58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.25'") + ' 48.1=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1'") + ' r36=' + cnt(siteSrc, '00346-') + ' r37=' + cnt(siteSrc, '00347-'));
+    ok('P0 site-config：版本赋值 58.25/48.1 各 1 + rev 00348-/00349- 各 2（58.25 双 changelog 条目：站点+FC 48.1 同轮）',
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2'") === 1 &&
+      cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2,
+      '58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") + ' 48.1=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2'") + ' r36=' + cnt(siteSrc, '00348-') + ' r37=' + cnt(siteSrc, '00349-'));
     ok('P0 资料页静态锚：toggle id ×4（模板+label for+F3+F4 选择器）+ slati_avatar_sync ×2（F1 读+F3 写）+ T 调用 ×2（label+aria-label）',
       cnt(profileSrc, 'editAvatarSyncToggle') === 4 && cnt(profileSrc, 'slati_avatar_sync') === 2 && cnt(profileSrc, "T('prof.edit.avatarSync')") === 2,
       'toggle=' + cnt(profileSrc, 'editAvatarSyncToggle') + ' key=' + cnt(profileSrc, 'slati_avatar_sync'));

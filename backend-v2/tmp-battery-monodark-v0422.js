@@ -137,8 +137,8 @@ const SCAN = `(function(){
   const ethSrc = fs.readFileSync(path.join(DOCS, 'assets', 'css', 'ethereal.css'), 'utf8');
   const sconfSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   ok('F1 版本双线 v0.2.54.0 / v10.28.36.1 + 注释块（49.2→49.3 白底白字第二轮·按钮）',
-    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.25';") !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") !== -1 &&
+    sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.26';") !== -1 &&
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") !== -1 &&
     sconfSrc.indexOf('黑白主题') !== -1 && sconfSrc.indexOf('深色模式背景') !== -1 &&
     sconfSrc.indexOf('白底白字') !== -1 && sconfSrc.indexOf('msg-acc') !== -1 &&
     sconfSrc.indexOf('尤其是按钮') !== -1);
@@ -228,7 +228,7 @@ const SCAN = `(function(){
     ok('M1c body 中性黑 rgb(11,11,13)', s.body === 'rgb(11, 11, 13)', s.body);
     {
       const card = await cdp.evalJs("(function(){var c=document.querySelector('.card');return c?getComputedStyle(c).backgroundColor:null;})()");
-      ok('M1d 卡片计算态 rgba(21,21,25,0.55)', card === 'rgba(21, 21, 25, 0.55)', String(card));
+      ok('M1d 卡片计算态 rgb(16,16,19)（58.26 首页卡片不透明化——旧玻璃 rgba(21,21,25,0.55) 撤）', card === 'rgb(16, 16, 19)', String(card));
     }
     {
       const toast = await cdp.evalJs("(function(){var t=document.getElementById('toast');return t?getComputedStyle(t).backgroundColor:null;})()");

@@ -9,12 +9,12 @@
 // v0.2.18.3 新增：HC1-7 CSSOM 直验规则（61 色环逐字/禁旧色/gravity scale(0.4)/position 5 窗/三动画链/图标弹跳）；H5/P3 摘类时机翻转为飞行中仍在、7s 后摘。
 // 线上（LIVE_BASE）：真卡/真帖页双按钮带粒子 span + 真访客拦截 toast + 假登录真 401 回滚链（like-pop 摘除）+
 //   L5 云模式零死爱心（修复前线上实测 3 个）+ L6 访客演示卡爱心 toast。
-// v0.2.58.25（社区页演示样本全移除）：H1/L1 版本锚 58.24；H9 死爱心口径改「静态 span 含爱心图标=0」
+// v0.2.58.26（社区页演示样本全移除）：H1/L1 版本锚 58.24；H9 死爱心口径改「静态 span 含爱心图标=0」
 //   （真卡评论/浏览静态 span 合法——旧 static===0 口径失效）；G 段重写=访客登录引导卡（三 tab 恒引导卡+
 //   发现中心/热门双引导行+切频道 tab 仍引导+零 API 含零 probe+零演示签名）；H10/P 段零改动；
 //   L 段重写=假登录 boot 401 整流终态登录引导卡（/social/feed 401→mn:unauthorized 静默整流零 toast）+
 //   真帖页公共端点取真 id 直达+访客拦截+假登录 401 回滚+访客 hub 面三 tab。
-// v0.2.58.25 另修：HC/H4/H5/P2 CSSOM 断言随 v0.2.19.0 中心对齐重构修口径——.like-fx 载三动画链、
+// v0.2.58.26 另修：HC/H4/H5/P2 CSSOM 断言随 v0.2.19.0 中心对齐重构修口径——.like-fx 载三动画链、
 //   .like-burst 外壳常量 scale(0.4) 零动画（transform 无 animation）、gravity 恢复参考原值 translateY(200px) 不带 scale、
 //   chain 选择器 .post-action-btn.like-pop .like-fx（58.19 后社区电池未入舰队从未被扫到，本轮回扫暴露）。
 // 跑法：node tmp-battery-community-like-anim.js（LIVE_BASE=<完整站点 URL> 跑线上）
@@ -251,7 +251,7 @@ async function main() {
     console.log('── H. Hub 点赞动画（本地罐头）──');
 
     const ver = await t.evalJs('window.MN_SITE_VERSION');
-    check('H1 版本 v0.2.58.25', ver === 'v0.2.58.25', 'ver=' + ver);
+    check('H1 版本 v0.2.58.26', ver === 'v0.2.58.26', 'ver=' + ver);
     const cardN = await t.evalJs("document.querySelectorAll('[data-cloud-id]').length");
     check('H1 feed 两卡渲染', cardN === 2, 'n=' + cardN);
 
@@ -416,7 +416,7 @@ async function main() {
 
     check('P6 全程 0 console 错误（帖页段）', errs.length === 0, errs.slice(0, 2).join(' | '));
 
-    console.log('── G. 访客登录引导卡（v0.2.58.25 演示样本全移除）──');
+    console.log('── G. 访客登录引导卡（v0.2.58.26 演示样本全移除）──');
     await clearUser(t);
     await nav(t, BASE + '/pages/community-hub.html');
     await sleep(500);
@@ -461,7 +461,7 @@ async function main() {
   }
 
   // ──────────────────────────────────────────────
-  // 线上（v0.2.58.25）：假登录 boot 401 整流终态=登录引导卡 + 真帖页按钮带粒子 span + 真访客拦截 +
+  // 线上（v0.2.58.26）：假登录 boot 401 整流终态=登录引导卡 + 真帖页按钮带粒子 span + 真访客拦截 +
   //   假登录真 401 回滚链（动画类摘除）+ 访客 hub 面（三 tab 恒引导卡+发现引导行）
   // ──────────────────────────────────────────────
   async function runLive(t) {
@@ -472,7 +472,7 @@ async function main() {
       " cloud: feed.querySelectorAll('[data-cloud-id]').length," +
       " guestLike: feed.querySelectorAll('[data-guest-like]').length," +
       " likeBtn: feed.querySelectorAll('[data-like-post]').length }; })()");
-    check('L1 版本 v0.2.58.25', l1.ver === 'v0.2.58.25', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.58.26', l1.ver === 'v0.2.58.26', 'ver=' + l1.ver);
     check('L1 假登录 boot 终态=登录引导卡（401 整流零云卡零演示签名）', l1 && l1.loginCard && l1.cloud === 0 && l1.guestLike === 0 && l1.likeBtn === 0, JSON.stringify(l1));
 
     // L2-L4 真帖页链：公共端点取真帖 id 直达（假登录 boot 整流后云卡不再可得）

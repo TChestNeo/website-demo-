@@ -1,7 +1,7 @@
 // tmp-battery-fc-i18n.js — FC v10.28.48.0 两页接入 12 语言 i18n 电池
 // 用户「还有 FC还没有做翻译」——编辑器页+落地页共享 fluidcanvas.i18n.js 字典
 // （zh 英文 chrome 换中文；卡片类型名显示层本地化、dataset.label 英文 payload 零改动）。
-// 验证：F0 管道（site-config 45.0/00346- 占位 + 两页字典三件套挂载 + data-i18n 规模 +
+// 验证：F0 管道（site-config 45.0/00348- 占位 + 两页字典三件套挂载 + data-i18n 规模 +
 //   zh 默认解析）/ F1 zh chrome 逐字（视口/模板/图层/历史/保存草稿/发布 + 状态栏四格）
 //   / F2 资产面板 zh 标签 + data-asset/data-label 英文 payload 恒在
 //   / F3 setLang 实时切换（en→zh 双向 + lang 属性 + 持久化）
@@ -87,6 +87,25 @@ function ok(name, cond, detail) {
   else { FAIL++; console.log('  ❌ ' + name + (detail ? '  ' + detail : '')); }
 }
 
+// F8（v0.2.58.26 Round 46）：落地页清单=FC_OVERVIEW 真数据——/api/fc/overview 罐头
+// （published+draft 各 1：Edit/View title 按钮齐；stats/windows 全键防 '—' 渲染路径异常）
+const FIX_OVERVIEW = {
+  stats: { followers: 0, following: 0, articles: 2, articlesPublished: 1, articleViews: 0, articleLikes: 0,
+    articleFavorites: 0, articleShares: 0, posts: 0, postViews: 0, postLikes: 0, postFavorites: 0, postShares: 0,
+    repostsReceived: 0, media: 0 },
+  windows: {
+    '7d': { from: '2026-09-26T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 1, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] },
+    '28d': { from: '2026-09-05T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 2, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] },
+    'month': { from: '2026-09-02T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 2, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] }
+  },
+  articles: [
+    { id: 'ART-I18N-PUB', title: 'Charter', status: 'published', createdAt: '2026-09-20T08:00:00.000Z', updatedAt: '2026-09-20T08:00:00.000Z', viewCount: 0, likeCount: 0, favoriteCount: 0, shareCount: 0, wordCount: 10 },
+    { id: 'ART-I18N-DRAFT', title: 'Draft Notes', status: 'draft', createdAt: '2026-09-19T10:00:00.000Z', updatedAt: '2026-09-19T10:00:00.000Z', viewCount: 0, likeCount: 0, favoriteCount: 0, shareCount: 0, wordCount: 5 }
+  ],
+  media: [],
+  posts: []
+};
+
 (async () => {
   await new Promise(r => server.listen(PORT, r));
   const BASE = 'http://127.0.0.1:' + PORT;
@@ -125,8 +144,8 @@ function ok(name, cond, detail) {
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     const landingHtml = await (await fetch(BASE + '/pages/fluidcanvas.html')).text();
     const countAttr = (html, attr) => (html.match(new RegExp(attr + '=', 'g')) || []).length;
-    ok('F0a site-config：FC v10.28.48.0 + rev 00346- 占位 + 站点版本恒 v0.2.58.25',
-      siteCfg.indexOf('v10.28.48.0') !== -1 && siteCfg.indexOf('00346-') !== -1 && siteCfg.indexOf('v0.2.58.25') !== -1);
+    ok('F0a site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点版本恒 v0.2.58.26',
+      siteCfg.indexOf('v10.28.48.0') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.26') !== -1);
     ok('F0b 编辑器页字典三件套挂载 + data-i18n 规模（≥180 文本 + ≥40 title + ≥8 placeholder）',
       editorHtml.indexOf('assets/js/i18n.js') !== -1 &&
       editorHtml.indexOf('assets/i18n/common.i18n.js') !== -1 &&
@@ -148,6 +167,23 @@ function ok(name, cond, detail) {
     // 每个新文档都注入（navigate 会清掉旧 window 上的定义）
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
       source: 'try{window.__lblTxt=function(id){var el=document.querySelector(\'.grid-card[data-card-id="\'+id+\'"] .card-label\');if(!el)return null;return (el.value!=null)?el.value.trim():el.textContent.trim();};}catch(e){}'
+    });
+    // F8（Round 46）：落地页 cloudMode 需 slati_user USR- 前缀（session 已由全局种子置 loggedIn）
+    // + /api/fc/overview 罐头（其余 /api/ 照旧走静态服务器 404——页面静默容错，F8 只吃 fc/overview）
+    await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
+      source: `try{(function(){
+        if (location.pathname.indexOf('fluidcanvas.html') !== -1) {
+          try { localStorage.setItem('slati_user', JSON.stringify({ id: 'USR-000001', displayName: 'Neo', citizenId: 'CIT-000001', avatarUrl: null })); } catch (e) {}
+        }
+        if (window.__slatiFcStub) return; window.__slatiFcStub = true;
+        var realFetch = window.fetch.bind(window);
+        var OVERVIEW = ${JSON.stringify(FIX_OVERVIEW)};
+        window.fetch = function (url, opts) {
+          var u = String(url);
+          if (u.indexOf('/api/fc/overview') === 0) return Promise.resolve(new Response(JSON.stringify(OVERVIEW), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+          return realFetch(url, opts);
+        };
+      })();}catch(e){}`
     });
     const nav = async (url, waitExpr, label) => {
       await cdp.send('Page.navigate', { url });

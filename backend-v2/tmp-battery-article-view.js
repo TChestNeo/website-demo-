@@ -1,10 +1,10 @@
-// tmp-battery-article-view.js — v0.2.49.0 / FC v10.28.35.3 文章查看器电池（F 轮复跑：版本断言更新 + F0-6 发布即公开）
+// tmp-battery-article-view.js — v0.2.49.0 / FC v10.28.35.3 文章查看器电池（58.26 Round 46 复跑：A 段清单=FC_OVERVIEW 真数据）
 // 用户「现在能不能做一下当我发布文章后其他用户看见这个文章的界面？我要求它的显示范围只有那个格子的范围超出格子就无法显示」
-// 验证：A 列表云端合并 17 行 + View 按钮接线导航 / B 查看器渲染+只读硬化+chrome 全隐+哨兵草稿不被覆盖
+// 验证：A 列表 2 行全云端（58.26 种子全撤）+ 恰 1 次 fc/overview + View 按钮状态分流导航 / B 查看器渲染+只读硬化+chrome 全隐+哨兵草稿不被覆盖
 //       C 格范围硬裁剪（越界卡 x/y 双侧几何 + overflow hidden）/ D pending 404 占位状态卡
 //       E guest 直载查看器不跳锁屏 / F demo store 兜底（ART-001 样例）+ reload 幂等
 //       G 全程零 Runtime exception + 零 console error（资源 404 豁免）
-//       F0 静态：双版本串 + 查看模式 CSS/JS + 五守卫 + View 委托分支 + 样例 contentJson
+//       F0 静态：双版本串 + 查看模式 CSS/JS + 五守卫 + View 委托分支 + 零假数据残留 + 样例 contentJson（居编辑器）
 // fetch 打桩：仅拦截 /articles 路径（list 2 篇：published+pending；detail：ART-CLOUD-1 带 4 卡 contentJson——
 //       其中 c3 右越界、c4 下越界；其余 404），其余路径放行原生 fetch（静态壳 /api 404 无碍）。
 // （house CDP 模式；截图全黑纪律，无截图依赖；confirm 对话框自动接受防挂起）
@@ -109,6 +109,46 @@ const FIXTURE_LIST = { articles: [
   { id: 'ART-CLOUD-1', title: 'Cloud Constitution', status: 'published', authorId: 'USR-000042', createdAt: '2026-09-14T10:00:00.000Z', updatedAt: '2026-09-14T10:00:00.000Z' },
   { id: 'ART-PENDING-1', title: 'Draft Act', status: 'pending', authorId: 'USR-000042', createdAt: '2026-09-13T08:30:00.000Z', updatedAt: '2026-09-13T08:30:00.000Z' }
 ] };
+// v0.2.58.26 Round 46：落地页清单=FC_OVERVIEW.articles 真聚合（A 段罐头——与 FIXTURE_LIST 同源映射）
+const FIX_OVERVIEW = {
+  stats: { followers: 2, following: 1, articles: 2, articlesPublished: 1, articleViews: 0, articleLikes: 0,
+    articleFavorites: 0, articleShares: 0, posts: 0, postViews: 0, postLikes: 0, postFavorites: 0, postShares: 0,
+    repostsReceived: 0, media: 0 },
+  windows: {
+    '7d': { from: '2026-09-26T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 0, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] },
+    '28d': { from: '2026-09-05T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 1, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] },
+    'month': { from: '2026-09-02T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 2, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] }
+  },
+  articles: [
+    { id: 'ART-CLOUD-1', title: 'Cloud Constitution', status: 'published', createdAt: '2026-09-14T10:00:00.000Z', updatedAt: '2026-09-14T10:00:00.000Z', viewCount: 0, likeCount: 0, favoriteCount: 0, shareCount: 0, wordCount: 42 },
+    { id: 'ART-PENDING-1', title: 'Draft Act', status: 'pending', createdAt: '2026-09-13T08:30:00.000Z', updatedAt: '2026-09-13T08:30:00.000Z', viewCount: 0, likeCount: 0, favoriteCount: 0, shareCount: 0, wordCount: 17 }
+  ],
+  media: [],
+  posts: []
+};
+// v0.2.58.26 Round 46：fluidcanvas.html 首访 demo 种子写入块已撤（假数据全撤钦定）——编辑器
+// ?article= 兜底仍读 slati_demo_article_content（云端 404 → 本地样例），F 段电池自行种入
+// ART-001 原样例（f0e71a7 v0.2.58.25 字节忠实：content + flag + text 三卡）。
+const DEMO_ART_001 = {
+  v: 9,
+  title: 'The Founding Charter of Etheria',
+  tags: [],
+  cards: [
+    { id: 'c1', type: 'content', col: 3, row: 2, colSpan: 26, rowSpan: 10,
+      content: '<h2 style="margin:0 0 8px">The Founding Charter</h2>' +
+        '<p><b>Article I — Sovereignty.</b> The Nation of Etheria is hereby established as an independent, self-governing micronation founded on the principles of open knowledge and shared imagination.</p>' +
+        '<p><b>Article II — Citizenship.</b> Citizenship is open to all who uphold this Charter, regardless of origin. Every citizen holds one vote in the Assembly.</p>' +
+        '<p><b>Article III — Knowledge.</b> The Archive of Etheria shall preserve every founding document, treaty and map for future generations.</p>',
+      bgAlpha: 0, baseFontSize: 14 },
+    { id: 'c2', type: 'flag', label: 'Etheria', col: 3, row: 13, colSpan: 12, rowSpan: 7,
+      imgSrc: 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20360%22%3E%3Crect%20width%3D%22600%22%20height%3D%22120%22%20fill%3D%22%236C5CE7%22%2F%3E%3Crect%20y%3D%22120%22%20width%3D%22600%22%20height%3D%22120%22%20fill%3D%22%23FFFFFF%22%2F%3E%3Crect%20y%3D%22240%22%20width%3D%22600%22%20height%3D%22120%22%20fill%3D%22%232E5BFF%22%2F%3E%3C%2Fsvg%3E' },
+    { id: 'c3', type: 'text', label: 'Charter Notes', col: 17, row: 13, colSpan: 12, rowSpan: 7,
+      background: 'rgba(108,92,231,0.08)',
+      content: '<b>Signatories</b><br>— The Cartography Guild<br>— Council of Etheria<br>— Citizens Assembly<br><i>Ratified 2026-08-05</i>' }
+  ],
+  settings: { snapOn: true, alignOn: true },
+  activePreset: '169', presets: {}, groupStyles: {}, pageBg: null, lastSaved: 1750000000000
+};
 // v0.2.53.1 时序修正：stub 响应改为 setTimeout(0) 宏任务解析（生产对齐）。
 // 旧写 Promise.resolve 即时解析 → microtask 在页面两个 <script> 块之间排空，
 // 而 renderArticleActions/fcvaToggle（v10.28.36.1）定义在第二个块——回调先跑即幽灵
@@ -117,8 +157,14 @@ const FIXTURE_LIST = { articles: [
 const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window.__slatiFetchStub = true;' +
   ' var realFetch = window.fetch.bind(window);' +
   ' var stubResponse = function (body, status) { return new Promise(function (resolve) { setTimeout(function () { resolve(new Response(body, { status: status, headers: { "Content-Type": "application/json" } })); }, 0); }); };' +
+  ' var FIX_OVERVIEW = ' + JSON.stringify(FIX_OVERVIEW) + ';' +
+  ' window.__stubCalls = [];' +
   ' window.fetch = function (url, opts) {' +
   '  var u = String(url);' +
+  '  window.__stubCalls.push({ u: u, method: (opts && opts.method) || "GET" });' +
+  '  if (u.indexOf("/api/fc/overview") === 0) {' +
+  '   return stubResponse(JSON.stringify(FIX_OVERVIEW), 200);' +
+  '  }' +
   '  if (u.indexOf("/articles") !== -1) {' +
   '   if (u.indexOf("/articles/") !== -1) {' +
   '    var id = decodeURIComponent(u.split("/articles/")[1].split("?")[0].split("#")[0]);' +
@@ -138,9 +184,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const main = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas.html'), 'utf8');
   const sconf = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   const editor = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
-  ok('F0-1 版本双线 v0.2.58.25 / v10.28.48.0（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.25';") !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") !== -1 &&
+  ok('F0-1 版本双线 v0.2.58.26 / v10.28.48.0（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.26';") !== -1 &&
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") !== -1 &&
     sconf.indexOf('00276-nnx') !== -1 &&
     sconf.indexOf('文章查看器') !== -1 && sconf.indexOf('提交审核') !== -1);
   ok('F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）',
@@ -149,13 +195,19 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     editor.indexOf('function enterViewLayout') !== -1 && editor.indexOf("!/[?&]article=/.test(window.location.search)") !== -1);
   ok('F0-3 编辑器五守卫在场（saveDraft/putCloudDraft/syncCloudDraft/keydown/refit resize 全挡 viewmode）',
     (editor.match(/contains\('fc-viewmode'\)\) return;/g) || []).length >= 5);
-  ok('F0-4 列表接云端在场（View 委托分支 + cloudArticles + loadCloudArticles + api.js 动态注入 + demo store）',
+  ok('F0-4 列表数据源改造在场（FC_OVERVIEW/cloudArticles/syncCloudArticles/loadFcOverview/api.js 动态注入 + demo store 移居编辑器）',
     main.indexOf(".art-action-btn[title=\"View\"]") !== -1 && main.indexOf('var cloudArticles') !== -1 &&
-    main.indexOf('function loadCloudArticles') !== -1 && main.indexOf("s.src = '../assets/js/api.js'") !== -1 &&
-    main.indexOf('slati_demo_article_content') !== -1);
-  ok('F0-5 ART-001 样例 contentJson 在场（正文卡 + flag + text，标题一致）',
-    main.indexOf('articles[0].contentJson') !== -1 && main.indexOf('The Founding Charter') !== -1 &&
-    main.indexOf("type: 'content'") !== -1 && main.indexOf("type: 'flag'") !== -1 && main.indexOf("type: 'text'") !== -1);
+    main.indexOf('function syncCloudArticles') !== -1 && main.indexOf('function loadFcOverview') !== -1 &&
+    main.indexOf("s.src = '../assets/js/api.js'") !== -1 && main.indexOf("MN_API.get('/fc/overview')") !== -1 &&
+    main.indexOf('slati_demo_article_content') === -1 && editor.indexOf('slati_demo_article_content') !== -1);
+  ok('F0-5 演示假数据零残留（可执行体全零：四标识声明/Founding Charter/Alex Rivera + 新 View/Edit 委托分支在场）',
+    main.indexOf('var SIMULATED_FILES') === -1 && main.indexOf('const SIMULATED_FILES') === -1 && main.indexOf('window.SIMULATED_FILES') === -1 &&
+    main.indexOf('function simulateFilePick') === -1 &&
+    main.indexOf('var pData') === -1 && main.indexOf('const pData') === -1 &&
+    main.indexOf('var sData') === -1 && main.indexOf('const sData') === -1 &&
+    main.indexOf('Founding Charter') === -1 && main.indexOf('Alex Rivera') === -1 &&
+    main.indexOf("'fluidcanvas-editor.html?edit=' + encodeURIComponent(id)") !== -1 &&
+    main.indexOf("'fluidcanvas-editor.html?article=' + encodeURIComponent(id)") !== -1);
   ok('F0-6 发布即公开在场（badge-success Published + 已发布 toast + 占位文案无「审核中」）',
     editor.indexOf("headerStatus.className = 'badge badge-success'") !== -1 &&
     editor.indexOf("showToast(T('fc.toast.published') || '已发布')") !== -1 &&
@@ -197,7 +249,12 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   try {
     const cdp = await connectCdp(CDP_PORT);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
-      source: 'try{localStorage.setItem("slati_session", ' + JSON.stringify(JSON.stringify({ loggedIn: true })) + ');}catch(e){}'
+      source: 'try{localStorage.setItem("slati_session", \'{"loggedIn":true}\');}catch(e){}'
+    });
+    // v0.2.58.26：落地页 cloudMode=isLoggedIn()&&USR- 前缀——单编码 session（storage.js 单次 JSON.parse）
+    // + fluidcanvas.html 专属 slati_user 种子（编辑器页路径不含 'fluidcanvas.html' 子串，天然豁免）
+    await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
+      source: 'try{(function(){ if (location.pathname.indexOf("fluidcanvas.html") !== -1) { localStorage.setItem("slati_user", JSON.stringify({ id: "USR-000042", displayName: "Neo", citizenId: "CIT-000042", avatarUrl: null })); } })();}catch(e){}'
     });
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: FETCH_STUB });
     const nav = async (url, waitExpr, label) => {
@@ -206,23 +263,27 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       await sleep(700);
     };
 
-    // ── A 列表云端合并 17 行（15 种子 + 2 云端）+ View 按钮接线导航 ──
-    await nav(BASE + '/pages/fluidcanvas.html?view=articles', "document.querySelectorAll('#artList .art-row').length === 17", 'A articles 17 行');
-    ok('A1 17 行（15 种子+2 云端）', await cdp.evalJs("document.querySelectorAll('#artList .art-row').length") === 17);
-    ok('A2 云端行置顶（首行 ART-CLOUD-1）', await cdp.evalJs("document.querySelector('#artList .art-row').dataset.id") === 'ART-CLOUD-1');
-    ok('A3 云端行与种子行均有删除钮（v0.2.55.1 起云端行可删）',
+    // ── A 列表 2 行全云端（58.26：15 种子+演示清单全撤——清单=FC_OVERVIEW.articles）+ View 按钮接线导航 ──
+    await nav(BASE + '/pages/fluidcanvas.html?view=articles', "document.querySelectorAll('#artList .art-row').length === 2", 'A articles 2 行');
+    ok('A1 2 行全云端（零种子零 demo）', await cdp.evalJs("document.querySelectorAll('#artList .art-row').length") === 2);
+    ok('A2 云端行置顶（首行 ART-CLOUD-1，newest-first）', await cdp.evalJs("document.querySelector('#artList .art-row').dataset.id") === 'ART-CLOUD-1');
+    ok('A3 两行均带删除钮（v0.2.55.1 起云端行可删，58.26 全清单皆云端）',
       await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-CLOUD-1\"] .art-action-btn.danger')") !== null &&
-      await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-001\"] .art-action-btn.danger')") !== null);
+      await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-PENDING-1\"] .art-action-btn.danger')") !== null);
     ok('A4 pending 云端行徽章 In Review', (await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-PENDING-1\"] .art-badge').className")).indexOf('review') !== -1);
-    // v0.2.56.2：View 按钮按云端/本地分流——云端（已发布）→ 平台阅读页（「FC只是一个编辑器」口径）；
-    // 本地草稿 → 编辑器 ?article= 网格裁剪预览（v10.28.35.0 保留，编辑器本职）
+    ok('A6 清单数据源=FC_OVERVIEW（恰 1 次 fc/overview + 零 /api/articles 旧链 + 零 ART-001 种子行）',
+      (await cdp.evalJs("(window.__stubCalls || []).filter(function(c){ return c.u.indexOf('/api/fc/overview') !== -1; }).length")) === 1 &&
+      (await cdp.evalJs("(window.__stubCalls || []).filter(function(c){ return c.u.indexOf('/articles') !== -1; }).length")) === 0 &&
+      await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-001\"]')") === null);
+    // v0.2.56.2：View 按钮按状态分流——已发布 → 平台阅读页（「FC只是一个编辑器」口径）；
+    // 草稿/审核 → 编辑器 ?article= 网格裁剪预览（v10.28.35.0 保留，编辑器本职）
     await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-CLOUD-1\"] .art-action-btn[title=\"View\"]').click()");
     await waitFor(cdp, "location.pathname.indexOf('article.html') !== -1", 20000, 'A5 云端 View → 平台阅读页');
-    ok('A5 云端 View → 平台阅读页 article.html?id=ART-CLOUD-1', (await cdp.evalJs('location.href')).indexOf('article.html?id=ART-CLOUD-1') !== -1);
-    await nav(BASE + '/pages/fluidcanvas.html?view=articles', "document.querySelectorAll('#artList .art-row').length === 17", 'A 列表回来');
-    await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-001\"] .art-action-btn[title=\"View\"]').click()");
-    await waitFor(cdp, "location.pathname.indexOf('fluidcanvas-editor.html') !== -1 && location.search.indexOf('article=ART-001') !== -1", 20000, 'A5b 种子行 View → 编辑器');
-    ok('A5b 本地草稿 View → 编辑器 ?article=ART-001（预览保留）', (await cdp.evalJs('location.search')).indexOf('article=ART-001') !== -1);
+    ok('A5 已发布 View → 平台阅读页 article.html?id=ART-CLOUD-1', (await cdp.evalJs('location.href')).indexOf('article.html?id=ART-CLOUD-1') !== -1);
+    await nav(BASE + '/pages/fluidcanvas.html?view=articles', "document.querySelectorAll('#artList .art-row').length === 2", 'A 列表回来');
+    await cdp.evalJs("document.querySelector('#artList .art-row[data-id=\"ART-PENDING-1\"] .art-action-btn[title=\"View\"]').click()");
+    await waitFor(cdp, "location.pathname.indexOf('fluidcanvas-editor.html') !== -1 && location.search.indexOf('article=ART-PENDING-1') !== -1", 20000, 'A5b pending View → 编辑器');
+    ok('A5b 审核草稿 View → 编辑器 ?article=ART-PENDING-1（预览保留）', (await cdp.evalJs('location.search')).indexOf('article=ART-PENDING-1') !== -1);
 
     // ── B 查看器渲染 + 只读硬化 + chrome 全隐 + 哨兵（直载 ?article=ART-CLOUD-1——
     // 云端 id 直链查看仍保留，仅列表 View 按钮分流）──
@@ -281,6 +342,10 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     ok('D4 404 文章占位卡在场', await cdp.evalJs("document.getElementById('fcViewPlaceholder') !== null") === true);
 
     // ── F demo store 兜底（ART-001 样例，云端 404 → 本地种子内容）+ reload 幂等 ──
+    // 58.26：种子首访写入块已从 fluidcanvas.html 撤除，电池自行种入 slati_demo_article_content
+    //（store 格式=JSON.stringify({id:contentJson})——编辑器单次 JSON.parse 后 demo=store[id] 对象）
+    await cdp.evalJs("localStorage.setItem('slati_demo_article_content', " +
+      JSON.stringify(JSON.stringify({ 'ART-001': DEMO_ART_001 })) + '); true');
     await nav(BASE + '/pages/fluidcanvas-editor.html?article=ART-001', "document.body.classList.contains('fc-viewmode') && document.querySelectorAll('.grid-card').length === 3", 'F demo 兜底');
     ok('F1 demo 兜底 3 卡渲染（云端 404 → 本地样例）', await cdp.evalJs("document.querySelectorAll('.grid-card').length") === 3);
     ok('F2 标题芯片 = 样例标题', await cdp.evalJs("document.getElementById('fcViewTitle') !== null && document.getElementById('fcViewTitle').textContent") === 'The Founding Charter of Etheria');

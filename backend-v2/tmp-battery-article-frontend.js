@@ -121,6 +121,25 @@ const FIXTURE_LIST = { articles: [
   { id: 'ART-Y', title: 'Constitution Notes', status: 'published', authorId: 'USR-000002', authorName: 'Bob', createdAt: '2026-09-17T10:00:00.000Z', updatedAt: '2026-09-17T10:00:00.000Z' },
   { id: 'ART-Z', title: 'Hidden Draft', status: 'hidden', authorId: 'USR-000001', authorName: 'Alice', createdAt: '2026-09-16T10:00:00.000Z', updatedAt: '2026-09-16T10:00:00.000Z' }
 ] };
+// v0.2.58.26 Round 46：FC 落地页清单=FC_OVERVIEW.articles 真聚合（B19 罐头——与 FIXTURE_LIST 同源映射；
+// syncCloudArticles 状态映射 published→published / pending→review / 其余→draft）
+const FIX_OVERVIEW = {
+  stats: { followers: 1, following: 0, articles: 3, articlesPublished: 2, articleViews: 42, articleLikes: 0,
+    articleFavorites: 0, articleShares: 0, posts: 0, postViews: 0, postLikes: 0, postFavorites: 0, postShares: 0,
+    repostsReceived: 0, media: 0 },
+  windows: {
+    '7d': { from: '2026-09-26T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 0, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] },
+    '28d': { from: '2026-09-05T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 3, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] },
+    'month': { from: '2026-09-02T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z', newFollowers: 0, newFollowersPct: null, articlesCreated: 3, articlesCreatedPct: null, postsCreated: 0, postsCreatedPct: null, interactionsReceived: 0, interactionsReceivedPct: null, days: [] }
+  },
+  articles: [
+    { id: 'ART-X', title: 'Test Article Title', status: 'published', createdAt: '2026-09-18T10:00:00.000Z', updatedAt: '2026-09-18T10:00:00.000Z', viewCount: 42, likeCount: 0, favoriteCount: 0, shareCount: 0, wordCount: 120 },
+    { id: 'ART-Y', title: 'Constitution Notes', status: 'published', createdAt: '2026-09-17T10:00:00.000Z', updatedAt: '2026-09-17T10:00:00.000Z', viewCount: 30, likeCount: 0, favoriteCount: 0, shareCount: 0, wordCount: 95 },
+    { id: 'ART-Z', title: 'Hidden Draft', status: 'pending', createdAt: '2026-09-16T10:00:00.000Z', updatedAt: '2026-09-16T10:00:00.000Z', viewCount: 12, likeCount: 0, favoriteCount: 0, shareCount: 0, wordCount: 60 }
+  ],
+  media: [],
+  posts: []
+};
 let likeState = { liked: false, likeCount: 5 };
 let favState = { favorited: false, favoriteCount: 2 };
 const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window.__slatiFetchStub = true;' +
@@ -129,12 +148,16 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   ' var FIX_DETAIL = ' + JSON.stringify(FIXTURE_DETAIL) + ';' +
   ' var FIX_COMMENTS = ' + JSON.stringify(FIXTURE_COMMENTS) + ';' +
   ' var FIX_LIST = ' + JSON.stringify(FIXTURE_LIST) + ';' +
+  ' var FIX_OVERVIEW = ' + JSON.stringify(FIX_OVERVIEW) + ';' +
   ' window.__stubLike = { liked: false, likeCount: 5 }; window.__stubFav = { favorited: false, favoriteCount: 2 };' +
   ' window.__stubCalls = [];' +
   ' window.fetch = function (url, opts) {' +
   '  var u = String(url); var method = (opts && opts.method) || "GET";' +
   '  if (u.indexOf("/api/") === -1) return realFetch(url, opts);' +
   '  if (u.indexOf("/api/health") === 0) return stubResponse(JSON.stringify({ status: "ok", db: "ok" }), 200);' +
+  '  if (u.indexOf("/api/fc/overview") === 0) {' +
+  '   return stubResponse(JSON.stringify(FIX_OVERVIEW), 200);' +
+  '  }' +
   '  var id = "ART-X";' +
   '  if (u.indexOf("/api/articles?q=") !== -1) {' +
   '   var q = decodeURIComponent(u.split("q=")[1] || "").toLowerCase();' +
@@ -235,9 +258,9 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     idxI18n.indexOf("'index.searchPh': '搜索文章…'") !== -1 && idxI18n.indexOf("'index.searchPh': 'Search articles...'") !== -1 &&
     idxI18n.indexOf('搜索世界、话题') === -1 && idxI18n.indexOf('__ZH_HANT_AUTO__') !== -1);
   ok('S11 site-config：v0.2.57.1 + changelog 文章前端条目 + FC v10.28.39.0',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.25';") !== -1 &&
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.26';") !== -1 &&
     sconf.indexOf('文章前端') !== -1 && sconf.indexOf('article_comments') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") !== -1);
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") !== -1);
 
   // ── v0.2.55.1 发布去重复 + 删除 ──
   const editor = read(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'));
@@ -258,11 +281,13 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     editor.indexOf('function isEditParam()') !== -1 && editor.indexOf('function loadArticleForEdit()') !== -1 &&
     editor.indexOf("setPublishId(id);") !== -1 &&
     editor.indexOf("} else if (isEditParam()) {") !== -1);
-  ok('S14 FC 列表：cloud 删除按钮无条件渲染 + DELETE API + bulk 逐个删 + Edit 带 ?edit=',
+  ok('S14 FC 列表：全清单皆云端（FC_OVERVIEW 驱动）+ 无条件 danger 钮 + DELETE API + Edit 带 ?edit=（cloudIds 旧族全撤）',
     fclist.indexOf("a.cloud ? '' :") === -1 &&
+    fclist.indexOf('cloudIds.forEach') === -1 &&
     fclist.indexOf("MN_API.request('/articles/' + encodeURIComponent(id), { method: 'DELETE' })") !== -1 &&
-    fclist.indexOf("'?edit=' + encodeURIComponent(id)") !== -1 &&
-    fclist.indexOf('cloudIds.forEach') !== -1);
+    fclist.indexOf("'fluidcanvas-editor.html?edit=' + encodeURIComponent(id)") !== -1 &&
+    fclist.indexOf('var cloudArticles') !== -1 &&
+    fclist.indexOf('FC_OVERVIEW.articles.map') !== -1);
 
   // ═══ 浏览器场景（登录态 Chrome #1）═══
   await new Promise(r => server.listen(PORT, r));

@@ -1,4 +1,4 @@
-// tmp-battery-crop.js — v0.2.58.25 上传裁切弹窗 + 横幅 1.5 倍高 + 视频横幅电池（Round 45 主电池）
+// tmp-battery-crop.js — v0.2.58.26 上传裁切弹窗 + 横幅 1.5 倍高 + 视频横幅电池（Round 45 主电池）
 // 用户「那个横幅和头像在上传后能不能先弹出一个选择裁切范围的弹窗调整裁切范围，还有那个横幅能不能再高1.5倍？」
 //   +「还有要允许上传视频，大小的话平台自己压缩，然后上传视频最长1分钟」+「那个视频是指横幅的部分」
 // 六钦定+视频四钦定：裁切=显示范围（绝不重编码 GIF 保动画）/固定比例框+缩放平移（视窗模型）/
@@ -331,12 +331,12 @@ const VIDEO_TO_INPUT_JS = (selector) => `(function(){ return (${RECORD_BODY})().
     const fcSrc = await get('/pages/fluidcanvas.html');
     const comI18n = await get('/assets/i18n/common.i18n.js');
     const proI18n = await get('/assets/i18n/community-profile.i18n.js');
-    ok('S0a site-config：58.25 赋值 1 + changelog 1 + rev 00346-/00347- 各 2（站点+FC 双条目）+ FC 48.1 赋值 1 + MN_CompressVideo/MN_VideoCap 各 1',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.25'") === 1 && cnt(siteSrc, '// v0.2.58.25 = ') === 1 &&
-      cnt(siteSrc, '00346-') === 2 && cnt(siteSrc, '00347-') === 2 &&
-      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1'") === 1 &&
+    ok('S0a site-config：58.25 赋值 1 + changelog 1 + rev 00348-/00349- 各 2（站点+FC 双条目）+ FC 48.1 赋值 1 + MN_CompressVideo/MN_VideoCap 各 1',
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, '// v0.2.58.26 = ') === 1 &&
+      cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2 &&
+      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2'") === 1 &&
       cnt(siteSrc, 'MN_CompressVideo') === 1 && cnt(siteSrc, 'MN_VideoCap') === 2,
-      'r40=' + cnt(siteSrc, '00346-') + ' r41=' + cnt(siteSrc, '00347-'));
+      'r40=' + cnt(siteSrc, '00348-') + ' r41=' + cnt(siteSrc, '00349-'));
     ok('S0b settings-modal 58.25 件：window.MN_CropDialog ×2 + MN_CropDialog.open ×4 + applyCrop ×8 + data-crop ×3 + mn-crop-stage ×5 + windowFromZoom ×3 + stDoUpload ×5 + 重裁钮 ×2×2 + settings-banner-img ×7 + settings-banner-video ×7 + stIsVideoUrl ×3 + vp9 ×1 + captureStream ×2 + MN_CompressVideo ×1 + MN_VideoCap ×2 + mnVideoCap ×3 + height: 144px ×1 + 96px 零残留',
       cnt(setSrc, 'window.MN_CropDialog') === 2 && cnt(setSrc, 'MN_CropDialog.open') === 4 && cnt(setSrc, 'applyCrop') === 8 &&
       cnt(setSrc, 'data-crop') === 3 && cnt(setSrc, 'mn-crop-stage') === 5 && cnt(setSrc, 'windowFromZoom') === 3 &&
@@ -354,11 +354,11 @@ const VIDEO_TO_INPUT_JS = (selector) => `(function(){ return (${RECORD_BODY})().
       cnt(profileSrc, '.mp4,.webm,.mov') === 1 && cnt(profileSrc, 'height: 210px') === 2 &&
       cnt(profileSrc, 'avatarNoVideo') === 1 && cnt(profileSrc, 'videoLocked') === 1 && cnt(profileSrc, 'videoCompressing') === 1 && cnt(profileSrc, 'videoFail') === 2,
       'crop=' + cnt(profileSrc, 'MN_CropDialog') + ' v=' + cnt(profileSrc, 'profile-banner-video'));
-    ok('S0d FC 页 48.1 件：fc-ch-avatar-crop ×4 + fc-ch-avatar-img ×3 + v10.28.48.1 ×4 + 48.0 残留 ×2（注释历史豁免）+ bannerUrl ×0（avatar-only 边界）+ MN_CropDialog ×4 + avatarCrop ×12 + applyCrop ×2',
+    ok('S0d FC 页 48.2 件：fc-ch-avatar-crop ×4 + fc-ch-avatar-img ×3 + v10.28.48.2 ×3（58.26 新注释）+ 48.1/48.0 注释历史冻结 ×4/×2 + bannerUrl ×0（avatar-only 边界）+ MN_CropDialog ×4 + avatarCrop ×12 + applyCrop ×2',
       cnt(fcSrc, 'fc-ch-avatar-crop') === 4 && cnt(fcSrc, 'fc-ch-avatar-img') === 3 &&
-      cnt(fcSrc, 'v10.28.48.1') === 4 && cnt(fcSrc, 'v10.28.48.0') === 2 &&
+      cnt(fcSrc, 'v10.28.48.2') === 3 && cnt(fcSrc, 'v10.28.48.0') === 2 && cnt(fcSrc, 'v10.28.48.1') === 4 &&
       cnt(fcSrc, 'bannerUrl') === 0 && cnt(fcSrc, 'MN_CropDialog') === 4 && cnt(fcSrc, 'avatarCrop') === 12 && cnt(fcSrc, 'applyCrop') === 2,
-      'crop=' + cnt(fcSrc, 'fc-ch-avatar-crop') + ' 481=' + cnt(fcSrc, 'v10.28.48.1'));
+      'crop=' + cnt(fcSrc, 'fc-ch-avatar-crop') + ' 482=' + cnt(fcSrc, 'v10.28.48.2') + ' 481=' + cnt(fcSrc, 'v10.28.48.1'));
     ok('S0e i18n 新键：common crop 6+reCrop 2+video 4 键单引号 ×11 各 + profile reCrop 2+video 4 键单引号 ×11 各 + zh-Hant 双引号 ×1 各 + 生成标记 ×1',
       cnt(comI18n, "'crop.titleAvatar'") === 11 && cnt(comI18n, "'crop.hint'") === 11 && cnt(comI18n, "'crop.loadFail'") === 11 &&
       cnt(comI18n, "'settings.profile.reCropAvatar'") === 11 && cnt(comI18n, "'settings.profile.reCropBanner'") === 11 &&
