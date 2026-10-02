@@ -1,7 +1,8 @@
-// tmp-battery-fc-paneltoggle.js — v10.28.49.1 折叠按钮随菜单移动电池（本地工作树）
-//   S 静态：site-config 版本 49.1 在位/49.0 赋值零残留/changelog 头 49.1+49.0 各 ×1/rev 占位各 ×1 +
-//     编辑器锚（:has 折叠态规则在位/旧相邻兄弟死规则零残留/展开态口径锚/left 过渡在位）；
-//   B 编辑器 CDP：B1 展开态按钮贴面板右缘 266px / B2 点击折叠→按钮滑到左缘 6px（中途采样证过渡）
+// tmp-battery-fc-paneltoggle.js — v10.28.49.2 折叠按钮改圆形电池（本地工作树；49.2 轮原位改锚）
+//   S 静态：site-config 版本 49.2 在位/49.1 赋值零残留/changelog 头 49.2+49.1+49.0 各 ×1/rev 前缀锚
+//     （rev 00352-/00353-/00354-/00355- 各 ×1——前缀口径填真值后恒真）+
+//     编辑器锚（:has 折叠态规则收窄为 { left: 6px; }/旧圆角方块规则零残留/32×32+50% 圆形锚/展开态口径锚）；
+//   B 编辑器 CDP：B1 展开态按钮贴面板右缘 266px 正圆 32×32 / B2 点击折叠→按钮滑到左缘 6px（中途采样证过渡）
 //     +面板宽 0 / B3 点击展开→回 266px / B4 往返后编辑器功能完好（建卡+面板搜索框在位）；
 //   E 零异常。
 'use strict';
@@ -83,8 +84,8 @@ const SESSION_SCRIPT = 'try{localStorage.setItem("slati_session", ' + JSON.strin
 // ═══ 面板/按钮状态读取（DOM 计算样式口径）═══
 const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-toggle');" +
   " var p = document.querySelector('.asset-panel'); var bs = getComputedStyle(b), ps = getComputedStyle(p);" +
-  " return { left: bs.left, br: bs.borderRadius, blw: bs.borderLeftWidth, txt: b.textContent.trim()," +
-  " pw: ps.width, brw: ps.borderRightWidth }; })()";
+  " return { left: bs.left, br: bs.borderRadius, blw: bs.borderLeftWidth, w: bs.width, h: bs.height," +
+  " txt: b.textContent.trim(), pw: ps.width, brw: ps.borderRightWidth }; })()";
 
 (async () => {
   server.listen(PORT, '127.0.0.1');
@@ -96,30 +97,34 @@ const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-to
   const el = (a) => edLines.filter((l) => l.includes(a)).length;
   const cfgSrc = fs.readFileSync(path.join(DOCS, 'assets/js/site-config.js'), 'utf8');
   const sc = (s) => cfgSrc.split(s).length - 1;
-  ok('S1 site-config：FC 版本 49.1 在位 + 49.0 赋值零残留 + changelog 头 49.1/49.0 各 ×1 + rev 占位各 ×1',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") === 1 &&
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.0';") === 0 &&
-    sc('// v10.28.49.1 = ') === 1 && sc('// v10.28.49.0 = ') === 1 &&
-    sc('rev 00352-XXX') === 1 && sc('rev 00353-???') === 1,
-    'fc49.1=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") + ' fc49.0=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.0';") +
-    ' cl49.1=' + sc('// v10.28.49.1 = ') + ' cl49.0=' + sc('// v10.28.49.0 = ') +
-    ' r1=' + sc('rev 00352-XXX') + ' r2=' + sc('rev 00353-???'));
-  ok('S2 编辑器：:has 折叠态规则在位 + 旧相邻兄弟死规则零残留 + 展开态口径锚在位',
+  ok('S1 site-config：FC 版本 49.2 在位 + 49.1 赋值零残留 + changelog 头 49.2/49.1/49.0 各 ×1 + rev 前缀锚各 ×1',
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.2';") === 1 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") === 0 &&
+    sc('// v10.28.49.2 = ') === 1 && sc('// v10.28.49.1 = ') === 1 && sc('// v10.28.49.0 = ') === 1 &&
+    sc('rev 00352-') === 1 && sc('rev 00353-') === 1 && sc('rev 00354-') === 1 && sc('rev 00355-') === 1,
+    'fc49.2=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.2';") + ' fc49.1=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") +
+    ' cl49.2=' + sc('// v10.28.49.2 = ') + ' cl49.1=' + sc('// v10.28.49.1 = ') + ' cl49.0=' + sc('// v10.28.49.0 = ') +
+    ' r52=' + sc('rev 00352-') + ' r53=' + sc('rev 00353-') + ' r54=' + sc('rev 00354-') + ' r55=' + sc('rev 00355-'));
+  ok('S2 编辑器：:has 折叠态规则收窄在位 + 旧圆角方块规则零残留 + 32×32 正圆锚 + 展开态口径锚在位',
     el('.canvas-body:has(.asset-panel.collapsed) .asset-panel-toggle') === 1 &&
+    el('{ left: 6px; }') === 1 &&
+    el('left: 6px; border-left: 1px solid var(--divider-line-strong); border-radius: 6px;') === 0 &&
+    el('border-left: none; border-radius: 0 6px 6px 0;') === 0 &&
     el('.asset-panel.collapsed + .asset-panel-toggle {') === 0 &&
+    el('width: 32px; height: 32px;') === 1 &&
     el('left: calc(var(--asset-panel-w) + 6px)') === 1 &&
-    el('left: 6px; border-left: 1px solid var(--divider-line-strong); border-radius: 6px;') === 1 &&
     el('--asset-panel-w: 260px') === 1 &&
     el('.asset-panel.collapsed {') === 1 &&
     el('transition: left 0.25s;') === 1 &&
     el("classList.toggle('collapsed')") === 1 &&
-    el('v10.28.49.1') === 1,
+    el('v10.28.49.2') === 1 && el('v10.28.49.1') === 1,
     JSON.stringify({
-      has: el('.canvas-body:has(.asset-panel.collapsed)'), old: el('.asset-panel.collapsed + .asset-panel-toggle {'),
-      base: el('left: calc(var(--asset-panel-w) + 6px)'),
-      new: el('left: 6px; border-left: 1px solid var(--divider-line-strong); border-radius: 6px;'),
+      has: el('.canvas-body:has(.asset-panel.collapsed)'), circle: el('{ left: 6px; }'),
+      oldc: el('left: 6px; border-left: 1px solid var(--divider-line-strong); border-radius: 6px;'),
+      oldbase: el('border-left: none; border-radius: 0 6px 6px 0;'), oldadj: el('.asset-panel.collapsed + .asset-panel-toggle {'),
+      size: el('width: 32px; height: 32px;'), base: el('left: calc(var(--asset-panel-w) + 6px)'),
       knob: el('--asset-panel-w: 260px'), col: el('.asset-panel.collapsed {'), trans: el('transition: left 0.25s;'),
-      togg: el("classList.toggle('collapsed')"), v491: el('v10.28.49.1')
+      togg: el("classList.toggle('collapsed')"), v492: el('v10.28.49.2'), v491: el('v10.28.49.1')
     }));
 
   // ═══ B 编辑器 CDP ═══
@@ -156,8 +161,8 @@ const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-to
     // ═══ B1 展开态默认：按钮贴面板右缘 266px ═══
     {
       const f = await cdp.evalJs(PANEL_EXPR);
-      ok('B1 展开态：按钮 left 266px / 圆角 0 6 6 0 / 左边线 0 / ◂ / 面板宽 260px',
-        f.left === '266px' && f.br === '0px 6px 6px 0px' && f.blw === '0px' &&
+      ok('B1 展开态：按钮 left 266px / 正圆 32×32（radius 50%+四边 1px）/ ◂ / 面板宽 260px',
+        f.left === '266px' && f.br === '50%' && f.blw === '1px' && f.w === '32px' && f.h === '32px' &&
         f.txt === '◂' && f.pw === '260px', JSON.stringify(f));
     }
 
@@ -171,8 +176,8 @@ const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-to
         midL > 10 && midL < 250, JSON.stringify(mid));
       await sleep(500);
       const f = await cdp.evalJs(PANEL_EXPR);
-      ok('B2b 折叠终态：按钮 left 6px / 圆角方块 6px / 补回左边线 1px / ▸ / 面板宽 0',
-        f.left === '6px' && f.br === '6px' && f.blw === '1px' &&
+      ok('B2b 折叠终态：按钮 left 6px / 仍是正圆 32×32（radius 50%+四边 1px 恒同）/ ▸ / 面板宽 0',
+        f.left === '6px' && f.br === '50%' && f.blw === '1px' && f.w === '32px' && f.h === '32px' &&
         f.txt === '▸' && f.pw === '0px' && f.brw === '0px', JSON.stringify(f));
     }
 
@@ -181,8 +186,8 @@ const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-to
       await cdp.evalJs("document.querySelector('.asset-panel-toggle').click()");
       await sleep(600);
       const f = await cdp.evalJs(PANEL_EXPR);
-      ok('B3 展开回来：按钮 left 266px / ◂ / 面板宽 260px（往返零漂移）',
-        f.left === '266px' && f.txt === '◂' && f.pw === '260px', JSON.stringify(f));
+      ok('B3 展开回来：按钮 left 266px / 仍正圆 50% / ◂ / 面板宽 260px（往返零漂移）',
+        f.left === '266px' && f.br === '50%' && f.txt === '◂' && f.pw === '260px', JSON.stringify(f));
     }
 
     // ═══ B4 往返后编辑器功能完好 ═══

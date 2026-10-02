@@ -220,7 +220,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   ok('F1-2a 版本 58.16 在位/58.15 赋值零残留/FC 恒 47.4',
     count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") === 1 &&
     count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.15';") === 0 &&
-    count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") === 1,
+    count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.49.2';") === 1,
     'v16=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") +
     ' v15res=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.15';"));
   ok('F1-2b changelog 条目（标题+原话片断+rev 注记）',
