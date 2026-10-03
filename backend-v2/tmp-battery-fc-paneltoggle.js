@@ -1,4 +1,4 @@
-// tmp-battery-fc-paneltoggle.js — v10.28.49.2 折叠按钮改圆形电池（本地工作树；49.2 轮原位改锚）
+// tmp-battery-fc-paneltoggle.js — v10.28.50.0 折叠按钮改圆形电池（本地工作树；49.2 轮原位改锚）
 //   S 静态：site-config 版本 49.2 在位/49.1 赋值零残留/changelog 头 49.2+49.1+49.0 各 ×1/rev 前缀锚
 //     （rev 00352-/00353-/00354-/00355- 各 ×1——前缀口径填真值后恒真）+
 //     编辑器锚（:has 折叠态规则收窄为 { left: 6px; }/旧圆角方块规则零残留/32×32+50% 圆形锚/展开态口径锚）；
@@ -98,12 +98,12 @@ const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-to
   const cfgSrc = fs.readFileSync(path.join(DOCS, 'assets/js/site-config.js'), 'utf8');
   const sc = (s) => cfgSrc.split(s).length - 1;
   ok('S1 site-config：FC 版本 49.2 在位 + 49.1 赋值零残留 + changelog 头 49.2/49.1/49.0 各 ×1 + rev 前缀锚各 ×1',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.2';") === 1 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 1 &&
     sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") === 0 &&
-    sc('// v10.28.49.2 = ') === 1 && sc('// v10.28.49.1 = ') === 1 && sc('// v10.28.49.0 = ') === 1 &&
+    sc('// v10.28.50.0 = ') === 1 && sc('// v10.28.49.1 = ') === 1 && sc('// v10.28.49.0 = ') === 1 &&
     sc('rev 00352-') === 1 && sc('rev 00353-') === 1 && sc('rev 00354-') === 1 && sc('rev 00355-') === 1,
-    'fc49.2=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.2';") + ' fc49.1=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") +
-    ' cl49.2=' + sc('// v10.28.49.2 = ') + ' cl49.1=' + sc('// v10.28.49.1 = ') + ' cl49.0=' + sc('// v10.28.49.0 = ') +
+    'fc49.2=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") + ' fc49.1=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") +
+    ' cl49.2=' + sc('// v10.28.50.0 = ') + ' cl49.1=' + sc('// v10.28.49.1 = ') + ' cl49.0=' + sc('// v10.28.49.0 = ') +
     ' r52=' + sc('rev 00352-') + ' r53=' + sc('rev 00353-') + ' r54=' + sc('rev 00354-') + ' r55=' + sc('rev 00355-'));
   ok('S2 编辑器：:has 折叠态规则收窄在位 + 旧圆角方块规则零残留 + 32×32 正圆锚 + 展开态口径锚在位',
     el('.canvas-body:has(.asset-panel.collapsed) .asset-panel-toggle') === 1 &&
@@ -117,14 +117,14 @@ const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-to
     el('.asset-panel.collapsed {') === 1 &&
     el('transition: left 0.25s;') === 1 &&
     el("classList.toggle('collapsed')") === 1 &&
-    el('v10.28.49.2') === 1 && el('v10.28.49.1') === 1,
+    el('v10.28.50.0') === 25 && el('v10.28.49.2') === 1 && el('v10.28.49.1') === 1,
     JSON.stringify({
       has: el('.canvas-body:has(.asset-panel.collapsed)'), circle: el('{ left: 6px; }'),
       oldc: el('left: 6px; border-left: 1px solid var(--divider-line-strong); border-radius: 6px;'),
       oldbase: el('border-left: none; border-radius: 0 6px 6px 0;'), oldadj: el('.asset-panel.collapsed + .asset-panel-toggle {'),
       size: el('width: 32px; height: 32px;'), base: el('left: calc(var(--asset-panel-w) + 6px)'),
       knob: el('--asset-panel-w: 260px'), col: el('.asset-panel.collapsed {'), trans: el('transition: left 0.25s;'),
-      togg: el("classList.toggle('collapsed')"), v492: el('v10.28.49.2'), v491: el('v10.28.49.1')
+      togg: el("classList.toggle('collapsed')"), v500: el('v10.28.50.0'), v492: el('v10.28.49.2'), v491: el('v10.28.49.1')
     }));
 
   // ═══ B 编辑器 CDP ═══

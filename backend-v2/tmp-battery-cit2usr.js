@@ -46,9 +46,9 @@ for (const f of ['signup-and-login.html', 'assets/js/sidebar.js', 'assets/js/set
 // 5. 测试钉：health/migrations 版本 28 + auth/social-profile/mask 的 USR- 口径
 {
   const h = read(path.join(BE, 'test/health.test.js'));
-  ok('health.test user_version 30 + 标题 001-030', h.indexOf('{ simple: true }), 30)') !== -1 && h.indexOf('迁移 001-030') !== -1);
+  ok('health.test user_version 31 + 标题 001-031', h.indexOf('{ simple: true }), 31)') !== -1 && h.indexOf('迁移 001-031') !== -1);
   const g = read(path.join(BE, 'test/migrations.test.js'));
-  ok('migrations.test user_version 30（主+幂等+017/022 补跑同步）', g.indexOf('{ simple: true }), 30)') !== -1);
+  ok('migrations.test user_version 31（主+幂等+017/022 补跑同步）', g.indexOf('{ simple: true }), 31)') !== -1);
   ok('migrations.test 新 026 测试在位（三态断言）',
     g.indexOf('迁移 026：citizen_id 统一 USR- 口径') !== -1 && g.indexOf("'USR-000001', '旧 CIT- 存量改写为 id'") !== -1);
   ok('auth.test USR- 前缀断言', read(path.join(BE, 'test/auth.test.js')).indexOf("startsWith('USR-')") !== -1);

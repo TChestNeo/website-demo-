@@ -239,8 +239,8 @@ async function main() {
     'rcA=' + cnt(i18nSrc, 'prof.edit.reCropAvatar') + ' rcB=' + cnt(i18nSrc, 'prof.edit.reCropBanner') + ' vl=' + cnt(i18nSrc, 'prof.toast.videoLocked'));
   const siteSrc = readNorm('assets/js/site-config.js');
   check('D0 site-config：版本赋值 v0.2.58.26 + FC 48.1 在位 + changelog rev 00348-/00349- 各 ×2（58.25 双 changelog：站点+FC 同轮）',
-    cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.49.2'") === 1 && cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2,
-    'v58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") + ' fc48=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.49.2'") + ' r46=' + cnt(siteSrc, '00348-') + ' r47=' + cnt(siteSrc, '00349-'));
+    cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.50.0'") === 1 && cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2,
+    'v58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") + ' fc48=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.50.0'") + ' r46=' + cnt(siteSrc, '00348-') + ' r47=' + cnt(siteSrc, '00349-'));
   const fcSrc = readNorm('pages/fluidcanvas.html');
   check('D9 FC 不互通（钦定③铁证）：fluidcanvas.html 源零 bannerUrl/banner_url（FC 频道主页不读 users.banner_url）',
     fcSrc.indexOf('bannerUrl') === -1 && fcSrc.indexOf('banner_url') === -1, 'bannerUrl=' + fcSrc.indexOf('bannerUrl') + ' banner_url=' + fcSrc.indexOf('banner_url'));

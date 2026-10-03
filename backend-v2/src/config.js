@@ -38,6 +38,15 @@ const config = {
     model: process.env.DEEPSEEK_MODEL || ''
   },
 
+  // Gemini（FC v10.28.50.0 边缘/边框 AI 生成；用户钦定「Gemini Flash 只负责生成、DeepSeek 只负责客服」）：
+  // key 只活 Cloud Run env，绝不 commit（AQ. 前缀非 AIza——当不透明 key 走 x-goog-api-key 头 Google 端点）。
+  // model 留空 = fc-edgegen.js MODEL_DEFAULT（gemini-3.8-flash——线上探测 404 后 2.5-flash 退役新用户）；无 key 端点回 503 unavailable（前端 toast 引导）。
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY || '',
+    baseUrl: process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com',
+    model: process.env.GEMINI_MODEL || ''
+  },
+
   tencent: {
     secretId: process.env.TENCENT_SECRET_ID || '',
     secretKey: process.env.TENCENT_SECRET_KEY || '',
@@ -50,6 +59,7 @@ const config = {
     chat: int('BUDGET_CHAT', 20),
     moderation_image: int('BUDGET_MODERATION_IMAGE', 10),
     copilot: int('BUDGET_COPILOT', 10),
+    edgeGen: int('BUDGET_EDGEGEN', 10),
     total: int('BUDGET_TOTAL', 60)
   },
 

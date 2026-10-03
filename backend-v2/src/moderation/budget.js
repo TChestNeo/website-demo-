@@ -7,7 +7,7 @@
 // 峰谷价（元/百万 tokens，DeepSeek V4 Pro 2026-08-17 起）：高峰 in 9 / cached 0.30 / out 27；低谷半价。
 // 低谷窗口 = 16:30–00:30 UTC（跨午夜，可 config.deepseek.offPeakWindow 覆盖）。
 
-const FEATURES = ['moderation_text', 'moderation_image', 'chat', 'copilot'];
+const FEATURES = ['moderation_text', 'moderation_image', 'chat', 'copilot', 'edgeGen'];
 const PRICES = {
   peak: { in: 9, cached: 0.30, out: 27 },
   offPeak: { in: 4.5, cached: 0.15, out: 13.5 }
@@ -19,7 +19,8 @@ const PROVIDER_OF = {
   chat: 'deepseek',
   chat_faq_hit: 'deepseek',
   copilot: 'deepseek',
-  moderation_image: 'tencent-ims'
+  moderation_image: 'tencent-ims',
+  edgeGen: 'gemini'
 };
 
 // 分钟数比较（不依赖 Date 构造，纯字符串解析，测试用显式 ISO）
