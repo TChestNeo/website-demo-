@@ -31,6 +31,10 @@ const { studentShape, studentRefresh } = require('../../students');
 const TIER_OF = { basic: 'basic', premium: 'premium', ultra: 'ultra', 'pkg-premium': 'premium', 'pkg-ultra': 'ultra' };
 const TIER_KEYS = Object.keys(TIER_OF);
 const TIER_RANK = { free: 0, basic: 1, premium: 2, ultra: 3 };
+// FC v10.28.51.0 团队扩容订阅（slots-*）：一次付清 1 个月（mode 恒 once），webhook 成功后写
+// users.team_cap_addon（basic/plus/premium/ultra）+ team_cap_expires_at——成员上限 3→8/16/26/∞（teams.js 消费）。
+const SLOT_OF = { 'slots-basic': 'basic', 'slots-plus': 'plus', 'slots-premium': 'premium', 'slots-ultra': 'ultra' };
+const SLOT_KEYS = Object.keys(SLOT_OF);
 const MONTHS = 1; // 订阅：月付（自动续费）
 const ONCE_MONTHS = 12; // once（每年支付）= 一次付清 1 年；row.months 落 12 → applyPaid 到期顺延 12 个月
 
@@ -79,6 +83,8 @@ function auditTier(db, user, to, via) {
 function applyPaid(db, cfg, row, opts) {
   if (row.status === 'paid') return false;
   if (db.prepare("SELECT 1 FROM payments WHERE stripe_event_id = ? AND status = 'paid'").get(opts.eventId)) return false;
+  const slotTier = SLOT_OF[row.tier_key];
+  if (slotTier) return applySlotsPaid(db, cfg, row, opts, slotTier); // 扩容订阅：只写 team_cap_addon，不动 tier
   const target = TIER_OF[row.tier_key];
   if (!target) { console.log('[webhook] 未知 tier_key ' + row.tier_key + '，忽略'); return false; } // 绝不信任行外输入
   const iso = new Date().toISOString();
@@ -102,6 +108,28 @@ function applyPaid(db, cfg, row, opts) {
       .run(newTier, expiry, iso, user.id);
     if (newTier !== user.tier) auditTier(db, user, newTier, opts.via || 'stripe');
   }
+  return true;
+}
+
+// 扩容订阅落账（FC v10.28.51.0 slots-*）：payments 记 paid + users.team_cap_addon/expiry 生效。
+// 到期顺延与订阅同款日历月；tier 不动、audit 不记 set_tier（payments 行即财务审计；团队上限变化 teams.js 实时读列）。
+function applySlotsPaid(db, cfg, row, opts, slotTier) {
+  const iso = new Date().toISOString();
+  db.prepare("UPDATE payments SET status = 'paid', paid_at = ?, stripe_event_id = ?, "
+    + 'stripe_invoice_id = COALESCE(stripe_invoice_id, ?), stripe_subscription_id = COALESCE(stripe_subscription_id, ?), '
+    + 'amount_micro = ?, currency = ? WHERE id = ? AND status = \'pending\'')
+    .run(iso, opts.eventId, opts.invoiceId || null, opts.subscriptionId || null,
+      opts.amountMicro, opts.currency || 'myr', row.id);
+  if (opts.customerId) {
+    db.prepare('UPDATE users SET stripe_customer_id = COALESCE(stripe_customer_id, ?) WHERE id = ?')
+      .run(opts.customerId, row.user_id);
+  }
+  const user = db.prepare('SELECT team_cap_addon, team_cap_expires_at FROM users WHERE id = ?').get(row.user_id);
+  if (!user) return false;
+  const expiry = extendExpiry(user.team_cap_expires_at, row.months || 1, iso);
+  db.prepare('UPDATE users SET team_cap_addon = ?, team_cap_expires_at = ?, updated_at = ? WHERE id = ?')
+    .run(slotTier, expiry, iso, row.user_id);
+  console.log('[webhook] slots 扩容生效 ' + row.tier_key + ' → ' + row.user_id + ' 到期 ' + expiry);
   return true;
 }
 
@@ -236,10 +264,12 @@ function register(router, ctx) {
     if (!ctx.limiter('pay:u:' + ctx.user.id, w.max, w.windowMs)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
     const body = await readJson(req);
     const tierKey = String(body.tierKey || '');
-    if (!TIER_OF[tierKey]) throw new HttpError('VALIDATION', 'tierKey 非法');
+    const isSlot = !!SLOT_OF[tierKey];
+    if (!TIER_OF[tierKey] && !isSlot) throw new HttpError('VALIDATION', 'tierKey 非法');
     let mode = 'subscription';
     if (body.mode === 'once') mode = 'once';
     else if (body.mode !== undefined && body.mode !== 'subscription') throw new HttpError('VALIDATION', 'mode 非法');
+    if (isSlot && mode !== 'once') throw new HttpError('VALIDATION', '扩容订阅仅支持一次性购买');
     const currency = normalizeCurrency(body.currency);
     if (currency !== 'myr' && !(cfg.stripe.catalog || {})[currency]) throw new HttpError('VALIDATION', 'currency 暂不支持');
     // v0.2.44.0 学生价（仅 Basic SKU × 仅 myr）：守卫在限流后、建会话前；认证缺失 → STUDENT_REQUIRED（前端走重新认证弹窗）
@@ -257,13 +287,14 @@ function register(router, ctx) {
     }
     const session = await createCheckoutSession(ctx.moderation.fetchImpl, cfg, {
       priceId, userId: ctx.user.id, email: ctx.user.email,
-      origin: returnOrigin(ctx, req), tierKey, months: mode === 'once' ? ONCE_MONTHS : MONTHS,
+      origin: returnOrigin(ctx, req), tierKey,
+      months: isSlot ? 1 : (mode === 'once' ? ONCE_MONTHS : MONTHS), // slots=一次付清 1 个月扩容
       mode: mode === 'once' ? 'payment' : 'subscription',
       paymentMethods: paymentMethodsFor(cfg, currency, mode)
     });
     insertWithId(db, 'payments',
       ['user_id', 'stripe_session_id', 'tier_key', 'amount_micro', 'currency', 'months', 'status', 'promo_id', 'created_at'],
-      [ctx.user.id, session.id, tierKey, 0, currency, mode === 'once' ? ONCE_MONTHS : MONTHS, 'pending',
+      [ctx.user.id, session.id, tierKey, 0, currency, isSlot ? 1 : (mode === 'once' ? ONCE_MONTHS : MONTHS), 'pending',
         student ? 'student' : null, new Date().toISOString()],
       (s) => 'PAY-' + pad6(s));
     sendJson(res, 200, { url: session.url });
@@ -301,4 +332,4 @@ function register(router, ctx) {
   });
 }
 
-module.exports = { register, enforceTierExpiry, TIER_OF, TIER_KEYS, TIER_RANK, extendExpiry };
+module.exports = { register, enforceTierExpiry, TIER_OF, TIER_KEYS, TIER_RANK, SLOT_OF, SLOT_KEYS, extendExpiry };

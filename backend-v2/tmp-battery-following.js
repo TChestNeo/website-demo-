@@ -294,7 +294,7 @@ const SEED_SESSION = 'try{(function(){' +
   ok('F1-4 版本 58.17 在位/58.16 赋值零残留/FC 恒 47.4/changelog（标题+原话+rev 对）',
     count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") === 1 &&
     count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.16';") === 0 &&
-    count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 1 &&
+    count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") === 1 &&
     count(sconf, '// v0.2.58.26 = ') === 1 && count(sconf, '那么关注页面的也做一下') === 1 &&
     count(sconf, 'rev 00348-') === 2 && count(sconf, 'rev 00349-') === 2,
     'v17=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") +

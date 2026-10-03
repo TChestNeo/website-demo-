@@ -1,4 +1,4 @@
-// tmp-battery-fc-edgeai.js — v10.28.50.0 边缘抽屉+AI 生成+本地库+边缘仓库电池（本地工作树）
+// tmp-battery-fc-edgeai.js — v10.28.51.0 边缘抽屉+AI 生成+本地库+边缘仓库电池（本地工作树）
 //   S 静态：编辑器/后端（config/budget/server/fc-edgegen/fc-edges/031/health）/site-config/i18n/article 锚
 //     （行计数口径=实测 grep -cF）；
 //   B 编辑器 CDP：B0 就绪抽屉隐 / B1 右键入口无卡拒+有卡开 / B2 卡片背景弹层幽灵钮入口 / B3 15 样本+tech4 mini /
@@ -275,13 +275,13 @@ const GETSCOPE_EXPR = "(function(){ return window.__edgeGetScope; })()";
 
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
-  ok('S3 site-config：50.0 在位 + 49.2 赋值零残留 + changelog 头各 ×1 + rev 占位各 ×1 + 站点恒 58.26',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.2';") === 0 &&
-    sc('// v10.28.50.0 = ') === 1 && sc('// v10.28.49.2 = ') === 1 &&
-    sc('rev 00356-XXX') === 1 && sc('rev 00357-???') === 1 &&
+  ok('S3 site-config：50.0 在位 + 49.2 赋值零残留 + changelog 头各 ×1 + rev 终态各 ×1 + 站点恒 58.26',
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
+    sc('// v10.28.51.0 = ') === 1 && sc('// v10.28.50.0 = ') === 1 &&
+    sc('rev 00356-djq') === 1 && sc('rev 00357-sh8') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.26';") === 1 && sc("window.MN_SITE_VERSION = 'v0.2.58.25';") === 0,
-    'fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") + ' fc49=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.2';") +
-    ' cl50=' + sc('// v10.28.50.0 = ') + ' r56=' + sc('rev 00356-XXX') + ' q57=' + sc('rev 00357-???') +
+    'fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") + ' fc49=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
+    ' cl50=' + sc('// v10.28.51.0 = ') + ' r56=' + sc('rev 00356-djq') + ' q57=' + sc('rev 00357-sh8') +
     ' v26=' + sc("window.MN_SITE_VERSION = 'v0.2.58.26';"));
 
   const i18nSrc = norm(await (await fetch(BASE + '/assets/i18n/fluidcanvas.i18n.js')).text());

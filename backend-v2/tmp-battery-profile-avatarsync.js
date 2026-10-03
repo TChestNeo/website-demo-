@@ -197,17 +197,17 @@ function ok(name, cond, detail) {
     const profI18n = await get('/assets/i18n/community-profile.i18n.js');
     const fcI18n = await get('/assets/i18n/fluidcanvas.i18n.js');
     ok('P0 site-config：版本赋值 58.25/48.1 各 1 + rev 00348-/00349- 各 2（58.25 双 changelog 条目：站点+FC 48.1 同轮）',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.50.0'") === 1 &&
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.51.0'") === 1 &&
       cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2,
-      '58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") + ' 48.1=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.50.0'") + ' r36=' + cnt(siteSrc, '00348-') + ' r37=' + cnt(siteSrc, '00349-'));
+      '58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") + ' 48.1=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.51.0'") + ' r36=' + cnt(siteSrc, '00348-') + ' r37=' + cnt(siteSrc, '00349-'));
     ok('P0 资料页静态锚：toggle id ×4（模板+label for+F3+F4 选择器）+ slati_avatar_sync ×2（F1 读+F3 写）+ T 调用 ×2（label+aria-label）',
       cnt(profileSrc, 'editAvatarSyncToggle') === 4 && cnt(profileSrc, 'slati_avatar_sync') === 2 && cnt(profileSrc, "T('prof.edit.avatarSync')") === 2,
       'toggle=' + cnt(profileSrc, 'editAvatarSyncToggle') + ' key=' + cnt(profileSrc, 'slati_avatar_sync'));
     ok('P0 资料页 i18n：prof.edit.avatarSync 单引号 ×11 手工块 + 双引号 ×1（zh-Hant OpenCC 自动块）',
       cnt(profI18n, "'prof.edit.avatarSync'") === 11 && cnt(profI18n, '"prof.edit.avatarSync"') === 1,
       "single=" + cnt(profI18n, "'prof.edit.avatarSync'") + ' double=' + cnt(profI18n, '"prof.edit.avatarSync"'));
-    ok('P0 FC 页静态锚：fc-avatar-editable ×5 + fcAvatarFile ×19 + fcEnsureApi ×3（48.1 弹窗回调+1）+ slati_avatar_sync ×1 + PATCH 体锚 avatarUrl: data.url ×1 + bannerUrl ×0（58.19 边界保留）+ bio ×4（48.1 注释——体仍绝不入包）',
-      cnt(fcSrc, 'fc-avatar-editable') === 5 && cnt(fcSrc, 'fcAvatarFile') === 19 && cnt(fcSrc, 'fcEnsureApi') === 3 &&
+    ok('P0 FC 页静态锚：fc-avatar-editable ×5 + fcAvatarFile ×19 + fcEnsureApi ×6（51.0 团队向导新增+3）+ slati_avatar_sync ×1 + PATCH 体锚 avatarUrl: data.url ×1 + bannerUrl ×0（58.19 边界保留）+ bio ×4（48.1 注释——体仍绝不入包）',
+      cnt(fcSrc, 'fc-avatar-editable') === 5 && cnt(fcSrc, 'fcAvatarFile') === 19 && cnt(fcSrc, 'fcEnsureApi') === 6 &&
       cnt(fcSrc, 'slati_avatar_sync') === 1 && cnt(fcSrc, 'avatarUrl: data.url') === 1 &&
       cnt(fcSrc, 'bannerUrl') === 0 && cnt(fcSrc, 'bio') === 4,
       'editable=' + cnt(fcSrc, 'fc-avatar-editable') + ' file=' + cnt(fcSrc, 'fcAvatarFile') + ' bannerUrl=' + cnt(fcSrc, 'bannerUrl') + ' bio=' + cnt(fcSrc, 'bio'));

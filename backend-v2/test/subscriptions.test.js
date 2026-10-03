@@ -585,3 +585,60 @@ test('webhook 容错：未知事件/未知会话/未知 tier_key → 200 忽略�
     assert.strictEqual(t.db.prepare('SELECT status FROM payments WHERE stripe_session_id = ?').get('cs_test_1').status, 'pending');
   } finally { await t.close(); }
 });
+
+test('slots 扩容 checkout：只走 once（subscription 模式 400）；payment 形状 + pending 行 months=1；缺 Price → 409 如实回退', async () => {
+  const stub = stripeStub();
+  const t = await testApp({ config: stripeConfig({ pricesOnce: { ...PRICES_ONCE, 'slots-basic': 'price_slots_basic', 'slots-plus': 'price_slots_plus', 'slots-premium': 'price_slots_premium', 'slots-ultra': 'price_slots_ultra' } }), fetchImpl: stub.fetchImpl });
+  try {
+    const alice = t.loginAs('alice@x.com');
+    // 扩容订阅仅支持一次性购买：mode 缺省（subscription）→ 400
+    assert.strictEqual((await t.request('POST', '/api/subscription/checkout', { tierKey: 'slots-basic' }, { cookie: alice.cookie })).status, 400);
+    // once → 200 + payment 模式 + once Price + pending 行
+    const d = await (await t.request('POST', '/api/subscription/checkout', { tierKey: 'slots-basic', mode: 'once' }, { cookie: alice.cookie })).json();
+    assert.match(d.url, /^https:\/\/checkout\.stripe\.com\//);
+    const row = t.db.prepare('SELECT * FROM payments WHERE user_id = ?').get(alice.user.id);
+    assert.strictEqual(row.status, 'pending');
+    assert.strictEqual(row.tier_key, 'slots-basic');
+    assert.strictEqual(row.months, 1); // 扩容=一次付清 1 个月
+    const form = Object.fromEntries(new URLSearchParams(stub.calls[0].opts.body).entries());
+    assert.strictEqual(form.mode, 'payment');
+    assert.strictEqual(form['line_items[0][price]'], 'price_slots_basic');
+    assert.strictEqual(form['subscription_data[metadata][tier_key]'], undefined); // payment 模式禁带 subscription_data
+    assert.strictEqual(form['metadata[months]'], '1');
+  } finally { await t.close(); }
+
+  // 缺 slots Price（默认配置无 slots env）→ 409 PAYMENTS_DISABLED 如实回退（不谎报即将上线）
+  const t2 = await testApp({ config: stripeConfig(), fetchImpl: stripeStub().fetchImpl });
+  try {
+    const bob = t2.loginAs('bob@x.com');
+    const r = await t2.request('POST', '/api/subscription/checkout', { tierKey: 'slots-basic', mode: 'once' }, { cookie: bob.cookie });
+    assert.strictEqual(r.status, 409);
+    assert.strictEqual((await r.json()).error.code, 'PAYMENTS_DISABLED');
+  } finally { await t2.close(); }
+});
+
+test('slots 扩容 webhook：paid → team_cap_addon+到期生效；tier 不动、无 set_tier 审计；重放幂等', async () => {
+  const stub = stripeStub();
+  const t = await testApp({ config: stripeConfig({ pricesOnce: { ...PRICES_ONCE, 'slots-basic': 'price_slots_basic' } }), fetchImpl: stub.fetchImpl });
+  try {
+    const alice = t.loginAs('alice@x.com');
+    await t.request('POST', '/api/subscription/checkout', { tierKey: 'slots-basic', mode: 'once' }, { cookie: alice.cookie });
+    const before = Date.now();
+    const evt = paidSession({ evt: 'evt_slot_1', id: 'cs_test_1', customer: 'cus_test_1', amount_total: 500, mode: 'payment' });
+    assert.strictEqual((await postWebhook(t, evt)).status, 200);
+    const row = t.db.prepare('SELECT * FROM payments WHERE stripe_session_id = ?').get('cs_test_1');
+    assert.strictEqual(row.status, 'paid');
+    assert.strictEqual(row.amount_micro, 500);
+    const u = t.db.prepare('SELECT * FROM users WHERE id = ?').get(alice.user.id);
+    assert.strictEqual(u.team_cap_addon, 'basic');
+    const exp = new Date(u.team_cap_expires_at).getTime();
+    assert.ok(exp > before + 27 * 86400000 && exp < before + 33 * 86400000, '扩容顺延 1 个日历月');
+    assert.strictEqual(u.tier, 'free', '扩容不动订阅等级');
+    assert.strictEqual(u.stripe_customer_id, 'cus_test_1');
+    assert.strictEqual(t.db.prepare("SELECT count(*) AS n FROM audit_log WHERE action = 'set_tier'").get().n, 0, '扩容不记 set_tier 审计');
+    // 重放：事件 id 去重挡住
+    await postWebhook(t, evt);
+    const u2 = t.db.prepare('SELECT * FROM users WHERE id = ?').get(alice.user.id);
+    assert.strictEqual(u2.team_cap_expires_at, u.team_cap_expires_at);
+  } finally { await t.close(); }
+});

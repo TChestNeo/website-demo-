@@ -334,7 +334,7 @@ const VIDEO_TO_INPUT_JS = (selector) => `(function(){ return (${RECORD_BODY})().
     ok('S0a site-config：58.25 赋值 1 + changelog 1 + rev 00348-/00349- 各 2（站点+FC 双条目）+ FC 48.1 赋值 1 + MN_CompressVideo/MN_VideoCap 各 1',
       cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, '// v0.2.58.26 = ') === 1 &&
       cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2 &&
-      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.50.0'") === 1 &&
+      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.51.0'") === 1 &&
       cnt(siteSrc, 'MN_CompressVideo') === 1 && cnt(siteSrc, 'MN_VideoCap') === 2,
       'r40=' + cnt(siteSrc, '00348-') + ' r41=' + cnt(siteSrc, '00349-'));
     ok('S0b settings-modal 58.25 件：window.MN_CropDialog ×2 + MN_CropDialog.open ×4 + applyCrop ×8 + data-crop ×3 + mn-crop-stage ×5 + windowFromZoom ×3 + stDoUpload ×5 + 重裁钮 ×2×2 + settings-banner-img ×7 + settings-banner-video ×7 + stIsVideoUrl ×3 + vp9 ×1 + captureStream ×2 + MN_CompressVideo ×1 + MN_VideoCap ×2 + mnVideoCap ×3 + height: 144px ×1 + 96px 零残留',
@@ -354,8 +354,8 @@ const VIDEO_TO_INPUT_JS = (selector) => `(function(){ return (${RECORD_BODY})().
       cnt(profileSrc, '.mp4,.webm,.mov') === 1 && cnt(profileSrc, 'height: 210px') === 2 &&
       cnt(profileSrc, 'avatarNoVideo') === 1 && cnt(profileSrc, 'videoLocked') === 1 && cnt(profileSrc, 'videoCompressing') === 1 && cnt(profileSrc, 'videoFail') === 2,
       'crop=' + cnt(profileSrc, 'MN_CropDialog') + ' v=' + cnt(profileSrc, 'profile-banner-video'));
-    ok('S0d FC 页 48.2 件：fc-ch-avatar-crop ×4 + fc-ch-avatar-img ×3 + v10.28.48.2 ×3（58.26 新注释）+ 48.1/48.0 注释历史冻结 ×4/×2 + bannerUrl ×0（avatar-only 边界）+ MN_CropDialog ×4 + avatarCrop ×12 + applyCrop ×2',
-      cnt(fcSrc, 'fc-ch-avatar-crop') === 4 && cnt(fcSrc, 'fc-ch-avatar-img') === 3 &&
+    ok('S0d FC 页 48.2 件：fc-ch-avatar-crop ×6 + fc-ch-avatar-img ×4 + v10.28.48.2 ×3（58.26 新注释）+ 48.1/48.0 注释历史冻结 ×4/×2 + bannerUrl ×0（avatar-only 边界）+ MN_CropDialog ×4 + avatarCrop ×12 + applyCrop ×2',
+      cnt(fcSrc, 'fc-ch-avatar-crop') === 6 && cnt(fcSrc, 'fc-ch-avatar-img') === 4 &&
       cnt(fcSrc, 'v10.28.48.2') === 3 && cnt(fcSrc, 'v10.28.48.1') === 4 && cnt(fcSrc, 'v10.28.48.0') === 2 &&
       cnt(fcSrc, 'bannerUrl') === 0 && cnt(fcSrc, 'MN_CropDialog') === 4 && cnt(fcSrc, 'avatarCrop') === 12 && cnt(fcSrc, 'applyCrop') === 2,
       'crop=' + cnt(fcSrc, 'fc-ch-avatar-crop') + ' 482=' + cnt(fcSrc, 'v10.28.48.2') + ' 481=' + cnt(fcSrc, 'v10.28.48.1') + ' 480=' + cnt(fcSrc, 'v10.28.48.0'));

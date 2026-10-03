@@ -118,3 +118,39 @@ test('写限流：dmWrite 覆盖为 2 → 第 3 条 429', async () => {
     assert.strictEqual((await t.request('POST', `/api/conversations/${conv.id}/messages`, { content: 'c' }, { cookie: alice.cookie })).status, 429);
   } finally { await t.close(); }
 });
+
+test('建群：kind=group+name；memberIds 限好友（去重/自排除/非好友 400）；群名 1-60；群消息互见', async () => {
+  const t = await testApp();
+  try {
+    const { alice, bob, carol } = await setupTrio(t);
+    const dave = t.loginAs('dave@x.com', { displayName: 'Dave' });
+    const iso = new Date().toISOString();
+    t.db.prepare("INSERT INTO friend_requests (sender_id, recipient_id, status, created_at, responded_at) VALUES (?, ?, 'accepted', ?, ?)")
+      .run(alice.user.id, bob.user.id, iso, iso);
+    // 群名校验 1-60
+    assert.strictEqual((await t.request('POST', '/api/conversations', { kind: 'group', name: '', memberIds: [] }, { cookie: alice.cookie })).status, 400);
+    assert.strictEqual((await t.request('POST', '/api/conversations', { kind: 'group', name: 'x'.repeat(61), memberIds: [] }, { cookie: alice.cookie })).status, 400);
+    // 非好友/自己 → 400
+    assert.strictEqual((await t.request('POST', '/api/conversations', { kind: 'group', name: 'G', memberIds: [dave.user.id] }, { cookie: alice.cookie })).status, 400);
+    assert.strictEqual((await t.request('POST', '/api/conversations', { kind: 'group', name: 'G', memberIds: [alice.user.id] }, { cookie: alice.cookie })).status, 400);
+    // 建群（memberIds 重复 → 去重）
+    const d = await (await t.request('POST', '/api/conversations', { kind: 'group', name: 'Guild', memberIds: [bob.user.id, bob.user.id] }, { cookie: alice.cookie })).json();
+    assert.match(d.conversation.id, /^CONV-\d{6}$/);
+    assert.strictEqual(d.conversation.kind, 'group');
+    assert.strictEqual(d.conversation.name, 'Guild');
+    assert.strictEqual(d.conversation.members.length, 2);
+    // 列表带 name；群消息互见（bob 发、双方可见 + senderName 内联）
+    const list = await (await t.request('GET', '/api/conversations', undefined, { cookie: alice.cookie })).json();
+    const g = list.conversations.find((c) => c.kind === 'group');
+    assert.strictEqual(g.name, 'Guild');
+    assert.strictEqual(g.members.length, 2);
+    assert.strictEqual(g.lastMessage, undefined); // 无消息时键随 undefined 被 JSON 丢弃（dm 同款口径）
+    const send = await (await t.request('POST', `/api/conversations/${d.conversation.id}/messages`, { content: 'hi team' }, { cookie: bob.cookie })).json();
+    assert.strictEqual(send.message.senderName, 'Bob');
+    const msgs = await (await t.request('GET', `/api/conversations/${d.conversation.id}/messages`, undefined, { cookie: alice.cookie })).json();
+    assert.strictEqual(msgs.messages.length, 1);
+    assert.strictEqual(msgs.messages[0].content, 'hi team');
+    // 非成员（carol）→ 403
+    assert.strictEqual((await t.request('GET', `/api/conversations/${d.conversation.id}/messages`, undefined, { cookie: carol.cookie })).status, 403);
+  } finally { await t.close(); }
+});

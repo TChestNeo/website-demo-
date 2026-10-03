@@ -10,7 +10,7 @@
 const { HttpError, sendJson, readJson } = require('../../http');
 const { requireSession } = require('../../middleware/auth');
 const { insertWithId, pad6 } = require('../../ids');
-const { membersOf, resolveTarget, createDm } = require('./dm-shared');
+const { membersOf, resolveTarget, createDm, acceptedFriends } = require('./dm-shared');
 
 const MSG_MAX = 4000;
 const PAGE_SIZE = 100;
@@ -53,7 +53,7 @@ function register(router, ctx) {
   // ── 会话列表 ──
   router.add('GET', '/api/conversations', requireSession((req, res, c) => {
     const rows = c.db.prepare(`
-      SELECT c.id, c.kind, c.created_at FROM conversations c
+      SELECT c.id, c.kind, c.name, c.created_at FROM conversations c
       JOIN conversation_members m ON m.conversation_id = c.id AND m.actor_type = 'user' AND m.actor_id = ?
       ORDER BY c.seq DESC
     `).all(c.user.id);
@@ -61,6 +61,7 @@ function register(router, ctx) {
       conversations: rows.map((row) => ({
         id: row.id,
         kind: row.kind,
+        name: row.name || null, // kind='group' 群名（032 列；dm 恒 null）
         createdAt: row.created_at,
         members: membersOf(c.db, row.id),
         lastMessage: lastMessageOf(c.db, row.id, c.user.id),
@@ -70,8 +71,31 @@ function register(router, ctx) {
   }));
 
   // ── 建/取 dm（{userId} 或 {email}；去重；自己 → 400）──
+  // FC v10.28.51.0 扩展：{kind:'group', name, memberIds} 建群（成员限好友，服务端校验；群名 1-60）
   router.add('POST', '/api/conversations', requireSession(async (req, res, c) => {
     const body = await readJson(req, 16 * 1024);
+    if (body.kind === 'group') {
+      const name = String(body.name || '').trim();
+      if (!name || name.length > 60) throw new HttpError('VALIDATION', '群名需 1-60 字符');
+      const ids = Array.isArray(body.memberIds) ? body.memberIds.map((x) => String(x || '')) : [];
+      const friends = new Set(acceptedFriends(c.db, c.user.id).map((f) => f.id));
+      const invitees = [];
+      const seen = new Set();
+      for (const id of ids) {
+        if (!id || id === c.user.id) throw new HttpError('VALIDATION', '不能拉自己进群');
+        if (seen.has(id)) continue;
+        seen.add(id);
+        if (!friends.has(id)) throw new HttpError('VALIDATION', '只能邀请你的好友进群');
+        invitees.push(id);
+      }
+      const iso = new Date().toISOString();
+      const { id } = insertWithId(c.db, 'conversations', ['kind', 'name', 'created_at'], ['group', name, iso], (s) => 'CONV-' + pad6(s));
+      const ins = c.db.prepare("INSERT INTO conversation_members (conversation_id, actor_type, actor_id, last_read_at, joined_at) VALUES (?, 'user', ?, ?, ?)");
+      ins.run(id, c.user.id, iso, iso);
+      for (const uid of invitees) ins.run(id, uid, null, iso);
+      sendJson(res, 200, { conversation: { id, kind: 'group', name, members: membersOf(c.db, id) }, created: true });
+      return;
+    }
     const target = resolveTarget(c.db, body);
     if (target.id === c.user.id) throw new HttpError('VALIDATION', '不能与自己私聊');
 

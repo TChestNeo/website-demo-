@@ -140,7 +140,12 @@ const config = {
       premium: process.env.STRIPE_PRICE_PREMIUM_ONCE || '',
       ultra: process.env.STRIPE_PRICE_ULTRA_ONCE || '',
       'pkg-premium': process.env.STRIPE_PRICE_PKG_PREMIUM_ONCE || '',
-      'pkg-ultra': process.env.STRIPE_PRICE_PKG_ULTRA_ONCE || ''
+      'pkg-ultra': process.env.STRIPE_PRICE_PKG_ULTRA_ONCE || '',
+      // FC v10.28.51.0 团队扩容订阅（slots-*，一次付清 1 个月；缺则点击如实回退）
+      'slots-basic': process.env.STRIPE_PRICE_SLOTS_BASIC || '',
+      'slots-plus': process.env.STRIPE_PRICE_SLOTS_PLUS || '',
+      'slots-premium': process.env.STRIPE_PRICE_SLOTS_PREMIUM || '',
+      'slots-ultra': process.env.STRIPE_PRICE_SLOTS_ULTRA || ''
     },
     // v0.2.44.0 学生价（仅 Basic SKU × 仅 myr）：月付 RM5.50 + 年付 RM55（用户 Stripe 后台创建）
     studentPrices: {

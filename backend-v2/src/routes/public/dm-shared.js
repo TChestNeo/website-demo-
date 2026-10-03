@@ -18,6 +18,17 @@ function membersOf(db, convId) {
   `).all(convId).map(publicUser);
 }
 
+// 好友清单（FC v10.28.51.0 团队向导/建群共用）：accepted 好友（任一方向）——
+// 与 fc-edges.js 好友集同口径（friend_requests status='accepted'，非 DM 存在即好友）。
+function acceptedFriends(db, uid) {
+  return db.prepare(`
+    SELECT u.id, u.display_name, u.avatar_url, u.citizen_id FROM friend_requests fr
+    JOIN users u ON u.id = CASE WHEN fr.sender_id = ? THEN fr.recipient_id ELSE fr.sender_id END
+    WHERE fr.status = 'accepted' AND (fr.sender_id = ? OR fr.recipient_id = ?)
+    ORDER BY fr.seq
+  `).all(uid, uid, uid).map((r) => ({ id: r.id, displayName: r.display_name, avatarUrl: r.avatar_url, citizenId: r.citizen_id }));
+}
+
 // dm 去重：恰有两名成员且包含双方
 function findDm(db, a, b) {
   return db.prepare(`
@@ -53,4 +64,4 @@ function createDm(db, a, b) {
   return { id, created: true };
 }
 
-module.exports = { publicUser, membersOf, findDm, resolveTarget, createDm };
+module.exports = { publicUser, membersOf, findDm, resolveTarget, createDm, acceptedFriends };
