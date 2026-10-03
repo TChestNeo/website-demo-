@@ -45,7 +45,7 @@ test('fc/edges：POST 校验 400（名称空/clip 拒/可见性非法）', async
   try {
     const { cookie } = t.loginAs('edge@example.com');
     assert.strictEqual((await t.request('POST', '/api/fc/edges', EDGE_BODY({ name: '  ' }), { cookie })).status, 400);
-    assert.strictEqual((await t.request('POST', '/api/fc/edges', EDGE_BODY({ clip: 'polygon(0 0, 50 0, 0 50)' }), { cookie })).status, 400);
+    assert.strictEqual((await t.request('POST', '/api/fc/edges', EDGE_BODY({ clip: 'polygon(0 0, 50px 0, 0 50)' }), { cookie })).status, 400); // 51.1: 裸值 50 已合法，px 单位仍拒
     assert.strictEqual((await t.request('POST', '/api/fc/edges', EDGE_BODY({ visibility: 'nope' }), { cookie })).status, 400);
   } finally { await t.close(); }
 });

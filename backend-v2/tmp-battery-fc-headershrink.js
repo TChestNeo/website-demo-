@@ -109,7 +109,7 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     ok('F1 site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点版本恒 v0.2.58.26',
-      siteCfg.indexOf('v10.28.51.0') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.26') !== -1);
+      siteCfg.indexOf('v10.28.51.1') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.26') !== -1);
     ok('F2 迁移按钮子代选择器在源：.migrate-btn > span / hover > span + 后代选择器零残留',
       editorHtml.indexOf('.migrate-btn > span {') !== -1 &&
       editorHtml.indexOf('.migrate-btn:hover > span {') !== -1 &&

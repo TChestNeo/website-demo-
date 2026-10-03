@@ -26,6 +26,9 @@ const SYSTEM_EDGE_GEN = '你是卡片边缘样式生成器。根据用户描述�
 // 服务端 sanitizeClip（AI 产物唯一入库口；fc-edges.js 复用，前端有镜像）。
 // 合法例：polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)
 //         polygon(evenodd, 0 0, 100 0, 100 100, 90 100, 90 10, 10 10, 10 90, 0 90)
+// v10.28.51.1: 裸值坐标放宽为 ±100 全收（51.1 前只许 0/100——border 内环 3-12%
+// 内缩 Gemini 常输出裸值 8/12 之类→全被拒→「边框生成失败」而 edge 只用 0/100
+// 故「边缘成功边框失败」；纯数字零注入面，黑名单不动）。百分比仍 0-100。
 // 返回规范化串（单空格点表）；不合法 → null。
 function sanitizeClip(clip) {
   const s = String(clip == null ? '' : clip).trim();
@@ -48,7 +51,7 @@ function sanitizeClip(clip) {
       if (!nm) return null;
       const v = parseFloat(nm[1]);
       if (nm[2]) { if (v < 0 || v > 100) return null; }
-      else if (v !== 0 && v !== 100) return null;
+      else if (v < -100 || v > 100) return null; // 51.1: 裸值 ±100（原 0/100 → border 内环裸值被拒）
     }
     out.push(nums[0] + ' ' + nums[1]);
   }

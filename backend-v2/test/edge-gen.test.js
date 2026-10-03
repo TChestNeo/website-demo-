@@ -108,7 +108,7 @@ test('edge-gen：带图——inline_data 进 parts（png dataURL）', async () =
 test('edge-gen：AI 回垃圾/坏 clip → 200 {ok:false}（降级不拦生成）', async () => {
   const cases = [
     geminiStub({ candidates: [{ content: { parts: [{ text: 'not json at all' }] } }] }),
-    geminiStub({ candidates: [{ content: { parts: [{ text: '{"name":"x","clip":"polygon(0 0, 50 0, 0 50)"}' }] } }] }), // 裸值 50 拒
+    geminiStub({ candidates: [{ content: { parts: [{ text: '{"name":"x","clip":"polygon(0 0, 50px 0, 0 50)"}' }] } }] }), // px 单位拒
     geminiStub({ candidates: [] }),
     new Error('network down')
   ];
@@ -165,13 +165,19 @@ test('edge-gen：config.gemini.model 覆写生效（env GEMINI_MODEL 路径）',
   } finally { await t.close(); }
 });
 
-test('sanitizeClip：合法族（百分比/evenodd 双环/nonzero/小数两点）', () => {
+test('sanitizeClip：合法族（百分比/evenodd 双环/nonzero/小数两点/51.1 裸值放宽）', () => {
   assert.strictEqual(sanitizeClip(GOOD_CLIP), GOOD_CLIP);
   assert.strictEqual(sanitizeClip('polygon(0 0, 100 0, 100 100, 0 100)'), 'polygon(0 0, 100 0, 100 100, 0 100)');
   assert.strictEqual(sanitizeClip('polygon(evenodd, 0% 0%, 100% 0%, 100% 100%, 90% 100%, 90% 10%, 10% 10%, 10% 90%, 0% 90%)'),
     'polygon(evenodd, 0% 0%, 100% 0%, 100% 100%, 90% 100%, 90% 10%, 10% 10%, 10% 90%, 0% 90%)');
   assert.strictEqual(sanitizeClip('  polygon(nonzero , 0% 0%, 100% 0%, 50.55% 100%)  '),
     'polygon(nonzero, 0% 0%, 100% 0%, 50.55% 100%)');
+  // v10.28.51.1: 裸值放宽 ±100 全收——border 内环 3-12% 内缩 Gemini 常输出裸值
+  // （51.1 前只许 0/100 → 「边框生成失败」而 edge 满盒只用 0/100 故「边缘成功边框失败」）
+  assert.strictEqual(sanitizeClip('polygon(0 0, 50 0, 0 50)'), 'polygon(0 0, 50 0, 0 50)');
+  assert.strictEqual(sanitizeClip('polygon(evenodd, 0 0, 100 0, 100 100, 8 100, 8 8, 92 8, 92 92, 0 92)'),
+    'polygon(evenodd, 0 0, 100 0, 100 100, 8 100, 8 8, 92 8, 92 92, 0 92)');
+  assert.strictEqual(sanitizeClip('polygon(0 0, 100 0, 12.5 75.25)'), 'polygon(0 0, 100 0, 12.5 75.25)');
 });
 
 test('sanitizeClip：拒族（注入面全拒）', () => {
@@ -191,7 +197,8 @@ test('sanitizeClip：拒族（注入面全拒）', () => {
     'polygon(0% 0%, 100% 0%, 100\\% 100%)',                    // 反斜杠
     'polygon(0% 0%, 150% 0%, 100% 100%)',                      // %>100
     'polygon(0% 0%, -1% 0%, 100% 100%)',                       // %<0
-    'polygon(0 0, 50 0, 0 50)',                                // 裸值非 0/100
+    'polygon(0 0, 150 0, 0 50)',                               // 裸值 >100
+    'polygon(0 0, -101 0, 0 50)',                              // 裸值 <-100
     'polygon(0% 0% 100% 0% 100% 100%)',                        // 单点四数
     'polygon(0% 0%, 100% 0%, 100%)',                           // 单数点
     'polygon(0% 0%, 100% 0%, 1e2% 100%)',                      // 科学计数法

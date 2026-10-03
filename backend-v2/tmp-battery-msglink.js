@@ -76,7 +76,7 @@ async function waitFor(cdp, expr, timeout, label) {
   const sconfSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   ok('F0 版本双线 v0.2.54.0 / v10.28.36.1 + 用户原话注释',
     sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.26';") !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") !== -1 &&
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") !== -1 &&
     sconfSrc.indexOf('douyin.com/user/self') !== -1);
   ok('F1 直达读取 showTab + 旧 tab 兼容',
     msgSrc.indexOf("params.get('showTab') || params.get('tab')") !== -1);

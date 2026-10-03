@@ -208,13 +208,13 @@ const CH_CARD_EXPR = "(function(){ var co = document.getElementById('channelOver
 
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
-  ok('S1 site-config：51.0 在位+50.0 赋值零残留+changelog 头各 ×1+rev 占位各 ×1+站点恒 58.26',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
-    sc('// v10.28.51.0 = ') === 1 && sc('// v10.28.50.0 = ') === 1 &&
-    sc('rev 00359-XXX') === 1 && sc('rev 00360-???') === 1 &&
+  ok('S1 site-config：51.1 在位+50.0 赋值零残留+changelog 头各 ×1+rev 真值各 ×1（637 轮已填真值，占位锚陈旧）+站点恒 58.26',
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
+    sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.50.0 = ') === 1 &&
+    sc('rev 00359-nfc') === 1 && sc('rev 00360-bk7') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.26';") === 1 && sc("window.MN_SITE_VERSION = 'v0.2.58.25';") === 0,
-    'fc51=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") + ' fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
-    ' cl51=' + sc('// v10.28.51.0 = ') + ' r59=' + sc('rev 00359-XXX') + ' q60=' + sc('rev 00360-???') +
+    'fc51=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") + ' fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
+    ' cl51=' + sc('// v10.28.51.1 = ') + ' r59=' + sc('rev 00359-nfc') + ' r60=' + sc('rev 00360-bk7') +
     ' v26=' + sc("window.MN_SITE_VERSION = 'v0.2.58.26';"));
 
   const fc = norm(await (await fetch(BASE + FC_URL_PATH)).text());
