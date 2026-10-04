@@ -1,6 +1,6 @@
 // tmp-battery-fc-team.js — v10.28.51.0 团队频道电池（本地工作树）
 //   S 静态：site-config（51.0/rev 占位/站点恒 58.26）/fluidcanvas 向导 16 锚/messages 群真接口 12 锚/
-//     premium slots 13 锚/后端 19 锚（teams/messages/subscriptions/032/health 61/user_version 32）/
+//     premium slots 13 锚/后端 19 锚（teams/messages/subscriptions/032/health 66/user_version 33）/
 //     i18n 7 样键 ×12+slots12 零残留（行计数口径=实测 grep -cF）；
 //   B fluidcanvas CDP：B1 访客门禁 / B2 就绪 / B3 step1 选是 / B4 step2 搬运多选全勾→取消贴文联动 /
 //     B5 step3 好友多选+群名→POST 体奇偶校验 / B6 成功流（toast+关弹窗+团队卡真数据） / B7 失败流 toast /
@@ -209,11 +209,11 @@ const CH_CARD_EXPR = "(function(){ var co = document.getElementById('channelOver
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
   ok('S1 site-config：51.1 在位+50.0 赋值零残留+changelog 头各 ×1+rev 真值各 ×1（637 轮已填真值，占位锚陈旧）+站点恒 58.26',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
     sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.50.0 = ') === 1 &&
     sc('rev 00359-nfc') === 1 && sc('rev 00360-bk7') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.26';") === 1 && sc("window.MN_SITE_VERSION = 'v0.2.58.25';") === 0,
-    'fc51=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") + ' fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
+    'fc51=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") + ' fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
     ' cl51=' + sc('// v10.28.51.1 = ') + ' r59=' + sc('rev 00359-nfc') + ' r60=' + sc('rev 00360-bk7') +
     ' v26=' + sc("window.MN_SITE_VERSION = 'v0.2.58.26';"));
 
@@ -269,13 +269,13 @@ const CH_CARD_EXPR = "(function(){ var co = document.getElementById('channelOver
     ['032 conversations.name', bc(mig32)('conversations ADD COLUMN name'), 1],
     ['032 slots-basic', bc(mig32)('slots-basic'), 1], ['032 slots-plus', bc(mig32)('slots-plus'), 1],
     ['032 slots-premium', bc(mig32)('slots-premium'), 1], ['032 slots-ultra', bc(mig32)('slots-ultra'), 1],
-    ['health 61 张表', bc(health)('61'), 2],
-    ['migTest user_version 32 ×5', blines(migTest).filter((l) => l.includes("user_version', { simple: true }), 32")).length, 5],
+    ['health 66 张表', bc(health)('66'), 2],
+    ['migTest user_version 33 ×5', blines(migTest).filter((l) => l.includes("user_version', { simple: true }), 33")).length, 5],
     ['subs slots-basic ×1+team_cap_addon ×5', bc(subs)('slots-basic') === 1 && bc(subs)('team_cap_addon') === 5, true],
     ['http TEAM_FULL 403', bc(http)('TEAM_FULL'), 1]
   ];
   const bBad = B_ANCHORS.filter(([, got, want]) => got !== want);
-  ok('S5 后端 19 锚全中（teams/建群/SKU/032/health 61/uv32）', bBad.length === 0,
+  ok('S5 后端 19 锚全中（teams/建群/SKU/032/health 66/uv33）', bBad.length === 0,
     bBad.map(([n, got, want]) => n + '=' + got + '≠' + want).join(',') || '19/19');
 
   const i18nSrc = norm(await (await fetch(BASE + '/assets/i18n/fluidcanvas.i18n.js')).text());

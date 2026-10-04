@@ -17,6 +17,8 @@ const {
 const { hashOf } = require('../../moderation/rules');
 const queue = require('../../moderation/queue');
 const { ipOf } = require('../../middleware/ratelimit');
+// v10.28.52.0 团队 XP 双向记账（五事件数值表；钩子：发帖 teamId/赞/收藏/转发）
+const { gainTeamXp, loseTeamXp } = require('./team-xp');
 
 const MAX_POST_LEN = 2000;
 const MAX_COMMENT_LEN = 2000; // comments.content ≤2000（写入层校验，同 005 注释）
@@ -26,6 +28,10 @@ const MAX_MEDIA = 3;
 const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear', 'solid-black', 'solid-white', 'solid-gray', 'mono-bw', 'mono-silver', 'mono-charcoal'];
 // v0.2.53.0 卡片边缘主题（迁移 027 users.card_edge；FC 14 键；auth.js 必须同步）
 const CARD_EDGE_KEYS = ['paper', 'treasure', 'tech1', 'tech2', 'tech3', 'tech4', 'tech5', 'tech6', 'paint1', 'paint2', 'paint3', 'paint4', 'paint5', 'paint6'];
+
+// v10.28.52.0 等级奖励装饰品白名单（与 auth.js 同款两份——各文件自持口径是既有惯例）
+const FRAME_KEYS = ['rookie-frame', 'champion-frame'];
+const TITLE_KEYS = ['veteran-title'];
 // v0.2.25.0 页面背景图片（020 列）校验口径：仅本站直传路径或 http(s) 外链（与 auth.js 同）
 const PAGE_BG_IMAGE_RE = /^(\/uploads\/UPL-[A-Za-z0-9]+\.(jpg|jpeg|png|gif|webp)|https?:\/\/.)/i;
 // v0.2.58.25 裁切矩形校验（030 列，与 auth.js 同款复制——58.22 CARD_BG_KEYS 双处先例）：归一化 {x,y,w,h} 0..1；
@@ -279,6 +285,11 @@ function register(router, ctx) {
     // v0.2.16.0：media 只收本站 /uploads/ 白名单路径（防任意 URL/穿越注入卡片 HTML）
     if (media.some(m => !MEDIA_URL_RE.test(m))) throw new HttpError('VALIDATION', '媒体地址无效');
     const topicId = body.topicId ? String(body.topicId).slice(0, 64) : null;
+    // v10.28.52.0 团队频道上传：teamId 需为本人所在团队（团队成员校验）；计入团队 XP upload（+24）
+    const teamId = body.teamId ? String(body.teamId).slice(0, 64) : null;
+    if (teamId && !c.db.prepare('SELECT 1 FROM team_members WHERE team_id = ? AND user_id = ?').get(teamId, c.user.id)) {
+      throw new HttpError('FORBIDDEN', '你不是该团队成员，无法上传到团队频道');
+    }
 
     const iso = new Date().toISOString();
     // 处罚生效：禁言 / 发布受限
@@ -300,8 +311,9 @@ function register(router, ctx) {
     const firstIsImage = media.length > 0 && /\.(jpg|jpeg|png|gif|webp)$/i.test(media[0]);
     const mediaNeedsIms = media.length > 0 && firstIsImage && imsOn;
     const postStatus = l0.verdict === 'reject' ? 'removed' : (mediaNeedsIms ? 'pending' : 'visible');
-    const { id } = insertWithId(c.db, 'posts', ['author_id', 'topic_id', 'content', 'media', 'status', 'created_at', 'updated_at'],
-      [c.user.id, topicId, content, JSON.stringify(media), postStatus, iso, iso], (s) => 'PST-' + pad6(s));
+    const { id } = insertWithId(c.db, 'posts', ['author_id', 'topic_id', 'content', 'media', 'team_id', 'status', 'created_at', 'updated_at'],
+      [c.user.id, topicId, content, JSON.stringify(media), teamId, postStatus, iso, iso], (s) => 'PST-' + pad6(s));
+    if (teamId) gainTeamXp(c, teamId, 'upload');
 
     if (l0.verdict === 'reject') {
       const itemId = createModerationItem(c.db, {
@@ -347,11 +359,12 @@ function register(router, ctx) {
   // v0.2.49.0：新赞（changes>0）且非自赞 → 给作者 +15 获得类经验（后端实时记，重复赞不二次记）
   router.add('POST', '/api/social/posts/:id/like', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
-    const post = c.db.prepare('SELECT id, status, author_id FROM posts WHERE id = ?').get(req.params.id);
+    const post = c.db.prepare('SELECT id, status, author_id, team_id FROM posts WHERE id = ?').get(req.params.id);
     if (!post || post.status !== 'visible') throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
     const info = c.db.prepare("INSERT OR IGNORE INTO content_likes (user_id, target_type, target_id, created_at) VALUES (?, 'post', ?, ?)")
       .run(c.user.id, post.id, new Date().toISOString());
     if (info.changes > 0 && post.author_id !== c.user.id) gainXp(c, post.author_id, 'like');
+    if (info.changes > 0 && post.team_id) gainTeamXp(c, post.team_id, 'like'); // 团队帖获赞 +16
     const likeCount = c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'post' AND target_id = ?").get(post.id).n;
     sendJson(res, 200, { liked: true, likeCount });
   }));
@@ -359,8 +372,10 @@ function register(router, ctx) {
   router.add('DELETE', '/api/social/posts/:id/like', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
     // 不校验帖子存在：对已下架帖取消点赞 = 无害 no-op（幂等）
-    c.db.prepare("DELETE FROM content_likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?")
+    const post = c.db.prepare('SELECT id, team_id FROM posts WHERE id = ?').get(req.params.id);
+    const info = c.db.prepare("DELETE FROM content_likes WHERE user_id = ? AND target_type = 'post' AND target_id = ?")
       .run(c.user.id, req.params.id);
+    if (info.changes > 0 && post && post.team_id) loseTeamXp(c, post.team_id, 'like'); // 团队帖取消赞 -16（少一个就收走）
     const likeCount = c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'post' AND target_id = ?").get(req.params.id).n;
     sendJson(res, 200, { liked: false, likeCount });
   }));
@@ -369,19 +384,22 @@ function register(router, ctx) {
   // v0.2.49.0：新收藏（changes>0）且非自藏 → 给作者 +12（「保存」= 星标收藏按钮，站点用词「收藏」）
   router.add('POST', '/api/social/posts/:id/favorite', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
-    const post = c.db.prepare('SELECT id, status, author_id FROM posts WHERE id = ?').get(req.params.id);
+    const post = c.db.prepare('SELECT id, status, author_id, team_id FROM posts WHERE id = ?').get(req.params.id);
     if (!post || post.status !== 'visible') throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
     const info = c.db.prepare("INSERT OR IGNORE INTO favorites (user_id, target_type, target_id, created_at) VALUES (?, 'post', ?, ?)")
       .run(c.user.id, post.id, new Date().toISOString());
     if (info.changes > 0 && post.author_id !== c.user.id) gainXp(c, post.author_id, 'favorite');
+    if (info.changes > 0 && post.team_id) gainTeamXp(c, post.team_id, 'favorite'); // 团队帖被收藏 +36
     sendJson(res, 200, { favorited: true });
   }));
 
   router.add('DELETE', '/api/social/posts/:id/favorite', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
     // 不校验帖子存在：对已下架帖取消收藏 = 无害 no-op（幂等，与取消点赞同口径）
-    c.db.prepare("DELETE FROM favorites WHERE user_id = ? AND target_type = 'post' AND target_id = ?")
+    const post = c.db.prepare('SELECT id, team_id FROM posts WHERE id = ?').get(req.params.id);
+    const info = c.db.prepare("DELETE FROM favorites WHERE user_id = ? AND target_type = 'post' AND target_id = ?")
       .run(c.user.id, req.params.id);
+    if (info.changes > 0 && post && post.team_id) loseTeamXp(c, post.team_id, 'favorite'); // 团队帖取消收藏 -36
     sendJson(res, 200, { favorited: false });
   }));
 
@@ -391,11 +409,12 @@ function register(router, ctx) {
   // 且非自操作 → 给作者 +15/+12 获得类经验；DELETE 不校验存在（无害 no-op 幂等）。
   router.add('POST', '/api/social/articles/:id/like', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
-    const art = c.db.prepare('SELECT id, status, author_id FROM articles WHERE id = ?').get(req.params.id);
+    const art = c.db.prepare('SELECT id, status, author_id, team_id FROM articles WHERE id = ?').get(req.params.id);
     if (!art || art.status !== 'published') throw new HttpError('NOT_FOUND', '文章不存在或未公开');
     const info = c.db.prepare("INSERT OR IGNORE INTO content_likes (user_id, target_type, target_id, created_at) VALUES (?, 'article', ?, ?)")
       .run(c.user.id, art.id, new Date().toISOString());
     if (info.changes > 0 && art.author_id !== c.user.id) gainXp(c, art.author_id, 'like');
+    if (info.changes > 0 && art.team_id) gainTeamXp(c, art.team_id, 'like'); // 团队作品获赞 +16
     const likeCount = c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'article' AND target_id = ?").get(art.id).n;
     sendJson(res, 200, { liked: true, likeCount });
   }));
@@ -403,19 +422,22 @@ function register(router, ctx) {
   router.add('DELETE', '/api/social/articles/:id/like', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
     // 不校验文章存在：对已删除文章取消点赞 = 无害 no-op（幂等，与帖子同口径）
-    c.db.prepare("DELETE FROM content_likes WHERE user_id = ? AND target_type = 'article' AND target_id = ?")
+    const art = c.db.prepare('SELECT id, team_id FROM articles WHERE id = ?').get(req.params.id);
+    const info = c.db.prepare("DELETE FROM content_likes WHERE user_id = ? AND target_type = 'article' AND target_id = ?")
       .run(c.user.id, req.params.id);
+    if (info.changes > 0 && art && art.team_id) loseTeamXp(c, art.team_id, 'like'); // 团队作品取消赞 -16
     const likeCount = c.db.prepare("SELECT count(*) AS n FROM content_likes WHERE target_type = 'article' AND target_id = ?").get(req.params.id).n;
     sendJson(res, 200, { liked: false, likeCount });
   }));
 
   router.add('POST', '/api/social/articles/:id/favorite', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
-    const art = c.db.prepare('SELECT id, status, author_id FROM articles WHERE id = ?').get(req.params.id);
+    const art = c.db.prepare('SELECT id, status, author_id, team_id FROM articles WHERE id = ?').get(req.params.id);
     if (!art || art.status !== 'published') throw new HttpError('NOT_FOUND', '文章不存在或未公开');
     const info = c.db.prepare("INSERT OR IGNORE INTO favorites (user_id, target_type, target_id, created_at) VALUES (?, 'article', ?, ?)")
       .run(c.user.id, art.id, new Date().toISOString());
     if (info.changes > 0 && art.author_id !== c.user.id) gainXp(c, art.author_id, 'favorite');
+    if (info.changes > 0 && art.team_id) gainTeamXp(c, art.team_id, 'favorite'); // 团队作品被收藏 +36
     const favoriteCount = c.db.prepare("SELECT count(*) AS n FROM favorites WHERE target_type = 'article' AND target_id = ?").get(art.id).n;
     sendJson(res, 200, { favorited: true, favoriteCount });
   }));
@@ -423,8 +445,10 @@ function register(router, ctx) {
   router.add('DELETE', '/api/social/articles/:id/favorite', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
     // 不校验文章存在：对已删除文章取消收藏 = 无害 no-op（幂等，与取消点赞同口径）
-    c.db.prepare("DELETE FROM favorites WHERE user_id = ? AND target_type = 'article' AND target_id = ?")
+    const art = c.db.prepare('SELECT id, team_id FROM articles WHERE id = ?').get(req.params.id);
+    const info = c.db.prepare("DELETE FROM favorites WHERE user_id = ? AND target_type = 'article' AND target_id = ?")
       .run(c.user.id, req.params.id);
+    if (info.changes > 0 && art && art.team_id) loseTeamXp(c, art.team_id, 'favorite'); // 团队作品取消收藏 -36
     const favoriteCount = c.db.prepare("SELECT count(*) AS n FROM favorites WHERE target_type = 'article' AND target_id = ?").get(req.params.id).n;
     sendJson(res, 200, { favorited: false, favoriteCount });
   }));
@@ -473,6 +497,9 @@ function register(router, ctx) {
         avatarCrop: parseCropSafe(row.avatar_crop),
         // v0.2.53.0 卡片边缘主题（027 列；NULL=默认圆角卡，公开——他人主页也渲染你的边缘剪影）
         cardEdge: CARD_EDGE_KEYS.includes(row.card_edge) ? row.card_edge : null,
+        // v10.28.52.0 等级奖励装饰品激活态（033 列；公开——他人主页也渲染你的相框/称号）
+        avatarFrame: FRAME_KEYS.includes(row.avatar_frame) ? row.avatar_frame : null,
+        title: TITLE_KEYS.includes(row.title) ? row.title : null,
         isSelf,
         followedByMe,
         followerCount,
@@ -567,6 +594,7 @@ function register(router, ctx) {
     const postStatus = l0 && l0.verdict === 'reject' ? 'removed' : 'visible';
     const { id } = insertWithId(c.db, 'posts', ['author_id', 'topic_id', 'content', 'media', 'repost_of', 'status', 'created_at', 'updated_at'],
       [c.user.id, original.topic_id || null, content, '[]', original.id, postStatus, iso, iso], (s) => 'PST-' + pad6(s));
+    if (original.team_id) gainTeamXp(c, original.team_id, 'share'); // 团队帖被转发 +20（撤销转发同额扣回）
 
     if (l0) {
       const hash = hashOf(content);
@@ -600,8 +628,10 @@ function register(router, ctx) {
   router.add('DELETE', '/api/social/posts/:id/repost', requireSession((req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
     // 不校验帖子存在：对已下架帖撤销转发 = 无害 no-op（幂等，与取消点赞同口径）
-    c.db.prepare('DELETE FROM posts WHERE repost_of = ? AND author_id = ?')
+    const original = c.db.prepare('SELECT id, team_id FROM posts WHERE id = ?').get(req.params.id);
+    const info = c.db.prepare('DELETE FROM posts WHERE repost_of = ? AND author_id = ?')
       .run(req.params.id, c.user.id);
+    if (info.changes > 0 && original && original.team_id) loseTeamXp(c, original.team_id, 'share'); // 撤销转发 -20（少一个就收走）
     const repostCount = c.db.prepare('SELECT count(*) AS n FROM posts WHERE repost_of = ?').get(req.params.id).n;
     sendJson(res, 200, { reposted: false, repostCount });
   }));

@@ -12,6 +12,7 @@ const { requireSession, authenticate } = require('../../middleware/auth');
 const { insertWithId, pad6 } = require('../../ids');
 const { createModerationItem, l0Screen, applyDecision } = require('../../moderation/pipeline');
 const { hashOf } = require('../../moderation/rules');
+const { gainTeamXp, loseTeamXp } = require('./team-xp'); // v10.28.52.0 团队 XP（发布/删除作品）
 
 const MAX_TITLE = 120;
 const MAX_BYTES = 4 * 1024 * 1024;
@@ -64,9 +65,15 @@ function register(router, ctx) {
     const contentJson = typeof body.contentJson === 'string'
       ? body.contentJson : JSON.stringify(body.contentJson || {});
     if (Buffer.byteLength(contentJson, 'utf8') > MAX_BYTES) throw new HttpError('VALIDATION', '内容超过 4MB');
+    // v10.28.52.0 团队频道发布（团队模式发布云端文章）：teamId 需为本人所在团队（团队成员校验）；计入团队 XP upload（+24）
+    const teamId = body.teamId ? String(body.teamId).slice(0, 64) : null;
+    if (teamId && !db.prepare('SELECT 1 FROM team_members WHERE team_id = ? AND user_id = ?').get(teamId, c.user.id)) {
+      throw new HttpError('FORBIDDEN', '你不是该团队成员，无法发布到团队频道');
+    }
     const iso = new Date().toISOString();
-    const { id } = insertWithId(db, 'articles', ['author_id', 'title', 'content_json', 'status', 'created_at', 'updated_at'],
-      [c.user.id, title, contentJson, 'published', iso, iso], (s) => 'ART-' + pad6(s));
+    const { id } = insertWithId(db, 'articles', ['author_id', 'team_id', 'title', 'content_json', 'status', 'created_at', 'updated_at'],
+      [c.user.id, teamId, title, contentJson, 'published', iso, iso], (s) => 'ART-' + pad6(s));
+    if (teamId) gainTeamXp(c, teamId, 'upload'); // 团队作品上传 +24（删除作品同额扣回）
     sendJson(res, 200, { article: { id, title, status: 'published', createdAt: iso } });
   }));
 
@@ -143,6 +150,7 @@ function register(router, ctx) {
       db.prepare("DELETE FROM content_likes WHERE target_type = 'article' AND target_id = ?").run(row.id);
       db.prepare("DELETE FROM favorites WHERE target_type = 'article' AND target_id = ?").run(row.id);
       db.prepare('DELETE FROM articles WHERE id = ?').run(row.id);
+      if (row.team_id) loseTeamXp(c, row.team_id, 'upload'); // 删除团队作品 -24（少一个就收走）
     })();
     sendJson(res, 200, { deleted: true, id: row.id });
   }));

@@ -89,7 +89,7 @@ console.log('═══ S. 静态巡检 ═══');
   ok('S11 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.26';") !== -1);
   ok('S12 site-config changelog 含 v0.2.55.0 条目 + 用户原话',
     s.indexOf('v0.2.55.0') !== -1 && s.indexOf('能不能把全部变成不透明的卡片') !== -1);
-  ok('S13 FC v10.28.36.1 保持', s.indexOf("'v10.28.51.1'") !== -1);
+  ok('S13 FC v10.28.36.1 保持', s.indexOf("'v10.28.52.0'") !== -1);
   const prem = read('docs/pages/premium.html');
   const auth = read('docs/signup-and-login.html');
   ok('S14 豁免卡零触碰锚（plan-card 深色 !important 仍在 + auth-card 仍在）',
@@ -319,6 +319,9 @@ const SNAP_CARDS = `(function(){
         if (u.indexOf('/api/') !== -1) {
           if (u.indexOf('/api/social/users/USR-000001/posts?tab=') === 0) return Promise.resolve(res(200, { posts: [] }));
           if (u.indexOf('/api/social/users/USR-000001') === 0) return Promise.resolve(res(200, { user: ME }));
+          // 52.0 等级奖励：/rewards/me 401（无会话）→ loadRewardsMe cb(null) → 二次 renderHeader 幂等；
+          //   桩内即时回执保时序确定（真实 fetch 404 迟到会把 DOMContentLoaded 注入层擦掉→B14 漂移）
+          if (u.indexOf('/api/rewards/me') === 0) return Promise.resolve(res(401, {}));
         }
         return realFetch(url, opts);
       };

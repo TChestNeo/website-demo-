@@ -1,5 +1,5 @@
 'use strict';
-// 迁移 001-032：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
+// 迁移 001-033：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
 
 const test = require('node:test');
 const assert = require('node:assert');
@@ -13,12 +13,12 @@ function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'mn2-mig-'));
 }
 
-test('迁移：user_version=32、61 表、角色/权限/平台种子齐整', () => {
+test('迁移：user_version=33、66 表、角色/权限/平台种子齐整', () => {
   const db = openDb(path.join(tmpDir(), 'a.sqlite'));
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 32);
-  // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 + 010 两 + 014 一 + 025 一 + 028 一 + 031 一 = 61（触发器不算表）
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 33);
+  // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 + 010 两 + 014 一 + 025 一 + 028 一 + 031 一 + 033 五 = 66（触发器不算表）
   const n = db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().n;
-  assert.strictEqual(n, 61);
+  assert.strictEqual(n, 66);
   // 角色 7、权限 42、矩阵基线（每角色授权数逐一断言 = 设计契约锁定）
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM roles').get().n, 7);
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM permissions').get().n, 42);
@@ -46,7 +46,7 @@ test('迁移：重复打开同库幂等（版本不再推进、无重复执行�
   const p = path.join(tmpDir(), 'b.sqlite');
   openDb(p);
   const db = openDb(p);
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 32);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 33);
 });
 
 test('迁移 005-009：社交/工单/知识库/审核/财务关键表与扩展列就位（D5/D6 口径）', () => {
@@ -149,9 +149,9 @@ test('迁移 017：following.users 显示名→id 引用 + 粉丝索引（v0.2.2
   db.prepare("INSERT INTO following (user_id, target_type, target_id, created_at) VALUES ('F1', 'user', 'No Such Name', ?)").run(iso); // 不存在 → 删
   db.prepare("INSERT INTO following (user_id, target_type, target_id, created_at) VALUES ('F1', 'nation', 'NAT-000001', ?)").run(iso); // 其他类型不动
 
-  migrate(db, srcDir); // 补跑 017-032
+  migrate(db, srcDir); // 补跑 017-033
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 32);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 33);
   const rows = db.prepare('SELECT target_id FROM following WHERE user_id = ? ORDER BY target_type, target_id').all('F1');
   assert.deepStrictEqual(rows.map((r) => r.target_id), ['NAT-000001', 'U1'], '显示名→最早注册的 id；映射不到的行已删；nation 不动');
   assert.ok(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='index' AND name = 'idx_following_target'").get().n === 1, '粉丝反查索引就位');
@@ -234,9 +234,9 @@ test('迁移 022：遗留 pending 文章一律转 published（v0.2.46.1 直接�
   db.prepare("INSERT INTO articles (id, author_id, title, content_json, status, created_at, updated_at) VALUES ('ART-000002', 'u022', 'Already Published', '{}', 'published', ?, ?)").run(iso, iso);
   db.prepare("INSERT INTO articles (id, author_id, title, content_json, status, created_at, updated_at) VALUES ('ART-000003', 'u022', 'Legacy Hidden', '{}', 'hidden', ?, ?)").run(iso, iso);
 
-  migrate(db, srcDir); // 补跑 022-032
+  migrate(db, srcDir); // 补跑 022-033
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 32);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 33);
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000001'").get().status, 'published', '遗留 pending → published');
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000002'").get().status, 'published', '已发布不动');
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000003'").get().status, 'hidden', 'hidden/removed 不动（非发布态不该复活）');
@@ -294,9 +294,9 @@ test('迁移 026：citizen_id 统一 USR- 口径（v0.2.51.1 CIT→USR；无新�
   db.prepare("INSERT INTO users (id, email, display_name, status, role, citizen_id, created_at, updated_at) VALUES ('USR-000002', 'b@x.com', 'Citizen B', 'active', 'user', NULL, ?, ?)").run(iso, iso);
   db.prepare("INSERT INTO users (id, email, display_name, status, role, citizen_id, created_at, updated_at) VALUES ('USR-000003', 'c@x.com', 'Citizen C', 'active', 'user', 'USR-000003', ?, ?)").run(iso, iso);
 
-  migrate(db, srcDir); // 补跑 026-032
+  migrate(db, srcDir); // 补跑 026-033
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 32);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 33);
   assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000001'").get().citizen_id, 'USR-000001', '旧 CIT- 存量改写为 id');
   assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000002'").get().citizen_id, 'USR-000002', 'NULL 补齐为 id');
   assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000003'").get().citizen_id, 'USR-000003', '已一致不动');
@@ -400,6 +400,57 @@ test('迁移 032：团队频道加列+扩容 SKU（FC v10.28.51.0 三步向导�
   for (const ix of ['idx_posts_team', 'idx_articles_team', 'idx_uploads_team']) {
     assert.ok(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='index' AND name = ?").get(ix).n === 1, '缺索引 ' + ix);
   }
+  db.close();
+});
+
+test('迁移 033：等级奖励五表+XP 列（FC v10.28.52.0；+5 表 → health 66）', () => {
+  const db = openDb(path.join(tmpDir(), 'y.sqlite'));
+  // teams.xp_gained + users.avatar_frame/title 三列就位
+  const xpCol = db.prepare('PRAGMA table_info(teams)').all().find((x) => x.name === 'xp_gained');
+  assert.ok(xpCol, '033 列缺: teams.xp_gained');
+  assert.strictEqual(Number(xpCol.dflt_value), 0);
+  for (const c of ['avatar_frame', 'title']) {
+    const col = db.prepare('PRAGMA table_info(users)').all().find((x) => x.name === c);
+    assert.ok(col, '033 列缺: users.' + c);
+    assert.strictEqual(col.dflt_value, null);
+  }
+  // 五表就位 + CHECK 枚举
+  const has = (name) => db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name = ?").get(name).n === 1;
+  for (const t of ['achievements', 'user_achievements', 'team_achievements', 'user_badges', 'user_cosmetics']) {
+    assert.ok(has(t), '缺表 ' + t);
+  }
+  const iso = new Date().toISOString();
+  assert.throws(() => db.prepare("INSERT INTO achievements (id, scope, name, description, level, created_at) VALUES ('ACH-x', 'nope', 'n', 'd', 1, ?)").run(iso), /CHECK/);
+  assert.throws(() => db.prepare("INSERT INTO user_cosmetics (user_id, kind, value, owned_at) VALUES ('u', 'nope', 'v', ?)").run(iso), /CHECK/);
+  // 8 条成就种子（个人/团队 2/6/9/12）
+  const seeds = db.prepare('SELECT id, scope, level, name FROM achievements ORDER BY scope, level').all();
+  // ORDER BY scope：'team' < 'user' 字典序在前
+  assert.deepStrictEqual(seeds.map((r) => r.id), ['ACH-team-2', 'ACH-team-6', 'ACH-team-9', 'ACH-team-12', 'ACH-user-2', 'ACH-user-6', 'ACH-user-9', 'ACH-user-12']);
+  // 名称=用户原文逐字
+  const byId = Object.fromEntries(seeds.map((r) => [r.id, r.name]));
+  assert.strictEqual(byId['ACH-user-2'], '官方对你的认可');
+  assert.strictEqual(byId['ACH-user-6'], '恭喜你成为老玩家');
+  assert.strictEqual(byId['ACH-user-9'], '我是五星上将！');
+  assert.strictEqual(byId['ACH-user-12'], '我是冠军！');
+  assert.strictEqual(byId['ACH-team-2'], '新国崛起！');
+  assert.strictEqual(byId['ACH-team-6'], '老了');
+  assert.strictEqual(byId['ACH-team-9'], '鼎世春秋');
+  assert.strictEqual(byId['ACH-team-12'], '我是一个空气');
+  // 团队 XP 可累加（team-xp.js 用的同款 UPDATE）+ MAX(0) 不穿负
+  db.prepare("INSERT INTO teams (id, data, created_at) VALUES ('TEAM-X1', '{}', ?)").run(iso);
+  db.prepare('UPDATE teams SET xp_gained = xp_gained + 24 WHERE id = ?').run('TEAM-X1');
+  assert.strictEqual(db.prepare('SELECT xp_gained FROM teams WHERE id = ?').get('TEAM-X1').xp_gained, 24);
+  db.prepare('UPDATE teams SET xp_gained = MAX(0, xp_gained - 36) WHERE id = ?').run('TEAM-X1');
+  assert.strictEqual(db.prepare('SELECT xp_gained FROM teams WHERE id = ?').get('TEAM-X1').xp_gained, 0);
+  // FK 级联：用户删除连带清成就/徽章/装饰品
+  db.prepare("INSERT INTO users (id, email, role, created_at, updated_at) VALUES ('u033', 'u033@x.com', 'user', ?, ?)").run(iso, iso);
+  db.prepare("INSERT INTO user_achievements (user_id, ach_id, unlocked_at) VALUES ('u033', 'ACH-user-2', ?)").run(iso);
+  db.prepare("INSERT INTO user_badges (user_id, badge_id, owned_at) VALUES ('u033', 'BADGE-user-2', ?)").run(iso);
+  db.prepare("INSERT INTO user_cosmetics (user_id, kind, value, owned_at) VALUES ('u033', 'frame', 'rookie-frame', ?)").run(iso);
+  db.prepare("DELETE FROM users WHERE id = 'u033'").run();
+  assert.strictEqual(db.prepare('SELECT count(*) AS n FROM user_achievements').get().n, 0);
+  assert.strictEqual(db.prepare('SELECT count(*) AS n FROM user_badges').get().n, 0);
+  assert.strictEqual(db.prepare('SELECT count(*) AS n FROM user_cosmetics').get().n, 0);
   db.close();
 });
 

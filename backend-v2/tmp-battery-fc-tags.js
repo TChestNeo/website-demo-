@@ -105,7 +105,7 @@ function ok(name, cond, detail) {
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     const i18nTxt = await (await fetch(BASE + '/assets/i18n/fluidcanvas.i18n.js')).text();
     ok('S1 site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点恒 v0.2.58.26 + 旧 47.3 版本锚零残留',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") !== -1 &&
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") !== -1 &&
       siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.26') !== -1 &&
       siteCfg.indexOf('v10.28.46.0 = 图库标签系统') !== -1 &&
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.3';") === -1);

@@ -267,20 +267,20 @@ const GETSCOPE_EXPR = "(function(){ return window.__edgeGetScope; })()";
     ['fc-edges VISIBILITIES ×3', bc(edges)('VISIBILITIES'), 3],
     ['fc-edges optionalViewer ×6', bc(edges)('optionalViewer'), 6],
     ['031 fc_edges ×4', bc(mig)('fc_edges'), 4],
-    ['health 61 张表 ×2', bc(health)('61'), 2]
+    ['health 66 张表 ×2', bc(health)('66'), 2]
   ];
   const bBad = B_ANCHORS.filter(([, got, want]) => got !== want);
-  ok('S2 后端 17 锚全中（Gemini 配置/预算/注册/端点/031/health 61）', bBad.length === 0,
+  ok('S2 后端 17 锚全中（Gemini 配置/预算/注册/端点/031/health 66）', bBad.length === 0,
     bBad.map(([n, got, want]) => n + '=' + got + '≠' + want).join(',') || '17/17');
 
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
   ok('S3 site-config：50.0 在位 + 49.2 赋值零残留 + changelog 头各 ×1 + rev 终态各 ×1 + 站点恒 58.26',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
     sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.50.0 = ') === 1 &&
     sc('rev 00356-djq') === 1 && sc('rev 00357-sh8') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.26';") === 1 && sc("window.MN_SITE_VERSION = 'v0.2.58.25';") === 0,
-    'fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") + ' fc49=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
+    'fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") + ' fc49=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
     ' cl50=' + sc('// v10.28.51.1 = ') + ' r56=' + sc('rev 00356-djq') + ' q57=' + sc('rev 00357-sh8') +
     ' v26=' + sc("window.MN_SITE_VERSION = 'v0.2.58.26';"));
 

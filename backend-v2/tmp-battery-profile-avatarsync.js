@@ -197,9 +197,9 @@ function ok(name, cond, detail) {
     const profI18n = await get('/assets/i18n/community-profile.i18n.js');
     const fcI18n = await get('/assets/i18n/fluidcanvas.i18n.js');
     ok('P0 site-config：版本赋值 58.25/48.1 各 1 + rev 00348-/00349- 各 2（58.25 双 changelog 条目：站点+FC 48.1 同轮）',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.51.1'") === 1 &&
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") === 1 &&
       cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2,
-      '58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") + ' 48.1=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.51.1'") + ' r36=' + cnt(siteSrc, '00348-') + ' r37=' + cnt(siteSrc, '00349-'));
+      '58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") + ' 48.1=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") + ' r36=' + cnt(siteSrc, '00348-') + ' r37=' + cnt(siteSrc, '00349-'));
     ok('P0 资料页静态锚：toggle id ×4（模板+label for+F3+F4 选择器）+ slati_avatar_sync ×2（F1 读+F3 写）+ T 调用 ×2（label+aria-label）',
       cnt(profileSrc, 'editAvatarSyncToggle') === 4 && cnt(profileSrc, 'slati_avatar_sync') === 2 && cnt(profileSrc, "T('prof.edit.avatarSync')") === 2,
       'toggle=' + cnt(profileSrc, 'editAvatarSyncToggle') + ' key=' + cnt(profileSrc, 'slati_avatar_sync'));

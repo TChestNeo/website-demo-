@@ -38,6 +38,10 @@ const PASSWORD_MAX = 72;
 const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear', 'solid-black', 'solid-white', 'solid-gray', 'mono-bw', 'mono-silver', 'mono-charcoal'];
 // v0.2.53.0 卡片边缘主题（迁移 027 users.card_edge；FC 14 键；social.js 必须同步）
 const CARD_EDGE_KEYS = ['paper', 'treasure', 'tech1', 'tech2', 'tech3', 'tech4', 'tech5', 'tech6', 'paint1', 'paint2', 'paint3', 'paint4', 'paint5', 'paint6'];
+
+// v10.28.52.0 等级奖励装饰品白名单（033 表 user_cosmetics 稳定编码；display 名走前端 i18n 逐字表）
+const FRAME_KEYS = ['rookie-frame', 'champion-frame'];
+const TITLE_KEYS = ['veteran-title'];
 // v0.2.25.0 页面背景图片（020 列）：仅本站直传路径（/uploads/UPL-*）或 http(s) 外链——防 CSS 注入等杂值
 const PAGE_BG_IMAGE_RE = /^(\/uploads\/UPL-[A-Za-z0-9]+\.(jpg|jpeg|png|gif|webp)|https?:\/\/.)/i;
 
@@ -86,6 +90,9 @@ function publicUser(row) {
     gender: row.gender || null, // 013：Male/Female/Other（注册第二页下拉），NULL = 未填写
     student: studentShape(row), // v0.2.44.0：认证有效 → {email, verifiedAt, expiresAt, source}，否则 null
     xpGained: row.xp_gained || 0, // v0.2.49.0 获得类经验（粉丝/赞/评论/收藏，后端实时累加；前端登录同步进徽章）
+    // v10.28.52.0 等级奖励装饰品激活态（033 列）：头像相框/称号（未解锁时 null；PATCH 校验拥有才可设）
+    avatarFrame: row.avatar_frame || null,
+    title: row.title || null,
     // v0.2.58.25 裁切元数据（030 列；坏值宽容回 null——settings 弹窗全站读 slati_user 需要；mirrorProfile 白名单不含此二键）
     avatarCrop: parseCropSafe(row.avatar_crop),
     bannerCrop: parseCropSafe(row.banner_crop),
@@ -354,8 +361,38 @@ function register(router, deps) {
     if (body.cardEdge !== undefined) {
       const cardEdge = body.cardEdge === null ? null : String(body.cardEdge);
       if (cardEdge !== null && !CARD_EDGE_KEYS.includes(cardEdge)) throw new HttpError('VALIDATION', '卡片边缘样式无效');
+      // v10.28.52.0 Lv.2 免费名片边缘解锁：免费用户非 null 边缘需先领奖（user_cosmetics edge/free-edge）；
+      // null 恒放行（祖父条款：已设边缘的既有行不因本门被卡）；付费订阅恒放行
+      if (cardEdge !== null && (!ctx.user.tier || ctx.user.tier === 'free')) {
+        const unlocked = ctx.db.prepare("SELECT 1 FROM user_cosmetics WHERE user_id = ? AND kind = 'edge' AND value = 'free-edge'").get(ctx.user.id);
+        if (!unlocked) throw new HttpError('FORBIDDEN', '免费用户需达到 Lv.2 解锁名片边缘（订阅或领取奖励后可用）');
+      }
       push('card_edge = ?', cardEdge);
       prev.cardEdge = ctx.user.card_edge;
+    }
+    // v10.28.52.0 等级奖励装饰品激活（033 列）：null = 卸下（恒放行）；非 null 必须白名单内
+    // 且已拥有（user_cosmetics 行）——装饰品只能戴已领的，防止伪造字段
+    if (body.avatarFrame !== undefined) {
+      const frame = body.avatarFrame === null ? null : String(body.avatarFrame);
+      if (frame !== null) {
+        if (!FRAME_KEYS.includes(frame)) throw new HttpError('VALIDATION', '头像相框样式无效');
+        if (!ctx.db.prepare('SELECT 1 FROM user_cosmetics WHERE user_id = ? AND kind = ? AND value = ?').get(ctx.user.id, 'frame', frame)) {
+          throw new HttpError('FORBIDDEN', '尚未解锁该头像相框');
+        }
+      }
+      push('avatar_frame = ?', frame);
+      prev.avatarFrame = ctx.user.avatar_frame;
+    }
+    if (body.title !== undefined) {
+      const title = body.title === null ? null : String(body.title);
+      if (title !== null) {
+        if (!TITLE_KEYS.includes(title)) throw new HttpError('VALIDATION', '称号样式无效');
+        if (!ctx.db.prepare('SELECT 1 FROM user_cosmetics WHERE user_id = ? AND kind = ? AND value = ?').get(ctx.user.id, 'title', title)) {
+          throw new HttpError('FORBIDDEN', '尚未解锁该称号');
+        }
+      }
+      push('title = ?', title);
+      prev.title = ctx.user.title;
     }
     if (sets.length) {
       push('updated_at = ?', new Date().toISOString());
@@ -373,7 +410,7 @@ function register(router, deps) {
           displayName: next.display_name, avatarUrl: next.avatar_url, language: next.language,
           country: next.country, bio: next.bio, dob: next.dob, gender: next.gender, cardBg: next.card_bg,
           cardPlate: next.card_plate, pageBgImage: next.page_bg_image, bannerUrl: next.banner_url, cardEdge: next.card_edge,
-          avatarCrop: next.avatar_crop, bannerCrop: next.banner_crop
+          avatarCrop: next.avatar_crop, bannerCrop: next.banner_crop, avatarFrame: next.avatar_frame, title: next.title
         }
       });
       sendJson(res, 200, { user: publicUser(next) });

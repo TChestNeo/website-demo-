@@ -33,6 +33,7 @@ const { register: registerFcOverview } = require('./routes/public/fc-overview');
 const { register: registerFcEdges } = require('./routes/public/fc-edges');
 const { register: registerEdgeGen } = require('./routes/public/fc-edgegen');
 const { register: registerTeams } = require('./routes/public/teams');
+const { register: registerRewards } = require('./routes/public/rewards');
 const { register: registerStaffDashboard } = require('./routes/staff/dashboard');
 const { register: registerStaffAnalytics } = require('./routes/staff/analytics');
 const { register: registerStaffUsers } = require('./routes/staff/users');
@@ -100,6 +101,7 @@ function createServer(deps = {}) {
   registerFcEdges(router, ctx);
   registerEdgeGen(router, ctx);
   registerTeams(router, ctx);
+  registerRewards(router, ctx);
   registerStaffDashboard(router, ctx);
   registerStaffAnalytics(router, ctx);
   registerStaffUsers(router, ctx);

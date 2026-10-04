@@ -82,6 +82,9 @@ const config = {
   //（用户钦定「至少一天内不同的10个用户发布一个帖子」）；windowDays = 活动窗口（≥30 供话题判定）。
   xp: {
     gained: { fan: 25, like: 15, comment: 10, favorite: 12 },
+    // v10.28.52.0 团队 XP 五事件（用户数值表 2026-10-04）：上传作品 24/获赞 16/粉丝 32/收藏 36/分享转发 20。
+    // 双向对称记账（「少一个就收走」）：反向操作同额扣回（team-xp.js loseTeamXp；MAX(0) 不穿负）。
+    teamGained: { upload: 24, like: 16, fan: 32, favorite: 36, share: 20 },
     activity: { minPosters: 10, windowDays: 60 }
   },
 

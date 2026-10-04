@@ -333,6 +333,16 @@ async function main() {
     await waitFor(t, 'window.MN_Report && window.MN_Report.toast', 10000, 'MN_Report 就绪');
     await patchToast(t);
 
+    // 639 修正：G2 几何须在入场动画落定后量——transitions.js stagger 给 .card 与 .app-main h2
+    // 各写 translateY(18px) 起手（h2 在 CARD_SELECTOR 内，叠卡自身 = +36）；638 曾踩中动画中段
+    // 采样（卡 +18、h2 +36 → nmT≥avB-1 侥幸过），639 loadRewardsMe 404 二次渲染把新卡排除在
+    // stagger 之外 → 静息采样（nmT=avB-12）真值现形。落定=卡与 h2 两元素 transform 恒等。
+    await waitFor(t, "(function(){ var c=document.querySelector('#profileHeader .profile-header');" +
+      " var h2=document.querySelector('#profileHeader h2'); if(!c||!h2) return false;" +
+      " var id=function(v){ return !v || v==='none' || v==='matrix(1, 0, 0, 1, 0, 0)'; };" +
+      " return id(getComputedStyle(c).transform) && id(getComputedStyle(h2).transform); })()",
+      8000, '入场动画落定');
+
     console.log('── G. 自己主页（USR-000101，isSelf）──');
 
     // G1 几何：主页可见/头部高度/4 tab/侧栏渲染/返回链
@@ -363,7 +373,7 @@ async function main() {
     check('G2 名字/公民号/性别徽章=♂svg/简介/加入时间', g2.text.indexOf('电池用户') !== -1 && g2.text.indexOf('@CIT-000101') !== -1 && g2.badgeSrc && g2.badgeSrc.indexOf('male_24dp_7CA7D8') !== -1 && g2.text.indexOf('电池用户简介') !== -1 && g2.text.indexOf('加入于 2026年8月1日') !== -1, (g2.badgeSrc || '') + ' ' + g2.text.slice(0, 60));
     check('G2 统计四块 1/1/2/1 + counts 并排 2 粉丝 · 3 关注 · 1 获赞', g2.nums === '1/1/2/1' && g2.counts.indexOf('2') !== -1 && g2.counts.indexOf('粉丝') !== -1 && g2.counts.indexOf('3') !== -1 && g2.counts.indexOf('关注') !== -1 && g2.counts.indexOf('1') !== -1 && g2.counts.indexOf('获赞') !== -1, g2.nums + ' / ' + g2.counts);
     check('G2 isSelf → 编辑资料钮（非关注钮）+ 真头像', g2.hasEdit && !g2.hasFollow && g2.avatar.indexOf('data:image/svg') === 0, 'edit=' + g2.hasEdit);
-    check('G2 v0.2.58.18 横排几何：名字列在头像右侧（nmL≥avR-1）+ 名称块自头像下方起行（nmT≥avB-1——头像上移叠横幅后不再垂直同带）', g2.nmL >= g2.avR - 1 && g2.nmT >= g2.avB - 1, 'avR=' + g2.avR + ' nmL=' + g2.nmL + ' avB=' + g2.avB + ' nmT=' + g2.nmT + ' nmB=' + g2.nmB);
+    check('G2 v0.2.58.18 横排几何：名字列在头像右侧（nmL≥avR-1）+ 名称块起行=头像底缘上方 12px（|nmT-(avB-12)|≤2——头像半身垂入名称带 12px；静息态测，入场动画落定后）', g2.nmL >= g2.avR - 1 && Math.abs(g2.nmT - (g2.avB - 12)) <= 2, 'avR=' + g2.avR + ' nmL=' + g2.nmL + ' avB=' + g2.avB + ' nmT=' + g2.nmT + ' nmB=' + g2.nmB + ' diff=' + (g2.avB - g2.nmT));
     check('G2 v0.2.22.3 粉丝关注贴 .profile-top 行最右缘（rightEdge≤1）+ 在头像右侧（pcL>avR）', g2.ptR - g2.pcR <= 1 && g2.pcL > g2.avR, 'ptR=' + g2.ptR + ' pcR=' + g2.pcR + ' pcL=' + g2.pcL + ' avR=' + g2.avR);
     check('G2 v0.2.58.18 头像叠横幅（经典布局）：横幅可见（h≥100）+ 分割线 1px + 头像顶叠横幅下缘 36px（bnB-avT≈36±16）+ 半身入行内（avB>bnB）', g2.bnH >= 100 && g2.bb === '1px' && g2.avT < g2.bnB && (g2.bnB - g2.avT) >= 20 && (g2.bnB - g2.avT) <= 52 && g2.avB > g2.bnB, 'bnH=' + g2.bnH + ' bb=' + g2.bb + ' avT=' + g2.avT + ' avB=' + g2.avB + ' bnB=' + g2.bnB);
 

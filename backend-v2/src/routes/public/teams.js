@@ -17,6 +17,7 @@ const { HttpError, sendJson, readJson } = require('../../http');
 const { requireSession } = require('../../middleware/auth');
 const { insertWithId, pad6 } = require('../../ids');
 const { acceptedFriends } = require('./dm-shared');
+const { gainTeamXp, loseTeamXp } = require('./team-xp'); // v10.28.52.0 团队 XP（关注/取关团队）
 
 const MAX_TEAM_NAME = 60;
 const MAX_CHAT_NAME = 60;
@@ -57,8 +58,8 @@ function requireOwner(db, teamId, userId) {
   return row;
 }
 
-// 团队形状（读侧统一：data JSON + 实时成员数 + 我的角色 + 上限）
-function teamShape(db, row, myRole, ownerId) {
+// 团队形状（读侧统一：data JSON + 实时成员数 + 我的角色 + 上限 + 团队经验/粉丝/我的关注态）
+function teamShape(db, row, myRole, ownerId, viewerId) {
   const d = parseJson(row.data) || {};
   return {
     id: row.id,
@@ -73,7 +74,13 @@ function teamShape(db, row, myRole, ownerId) {
     createdAt: row.created_at,
     avatarUrl: d.avatarUrl || null,
     bannerUrl: d.bannerUrl || null,
-    decorations: d.decorations || {}
+    decorations: d.decorations || {},
+    // v10.28.52.0 团队等级：xpGained=团队经验（五事件服务端记账）、followers=团队粉丝数、followingByMe=我的关注态
+    xpGained: row.xp_gained || 0,
+    followers: db.prepare("SELECT count(*) AS n FROM following WHERE target_type = 'team' AND target_id = ?").get(row.id).n,
+    followingByMe: viewerId
+      ? !!db.prepare("SELECT 1 FROM following WHERE user_id = ? AND target_type = 'team' AND target_id = ?").get(viewerId, row.id)
+      : false
   };
 }
 
@@ -152,7 +159,7 @@ function register(router, ctx) {
       FROM teams t JOIN team_members tm ON tm.team_id = t.id AND tm.user_id = ?
       ORDER BY t.seq DESC
     `).all(c.user.id);
-    sendJson(res, 200, { teams: rows.map((r) => teamShape(c.db, r, r.my_role, null)) });
+    sendJson(res, 200, { teams: rows.map((r) => teamShape(c.db, r, r.my_role, null, c.user.id)) });
   }));
 
   // ── 一键建团（三步向导一次承载）：身份转换 + 内容搬运 + 建群聊 ──
@@ -222,7 +229,7 @@ function register(router, ctx) {
     }
     const fresh = c.db.prepare('SELECT * FROM teams WHERE id = ?').get(id);
     sendJson(res, 200, {
-      team: teamShape(c.db, fresh, 'owner', me.id),
+      team: teamShape(c.db, fresh, 'owner', me.id, me.id),
       copied: { posts: copied.posts, media: copied.media, activity: copied.activity, decorations: !!decorations },
       chat: chatOut, cap
     });
@@ -234,7 +241,7 @@ function register(router, ctx) {
     if (!row) throw new HttpError('NOT_FOUND', '团队不存在');
     const mine = requireTeamMember(c.db, row.id, c.user.id);
     const d = parseJson(row.data) || {};
-    sendJson(res, 200, { team: teamShape(c.db, row, mine.role, d.ownerId || c.user.id) });
+    sendJson(res, 200, { team: teamShape(c.db, row, mine.role, d.ownerId || c.user.id, c.user.id) });
   }));
 
   // ── 成员列表 ──
@@ -273,6 +280,31 @@ function register(router, ctx) {
     c.db.prepare("INSERT INTO team_members (team_id, user_id, role, joined_at) VALUES (?, ?, 'member', ?)")
       .run(team.id, okId, new Date().toISOString());
     sendJson(res, 200, { added: { userId: okId }, memberCount: memberCountOf(c.db, team.id) });
+  }));
+
+  // ── 关注/取关团队（v10.28.52.0：粉丝事件计入团队 XP——一个粉丝 +32/取关 -32 双向对称）──
+  router.add('POST', '/api/teams/:id/follow', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    const team = c.db.prepare('SELECT * FROM teams WHERE id = ?').get(req.params.id);
+    if (!team) throw new HttpError('NOT_FOUND', '团队不存在');
+    requireTeamMember(c.db, team.id, c.user.id); // 仅团队成员可关注自己的团队（避免刷粉）
+    const iso = new Date().toISOString();
+    const info = c.db.prepare("INSERT OR IGNORE INTO following (user_id, target_type, target_id, created_at) VALUES (?, 'team', ?, ?)")
+      .run(c.user.id, team.id, iso);
+    if (info.changes > 0) gainTeamXp(c, team.id, 'fan'); // 团队新增粉丝 +32
+    const followerCount = c.db.prepare("SELECT count(*) AS n FROM following WHERE target_type = 'team' AND target_id = ?").get(team.id).n;
+    sendJson(res, 200, { following: true, followerCount });
+  }));
+
+  router.add('DELETE', '/api/teams/:id/follow', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    const team = c.db.prepare('SELECT * FROM teams WHERE id = ?').get(req.params.id);
+    if (!team) throw new HttpError('NOT_FOUND', '团队不存在');
+    const info = c.db.prepare("DELETE FROM following WHERE user_id = ? AND target_type = 'team' AND target_id = ?")
+      .run(c.user.id, team.id);
+    if (info.changes > 0) loseTeamXp(c, team.id, 'fan'); // 取关 -32（少一个就收走）
+    const followerCount = c.db.prepare("SELECT count(*) AS n FROM following WHERE target_type = 'team' AND target_id = ?").get(team.id).n;
+    sendJson(res, 200, { following: false, followerCount });
   }));
 
   // ── 移出/退出（队长移出成员；成员可自行退出；队长不可退出）──

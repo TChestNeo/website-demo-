@@ -154,12 +154,12 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   // S1 rev 口径：632 终态烘焙已填真值——00348-t8b/00349-hgc 各 ×2（633 轮改锚）
   ok('S1 site-config 版本双线 58.26/49.0 + rev 真值 ×2 + 58.25/48.1/48.2 赋值零残留',
     cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") === 1 &&
-    cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") === 1 &&
+    cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1 &&
     cnt(sconf, '00348-t8b') === 2 && cnt(sconf, '00349-hgc') === 2 &&
     cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.25';") === 0 &&
     cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") === 0 &&
     cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") === 0,
-    '58.26=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") + ' 49.0=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") +
+    '58.26=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") + ' 49.0=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") +
     ' 00348-t8b=' + cnt(sconf, '00348-t8b') + ' 00349-hgc=' + cnt(sconf, '00349-hgc') +
     ' 58.25=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.25';") +
     ' 48.1=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") +

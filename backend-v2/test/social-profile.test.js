@@ -260,6 +260,8 @@ test('v0.2.53.0 卡片边缘主题：PATCH /auth/me 落库 + 非法键 400 + nul
   const t = await testApp();
   try {
     const alice = t.loginAs('alice@x.com');
+    // v10.28.52.0 Lv.2 免费名片边缘解锁：免费用户需先领奖（edge/free-edge）才可设边缘
+    await t.request('POST', '/api/rewards/claim', { scope: 'user', lv: 2 }, { cookie: alice.cookie });
     const prof = (cookie) => t.request('GET', '/api/social/users/' + alice.user.id, undefined, cookie ? { cookie } : undefined).then((r) => r.json());
     assert.strictEqual((await prof()).user.cardEdge, null, '默认 NULL');
     const r1 = await t.request('PATCH', '/api/auth/me', { cardEdge: 'paper' }, { cookie: alice.cookie });

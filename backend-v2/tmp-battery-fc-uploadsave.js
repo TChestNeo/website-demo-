@@ -105,7 +105,7 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     ok('F1 site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点版本恒 v0.2.58.26',
-      siteCfg.indexOf('v10.28.51.1') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.26') !== -1);
+      siteCfg.indexOf('v10.28.52.0') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.26') !== -1);
     ok('F2 上传落地即存锚在源：imgMetaSave 后 saveDraft(true) + saveDraft(silent) 签名 + silent 压成功 toast',
       editorHtml.indexOf('上传落地即存（用户「上传就上传了怎么会不见」') !== -1 &&
       editorHtml.indexOf('function saveDraft(silent)') !== -1 &&
