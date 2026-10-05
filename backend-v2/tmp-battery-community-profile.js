@@ -30,7 +30,7 @@ const DOC_START_SRC = `
     id: 'USR-000101', displayName: '电池用户', avatarUrl: ${JSON.stringify(AVATAR_URI)},
     bio: '电池用户简介', gender: 'Male', citizenId: 'CIT-000101', createdAt: '2026-08-01T00:00:00.000Z',
     isSelf: true, followedByMe: false, followerCount: 2, followingCount: 3,
-    cardBg: null, cardPlate: null, pageBgImage: null, cardEdge: null, avatarCrop: null, bannerCrop: null, // v0.2.25.0 页面背景图片（null = 无整页背景）；v0.2.53.1 卡片边缘（null = 默认圆角卡）；v0.2.58.26 裁切元数据（030 列，null = 默认整图）
+    cardBg: null, cardPlate: null, pageBgImage: null, cardEdge: null, avatarCrop: null, bannerCrop: null, // v0.2.25.0 页面背景图片（null = 无整页背景）；v0.2.53.1 卡片边缘（null = 默认圆角卡）；v0.2.58.27 裁切元数据（030 列，null = 默认整图）
     stats: { postCount: 1, repostCount: 1, likeReceivedCount: 1, likeCount: 2, favoriteCount: 1 }
   };
   // 他人（USR-000202，bio 空 → 兜底文案；Female → 女；零帖 → 空态；关注链目标；v0.2.23.0 cardBg='glass-rose' 公开渲染他人背景；v0.2.24.1/2 cardPlate='glass-clear' 标准液态玻璃（纯透明）独立背景层）
@@ -133,7 +133,7 @@ const DOC_START_SRC = `
         if (pb.pageBgImage !== undefined) ME.pageBgImage = pb.pageBgImage;
         // v0.2.53.1 卡片边缘（null 显式入 body → 恢复默认圆角卡）
         if (pb.cardEdge !== undefined) ME.cardEdge = pb.cardEdge;
-        // v0.2.58.26 裁切元数据（含 null 显式清空）
+        // v0.2.58.27 裁切元数据（含 null 显式清空）
         if (pb.avatarCrop !== undefined) ME.avatarCrop = pb.avatarCrop;
         if (pb.bannerCrop !== undefined) ME.bannerCrop = pb.bannerCrop;
         return Promise.resolve(res(200, { user: { id: ME.id, displayName: ME.displayName, avatarUrl: ME.avatarUrl, citizenId: ME.citizenId, bio: ME.bio, gender: ME.gender, createdAt: ME.createdAt, avatarCrop: ME.avatarCrop, bannerCrop: ME.bannerCrop } }));
@@ -311,7 +311,7 @@ async function main() {
     const ver = await t.evalJs('window.MN_SITE_VERSION');
     const s1 = await t.evalJs("(() => { var a = document.querySelector('.user-module a[href*=\"community-profile.html\"]');" +
       " return { href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && !!a.querySelector('.user-name')) : false }; })()");
-    check('S1 版本 v0.2.54.0', ver === 'v0.2.58.26', 'ver=' + ver);
+    check('S1 版本 v0.2.54.0', ver === 'v0.2.58.27', 'ver=' + ver);
     check('S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）', s1.href === '../pages/community-profile.html?id=USR-000101' && s1.wrapped, s1.href);
 
     // S2 点侧栏锚 → 弹信息卡（58.21 口径：不跳页）→ 弹窗内「查看主页」→ 真导航到自己主页
@@ -498,7 +498,7 @@ async function main() {
       " pvCardBgColor: getComputedStyle(pvCard).backgroundColor," +
       " pgN: pgSw.length, pgLabels: Array.prototype.map.call(pgSw, function (x) { return x.querySelector('.swatch-label').textContent; }).join('|')," +
       " pgFirstActive: pgSw[0].classList.contains('active') }; })()");
-    check('E6 切自定义：互斥显示 + 五组（横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景——v0.2.53.1 新边缘组+v0.2.58.18 新横幅图片组）+ 横幅 13 预设（v0.2.58.26 免费层扩展 6 单色/黑白系）+ v0.2.24.1 卡片背景只 2 选项（默认|标准液态玻璃）默认选中 + v0.2.25.0 页面背景 2 选项（默认|自定义图片）默认选中', e6b.active === 'custom' && e6b.basicVis === 'none' && e6b.customVis !== 'none' && e6b.labels === '横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景' && e6b.bgN === 13 && e6b.bgLabels === '默认|磨砂|深海|薰衣草|樱花|薄荷|落日|墨黑|纯白|石板灰|黑白渐变|银灰渐变|炭黑渐变' && e6b.bgFirstActive && e6b.plN === 2 && e6b.plLabels === '默认|标准液态玻璃' && e6b.plFirstActive && e6b.pgN === 2 && e6b.pgLabels === '默认|自定义图片' && e6b.pgFirstActive, JSON.stringify(e6b));
+    check('E6 切自定义：互斥显示 + 五组（横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景——v0.2.53.1 新边缘组+v0.2.58.18 新横幅图片组）+ 横幅 13 预设（v0.2.58.27 免费层扩展 6 单色/黑白系）+ v0.2.24.1 卡片背景只 2 选项（默认|标准液态玻璃）默认选中 + v0.2.25.0 页面背景 2 选项（默认|自定义图片）默认选中', e6b.active === 'custom' && e6b.basicVis === 'none' && e6b.customVis !== 'none' && e6b.labels === '横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景' && e6b.bgN === 13 && e6b.bgLabels === '默认|磨砂|深海|薰衣草|樱花|薄荷|落日|墨黑|纯白|石板灰|黑白渐变|银灰渐变|炭黑渐变' && e6b.bgFirstActive && e6b.plN === 2 && e6b.plLabels === '默认|标准液态玻璃' && e6b.plFirstActive && e6b.pgN === 2 && e6b.pgLabels === '默认|自定义图片' && e6b.pgFirstActive, JSON.stringify(e6b));
     check('E6 v0.2.24.0 预览默认：横幅条=品牌渐变 + 卡片背景预览无 has-plate 无背景 + 迷你透明卡身', e6b.flatCls === 'edit-bg-flat bg-default' && e6b.flatBg.indexOf('linear-gradient') !== -1 && e6b.pvCls === 'edit-bg-preview' && e6b.pvBg === 'none' && e6b.pvCardBgColor === 'rgba(0, 0, 0, 0)', 'flat=' + e6b.flatCls + ' pvCls=' + e6b.pvCls + ' pvBg=' + e6b.pvBg + ' pvCard=' + e6b.pvCardBgColor);
 
     // E6c 横幅组点深海：active 唯一互斥 + 横幅条换类换渐变
@@ -1013,7 +1013,7 @@ async function main() {
     // L1 hub 首卡作者锚 → 个人主页（href 形状断言）
     const l1 = await t.evalJs("(() => { var c = document.querySelector('[data-cloud-id]'); var a = c ? c.querySelector('.post-author-link') : null;" +
       " return { ver: window.MN_SITE_VERSION, href: a ? a.getAttribute('href') : null, wrapped: a ? (!!a.querySelector('img.avatar') && a.textContent.length > 0) : false }; })()");
-    check('L1 版本 v0.2.54.0', l1.ver === 'v0.2.58.26', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.54.0', l1.ver === 'v0.2.58.27', 'ver=' + l1.ver);
     check('L1 云卡作者锚 → profile（id=USR- 形状 + 头像+名字在内）', l1.href && /^community-profile\.html\?id=USR-\d{6}$/.test(l1.href) && l1.wrapped, l1.href);
 
     // L2 点作者锚 → 真导航 → 头部渲染（真数据）+ 几何 + 关注钮

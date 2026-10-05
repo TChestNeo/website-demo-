@@ -1,4 +1,4 @@
-// tmp-battery-crop.js — v0.2.58.26 上传裁切弹窗 + 横幅 1.5 倍高 + 视频横幅电池（Round 45 主电池）
+// tmp-battery-crop.js — v0.2.58.27 上传裁切弹窗 + 横幅 1.5 倍高 + 视频横幅电池（Round 45 主电池）
 // 用户「那个横幅和头像在上传后能不能先弹出一个选择裁切范围的弹窗调整裁切范围，还有那个横幅能不能再高1.5倍？」
 //   +「还有要允许上传视频，大小的话平台自己压缩，然后上传视频最长1分钟」+「那个视频是指横幅的部分」
 // 六钦定+视频四钦定：裁切=显示范围（绝不重编码 GIF 保动画）/固定比例框+缩放平移（视窗模型）/
@@ -332,7 +332,7 @@ const VIDEO_TO_INPUT_JS = (selector) => `(function(){ return (${RECORD_BODY})().
     const comI18n = await get('/assets/i18n/common.i18n.js');
     const proI18n = await get('/assets/i18n/community-profile.i18n.js');
     ok('S0a site-config：58.25 赋值 1 + changelog 1 + rev 00348-/00349- 各 2（站点+FC 双条目）+ FC 48.1 赋值 1 + MN_CompressVideo/MN_VideoCap 各 1',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, '// v0.2.58.26 = ') === 1 &&
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.27'") === 1 && cnt(siteSrc, '// v0.2.58.27 = ') === 1 &&
       cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2 &&
       cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") === 1 &&
       cnt(siteSrc, 'MN_CompressVideo') === 1 && cnt(siteSrc, 'MN_VideoCap') === 2,

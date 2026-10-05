@@ -10,7 +10,7 @@
 // 本地：静态壳 + document-start fetch 罐头（feed 两卡：LIKED 已赞+已转+已收藏 / ORIG 未互动；like/repost/favorite POST/DELETE 有状态翻转 +
 //   __forceRepostRemoved 测转发 removed 拦截分支 + __forceFavoriteFail 测收藏 500 回滚；粒子对齐/实心爱心回归 = v0.2.19.0 同款 CSSOM + 几何断言）。
 // 线上（LIVE_BASE）：真卡六件齐 + 分享弹窗 URL 含帖 id + 转发/收藏假会话 401 回滚实测 + 访客演示卡引导 toast + 帖页实心态/星态一致。
-// v0.2.58.26（社区页演示样本全移除）：A1/L1 版本锚 58.24；boot 假登录 401 整流终态=登录引导卡（hub 云卡不可得→六件行断言
+// v0.2.58.27（社区页演示样本全移除）：A1/L1 版本锚 58.24；boot 假登录 401 整流终态=登录引导卡（hub 云卡不可得→六件行断言
 //   全部迁真帖页直达）；G 段重写=访客登录引导卡（三 tab 恒引导卡+发现引导行+零 API 含零 probe+零演示签名）；
 //   L 段重写=假登录 boot 整流终态登录卡+公共端点取真 id 帖页六件齐+分享弹窗同 id+访客点赞/转发 toast+假登录 401 回滚链+访客 hub 面。
 // 跑法：node tmp-battery-community-action-row.js（LIVE_BASE=<完整站点 URL> 跑线上）
@@ -272,7 +272,7 @@ async function main() {
     console.log('── A. Hub 粒子对齐 + 操作行（本地罐头）──');
 
     const ver = await t.evalJs('window.MN_SITE_VERSION');
-    check('A1 版本 v0.2.58.26', ver === 'v0.2.58.26', 'ver=' + ver);
+    check('A1 版本 v0.2.58.27', ver === 'v0.2.58.27', 'ver=' + ver);
     const cardN = await t.evalJs("document.querySelectorAll('[data-cloud-id]').length");
     check('A1 feed 两卡渲染', cardN === 2, 'n=' + cardN);
 
@@ -554,7 +554,7 @@ async function main() {
     await t.evalJs("document.querySelector('#postCardWrap [data-repost-post]').click()");
     await sleep(400);
 
-    console.log('── G. 访客登录引导卡（v0.2.58.26 演示样本全移除）──');
+    console.log('── G. 访客登录引导卡（v0.2.58.27 演示样本全移除）──');
     await clearUser(t);
     await nav(t, BASE + '/pages/community-hub.html');
     await sleep(500);
@@ -597,7 +597,7 @@ async function main() {
   }
 
   // ──────────────────────────────────────────────
-  // 线上（v0.2.58.26）：假登录 boot 401 整流终态=登录引导卡 + 真帖页六件齐 + 分享弹窗同 id +
+  // 线上（v0.2.58.27）：假登录 boot 401 整流终态=登录引导卡 + 真帖页六件齐 + 分享弹窗同 id +
   //   访客点赞/转发 toast + 假登录 401 回滚链 + 访客 hub 面
   // ──────────────────────────────────────────────
   async function runLive(t) {
@@ -608,7 +608,7 @@ async function main() {
       " cloud: feed.querySelectorAll('[data-cloud-id]').length," +
       " guestLike: feed.querySelectorAll('[data-guest-like]').length," +
       " likeBtn: feed.querySelectorAll('[data-like-post]').length }; })()");
-    check('L1 版本 v0.2.58.26', l1.ver === 'v0.2.58.26', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.58.27', l1.ver === 'v0.2.58.27', 'ver=' + l1.ver);
     check('L1 假登录 boot 终态=登录引导卡（401 整流零云卡零演示签名）', l1 && l1.loginCard && l1.cloud === 0 && l1.guestLike === 0 && l1.likeBtn === 0, JSON.stringify(l1));
 
     // L2-L5 真帖页链：公共端点取真帖 id 直达（hub 云卡不可得→六件行断言全部迁帖页）

@@ -1,4 +1,4 @@
-// tmp-battery-prefetch.js — v0.2.58.26 悬停预加载电池（Round 43 新轮）
+// tmp-battery-prefetch.js — v0.2.58.27 悬停预加载电池（Round 43 新轮）
 // 用户「为什么我在切换页面的时候会闪一下 然而我在抖音或者Youtube切换页面的时候并不会闪烁一下
 //   是不是没有做预先加载？」→ 钦定 A=悬停预加载：悬停站内链接 65ms 后 <link rel="prefetch"
 //   as="document"> 预下载目标页；点击导航命中预取缓存消除切页白闪。
@@ -141,10 +141,10 @@ function ok(name, cond, detail) {
       cnt(trSrc, "addEventListener('mouseover'") === 1 && cnt(trSrc, "addEventListener('click'") === 1,
       'pf=' + cnt(trSrc, "l.rel = 'prefetch'") + ' done=' + cnt(trSrc, 'prefetchDone') + ' timer=' + cnt(trSrc, 'prefetchTimer'));
     ok('S0b site-config：58.23 赋值 1 + 58.22 赋值零残留 + changelog 标题 58.23 1 + rev 00348-/00349- 各 2（占位口径，部署后终态同数）+ FC 48.1',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.22'") === 0 &&
-      cnt(siteSrc, '// v0.2.58.26 = ') === 1 && cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2 &&
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.27'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.22'") === 0 &&
+      cnt(siteSrc, '// v0.2.58.27 = ') === 1 && cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2 &&
       cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") === 1,
-      '23=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.26'") + ' r42=' + cnt(siteSrc, '00348-') + ' r43=' + cnt(siteSrc, '00349-'));
+      '23=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.27'") + ' r42=' + cnt(siteSrc, '00348-') + ' r43=' + cnt(siteSrc, '00349-'));
 
     const cdp = await connectCdp(CDP_PORT);
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', { source: SEED });

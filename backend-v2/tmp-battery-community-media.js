@@ -141,7 +141,7 @@ async function main() {
   fs.writeFileSync(tmpPng, Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x01, 0x02, 0x03, 0x04]));
 
   console.log('── B. Community 帖子媒体（v0.2.16.0）──');
-  // v0.2.58.26：演示样本全移除——访客 boot 终态=登录引导卡（零演示卡）；手动注入云模式罐头再渲染（删旧探针静置）
+  // v0.2.58.27：演示样本全移除——访客 boot 终态=登录引导卡（零演示卡）；手动注入云模式罐头再渲染（删旧探针静置）
   await nav(t, BASE + '/pages/community-hub');
   await waitFor(t, "document.getElementById('hubLoginCard')", 15000, '访客登录引导卡');
   await t.evalJs(
@@ -152,7 +152,7 @@ async function main() {
   // B1 版本 + 卡片结构（composer + 5 云帖）
   const ver = await t.evalJs('window.MN_SITE_VERSION');
   const cards = await t.evalJs("document.querySelectorAll('#feedContent > .card').length");
-  check('B1 版本 v0.2.58.26 / 6 卡（composer+5 云帖）', ver === 'v0.2.58.26' && cards === 6, 'ver=' + ver + ' n=' + cards);
+  check('B1 版本 v0.2.58.27 / 6 卡（composer+5 云帖）', ver === 'v0.2.58.27' && cards === 6, 'ver=' + ver + ' n=' + cards);
 
   // B2 画廊网格形状：P1 .pm-3（2 IMG + 1 VIDEO）、P2 .pm-1、P3 .pm-2（IMG + VIDEO）、P5 过滤后 .pm-1、P4 无网格
   const g0 = await t.evalJs(`(() => { const g = document.querySelectorAll('#feedContent .post-media')[0];

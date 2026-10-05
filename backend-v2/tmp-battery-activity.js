@@ -1,4 +1,4 @@
-// tmp-battery-activity.js — v0.2.58.26 动态页真实数据接入电池
+// tmp-battery-activity.js — v0.2.58.27 动态页真实数据接入电池
 // 用户「能不能先把动态页面的所有实际功能做一下？」——六大区块假数据全撤、搜索接过滤、全站灯塔。
 // 断言面：F1 页面静态 → F1-2 site-config 版本+灯塔 → F1-3 i18n 键族 → F1-4 后端源码
 //        → R9 无桩导航离线态 → R1 初始加载 5 卡真实值 → R2 切 7d 重拉 → R3 切 metric 零重拉 → R4 内容类型
@@ -218,15 +218,15 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
 
   console.log('═══ F1-2 site-config.js 版本+灯塔 ═══');
   ok('F1-2a 版本 58.16 在位/58.15 赋值零残留/FC 恒 47.4',
-    count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") === 1 &&
+    count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.27';") === 1 &&
     count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.15';") === 0 &&
     count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1,
-    'v16=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.26';") +
+    'v16=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.27';") +
     ' v15res=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.15';"));
   ok('F1-2b changelog 条目（标题+原话片断+rev 注记）',
-    count(sconf, '// v0.2.58.26 = ') === 1 && count(sconf, '能不能先把动态页面的') === 1 &&
+    count(sconf, '// v0.2.58.27 = ') === 1 && count(sconf, '能不能先把动态页面的') === 1 &&
     count(sconf, 'rev 00348-') === 2 && count(sconf, 'rev 00349-') === 2,
-    'title=' + count(sconf, '// v0.2.58.26 = ') + ' quote=' + count(sconf, '能不能先把动态页面的'));
+    'title=' + count(sconf, '// v0.2.58.27 = ') + ' quote=' + count(sconf, '能不能先把动态页面的'));
   ok('F1-2c 灯塔块（守卫/端点/slati_cid/发送双通道）',
     count(sconf, '__slatiPvSent') === 3 && count(sconf, '/analytics/pageview') === 3 &&
     count(sconf, 'slati_cid') === 4 && count(sconf, 'navigator.sendBeacon') === 2 &&

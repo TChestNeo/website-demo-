@@ -240,11 +240,11 @@ const SEED_PORTRAIT = {
     sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") === 0 &&
     sc('// v10.28.49.0 = ') === 1 && sc('// v10.28.48.2 = ') === 1 &&
     sc('rev 00350-6vv') === 1 && sc('rev 00351-5mm') === 1 &&
-    sc("window.MN_SITE_VERSION = 'v0.2.58.26';") === 1 && sc("window.MN_SITE_VERSION = 'v0.2.58.25';") === 0,
+    sc("window.MN_SITE_VERSION = 'v0.2.58.27';") === 1 && sc("window.MN_SITE_VERSION = 'v0.2.58.25';") === 0,
     'fc49=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") + ' fc48=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") +
     ' cl49=' + sc('// v10.28.49.0 = ') + ' cl48=' + sc('// v10.28.48.2 = ') +
     ' r50=' + sc('rev 00350-6vv') + ' q51=' + sc('rev 00351-5mm') +
-    ' v26=' + sc("window.MN_SITE_VERSION = 'v0.2.58.26';") + ' v25=' + sc("window.MN_SITE_VERSION = 'v0.2.58.25';"));
+    ' v26=' + sc("window.MN_SITE_VERSION = 'v0.2.58.27';") + ' v25=' + sc("window.MN_SITE_VERSION = 'v0.2.58.25';"));
 
   const i18nSrc = norm(await (await fetch(BASE + '/assets/i18n/fluidcanvas.i18n.js')).text());
   const ic = mk(i18nSrc);

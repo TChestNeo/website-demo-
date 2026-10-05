@@ -1,4 +1,4 @@
-// tmp-battery-sidebar-light.js — v0.2.58.26 左侧菜单底部不透明背景完全删除静态巡检电池（纯文件 grep，无浏览器）
+// tmp-battery-sidebar-light.js — v0.2.58.27 左侧菜单底部不透明背景完全删除静态巡检电池（纯文件 grep，无浏览器）
 // 断言：ethereal.css 侧栏容器铺底规则零残留（深浅两主题）/ 玻璃注入层灭滤镜灭磨砂规则在位 /
 // 41 页内联块全量已刷新（凡含 lg-glass-filter 内联块的页面必含新轮注释且零铺底规则）/ 三张卡零触碰
 // （.sidebar-module --card-bg+blur 原样）/ dropdown 与全站卡片的 --sidebar-bg 用法不动（计数=2）/
@@ -31,12 +31,12 @@ function ok(name, cond) {
   ok('ethereal 新轮注释含用户原话',
     css.indexOf('我要完全的删除它') !== -1 && css.indexOf('不是我的卡片') !== -1 &&
     css.indexOf('Z 轴最底部背景') !== -1);
-  ok('ethereal 三张卡零触碰（.sidebar-module 玻璃卡原样）',
+  ok('ethereal 三张卡卡面改铺不透明底（.sidebar-module background: var(--sidebar-bg) + blur 保留——640 轮 58.27 侧栏卡不透明）',
     css.indexOf('.sidebar-module {') !== -1 &&
-    css.indexOf('background: var(--card-bg);') !== -1 &&
+    css.indexOf('background: var(--sidebar-bg);') !== -1 &&
     css.indexOf('backdrop-filter: blur(20px);') !== -1);
-  ok('ethereal --sidebar-bg 用法恒 2 处（dropdown + 全站卡片不透明规则）',
-    css.split('background: var(--sidebar-bg);').length - 1 === 2);
+  ok('ethereal --sidebar-bg 用法恒 3 处（dropdown + 全站卡片不透明规则 + 侧栏模块卡面）',
+    css.split('background: var(--sidebar-bg);').length - 1 === 3);
   ok('ethereal 09-18 修复历史注释保留（发黄原话）',
     css.indexOf('为什么在亮色模式下平台的左侧菜单背景卡片会发黄的') !== -1);
 }
@@ -67,9 +67,9 @@ function ok(name, cond) {
 // 3. site-config 版本 + changelog 新条目 + 历史条目保留 + FC 零改动
 {
   const s = read(path.join(DOCS, 'assets/js/site-config.js'));
-  ok('site-config 版本 = v0.2.58.26', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.26';") !== -1);
+  ok('site-config 版本 = v0.2.58.27', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.27';") !== -1);
   ok('site-config 旧版本赋值零残留', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.0';") === -1);
-  ok('site-config changelog 含 v0.2.58.26 条目 + 用户原话 + 修法口径',
+  ok('site-config changelog 含 v0.2.58.27 条目 + 用户原话 + 修法口径',
     s.indexOf('v0.2.58.3 = 折叠侧栏等级水位环+双层水波') !== -1 &&
     s.indexOf('我要完全的删除它') !== -1 && s.indexOf('不是我的卡片') !== -1 &&
     s.indexOf('rev 00348-') !== -1);

@@ -134,9 +134,9 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
-    ok('S1 site-config 44.3 + rev 00293- 占位 + 站点恒 v0.2.58.26 + 编辑器覆盖层挂载/CSS 锚在位 + fc-touch.js 零改动（inEditableZone input 豁免复用）',
+    ok('S1 site-config 44.3 + rev 00293- 占位 + 站点恒 v0.2.58.27 + 编辑器覆盖层挂载/CSS 锚在位 + fc-touch.js 零改动（inEditableZone input 豁免复用）',
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") !== -1 &&
-      siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.26') !== -1 &&
+      siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.27') !== -1 &&
       editorHtml.split("fi.className = 'card-upload-input'").length - 1 === 2 &&
       editorHtml.indexOf('avatar.replaceChildren(fi)') !== -1 &&
       editorHtml.indexOf('avatar.appendChild(fi)') !== -1 &&
