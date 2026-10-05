@@ -1,9 +1,9 @@
-// tmp-battery-fc-paneltoggle.js — v10.28.49.2 折叠按钮改圆形电池（本地工作树；49.2 轮原位改锚；52.3 轮再改锚）
+// tmp-battery-fc-paneltoggle.js — v10.28.49.2 折叠按钮改圆形电池（本地工作树；49.2 轮原位改锚；52.3 轮再改锚；52.4 轮三改锚）
 //   S 静态：site-config 版本 49.2 在位/49.1 赋值零残留/changelog 头 49.2+49.1+49.0 各 ×1/rev 前缀锚
 //     （rev 00352-/00353-/00354-/00355- 各 ×1——前缀口径填真值后恒真）+
 //     编辑器锚（:has 折叠态规则收窄为 { left: 6px; }/旧圆角方块规则零残留/32×32+50% 圆形锚/展开态口径锚）；
-//   B 编辑器 CDP：B1 展开态按钮驻搜索菜单左侧 6px 正圆 32×32（52.3 桌面驻左缘）/ B2 点击折叠→出画回弹
-//     动画起跑（中途采样 left<6+animationName 命中）+面板宽 0 / B3 点击展开→仍 6px / B4 往返后编辑器
+//   B 编辑器 CDP：B1 展开态按钮驻搜索菜单右侧 214px 正圆 40×40（52.4 桌面驻右缘+与搜索栏同高）/ B2 点击折叠→出画回弹
+//     动画起跑（中途采样 left<214+animationName 命中）+面板宽 0 / B3 点击展开→过渡滑回 214px / B4 往返后编辑器
 //     功能完好（建卡+面板搜索框在位）；
 //   E 零异常。
 'use strict';
@@ -99,20 +99,20 @@ const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-to
   const cfgSrc = fs.readFileSync(path.join(DOCS, 'assets/js/site-config.js'), 'utf8');
   const sc = (s) => cfgSrc.split(s).length - 1;
   ok('S1 site-config：FC 版本 49.2 在位 + 49.1 赋值零残留 + changelog 头 49.2/49.1/49.0 各 ×1 + rev 前缀锚各 ×1',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.3';") === 1 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") === 1 &&
     sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") === 0 &&
     sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.49.1 = ') === 1 && sc('// v10.28.49.0 = ') === 1 &&
     sc('rev 00352-') === 1 && sc('rev 00353-') === 1 && sc('rev 00354-') === 1 && sc('rev 00355-') === 1,
-    'fc49.2=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.3';") + ' fc49.1=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") +
+    'fc49.2=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") + ' fc49.1=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") +
     ' cl49.2=' + sc('// v10.28.51.1 = ') + ' cl49.1=' + sc('// v10.28.49.1 = ') + ' cl49.0=' + sc('// v10.28.49.0 = ') +
     ' r52=' + sc('rev 00352-') + ' r53=' + sc('rev 00353-') + ' r54=' + sc('rev 00354-') + ' r55=' + sc('rev 00355-'));
-  ok('S2 编辑器：:has 折叠态规则收窄在位 + 旧圆角方块规则零残留 + 32×32 正圆锚 + 展开态口径锚在位（:has ×2/{ left: 6px; } ×2=52.3 动画挂接+关键帧行计入）',
+  ok('S2 编辑器：:has 折叠态规则收窄在位 + 旧圆角方块规则零残留 + 32×32 正圆锚 + 展开态口径锚在位（:has ×2/{ left: 6px; } ×2=52.4 动画挂接+关键帧 100% 行计入）',
     el('.canvas-body:has(.asset-panel.collapsed) .asset-panel-toggle') === 2 &&
     el('{ left: 6px; }') === 2 &&
     el('left: 6px; border-left: 1px solid var(--divider-line-strong); border-radius: 6px;') === 0 &&
     el('border-left: none; border-radius: 0 6px 6px 0;') === 0 &&
     el('.asset-panel.collapsed + .asset-panel-toggle {') === 0 &&
-    el('width: 32px; height: 32px;') === 1 &&
+    el('width: 40px; height: 40px; /* 52.4') === 1 &&
     el('left: calc(var(--asset-panel-w) + 6px)') === 1 &&
     el('--asset-panel-w: 260px') === 1 &&
     el('.asset-panel.collapsed {') === 1 &&
@@ -123,7 +123,7 @@ const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-to
       has: el('.canvas-body:has(.asset-panel.collapsed)'), circle: el('{ left: 6px; }'),
       oldc: el('left: 6px; border-left: 1px solid var(--divider-line-strong); border-radius: 6px;'),
       oldbase: el('border-left: none; border-radius: 0 6px 6px 0;'), oldadj: el('.asset-panel.collapsed + .asset-panel-toggle {'),
-      size: el('width: 32px; height: 32px;'), base: el('left: calc(var(--asset-panel-w) + 6px)'),
+      size: el('width: 40px; height: 40px; /* 52.4'), base: el('left: calc(var(--asset-panel-w) + 6px)'),
       knob: el('--asset-panel-w: 260px'), col: el('.asset-panel.collapsed {'), trans: el('transition: left 0.25s;'),
       togg: el("classList.toggle('collapsed')"), v500: el('v10.28.50.0'), v492: el('v10.28.49.2'), v491: el('v10.28.49.1')
     }));
@@ -159,37 +159,37 @@ const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-to
     await waitFor(cdp, "document.getElementById('undoBtn') && document.getElementById('gridCanvas') && window.toggleAssetPanel", 40000, '编辑器就绪');
     await sleep(900);
 
-    // ═══ B1 展开态默认：按钮驻搜索菜单左侧 6px ═══
+    // ═══ B1 展开态默认：按钮驻搜索菜单右侧 214px ═══
     {
       const f = await cdp.evalJs(PANEL_EXPR);
-      ok('B1 展开态：按钮 left 6px / 正圆 32×32（radius 50%+四边 1px）/ ◂ / 面板宽 260px（52.3 桌面驻左缘）',
-        f.left === '6px' && f.br === '50%' && f.blw === '1px' && f.w === '32px' && f.h === '32px' &&
+      ok('B1 展开态：按钮 left 214px / 正圆 40×40（radius 50%+四边 1px；=搜索胶囊同高）/ ◂ / 面板宽 260px（52.4 桌面驻右缘）',
+        f.left === '214px' && f.br === '50%' && f.blw === '1px' && f.w === '40px' && f.h === '40px' &&
         f.txt === '◂' && f.pw === '260px', JSON.stringify(f));
     }
 
-    // ═══ B2 点击折叠：出画回弹动画起跑（终态仍左缘 6px）═══
+    // ═══ B2 点击折叠：出画回弹动画起跑（终态落定左缘 6px）═══
     {
       await cdp.evalJs("document.querySelector('.asset-panel-toggle').click()");
       await sleep(120);
       const mid = await cdp.evalJs(PANEL_EXPR);
       const midL = parseFloat(mid.left);
       const midAn = await cdp.evalJs("getComputedStyle(document.querySelector('.asset-panel-toggle')).animationName");
-      ok('B2a 折叠中途采样：fcToggleOutSpring 动画命中 + left < 6px（已起步跑出，证明动画而非瞬移）',
-        midAn === 'fcToggleOutSpring' && midL < 6, JSON.stringify(Object.assign({ an: midAn }, mid)));
+      ok('B2a 折叠中途采样：fcToggleOutSpring 动画命中（双动画 comma-list indexOf）+ left < 214px（已从右缘起步跑出，证明动画而非瞬移）',
+        midAn.indexOf('fcToggleOutSpring') !== -1 && midL < 214, JSON.stringify(Object.assign({ an: midAn }, mid)));
       await sleep(1400);
       const f = await cdp.evalJs(PANEL_EXPR);
-      ok('B2b 折叠终态：按钮 left 6px / 仍是正圆 32×32（radius 50%+四边 1px 恒同）/ ▸ / 面板宽 0',
-        f.left === '6px' && f.br === '50%' && f.blw === '1px' && f.w === '32px' && f.h === '32px' &&
+      ok('B2b 折叠终态：按钮 left 6px / 仍是正圆 40×40（radius 50%+四边 1px 恒同）/ ▸ / 面板宽 0',
+        f.left === '6px' && f.br === '50%' && f.blw === '1px' && f.w === '40px' && f.h === '40px' &&
         f.txt === '▸' && f.pw === '0px' && f.brw === '0px', JSON.stringify(f));
     }
 
-    // ═══ B3 点击展开：按钮驻原地 6px ═══
+    // ═══ B3 点击展开：过渡滑回右缘 214px ═══
     {
       await cdp.evalJs("document.querySelector('.asset-panel-toggle').click()");
       await sleep(1400);
       const f = await cdp.evalJs(PANEL_EXPR);
-      ok('B3 展开回来：按钮 left 6px / 仍正圆 50% / ◂ / 面板宽 260px（52.3 双态恒驻零漂移）',
-        f.left === '6px' && f.br === '50%' && f.txt === '◂' && f.pw === '260px', JSON.stringify(f));
+      ok('B3 展开回来：按钮 left 214px / 仍正圆 50% / ◂ / 面板宽 260px（52.4 展开=0.25s 过渡滑回右缘）',
+        f.left === '214px' && f.br === '50%' && f.txt === '◂' && f.pw === '260px', JSON.stringify(f));
     }
 
     // ═══ B4 往返后编辑器功能完好 ═══
