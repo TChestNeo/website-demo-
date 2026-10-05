@@ -121,7 +121,7 @@ function ok(name, cond, detail) {
     const i18nJs = await (await fetch(BASE + '/assets/i18n/fluidcanvas.i18n.js')).text();
     const occ = (s, sub) => s.split(sub).length - 1;
     ok('S1 site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点恒 v0.2.58.28 + 「同步图库」在 changelog + 旧赋值零残留',
-      siteCfg.indexOf('v10.28.52.2') !== -1 && siteCfg.indexOf('00348-') !== -1 &&
+      siteCfg.indexOf('v10.28.52.3') !== -1 && siteCfg.indexOf('00348-') !== -1 &&
       siteCfg.indexOf('v0.2.58.28') !== -1 && siteCfg.indexOf('同步图库') !== -1 &&
       siteCfg.indexOf("'v10.28.47.2';") === -1);
     ok('S2 弹层锚：4 新 id + TT_FILTER_TAG_IDS + 两桥两导出（currentTabItems/refreshLibItems/esc）+ 钩子 4 处+赋值 1 处',

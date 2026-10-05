@@ -1,9 +1,10 @@
-// tmp-battery-fc-whitenav.js — v10.28.52.2 折叠按钮+顶部菜单纯白不透明电池（本地工作树；新轮新件）
-//   S 静态：site-config 52.2 赋值 ×1/52.1 赋值零残留/changelog 头 52.2/52.1 各 ×1/rev 占位 00371-XXX+00372-??? 各 ×1/
-//     站点恒 58.28；编辑器锚（折叠按钮+头栏 lowest 纯白锚各 ×1/暗色还原规则 ×2 行/注释原话 ×1/
+// tmp-battery-fc-whitenav.js — v10.28.52.2 折叠按钮+顶部菜单纯白不透明电池（本地工作树；52.3 轮改锚）
+//   S 静态：site-config 52.3 赋值 ×1/52.2 赋值零残留/changelog 头 52.3/52.2 各 ×1/rev 真值 00371-zvn+00372-svk
+//     各 ×1/站点恒 58.28；编辑器锚（折叠按钮+头栏 lowest 纯白锚各 ×1/暗色还原规则 ×2 行/注释原话 ×1/
 //     旧头栏 surface-container 行零残留/49.1 :has 折叠规则在位）；
-//   B 编辑器 CDP：B1 亮色 toggle+header 纯白 #ffffff 不透明+blur 摘除 / B2 折叠往返按钮仍纯白（6px→266px）/
-//     B3 暗色主题还原 #202038 实心零回归 / B4 暗 mono 还原 #151518 实心 / E 零异常。
+//   B 编辑器 CDP：B1 亮色 toggle+header 纯白 #ffffff 不透明+blur 摘除（52.3 按钮驻左缘 6px）/
+//     B2 折叠往返按钮仍纯白（6px→6px 双态恒驻）/B3 暗色主题还原 #202038 实心零回归 /
+//     B4 暗 mono 还原 #151518 实心 / E 零异常。
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -101,14 +102,14 @@ const isOpaque = (s) => !/rgba\(/.test(s) || (parseColor(s).length === 4 && pars
   const el = (a) => edLines.filter((l) => l.includes(a)).length;
   const cfgSrc = fs.readFileSync(path.join(DOCS, 'assets/js/site-config.js'), 'utf8');
   const sc = (s) => cfgSrc.split(s).length - 1;
-  ok('S1 site-config：52.2 赋值 ×1 + 52.1 赋值零残留 + changelog 头 52.2/52.1 各 ×1 + rev 占位 00371-XXX/00372-??? 各 ×1 + 站点恒 58.28',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.2';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.1';") === 0 &&
-    sc('// v10.28.52.2 = ') === 1 && sc('// v10.28.52.1 = ') === 1 &&
-    sc('00371-XXX') === 1 && sc('00372-???') === 1 &&
+  ok('S1 site-config：52.3 赋值 ×1 + 52.2 赋值零残留 + changelog 头 52.3/52.2 各 ×1 + rev 真值 00371-zvn/00372-svk 各 ×1 + 站点恒 58.28',
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.3';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.2';") === 0 &&
+    sc('// v10.28.52.3 = ') === 1 && sc('// v10.28.52.2 = ') === 1 &&
+    sc('rev 00371-zvn') === 1 && sc('rev 00372-svk') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
-    'fc522=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.2';") + ' fc521=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.1';") +
-    ' cl522=' + sc('// v10.28.52.2 = ') + ' cl521=' + sc('// v10.28.52.1 = ') +
-    ' q71=' + sc('00371-XXX') + ' q72=' + sc('00372-???'));
+    'fc523=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.3';") + ' fc522=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.2';") +
+    ' cl523=' + sc('// v10.28.52.3 = ') + ' cl522=' + sc('// v10.28.52.2 = ') +
+    ' r71=' + sc('rev 00371-zvn') + ' r72=' + sc('rev 00372-svk'));
   ok('S2 编辑器：折叠按钮+头栏 lowest 纯白锚各 ×1 + 暗色还原规则 ×2 行 + 注释原话 ×1 + 旧头栏 surface-container 行零残留 + 49.1 :has 折叠规则在位',
     el('background: var(--color-surface-container-lowest); /* 52.2 纯白不透明 */') === 1 &&
     el('background: var(--color-surface-container-lowest); /* 42.1 全不透明+52.2 纯白') === 1 &&
@@ -161,25 +162,25 @@ const isOpaque = (s) => !/rgba\(/.test(s) || (parseColor(s).length === 4 && pars
     // ═══ B1 亮色默认：按钮+头栏纯白 #ffffff 不透明+blur 摘除 ═══
     {
       const f = await cdp.evalJs(FACE_EXPR);
-      ok('B1 亮色：折叠按钮+头栏 computed 纯白 rgb(255,255,255) 不透明 + blur 摘除',
+      ok('B1 亮色：折叠按钮+头栏 computed 纯白 rgb(255,255,255) 不透明 + blur 摘除（52.3 按钮驻左缘 6px）',
         f && near(parseColor(f.tb), [255, 255, 255], 0) && isOpaque(f.tb) && f.tblur === 'none' &&
         near(parseColor(f.hb), [255, 255, 255], 0) && isOpaque(f.hb) && f.hblur === 'none' &&
-        f.tl === '266px' && f.tw === '32px' && f.pw === '260px', JSON.stringify(f));
+        f.tl === '6px' && f.tw === '32px' && f.pw === '260px', JSON.stringify(f));
     }
 
-    // ═══ B2 折叠往返：按钮滑到 6px 仍纯白 → 回 266px 仍纯白 ═══
+    // ═══ B2 折叠往返：按钮 6px 落定仍纯白 → 展开回 6px 仍纯白 ═══
     {
       await cdp.evalJs("document.querySelector('.asset-panel-toggle').click()");
-      await sleep(600);
+      await sleep(1400);
       const f = await cdp.evalJs(FACE_EXPR);
       ok('B2a 折叠终态：按钮 left 6px 仍纯白 rgb(255,255,255) 不透明（面板宽 0）',
         f && f.tl === '6px' && near(parseColor(f.tb), [255, 255, 255], 0) && isOpaque(f.tb) &&
         near(parseColor(f.hb), [255, 255, 255], 0) && isOpaque(f.hb) && f.pw === '0px', JSON.stringify(f));
       await cdp.evalJs("document.querySelector('.asset-panel-toggle').click()");
-      await sleep(600);
+      await sleep(1400);
       const f2 = await cdp.evalJs(FACE_EXPR);
-      ok('B2b 展开回来：按钮 left 266px 仍纯白（往返零漂移+白底恒同）',
-        f2 && f2.tl === '266px' && near(parseColor(f2.tb), [255, 255, 255], 0) && isOpaque(f2.tb) &&
+      ok('B2b 展开回来：按钮 left 6px 仍纯白（52.3 双态恒驻左缘零漂移+白底恒同）',
+        f2 && f2.tl === '6px' && near(parseColor(f2.tb), [255, 255, 255], 0) && isOpaque(f2.tb) &&
         near(parseColor(f2.hb), [255, 255, 255], 0) && isOpaque(f2.hb) && f2.pw === '260px', JSON.stringify(f2));
     }
 
