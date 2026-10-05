@@ -1,7 +1,7 @@
 // tmp-battery-sidebar-collapsed.js — v0.2.58.28 折叠侧栏用户卡不透明补丁电池（641 轮主电池）
 //   S 静态（零浏览器）：
-//     S1 site-config：58.28 赋值 ×1/58.27 赋值零残留/FC 52.0 ×1 + changelog 头 58.28 在 58.27 在 58.26 前 +
-//       新轮原话 ×1 + rev 00367-XXX/00368-??? 各 ×1；
+//     S1 site-config：58.28 赋值 ×1/58.27 赋值零残留/FC 52.1 ×1 + changelog 头 58.28 在 58.27 在 58.26 前 +
+//       新轮原话 ×1 + rev 00367-4wl/00368-gmw 各 ×1（641 终态填真值口径——占位锚陈旧教训同 sidebar-opaque）；
 //     S2 ethereal.css：折叠态覆盖规则（选择器 ×2：分组规则+修法规则）邻接 --sidebar-bg+blur(20px) +
 //       -webkit-backdrop-filter 在位 + 新轮注释原话 ×1 + --sidebar-bg 恒 4 处 + --card-bg 恒 3 处（通用玻璃类零泄漏）；
 //     S3 内联页：community-profile/index 含折叠覆盖（选择器 ×2+注释原话 ×1）+ 邻接 sbg/blur +
@@ -107,18 +107,18 @@ async function main() {
   // ═══ S 静态 ═══
   console.log('═══ S 静态（零浏览器）═══');
   const sc = fs.readFileSync(path.join(DOCS, 'assets/js/site-config.js'), 'utf8');
-  ok('S1a site-config：58.28 赋值 ×1 + 58.27 赋值零残留 + FC 52.0 ×1',
+  ok('S1a site-config：58.28 赋值 ×1 + 58.27 赋值零残留 + FC 52.1 ×1',
     c(sc, "window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 && c(sc, "window.MN_SITE_VERSION = 'v0.2.58.27';") === 0 &&
-    c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1,
+    c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.1';") === 1,
     '28=' + c(sc, "window.MN_SITE_VERSION = 'v0.2.58.28';") + ' 27=' + c(sc, "window.MN_SITE_VERSION = 'v0.2.58.27';") +
-    ' fc=' + c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0';"));
-  ok('S1b site-config：changelog 头 58.28 在 58.27 在 58.26 前 + 新轮原话 ×1 + rev 00367-XXX/00368-??? 各 ×1',
+    ' fc=' + c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.1';"));
+  ok('S1b site-config：changelog 头 58.28 在 58.27 在 58.26 前 + 新轮原话 ×1 + rev 00367-4wl/00368-gmw 各 ×1（641 终态填真值口径）',
     sc.indexOf('// v0.2.58.28 = ') !== -1 &&
     sc.indexOf('// v0.2.58.28 = ') < sc.indexOf('// v0.2.58.27 = ') &&
     sc.indexOf('// v0.2.58.27 = ') < sc.indexOf('// v0.2.58.26 = ') &&
-    c(sc, '折叠起来的时候还是一样是半透明的') === 1 && c(sc, 'rev 00367-XXX') === 1 && c(sc, '00368-???') === 1,
+    c(sc, '折叠起来的时候还是一样是半透明的') === 1 && c(sc, 'rev 00367-4wl') === 1 && c(sc, '00368-gmw') === 1,
     'h28=' + sc.indexOf('// v0.2.58.28 = ') + ' h27=' + sc.indexOf('// v0.2.58.27 = ') + ' h26=' + sc.indexOf('// v0.2.58.26 = ') +
-    ' q=' + c(sc, '折叠起来的时候还是一样是半透明的') + ' r=' + c(sc, 'rev 00367-XXX') + '/' + c(sc, '00368-???'));
+    ' q=' + c(sc, '折叠起来的时候还是一样是半透明的') + ' r=' + c(sc, 'rev 00367-4wl') + '/' + c(sc, '00368-gmw'));
   const css = fs.readFileSync(path.join(DOCS, 'assets/css/ethereal.css'), 'utf8');
   ok('S2a ethereal.css：折叠态覆盖规则（选择器 ×2：分组规则+修法规则）邻接 --sidebar-bg+blur(20px) + -webkit 前缀在位 + 新轮注释原话 ×1',
     c(css, '.app-sidebar.collapsed .user-module') === 2 &&

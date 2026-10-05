@@ -1,6 +1,6 @@
 // tmp-battery-sidebar-opaque.js — v0.2.58.28 侧栏菜单背景卡片改不透明电池（640 轮主电池）
 //   S 静态（零浏览器）：
-//     S1 site-config：58.28 赋值 ×1/58.26 赋值零残留/changelog 头 58.28 在 58.26 前/用户原话 ×1/rev 终态 00365-6zb/00366-2jw 各 ×1（锚改真值）/FC 52.0 ×1；
+//     S1 site-config：58.28 赋值 ×1/58.26 赋值零残留/changelog 头 58.28 在 58.26 前/用户原话 ×1/rev 终态 00365-6zb/00366-2jw 各 ×1（锚改真值）/FC 52.1 ×1；
 //     S2 ethereal.css：--sidebar-bg 用法 2→3（dropdown+全站卡片+侧栏模块卡面）/新轮注释原话 ×1/旧 58.1 注释保留/铺底规则仍零残留/灭滤镜规则在位；
 //     S3 内联刷新：CSS_MARK 页=41 且除编辑器豁免页外 40 页全含新轮注释/含 lg-glass-filter 页=41/community-profile 内联 --sidebar-bg ×3+原话 ×1；
 //     S4 FC 编辑器页豁免血证：mark ×1+新轮注释零残留（页面专属 CSS 永不入内联块）；
@@ -112,10 +112,10 @@ async function main() {
   ok('S1a site-config：58.28 赋值 ×1 + 58.26 赋值零残留',
     c(sc, "window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 && c(sc, "window.MN_SITE_VERSION = 'v0.2.58.26';") === 0,
     '27=' + c(sc, "window.MN_SITE_VERSION = 'v0.2.58.28';") + ' 26=' + c(sc, "window.MN_SITE_VERSION = 'v0.2.58.26';"));
-  ok('S1b site-config：changelog 头 58.28 在 58.26 前 + 用户原话 ×1 + rev 终态 00365-6zb/00366-2jw 各 ×1（锚改真值）+ FC 52.0 ×1',
+  ok('S1b site-config：changelog 头 58.28 在 58.26 前 + 用户原话 ×1 + rev 终态 00365-6zb/00366-2jw 各 ×1（锚改真值）+ FC 52.1 ×1',
     sc.indexOf('// v0.2.58.28 = ') !== -1 && sc.indexOf('// v0.2.58.28 = ') < sc.indexOf('// v0.2.58.26 = ') &&
     c(sc, '那个在个人主页') === 1 && c(sc, 'rev 00365-6zb') === 1 && c(sc, 'rev 00366-2jw') === 1 &&
-    c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1,
+    c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.1';") === 1,
     'head=' + sc.indexOf('// v0.2.58.28 = ') + ' q=' + c(sc, '那个在个人主页') + ' r=' + c(sc, 'rev 00365-6zb') + '/' + c(sc, 'rev 00366-2jw'));
   const css = fs.readFileSync(path.join(DOCS, 'assets/css/ethereal.css'), 'utf8');
   ok('S2a ethereal.css：--sidebar-bg 用法 3→4 处（dropdown+全站卡片+侧栏模块卡面+折叠态 user-module 覆盖）',

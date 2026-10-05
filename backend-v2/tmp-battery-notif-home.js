@@ -1,4 +1,4 @@
-// tmp-battery-notif-home.js — v0.2.52.0 通知铃铛聚合 + 文章点赞/收藏电池
+// tmp-battery-notif-home.js — v0.2.52.1 通知铃铛聚合 + 文章点赞/收藏电池
 // 用户「那个铃铛能不能是在Home的时候会显示所有除了公告以外的信息例如谁点赞/收藏了你的帖子，谁点赞/收藏了
 // 你的文章，谁关注了你；只有在你进入特定页面时才筛选」
 // 断言面：F0 双版本 → F1 首页铃铛/灵动岛 → F2 messages 零改动在位 → F3 FC 文章操作条 → F4 后端 → F5 零迁移
@@ -121,9 +121,9 @@ const SEED_LOGIN = 'try{localStorage.setItem("slati_user", ' + JSON.stringify(JS
   console.log('═══ F0 双版本 + changelog ═══');
   ok('F0-1 site-config 双版本 v0.2.54.0 / v10.28.36.1 + changelog 标记',
     count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 &&
-    count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1 &&
+    count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.1';") === 1 &&
     sconf.indexOf('通知铃铛聚合') !== -1 && sconf.indexOf('文章查看模式点赞/收藏操作条') !== -1,
-    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.28';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0';"));
+    'site=' + count(sconf, "window.MN_SITE_VERSION = 'v0.2.58.28';") + ' fc=' + count(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.1';"));
 
   console.log('═══ F1 index.html 铃铛/灵动岛 ═══');
   ok('F1-1 铃铛按钮+红点徽章（唯一性 + search-capsule position:relative + 徽章在铃铛后）',

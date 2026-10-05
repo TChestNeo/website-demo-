@@ -211,7 +211,7 @@ async function main() {
   console.log('── D0. 静态锚（页面/i18n/site-config/FC 不互通）──');
   const pageSrc = readNorm('pages/community-profile.html');
   const cnt = (s, sub) => s.split(sub).length - 1;
-  check('D0 页面 58.22 件：sub-locked ×6（58.22 原 4 + 52.0 相框/称号 swatch 各 1）+ blockGif ×4（声明+三拦截）+ 升级链接 id（头像 ×1/横幅 ×3 含 click 门查询）+ premium.html href ×3 + 金罩族（gold-lock-group ×4/gold-locked ×6（52.0 swatch ×2+注释 ×1）/goldShimmer ×3）+ canGif ×9（58.25 视频门复用+2）+ 三新键引用（bannerLocked ×2/imgUpgrade ×1/premGifUpgrade ×2）+ FC 图库弹窗加大（680px ×1/80px ×1）+ mono-charcoal ×3',
+  check('D0 页面 58.22 件：sub-locked ×6（58.22 原 4 + 52.1 相框/称号 swatch 各 1）+ blockGif ×4（声明+三拦截）+ 升级链接 id（头像 ×1/横幅 ×3 含 click 门查询）+ premium.html href ×3 + 金罩族（gold-lock-group ×4/gold-locked ×6（52.1 swatch ×2+注释 ×1）/goldShimmer ×3）+ canGif ×9（58.25 视频门复用+2）+ 三新键引用（bannerLocked ×2/imgUpgrade ×1/premGifUpgrade ×2）+ FC 图库弹窗加大（680px ×1/80px ×1）+ mono-charcoal ×3',
     cnt(pageSrc, 'sub-locked') === 6 && cnt(pageSrc, 'blockGif') === 4 &&
     cnt(pageSrc, 'avatarGifUpgradeLink') === 1 && cnt(pageSrc, 'bannerGifUpgradeLink') === 3 && cnt(pageSrc, 'href="premium.html"') === 3 &&
     cnt(pageSrc, 'gold-lock-group') === 4 && cnt(pageSrc, 'gold-locked') === 6 && cnt(pageSrc, 'goldShimmer') === 3 &&
@@ -239,8 +239,8 @@ async function main() {
     'rcA=' + cnt(i18nSrc, 'prof.edit.reCropAvatar') + ' rcB=' + cnt(i18nSrc, 'prof.edit.reCropBanner') + ' vl=' + cnt(i18nSrc, 'prof.toast.videoLocked'));
   const siteSrc = readNorm('assets/js/site-config.js');
   check('D0 site-config：版本赋值 v0.2.58.28 + FC 48.1 在位 + changelog rev 00348-/00349- 各 ×2（58.25 双 changelog：站点+FC 同轮）',
-    cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") === 1 && cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2,
-    'v58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") + ' fc48=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") + ' r46=' + cnt(siteSrc, '00348-') + ' r47=' + cnt(siteSrc, '00349-'));
+    cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.1'") === 1 && cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2,
+    'v58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") + ' fc48=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.1'") + ' r46=' + cnt(siteSrc, '00348-') + ' r47=' + cnt(siteSrc, '00349-'));
   const fcSrc = readNorm('pages/fluidcanvas.html');
   check('D9 FC 不互通（钦定③铁证）：fluidcanvas.html 源零 bannerUrl/banner_url（FC 频道主页不读 users.banner_url）',
     fcSrc.indexOf('bannerUrl') === -1 && fcSrc.indexOf('banner_url') === -1, 'bannerUrl=' + fcSrc.indexOf('bannerUrl') + ' banner_url=' + fcSrc.indexOf('banner_url'));
@@ -412,7 +412,7 @@ async function main() {
     " avLibGold: document.getElementById('editAvatarLibBtn').classList.contains('gold-locked')," +
     " upLocked: document.getElementById('editBannerUploadBtn').classList.contains('sub-locked')," +
     " linkText: l.textContent.trim(), avLinkText: al.textContent.trim(), linkVis: getComputedStyle(l).display }; })()");
-  check('D6b0 basic 弹窗：零金罩组（.gold-lock-group 全无）+ 金罩只锁 52.0 装饰 swatch ×3（相框 2+称号 1，rewards 空=未拥有）+ 头像图库钮零罩（basic 可静态图库）+ 横幅上传钮零锁 + 双行 premGifUpgrade 链接可见文案精确',
+  check('D6b0 basic 弹窗：零金罩组（.gold-lock-group 全无）+ 金罩只锁 52.1 装饰 swatch ×3（相框 2+称号 1，rewards 空=未拥有）+ 头像图库钮零罩（basic 可静态图库）+ 横幅上传钮零锁 + 双行 premGifUpgrade 链接可见文案精确',
     !d6b0.gold && d6b0.swLocked === 3 && !d6b0.avLibGold && !d6b0.upLocked && d6b0.linkVis === 'inline-block' &&
     d6b0.linkText === '升级到高级订阅可上传 GIF 动图 →' && d6b0.avLinkText === '升级到高级订阅可上传 GIF 动图 →', JSON.stringify(d6b0));
   const d6UpBefore = await upCount(t);
@@ -457,7 +457,7 @@ async function main() {
     " lVis: getComputedStyle(l).display, avLocked: av.classList.contains('sub-locked'), avGold: av.classList.contains('gold-locked'), avIcon: av.querySelector('.material-symbols-outlined').textContent," +
     " alVis: getComputedStyle(al).display, upLocked: document.getElementById('editBannerUploadBtn').classList.contains('sub-locked')," +
     " gold: !!document.querySelector('.gold-lock-group'), swLocked: document.querySelectorAll('.pr-edit-swatch.gold-locked').length }; })()");
-  check('D7 订阅会话：横幅/头像图库钮零锁 + 横幅钮无锁图标无徽标（sub 分支整体不渲染）+ 头像钮 icon photo_library + 两升级链接 display:none + 零金罩组 + 金罩只锁 52.0 装饰 swatch ×3（prem 未领奖=未拥有）',
+  check('D7 订阅会话：横幅/头像图库钮零锁 + 横幅钮无锁图标无徽标（sub 分支整体不渲染）+ 头像钮 icon photo_library + 两升级链接 display:none + 零金罩组 + 金罩只锁 52.1 装饰 swatch ×3（prem 未领奖=未拥有）',
     !d7a.bLocked && d7a.bIconEl === null && d7a.bBadge === null && d7a.lVis === 'none' && !d7a.avLocked && !d7a.avGold &&
     d7a.avIcon === 'photo_library' && d7a.alVis === 'none' && !d7a.upLocked && !d7a.gold && d7a.swLocked === 3, JSON.stringify(d7a));
   await pressEsc(t);

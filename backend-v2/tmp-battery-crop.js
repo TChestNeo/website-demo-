@@ -334,7 +334,7 @@ const VIDEO_TO_INPUT_JS = (selector) => `(function(){ return (${RECORD_BODY})().
     ok('S0a site-config：58.25 赋值 1 + changelog 1 + rev 00348-/00349- 各 2（站点+FC 双条目）+ FC 48.1 赋值 1 + MN_CompressVideo/MN_VideoCap 各 1',
       cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") === 1 && cnt(siteSrc, '// v0.2.58.28 = ') === 1 &&
       cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2 &&
-      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") === 1 &&
+      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.1'") === 1 &&
       cnt(siteSrc, 'MN_CompressVideo') === 1 && cnt(siteSrc, 'MN_VideoCap') === 2,
       'r40=' + cnt(siteSrc, '00348-') + ' r41=' + cnt(siteSrc, '00349-'));
     ok('S0b settings-modal 58.25 件：window.MN_CropDialog ×2 + MN_CropDialog.open ×4 + applyCrop ×8 + data-crop ×3 + mn-crop-stage ×5 + windowFromZoom ×3 + stDoUpload ×5 + 重裁钮 ×2×2 + settings-banner-img ×7 + settings-banner-video ×7 + stIsVideoUrl ×3 + vp9 ×1 + captureStream ×2 + MN_CompressVideo ×1 + MN_VideoCap ×2 + mnVideoCap ×3 + height: 144px ×1 + 96px 零残留',
@@ -346,7 +346,7 @@ const VIDEO_TO_INPUT_JS = (selector) => `(function(){ return (${RECORD_BODY})().
       cnt(setSrc, 'MN_CompressVideo') === 1 && cnt(setSrc, 'MN_VideoCap') === 2 && cnt(setSrc, 'mnVideoCap') === 3 &&
       cnt(setSrc, 'height: 144px') === 1 && cnt(setSrc, 'height: 96px') === 0,
       'crop=' + cnt(setSrc, 'window.MN_CropDialog') + ' wfz=' + cnt(setSrc, 'windowFromZoom') + ' vid=' + cnt(setSrc, 'settings-banner-video'));
-    ok('S0c 资料页 58.25 件：profile-banner-video ×3 + isProfileVideoUrl ×3 + VIDEO_EXTS ×4 + 重裁钮 ×3/×2 + MN_CropDialog ×25 + profile-banner-crop ×9 + profile-banner-img ×3 + avatarCrop ×10 + bannerCrop ×5 + profile-avatar-img ×5（52.0 has-frame 规则 +1）+ accept 视频 ×1 + height: 210px ×2 + 140px 零残留（post-media/注释 2 处豁免）+ 视频 i18n 锚 ×1/×1/×1/×2',
+    ok('S0c 资料页 58.25 件：profile-banner-video ×3 + isProfileVideoUrl ×3 + VIDEO_EXTS ×4 + 重裁钮 ×3/×2 + MN_CropDialog ×25 + profile-banner-crop ×9 + profile-banner-img ×3 + avatarCrop ×10 + bannerCrop ×5 + profile-avatar-img ×5（52.1 has-frame 规则 +1）+ accept 视频 ×1 + height: 210px ×2 + 140px 零残留（post-media/注释 2 处豁免）+ 视频 i18n 锚 ×1/×1/×1/×2',
       cnt(profileSrc, 'profile-banner-video') === 3 && cnt(profileSrc, 'isProfileVideoUrl') === 3 && cnt(profileSrc, 'VIDEO_EXTS') === 4 &&
       cnt(profileSrc, 'editBannerReCropBtn') === 3 && cnt(profileSrc, 'editAvatarReCropBtn') === 2 &&
       cnt(profileSrc, 'MN_CropDialog') === 25 && cnt(profileSrc, 'profile-banner-crop') === 9 && cnt(profileSrc, 'profile-banner-img') === 3 &&

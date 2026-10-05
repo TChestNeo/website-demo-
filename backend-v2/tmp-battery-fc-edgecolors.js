@@ -1,11 +1,11 @@
 // tmp-battery-fc-edgecolors.js — v10.28.51.1 边缘样本默认配色+抽屉顶部导航平台同款+应用链修复+边框裸值放宽
 //   +AI 弹窗正向反馈电池（本地工作树）
-//   S 静态：site-config 51.1 赋值/零残留/changelog 头/rev 占位/50.0 条目保留/站点恒 58.26；编辑器 30 锚
-//     （edgeMiniHtml bg 参数/cardLayers join/segmented 结构/线型样本色/零残留 fc-edge-tab/bug 修复 toast 锚/
+//   S 静态：site-config 51.1 赋值/零残留/changelog 头/rev 占位/50.0 条目保留/站点恒 58.28；编辑器 31 锚
+//     （edgeMiniHtml bg 参数/cardLayers join/subnav 滑动结构（52.1 改锚）/线型样本色/零残留 fc-edge-tab/bug 修复 toast 锚/
 //      裸值 ±100 放宽锚/fc-gen-lamp/fc-gen-dots/edgeGenSetStatus 正向反馈 UI 锚）；
 //     i18n 51.1 正向反馈 5 新键 ×12 语（genIdle/genThinking/genOk/genFail/genThinkingHint）+tabAll ×12 保留
 //     +cardUnsupported ×0；
-//   B 编辑器 CDP：B1 无卡点条目 toast 引导（51.1 修复）/ B2 抽屉 nav segmented 结构+0.2s 过渡+padding 3px /
+//   B 编辑器 CDP：B1 无卡点条目 toast 引导（51.1 修复）/ B2 抽屉 nav subnav 滑动结构（52.1 白胶囊+0.55s）/
 //     B3 15 样本 cardLayers 默认配色四款（纸/藏宝/科技1/油漆1）+「无」虚线空盒+自定义剪影仍中性渐变 /
 //     B4 顶部导航 My↔全部 active 互换+pane 切换 / B5 边框线型样本画取色器当前色（默认 #c8c8d0→改红刷新）/
 //     B6 51.1 正向反馈状态机：打开弹窗 idle 灰灯→生成中 thinking 蓝灯脉冲+三粒点+小字→成功 success 绿灯
@@ -115,14 +115,15 @@ const SEED_SCRIPT = 'try{(function(){' +
 const READY = "document.getElementById('undoBtn') && document.getElementById('gridCanvas') && window.openEdgeDrawer && window.setCardEdge && window.createAssetCard && window.selectCard";
 const DRAWER_EXPR = "(function(){ var d = document.getElementById('fcEdgeDrawer');" +
   " var tAll = document.getElementById('fcEdgeTabAll'); var tMy = document.getElementById('fcEdgeTabMy');" +
-  " var control = tAll ? tAll.parentElement : null;" +
+  " var nav = tAll ? tAll.parentElement : null;" +
+  " var bg = nav ? nav.querySelector('.subnav-highlight-bg') : null;" +
   " return { open: d.classList.contains('open')," +
-  "  allSeg: tAll.classList.contains('segmented-option'), allActive: tAll.classList.contains('active')," +
-  "  mySeg: tMy.classList.contains('segmented-option'), myActive: tMy.classList.contains('active')," +
-  "  navOk: !!tAll.closest('.fc-edge-nav'), controlCls: control ? control.className : null," +
-  "  controlPad: control ? getComputedStyle(control).padding : null," +
-  "  trans: tAll ? getComputedStyle(tAll).transition : null," +
-  "  radius: tAll ? getComputedStyle(tAll).borderRadius : null," +
+  "  allPill: tAll.classList.contains('subnav-pill'), allActive: tAll.classList.contains('active')," +
+  "  myPill: tMy.classList.contains('subnav-pill'), myActive: tMy.classList.contains('active')," +
+  "  navOk: !!tAll.closest('.fc-edge-nav'), navCls: nav ? nav.className : null," +
+  "  navSlider: nav ? nav.getAttribute('data-slider') : null," +
+  "  hasBg: !!bg, cloneCount: nav ? nav.querySelectorAll('.subnav-highlight-clone').length : 0," +
+  "  bgTrans: bg ? getComputedStyle(bg).transition : null," +
   "  paneAll: getComputedStyle(document.getElementById('fcEdgePaneAll')).display," +
   "  paneMy: getComputedStyle(document.getElementById('fcEdgePaneMy')).display," +
   "  samples: document.getElementById('fcEdgeSamplesGrid').children.length," +
@@ -147,11 +148,11 @@ const TOAST_EXPR = "(function(){ var t = document.getElementById('toast');" +
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
   ok('S1 site-config：51.1 赋值 ×1 + 51.0 赋值零残留 + changelog 头 51.1/51.0/50.0 各 ×1 + rev 占位/历史各 ×1 + 站点恒 58.26',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") === 0 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.1';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") === 0 &&
     sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.51.0 = ') === 1 && sc('// v10.28.50.0 = ') === 1 &&
     sc('rev 00361-7vk') === 1 && sc('rev 00362-fdj') === 1 && sc('rev 00359-nfc') === 1 && sc('rev 00360-bk7') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
-    'fc511=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") + ' fc510=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") +
+    'fc511=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.1';") + ' fc510=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") +
     ' cl511=' + sc('// v10.28.51.1 = ') + ' r61=' + sc('rev 00361-7vk') + ' q62=' + sc('rev 00362-fdj'));
 
   const ed = norm(await (await fetch(BASE + EDITOR_URL_PATH)).text());
@@ -160,16 +161,17 @@ const TOAST_EXPR = "(function(){ var t = document.getElementById('toast');" +
   const ED_ANCHORS = [
     ['function edgeMiniHtml(clip, cls, bg)', 1],
     ["st.cardLayers.join(', ')", 1],
-    ['fc-edge-nav .segmented-control', 1],
-    ['class="segmented-control">', 1],
-    ['segmented-option active" id="fcEdgeTabAll"', 1],
-    ['segmented-option" id="fcEdgeTabMy"', 1],
+    ['fc-edge-nav .subnav { flex: 1; }', 1],
+    ['fc-edge-nav .subnav-pill { flex: 1; }', 1],
+    ['class="subnav" data-slider id="fcEdgeTabNav"', 1],
+    ['subnav-pill active" id="fcEdgeTabAll"', 1],
+    ['subnav-pill" id="fcEdgeTabMy"', 1],
     ["' + s.value + ' ' + curColor", 1],
     ["selectedCard.style.borderColor || '#c8c8d0'", 1],
     ['fc-edge-tab', 0],
     ['fc-edge-sample-name', 2],
     ['fc-edge-mini', 7],
-    ['fc-edge-nav', 3],
+    ['fc-edge-nav', 4],
     ["showToast(T('fc.common.selectCard')", 2],
     ['fc.edge.cardUnsupported', 1],
     ['该卡片不支持边缘样式', 1],
@@ -265,13 +267,12 @@ const TOAST_EXPR = "(function(){ var t = document.getElementById('toast');" +
       await sleep(400);
     }
 
-    // ═══ B2 抽屉 nav = 平台 segmented-control 同款结构/动画 ═══
+    // ═══ B2 抽屉 nav = 平台 subnav 同款滑动（52.1：subnav.js 注入白胶囊）═══
     {
       const d = await cdp.evalJs(DRAWER_EXPR);
-      ok('B2 nav segmented 结构：双钮 segmented-option + 全部 active + .fc-edge-nav 容器 + 控制条 padding 3px + 过渡含 0.2s + radius-full',
-        d.open === true && d.allSeg === true && d.allActive === true && d.mySeg === true && d.myActive === false &&
-        d.navOk === true && d.controlCls === 'segmented-control' && d.controlPad === '3px' &&
-        typeof d.trans === 'string' && d.trans.indexOf('0.2s') !== -1 && d.radius !== '0px',
+      ok('B2 nav subnav 结构：双钮 subnav-pill + 全部 active + data-slider + subnav.js 注入白胶囊/双 clone（滑动过渡由 edgenav B3a 专测）',
+        d.open === true && d.allPill === true && d.allActive === true && d.myPill === true && d.myActive === false &&
+        d.navOk === true && d.navCls === 'subnav' && d.navSlider === '' && d.hasBg === true && d.cloneCount === 2,
         JSON.stringify(d));
     }
 
@@ -302,7 +303,7 @@ const TOAST_EXPR = "(function(){ var t = document.getElementById('toast');" +
         JSON.stringify({ name: myMini && myMini.name, inline: myMini && myMini.inline, bg: myMini && myMini.bg.slice(0, 90) }));
     }
 
-    // ═══ B4 顶部导航 My↔全部（segmented active 互换 + pane 切换）═══
+    // ═══ B4 顶部导航 我↔全部（subnav active 互换 + pane 切换）═══
     {
       await cdp.evalJs('(function(){ document.getElementById("fcEdgeTabMy").click(); })()');
       await sleep(300);

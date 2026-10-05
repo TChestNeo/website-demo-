@@ -130,7 +130,7 @@ function ok(name, cond, detail) {
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
     ok('S1 site-config：FC v10.28.48.0 + 平滑折叠 changelog（折叠的过渡动画不顺畅/列表的背景能不能是白色的）+ rev 00348- + 站点恒 v0.2.58.28 + 旧 47.3 版本赋值锚零残留',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") !== -1 &&
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.1';") !== -1 &&
       siteCfg.indexOf('折叠的过渡动画不顺畅') !== -1 &&
       siteCfg.indexOf('列表的背景能不能是白色的') !== -1 &&
       siteCfg.indexOf('rev 00348-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1 &&
