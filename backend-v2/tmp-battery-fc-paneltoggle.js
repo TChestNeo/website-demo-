@@ -1,4 +1,4 @@
-// tmp-battery-fc-paneltoggle.js — v10.28.49.2 折叠按钮改圆形电池（本地工作树；49.2 轮原位改锚；52.3 轮再改锚；52.4 轮三改锚）
+// tmp-battery-fc-paneltoggle.js — v10.28.49.2 折叠按钮改圆形电池（本地工作树；49.2 轮原位改锚；52.3 轮再改锚；52.4 轮三改锚；52.5 轮四改锚）
 //   S 静态：site-config 版本 49.2 在位/49.1 赋值零残留/changelog 头 49.2+49.1+49.0 各 ×1/rev 前缀锚
 //     （rev 00352-/00353-/00354-/00355- 各 ×1——前缀口径填真值后恒真）+
 //     编辑器锚（:has 折叠态规则收窄为 { left: 6px; }/旧圆角方块规则零残留/32×32+50% 圆形锚/展开态口径锚）；
@@ -98,13 +98,13 @@ const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-to
   const el = (a) => edLines.filter((l) => l.includes(a)).length;
   const cfgSrc = fs.readFileSync(path.join(DOCS, 'assets/js/site-config.js'), 'utf8');
   const sc = (s) => cfgSrc.split(s).length - 1;
-  ok('S1 site-config：FC 版本 49.2 在位 + 49.1 赋值零残留 + changelog 头 49.2/49.1/49.0 各 ×1 + rev 前缀锚各 ×1',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") === 1 &&
+  ok('S1 site-config：FC 版本 52.5 在位 + 49.1 赋值零残留 + changelog 头 51.1/49.1/49.0 各 ×1 + rev 前缀锚各 ×1',
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 1 &&
     sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") === 0 &&
     sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.49.1 = ') === 1 && sc('// v10.28.49.0 = ') === 1 &&
     sc('rev 00352-') === 1 && sc('rev 00353-') === 1 && sc('rev 00354-') === 1 && sc('rev 00355-') === 1,
-    'fc49.2=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") + ' fc49.1=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") +
-    ' cl49.2=' + sc('// v10.28.51.1 = ') + ' cl49.1=' + sc('// v10.28.49.1 = ') + ' cl49.0=' + sc('// v10.28.49.0 = ') +
+    'fc52.5=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") + ' fc49.1=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") +
+    ' cl51.1=' + sc('// v10.28.51.1 = ') + ' cl49.1=' + sc('// v10.28.49.1 = ') + ' cl49.0=' + sc('// v10.28.49.0 = ') +
     ' r52=' + sc('rev 00352-') + ' r53=' + sc('rev 00353-') + ' r54=' + sc('rev 00354-') + ' r55=' + sc('rev 00355-'));
   ok('S2 编辑器：:has 折叠态规则收窄在位 + 旧圆角方块规则零残留 + 32×32 正圆锚 + 展开态口径锚在位（:has ×2/{ left: 6px; } ×2=52.4 动画挂接+关键帧 100% 行计入）',
     el('.canvas-body:has(.asset-panel.collapsed) .asset-panel-toggle') === 2 &&

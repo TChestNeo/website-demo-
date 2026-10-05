@@ -1,6 +1,7 @@
-// tmp-battery-fc-togglefly.js — v10.28.52.4 折叠按钮搬搜索菜单右侧+折叠出画回弹+Q弹+按钮与搜索栏同高电池（本地工作树；52.4 轮改锚）
-//   S 静态：site-config 52.4 赋值 ×1/52.3 赋值零残留/站点 58.28 ×1/changelog 头 52.4/52.3/52.2 各 ×1/
-//     rev 00375-/00376- 前缀锚各 ×1 + 编辑器锚（52.4 注释三原话/fine 块右缘 calc 214px/胶囊让位 46px/双动画挂接/
+// tmp-battery-fc-togglefly.js — v10.28.52.5 折叠出画加深+画外停一拍+展开加Q弹电池（本地工作树；52.5 轮改锚）
+//   S 静态：site-config 52.5 赋值 ×1/52.4 赋值零残留/站点 58.28 ×1/changelog 头 52.5/52.4/52.3 各 ×1/
+//     rev 00377-/00378- 前缀锚各 ×1 + 编辑器锚（52.4/52.5 注释五原话/fine 块右缘 calc 带展开 Q弹/
+//     胶囊让位 46px/双动画挂接/位移四站+画外停拍/Q弹五站/展开 Q弹关键帧/40×40 同高/旧锚零残留）
 //     位移三站关键帧/Q弹四站关键帧/40×40 同高/旧 52.3 锚零残留（左缘 6px 规则/margin-left 让位/单动画行/
 //     38px 让位/32×32）/内联宽度搬出零残留/49.1 :has 规则仍在/52.2 纯白+暗色还原仍在/粗指针基态 266px 口径仍在）；
 //   B 编辑器 CDP（桌面细指针）：B1 展开态按钮驻右缘 214px+top 12px 正圆 40×40 纯白+搜索胶囊让位
@@ -120,32 +121,43 @@ const near = (a, b, tol) => a && a.length >= 3 && b && b.length >= 3 &&
     'border: 1px solid var(--divider-line-strong);\n      border-radius: 50%;\n      background: var(--color-surface-container-lowest);') !== -1;
   const cfgSrc = fs.readFileSync(path.join(DOCS, 'assets/js/site-config.js'), 'utf8');
   const sc = (s) => cfgSrc.split(s).length - 1;
-  ok('S1 site-config：FC 52.4 赋值 ×1 + 52.3 赋值零残留 + 站点 58.28 ×1 + changelog 头 52.4/52.3/52.2 各 ×1 + rev 前缀锚各 ×1',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") === 1 &&
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.3';") === 0 &&
+  ok('S1 site-config：FC 52.5 赋值 ×1 + 52.4 赋值零残留 + 站点 58.28 ×1 + changelog 头 52.5/52.4/52.3 各 ×1 + rev 前缀锚各 ×1',
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 1 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") === 0 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 &&
-    sc('// v10.28.52.4 = ') === 1 && sc('// v10.28.52.3 = ') === 1 && sc('// v10.28.52.2 = ') === 1 &&
-    sc('rev 00375-') === 1 && sc('rev 00376-') === 1,
-    'fc524=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") + ' fc523=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.3';") +
-    ' cl524=' + sc('// v10.28.52.4 = ') + ' cl523=' + sc('// v10.28.52.3 = ') + ' cl522=' + sc('// v10.28.52.2 = ') +
-    ' r75=' + sc('rev 00375-') + ' r76=' + sc('rev 00376-'));
-  ok('S2 编辑器：52.4 注释三原话 + fine 块锚（右缘 calc/胶囊让位 46px/双动画挂接/位移三站/Q弹四站/40×40 同高）+ 旧锚零残留（左缘 6px 规则/margin-left 让位/单动画行/38px 让位/32×32）+ 内联宽度搬出零残留',
+    sc('// v10.28.52.5 = ') === 1 && sc('// v10.28.52.4 = ') === 1 && sc('// v10.28.52.3 = ') === 1 &&
+    sc('rev 00377-') === 1 && sc('rev 00378-') === 1,
+    'fc525=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") + ' fc524=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") +
+    ' cl525=' + sc('// v10.28.52.5 = ') + ' cl524=' + sc('// v10.28.52.4 = ') + ' cl523=' + sc('// v10.28.52.3 = ') +
+    ' r77=' + sc('rev 00377-') + ' r78=' + sc('rev 00378-'));
+  ok('S2 编辑器：52.4/52.5 注释原话 + fine 块锚（右缘 calc 带展开 Q弹/胶囊让位 46px/双动画挂接/位移四站/画外停拍/Q弹五站/展开 Q弹关键帧/40×40 同高）+ 旧锚零残留（52.4 浅出画 -40px/58% 拉长站/左缘 6px 规则/margin-left 让位/单动画行/38px 让位/32×32）+ 内联宽度搬出零残留',
     el('我希望那个圆形是在右侧的') === 1 &&
     el('然后那个按钮回弹的时候能不能有一个Q弹') === 1 &&
     el('还有那个按钮的大小能不能和搜索栏一样') === 1 &&
+    el('为什么他没有短暂的滑出画面外') === 1 &&
+    el('在展开的时候按钮能不能也附加上Q弹效果') === 2 &&
+    el('v10.28.52.5: 折叠出画加深+画外停一拍+展开加 Q弹') === 1 &&
     el('v10.28.52.4: 折叠按钮搬搜索菜单右侧') === 1 &&
-    el('.asset-panel-toggle { left: calc(var(--asset-panel-w) - 46px); top: 12px; }') === 1 &&
+    el('.asset-panel-toggle { left: calc(var(--asset-panel-w) - 46px); top: 12px; animation: fcToggleInQSquash 0.28s; }') === 1 &&
     el('.asset-panel .search-capsule { width: calc(100% - 46px); }') === 1 &&
     el('.asset-panel .search-capsule { width: 100%; }') === 1 &&
     el('animation: fcToggleOutSpring 0.9s, fcToggleQSquash 0.9s;') === 1 &&
     el('@keyframes fcToggleOutSpring {') === 1 &&
     el('0%   { left: calc(var(--asset-panel-w) - 46px);  animation-timing-function: cubic-bezier(0.5, 0, 1, 0.6); }') === 1 &&
-    el('30%  { left: -40px; animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }') === 1 &&
+    el('28%  { left: -80px; animation-timing-function: linear; }') === 1 &&
+    el('50%  { left: -80px; animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }') === 1 &&
     el('100% { left: 6px; }') === 1 &&
     el('@keyframes fcToggleQSquash {') === 1 &&
-    el('58%  { transform: scale(1.35, 0.65); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }') === 1 &&
-    el('100% { transform: scale(1, 1); }') === 1 &&
+    el('28%  { transform: scale(0.85, 0.85); animation-timing-function: linear; }') === 1 &&
+    el('50%  { transform: scale(0.85, 0.85); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }') === 1 &&
+    el('70%  { transform: scale(1.35, 0.65); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }') === 1 &&
+    el('100% { transform: scale(1, 1); }') === 2 &&
+    el('@keyframes fcToggleInQSquash {') === 1 &&
+    el('45%  { transform: scale(1.3, 0.7); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }') === 1 &&
+    el('75%  { transform: scale(0.9, 1.1); }') === 1 &&
     el('width: 40px; height: 40px; /* 52.4') === 1 &&
+    el('left: -40px') === 0 &&
+    el('58%  { transform: scale(1.35, 0.65)') === 0 &&
     el('.asset-panel-toggle { left: 6px; top: 16px; }') === 0 &&
     el('width: calc(100% - 38px); margin-left: 38px;') === 0 &&
     el('.asset-panel-toggle { left: calc(var(--asset-panel-w) - 38px); top: 16px; }') === 0 &&
@@ -156,10 +168,13 @@ const near = (a, b, tol) => a && a.length >= 3 && b && b.length >= 3 &&
     el('style="width:100%;margin-bottom:var(--space-sm)"') === 0,
     JSON.stringify({
       q1: el('我希望那个圆形是在右侧的'), q2: el('然后那个按钮回弹的时候能不能有一个Q弹'), q3: el('还有那个按钮的大小能不能和搜索栏一样'),
-      head: el('v10.28.52.4: 折叠按钮搬搜索菜单右侧'), rest: el('.asset-panel-toggle { left: calc(var(--asset-panel-w) - 46px); top: 12px; }'),
+      q4: el('为什么他没有短暂的滑出画面外'), q5: el('在展开的时候按钮能不能也附加上Q弹效果'),
+      head52: el('v10.28.52.5: 折叠出画加深+画外停一拍+展开加 Q弹'), head51: el('v10.28.52.4: 折叠按钮搬搜索菜单右侧'),
+      rest: el('.asset-panel-toggle { left: calc(var(--asset-panel-w) - 46px); top: 12px; animation: fcToggleInQSquash 0.28s; }'),
       give: el('.asset-panel .search-capsule { width: calc(100% - 46px); }'), base: el('.asset-panel .search-capsule { width: 100%; }'),
       anim: el('animation: fcToggleOutSpring 0.9s, fcToggleQSquash 0.9s;'), kf: el('@keyframes fcToggleOutSpring {'),
-      qkf: el('@keyframes fcToggleQSquash {'), size: el('width: 40px; height: 40px; /* 52.4'),
+      qkf: el('@keyframes fcToggleQSquash {'), inq: el('@keyframes fcToggleInQSquash {'), s1: el('100% { transform: scale(1, 1); }'),
+      size: el('width: 40px; height: 40px; /* 52.4'), oldFly: el('left: -40px'), oldStretch: el('58%  { transform: scale(1.35, 0.65)'),
       oldRest: el('.asset-panel-toggle { left: 6px; top: 16px; }'),
       oldGive: el('width: calc(100% - 38px); margin-left: 38px;'), oldRest2: el('.asset-panel-toggle { left: calc(var(--asset-panel-w) - 38px); top: 16px; }'),
       oldGive2: el('width: calc(100% - 38px); }'), oldAnim: el('animation: fcToggleOutSpring 0.9s;'),
@@ -240,22 +255,23 @@ const near = (a, b, tol) => a && a.length >= 3 && b && b.length >= 3 &&
         tr && tr.an && tr.an.indexOf('fcToggleOutSpring') !== -1 && tr.an.indexOf('fcToggleQSquash') !== -1 &&
         tr.ac >= 2 && xs.length >= 60 && earlyMax > 100,
         JSON.stringify({ an: tr && tr.an, ac: tr && tr.ac, n: xs.length, earlyMax }));
-      ok('B2b 出画：轨迹最低 ≤ -30（右缘出画面外）+ 回弹过冲最高 ≥ 8 + 先出画后回弹（min 先于 maxAfterMin）',
-        min <= -30 && maxAfterMin >= 8 && minIdx < maxAfterMinIdx,
-        JSON.stringify({ min, maxAfterMin, minIdx, maxAfterMinIdx }));
+      const dwell = xs.filter((x) => x <= -75).length;
+      ok('B2b 出画：轨迹最低 ≤ -70（深出画 -80px）+ 画外停拍 ≥8 采样（left≤-75）+ 回弹过冲最高 ≥ 8 + 先出画后回弹（min 先于 maxAfterMin）',
+        min <= -70 && dwell >= 8 && maxAfterMin >= 8 && minIdx < maxAfterMinIdx,
+        JSON.stringify({ min, dwell, maxAfterMin, minIdx, maxAfterMinIdx }));
       ok('B2c 落定：终采样 left 6px + 面板宽 0 + 按钮仍纯白 + ▸',
         final === 6 && f.pw === '0px' && near(parseColor(f.bg), [255, 255, 255], 0) && f.txt === '▸',
         JSON.stringify({ final, pw: f.pw, txt: f.txt }));
     }
 
-    // ═══ B3 点击展开：0.25s 过渡滑回右缘 214px ═══
+    // ═══ B3 点击展开：0.25s 过渡滑回右缘 214px + 展开 Q弹命中 ═══
     {
       await cdp.evalJs("document.querySelector('.asset-panel-toggle').click()");
       await sleep(1400);
       const f = await cdp.evalJs(PANEL_EXPR);
       const an = await cdp.evalJs("getComputedStyle(document.querySelector('.asset-panel-toggle')).animationName");
-      ok('B3 展开回来：按钮 left 214px/◂/面板 260px + animationName none（展开=0.25s 过渡滑回右缘）',
-        f.left === '214px' && f.txt === '◂' && f.pw === '260px' && an === 'none', JSON.stringify({ f, an }));
+      ok('B3 展开回来：按钮 left 214px/◂/面板 260px + animationName 含 fcToggleInQSquash（展开=0.25s 过渡滑回右缘+52.5 展开 Q弹）',
+        f.left === '214px' && f.txt === '◂' && f.pw === '260px' && an && an.indexOf('fcToggleInQSquash') !== -1, JSON.stringify({ f, an }));
     }
 
     // ═══ B4 再折叠：双动画重触发（类重挂即重放）═══
