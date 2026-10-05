@@ -176,7 +176,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n'); // CRLF 归一（多行锚）
     ok('S1 site-config：FC v10.28.48.0 + changelog 编辑器镶边玻璃全灭条目 + rev 00288- 占位 + 站点版本恒 v0.2.58.28',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.1';") !== -1 &&
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.2';") !== -1 &&
       siteCfg.indexOf('编辑器镶边玻璃全灭') !== -1 &&
       siteCfg.indexOf('00288-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1);
     ok('S2 编辑器头栏：铺 surface-container 不透明底 + 旧 16px 模糊写法零残留（门控死码配方除外）',
@@ -233,6 +233,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       cdp.send('Input.dispatchMouseEvent', Object.assign({ type: type, x: x, y: y, button: 'none', clickCount: 1, modifiers: 0 }, opts || {}));
     const SURFACE = [236, 238, 240];      // 浅色 --color-surface-container #eceef0
     const SURFACE_LOW = [242, 244, 246];  // 浅色 --color-surface-container-low #f2f4f6
+    const SURFACE_LOWEST = [255, 255, 255]; // 浅色 --color-surface-container-lowest #ffffff（52.2 头栏纯白不透明）
     const faceOf = (sel) => "(function(){ var c = document.querySelector('" + sel + "'); if (!c) return null; var cs = getComputedStyle(c); return { bg: cs.backgroundColor, blur: cs.backdropFilter || 'none', webkitBlur: cs.webkitBackdropFilter || 'none', bgImg: cs.backgroundImage.slice(0, 60) }; })()";
 
     // ── B 浏览器实测 ──
@@ -240,8 +241,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
       "!!document.getElementById('gridCanvas') && !!window.createSneCard", 'B 编辑器加载');
 
     let f = await cdp.evalJs(faceOf('.editor-header'));
-    ok('B1 编辑器头栏（真元素）：不透明 surface-container + blur 摘除（含 -webkit）',
-      f && near(parseColor(f.bg), SURFACE, 1) && isOpaque(f.bg) && f.blur === 'none' && f.webkitBlur === 'none', JSON.stringify(f));
+    ok('B1 编辑器头栏（真元素）：不透明 surface-container-lowest 纯白 #ffffff + blur 摘除（含 -webkit；52.2 纯白口径）',
+      f && near(parseColor(f.bg), SURFACE_LOWEST, 1) && isOpaque(f.bg) && f.blur === 'none' && f.webkitBlur === 'none', JSON.stringify(f));
 
     // 真开标签弹窗：卡面/输入框/注入层/背底四查
     await cdp.evalJs("window.openModal('tagsModal')");

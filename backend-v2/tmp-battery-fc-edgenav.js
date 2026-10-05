@@ -1,5 +1,5 @@
-// tmp-battery-fc-edgenav.js — v10.28.52.1 边缘抽屉全部/我左右切换平台同款滑动+My 标签全语言化电池（本地工作树）
-//   S 静态：site-config 52.1 赋值 ×1/52.0 赋值零残留/changelog 头 52.1/52.0 各 ×1/rev 占位 00369-XXX+00370-??? 各 ×1/
+// tmp-battery-fc-edgenav.js — v10.28.52.2 边缘抽屉全部/我左右切换平台同款滑动+My 标签全语言化电池（本地工作树）
+//   S 静态：site-config 52.2 赋值 ×1/52.0 赋值零残留/changelog 头 52.2/52.0 各 ×1/rev 真值 00369-gmh+00370-8g7 各 ×1/
 //     站点恒 58.28；编辑器锚：subnav data-slider 抽屉 nav ×1/subnav-pill 双钮/tabMy 兜底「我」×1+>My</button> 零残留/
 //     subnav.js 引入 ×1/.fc-edge-nav .subnav/.subnav-pill 各 ×1/旧 .fc-edge-nav .segmented-control 零残留/
 //     edgeNavResync 定义+调用各 ×1；i18n tabMy 键 ×12 语+zh/zh-Hant=我 各 ×1+en=My ×1（12 语零英文混杂）；
@@ -132,14 +132,14 @@ const align = (n, pillOff, pillOffW) => Math.abs(n.bgLeft - pillOff) < 1 && Math
 
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
-  ok('S1 site-config：52.1 赋值 ×1 + 52.0 赋值零残留 + changelog 头 52.1/52.0 各 ×1 + rev 占位 00369-XXX/00370-??? 各 ×1 + 站点恒 58.28',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.1';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 0 &&
-    sc('// v10.28.52.1 = ') === 1 && sc('// v10.28.52.0 = ') === 1 &&
-    sc('00369-XXX') === 1 && sc('00370-???') === 1 &&
+  ok('S1 site-config：52.2 赋值 ×1 + 52.0 赋值零残留 + changelog 头 52.2/52.0 各 ×1 + rev 真值 00369-gmh/00370-8g7 各 ×1（642 终态填真值口径）+ 站点恒 58.28',
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.2';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 0 &&
+    sc('// v10.28.52.2 = ') === 1 && sc('// v10.28.52.0 = ') === 1 &&
+    sc('00369-gmh') === 1 && sc('00370-8g7') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
-    'fc521=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.1';") +
+    'fc522=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.2';") +
     ' fc520=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") +
-    ' cl521=' + sc('// v10.28.52.1 = ') + ' q69=' + sc('00369-XXX') + ' q70=' + sc('00370-???'));
+    ' cl522=' + sc('// v10.28.52.2 = ') + ' q69=' + sc('00369-gmh') + ' q70=' + sc('00370-8g7'));
 
   const ed = norm(await (await fetch(BASE + EDITOR_URL_PATH)).text());
   const edLines = ed.split('\n');
