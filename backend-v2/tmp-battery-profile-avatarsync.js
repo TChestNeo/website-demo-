@@ -1,4 +1,4 @@
-// tmp-battery-profile-avatarsync.js — v0.2.58.27 个人资料头像 ↔ FC 频道主页头像双向同步电池
+// tmp-battery-profile-avatarsync.js — v0.2.58.28 个人资料头像 ↔ FC 频道主页头像双向同步电池
 // 用户「还有个人资料设置里的头像你没有做更换头像是和频道主页同步的当然用户可以勾选是否要同步」
 //   边界「还有用户个人资料的自我介绍和频道主页的bio是不互通的」
 // 钦定：①勾选框默认勾选（键缺失=ON）②双向同步·资料页权威（FC 侧点频道卡头像可换，同 PATCH 链）③bio 绝不互通（FC PATCH 只发 avatarUrl+avatarCrop）
@@ -197,9 +197,9 @@ function ok(name, cond, detail) {
     const profI18n = await get('/assets/i18n/community-profile.i18n.js');
     const fcI18n = await get('/assets/i18n/fluidcanvas.i18n.js');
     ok('P0 site-config：版本赋值 58.25/48.1 各 1 + rev 00348-/00349- 各 2（58.25 双 changelog 条目：站点+FC 48.1 同轮）',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.27'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") === 1 &&
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") === 1 &&
       cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2,
-      '58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.27'") + ' 48.1=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") + ' r36=' + cnt(siteSrc, '00348-') + ' r37=' + cnt(siteSrc, '00349-'));
+      '58.25=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") + ' 48.1=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") + ' r36=' + cnt(siteSrc, '00348-') + ' r37=' + cnt(siteSrc, '00349-'));
     ok('P0 资料页静态锚：toggle id ×4（模板+label for+F3+F4 选择器）+ slati_avatar_sync ×2（F1 读+F3 写）+ T 调用 ×2（label+aria-label）',
       cnt(profileSrc, 'editAvatarSyncToggle') === 4 && cnt(profileSrc, 'slati_avatar_sync') === 2 && cnt(profileSrc, "T('prof.edit.avatarSync')") === 2,
       'toggle=' + cnt(profileSrc, 'editAvatarSyncToggle') + ' key=' + cnt(profileSrc, 'slati_avatar_sync'));

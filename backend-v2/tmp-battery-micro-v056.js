@@ -86,7 +86,7 @@ const FIX_LIST = { articles: [
   { id: 'ART-MICRO-1', title: 'Founding Charter', status: 'published', authorId: 'USR-000001', authorName: 'Neo', createdAt: '2026-09-20T08:00:00.000Z', updatedAt: '2026-09-20T08:00:00.000Z' },
   { id: 'ART-MICRO-2', title: 'Trade Treaty Notes', status: 'published', authorId: 'USR-000002', authorName: 'Vela', createdAt: '2026-09-19T10:00:00.000Z', updatedAt: '2026-09-19T10:00:00.000Z' }
 ] };
-// v0.2.58.27 Round 46：FC 首页接 /api/fc/overview 真聚合——F 段罐头（ART-MICRO-1 published→阅读页、
+// v0.2.58.28 Round 46：FC 首页接 /api/fc/overview 真聚合——F 段罐头（ART-MICRO-1 published→阅读页、
 // ART-MICRO-2 pending→review 徽章→编辑器 ?article= 查看器）
 const FIX_OVERVIEW = {
   stats: { followers: 4, following: 2, articles: 2, articlesPublished: 1, articleViews: 0, articleLikes: 0,
@@ -235,10 +235,10 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     // B6 双版本锚
     const ver = await cdp.evalJs("window.MN_SITE_VERSION");
     const fcVer = await cdp.evalJs("window.FLUIDCANVAS_VERSION");
-    ok('B6 站点号 v0.2.58.27', ver === 'v0.2.58.27', 'got=' + ver);
+    ok('B6 站点号 v0.2.58.28', ver === 'v0.2.58.28', 'got=' + ver);
     ok('B6b FC v10.28.39.0', fcVer === 'v10.28.52.0', 'got=' + fcVer);
 
-    // ═══ F FC 列表 View 分流（v0.2.58.27 Round 46：清单=FC_OVERVIEW 真数据，访客零 API）═══
+    // ═══ F FC 列表 View 分流（v0.2.58.28 Round 46：清单=FC_OVERVIEW 真数据，访客零 API）═══
     // F0 访客：锁定英雄卡显示 + studio 隐藏 + 零 API（Round 46 访客零 API 连 fc/overview 都不发）
     await cdp.send('Page.navigate', { url: 'http://127.0.0.1:' + PORT + '/pages/fluidcanvas.html?view=articles&guest=1' });
     await waitFor(cdp, "document.readyState === 'complete' && !!document.getElementById('artList')", 30000, 'FC 列表加载');

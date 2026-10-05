@@ -132,13 +132,13 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
-    ok('S1 site-config：FC v10.28.48.0 + 平滑折叠 changelog（折叠的过渡动画不顺畅/列表的背景能不能是白色的）+ 两卡 changelog（三粒点独立一个）+ 47.2 顶部停靠 changelog + rev 00348- 占位 + 站点恒 v0.2.58.27 + 旧 47.3 赋值零残留',
+    ok('S1 site-config：FC v10.28.48.0 + 平滑折叠 changelog（折叠的过渡动画不顺畅/列表的背景能不能是白色的）+ 两卡 changelog（三粒点独立一个）+ 47.2 顶部停靠 changelog + rev 00348- 占位 + 站点恒 v0.2.58.28 + 旧 47.3 赋值零残留',
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") !== -1 &&
       siteCfg.indexOf('折叠的过渡动画不顺畅') !== -1 &&
       siteCfg.indexOf('列表的背景能不能是白色的') !== -1 &&
       siteCfg.indexOf('三粒点独立一个') !== -1 &&
       siteCfg.indexOf('左侧菜单最顶部') !== -1 &&
-      siteCfg.indexOf('rev 00348-') !== -1 && siteCfg.indexOf('v0.2.58.27') !== -1 &&
+      siteCfg.indexOf('rev 00348-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1 &&
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.3';") === -1);
     ok('S2 编辑器：ctxPillDots 三点钮 + 横向三点 more_horiz（more_vert 零在场）+ 两卡 CSS（fc-pill-fold 门控/.asset-panel > .ctx-pill-dots/ctxPillRise/translateY(110%)/static/占满宽/真药丸规格）+ 47.4 平滑折叠锚（fc-pill-fold-prep/ctxPillFall/ctxPillFadeOut/ctx-pill-exit/__pillCloseTimer/__foldTimer/finishHideContextMenu/translateY(-56px)/白底 #ffffff）+ 旧一体化锚（ctx-collapsed/ctxPillIn/translateY(-110%)）零在场 + flex-shrink 禁压保持 + 顶部挂载锚（insertBefore 首子/margin-bottom）',
       editorHtml.indexOf('id="ctxPillDots"') !== -1 &&

@@ -1,5 +1,5 @@
 // tmp-battery-fc-rewards.js — v10.28.52.0 等级奖励电池（本地工作树）
-//   S 静态：site-config 52.0 赋值/51.1 零残留/changelog 头 52.0/51.1/51.0/rev 终态 00363-ksq+00364-wdg（640 轮锚改真值）/站点 58.27；
+//   S 静态：site-config 52.0 赋值/51.1 零残留/changelog 头 52.0/51.1/51.0/rev 终态 00363-ksq+00364-wdg（640 轮锚改真值）/站点 58.28；
 //     storage TEAM_LEVELS 1.5× 阈值表/getTeamLevelState；sidebar mn:level-up → POST /rewards/claim 链；
 //     编辑器 teamId 发布分键（getFcTeamPublishId/publishIdKey/body.teamId）；
 //     fluidcanvas 团队徽章/成就条/关注切换锚；资料页奖励区全锚（loadRewardsMe/prCosm*/edit 弹窗装饰/边缘门）；
@@ -195,11 +195,11 @@ const AVATAR_EXPR = "(function(){ var a = document.querySelector('#profileHeader
 
   const scSrc = await fetchSrc('/assets/js/site-config.js');
   const sc = mk(scSrc);
-  ok('S1 site-config：52.0 赋值 ×1 + 51.1 赋值零残留 + changelog 头 52.0/51.1/51.0 各 ×1 + rev 终态 00363-ksq/00364-wdg 各 ×1（640 轮锚改真值=639 终态口径）+ 站点 58.27',
+  ok('S1 site-config：52.0 赋值 ×1 + 51.1 赋值零残留 + changelog 头 52.0/51.1/51.0 各 ×1 + rev 终态 00363-ksq/00364-wdg 各 ×1（640 轮锚改真值=639 终态口径）+ 站点 58.28',
     sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") === 0 &&
     sc('// v10.28.52.0 = ') === 1 && sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.51.0 = ') === 1 &&
     sc('00363-ksq') === 1 && sc('00364-wdg') === 1 &&
-    sc("window.MN_SITE_VERSION = 'v0.2.58.27';") === 1,
+    sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
     'fc520=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") + ' fc511=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") +
     ' cl520=' + sc('// v10.28.52.0 = ') + ' r63=' + sc('00363-ksq') + ' q64=' + sc('00364-wdg'));
 

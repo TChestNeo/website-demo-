@@ -150,7 +150,7 @@ const TOAST_EXPR = "(function(){ var t = document.getElementById('toast');" +
     sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") === 0 &&
     sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.51.0 = ') === 1 && sc('// v10.28.50.0 = ') === 1 &&
     sc('rev 00361-7vk') === 1 && sc('rev 00362-fdj') === 1 && sc('rev 00359-nfc') === 1 && sc('rev 00360-bk7') === 1 &&
-    sc("window.MN_SITE_VERSION = 'v0.2.58.27';") === 1,
+    sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
     'fc511=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") + ' fc510=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") +
     ' cl511=' + sc('// v10.28.51.1 = ') + ' r61=' + sc('rev 00361-7vk') + ' q62=' + sc('rev 00362-fdj'));
 

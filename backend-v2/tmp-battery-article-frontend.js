@@ -121,7 +121,7 @@ const FIXTURE_LIST = { articles: [
   { id: 'ART-Y', title: 'Constitution Notes', status: 'published', authorId: 'USR-000002', authorName: 'Bob', createdAt: '2026-09-17T10:00:00.000Z', updatedAt: '2026-09-17T10:00:00.000Z' },
   { id: 'ART-Z', title: 'Hidden Draft', status: 'hidden', authorId: 'USR-000001', authorName: 'Alice', createdAt: '2026-09-16T10:00:00.000Z', updatedAt: '2026-09-16T10:00:00.000Z' }
 ] };
-// v0.2.58.27 Round 46：FC 落地页清单=FC_OVERVIEW.articles 真聚合（B19 罐头——与 FIXTURE_LIST 同源映射；
+// v0.2.58.28 Round 46：FC 落地页清单=FC_OVERVIEW.articles 真聚合（B19 罐头——与 FIXTURE_LIST 同源映射；
 // syncCloudArticles 状态映射 published→published / pending→review / 其余→draft）
 const FIX_OVERVIEW = {
   stats: { followers: 1, following: 0, articles: 3, articlesPublished: 2, articleViews: 42, articleLikes: 0,
@@ -258,7 +258,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     idxI18n.indexOf("'index.searchPh': '搜索文章…'") !== -1 && idxI18n.indexOf("'index.searchPh': 'Search articles...'") !== -1 &&
     idxI18n.indexOf('搜索世界、话题') === -1 && idxI18n.indexOf('__ZH_HANT_AUTO__') !== -1);
   ok('S11 site-config：v0.2.57.1 + changelog 文章前端条目 + FC v10.28.39.0',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.27';") !== -1 &&
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.28';") !== -1 &&
     sconf.indexOf('文章前端') !== -1 && sconf.indexOf('article_comments') !== -1 &&
     sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") !== -1);
 

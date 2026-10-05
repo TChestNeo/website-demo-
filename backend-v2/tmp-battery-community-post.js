@@ -1,6 +1,6 @@
-// tmp-battery-community-post.js — v0.2.58.27 Community 头像/点赞/评论 + 独立帖页电池（2026-09-30；2026-09-05 起）
+// tmp-battery-community-post.js — v0.2.58.28 Community 头像/点赞/评论 + 独立帖页电池（2026-09-30；2026-09-05 起）
 // 用户：「那个为什么没有头像，然后点赞按钮没有功能，评论也是，然后我希望做成点击帖子查看评论就是和Twitter一样的那种」→ 钦定独立帖子页。
-// v0.2.58.27 演示样本全移除：本地 A 段 hub 面 seeded 仍走真云卡（罐头 /api/health 200 点 cloudMode，云卡断言不变）；
+// v0.2.58.28 演示样本全移除：本地 A 段 hub 面 seeded 仍走真云卡（罐头 /api/health 200 点 cloudMode，云卡断言不变）；
 //   A1 demo 口径改「#feedContent 非云卡恰 1=composer 零演示卡」（页面另有 discovery 卡必须 feedContent 作用域）；
 //   线上 L 段 hub 面=登录引导卡（fake-login /social/feed 401 整流零云卡），真帖断言改 Node 侧直取 /api/social/posts 首个 id 导航帖页；
 //   L3 点赞 401 → L4 评论 401 边界补 seedUser+reload（mn:unauthorized 清了 session）。
@@ -235,7 +235,7 @@ async function main() {
       " likeCount: like ? like.querySelector('[data-like-count]').textContent : null, pressed: like.getAttribute('aria-pressed')," +
       " text: c.textContent }; })()");
     const demoNoAttr = await t.evalJs("document.querySelectorAll('#feedContent .card:not([data-cloud-id])').length");
-    check('A1 版本 v0.2.58.27', ver === 'v0.2.58.27', 'ver=' + ver);
+    check('A1 版本 v0.2.58.28', ver === 'v0.2.58.28', 'ver=' + ver);
     check('A1 云卡整卡跳转属性（data-cloud-id + post-card-click）', a1.id === 'PST-000101' && a1.cls.indexOf('post-card-click') !== -1, a1.id + ' / ' + a1.cls);
     check('A1 帖子卡真头像 img.avatar', a1.hasAvatar && a1.avatarSrc.indexOf('data:image/svg') === 0, a1.avatarSrc.slice(0, 40));
     check('A1 点赞钮真实计数 + 未点赞态', a1.likeCount === '3' && a1.pressed === 'false', a1.likeCount + ' / ' + a1.pressed);
@@ -382,7 +382,7 @@ async function main() {
       " loginCard: !!document.getElementById('hubLoginCard')," +
       " cloud: document.querySelectorAll('[data-cloud-id]').length," +
       " guest: document.querySelectorAll('[data-guest-like],[data-guest-repost],[data-guest-favorite],[data-guest-share]').length }; })()");
-    check('L1 版本 v0.2.58.27', l1.ver === 'v0.2.58.27', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.58.28', l1.ver === 'v0.2.58.28', 'ver=' + l1.ver);
     check('L1 登录引导卡在位 + 零云卡 + 零演示钮', l1.loginCard && l1.cloud === 0 && l1.guest === 0, JSON.stringify(l1));
 
     // 真帖 id：Node 侧直取线上帖表（hub 面已无云卡可点，帖页断言改直导航）

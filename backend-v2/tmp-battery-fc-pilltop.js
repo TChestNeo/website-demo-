@@ -129,11 +129,11 @@ function ok(name, cond, detail) {
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
-    ok('S1 site-config：FC v10.28.48.0 + 平滑折叠 changelog（折叠的过渡动画不顺畅/列表的背景能不能是白色的）+ rev 00348- + 站点恒 v0.2.58.27 + 旧 47.3 版本赋值锚零残留',
+    ok('S1 site-config：FC v10.28.48.0 + 平滑折叠 changelog（折叠的过渡动画不顺畅/列表的背景能不能是白色的）+ rev 00348- + 站点恒 v0.2.58.28 + 旧 47.3 版本赋值锚零残留',
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") !== -1 &&
       siteCfg.indexOf('折叠的过渡动画不顺畅') !== -1 &&
       siteCfg.indexOf('列表的背景能不能是白色的') !== -1 &&
-      siteCfg.indexOf('rev 00348-') !== -1 && siteCfg.indexOf('v0.2.58.27') !== -1 &&
+      siteCfg.indexOf('rev 00348-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1 &&
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.3';") === -1);
     ok('S2 编辑器页：两卡锚（placeCtxPillDots/fc-pill-fold/ctxPillRise/translateY(110%)/ctxPillFade/.asset-panel > .ctx-pill-dots/折叠门控 !important/药丸关窗 toggleCtxPill）在场 + 47.4 平滑折叠锚（fc-pill-fold-prep/ctxPillFall/ctxPillFadeOut/ctx-pill-exit/__pillCloseTimer/__foldTimer/finishHideContextMenu/pointer: coarse 过渡/translateY(-56px)/白底 #ffffff）在场 + 旧一体化锚（ctxPillIn/translateY(-110%)/ctx-collapsed）零残留 + flex-shrink 禁压保持 + 药丸钮/菜单首子挂载锚在场',
       editorHtml.indexOf('placeCtxPillDots(panel)') !== -1 &&

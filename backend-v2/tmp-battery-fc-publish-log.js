@@ -136,8 +136,8 @@ function ok(name, cond, detail) {
     // ── F0 静态锚 ──
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
-    ok('F1 site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点版本恒 v0.2.58.27',
-      siteCfg.indexOf('v10.28.52.0') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.27') !== -1);
+    ok('F1 site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点版本恒 v0.2.58.28',
+      siteCfg.indexOf('v10.28.52.0') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1);
     ok('F2 编辑器页静态锚：发布日志弹窗 DOM + 计数 0 / 320 + 确认发布/取消按钮',
       editorHtml.indexOf('id="publishLogModal"') !== -1 &&
       editorHtml.indexOf('id="pubLogInput"') !== -1 &&

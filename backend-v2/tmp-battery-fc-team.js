@@ -212,10 +212,10 @@ const CH_CARD_EXPR = "(function(){ var co = document.getElementById('channelOver
     sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
     sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.50.0 = ') === 1 &&
     sc('rev 00359-nfc') === 1 && sc('rev 00360-bk7') === 1 &&
-    sc("window.MN_SITE_VERSION = 'v0.2.58.27';") === 1 && sc("window.MN_SITE_VERSION = 'v0.2.58.25';") === 0,
+    sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 && sc("window.MN_SITE_VERSION = 'v0.2.58.25';") === 0,
     'fc51=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") + ' fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
     ' cl51=' + sc('// v10.28.51.1 = ') + ' r59=' + sc('rev 00359-nfc') + ' r60=' + sc('rev 00360-bk7') +
-    ' v26=' + sc("window.MN_SITE_VERSION = 'v0.2.58.27';"));
+    ' v26=' + sc("window.MN_SITE_VERSION = 'v0.2.58.28';"));
 
   const fc = norm(await (await fetch(BASE + FC_URL_PATH)).text());
   const fcLines = fc.split('\n');

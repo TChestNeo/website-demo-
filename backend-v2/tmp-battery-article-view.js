@@ -109,7 +109,7 @@ const FIXTURE_LIST = { articles: [
   { id: 'ART-CLOUD-1', title: 'Cloud Constitution', status: 'published', authorId: 'USR-000042', createdAt: '2026-09-14T10:00:00.000Z', updatedAt: '2026-09-14T10:00:00.000Z' },
   { id: 'ART-PENDING-1', title: 'Draft Act', status: 'pending', authorId: 'USR-000042', createdAt: '2026-09-13T08:30:00.000Z', updatedAt: '2026-09-13T08:30:00.000Z' }
 ] };
-// v0.2.58.27 Round 46：落地页清单=FC_OVERVIEW.articles 真聚合（A 段罐头——与 FIXTURE_LIST 同源映射）
+// v0.2.58.28 Round 46：落地页清单=FC_OVERVIEW.articles 真聚合（A 段罐头——与 FIXTURE_LIST 同源映射）
 const FIX_OVERVIEW = {
   stats: { followers: 2, following: 1, articles: 2, articlesPublished: 1, articleViews: 0, articleLikes: 0,
     articleFavorites: 0, articleShares: 0, posts: 0, postViews: 0, postLikes: 0, postFavorites: 0, postShares: 0,
@@ -126,7 +126,7 @@ const FIX_OVERVIEW = {
   media: [],
   posts: []
 };
-// v0.2.58.27 Round 46：fluidcanvas.html 首访 demo 种子写入块已撤（假数据全撤钦定）——编辑器
+// v0.2.58.28 Round 46：fluidcanvas.html 首访 demo 种子写入块已撤（假数据全撤钦定）——编辑器
 // ?article= 兜底仍读 slati_demo_article_content（云端 404 → 本地样例），F 段电池自行种入
 // ART-001 原样例（f0e71a7 v0.2.58.25 字节忠实：content + flag + text 三卡）。
 const DEMO_ART_001 = {
@@ -184,8 +184,8 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   const main = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas.html'), 'utf8');
   const sconf = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   const editor = fs.readFileSync(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'), 'utf8');
-  ok('F0-1 版本双线 v0.2.58.27 / v10.28.48.0（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块',
-    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.27';") !== -1 &&
+  ok('F0-1 版本双线 v0.2.58.28 / v10.28.48.0（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块',
+    sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.28';") !== -1 &&
     sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") !== -1 &&
     sconf.indexOf('00276-nnx') !== -1 &&
     sconf.indexOf('文章查看器') !== -1 && sconf.indexOf('提交审核') !== -1);
@@ -251,7 +251,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
       source: 'try{localStorage.setItem("slati_session", \'{"loggedIn":true}\');}catch(e){}'
     });
-    // v0.2.58.27：落地页 cloudMode=isLoggedIn()&&USR- 前缀——单编码 session（storage.js 单次 JSON.parse）
+    // v0.2.58.28：落地页 cloudMode=isLoggedIn()&&USR- 前缀——单编码 session（storage.js 单次 JSON.parse）
     // + fluidcanvas.html 专属 slati_user 种子（编辑器页路径不含 'fluidcanvas.html' 子串，天然豁免）
     await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
       source: 'try{(function(){ if (location.pathname.indexOf("fluidcanvas.html") !== -1) { localStorage.setItem("slati_user", JSON.stringify({ id: "USR-000042", displayName: "Neo", citizenId: "CIT-000042", avatarUrl: null })); } })();}catch(e){}'

@@ -87,7 +87,7 @@ function ok(name, cond, detail) {
   else { FAIL++; console.log('  ❌ ' + name + (detail ? '  ' + detail : '')); }
 }
 
-// F8（v0.2.58.27 Round 46）：落地页清单=FC_OVERVIEW 真数据——/api/fc/overview 罐头
+// F8（v0.2.58.28 Round 46）：落地页清单=FC_OVERVIEW 真数据——/api/fc/overview 罐头
 // （published+draft 各 1：Edit/View title 按钮齐；stats/windows 全键防 '—' 渲染路径异常）
 const FIX_OVERVIEW = {
   stats: { followers: 0, following: 0, articles: 2, articlesPublished: 1, articleViews: 0, articleLikes: 0,
@@ -144,8 +144,8 @@ const FIX_OVERVIEW = {
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     const landingHtml = await (await fetch(BASE + '/pages/fluidcanvas.html')).text();
     const countAttr = (html, attr) => (html.match(new RegExp(attr + '=', 'g')) || []).length;
-    ok('F0a site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点版本恒 v0.2.58.27',
-      siteCfg.indexOf('v10.28.52.0') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.27') !== -1);
+    ok('F0a site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点版本恒 v0.2.58.28',
+      siteCfg.indexOf('v10.28.52.0') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1);
     ok('F0b 编辑器页字典三件套挂载 + data-i18n 规模（≥180 文本 + ≥40 title + ≥8 placeholder）',
       editorHtml.indexOf('assets/js/i18n.js') !== -1 &&
       editorHtml.indexOf('assets/i18n/common.i18n.js') !== -1 &&

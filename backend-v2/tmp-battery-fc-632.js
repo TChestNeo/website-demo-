@@ -1,4 +1,4 @@
-// tmp-battery-fc-632.js — v0.2.58.27 / FC v10.28.48.2 首页真数据+不透明卡片电池
+// tmp-battery-fc-632.js — v0.2.58.28 / FC v10.28.48.2 首页真数据+不透明卡片电池
 // 用户「能不能顺便把FC的所有并非用户手动创建的测试信息都去除掉，还有把所有FC的首页卡片从玻璃变成不透明的卡片？」
 // 验证：S 静态八面（版本/rev 双占位+58.25 零残留、后端 fc/overview 路由+注册、FC_OVERVIEW 数据层、
 //       假数据零残留（SIMULATED_FILES/simulateFilePick/pData/sData/Founding Charter/Alex Rivera/48.2K/
@@ -153,13 +153,13 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
 
   // S1 rev 口径：632 终态烘焙已填真值——00348-t8b/00349-hgc 各 ×2（633 轮改锚）
   ok('S1 site-config 版本双线 58.26/49.0 + rev 真值 ×2 + 58.25/48.1/48.2 赋值零残留',
-    cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.27';") === 1 &&
+    cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 &&
     cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 1 &&
     cnt(sconf, '00348-t8b') === 2 && cnt(sconf, '00349-hgc') === 2 &&
     cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.25';") === 0 &&
     cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") === 0 &&
     cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") === 0,
-    '58.26=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.27';") + ' 49.0=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") +
+    '58.26=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.28';") + ' 49.0=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") +
     ' 00348-t8b=' + cnt(sconf, '00348-t8b') + ' 00349-hgc=' + cnt(sconf, '00349-hgc') +
     ' 58.25=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.25';") +
     ' 48.1=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") +

@@ -178,8 +178,8 @@ function runStatic() {
   const i18n = fs.readFileSync(path.join(DOCS, 'assets', 'i18n', 'community-hub.i18n.js'), 'utf8');
   const c = (s, a) => s.split(a).length - 1;
 
-  // F1 site-config：58.26 恰 15（版本行抬 58.27 后 −1：49.0 条目头/正文+49.1 条目头/正文+49.2 条目头/正文+50.0 条目头/正文+51.0 条目头/正文+51.1 条目正文+52.0 条目正文）+ 58.23 历史条目保留 + rev 占位双锚
-  check('F1 site-config v0.2.58.26 恰 15 处（640 轮版本行抬 58.27 −1）', c(cfg, 'v0.2.58.26') === 15, 'n=' + c(cfg, 'v0.2.58.26'));
+  // F1 site-config：58.26 恰 15（版本行抬 58.28 后 −1：49.0 条目头/正文+49.1 条目头/正文+49.2 条目头/正文+50.0 条目头/正文+51.0 条目头/正文+51.1 条目正文+52.0 条目正文）+ 58.23 历史条目保留 + rev 占位双锚
+  check('F1 site-config v0.2.58.26 恰 15 处（640 轮版本行抬 58.28 −1）', c(cfg, 'v0.2.58.26') === 15, 'n=' + c(cfg, 'v0.2.58.26'));
   check('F1 site-config 58.23 历史条目保留 ×1', c(cfg, 'v0.2.58.23') === 1, 'n=' + c(cfg, 'v0.2.58.23'));
   check('F1 rev 占位双锚（00348-XXX + 00349-??? 各 2，部署后终态同数）', c(cfg, 'rev 00348-') === 2 && c(cfg, 'rev 00349-') === 2, c(cfg, 'rev 00348-') + ' / ' + c(cfg, 'rev 00349-'));
 
@@ -450,7 +450,7 @@ async function main() {
       " guest: document.querySelectorAll('[data-guest-like],[data-guest-repost],[data-guest-favorite],[data-guest-share]').length," +
       " composer: !!document.getElementById('postComposer')," +
       " disc: document.getElementById('discoveryList').textContent.indexOf('登录后探索话题与频道') !== -1 }; })()");
-    check('L1 版本 v0.2.58.27', l1.ver === 'v0.2.58.27', 'ver=' + l1.ver);
+    check('L1 版本 v0.2.58.28', l1.ver === 'v0.2.58.28', 'ver=' + l1.ver);
     check('L1 访客=登录引导卡 + 零云卡零演示签名零 composer + 发现引导行', l1 && l1.loginCard && l1.cloud === 0 && l1.guest === 0 && !l1.composer && l1.disc, JSON.stringify(l1));
     await t.evalJs("document.querySelector('[data-tab=\"topic\"]').click()");
     await sleep(200);

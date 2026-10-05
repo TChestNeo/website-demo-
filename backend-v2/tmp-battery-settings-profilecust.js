@@ -1,4 +1,4 @@
-// tmp-battery-settings-profilecust.js — v0.2.58.27 设置弹窗资料区头像/横幅三层订阅门禁电池（58.21 母本 + S10-S12 新段 + 58.25 裁切弹窗）
+// tmp-battery-settings-profilecust.js — v0.2.58.28 设置弹窗资料区头像/横幅三层订阅门禁电池（58.21 母本 + S10-S12 新段 + 58.25 裁切弹窗）
 // 用户「横幅的从图库中选择和上传图片只限于基础订阅项；动图要高级订阅；没有订阅的只能调整横幅的单色和渐变颜色；
 //   图库弹窗大点；被锁按钮用金色罩子盖住而不是点击后才出现提示反馈」
 // 钦定：①两处一起改（设置弹窗+资料页编辑弹窗同口径）②免费层=扩展预设色卡（6 玻璃+6 单色/黑白系=13 格点选即存
@@ -199,10 +199,10 @@ function ok(name, cond, detail) {
     const sbSrc = await get('/assets/js/sidebar.js');
     const comI18n = await get('/assets/i18n/common.i18n.js');
     ok('S0a site-config：58.26 赋值 1 + 58.21 赋值零残留 + changelog 标题 58.26 1 + rev 00348-/00349- 各 2 + FC 49.0 1/48.2 赋值零残留',
-      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.27'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.21'") === 0 &&
-      cnt(siteSrc, '// v0.2.58.27 = ') === 1 && cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2 &&
+      cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.21'") === 0 &&
+      cnt(siteSrc, '// v0.2.58.28 = ') === 1 && cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2 &&
       cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") === 1 && cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2'") === 0,
-      '58.26=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.27'") + ' r48=' + cnt(siteSrc, '00348-') + ' r49=' + cnt(siteSrc, '00349-') +
+      '58.26=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") + ' r48=' + cnt(siteSrc, '00348-') + ' r49=' + cnt(siteSrc, '00349-') +
       ' fc49=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.0'") + ' fc482=' + cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2'"));
     ok('S0b settings-modal 控件件：六 id 族（avatarBtn/libBtn 各 2、avatarPreview 4（58.25 wrapper+applyCrop+2）、bannerPreview 6（58.25 内嵌 img+applyCrop+2）、upload/lib/remove 2/2/4、file ×2 各、avatarUpgradeLink ×3、bannerUpgradeLink ×4）+ sub-locked ×4 + stUpload ×5 + stPickFromLibrary ×3 + stRawMergeUser ×7（58.25 连带 crop 合并+2）+ bannerUrl: null ×2 + slati_avatar_sync ×4 + toast 件 ×2 + 58.25 重裁钮 ×2 各 + mn-crop-stage ×5',
       cnt(setSrc, 'settingsAvatarBtn') === 2 && cnt(setSrc, 'settingsAvatarPreview') === 4 && cnt(setSrc, 'settingsAvatarLibBtn') === 2 &&
