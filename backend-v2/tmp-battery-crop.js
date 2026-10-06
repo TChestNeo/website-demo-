@@ -334,7 +334,7 @@ const VIDEO_TO_INPUT_JS = (selector) => `(function(){ return (${RECORD_BODY})().
     ok('S0a site-config：58.25 赋值 1 + changelog 1 + rev 00348-/00349- 各 2（站点+FC 双条目）+ FC 48.1 赋值 1 + MN_CompressVideo/MN_VideoCap 各 1',
       cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") === 1 && cnt(siteSrc, '// v0.2.58.28 = ') === 1 &&
       cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2 &&
-      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.54.0'") === 1 &&
+      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.55.0'") === 1 &&
       cnt(siteSrc, 'MN_CompressVideo') === 1 && cnt(siteSrc, 'MN_VideoCap') === 2,
       'r40=' + cnt(siteSrc, '00348-') + ' r41=' + cnt(siteSrc, '00349-'));
     ok('S0b settings-modal 58.25 件：window.MN_CropDialog ×2 + MN_CropDialog.open ×4 + applyCrop ×8 + data-crop ×3 + mn-crop-stage ×5 + windowFromZoom ×3 + stDoUpload ×5 + 重裁钮 ×2×2 + settings-banner-img ×7 + settings-banner-video ×7 + stIsVideoUrl ×3 + vp9 ×1 + captureStream ×2 + MN_CompressVideo ×1 + MN_VideoCap ×2 + mnVideoCap ×3 + height: 144px ×1 + 96px 零残留',
