@@ -174,7 +174,7 @@ const FIXED_EXPR = "(function(){ var gc = document.getElementById('gridCanvas');
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     ok('F1 site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点版本恒 v0.2.58.28',
-      siteCfg.indexOf('v10.28.53.0') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1);
+      siteCfg.indexOf('v10.28.54.0') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1);
     ok('F2 编辑器页静态锚：.grid-canvas width:max-content（画布盒全覆盖 115 列）+ computeCols preset 感知（49.0）',
       editorHtml.indexOf('width: max-content') !== -1 && /function computeCols\(\)[\s\S]{0,140}return \(p && p\.cols\) \? p\.cols : 115;/.test(editorHtml));
     ok('F3 编辑器页静态锚：zoomChip 按钮 + window.setViewZoom/resetViewZoom 导出',

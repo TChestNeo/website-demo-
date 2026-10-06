@@ -1,4 +1,4 @@
-// tmp-battery-fc-edgemask.js — v10.28.53.0 AI 边缘 Mask 化+图片与边缘同步勾选+边缘外扩电池（本地工作树）
+// tmp-battery-fc-edgemask.js — v10.28.54.0 AI 边缘 Mask 化+图片与边缘同步勾选+边缘外扩电池（本地工作树）
 //   S 静态：编辑器 13 锚（expandClipPct/CUSTOM_EDGE_EXPAND/--card-mask-clip/dataset.edgeMask/勾选节链/clipRaw）
 //     （行计数口径=实测 grep -cF）；site-config 53.0 赋值+52.5 零残留+changelog 头+rev 00379-/00380-；
 //     i18n fc.edge.maskSync ×12；
@@ -174,7 +174,7 @@ const LIB_EXPR = "(function(){ try { return JSON.parse(localStorage.getItem('sla
   const edLines = ed.split('\n');
   const c = (a) => edLines.filter((l) => l.includes(a)).length;
   const ED_ANCHORS = [
-    ['function expandClipPct', 1], ['window.expandClipPct', 1], ['CUSTOM_EDGE_EXPAND', 2],
+    ['function expandClipPct', 1], ['window.expandClipPct', 1], ['CUSTOM_EDGE_EXPAND', 4],
     ['--card-mask-clip', 5], ['dataset.edgeMask', 10], ['fcEdgeMaskSec', 2], ['fcEdgeMaskSync', 3],
     ['setEdgeMaskSync', 3], ['renderEdgeMaskSec', 3], ['clipRaw', 4], ['expandClipPct(e.clip', 1],
     ['function customEdgeById', 1], ['function customEdgeRecipe', 1],
@@ -186,12 +186,12 @@ const LIB_EXPR = "(function(){ try { return JSON.parse(localStorage.getItem('sla
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
   ok('S2 site-config：53.0 在位 + 52.5 赋值零残留 + changelog 头 53.0/52.5 各 ×1 + rev 00379-/00380- 各 ×1 + 站点恒 58.28',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 0 &&
-    sc('// v10.28.53.0 = ') === 1 && sc('// v10.28.52.5 = ') === 1 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.54.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 0 &&
+    sc('// v10.28.54.0 = ') === 1 && sc('// v10.28.52.5 = ') === 1 &&
     sc('rev 00379-') === 1 && sc('rev 00380-') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
-    'fc53=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") + ' fc525=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") +
-    ' cl53=' + sc('// v10.28.53.0 = ') + ' cl525=' + sc('// v10.28.52.5 = ') +
+    'fc53=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.54.0';") + ' fc525=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") +
+    ' cl53=' + sc('// v10.28.54.0 = ') + ' cl525=' + sc('// v10.28.52.5 = ') +
     ' r79=' + sc('rev 00379-') + ' r80=' + sc('rev 00380-') +
     ' v28=' + sc("window.MN_SITE_VERSION = 'v0.2.58.28';"));
 
