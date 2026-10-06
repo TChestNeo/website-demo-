@@ -148,11 +148,11 @@ const TOAST_EXPR = "(function(){ var t = document.getElementById('toast');" +
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
   ok('S1 site-config：51.1 赋值 ×1 + 51.0 赋值零残留 + changelog 头 51.1/51.0/50.0 各 ×1 + rev 占位/历史各 ×1 + 站点恒 58.26',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.55.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") === 0 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.56.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") === 0 &&
     sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.51.0 = ') === 1 && sc('// v10.28.50.0 = ') === 1 &&
     sc('rev 00361-7vk') === 1 && sc('rev 00362-fdj') === 1 && sc('rev 00359-nfc') === 1 && sc('rev 00360-bk7') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
-    'fc511=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.55.0';") + ' fc510=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") +
+    'fc511=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.56.0';") + ' fc510=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.0';") +
     ' cl511=' + sc('// v10.28.51.1 = ') + ' r61=' + sc('rev 00361-7vk') + ' q62=' + sc('rev 00362-fdj'));
 
   const ed = norm(await (await fetch(BASE + EDITOR_URL_PATH)).text());

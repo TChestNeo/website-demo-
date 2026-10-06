@@ -115,7 +115,7 @@ async function main() {
   ok('S1b site-config：changelog 头 58.28 在 58.26 前 + 用户原话 ×1 + rev 终态 00365-6zb/00366-2jw 各 ×1（锚改真值）+ FC 52.1 ×1',
     sc.indexOf('// v0.2.58.28 = ') !== -1 && sc.indexOf('// v0.2.58.28 = ') < sc.indexOf('// v0.2.58.26 = ') &&
     c(sc, '那个在个人主页') === 1 && c(sc, 'rev 00365-6zb') === 1 && c(sc, 'rev 00366-2jw') === 1 &&
-    c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.55.0';") === 1,
+    c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.56.0';") === 1,
     'head=' + sc.indexOf('// v0.2.58.28 = ') + ' q=' + c(sc, '那个在个人主页') + ' r=' + c(sc, 'rev 00365-6zb') + '/' + c(sc, 'rev 00366-2jw'));
   const css = fs.readFileSync(path.join(DOCS, 'assets/css/ethereal.css'), 'utf8');
   ok('S2a ethereal.css：--sidebar-bg 用法 3→4 处（dropdown+全站卡片+侧栏模块卡面+折叠态 user-module 覆盖）',

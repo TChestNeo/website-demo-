@@ -133,11 +133,11 @@ const align = (n, pillOff, pillOffW) => Math.abs(n.bgLeft - pillOff) < 1 && Math
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
   ok('S1 site-config：52.3 赋值 ×1 + 52.0 赋值零残留 + changelog 头 52.3/52.0 各 ×1 + rev 真值 00369-gmh/00370-8g7 各 ×1（642 终态填真值口径）+ 站点恒 58.28',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.55.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 0 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.56.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") === 0 &&
     sc('// v10.28.52.3 = ') === 1 && sc('// v10.28.52.0 = ') === 1 &&
     sc('00369-gmh') === 1 && sc('00370-8g7') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
-    'fc522=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.55.0';") +
+    'fc522=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.56.0';") +
     ' fc520=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.0';") +
     ' cl522=' + sc('// v10.28.52.3 = ') + ' q69=' + sc('00369-gmh') + ' q70=' + sc('00370-8g7'));
 
