@@ -237,11 +237,11 @@ const SEED_PORTRAIT = {
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
   ok('S3 site-config：49.1 在位 + 48.2 赋值零残留 + changelog 头各 ×1 + rev 终态真值各 ×1 + 站点恒 58.26',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") === 0 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") === 0 &&
     sc('// v10.28.49.0 = ') === 1 && sc('// v10.28.48.2 = ') === 1 &&
     sc('rev 00350-6vv') === 1 && sc('rev 00351-5mm') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 && sc("window.MN_SITE_VERSION = 'v0.2.58.25';") === 0,
-    'fc49=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") + ' fc48=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") +
+    'fc49=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") + ' fc48=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") +
     ' cl49=' + sc('// v10.28.49.0 = ') + ' cl48=' + sc('// v10.28.48.2 = ') +
     ' r50=' + sc('rev 00350-6vv') + ' q51=' + sc('rev 00351-5mm') +
     ' v26=' + sc("window.MN_SITE_VERSION = 'v0.2.58.28';") + ' v25=' + sc("window.MN_SITE_VERSION = 'v0.2.58.25';"));
@@ -794,9 +794,10 @@ const SEED_PORTRAIT = {
     fail++;
     try { cdp && cdp.close(); } catch (e2) {}
   }
-  try { spawn('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {}
+  try { require('child_process').spawnSync('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {}
   try { server.close(); } catch (e) {}
 
   console.log('\n═══ ' + (fail === 0 ? 'ALL GREEN' : 'FAILED') + ' — ' + pass + '/' + (pass + fail) + ' ═══');
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(fail === 0 ? 0 : 1);
 })();

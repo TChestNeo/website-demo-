@@ -446,7 +446,7 @@ async function main() {
   chrome.kill();
   if (!LIVE) server.close();
   await sleep(300);
-  try { fs.rmSync(USER_DATA, { recursive: true, force: true }); } catch (e) {}
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
 
   console.log('\n结果：' + pass.length + ' 通过 / ' + fail.length + ' 失败');
   if (fail.length) { console.log('失败项：'); fail.forEach(f => console.log(f)); }

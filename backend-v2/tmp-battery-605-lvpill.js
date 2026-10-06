@@ -114,7 +114,7 @@ const rgbSum = (s) => {
 
   ok('F1 静态：58.16 赋值 + FC 48.0 在位 + changelog 新条目标题（58.15 悬停卡标题按历史前缀保留）+用户原话三片断（滑鼠靠近/向右滑出/显示等级信息和经验条）+ rev 00348-/00349- 各 1（58.21 单 changelog 条目）+ 58.14 赋值零残留 + 58.14 标题与原话保留 + 58.13/58.12/58.11/58.10/58.9/58.8/58.7/58.6/58.5/58.4/58.3/58.2/58.1 历史条目标题保留',
     sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.28';") !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") !== -1 &&
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") !== -1 &&
     sconfSrc.indexOf('v0.2.58.15 = 折叠侧栏等级药丸悬停放大+右侧滑出等级信息卡') !== -1 &&
     sconfSrc.indexOf('滑鼠靠近') !== -1 &&
     sconfSrc.indexOf('向右滑出') !== -1 &&
@@ -687,4 +687,5 @@ const rgbSum = (s) => {
 
   console.log('\nlvpill 电池：' + PASS + ' ✅ / ' + FAIL + ' ❌');
   process.exit(FAIL ? 1 : 0);
+(() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
 })().catch((e) => { console.error('电池崩溃：' + (e && e.stack || e)); process.exit(1); });

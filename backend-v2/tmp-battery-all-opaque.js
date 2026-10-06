@@ -89,7 +89,7 @@ console.log('═══ S. 静态巡检 ═══');
   ok('S11 site-config 版本 = v0.2.55.0', s.indexOf("window.MN_SITE_VERSION = 'v0.2.58.28';") !== -1);
   ok('S12 site-config changelog 含 v0.2.55.0 条目 + 用户原话',
     s.indexOf('v0.2.55.0') !== -1 && s.indexOf('能不能把全部变成不透明的卡片') !== -1);
-  ok('S13 FC v10.28.36.1 保持', s.indexOf("'v10.28.52.5'") !== -1);
+  ok('S13 FC v10.28.36.1 保持', s.indexOf("'v10.28.53.0'") !== -1);
   const prem = read('docs/pages/premium.html');
   const auth = read('docs/signup-and-login.html');
   ok('S14 豁免卡零触碰锚（plan-card 深色 !important 仍在 + auth-card 仍在）',
@@ -174,7 +174,7 @@ async function launchChrome(suffix) {
   await cdp.connect();
   await cdp.send('Page.enable'); await cdp.send('Runtime.enable');
   await cdp.send('Network.setBlockedURLs', { urls: ['*fonts.googleapis.com*', '*fonts.gstatic.com*', '*favicon*'] });
-  const cleanup = () => { try { spawn('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {} };
+  const cleanup = () => { try { require('child_process').spawnSync('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {} };
   return { cdp, cleanup, chrome };
 }
 
@@ -409,5 +409,6 @@ const SNAP_CARDS = `(function(){
   } catch (e) { fail++; console.log('  ❌ B6 段异常：' + e.message); }
 
   console.log('\nall-opaque 电池：' + pass + ' 通过 / ' + fail + ' 失败');
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(fail ? 1 : 0);
 })();

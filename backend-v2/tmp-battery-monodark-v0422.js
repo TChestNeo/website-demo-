@@ -138,7 +138,7 @@ const SCAN = `(function(){
   const sconfSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   ok('F1 版本双线 v0.2.54.0 / v10.28.36.1 + 注释块（49.2→49.3 白底白字第二轮·按钮）',
     sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.28';") !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") !== -1 &&
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") !== -1 &&
     sconfSrc.indexOf('黑白主题') !== -1 && sconfSrc.indexOf('深色模式背景') !== -1 &&
     sconfSrc.indexOf('白底白字') !== -1 && sconfSrc.indexOf('msg-acc') !== -1 &&
     sconfSrc.indexOf('尤其是按钮') !== -1);
@@ -331,5 +331,6 @@ const SCAN = `(function(){
   server.close();
   console.log('');
   console.log(FAIL === 0 ? '🎉 全部通过 ' + PASS + '/' + PASS : '💔 失败 ' + FAIL + ' / 共 ' + (PASS + FAIL));
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(FAIL === 0 ? 0 : 1);
 })();

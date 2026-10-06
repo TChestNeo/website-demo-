@@ -209,11 +209,11 @@ const CH_CARD_EXPR = "(function(){ var co = document.getElementById('channelOver
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
   ok('S1 site-config：51.1 在位+50.0 赋值零残留+changelog 头各 ×1+rev 真值各 ×1（637 轮已填真值，占位锚陈旧）+站点恒 58.26',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
     sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.50.0 = ') === 1 &&
     sc('rev 00359-nfc') === 1 && sc('rev 00360-bk7') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 && sc("window.MN_SITE_VERSION = 'v0.2.58.25';") === 0,
-    'fc51=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") + ' fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
+    'fc51=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") + ' fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
     ' cl51=' + sc('// v10.28.51.1 = ') + ' r59=' + sc('rev 00359-nfc') + ' r60=' + sc('rev 00360-bk7') +
     ' v26=' + sc("window.MN_SITE_VERSION = 'v0.2.58.28';"));
 
@@ -525,6 +525,7 @@ const CH_CARD_EXPR = "(function(){ var co = document.getElementById('channelOver
   } catch (e) {
     console.log('💔 电池崩溃: ' + e.message);
     if (cdp && cdp.errs && cdp.errs.length) console.log('  异常: ' + cdp.errs.slice(0, 5).join(' | '));
+    (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
     process.exit(1);
   } finally {
     try { cdp && cdp.close(); } catch (e) {}

@@ -196,11 +196,11 @@ const AVATAR_EXPR = "(function(){ var a = document.querySelector('#profileHeader
   const scSrc = await fetchSrc('/assets/js/site-config.js');
   const sc = mk(scSrc);
   ok('S1 site-config：52.1 赋值 ×1 + 51.1 赋值零残留 + changelog 头 52.1/51.1/51.0 各 ×1 + rev 终态 00363-ksq/00364-wdg 各 ×1（640 轮锚改真值=639 终态口径）+ 站点 58.28',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") === 0 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") === 0 &&
     sc('// v10.28.52.3 = ') === 1 && sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.51.0 = ') === 1 &&
     sc('00363-ksq') === 1 && sc('00364-wdg') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
-    'fc520=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") + ' fc511=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") +
+    'fc520=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") + ' fc511=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") +
     ' cl520=' + sc('// v10.28.52.3 = ') + ' r63=' + sc('00363-ksq') + ' q64=' + sc('00364-wdg'));
 
   const stSrc = await fetchSrc('/assets/js/storage.js');
@@ -513,8 +513,9 @@ const AVATAR_EXPR = "(function(){ var a = document.querySelector('#profileHeader
   const errs = rawErrs.filter(e => !noise.test(e));
   ok('E 零异常（' + rawErrs.length + ' 原始 / ' + errs.length + ' 噪声后）', errs.length === 0, errs.slice(0, 5).join(' || '));
   try { cdp && cdp.close(); } catch (e) {}
-  try { spawn('taskkill', ['/pid', String(chrome.pid), '/t', '/f'], { stdio: 'ignore' }); } catch (e) {}
+  try { require('child_process').spawnSync('taskkill', ['/pid', String(chrome.pid), '/t', '/f'], { stdio: 'ignore' }); } catch (e) {}
 
   console.log('🎉 ' + pass + ' ✅ / ' + fail + ' ❌');
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(fail === 0 ? 0 : 1);
 })();

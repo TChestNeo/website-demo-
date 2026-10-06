@@ -121,7 +121,7 @@ const AVATAR_RING = "rgb(247, 249, 251)";
     sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.28';") !== -1 &&
     sconfSrc.indexOf('用户横幅与头像不再受网页主题影响') !== -1 &&
     sconfSrc.indexOf('问询钦定「两处都要」') !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") !== -1);
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") !== -1);
   const msgAvLines = msgSrc.split('\n').filter(l => l.indexOf('msg-avatar') !== -1 && l.indexOf('style=') !== -1);
   ok('F11 messages 头像族 11 个 msg-avatar 类 + 头像行零 var(--color-) 残留',
     countOcc(msgSrc, 'msg-acc msg-avatar') === 11 &&
@@ -270,6 +270,7 @@ const AVATAR_RING = "rgb(247, 249, 251)";
     await cdp.close();
   } catch (e) {
     console.error('电池异常: ' + e.message);
+    (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
     process.exitCode = 2;
   } finally {
     chrome.kill();

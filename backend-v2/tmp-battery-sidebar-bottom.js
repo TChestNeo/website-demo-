@@ -175,8 +175,9 @@ const GEOM = `(function () {
     fail++;
     console.error('  ❌ 浏览器阶段异常：', e && e.message);
   }
-  try { spawn('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {}
+  try { require('child_process').spawnSync('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {}
   server.close();
   console.log('\nsidebar-bottom：' + pass + ' 通过 / ' + fail + ' 失败');
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(fail ? 1 : 0);
 })();

@@ -105,7 +105,7 @@ function ok(name, cond, detail) {
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     const i18nTxt = await (await fetch(BASE + '/assets/i18n/fluidcanvas.i18n.js')).text();
     ok('S1 site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点恒 v0.2.58.28 + 旧 47.3 版本锚零残留',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") !== -1 &&
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") !== -1 &&
       siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1 &&
       siteCfg.indexOf('v10.28.46.0 = 图库标签系统') !== -1 &&
       siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.47.3';") === -1);
@@ -409,5 +409,6 @@ function ok(name, cond, detail) {
   server.close();
   console.log('');
   console.log(FAIL === 0 ? '🎉 全部通过 ' + PASS + '/' + PASS + '  (fc-tags)' : '💔 失败 ' + FAIL + ' / 共 ' + (PASS + FAIL));
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(FAIL === 0 ? 0 : 1);
 })();

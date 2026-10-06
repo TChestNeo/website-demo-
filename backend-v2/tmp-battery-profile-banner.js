@@ -1269,4 +1269,5 @@ async function main() {
     check('L7 全程 0 console error', errs.length === 0, errs.slice(0, 3).join(' | '));
   }
 }
+(() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
 main().catch(e => { console.error('FATAL', e); process.exit(1); });

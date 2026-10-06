@@ -461,4 +461,5 @@ async function main() {
   }
 }
 
+(() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
 main().catch(e => { console.error('电池异常:', e.message); process.exit(2); });

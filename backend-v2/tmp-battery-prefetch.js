@@ -143,7 +143,7 @@ function ok(name, cond, detail) {
     ok('S0b site-config：58.23 赋值 1 + 58.22 赋值零残留 + changelog 标题 58.23 1 + rev 00348-/00349- 各 2（占位口径，部署后终态同数）+ FC 48.1',
       cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") === 1 && cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.22'") === 0 &&
       cnt(siteSrc, '// v0.2.58.28 = ') === 1 && cnt(siteSrc, '00348-') === 2 && cnt(siteSrc, '00349-') === 2 &&
-      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.52.5'") === 1,
+      cnt(siteSrc, "window.FLUIDCANVAS_VERSION = 'v10.28.53.0'") === 1,
       '23=' + cnt(siteSrc, "window.MN_SITE_VERSION = 'v0.2.58.28'") + ' r42=' + cnt(siteSrc, '00348-') + ' r43=' + cnt(siteSrc, '00349-'));
 
     const cdp = await connectCdp(CDP_PORT);
@@ -236,8 +236,9 @@ function ok(name, cond, detail) {
     console.error('💥 ' + (e.stack || e.message));
     FAIL++;
   }
-  try { spawn('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {}
+  try { require('child_process').spawnSync('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {}
   server.close();
   console.log('\n' + (FAIL ? ('🎉 PASS ' + PASS + ' / 💔 FAIL ' + FAIL) : ('🎉 全部通过 ' + PASS + '/' + PASS)));
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(FAIL === 0 ? 0 : 1);
 })();

@@ -154,12 +154,12 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   // S1 rev 口径：632 终态烘焙已填真值——00348-t8b/00349-hgc 各 ×2（633 轮改锚）
   ok('S1 site-config 版本双线 58.26/49.0 + rev 真值 ×2 + 58.25/48.1/48.2 赋值零残留',
     cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 &&
-    cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 1 &&
+    cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") === 1 &&
     cnt(sconf, '00348-t8b') === 2 && cnt(sconf, '00349-hgc') === 2 &&
     cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.25';") === 0 &&
     cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") === 0 &&
     cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.2';") === 0,
-    '58.26=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.28';") + ' 49.0=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") +
+    '58.26=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.28';") + ' 49.0=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") +
     ' 00348-t8b=' + cnt(sconf, '00348-t8b') + ' 00349-hgc=' + cnt(sconf, '00349-hgc') +
     ' 58.25=' + cnt(sconf, "window.MN_SITE_VERSION = 'v0.2.58.25';") +
     ' 48.1=' + cnt(sconf, "window.FLUIDCANVAS_VERSION = 'v10.28.48.1';") +
@@ -446,4 +446,5 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   // 总结行条件输出（FAIL>0 才印——舰队 runner 💔 计数口径：绿电池不得含 💔 字样）
   console.log(FAIL > 0 ? ('  PASS ' + PASS + ' / 💔 FAIL ' + FAIL) : ('🎉 全部通过 ' + PASS + '/' + PASS));
   process.exit(FAIL > 0 ? 1 : 0);
+(() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(profile, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
 })().catch(e => { console.error('电池崩: ' + e.stack); process.exit(1); });

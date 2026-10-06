@@ -86,6 +86,8 @@ class CDP {
 // ── 罐头形状 ──
 const RING = 'polygon(evenodd, 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 8% 8%, 92% 8%, 92% 92%, 8% 92%, 8% 8%)';
 const EDGE_CLIP = 'polygon(0% 0%, 100% 3%, 98% 97%, 3% 100%, 0% 0%)';
+const EXP_EDGE = 'polygon(-3% -3%, 103% 0.18%, 100.88% 99.82%, 0.18% 103%, -3% -3%)';
+const EXP_RING = 'polygon(evenodd, -3% -3%, 103% -3%, 103% 103%, -3% 103%, -3% -3%, 5.48% 5.48%, 94.52% 5.48%, 94.52% 94.52%, 5.48% 94.52%, 5.48% 5.48%)';
 const REPO_ROWS = [
   { id: 'EDG-000001', name: '锯齿星', kind: 'edge', clip: EDGE_CLIP, visibility: 'public', createdAt: '2026-10-01T10:00:00.000Z', ownerId: 'USR-000042', authorName: 'Neo' },
   { id: 'EDG-000002', name: '团队框', kind: 'border', clip: RING, visibility: 'team', createdAt: '2026-10-01T11:00:00.000Z', ownerId: 'USR-000043', authorName: 'Nia' }
@@ -276,11 +278,11 @@ const GETSCOPE_EXPR = "(function(){ return window.__edgeGetScope; })()";
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
   ok('S3 site-config：50.0 在位 + 49.2 赋值零残留 + changelog 头各 ×1 + rev 终态各 ×1 + 站点恒 58.26',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") === 0 &&
     sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.50.0 = ') === 1 &&
     sc('rev 00356-djq') === 1 && sc('rev 00357-sh8') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 && sc("window.MN_SITE_VERSION = 'v0.2.58.25';") === 0,
-    'fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") + ' fc49=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
+    'fc50=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") + ' fc49=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.50.0';") +
     ' cl50=' + sc('// v10.28.51.1 = ') + ' r56=' + sc('rev 00356-djq') + ' q57=' + sc('rev 00357-sh8') +
     ' v26=' + sc("window.MN_SITE_VERSION = 'v0.2.58.28';"));
 
@@ -513,7 +515,7 @@ const GETSCOPE_EXPR = "(function(){ return window.__edgeGetScope; })()";
       await sleep(400);
       const card = await cdp.evalJs(CARD_EXPR('T1'));
       ok('B7 应用 border 自定义：cardEdge custom:id + 类 + --card-clip RING + 背景保留 rgb + 边框透明 + 无外板',
-        card && card.edge === 'custom:' + ringId && card.cls === true && card.clip === RING &&
+        card && card.edge === 'custom:' + ringId && card.cls === true && card.clip === EXP_RING &&
         card.bg.indexOf('rgb(51, 102, 153') !== -1 && card.bc === 'rgba(0, 0, 0, 0)' && card.oe === '',
         JSON.stringify(card));
     }
@@ -526,7 +528,7 @@ const GETSCOPE_EXPR = "(function(){ return window.__edgeGetScope; })()";
       await sleep(400);
       const card = await cdp.evalJs(CARD_EXPR('T1'));
       ok('B8 应用 edge 自定义：--card-clip EDGE_CLIP + 背景清空 + 无外板 + 类在',
-        card && card.edge === 'custom:' + edgeId && card.cls === true && card.clip === EDGE_CLIP &&
+        card && card.edge === 'custom:' + edgeId && card.cls === true && card.clip === EXP_EDGE &&
         card.bg === '' && card.bgImg === 'none' && card.oe === '', JSON.stringify(card));
     }
 
@@ -562,7 +564,7 @@ const GETSCOPE_EXPR = "(function(){ return window.__edgeGetScope; })()";
       const card = await cdp.evalJs(CARD_EXPR('T1'));
       let L2 = await lib();
       ok('B10b reload 往返：卡仍 custom 类+clip RING + 库并回该条',
-        card && card.edge === 'custom:' + ringId && card.cls === true && card.clip === RING &&
+        card && card.edge === 'custom:' + ringId && card.cls === true && card.clip === EXP_RING &&
         L2.some(x => x.id === ringId), JSON.stringify({ card: card, ids: L2.map(x => x.id) }));
     }
 
@@ -604,7 +606,7 @@ const GETSCOPE_EXPR = "(function(){ return window.__edgeGetScope; })()";
         " return { edge: bg.dataset.cardEdge || '', clip: cs.getPropertyValue('--card-clip').trim(), cls: bg.classList.contains('card-edge-custom') }; })()");
       const t2 = await cdp.evalJs(CARD_EXPR('T2'));
       ok('B12 组模式：组背景 dataset custom:id + clip RING + 成员卡零改动',
-        gb && gb.edge === 'custom:' + ringId && gb.clip === RING && gb.cls === true &&
+        gb && gb.edge === 'custom:' + ringId && gb.clip === EXP_RING && gb.cls === true &&
         t2 && t2.edge === '', JSON.stringify({ gb: gb, t2: t2 && t2.edge }));
     }
 
@@ -633,7 +635,7 @@ const GETSCOPE_EXPR = "(function(){ return window.__edgeGetScope; })()";
         d.repo === 2 && row0 && row0.name === '锯齿星' && row0.author.indexOf('Neo') !== -1 && row0.mini === EDGE_CLIP &&
         clicked === true && t && t.text === '已添加并应用' &&
         L.length >= 1 && L[0].source === 'repo' && L[0].author === 'Neo' && L[0].name === '锯齿星' &&
-        card && card.edge.indexOf('custom:') === 0 && card.clip === EDGE_CLIP,
+        card && card.edge.indexOf('custom:') === 0 && card.clip === EXP_EDGE,
         JSON.stringify({ d: d.repo, row0: row0, t: t, L0: L[0] }));
     }
 
@@ -838,8 +840,9 @@ const GETSCOPE_EXPR = "(function(){ return window.__edgeGetScope; })()";
   const errs = rawErrs.filter(e => !noise.test(e));
   ok('E 零异常（' + rawErrs.length + ' 原始 / ' + errs.length + ' 噪声后）', errs.length === 0, errs.slice(0, 5).join(' || '));
   try { cdp && cdp.close(); } catch (e) {}
-  try { spawn('taskkill', ['/pid', String(chrome.pid), '/t', '/f'], { stdio: 'ignore' }); } catch (e) {}
+  try { require('child_process').spawnSync('taskkill', ['/pid', String(chrome.pid), '/t', '/f'], { stdio: 'ignore' }); } catch (e) {}
   server.close();
   console.log('🎉 ' + pass + ' ✅ / ' + fail + ' ❌');
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(fail === 0 ? 0 : 1);
 })();

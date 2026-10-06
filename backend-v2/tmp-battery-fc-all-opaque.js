@@ -176,7 +176,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
     const siteCfg = await (await fetch(BASE + '/assets/js/site-config.js')).text();
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n'); // CRLF 归一（多行锚）
     ok('S1 site-config：FC v10.28.48.0 + changelog 编辑器镶边玻璃全灭条目 + rev 00288- 占位 + 站点版本恒 v0.2.58.28',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") !== -1 &&
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") !== -1 &&
       siteCfg.indexOf('编辑器镶边玻璃全灭') !== -1 &&
       siteCfg.indexOf('00288-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1);
     ok('S2 编辑器头栏：铺 surface-container 不透明底 + 旧 16px 模糊写法零残留（门控死码配方除外）',
@@ -341,5 +341,6 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   console.log('│  🎉 ' + PASS + ' ✅ / ' + FAIL + ' ❌  (fc-all-opaque)  │');
   console.log('╰────────────────────────────────────╯');
   if (FAIL > 0) process.exit(1);
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   else process.exit(0);
 })();

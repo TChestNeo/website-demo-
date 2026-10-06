@@ -500,7 +500,7 @@ async function waitFor(cdp, expr, timeout, label) {
   } finally {
     try { chrome.kill(); } catch (e) {}
     server.close();
-    try { fs.rmSync(USER_DATA, { recursive: true, force: true }); } catch (e) {}
+    (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   }
   console.log('\n  ── 结果: ' + pass + '/' + (pass + fail) + ' 全绿' + (fail === 0 ? ' ✅' : ' ❌'));
   if (fail) process.exit(1);

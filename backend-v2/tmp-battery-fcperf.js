@@ -401,4 +401,5 @@ async function main() {
   process.exit(fail.length === 0 ? 0 : 1);
 }
 
+(() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
 main().catch(err => { console.error('电池崩了:', err); process.exit(2); });

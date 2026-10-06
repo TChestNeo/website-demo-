@@ -196,7 +196,7 @@ async function launchChrome(lang, injectSession, suffix) {
       source: 'try{localStorage.setItem("slati_session", ' + JSON.stringify(JSON.stringify({ loggedIn: true, user: { id: 'USR-000001', name: 'Neo', email: 'neo@mn.world', tier: 'premium' } })) + ');}catch(e){}'
     });
   }
-  const cleanup = () => { try { spawn('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {} };
+  const cleanup = () => { try { require('child_process').spawnSync('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {} };
   return { cdp, cleanup, chrome };
 }
 
@@ -361,5 +361,6 @@ async function launchChrome(lang, injectSession, suffix) {
 
   server.close();
   console.log('\ni18n：' + pass + ' 通过 / ' + fail + ' 失败');
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(fail ? 1 : 0);
 })();

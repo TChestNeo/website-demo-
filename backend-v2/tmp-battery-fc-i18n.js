@@ -145,7 +145,7 @@ const FIX_OVERVIEW = {
     const landingHtml = await (await fetch(BASE + '/pages/fluidcanvas.html')).text();
     const countAttr = (html, attr) => (html.match(new RegExp(attr + '=', 'g')) || []).length;
     ok('F0a site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点版本恒 v0.2.58.28',
-      siteCfg.indexOf('v10.28.52.5') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1);
+      siteCfg.indexOf('v10.28.53.0') !== -1 && siteCfg.indexOf('00348-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1);
     ok('F0b 编辑器页字典三件套挂载 + data-i18n 规模（≥180 文本 + ≥40 title + ≥8 placeholder）',
       editorHtml.indexOf('assets/js/i18n.js') !== -1 &&
       editorHtml.indexOf('assets/i18n/common.i18n.js') !== -1 &&
@@ -335,5 +335,6 @@ const FIX_OVERVIEW = {
   server.close();
   console.log('');
   console.log(FAIL === 0 ? '🎉 全部通过 ' + PASS + '/' + PASS : '💔 失败 ' + FAIL + ' / 共 ' + (PASS + FAIL));
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(FAIL === 0 ? 0 : 1);
 })();

@@ -135,7 +135,7 @@ function ok(name, cond, detail) {
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
     ok('S1 site-config 44.3 + rev 00293- 占位 + 站点恒 v0.2.58.28 + 编辑器覆盖层挂载/CSS 锚在位 + fc-touch.js 零改动（inEditableZone input 豁免复用）',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") !== -1 &&
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") !== -1 &&
       siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1 &&
       editorHtml.split("fi.className = 'card-upload-input'").length - 1 === 2 &&
       editorHtml.indexOf('avatar.replaceChildren(fi)') !== -1 &&
@@ -255,5 +255,6 @@ function ok(name, cond, detail) {
   server.close();
   console.log('');
   console.log(FAIL === 0 ? '🎉 全部通过 ' + PASS + '/' + PASS : '💔 失败 ' + FAIL + ' / 共 ' + (PASS + FAIL));
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(FAIL === 0 ? 0 : 1);
 })();

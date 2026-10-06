@@ -77,7 +77,7 @@ console.log('═══ S. 静态巡检 ═══');
     s.indexOf('v0.2.54.3 = 首页卡片背景换侧栏同款不透明底') !== -1 &&
     s.indexOf('能不能把首页的卡片背景都变成') !== -1);
   ok('S11 本轮后端零改动（v0.2.56.2 条目口径「GET /api/articles 已具备」）', s.indexOf('v0.2.58.28') !== -1 && s.indexOf('后端零改动（GET /api/articles 已具备）') !== -1);
-  ok('S12 FC v10.28.36.1 保持', s.indexOf("'v10.28.52.5'") !== -1);
+  ok('S12 FC v10.28.36.1 保持', s.indexOf("'v10.28.53.0'") !== -1);
 }
 
 // ── house CDP 骨架 ────────────────────────────────────────────────
@@ -155,7 +155,7 @@ async function launchChrome(suffix) {
   await cdp.connect();
   await cdp.send('Page.enable'); await cdp.send('Runtime.enable');
   await cdp.send('Network.setBlockedURLs', { urls: ['*fonts.googleapis.com*', '*fonts.gstatic.com*', '*favicon*'] });
-  const cleanup = () => { try { spawn('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {} };
+  const cleanup = () => { try { require('child_process').spawnSync('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch (e) {} };
   return { cdp, cleanup, chrome };
 }
 
@@ -250,5 +250,6 @@ const FACE_SNAP = `(function(){
   } catch (e) { fail++; console.log('  ❌ B2 段异常：' + e.message); }
 
   console.log('\nhome-bg 电池：' + pass + ' 通过 / ' + fail + ' 失败');
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(fail ? 1 : 0);
 })();

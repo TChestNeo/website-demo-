@@ -130,7 +130,7 @@ function ok(name, cond, detail) {
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
     ok('S1 site-config：FC v10.28.48.0 + 平滑折叠 changelog（折叠的过渡动画不顺畅/列表的背景能不能是白色的）+ rev 00348- + 站点恒 v0.2.58.28 + 旧 47.3 版本赋值锚零残留',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") !== -1 &&
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") !== -1 &&
       siteCfg.indexOf('折叠的过渡动画不顺畅') !== -1 &&
       siteCfg.indexOf('列表的背景能不能是白色的') !== -1 &&
       siteCfg.indexOf('rev 00348-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1 &&
@@ -372,5 +372,6 @@ function ok(name, cond, detail) {
   console.log('│  🎉 ' + PASS + ' ✅ / ' + FAIL + ' ❌  (fc-pilltop)      │');
   console.log('╰────────────────────────────────────╯');
   if (FAIL > 0) process.exit(1);
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   else process.exit(0);
 })();

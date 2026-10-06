@@ -405,6 +405,6 @@ function ok(name, cond, detail) {
   } finally {
     try { chrome.kill(); } catch (e) {}
     server.close();
-    try { fs.rmSync(USER_DATA, { recursive: true, force: true }); } catch (e) {}
+    (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   }
 })().catch(e => { console.error('FAIL:', e.message); process.exit(1); });

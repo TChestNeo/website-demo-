@@ -484,4 +484,5 @@ async function main() {
   process.exit(fail.length ? 1 : 0);
 }
 
+(() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
 main().catch(e => { console.error('电池崩溃:', e); process.exit(2); });

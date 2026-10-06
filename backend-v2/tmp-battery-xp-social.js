@@ -394,4 +394,5 @@ const norm = (s) => s.replace(/\r\n/g, '\n');
   }
   console.log('\n  ── 结果: ' + PASS + '/' + (PASS + FAIL) + (FAIL === 0 ? ' 全绿 ✅' : ' 有红 ❌'));
   process.exit(FAIL === 0 ? 0 : 1);
+(() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
 })().catch(e => { console.error('FATAL', e); process.exit(1); });

@@ -260,7 +260,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   ok('S11 site-config：v0.2.57.1 + changelog 文章前端条目 + FC v10.28.39.0',
     sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.28';") !== -1 &&
     sconf.indexOf('文章前端') !== -1 && sconf.indexOf('article_comments') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") !== -1);
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") !== -1);
 
   // ── v0.2.55.1 发布去重复 + 删除 ──
   const editor = read(path.join(DOCS, 'pages', 'fluidcanvas-editor.html'));
@@ -520,5 +520,6 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   server.close();
   console.log('');
   console.log(FAIL === 0 ? '🎉 全部通过 ' + PASS + '/' + PASS : '💔 失败 ' + FAIL + ' / 共 ' + (PASS + FAIL));
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(profile, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   process.exit(FAIL === 0 ? 0 : 1);
 })();

@@ -124,7 +124,7 @@ function ok(name, cond, detail) {
     const editorHtml = (await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text()).replace(/\r\n/g, '\n');
     const touchJs = await (await fetch(BASE + '/assets/js/fc-touch.js')).text();
     ok('S1 site-config：FC v10.28.48.0 + changelog iPad 触控适配条目 + rev 00293- 占位 + 站点恒 v0.2.58.28',
-      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") !== -1 &&
+      siteCfg.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.53.0';") !== -1 &&
       siteCfg.indexOf('iPad 触控适配') !== -1 &&
       siteCfg.indexOf('00293-') !== -1 && siteCfg.indexOf('v0.2.58.28') !== -1);
     ok('S2 fc-touch.js：本地可加载 + 粗指针门控/测试钩/守卫旗在位 + 编辑器页 script 标签在位',
@@ -341,5 +341,6 @@ function ok(name, cond, detail) {
   console.log('│  🎉 ' + PASS + ' ✅ / ' + FAIL + ' ❌  (fc-tablet)       │');
   console.log('╰────────────────────────────────────╯');
   if (FAIL > 0) process.exit(1);
+  (() => { for (let _i = 0; _i < 15; _i++) { try { fs.rmSync(USER_DATA, { recursive: true, force: true }); break; } catch (e) { const _t = Date.now(); while (Date.now() - _t < 200) {} } } })();
   else process.exit(0);
 })();

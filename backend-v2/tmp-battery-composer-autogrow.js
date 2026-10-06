@@ -405,7 +405,7 @@ async function main() {
     console.log(`════ composer 自适长电池完成：${passed}/${passed + failures.length} 通过 ════`);
     if (failures.length) { console.log('失败：', failures.join(' | ')); process.exit(1); }
   } finally {
-    try { spawn('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch {}
+    try { require('child_process').spawnSync('taskkill', ['/T', '/F', '/PID', String(chrome.pid)], { stdio: 'ignore' }); } catch {}
   }
 }
 main().catch((e) => { console.error('FATAL', e.message); process.exit(1); });
