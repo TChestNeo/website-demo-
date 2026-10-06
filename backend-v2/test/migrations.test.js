@@ -1,24 +1,30 @@
 'use strict';
 // 迁移 001-033：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
 
-const test = require('node:test');
+const { test, after } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const Database = require('better-sqlite3');
-const { openDb, migrate } = require('../src/db');
+const { openDb: _openDb, migrate } = require('../src/db');
+const openDbs = [];
+function openDb(p) { const db = _openDb(p); openDbs.push(db); return db; }
 
+const createdMigDirs = [];
 function tmpDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'mn2-mig-'));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'mn2-mig-'));
+  createdMigDirs.push(d);
+  return d;
 }
+after(() => { for (const db of openDbs) { try { db.close(); } catch (e) {} } for (const d of createdMigDirs) { try { fs.rmSync(d, { recursive: true, force: true }); } catch (e) {} } });
 
-test('迁移：user_version=33、66 表、角色/权限/平台种子齐整', () => {
+test('迁移：user_version=34、69 表、角色/权限/平台种子齐整', () => {
   const db = openDb(path.join(tmpDir(), 'a.sqlite'));
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 33);
-  // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 + 010 两 + 014 一 + 025 一 + 028 一 + 031 一 + 033 五 = 66（触发器不算表）
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 34);
+  // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 + 010 两 + 014 一 + 025 一 + 028 一 + 031 一 + 033 五 + 034 三 = 69（触发器不算表）
   const n = db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().n;
-  assert.strictEqual(n, 66);
+  assert.strictEqual(n, 69);
   // 角色 7、权限 42、矩阵基线（每角色授权数逐一断言 = 设计契约锁定）
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM roles').get().n, 7);
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM permissions').get().n, 42);
@@ -46,7 +52,7 @@ test('迁移：重复打开同库幂等（版本不再推进、无重复执行�
   const p = path.join(tmpDir(), 'b.sqlite');
   openDb(p);
   const db = openDb(p);
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 33);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 34);
 });
 
 test('迁移 005-009：社交/工单/知识库/审核/财务关键表与扩展列就位（D5/D6 口径）', () => {
@@ -151,7 +157,7 @@ test('迁移 017：following.users 显示名→id 引用 + 粉丝索引（v0.2.2
 
   migrate(db, srcDir); // 补跑 017-033
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 33);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 34);
   const rows = db.prepare('SELECT target_id FROM following WHERE user_id = ? ORDER BY target_type, target_id').all('F1');
   assert.deepStrictEqual(rows.map((r) => r.target_id), ['NAT-000001', 'U1'], '显示名→最早注册的 id；映射不到的行已删；nation 不动');
   assert.ok(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='index' AND name = 'idx_following_target'").get().n === 1, '粉丝反查索引就位');
@@ -236,7 +242,7 @@ test('迁移 022：遗留 pending 文章一律转 published（v0.2.46.1 直接�
 
   migrate(db, srcDir); // 补跑 022-033
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 33);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 34);
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000001'").get().status, 'published', '遗留 pending → published');
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000002'").get().status, 'published', '已发布不动');
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000003'").get().status, 'hidden', 'hidden/removed 不动（非发布态不该复活）');
@@ -296,7 +302,7 @@ test('迁移 026：citizen_id 统一 USR- 口径（v0.2.51.1 CIT→USR；无新�
 
   migrate(db, srcDir); // 补跑 026-033
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 33);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 34);
   assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000001'").get().citizen_id, 'USR-000001', '旧 CIT- 存量改写为 id');
   assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000002'").get().citizen_id, 'USR-000002', 'NULL 补齐为 id');
   assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000003'").get().citizen_id, 'USR-000003', '已一致不动');
