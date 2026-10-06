@@ -76,7 +76,7 @@ function ok(name, cond) {
   ok('site-config 58.0 历史条目保留', s.indexOf('v0.2.58.0 = 完整格子画布镜像') !== -1);
   const sj = read(path.join(DOCS, 'assets/js/sidebar.js'));
   ok('sidebar.js 53.3 历史注释保留', sj.indexOf('那个左侧菜单的底部背景能不能去掉') !== -1);
-  ok('FC v10.28.48.0 保持（零改动）', s.indexOf("'v10.28.62.2'") !== -1);
+  ok('FC v10.28.48.0 保持（零改动）', s.indexOf("'v10.28.62.3'") !== -1);
 }
 
 console.log('\nsidebar-light 巡检：' + pass + ' 通过 / ' + fail + ' 失败');
