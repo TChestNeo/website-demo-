@@ -113,7 +113,7 @@ function ok(name, cond, detail) {
     const editorHtml = await (await fetch(BASE + '/pages/fluidcanvas-editor.html')).text();
     const occ = (s, sub) => s.split(sub).length - 1;
     ok('S1 site-config：FC v10.28.48.0 + rev 00348- 占位 + 站点恒 v0.2.58.28 + 「做大些」在 changelog + 47.1 条目保留 + 旧赋值零残留',
-      siteCfg.indexOf('v10.28.61.0') !== -1 && siteCfg.indexOf('00348-') !== -1 &&
+      siteCfg.indexOf('v10.28.62.0') !== -1 && siteCfg.indexOf('00348-') !== -1 &&
       siteCfg.indexOf('v0.2.58.28') !== -1 && siteCfg.indexOf('做大些') !== -1 &&
       siteCfg.indexOf('v10.28.47.0 = 文字工具栏添加图像弹层图库同步') !== -1 &&
       siteCfg.indexOf("'v10.28.47.2';") === -1);
