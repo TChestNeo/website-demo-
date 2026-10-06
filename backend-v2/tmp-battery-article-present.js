@@ -163,7 +163,7 @@ const FETCH_STUB = 'try{(function(){ if (window.__slatiFetchStub) return; window
   ok('F0-2 版本 v0.2.58.28 + changelog（58.0 rev 00276-nnx + 57.1 rev 00274-xfl 保留）+ FC v10.28.48.0',
     sconf.indexOf("window.MN_SITE_VERSION = 'v0.2.58.28';") !== -1 &&
     sconf.indexOf('00276-nnx') !== -1 && sconf.indexOf('00274-xfl') !== -1 &&
-    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.59.0';") !== -1);
+    sconf.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.60.0';") !== -1);
   ok('F0-3 i18n 新键在场（article.tags.label/article.toc.title zh + zh-Hant 目錄）',
     i18n.indexOf("article.tags.label") !== -1 && i18n.indexOf("article.toc.title") !== -1 &&
     i18n.indexOf('目錄') !== -1);
