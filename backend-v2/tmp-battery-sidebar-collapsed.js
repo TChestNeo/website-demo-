@@ -109,9 +109,9 @@ async function main() {
   const sc = fs.readFileSync(path.join(DOCS, 'assets/js/site-config.js'), 'utf8');
   ok('S1a site-config：58.28 赋值 ×1 + 58.27 赋值零残留 + FC 52.1 ×1',
     c(sc, "window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 && c(sc, "window.MN_SITE_VERSION = 'v0.2.58.27';") === 0 &&
-    c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.56.0';") === 1,
+    c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.56.1';") === 1,
     '28=' + c(sc, "window.MN_SITE_VERSION = 'v0.2.58.28';") + ' 27=' + c(sc, "window.MN_SITE_VERSION = 'v0.2.58.27';") +
-    ' fc=' + c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.56.0';"));
+    ' fc=' + c(sc, "window.FLUIDCANVAS_VERSION = 'v10.28.56.1';"));
   ok('S1b site-config：changelog 头 58.28 在 58.27 在 58.26 前 + 新轮原话 ×1 + rev 00367-4wl/00368-gmw 各 ×1（641 终态填真值口径）',
     sc.indexOf('// v0.2.58.28 = ') !== -1 &&
     sc.indexOf('// v0.2.58.28 = ') < sc.indexOf('// v0.2.58.27 = ') &&
