@@ -99,11 +99,11 @@ const PANEL_EXPR = "(function(){ var b = document.querySelector('.asset-panel-to
   const cfgSrc = fs.readFileSync(path.join(DOCS, 'assets/js/site-config.js'), 'utf8');
   const sc = (s) => cfgSrc.split(s).length - 1;
   ok('S1 site-config：FC 版本 52.5 在位 + 49.1 赋值零残留 + changelog 头 51.1/49.1/49.0 各 ×1 + rev 前缀锚各 ×1',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.1';") === 1 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.2';") === 1 &&
     sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") === 0 &&
     sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.49.1 = ') === 1 && sc('// v10.28.49.0 = ') === 1 &&
     sc('rev 00352-') === 1 && sc('rev 00353-') === 1 && sc('rev 00354-') === 1 && sc('rev 00355-') === 1,
-    'fc53.0=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.1';") + ' fc49.1=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") +
+    'fc53.0=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.2';") + ' fc49.1=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.49.1';") +
     ' cl51.1=' + sc('// v10.28.51.1 = ') + ' cl49.1=' + sc('// v10.28.49.1 = ') + ' cl49.0=' + sc('// v10.28.49.0 = ') +
     ' r52=' + sc('rev 00352-') + ' r53=' + sc('rev 00353-') + ' r54=' + sc('rev 00354-') + ' r55=' + sc('rev 00355-'));
   ok('S2 编辑器：:has 折叠态规则收窄在位 + 旧圆角方块规则零残留 + 32×32 正圆锚 + 展开态口径锚在位（:has ×2/{ left: 6px; } ×2=52.4 动画挂接+关键帧 100% 行计入）',

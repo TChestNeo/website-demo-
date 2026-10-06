@@ -103,12 +103,12 @@ const isOpaque = (s) => !/rgba\(/.test(s) || (parseColor(s).length === 4 && pars
   const cfgSrc = fs.readFileSync(path.join(DOCS, 'assets/js/site-config.js'), 'utf8');
   const sc = (s) => cfgSrc.split(s).length - 1;
   ok('S1 site-config：52.5 赋值 ×1 + 52.4 赋值零残留 + changelog 头 52.5/52.4/52.3 各 ×1 + rev 真值 00371-zvn/00372-svk 各 ×1 + 站点恒 58.28',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.1';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 0 &&
-    sc('// v10.28.62.1 = ') === 1 && sc('// v10.28.52.5 = ') === 1 && sc('// v10.28.52.4 = ') === 1 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.2';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 0 &&
+    sc('// v10.28.62.2 = ') === 1 && sc('// v10.28.52.5 = ') === 1 && sc('// v10.28.52.4 = ') === 1 &&
     sc('rev 00371-zvn') === 1 && sc('rev 00372-svk') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
-    'fc525=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.1';") + ' fc524=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") +
-    ' cl525=' + sc('// v10.28.62.1 = ') + ' cl524=' + sc('// v10.28.52.4 = ') + ' cl523=' + sc('// v10.28.52.3 = ') +
+    'fc525=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.2';") + ' fc524=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") +
+    ' cl525=' + sc('// v10.28.62.2 = ') + ' cl524=' + sc('// v10.28.52.4 = ') + ' cl523=' + sc('// v10.28.52.3 = ') +
     ' r71=' + sc('rev 00371-zvn') + ' r72=' + sc('rev 00372-svk'));
   ok('S2 编辑器：折叠按钮+头栏 lowest 纯白锚各 ×1 + 暗色还原规则 ×2 行 + 注释原话 ×1 + 旧头栏 surface-container 行零残留 + 49.1 :has 折叠规则在位',
     el('background: var(--color-surface-container-lowest); /* 52.2 纯白不透明 */') === 1 &&

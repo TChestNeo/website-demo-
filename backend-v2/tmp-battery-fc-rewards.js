@@ -196,11 +196,11 @@ const AVATAR_EXPR = "(function(){ var a = document.querySelector('#profileHeader
   const scSrc = await fetchSrc('/assets/js/site-config.js');
   const sc = mk(scSrc);
   ok('S1 site-config：52.1 赋值 ×1 + 51.1 赋值零残留 + changelog 头 52.1/51.1/51.0 各 ×1 + rev 终态 00363-ksq/00364-wdg 各 ×1（640 轮锚改真值=639 终态口径）+ 站点 58.28',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.1';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") === 0 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.2';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") === 0 &&
     sc('// v10.28.52.3 = ') === 1 && sc('// v10.28.51.1 = ') === 1 && sc('// v10.28.51.0 = ') === 1 &&
     sc('00363-ksq') === 1 && sc('00364-wdg') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
-    'fc520=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.1';") + ' fc511=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") +
+    'fc520=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.62.2';") + ' fc511=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.51.1';") +
     ' cl520=' + sc('// v10.28.52.3 = ') + ' r63=' + sc('00363-ksq') + ' q64=' + sc('00364-wdg'));
 
   const stSrc = await fetchSrc('/assets/js/storage.js');
