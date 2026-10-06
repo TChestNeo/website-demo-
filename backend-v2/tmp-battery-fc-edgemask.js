@@ -1,4 +1,4 @@
-// tmp-battery-fc-edgemask.js — v10.28.56.1 AI 边缘 Mask 化+图片与边缘同步勾选+边缘外扩电池（本地工作树）
+// tmp-battery-fc-edgemask.js — v10.28.57.0 AI 边缘 Mask 化+图片与边缘同步勾选+边缘外扩电池（本地工作树）
 //   S 静态：编辑器 13 锚（expandClipPct/CUSTOM_EDGE_EXPAND/--card-mask-clip/dataset.edgeMask/勾选节链/clipRaw）
 //     （行计数口径=实测 grep -cF）；site-config 53.0 赋值+52.5 零残留+changelog 头+rev 00379-/00380-；
 //     i18n fc.edge.maskSync ×12；
@@ -85,9 +85,10 @@ class CDP {
 // ── 罐头形状（raw=原多边形；EXP=0.06 外扩多边形——expandClipPct 数学推值）──
 const EDGE_CLIP = 'polygon(0% 0%, 100% 3%, 98% 97%, 3% 100%, 0% 0%)';
 const EXP_EDGE = 'polygon(-3% -3%, 103% 0.18%, 100.88% 99.82%, 0.18% 103%, -3% -3%)';
-const EXP_INNER = 'polygon(-1.5% -1.5%, 101.5% 1.59%, 99.44% 98.41%, 1.59% 101.5%, -1.5% -1.5%)'; // v10.28.56.1 Mask=内缩 3%
+const EXP_14 = 'polygon(-20% -20%, 120% -15.8%, 117.2% 115.8%, -15.8% 120%, -20% -20%)'; // v10.28.57.0 紫色=1.4×内容
 const RING = 'polygon(evenodd, 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 8% 8%, 92% 8%, 92% 92%, 8% 92%, 8% 8%)';
 const EXP_RING = 'polygon(evenodd, -3% -3%, 103% -3%, 103% 103%, -3% 103%, -3% -3%, 5.48% 5.48%, 94.52% 5.48%, 94.52% 94.52%, 5.48% 94.52%, 5.48% 5.48%)';
+const EXP_RING_14 = 'polygon(evenodd, -20% -20%, 120% -20%, 120% 120%, -20% 120%, -20% -20%, -8.8% -8.8%, 108.8% -8.8%, 108.8% 108.8%, -8.8% 108.8%, -8.8% -8.8%)';
 const TRI = 'polygon(0% 0%, 100% 50%, 0% 100%)';
 const EXP_TRI = 'polygon(-3% -3%, 103% 50%, -3% 103%)';
 const PNG_1PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
@@ -175,9 +176,9 @@ const LIB_EXPR = "(function(){ try { return JSON.parse(localStorage.getItem('sla
   const edLines = ed.split('\n');
   const c = (a) => edLines.filter((l) => l.includes(a)).length;
   const ED_ANCHORS = [
-    ['function expandClipPct', 1], ['window.expandClipPct', 1], ['CUSTOM_EDGE_EXPAND', 4],
+    ['function expandClipPct', 1], ['window.expandClipPct', 1], ['CUSTOM_EDGE_SCALE', 2],
     ['--card-mask-clip', 5], ['dataset.edgeMask', 10], ['fcEdgeMaskSec', 2], ['fcEdgeMaskSync', 3],
-    ['setEdgeMaskSync', 3], ['renderEdgeMaskSec', 3], ['clipRaw', 2], ['expandClipPct(e.clip', 2],
+    ['setEdgeMaskSync', 3], ['renderEdgeMaskSec', 3], ['clipRaw', 2], ['expandClipPct(e.clip', 1],
     ['function customEdgeById', 1], ['function customEdgeRecipe', 1],
     ['.grid-card .card-stripes { clip-path: var(--card-mask-clip, none); }', 1]];
   const edBad = ED_ANCHORS.filter(([a, n]) => c(a) !== n);
@@ -187,12 +188,12 @@ const LIB_EXPR = "(function(){ try { return JSON.parse(localStorage.getItem('sla
   const scSrc = norm(await (await fetch(BASE + '/assets/js/site-config.js')).text());
   const sc = mk(scSrc);
   ok('S2 site-config：53.0 在位 + 52.5 赋值零残留 + changelog 头 53.0/52.5 各 ×1 + rev 00379-/00380- 各 ×1 + 站点恒 58.28',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.56.1';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 0 &&
-    sc('// v10.28.56.1 = ') === 1 && sc('// v10.28.52.5 = ') === 1 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.57.0';") === 1 && sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 0 &&
+    sc('// v10.28.57.0 = ') === 1 && sc('// v10.28.52.5 = ') === 1 &&
     sc('rev 00379-') === 1 && sc('rev 00380-') === 1 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1,
-    'fc53=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.56.1';") + ' fc525=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") +
-    ' cl53=' + sc('// v10.28.56.1 = ') + ' cl525=' + sc('// v10.28.52.5 = ') +
+    'fc53=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.57.0';") + ' fc525=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") +
+    ' cl53=' + sc('// v10.28.57.0 = ') + ' cl525=' + sc('// v10.28.52.5 = ') +
     ' r79=' + sc('rev 00379-') + ' r80=' + sc('rev 00380-') +
     ' v28=' + sc("window.MN_SITE_VERSION = 'v0.2.58.28';"));
 
@@ -281,7 +282,7 @@ const LIB_EXPR = "(function(){ try { return JSON.parse(localStorage.getItem('sla
         " bad: window.expandClipPct('url(#x)', 0.06) }; })()");
       ok('B1 应用 edge 自定义：edgeMask=\'1\' 默认 + maskVar=原多边形 + --card-clip=外扩 + expandClipPct 数学三式 + 非 polygon 防御回退',
         card && card.edge === 'custom:ce-mask1' && card.mask === '1' &&
-        card.maskVar === EXP_INNER && card.clip === EXP_EDGE && card.bgImg === false &&
+        card.maskVar === EDGE_CLIP && card.clip === EXP_14 && card.bgImg === false &&
         math.e === EXP_EDGE && math.r === EXP_RING && math.t === EXP_TRI && math.bad === 'url(#x)',
         JSON.stringify({ card: card, math: math }));
     }
@@ -299,7 +300,7 @@ const LIB_EXPR = "(function(){ try { return JSON.parse(localStorage.getItem('sla
       const card = await mcard('IMG1');
       ok('B2 图片卡 Mask：.card-img-bg clipPath=原多边形 + 卡根不剪（rootClip none）+ maskVar 原形',
         card && card.bgImg === true && card.mask === '1' &&
-        card.imgClip === EXP_INNER && card.rootClip === 'none' && card.maskVar === EXP_INNER,
+        card.imgClip === EDGE_CLIP && card.rootClip === 'none' && card.maskVar === EDGE_CLIP,
         JSON.stringify(card));
     }
 
@@ -321,7 +322,7 @@ const LIB_EXPR = "(function(){ try { return JSON.parse(localStorage.getItem('sla
       const card2 = await mcard('IMG1');
       sec = await maskSec();
       ok('B3c 重勾恢复：edgeMask=\'1\' + img clipPath 原形回来 + 已勾',
-        card2 && card2.mask === '1' && card2.maskVar === EXP_INNER && card2.imgClip === EXP_INNER && sec.checked === true,
+        card2 && card2.mask === '1' && card2.maskVar === EDGE_CLIP && card2.imgClip === EDGE_CLIP && sec.checked === true,
         JSON.stringify({ card2: card2, sec: sec }));
     }
 
@@ -362,7 +363,7 @@ const LIB_EXPR = "(function(){ try { return JSON.parse(localStorage.getItem('sla
       const sec = await maskSec();
       ok('B5 border 种：旗删 + maskVar 无 + --card-clip=EXP_RING + 勾选节隐藏',
         card && card.edge === 'custom:ce-mask2' && card.mask === '' && card.maskVar === '' &&
-        card.clip === EXP_RING && sec.show === false,
+        card.clip === EXP_RING_14 && sec.show === false,
         JSON.stringify({ card: card, sec: sec }));
     }
 
@@ -403,7 +404,7 @@ const LIB_EXPR = "(function(){ try { return JSON.parse(localStorage.getItem('sla
       const imgC = await mcard('IMG1');
       const t6C = await mcard('T6');
       ok('B7b reload 往返：IMG1 mask=\'1\' + img clip 原形 + clip EXP_EDGE；T6 mask=\'0\' + maskVar 无',
-        imgC && imgC.edge === 'custom:ce-mask1' && imgC.mask === '1' && imgC.imgClip === EXP_INNER && imgC.clip === EXP_EDGE &&
+        imgC && imgC.edge === 'custom:ce-mask1' && imgC.mask === '1' && imgC.imgClip === EDGE_CLIP && imgC.clip === EXP_14 &&
         t6C && t6C.edge === 'custom:ce-mask1' && t6C.mask === '0' && t6C.maskVar === '',
         JSON.stringify({ imgC: imgC, t6C: t6C }));
     }
@@ -451,7 +452,7 @@ const LIB_EXPR = "(function(){ try { return JSON.parse(localStorage.getItem('sla
       ok('B9 AI 生成流端到端：保存进库 + toast + 点击选中后画布出现（edgeMask=\'1\' + maskVar 原形 + clip 外扩）',
         L.length === 3 && saved && saved.kind === 'edge' && t && t.text === '已保存到我的自定义' &&
         card && card.edge === 'custom:' + saved.id && card.mask === '1' &&
-        card.maskVar === EXP_INNER && card.clip === EXP_EDGE,
+        card.maskVar === EDGE_CLIP && card.clip === EXP_14,
         JSON.stringify({ n: L.length, t: t, card: card && { edge: card.edge, mask: card.mask, maskVar: card.maskVar, clip: card.clip } }));
     }
 
