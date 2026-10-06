@@ -1,4 +1,4 @@
-// tmp-battery-fc-togglefly-r.js — v10.28.58.0 折叠出画加深+画外停一拍+展开加Q弹电池（本地工作树；52.5 轮改锚）
+// tmp-battery-fc-togglefly-r.js — v10.28.59.0 折叠出画加深+画外停一拍+展开加Q弹电池（本地工作树；52.5 轮改锚）
 //   S 静态：site-config 52.5 赋值 ×1/52.4 赋值零残留/站点 58.28 ×1/changelog 头 52.5/52.4/52.3 各 ×1/
 //     rev 00377-/00378- 前缀锚各 ×1 + 编辑器锚（52.4/52.5 注释五原话/fine 块锚（右缘 calc 带展开 Q弹/
 //     胶囊让位 46px/双动画挂接/位移关键帧四站+画外停拍/Q弹缩放关键帧五站/展开 Q弹关键帧/40×40 同高）/
@@ -128,13 +128,13 @@ const near = (a, b, tol) => a && a.length >= 3 && b && b.length >= 3 &&
   const cfgSrc = fs.readFileSync(path.join(DOCS, 'assets/js/site-config.js'), 'utf8');
   const sc = (s) => cfgSrc.split(s).length - 1;
   ok('S1 site-config：FC 52.5 赋值 ×1 + 52.4 赋值零残留 + 站点 58.28 ×1 + changelog 头 52.5/52.4/52.3 各 ×1 + rev 前缀锚各 ×1',
-    sc("window.FLUIDCANVAS_VERSION = 'v10.28.58.0';") === 1 &&
+    sc("window.FLUIDCANVAS_VERSION = 'v10.28.59.0';") === 1 &&
     sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.5';") === 0 &&
     sc("window.MN_SITE_VERSION = 'v0.2.58.28';") === 1 &&
-    sc('// v10.28.58.0 = ') === 1 && sc('// v10.28.52.5 = ') === 1 && sc('// v10.28.52.4 = ') === 1 &&
+    sc('// v10.28.59.0 = ') === 1 && sc('// v10.28.52.5 = ') === 1 && sc('// v10.28.52.4 = ') === 1 &&
     sc('rev 00379-') === 1 && sc('rev 00380-') === 1,
-    'fc525=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.58.0';") + ' fc524=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") +
-    ' cl525=' + sc('// v10.28.58.0 = ') + ' cl524=' + sc('// v10.28.52.4 = ') + ' cl523=' + sc('// v10.28.52.3 = ') +
+    'fc525=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.59.0';") + ' fc524=' + sc("window.FLUIDCANVAS_VERSION = 'v10.28.52.4';") +
+    ' cl525=' + sc('// v10.28.59.0 = ') + ' cl524=' + sc('// v10.28.52.4 = ') + ' cl523=' + sc('// v10.28.52.3 = ') +
     ' r77=' + sc('rev 00377-') + ' r78=' + sc('rev 00378-'));
   ok('S2 编辑器：52.4/52.5 注释原话 + fine 块锚（右缘 calc 带展开 Q弹/胶囊让位 46px/双动画挂接/位移四站/画外停拍/Q弹五站/展开 Q弹关键帧/40×40 同高）+ 旧锚零残留（52.4 浅出画 -40px/58% 拉长站/左缘 6px 规则/margin-left 让位/单动画行/38px 让位/32×32）+ 内联宽度搬出零残留',
     el('我希望那个圆形是在右侧的') === 1 &&
@@ -142,7 +142,7 @@ const near = (a, b, tol) => a && a.length >= 3 && b && b.length >= 3 &&
     el('还有那个按钮的大小能不能和搜索栏一样') === 1 &&
     el('为什么他没有短暂的滑出画面外') === 1 &&
     el('在展开的时候按钮能不能也附加上Q弹效果') === 2 &&
-    el('v10.28.58.0 — 边缘 Mask（用户：边缘像 Alight Motion 的 Mask 一样') === 1 &&
+    el('v10.28.59.0 — 边缘 Mask（用户：边缘像 Alight Motion 的 Mask 一样') === 1 &&
     el('v10.28.52.5: 折叠出画加深+画外停一拍+展开加 Q弹') === 1 &&
     el('.asset-panel-toggle { left: calc(var(--asset-panel-w) - 46px); top: 12px; animation: fcToggleInQSquash 0.28s; }') === 1 &&
     el('.asset-panel .search-capsule { width: calc(100% - 46px); }') === 1 &&
@@ -175,7 +175,7 @@ const near = (a, b, tol) => a && a.length >= 3 && b && b.length >= 3 &&
     JSON.stringify({
       q1: el('我希望那个圆形是在右侧的'), q2: el('然后那个按钮回弹的时候能不能有一个Q弹'), q3: el('还有那个按钮的大小能不能和搜索栏一样'),
       q4: el('为什么他没有短暂的滑出画面外'), q5: el('在展开的时候按钮能不能也附加上Q弹效果'),
-      head53: el('v10.28.58.0 — 边缘 Mask（用户：边缘像 Alight Motion 的 Mask 一样'), head52: el('v10.28.52.5: 折叠出画加深+画外停一拍+展开加 Q弹'),
+      head53: el('v10.28.59.0 — 边缘 Mask（用户：边缘像 Alight Motion 的 Mask 一样'), head52: el('v10.28.52.5: 折叠出画加深+画外停一拍+展开加 Q弹'),
       rest: el('.asset-panel-toggle { left: calc(var(--asset-panel-w) - 46px); top: 12px; animation: fcToggleInQSquash 0.28s; }'),
       give: el('.asset-panel .search-capsule { width: calc(100% - 46px); }'), base: el('.asset-panel .search-capsule { width: 100%; }'),
       anim: el('animation: fcToggleOutSpring 0.9s, fcToggleQSquash 0.9s;'), qkf: el('@keyframes fcToggleQSquash {'),
