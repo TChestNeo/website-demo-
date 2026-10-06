@@ -121,7 +121,7 @@ const FRAME_REC = `(function () {
   const sconfSrc = fs.readFileSync(path.join(DOCS, 'assets', 'js', 'site-config.js'), 'utf8');
   ok('F0 版本双线 v0.2.54.0 / v10.28.36.1',
     sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.28';") !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.62.0';") !== -1 &&
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.62.1';") !== -1 &&
     sconfSrc.indexOf('Messages 页专属轻量切页模式') !== -1);
   ok('F1 双模式入场串：原样渐隐+位移全串 + 轻量 transform-only 串都在',
     trSrc.indexOf("'opacity 0.4s cubic-bezier(0.22, 0.61, 0.36, 1), transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1)'") !== -1 &&

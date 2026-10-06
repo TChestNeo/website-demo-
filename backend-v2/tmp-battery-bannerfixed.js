@@ -121,7 +121,7 @@ const AVATAR_RING = "rgb(247, 249, 251)";
     sconfSrc.indexOf("window.MN_SITE_VERSION = 'v0.2.58.28';") !== -1 &&
     sconfSrc.indexOf('用户横幅与头像不再受网页主题影响') !== -1 &&
     sconfSrc.indexOf('问询钦定「两处都要」') !== -1 &&
-    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.62.0';") !== -1);
+    sconfSrc.indexOf("window.FLUIDCANVAS_VERSION = 'v10.28.62.1';") !== -1);
   const msgAvLines = msgSrc.split('\n').filter(l => l.indexOf('msg-avatar') !== -1 && l.indexOf('style=') !== -1);
   ok('F11 messages 头像族 11 个 msg-avatar 类 + 头像行零 var(--color-) 残留',
     countOcc(msgSrc, 'msg-acc msg-avatar') === 11 &&
