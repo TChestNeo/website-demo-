@@ -24,9 +24,20 @@ jobs:
 
       - name: Build debug APK
         working-directory: android
-        run: gradle assembleDebug --no-daemon
+        run: |
+          gradle assembleDebug --no-daemon > build.log 2>&1 || true
+          echo "== 日志末尾 =="
+          tail -60 build.log
+
+      - name: Upload build log（失败也能看）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build-log
+          path: android/build.log
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: MNationWorld-debug-apk

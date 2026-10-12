@@ -203,8 +203,10 @@ fun CommunityTab() {
     var posts by remember { mutableStateOf<List<Post>?>(null) }
     val scope = rememberCoroutineScope()
 
-    suspend fun reload() {
-        posts = runCatching { ApiClient.posts() }.getOrNull() ?: emptyList()
+    fun reload() {
+        scope.launch {
+            posts = runCatching { ApiClient.posts() }.getOrNull() ?: emptyList()
+        }
     }
 
     LaunchedEffect(Unit) { reload() }
