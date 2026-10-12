@@ -224,6 +224,95 @@ struct APIClient {
         let resp: CreatePostResponse = try await request("POST", "social/posts", body: body)
         return resp.post
     }
+
+    // MARK: - 个人资料（PATCH /api/auth/me：displayName/bio/gender/language/country…）
+
+    struct ProfilePatch: Encodable {
+        var displayName: String?
+        var bio: String?
+        var gender: String?
+        var language: String?
+        var country: String?
+
+        init(displayName: String? = nil, bio: String? = nil, gender: String? = nil,
+             language: String? = nil, country: String? = nil) {
+            self.displayName = displayName
+            self.bio = bio
+            self.gender = gender
+            self.language = language
+            self.country = country
+        }
+    }
+
+    struct ProfilePatchResponse: Decodable {
+        let user: User
+    }
+
+    func updateProfile(_ patch: ProfilePatch) async throws -> User {
+        let resp: ProfilePatchResponse = try await request("PATCH", "auth/me", body: patch)
+        return resp.user
+    }
+
+    // MARK: - 密码与账号
+
+    struct PasswordBody: Encodable {
+        let newPassword: String
+
+        init(newPassword: String) {
+            self.newPassword = newPassword
+        }
+    }
+
+    func changePassword(_ newPassword: String) async throws {
+        try await postVoid("auth/password", body: PasswordBody(newPassword: newPassword))
+    }
+
+    struct DeleteBody: Encodable {
+        let code: String
+
+        init(code: String) {
+            self.code = code
+        }
+    }
+
+    struct DeleteResponse: Decodable {
+        let ok: Bool
+        let restoreBy: String?
+    }
+
+    /// 删除账户：先发码（purpose=delete_confirm），再带码调用；成功后 30 天后悔期（restoreBy）。
+    func deleteAccount(code: String) async throws -> DeleteResponse {
+        try await request("POST", "auth/delete", body: DeleteBody(code: code))
+    }
+
+    // MARK: - 屏蔽名单
+
+    struct BlockedUser: Codable, Identifiable, Hashable {
+        let id: String
+        let displayName: String?
+        let avatarUrl: String?
+        let citizenId: String?
+    }
+
+    struct BlockedResponse: Decodable {
+        let users: [BlockedUser]
+    }
+
+    func blockedUsers() async throws -> [BlockedUser] {
+        let resp: BlockedResponse = try await get("social/blocked")
+        return resp.users
+    }
+
+    func unblock(user id: String) async throws {
+        try await deleteVoid("social/users/\(id)/block")
+    }
+
+    // MARK: - 赞过的内容（本人可见：GET /api/social/users/:id/posts?tab=likes）
+
+    func likedPosts(userID: String) async throws -> [Post] {
+        let resp: PostsResponse = try await get("social/users/\(userID)/posts", query: [URLQueryItem(name: "tab", value: "likes")])
+        return resp.posts
+    }
 }
 
 // MARK: - 错误信封
