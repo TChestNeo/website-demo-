@@ -1,10 +1,14 @@
 package com.mnationworld.app
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.content.FileProvider
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -44,7 +48,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import java.io.File
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 // ── 入口 ──
 
@@ -63,9 +72,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppRoot() {
-    // 系统更新（P9）：启动时检查 /api/app/latest，落后于最新版本则弹窗提示
+    // 系统更新（P9）：启动时检查 /api/app/latest；落后则弹窗 → 自动下载 APK → 拉起系统安装器
     var updateInfo by remember { mutableStateOf<AndroidLatest?>(null) }
+    var updating by remember { mutableStateOf(false) }
+    var updateMsg by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         val latest = runCatching { ApiClient.latestApp() }.getOrNull()
@@ -77,18 +89,55 @@ fun AppRoot() {
 
     updateInfo?.let { info ->
         AlertDialog(
-            onDismissRequest = { updateInfo = null },
+            onDismissRequest = { if (!updating) updateInfo = null },
             title = { Text("发现新版本 ${info.versionName}") },
-            text = { Text(info.note.ifBlank { "新版已发布，包含修复与新功能，建议更新。" }) },
+            text = {
+                Column {
+                    Text(updateMsg ?: info.note.ifBlank { "新版已发布，包含修复与新功能，建议更新。" })
+                    if (updating) {
+                        Spacer(Modifier.height(10.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                            Spacer(Modifier.width(8.dp))
+                            Text("正在下载…", fontSize = 13.sp)
+                        }
+                    }
+                }
+            },
             confirmButton = {
-                TextButton(onClick = {
-                    updateInfo = null
-                    val uri = Uri.parse("https://mnationworld.com/pages/download.html")
-                    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
-                }) { Text("去更新") }
+                TextButton(
+                    onClick = {
+                        if (!updating) {
+                            updating = true
+                            scope.launch {
+                                val result = downloadAndInstallApk(context, info)
+                                when (result) {
+                                    is DownloadResult.Installing -> {
+                                        updateInfo = null
+                                        updating = false
+                                        updateMsg = null
+                                    }
+                                    is DownloadResult.Failed -> {
+                                        updateMsg = result.message
+                                        updating = false
+                                    }
+                                    is DownloadResult.NeedInstallPermission -> {
+                                        updateMsg = "请先开启「安装未知应用」权限，然后重新更新"
+                                        updating = false
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    enabled = !updating,
+                ) {
+                    Text(if (updating) "下载中…" else "立即更新")
+                }
             },
             dismissButton = {
-                TextButton(onClick = { updateInfo = null }) { Text("以后再说") }
+                TextButton(onClick = { updateInfo = null; updating = false; updateMsg = null }) {
+                    Text("以后再说")
+                }
             },
         )
     }
@@ -99,6 +148,54 @@ fun AppRoot() {
         LoginScreen()
     }
 }
+
+// ── 自动更新：下载 APK → 系统安装器 ──
+
+sealed interface DownloadResult {
+    data object Installing : DownloadResult
+    data object NeedInstallPermission : DownloadResult
+    data class Failed(val message: String) : DownloadResult
+}
+
+suspend fun downloadAndInstallApk(context: Context, info: AndroidLatest): DownloadResult =
+    withContext(Dispatchers.IO) {
+        try {
+            // Android 8+：未授权「安装未知应用」先引导去设置
+            if (Build.VERSION.SDK_INT >= 26 && !context.packageManager.canRequestPackageInstalls()) {
+                withContext(Dispatchers.Main) {
+                    val intent = Intent(
+                        Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:com.mnationworld.app")
+                    )
+                    context.startActivity(intent)
+                }
+                return@withContext DownloadResult.NeedInstallPermission
+            }
+            val file = File(context.cacheDir, "update.apk")
+            val request = Request.Builder().url(BASE_URL + info.url).build()
+            OkHttpClient().newCall(request).execute().use { resp ->
+                if (!resp.isSuccessful) return@withContext DownloadResult.Failed("下载失败（HTTP ${resp.code}）")
+                val body = resp.body ?: return@withContext DownloadResult.Failed("下载失败：空响应")
+                file.outputStream().use { out ->
+                    body.byteStream().use { input ->
+                        input.copyTo(out)
+                    }
+                }
+            }
+            withContext(Dispatchers.Main) {
+                val uri = FileProvider.getUriForFile(context, "com.mnationworld.app.fileprovider", file)
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(uri, "application/vnd.android.package-archive")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+            }
+            DownloadResult.Installing
+        } catch (e: Exception) {
+            DownloadResult.Failed("下载失败：${e.message}")
+        }
+    }
 
 // ── 登录（密码+验证码双因素，对齐网页端 /api/auth 契约；UI 参考 SlatiWorld 渐变品牌卡设计） ──
 
