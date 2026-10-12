@@ -1,5 +1,7 @@
 package com.mnationworld.app
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -9,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -34,6 +37,36 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppRoot() {
+    // 系统更新（P9）：启动时检查 /api/app/latest，落后于最新版本则弹窗提示
+    var updateInfo by remember { mutableStateOf<AndroidLatest?>(null) }
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        val latest = runCatching { ApiClient.latestApp() }.getOrNull()
+        val android = latest?.android
+        if (android != null && android.versionCode > BuildConfig.VERSION_CODE) {
+            updateInfo = android
+        }
+    }
+
+    updateInfo?.let { info ->
+        AlertDialog(
+            onDismissRequest = { updateInfo = null },
+            title = { Text("发现新版本 ${info.versionName}") },
+            text = { Text(info.note.ifBlank { "新版已发布，包含修复与新功能，建议更新。" }) },
+            confirmButton = {
+                TextButton(onClick = {
+                    updateInfo = null
+                    val uri = Uri.parse("https://mnationworld.com/pages/download.html")
+                    context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                }) { Text("去更新") }
+            },
+            dismissButton = {
+                TextButton(onClick = { updateInfo = null }) { Text("以后再说") }
+            },
+        )
+    }
+
     if (Session.isLoggedIn) {
         MainScreen()
     } else {

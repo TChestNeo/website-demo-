@@ -34,6 +34,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true // 系统更新：BuildConfig.VERSION_CODE 供版本对比
     }
 }
 

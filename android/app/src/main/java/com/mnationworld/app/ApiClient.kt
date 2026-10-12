@@ -142,4 +142,8 @@ object ApiClient {
     suspend fun deleteAccount(code: String) {
         post("/api/auth/delete", json.encodeToString(DeleteBody.serializer(), DeleteBody(code)))
     }
+
+    // ── 系统更新 ──
+    suspend fun latestApp(): LatestApp =
+        json.decodeFromString(LatestApp.serializer(), get("/api/app/latest"))
 }

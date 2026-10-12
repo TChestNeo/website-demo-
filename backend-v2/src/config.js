@@ -53,6 +53,19 @@ const config = {
     imsRegion: process.env.TENCENT_IMS_REGION || 'ap-singapore'
   },
 
+  // 系统更新（P9）：/api/app/latest 的版本单一来源——发新版只改这里（或 env）+ 覆盖 docs/downloads/MNationWorld.apk
+  appVersions: {
+    androidVersionCode: int('APP_VERSION_CODE', 1),
+    androidVersionName: process.env.APP_VERSION_NAME || '1.0.0',
+    androidUrl: process.env.APP_URL || '/downloads/MNationWorld.apk',
+    androidSizeMb: Number(process.env.APP_SIZE_MB || 10.4),
+    androidMinSdk: process.env.APP_MIN_SDK || 'Android 7.0+',
+    androidNote: process.env.APP_NOTE || '',
+    iosStatus: process.env.IOS_STATUS || 'preparing',
+    iosNote: process.env.IOS_NOTE || 'iOS 版正在准备上架',
+    iosUrl: process.env.IOS_URL || ''
+  },
+
   // 月度预算默认值（元）——platform_settings budget.* 为运行时真值，此处为建库种子/兜底
   budgets: {
     moderation_text: int('BUDGET_MODERATION_TEXT', 30),

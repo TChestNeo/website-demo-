@@ -141,3 +141,27 @@ data class PasswordBody(val newPassword: String)
 
 @Serializable
 data class DeleteBody(val code: String)
+
+// 系统更新（GET /api/app/latest）
+@Serializable
+data class LatestApp(
+    val android: AndroidLatest? = null,
+    val ios: IosLatest? = null,
+)
+
+@Serializable
+data class AndroidLatest(
+    val versionCode: Int = 0,
+    val versionName: String = "",
+    val url: String = "",
+    val sizeMb: Double = 0.0,
+    val minSdk: String = "",
+    val note: String = "",
+)
+
+@Serializable
+data class IosLatest(
+    val status: String = "preparing",
+    val note: String = "",
+    val url: String = "",
+)
