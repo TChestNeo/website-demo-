@@ -19,7 +19,7 @@ jobs:
         working-directory: ios
         run: xcodegen generate
 
-      - name: Build (simulator, no signing)
+      - name: Build (simulator, no signing) — 编译验证
         working-directory: ios
         run: |
           xcodebuild build \
@@ -28,3 +28,31 @@ jobs:
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO | tail -40
+
+      - name: Archive (device, unsigned) — 出真机安装包
+        working-directory: ios
+        run: |
+          xcodebuild archive \
+            -project MNationWorld.xcodeproj \
+            -scheme MNationWorld \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/MNationWorld.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_IDENTITY="" | tail -40
+
+      - name: Make unsigned IPA
+        working-directory: ios
+        run: |
+          mkdir -p build/Payload
+          cp -R build/MNationWorld.xcarchive/Products/Applications/MNationWorld.app build/Payload/
+          cd build
+          zip -qr MNationWorld-unsigned.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: MNationWorld-unsigned-ipa
+          path: ios/build/MNationWorld-unsigned.ipa
+          retention-days: 30
