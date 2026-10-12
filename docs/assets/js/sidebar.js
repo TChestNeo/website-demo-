@@ -726,6 +726,7 @@
         '.mbn-sheet{display:none}',
         '.mbn-subsheet{display:none}',
         '@media (max-width:768px){',
+        '.app-sidebar{display:none !important}',
         '.mobile-bottom-nav{display:flex !important;position:fixed;left:50% !important;right:auto !important;transform:translateX(-50%) !important;bottom:calc(12px + env(safe-area-inset-bottom)) !important;height:56px !important;z-index:9999;width:auto;min-width:264px;max-width:calc(100% - 28px);border-radius:999px;padding:0 6px;background:rgba(255,255,255,0.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);box-shadow:0 10px 36px rgba(20,20,40,0.18),inset 0 0.5px 0 rgba(255,255,255,0.65)}',
         ':root[data-theme="dark"] .mobile-bottom-nav{background:rgba(24,24,38,0.72) !important;box-shadow:0 10px 36px rgba(0,0,0,0.42),inset 0 0.5px 0 rgba(255,255,255,0.14)}',
         '.mobile-bottom-nav .mbn-item{flex:1;min-width:48px;max-width:78px;padding:0 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-decoration:none;color:var(--color-outline,#6f6e7b);font-size:10px;font-weight:500;border-radius:999px;transition:background .2s ease,color .2s ease}',

@@ -1570,6 +1570,10 @@ body.pre-stagger .auth-card { opacity: 0; }
   :root {
     --fs-display-lg: 32px;
   }
+  /* v0.2.59.x 用户钦定：手机版隐藏左侧菜单（导航/用户/设置全走底部菜单与「我的」sheet，侧栏零存在） */
+  .app-sidebar {
+    display: none !important;
+  }
   .auth-card { height: auto; min-height: 560px; }
   .auth-panel,
   .auth-card.auth-tab-signup .auth-panel,
