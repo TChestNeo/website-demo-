@@ -26,8 +26,17 @@ struct HomeView: View {
             }
 
             Section("快捷入口") {
+                NavigationLink {
+                    FCWebEditorView()
+                } label: {
+                    Label("FluidCanvas 编辑器", systemImage: "scribble.variable")
+                }
+                NavigationLink {
+                    NativeCanvasView()
+                } label: {
+                    Label("原生画布（实验）", systemImage: "pencil.and.outline")
+                }
                 Label("新建国家", systemImage: "plus.circle.fill")
-                Label("FluidCanvas 编辑器", systemImage: "scribble.variable")
                 Label("提交工单", systemImage: "ticket.fill")
             }
 

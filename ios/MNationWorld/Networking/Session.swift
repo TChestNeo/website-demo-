@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import WebKit
 
 /// 全局会话：当前用户 + 登录态。
 /// 登录成功后后端通过 Set-Cookie 下发 `mn_session`；URLSession 的共享 cookie 存储自动保存并随后续请求携带，
@@ -19,12 +20,22 @@ final class Session {
         }
     }
 
-    /// 登录成功：保存用户快照。
+    /// 登录成功：保存用户快照，并同步会话 cookie 到 WKWebView（FC 编辑器网页嵌入登录互通）。
     func applyLogin(_ user: User) {
         self.user = user
         isLoggedIn = true
         if let data = try? JSONEncoder.mn.encode(user) {
             UserDefaults.standard.set(data, forKey: userKey)
+        }
+        syncWebViewCookies()
+    }
+
+    /// URLSession 会话 cookie → WKWebsiteDataStore（供 FCWebView 登录互通）。
+    func syncWebViewCookies() {
+        guard let cookies = HTTPCookieStorage.shared.cookies else { return }
+        let store = WKWebsiteDataStore.default()
+        for cookie in cookies where cookie.domain.contains("mnationworld.com") {
+            store.httpCookieStore.setCookie(cookie)
         }
     }
 
