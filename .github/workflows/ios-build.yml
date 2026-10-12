@@ -19,36 +19,41 @@ jobs:
         working-directory: ios
         run: xcodegen generate
 
-      - name: Build (simulator, no signing) — 编译验证
+      - name: Build (simulator) — 编译验证
         working-directory: ios
+        shell: bash
         run: |
+          set -o pipefail
           xcodebuild build \
             -project MNationWorld.xcodeproj \
             -scheme MNationWorld \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO | tail -40
+            CODE_SIGNING_REQUIRED=NO 2>&1 | tail -50
 
-      - name: Archive (device, unsigned) — 出真机安装包
+      - name: Build device app (unsigned) — 出真机产物
         working-directory: ios
+        shell: bash
         run: |
-          xcodebuild archive \
+          set -o pipefail
+          xcodebuild build \
             -project MNationWorld.xcodeproj \
             -scheme MNationWorld \
+            -configuration Release \
             -destination 'generic/platform=iOS' \
-            -archivePath build/MNationWorld.xcarchive \
+            -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_IDENTITY="" | tail -40
+            CODE_SIGNING_REQUIRED=NO 2>&1 | tail -50
 
       - name: Make unsigned IPA
         working-directory: ios
         run: |
-          echo "== archive 产物结构 =="
-          find build/MNationWorld.xcarchive/Products -maxdepth 3 2>/dev/null || echo "(无 Products 目录)"
-          APP=$(find build/MNationWorld.xcarchive -name "*.app" -type d | head -1)
-          if [ -z "$APP" ]; then echo "APP NOT FOUND"; exit 1; fi
+          APP=$(find build/Build/Products -name "*.app" -type d | head -1)
+          if [ -z "$APP" ]; then
+            echo "APP NOT FOUND — 产物目录结构："
+            find build -maxdepth 4 -type d | head -40
+            exit 1
+          fi
           echo "APP=$APP"
           mkdir -p build/Payload
           cp -R "$APP" build/Payload/
