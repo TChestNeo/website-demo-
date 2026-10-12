@@ -1,13 +1,13 @@
-﻿'use strict';
-// çŽ¯å¢ƒå˜é‡é›†ä¸­è¯»å– + æ ¡éªŒã€‚æ‰€æœ‰å€¼å¸¦é»˜è®¤ï¼›éžæ³•æ•´æ•°å¯åŠ¨å³æŠ¥é”™ï¼ˆfail fastï¼‰ã€‚
-// ç”± node --env-file æ³¨å…¥ process.envï¼Œæ—  dotenv ä¾èµ–ã€‚
-// v2 ç›¸å¯¹ v1 çš„æ–°å¢žï¼šstaffCookie / geoIpUrl / seedDemoStaff / budgets.copilotã€‚
+'use strict';
+// 环境变量集中读取 + 校验。所有值带默认；非法整数启动即报错（fail fast）。
+// 由 node --env-file 注入 process.env，无 dotenv 依赖。
+// v2 相对 v1 的新增：staffCookie / geoIpUrl / seedDemoStaff / budgets.copilot。
 
 function int(name, fallback) {
   const v = process.env[name];
   if (v == null || v === '') return fallback;
   const n = Number.parseInt(v, 10);
-  if (Number.isNaN(n)) throw new Error(`env ${name}=${v} ä¸æ˜¯æ•´æ•°`);
+  if (Number.isNaN(n)) throw new Error(`env ${name}=${v} 不是整数`);
   return n;
 }
 
@@ -17,7 +17,7 @@ const config = {
   host: process.env.HOST || '127.0.0.1',
   databasePath: process.env.DATABASE_PATH || './data/mn-v2.sqlite',
   adminEmail: (process.env.ADMIN_EMAIL || '').toLowerCase(),
-  // v0.2.16.0 å¸–å­åª’ä½“æ–‡ä»¶ç›®å½•ï¼ˆGCS FUSE æŒ‚è½½ç›˜ï¼Œæ•´æ–‡ä»¶å†™å®‰å…¨ï¼›æµ‹è¯•è¦†ç›–ä¸ºä¸´æ—¶ç›®å½•ï¼‰
+  // v0.2.16.0 帖子媒体文件目录（GCS FUSE 挂载盘，整文件写安全；测试覆盖为临时目录）
   uploadDir: process.env.UPLOADS_DIR || '/mnt/data/uploads',
 
   mail: {
@@ -34,13 +34,13 @@ const config = {
   deepseek: {
     apiKey: process.env.DEEPSEEK_API_KEY || '',
     baseUrl: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com',
-    // ç•™ç©º = ç«¯ç‚¹å„è‡ªé»˜è®¤ï¼ˆå®¢æœ chat=deepseek-v4-flashï¼›å›¾åº“æ ‡ç­¾æŸ¥é‡=deepseek-v4-flashï¼‰ï¼›é…äº†åˆ™å…±ç”¨
+    // 留空 = 端点各自默认（客服 chat=deepseek-v4-flash；图库标签查重=deepseek-v4-flash）；配了则共用
     model: process.env.DEEPSEEK_MODEL || ''
   },
 
-  // Geminiï¼ˆFC v10.28.50.0 è¾¹ç¼˜/è¾¹æ¡† AI ç”Ÿæˆï¼›ç”¨æˆ·é’¦å®šã€ŒGemini Flash åªè´Ÿè´£ç”Ÿæˆã€DeepSeek åªè´Ÿè´£å®¢æœã€ï¼‰ï¼š
-  // key åªæ´» Cloud Run envï¼Œç»ä¸ commitï¼ˆAQ. å‰ç¼€éž AIzaâ€”â€”å½“ä¸é€æ˜Ž key èµ° x-goog-api-key å¤´ Google ç«¯ç‚¹ï¼‰ã€‚
-  // model ç•™ç©º = fc-edgegen.js MODEL_DEFAULTï¼ˆgemini-3.8-flashâ€”â€”çº¿ä¸ŠæŽ¢æµ‹ 404 åŽ 2.5-flash é€€å½¹æ–°ç”¨æˆ·ï¼‰ï¼›æ—  key ç«¯ç‚¹å›ž 503 unavailableï¼ˆå‰ç«¯ toast å¼•å¯¼ï¼‰ã€‚
+  // Gemini（FC v10.28.50.0 边缘/边框 AI 生成；用户钦定「Gemini Flash 只负责生成、DeepSeek 只负责客服」）：
+  // key 只活 Cloud Run env，绝不 commit（AQ. 前缀非 AIza——当不透明 key 走 x-goog-api-key 头 Google 端点）。
+  // model 留空 = fc-edgegen.js MODEL_DEFAULT（gemini-3.8-flash——线上探测 404 后 2.5-flash 退役新用户）；无 key 端点回 503 unavailable（前端 toast 引导）。
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || '',
     baseUrl: process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com',
@@ -53,20 +53,20 @@ const config = {
     imsRegion: process.env.TENCENT_IMS_REGION || 'ap-singapore'
   },
 
-  // ç³»ç»Ÿæ›´æ–°ï¼ˆP9ï¼‰ï¼š/api/app/latest çš„ç‰ˆæœ¬å•ä¸€æ¥æºâ€”â€”å‘æ–°ç‰ˆåªæ”¹è¿™é‡Œï¼ˆæˆ– envï¼‰+ è¦†ç›– docs/downloads/MNationWorld.apk
+  // 系统更新（P9）：/api/app/latest 的版本单一来源——发新版只改这里（或 env）+ 覆盖 docs/downloads/MNationWorld.apk
   appVersions: {
     androidVersionCode: int('APP_VERSION_CODE', 5),
-    androidVersionName: process.env.APP_VERSION_NAME || '1.0.3',
+    androidVersionName: process.env.APP_VERSION_NAME || '1.1.0',
     androidUrl: process.env.APP_URL || '/downloads/MNationWorld.apk',
     androidSizeMb: Number(process.env.APP_SIZE_MB || 10.4),
     androidMinSdk: process.env.APP_MIN_SDK || 'Android 7.0+',
     androidNote: process.env.APP_NOTE || '',
     iosStatus: process.env.IOS_STATUS || 'preparing',
-    iosNote: process.env.IOS_NOTE || 'iOS ç‰ˆæ­£åœ¨å‡†å¤‡ä¸Šæž¶',
+    iosNote: process.env.IOS_NOTE || 'iOS 版正在准备上架',
     iosUrl: process.env.IOS_URL || ''
   },
 
-  // æœˆåº¦é¢„ç®—é»˜è®¤å€¼ï¼ˆå…ƒï¼‰â€”â€”platform_settings budget.* ä¸ºè¿è¡Œæ—¶çœŸå€¼ï¼Œæ­¤å¤„ä¸ºå»ºåº“ç§å­/å…œåº•
+  // 月度预算默认值（元）——platform_settings budget.* 为运行时真值，此处为建库种子/兜底
   budgets: {
     moderation_text: int('BUDGET_MODERATION_TEXT', 30),
     chat: int('BUDGET_CHAT', 20),
@@ -76,67 +76,67 @@ const config = {
     total: int('BUDGET_TOTAL', 60)
   },
 
-  // è®¤è¯å‚æ•°ï¼ˆD2 åŒä¼šè¯ï¼šå…¬ç½‘ mn_session / staff sc_sessionï¼ŒåŒåŸŸå…±äº«ï¼‰
-  sessionTtlMs: 30 * 24 * 3600 * 1000,   // ä¼šè¯ 30 å¤©
-  emailCodeTtlMs: 10 * 60 * 1000,        // éªŒè¯ç  10 åˆ†é’Ÿ
+  // 认证参数（D2 双会话：公网 mn_session / staff sc_session，同域共享）
+  sessionTtlMs: 30 * 24 * 3600 * 1000,   // 会话 30 天
+  emailCodeTtlMs: 10 * 60 * 1000,        // 验证码 10 分钟
   sessionCookie: 'mn_session',
   staffCookie: 'sc_session',
 
-  // å­¦ç”Ÿè®¤è¯ï¼ˆv0.2.44.0 å­¦ç”Ÿä»· RM5.50ï¼‰ï¼šè®¤è¯æœ‰æ•ˆæœŸ 365 å¤©ï¼ˆè¿‡æœŸè¯»å–è·¯å¾„æƒ°æ€§æ¸…é™¤ï¼ŒåŒ tier æƒ°æ€§é™çº§ï¼‰ï¼›
-  // domains = å­¦æ ¡é‚®ç®±åŸŸåç™½åå•ï¼ˆå¯é€‰ env é€—å·åˆ†éš”ï¼Œæ•´è¡¨æ›¿æ¢ï¼›ç©º â†’ students.js DEFAULT_DOMAINSï¼‰
+  // 学生认证（v0.2.44.0 学生价 RM5.50）：认证有效期 365 天（过期读取路径惰性清除，同 tier 惰性降级）；
+  // domains = 学校邮箱域名白名单（可选 env 逗号分隔，整表替换；空 → students.js DEFAULT_DOMAINS）
   student: {
     ttlMs: 365 * 24 * 3600 * 1000,
     domains: (process.env.STUDENT_EMAIL_DOMAINS || '').split(',').map((s) => s.trim()).filter(Boolean)
   },
 
-  // ç¤¾äº¤ç»éªŒå€¼ï¼ˆv0.2.49.0 ç”¨æˆ·æ•°å€¼è¡¨ï¼šç²‰ä¸+25/èµž+15/èŽ·è¯„è®º+10/æ”¶è—+12ï¼‰ï¼š
-  // gained = ã€Œåˆ«äººå¯¹ä½ åšã€æ—¶åŽç«¯å®žæ—¶ç´¯åŠ ï¼ˆusers.xp_gained è¿ç§» 023ï¼‰ï¼›åŠ¨ä½œç±» XP ä»åœ¨å‰ç«¯ localStorageã€‚
-  // activity = å¹³å°æ´»è·ƒæ—¥åˆ¤å®šï¼ˆè¯é¢˜ +25 çš„ 30 å¤©è¿žç»­é—¨ç¦ï¼‰ï¼šå½“å¤© â‰¥ minPosters ä¸ªä¸åŒç”¨æˆ·å‘å¸–ç®—æ´»è·ƒæ—¥
-  //ï¼ˆç”¨æˆ·é’¦å®šã€Œè‡³å°‘ä¸€å¤©å†…ä¸åŒçš„10ä¸ªç”¨æˆ·å‘å¸ƒä¸€ä¸ªå¸–å­ã€ï¼‰ï¼›windowDays = æ´»åŠ¨çª—å£ï¼ˆâ‰¥30 ä¾›è¯é¢˜åˆ¤å®šï¼‰ã€‚
+  // 社交经验值（v0.2.49.0 用户数值表：粉丝+25/赞+15/获评论+10/收藏+12）：
+  // gained = 「别人对你做」时后端实时累加（users.xp_gained 迁移 023）；动作类 XP 仍在前端 localStorage。
+  // activity = 平台活跃日判定（话题 +25 的 30 天连续门禁）：当天 ≥ minPosters 个不同用户发帖算活跃日
+  //（用户钦定「至少一天内不同的10个用户发布一个帖子」）；windowDays = 活动窗口（≥30 供话题判定）。
   xp: {
     gained: { fan: 25, like: 15, comment: 10, favorite: 12 },
-    // v10.28.52.0 å›¢é˜Ÿ XP äº”äº‹ä»¶ï¼ˆç”¨æˆ·æ•°å€¼è¡¨ 2026-10-04ï¼‰ï¼šä¸Šä¼ ä½œå“ 24/èŽ·èµž 16/ç²‰ä¸ 32/æ”¶è— 36/åˆ†äº«è½¬å‘ 20ã€‚
-    // åŒå‘å¯¹ç§°è®°è´¦ï¼ˆã€Œå°‘ä¸€ä¸ªå°±æ”¶èµ°ã€ï¼‰ï¼šåå‘æ“ä½œåŒé¢æ‰£å›žï¼ˆteam-xp.js loseTeamXpï¼›MAX(0) ä¸ç©¿è´Ÿï¼‰ã€‚
+    // v10.28.52.0 团队 XP 五事件（用户数值表 2026-10-04）：上传作品 24/获赞 16/粉丝 32/收藏 36/分享转发 20。
+    // 双向对称记账（「少一个就收走」）：反向操作同额扣回（team-xp.js loseTeamXp；MAX(0) 不穿负）。
     teamGained: { upload: 24, like: 16, fan: 32, favorite: 36, share: 20 },
     activity: { minPosters: 10, windowDays: 60 }
   },
 
-  // å¼€å‘æ¨¡å¼å›ºå®šç™»å½•ç ï¼ˆDEV_LOGIN_CODEï¼Œä»…æœ¬åœ°æµ‹è¯•ç”¨ï¼‰ï¼š
-  // ç”¨æˆ·/Staff éªŒè¯ç çŽ¯èŠ‚ç›´æŽ¥æ”¾è¡Œã€åªå…è®¸ç™»å½•å·²æœ‰è´¦å·/staff è¡Œï¼›ç”Ÿäº§çŽ¯å¢ƒå¼ºåˆ¶å¿½ç•¥ï¼ˆè¯¯é…ä¹Ÿä¸ç”Ÿæ•ˆï¼‰ã€‚
+  // 开发模式固定登录码（DEV_LOGIN_CODE，仅本地测试用）：
+  // 用户/Staff 验证码环节直接放行、只允许登录已有账号/staff 行；生产环境强制忽略（误配也不生效）。
   devLoginCode: process.env.NODE_ENV === 'production' ? '' : (process.env.DEV_LOGIN_CODE || ''),
 
-  // å‰åŽç«¯åˆ†ç¦»ï¼ˆå‰ç«¯ç‹¬ç«‹æ‰˜ç®¡ï¼ŒAPI ç‹¬ç«‹å­åŸŸï¼‰ï¼š
-  // COOKIE_DOMAIN ä¾‹ 'mn.world'ï¼ˆä¸å«ç«¯å£ï¼›é…äº†æ‰ä¼šåŠ  Domain=ï¼Œæœ¬åœ°åŒåŸŸå¼€å‘ä¸é…ï¼‰
-  // FRONTEND_ORIGIN ä¾‹ 'https://mn.world,https://www.mn.world,https://admin.mn.world'ï¼ˆCORS ç™½åå•ï¼‰
+  // 前后端分离（前端独立托管，API 独立子域）：
+  // COOKIE_DOMAIN 例 'mn.world'（不含端口；配了才会加 Domain=，本地同域开发不配）
+  // FRONTEND_ORIGIN 例 'https://mn.world,https://www.mn.world,https://admin.mn.world'（CORS 白名单）
   cookieDomain: process.env.COOKIE_DOMAIN || '',
   frontendOrigins: (process.env.FRONTEND_ORIGIN || '').split(',').map((s) => s.trim()).filter(Boolean),
 
-  // IP åœ°ç†ä½ç½®ï¼ˆå¯é€‰ï¼ŒD10ï¼‰ï¼šGEOIP_URL ä¸ºå¯æŸ¥è¯¢æ¨¡æ¿ï¼ˆå¦‚ https://ipinfo.io/{ip}/jsonï¼‰ã€‚
-  // æœªé…ç½®/æŸ¥è¯¢å¤±è´¥ â†’ login_history.country ä¸ºç©ºï¼ŒIP åªä½œé£Žé™©ä¿¡å·ï¼ˆÂ§5ï¼‰ï¼Œä¸å•ç‹¬åˆ¤ç›—å·ã€‚
+  // IP 地理位置（可选，D10）：GEOIP_URL 为可查询模板（如 https://ipinfo.io/{ip}/json）。
+  // 未配置/查询失败 → login_history.country 为空，IP 只作风险信号（§5），不单独判盗号。
   geoIpUrl: process.env.GEOIP_URL || '',
 
-  // seed è„šæœ¬ï¼šæ˜¯å¦åˆ›å»ºæ¼”ç¤º staffï¼ˆAlex/Danielï¼‰ï¼›ç”Ÿäº§éƒ¨ç½²ç•™ç©º/è®¾ falseã€‚
+  // seed 脚本：是否创建演示 staff（Alex/Daniel）；生产部署留空/设 false。
   seedDemoStaff: process.env.SEED_DEMO_STAFF !== 'false',
 
-  // Stripe åœ¨çº¿æ”¯ä»˜ï¼ˆçœŸå®žæ‰£æ¬¾ï¼›é›¶å‰ç«¯å¯†é’¥â€”â€”å‰ç«¯åªæ‹¿åŽç«¯è¿”å›žçš„è·³è½¬ URLï¼‰ã€‚æ··åˆæ¨¡å¼ï¼š
-  //   subscription = è‡ªåŠ¨ç»­è´¹è®¢é˜…ï¼ˆä»…å¡ç±»æ”¯æ’‘åå¤æ‰£æ¬¾ï¼›Apple Pay/Google Pay éšå¡è‡ªåŠ¨å‡ºçŽ°ï¼‰
-  //   once         = æ¯å¹´æ”¯ä»˜ 1 å¹´ï¼ˆv0.2.13.0ï¼šæœˆä»·Ã—10 é€ 2 ä¸ªæœˆï¼Œä¸€æ¬¡ä»˜æ¸…ï¼›GrabPay ç­‰ä¸€æ¬¡æ€§æ”¯ä»˜æ–¹å¼ï¼Œ
-  //                  åˆ°æœŸä¸è‡ªåŠ¨ç»­ï¼Œwebhook é¡ºå»¶ 12 ä¸ªæœˆï¼›Apple/Google Pay éšå¡è‡ªåŠ¨å‡ºçŽ°åœ¨ç»“è´¦é¡µï¼‰
-  // STRIPE_ENABLED æœªå¼€ / å¯†é’¥æœªé… â†’ ä»˜è´¹é¡µå›žé€€ã€Œç”³è¯·å¼€é€šã€å·¥å•æµç¨‹ï¼ˆé™çº§è·¯å¾„ï¼‰ã€‚
-  // pricesï¼š5 ä¸ªä¸» SKUï¼ˆbasic/premium/ultra/pkg-premium/pkg-ultraï¼‰çš„ recurring Price IDï¼›
-  // pricesOnceï¼šåŒ SKU çš„å¹´ä»˜ï¼ˆone_timeï¼‰Price IDã€‚Basic = å­¦ç”Ÿä»·æ–¹æ¡ˆ RM12/æœˆï¼ˆä»˜è´¹å±‚ï¼Œæ–°ç”¨æˆ·é»˜è®¤ free æ™®é€šç”¨æˆ·ï¼›
-  // å­¦æ ¡é‚®ç®±è®¤è¯åŽå­¦ç”Ÿä»· RM5.50/æœˆèµ° studentPrices ç‹¬ç«‹ Priceï¼‰ã€‚
-  // ç¼ºå“ªä¸ªï¼Œå“ªä¸ª SKU çš„å¯¹åº”é€šé“å°±ä¸èµ°æ”¯ä»˜ã€å›žé€€ç”³è¯·æµã€‚
-  // paymentMethodsï¼ˆè®¢é˜…ï¼‰ï¼šåªæ”¾å¡ç±»â€”â€”FPX/æ”¯ä»˜å®ç­‰ä¸€æ¬¡æ€§æ–¹å¼ä¸æ”¯æ’‘è®¢é˜…ï¼Œæ”¾è¿›è®¢é˜…æ¸…å• Checkout å»ºä¼šè¯ä¼šå¤±è´¥ã€‚
-  // oncePaymentMethodsï¼ˆæ¯å¹´æ”¯ä»˜ï¼‰ï¼šé»˜è®¤ card,grabpayâ€”â€”v0.2.13.1 å®žè¯è½®ï¼ˆ09-04 æŽ¢æ´» PaymentMethodConfigurations
-  // é€æ–¹å¼ available å­—æ®µï¼‰ï¼šæœ¬è´¦æˆ·ï¼ˆMYï¼‰fpx/alipay available:falseï¼ˆStripe è´¦æˆ·çº§ä¸å¯ç”¨ï¼Œdisplay_preference å¼€äº†
-  // ä¹Ÿå»ºä¸äº†ä¼šè¯ï¼Œæ›¾è‡´ MYR æ¯å¹´æ”¯ä»˜ checkout 400 å…¨æ­»ï¼‰ï¼›å¯ç”¨ = card/grabpay/apple_pay/google_pay/linkï¼ˆé’±åŒ…éšå¡
-  // è‡ªåŠ¨å‡ºçŽ°ï¼Œæ— éœ€åˆ—å…¥ï¼‰ï¼›å“ªå¤© Stripe ç»™å¼€é€šå¯åŠ å›žï¼ˆwechat_pay åŒç†éœ€è´¦æˆ·çœŸå¯ç”¨æ‰åˆ—ï¼‰ã€‚
-  // å¤šå¸ç§ï¼ˆv0.2.12.0ï¼‰ï¼šmyrï¼ˆé©¬æ¥è¥¿äºšæœ¬åœ°ä»·ï¼Œé»˜è®¤ï¼‰èµ°ä¸Šæ–¹ legacy env Priceï¼›usd + 14 å¸èµ° STRIPE_CATALOG_B64
-  // ï¼ˆbase64url JSON {currency:{tierKey:{sub,once}}}ï¼›v0.2.13.0 èµ· once = å¹´ä»˜ Price IDï¼Œæœˆä»˜é‡‘é¢Ã—10 åŽé‡å¸
-  // .99/.00 å°¾ï¼‰ï¼›å• env å•å€¼é¿å… gcloud é€—å·æ‹†å‚ï¼‰ã€‚
-  //   å¼±å¸ï¼ˆidr/vnd/thb/php/inrï¼Œ1 USD æ¢å¾—æ¯” MYR å¤šï¼‰â†’ æŒ‰ MYR ä»·æ¡£æ¢ç®—ï¼›å…¶ä½™ â†’ æŒ‰ USD ä»·æ¡£æ¢ç®—ï¼›å°¾ X.99/.00ã€‚
-  // éž myr ä¼šè¯æ”¯ä»˜æ–¹å¼åªå…è®¸ cardï¼ˆFPX/æ”¯ä»˜å®/GrabPay ä¸ºé©¬åŒºæ–¹å¼ï¼‰ã€‚ç¼ºå¤±/è§£æžå¤±è´¥ â†’ catalog={}ï¼ˆçº¯ legacy å…¼å®¹ï¼‰ã€‚
+  // Stripe 在线支付（真实扣款；零前端密钥——前端只拿后端返回的跳转 URL）。混合模式：
+  //   subscription = 自动续费订阅（仅卡类支撑反复扣款；Apple Pay/Google Pay 随卡自动出现）
+  //   once         = 每年支付 1 年（v0.2.13.0：月价×10 送 2 个月，一次付清；GrabPay 等一次性支付方式，
+  //                  到期不自动续，webhook 顺延 12 个月；Apple/Google Pay 随卡自动出现在结账页）
+  // STRIPE_ENABLED 未开 / 密钥未配 → 付费页回退「申请开通」工单流程（降级路径）。
+  // prices：5 个主 SKU（basic/premium/ultra/pkg-premium/pkg-ultra）的 recurring Price ID；
+  // pricesOnce：同 SKU 的年付（one_time）Price ID。Basic = 学生价方案 RM12/月（付费层，新用户默认 free 普通用户；
+  // 学校邮箱认证后学生价 RM5.50/月走 studentPrices 独立 Price）。
+  // 缺哪个，哪个 SKU 的对应通道就不走支付、回退申请流。
+  // paymentMethods（订阅）：只放卡类——FPX/支付宝等一次性方式不支撑订阅，放进订阅清单 Checkout 建会话会失败。
+  // oncePaymentMethods（每年支付）：默认 card,grabpay——v0.2.13.1 实证轮（09-04 探活 PaymentMethodConfigurations
+  // 逐方式 available 字段）：本账户（MY）fpx/alipay available:false（Stripe 账户级不可用，display_preference 开了
+  // 也建不了会话，曾致 MYR 每年支付 checkout 400 全死）；可用 = card/grabpay/apple_pay/google_pay/link（钱包随卡
+  // 自动出现，无需列入）；哪天 Stripe 给开通可加回（wechat_pay 同理需账户真可用才列）。
+  // 多币种（v0.2.12.0）：myr（马来西亚本地价，默认）走上方 legacy env Price；usd + 14 币走 STRIPE_CATALOG_B64
+  // （base64url JSON {currency:{tierKey:{sub,once}}}；v0.2.13.0 起 once = 年付 Price ID，月付金额×10 后重吸
+  // .99/.00 尾）；单 env 单值避免 gcloud 逗号拆参）。
+  //   弱币（idr/vnd/thb/php/inr，1 USD 换得比 MYR 多）→ 按 MYR 价档换算；其余 → 按 USD 价档换算；尾 X.99/.00。
+  // 非 myr 会话支付方式只允许 card（FPX/支付宝/GrabPay 为马区方式）。缺失/解析失败 → catalog={}（纯 legacy 兼容）。
   stripe: {
     enabled: process.env.STRIPE_ENABLED === 'true',
     secretKey: process.env.STRIPE_SECRET_KEY || '',
@@ -157,13 +157,13 @@ const config = {
       ultra: process.env.STRIPE_PRICE_ULTRA_ONCE || '',
       'pkg-premium': process.env.STRIPE_PRICE_PKG_PREMIUM_ONCE || '',
       'pkg-ultra': process.env.STRIPE_PRICE_PKG_ULTRA_ONCE || '',
-      // FC v10.28.51.0 å›¢é˜Ÿæ‰©å®¹è®¢é˜…ï¼ˆslots-*ï¼Œä¸€æ¬¡ä»˜æ¸… 1 ä¸ªæœˆï¼›ç¼ºåˆ™ç‚¹å‡»å¦‚å®žå›žé€€ï¼‰
+      // FC v10.28.51.0 团队扩容订阅（slots-*，一次付清 1 个月；缺则点击如实回退）
       'slots-basic': process.env.STRIPE_PRICE_SLOTS_BASIC || '',
       'slots-plus': process.env.STRIPE_PRICE_SLOTS_PLUS || '',
       'slots-premium': process.env.STRIPE_PRICE_SLOTS_PREMIUM || '',
       'slots-ultra': process.env.STRIPE_PRICE_SLOTS_ULTRA || ''
     },
-    // v0.2.44.0 å­¦ç”Ÿä»·ï¼ˆä»… Basic SKU Ã— ä»… myrï¼‰ï¼šæœˆä»˜ RM5.50 + å¹´ä»˜ RM55ï¼ˆç”¨æˆ· Stripe åŽå°åˆ›å»ºï¼‰
+    // v0.2.44.0 学生价（仅 Basic SKU × 仅 myr）：月付 RM5.50 + 年付 RM55（用户 Stripe 后台创建）
     studentPrices: {
       basic: process.env.STRIPE_PRICE_BASIC_STUDENT || ''
     },
@@ -177,7 +177,7 @@ const config = {
         const j = JSON.parse(Buffer.from(b.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
         return j && typeof j === 'object' ? j : {};
       } catch (e) {
-        console.error('[config] STRIPE_CATALOG_B64 è§£æžå¤±è´¥ï¼š' + e.message);
+        console.error('[config] STRIPE_CATALOG_B64 解析失败：' + e.message);
         return {};
       }
     })()
@@ -185,4 +185,3 @@ const config = {
 };
 
 module.exports = config;
-
