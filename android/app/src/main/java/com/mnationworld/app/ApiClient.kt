@@ -55,7 +55,7 @@ object ApiClient {
         })
         .build()
 
-    class ApiException(val code: String, val message: String) : Exception(message)
+    class ApiException(val code: String, message: String) : Exception(message)
 
     private suspend fun raw(method: String, path: String, body: String?): String =
         withContext(Dispatchers.IO) {
