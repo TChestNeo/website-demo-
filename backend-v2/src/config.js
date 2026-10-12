@@ -55,8 +55,8 @@ const config = {
 
   // 系统更新（P9）：/api/app/latest 的版本单一来源——发新版只改这里（或 env）+ 覆盖 docs/downloads/MNationWorld.apk
   appVersions: {
-    androidVersionCode: int('APP_VERSION_CODE', 1),
-    androidVersionName: process.env.APP_VERSION_NAME || '1.0.0',
+    androidVersionCode: int('APP_VERSION_CODE', 2),
+    androidVersionName: process.env.APP_VERSION_NAME || '1.0.1',
     androidUrl: process.env.APP_URL || '/downloads/MNationWorld.apk',
     androidSizeMb: Number(process.env.APP_SIZE_MB || 10.4),
     androidMinSdk: process.env.APP_MIN_SDK || 'Android 7.0+',
