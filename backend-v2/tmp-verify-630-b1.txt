@@ -1,0 +1,262 @@
+﻿[hub function isHubAuthed ×1] → 1
+[hub cloudMode = isHubAuthed() ×1] → 1
+[hub id="hubLoginCard" ×1] → 1
+[hub id="hubOfflineCard" ×1] → 1
+[hub function hubOfflineCardHtml ×1] → 1
+[hub mn:unauthorized 监听 ×1] → 1
+[hub GET /social/posts ×1] → 1
+[hub GET /social/feed ×1] → 1
+[hub GET /social/topics ×1] → 1
+[hub create-topic-step-1.html ×1] → 1
+[hub T(hub.emptyFeed) ×1] → 1
+[hub T(hub.topic.members) ×1] → 1
+[hub T(hub.discovery.channelsEmpty) ×1] → 1
+[hub T(hub.feedEmptyFollowing) ×1] → 1
+[hub T(hub.feedEmptyTopic) ×1] → 1
+[hub T(hub.offline) ×1] → 1
+[hub function topicCardHtml ×1] → 1
+[hub function feedEmptyHtml ×1] → 1
+[hub T(hub.discovery.guest) ×2] → 2
+[hub T(hub.discovery.emptyTopics) ×2] → 2
+[hub hubLoginCardHtml ×2] → 2
+[hub hubOfflineCardHtml ×2] → 2
+[hub T(hub.loginCta.) ×3] → 3
+[hub var feedData 零(应 0)] → 0
+[hub Marcus Vane 零(应 0)] → 0
+[hub Sovereign Council 零(应 0)] → 0
+[hub Cartography Guild 零(应 0)] → 0
+[hub Neural Architects 零(应 0)] → 0
+[hub SlatiDB.getTopics 零(应 0)] → 0
+[hub data-guest- 零(应 0)] → 0
+[hub hub.toast.likeLogin 零(应 0)] → 0
+[hub hub.toast.repostLogin 零(应 0)] → 0
+[hub hub.toast.favLogin 零(应 0)] → 0
+[hub hub.share.communityTitle 零(应 0)] → 0
+[hub communityHub.feed. 零(应 0)] → 0
+[hub badgeKey 零(应 0)] → 0
+[hub timeKey 零(应 0)] → 0
+[hub titleKey 零(应 0)] → 0
+[hub descKey 零(应 0)] → 0
+[hub i18n communityHub.feed. 零(应 0)] → 0
+[hub i18n hub.toast.likeLogin 零(应 0)] → 0
+[hub i18n hub.toast.repostLogin 零(应 0)] → 0
+[hub i18n hub.toast.favLogin 零(应 0)] → 0
+[hub i18n hub.share.communityTitle 零(应 0)] → 0
+[hub i18n hub.emptyFeed ×12] → 12
+[hub i18n hub.loginCta.title ×11] → 11
+[hub i18n hub.loginCta.desc ×11] → 11
+[hub i18n hub.loginCta.btn ×11] → 11
+[hub i18n hub.offline ×11] → 11
+[hub i18n hub.feedEmptyFollowing ×11] → 11
+[hub i18n hub.feedEmptyTopic ×11] → 11
+[hub i18n hub.feedEmptyTopicCta ×11] → 11
+[hub i18n hub.discovery.guest ×11] → 11
+[hub i18n hub.discovery.emptyTopics ×11] → 11
+[hub i18n hub.discovery.channelsEmpty ×11] → 11
+[hub i18n hub.topic.members ×11] → 11
+[hub i18n zh-Hant 自动块 hub.offline ×1（双引号）] → 1
+[hub i18n zh-Hant 自动块 hub.topic.members ×1（双引号）] → 1
+[hub i18n zh-Hant 自动生成标记 ×1] → 1
+[social.js /api/social/posts 路由 ×2（GET+POST）] → 2
+[social.js /api/social/feed 路由 ×1] → 1
+[social.js /api/social/topics 路由 ×2（GET+POST）] → 2
+[transitions.js l.rel = prefetch ×1] → 1
+[transitions.js l.as = document ×1] → 1
+[transitions.js function prefetchPage ×1] → 1
+[transitions.js prefetchDone ×2] → 2
+[transitions.js clearTimeout(prefetchTimer) ×2] → 2
+[transitions.js prefetchTimer ×4] → 4
+[transitions.js (hover: hover) ×1] → 1
+[transitions.js saveData ×1] → 1
+[transitions.js ", 65)" ×1] → 1
+[transitions.js { once: true } ×1] → 1
+[transitions.js mouseover 监听 ×1] → 1
+[transitions.js click 劫持监听保留 ×1] → 1
+[transitions.js STAGGER_DELAY = 60 ×1] → 1
+[transitions.js LIGHT_STAGGER_DELAY = 40 ×1] → 1
+[transitions.js STAGGER_CAP = 8 ×1] → 1
+[auth.js CARD_BG_KEYS solid-black ×1] → 1
+[auth.js CARD_BG_KEYS solid-white ×1] → 1
+[auth.js CARD_BG_KEYS solid-gray ×1] → 1
+[auth.js CARD_BG_KEYS mono-bw ×1] → 1
+[auth.js CARD_BG_KEYS mono-silver ×1] → 1
+[auth.js CARD_BG_KEYS mono-charcoal ×1] → 1
+[social.js CARD_BG_KEYS solid-black ×1] → 1
+[social.js CARD_BG_KEYS solid-white ×1] → 1
+[social.js CARD_BG_KEYS solid-gray ×1] → 1
+[social.js CARD_BG_KEYS mono-bw ×1] → 1
+[social.js CARD_BG_KEYS mono-silver ×1] → 1
+[social.js CARD_BG_KEYS mono-charcoal ×1] → 1
+[029 迁移 ADD COLUMN banner_url ×1] → 1
+[auth.js PATCH banner_url = ? 分支 ×1] → 1
+[social.js GET bannerUrl 守卫行 ×1] → 1
+[social-profile.test.js 横幅案标题 ×1] → 1
+[social-profile.test.js 头像加固案标题 ×1] → 1
+[migrations.test.js 029 案标题 ×1] → 1
+[notifications.test.js 029 旁证注释 ×1] → 1
+[health.test.js 029_user_banner 注释 ×1] → 1
+[site-config 58.24 赋值在位] → 1
+[site-config 58.23 赋值零残留(应 0)] → 0
+[site-config FC 48.0 赋值在位] → 1
+[site-config FC 47.4 赋值零残留(应 0)] → 0
+[changelog 58.24 条目标题在位] → 1
+[changelog 58.23 条目标题保留（历史条目）] → 1
+[changelog 58.22 条目标题保留（历史条目）] → 1
+[changelog FC 48.0 条目标题在位] → 1
+[changelog 58.24 新词 社区页演示样本全移除 ×1] → 1
+[changelog 58.24 新词 三 tab 全接真数据 ×2] → 2
+[changelog 58.24 新词 假频道 ×1] → 1
+[changelog 58.23 词 预先加载 ×1] → 1
+[changelog 58.23 词 悬停预加载 ×2] → 2
+[changelog 58.23 词 rel="prefetch" ×1] → 1
+[changelog 58.23 词 多页应用 ×1] → 1
+[changelog 58.23 词 单页应用长串 ×1] → 1
+[changelog rev 00344-XXX 占位 ×1] → 1
+[changelog rev 00345-??? 终态占位注记 ×1] → 1
+[changelog rev 00343-gxb 真值 ×1（58.23 条）] → 1
+[changelog rev 00343-??? 占位零残留(应 0)] → 0
+[changelog rev 00342-zsw 真值 ×1（58.23 条）] → 1
+[changelog 58.22 条目 00340-wgj 保留] → 1
+[changelog 58.22 条目 00341-hbw 保留] → 1
+[changelog 58.21 条目 00338-tj5 保留] → 1
+[changelog 58.21 条目 00339-m4j 保留] → 1
+[changelog 58.19 条目 00334-tz6 保留] → 1
+[changelog 58.19 条目 00335-fmn 保留] → 1
+[changelog 58.20 条目 00336-7gr 保留] → 2
+[changelog 58.20 条目 00337-wxl 保留] → 2
+[settings-modal settingsBgGrid ×2] → 2
+[settings-modal settings-bg-grid ×2] → 2
+[settings-modal settings-bg-swatch ×6] → 6
+[settings-modal var ST_BG_DEFS ×1] → 1
+[settings-modal var ST_BG_KEYS ×1] → 1
+[settings-modal function stCanGif ×1] → 1
+[settings-modal function stCanImg ×1] → 1
+[settings-modal gold-lock-group ×5] → 5
+[settings-modal gold-locked ×2] → 2
+[settings-modal goldShimmer ×3] → 3
+[settings-modal mono-bw ×3] → 3
+[settings-modal bg-default ×2] → 2
+[settings-modal bannerColor 引用 ×1] → 1
+[settings-modal imgUpgrade 引用 ×1] → 1
+[settings-modal premGifUpgrade 引用 ×1] → 1
+[settings-modal toast.bannerLocked 引用 ×1] → 1
+[settings-modal toast.bgUpdated 引用 ×1] → 1
+[settings-modal 弹窗 width: 400px ×1] → 1
+[settings-modal 网格 repeat(4, 1fr) ×1] → 1
+[settings-modal max-width calc 防溢出 ×1] → 1
+[settings-modal .settings-lib-pop ×1] → 1
+[settings-modal settingsAvatarBtn ×2] → 2
+[settings-modal settingsAvatarPreview ×2] → 2
+[settings-modal settingsAvatarLibBtn ×2] → 2
+[settings-modal settingsBannerPreview ×4] → 4
+[settings-modal settingsBannerUploadBtn ×2] → 2
+[settings-modal settingsBannerLibBtn ×2] → 2
+[settings-modal settingsBannerRemoveBtn ×4] → 4
+[settings-modal settingsBannerGifUpgradeLink ×4] → 4
+[settings-modal sub-locked ×4] → 4
+[settings-modal function stUpload ×1] → 1
+[settings-modal function stRawMergeUser ×1] → 1
+[settings-modal bannerUrl: null ×2（移除语义）] → 2
+[settings-modal slati_avatar_sync ×4] → 4
+[settings-modal settingsProfileToast ×2] → 2
+[settings-modal function makeToggle ×1（复用）] → 1
+[settings-modal function stApiBase ×1] → 1
+[settings-modal MN_API.patch ×2] → 2
+[settings-modal window.SlatiSettings 导出 ×1] → 1
+[sidebar.js function openUserPop ×1] → 1
+[sidebar.js slati-user-pop-style ×2] → 2
+[sidebar.js preventDefault ×2（代码+注释）] → 2
+[sidebar.js e.stopPropagation() ×1] → 1
+[sidebar.js .user-info-bar a ×1] → 1
+[sidebar.js initUserPopWiring ×2] → 2
+[sidebar.js SlatiSettings.open ×3] → 3
+[sidebar.js e.button !== 0 ×1] → 1
+[i18n settings.profile.bannerColor ×11] → 11
+[i18n settings.profile.imgUpgrade ×11] → 11
+[i18n settings.profile.premGifUpgrade ×11] → 11
+[i18n settings.profile.toast.bannerLocked ×11] → 11
+[i18n settings.profile.toast.bgUpdated ×11] → 11
+[i18n zh-Hant 自动块 bannerColor ×1（双引号）] → 1
+[i18n zh-Hant 自动生成标记 ×1] → 1
+[i18n sidebar.pop.editProfile ×11] → 11
+[i18n sidebar.pop.viewProfile ×11] → 11
+[i18n sidebar.pop.following ×11] → 11
+[i18n sidebar.pop.followers ×11] → 11
+[i18n sidebar.pop.posts ×11] → 11
+[i18n sidebar.pop.joined ×11] → 11
+[i18n settings.profile.banner ×11] → 11
+[i18n settings.profile.bannerUpload ×11] → 11
+[i18n settings.profile.bannerGallery ×11] → 11
+[i18n settings.profile.bannerRemove ×11] → 11
+[i18n settings.profile.avatarGallery ×11] → 11
+[i18n settings.profile.avatarSync ×11] → 11
+[i18n settings.profile.gifUpgrade ×11] → 11
+[i18n settings.profile.toast.avatarUpdated ×11] → 11
+[i18n settings.profile.toast.bannerUpdated ×11] → 11
+[i18n settings.profile.toast.bannerRemoved ×11] → 11
+[i18n settings.profile.toast.failed ×11] → 11
+[i18n settings.profile.toast.gifLocked ×11] → 11
+[i18n settings.profile.toast.libLocked ×11] → 11
+[i18n settings.profile.toast.imgOnly ×11] → 11
+[i18n settings.profile.toast.imgTooBig10 ×11] → 11
+[i18n zh-Hant 自动块 sidebar.pop.editProfile ×1（双引号）] → 1
+[页面 gold-lock-group ×4] → 4
+[页面 gold-locked ×3] → 3
+[页面 goldShimmer ×3] → 3
+[页面 canGif ×7] → 7
+[页面 canGif 谓词行 ×1] → 1
+[页面 prof.toast.bannerLocked ×2（双保险门+文案）] → 2
+[页面 prof.edit.imgUpgrade ×1] → 1
+[页面 prof.edit.premGifUpgrade ×2（双行文案）] → 2
+[页面 FC 图库弹窗 680px ×1] → 1
+[页面 缩略图 height: 80px ×1] → 1
+[页面 mono-charcoal ×3（键+CSS+DEFS）] → 3
+[页面 .solid-black CSS ×1] → 1
+[页面 var CARD_BG_KEYS ×1] → 1
+[页面 var CARD_BG_DEFS ×1] → 1
+[页面 预设网格 data-bg ×1] → 1
+[页面 保存 diff cardBg ×1] → 1
+[页面 editAvatarSyncToggle ×4] → 4
+[页面 slati_avatar_sync ×2] → 2
+[页面 sub-locked ×4（渲染 ×3+CSS ×1）] → 4
+[页面 function blockGif ×1] → 1
+[页面 id avatarGifUpgradeLink ×1] → 1
+[页面 id bannerGifUpgradeLink ×2] → 2
+[页面 id editBannerUploadBtn ×1] → 1
+[页面 id editBannerLibBtn ×1] → 1
+[页面 id editBannerRemoveBtn ×1] → 1
+[页面 id editBannerFile ×1（JS 动态赋 id）] → 1
+[页面 id editAvatarFile ×1（JS 动态赋 id）] → 1
+[页面 id editAvatarLibBtn ×1] → 1
+[页面 has-img CSS 规则 ×1] → 1
+[页面 function openFcLibraryPicker ×1] → 1
+[页面 function fcDataUrlToBlob ×1] → 1
+[页面 保存 diff body.bannerUrl = editBannerUrl ×1] → 1
+[i18n prof.toast.bannerLocked ×11（手工单引号块）] → 11
+[i18n prof.edit.imgUpgrade ×11（手工单引号块）] → 11
+[i18n prof.edit.premGifUpgrade ×11（手工单引号块）] → 11
+[i18n prof.toast.bannerLocked zh-Hant 自动块 ×1（双引号）] → 1
+[i18n zh-Hant 自动生成标记 ×1] → 1
+[i18n prof.edit.avatarSync ×11] → 11
+[i18n prof.edit.avatarSync zh-Hant 自动块 ×1（双引号）] → 1
+[i18n prof.toast.gifLocked ×11] → 11
+[i18n prof.toast.libLocked ×11] → 11
+[i18n prof.edit.gifUpgrade ×11] → 11
+[fc-avatar-editable ×6] → 6
+[fcAvatarFile ×16 行] → 16
+[fcEnsureApi ×2] → 2
+[slati_avatar_sync ×1（fcAvatarSyncOn 谓词）] → 1
+[PATCH 体纯度 avatarUrl: data.url ×1] → 1
+[bio ×2 行] → 2
+[fluidcanvas.html bannerUrl 零(应 0)] → 0
+[fluidcanvas.html banner_url 零(应 0)] → 0
+[fc i18n fc.landing.changeAvatar ×12] → 12
+[fc i18n fc.toast.avatarUpdated ×12] → 12
+[fc i18n fc.toast.avatarFailed ×12] → 12
+[fc i18n fc.toast.gifLocked ×12] → 12
+[fc i18n fc.toast.imgOnly ×12] → 12
+[fc i18n fc.toast.imgTooBig10 ×12] → 12
+[fc i18n zh-Hant 自动生成标记 ×2（头注释+块标记）] → 2
+[activity.html 搜索框 id ×1（58.16 回归）] → 1
+[following.html api.js 引入 ×1（58.17 回归）] → 1
+✅ 镜像内容全部在位

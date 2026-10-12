@@ -1,0 +1,26 @@
+  ✅ S1 site-config：FC v10.28.47.4 + rev 00308- 占位 + 站点恒 v0.2.58.5 + 「同步图库」在 changelog + 旧赋值零残留
+  ✅ S2 弹层锚：4 新 id + TT_FILTER_TAG_IDS + 两桥两导出（currentTabItems/refreshLibItems/esc）+ 钩子 4 处+赋值 1 处
+  ✅ S3 遗锚：insertInlineImage 签名/FC_FLAG_LIBRARY 行/renderLibTiles(grid)/openImgMetaModal ≥8/守卫豁免/SEED·MY 无
+  ✅ S4 主图库行零动 + i18n 零新键（filterBtn/manageBtn ×12 复用，无 fc.tt.filter/fc.tt.lib/fc.tt.manage 新键）
+  ✅ T1 开弹层：3 库格两列+上传格尾位+零条纹+库视图态（chips A1/B1/C2）  {"mode":true,"searchMode":false,"libN":3,"thumbs":0,"uploads":1,"stripes":0,"names":["A","B","C"],"chips":[1,1,2],"badge":{"text":"0","hidden":true}}
+  ✅ T2 点库格：弹层关+卡内输入框 richify+img 三 dataset+toast 图片已插入  {"rich":true,"has":true,"src":true,"name":"A","desc":"A desc","vis":"private","toast":"图片已插入：A","popClosed":true}
+  ✅ T3a 勾国旗=A+C（OR 并集）+徽章 1  {"mode":true,"searchMode":false,"libN":2,"thumbs":0,"uploads":1,"stripes":0,"names":["A","C"],"chips":[1,2],"badge":{"text":"1","hidden":false}}
+  ✅ T3b 再勾地图=A+B+C 并集+徽章 2  {"mode":true,"searchMode":false,"libN":3,"thumbs":0,"uploads":1,"stripes":0,"names":["A","B","C"],"chips":[1,1,2],"badge":{"text":"2","hidden":false}}
+  ✅ T4a 全选=徽章 3+全量条目  {"mode":true,"searchMode":false,"libN":3,"thumbs":0,"uploads":1,"stripes":0,"names":["A","B","C"],"chips":[1,1,2],"badge":{"text":"3","hidden":false}}
+  ✅ T4b 清空=徽章隐藏+全量条目  {"mode":true,"searchMode":false,"libN":3,"thumbs":0,"uploads":1,"stripes":0,"names":["A","B","C"],"chips":[1,1,2],"badge":{"text":"0","hidden":true}}
+  ✅ T7a 搜索=维基桩 2 缩略格+搜索态+无库格（搜索框仍搜维基）  {"mode":false,"searchMode":true,"libN":0,"thumbs":2,"uploads":0,"stripes":0,"names":[],"chips":[],"badge":{"text":"1","hidden":false}}
+  ✅ T7b 清除搜索=回库视图+筛选跨搜索保持（A+C+徽章 1）  {"mode":true,"searchMode":false,"libN":2,"thumbs":0,"uploads":1,"stripes":0,"names":["A","C"],"chips":[1,2],"badge":{"text":"1","hidden":false}}
+  ✅ T10 关重开=筛选重置（徽章隐藏+全量 3 条目）  {"mode":true,"searchMode":false,"libN":3,"thumbs":0,"uploads":1,"stripes":0,"names":["A","B","C"],"chips":[1,1,2],"badge":{"text":"0","hidden":true}}
+  ✅ T5a 标签管理弹窗叠在弹层上（tagManageModal active 且 ttImgPop 仍 active）  {"tm":true,"pop":true}
+  ✅ T5b 关标签管理=弹层不坏（modal 关、ttImgPop 仍 active）  {"tm":true,"pop":true}
+  ✅ T6a 重放：C 带自建标签（3 chips=国旗+国徽+溢出 +1）  {"mode":true,"searchMode":false,"libN":3,"thumbs":0,"uploads":1,"stripes":0,"names":["A","B","C"],"chips":[1,1,3],"badge":{"text":"0","hidden":true}}
+  ✅ T6b 删自建标签：钩子触发 ≥1+弹层重绘（C 回 2 chips+grid 无 probe tag）+store 已删  {"fired":1,"chipsC":2,"gone":true,"tagGone":true}
+  ✅ T8a 上传→meta 保存→弹层条目即现（4 条目含 uplib1，钩子即时重绘）  {"libN":4,"names":["A","B","C","uplib1"]}
+  ✅ T8b 重开仍在（持久库已存：4 条目含 uplib1）  {"libN":4,"names":["A","B","C","uplib1"]}
+  ✅ T9a 只清 store：画布内联图仍按主图库同源口径在场（A+uplib1 派生图、零标签、无条纹）  {"mode":true,"searchMode":false,"libN":2,"thumbs":0,"uploads":1,"stripes":0,"names":["A","uplib1"],"chips":[0,0],"badge":{"text":"0","hidden":true}}
+  ✅ T9b 真空库（重载后）：零库格+仅上传格（同 v10.28.29.1 口径）  {"mode":true,"libN":0,"uploads":1,"stripes":0}
+  ✅ E1 全程零 Runtime.exceptionThrown  []
+  ✅ E2 全程零 console error  []
+
+🎉 全部通过 23/23  (fc-ttlib)
+

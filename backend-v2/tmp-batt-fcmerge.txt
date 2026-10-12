@@ -1,0 +1,54 @@
+  ✅ F0-1 版本双线 v0.2.45.0 / v10.28.34.0 + 三页合一注释块
+  ✅ F0-2 合并标记在场（两视图 DOM + 双 IIFE + initURLSync）
+  ✅ F0-3 旧页 href / 旧 hash href / 内联 onclick 全消失
+  ✅ F0-4 两 stub 各含 ?view= 目标 + location.replace
+  ✅ F0-5 编辑器页独立未动（不含合并标记）
+  ✅ A1 裸载入 dashboard 可见
+  ✅ A2 analytics 视图隐藏
+  ✅ A3 location.search 为空
+  ✅ B1 视图可见
+  ✅ B2 dashboard 隐藏
+  ✅ B3 period pill month active
+  ✅ B4 detail pill media active
+  ✅ B5 4 张 metric-card
+  ✅ B6 URL 原样保留
+  ✅ C1 URL 含 tab=articles
+  ✅ C2 detail pill articles active
+  ✅ C3 history.length +1  hLen=3
+  ✅ D1 URL 恢复 media+month
+  ✅ D2 period month 恢复
+  ✅ D3 history.length 不增（无新条目）  hLen=4
+  ✅ E1 15 行渲染
+  ✅ E2 勾选首行（事件委托实证，行 selected + bulkBar）
+  ✅ E3 删除后 14 行（confirm 自动接受）
+  ✅ E4 批量发布 toast 含 Published  publishPublished 2 article(s)
+  ✅ F1 upload 视图可见
+  ✅ F2 hash 清空 + search=?view=upload
+  ✅ G1 终态 pathname=fluidcanvas.html
+  ✅ G2 终态 search=?view=analytics
+  ✅ G3 periodTabs 在场
+  ✅ H1 media pill active
+  ✅ H2 滑轨 transform -100%
+  ✅ I1 视图切换 + URL
+  ✅ I2 history.length +1  hLen=7
+  ✅ J1 reload 后同视图
+  ✅ J2 reload 后 period 7d 恢复
+  ✅ J3 reload 后 detail media 恢复
+  ✅ M dashboard 页面级不差于基线  sw=812 baseline=812
+  ✅ M dashboard 未裁剪溢出不宽于既有最坏  max=812 (div.card) 既有最坏=812
+  ✅ M upload 页面级不差于基线  sw=586 baseline=812
+  ✅ M upload 未裁剪溢出不宽于既有最坏  max=586 (div.target-card) 既有最坏=812
+  ✅ M content 页面级不差于基线  sw=718 baseline=812
+  ✅ M content 未裁剪溢出不宽于既有最坏  max=718 (div.card) 既有最坏=812
+  ✅ M analytics 页面级不差于基线  sw=809 baseline=812
+  ✅ M analytics 未裁剪溢出不宽于既有最坏  max=808 (div.card) 既有最坏=812
+  ✅ M articles 页面级不差于基线  sw=757 baseline=812
+  ✅ M articles 未裁剪溢出不宽于既有最坏  max=757 (div.) 既有最坏=812
+  ✅ L1 零 Runtime exception  干净
+  ✅ L2 零 console error  干净
+  ✅ K1 html.fc-guest 已挂
+  ✅ K2 .studio-main 隐藏
+  ✅ K3 锁屏卡可见
+  ✅ K4 guest 零 Runtime exception  干净
+
+🎉 全部通过 52/52

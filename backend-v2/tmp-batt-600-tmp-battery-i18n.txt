@@ -1,0 +1,43 @@
+═══ S. 静态巡检 ═══
+  ✅ S1 7 旧 .zh.js 全删（badge/help/ticket/ai-chat/community-rules/financial-terms/platform-responsibility）
+  ✅ S2 词典文件集恰 41 个（38 页 + common + admin + article，无杂散无缺失；auth/fluidcanvas 各同域双页共用）
+  ✅ S3 每个词典含 en 块
+  ✅ S4 每个词典含 OpenCC 生成的 zh-Hant 块（哨兵 __ZH_HANT_AUTO__）
+  ✅ S5 40 页↔词典挂载逐一接通（HTML 加载自身 .i18n.js）
+  ✅ S6 40 接入页三件套（i18n.js + apply() + common.i18n.js，admin 免 common）
+  ✅ S7 4 排除页零 i18n（重定向 stub×2+demo×2 一个 i18n script 都没有）
+  ✅ S8 i18n.js LANGS 12 码序列 zh→zh-Hant→en→de→ru→ms→th→vi→id→fr→es→pt
+  ✅ S9 site-config 版本 = v0.2.54.2
+  ✅ S10 common.i18n.js 键族齐（sidebar/settings/report/aichat 从 help 移入/verify 从 badge 共享）
+═══ A. 设置弹窗切换链（badge 页）═══
+  ✅ A1 设置弹窗 12 语言 pill 标签序列（固有语言名）
+  ✅ A2 初始 active pill = zh（--lang=zh-CN 自动选）
+  ✅ A3 点 Deutsch → 页面标题变德语（=t('badge.meta.title') 且 ≠ 中文原文）
+  ✅ A4 双键持久：slati_lang=de + slati_settings.language=de
+  ✅ A5 reload 后语言仍德语（slati_lang 持久生效）
+  ✅ A6 xx 无字典回落浏览器语言 zh（标题=zh 值）
+═══ A'. FC 编辑器页 i18n 接入（v10.28.47.1）═══
+  ✅ A7 FC 编辑器页引擎接入（MN_I18N + 默认解析 zh）
+  ✅ A8 FC 弹窗 12 pill 来自 MN_I18N.LANGS（唯一来源）
+  ✅ A9 FC 设置弹窗 h3 显示 语言（zh 默认，data-i18n 渲染）
+  ✅ A10 FC 切 de 后重渲染：slati_lang=de + chrome 元素=de 字典值（非中文）
+═══ B. 浏览器语言自动选（de-DE）═══
+  ✅ B1 访客 --lang=de-DE 首访法律页自动选德语（标题=de 值+无 CJK）
+  ✅ B2 admin 壳静态节点自动选德语（登录标题=de 值+无 CJK）
+  ✅ B3 admin 切 zh 回落中文（zh 值逐字节=管理端原文，smoke-admin 安全）
+═══ C. 默认 zh 回归 ═══
+  ✅ C1 无 localStorage 默认 zh（--lang=zh-CN 回落）
+  ✅ C2 侧栏首项 = 主页（common T() 渲染）
+  ✅ C3 知识库卡 = 知识库（index 词典渲染）
+═══ D. index 动态区双语（活动流/公告/订阅卡）═══
+  ✅ D1 zh 活动流已翻译（以太共和国 + 2 小时前）
+  ✅ D2 zh 公告已翻译（公开测试启动 + 官方）
+  ✅ D3 zh 订阅卡特性已翻译（高级分析）
+  ✅ D4 zh 公告按钮/搜索框已翻译（查看全部公告/搜索文章…——v0.2.55.0 搜索改文章口径）
+  ✅ D5 de 活动流已翻译（Republik Etheria + vor 2 Stunden）
+  ✅ D6 de 公告已翻译（Beta-Start + offiziell）
+  ✅ D7 de 订阅卡特性已翻译（Erweiterte Analysen）
+  ✅ D8 切回 zh 重渲染恢复中文（以太共和国）
+
+i18n：34 通过 / 0 失败
+

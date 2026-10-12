@@ -1,0 +1,24 @@
+  ✅ B1 概览页近期贡献=真文章（Charter 在列）  Neo 发布了 Founding Charter2026-09-20Vela 发布了 Trade Treaty Note
+  ✅ B1b 假数据 Alex Rivera 已移除
+  ✅ B1c 贡献行含作者+动作词（发布了）
+  ✅ B1d 贡献行锚到 article.html?id=ART-MICRO-1  href=article.html?id=ART-MICRO-1
+  ✅ B1e 概览页已接 api.js（MN_API 存在）
+  ✅ B2 概览搜索 Charter → 下拉出结果  articleFounding CharterNeo · 2026-09-20
+  ✅ B2b 结果锚到 article.html?id=ART-MICRO-1  href=article.html?id=ART-MICRO-1
+  ✅ B3 概览搜索无结果 → 没有找到相关文章
+  ✅ B4 零文章 → 空态（暂无贡献内容）不回退假数据  暂无贡献内容
+  ✅ B5 活动流首卡=真文章卡（混入）  href=pages/article.html?id=ART-MICRO-1
+  ✅ B5b 文章卡含标题+作者+badge  edit_note文章Founding Charter2026-09-20Neo
+  ✅ B5c 文章卡插在 demo 活动项之前
+  ✅ B5d 最新文章区块仍显示（并存）
+  ✅ B5e 活动流 demo 项仍在（4 条）
+  ✅ B6 站点号 v0.2.58.2  got=v0.2.58.2
+  ✅ B6b FC v10.28.39.0  got=v10.28.47.4
+  ✅ F1 FC 列表行渲染（含云端行）  [{"id":"ART-MICRO-1","title":"Founding Charter","isCloud":false},{"id":"ART-MICRO-2","title":"Trade Treaty Notes","isCloud":false},{"id":"ART-015","title":"Inter-Micronation Trade Agreement","isCloud"
+  ✅ F2 云端文章 View → 平台阅读页 article.html?id=  http://127.0.0.1:4841/pages/article.html?id=ART-MICRO-1
+  ✅ F3 本地草稿 View → 编辑器 ?article=（预览保留）  clicked / http://127.0.0.1:4841/pages/fluidcanvas-editor.html?article=ART-015
+  ✅ S1 全程零 Runtime exception  干净
+  ✅ S1b 零 console error  干净
+
+🎉 全部通过 21/21
+

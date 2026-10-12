@@ -1,0 +1,76 @@
+  ✅ A0 编辑器页含 v10.28.17
+  ✅ A1 合并前图卡 320×320 / 内容宽 320（h2m=40）
+  ✅ A1b 图列高于内容列（方向确定）（320 vs 40）
+  ❌ A2 填满后两列底缘齐平（360/76）
+  ❌ A2b 内容卡只加高（高=列高 320、宽不变 320）（320×36）
+  ✅ A2c 图卡分毫未动（320×320、fitW/fitH 320）（320×320）
+  ❌ A3 重排幂等（尺寸/位置不变）（[{"id":"c1","t":"flag","g":"gmu1kmph114w","x":40,"y":40,"w":320,"h":320,"fitW":"320","fitH":"320","ar":"1","al":"1","cs":"8","rs":"6","bottom":360},{"id":"c2","t":"content","g":"gmu1kmph114w","x":600,"y":40,"w":320,"h":36,"fitW":"","fitH":"","ar":"","al":"","cs":"8","rs":"1","bottom":76}]）
+  ✅ A4a 草稿图卡 aspectLock+fitW/fitH 320（{"id":"c1","type":"flag","col":3,"row":3,"x":40,"y":40,"colSpan":8,"rowSpan":6,"rotate":0,"borderRadius":8,"background":"","borderStyle":"solid","borderColor":"","borderWidth":2,"aspectLock":"1","aspectRatio":"1","fitW":320,"fitH":320,"label":"c1","groupId":"gmu1kmph114w","imgSrc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjQwIiBmaWxsPSIjNGY0NmU1Ii8+PGNpcmNsZSBjeD0iMzIiIGN5PSIyMCIgcj0iMTIiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4=","imgAlt":"c1"}）
+  ✅ A4b 草稿内容卡 w 320、无高度字段（高度不落草稿）（{"id":"c2","type":"content","col":28,"row":3,"x":600,"y":40,"colSpan":8,"rowSpan":1,"rotate":0,"borderRadius":8,"background":"","borderStyle":"solid","borderColor":"","borderWidth":2,"w":320,"label":"","groupId":"gmu1kmph114w","content":"<p>短内容</p>","bgAlpha":100}）
+  ✅ A4 重载后图卡不翻倍（仍 320×320）（320×320）
+  ❌ A4c 重载后内容卡 reflow 补填回 320 高、底缘齐平（320×36）
+  ❌ A5 二次重载稳定（320×320 / 320×320）（320/36）
+  ✅ A6 无运行时异常
+  ✅ A7 无 console error
+  ✅ B0 合并前 400×400 / 320×200（[{"id":"c1","t":"flag","g":"","x":40,"y":40,"w":400,"h":400,"fitW":"400","fitH":"400","ar":"1","al":"1","cs":"8","rs":"6","bottom":440},{"id":"c2","t":"flag","g":"","x":600,"y":40,"w":320,"h":200,"fitW":"320","fitH":"200","ar":"1.6","al":"1","cs":"8","rs":"6","bottom":240}]）
+  ❌ B1 矮列图卡等比放大 640×400（320×200）
+  ✅ B1b aspectRatio 1.6 保持（640/400）（1.6000）
+  ❌ B1c fitW/fitH 同步 640/400（320/200）
+  ❌ B1d colSpan/rowSpan 按格同步（29/18，cs=20）（8/6）
+  ❌ B1e 两列底缘齐平 440（440/240）
+  ❌ B1f 列间按实际宽度贴齐（c2 左缘 440）（600）
+  ✅ B1g 高列图卡分毫未动 400×400（400×400）
+  ❌ B2 重排幂等（640×400 不变、贴齐 440 不变）（320×200 @600）
+  ❌ B3a 草稿 c2 fitW 640 fitH 400（{"id":"c2","type":"flag","col":28,"row":3,"x":600,"y":40,"colSpan":8,"rowSpan":6,"rotate":0,"borderRadius":8,"background":"","borderStyle":"solid","borderColor":"","borderWidth":2,"aspectLock":"1","aspectRatio":"1.6","fitW":320,"fitH":200,"label":"c2","groupId":"gmu1kmq6zqy","imgSrc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjQwIiBmaWxsPSIjNGY0NmU1Ii8+PGNpcmNsZSBjeD0iMzIiIGN5PSIyMCIgcj0iMTIiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4=","imgAlt":"c2"}）
+  ❌ B3 重载不翻倍（c2 仍 640×400、c1 仍 400×400）（320×200 / 400×400）
+  ❌ B3b 重载后底缘齐平（440/240）
+  ❌ B4 二次重载稳定（320×200）
+  ✅ B5 无运行时异常
+  ✅ B6 无 console error
+  ✅ C0 种子恢复：组背景 1 处、c3 未分组（[{"id":"c1","t":"flag","g":"g1","x":40,"y":40,"w":400,"h":400,"fitW":"400","fitH":"400","ar":"1","al":"1","cs":"8","rs":"6","bottom":440},{"id":"c2","t":"flag","g":"g1","x":440,"y":40,"w":640,"h":400,"fitW":"640","fitH":"400","ar":"1.6","al":"1","cs":"8","rs":"6","bottom":440},{"id":"c3","t":"flag","g":"","x":1200,"y":40,"w":300,"h":300,"fitW":"300","fitH":"300","ar":"1","al":"1","cs":"8","rs":"6","bottom":340}]）
+  ❌ C1 并入卡挤到组宽 640×640（300×300）
+  ❌ C1b 矮列 c1 等比放大 640×640（400×400）
+  ❌ C1c 矮列 c2 等比放大 1024×640（r1.6 保持）（640×400）
+  ❌ C1d 三列底缘齐平 680（440/440/340）
+  ❌ C1e 列间按实际宽度贴齐（c2@680、c3@1704）（440/1200）
+  ❌ C2 重排幂等（640/1024/640 不变）（400/640/300）
+  ❌ C3 拆分后 c3 离组、剩余组尺寸不变（640×640 / 1024×640）（[{"id":"c1","t":"flag","g":"g1","x":40,"y":40,"w":400,"h":400,"fitW":"400","fitH":"400","ar":"1","al":"1","cs":"8","rs":"6","bottom":440},{"id":"c2","t":"flag","g":"g1","x":440,"y":40,"w":640,"h":400,"fitW":"640","fitH":"400","ar":"1.6","al":"1","cs":"8","rs":"6","bottom":440},{"id":"c3","t":"flag","g":"","x":1200,"y":40,"w":300,"h":300,"fitW":"300","fitH":"300","ar":"1","al":"1","cs":"8","rs":"6","bottom":340}]）
+  ✅ C3b 拆分后组背景仍在（2 成员）
+  ✅ C4a 草稿 c3 无 groupId（{"id":"c3","type":"flag","col":56,"row":3,"x":1200,"y":40,"colSpan":8,"rowSpan":6,"rotate":0,"borderRadius":8,"background":"","borderStyle":"solid","borderColor":"","borderWidth":2,"aspectLock":"1","aspectRatio":"1","fitW":300,"fitH":300,"label":"c3","imgSrc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjQwIiBmaWxsPSIjNGY0NmU1Ii8+PGNpcmNsZSBjeD0iMzIiIGN5PSIyMCIgcj0iMTIiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4=","imgAlt":"c3"}）
+  ❌ C4 重载不翻倍（c1 640×640、c2 1024×640）（400/640）
+  ✅ C5 无运行时异常
+  ✅ C6 无 console error
+  ✅ D1 单列不填满（尺寸不变 320×200 / 320×300）（320×200 / 320×300）
+  ❌ D1b 列内贴齐堆叠（c2 顶 240）（260）
+  ✅ D1c fitW/fitH 未动（320/320/300）
+  ❌ D2 重排幂等（尺寸/堆叠不变）（320×300 @260）
+  ✅ D3 无运行时异常
+  ✅ D4 无 console error
+
+结果：23 通过 / 25 失败
+失败项：
+  ❌ A2 填满后两列底缘齐平（360/76）
+  ❌ A2b 内容卡只加高（高=列高 320、宽不变 320）（320×36）
+  ❌ A3 重排幂等（尺寸/位置不变）（[{"id":"c1","t":"flag","g":"gmu1kmph114w","x":40,"y":40,"w":320,"h":320,"fitW":"320","fitH":"320","ar":"1","al":"1","cs":"8","rs":"6","bottom":360},{"id":"c2","t":"content","g":"gmu1kmph114w","x":600,"y":40,"w":320,"h":36,"fitW":"","fitH":"","ar":"","al":"","cs":"8","rs":"1","bottom":76}]）
+  ❌ A4c 重载后内容卡 reflow 补填回 320 高、底缘齐平（320×36）
+  ❌ A5 二次重载稳定（320×320 / 320×320）（320/36）
+  ❌ B1 矮列图卡等比放大 640×400（320×200）
+  ❌ B1c fitW/fitH 同步 640/400（320/200）
+  ❌ B1d colSpan/rowSpan 按格同步（29/18，cs=20）（8/6）
+  ❌ B1e 两列底缘齐平 440（440/240）
+  ❌ B1f 列间按实际宽度贴齐（c2 左缘 440）（600）
+  ❌ B2 重排幂等（640×400 不变、贴齐 440 不变）（320×200 @600）
+  ❌ B3a 草稿 c2 fitW 640 fitH 400（{"id":"c2","type":"flag","col":28,"row":3,"x":600,"y":40,"colSpan":8,"rowSpan":6,"rotate":0,"borderRadius":8,"background":"","borderStyle":"solid","borderColor":"","borderWidth":2,"aspectLock":"1","aspectRatio":"1.6","fitW":320,"fitH":200,"label":"c2","groupId":"gmu1kmq6zqy","imgSrc":"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI0MCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjQwIiBmaWxsPSIjNGY0NmU1Ii8+PGNpcmNsZSBjeD0iMzIiIGN5PSIyMCIgcj0iMTIiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4=","imgAlt":"c2"}）
+  ❌ B3 重载不翻倍（c2 仍 640×400、c1 仍 400×400）（320×200 / 400×400）
+  ❌ B3b 重载后底缘齐平（440/240）
+  ❌ B4 二次重载稳定（320×200）
+  ❌ C1 并入卡挤到组宽 640×640（300×300）
+  ❌ C1b 矮列 c1 等比放大 640×640（400×400）
+  ❌ C1c 矮列 c2 等比放大 1024×640（r1.6 保持）（640×400）
+  ❌ C1d 三列底缘齐平 680（440/440/340）
+  ❌ C1e 列间按实际宽度贴齐（c2@680、c3@1704）（440/1200）
+  ❌ C2 重排幂等（640/1024/640 不变）（400/640/300）
+  ❌ C3 拆分后 c3 离组、剩余组尺寸不变（640×640 / 1024×640）（[{"id":"c1","t":"flag","g":"g1","x":40,"y":40,"w":400,"h":400,"fitW":"400","fitH":"400","ar":"1","al":"1","cs":"8","rs":"6","bottom":440},{"id":"c2","t":"flag","g":"g1","x":440,"y":40,"w":640,"h":400,"fitW":"640","fitH":"400","ar":"1.6","al":"1","cs":"8","rs":"6","bottom":440},{"id":"c3","t":"flag","g":"","x":1200,"y":40,"w":300,"h":300,"fitW":"300","fitH":"300","ar":"1","al":"1","cs":"8","rs":"6","bottom":340}]）
+  ❌ C4 重载不翻倍（c1 640×640、c2 1024×640）（400/640）
+  ❌ D1b 列内贴齐堆叠（c2 顶 240）（260）
+  ❌ D2 重排幂等（尺寸/堆叠不变）（320×300 @260）

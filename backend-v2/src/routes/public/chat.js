@@ -87,7 +87,7 @@ async function callDeepSeek(ctx, locale, messages) {
   const cfg = ctx.config;
   const baseUrl = (cfg.deepseek || {}).baseUrl || 'https://api.deepseek.com';
   const req = {
-    model: (cfg.deepseek || {}).model || 'deepseek-chat',
+    model: (cfg.deepseek || {}).model || 'deepseek-v4-flash',
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: JSON.stringify({ locale, messages }) }
@@ -218,7 +218,8 @@ function register(router, ctx) {
     const slim = messages.slice(-6).map(m => ({ role: m.role, content: m.content.slice(0, 2000) }));
     const started = Date.now();
     try {
-      const { reply, usage } = await callDeepSeek(ctx, locale, slim);
+      // v0.2.59.35：AI 排队层——高峰排队等位（超时抛 AiBusyError → 走下方降级 200）
+      const { reply, usage } = await ctx.aiLimiter.withSlot(() => callDeepSeek(ctx, locale, slim));
       const nowIso = new Date().toISOString();
       const { rates } = priceOf(nowIso, (ctx.config.deepseek || {}).offPeakWindow);
       const latencyMs = Date.now() - started;

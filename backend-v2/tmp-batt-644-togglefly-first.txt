@@ -1,0 +1,17 @@
+═══ S 静态锚 ═══
+  ✅ S1 site-config：FC 52.3 赋值 ×1 + 52.2 赋值零残留 + 站点 58.28 ×1 + changelog 头 52.3/52.2 各 ×1 + rev 前缀锚各 ×1
+  ✅ S2 编辑器：52.3 注释原话 + fine 块六锚（左缘 6px/top 16px/胶囊让位/动画挂接/关键帧/过冲曲线）+ 内联宽度搬出零残留
+  ✅ S3 编辑器：旧轮锚全保留（49.1 :has 折叠态/49.2 正圆尺寸/52.2 纯白+暗色还原/粗指针基态 266px 口径）
+═══ B 编辑器 CDP ═══
+  ✅ B1 展开态：按钮 left 6px/top 16px 正圆 32×32 纯白 rgb(255,255,255)+blur 摘除/◂/面板 260px
+  ❌ B1b 搜索胶囊让位：左缘 50px（=面板内边距 12+margin-left 38）/宽 206px（=244-38）/按钮右缘 38 留 ≥10px 缝 — capL=50 capW=191px btnR=38
+  ❌ B2a 折叠动画命中：animationName=fcToggleOutSpring + getAnimations≥1 + 轨迹 ≥60 采样 + 首采样已起步（<6） — {"an":"fcToggleOutSpring","ac":1,"n":82,"first":6}
+  ✅ B2b 出画：轨迹最低 ≤ -30（右缘出画面外）+ 回弹过冲最高 ≥ 8 + 先出画后回弹（min 先于 max）
+  ✅ B2c 落定：终采样 left 6px + 面板宽 0 + 按钮仍纯白 + ▸
+  ✅ B3 展开回来：按钮仍 left 6px/◂/面板 260px + animationName none（展开态恒驻原地）
+  ✅ B4 再折叠：动画重触发（animationName 命中+getAnimations≥1）→ 落定 6px
+  ✅ B5 搜索过滤：输入 flag 过滤生效（可见卡 ≤3 张且含 National Flag 或零卡）
+  ✅ B6 暗色主题：按钮还原 rgb(32,32,56) 实心 → 回亮色纯白恢复（52.2 规则在新位置零回归）
+  ✅ E 零异常（Runtime exception + 控制台 error 全滤噪声后）
+
+═══ FAILED — 11/13 ═══

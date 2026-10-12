@@ -1,0 +1,36 @@
+<style>
+/* ===== 序章页专属（无额外样式，全部走共享基类） ===== */
+</style>
+<meta name="story-topic" content="story-home">
+</head>
+<body class="story-page" data-page="index">
+<div class="story-progress"></div>
+<main class="story-flow">
+
+  <!-- ScrollExpand 序章展开：小卡（42%×58% 圆角）随滚动展开到全屏；与全部故事内容同页（/wip 单页架构，无需点击）。
+       媒体图 docs/story/hero-media.jpg 必须在本层——story 域 docRoot 只出本级文件 -->
+  <section class="scene scene-hero se-scene" id="scene-1" data-scene="home-01">
+    <div class="se-track">
+      <div class="se-stage">
+        <div class="se-frame">
+          <div class="se-media">
+            <img class="se-img" src="hero-media.jpg" alt="政治启蒙">
+          </div>
+          <div class="se-scrim"></div>
+        </div>
+        <h1 class="se-title">政治</h1>
+        <div class="se-sub-line">先了解政治，再创造国家</div>
+        <div class="se-hint">向下滚动</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+<footer class="story-sources">
+  <div class="s-head">阅读口径</div>
+  <p><span class="tag tag-fact">Fact</span>普遍接受的事实　<span class="tag tag-interp">Interpretation</span>学界的一种解释　<span class="tag tag-debate">Debate</span>仍在争论的问题</p>
+  <p>本站是 M.NationWorld 的知识入口：只做入门级讲解，不宣扬任何特定立场。同一个问题，不同的国家有不同的答案。</p>
+</footer>
+<script src="story.js"></script>
+</body>
+</html>

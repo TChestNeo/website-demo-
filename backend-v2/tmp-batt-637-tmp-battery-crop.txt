@@ -1,0 +1,31 @@
+  ✅ S0a site-config：58.25 赋值 1 + changelog 1 + rev 00348-/00349- 各 2（站点+FC 双条目）+ FC 48.1 赋值 1 + MN_CompressVideo/MN_VideoCap 各 1  r40=2 r41=2
+  ✅ S0b settings-modal 58.25 件：window.MN_CropDialog ×2 + MN_CropDialog.open ×4 + applyCrop ×8 + data-crop ×3 + mn-crop-stage ×5 + windowFromZoom ×3 + stDoUpload ×5 + 重裁钮 ×2×2 + settings-banner-img ×7 + settings-banner-video ×7 + stIsVideoUrl ×3 + vp9 ×1 + captureStream ×2 + MN_CompressVideo ×1 + MN_VideoCap ×2 + mnVideoCap ×3 + height: 144px ×1 + 96px 零残留  crop=2 wfz=3 vid=7
+  ✅ S0c 资料页 58.25 件：profile-banner-video ×3 + isProfileVideoUrl ×3 + VIDEO_EXTS ×4 + 重裁钮 ×3/×2 + MN_CropDialog ×25 + profile-banner-crop ×9 + profile-banner-img ×3 + avatarCrop ×10 + bannerCrop ×5 + profile-avatar-img ×4 + accept 视频 ×1 + height: 210px ×2 + 140px 零残留（post-media/注释 2 处豁免）+ 视频 i18n 锚 ×1/×1/×1/×2  crop=25 v=3
+  ❌ S0d FC 页 48.2 件：fc-ch-avatar-crop ×4 + fc-ch-avatar-img ×3 + v10.28.48.2 ×3（58.26 新注释）+ 48.1/48.0 注释历史冻结 ×4/×2 + bannerUrl ×0（avatar-only 边界）+ MN_CropDialog ×4 + avatarCrop ×12 + applyCrop ×2  crop=6 482=3 481=4 480=2
+  ✅ S0e i18n 新键：common crop 6+reCrop 2+video 4 键单引号 ×11 各 + profile reCrop 2+video 4 键单引号 ×11 各 + zh-Hant 双引号 ×1 各 + 生成标记 ×1  crop=11 v=11
+  ✅ S0f 后端 58.25 件：030 迁移 avatar_crop ×2 + auth.js avatar_crop = ?/banner_crop = ? 各 ×2 + parseCrop ×7 + social.js parseCrop ×6 + bannerCrop: ×1 + video/webm ×1  mig=2 p=7
+  ℹ️ DEMO-V.webm 已生成 921B
+  ✅ C2 Esc：裁切弹窗关 + 设置弹窗仍在（捕获相 stopPropagation 不连锁关）+ 零上传零 PATCH  {"c2":{"overlay":false,"settings":true},"up":0,"patch":0}
+  ✅ C3 设置横幅上传：上传恰 1 + PATCH 恰 1 体 keys bannerUrl,bannerCrop + rect 深等 {0,0,1,1} + slati_user 合并写（字段保留）+ 预览 img data-crop 精确  {"up":1,"patch":1,"keys":"bannerUrl,bannerCrop","rect":{"x":0,"y":0,"w":1,"h":1},"c3prev":{"hasImg":true,"src":"/uploads/UPL-DEMO02.jpg","dataCrop":"{\"x\":0,\"y\":0,\"w\":1,\"h\":1}","w":"867px"}}
+  ✅ C15a 设置横幅预览高度 computed 144px（钦定③ 96→144）  144px
+  ✅ V2 MN_VideoCap：65→60 / 5→5 / NaN→60 / ∞→60 / -3→60 / 0→60（超 60s 截取纯逻辑）  [60,5,60,60,60,60]
+  ✅ C9 设置重裁：stage src=远程 URL 无 blob: + confirm → PATCH 恰 {bannerCrop:{0,0,1,1}} 无 bannerUrl + slati_user.bannerCrop 写 + 预览 data-crop 更新  {"src":"/uploads/UPL-DEMO01.jpg","keys":"bannerCrop","ls":{"x":0,"y":0,"w":1,"h":1},"prev":"{\"x\":0,\"y\":0,\"w\":1,\"h\":1}"}
+  ✅ C6 图库取消：弹窗开（图库同漏斗）+ 取消零上传零 PATCH  {"up":0,"patch":0}
+  ✅ C13 GIF 保真：stage src blob: 前缀（objectURL 不重编码）+ 上传体原字节（size 相等+type image/gif）+ PATCH keys bannerUrl,bannerCrop  {"src":"blob:http://127.0.0.1:4883/5be1da13-1192-4346-aa43-48607dd6f209","up":{"size":68,"type":"image/gif"},"keys":"bannerUrl,bannerCrop"}
+  ✅ C4 拖拽数学：zoom×2 后视窗重算 + 拖 +100x（x -= dx/(Nw·s) 跟手）→ confirm 产物与 Node 同式复算逐位一致 + 视窗已物化 w<1  {"got":{"x":0.2373,"y":0.1219,"w":0.3781,"h":0.7561},"exp":{"x":0.2373,"y":0.1219,"w":0.3781,"h":0.7561,"W":513,"H":513,"sFull":5.13}}
+  ✅ C5 钳制：25 放大→w 钳 [1/3,1]（方形图 3·sFull 时 w=1/3）+ 40 缩小→sFull 视窗回整图 {0,0,1,1}（重裁可缩回整图）  {"in":{"x":0.3333,"y":0.3333,"w":0.3333,"h":0.3333},"expIn":{"x":0.3333,"y":0.3333,"w":0.3333,"h":0.3333,"W":513,"H":513,"sFull":2.565},"out":{"x":0,"y":0,"w":1,"h":1},"expOut":{"x":0,"y":0,"w":1,"h":1,"W":513,"H":513,"sFull":2.565}}
+  ✅ C14 触屏：touch 拖拽走同一 pointer 链（dx=80 跟手）→ confirm 产物与复算逐位一致  {"got":{"x":0.252,"y":0.1219,"w":0.3781,"h":0.7561},"exp":{"x":0.252,"y":0.1219,"w":0.3781,"h":0.7561,"W":513,"H":513,"sFull":5.13}}
+  ✅ C7 资料页重裁：stage src=DEMO01 无 blob: + 放大确认 → 保存 PATCH 恰 {bannerCrop}（无 bannerUrl 无 name/bio）rect 与 Node 同式复算逐位一致 + loadProfile 后头部 img data-crop 同 rect  {"src":"/uploads/UPL-DEMO01.jpg","keys":"bannerCrop","got":{"x":0.0652,"y":0.2101,"w":0.8696,"h":0.5797},"exp":{"x":0.0652,"y":0.2101,"w":0.8696,"h":0.5797,"W":720,"H":240,"sFull":3.6},"hdr":{"crop":"{\"x\":0.0652,\"y\":0.2101,\"w\":0.8696,\"h\":0.5797}","src":"/uploads/UPL-DEMO01.jpg"}}
+  ✅ C12 爷爷零回归：null crop → {0,0,1,1} 居中 cover（头像/横幅几何与解析值 <0.01）+ 高度 210px  {"av":{"w":132,"l":-33,"t":0},"bn":{"w":678,"l":0,"t":-64.5},"got":{"aw":66,"ah":66,"asw":132,"asl":-33,"ast":0,"bw":678,"bh":210,"bsw":678,"bsl":0,"bst":-64.5}}
+  ✅ V3a free 设置 mp4：videoLocked toast 精确串 + 升级链显 + 零上传零 PATCH + 零弹窗  {"t":{"text":"视频横幅为高级订阅专属功能","active":true},"lk":true,"up":0,"patch":0,"dlg":false}
+  ✅ V6 设置视频全链：stage 为 video + confirm → 上传 ext=.webm → PATCH {bannerUrl:DEMO-V,bannerCrop} + slati_user 写 + 预览 video autoplay/muted/loop/playsinline + data-crop  {"tag":"VIDEO","keys":"bannerUrl,bannerCrop","url":"/uploads/UPL-DEMO-V.webm","prev":{"autoplay":true,"muted":true,"loop":true,"playsinline":true,"src":"/uploads/UPL-DEMO-V.webm","crop":"{\"x\":0,\"y\":0,\"w\":1,\"h\":1}"}}
+  ✅ V7 视频重裁：预览即 video（src DEMO-V）+ 重裁 stage 为 video 远程 URL 无 blob: + PATCH 恰 {bannerCrop} + slati_user.bannerCrop 写  {"pv":{"src":"/uploads/UPL-DEMO-V.webm","hasImg":true},"dlg":{"tag":"VIDEO","src":"/uploads/UPL-DEMO-V.webm"},"keys":"bannerCrop"}
+  ✅ V3b basic 资料页 mp4：videoLocked toast 精确串 + 升级链显 + 零上传零 PATCH + 零弹窗  {"t":{"msg":"视频横幅为高级订阅专属功能","err":true},"lk":true,"up":0,"patch":0,"dlg":false}
+  ✅ V4 资料页视频全链：stage video → 上传 ext=.webm → 保存 PATCH {bannerUrl:DEMO-V,bannerCrop:{0,0,1,1}} → loadProfile 头部 video autoplay/muted/loop/playsinline + data-crop + profile-banner-crop 盒 + has-img  {"tag":"VIDEO","keys":"bannerUrl,bannerCrop","hdr":{"autoplay":true,"muted":true,"loop":true,"playsinline":true,"src":"/uploads/UPL-DEMO-V.webm","crop":"{\"x\":0,\"y\":0,\"w\":1,\"h\":1}","parent":"profile-banner-crop","hasImgCls":true}}
+  ✅ V5 头像链 mp4：toast 头像仅支持图片 + 零上传零 PATCH + 零弹窗（视频只横幅钦定）  {"t":{"msg":"头像仅支持图片","err":true},"up":0,"patch":0,"dlg":false}
+  ✅ C10 FC 链：上传 1 + PATCH 1 体 keys avatarUrl,avatarCrop 无 bio + slati_user 合并写 avatarCrop + 频道卡 .fc-ch-avatar-crop wrapper + 头像换 DEMO02 + personalAvatar 同步  {"keys":"avatarUrl,avatarCrop","card":{"wrap":true,"img":true,"src":"/uploads/UPL-DEMO02.jpg","personal":"/uploads/UPL-DEMO02.jpg"}}
+  ✅ C11 FC 几何：rect {0.25,0,0.5,1} 中心锚定渲染（s=max(W/(w·Nw),H/(h·Nh)) 解析比对 <0.01）+ data-crop 在位  {"got":{"w":72,"h":72,"sw":144,"sh":72,"sl":-36,"st":0,"crop":"{\"x\":0.25,\"y\":0,\"w\":0.5,\"h\":1}"},"s":0.72}
+  ✅ E 全程零异常零 console error（噪声已滤）
+
+🎉 PASS 26 / 💔 FAIL 1
+

@@ -1,0 +1,32 @@
+═══ S. 静态巡检 ═══
+  ✅ S1 ethereal 全站铺底规则在位（body:not(.fc-page) 三面，首页命中同口径）
+  ✅ S2 ethereal 全站灭层规则在位（card + guest-hero 直系 lg-backdrop 灭滤镜灭磨砂）
+  ✅ S3 ethereal 修复注释含 54.4 用户原话 + 三钦定口径（54.3 旧注释已整体替换零残留）
+  ✅ S4 index body 挂 mn-index 页面类
+  ✅ S5 问候卡内联 background:var(--sidebar-bg)（旧 tint 渐变已去）
+  ✅ S6 订阅卡深色渐变底零触碰（白字设计卡不动）
+  ✅ S7 内联页总数 = 41（55.0 article.html 入族，实测 41）
+  ✅ S8 41 页内联块全部含全站铺底规则
+  ✅ S9 site-config 版本 = v0.2.55.0
+  ✅ S10 site-config changelog 含 v0.2.54.3 条目 + 用户原话 + 侧栏同款口径
+  ✅ S11 本轮后端零改动（v0.2.56.2 条目口径「GET /api/articles 已具备」）
+  ✅ S12 FC v10.28.36.1 保持
+═══ B1. 登录工作台（亮色 → data-theme=dark）═══
+  ✅ B1 卡数 = 18（问候 1+活动流 4+公告 10+工作台/指标/我的世界 3）
+  ✅ B2 亮色 18 卡 backgroundColor 全 rgba(255,255,255,0.95) 不透明侧栏同底
+  ✅ B3 卡自带 backdrop-filter blur(24px) 保留（底不透明零可见效果，侧栏模块同口径）
+  ✅ B4 13 张非 tilt 卡 .lg-backdrop 全灭（filter=none + backdropFilter=none）
+  ✅ B5 5 张 tilt 卡免层（问候+活动流 4；liquid-glass elasticOk 设计排除，本轮零触碰）
+  ✅ B6 搜索胶囊同底 0.95 + 自带 blur(16px) 保留
+  ✅ B7 暗色 18 卡 backgroundColor 全 rgb(26,26,46)（侧栏暗色同底）
+  ✅ B8 暗色 13 张挂层卡 .lg-backdrop 仍全灭
+  ✅ B9 暗色搜索胶囊同底 rgb(26,26,46)
+═══ B2. 访客态 guest-hero 大卡 ═══
+  ✅ B10 访客大卡亮色底 rgba(255,255,255,0.95)
+  ✅ B11 访客大卡 .lg-backdrop 灭（filter=none + backdropFilter=none）
+  ✅ B12 访客态工作台卡互斥隐藏（offsetParent 全 null=祖先 display:none，hero 独显）
+  ✅ B13 访客大卡暗色底 rgb(26,26,46)
+  ✅ B14 暗色访客大卡 .lg-backdrop 仍全灭
+
+home-bg 电池：26 通过 / 0 失败
+

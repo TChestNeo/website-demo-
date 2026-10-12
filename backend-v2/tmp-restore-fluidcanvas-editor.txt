@@ -1,0 +1,372 @@
+/* ── 恢复段 1（原内联块行 604..619）── */
+  /* v0.2.45.2：隐藏态免绘制——旧隐藏态只 opacity:0，玻璃卡（backdrop-filter
+     blur(32px)）连同卡内无限动画（迁移按钮魔法条 2s 自转）每帧照样重光栅
+     ——编辑器静息实测 15fps（探针 tmp-probe-editor-jank 二分实证：摘掉转圈
+     条 17→52 帧/秒）。visibility 隐藏杀绘制，关闭延迟 0.25s 等淡出结束 */
+  visibility: hidden;
+  transition: all 0.25s ease, visibility 0s linear 0.25s;
+}
+/* v0.2.45.2：隐藏弹窗内动画全停——visibility:hidden 只免绘制，卡内无限动画
+   （迁移按钮魔法条 2s 自转）的合成器 tick 仍每帧把玻璃面拖进重光栅循环：
+   探针微基准⑥ 暂停全部动画后编辑链慢帧 7→3、整窗 fc-moving 7→2 实证；
+   animation 不吃继承且 `*` 不命中伪元素 → ::before/::after 一并点名。
+   弹窗打开 (.active) 规则失配，卡内动画照常从零起播、零视觉差异 */
+.modal-card:not(.active) *,
+.modal-card:not(.active) *::before,
+.modal-card:not(.active) *::after {
+  animation: none !important;
+
+/* ── 恢复段 2（原内联块行 639..735）── */
+/* ── v10.28.28 图片信息弹窗（上传元数据：名称/描述/可见性）── */
+.imm-row { display: flex; align-items: center; gap: 10px; }
+.imm-name { flex: 1; min-width: 0; }
+.imm-preview {
+  width: 64px; height: 64px; flex-shrink: 0; object-fit: cover;
+  border-radius: var(--radius-md); border: 1px solid var(--divider-line);
+  background: var(--color-surface-container-lowest);
+}
+.imm-desc {
+  width: 100%; height: 110px;          /* 固定高度，不可拖拽调整（用户钦定） */
+  resize: none; overflow-y: auto; line-height: 1.5; margin-top: 4px;
+}
+.imm-count { font-variant-numeric: tabular-nums; }
+.imm-count.over { color: #e5484d; font-weight: 600; }
+/* ── v10.28.33 图片信息只读弹窗（图库 info 图标二级弹窗：上传者/简介/时间/可见性/尺寸）── */
+.iim-row { display: flex; gap: 10px; align-items: flex-start; margin-top: 8px; }
+.iim-label { flex: 0 0 64px; font-size: var(--fs-label-sm); color: var(--color-outline); }
+.iim-value { flex: 1; min-width: 0; font-size: var(--fs-label-sm); word-break: break-word; white-space: pre-wrap; }
+.pbg-name-row { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.pbg-name {
+  flex: 1; min-width: 0; font-size: var(--fs-label-sm);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.pbg-edit { display: flex; border: none; background: none; padding: 0; color: var(--color-outline); cursor: pointer; }
+.pbg-edit:hover { color: var(--color-primary); }
+.pbg-edit .material-symbols-outlined { font-size: 14px; }
+
+/* ── v10.28.27 自定义页面背景弹窗：左工具栏 + 右整页预览 ── */
+.modal-card-preview { max-width: min(1040px, 94vw); width: 94%; }
+.pbg-shell {
+  display: flex; gap: var(--space-md);
+  height: calc(85vh - 2 * var(--space-lg));
+}
+.pbg-tools {
+  width: 300px; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: var(--space-sm);
+  overflow-y: auto; padding-right: 6px;
+  scrollbar-width: thin;
+}
+.pbg-tools::-webkit-scrollbar { width: 5px; }
+.pbg-tools::-webkit-scrollbar-thumb { background: rgba(118,117,134,0.18); border-radius: 10px; }
+.pbg-list { display: flex; flex-direction: column; gap: 6px; min-height: 40px; }
+.pbg-list-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--divider-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-container-lowest);
+  user-select: none;
+}
+.pbg-list-item.dragging { opacity: 0.4; }
+.pbg-list-item.drag-over { border-top: 2px solid var(--color-primary); }
+.pbg-thumb {
+  width: 48px; height: 34px; flex-shrink: 0;
+  border-radius: 4px; background-size: cover; background-position: center;
+  border: 1px solid var(--divider-line);
+}
+.pbg-item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.pbg-feather-row { display: flex; align-items: center; gap: 4px; }
+.pbg-feather-row span { font-size: var(--fs-label-sm); color: var(--color-outline); width: 30px; flex-shrink: 0; }
+.pbg-feather-row input[type="range"] { flex: 1; min-width: 0; }
+.pbg-grip { cursor: grab; color: var(--color-outline); }
+.pbg-del { cursor: pointer; color: var(--color-outline); border: none; background: none; padding: 2px; }
+.pbg-del:hover { color: #e5484d; }
+.pbg-ratio-label { font-size: var(--fs-label-sm); color: var(--color-outline); padding: 4px 0 2px; }
+.pbg-ratio-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.pbg-ratio-btn {
+  flex: 1 1 42%; text-align: center;
+  border: 1px solid var(--divider-line-strong);
+  background: var(--color-surface-container);
+  color: var(--color-on-surface);
+  border-radius: var(--radius-md);
+  padding: 5px 6px; font-size: 13px; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.pbg-ratio-btn.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.pbg-ratio-btn:hover:not(.active) { border-color: var(--color-primary); color: var(--color-primary); }
+details.pbg-details summary {
+  font-size: var(--fs-label-sm); color: var(--color-outline);
+  cursor: pointer; padding: 4px 0; user-select: none;
+}
+.pbg-preview { flex: 1; min-width: 0; display: flex; align-items: flex-start; justify-content: center; }
+.pbg-frame {
+  width: min(100%, 620px); flex-shrink: 0;
+  border: 1px solid var(--divider-line-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-container-lowest);
+  overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: thin;
+}
+.pbg-frame::-webkit-scrollbar { width: 5px; }
+.pbg-frame::-webkit-scrollbar-thumb { background: rgba(118,117,134,0.18); border-radius: 10px; }
+.pbg-clone-wrap { position: relative; pointer-events: none; transform-origin: 0 0; overflow: hidden; }
+.pbg-hint { display: none; color: #e5484d; font-size: var(--fs-label-sm); }
+.pbg-hint.show { display: block; }
+.pbg-actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; }
+.pbg-empty { font-size: var(--fs-label-sm); color: var(--color-outline); padding: 8px; text-align: center; }
+
+/* ── 恢复段 3（原内联块行 742..742）── */
+.modal-card.active { transform: scale(1); opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s, 0s; } /* v0.2.45.2：打开立即可见（visibility 延迟归零），淡入动画保留 */
+
+/* ── 恢复段 4（原内联块行 1766..2016）── */
+/* ═══ Article View Mode（v10.28.35.0）═══
+   ?article=ART-xxx 只读查看已发布文章（其他用户视角）：编辑器 chrome 全隐、
+   格子范围硬裁剪——画布包进 #fcViewScaler（overflow:hidden + 等比缩放适配视口），
+   超出格子的任何内容（越界卡片/超出画布的背景/编辑器 UI）一律不可见；
+   画布内零交互（pointer-events:none 整子树）。 */
+body.fc-viewmode .editor-header,
+body.fc-viewmode .title-input,
+body.fc-viewmode .grid-controls,
+body.fc-viewmode .asset-panel,
+body.fc-viewmode .asset-panel-toggle,
+body.fc-viewmode .editor-statusbar { display: none !important; }
+body.fc-viewmode .canvas-body { padding: 0; }
+body.fc-viewmode .editor-body {
+  overflow: hidden !important;
+  padding: 16px !important;
+  display: flex; align-items: center; justify-content: center;
+}
+body.fc-viewmode #gridCanvas * { pointer-events: none !important; }
+#fcViewScaler {
+  overflow: hidden;
+  position: relative;
+  flex: none;
+  border-radius: var(--radius-md);
+  box-shadow: 0 24px 60px -16px rgba(0,0,0,0.45);
+  background: var(--color-surface-container-lowest);
+}
+#fcViewTitle {
+  position: fixed; left: 20px; bottom: 18px; z-index: 60;
+  max-width: min(60vw, 560px);
+  padding: 10px 18px;
+  border-radius: var(--radius-full);
+  background: var(--card-bg);
+  border: var(--card-border);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-md);
+  font-weight: 700; font-size: 14px; color: var(--color-on-surface);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  pointer-events: none;
+}
+#fcViewPlaceholder {
+  position: absolute; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--space-lg);
+}
+.fcvp-card {
+  max-width: 480px; width: 100%;
+  text-align: center;
+  padding: 40px 32px;
+  border-radius: var(--radius-lg);
+  background: var(--card-bg);
+  border: var(--card-border);
+  box-shadow: var(--shadow-md);
+}
+.fcvp-card .fcvp-icon { font-size: 44px; color: var(--color-outline); margin-bottom: 14px; }
+.fcvp-card h2 { margin: 0 0 10px; font-size: 18px; color: var(--color-on-surface); }
+.fcvp-card p { margin: 0 0 22px; font-size: 13px; line-height: 1.7; color: var(--color-on-surface-variant); }
+
+/* ── v0.2.28.14 恢复：Migrate 两套按钮样式（顶部 cssbuttons-io 紫渐变 + 弹窗 Uiverse 药丸）
+   v0.2.8.0 液态玻璃移植轮（4a01104）重写本 style 尾部时整块误删（189→30 行）——
+   顶部 Migrate 钮与弹窗 Migrate to Cards 药丸自此裸奔；从 df70a76（v10.28.17.4 同轮修正终版）
+   原样恢复（180 行，含暗色主题覆写）。 */
+/* ── 顶部 Migrate 按钮：cssbuttons-io 设计（v0.2.28.15 用户定制：白面板 + 字母反色滤镜）
+   v10.28.17.4 原设计 = 紫渐变底 + ghostwhite 字 + 黑色斜面板横扫、按下缩小 0.95；
+   2026-09-11 v0.2.28.15 用户四项要求：①大小对齐旁边 .btn-sm（History/Tags/Save Draft/Publish）
+   ——font-size/padding/图标尺寸全对齐（font-size var(--fs-label-sm)、padding 6px 16px、svg 24px，
+   高度 38px 与邻居一致——邻钮 .btn-outline 含 1px 边框 38px，migrate 无边框用 7px 上下垫等值对齐）；
+   ②改药丸形（border-radius: var(--radius-full)，与邻居 .btn 同）；
+   ③横扫面板黑→白（亮/暗主题一致——两主题对顶部钮本就零覆写，直接共用）；④字母挂黑白相反滤镜
+   ——静息 invert(1) 白字反转成黑字压在白色面板上，悬停面板滑离时同步翻回白字（紫底上），
+   0.4s 同曲线过渡与面板横扫完全同步、丝滑换色。 */
+.migrate-btn {
+  position: relative;
+  font-family: inherit;
+  font-weight: 600;               /* 对齐 .btn（邻居钮 600） */
+  font-size: var(--fs-label-sm);  /* 对齐 .btn-sm */
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-full);  /* 药丸形（对齐 .btn） */
+  cursor: pointer;
+  border: none;
+  background: linear-gradient(to right, #8e2de2, #4a00e0);
+  color: ghostwhite;              /* 字母本色=白；静息经 invert(1) 呈黑 */
+  overflow: hidden;
+  padding: 0;   /* 内边距在 span 上（原设计） */
+}
+.migrate-btn svg {
+  width: 24px;                    /* 对齐邻居 material 图标 24px */
+  height: 24px;
+  margin-right: 8px;              /* 对齐 .btn gap: 8px */
+}
+.migrate-btn span {
+  position: relative;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;              /* 对齐 .btn-sm（邻钮 1px 边框=38px，7px 垫等值对齐） */
+  filter: invert(1);              /* 静息：白色面板上黑字（黑白相反滤镜） */
+  transition: filter 0.4s cubic-bezier(0.3, 1, 0.8, 1);  /* 与面板横扫同曲线，丝滑换色 */
+}
+.migrate-btn:hover span {
+  filter: invert(0);              /* 白面板滑离时同步翻回白字（紫底上） */
+}
+.migrate-btn::before,
+.migrate-btn::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+.migrate-btn::before {
+  content: "";
+  background: #fff;               /* 黑→白（v0.2.28.15 用户定制；亮/暗主题一致） */
+  width: 120%;
+  left: -10%;
+  transform: skew(30deg);
+  transition: transform 0.4s cubic-bezier(0.3, 1, 0.8, 1);
+}
+.migrate-btn:hover::before {
+  transform: translate3d(100%, 0, 0);
+}
+.migrate-btn:active {
+  transform: scale(0.95);
+}
+
+/* ── Migrate to Cards 按钮（弹窗内）：Uiverse.io by MuhammadHasann 设计
+   （v10.28.17.3 亮/暗双主题适配；v10.28.17.4 同轮修正还原——cssbuttons-io 设计归顶部
+   Migrate 按钮，弹窗钮回退药丸。类名 .migrate-btn → .migrate-pill 独立作用域）──
+   原设计 = 近黑药丸 + 白字 + 悬停紫色渐变/光环；暗色主题下药丸翻浅色、文字翻深色，
+   紫色悬停层两主题共用（浅药丸上更亮眼）。 */
+.migrate-pill {
+  --mb-pill: hsla(0 0% 12% / 1);   /* 药丸底色（亮主题=近黑） */
+  --mb-text-c: 0 0% 100%;           /* 文字色相组（亮主题=白） */
+  --border_radius: 9999px;
+  --transtion: 0.3s ease-in-out;
+
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transform-origin: center;
+  padding: 1rem 2rem;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border_radius);
+  transform: scale(calc(1 + (var(--active, 0) * 0.1)));
+  transition: transform var(--transtion);
+}
+.migrate-pill::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%; height: 100%;
+  background-color: var(--mb-pill);
+  border-radius: var(--border_radius);
+  box-shadow: inset 0 0.5px hsl(0, 0%, 100%), inset 0 -1px 2px 0 hsl(0, 0%, 0%),
+    0px 4px 10px -4px hsla(0 0% 0% / calc(1 - var(--active, 0))),
+    0 0 0 calc(var(--active, 0) * 0.375rem) hsl(260 97% 50% / 0.75);
+  transition: all var(--transtion);
+  z-index: 0;
+}
+.migrate-pill::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%; height: 100%;
+  background-color: hsla(260 97% 61% / 0.75);
+  background-image: radial-gradient(
+      at 51% 89%,
+      hsla(266, 45%, 74%, 1) 0px,
+      transparent 50%
+    ),
+    radial-gradient(at 100% 100%, hsla(266, 36%, 60%, 1) 0px, transparent 50%),
+    radial-gradient(at 22% 91%, hsla(266, 36%, 60%, 1) 0px, transparent 50%);
+  background-position: top;
+  opacity: var(--active, 0);
+  border-radius: var(--border_radius);
+  transition: opacity var(--transtion);
+  z-index: 2;
+}
+.migrate-pill:is(:hover, :focus-visible) { --active: 1; }
+.migrate-pill:active { transform: scale(1); }
+.migrate-pill .dots_border {
+  --size_border: calc(100% + 2px);
+  overflow: hidden;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--size_border); height: var(--size_border);
+  background-color: transparent;
+  border-radius: var(--border_radius);
+  z-index: -10;
+}
+.migrate-pill .dots_border::before {
+  content: "";
+  position: absolute;
+  top: 30%; left: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: left;
+  transform: rotate(0deg);
+  width: 100%; height: 2rem;
+  background-color: white;
+  mask: linear-gradient(transparent 0%, white 120%);
+  animation: rotate 2s linear infinite;
+}
+@keyframes rotate { to { transform: rotate(360deg); } }
+.migrate-pill .sparkle {
+  position: relative;
+  z-index: 10;
+  width: 1.75rem;
+}
+.migrate-pill .sparkle .path {
+  fill: currentColor;
+  stroke: currentColor;
+  transform-origin: center;
+  color: hsl(0, 0%, 100%);
+}
+.migrate-pill:is(:hover, :focus) .sparkle .path {
+  animation: path 1.5s linear 0.5s infinite;
+}
+.migrate-pill .sparkle .path:nth-child(1) { --scale_path_1: 1.2; }
+.migrate-pill .sparkle .path:nth-child(2) { --scale_path_2: 1.2; }
+.migrate-pill .sparkle .path:nth-child(3) { --scale_path_3: 1.2; }
+@keyframes path {
+  0%, 34%, 71%, 100% { transform: scale(1); }
+  17% { transform: scale(var(--scale_path_1, 1)); }
+  49% { transform: scale(var(--scale_path_2, 1)); }
+  83% { transform: scale(var(--scale_path_3, 1)); }
+}
+.migrate-pill .text_button {
+  position: relative;
+  z-index: 10;
+  background-image: linear-gradient(
+    90deg,
+    hsl(var(--mb-text-c) / 1) 0%,
+    hsl(var(--mb-text-c) / var(--active, 0)) 120%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  font-size: 1rem;
+  color: transparent;
+}
+/* 暗色主题：药丸翻浅色、文字翻深色、星芒换深紫（浅药丸上白星不可见） */
+:root[data-theme="dark"] .migrate-pill {
+  --mb-pill: #f2f1fb;
+  --mb-text-c: 240 14% 14%;
+}
+:root[data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(260 55% 42%); }

@@ -1,0 +1,1 @@
+修正：FC v10.28.62.4 调卡片背景色不再删图片/边缘（rev 00394-8lp；站点恒 v0.2.58.28）——用户「调整卡片背景时图片和选择的自定义边缘会不见」；真身=setCardBgColor 旧设计「背景色与图片互斥」会 img.remove() 删掉卡片图片；修法=setCardBgColor 不再删 .card-img-bg/.card-stripes（图片在上、颜色垫底做边缘底色，与边缘共存）；后端零改动 npm test 413/413；诊断复现 img:false→true；digest sha256:39b880d9d320d6d6cfab225455db4330d7fc68456d3f9b84f548c7b02c025ea7（当前线上）

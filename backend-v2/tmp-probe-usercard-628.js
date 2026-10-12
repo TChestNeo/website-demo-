@@ -1,14 +1,14 @@
-// tmp-probe-usercard-628.js — v0.2.58.22 横幅三层门禁+金罩+预设扩展线上探针（mnationworld.com）
+// tmp-probe-usercard-628.js — v0.2.58.25 横幅三层门禁+金罩+预设扩展线上探针（mnationworld.com）
 // 注记：写路径（上传/PATCH 横幅头像/预设保存）线上无凭证不可探——由两新电池覆盖（settings-profilecust 27 项+
 //   profile-subtier 27 项）。
 //   S1 静态锚（settings-modal 58.22 新件 settingsBgGrid/gold-lock-group/ST_BG_DEFS/stCanGif/width: 400px+
 //   58.21 回归件 sub-locked ×4/六 id；sidebar 弹窗件；common.i18n 5 新键 11 单引号+1 zh-Hant 双引号；
-//   site-config 58.22/48.0+rev 终态口径（00340- 真值 ×1+00340-XXX 零残留+00341-??? ×1+00338-tj5 保留）；
+//   site-config 58.22/48.0+rev 终态口径（00346- 真值 ×1+00346-XXX 零残留+00347-??? ×1+00338-tj5 保留）；
 //   页面件 gold-lock-group ×4/canGif ×7/680px ×1+prof 3 新键 ×11）
 //   → P1 CDP seed 假 USR- session+user → 真实点击侧栏卡 → 弹窗本地渲染（不跳页）+GET 404 静默（统计 '—'）
 //   → P2 CDP 点齿轮开设置弹窗 → free 层：横幅上传钮在 gold-lock-group 罩内+头像图库钮 sub-locked+移除钮隐藏+
 //   #settingsBgGrid 13 swatch+mono-bw 在位+imgUpgrade 链接可见+点罩内上传钮零崩溃 → E1 零异常。
-// 口径：rev 00340-XXX 终态已填真值（二次烘焙）；live 文本滞后一部署=惯例——探针跑在 deploy#2 之后。
+// 口径：rev 00346-XXX 终态已填真值（二次烘焙）；live 文本滞后一部署=惯例——探针跑在 deploy#2 之后。
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -113,15 +113,15 @@ class CDP {
   const scSrc = norm(await sc.text());
   const scCount = mk(scSrc);
   ok('S1e site-config：58.22/48.0 赋值在位 + 58.21 赋值零残留 + 58.22 changelog 标题 + FC 48.0 标题',
-    scCount("window.MN_SITE_VERSION = 'v0.2.58.22';") === 1 && scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 &&
-    scCount("window.MN_SITE_VERSION = 'v0.2.58.21';") === 0 && scCount('// v0.2.58.22 = ') === 1 &&
+    scCount("window.MN_SITE_VERSION = 'v0.2.58.25';") === 1 && scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 &&
+    scCount("window.MN_SITE_VERSION = 'v0.2.58.21';") === 0 && scCount('// v0.2.58.25 = ') === 1 &&
     scCount('// v10.28.48.0 = ') === 1,
-    'v58.22=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.22';") + ' fc48=' +
+    'v58.22=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.25';") + ' fc48=' +
     scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") + ' v58.21=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.21';") +
-    ' cl=' + scCount('// v0.2.58.22 = ') + ' fcl=' + scCount('// v10.28.48.0 = '));
-  ok('S1f site-config rev 终态口径：00340- 真值 ×1 + 00340-XXX 占位零残留 + 00341-??? 占位 ×1 + 58.21 条目 00338-tj5 保留',
-    scCount('00340-') === 1 && scCount('00340-XXX') === 0 && scCount('00341-???') === 1 && scCount('00338-tj5') === 1,
-    'r40=' + scCount('00340-') + ' x40=' + scCount('00340-XXX') + ' q41=' + scCount('00341-???') +
+    ' cl=' + scCount('// v0.2.58.25 = ') + ' fcl=' + scCount('// v10.28.48.0 = '));
+  ok('S1f site-config rev 终态口径：00346- 真值 ×1 + 00346-XXX 占位零残留 + 00347-??? 占位 ×1 + 58.21 条目 00338-tj5 保留',
+    scCount('00346-') === 1 && scCount('00346-XXX') === 0 && scCount('00347-???') === 1 && scCount('00338-tj5') === 1,
+    'r40=' + scCount('00346-') + ' x40=' + scCount('00346-XXX') + ' q41=' + scCount('00347-???') +
     ' r38=' + scCount('00338-tj5'));
 
   const page = await fetch(SITE + '/pages/community-profile.html');

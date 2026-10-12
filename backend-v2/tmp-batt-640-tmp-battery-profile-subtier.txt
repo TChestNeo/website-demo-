@@ -1,0 +1,7 @@
+── D0. 静态锚（页面/i18n/site-config/FC 不互通）──
+  ✅ D0 页面 58.22 件：sub-locked ×6（58.22 原 4 + 52.0 相框/称号 swatch 各 1）+ blockGif ×4（声明+三拦截）+ 升级链接 id（头像 ×1/横幅 ×3 含 click 门查询）+ premium.html href ×3 + 金罩族（gold-lock-group ×4/gold-locked ×6（52.0 swatch ×2+注释 ×1）/goldShimmer ×3）+ canGif ×9（58.25 视频门复用+2）+ 三新键引用（bannerLocked ×2/imgUpgrade ×1/premGifUpgrade ×2）+ FC 图库弹窗加大（680px ×1/80px ×1）+ mono-charcoal ×3（sub-locked=6 goldGrp=4 goldLocked=6 canGif=9 bnLink=3 bannerLocked=2）
+  ✅ D0 页面 58.25 新件：profile-banner-img ×3 + 重裁钮（editAvatarReCropBtn ×2/editBannerReCropBtn ×3）+ MN_CropDialog.open ×5 + 视频件（videoLocked ×1/videoCompressing ×1/avatarNoVideo ×1/videoFail ×2）+ 210px ×12 + 140px 残留 ×1（注释字样，实测口径）（bnImg=3 rcBtn=3 cropOpen=5 210=12 140=1）
+  ✅ D0 i18n 6 新键 × 12 语块（gifLocked/libLocked/gifUpgrade/bannerLocked/imgUpgrade/premGifUpgrade 各 12）（gifLocked=12 libLocked=12 gifUpgrade=12 bannerLocked=12 imgUpgrade=12 prem=12）
+  ✅ D0 i18n 58.25 新 8 键 × 12 语块（reCropAvatar/reCropBanner/videoLocked/videoCompressing/avatarNoVideo/videoFail 各 12）（rcA=12 rcB=12 vl=12）
+  ✅ D0 site-config：版本赋值 v0.2.58.27 + FC 48.1 在位 + changelog rev 00348-/00349- 各 ×2（58.25 双 changelog：站点+FC 同轮）（v58.25=1 fc48=1 r46=2 r47=2）
+  ✅ D9 FC 不互通（钦定③铁证）：fluidcanvas.html 源零 bannerUrl/banner_url（FC 频道主页不读 users.banner_url）（bannerUrl=-1 banner_url=-1）

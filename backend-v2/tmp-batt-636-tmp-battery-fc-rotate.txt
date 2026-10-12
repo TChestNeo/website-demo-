@@ -1,0 +1,42 @@
+═══ S 静态锚 ═══
+  ❌ S1 编辑器 18 锚全中（旋转钮/autoFlow/门控/方向/13 处 tablet-p） — rotateWrap=3≠2
+  ✅ S2 阅读页 12 锚全中（pickReaderLayout/autoFlowEntries/逐布局渲染链）
+  ✅ S3 site-config：49.1 在位 + 48.2 赋值零残留 + changelog 头各 ×1 + rev 终态真值各 ×1 + 站点恒 58.26
+  ✅ S4 i18n：4 新键 ×12 + 旧 tablet 键 ×12 保留
+═══ B 编辑器 CDP ═══
+  ✅ B1 默认 169：cols 115 / cs 20px / 画布 2528×2200 / 旋转钮不滑出 / 按钮态 16:9
+  ✅ B2 点弹窗 tablet 钮：cols 110 / 画布 2418×1694 / rotateWrap 滑出 / 按钮态 Tablet 4:3
+  ✅ B3a 点旋转钮 → 竖屏：cols 77 / 画布 1692×2420 / active + aria-pressed / 竖标签显横标签隐
+  ✅ B3b 再点旋转钮 → 回横屏：cols 110 / aria-pressed false / 横标签显竖标签隐
+  ✅ B4 tablet auto-flow 2/行：A(1,1) B(7,1) 同排 / C(1,7) 下一行 / 左对齐零残留组
+  ✅ B5a tablet：K1(1,1) K2(7,1) / K3(1,8) K4(9,8) / K5(1,16) K6(13,16)（2/行+行高 5/6+aspect 9.09 宽）
+  ✅ B5b half：K1 K2 K3 同行→长文 K4 到来挤下最右 K3 / K5 宽 12→24 / K6 aspect 33 列
+  ✅ B5c mobile：全纵向每卡一行全宽（rows 1/8/13/21/29/36, colSpan 115）
+  ✅ B7a 合并：A/B 同 groupId 非空
+  ✅ B7b tablet 合并卡=一单位：A(1,1) B(7,1) 同排相对偏移保持
+  ✅ B7c mobile 组展开纵向：A(1,1) 全宽 / B(1,7) 全宽（A 高 4 行+2 行空档）
+  ✅ B8a 拖 A +44px → col 3 left 44px（自定义门控已触发）
+  ✅ B8b 草稿往返：tablet custom=true + 3 卡（c1=A col 3）+ activePreset tablet + orientation l
+  ✅ B8c 旋转→tablet-p：cols 77 + 未动过不落盘（cards 空/custom falsy）+ orientation p
+  ✅ B8d 转回 tablet：位置记忆恢复（A 仍 col 3 left 44px,不重新 auto-flow）
+  ✅ B9 未动过不落盘：tablet/169 表均空 + custom falsy + 回 169 重新 auto-flow 单列全宽
+  ✅ B10a 增：tablet 表 4 卡（含 D）+ draft.cards 4（增同步）
+  ✅ B10b 删：D 消失 + tablet 表 3 卡 + draft.cards 3（删同步）
+  ✅ B11 旧 115 格 tablet 表 clamp：col 112→101 / colSpan 10 / left 2200px + custom falsy（表非空守卫不触发；表保持原值 112 不落新）
+  ✅ B12a 竖屏 seed：cols 77 / 画布高 2420 / rotateBtn active+aria-pressed / 种子守卫填 tablet-p 表（custom true + c1(2,2)）
+  ✅ B12b 旋转→tablet：cols 110 / aria-pressed false / orientation l
+═══ C 阅读页 CDP ═══
+  ✅ C0 matchMedia orientation 随 Emulation 翻转（landscape→false / portrait→true）
+  ✅ C1 169 等价路径：stage 2530×2090 / cell 22px / 顶层 x/y 旧公式精确（回归零变动）
+  ✅ C2 tablet auto-flow：stage 2420 / cell 22px / 2-卡行精确偏移（spanPx+24 口径）
+  ✅ C3 tablet-p（自然竖屏选）：stage 1694 / 同款 2-卡行偏移
+  ✅ C4 mobile：reflow + 6 带各 1 卡 c1..c6 序 + c1-c5 flexible + c6 shrink(--art-ar 200/100) + cell 20px + 带顶递增
+  ✅ C5 half 表：stage 1508 / cell 26px / 表内卡精确偏移 + 缺卡 c5 append 表底全宽 58
+  ✅ C6a tablet auto-flow：stage 2420 / 2-卡行 + aspect 13 列（与编辑器 B5a 同款数学）
+  ✅ C6b half auto-flow：stage 1508 / 4-卡行 + 长文挤下 s3 + text 12→24（与编辑器 B5b 同款数学）
+  ✅ C7a tablet 合并卡=一单位：solo(1,1) + 组员同排相对偏移保持（154/286）
+  ✅ C7b mobile 组展开：3 带各 1 卡 g1|g2|g3 序（组展开纵向）+ 全 flexible
+  ✅ E 零异常（Runtime exception + 控制台 error 全滤噪声后）
+
+═══ FAILED — 35/36 ═══
+

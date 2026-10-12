@@ -1,4 +1,4 @@
-// tmp-probe-usercard-627.js — v0.2.58.21 侧栏用户卡片弹窗+设置弹窗头像/横幅控件线上探针（mnationworld.com）
+// tmp-probe-usercard-627.js — v0.2.58.25 侧栏用户卡片弹窗+设置弹窗头像/横幅控件线上探针（mnationworld.com）
 // 注记：写路径（上传/PATCH 头像横幅/同步旗标）线上无凭证不可探——由两新电池覆盖（settings-profilecust 17 项+
 //   sidebar-userpop 10 项）。
 //   S1 静态锚（settings-modal 六 id+sub-locked+stUpload+stRawMergeUser+slati_avatar_sync+升级链接×3；
@@ -101,15 +101,15 @@ class CDP {
   const scSrc = norm(await sc.text());
   const scCount = mk(scSrc);
   ok('S1d site-config：58.21/48.0 赋值在位 + 58.20 赋值零残留 + 58.21 changelog 标题 + FC 48.0 标题',
-    scCount("window.MN_SITE_VERSION = 'v0.2.58.21';") === 1 && scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 &&
-    scCount("window.MN_SITE_VERSION = 'v0.2.58.20';") === 0 && scCount('// v0.2.58.21 = ') === 1 &&
+    scCount("window.MN_SITE_VERSION = 'v0.2.58.25';") === 1 && scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 &&
+    scCount("window.MN_SITE_VERSION = 'v0.2.58.20';") === 0 && scCount('// v0.2.58.25 = ') === 1 &&
     scCount('// v10.28.48.0 = ') === 1,
-    'v58.21=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.21';") + ' fc48=' +
+    'v58.21=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.25';") + ' fc48=' +
     scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") + ' v58.20=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.20';") +
-    ' cl=' + scCount('// v0.2.58.21 = ') + ' fcl=' + scCount('// v10.28.48.0 = '));
-  ok('S1e site-config rev 口径：00338- 真值 ×1 + 00338-XXX 占位零残留 + 00339-??? 占位 ×1（live 文本滞后一部署=惯例）+ 58.19 条目 00334-tz6 保留',
-    scCount('00338-') === 1 && scCount('00338-XXX') === 0 && scCount('00339-???') === 1 && scCount('00334-tz6') === 1,
-    'r38=' + scCount('00338-') + ' x38=' + scCount('00338-XXX') + ' q39=' + scCount('00339-???') +
+    ' cl=' + scCount('// v0.2.58.25 = ') + ' fcl=' + scCount('// v10.28.48.0 = '));
+  ok('S1e site-config rev 口径：00346- 真值 ×1 + 00346-XXX 占位零残留 + 00347-??? 占位 ×1（live 文本滞后一部署=惯例）+ 58.19 条目 00334-tz6 保留',
+    scCount('00346-') === 1 && scCount('00346-XXX') === 0 && scCount('00347-???') === 1 && scCount('00334-tz6') === 1,
+    'r38=' + scCount('00346-') + ' x38=' + scCount('00346-XXX') + ' q39=' + scCount('00347-???') +
     ' r34=' + scCount('00334-tz6'));
 
   console.log('═══ P1 CDP 侧栏卡点击弹窗（不跳页+本地渲染+GET 404 静默）═══');

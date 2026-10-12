@@ -1,0 +1,15 @@
+  ✅ S0a transitions.js 预取块件：rel=prefetch ×1 + as=document ×1 + function prefetchPage ×1 + prefetchDone ×2 + clearTimeout(prefetchTimer) ×2 + prefetchTimer ×4 + (hover: hover) ×1 + saveData ×1 + ", 65)" ×1 + { once: true } ×1 + mouseover 监听 ×1 + click 劫持监听保留 ×1  pf=1 done=2 timer=4
+  ✅ S0b site-config：58.23 赋值 1 + 58.22 赋值零残留 + changelog 标题 58.23 1 + rev 00342-/00343- 各 1（占位口径）+ FC 48.0 不动  23=1 r42=1 r43=1
+  ✅ S2 快速扫过（悬停 20ms 移开）：零 link[rel=prefetch]（65ms 计时器被 mouseleave 取消）  []
+  ✅ S1 悬停站内链接 400ms：恰 1 link[rel=prefetch] + href="pages/explore.html" 原样 + as="document"  [{"href":"pages/explore.html","as":"document"}]
+  ✅ S3 外链/mailto/javascript: 悬停各 250ms → 零新增预取（仍恰 S1 的 1 条）  [{"href":"pages/explore.html","as":"document"}]
+  ✅ S4 #hash 链接 → 零新增预取（isInternal 拦）  [{"href":"pages/explore.html","as":"document"}]
+  ✅ S5 同页链接 index.html → 零新增预取（isSamePage 复用拦）  [{"href":"pages/explore.html","as":"document"}]
+  ✅ S6 同链接再悬停 300ms → 仍恰 1（一次性守卫零重复注入）  [{"href":"pages/explore.html","as":"document"}]
+  ✅ S7 预取后点击导航：pathname 到 /pages/explore.html + readyState complete + 主容器在位（切页动画/点击劫持零干扰）  {"path":"/pages/explore.html","ready":"complete","main":true}
+  ✅ S8a Save-Data 省流量模式：旗标真 + 悬停 400ms 零预取  {"flag":true,"pf":[]}
+  ✅ S8b (hover: hover) 假 false：旗标 false + 悬停 400ms 零预取（触屏门控生效）  {"flag":false,"pf":[]}
+  ✅ E 全程零异常零 console error（噪声已滤）
+
+🎉 全部通过 12/12
+

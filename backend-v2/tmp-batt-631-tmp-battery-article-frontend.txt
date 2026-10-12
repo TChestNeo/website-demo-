@@ -1,0 +1,51 @@
+  ✅ S1 028 迁移：article_comments 表 + id TEXT UNIQUE 可空（insertWithId 契约）+ ACM- 前缀 + FK 级联 + status CHECK
+  ✅ S2 articles.js：q 搜索 LIKE ESCAPE 转义 + 只搜 published + 评论 GET/POST + commentRow avatarUrl + 限流键 acw
+  ✅ S3 notifications.js：article_comment 事件从 article_comments 联查
+  ✅ S4 测试锚：health 60 表 + user_version 30 + migrations 头注释 030
+  ✅ S5 index.html：搜索输入+面板+防抖三态+最新文章区块+article 跳转锚（搜索行/最新文章/通知三处）
+  ✅ S6 index.html：通知第八类 article_comment 文案+跳转分支 + 三态 i18n 键调用
+  ✅ S7 article.html：阅读页骨架（wrap/title/meta/正文流/评论区）+ 三件套 + __articleI18nRefresh + pre-stagger art-present
+  ✅ S8 article.html：draft v9 卡渲染（四型+盾徽+兜底）+ (row,col) 排序 + 消毒 + 互动端点 + 访客引导
+  ✅ S9 article.i18n.js：zh 23 键 + en 链 + zh-Hant 自动段（OpenCC 已重跑）
+  ✅ S10 index.i18n.js：新键 11 语言（latestArticles/searching/notif.articleComment）+ searchPh 文章口径 + zh-Hant 自动段
+  ✅ S11 site-config：v0.2.57.1 + changelog 文章前端条目 + FC v10.28.39.0
+  ✅ S12 articles.js PUT/DELETE 端点（本人校验/互动行清理/级联）+ article-write 4 测
+  ✅ S13 编辑器：publish id 记忆 + PUT 更新分支 + 404/403 回退 + 草稿清空作废 + ?edit= 加载 + boot 分支
+  ✅ S14 FC 列表：cloud 删除按钮无条件渲染 + DELETE API + bulk 逐个删 + Edit 带 ?edit=
+  ✅ B1 标题 + 作者行（首字母圆头像 A + 名字 Alice + 主页锚 + 日期 + 浏览数 42）
+  ✅ B2 正文流 2 张 content 卡 + baseFontSize 内联 + 富文本 h2/p/b/i 保留
+  ✅ B3 消毒实证：script 不执行（__pwned 未定义）+ script 节点 0 + onerror 属性被剥
+  ✅ B4a flag 卡：figure.art-figure + img 挂 data URI + figcaption label
+  ✅ B4b text 卡：art-note + 内联 rgba 底 + 富文本 b/br 保留
+  ✅ B4c shield 无图国徽卡：art-emblem + shield 图标 + Emblem 标签（v0.2.56.0 不再静默丢弃）
+  ✅ B4d map 无图兜底卡：art-asset + map 图标 + Territorial Map 标签
+  ✅ B4e character 有图兜底卡：第二个 figure + figcaption King
+  ✅ B5 卡序按 (row,col)：row2 的 content 卡先于 row30 的 Late card
+  ✅ B6 点赞初始态（aria-pressed true + liked 类 + 计数 5）
+  ✅ B6b 取消点赞（likedByMe 初始 true → 第一次点击=DELETE）→ 计数 6 + pressed false + liked 类摘除
+  ✅ B6c 再点赞（POST）→ 服务端 7 同步 + pressed true + liked 类回来
+  ✅ B7 收藏：点击 → star + favorited 类（无计数显示）
+  ✅ B8 评论列表 2 条（名字/内容/相对时间渲染）+ 空态不在
+  ✅ B8b 提交评论 → 追加 1 条（共 3）+ 输入框清空
+  ✅ B9 removed 评论不追加（仍 3 条）+ 拦截 toast 在场
+  ✅ B10 空评论 → 拦截 toast（内容需 1-2000 字符）
+  ✅ B11 切 en：评论标题变 Comments + 返回链接 Back to Home + 占位英文 + 评论列表重渲染不丢（仍 3 条）
+  ✅ B12 404 占位在场 + notFound 文案 + detail 隐藏
+  ✅ B13 最新文章区块显示 + 只渲染 published（ART-X/ART-Y 2 行，hidden 不出现）
+  ✅ B14 最新文章行锚到 pages/article.html?id=
+  ✅ B14b 搜索下拉 1 行（Constitution Notes 命中、大小写不敏感）+ 行锚到 article.html
+  ✅ B14c 无结果三态：zzz → 没有找到相关文章
+  ✅ B14d Escape 关闭面板
+  ✅ B16 ?edit= 加载：标题回填 + publish id 记忆 + 画布卡片恢复
+  ✅ B17 已发布文章再点 Publish = 发布日志弹窗 → 确认 = PUT 更新原文章（恰 1 次 PUT、零新 POST）
+  ✅ B18 无发布 id 时点 Publish = 发布日志弹窗 → 确认 = POST 创建 + id 记忆（后续再发布即更新）
+  ✅ B19a cloud 行删除按钮渲染（ART-X 有 danger 按钮）
+  ✅ B19b 点击删除 → DELETE /api/articles/ART-X + 行从列表消失
+  ✅ G1 零 Runtime exception  干净
+  ✅ G2 零 console error  干净
+  ✅ B15 guest 可读文章（detail 显示）+ 评论框隐藏 + 访客提示显示 + ?next= 登录锚
+  ✅ B15b guest 点收藏 → 登录 toast（登录后才能收藏）
+  ✅ B15c guest 零 Runtime exception  干净
+
+🎉 全部通过 48/48
+

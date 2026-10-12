@@ -686,8 +686,14 @@ textarea.input-glass {
 .progress-connector.done { background: var(--color-primary); }
 
 /* ----- Sidebar Module ----- */
+/* 2026-10-05 用户「那个在个人主页那边的左侧菜单背景卡片是半透明的能不能变成不透明的？」——
+   真身=v0.2.58.1（09-26 删侧栏容器铺底）后三张卡（logo/用户/菜单 .sidebar-module）仍用 --card-bg
+   （亮色 rgba(255,255,255,0.55)/暗色 rgba(30,30,50,0.55) 半透明玻璃）+ blur(20px) 磨砂——页面内容
+   透卡可见=半透明观感；修法=卡面改铺 --sidebar-bg（09-18 用户钦定不透明底：亮色近纯白 0.95/暗色实心
+   #1a1a2e/mono 随 var() 自适应）；模块自带 backdrop-filter 保留（底已不透明零可见效果，与 09-20
+   全站卡片同口径）；三张卡同规则一并生效；窄屏 floating 覆盖态同步（口径统一）。 */
 .sidebar-module {
-  background: var(--card-bg);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1301,7 +1307,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .app-sidebar.collapsed .user-module {
   padding: 10px 4px !important;
   display: flex; align-items: center; justify-content: flex-start;
-  background: var(--card-bg);
+  /* 58.28 补：折叠态覆盖曾回退 --card-bg 半透明玻璃（58.27 卡面不透明修法漏了这条折叠态覆盖）——
+     用户「折叠起来的时候还是一样是半透明的」；口径与 58.27 同：铺 --sidebar-bg 不透明底+blur 保留 */
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1385,7 +1393,20 @@ body.pre-stagger .auth-card { opacity: 0; }
    v0.2.58.11 用户「能不能把那个浅蓝色波浪和深蓝色倒反？」「就只是互换一下颜色而已」——58.10 深水+浅浪
    两色互换（类名保持不动）：主色水 .mn-lv-wdeep 背景 var(--color-primary)→var(--mn-lv-light) 变浅水、
    浅浪 .mn-lv-wlightwave 背景 var(--mn-lv-light)→var(--color-primary) 变深浪；两层结构/80×16 mask/
-   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。 */
+   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.12 用户「能不能把波浪的位置抬高4px?」（一问钦定「位置抬高 4px」）——58.11 浅浪 top -8px 抬高
+   4px→-12px（单值改动）：浅浪 .mn-lv-wlightwave top -8px→-12px；两层结构/80×16 mask/16px 带高/400% strip/
+   平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84/两色互换（浅水+深浪）全零改动。
+   v0.2.58.13 用户「然后把两个颜色改成一样的深蓝色，然后在那个波浪Z轴的-1那边再添加一个慢0.3s的波浪」
+   ——①水和浪两色统一深蓝：主色水 .mn-lv-wdeep 背景 var(--mn-lv-light)→var(--color-primary)（58.11 两色
+   互换撤销为两色相同）、--mn-lv-light 赋值整体删除（零引用，58.10 --mn-lv-wave-c 先例）；②新慢浪
+   .mn-lv-wlightwave2 与快浪全同款几何（80×16 mask/16px 带高/400% strip/平移 80px/top -12px 全同）
+   置于快浪 z 轴 -1 层（z-index:-1）+动画 2.5s（慢 0.3s）；z 层级：.mn-lv-fill z-index:0 建 stacking
+   context→水 z-index:-2 最底→慢浪 -1→快浪 0（显式盖慢浪）；两浪同色相位漂移，慢浪浪峰周期性从快浪
+   浪谷透明区透出=两道浪峰不同速叠加；水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.14 用户「那个刚才提出添加的第二个波浪我希望是浅色的」——慢浪 .mn-lv-wlightwave2 背景
+   var(--color-primary)→var(--mn-lv-light)（58.11 浅水同款浅色公式 color-mix 55%+白；赋值挂 .mn-lv-ring
+   恢复——58.13 整体删除后本轮复活）；快浪/水/几何/z 层级/动画全零改动。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1418,8 +1439,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .mn-lv-fill {
   position: absolute; left: 0; right: 0; bottom: 0; height: 0;
   transition: height 0.5s ease;
+  z-index: 0; /* 建 stacking context：水/慢浪负 z 层不逃出杯 */
 }
-.mn-lv-wdeep { position: absolute; inset: 0; background: var(--mn-lv-light); }
+.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); z-index: -2; }
 .mn-lv-wlightwave {
   position: absolute; left: -100%; width: 400%; height: 16px;
   background-color: var(--color-primary);
@@ -1428,8 +1450,23 @@ body.pre-stagger .auth-card { opacity: 0; }
   -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
   -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
   pointer-events: none;
-  top: -8px;
+  top: -12px;
+  z-index: 0;
   animation: mn-lv-wave 2.2s linear infinite;
+}
+/* 慢浪：与快浪全同款几何，z 轴 -1 层（快浪之下），2.5s（慢 0.3s）、浅色（var(--mn-lv-light)）——
+   两浪异色相位漂移，慢浪浪峰周期性从快浪浪谷透明区透出=浅色幽灵浪峰在深浪下流动 */
+.mn-lv-wlightwave2 {
+  position: absolute; left: -100%; width: 400%; height: 16px;
+  background-color: var(--mn-lv-light);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
+  pointer-events: none;
+  top: -12px;
+  z-index: -1;
+  animation: mn-lv-wave 2.5s linear infinite;
 }
 @keyframes mn-lv-wave {
   from { transform: translateX(0); }
@@ -1445,6 +1482,48 @@ body.pre-stagger .auth-card { opacity: 0; }
   z-index: 5;
   font-size: 28px; font-weight: 700; color: var(--color-primary);
   text-shadow: 0 0 2px rgba(255,255,255,0.9), 0 0 3px rgba(255,255,255,0.9);
+}
+/* v0.2.58.15 用户「那么能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出
+   一个卡片完整的显示等级信息和经验条」：折叠态药丸悬停放大+右侧滑出等级信息卡。
+   ①药丸 scale(1.12)（hover 类挂 .mn-lv-badge——悬停区=药丸+边距整块，贴近即触发；transform-origin
+   center，72px 折叠列/64px floating 列内瞬态放大可接受）；transition 0.18s ease（药丸本体折叠入场
+   动画 0.3s 期间 transform 被动画持有——折叠后立刻悬停时缩放瞬态失效可接受）。
+   ②卡片 .mn-lv-hovercard position:fixed 挂 body（侧栏 overflow-x:hidden + 用户卡 overflow:hidden
+   双裁剪，卡片必须逃出 DOM 裁剪；JS 按药丸 getBoundingClientRect 定位+视口钳制）；内容=JS 每次
+   show 从活的 .mn-lv-normal clone——展开徽章同款信息（Lv.x·称号+XP 文本+经验条）；z-index 150=
+   侧栏 50/55 之上、tooltip 200 之下；backdrop-filter blur 与折叠用户卡同款玻璃质感（卡片自身 fixed
+   于 body，其 blur 只影响自身后代=无 containing block 问题）。
+   ③@media (hover:hover) and (pointer:fine) 门控——触屏/平板零规则零行为（JS matchMedia 同款双保险）。 */
+@media (hover: hover) and (pointer: fine) {
+  .mn-lv-pill {
+    transition: transform 0.18s ease;
+  }
+  .app-sidebar.collapsed .mn-lv-badge.mn-lv-hover .mn-lv-pill {
+    transform: scale(1.12);
+  }
+  .mn-lv-hovercard {
+    position: fixed;
+    z-index: 150;
+    width: 200px;
+    box-sizing: border-box;
+    background: var(--card-bg, #ffffff);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: var(--card-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 10px 12px;
+    opacity: 0;
+    transform: translateX(-10px) scale(0.98);
+    transform-origin: left center;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .mn-lv-hovercard.active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
 }
 /* 同轮折叠态头像间距归整（根治「挤压到了用户头像」的两处真身）：
    ①头像 img 是行内元素——行基线给父 div 加 8px 下坠空隙（折叠后视觉死隙）→ display:block 消除；
@@ -2031,6 +2110,157 @@ html[data-accent="mono"] .migrate-pill::after { background-color: hsla(0 0% 45% 
 html[data-accent="mono"][data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(0 0% 40%); }
 html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117, 134, 0.10); }
 
+/* ===== v0.2.59.x 手机底部导航（5 tab：首页/百科/社区/消息/我的；无操作按钮） ===== */
+.mobile-bottom-nav { display: none; }
+.mbn-backdrop { display: none; }
+.mbn-sheet { display: none; }
+@media (max-width: 768px) {
+  /* iOS 26 风格浮动药丸 dock：居中悬浮、大圆角、磨砂玻璃、选中项浅色胶囊 */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    height: 56px; z-index: 9999;
+    width: auto; min-width: 264px; max-width: calc(100% - 28px);
+    border-radius: 999px;
+    padding: 0 6px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 10px 36px rgba(20, 20, 40, 0.18), inset 0 0.5px 0 rgba(255, 255, 255, 0.65);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav {
+    background: rgba(24, 24, 38, 0.72);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.42), inset 0 0.5px 0 rgba(255, 255, 255, 0.14);
+  }
+  .mobile-bottom-nav .mbn-item {
+    flex: 1; min-width: 48px; max-width: 78px;
+    padding: 0 10px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1px;
+    text-decoration: none; color: var(--color-outline);
+    font-size: 10px; font-weight: 500; letter-spacing: 0.01em;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .mobile-bottom-nav .mbn-item .material-symbols-outlined { font-size: 22px; }
+  .mobile-bottom-nav .mbn-item.active {
+    color: var(--color-primary);
+    background: rgba(70, 72, 212, 0.10);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav .mbn-item.active { background: rgba(122, 126, 255, 0.18); }
+  .mbn-backdrop {
+    display: block;
+    position: fixed; inset: 0; z-index: 68;
+    background: rgba(0, 0, 0, 0.32);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .mbn-backdrop.open { opacity: 1; pointer-events: auto; }
+  .mbn-sheet {
+    display: block;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 69;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(105%); transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.14);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-sheet.open { transform: translateY(0); }
+  .mbn-user-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 4px 0 14px; text-decoration: none; color: var(--color-on-surface);
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10));
+  }
+  .mbn-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--color-primary); object-fit: cover; flex-shrink: 0; }
+  .mbn-user-meta { min-width: 0; flex: 1; }
+  .mbn-user-name { font-weight: 700; font-size: 16px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbn-user-cid { font-size: 12px; color: var(--color-outline); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: capitalize; }
+  .mbn-row {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 13px 0; background: none; border: none; cursor: pointer;
+    text-align: left; text-decoration: none; color: var(--color-on-surface);
+    font-size: var(--fs-label-md); font-family: inherit;
+  }
+  .mbn-row + .mbn-row { border-top: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-ico { color: var(--color-outline); font-size: 22px; flex-shrink: 0; }
+  .mbn-row-label { flex: 1; min-width: 0; }
+  .mbn-chev { color: var(--color-outline); opacity: 0.5; font-size: 20px; }
+  .mbn-row.mbn-danger { color: #d23b3b; }
+  .mbn-row.mbn-danger .mbn-ico { color: #d23b3b; }
+  .mbn-group-title { font-weight: 700; font-size: 13px; color: var(--color-outline); letter-spacing: 0.03em; margin: 14px 0 6px; text-transform: uppercase; }
+  .mbn-group { margin-bottom: 4px; }
+  .mbn-group-name { font-size: 12px; color: var(--color-outline); padding: 10px 0 2px; }
+  .mbn-switch {
+    width: 44px; height: 26px; border-radius: 999px; flex-shrink: 0;
+    background: var(--color-outline-variant, #c8c7d4); position: relative;
+    transition: background 0.18s ease;
+  }
+  .mbn-switch .mbn-knob {
+    position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.25); transition: transform 0.18s ease;
+  }
+  .mbn-switch[data-on="1"] { background: var(--color-primary); }
+  .mbn-switch[data-on="1"] .mbn-knob { transform: translateX(18px); }
+  .mbn-toast {
+    position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%) translateY(12px);
+    background: rgba(24,24,32,0.9); color: #fff; padding: 10px 18px; border-radius: 999px;
+    font-size: 13px; z-index: 90; opacity: 0; pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease; max-width: 86vw; text-align: center;
+  }
+  .mbn-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* 二级子 sheet */
+  .mbn-subsheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 71;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.16);
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-subsheet.open { transform: translateY(0); }
+  .mbn-sub-head { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10)); }
+  .mbn-sub-back { width: 36px; height: 36px; border-radius: 50%; border: none; background: none; color: var(--color-on-surface); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .mbn-sub-title { font-weight: 700; font-size: 16px; }
+  .mbn-sub-body { padding-top: 6px; }
+  .mbn-sub-row {
+    display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 0;
+    background: none; border: none; cursor: pointer; text-align: left;
+    font-size: var(--fs-label-md); color: var(--color-on-surface); font-family: inherit;
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08));
+  }
+  .mbn-sub-row > span:first-child { flex: 1; min-width: 0; }
+  .mbn-sub-row.on { color: var(--color-primary); font-weight: 600; }
+  .mbn-sub-check { color: var(--color-outline); opacity: 0.6; font-size: 20px; flex-shrink: 0; }
+  .mbn-sub-row.on .mbn-sub-check { color: var(--color-primary); opacity: 1; }
+  .mbn-sub-sec { font-size: 12px; color: var(--color-outline); text-transform: uppercase; letter-spacing: 0.03em; padding: 14px 0 4px; }
+  .mbn-sub-note { font-size: 13px; color: var(--color-outline); padding: 14px 0; line-height: 1.5; }
+  .mbn-list-item { padding: 12px 0; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mbn-list-author { font-weight: 600; font-size: 14px; color: var(--color-on-surface); }
+  .mbn-list-time { font-size: 11px; color: var(--color-outline); flex-shrink: 0; }
+  .mbn-list-body { font-size: 13px; color: var(--color-outline); margin-top: 4px; line-height: 1.5; word-break: break-word; }
+  .mbn-unblock { border: 1px solid var(--divider-line, rgba(118,117,134,0.3)); background: none; color: var(--color-on-surface); border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+  .app-main { padding-bottom: 74px; } /* 给底部导航留空间 */
+}
+
+/* v0.2.59.50 手机适配：主内容 + 340px 侧栏预览的左右网格（dashboard/micronationary/overview 共用），手机收单列 */
+.fc-split-grid { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-md); }
+@media (max-width: 768px) {
+  .fc-split-grid { grid-template-columns: 1fr; }
+}
+/* v0.2.59.50 手机适配：两列网格 + 左右弹性布局收单列 */
+.fc-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+.fc-split-flex { display: flex; }
+@media (max-width: 768px) {
+  .fc-two-col { grid-template-columns: 1fr; }
+  .fc-split-flex { flex-direction: column; min-height: 0 !important; }
+  .fc-split-flex > div { width: 100% !important; border-right: none !important; }
+}
+
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -2316,6 +2546,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 }
 
 </style>
+<style>
+/* v0.2.58.17 关注页真实数据接入：页面专属样式（inliner 管区之外，不入内联块） */
+.folg-cta, .folg-offline, .folg-empty { text-align:center; padding:var(--space-lg) var(--space-md); border:1px dashed rgba(118,117,134,0.35); border-radius:var(--radius-lg,14px); }
+.folg-media { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:6px; margin-top:10px; }
+.folg-media img { width:100%; height:140px; object-fit:cover; border-radius:10px; display:block; }
+</style>
 </head>
 <body class="pre-stagger">
 
@@ -2331,7 +2567,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       </div>
       <div class="search-capsule">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search followed..." data-i18n-placeholder="following.searchPh">
+        <input type="text" id="followingSearch" placeholder="Search feed, following and discover..." data-i18n-placeholder="following.searchPh">
       </div>
     </header>
 
@@ -2415,6 +2651,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/site-config.js"></script>
+<script src="../assets/js/api.js"></script>
 <script src="../assets/js/storage.js"></script>
 <script src="../assets/js/sidebar.js"></script>
 <script src="../assets/js/settings-modal.js"></script>
@@ -2428,91 +2665,203 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   'use strict';
 
   // ═══════════════════════════════════════════
-  // Data
+  // v0.2.58.17 关注页真实数据接入
+  // 零假数据：页面只认 API 响应；失败 → 离线卡；未登录 → 登录引导卡（可看发现区真数据）。
+  // 数据源：GET /api/social/feed（关注用户帖+关注话题帖）、/api/social/following/detail（关注三类明细）、
+  //   /api/social/nations、/api/social/topics、/api/public/users（发现·用户 + 推荐关注共用）。
+  // 关注/取关：nation/topic → SlatiDB.saveFollowing（本地持久 + 触发 PUT 全量镜像，500ms 后重拉真相）；
+  //   user → POST/DELETE /api/social/users/:id/follow 成功后 localStorage 直写（绝不 saveFollowing 防双重写）。
+  // 渲染器全纯（只读 state 零 fetch）→ 切语零重拉；每次渲后 SlatiTilt.init。
   // ═══════════════════════════════════════════
 
-  // -- Seed feed items (from followed entities) --
-  // v0.2.54.2 i18n 补：badge/time/desc 改 key/En 对，渲染时 (T(key) || xxxEn) 取值；name 为专名不译
-  var feedItems = [
-    { type:'nation', id:'NAT-demo-1', icon:'public', badgeKey:'nation', badgeEn:'Nation', badgeClass:'badge-primary', name:'Republic of Etheria', descKey:'etheriaDesc', descEn:'Published a new territorial charter outlining maritime boundaries and resource zones.', timeKey:'t2h', timeEn:'2 hours ago' },
-    { type:'topic', id:'TOP-demo-4', icon:'forum', badgeKey:'topic', badgeEn:'Topic', badgeClass:'badge-secondary', name:'Governance Design Lab', descKey:'govLabDesc', descEn:'New discussion thread: "Liquid Democracy — A Practical Framework for Digital Nations." 89 replies.', timeKey:'t3h', timeEn:'3 hours ago' },
-    { type:'user', id:'Marcus Vane', icon:'person', badgeKey:'user', badgeEn:'User', badgeClass:'badge-warning', name:'Marcus Vane', descKey:'marcusDesc', descEn:'Published a new sovereign log: "The Architecture of Floating Cities — Phase 2 Blueprints."', timeKey:'t5h', timeEn:'5 hours ago' },
-    { type:'nation', id:'NAT-demo-2', icon:'shield', badgeKey:'nation', badgeEn:'Nation', badgeClass:'badge-primary', name:'Kingdom of Aethelgard', descKey:'aethelgardDesc', descEn:'Royal decree announced: Renewable Energy Initiative mandating 80% green energy by 2030.', timeKey:'t6h', timeEn:'6 hours ago' },
-    { type:'user', id:'Lena Hartmann', icon:'person', badgeKey:'user', badgeEn:'User', badgeClass:'badge-warning', name:'Lena Hartmann', descKey:'lenaDesc', descEn:'Contributed a new article to Neo-Venice Archive: "Aquatic Urban Planning — Lessons from the Adriatic."', timeKey:'t8h', timeEn:'8 hours ago' },
-    { type:'topic', id:'TOP-demo-1', icon:'forum', badgeKey:'topic', badgeEn:'Topic', badgeClass:'badge-secondary', name:'Digital Sovereignty Protocols', descKey:'digSovDesc', descEn:'Updated standards for blockchain-based identity verification in micronation governance.', timeKey:'t12h', timeEn:'12 hours ago' },
-    { type:'nation', id:'NAT-demo-3', icon:'water', badgeKey:'nation', badgeEn:'Nation', badgeClass:'badge-primary', name:'Neo-Venice Collective', descKey:'neoVeniceDesc', descEn:'Completed Phase 3 of floating district construction — 2,400 new residential units.', timeKey:'t1d', timeEn:'1 day ago' },
-    { type:'user', id:'Kai Zhang', icon:'person', badgeKey:'user', badgeEn:'User', badgeClass:'badge-warning', name:'Kai Zhang', descKey:'kaiDesc', descEn:'Posted a detailed economic analysis: "Micro-GDP Growth Projections for Pacific Island Nations."', timeKey:'t1d', timeEn:'1 day ago' },
-  ];
-
-  // -- Discover recommendations --
-  // v0.2.54.2 i18n 补：desc/role 改 key/En 对；name 为专名不译
-  var discoverNations = [
-    { id:'nat-disc-1', name:'Solarian Federation', abbr:'SF', color:'#f59e0b', descKey:'solarian', descEn:'A space-focused micronation with orbital habitat research programs.', followers: 4230 },
-    { id:'nat-disc-2', name:'Deepwater Accord', abbr:'DA', color:'#3b82f6', descKey:'deepwater', descEn:'Sub-aquatic colony pioneering deep-sea sustainable living.', followers: 3180 },
-    { id:'nat-disc-3', name:'Skyward Dominion', abbr:'SD', color:'#6366f1', descKey:'skyward', descEn:'High-altitude aerostat cities with advanced atmospheric engineering.', followers: 5620 },
-    { id:'nat-disc-4', name:'Greenbelt Confederation', abbr:'GC', color:'#22c55e', descKey:'greenbelt', descEn:'Eco-nation spanning forest territories with zero-carbon infrastructure.', followers: 2890 },
-  ];
-  var discoverTopics = [
-    { id:'top-disc-1', name:'Micronation Economics', icon:'account_balance', members: 920, descKey:'microEcon', descEn:'Currency design, trade agreements, and micro-GDP modeling.' },
-    { id:'top-disc-2', name:'Flag & Heraldry Guild', icon:'flag', members: 1150, descKey:'flagGuild', descEn:'Vexillology, coat-of-arms design, and national symbolism.' },
-    { id:'top-disc-3', name:'AI-Assisted Governance', icon:'smart_toy', members: 2340, descKey:'aiGov', descEn:'Exploring LLMs and automation in legislative processes.' },
-    { id:'top-disc-4', name:'Treaty Drafting Lab', icon:'gavel', members: 680, descKey:'treatyLab', descEn:'Collaborative drafting and peer review of bilateral treaties.' },
-  ];
-  var discoverUsers = [
-    { id:'user-disc-1', name:'Dr. Amina Okonkwo', avatar:'AO', roleKey:'politTheorist', roleEn:'Political Theorist', color:'#4648d4' },
-    { id:'user-disc-2', name:'Yuki Tanaka', avatar:'YT', roleKey:'cartographer', roleEn:'Cartographer', color:'#16a34a' },
-    { id:'user-disc-3', name:'Omar Hassan', avatar:'OH', roleKey:'econAdvisor', roleEn:'Economic Advisor', color:'#ea580c' },
-    { id:'user-disc-4', name:'Sofia Reyes', avatar:'SR', roleKey:'cultHistorian', roleEn:'Cultural Historian', color:'#8127cf' },
-  ];
-
-  // -- User/nation/topic name lookup (maps discover IDs → display names) --
-  var nameLookup = { users: {}, nations: {}, topics: {} };
-  // v0.2.54.2 i18n 补：lookup 的 sub 文案（计数后缀/角色）惰性 T()。首次构建在本 script
-  // 执行时（i18n.js 尚未加载，T 返回 null → 英文兜底）；apply() 触发 __mnI18nRerender
-  // 重建后换回译文。
-  function buildNameLookup() {
-    nameLookup = { users: {}, nations: {}, topics: {} };
-    discoverNations.forEach(function(n) { nameLookup.nations[n.id] = { name:n.name, abbr:n.abbr, color:n.color, sub: n.followers.toLocaleString() + (T('following.suffix.followers') || ' followers') }; });
-    discoverTopics.forEach(function(t) { nameLookup.topics[t.id] = { name:t.name, icon:t.icon, color:'#16a34a', sub: t.members.toLocaleString() + (T('following.suffix.members') || ' members') }; });
-    discoverUsers.forEach(function(u) { nameLookup.users[u.id] = { name:u.name, avatar:u.avatar, color:u.color, sub: (T('following.role.' + u.roleKey) || u.roleEn) }; });
-    // Seed users
-    nameLookup.users['Marcus Vane'] = { name:'Marcus Vane', avatar:'MV', color:'#4648d4', sub: (T('following.role.sovereignLog') || 'Sovereign Log Author') };
-    nameLookup.users['Lena Hartmann'] = { name:'Lena Hartmann', avatar:'LH', color:'#16a34a', sub: (T('following.role.aquaticUrbanist') || 'Aquatic Urbanist') };
-    nameLookup.users['Kai Zhang'] = { name:'Kai Zhang', avatar:'KZ', color:'#ea580c', sub: (T('following.role.econAnalyst') || 'Economic Analyst') };
-  }
-  buildNameLookup();
+  var LOGIN_URL = "../signup-and-login.html";
 
   // -- State --
-  var currentTab = 'feed';
-  var currentFilter = 'all';
+  var state = {
+    tab: 'feed',
+    filter: 'all',
+    search: '',
+    auth: false,
+    feed: [], feedFailed: false,
+    detail: { nations: [], topics: [], users: [] }, detailFailed: false,
+    followingIds: { nations: [], topics: [], users: [] },
+    discNations: [], discNationsFailed: false,
+    discTopics: [], discTopicsFailed: false,
+    discUsers: [], discUsersFailed: false
+  };
 
-  // Following data from storage
-  var myFollowing = SlatiDB.getFollowing();
+  // 双门 auth：slati_session 登录 + 用户 id 以 USR- 开头（演示用户「登录但无服务端 cookie」→ 视同未登录）
+  function isAuthed() {
+    var u = SlatiDB.getUser();
+    return !!SlatiDB.isLoggedIn() && !!u && String(u.id || '').indexOf('USR-') === 0;
+  }
 
-  function saveMyFollowing() {
-    SlatiDB.saveFollowing(myFollowing);
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function isFollowing(type, id) {
+    return (state.followingIds[type] || []).indexOf(id) !== -1;
+  }
+
+  function ownId() {
+    var u = SlatiDB.getUser();
+    return (u && u.id) || '';
+  }
+
+  function sMatch(texts) {
+    var q = state.search.trim().toLowerCase();
+    if (!q) return true;
+    for (var i = 0; i < texts.length; i++) {
+      if (String(texts[i] || '').toLowerCase().indexOf(q) !== -1) return true;
+    }
+    return false;
   }
 
   // ═══════════════════════════════════════════
-  // Helpers
+  // Data loading
   // ═══════════════════════════════════════════
+  function loadFeed() {
+    MN_API.get('/social/feed').then(function (r) {
+      if (r.ok && r.data) { state.feed = r.data.posts || []; state.feedFailed = false; }
+      else { state.feedFailed = true; }
+      renderAll();
+    });
+  }
 
-  function isFollowing(type, id) {
-    return myFollowing[type] && myFollowing[type].indexOf(id) !== -1;
+  function loadFollowingDetail() {
+    MN_API.get('/social/following/detail').then(function (r) {
+      if (r.ok && r.data) {
+        state.detail = { nations: r.data.nations || [], topics: r.data.topics || [], users: r.data.users || [] };
+        // 服务端真相 → 关注集合（按钮态/推荐区过滤的权威来源）
+        state.followingIds = {
+          nations: state.detail.nations.map(function (n) { return n.id; }),
+          topics: state.detail.topics.map(function (t) { return t.id; }),
+          users: state.detail.users.map(function (u) { return u.id; })
+        };
+        state.detailFailed = false;
+      } else { state.detailFailed = true; }
+      renderAll();
+    });
+  }
+
+  function loadDiscover() {
+    MN_API.get('/social/nations').then(function (r) {
+      state.discNations = (r.ok && r.data && r.data.nations) ? r.data.nations : [];
+      state.discNationsFailed = !(r.ok && r.data);
+      renderAll();
+    });
+    MN_API.get('/social/topics').then(function (r) {
+      state.discTopics = (r.ok && r.data && r.data.topics) ? r.data.topics : [];
+      state.discTopicsFailed = !(r.ok && r.data);
+      renderAll();
+    });
+    MN_API.get('/public/users').then(function (r) {
+      state.discUsers = (r.ok && r.data && r.data.users) ? r.data.users : [];
+      state.discUsersFailed = !(r.ok && r.data);
+      renderAll();
+    });
+  }
+
+  // ═══════════════════════════════════════════
+  // 关注/取关
+  // ═══════════════════════════════════════════
+  function applyLocalToggle(type, id, isNow) {
+    var arr = (state.followingIds[type] || []).slice();
+    var idx = arr.indexOf(id);
+    if (isNow && idx < 0) arr.push(id);
+    if (!isNow && idx >= 0) arr.splice(idx, 1);
+    state.followingIds[type] = arr;
+  }
+
+  function setLocalFollowingRaw(data) {
+    try { localStorage.setItem('slati_following', JSON.stringify(data)); } catch (e) {}
   }
 
   function toggleFollow(type, id) {
-    if (!myFollowing[type]) myFollowing[type] = [];
-    var idx = myFollowing[type].indexOf(id);
-    if (idx >= 0) {
-      myFollowing[type].splice(idx, 1);
-      saveMyFollowing();
-      return false; // unfollowed
-    } else {
-      myFollowing[type].push(id);
-      saveMyFollowing();
-      return true; // followed
+    if (!state.auth) { window.location.href = LOGIN_URL; return; }
+    var isNow = !isFollowing(type, id);
+    if (type === 'users') {
+      MN_API.request('/social/users/' + encodeURIComponent(id) + '/follow', { method: isNow ? 'POST' : 'DELETE' })
+        .then(function (r) {
+          if (r.ok && r.data) {
+            applyLocalToggle(type, id, isNow);
+            // 本地直写（绝不 saveFollowing——POST 后又 PUT = 双重写服务端）
+            var local = SlatiDB.getFollowing();
+            local.users = state.followingIds.users.slice();
+            setLocalFollowingRaw(local);
+          }
+          // 服务端真相重拉（失败 = 回滚到真相）
+          loadFollowingDetail();
+        });
+      return;
     }
+    // nation/topic：乐观翻转 + 本地持久（saveFollowing 触发 PUT 全量镜像）
+    applyLocalToggle(type, id, isNow);
+    var local = SlatiDB.getFollowing();
+    local[type] = state.followingIds[type].slice();
+    SlatiDB.saveFollowing(local);
+    // 500ms 宽限等 PUT 镜像落库再重拉真相（防镜像 PUT 与 detail GET 乱序回滚按钮）
+    setTimeout(loadFollowingDetail, 500);
+  }
+
+  // ═══════════════════════════════════════════
+  // 渲染（全纯：只读 state，零 fetch）
+  // ═══════════════════════════════════════════
+  function relTime(iso) {
+    var t = Date.parse(iso);
+    if (!t || isNaN(t)) return "";
+    var d = Date.now() - t;
+    if (d < 0) d = 0;
+    if (d < 86400000) return T('following.feed.time.today') || 'Today';
+    var days = Math.floor(d / 86400000);
+    return (T('following.feed.time.daysAgo') || '{n} days ago').replace('{n}', String(days));
+  }
+
+  function mediaHtml(media) {
+    var list = (media || []).filter(function (m) { return typeof m === "string" && /^(\/|https?:)/i.test(m); });
+    if (!list.length) return '';
+    return '<div class="folg-media">' + list.slice(0, 4).map(function (m) {
+      return '<img src="' + esc(m) + '" alt="" loading="lazy">';
+    }).join('') + '</div>';
+  }
+
+  function avatarHtml(name, url, color, size) {
+    if (url) return '<img style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;object-fit:cover;flex-shrink:0" src="' + esc(url) + '" alt="">';
+    var initials = String(name || '').trim().split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase() || '?';
+    return '<div style="width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * 0.36) + 'px;background:linear-gradient(135deg,' + (color || '#ea580c') + ',' + (color || '#ea580c') + 'dd);flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;color:white;font-weight:700">' + esc(initials) + '</div>';
+  }
+
+  function offlineInner() {
+    return '<span class="material-symbols-outlined" style="font-size:40px;color:var(--color-outline);opacity:0.5">wifi_off</span>' +
+      '<p style="font-weight:600;margin-top:var(--space-sm);color:var(--color-on-surface)">' + (T('following.offline.title') || 'Data temporarily unavailable') + '</p>' +
+      '<p class="label-sm" style="color:var(--color-outline);margin-top:4px">' + (T('following.offline.desc') || 'Please check your connection and try again.') + '</p>';
+  }
+  function offlineCard() { return '<div class="card folg-offline">' + offlineInner() + '</div>'; }
+
+  function loginCtaCard() {
+    return '<div class="card folg-cta">' +
+      '<span class="material-symbols-outlined" style="font-size:40px;color:var(--color-primary)">lock</span>' +
+      '<p style="font-weight:600;margin-top:var(--space-sm);color:var(--color-on-surface)">' + (T('following.loginCta.title') || 'Log in to see your feed') + '</p>' +
+      '<p class="label-sm" style="color:var(--color-outline);margin-top:4px;max-width:420px;margin-left:auto;margin-right:auto">' + (T('following.loginCta.desc') || 'Sign in to follow nations, topics, and citizens — their updates appear here.') + '</p>' +
+      '<button class="btn btn-primary btn-sm" style="margin-top:var(--space-sm)" onclick="window.location.href=\'' + LOGIN_URL + '\'">' + (T('following.loginCta.btn') || 'Go to Login') + '</button>' +
+    '</div>';
+  }
+
+  function emptyCard(icon, text) {
+    return '<div class="card folg-empty">' +
+      '<span class="material-symbols-outlined" style="font-size:40px;color:var(--color-outline);opacity:0.4">' + icon + '</span>' +
+      '<p style="color:var(--color-outline);margin-top:var(--space-sm)">' + text + '</p>' +
+    '</div>';
+  }
+
+  function followBtnHtml(type, id, following) {
+    return '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="' + type + '" data-id="' + esc(id) + '">' +
+      (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following')
+                 : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow')) +
+    '</button>';
   }
 
   // ═══════════════════════════════════════════
@@ -2520,77 +2869,84 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   // ═══════════════════════════════════════════
   function renderFeed() {
     var panel = document.getElementById('feedPanel');
-    if (!feedItems.length) {
+    if (!state.auth) { panel.innerHTML = loginCtaCard(); return; }
+    if (state.feedFailed) { panel.innerHTML = offlineCard(); return; }
+    var posts = state.feed.filter(function (p) {
+      return sMatch([p.authorName, p.content]);
+    });
+    if (!posts.length) {
       panel.innerHTML = '<div style="text-align:center;padding:var(--space-xl) 0">' +
         '<span class="material-symbols-outlined" style="font-size:48px;color:var(--color-outline);opacity:0.4">inbox</span>' +
         '<p style="color:var(--color-outline);margin-top:var(--space-sm)">' + (T('following.feed.empty') || 'No recent activity from followed entities.<br>Follow nations, topics, or users to see updates here.') + '</p></div>';
       return;
     }
-    panel.innerHTML = feedItems.map(function(item) {
-      return '<div class="card card-hover tilt-container">' +
+    panel.innerHTML = posts.map(function (p) {
+      var name = esc(p.authorName || "");
+      var authorLink = p.authorId
+        ? '<a href="community-profile.html?id=' + encodeURIComponent(p.authorId) + '" style="color:var(--color-on-surface);text-decoration:none;font-weight:600">' + name + '</a>'
+        : '<span style="font-weight:600">' + name + '</span>';
+      return '<div class="card card-hover tilt-container" style="padding:var(--space-md)">' +
         '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:8px">' +
-          '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + item.icon + '</span>' +
-          '<span class="badge ' + item.badgeClass + '">' + (T('following.feed.badge.' + item.badgeKey) || item.badgeEn) + '</span>' +
-          '<span style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + item.name + '</span>' +
-          '<span class="label-sm" style="margin-left:auto;color:var(--color-outline)">' + (T('following.feed.time.' + item.timeKey) || item.timeEn) + '</span>' +
+          avatarHtml(p.authorName, p.avatarUrl, "#4648d4", 32) +
+          '<div style="min-width:0">' +
+            '<div style="font-size:var(--fs-label-md);color:var(--color-on-surface)">' + authorLink + '</div>' +
+            '<div class="label-sm" style="color:var(--color-outline)">' + esc(relTime(p.createdAt)) + '</div>' +
+          '</div>' +
         '</div>' +
-        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + (T('following.feed.desc.' + item.descKey) || item.descEn) + '</p>' +
+        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);white-space:pre-wrap;word-break:break-word">' + esc(p.content || '') + '</p>' +
+        mediaHtml(p.media) +
+        '<div style="display:flex;gap:14px;margin-top:8px">' +
+          '<span class="flex-center" style="gap:3px;font-size:12px;color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px">favorite</span>' + (p.likeCount || 0) + '</span>' +
+          '<span class="flex-center" style="gap:3px;font-size:12px;color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px">comment</span>' + (p.commentCount || 0) + '</span>' +
+          '<span class="flex-center" style="gap:3px;font-size:12px;color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:14px">visibility</span>' + (p.viewCount || 0) + '</span>' +
+        '</div>' +
       '</div>';
     }).join('');
-    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('#feedPanel .tilt-container'));
   }
 
   // ═══════════════════════════════════════════
   // 2. Following Tab
   // ═══════════════════════════════════════════
   function renderFollowingList() {
+    var filterRow = document.getElementById('followingFilter');
     var list = document.getElementById('followingList');
     var empty = document.getElementById('followingEmpty');
-
-    // Collect all followed items
+    if (!state.auth) {
+      filterRow.style.display = 'none';
+      empty.style.display = 'none';
+      list.style.display = '';
+      list.innerHTML = loginCtaCard();
+      return;
+    }
+    filterRow.style.display = '';
+    if (state.detailFailed) {
+      list.style.display = '';
+      empty.style.display = 'none';
+      list.innerHTML = offlineCard();
+      return;
+    }
     var items = [];
-
-    // Nations
-    if (currentFilter === 'all' || currentFilter === 'nations') {
-      var nations = SlatiDB.getNations();
-      myFollowing.nations.forEach(function(nid) {
-        // Try discover lookup first, then seed nations
-        var nl = nameLookup.nations[nid];
-        if (nl) {
-          items.push({ type:'nations', id:nid, title:nl.name, sub:nl.sub, abbr:nl.abbr, color:nl.color, isDiscover:true });
-        } else {
-          var n = nations.filter(function(x) { return x.id === nid; })[0];
-          if (n) items.push({ type:'nations', id:nid, title:n.name, sub:n.classification, abbr:n.moniker.charAt(0).toUpperCase(), color:'#4648d4', isDiscover:false });
+    if (state.filter === 'all' || state.filter === 'nations') {
+      state.detail.nations.forEach(function (n) {
+        if (sMatch([n.name, n.classification, n.moniker])) {
+          items.push({ type: 'nations', id: n.id, title: n.name, sub: n.classification || '', abbr: (n.moniker || n.name || 'N').charAt(0).toUpperCase(), color: '#4648d4' });
         }
       });
     }
-
-    // Topics
-    if (currentFilter === 'all' || currentFilter === 'topics') {
-      var topics = SlatiDB.getTopics();
-      myFollowing.topics.forEach(function(tid) {
-        var tl = nameLookup.topics[tid];
-        if (tl) {
-          items.push({ type:'topics', id:tid, title:tl.name, sub:tl.sub, icon:tl.icon, color:tl.color, isDiscover:true });
-        } else {
-          var t = topics.filter(function(x) { return x.id === tid; })[0];
-          if (t) items.push({ type:'topics', id:tid, title:t.name, sub:t.memberCount.toLocaleString() + (T('following.suffix.members') || ' members'), icon:'forum', color:'#16a34a', isDiscover:false });
+    if (state.filter === 'all' || state.filter === 'topics') {
+      state.detail.topics.forEach(function (t) {
+        if (sMatch([t.name, t.description])) {
+          items.push({ type: 'topics', id: t.id, title: t.name, sub: (t.memberCount || 0).toLocaleString() + (T('following.suffix.members') || ' members'), icon: t.icon || 'forum', color: '#16a34a' });
         }
       });
     }
-
-    // Users
-    if (currentFilter === 'all' || currentFilter === 'users') {
-      myFollowing.users.forEach(function(uid) {
-        var ul = nameLookup.users[uid];
-        if (ul) {
-          items.push({ type:'users', id:uid, title:ul.name, sub:ul.sub, avatar:ul.avatar, color:ul.color, isDiscover:true });
-        } else {
-          items.push({ type:'users', id:uid, title:uid, sub:(T('following.list.citizen') || 'Citizen'), avatar:uid.split(' ').map(function(w){return w[0];}).join('').substring(0,2).toUpperCase(), color:'#ea580c', isDiscover:false });
+    if (state.filter === 'all' || state.filter === 'users') {
+      state.detail.users.forEach(function (u) {
+        if (sMatch([u.displayName, u.citizenId])) {
+          items.push({ type: 'users', id: u.id, title: u.displayName, sub: u.citizenId || '', avatarUrl: u.avatarUrl || null, color: '#ea580c' });
         }
       });
     }
-
     if (!items.length) {
       list.style.display = 'none';
       empty.style.display = '';
@@ -2598,40 +2954,30 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
     }
     list.style.display = '';
     empty.style.display = 'none';
-
-    list.innerHTML = items.map(function(item) {
-      // Avatar
-      var avatarHtml;
+    list.innerHTML = items.map(function (item) {
+      var avatarHtmlRow;
       if (item.type === 'users') {
-        var initials = item.avatar || item.title.split(' ').map(function(w) { return w[0]; }).join('').substring(0,2).toUpperCase();
-        avatarHtml = '<div class="avatar" style="width:36px;height:36px;font-size:13px;background:linear-gradient(135deg,' + (item.color||'#ea580c') + ',' + (item.color||'#ea580c') + 'dd);flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;color:white;font-weight:700">' + initials + '</div>';
+        avatarHtmlRow = avatarHtml(item.title, item.avatarUrl, item.color, 36);
       } else if (item.type === 'nations') {
-        avatarHtml = '<div style="width:48px;height:32px;background:' + (item.color||'#4648d4') + ';border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center">' +
-          '<span style="font-weight:700;font-size:11px;color:rgba(255,255,255,0.9);letter-spacing:0.05em">' + (item.abbr||'') + '</span></div>';
+        avatarHtmlRow = '<div style="width:48px;height:32px;background:' + (item.color || '#4648d4') + ';border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center">' +
+          '<span style="font-weight:700;font-size:11px;color:rgba(255,255,255,0.9);letter-spacing:0.05em">' + esc(item.abbr || '') + '</span></div>';
       } else {
-        avatarHtml = '<div style="width:36px;height:36px;border-radius:10px;background:rgba(22,163,74,0.1);flex-shrink:0;display:flex;align-items:center;justify-content:center">' +
-          '<span class="material-symbols-outlined" style="font-size:20px;color:' + (item.color||'#16a34a') + '">' + (item.icon||'forum') + '</span></div>';
+        avatarHtmlRow = '<div style="width:36px;height:36px;border-radius:10px;background:rgba(22,163,74,0.1);flex-shrink:0;display:flex;align-items:center;justify-content:center">' +
+          '<span class="material-symbols-outlined" style="font-size:20px;color:' + (item.color || '#16a34a') + '">' + esc(item.icon || 'forum') + '</span></div>';
       }
-
       return '<div class="card card-hover" style="display:flex;align-items:center;gap:12px;padding:var(--space-sm) var(--space-md)">' +
-        avatarHtml +
+        avatarHtmlRow +
         '<div style="flex:1;min-width:0">' +
-          '<div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + item.title + '</div>' +
-          '<div class="label-sm" style="color:var(--color-outline)">' + item.sub + '</div>' +
+          '<div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + esc(item.title || '') + '</div>' +
+          '<div class="label-sm" style="color:var(--color-outline)">' + esc(item.sub || '') + '</div>' +
         '</div>' +
-        '<button class="btn btn-outline btn-sm unfollow-btn" data-type="' + item.type + '" data-id="' + item.id + '" style="flex-shrink:0;font-size:11px">' + (T('following.list.followingBtn') || 'Following') + '</button>' +
+        '<button class="btn btn-outline btn-sm unfollow-btn" data-type="' + item.type + '" data-id="' + esc(item.id) + '" style="flex-shrink:0;font-size:11px">' + (T('following.list.followingBtn') || 'Following') + '</button>' +
       '</div>';
     }).join('');
 
-    // Bind unfollow buttons
-    list.querySelectorAll('.unfollow-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var type = btn.dataset.type;
-        var id = btn.dataset.id;
-        toggleFollow(type, id);
-        renderFollowingList();
-        renderSidebar();
-        renderDiscoverGrids();
+    list.querySelectorAll('.unfollow-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        toggleFollow(btn.dataset.type, btn.dataset.id);
       });
     });
   }
@@ -2640,74 +2986,70 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   // 3. Discover Tab
   // ═══════════════════════════════════════════
   function renderDiscoverGrids() {
-    // Nations
-    document.getElementById('discoverNations').innerHTML = discoverNations.map(function(n) {
-      var following = isFollowing('nations', n.id);
-      return '<div class="card tilt-container" style="padding:var(--space-md);text-align:center">' +
-        '<div style="width:100%;height:56px;background:' + n.color + ';border-radius:6px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden">' +
-          '<span style="font-weight:800;font-size:18px;color:rgba(255,255,255,0.9);letter-spacing:0.08em">' + n.abbr + '</span>' +
-        '</div>' +
-        '<div style="font-weight:600;font-size:var(--fs-label-md);margin-bottom:2px;color:var(--color-on-surface)">' + n.name + '</div>' +
-        '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px;line-height:1.3">' + (T('following.discover.natDesc.' + n.descKey) || n.descEn) + '</p>' +
-        '<div class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + n.followers.toLocaleString() + (T('following.suffix.followers') || ' followers') + '</div>' +
-        '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="nations" data-id="' + n.id + '">' +
-          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following') : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow')) +
-        '</button>' +
-      '</div>';
-    }).join('');
+    // Nations（无 emoji/无假粉丝数：abbr=moniker 首两字、副行=classification、lore≤120 字）
+    var nBox = document.getElementById('discoverNations');
+    if (state.discNationsFailed) { nBox.innerHTML = offlineCard(); }
+    else {
+      var nRows = state.discNations.filter(function (n) { return sMatch([n.name, n.classification, n.moniker]); });
+      if (!nRows.length) { nBox.innerHTML = emptyCard('public', T('following.empty.nations') || 'No nations yet.'); }
+      else {
+        nBox.innerHTML = nRows.map(function (n) {
+          var following = isFollowing("nations", n.id);
+          return '<div class="card tilt-container" style="padding:var(--space-md);text-align:center">' +
+            '<div style="width:100%;height:56px;background:#4648d4;border-radius:6px;margin-bottom:10px;display:flex;align-items:center;justify-content:center">' +
+              '<span style="font-weight:800;font-size:18px;color:rgba(255,255,255,0.9);letter-spacing:0.08em">' + esc((n.moniker || n.name || 'N').slice(0, 2).toUpperCase()) + '</span>' +
+            '</div>' +
+            '<div style="font-weight:600;font-size:var(--fs-label-md);margin-bottom:2px;color:var(--color-on-surface)">' + esc(n.name || '') + '</div>' +
+            '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px;line-height:1.3">' + esc(String(n.lore || n.classification || '').slice(0, 120)) + '</p>' +
+            followBtnHtml("nations", n.id, following) +
+          '</div>';
+        }).join('');
+      }
+    }
 
     // Topics
-    document.getElementById('discoverTopics').innerHTML = discoverTopics.map(function(t) {
-      var following = isFollowing('topics', t.id);
-      return '<div class="card tilt-container" style="padding:var(--space-md)">' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
-          '<span class="material-symbols-outlined" style="font-size:24px;color:var(--color-primary)">' + t.icon + '</span>' +
-          '<div><div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + t.name + '</div>' +
-          '<div class="label-sm" style="color:var(--color-outline)">' + t.members.toLocaleString() + (T('following.suffix.members') || ' members') + '</div></div>' +
-        '</div>' +
-        '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px">' + (T('following.discover.topicDesc.' + t.descKey) || t.descEn) + '</p>' +
-        '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="topics" data-id="' + t.id + '">' +
-          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following') : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow')) +
-        '</button>' +
-      '</div>';
-    }).join('');
+    var tBox = document.getElementById('discoverTopics');
+    if (state.discTopicsFailed) { tBox.innerHTML = offlineCard(); }
+    else {
+      var tRows = state.discTopics.filter(function (t) { return sMatch([t.name, t.description]); });
+      if (!tRows.length) { tBox.innerHTML = emptyCard('forum', T('following.empty.topics') || 'No topics yet.'); }
+      else {
+        tBox.innerHTML = tRows.map(function (t) {
+          var following = isFollowing("topics", t.id);
+          return '<div class="card tilt-container" style="padding:var(--space-md)">' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
+              '<span class="material-symbols-outlined" style="font-size:24px;color:var(--color-primary)">' + esc(t.icon || 'forum') + '</span>' +
+              '<div><div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + esc(t.name || '') + '</div>' +
+              '<div class="label-sm" style="color:var(--color-outline)">' + (t.memberCount || 0).toLocaleString() + (T('following.suffix.members') || ' members') + '</div></div>' +
+            '</div>' +
+            '<p style="font-size:11px;color:var(--color-on-surface-variant);margin-bottom:8px">' + esc(String(t.description || '').slice(0, 120)) + '</p>' +
+            followBtnHtml("topics", t.id, following) +
+          '</div>';
+        }).join('');
+      }
+    }
 
-    // Users
-    document.getElementById('discoverUsers').innerHTML = discoverUsers.map(function(u) {
-      var following = isFollowing('users', u.id);
-      return '<div class="card tilt-container" style="padding:var(--space-md);text-align:center">' +
-        '<div class="avatar" style="width:44px;height:44px;font-size:15px;background:linear-gradient(135deg,' + u.color + ',' + u.color + 'dd);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;border-radius:50%;color:white;font-weight:700">' + u.avatar + '</div>' +
-        '<div style="font-weight:600;font-size:var(--fs-label-md);margin-bottom:2px;color:var(--color-on-surface)">' + u.name + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + (T('following.role.' + u.roleKey) || u.roleEn) + '</div>' +
-        '<button class="btn btn-outline btn-sm follow-btn" style="width:100%;font-size:11px" data-type="users" data-id="' + u.id + '">' +
-          (following ? '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following') : '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow')) +
-        '</button>' +
-      '</div>';
-    }).join('');
-
-    // Bind follow buttons
-    document.querySelectorAll('#discoverPanel .follow-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var type = btn.dataset.type;
-        var id = btn.dataset.id;
-        var nowFollowing = toggleFollow(type, id);
-        // Update button style
-        if (nowFollowing) {
-          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">favorite</span>' + (T('following.discover.followingBtn') || 'Following');
-          btn.style.background = 'rgba(22,163,74,0.08)';
-          btn.style.color = '#16a34a';
-          btn.style.borderColor = 'rgba(22,163,74,0.3)';
-        } else {
-          btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;margin-right:3px">add</span>' + (T('following.discover.followBtn') || 'Follow');
-          btn.style.background = '';
-          btn.style.color = '';
-          btn.style.borderColor = '';
-        }
-        renderSidebar();
+    // Users（= 公开用户端点；登出自身不显示）
+    var uBox = document.getElementById('discoverUsers');
+    if (state.discUsersFailed) { uBox.innerHTML = offlineCard(); }
+    else {
+      var me = ownId();
+      var uRows = state.discUsers.filter(function (u) {
+        return u.id !== me && sMatch([u.displayName, u.citizenId]);
       });
-    });
-
-    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('#discoverPanel .tilt-container'));
+      if (!uRows.length) { uBox.innerHTML = emptyCard('person', T('following.empty.users') || 'No citizens yet.'); }
+      else {
+        uBox.innerHTML = uRows.map(function (u) {
+          var following = isFollowing("users", u.id);
+          return '<div class="card tilt-container" style="padding:var(--space-md);text-align:center">' +
+            avatarHtml(u.displayName, u.avatarUrl, "#ea580c", 44) +
+            '<div style="font-weight:600;font-size:var(--fs-label-md);margin:8px 0 2px;color:var(--color-on-surface)">' + esc(u.displayName || '') + '</div>' +
+            '<div class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + esc(u.citizenId || '') + '</div>' +
+            followBtnHtml("users", u.id, following) +
+          '</div>';
+        }).join('');
+      }
+    }
   }
 
   // ═══════════════════════════════════════════
@@ -2715,9 +3057,8 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   // ═══════════════════════════════════════════
   function renderSidebar() {
     var slot = document.getElementById('rightSidebarSlot');
-
-    if (currentTab === 'following') {
-      // Stats
+    if (state.tab === 'following') {
+      // Stats（detail 三数组计数 = 服务端真相）
       slot.innerHTML = '<div class="card">' +
         '<h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">' +
           '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)">monitoring</span> ' + (T('following.stats.title') || 'Following Stats') +
@@ -2725,98 +3066,139 @@ function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
         '<div style="display:flex;flex-direction:column;gap:8px">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
             '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#4648d4">public</span> ' + (T('following.filter.nations') || 'Nations') + '</span>' +
-            '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#4648d4">' + myFollowing.nations.length + '</span>' +
+            '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#4648d4">' + state.detail.nations.length + '</span>' +
           '</div>' +
           '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
             '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#16a34a">forum</span> ' + (T('following.filter.topics') || 'Topics') + '</span>' +
-            '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#16a34a">' + myFollowing.topics.length + '</span>' +
+            '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#16a34a">' + state.detail.topics.length + '</span>' +
           '</div>' +
           '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">' +
             '<span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md)"><span class="material-symbols-outlined" style="font-size:16px;color:#ea580c">person</span> ' + (T('following.filter.users') || 'Users') + '</span>' +
-            '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#ea580c">' + myFollowing.users.length + '</span>' +
+            '<span style="font-weight:700;font-size:var(--fs-body-lg);color:#ea580c">' + state.detail.users.length + '</span>' +
           '</div>' +
         '</div>' +
       '</div>';
-    } else {
-      // Recommendations (Feed tab)
-      // v0.2.54.2 i18n 补：sub 改 key/En 对；name 为专名不译
-      var recItems = [
-        { icon:'public', name:'Solarian Federation', subKey:'solarian', subEn:'4,230 followers', color:'#4648d4' },
-        { icon:'forum', name:'AI-Assisted Governance', subKey:'aiGov', subEn:'2,340 members', color:'#16a34a' },
-        { icon:'person', name:'Dr. Amina Okonkwo', subKey:'amina', subEn:'Political Theorist', color:'#ea580c' },
-      ];
+      return;
+    }
+    // Who to Follow（= 公开用户端点 减已关注 减自身，≤5）
+    if (state.discUsersFailed) { slot.innerHTML = '<div class="card">' + offlineInner() + '</div>'; return; }
+    var me = ownId();
+    var rows = state.discUsers.filter(function (u) {
+      return u.id !== me && !isFollowing("users", u.id);
+    }).slice(0, 5);
+    if (!rows.length) {
       slot.innerHTML = '<div class="card">' +
         '<h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">' +
           '<span class="material-symbols-outlined" style="font-size:18px;color:#eab308">auto_awesome</span> ' + (T('following.rec.title') || 'Who to Follow') +
         '</h3>' +
-        recItems.map(function(r) {
-          return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
-            '<span class="material-symbols-outlined" style="font-size:20px;color:' + r.color + ';flex-shrink:0">' + r.icon + '</span>' +
-            '<div style="flex:1;min-width:0">' +
-              '<div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + r.name + '</div>' +
-              '<div class="label-sm" style="color:var(--color-outline)">' + (T('following.rec.sub.' + r.subKey) || r.subEn) + '</div>' +
-            '</div>' +
-            '<button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:11px;color:var(--color-primary)">' + (T('following.rec.followBtn') || '+ Follow') + '</button>' +
-          '</div>';
-        }).join('') +
-        '<a href="#" class="label-sm" id="gotoDiscover" style="display:block;text-align:center;margin-top:var(--space-sm);color:var(--color-primary);text-decoration:none">' + (T('following.rec.viewMore') || 'View more in Discover →') + '</a>' +
+        '<p class="label-sm" style="color:var(--color-outline);text-align:center;padding:var(--space-sm) 0">' + (T('following.rec.empty') || 'No suggestions right now.') + '</p>' +
       '</div>';
+      return;
     }
+    slot.innerHTML = '<div class="card">' +
+      '<h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">' +
+        '<span class="material-symbols-outlined" style="font-size:18px;color:#eab308">auto_awesome</span> ' + (T('following.rec.title') || 'Who to Follow') +
+      '</h3>' +
+      rows.map(function (u) {
+        return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
+          avatarHtml(u.displayName, u.avatarUrl, "#ea580c", 28) +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-weight:600;font-size:var(--fs-label-md);color:var(--color-on-surface)">' + esc(u.displayName || '') + '</div>' +
+            '<div class="label-sm" style="color:var(--color-outline)">' + (u.followerCount || 0).toLocaleString() + (T('following.suffix.followers') || ' followers') + '</div>' +
+          '</div>' +
+          '<button class="btn btn-ghost btn-sm follow-btn" style="padding:2px 8px;font-size:11px;color:var(--color-primary)" data-type="users" data-id="' + esc(u.id) + '">' + (T('following.rec.followBtn') || '+ Follow') + '</button>' +
+        '</div>';
+      }).join('') +
+      '<a href="#" class="label-sm" id="gotoDiscover" style="display:block;text-align:center;margin-top:var(--space-sm);color:var(--color-primary);text-decoration:none">' + (T('following.rec.viewMore') || 'View more in Discover →') + '</a>' +
+    '</div>';
   }
 
   // ═══════════════════════════════════════════
-  // Tab Switching
+  // Tab Switching / 事件
   // ═══════════════════════════════════════════
   function switchTab(tab) {
-    currentTab = tab;
+    state.tab = tab;
     document.getElementById('feedPanel').style.display = tab === 'feed' ? '' : 'none';
     document.getElementById('followingPanel').style.display = tab === 'following' ? '' : 'none';
     document.getElementById('discoverPanel').style.display = tab === 'discover' ? '' : 'none';
-
-    if (tab === 'feed') renderFeed();
-    if (tab === 'following') renderFollowingList();
-    if (tab === 'discover') renderDiscoverGrids();
-    renderSidebar();
+    renderAll();
   }
 
-  document.getElementById('mainTabs').addEventListener('click', function(e) {
+  function renderAll() {
+    renderFeed();
+    renderFollowingList();
+    renderDiscoverGrids();
+    renderSidebar();
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+  }
+
+  document.getElementById('mainTabs').addEventListener('click', function (e) {
     var btn = e.target.closest('.subnav-pill');
-    if (!btn || btn.dataset.tab === currentTab) return;
+    if (!btn || btn.dataset.tab === state.tab) return;
     switchTab(btn.dataset.tab);
   });
 
-  // Following filter
-  document.getElementById('followingFilter').addEventListener('click', function(e) {
+  document.getElementById('followingFilter').addEventListener('click', function (e) {
     var btn = e.target.closest('.subnav-pill');
-    if (!btn || btn.dataset.filter === currentFilter) return;
-    currentFilter = btn.dataset.filter;
+    if (!btn || btn.dataset.filter === state.filter) return;
+    state.filter = btn.dataset.filter;
     renderFollowingList();
   });
 
-  // "View more in Discover" link
-  document.getElementById('rightSidebarSlot').addEventListener('click', function(e) {
+  // Discover 区 +Follow（事件委托：渲染替换 innerHTML 后无需重绑）
+  document.getElementById('discoverPanel').addEventListener('click', function (e) {
+    var btn = e.target.closest('.follow-btn');
+    if (!btn) return;
+    toggleFollow(btn.dataset.type, btn.dataset.id);
+  });
+
+  // 右栏：推荐关注 +Follow / 「在发现中查看更多」（手动 .active 切换——subnav.js MutationObserver 驱动滑块，安全）
+  document.getElementById('rightSidebarSlot').addEventListener('click', function (e) {
+    var fb = e.target.closest('.follow-btn');
+    if (fb) { toggleFollow(fb.dataset.type, fb.dataset.id); return; }
     if (e.target.id === 'gotoDiscover') {
       e.preventDefault();
       switchTab('discover');
-      // Update subnav pill
-      document.querySelectorAll('#mainTabs .subnav-pill').forEach(function(p) { p.classList.remove('active'); });
+      document.querySelectorAll('#mainTabs .subnav-pill').forEach(function (p) { p.classList.remove('active'); });
       var discPill = document.querySelector('#mainTabs [data-tab="discover"]');
       if (discPill) discPill.classList.add('active');
     }
   });
 
-  // v0.2.54.0 i18n：重渲钩子——body 尾部三件套 apply（及语言切换）后按当前 tab 整刷
-  // （Feed/Following/Discover 面板与右栏全部由 JS 渲染，switchTab 幂等可安全重跑）。
-  // v0.2.54.2：先重建 nameLookup（sub 文案惰性 T() 已在字典就绪后生效）再整刷。
+  // 搜索：input → state.search → 重渲当前标签（feed 按作者名+内容、following/discover 按名），无防抖
+  var searchInput = document.getElementById('followingSearch');
+  searchInput.addEventListener('input', function () {
+    state.search = searchInput.value;
+    renderAll();
+  });
+
+  // 401 → storage.js 已清会话 → 页面退登录引导态
+  window.addEventListener('mn:unauthorized', function () {
+    state.auth = false;
+    state.feed = []; state.feedFailed = false;
+    state.detail = { nations: [], topics: [], users: [] };
+    state.followingIds = { nations: [], topics: [], users: [] };
+    renderAll();
+  });
+
+  // v0.2.54.0 i18n：重渲钩子——body 尾部三件套 apply（及语言切换）后整刷。
+  // v0.2.58.17 链式挂载：不踩其他页（58.16 activity 等已挂 __mnI18nRerender）。
+  var __mnPrevRerender = window.__mnI18nRerender || function () {};
   window.__mnI18nRerender = function () {
-    buildNameLookup();
-    switchTab(currentTab);
+    __mnPrevRerender();
+    renderAll();
   };
 
   // ═══════════════════════════════════════════
-  // Initial Render
+  // Boot
   // ═══════════════════════════════════════════
-  switchTab('feed');
+  state.auth = isAuthed();
+  if (state.auth) {
+    loadFeed();
+    loadFollowingDetail();
+  }
+  loadDiscover(); // 恒拉（公开端点）：发现区 + 推荐关注
+  switchTab("feed");
 
 })();
 </script>

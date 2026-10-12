@@ -1,0 +1,21 @@
+  ✅ F1 site-config：FC v10.28.47.4 + rev 00313- 占位 + 站点版本恒 v0.2.58.9
+  ✅ F2 迁移按钮子代选择器在源：.migrate-btn > span / hover > span + 后代选择器零残留
+  ✅ F3 头栏缩身规则在源：纵向垫 5px + gap 8px + btn-sm 3px 12px + btn-icon 30×30 + migrate svg 20 + 标题 icon 18px + 粗指针 migrate 入 44px 列表
+  ✅ H1 头栏纵向垫 5px + gap 8px  {"pt":"5px","pb":"5px","gap":"8px","hh":41,"spad":"3px 12px","saveH":28,"bw":30,"bh":30,"bpad":"0px","ui":"20px","undoH":28,"ti":"18px"}
+  ✅ H2 头栏总高 ~42px（旧 ~64px 缩身 ≥14px）  hh=41
+  ✅ H3 Save Draft（.btn-sm）垫 3px 12px + 钮高 ≤34  spad=3px 12px h=28
+  ✅ H4 返回钮（.btn-icon）30×30 + padding 0（顺序敏感：0 压回 3px 垫）  bw=30 bh=30 pad=0px
+  ✅ H5 undo 图标 24→20px + 钮高 ≤34  ui=20px h=28
+  ✅ H6 标题 article 图标 22→18px  ti=18px
+  ✅ M1 外层 span filter=invert(1) + 内层 <span data-i18n> filter=none（单次反转=静息黑字，双重反转回归不复现）  {"of":"invert(1)","ifl":"none"}
+  ✅ M2 迁移钮缩身：svg 20×20 + 外层垫 4px 12px + 钮高 ≤34  {"sw":20,"sh":20,"pad":"4px 12px","bh":28}
+  ✅ M3 ::before 白面板在位（z 0）+ 外层 span z 10 压面板之上（文字可见性前提）  {"bbg":"rgb(255, 255, 255)","bz":"0","oz":"10"}
+  ✅ M4 悬停 → 外层 filter 翻 invert(0)（白面板滑离，紫底白字）  filter=invert(0)
+  ✅ M5 移开回静息 invert(1)  filter=invert(1)
+  ✅ C1 粗指针 .btn 44px 命中区兜底（缩身不缩触控）  {"coarse":true,"minH":"44px","minW":"44px","bh":44}
+  ✅ C2 粗指针 migrate-btn 44px 兜底（本轮新入列表）  {"minH":"44px","minW":"44px","bh":44}
+  ✅ E1 全程零 Runtime exception  干净
+  ✅ E2 全程零 console error  干净
+
+🎉 全部通过 18/18
+

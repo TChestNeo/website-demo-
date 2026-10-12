@@ -1,0 +1,47 @@
+═══ S. 静态巡检 ═══
+  ✅ S1 ethereal 全站铺底规则在位（body:not(.fc-page) 三面）
+  ✅ S2 ethereal 全站灭层规则在位（card + guest-hero 直系 lg-backdrop 灭滤镜灭磨砂）
+  ✅ S3 旧 mn-index 首页规则零残留（54.3 块整体替换为全站规则）
+  ✅ S4 ethereal 修复注释含用户原话 + 三钦定口径
+  ✅ S5 FC 两页 body 挂 fc-page 排除类
+  ✅ S6 index body 挂 mn-index 页面类（首页作用域保留，无碍全站规则）
+  ✅ S7 订阅卡深色渐变底零触碰（白字设计卡钦定不动）
+  ✅ S8 cp 页钦定玻璃规则锚在位（profile-header 层 glass-distortion + blur(10px)）
+  ✅ S9 内联页总数 = 41（55.0 article.html 入族，实测 41）
+  ✅ S10 41 页内联块全部含全站铺底规则
+  ✅ S11 site-config 版本 = v0.2.55.0
+  ✅ S12 site-config changelog 含 v0.2.55.0 条目 + 用户原话
+  ✅ S13 FC v10.28.36.1 保持
+  ✅ S14 豁免卡零触碰锚（plan-card 深色 !important 仍在 + auth-card 仍在）
+  ✅ S15 admin 页 body 裸标签无 class（命中全站规则属全站口径）
+═══ B1. 登录 index 亮色 ═══
+  ✅ B1 卡数 = 18（问候 1+活动流 4+公告 10+工作台/指标/我的世界 3）
+  ✅ B2 亮色 18 卡 backgroundColor 全 rgba(255,255,255,0.95) 不透明侧栏同底
+  ✅ B3 13 张非 tilt 卡 .lg-backdrop 全灭（filter=none + backdropFilter=none）
+  ✅ B4 订阅卡深色渐变白字仍在（钦定保持深色不变）
+  ✅ B5 搜索胶囊同底 0.95（54.3 口径保留）
+  ✅ B6 暗色 18 卡 backgroundColor 全 rgb(26,26,46)（侧栏暗色同底）
+═══ B2. 访客 index guest-hero ═══
+  ✅ B7 访客大卡亮色底 rgba(255,255,255,0.95) + 层全灭
+  ✅ B8 访客大卡暗色底 rgb(26,26,46) + 层仍全灭
+═══ B3. explore 页全站化 ═══
+  ✅ B9 explore 页 6 张卡 backgroundColor 全 0.95 不透明
+  ✅ B10 explore 页挂层卡 .lg-backdrop 全灭
+═══ B4. messages 页全站化 ═══
+  ✅ B11 messages 页 12 张卡 backgroundColor 全 0.95 不透明
+  ✅ B12 messages 页挂层卡 .lg-backdrop 全灭
+═══ B5. community-profile 钦定玻璃保留 ═══
+  ✅ B13 profile-header 玻璃保留（bg=var(--card-bg) 0.55 原玻璃值，非 0.95）
+  ✅ B14 profile-header 钦定玻璃层保留（filter 含 glass-distortion + blur(10px) 磨砂）
+  ✅ B15 cp 页其余 2 张普通卡全 0.95 不透明（profile-tabs/空态等全站口径）
+  ✅ B16 cp 页普通卡挂层者 .lg-backdrop 全灭（玻璃层不误伤）
+═══ B6. FC 页首页卡片不透明化 ═══
+  ✅ B17 FC 页 body 挂 fc-page 类（58.26 页面专属规则作用域标记）
+  ✅ B18 FC 页 .card 底改 --sidebar-bg 0.95 不透明 + 自身 backdropFilter 保留 + .lg-backdrop 层灭
+  ✅ B19 FC 页真实卡全 0.95 不透明底（channelOverview/Summary !important 渐变同底）
+  ✅ B20 FC 页挂层卡 .lg-backdrop 全灭（filter=none + backdropFilter=none）
+  ✅ B21 搜索胶囊玻璃保留（非 0.95 底 + blur(16px) 原值——钦定③按钮/胶囊不在不透明范围）
+  ✅ B22 暗色 FC 页 .card 底全 rgb(26,26,46)（侧栏暗色同底）
+
+all-opaque 电池：37 通过 / 0 失败
+

@@ -1158,6 +1158,292 @@ window.MN_SITE = window.MN_SITE || {};
 //   sidebar.js 零改动（纯 CSS 零 JS）；40 页内联块全量刷新+编辑器页手工同款（inliner SKIP_CSS_REFRESH
 //   豁免）；FC 恒 v10.28.47.4、后端零改动、i18n 零新键）：
 //   （rev 00317-ht9 瞬态占位上直播；二次烘焙重部署终态 rev 00318-2vk——live 文本 00317-ht9 滞后一部署=58.10 同款下轮烘焙）
+// v0.2.58.15 = 折叠侧栏等级药丸悬停放大+右侧滑出等级信息卡（补丁位 14→15·调整轮；2026-09-28）——用户
+//   「那么能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出 一个卡片完整的
+//   显示等级信息和经验条」：折叠态药丸悬停（.mn-lv-badge 整块=悬停区，贴近即触发）scale(1.12)+右侧
+//   滑出 .mn-lv-hovercard（position:fixed 挂 body 逃双裁剪——侧栏 overflow-x:hidden+用户卡
+//   overflow:hidden；z-index 150；内容=每次 show 从活的 .mn-lv-normal clone 最新 innerHTML 零陈旧；
+//   200ms 宽限防缝隙闪烁；触屏门控 matchMedia(hover+fine)+CSS @media 同款双保险，触屏/平板零行为）；
+//   展开态原徽章可见零卡片；sidebar.js 新 initLevelHover（renderSidebar 尾部每轮重挂监听）；药丸/水杯/
+//   水位/两浪 58.14 全零改动；40 页内联块全量刷新+编辑器页手工同款（inliner SKIP_CSS_REFRESH 豁免）；
+//   FC 恒 v10.28.47.4、后端零改动、i18n 零新键）：
+//   （rev 00325-555 瞬态占位上直播；二次烘焙重部署终态 rev 00326-j6m——live 文本 00325-555 滞后一部署=58.14 同款下轮烘焙）
+// v0.2.58.18 = 个人资料自定义横幅/头像（补丁位 17→18·新功能轮；2026-09-29）——用户「能不能把个人资料的自定义
+//   横幅/头像做一下」：资料页横幅 .profile-banner 只有 7 个玻璃预设渐变（无图片）；头像上传已有（编辑弹窗→
+//   /social/uploads→PATCH）但无 FC 图库入口、PATCH avatarUrl 零校验（String(null) 会写 "null" 字面串缺陷）。
+//   六项用户钦定：①编辑权限=仅本人（u.isSelf 门控结构已成立零新门）②图片来源=本地上传+FC 图库双来源（无 URL
+//   输入）③自动适配零裁剪（服务端限大小/格式，页面居中裁切；横幅约 3:1 宽条、头像正方形；零裁剪 UI）④≤10MB 含
+//   gif（jpg/png/webp/gif）⑤头像本轮也加图库入口 ⑥横幅显示在资料页顶部、头像叠其上（经典社交布局）；
+//   后端：迁移 029_user_banner（users 加 banner_url 列，NULL=默认预设渐变，无新表 health 60 不变）、
+//   PATCH /api/auth/me bannerUrl 新分支（null=移除、slice(0,500)+PAGE_BG_IMAGE_RE 校验、审计随行）+
+//   avatarUrl 同款加固顺修 String(null) 缺陷、GET /api/social/users/:id bannerUrl 公开守卫行、
+//   publicUser/公共 users 零改动（PII 最小口径 banner 绝不出现在发现/关注页）；
+//   前端：renderHeader 横幅行（has-img 类+escapeHtml 内联背景图盖预设渐变）、编辑弹窗新组「横幅图片」（预览条+
+//   上传/图库/移除三按钮+state 四态）、FC 图库选择器 openFcLibraryPicker（读 slati_img_library 只收 data:
+//   条目=URL 输入后门过滤+3 列网格+空态）、fcDataUrlToBlob（dataURL→Blob 双来源同上传链直传绝不 FormData）、
+//   头像图库入口同链落 editPendingAvatar、保存 diff-only（null 显式入 body=移除语义）；
+//   侧栏 60px user-banner 零触碰（钦定只资料页顶部）；切页动画/10 分钟心跳/药丸悬停卡零触碰；FC 恒
+//   v10.28.47.4；i18n 11 新键×11 语（OpenCC 重生成 zh-Hant）；CSS 全进页面专属块→跳过 inline-css.js；
+//   后端测试 359/359（横幅案+头像加固案+迁移 029 案）+电池 profile-banner 122/122（继承母本全套 100 项+B 组 22 项）+
+//   舰队 44 套全绿（article-frontend/notif-home 旧 user_version 28 锚随 029 改 29、all-opaque Chrome 未起 flake——独立复跑销账）+
+//   冒烟 60/60+i18n 34/34；镜像内容验证 两次构建各验一次、先验后推；线上探针 profile-banner 10/10）：
+//   （rev 00331-g9b 瞬态占位上直播；二次烘焙重部署终态 rev 00333-kkx——live 文本滞后一部署=惯例）
+// v0.2.58.19 = 个人资料横幅/头像订阅分层（补丁位 18→19·新功能轮；2026-09-29）——用户「能不能在个人资料设置内
+//   也添加这个功能类似discord那种分成基本和付费，还有这个和用户的频道主页的横幅是不互通的」：58.18 横幅/头像
+//   功能（上传+FC 图库双来源、gif 全家放行）无分层。三项用户钦定：①分层=免费（静态图 jpg/png/webp 上传）vs
+//   付费（gif 动图+FC 图库来源，tier∈{basic,premium,ultra}）②纯前端门禁（同弹窗「边缘主题」组先例：锁 UI+
+//   点击 toast 不生效+premium.html 升级链接；后端零改动——上传端点不能门禁，帖子发图也走它会误伤）
+//   ③资料横幅与用户频道主页横幅保持不互通（FC 频道主页 #channelOverview 本轮零改动——FC 卡本来就不读
+//   users.banner_url）；
+//   前端（community-profile.html）：blockGif(ext) 助手拦 gif（免费 toast gifLocked+零 fetch；横幅 uploadBannerBlob
+//   统一漏斗+头像文件/图库两处共三入口）、图库按钮免费点击 toast libLocked 不生效（选择器绝不打开 DOM 零构建）、
+//   两图库按钮锁态（.sub-locked 半透明+lock 图标+title「订阅后可用」+「订阅」徽标）、基础/自定义两 tab 各一条
+//   升级链接（avatarGifUpgradeLink/bannerGifUpgradeLink 订阅时 display:none）；祖父条款天然成立（渲染无 tier
+//   检查——免费用户已有 gif 横幅/头像继续显示；移除按钮永可用）；故意不对称：页面背景组不在本轮范围（免费仍可传
+//   gif 页背景）；CSS 全进页面专属块→跳过 inline-css.js；后端零改动、FC 恒 v10.28.47.4；i18n 3 新键×12 语
+//   （OpenCC 重生成 zh-Hant、en 值=页面兜底串逐字节一致）；
+//   电池：新 tmp-battery-profile-subtier（免费锁 UI/图库拦截/gif 拦截/静态放行/订阅全解锁/祖父 D 组）+
+//   profile-banner 旧电池 B 组种 tier 修正；舰队 45 套全绿+冒烟 60/60+i18n 34/34；镜像内容验证两次构建各验
+//   一次、先验后推；线上探针 profile-subtier）：
+//   （rev 00334-tz6 瞬态占位上直播；二次烘焙重部署终态 rev 00335-fmn——live 文本滞后一部署=惯例）
+// v0.2.58.20 = 个人资料头像与 FC 频道主页头像双向同步（补丁位 19→20·新功能轮；2026-09-30）——用户「还有个人
+//   资料设置里的头像你没有做更换头像是和频道主页同步的当然用户可以勾选是否要同步」：58.18/58.19 头像只落在
+//   资料页，FC 频道主页频道卡头像恒为首字母（从不读 user.avatarUrl）。三项用户钦定：①勾选框默认勾选（键缺失=
+//   ON）②双向同步·资料页权威（勾选框只活在资料编辑弹窗；FC 频道卡头像点击也可换，走同一上传+PATCH 链）
+//   ③边界「个人资料的自我介绍和频道主页的bio是不互通的」——FC PATCH 只发 avatarUrl 绝不发 bio、资料页 bio
+//   保存流零改动（FC 页本身零 bio）；
+//   前端：资料页编辑弹窗头像组新勾选行（.toggle-switch 复用 ethereal 已有 CSS 零新样式；toggle 即时落
+//   localStorage slati_avatar_sync 不经保存事务）+保存成功分支 avatarUrl 在 body 且勾选 ON → raw 合并写
+//   slati_user（绝不 SlatiDB.saveUser——mirrorProfile 二次 PATCH 双写；OFF 零写入，FC 读旗标显字母卡）；
+//   FC（fluidcanvas.html）：renderContent 个人分支旗标 ON 且有头像 → 频道卡 img（fcEsc 转义）+fc-avatar-editable
+//   类+title 每渲染重打（innerHTML 整换吞监听→一次性委托挂常驻 #channelOverview）；点击换头像链=隐藏 file
+//   input 恒挂 body→ext 白名单+gif 订阅门禁（同资料页 tier!=='free' 口径）+10MB→fcEnsureApi 注入（FC 页无
+//   api.js 静态引入）→fetch POST /social/uploads?ext=（credentials:'include' 同资料页契约）→PATCH /auth/me
+//   只 {avatarUrl}→r.ok 才改 UI（user.avatarUrl+raw 合并写 slati_user+#personalAvatar+renderContent+toast）；
+//   团队卡永不受影响（无类无入口）；hover 相机徽章 CSS 全进 FC 页面专属块→跳过 inline-css.js；storage.js
+//   零改动；后端零改动；i18n 资料 1 新键+FC 6 新键×12 语（OpenCC 重生成 zh-Hant、en 值=页面兜底串逐字节
+//   一致）；FC v10.28.48.0 同轮（FC 频道卡头像同步=FC 功能轮）；
+//   电池：新 tmp-battery-profile-avatarsync（P 组资料页默认勾选/关同步零写入/开同步 raw 合并恰 1 PATCH/重载
+//   持久化；F 组 FC 图片卡/关旗标字母卡/点击换头像 PATCH 体恰 {avatarUrl} 无 bio/gif 订阅门禁/团队卡零动作/
+//   客人零异常）+旧电池五套锚随扫；舰队 46 套全绿+冒烟 60/60+i18n 34/34；镜像内容验证两次构建各验一次、
+//   先验后推；线上探针 avatarsync）：
+//   （rev 00336-7gr 瞬态占位上直播；二次烘焙重部署终态 rev 00337-wxl——live 文本滞后一部署=惯例）
+// v0.2.58.24 = 社区页演示样本全移除+三 tab 全接真数据（补丁位 23→24·新功能轮；2026-09-30）——用户
+//   「能不能把社区页面的所有测试使用的样本信息都去除掉」：真身=community-hub 的 feedData 8 张硬编码
+//   演示卡（Marcus Vane 等假名假数）+4 个访客静态按钮+发现中心 3 个硬编码假频道+本地演示话题，且云模式下
+//   只有推荐 tab 接真数据（关注/主题两 tab 登录用户仍看假卡）。四项钦定（AskUserQuestion）：①只删页面假样本
+//   （后端库数据不动、真帖保留）②匿名访客看登录引导卡（58.17 following 先例）③三 tab 全接真数据
+//   （recommend=/api/social/posts、following=/api/social/feed、topic=/api/social/topics）④发现中心一并清理
+//   接真数据（话题/热门接真话题，空表显空态；频道无数据源保留 tab 显空态；访客看引导）。
+//   修法=纯前端 hub 重写：feedData/本地话题/访客引导链全删；cloudMode 改 boot 同步门 isHubAuthed()
+//   （USR- 真账号+登录态才算，demo 账号零 API 连 probe 都不发）；访客→登录引导卡、已登录但后端不可达→
+//   离线卡（绝不回退假数据）；refreshCloudFeed 三端点并行按 tab 门控重渲染；mn:unauthorized 整流回引导卡；
+//   renderDiscovery/renderTrending 接真话题（热门 memberCount 降序 top5）；i18n 删 32 键×12 语+新 10 键×12 语
+//   （OpenCC 重生成 zh-Hant、zh 值=页面兜底串逐字节一致）；后端零改动、CSS 零改动→跳过 inline-css.js；FC 恒
+//   v10.28.48.0；
+//   （rev 00344-ntt 瞬态占位上直播；二次烘焙重部署终态 rev 00345-vhw——live 文本滞后一部署=惯例）
+// v0.2.58.28 = 折叠侧栏用户卡不透明补丁（补丁位 27→28·调整轮；2026-10-05）——用户「现在是用户卡片那边
+//   在折叠起来的时候还是一样是半透明的」；
+//   真身=58.27 修法只改 .sidebar-module 基态，折叠态高特异性覆盖 .app-sidebar.collapsed .user-module
+//   （窄栏头像卡）仍写 background:var(--card-bg) 半透明玻璃——折叠时透卡依旧；
+//   修法=折叠态覆盖同改 --sidebar-bg 不透明底（09-18 钦定口径+58.27 同款）+blur(20px) 保留；
+//   ethereal.css 改动→重跑 inline-css.js（40 页内联刷新+8 页豁免）；
+//   FC 恒 v10.28.52.0；后端零改动 npm test 413/413；i18n 零新键；transitions.js/10 分钟心跳零触碰；
+//   （rev 00367-4wl 瞬态占位上直播；二次烘焙重部署终态 rev 00368-gmw——live 文本滞后一部署=惯例）
+// v0.2.58.27 = 侧栏菜单背景卡片改不透明（补丁位 26→27·调整轮；2026-10-05）——用户「那个在个人主页
+//   那边的左侧菜单背景卡片是半透明的能不能变成不透明的？」；
+//   真身=v0.2.58.1（09-26 删侧栏容器铺底）后三张卡（logo/用户/菜单 .sidebar-module）仍用 --card-bg
+//   （亮色 rgba(255,255,255,0.55)/暗色 rgba(30,30,50,0.55) 半透明玻璃）+blur(20px) 磨砂——页面内容
+//   透卡可见=半透明观感；
+//   修法=ethereal.css .sidebar-module 卡面 background --card-bg→--sidebar-bg（09-18 钦定不透明底：
+//   亮色近纯白 0.95/暗色实心 #1a1a2e/mono 随 var() 自适应）；模块自带 backdrop-filter 保留（底已
+//   不透明零可见效果，09-20 全站卡片同口径）；三张卡同规则一并生效；窄屏 floating 覆盖态同步（口径统一）；
+//   ethereal.css 改动→重跑 inline-css.js（40 页内联刷新+8 页豁免：FC 编辑器/演示/故事页）；
+//   FC 恒 v10.28.52.0；后端零改动 npm test 413/413；i18n 零新键；transitions.js/10 分钟心跳零触碰；
+//   （rev 00365-6zb 瞬态占位上直播；二次烘焙重部署终态 rev 00366-2jw——live 文本滞后一部署=惯例）
+// v0.2.58.26 = FC 首页假数据全撤接真实聚合+首页卡片不透明（补丁位 25→26·新功能轮；2026-10-02）——用户
+//   「能不能顺便把FC的所有并非用户手动创建的测试信息都去除掉，还有把所有FC的首页卡片从玻璃变成不透明的
+//   卡片？」；三项钦定（AskUserQuestion）：①清除范围=只页面硬编码假数据（演示文章/图库样例/假统计 48.2K/
+//   假上传记录/假趋势）——演示账号与后端库不动 ②假数字区块=接真实数据+空态（后端加真实聚合端点；匿名=
+//   登录引导卡 58.24 hub 先例）③玻璃→不透明=只首页卡片（按钮/搜索胶囊保持玻璃）；
+//   真身=FC 首页（fluidcanvas.html）八处硬编码测试信息：dashboard 演示统计（个人 48.2K 粉丝/团队乘数）、
+//   quickStats 假四卡、内容表硬编码行、上传模块 SIMULATED_FILES 假记录+simulateFilePick、内容库 18 条
+//   演示条目、分析页假趋势（pData/sData/mult 三数组）、文章页 15 条种子文章+演示 contentJson blob、
+//   头像 Alex Rivera 兜底——图库持久库 slati_img_library 本就纯用户上传零样例无需清理；
+//   修法=后端新增 GET /api/fc/overview（routes/public/fc-overview.js+server.js 注册；requireSession 登录
+//   专属+限流 fco:user: 30/min）：stats 15 键全真聚合（followers/following/articles/articlesPublished/
+//   articleViews/articleLikes/articleFavorites/articleShares/posts/postViews/postLikes/postFavorites/
+//   postShares/repostsReceived/media）+windows 7d/28d/month 三窗口（等长前窗对比 newFollowers/
+//   articlesCreated/postsCreated/interactionsReceived 各带 Prev+Pct、前窗零 Pct=null、fillDays 日序列恰
+//   7/28 点）+articles 清单（互动实时计数+wordCount HTML 剥标签 CJK 正则）+media 最新在前+posts
+//   content 截 80 字 media 原样（npm test 361→366/366）；
+//   前端假数据全撤接 FC_OVERVIEW（boot 同步门 cloudMode=登录+USR- 前缀——访客/演示账号零 API 连 probe
+//   不发；FC_OVERVIEW=null 全站 '—'/空态绝不回退假数据）：dashboard 个人分支真计数（followers/浏览/互动）
+//   +团队分支假乘数全撤、quickStats 总浏览/收藏/分享/新关注、内容表文章 viewCount 前 5+媒体前 5（空态
+//   提示卡）、上传模块真上传 POST /api/social/uploads（登录门 toast+成功 toast+loadFcOverview(true)
+//   刷新）、内容库 articles+posts 聚合（Published/Review/Draft 状态映射）、分析页三窗口真趋势+sparkline+
+//   详情表（无数据空态卡）、文章页云端清单（真 DELETE /articles/:id、View 状态判读、批量发布 toast 引导
+//   编辑器）；首页卡片玻璃→不透明（钦定③）：body.fc-page .card:not(.profile-header) 背景 --card-bg→
+//   --sidebar-bg+>.lg-backdrop 滤镜摘除（09-20 sitewide-opaque 先例镜像）+channelOverview/channelSummary
+//   内联渐变 !important 覆写（深色主题同款）；按钮/搜索胶囊保持玻璃；FC v10.28.48.2 同轮；i18n 25 新键
+//   ×12 语+fc.landing.demoSub 死键删（OpenCC 重生成 zh-Hant、en 值=页面兜底串逐字节一致）；CSS 全进页面
+//   专属块→跳过 inline-css.js；切页动画/10 分钟心跳零触碰）：
+//   （rev 00348-t8b 瞬态占位上直播（已实得）；二次烘焙重部署终态 rev 00349-hgc——live 文本滞后一部署=惯例）
+// v0.2.58.25 = 横幅/头像上传裁切弹窗+横幅增高 1.5 倍（补丁位 24→25·新功能轮；2026-10-01）——用户
+//   「那个横幅和头像在上传后能不能先弹出一个选择裁切范围的弹窗调整裁切范围，还有那个横幅能不能再高
+//   1.5倍？」；六项钦定（AskUserQuestion）：①裁切=图片显示范围裁切、裁切后 GIF 保持动画（绝不 canvas
+//   重编码——原文件原样上传、裁切元数据存服务端、渲染用 <img>+几何数学 GIF 天然动画）②固定比例框+图片
+//   缩放/平移（Discord 换头像式：头像 1:1、横幅 3:1）③横幅 ×1.5 两处同改（资料页 140→210px 含边缘主题
+//   硬编码、设置弹窗预览 96→144px）④图库选图也走裁切弹窗 ⑤FC 频道主页频道卡头像也应用个人裁切（FC
+//   v10.28.48.1 同轮）⑥已有横幅/头像加「重新裁切」按钮（资料页编辑弹窗+设置弹窗；FC 不加）；
+//   修法=裁切元数据=归一化矩形 {x,y,w,h}（0..1 浮点、x+w≤1、y+h≤1）存 users 新列 banner_crop/
+//   avatar_crop（TEXT JSON，030 迁移 user_version 30；null=默认 {0,0,1,1} 整图 cover=爷爷辈零回归）；
+//   渲染数学（中心锚定式、cover+center 严格推广）：s = max(W/(w·Nw), H/(h·Nh))、img width=Nw·s
+//   height=Nh·s、left=W/2−(x+w/2)·Nw·s、top=H/2−(y+h/2)·Nh·s——w=h=1 时与现状 background-size:
+//   cover+center 逐像素等价；组件=settings-modal.js 内置 window.MN_CropDialog（open/isOpen/applyCrop/
+//   rescaleAll；community-profile/fluidcanvas 已载 settings-modal.js 零新 script 标签；上传链留在调用方
+//   弹窗只产 rect；Esc 捕获相 stopPropagation 防连锁关下层弹窗；Blob objectURL 四出口统一 revoke）；
+//   门禁序=file change/图库点击→free 门禁（toast 不弹窗）→gif 门禁→白名单/≤10MB（弹窗前）→弹窗→确认
+//   后 fetch、取消=零上传零 PATCH；确认不拖不滚恒 rect {0,0,1,1} 且一律写入 PATCH 体（键序 url 先 crop
+//   后）；后端 auth.js+social.js parseCrop/parseCropSafe（严格版坏值 400 VALIDATION/宽容版回 null）+
+//   publicUser 与 GET /social/users/:id 暴露两 crop+连带清（url:null→crop 清空、换 url 未带 crop→该 crop
+//   重置 null 防旧 crop 错配新图）；storage.js mirrorProfile 白名单绝不加 crop 字段（cloudMerge 全量回读
+//   自动落 slati_user）；渲染=资料页横幅/头像、设置弹窗双预览、FC 频道卡头像三处 wrapper+img 几何应用
+//   （侧栏 60px/userpop 96px/FC 顶栏 #personalAvatar/帖子作者头像零改动）；CSS 全进页面/settings 专属块→
+//   跳过 inline-css.js；i18n 10 新键×12 语（common crop.* 6+settings.profile.reCrop* 2、资料页 prof.edit.
+//   reCrop* 2；OpenCC 重生成 zh-Hant、zh/en 值=页面兜底串逐字节一致）；
+//   （2026-10-01 补报）视频横幅：用户「还有要允许上传视频，大小的话平台自己压缩，然后上传视频最长1分钟」
+//   +「那个视频是指横幅的部分」——范围=只横幅（头像保持图片/GIF、视频文件在头像链 toast 拒绝）；
+//   压缩=浏览器端 canvas.captureStream+MediaRecorder（宽 1280 上限等比缩、30fps、1.2Mbps、静音无音轨、
+//   输出恒 webm；settings-modal.js 全局 MN_CompressVideo/MN_VideoCap——MN_VideoCap=min(时长,60) 纯函数
+//   自动截取前 60 秒，超 1 分钟即截、短视频 onended 早停）；门禁=GIF 同门（free/basic 拦 toast+升级链、
+//   premium/ultra 可用）；裁切弹窗对视频同样适用（同漏斗：门禁→白名单→压缩（跳过 10MB 预检=输入任意大
+//   平台自己压缩）→弹窗→confirm 上传压缩成片；弹窗/预览 <video autoplay muted loop playsinline> 走同
+//   applyCrop 几何数学）；后端零改动（v0.2.16.0 帖子媒体链已含 webm/mp4/mov 白名单+魔数+30MB 上限——
+//   压缩成片天然合规）；i18n 追加 8 新键×12 语（common settings.profile.video* 4+资料页 prof.* video* 4）；
+//   （rev 00346-rn2 瞬态占位上直播；二次烘焙重部署终态 rev 00347-skv——live 文本滞后一部署=惯例）
+// v0.2.58.23 = 悬停预加载消除切页白闪（补丁位 22→23·新功能轮；2026-09-30）——用户
+//   「为什么我在切换页面的时候会闪一下 然而我在抖音或者Youtube切换页面的时候并不会闪烁一下
+//   是不是没有做预先加载？」：真身=本站是多页应用（每页独立 HTML，跳页=销毁旧文档冷下载新文档→
+//   白闪），抖音/YouTube 是单页应用（壳常驻内容 JS 换、不重建文档）；本站此前全站零预加载
+//   （仅视频 preload 属性）。钦定 A=悬停预加载：鼠标悬停站内链接 65ms 后
+//   <link rel="prefetch" as="document"> 后台预下载目标页，点击导航命中预取缓存（本站
+//   HTML/JS/CSS no-cache+ETag 也走 304 重校验、正文零传输）→ 切页白闪消除。
+//   修法=纯前端 transitions.js 新增悬停预取块（isInternal/isSamePage 复用+桌面 hover 门控
+//   matchMedia('(hover: hover)') 触屏自动关+Save-Data 省流量模式跳过+65ms 防误触+每链接一次性
+//   dataset 守卫+鼠标移开取消计时器=快速扫过零预取+失败静默——切页动画/点击劫持/节奏时长缓动
+//   逐字零改动）；后端零改动、CSS 零改动→跳过 inline-css.js；i18n 零新键；FC 恒 v10.28.48.0；
+//   （rev 00342-zsw 瞬态占位上直播；二次烘焙重部署终态 rev 00343-gxb——live 文本滞后一部署=惯例）
+// v0.2.58.22 = 横幅订阅三层门禁+免费层单色/渐变预设色卡+金色罩子+图库弹窗加大（补丁位 21→22·新功能轮；2026-09-30）——用户
+//   「那个横幅的从图库中选择和上传图片的能不能改成只限于基础订阅项 然后 如果要使用动图就要高级订阅，然后没有订阅的就
+//   只能调整横幅的单色和渐变颜色，就是例如黑白中间有渐变的那种效果，还有图库按钮点击后的弹窗能不能大有点？还有我希望
+//   那个按钮是在没有订阅的用户目前是被特别的金色罩子盖住的而不是点击后才出现提示反馈」：58.19/58.21 门禁是二元制
+//   （free=静态图，basic/premium/ultra=图库+gif），本轮改三层——free：横幅只能预设色卡（上传/图库被锁）；basic：上传+
+//   图库静态图 OK、gif 锁（升级链接→高级）；premium/ultra：全部含 gif；头像保持现状（free 仍可传静态头像，仅图库钮锁）。
+//   四项钦定：①两处一起改（设置弹窗+资料页编辑弹窗同口径）②免费层=扩展预设色卡（现有 6 玻璃渐变+新增 6 单色/黑白系
+//   =13 格点选即存，复用 cardBg 落库零迁移）③金罩=所有被锁按钮且相邻按钮共用一个罩（「如果两个按钮很接近就直接只使用
+//   一个罩 不要使用两个」）④头像保持现状；
+//   修法=后端唯一改动：CARD_BG_KEYS 白名单 auth.js+social.js 双数组同款追加 6 键（solid-black/solid-white/solid-gray/
+//   mono-bw/mono-silver/mono-charcoal，否则新预设 PATCH 400）；资料页：CARD_BG_KEYS/DEFS 追加 13 格（墨黑/纯白/石板灰/
+//   黑白渐变/银灰渐变/炭黑渐变）、gif 谓词拆 canGif（premium/ultra 专属）、横幅 upload+lib 免费层包
+//   .gold-lock-group（相邻共罩）移除钮永远在罩外、上传点击免费层 toast「横幅图片为订阅用户专属功能」文件选择器绝不打开、
+//   升级链接 tier 矩阵（free=imgUpgrade/gifUpgrade 旧键、basic=premGifUpgrade 新键、premium/ultra=不渲染）、
+//   FC 图库选择器弹窗 560→680px+缩略图 64→80px；设置弹窗：stCanImg/stCanGif 谓词、ST_BG_KEYS/ST_BG_DEFS 13 条、
+//   新 #settingsBgGrid 7 列预设网格（stReal 门内）点击即存 PATCH {cardBg} ok 才落本地+active 换位+预览即时吃色、
+//   .settings-banner-preview 吃 var(--lg-bg)、图库浮层 300→400px+max-width 防溢出+3→4 列、横幅 upload+lib 金罩、
+//   头像图库钮金罩；金罩 CSS 两处同款（.gold-lock-group 相邻共罩+.gold-locked 单钮+goldShimmer 2.4s 呼吸；伪元素
+//   全 pointer-events:none——点击穿透到按钮 toast 反馈保留）；祖父=free 已有 bannerUrl 继续显示+移除钮永可用；
+//   侧栏用户弹窗横幅只读不回退预设——故意不对称零改动；CSS 全进两文件注入/页面专属块→跳过 inline-css.js；
+//   后端 npm test 359/359 重跑；FC 恒 v10.28.48.0；
+//   i18n：common 5 新键+资料页 3 新键×12 语（settings.profile.bannerColor/imgUpgrade/premGifUpgrade/toast.bannerLocked/
+//   toast.bgUpdated+prof.edit.imgUpgrade/premGifUpgrade/prof.toast.bannerLocked；现有 gifUpgrade 键保留只改用途=free 层
+//   头像行专属文案；OpenCC 重生成 zh-Hant、zh 值=页面兜底串逐字节一致）；
+//   （rev 00340-wgj 瞬态占位上直播；二次烘焙重部署终态 rev 00341-hbw——live 文本滞后一部署=惯例）
+// v0.2.58.21 = 侧栏用户卡片信息弹窗+设置弹窗头像/横幅完整自定义（补丁位 20→21·新功能轮；2026-09-30）——用户
+//   「能不能点击左侧用户卡片或头像时是弹出用户完整信息弹窗而不是跳转到主页，还有你根本就没有在设置里完成我要的
+//   用户头像和横幅的自定义功能 >:(」：真身①=侧栏用户模块（22 页共用）头像+名字+公民号包锚整页跳转自己主页；
+//   真身②=设置弹窗资料区只有显示名+bio（且只存本地不 PATCH）+公民号/性别只读+头像相机按钮是死的（无 id 无监听）——
+//   58.18-58.20 的头像/横幅自定义全部只活在资料页「编辑资料」弹窗，设置弹窗里什么都没有，用户生气属实。三项钦定：
+//   ①设置弹窗资料区直接放完整控件（头像：预览+上传+FC 图库；横幅：预览+上传+图库+移除；同步勾选；免费/付费
+//   gif 门禁同款），改完即时生效不跳页 ②侧栏卡片弹完整信息卡（横幅+头像+名字+公民号+性别+简介+订阅状态+关注/
+//   粉丝/帖子数+加入时间+「编辑资料」「查看主页」两按钮）③弹窗「编辑资料」→就地打开设置弹窗（不跳页）；
+//   修法=纯前端、后端零改动（POST /social/uploads、PATCH /auth/me、GET /social/users/:id 全已存在）、FC 恒
+//   v10.28.48.0：sidebar.js 锚保留（中键/ctrl/新标签仍跳主页）左键拦截 preventDefault+openUserPop（body 挂载
+//   ~380px 卡；数据两段式=本地 slati_user 即时渲染+异步 GET /social/users/:id 回填统计/加入时间/性别/bio/横幅，
+//   回填新鲜度守卫+失败离线=本地数据+统计 '—' 零回退假数据；「编辑资料」=SlatiSettings.open() 无则兜底跳资料页）；
+//   settings-modal.js 资料区重写（settingsAvatarPreview/settingsAvatarBtn/settingsAvatarLibBtn 免费层
+//   sub-locked+settingsBannerPreview 横幅预览条+上传/图库/移除三按钮+settingsBannerRemoveBtn 无横幅隐藏+双升级
+//   链接+同步勾选 makeToggle 写 slati_avatar_sync '1'/'0'+两隐藏 file input）上传统一链 stUpload（gif 免费锁
+//   toast+显升级链接+零上传零 PATCH→白名单→≤10MB→POST /social/uploads?ext=→PATCH /auth/me 只 {avatarUrl} 或
+//   {bannerUrl} 或 {bannerUrl:null} 移除语义→ok 才改 UI：同步 ON 才 raw setItem 合并写 slati_user——绝不
+//   SlatiDB.saveUser 双 PATCH 坑、bannerUrl 恒写、预览 src 直改+侧栏头像直改+stToast；stPickFromLibrary 免费
+//   libLocked 锁/付费 slati_img_library 只收 data: 条目 3 列网格浮层点格转 Blob 走同链）；i18n common 21 新键
+//   ×12 语（sidebar.pop 6+settings.profile 15；OpenCC 重生成 zh-Hant；en 值=兜底串逐字节一致）；
+//   （rev 00338-tj5 瞬态占位上直播；二次烘焙重部署终态 rev 00339-m4j——live 文本滞后一部署=惯例）
+// v0.2.58.17 = 关注页真实数据接入（补丁位 16→17·新功能轮；2026-09-29）——用户「那么关注页面的也做一下」：
+//   关注页全站最假的一页——零 fetch 零 api.js、5 组种子数组（feedItems 8 条/discoverNations·Topics·Users
+//   各 4/recItems 3）、搜索胶囊死输入、「+关注」按钮无 handler、唯一数据源是 localStorage 演示种子（种子
+//   用户还是显示名，后端 PUT 只收 USR- 格式连镜像都失败）；后端关注体系已完整存在（following 表/POST/DELETE
+//   关注/通知/测试）——本轮零迁移、前端重写+补 3 个新端点。四项用户钦定：①动态=关注用户帖+关注话题帖 ②未登录=
+//   页面可看、发现给真实公开数据、动态/关注给登录引导卡（不跳转）③离线=离线卡片绝不回退假数据（5 组种子全删）
+//   ④发现·用户=新建公开用户端点（暴露度与现公开主页一致：id/displayName/avatarUrl/citizenId，绝无 email/bio）：
+//   后端 social.js 三新端点（零迁移、server.js 零改动）：GET /api/social/feed（requireSession；关注用户帖
+//   ∪关注话题帖、seq DESC LIMIT 100、postRow 复用）、GET /api/social/following/detail（关注三类明细解析、
+//   已删目标静默丢弃、teams 忽略、nation followerCount 现算）、GET /api/public/users（匿名公开+限流 30/min、
+//   active only+followerCount DESC·seq ASC 平局+LIMIT 20、viewer 随行 followedByMe）；
+//   前端 IIFE 整体重写（渲染器全纯零重拉、搜索实时过滤三区、auth 双门 isLoggedIn+USR- 前缀、mn:unauthorized
+//   退登录引导态、nation/topic 切换走 SlatiDB.saveFollowing 触发 PUT 镜像、user 切换走 POST/DELETE 后
+//   localStorage 直写绝不 saveFollowing 防双重写、链式 __mnI18nRerender 不踩 activity 页）；
+//   i18n：54.2 demo 文案键族 37 死键整体删除、suffix 保留、11 新键×11 语言手写（OpenCC 重生成 zh-Hant）；
+//   切页动画/10 分钟心跳/药丸悬停卡零触碰；FC 恒 v10.28.47.4；后端测试 356/356+电池 following 25/25+
+//   舰队 43 套全绿（grep exit=1|💥 复核零命中；home-bg Chrome 未起 flake 独立复跑 26/26 销账）+
+//   冒烟 60/60+i18n 34/34；镜像内容验证 57/57+57/57（两次构建各验一次、先验后推）；线上探针 following 14/14）：
+//   （rev 00329-6nq 瞬态占位上直播；二次烘焙重部署终态 rev 00330-gcs——live 文本 00329-6nq 滞后一部署=58.16 同款下轮烘焙）
+// v0.2.58.16 = 活动页真实数据接入（补丁位 15→16·新功能轮；2026-09-29）——用户「能不能先把动态页面的
+//   所有实际功能做一下？」：动态页六大区块全是硬编码假数据（kpiData/generateGrowthSeries/topNations
+//   等种子数组）、搜索胶囊是死的（输入框无监听）、热力图 page_views 全站无人上报是空表；修法（四项用户
+//   钦定：①KPI 第 5 卡「条约签署」无 treaties 表→新公民数（窗口新注册+趋势）②「内容分类分布」无分类
+//   字段→内容类型分布（文章/帖子/评论/点赞真实计数）③死搜索框→排行榜名字+里程碑标题实时过滤 ④热力图→
+//   全站装 pageview 灯塔攒数据（空态友好提示、保持 6 时段×7 天形状））：
+//   后端零迁移新增 GET /api/public/activity（匿名公开+轻限流 30/min）聚合六区块——KPI 五卡（国家/公民=
+//   全量总数+窗口增量趋势、新公民/文章/动态=窗口计数、trend=等长前窗 deltaPct 前窗空→'—'）、趋势图恒
+//   30 天日序列、内容类型四条形、热力图最近 7 完整 UTC 日×6 时段（page_views）、排行榜 activity_daily
+//   请求和 TOP5（零分不上榜）、里程碑三类型（nation/article/citizen）——公民 title 恒 null（公开端点
+//   PII 禁令零邮箱零 display_name）；
+//   前端 IIFE 整体重写：state{range/cache/search}+loadData 缓存+陈旧守卫、失败/空态绝不回退假数据
+//   （离线一张提示卡五容器清空、热力图空态友好提示）、搜索过滤两区零重拉、切语言从缓存重渲、subnav
+//   .active 归 subnav.js（页面零触碰）；全站灯塔（本文件尾）：sendBeacon 优先+fetch keepalive 兜底
+//   POST /api/analytics/pageview（slati_cid 一次性生成、__slatiPvSent 每页一次守卫、try/catch 静默）；
+//   i18n 16 新键×11 语言+旧条约/分类键族整体删除（OpenCC 重生成 zh-Hant）；切页动画/10 分钟心跳/药丸
+//   悬停卡零触碰；FC 恒 v10.28.47.4；后端测试 342/342；电池 activity 14/14+舰队 42 套全绿+冒烟 60/60+
+//   i18n 34/34；镜像内容验证两次构建各验一次、先验后推；线上探针 activity 8/8）：
+//   （rev 00327-n5s 瞬态占位上直播；二次烘焙重部署终态 rev 00328-c67——live 文本 00327-n5s 滞后一部署=58.15 同款下轮烘焙）
+// v0.2.58.14 = 折叠侧栏等级水杯慢浪改浅色（补丁位 13→14·调整轮；2026-09-28）——用户「那个刚才提出添加的
+//   第二个波浪我希望是浅色的」：慢浪 .mn-lv-wlightwave2 背景 var(--color-primary)→var(--mn-lv-light)
+//   （58.11 浅水同款浅色公式 color-mix(in srgb, var(--color-primary) 55%, #ffffff)；赋值挂 .mn-lv-ring
+//   恢复——58.13 整体删除后本轮复活）；快浪/水深蓝/两层结构/80×16 mask/16px 带高/400% strip/平移 80px/
+//   top -12px 同顶/2.2s+2.5s 两速/z 层级（fill 0→水 -2→慢浪 -1→快浪 0）/水位从底往上灌/0.5s 过渡/药丸
+//   48×116/水杯 44×84 全零改动；sidebar.js 零改动（纯 CSS 零 JS）；40 页内联块全量刷新+编辑器页手工同款
+//   （inliner SKIP_CSS_REFRESH 豁免）；FC 恒 v10.28.47.4、后端零改动、i18n 零新键）：
+//   （rev 00323-qsz 瞬态占位上直播；二次烘焙重部署终态 rev 00324-xr2——live 文本 00323-qsz 滞后一部署=58.13 同款下轮烘焙）
+// v0.2.58.13 = 折叠侧栏等级水杯双浪同色深蓝+慢浪 z-1 层（补丁位 12→13·调整轮；2026-09-28）——用户
+//   「然后把两个颜色改成一样的深蓝色，然后在那个波浪Z轴的-1那边再添加一个慢0.3s的波浪」：①水和浪两色
+//   统一深蓝——主色水 .mn-lv-wdeep 背景 var(--mn-lv-light)→var(--color-primary)（58.11 两色互换撤销为
+//   两色相同）、--mn-lv-light 赋值整体删除（零引用，58.10 --mn-lv-wave-c 先例）；②新慢浪
+//   .mn-lv-wlightwave2 与快浪全同款几何（80×16 mask/16px 带高/400% strip/平移 80px/top -12px 全同）
+//   置于快浪 z 轴 -1 层（z-index:-1）+动画 2.5s（慢 0.3s）；z 层级：.mn-lv-fill z-index:0 建 stacking
+//   context→水 z-index:-2 最底→慢浪 -1→快浪 0；两浪同色相位漂移，慢浪浪峰周期性从快浪浪谷透明区透出
+//   =两道浪峰不同速叠加；水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动；sidebar.js 模板加
+//   慢浪 div（纯 CSS 动画零 JS）；40 页内联块全量刷新+编辑器页手工同款（inliner SKIP_CSS_REFRESH 豁免）；
+//   FC 恒 v10.28.47.4、后端零改动、i18n 零新键）：
+//   （rev 00321-jbh 瞬态占位上直播；二次烘焙重部署终态 rev 00322-cv4——live 文本 00321-jbh 滞后一部署=58.12 同款下轮烘焙）
+// v0.2.58.12 = 折叠侧栏等级水杯波浪位置抬高 4px（补丁位 11→12·调整轮；2026-09-27）——用户「能不能把
+//   波浪的位置抬高4px?」（一问钦定「位置抬高 4px」）：58.11 浅浪 .mn-lv-wlightwave top -8px→-12px（单值
+//   改动）；两层结构/80×16 mask/16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/
+//   药丸 48×116/水杯 44×84/两色互换（浅水+深浪）全零改动；sidebar.js 零改动（纯 CSS 零 JS）；40 页
+//   内联块全量刷新+编辑器页手工同款（inliner SKIP_CSS_REFRESH 豁免）；FC 恒 v10.28.47.4、后端零改动、
+//   i18n 零新键）：
+//   （rev 00319-mw5 瞬态占位上直播；二次烘焙重部署终态 rev 00320-wl8——live 文本 00319-mw5 滞后一部署=58.11 同款下轮烘焙）
 // v0.2.58.10 = 折叠侧栏等级水杯收成两层（补丁位 9→10·调整轮；2026-09-27）——用户「为什么是四层颜色？
 //   能不能只有两层？」（一问钦定「只有主色水+一道浅浪」）：58.9 杯里 4 件套（深水+浅水半透明叠层+深浪
 //   压交界线+浅浪）视觉上四段颜色；修法：删浅水层 .mn-lv-wlight 与深浪 .mn-lv-wdeepwave，只留主色水
@@ -1254,7 +1540,46 @@ window.MN_SITE = window.MN_SITE || {};
 //   i18n：overview/index 新键 12 语言（ov.searchPh/search.*/contrib.published/empty、index.act.article）+ OpenCC 重生成
 //   后端零改动（GET /api/articles 已具备）；电池：新 tmp-battery-micro-v056 + article-view 补 View 锚
 //   （rev 00269-52s）
-window.MN_SITE_VERSION = 'v0.2.58.11';
+// v0.2.59.0 = 插件商店第一环（小改动位 58→59·新功能轮·补丁清零；2026-10-07）——用户「插件放高级订阅门槛、可改左侧菜单/UI 风格/背景图、万物皆可插件」：
+//   后端：迁移 034 建 plugins/plugin_versions/plugin_installs 三表 + 2 演示插件种子；routes/public/plugins.js 列表/详情(含版本历史)/我的安装/安装/卸载（订阅门槛 TIER_RANK 比较，未达 403 PLUGIN_TIER_LOCKED）；health 66→69 表、user_version 33→34；
+//   前端：侧栏新增「插件商店」入口 → plugins.html（商店网格+搜索/分类+插件信息弹窗：预览图+简介+版本历史+底部安装按钮，全走 design token 明暗主题自适应）；plugins.js 走 MN_API；
+//   测试 413/413（迁移/health/user_version 断言同步更新）；后端零破坏；增长卡片/审核/下放订阅=后续轮；
+// v0.2.59.1 = 插件制作指南 + 动态页插件增长卡片（补丁位 0→1·新功能轮；2026-10-07）：
+//   指南：plugin-guide.html 完整教学（manifest/能力/示例/版本/审核/订阅下放/最佳实践）+ help.html 快速上手第 5 卡直达；
+//   增长卡片：activity.html 右栏新增「插件动态」卡——GET /api/plugins 按安装量降序取前 4，点击跳插件商店；纯前端零后端。
+// v0.2.59.2 = 插件指南补「完整操作范围」（补丁位 1→2；2026-10-07）：plugin-guide.html 第④节扩为「能力清单与完整操作范围」——按界面/内容/工具/行为/数据/通信六层列表格，逐项说明插件能操作什么 + 示例；纯前端文档零后端。
+// v0.2.59.3 = 插件指南扩为完整参考手册（补丁位 2→3；2026-10-07）：plugin-guide.html 从 9 节扩到 16 节——补 manifest 完整字段（category/tags/license）、capabilities 逐项详解、插件 API 参考（register/storage/on/notify）、扩展点+事件钩子完整列表、开发测试流程、语义化版本表、提交审核+自检清单、沙箱安全边界、命名图标规范、FAQ；纯前端文档零后端。
+// v0.2.59.4 = 插件指南补「平台实体速查 + 能力→位置映射 + 完整 API/钩子」（补丁位 3→4；2026-10-07）：plugin-guide.html 扩到 17 节——新增平台全貌、平台实体速查（卡型/边缘/订阅等级/页面/字体的 ID 对应表）、capabilities 逐项对应平台具体位置、API 完整签名（storage.set/get/remove、on、notify）、事件钩子完整参数表；纯前端文档零后端。
+// v0.2.59.5 = 插件指南正名为「插件 SDK 手册」（补丁位 4→5；2026-10-07）：plugin-guide.html 标题/hero 改「插件 SDK 手册 · 独立 SDK 手册」；插件商店 header 加「查看插件 SDK 手册」按钮；帮助页快速上手第 5 卡同步更名；纯前端零后端。
+// v0.2.59.6 = 插件 SDK 手册补 ui.animation 能力（补丁位 5→6；2026-10-07）：新增能力「ui.animation 操控网页打开/页面切换动画（transitions.js）」，实体速查加动画条目，capabilities 表加一行；纯前端文档零后端。
+// v0.2.59.7 = 插件 SDK 手册补「展示层 vs 核心层」边界（补丁位 6→7；2026-10-07）：封面加核心原则卡（能改一切看得到的默认展示方式/动画/卡片/菜单等，不能改核心登录/数据/业务规则）+ 平台全貌补简言边界；纯前端文档零后端。
+// v0.2.59.8 = 注册/登录页半透明白底改不透明白（补丁位 7→8；2026-10-07）：用户「注册登录页半透明的东西改成白色不透明」——亮色主题设计令牌（--glass-bg/--card-bg/--input-bg/--modal-bg/--sidebar-bg 及玻璃边框等 14 项）由半透明白 rgba 改 #ffffff，暗色主题不动；纯前端零后端。
+// v0.2.59.9 = 设置加「开发者」开关（补丁位 8→9·新功能轮；2026-10-07）：用户「在设置内添加开发者开关，打开后看到更多信息」——settings-modal 新增 Developer 区：开发者模式开关（developerMode 持久化 slati_settings），开启后显示站点版本/FC 版本/用户/订阅等级/语言/主题/主色/API 地址调试信息 + console.log；纯前端零后端。
+// v0.2.59.10 = 插件商店开发者上传入口 + GitHub logo + 作者名片（补丁位 9→10·新功能轮；2026-10-07）：用户「开发者模式→上传插件按钮→上传/GitHub 弹窗；GitHub 插件卡片名右侧 logo；高级订阅下方作者头像+名称→作者名片」——后端 035 迁移给 plugins 加 github/author_avatar 列 + 路由 shape 补充（测试 413/413，user_version 34→35）；前端开发者模式显示上传按钮 + 上传弹窗（上传文件/连接 GitHub 占位）+ 卡片 GitHub logo + 作者头像/名称点击出作者名片。
+// v0.2.59.11 = 上传插件弹窗选项 UI 适配（补丁位 10→11·修复轮；2026-10-07）：用户「上传插件文件与连接 GitHub 没有做 UI 适配」——两枚「上传插件文件/连接 GitHub」由透明描边药丸改成卡片式选项（主题色图标 + 加粗标题 + 描述 + 右箭头），走 design token 明暗主题自适应；纯前端零后端。
+// v0.2.59.12 = 首页网络指标 + 我的世界接真实数据（补丁位 11→12·新功能轮；2026-10-07）：用户「首页网络指标卡片 + 我的世界能不能连接实际数据」——后端加 GET /api/social/nations/mine（当前用户国家）；前端首页指标卡由写死数字改走 /api/public/activity（KPI citizens/nations/articles/activity/newCitizens + trends.users 真实柱状图，失败回退兜底）；「我的世界」改走后端国家（远端空回退本地）；测试 413/413。
+// v0.2.59.13 = 创建世界页精简为架空国家相关类型（补丁位 12→13；2026-10-07）：用户「创建世界只保留和架空国家有关的，其他无关的全部去除」——22 种世界类型精简为 8 种（架空国家/架空历史/地缘政治/政治体系/文明/城邦/地图/时间线），去除奇幻/科幻/平行宇宙/OC/小说/游戏/动画/RPG/宇宙/公司/语言/宗教/人物/英文版架空历史；状态文案 22→8（12 语言 i18n 同步）；纯前端零后端。
+// v0.2.59.14 = 创建国家完成后自动生成介绍文章（补丁位 13→14·新功能轮；2026-10-07）：用户「创建世界步骤完成后不会生成文章」——registry-step-3 提交改走 publishNation：草稿三步骤拼装正文（国名/分类/首都/建国/简介/人口/领土/GDP/军事）→ POST /api/articles 生成文章并跳转文章页，同时 POST /api/social/nations 落库国家（尽力而为）；未登录回退旧 sovereignty-ratified 跳转；纯前端 + 复用现有文章/国家接口，零迁移。
+// v0.2.59.15 = 主权实体分类翻译（补丁位 14→15；2026-10-07）：用户「主权实体分类没有做翻译」——五种分类名（Sovereign Nation/Colonial Territory/Puppet State/Free Association/Protectorate）显示值随语言翻译（12 语言 i18n 追加合并块）；下拉选项挂 data-i18n + selectClass 按 classNameLabel 显示译文；草稿/后端仍存英文原值不变；纯前端零后端。
+// v0.2.59.16 = 创建国家文章改卡片式 + 维基百科式排版（补丁位 15→16；2026-10-07）：用户「生成用卡片 + 信息卡片放右侧左侧文字」——publishNation 正文由纯段落改 FC 草稿画布卡（content 卡=带边框卡片盒）；排版=维基百科式（左侧正文文字卡 + 右侧信息卡，信息卡含分类/首都/建国/人口/领土/GDP/军事键值表）；移动端自动回流单列；纯前端零后端。
+// v0.2.59.17 = 创建国家文章信息卡补全实际数据（补丁位 16→17；2026-10-07）：用户「把所有信息换成实际数据」——信息卡补齐简称 + 经济部门（6 个行业占比，英文名映射中文）；全部读草稿实际值（空字段跳过）；纯前端零后端。
+// v0.2.59.18 = MicroNationary 页接真实数据（补丁位 17→18；2026-10-07）：用户「把 MicroNationary 页面数据换成实际数据」——统计卡由写死（1,402/892/312/+12%/+5%）改走 /api/public/activity KPI（国家/公民/文章）+ /api/social/topics 话题数，趋势 deltaPct 真实；精选国家改走 /api/social/nations 首个可见国家；创建国家同步把人口/领土/GDP/军事存进国家（精选卡显示完整）；新增 ov.stat.citizens/articles i18n 12 语言；纯前端零后端。
+// v0.2.59.19 = 平台首页去测试数据接真实接口：活动流改 /api/social/nations + /api/social/topics、移除 10 条硬编码公告、网络指标去掉硬编码兜底/假趋势曲线。
+// v0.2.59.20 = 国家三步创建制图数据真上传：后端 /api/social/uploads 支持 .svg/.geojson/.json/.shp/.zip（上限放开到 30MB）；前端 registry-step-2 假上传换真上传、去掉 Max 50MB。
+// v0.2.59.21 = 制图数据上传补图片格式：.jpg/.jpeg/.png/.gif/.webp 加入白名单（前端 + 后端）。
+// v0.2.59.22 = 修复三步创建第一步「主权实体分类」下拉无法互动：草稿恢复 selectClass 先于 CLASS_I18N 赋值执行抛 TypeError，classNameLabel 加 undefined 守卫。
+// v0.2.59.23 = 搜索页去测试数据 + 卡片跳文章 + DeepSeek Flash 审核/简介：explore.html 撤 Top Growing 硬编码、国家/话题接 /api/social/nations+topics、国家卡片带 articleId 跳文章页、搜索结果显示简介(≤125字)；发布时 DeepSeek Flash 审违规+生成简介存 articles.summary（迁移 036）。
+// v0.2.59.24 = 搜索下拉点击修复（backdrop-filter 层叠上下文困住面板 z-index，胶囊升层）+ overview 同款修复。
+// v0.2.59.25 = MicroNationary 抖音式主页：资料头部 + 作品/文章/话题标签 + 三列封面网格（explore.html）。
+// v0.2.59.26 = MicroNationary 一页化：overview/explore/guidelines 合成 /micronationary?showTab=…（旧三页 302 迁移、菜单直连、切标签不刷新）。
+// v0.2.59.28 = 搜索页重构（用户钦定）：AI 式顶部搜索栏 + 智能搜索开关（DeepSeek Flash 语义匹配，
+//   发布时生成检索摘要 search_blob 省 token）+ 建议文章 25 + 热门/历史/国家/话题 chips +
+//   App Store 式浏览瓷贴 + 最新/最热排序；默认 Google 式关键词搜索（标题/简介/摘要 LIKE）。
+// v0.2.59.29 = 文章页分组「整体」渲染：阅读页画布补组背景层（成员并集外扩 14px 的不透明卡面 +
+//   四向描边投影）+ 组内卡一体外观（藏独立边框/卡面/阴影）——FC 合并的组发布后不再散开。
+// v0.2.59.30 = 文章页数据卡/表格卡阅读渲染：stats 卡（statsRows 列表 + column/bar/pie/donut 简易图表，
+//   其余图表回退列表）+ sheet 卡（sheetData 真 HTML 表格）；流式兜底模式同步支持。
+window.MN_SITE_VERSION = 'v0.2.59.50';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -1731,6 +2056,350 @@ window.MN_SITE_VERSION = 'v0.2.58.11';
 //   32 套全绿（版本锚 sed 44.3→45.0 共 32 文件——fc-publish-log/fc-viewport rev 锚同轮手工更新；
 //   article-view/notif-home 静态锚口径更新后独立复跑 45/45、23/23）+冒烟 60/60+i18n 34/34；线上探针
 //   fc-i18n-live 14/14；rev 00295-btc
+// v10.28.48.0 = 频道卡头像与个人资料头像双向同步（小改动位 47→48 新功能轮；2026-09-30）：与站点
+//   v0.2.58.20 同轮——用户「还有个人资料设置里的头像你没有做更换头像是和频道主页同步的当然用户可以
+//   勾选是否要同步」；三项钦定：①勾选框默认勾选（slati_avatar_sync 键缺失=ON）②双向同步·资料页权威
+//   （勾选框只活在资料编辑弹窗）③资料自我介绍与频道主页 bio 互不相通（FC PATCH 只发 avatarUrl 绝不发
+//   bio；FC 页零 bio）；
+//   修法：renderContent 个人分支旗标 ON 且有 user.avatarUrl → 频道卡 img（fcEsc 转义）+fc-avatar-editable
+//   类+title（每渲染重打——innerHTML 整换吞监听）；点击换头像=一次性委托挂常驻 #channelOverview+隐藏
+//   file input 恒挂 body→ext 白名单+gif 订阅门禁（tier!=='free' 同资料页口径）+10MB→fcEnsureApi 注入
+//   （FC 页无 api.js 静态引入）→fetch POST /social/uploads?ext=（credentials:'include' 同资料页契约）→
+//   PATCH /auth/me 只 {avatarUrl}→r.ok 才改 UI（user.avatarUrl+raw 合并写 slati_user 绝不 SlatiDB.saveUser
+//   防 mirrorProfile 二次 PATCH+#personalAvatar+renderContent+toast）；团队卡永不受影响（无类无入口）；
+//   hover 相机徽章 CSS 全进页面专属块→跳过 inline-css.js；storage.js 零改动；后端零改动；i18n 6 新键×12
+//   语（OpenCC 重生成 zh-Hant、en 值=页面兜底串逐字节一致）；站点 v0.2.58.20 同轮、10 分钟自动保存心跳/
+//   切页动画零触碰；
+//   电池 tmp-battery-profile-avatarsync F 组（图片卡/关旗标字母卡/PATCH 体恰 {avatarUrl} 无 bio/gif 订阅
+//   门禁/团队卡零动作/客人零异常）覆盖；舰队 46 套全绿；镜像内容验证两次构建各验一次、先验后推；线上
+//   探针 avatarsync；
+//   （rev 00336-7gr 瞬态占位上直播；二次烘焙重部署终态 rev 00337-wxl——live 文本滞后一部署=惯例）
+// v10.28.52.2 = 折叠按钮+顶部菜单纯白不透明（补丁位 1→2 观感修复轮；2026-10-05）：
+//   用户「那个FC编辑器的左侧菜单的折叠按钮的背景能不能改成纯白不透明的？还有顶部菜单也是」；
+//   真身=折叠按钮 .asset-panel-toggle 与顶部栏 .editor-header 都用 var(--color-surface-container)——
+//   亮色 #eceef0 灰底（非纯白）、暗色 #202038 实心；
+//   修法=两者改 --color-surface-container-lowest（亮色 #ffffff 纯白不透明）+暗色主题块还原规则
+//   （:root[data-theme="dark"] 下仍 --color-surface-container：默认 #202038/暗 mono #151518 实心，
+//   暗色零回归）；站点恒 58.28；后端零改动；i18n 零新键；ethereal.css/transitions.js/10 分钟心跳
+//   零触碰（编辑器页豁免 inline-css 零重跑）；
+//   （rev 00371-zvn 瞬态占位上直播；二次烘焙重部署终态 rev 00372-svk——live 文本滞后一部署=惯例）
+// v10.28.52.4 = 折叠按钮搬搜索菜单右侧+折叠出画回弹落定左缘+Q弹拉长+按钮与搜索栏同高（补丁位 3→4 观感修复轮；2026-10-05）：
+//   用户「我希望那个圆形是在右侧的」+「然后那个按钮回弹的时候能不能有一个Q弹
+//   弹出时被拉长再回规原本现状的动画」+「还有那个按钮的大小能不能和搜索栏一样
+//   现在它的大小对比搜索栏有点小」；
+//   真身=52.3 桌面（pointer:fine）圆钮驻搜索胶囊左侧（left 6px）+胶囊 margin-left:38px 右移让位+
+//   按钮 32×32 对比 40px 高搜索胶囊偏小；
+//   修法=镜像到右侧：胶囊回贴左缘（margin-left 移除）+圆钮驻面板右缘内缩 6px
+//   （left:calc(var(--asset-panel-w) - 46px)=214px，top 12px 与胶囊上缘齐、40×40 与搜索胶囊同高、
+//   正圆 49.2/纯白 52.2 全保留、胶囊 width:calc(100% - 46px) 让位留 12px 缝）+
+//   折叠动画 fcToggleOutSpring 0.9s 三站式（0% 右缘 214px 起步→30% 加速跑出画面外
+//   -40px 左出画→100% 回弹过冲 cubic-bezier(0.34,1.56,0.64,1) 落定左缘 6px=49.1 折叠态宿位）+
+//   Q弹=fcToggleQSquash 同 0.9s transform 缩放（0% 原形→30% 蓄力微缩 0.85→58% 弹出拉长
+//   scale(1.35,0.65)→100% 过冲挤扁回规 1；双动画同触发、位移缩放互不干扰）+
+//   展开复用基态 transition:left 0.25s 平滑滑回右缘 214px（动画压过过渡、落定零漂移）；平板（pointer:coarse）
+//   恒旧行为（266px 右缘+0.25s 滑动）零回归；站点恒 58.28；后端零改动；i18n 零新键；
+//   ethereal.css/transitions.js/10 分钟心跳零触碰（编辑器页豁免 inline-css 零重跑）；
+//   （rev 00375-nlm 瞬态占位上直播；二次烘焙重部署终态 rev 00376-8qx——live 文本滞后一部署=惯例）
+// v10.28.62.6 = 分组边缘手柄改方向缩放（补丁位 5→6 修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「拖左侧条应调横向宽度结果整体大小、多调几次上下散架跑位」；
+//   真身=分组缩放里锁定成员（带图）用 min(scaleX,scaleY) 等比缩，边缘柄(单轴)下把高度也一起缩、与框高脱节逐次漂移；
+//   修法=角手柄(双轴)仍等比保图不变形，边缘手柄(单轴)按框轴向各自缩放（宽随 scaleX、高随 scaleY）；诊断实证边缘柄高度恒 130 不漂移；后端零改动 npm test 413/413；
+// v10.28.62.5 = 左右合并改底对齐（补丁位 4→5 修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「两个卡片合并时下方的边总是不平总会凹进去」；
+//   真身=mergeCards 左右并入用顶对齐，高度不同时底边参差、分割处凹口；
+//   修法=左右并入改底对齐（tbb.bottom-cb0.bottom 落位），底边平齐（顶边可参差，各自大小不变）；后端零改动 npm test 413/413；
+// v10.28.62.4 = 调卡片背景色不再删图片/边缘（补丁位 3→4 修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「调整卡片背景时图片和选择的自定义边缘会不见」；
+//   真身=setCardBgColor 旧设计「背景色与图片互斥」会 img.remove() 删掉卡片图片；
+//   修法=setCardBgColor 不再删 .card-img-bg/.card-stripes（图片在上、颜色垫底做边缘底色，与边缘共存）；后端零改动 npm test 413/413；
+// v10.28.62.3 = 版本徽章放进状态栏 saveStatus 左侧（补丁位 2→3 修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「把版本号放在右下角的状态文字的左侧」；
+//   修法=版本徽章由 position:fixed 改为 span 插入 .editor-statusbar 的 #saveStatus 前（左邻保存状态文字）；后端零改动 npm test 413/413；
+// v10.28.62.2 = 版本徽章移到右上角（补丁位 1→2 修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「右下角的版本号和一个状态文字重叠了」；
+//   修法=版本徽章 position:fixed 由 bottom:8px 改 top:8px，避开底部状态栏的保存状态文字；后端零改动 npm test 413/413；
+// v10.28.62.1 = 字体搜索/筛选可交互修复（补丁位 0→1 修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「搜索栏和筛选下拉菜单都没办法互动」；
+//   真身=字体面板 fpanel 的 mousedown e.preventDefault()（保文本选区）把搜索框/下拉的原生聚焦/展开也拦了；
+//   修法=fpanel mousedown 对 .fp-search/.fp-lang 跳过 preventDefault + 搜索框/下拉 click 显式 focus 兜底；后端零改动 npm test 413/413；
+// v10.28.62.0 = 字体面板加搜索栏+语言筛选（小改动位 61→62 新功能轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「选字体语言很麻烦，在菜单顶部加语言筛选栏和搜索栏」；
+//   修法=字体面板 #fontPanel 顶部加 .fp-toolbar（搜索框 #fpSearch + 语言下拉 #fpLangFilter），buildFontPanel 填语言选项+行/组 data-lang，filterFontPanel 按名称搜索+语言筛选叠加过滤、空组头隐藏；i18n fc.font.search/fc.font.allLangs ×12 语；后端零改动 npm test 413/413；
+// v10.28.61.0 = 恢复「图片与边缘同步」勾选（小改动位 60→61 新功能轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「那个让图片和边缘/边框同步的勾选呢」——上一轮去 Mask 时把勾选一起删了；
+//   修法=恢复内容层 Mask：CSS .card-edge-custom .card-img-bg/.card-stripes clip-path=var(--card-mask-clip) + applyCardBg 按 edgeMask 写 --card-mask-clip=edge.clip（e.clip 原多边形）+ 勾选节 HTML + setEdgeMaskSync/renderEdgeMaskSec + setCardEdge 旗 + 草稿 edgeMask + i18n maskSync ×12 语；后端零改动 npm test 413/413；
+// v10.28.60.0 = 自定义边缘装饰真的伸出矩形（小改动位 59→60 观感修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「还是看不到，可能是那个矩形的 Mask 导致的，去掉」；
+//   真身=装饰层 ::before/::after 是 inset:0（矩形），背景只填满矩形、没伸出 1.4× 外扩——clip 虽是 1.4× 但背景只有矩形，被「矩形 mask」框住、藏在图片后看不见；
+//   修法=clip 改回原多边形 e.clip，CSS 加 .card-edge-custom::before/::after inset:-20%（对应 CUSTOM_EDGE_SCALE=1.4）撑大装饰盒，clip 相对 1.4× 盒解析 → 剪影真的伸出矩形外一圈；后端零改动 npm test 413/413；
+// v10.28.59.0 = AI 边缘藏宝图式呈现（小改动位 58→59 观感修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「参考藏宝图这个边缘的呈现代码，让 AI 生成部分的成品以一样的方式呈现」；
+//   修法=customEdgeRecipe 照搬藏宝图渲染：clipSoft=TORN_CLIP_SOFT（软撕边标签）+cardLayers 加中性噪点 NOISE_CUSTOM（黑+alpha 0.30，适配任何自动配色）+cardOverlay 两段暗角 radial-gradient+glow=inset 辉光+border 1px+radius 3px；后端零改动 npm test 413/413；
+// v10.28.58.0 = 移除边缘 Mask 效果（小改动位 57→58 观感修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「能不能去掉那个 Mask 效果」——图片不再被裁进边缘形状，恢复完整矩形显示；紫色边缘装饰（1.4×同心）保留；
+//   修法=移除内容层 clip-path（CSS .card-img-bg/.card-stripes 规则）+ applyCardBg 的 --card-mask-clip 写入 + 「图片与边缘同步」勾选节（HTML/JS setEdgeMaskSync/renderEdgeMaskSec）+ 草稿 edgeMask + i18n fc.edge.maskSync ×12 语 + recipe clipInner/clipRaw 死代码；后端零改动 npm test 413/413；
+// v10.28.57.0 = 紫色=1.4×内容（同心矩形，小改动位 56→57 观感修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「希望紫色始终比原本的内容大 1.4 倍，像苹果的 ConcentricRectangle 同心矩形，外围背景怎么变都始终在范围内」；
+//   真身=56.1 用固定内缩 3%（CUSTOM_EDGE_FRAME）非比例关系，紫边随内容大小变化不恒定；
+//   修法=customEdgeRecipe 改 clip=expandClipPct(e.clip, CUSTOM_EDGE_SCALE-1)（SCALE=1.4，同心 1.4×缩放）、clipInner=clipRaw=e.clip（内容=原形）；移除「边缘外扩距离」滑杆（HTML/JS/草稿 edgeExpand/i18n expandDist ×12 语）；后端零改动 npm test 413/413；
+// v10.28.56.1 = 紫色边框可见（补丁位 0→1 修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「现状是那个紫色的部分不见了」——56.0 让 Mask=装饰同形状后，不透明图片（z0）盖住紫色剪影（z-1），紫边消失；
+//   修法=customEdgeRecipe 增 clipInner=expandClipPct(e.clip, f-CUSTOM_EDGE_FRAME)（FRAME=0.03 内缩），applyCardBg 的 Mask 改用 clipInner——内容跟紫色走但内缩一圈，紫色作边框可见；后端零改动 npm test 413/413；
+// v10.28.56.0 = Mask 跟随边缘装饰剪影（小改动位 55→56 观感修复轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「卡片本身有了 alight motion mask 效果但不符合预期，希望内容在紫色范围内、Mask 跟着紫色部分变化，而不是把 Mask 放在原本矩形上」；
+//   真身=内容层 Mask（--card-mask-clip）用原多边形 clipRaw（0-100% 近矩形），而装饰剪影 ::before 用外扩 clip——两者形状不一致，外扩滑杆只动装饰不动内容；
+//   修法=applyCardBg 的 Mask 改用外扩 clip（=装饰剪影同一形状），内容随外扩滑杆一起放大缩小、与紫色装饰完全对齐；clipRaw 保留但不再用于 Mask；后端零改动 npm test 413/413；
+// v10.28.55.0 = AI 边缘/边框自动配色（小改动位 54→55 新功能轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「处理完之后能不能在 Ai 生成边缘/边框那边添加一个底层代码会根据图形或名称给边缘/边框添加自带颜色」；
+//   真身=customEdgeRecipe 恒定紫渐变（所有自定义边缘/边框同色，不随名称/形状区分）；
+//   修法=CUSTOM_EDGE_PALETTE 关键词色板（星=金/火=红橙/水浪=蓝/叶=绿/金=金黄/粉/雷=亮黄/暗/云=灰/紫=默认）+pickEdgeColor（名称关键词匹配 → 无匹配按 clip 多边形字符串哈希取色，同形状稳定同色）+edgeColorGradients（rgb → tint/layer 双透明度渐变）；customEdgeRecipe 改用 pickEdgeColor(e.name, e.clip)；后端零改动 npm test 413/413；
+// v10.28.54.0 = 边缘外扩距离滑杆+卡身透明（小改动位 53→54 新功能轮；
+//   2026-10-07；站点恒 58.28）：
+//   用户「Z轴最底部的卡片还在并不是透明的…调整图像/内容与卡片边缘的距离时边缘还是在原有卡片范围内增加距离而不是增加整体大小」；
+//   真身=①自定义边缘卡身 background 恒 --card-bg 矩形底（applyCardBg 只清内联 '' 不覆盖 CSS 默认）②overflow:hidden 把外扩剪影裁在矩形内③外扩系数 CUSTOM_EDGE_EXPAND 固定 0.06 无 UI 不可调；
+//   修法=①.grid-card.card-edge-custom 卡身 transparent+overflow:visible（矩形底去掉、外扩剪影能伸出矩形外）②抽屉「图片与边缘同步」下加「边缘外扩距离」滑杆（0-30% 默认 6%，dataset.edgeExpand %→0-1 系数喂 customEdgeRecipe 的 expandClipPct；仅自定义边缘 edge 种显示）③草稿 edgeExpand 往返+i18n fc.edge.expandDist ×12 语；后端零改动 npm test 413/413；
+// v10.28.53.0 = AI 边缘 Mask 化+图片与边缘同步勾选+边缘外扩多出去一点（小改动位 52→53 新功能轮；
+//   2026-10-06；站点恒 58.28）：
+//   用户「那个边缘在Ai生成完成后还是一样没办法使用，点击选中后还是一样没有在画布里出现，
+//   还有能不能把边缘改成像Alight Motion 里的Mask一样就是图片只是会显示在它的范围内，
+//   但是图片的现状会跟着边缘的现状而变化，但是用户可以在选择边缘那边选择图片的边框
+//   是否要和边缘同步的勾选，然后我希望那个边缘一样要多出去一点预防图片或信息因为边缘的
+//   变化而跑到范围外或被边缘遮挡到」；
+//   真身=自定义边缘无外板+无 ::after 覆盖层（cardOverlay:[] 50.0 设计），剪影全在 ::before
+//   z-index:-1 —— 图片/条纹内容层（.card-img-bg/.card-stripes z 0）整盒铺满把它完全盖住，
+//   图片卡/条纹卡应用 AI 边缘=零可见（51.1 只修了未选中卡 toast，选中图片卡仍「什么都没有」）；
+//   修法（三件）=
+//   ① Mask 化（AM 口径）：内容层 .card-img-bg/.card-stripes 新增 clip-path:
+//   var(--card-mask-clip)（CSS 规则+applyCardBg 写原多边形 clipRaw）——图片只显示在边缘
+//   范围内、形状跟随边缘变化；卡根不剪（box-shadow/选中环/外板照常）；显式 '1' 开、
+//   '0' 关（dataset.edgeMask，草稿 buildDraft/applyDraft 往返）；
+//   ② 抽屉新「图片与边缘同步」勾选（fc.edge.maskSync ×12 语；无选中卡/分组/none/border 种
+//   自动隐藏）：应用自定义边缘默认勾选（setCardEdge 写 '1'），内置边缘保留用户既有勾选
+//   （不写不删），关掉=内容层整矩形旧行为；
+//   ③ 边缘外扩（expandClipPct 0.06 系数）：装饰剪影 ::before 用外扩多边形（% 坐标
+//   50+(v-50)×1.06、裸值同乘）——边缘多出去一圈，图片按原形裁剪后装饰在图片外露出
+//   （不再被图片盖住），内容也不会跑到边缘范围外或被边缘遮挡；Mask 恒用原多边形
+//   （clipRaw）形状严格跟随；内置边缘/仓库/文章页零改动（article 消费 raw clip 同前）；
+//   后端零改动；i18n 新键 ×1（maskSync）；ethereal.css/transitions.js/10 分钟心跳零触碰
+//   （编辑器页豁免 inline-css 零重跑）；
+//   （rev 00379-6k8 瞬态占位上直播；二次烘焙重部署终态 rev 00380-8kn——live 文本滞后一部署=惯例）
+// v10.28.52.5 = 折叠出画加深+画外停一拍+展开加Q弹（补丁位 4→5 观感修复轮；2026-10-05）：
+//   用户「为什么他没有短暂的滑出画面外？」+「在展开的时候按钮能不能也附加上Q弹效果」；
+//   真身=52.4 出画只 -40px 深（40px 宽按钮右缘恰贴屏幕边、完全离屏仅 ~0.2s）且 0.27s 极快，眼睛易错过；
+//   修法=位移改四站 0% 右缘 214px→28% 加速滑出 -80px（整体出画+40px 余量）→50% 画外停留 ~0.2s
+//   （linear 恒停=「短暂的滑出画面外」一眼可见）→100% 回弹过冲 cubic-bezier(0.34,1.56,0.64,1) 落定 6px；
+//   Q弹同步改五站（28% 微缩 0.85 蓄力→50% 画外保持→70% 回屏瞬间拉长 scale(1.35,0.65)→100% 回规 1）+
+//   展开态 fine 规则新增 fcToggleInQSquash 0.28s（45% 弹出拉长 scale(1.3,0.7)→75% 过冲挤扁
+//   scale(0.9,1.1)→100% 回规；与基态 transition:left 0.25s 滑回并行；页面载入播放一次无妨）；
+//   平板（pointer:coarse）恒旧行为（266px 右缘+0.25s 滑动）零回归；站点恒 58.28；后端零改动；i18n 零新键；
+//   ethereal.css/transitions.js/10 分钟心跳零触碰（编辑器页豁免 inline-css 零重跑）；
+//   （rev 00377-628 瞬态已直播；二次烘焙重部署终态 rev 00378-rjd——live 文本滞后一部署=惯例）
+// v10.28.52.3 = 折叠按钮搬搜索菜单左侧+折叠出画回弹（补丁位 2→3 观感修复轮；2026-10-05）：
+//   用户「然后FC编辑器左侧的菜单的折叠按钮能不能变成是放在搜索菜单左侧那边再多出一个圆形，
+//   然后我希望折叠的时候他会先跑到画面外然后再回弹弹出这样」；
+//   真身=折叠按钮 .asset-panel-toggle 绝对定位贴面板右缘 266px（49.1/49.2 设计），面板内搜索胶囊
+//   全宽铺满无让位；
+//   修法=桌面（pointer:fine）展开态按钮改驻左缘 6px=搜索菜单左侧的新圆钮（32×32 正圆 49.2/纯白
+//   52.2 全保留、top 16px 与 40px 高搜索胶囊垂直对中）+搜索胶囊让位（width:calc(100% - 38px)+
+//   margin-left:38px，按钮右缘 38 与胶囊左缘 46 留 8px 缝，内联 width 搬入 CSS）+折叠动画
+//   fcToggleOutSpring 0.9s（先加速跑出画面外 -40px 再回弹过冲 cubic-bezier(0.34,1.56,0.64,1)
+//   落定 6px）；平板（pointer:coarse）恒旧行为（266px 右缘+0.25s 滑动）零回归；站点恒 58.28；
+//   后端零改动；i18n 零新键；ethereal.css/transitions.js/10 分钟心跳零触碰（编辑器页豁免
+//   inline-css 零重跑）；
+//   （rev 00373-q4k 瞬态占位上直播；二次烘焙重部署终态 rev 00374-5cz——live 文本滞后一部署=惯例）
+// v10.28.52.1 = 边缘抽屉全部/我左右切换平台同款滑动+My 标签全语言化（补丁位 0→1 修复轮；2026-10-05）：
+//   用户「那个FC编辑器点击边缘与边框之后滑出的左侧菜单的顶部的全部和我的 的左右切换能不能是和平台
+//   一样的滑动的还有把那个My改成我，界面什么语言就什么语言不要参其他语言」；
+//   真身=51.1 抽屉顶 nav 已改 segmented-control 结构，但只有 active 底色 0.2s 渐变（白胶囊不滑动）——
+//   平台同款滑动=hub 顶部 subnav（data-slider + subnav.js 注入 .subnav-highlight-bg 白胶囊 0.55s
+//   left/width 滑动 + 尾部 blob 残影 + slime 拉伸）；tabMy 兜底硬编码英文 My+zh/zh-Hant 词典值=My
+//   （OpenCC 不翻拉丁）界面混英文；
+//   修法=抽屉 nav 换 .subnav[data-slider]+.subnav-pill 平台原版结构（subnav.js 引入编辑器页；圆球滑出
+//   挤压 subnav 宽度后 remove+add 触发观察器重对齐 edgeNavResync）+tabMy 兜底改「我」+zh/zh-Hant 词典值
+//   改「我」（其余 9 语本就各语，en 恒 My——12 语零英文混杂）+52.0 旧条目保留；后端零改动；
+//   站点恒 58.28；i18n 零新键；ethereal.css/transitions.js/10 分钟心跳零触碰；
+//   （rev 00369-gmh 瞬态占位上直播；二次烘焙重部署终态 rev 00370-8g7——live 文本滞后一部署=惯例）
+// v10.28.52.0 = 等级奖励（小改动位 51→52 新功能轮；2026-10-04）：与站点 v0.2.58.26 同轮——个人
+//   Lv.2/6/9/12 + 团队 Lv.2/6/9/12（阈值=个人 ×1.5）升级领奖：成就+徽章+称号+头像相框+免费名片边缘；
+//   团队经验五事件钦定：「上传一个作品 24px / 获得一个赞 16px / 一个粉丝 32px / 一个收藏 36px / 一个
+//   分享/转发 20px」+双向对称钦定「少一个就收走 就给了24px少了一个就减24」（反向操作同额扣回 MAX(0,…)
+//   不穿负；个人 XP 仍只进不出不变）；
+//   修法：后端 033_rewards.sql（teams.xp_gained 列+users.avatar_frame/title 装饰激活列+achievements/
+//   user_achievements/team_achievements/user_badges/user_cosmetics 五新表——health 66/user_version 33）
+//   +team-xp.js 五事件记账（上传 24/赞 16/粉丝 32/收藏 36/转发 20；取消赞/取消收藏/取关/撤销转发/删除
+//   作品同额扣回）+rewards.js POST /api/rewards/claim（幂等 INSERT OR IGNORE；个人信任客户端 lv 纯装饰
+//   +团队校验成员+teams.xp_gained ≥ TEAM_LEVELS[lv-1] 阈值表）+GET /api/rewards/me+GET /api/teams/:id/
+//   rewards；auth.js PATCH avatarFrame/title（服务端拥有性校验 user_cosmetics 行+白名单；null 卸下恒放行）
+//   +publicUser/social 公开 avatarFrame/title；L2 免费名片边缘=claim 后 free-edge 授予行→免费用户
+//   cardEdge PATCH 放行（订阅恒放行/null 恒放行祖父条款）；
+//   前端：sidebar mn:level-up 监听→POST /rewards/claim→toast+mn:rewards-changed；community-profile 新
+//   「成就&徽章」区（成就卡 chips+徽章行+称号/相框/边缘装饰行使用/卸下 PATCH）+昵称旁称号金药丸+头像
+//   相框环（rookie 主题蓝环/champion 金 conic 环）+编辑弹窗相框/称号选择器（未解锁金罩锁+名片边缘门改
+//   订阅或已解锁）；fluidcanvas 团队卡等级徽章 Lv.X（getTeamLevelState ×1.5 表）+成就 chips 条+关注/
+//   取关钮（关注后刷新团队奖励重渲染）；编辑器发布 ?team= 团队作用域（publish id key 加 :TEAMID 后缀
+//   +POST body teamId——团队视图发布不再落到个人频道）；i18n common rewards.* 25 键+fluidcanvas
+//   fc.rewards.* 5 键 ×12 语（zh-Hant 只 OpenCC）；npm test 413/413（rewards.test.js 新增）；站点恒
+//   v0.2.58.26（本条目外零改动）、ethereal.css/transitions.js/心跳零触碰；
+//   （rev 00363-ksq 瞬态占位上直播；二次烘焙重部署终态 rev 00364-wdg——live 文本滞后一部署=惯例）
+// v10.28.51.0 = 团队频道（小改动位 50→51 新功能轮；2026-10-04）：与站点 v0.2.58.26 同轮——用户
+//   「把团队频道体系做出来」：创建团队频道弹三步向导（①是否把现有横幅&头像&名称&id 直接转换到团队频道
+//   ②搬运内容多选：贴文/视频&贴图/动态/主页装饰/全部（默认全勾）③建群聊：头像+名称+拉好友），标配最多
+//   3 组员、订阅项扩容（Basic 增至 8 / Plus 增至 16 / Premium 增至 26 / Premium Ultra 无限）；搬运=只搬
+//   数据不搬频道（个人频道保留、私人点赞收藏留个人）；
+//   修法：fluidcanvas.html #fcTeamWizard 三步向导弹窗（step1 身份：是/否大卡+否时团队名称输入；step2
+//   搬运多选：全部+贴文/视频&贴图/动态/主页装饰 四复选框默认全勾（勾全部=四类全选）；step3 群聊：名称
+//   1-60 字符留空不建群+好友多选列表 GET /api/friends）→ 一次 POST /api/teams {name, copyIdentity,
+//   copyItems:['all']|四键数组, chat:{name, memberIds}}；团队切换区/渲染接真数据 loadTeamsFromApi（团队
+//   频道卡=头像图/字母卡+名称+成员数；个人↔团队切换）；未登录建团=登录提示 toast；messages.html 建群真
+//   接口：createGroupDemo 云模式换 POST /api/conversations {kind:'group', name, memberIds}（好友多选
+//   #groupFriendPick 来自 GET /api/friends）+群列表/群消息/发消息接云端（群附件暂不支持 toast）；群头像=
+//   名称首字母自动生成（与 messages 群列表同款，无 avatar 列）；premium.html Team Slots 卡数字改
+//   8/16/26/∞ 并接通一次性结算（startCheckout mode='once'；slots-* 扩容订阅仅支持一次性购买）；后端
+//   032_team_channels.sql 列级 ALTER（conversations.name/users.team_cap_addon+expires/posts.team_id；
+//   health 61 恒/user_version 32）+pricing_plans 插 4 扩容 SKU（plan_key slots-basic/plus/premium/ultra
+//   口径 8/16/26/∞）+POST /api/teams 一键向导（copyIdentity 拷 display_name/avatar_url/banner_url 入团队
+//   data 个人行零改动；copyItems 贴文=复制 team_id 行原创作者标注保留、视频&贴图=uploads 新行同文件、
+//   动态同口径、主页装饰=装饰字段入团队 data；点赞收藏恒不搬）+GET /api/teams/:id/members+POST/DELETE
+//   成员（owner-only；上限 3+addon 映射 basic→8/plus→16/premium→26/ultra→∞ 满则 403 TEAM_FULL）+
+//   GET /api/friends（accepted 双向）+建群写路径（memberIds 逐个限好友/去重/自排除/群名 1-60）；npm test
+//   399/399（teams.test.js+friends+群聊矩阵新增）；i18n 36 新键×12 语（fc.team.* 28+messages.modal.group*
+//   6+messages.toast.groupNoFile；premium slots12/24/36→slots8/16/26 原位替换；zh-Hant 只 OpenCC）；
+//   站点恒 v0.2.58.26（本条目外零改动）、ethereal.css/transitions.js/10 分钟自动保存心跳零触碰；
+//   （rev 00359-nfc 瞬态占位上直播；二次烘焙重部署终态 rev 00360-bk7——live 文本滞后一部署=惯例）
+// v10.28.51.1 = 边缘样本默认配色+抽屉顶部导航平台同款（补丁位 0→1 修复轮；2026-10-04）：用户「样本除了
+//   展示边缘还要展示默认自带的颜色那些」+「顶部导航的左右切换能不能参考平台的顶部导航的左右切换动画和
+//   结构」；真身=样本 mini 恒中性紫渐变剪影（配色全在 EDGE_STYLES.cardLayers 从未上样本）、抽屉顶部导航
+//   .fc-edge-tab 自绘平板双钮（active 全填充 primary）、边框线型样本画 var(--color-on-surface) 与取色器
+//   脱节；修法：fluidcanvas-editor.html 样本网格 15 内置 mini 背景改 EDGE_STYLES[name].cardLayers 直写
+//   配色（纸=羊皮纸米黄斑点/藏宝=棕金/科技1-6=暗蓝 HUD/油漆1-6=PAINT_GRADS 六色；「无」虚线空盒不动；
+//   自定义剪影仍中性渐变）——edgeMiniHtml 加 bg 参数、renderEdgeSamples 传 cardLayers.join(', ')；
+//   顶部导航旧 .fc-edge-tab 双钮删除，改用平台 segmented-control/segmented-option 同款结构（滑动白胶囊
+//   thumb+0.2s 过渡；圆球仍从导航左侧滑出、edgeDrawerSetTab 类切换零改动）；边框样式节 7 线型样本改画
+//   取色器当前色（默认 #c8c8d0 与卡片实际边框一致）；用户测试报告：「AI 边缘成功生成了但是无法使用
+//   ——点击后什么都没有」；真身=setCardEdge 无选中卡时静默 return（AI 生成→保存→点条目全程不需要选卡，
+//   新画布零卡=点击应用零反馈零变化）；修法：无选中卡→toast「请先选中一张卡片」（与右键入口同款
+//   fc.common.selectCard 兜底文案）+无标签卡（content/text）→toast「该卡片不支持边缘样式」（T 键兜底
+//   中文，与 fc.common.selectCard 历史同口径）；用户测试报告②：「边框那边生成失败」；真身=sanitizeClip
+//   裸值坐标只许 0/100——border 双环内环 3-12% 内缩 Gemini 常输出裸值 8/12 之类→服务端白名单全拒→
+//   200 ok:false→toast 生成失败（edge 满盒只用 0/100 故「边缘成功边框失败」）；修法：服务端 fc-edgegen.js
+//   sanitizeClip+客户端 sanitizeClipEdge 同步放宽裸值 ±100 全收（纯数字零注入面，黑名单不动；百分比仍
+//   0-100）；用户新请求：「弹窗做一个正向反馈——按钮下方会有小字和一个三粒点的 loading 条，左侧显示 AI
+//   当前状态」；修法：AI 弹窗改两栏（左栏 AI 状态灯：灰空闲/蓝脉冲思考中/绿成功/红失败+状态文本；右栏
+//   表单不变），按钮下方反馈行=三粒点弹跳 loading（生成中）+小字（正在生成，通常需要几秒钟/生成成功/
+//   失败具体原因同 toast）；i18n 新键 5×12 语（fc.edge.genIdle/genThinking/genOk/genFail/
+//   genThinkingHint；zh-Hant OpenCC 重生成）；站点恒 v0.2.58.26（本条目外零改动）、npm test 399/399
+//   （edge-gen.test.js 裸值放宽用例移位同数）、ethereal.css/transitions.js/心跳零触碰（平台 segmented
+//   类原样复用）；
+//   （rev 00361-7vk 瞬态占位上直播；二次烘焙重部署终态 rev 00362-fdj——live 文本滞后一部署=惯例）
+// v10.28.50.0 = 边缘抽屉+AI 生成+自定义边缘库+边缘仓库（小改动位 49→50 新功能轮；2026-10-04）：与站点
+//   v0.2.58.26 同轮——用户「能不能把FC编辑器的弹窗点击后出现的二级窗口改成左侧弹窗？然后展示以该
+//   选项的边缘样本展示，然后再那个左侧弹窗的顶部添加一个横向长条的自定义添加按钮，会弹出一个Ai要求
+//   弹窗用户输入要求或一起附上图片，Ai生成Polygon Clipping 用clip-path和polygon()等等的代码制作出
+//   那个边缘，还有一个叫边框样式的那个选项也是，一样可以通过描述或附赠提供图片让Ai 生成」+「生成完成
+//   后上传进仓库之前选择公开/团队/好友/私人（和上传国旗的步骤一样）+左弹窗顶部导航左全部右 My+有
+//   Team 和 Friend 时顶部菜单左侧滑出圆球在好友/团队间切换」；三项钦定：①两个入口（右键「选择边框
+//   边缘样式」+卡片背景 popover「背景边缘」）合成一个左侧弹窗 ②AI=Gemini Flash 只负责生成、DeepSeek
+//   只负责客服 ③自定义边缘/边框直接存进左弹层列表（名称+本体剪影展示），一次过把本地库做好；
+//   修法：左侧抽屉 .fc-edge-drawer（z-66 介于 toc 抽屉与弹窗之间，translateX 滑入）：顶部导航左「全部」
+//   右「My」+圆球（hasFriends&&hasTeam 时从导航条左侧 max-width 滑出、好友/团队互切；只有一方直达、
+//   皆无则纯全部）；全部 tab=全宽「自定义添加」主按钮+15 内置边缘样本（名称+clip 剪影）+边缘仓库列表
+//   （名称+本体+上传者名）；My tab=我的自定义（名称+本体+删除/上传仓库钮，已上传显可见性徽章+修改）；
+//   两 tab 下方常驻边框样式节（7 CSS 线型+宽度滑杆+取色器——原 borderStyleModal 内容原位迁移，
+//   openBorderStyleModal 改走抽屉 border 节）；AI 弹窗 #fcEdgeGenModal：种类边缘/边框+名称+描述+附图
+//   （png/jpeg/webp ≤6MB）→ POST /api/fc/edge-gen（后端 Gemini Flash 直调：x-goog-api-key 头
+//   GEMINI_API_KEY env、contents-only、temperature 0.4+responseMimeType application/json、60s+2 退避、
+//   无 key 503 unavailable/预算 exhausted 200/解析失败 200 ai_failed）→ 服务端 sanitizeClip 白名单
+//   （≤2000 字符、polygon 正则、3-80 点、坐标 %0-100 或裸 0/100、小数≤2 位、拒 url(/expression(/calc(/
+//   var(/javascript:/引号/尖括号/反斜杠）+客户端镜像复核 → 预览+保存/重新生成；保存=只进本地「我的」；
+//   自定义边缘模型：cardEdge='custom:<id>' 沿用现有字段零新卡字段（customEdgeRecipe：border 种
+//   cardLayers:[]——边框带由 ::before evenodd 环画、卡背景不清理露卡身；edge 种禁用自动外板）；
+//   localStorage slati_custom_edges（200 条+1MB 守卫）；草稿 customEdges 顶层 additive 只收被引用条目
+//   （applyDraft 合并草稿赢）；article.html 阅读页消费（edge 种直写 clipPath、border 种
+//   .art-card-custom-frame 子层；写前 sanitizeClip 复核）；边缘仓库：031_fc_edges.sql 新表（visibility
+//   四值公开/团队/好友/私人）+GET /api/fc/edges?scope= 四范围过滤（optionalViewer 匿名见公开；好友集=
+//   accepted 双向；团队集=我团成员）+POST/PUT/DELETE（本人）+scopes 端点（圆球依据）+上传弹窗
+//   #fcEdgeRepoModal（imgMetaModal 先例：名称+可见性四选段）→ 条目 uploaded 徽章+「修改」PUT；后端
+//   npm test 389/389；i18n 38 新键×12 语（37 fc.edge.*+fc.imgMeta.visFriends；zh-Hant 只 OpenCC）；
+//   站点恒 v0.2.58.26（本条目外零改动）、ethereal.css/transitions.js/10 分钟自动保存心跳零触碰；
+//   （rev 00356-djq 瞬态占位上直播；二次烘焙重部署终态 rev 00357-sh8——live 文本滞后一部署=惯例）
+// v10.28.49.2 = 折叠按钮改圆形（补丁位 49.1→49.2 调整轮；2026-10-02）：与站点 v0.2.58.26 同轮——用户「那个折叠按钮能不能是一个圆形的」；
+//   修法=.asset-panel-toggle 22×44 门帘形改 32×32 正圆（border-radius: 50% 双态恒同、border-left: none
+//   撤除改四边完整 1px 边框）；49.1 :has 折叠态规则保留但收窄为只改 left: 6px（圆形无需补左边线/覆写圆角）；
+//   left 滑动过渡与 49.1 同款零改动；站点恒 v0.2.58.26（本条目外零改动）、后端零改动、i18n 零新键、
+//   ethereal.css/transitions.js/心跳零触碰；
+//   （rev 00354-z2g 瞬态占位上直播；二次烘焙重部署终态 rev 00355-j7g——live 文本滞后一部署=惯例）
+// v10.28.49.1 = 折叠按钮随菜单一起移动（补丁位 49.0→49.1 调整轮；2026-10-02）：与站点 v0.2.58.26 同轮——用户「还有那个FC编辑页左侧菜单的折叠按钮不会在菜单折叠后一起移动」；
+//   真身=折叠按钮 .asset-panel-toggle 靠绝对定位 left:calc(面板宽+6px) 贴面板右缘，「面板折叠→按钮左移
+//   6px」的旧规则写成 .asset-panel.collapsed + .asset-panel-toggle 相邻兄弟选择器，但 DOM 序里按钮是
+//   .canvas-body 首子、面板是次子（按钮在前），相邻兄弟选择器恒不匹配=死规则，面板折叠后按钮滞留在
+//   266px 处悬空；
+//   修法=改 .canvas-body:has(.asset-panel.collapsed) .asset-panel-toggle 祖先匹配（面板折叠态→按钮滑到
+//   左缘 6px 圆角方块+补回左边线），DOM 顺序零改动、展开态口径逐字节不变（left 266px/圆角 0 6 6 0/◂）；
+//   站点恒 v0.2.58.26（本条目外零改动）、后端零改动、i18n 零新键、ethereal.css/transitions.js/心跳零触碰；
+//   （rev 00352-sdl 瞬态占位上直播；二次烘焙重部署终态 rev 00353-8d2——live 文本滞后一部署=惯例）
+// v10.28.49.0 = 平板 4:3 视口+旋转按钮+逐设备布局（2026-10-02）：与站点 v0.2.58.26 同轮——用户「那个
+//   FC 编辑器那边平板的比例是 4:3 然后横向 110 × 纵向 77 个格子 然后我希望当用户选择平板比例的时候
+//   那个视口选择按钮旁边会滑出一个旋转按钮可以点击旋转方向进行编辑，然后这些视口内这些卡片的位置在
+//   所有不同的比例或平板的方向它们的位置可以不一样，但是一定要拥有相关的卡片，就是卡片位置不需要
+//   同步但是卡片的内容那些需要同步」；五项钦定：①发布侧=全部视口一起发布、阅读页按设备自动选布局
+//   （纯自动无手动切换钮）、编辑页 ?article= 查看模式零改动 ②初始位置=系统自动排列（未动过的视口），
+//   手动动卡才转自定义落盘（markPresetCustom 门控）③增删同步所有视口（仅位置各异）④自动排列规则：
+//   mobile 全纵向（每卡一行全宽、合并组展开成员纵向流）/tablet+tablet-p 横向最多 2 卡（合并组=一个单位
+//   整体等效比例缩放）/half=115 格砍半 58 格一排最多 4 卡第 5 放下方+长文卡至少 24 格（行内已有 3 卡时
+//   最右挤到下方）/169=wiki 单列全宽 ⑤旋转按钮：选平板时视口按钮旁滑出、点击横竖互切；
+//   修法：编辑器 PRESETS 五视口带 cols/rows（tablet 110×77 / tablet-p 77×110 / half 58 / 169+half+
+//   mobile 100 行）、computeCols preset 感知、旋转按钮 .fc-rotate-wrap max-width 0→160px 滑出过渡
+//   （display:none 不可过渡）+active 双 span 声明式 i18n（fc-rot-l/fc-rot-p）、autoFlowCards wiki 自动
+//   排版（组单位 bounding 比例缩/阅读序 row+col 升序/行距 2 行/长文卡 24 格挤下规则）、
+//   markPresetCustom 挂全部用户几何提交点（拖拽/合并/拆组/旋转/缩放/拖放建卡/fc-touch 守卫钩）、
+//   删卡同步清全部预设表、草稿往返 additive tabletOrientation 'l'|'p'+presets['tablet-p'] 桶（旧草稿
+//   缺省 'l'/旧 115 格表 clampPresetEntry 钳制）；阅读页 article.html 逐布局渲染（LAYOUT_COLS/ROWS 与
+//   编辑器同源、pickReaderLayout 按设备自动选 <768 手机/768–1280 平板按横竖屏/≥1280 默认 169、
+//   布局表空→autoFlowEntries 与编辑器同款算法、活动预设相等路径逐字节保持原口径、resize+横竖屏翻转
+//   重渲染）；i18n 4 新键×12 语（tablet43/rotate/landscape/portrait，zh-Hant 只 OpenCC）；站点恒
+//   v0.2.58.26（本条目外零改动）、后端零改动、ethereal.css/transitions.js/10 分钟自动保存心跳零触碰；
+//   （rev 00350-6vv 瞬态占位上直播；二次烘焙重部署终态 rev 00351-5mm——live 文本滞后一部署=惯例）
+// v10.28.48.2 = 首页假数据全撤接真实聚合+首页卡片不透明（补丁位 48.1→48.2 调整轮；2026-10-02）：与站点
+//   v0.2.58.26 同轮——用户「能不能顺便把FC的所有并非用户手动创建的测试信息都去除掉，还有把所有FC的首页
+//   卡片从玻璃变成不透明的卡片？」；三项钦定（详见站点 58.26 条目）：①只清页面硬编码假数据（演示账号与
+//   后端库不动）②假数字区块接真实聚合+空态、匿名=登录引导卡 ③玻璃→不透明=只首页卡片（按钮/搜索胶囊
+//   保持玻璃）；
+//   修法：后端新端点 GET /api/fc/overview（stats 15 键全真聚合+windows 三窗口前窗对比+articles/media/
+//   posts 清单，npm test 366/366）；页面八处假数据源全撤（dashboard 演示统计/团队乘数/quickStats 假卡/
+//   内容表硬编码/上传假记录+simulateFilePick/内容库 18 条/分析假趋势/文章页种子+演示 contentJson/Alex
+//   Rivera）→ FC_OVERVIEW 真实聚合（cloudMode=登录+USR- 前缀同步门、null 全站 '—'/空态、上传模块真
+//   POST /api/social/uploads、文章页真 DELETE、动作后 loadFcOverview(true) 刷新）；首页卡片玻璃→不透明
+//   （body.fc-page .card:not(.profile-header) --card-bg→--sidebar-bg+lg-backdrop 滤镜摘除+channelOverview/
+//   channelSummary !important 覆写深浅两主题；按钮/搜索胶囊保持玻璃）；i18n 25 新键+demoSub 死键删；
+//   10 分钟自动保存心跳/切页动画零触碰；
+//   （rev 00348-t8b 瞬态占位上直播（已实得）；二次烘焙重部署终态 rev 00349-hgc——live 文本滞后一部署=惯例）
+// v10.28.48.1 = 频道卡头像应用个人裁切（补丁位 48.0→48.1 调整轮；2026-10-01）：与站点 v0.2.58.25
+//   同轮——用户「那个横幅和头像在上传后能不能先弹出一个选择裁切范围的弹窗调整裁切范围，还有那个横幅
+//   能不能再高1.5倍？」；钦定⑤=FC 频道主页频道卡头像也应用个人裁切（资料页/设置弹窗裁出的 avatarCrop
+//   同源一致）；
+//   修法：renderContent 个人分支 img 外包 .fc-ch-avatar-crop 圆裁切盒（overflow:hidden+img 绝对定位
+//   几何应用——MN_CropDialog.applyCrop 同款数学，null=默认 {0,0,1,1} 整图 cover=旧渲染零回归）；点击换
+//   头像链在 busy 前插裁切弹窗（kind:'avatar'），确认才上传、取消=零上传零 PATCH，PATCH 体 {avatarUrl,
+//   avatarCrop}（只 avatarUrl 绝不带 bio）；成功 raw 合并写 slati_user.avatarCrop；editable 类/title
+//   重打零改动；边界=#personalAvatar/侧栏/userpop/帖子作者头像不应用裁切、FC 新代码零 bannerUrl 字样；
+//   CSS 全进页面专属块→跳过 inline-css.js；storage.js 零改动；后端零改动；i18n 零新键（复用 common
+//   crop.*）；站点 v0.2.58.25 同轮、10 分钟自动保存心跳/切页动画零触碰；
+//   （rev 00346-rn2 瞬态占位上直播；二次烘焙重部署终态 rev 00347-skv——live 文本滞后一部署=惯例）
 // v10.28.47.4 = 平板端药丸菜单平滑折叠过渡+白底列表（补丁位 47.3→47.4 调整轮；2026-09-26）：用户
 //   「折叠的过渡动画不顺畅 很割裂」+「列表的背景能不能是白色的？」；真身三连：①折叠用
 //   display:none !important——内容瞬间消失零过渡（display 不可 transition）；②关菜单（点药丸/删卡/
@@ -1889,4 +2558,73 @@ window.MN_SITE_VERSION = 'v0.2.58.11';
 //   15/15（B1-B4 口径更新：药丸头首位/横药丸 236×40/折叠不缩宽/条目在药丸下方）+舰队全绿（版本锚 sed
 //   44.0→44.1 共 23 文件）+冒烟 55/55+i18n 34/34；线上探针 fc-pillmenu-live 13/13（新 B2 药丸头首位）；
 //   rev 00291-61e
-window.FLUIDCANVAS_VERSION = 'v10.28.47.4';
+// v10.28.62.25 = 发布画布改为开放展示、整页滚动（用户「开放展示不要框在范围内，上下滚动用整个页面」）：.art-canvas overflow auto→visible，去掉画布内部滚动条，纵向交给页面滚动。
+// v10.28.62.26 = 修复国家三步创建文章点编辑打不开（用户「FC内容那边点编辑编辑不了该文章」）：applyDraft 兼容「只有 x/y/w 无 col/row」的卡片（按格子反推 col/row）；loadArticleForEdit 用文章表 title 补 contentJson 缺失的标题。
+// v10.28.63.0 = 整组缩放改 Canva 刚体变换（用户「像 Canva 框选多项目调整大小，彻底解决上下错位/变形/破图」）：拖动全程不量化（组框/成员位置/尺寸全浮点、同一倍率缩放，缝永不裂、零校正）；松手 commitGroupResize 才一次性量化尺寸+写回 colSpan/rowSpan、等比锁保留精确像素。
+// v10.28.63.1 = 资产面板（选择图标种类）改左侧抽屉弹窗（与边缘/边框抽屉同款）：默认收起、左侧圆钮点开滑入、头部标题+关闭钮；搜索胶囊回 100% 宽。
+// v10.28.63.2 = 保存草稿错误分诊（用户「点击保存草稿没办法保存」）：buildDraft 进守卫不再静默失败；非配额错误把原因打进提示，便于定位。
+// v10.28.63.3 = 合并留间距（用户「两个图片合并在一起中间可以有一段间隔的距离」）：mergeCards 上下左右四个方向落位各留 MERGE_GAP=12px 间距，不再贴齐。
+// v10.28.63.4 = 组背景套边缘主题不被裁切（用户「选择边缘的时候边缘被裁切掉了」）：applyGroupBgTheme 撤掉自由形状 clip-path，外板环带/边缘 artwork 完整伸出。
+// v10.28.63.5 = 撤销 63.1 资产面板抽屉化（用户「左侧菜单为什么不见了，原本有带动画的那个」）：恢复常驻左侧资产面板 + Q弹折叠动画 + 搜索胶囊让位，全部还原。
+// v10.28.63.6 = 折叠滑出改「重力拉长」Q弹（用户「滑出窗口外的时候没有地心引力的那种拉长」）：滑出瞬间沿运动方向拽长 scale(1.4,0.6)、画外保持、回屏落地压扁过冲回规。
+// v10.28.63.7 = 折叠内容动画（用户「折叠时搜索栏向上滑出、卡片从下到上逐一掉下去、掉下去时被地心引力拉伸、搜索栏向上也拉伸」）：搜索栏 fcFoldUp 向上拉长滑出；卡片/标题/自定义条目 fcFoldDown 逐一重力掉落（倒序延迟）；动画放完再收面板宽度。
+// v10.28.63.8 = 折叠时序修正（用户「等他们动画跑才开始折叠」）：面板收窄改按「最大延迟+时长+缓冲」动态计算，最后一张也掉完才收。
+// v10.28.63.9 = 折叠动画统一向左滑出（用户「让全部搜索卡片选项等等全部改成向左滑出」）：搜索栏/卡片/标题/自定义条目全走 fcFoldLeft 向左滑出 + 右缘锚定沿运动方向重力拉长。
+// v10.28.63.10 = 折叠顺序调整（用户「先是搜索和卡片选项那些然后逐步才到那个按钮」）：按钮 Q弹 改到条目全部滑出 + 面板收起之后才登场。
+// v10.28.63.11 = 折叠同刻完结（用户「动画完结的时间是一样的只是那个按钮慢一个 0.2s」）：条目延迟按 1.1s 总长均摊、按钮 0.2s 后登场（0.9s Q弹），两者 1.1s 同时完结。
+// v10.28.63.12 = 条目先于按钮滑出窗口（用户「自定义和卡片选项会在按钮动画开始到滑出窗口范围前就已经先滑出」）：条目压到 ~0.42s 内滑完、单条 0.22s；按钮 0.2s 登场约 0.45s 滑出窗口时条目已清空。
+// v10.28.63.13 = 折叠跟随按钮动画开始（用户「折叠是跟着那个按钮的动画开始的」）：按钮 Q弹 与条目折叠同刻出发，不再错开 0.2s。
+// v10.28.63.14 = 画布底 100% 透明（用户「把Z轴最底的那个底变成100%透明的」）：grid-canvas 背景色撤掉，只留网格线，页面底色直接透出。
+// v10.28.63.15 = 画布盒描边+阴影一并撤掉（用户「那个底我还是看得见啊有一个边框的线」）：box-shadow 改 none，Z轴最底的画布完全不可见只剩网格线。
+// v10.28.63.16 = 面板宽度收放跟随按钮 Q弹 速度曲线（用户「那个底的移动能不能跟着那个按钮还有它的动画速度曲线」）：transition 换 spring 过冲曲线 0.4s，与按钮回弹段同步。
+// v10.28.63.17 = 折叠与按钮同刻出发（用户「按钮都开始移动了那个折叠慢半拍」）：条目改为从上面（按钮旁）开始向下逐一滑出，最上层零延迟跟按钮同帧动。
+// v10.28.63.18 = 条目与按钮共用一个动画（用户「还是一样慢了...给他和按钮共用一个动画...除了回弹的部分不要」）：fcFoldLeft 改 0.9s 与按钮 Q弹 同曲线同节奏、零逐条延迟；条目滑出后停在画面外淡出，不跟回弹。
+// v10.28.63.19 = 完成前卡顿修复（用户「为什么他会在要完成的时候卡一下」）：fc-fold-anim 摘类延迟到面板收完（条目不再瞬间弹回闪一下）；refitColumns 挪到动画全部落定后（不再与按钮落点同帧全卡重排掉帧）。
+// v10.28.63.20 = 条目淡出提前到 28%（用户「选项卡片该完成的时候却慢了一个0.1秒」）：与按钮滑出窗口完成点同刻结束淡出，不再慢半拍。
+// v10.28.63.21 = 右侧画布左移加速（用户「右侧内容滑向左侧慢了」）：面板收放改 0.25s 加速曲线、条目淡出完（0.3s）即收面板，右侧画布轻快左移。
+// v10.28.63.22 = 整体再快 0.2s（用户「能不能让它再快0.2s」）：按钮 Q弹 与条目动画 0.9s→0.7s、面板 0.24s 开收、refit 0.8s。
+// v10.28.63.23 = 整体再快 0.3s（用户「能不能再快0.3s」）：按钮 Q弹 与条目动画 0.7s→0.4s、面板 0.14s 开收、refit 0.6s。
+// v10.28.63.24 = 加速目标修正（用户「我是指右侧内容向左侧移动的速度啊」）：按钮 Q弹/条目动画还原 0.9s；面板收放 0.25s→0.12s 疾收、0.25s 即开收——右侧画布左移瞬间完成。
+// v10.28.63.25 = 展开甩出动画（用户「展开的时候按钮能不能有一个被甩出来拉伸后再恢复的动画」）：fcToggleInQSquash 改 0.5s——甩出拉长 scale(1.45,0.62)→压扁过冲→恢复。
+// v10.28.63.26 = 展开甩出加位移过冲（用户「给他一小段的甩出范围然后再回弹回原位」）：40% translateX(+24px) 甩出一小段 + 拉长，70% -6px 回弹，100% 回原位。
+// v10.28.63.27 = 甩出更远+阻尼回弹（用户「甩出的距离更远一点希望更加自然」）：三段阻尼振荡——35% +38px 拉长、62% -9px 压扁、82% +4px 小过冲、100% 回原位。
+// v10.28.63.28 = 回弹放慢（用户「回弹速度可以不要那么快」）：0.5s→0.7s、回弹段拉长（70%）、二次小过冲后置（88%），衰减更舒缓。
+window.FLUIDCANVAS_VERSION = 'v10.28.64.20';
+
+/* ─────────────────────────────────────────────
+   v0.2.58.16 全站灯塔：每页一次 POST /api/analytics/pageview（动态页热力图数据源）。
+   sendBeacon 优先 + fetch keepalive 兜底；全程 try/catch 静默——绝不干扰页面任何功能。
+   slati_cid 一次性生成（localStorage）；UA 嗅探只发粗粒度设备/浏览器/OS。
+   ───────────────────────────────────────────── */
+(function () {
+  'use strict';
+  try {
+    if (window.__slatiPvSent) return;
+    window.__slatiPvSent = true;
+    var cid = null;
+    try { cid = localStorage.getItem('slati_cid'); } catch (e) { cid = null; }
+    if (!cid) {
+      cid = 'pv_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+      try { localStorage.setItem('slati_cid', cid); } catch (e) {}
+    }
+    var ua = navigator.userAgent || '';
+    var payload = {
+      path: location.pathname,
+      clientId: cid,
+      referer: (document.referrer || '').slice(0, 512),
+      language: (navigator.language || '').slice(0, 16),
+      device: /Mobi|Android|iPhone|iPad/i.test(ua) ? 'mobile' : 'desktop',
+      browser: /Edg\//.test(ua) ? 'Edge' : /Chrome\//.test(ua) ? 'Chrome' : /Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : 'other',
+      os: /Windows/.test(ua) ? 'Windows' : /Mac OS/.test(ua) ? 'macOS' : /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Linux/.test(ua) ? 'Linux' : 'other'
+    };
+    var url = ((window.MN_SITE && MN_SITE.apiBase) || '/api') + '/analytics/pageview';
+    var body = JSON.stringify(payload);
+    var sent = false;
+    if (navigator.sendBeacon) {
+      try { sent = navigator.sendBeacon(url, new Blob([body], { type: 'application/json' })); } catch (e) { sent = false; }
+    }
+    if (!sent && window.fetch) {
+      try { fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true }).catch(function () {}); } catch (e) {}
+    }
+  } catch (e) {}
+})();

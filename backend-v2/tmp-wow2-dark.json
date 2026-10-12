@@ -1,0 +1,1184 @@
+[
+ {
+  "page": "admin/index.html",
+  "landed": "/admin/index.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "btn",
+    "id": "logoutBtn",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "退出登录"
+   }
+  ]
+ },
+ {
+  "page": "forgot-password.html",
+  "landed": "/forgot-password.html",
+  "offenders": []
+ },
+ {
+  "page": "index.html",
+  "landed": "/index.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   },
+   {
+    "tag": "DIV",
+    "cls": "",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(255, 255, 255)",
+    "fgL": 1,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "N"
+   },
+   {
+    "tag": "DIV",
+    "cls": "",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(255, 255, 255)",
+    "fgL": 1,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "R"
+   },
+   {
+    "tag": "DIV",
+    "cls": "",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(255, 255, 255)",
+    "fgL": 1,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "K"
+   }
+  ]
+ },
+ {
+  "page": "pages/about.html",
+  "landed": "/pages/about.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "个人简介"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "项目构想与产品定位"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "产品与功能设计"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "UI / UX 设计"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "FluidCanvas 与创作工具"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "项目开发"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "社区与平台治理"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "商业化与长期发展"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "当前个人定位"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "总结"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "一、斯拉蒂工作室简介"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "二、与 M.NationWorld 的关系"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "三、核心职责"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "四、世界观创建平台建设"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "五、产品与功能设计"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "六、UI/UX 设计"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "七、FluidCanvas"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "八、软件开发"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "九、AI 应用"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "十、社区与创作者生态"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "十一、商业化与运营规划"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "十二、国际化"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "十三、长期发展方向"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "十四、当前工作室组织形态"
+   },
+   {
+    "tag": "DIV",
+    "cls": "art-sec",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "::before",
+    "txt": "十五、斯拉蒂工作室的定位"
+   }
+  ]
+ },
+ {
+  "page": "pages/activity.html",
+  "landed": "/pages/activity.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/badge.html",
+  "landed": "/pages/badge.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/blackhole-demo.html",
+  "landed": "/pages/blackhole-demo.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/community-hub.html",
+  "landed": "/pages/community-hub.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/community-post.html",
+  "landed": "/pages/community-post.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/community-profile.html",
+  "landed": "/pages/community-profile.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/community-rules.html",
+  "landed": "/pages/community-rules.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/construction.html",
+  "landed": "/pages/construction.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/create-topic-step-1.html",
+  "landed": "/pages/create-topic-step-1.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/create-topic-step-2.html",
+  "landed": "/pages/create-topic-step-2.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/create-topic-step-3.html",
+  "landed": "/pages/create-topic-step-1.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/create-world.html",
+  "landed": "/pages/create-world.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/cyberfall-demo.html",
+  "landed": "/pages/cyberfall-demo.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/edge-themes-demo.html",
+  "landed": "/pages/edge-themes-demo.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/explore.html",
+  "landed": "/pages/explore.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/financial-terms.html",
+  "landed": "/pages/financial-terms.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/fluidcanvas-analytics.html",
+  "landed": "/pages/fluidcanvas.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/fluidcanvas-articles.html",
+  "landed": "/pages/fluidcanvas.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/fluidcanvas-editor.html",
+  "landed": "/pages/fluidcanvas-editor.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "migrate-pill",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.86,
+    "bgA": 1,
+    "bgSrc": "::after(grad)",
+    "txt": "Migrate to Cards"
+   },
+   {
+    "tag": "BUTTON",
+    "cls": "tt-swatch",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 1,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": ""
+   }
+  ]
+ },
+ {
+  "page": "pages/fluidcanvas.html",
+  "landed": "/pages/fluidcanvas.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/following.html",
+  "landed": "/pages/following.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/guidelines.html",
+  "landed": "/pages/guidelines.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/help.html",
+  "landed": "/pages/help.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/messages.html",
+  "landed": "/pages/messages.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/onboarding-complete.html",
+  "landed": "/pages/onboarding-complete.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/onboarding-identity.html",
+  "landed": "/pages/onboarding-identity.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/overview.html",
+  "landed": "/pages/overview.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/platform-responsibility.html",
+  "landed": "/pages/platform-responsibility.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/premium.html",
+  "landed": "/pages/premium.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/privacy.html",
+  "landed": "/pages/privacy.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/registry-step-1.html",
+  "landed": "/pages/registry-step-1.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/registry-step-2.html",
+  "landed": "/pages/registry-step-2.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/registry-step-3.html",
+  "landed": "/pages/registry-step-3.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "pages/sovereignty-ratified.html",
+  "landed": "/pages/sovereignty-ratified.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/terms.html",
+  "landed": "/pages/terms.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/ticket.html",
+  "landed": "/pages/ticket.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   },
+   {
+    "tag": "DIV",
+    "cls": "step-num",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(255, 255, 255)",
+    "fgL": 1,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self(grad)",
+    "txt": "1"
+   },
+   {
+    "tag": "DIV",
+    "cls": "step-num",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(255, 255, 255)",
+    "fgL": 1,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self(grad)",
+    "txt": "2"
+   },
+   {
+    "tag": "DIV",
+    "cls": "step-num",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(255, 255, 255)",
+    "fgL": 1,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self(grad)",
+    "txt": "3"
+   }
+  ]
+ },
+ {
+  "page": "pages/transitioning.html",
+  "landed": "/pages/transitioning.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/workspace.html",
+  "landed": "/pages/workspace.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   },
+   {
+    "tag": "DIV",
+    "cls": "",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(255, 255, 255)",
+    "fgL": 1,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "ET"
+   }
+  ]
+ },
+ {
+  "page": "pages/world-created.html",
+  "landed": "/pages/world-created.html",
+  "offenders": []
+ },
+ {
+  "page": "pages/world-wizard.html",
+  "landed": "/pages/create-world.html",
+  "offenders": [
+   {
+    "tag": "BUTTON",
+    "cls": "settings-btn-collapsed",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "self",
+    "txt": "settings"
+   },
+   {
+    "tag": "SPAN",
+    "cls": "material-symbols-outlined",
+    "id": "",
+    "hidden": true,
+    "fg": "rgb(226, 226, 232)",
+    "fgL": 0.9,
+    "bgL": 0.94,
+    "bgA": 1,
+    "bgSrc": "anc:settings-btn-collapsed",
+    "txt": "settings"
+   }
+  ]
+ },
+ {
+  "page": "signup-and-login.html",
+  "landed": "/signup-and-login.html",
+  "offenders": []
+ },
+ {
+  "page": "story/index.html",
+  "landed": "/story/wip",
+  "offenders": []
+ },
+ {
+  "page": "story/wip.html",
+  "landed": "/story/wip.html",
+  "offenders": []
+ }
+]

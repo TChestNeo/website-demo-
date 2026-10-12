@@ -1,0 +1,18 @@
+═══ S1 静态锚（live）═══
+  ✅ S1a site-config：58.26 赋值 ×1 + FC 51.0 赋值 ×1 + 50.0 赋值零残留 + changelog 头 51.0/50.0 各 ×1
+  ✅ S1b site-config rev live 口径：rev 00359-nfc ×1 + 00359-XXX 零残留 + 00360-??? 占位 ×1 + 00360-bk7 零残留
+  ✅ S1c fluidcanvas 7 锚全中（向导/stepper/提交/团队真数据/入口/51.0×5）
+  ✅ S1d messages 4 锚全中（云群合并/好友选择/群表/51.0×7）
+  ✅ S1e i18n live：fc.team.wizardTitle ×12 + messages.modal.groupFriendsLoading ×12 + premium.addon.slots8 ×12
+═══ S2 API（匿名口径）═══
+  ✅ S2a /api/health 200 + tables:61（032 列级无新表）
+  ✅ S2b GET /api/teams 匿名 401（requireSession 实证）
+  ✅ S2c GET /api/friends 匿名 401（向导好友源）
+  ✅ S2d GET /api/teams/:id 匿名 401
+═══ P1 CDP 流体画布向导（种子 slati_session loggedIn）═══
+  ✅ P1a 向导打开 + 三步 stepper + 步1 双选卡 + 容量提示（8/16/26/∞）
+  ✅ P1b 步2 五搬运项 + 全选首行默认勾选（贴文/视频&贴图/动态/主页装饰）
+  ✅ P1c 步3 建群名输入 + 无好友降级提示（live 假会话 401→空好友）
+═══ E1 零异常 ═══
+  ✅ E1 零异常（0 原始 / 0 噪声后）
+🎉 13 ✅ / 0 ❌

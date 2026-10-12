@@ -1,0 +1,1 @@
+修正：FC v10.28.62.1 字体搜索/筛选可交互修复（rev 00391-67h；站点恒 v0.2.58.28）——用户「搜索栏和筛选下拉菜单都没办法互动」；真身=字体面板 fpanel 的 mousedown e.preventDefault()（保文本选区）把搜索框/下拉的原生聚焦/展开也拦了；修法=fpanel mousedown 对 .fp-search/.fp-lang 跳过 preventDefault + 搜索框/下拉 click 显式 focus 兜底；后端零改动 npm test 413/413；digest sha256:112f1888d0ba1df1020f5c5b534ea186343a246571773a699de4160f3a5f6797（当前线上）

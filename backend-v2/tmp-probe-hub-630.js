@@ -1,7 +1,7 @@
-// tmp-probe-hub-630.js — v0.2.58.24 社区页演示样本全移除线上探针（mnationworld.com）
+// tmp-probe-hub-630.js — v0.2.58.25 社区页演示样本全移除线上探针（mnationworld.com）
 //   S1 静态锚：live community-hub.html 新件锚 23 项（18 恰 1/4 恰 2/loginCta 恰 3）+ 演示零残留 16 锚全 0；
-//   site-config 58.24 赋值+58.23 零残留+FC 48.0+changelog 58.24 头+rev live 口径（00344-ntt ×1/00344-XXX 零残留/
-//   00345-??? 占位 ×1——live 文本滞后一部署=惯例，二次烘焙镜像 00345 未填）；live hub i18n 11 新键 SQ×11+DQ×1+
+//   site-config 58.24 赋值+58.23 零残留+FC 48.0+changelog 58.24 头+rev live 口径（00346-ntt ×1/00346-XXX 零残留/
+//   00347-??? 占位 ×1——live 文本滞后一部署=惯例，二次烘焙镜像 00345 未填）；live hub i18n 11 新键 SQ×11+DQ×1+
 //   删键族 5 全 0+hub.emptyFeed 保留 ×12+__ZH_HANT_AUTO__ ×1；
 //   S2 端点形状：posts 匿名 200+posts 数组（空合法）/feed 匿名 401（requireSession）/topics 200+topics 数组（空合法）；
 //   S3 PII 扫描：posts 响应串零 email（空帖则跳过）；
@@ -89,14 +89,14 @@ class CDP {
   const scSrc = norm(await sc.text());
   const scCount = mk(scSrc);
   ok('S1c site-config：58.24 赋值在位 + 58.23 赋值零残留 + FC 48.0 在位 + changelog 58.24 标题 ×1 + 58.23 历史条目保留',
-    scCount("window.MN_SITE_VERSION = 'v0.2.58.24';") === 1 && scCount("window.MN_SITE_VERSION = 'v0.2.58.23';") === 0 &&
-    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 && scCount('// v0.2.58.24 = ') === 1 &&
+    scCount("window.MN_SITE_VERSION = 'v0.2.58.25';") === 1 && scCount("window.MN_SITE_VERSION = 'v0.2.58.23';") === 0 &&
+    scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 && scCount('// v0.2.58.25 = ') === 1 &&
     scCount('// v0.2.58.23 = ') === 1,
-    'v58.24=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.24';") + ' v58.23=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.23';") +
-    ' cl24=' + scCount('// v0.2.58.24 = ') + ' cl23=' + scCount('// v0.2.58.23 = '));
-  ok('S1d site-config rev live 口径：00344-ntt 真值 ×1 + 00344-XXX 零残留 + 00345-??? 占位 ×1（live 文本滞后一部署=惯例）',
-    scCount('rev 00344-ntt') === 1 && scCount('rev 00344-XXX') === 0 && scCount('rev 00345-???') === 1,
-    'r44=' + scCount('rev 00344-ntt') + ' x44=' + scCount('rev 00344-XXX') + ' q45=' + scCount('rev 00345-???'));
+    'v58.24=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.25';") + ' v58.23=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.23';") +
+    ' cl24=' + scCount('// v0.2.58.25 = ') + ' cl23=' + scCount('// v0.2.58.23 = '));
+  ok('S1d site-config rev live 口径：00346-ntt 真值 ×1 + 00346-XXX 零残留 + 00347-??? 占位 ×1（live 文本滞后一部署=惯例）',
+    scCount('rev 00346-ntt') === 1 && scCount('rev 00346-XXX') === 0 && scCount('rev 00347-???') === 1,
+    'r44=' + scCount('rev 00346-ntt') + ' x44=' + scCount('rev 00346-XXX') + ' q45=' + scCount('rev 00347-???'));
 
   const hubi = await fetch(SITE + '/assets/i18n/community-hub.i18n.js');
   const hubiSrc = norm(await hubi.text());

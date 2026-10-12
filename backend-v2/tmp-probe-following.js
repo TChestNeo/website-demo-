@@ -1,4 +1,4 @@
-// tmp-probe-following.js — v0.2.58.21 关注页真实数据接入线上探针（mnationworld.com 匿名面）
+// tmp-probe-following.js — v0.2.58.25 关注页真实数据接入线上探针（mnationworld.com 匿名面）
 // 注记：authed feed 线上无法无凭证探——登录态断言由电池 tmp-battery-following.js 覆盖（25/25）。
 //   S1 页面静态锚+种子零残留 → S2 端点形状（public users 200 全形状+匿名无 followedByMe 键 /
 //   nations/topics 200 / feed 匿名 401 / following/detail 匿名 401）→ S3 PII 扫描（无 @/display_name/bio/email

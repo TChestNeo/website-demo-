@@ -1,0 +1,18 @@
+═══ S 静态（零浏览器）═══
+  ✅ S1a site-config：58.28 赋值 ×1 + 58.27 赋值零残留 + FC 52.1 ×1
+  ✅ S1b site-config：changelog 头 58.28 在 58.27 在 58.26 前 + 新轮原话 ×1 + rev 00367-4wl/00368-gmw 各 ×1（641 终态填真值口径）
+  ✅ S2a ethereal.css：折叠态覆盖规则（选择器 ×2：分组规则+修法规则）邻接 --sidebar-bg+blur(20px) + -webkit 前缀在位 + 新轮注释原话 ×1
+  ✅ S2b ethereal.css：--sidebar-bg 恒 4 处 + --card-bg 恒 3 处（通用玻璃类零泄漏）
+  ✅ S3a 内联刷新：CSS_MARK 页=41 且新轮注释页=40（编辑器豁免页除外）
+  ✅ S3b FC 编辑器页豁免血证：mark ×1 + 新轮注释零残留（页面专属 CSS 永不入内联块）
+  ✅ S3c community-profile + index 内联：折叠覆盖（选择器 ×2 + 注释原话 ×1）+ 邻接 sbg/blur
+═══ B 社区资料页 CDP（折叠态不透明实证）═══
+  ✅ B1 展开态基准：user-module 0.95 不透明 + blur(20px)（58.27 基态不回归）
+  ✅ B2 折叠态补丁实证：user-module 仍 0.95 不透明 + blur(20px)（旧 --card-bg 半透明玻璃已灭）
+  ✅ B3 折叠态 58.1 不回归：.app-sidebar 容器仍全透明（卡下方无面板）
+  ✅ B4 暗色折叠：user-module 实心 #1a1a2e（rgb(26,26,46)）+ blur 保留
+  ✅ B5 展开往返零回归：user-module 仍 0.95 不透明
+  ✅ B6 index.html 折叠态（localStorage 预折叠流）：user-module 同款 0.95 不透明
+  ✅ E 零异常
+
+🎉 14 ✅ / 0 ❌

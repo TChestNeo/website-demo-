@@ -686,8 +686,14 @@ textarea.input-glass {
 .progress-connector.done { background: var(--color-primary); }
 
 /* ----- Sidebar Module ----- */
+/* 2026-10-05 用户「那个在个人主页那边的左侧菜单背景卡片是半透明的能不能变成不透明的？」——
+   真身=v0.2.58.1（09-26 删侧栏容器铺底）后三张卡（logo/用户/菜单 .sidebar-module）仍用 --card-bg
+   （亮色 rgba(255,255,255,0.55)/暗色 rgba(30,30,50,0.55) 半透明玻璃）+ blur(20px) 磨砂——页面内容
+   透卡可见=半透明观感；修法=卡面改铺 --sidebar-bg（09-18 用户钦定不透明底：亮色近纯白 0.95/暗色实心
+   #1a1a2e/mono 随 var() 自适应）；模块自带 backdrop-filter 保留（底已不透明零可见效果，与 09-20
+   全站卡片同口径）；三张卡同规则一并生效；窄屏 floating 覆盖态同步（口径统一）。 */
 .sidebar-module {
-  background: var(--card-bg);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1301,7 +1307,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .app-sidebar.collapsed .user-module {
   padding: 10px 4px !important;
   display: flex; align-items: center; justify-content: flex-start;
-  background: var(--card-bg);
+  /* 58.28 补：折叠态覆盖曾回退 --card-bg 半透明玻璃（58.27 卡面不透明修法漏了这条折叠态覆盖）——
+     用户「折叠起来的时候还是一样是半透明的」；口径与 58.27 同：铺 --sidebar-bg 不透明底+blur 保留 */
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1385,7 +1393,20 @@ body.pre-stagger .auth-card { opacity: 0; }
    v0.2.58.11 用户「能不能把那个浅蓝色波浪和深蓝色倒反？」「就只是互换一下颜色而已」——58.10 深水+浅浪
    两色互换（类名保持不动）：主色水 .mn-lv-wdeep 背景 var(--color-primary)→var(--mn-lv-light) 变浅水、
    浅浪 .mn-lv-wlightwave 背景 var(--mn-lv-light)→var(--color-primary) 变深浪；两层结构/80×16 mask/
-   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。 */
+   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.12 用户「能不能把波浪的位置抬高4px?」（一问钦定「位置抬高 4px」）——58.11 浅浪 top -8px 抬高
+   4px→-12px（单值改动）：浅浪 .mn-lv-wlightwave top -8px→-12px；两层结构/80×16 mask/16px 带高/400% strip/
+   平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84/两色互换（浅水+深浪）全零改动。
+   v0.2.58.13 用户「然后把两个颜色改成一样的深蓝色，然后在那个波浪Z轴的-1那边再添加一个慢0.3s的波浪」
+   ——①水和浪两色统一深蓝：主色水 .mn-lv-wdeep 背景 var(--mn-lv-light)→var(--color-primary)（58.11 两色
+   互换撤销为两色相同）、--mn-lv-light 赋值整体删除（零引用，58.10 --mn-lv-wave-c 先例）；②新慢浪
+   .mn-lv-wlightwave2 与快浪全同款几何（80×16 mask/16px 带高/400% strip/平移 80px/top -12px 全同）
+   置于快浪 z 轴 -1 层（z-index:-1）+动画 2.5s（慢 0.3s）；z 层级：.mn-lv-fill z-index:0 建 stacking
+   context→水 z-index:-2 最底→慢浪 -1→快浪 0（显式盖慢浪）；两浪同色相位漂移，慢浪浪峰周期性从快浪
+   浪谷透明区透出=两道浪峰不同速叠加；水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.14 用户「那个刚才提出添加的第二个波浪我希望是浅色的」——慢浪 .mn-lv-wlightwave2 背景
+   var(--color-primary)→var(--mn-lv-light)（58.11 浅水同款浅色公式 color-mix 55%+白；赋值挂 .mn-lv-ring
+   恢复——58.13 整体删除后本轮复活）；快浪/水/几何/z 层级/动画全零改动。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1418,8 +1439,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .mn-lv-fill {
   position: absolute; left: 0; right: 0; bottom: 0; height: 0;
   transition: height 0.5s ease;
+  z-index: 0; /* 建 stacking context：水/慢浪负 z 层不逃出杯 */
 }
-.mn-lv-wdeep { position: absolute; inset: 0; background: var(--mn-lv-light); }
+.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); z-index: -2; }
 .mn-lv-wlightwave {
   position: absolute; left: -100%; width: 400%; height: 16px;
   background-color: var(--color-primary);
@@ -1428,8 +1450,23 @@ body.pre-stagger .auth-card { opacity: 0; }
   -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
   -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
   pointer-events: none;
-  top: -8px;
+  top: -12px;
+  z-index: 0;
   animation: mn-lv-wave 2.2s linear infinite;
+}
+/* 慢浪：与快浪全同款几何，z 轴 -1 层（快浪之下），2.5s（慢 0.3s）、浅色（var(--mn-lv-light)）——
+   两浪异色相位漂移，慢浪浪峰周期性从快浪浪谷透明区透出=浅色幽灵浪峰在深浪下流动 */
+.mn-lv-wlightwave2 {
+  position: absolute; left: -100%; width: 400%; height: 16px;
+  background-color: var(--mn-lv-light);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
+  pointer-events: none;
+  top: -12px;
+  z-index: -1;
+  animation: mn-lv-wave 2.5s linear infinite;
 }
 @keyframes mn-lv-wave {
   from { transform: translateX(0); }
@@ -1445,6 +1482,48 @@ body.pre-stagger .auth-card { opacity: 0; }
   z-index: 5;
   font-size: 28px; font-weight: 700; color: var(--color-primary);
   text-shadow: 0 0 2px rgba(255,255,255,0.9), 0 0 3px rgba(255,255,255,0.9);
+}
+/* v0.2.58.15 用户「那么能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出
+   一个卡片完整的显示等级信息和经验条」：折叠态药丸悬停放大+右侧滑出等级信息卡。
+   ①药丸 scale(1.12)（hover 类挂 .mn-lv-badge——悬停区=药丸+边距整块，贴近即触发；transform-origin
+   center，72px 折叠列/64px floating 列内瞬态放大可接受）；transition 0.18s ease（药丸本体折叠入场
+   动画 0.3s 期间 transform 被动画持有——折叠后立刻悬停时缩放瞬态失效可接受）。
+   ②卡片 .mn-lv-hovercard position:fixed 挂 body（侧栏 overflow-x:hidden + 用户卡 overflow:hidden
+   双裁剪，卡片必须逃出 DOM 裁剪；JS 按药丸 getBoundingClientRect 定位+视口钳制）；内容=JS 每次
+   show 从活的 .mn-lv-normal clone——展开徽章同款信息（Lv.x·称号+XP 文本+经验条）；z-index 150=
+   侧栏 50/55 之上、tooltip 200 之下；backdrop-filter blur 与折叠用户卡同款玻璃质感（卡片自身 fixed
+   于 body，其 blur 只影响自身后代=无 containing block 问题）。
+   ③@media (hover:hover) and (pointer:fine) 门控——触屏/平板零规则零行为（JS matchMedia 同款双保险）。 */
+@media (hover: hover) and (pointer: fine) {
+  .mn-lv-pill {
+    transition: transform 0.18s ease;
+  }
+  .app-sidebar.collapsed .mn-lv-badge.mn-lv-hover .mn-lv-pill {
+    transform: scale(1.12);
+  }
+  .mn-lv-hovercard {
+    position: fixed;
+    z-index: 150;
+    width: 200px;
+    box-sizing: border-box;
+    background: var(--card-bg, #ffffff);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: var(--card-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 10px 12px;
+    opacity: 0;
+    transform: translateX(-10px) scale(0.98);
+    transform-origin: left center;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .mn-lv-hovercard.active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
 }
 /* 同轮折叠态头像间距归整（根治「挤压到了用户头像」的两处真身）：
    ①头像 img 是行内元素——行基线给父 div 加 8px 下坠空隙（折叠后视觉死隙）→ display:block 消除；
@@ -2031,6 +2110,157 @@ html[data-accent="mono"] .migrate-pill::after { background-color: hsla(0 0% 45% 
 html[data-accent="mono"][data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(0 0% 40%); }
 html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117, 134, 0.10); }
 
+/* ===== v0.2.59.x 手机底部导航（5 tab：首页/百科/社区/消息/我的；无操作按钮） ===== */
+.mobile-bottom-nav { display: none; }
+.mbn-backdrop { display: none; }
+.mbn-sheet { display: none; }
+@media (max-width: 768px) {
+  /* iOS 26 风格浮动药丸 dock：居中悬浮、大圆角、磨砂玻璃、选中项浅色胶囊 */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    height: 56px; z-index: 9999;
+    width: auto; min-width: 264px; max-width: calc(100% - 28px);
+    border-radius: 999px;
+    padding: 0 6px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 10px 36px rgba(20, 20, 40, 0.18), inset 0 0.5px 0 rgba(255, 255, 255, 0.65);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav {
+    background: rgba(24, 24, 38, 0.72);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.42), inset 0 0.5px 0 rgba(255, 255, 255, 0.14);
+  }
+  .mobile-bottom-nav .mbn-item {
+    flex: 1; min-width: 48px; max-width: 78px;
+    padding: 0 10px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1px;
+    text-decoration: none; color: var(--color-outline);
+    font-size: 10px; font-weight: 500; letter-spacing: 0.01em;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .mobile-bottom-nav .mbn-item .material-symbols-outlined { font-size: 22px; }
+  .mobile-bottom-nav .mbn-item.active {
+    color: var(--color-primary);
+    background: rgba(70, 72, 212, 0.10);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav .mbn-item.active { background: rgba(122, 126, 255, 0.18); }
+  .mbn-backdrop {
+    display: block;
+    position: fixed; inset: 0; z-index: 68;
+    background: rgba(0, 0, 0, 0.32);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .mbn-backdrop.open { opacity: 1; pointer-events: auto; }
+  .mbn-sheet {
+    display: block;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 69;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(105%); transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.14);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-sheet.open { transform: translateY(0); }
+  .mbn-user-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 4px 0 14px; text-decoration: none; color: var(--color-on-surface);
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10));
+  }
+  .mbn-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--color-primary); object-fit: cover; flex-shrink: 0; }
+  .mbn-user-meta { min-width: 0; flex: 1; }
+  .mbn-user-name { font-weight: 700; font-size: 16px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbn-user-cid { font-size: 12px; color: var(--color-outline); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: capitalize; }
+  .mbn-row {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 13px 0; background: none; border: none; cursor: pointer;
+    text-align: left; text-decoration: none; color: var(--color-on-surface);
+    font-size: var(--fs-label-md); font-family: inherit;
+  }
+  .mbn-row + .mbn-row { border-top: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-ico { color: var(--color-outline); font-size: 22px; flex-shrink: 0; }
+  .mbn-row-label { flex: 1; min-width: 0; }
+  .mbn-chev { color: var(--color-outline); opacity: 0.5; font-size: 20px; }
+  .mbn-row.mbn-danger { color: #d23b3b; }
+  .mbn-row.mbn-danger .mbn-ico { color: #d23b3b; }
+  .mbn-group-title { font-weight: 700; font-size: 13px; color: var(--color-outline); letter-spacing: 0.03em; margin: 14px 0 6px; text-transform: uppercase; }
+  .mbn-group { margin-bottom: 4px; }
+  .mbn-group-name { font-size: 12px; color: var(--color-outline); padding: 10px 0 2px; }
+  .mbn-switch {
+    width: 44px; height: 26px; border-radius: 999px; flex-shrink: 0;
+    background: var(--color-outline-variant, #c8c7d4); position: relative;
+    transition: background 0.18s ease;
+  }
+  .mbn-switch .mbn-knob {
+    position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.25); transition: transform 0.18s ease;
+  }
+  .mbn-switch[data-on="1"] { background: var(--color-primary); }
+  .mbn-switch[data-on="1"] .mbn-knob { transform: translateX(18px); }
+  .mbn-toast {
+    position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%) translateY(12px);
+    background: rgba(24,24,32,0.9); color: #fff; padding: 10px 18px; border-radius: 999px;
+    font-size: 13px; z-index: 90; opacity: 0; pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease; max-width: 86vw; text-align: center;
+  }
+  .mbn-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* 二级子 sheet */
+  .mbn-subsheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 71;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.16);
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-subsheet.open { transform: translateY(0); }
+  .mbn-sub-head { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10)); }
+  .mbn-sub-back { width: 36px; height: 36px; border-radius: 50%; border: none; background: none; color: var(--color-on-surface); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .mbn-sub-title { font-weight: 700; font-size: 16px; }
+  .mbn-sub-body { padding-top: 6px; }
+  .mbn-sub-row {
+    display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 0;
+    background: none; border: none; cursor: pointer; text-align: left;
+    font-size: var(--fs-label-md); color: var(--color-on-surface); font-family: inherit;
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08));
+  }
+  .mbn-sub-row > span:first-child { flex: 1; min-width: 0; }
+  .mbn-sub-row.on { color: var(--color-primary); font-weight: 600; }
+  .mbn-sub-check { color: var(--color-outline); opacity: 0.6; font-size: 20px; flex-shrink: 0; }
+  .mbn-sub-row.on .mbn-sub-check { color: var(--color-primary); opacity: 1; }
+  .mbn-sub-sec { font-size: 12px; color: var(--color-outline); text-transform: uppercase; letter-spacing: 0.03em; padding: 14px 0 4px; }
+  .mbn-sub-note { font-size: 13px; color: var(--color-outline); padding: 14px 0; line-height: 1.5; }
+  .mbn-list-item { padding: 12px 0; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mbn-list-author { font-weight: 600; font-size: 14px; color: var(--color-on-surface); }
+  .mbn-list-time { font-size: 11px; color: var(--color-outline); flex-shrink: 0; }
+  .mbn-list-body { font-size: 13px; color: var(--color-outline); margin-top: 4px; line-height: 1.5; word-break: break-word; }
+  .mbn-unblock { border: 1px solid var(--divider-line, rgba(118,117,134,0.3)); background: none; color: var(--color-on-surface); border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+  .app-main { padding-bottom: 74px; } /* 给底部导航留空间 */
+}
+
+/* v0.2.59.50 手机适配：主内容 + 340px 侧栏预览的左右网格（dashboard/micronationary/overview 共用），手机收单列 */
+.fc-split-grid { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-md); }
+@media (max-width: 768px) {
+  .fc-split-grid { grid-template-columns: 1fr; }
+}
+/* v0.2.59.50 手机适配：两列网格 + 左右弹性布局收单列 */
+.fc-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+.fc-split-flex { display: flex; }
+@media (max-width: 768px) {
+  .fc-two-col { grid-template-columns: 1fr; }
+  .fc-split-flex { flex-direction: column; min-height: 0 !important; }
+  .fc-split-flex > div { width: 100% !important; border-right: none !important; }
+}
+
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -2352,7 +2582,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 .art-asset { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: var(--radius-md); background: var(--color-surface-container-low); font-size: var(--fs-label-md); color: var(--color-on-surface-variant); }
 .art-asset .material-symbols-outlined { font-size: 22px; color: var(--color-primary); }
 /* v0.2.56.2: FC 1:1 画布渲染——卡片按编辑器画布绝对定位（bbox 裁剪空余+等比缩放到栏宽，相对位置严格 1:1） */
-.art-canvas { position: relative; width: 100%; overflow: hidden; margin: 0 auto; }
+.art-canvas { position: relative; width: 100%; overflow: visible; margin: 0; }
 .art-canvas-inner { position: relative; transform-origin: top left; }
 /* v0.2.58.0: 完整格子画布镜像——代码层面有格子（两笔 linear-gradient 网格线、
    间隔随 preset 格宽 --art-cell-px），透明度放满（--art-grid-alpha: 0 读者看不见、
@@ -2365,19 +2595,73 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   background-position: 0 0;
 }
 .art-card { position: absolute; overflow: hidden; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+/* v0.2.59.29 分组「整体」：组背景层（编辑器 .grid-group-bg 同款不透明卡面 + 四向描边投影）
+   组内成员卡一体外观（边框/卡面/阴影全藏——组背景才是那张「大卡」） */
+.art-group-bg {
+  position: absolute; z-index: 0;
+  background-color: var(--color-surface-container);
+  border-radius: 8px;
+  filter: drop-shadow(1px 0 0 var(--divider-line)) drop-shadow(-1px 0 0 var(--divider-line)) drop-shadow(0 1px 0 var(--divider-line)) drop-shadow(0 -1px 0 var(--divider-line)) drop-shadow(0 4px 18px rgba(0, 0, 0, 0.10));
+}
+.art-card.art-card-grouped {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.art-card.art-card-grouped::before,
+.art-card.art-card-grouped::after { display: none !important; }
 .art-card.art-card-flow { justify-content: flex-start; }
 .art-card-img { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit;
   -webkit-mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, #000 80%, transparent 96%);
   mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, #000 80%, transparent 96%); }
+/* v10.28.50.0: 自定义 border 种框环子层（evenodd 双环 clip 由 JS 直写；
+   z -1 画在卡自身背景之上、空心露卡身；色带与编辑器样本同款紫渐变） */
+.art-card-custom-frame { position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(135deg, rgba(124,77,255,0.82), rgba(92,60,214,0.82)); }
 .art-card-stripes { position: absolute; inset: 0; z-index: 0; border-radius: inherit; }
 .art-card-label { position: relative; z-index: 1; font-size: 11px; font-weight: 500; text-align: center; min-width: 30px; max-width: 90%; padding: 2px 6px; border-radius: var(--radius-xs); color: var(--color-on-surface); }
 .art-card-hasimg .art-card-label { background: rgba(0,0,0,0.35); color: #fff; }
-.art-card-content { position: relative; z-index: 1; width: 100%; box-sizing: border-box; padding: 8px 10px; line-height: 1.5; word-break: break-word; }
+.art-card-content { position: relative; z-index: 1; width: 100%; box-sizing: border-box; padding: 8px; line-height: 1.5; word-break: break-word; }
 .art-card-content p { margin: 0 0 8px; }
 .art-card-content p:last-child { margin-bottom: 0; }
-.art-card-asset { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 8px 10px; color: var(--color-on-surface-variant); font-size: 12px; }
+.art-card-asset { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 8px; color: var(--color-on-surface-variant); font-size: 12px; }
 .art-card-emblem { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px; }
 .art-card-emblem .material-symbols-outlined { font-size: 34px; color: var(--color-primary); }
+/* v0.2.59.30 数据卡/表格卡阅读渲染（statsRows 列表/简易图表 + sheetData 真表格）
+   v0.2.59.30.3 图表填满卡片盒（编辑器图表=满卡 SVG；固定 90px 小图会在高卡下方留白） */
+.art-card-stats, .art-card-sheet { justify-content: flex-start !important; }
+.art-stats-body { flex: 1; min-height: 0; width: 100%; box-sizing: border-box; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.art-stats-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.art-stats-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; } /* v0.2.59.31 数据颜色点 */
+.art-stats-label { flex: 1; color: var(--color-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.art-stats-value { font-weight: 700; color: var(--color-on-surface); text-align: right; flex-shrink: 0; }
+.art-chart-column { flex: 1; min-height: 60px; display: flex; align-items: flex-end; gap: 8px; padding-top: 6px; }
+.art-chart-col { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; min-width: 0; }
+.art-chart-colbar { width: 70%; max-width: 26px; background: linear-gradient(180deg, #4648d4, #6063ee); border-radius: 4px 4px 0 0; }
+.art-chart-tick { font-size: 9px; color: var(--color-outline); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.art-chart-bwrap { flex: 1; min-height: 60px; display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+.art-chart-brow { display: flex; align-items: center; gap: 6px; }
+.art-chart-blabel { width: 40%; font-size: 10px; color: var(--color-on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.art-chart-btrack { flex: 1; height: 10px; background: var(--color-surface-container-high); border-radius: 999px; overflow: hidden; }
+.art-chart-bfill { height: 100%; background: linear-gradient(90deg, #4648d4, #8127cf); border-radius: 999px; }
+.art-chart-pie { flex: 1; min-height: 60px; width: auto; aspect-ratio: 1 / 1; max-width: 100%; border-radius: 50%; margin: 0 auto; }
+.art-chart-legend-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; flex-shrink: 0; }
+.art-chart-legend { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--color-on-surface-variant); }
+.art-chart-legend i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+/* v0.2.59.30.1 趋势图：折线/面积 + 数据点数值标注（无图例，数字直接对应） */
+.art-chart-line { flex: 1; min-height: 60px; width: 100%; height: auto; display: block; }
+.art-chart-lpath { stroke: #4648d4; stroke-width: 2; }
+.art-chart-area { fill: rgba(70, 72, 212, .15); stroke: none; }
+.art-chart-line circle { fill: #4648d4; }
+.art-chart-ptval { font-size: 8px; fill: var(--color-on-surface-variant); text-anchor: middle; }
+.art-chart-ptlabel { font-size: 7px; fill: var(--color-outline); text-anchor: middle; }
+.art-sheet-body { flex: 1; min-height: 0; width: 100%; box-sizing: border-box; padding: 8px; overflow: auto; display: flex; }
+.art-sheet-table { width: 100%; flex: 1; border-collapse: collapse; font-size: 11px; }
+.art-sheet-table th, .art-sheet-table td { border: 1px solid var(--divider-line); padding: 5px 8px; text-align: left; }
+.art-sheet-table th { background: var(--color-surface-container-low); font-weight: 700; }
+.art-sheet-empty { padding: 20px; text-align: center; font-size: 11px; color: var(--color-outline); }
 .art-card-emblem-label { font-size: 12px; font-weight: 600; color: var(--color-on-surface-variant); text-align: center; }
 /* caption 位置 12 值——与 FC 编辑器同款（absent = 卡 flexbox 居中）；outside 位置翻卡为 overflow:visible 与编辑器一致 */
 .art-card[data-caption-pos="top"] .art-card-label { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); }
@@ -2546,6 +2830,22 @@ body.art-present .app-main { margin-left: 0 !important; }
   // v0.2.57.0 画布状态缓存 {cj,bboxW}——resize 防抖仅在宽 1:1 ↔ 窄回流模式翻转时重渲染
   var lastCanvasState = null;
 
+  // ── v10.28.49.0 读者逐布局渲染：设备自动选布局（纯自动无切换钮——发布=全布局一起发、
+  // 编辑页 ?article= 查看模式零改动）。布局格子常量与编辑器 PRESETS cols/rows 同源
+  // （169 115×70、half 58、tablet 110×77、tablet-p 77×110、mobile 115×70；各 +25 行增长）。
+  // <768 手机 / 768–1280 平板（按横竖屏 tablet/tablet-p）/ ≥1280 默认 169；
+  // half 为编辑器专用视口读者永不选中。__slatiForceLayout 仅测试钩（无效值回落自动选）。
+  var LAYOUT_COLS = { '169': 115, half: 58, tablet: 110, 'tablet-p': 77, mobile: 22 };
+  var LAYOUT_ROWS = { '169': 70, half: 70, tablet: 77, 'tablet-p': 110, mobile: 115 };
+  function pickReaderLayout() {
+    if (typeof window.__slatiForceLayout === 'string' &&
+        Object.prototype.hasOwnProperty.call(LAYOUT_COLS, window.__slatiForceLayout)) return window.__slatiForceLayout;
+    var w = window.innerWidth || 1280;
+    if (w < 768) return 'mobile';
+    if (w < 1280) return 'tablet'; // v10.28.62.11: 平板恒横向（用户「平板要横向不要纵向阅读」）
+    return '169';
+  }
+
   function parseArticleId() {
     try {
       var p = new URLSearchParams(window.location.search).get('id');
@@ -2569,6 +2869,95 @@ body.art-present .app-main { margin-left: 0 !important; }
   // ── 正文渲染：draft v9 cards 按 (row, col) 排序 → content 正文流 / img·bitmap·flag·shield 图 / text 便签 ──
   // v0.2.55.2: shield（国徽）卡入渲染（有图同国旗、无图盾徽块）；其余卡型兜底块不再静默丢弃
   // v0.2.56.2: 有像素坐标的 v9 草稿改走 FC 1:1 画布渲染（renderBodyCanvas），旧草稿保持流式兜底
+  // v0.2.59.30 数据卡/表格卡阅读渲染（流式与 1:1 画布两种模式共用——IIFE 级作用域）
+  function plainTxt(s) { return String(s == null ? '' : s).replace(/<[^>]*>/g, ''); }
+  function safeColor(c) { return /^#[0-9a-fA-F]{6}$/.test(String(c || '')) ? String(c) : null; } // v0.2.59.31 草稿色值白名单
+  function statsChartHtml(chart, rows) {
+    var vals = rows.map(function (r, i) {
+      return { l: plainTxt(r.label), v: Math.max(0, parseFloat(r.value) || 0), c: safeColor(r.color) || null };
+    });
+    var colors = ['#4648d4', '#8127cf', '#0f766e', '#c2410c', '#b45309', '#7c3aed'];
+    function cOf(i) { return vals[i].c || colors[i % colors.length]; } // v0.2.59.31 每行自定义颜色优先
+    // v0.2.59.30.1 图例口径（用户钦定）：占比类（饼/环）必须有颜色↔类别图例；
+    // 对比类（柱/条）刻度标签已直接对应、趋势类（折线/面积）只标数字——都不需要图例
+    function legendHtml() {
+      return '<div class="art-chart-legend-row">' + vals.map(function (x, i) {
+        return '<span class="art-chart-legend"><i style="background:' + cOf(i) + '"></i>' + escapeHtml(x.l) + '</span>';
+      }).join('') + '</div>';
+    }
+    if (chart === 'column') {
+      var max = Math.max.apply(null, vals.map(function (x) { return x.v; }).concat([1]));
+      return '<div class="art-chart-column">' + vals.map(function (x) {
+        return '<div class="art-chart-col"><div class="art-chart-colbar" style="height:' + Math.round((x.v / max) * 100) + '%;' + (x.c ? 'background:' + x.c + ';' : '') + '"></div><span class="art-chart-tick">' + escapeHtml(x.l) + '</span></div>';
+      }).join('') + '</div>';
+    }
+    if (chart === 'bar') {
+      var max2 = Math.max.apply(null, vals.map(function (x) { return x.v; }).concat([1]));
+      return '<div class="art-chart-bwrap">' + vals.map(function (x) {
+        return '<div class="art-chart-brow"><span class="art-chart-blabel">' + escapeHtml(x.l) + '</span><div class="art-chart-btrack"><div class="art-chart-bfill" style="width:' + Math.round((x.v / max2) * 100) + '%;' + (x.c ? 'background:' + x.c + ';' : '') + '"></div></div></div>';
+      }).join('') + '</div>';
+    }
+    if (chart === 'pie' || chart === 'donut') {
+      var total = vals.reduce(function (s, x) { return s + x.v; }, 0) || 1;
+      var acc = 0;
+      var segs = vals.map(function (x, i) {
+        var from = acc / total * 360; acc += x.v;
+        return cOf(i) + ' ' + from + 'deg ' + (acc / total * 360) + 'deg';
+      }).join(', ');
+      var hole = chart === 'donut' ? '-webkit-mask:radial-gradient(circle, transparent 56%, #000 57%);mask:radial-gradient(circle, transparent 56%, #000 57%);' : '';
+      return '<div class="art-chart-pie" style="background:conic-gradient(' + segs + ');' + hole + '"></div>' + legendHtml();
+    }
+    if (chart === 'line' || chart === 'area') {
+      // v0.2.59.30.1 趋势图：折线/面积 + 每个数据点的数值标注（无图例——数字直接对应）
+      var W = 260, H = 96, PAD = 20;
+      var maxV = Math.max.apply(null, vals.map(function (x) { return x.v; }).concat([1]));
+      var step = vals.length > 1 ? (W - PAD * 2) / (vals.length - 1) : 0;
+      var pts = vals.map(function (x, i) {
+        return [PAD + i * step, H - PAD - (x.v / maxV) * (H - PAD * 2)];
+      });
+      var path = pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
+      var area = chart === 'area' ? path + ' L' + (PAD + (vals.length - 1) * step).toFixed(1) + ' ' + (H - PAD) + ' L' + PAD + ' ' + (H - PAD) + ' Z' : '';
+      var marks = pts.map(function (p, i) {
+        return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5"></circle>' +
+          '<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 6).toFixed(1) + '" class="art-chart-ptval">' + escapeHtml(String(vals[i].v)) + '</text>';
+      }).join('');
+      var xlabs = vals.map(function (x, i) {
+        return '<text x="' + (PAD + i * step).toFixed(1) + '" y="' + (H - 5).toFixed(1) + '" class="art-chart-ptlabel">' + escapeHtml(x.l) + '</text>';
+      }).join('');
+      return '<svg class="art-chart-line" viewBox="0 0 ' + W + ' ' + H + '">' +
+        (area ? '<path class="art-chart-area" d="' + area + '"></path>' : '') +
+        '<path class="art-chart-lpath" d="' + path + '" fill="none"></path>' +
+        marks + xlabs + '</svg>';
+    }
+    return vals.map(function (x) {
+      return '<div class="art-stats-row"><span class="art-stats-label">' + escapeHtml(x.l) + '</span><span class="art-stats-value">' + escapeHtml(String(x.v)) + '</span></div>';
+    }).join('');
+  }
+  function statsInner(card) {
+    var rows = [];
+    try { rows = JSON.parse(card.statsRows || '[]'); } catch (e) { rows = []; }
+    var chart = String(card.statsChart || '');
+    if (chart && rows.length) return '<div class="art-stats-body">' + statsChartHtml(chart, rows) + '</div>';
+    var list = rows.map(function (r) {
+      var dot = safeColor(r.color) ? '<span class="art-stats-dot" style="background:' + safeColor(r.color) + '"></span>' : '';
+      return '<div class="art-stats-row">' + dot + '<span class="art-stats-label">' + escapeHtml(plainTxt(r.label)) + '</span><span class="art-stats-value">' + escapeHtml(String(r.value != null ? r.value : '')) + '</span></div>';
+    }).join('');
+    return '<div class="art-stats-body">' + (list || '<div class="art-sheet-empty">暂无数据</div>') + '</div>';
+  }
+  function sheetInner(card) {
+    try {
+      var data = JSON.parse(card.sheetData || 'null');
+      if (data && Array.isArray(data.cells) && data.cells.length) {
+        var ncols = Math.max(1, parseInt(data.cols, 10) || (data.cells[0] || []).length);
+        var head = data.cells[0].slice(0, ncols).map(function (c2) { return '<th>' + escapeHtml(plainTxt(c2)) + '</th>'; }).join('');
+        var bodyRows = data.cells.slice(1).map(function (row) {
+          return '<tr>' + row.slice(0, ncols).map(function (c2) { return '<td>' + escapeHtml(plainTxt(c2)) + '</td>'; }).join('') + '</tr>';
+        }).join('');
+        return '<div class="art-sheet-body"><table class="art-sheet-table"><thead><tr>' + head + '</tr></thead><tbody>' + bodyRows + '</tbody></table></div>';
+      }
+    } catch (e) {}
+    return '<div class="art-sheet-body"><div class="art-sheet-empty">暂无表格数据</div></div>';
+  }
   function renderBody(cj) {
     lastCanvasState = null; // 每次重渲染重置：流式兜底路径无画布，resize 监听据此跳过
     var CARD_TYPE_ICONS = { map: 'map', account_balance: 'account_balance', payments: 'payments', menu_book: 'menu_book', history_edu: 'history_edu', image: 'image', character: 'person', stats: 'monitoring', timeline: 'history_edu', sheet: 'table' };
@@ -2611,6 +3000,12 @@ body.art-present .app-main { margin-left: 0 !important; }
         }
       } else if (card.type === 'text') {
         html += '<div class="art-note" style="background:' + safeBg(card.background) + '">' + sanitizeCardHtml(card.content) + '</div>';
+      } else if (card.type === 'stats') {
+        // v0.2.59.30 数据卡：列表/简易图表
+        html += '<div class="art-note">' + statsInner(card) + '</div>';
+      } else if (card.type === 'sheet') {
+        // v0.2.59.30 表格卡：真表格
+        html += '<div class="art-note">' + sheetInner(card) + '</div>';
       } else {
         var oSrc = String(card.imgSrc || '');
         if (oSrc) {
@@ -2632,15 +3027,167 @@ body.art-present .app-main { margin-left: 0 !important; }
   // gap 2、宽 = span×cs+(span−1)×2、preset 存的位置优先于卡顶层（同 L5824 恢复逻辑）。
   function renderBodyCanvas(cj, cards) {
     var CARD_TYPE_ICONS = { map: 'map', account_balance: 'account_balance', payments: 'payments', menu_book: 'menu_book', history_edu: 'history_edu', image: 'image', character: 'person', stats: 'monitoring', timeline: 'history_edu', sheet: 'table' };
-    var PRESET_CS = { '169': 20, half: 24, tablet: 20, mobile: 18 };
-    var cs = PRESET_CS[(cj && cj.activePreset) || '169'] || 20;
+    var PRESET_CS = { '169': 20, half: 24, tablet: 20, 'tablet-p': 20, mobile: 20 };
+    // v10.28.49.0: 读者设备布局（activePreset 相等走原有精确路径；不等走逐布局表/auto-flow）
+    var layout = pickReaderLayout(cj);
+    var perLayout = layout !== ((cj && cj.activePreset) || '169');
+    var cs = PRESET_CS[layout] || 20;
     var GAP = 2;
-    function spanPx(n) { return (n || 1) * cs + ((n || 1) - 1) * GAP; }
+    function spanPx(n) { return n * cs + Math.max(0, n - 1) * GAP; } // n=0 合法（首行/首列偏移 0）
+    // v10.28.49.0: 布局表空 → 与编辑器 autoFlowCards 同款 wiki 自动排版（确定性、不落盘）：
+    // 合并组=一个单位（bounding 宽钳 [1,cols] 比例缩成员相对偏移）、mobile 组展开纵向流、
+    // half 长文卡至少 24 格+行内已有 3 卡时最右单位挤到下一行。返回 cardId→{col,row,colSpan,rowSpan}
+    //（aspect 卡附 aspectLock/fitW/fitH 原值——阅读页宽高恒取 fit）。仅含可见卡。
+    function autoFlowEntries(list, lay, cell) {
+      var gap = GAP, cols = LAYOUT_COLS[lay] || 115;
+      var entries = {};
+      var units = [];
+      var grouped = {};
+      list.forEach(function (c) {
+        if (c.groupId) {
+          if (!grouped[c.groupId]) grouped[c.groupId] = [];
+          grouped[c.groupId].push(c);
+        } else {
+          units.push({ kind: 'card', card: c });
+        }
+      });
+      Object.keys(grouped).forEach(function (g) {
+        var mems = grouped[g].sort(function (a, b) {
+          return ((parseFloat(a.row) || 0) - (parseFloat(b.row) || 0)) ||
+                 ((parseFloat(a.col) || 0) - (parseFloat(b.col) || 0));
+        });
+        if (lay === 'mobile') {
+          mems.forEach(function (c) { units.push({ kind: 'card', card: c }); });
+          return;
+        }
+        var minC = Infinity, minR = Infinity, maxC = -Infinity, maxR = -Infinity;
+        mems.forEach(function (c) {
+          var c0 = parseFloat(c.col) || 1, r0 = parseFloat(c.row) || 1;
+          var cw = parseFloat(c.colSpan) || 4, rh = parseFloat(c.rowSpan) || 3;
+          minC = Math.min(minC, c0); minR = Math.min(minR, r0);
+          maxC = Math.max(maxC, c0 + cw); maxR = Math.max(maxR, r0 + rh);
+        });
+        units.push({ kind: 'group', cards: mems, w: maxC - minC, h: maxR - minR,
+          rel: mems.map(function (c) {
+            return { c: c,
+              dc: ((parseFloat(c.col) || 1) - minC),
+              dr: ((parseFloat(c.row) || 1) - minR),
+              ds: parseFloat(c.colSpan) || 4,
+              dh: parseFloat(c.rowSpan) || 3 };
+          }) });
+      });
+      units.sort(function (a, b) {
+        var ka = a.kind === 'group' ? a.cards[0] : a.card;
+        var kb = b.kind === 'group' ? b.cards[0] : b.card;
+        return ((parseFloat(ka.row) || 0) - (parseFloat(kb.row) || 0)) ||
+               ((parseFloat(ka.col) || 0) - (parseFloat(kb.col) || 0));
+      });
+      var maxPerRow = (lay === 'tablet' || lay === 'tablet-p') ? 2 : (lay === 'half') ? 4 : 1;
+      var fullWidth = (lay === '169' || lay === 'mobile');
+      var rowY = 1, rowUnits = [], rowW = 0;
+      function unitSpan(u) {
+        if (u.kind === 'group') return { w: u.w, h: u.h };
+        var c = u.card;
+        var cw = parseFloat(c.colSpan) || 4;
+        var rh = parseFloat(c.rowSpan) || 3;
+        if (c.aspectLock === '1') {
+          var fw = parseFloat(c.fitW), fh = parseFloat(c.fitH);
+          if (fw && fh) { cw = fw / (cell + gap); rh = fh / (cell + gap); }
+        }
+        if (lay === 'half' && (c.type === 'content' || c.type === 'text') && cw < 24) cw = 24;
+        if (fullWidth) { cw = cols; return { w: cw, h: rh, full: true }; }
+        return { w: Math.max(1, Math.min(cw, cols)), h: Math.max(1, rh) };
+      }
+      function put(u, span, colAt) {
+        if (u.kind === 'card') {
+          var e = { col: colAt, row: rowY, colSpan: span.full ? cols : span.w, rowSpan: Math.max(1, Math.ceil(span.h)) };
+          if (u.card.aspectLock === '1' && u.card.fitW && u.card.fitH) { e.aspectLock = '1'; e.fitW = u.card.fitW; e.fitH = u.card.fitH; }
+          entries[u.card.id] = e;
+        } else {
+          var scale = Math.max(1, Math.min(u.w, cols)) / u.w;
+          u.rel.forEach(function (r) {
+            var e = { col: colAt + r.dc * scale, row: rowY + r.dr * scale,
+              colSpan: Math.max(1, r.ds * scale), rowSpan: Math.max(1, Math.ceil(r.dh * scale)) };
+            if (r.c.aspectLock === '1' && r.c.fitW && r.c.fitH) { e.aspectLock = '1'; e.fitW = r.c.fitW; e.fitH = r.c.fitH; }
+            entries[r.c.id] = e;
+          });
+        }
+      }
+      function closeRow() {
+        var rowH = 0;
+        rowUnits.forEach(function (ru) { rowH = Math.max(rowH, ru.span.h); });
+        rowY += rowH + 2; // 2 行纵向空档（与编辑器同款）
+        rowUnits = [];
+        rowW = 0;
+      }
+      units.forEach(function (u) {
+        var span = unitSpan(u);
+        var isContent = u.kind === 'card' && (u.card.type === 'content' || u.card.type === 'text');
+        if (fullWidth) { put(u, span, 1); rowUnits.push({ u: u, span: span }); closeRow(); return; }
+        if (rowUnits.length >= maxPerRow) closeRow();
+        // half 挤下规则：长文卡到来且行内已有 3 个单位 → 最右单位挤到下一行，长文卡占其位
+        if (isContent && rowUnits.length >= 3) {
+          var popped = rowUnits.pop();
+          rowW -= popped.span.w;
+          put(u, span, 1 + rowW);
+          rowUnits.push({ u: u, span: span });
+          rowW += span.w;
+          closeRow();
+          put(popped.u, popped.span, 1);
+          rowUnits.push(popped);
+          rowW = popped.span.w;
+          return;
+        }
+        if (rowW + span.w > cols) closeRow();
+        put(u, span, 1 + rowW);
+        rowUnits.push({ u: u, span: span });
+        rowW += span.w;
+      });
+      return entries;
+    }
+    // v10.28.49.0: 布局表条目钳制（旧 115 格 tablet/half 表收进 110/77/58；保留附加键）
+    function clampLayoutEntry(e, cols) {
+      var cw = Math.max(1, Math.min(parseFloat(e.colSpan) || 4, cols));
+      var cl = Math.max(1, Math.min(parseFloat(e.col) || 1, cols - cw + 1));
+      var out = Object.assign({}, e);
+      out.col = cl; out.row = Math.max(1, parseFloat(e.row) || 1);
+      out.colSpan = cw; out.rowSpan = Math.max(1, parseFloat(e.rowSpan) || 3);
+      return out;
+    }
     function hexA(hex, a) {
       var m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
       if (!m) return '';
       var n = parseInt(m[1], 16);
       return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+    }
+    // v10.28.50.0: 客户端 sanitizeClip 镜像（服务端 fc-edgegen.js 白名单同款）——
+    // 自定义边缘写进阅读页 style 前的最后一道防线；过不了=平卡零改动。
+    function sanitizeClipEd(clip) {
+      var s = String(clip == null ? '' : clip).trim();
+      if (!s || s.length > 2000) return null;
+      if (/url\(|expression\(|calc\(|var\(|javascript:|[;"'<>\\]/i.test(s)) return null;
+      var m = /^polygon\((.*)\)$/s.exec(s);
+      if (!m) return null;
+      var inner = m[1].trim();
+      var fill = null;
+      var fm = /^(evenodd|nonzero)\s*,?\s*(.*)$/s.exec(inner);
+      if (fm) { fill = fm[1]; inner = fm[2]; }
+      var pts = inner.split(',').map(function (p) { return p.trim(); }).filter(Boolean);
+      if (pts.length < 3 || pts.length > 80) return null;
+      var out = [];
+      for (var i = 0; i < pts.length; i++) {
+        var nums = pts[i].split(/\s+/).filter(Boolean);
+        if (nums.length !== 2) return null;
+        for (var j = 0; j < 2; j++) {
+          var nm = /^(-?\d+(?:\.\d{1,2})?)(%)?$/.exec(nums[j]);
+          if (!nm) return null;
+          var v = parseFloat(nm[1]);
+          if (nm[2]) { if (v < 0 || v > 100) return null; }
+          else if (v !== 0 && v !== 100) return null;
+        }
+        out.push(nums[0] + ' ' + nums[1]);
+      }
+      return 'polygon(' + (fill ? fill + ', ' : '') + out.join(', ') + ')';
     }
     function addLabel(el, card, pill) {
       if (!card.label) return;
@@ -2654,7 +3201,38 @@ body.art-present .app-main { margin-left: 0 !important; }
     }
 
     var body = document.getElementById('artBody');
-    var presetCards = (cj && cj.presets && cj.presets[(cj.activePreset || '169')] && cj.presets[(cj.activePreset || '169')].cards) || {};
+    var presetCards;
+    if (perLayout) {
+      // v10.28.49.0 逐布局路径：布局表空 → autoFlowEntries 同款 wiki 自动排版；
+      // 有表 → 条目钳制 + 表存后新增的可见卡追加表底全宽（阅读页确定性口径）
+      var lc = LAYOUT_COLS[layout] || 115;
+      var table = (cj && cj.presets && cj.presets[layout] && cj.presets[layout].cards) || {};
+      if (Object.keys(table).length) {
+        presetCards = {};
+        var bottomRow = 0;
+        Object.keys(table).forEach(function (id) {
+          var e = clampLayoutEntry(table[id], lc);
+          presetCards[id] = e;
+          bottomRow = Math.max(bottomRow, e.row + e.rowSpan);
+        });
+        cards.forEach(function (card) {
+          if (!card) return;
+          if (card.hidden === '1' || card.hidden === 1 || card.hidden === true) return;
+          if (presetCards[card.id]) return;
+          var e = { col: 1, row: bottomRow + 1, colSpan: lc, rowSpan: Math.max(1, parseFloat(card.rowSpan) || 3) };
+          if (card.aspectLock === '1' && card.fitW && card.fitH) { e.aspectLock = '1'; e.fitW = card.fitW; e.fitH = card.fitH; }
+          presetCards[card.id] = e;
+          bottomRow = e.row + e.rowSpan;
+        });
+      } else {
+        var vis = cards.filter(function (c) {
+          return c && !(c.hidden === '1' || c.hidden === 1 || c.hidden === true);
+        });
+        presetCards = autoFlowEntries(vis, layout, cs);
+      }
+    } else {
+      presetCards = (cj && cj.presets && cj.presets[(cj.activePreset || '169')] && cj.presets[(cj.activePreset || '169')].cards) || {};
+    }
     var rects = [];
     cards.forEach(function (card) {
       if (!card) return;
@@ -2663,24 +3241,58 @@ body.art-present .app-main { margin-left: 0 !important; }
       var w, h, hAuto = false;
       if (pos.aspectLock === '1' && pos.fitW && pos.fitH) { w = parseFloat(pos.fitW); h = parseFloat(pos.fitH); }
       else {
-        w = card.w ? parseFloat(card.w) : spanPx(pos.colSpan);
+        // v10.28.49.0 perLayout：宽恒 spanPx(colSpan)——card.w 是活动预设精确宽必弃；
+        // 活动预设相等路径保持原口径（顶层 card.w 优先）
+        w = (perLayout || !card.w) ? spanPx(pos.colSpan) : parseFloat(card.w);
         h = spanPx(pos.rowSpan);
         if (card.type === 'content' || card.type === 'text') hAuto = true;
       }
       var rad = ((parseFloat(card.rotate) || 0) * Math.PI) / 180;
       var rw = w * Math.abs(Math.cos(rad)) + h * Math.abs(Math.sin(rad));
       var rh = w * Math.abs(Math.sin(rad)) + h * Math.abs(Math.cos(rad));
-      var x = typeof card.x === 'number' ? card.x : 0;
-      var y = typeof card.y === 'number' ? card.y : 0;
+      // v10.28.49.0 perLayout：x/y 取布局表格坐标（spanPx(col-1/row-1)）；
+      // 活动预设相等路径保持原口径（顶层像素 x/y 优先）
+      var x = perLayout ? spanPx((parseFloat(pos.col) || 1) - 1) : (typeof card.x === 'number' ? card.x : 0);
+      var y = perLayout ? spanPx((parseFloat(pos.row) || 1) - 1) : (typeof card.y === 'number' ? card.y : 0);
       rects.push({ card: card, x: x + w / 2 - rw / 2, y: y + h / 2 - rh / 2, w: rw, h: rh, w0: w, h0: h, hAuto: hAuto });
     });
     if (!rects.length) {
       body.innerHTML = '<p class="label-sm" style="color:var(--color-outline)">' + (T('article.emptyBody') || '这篇文章还没有正文内容') + '</p>';
       return;
     }
-    var M = 24;
+    // v0.2.59.29 分组「整体」：组背景层几何（成员并集外扩 14px——与编辑器 GROUP_BG_PAD 同款）
+    var GROUP_PAD = 14;
+    var groupRects = [];
+    var groupedIds = {};
+    (function () {
+      var gmap = {};
+      rects.forEach(function (r) {
+        var g = r.card.groupId;
+        if (!g) return;
+        (gmap[g] = gmap[g] || []).push(r);
+      });
+      Object.keys(gmap).forEach(function (g) {
+        var rs = gmap[g];
+        if (rs.length < 2) return;
+        var gx1 = Infinity, gy1 = Infinity, gx2 = -Infinity, gy2 = -Infinity;
+        rs.forEach(function (r) {
+          gx1 = Math.min(gx1, r.x); gy1 = Math.min(gy1, r.y);
+          gx2 = Math.max(gx2, r.x + r.w); gy2 = Math.max(gy2, r.y + r.h);
+          groupedIds[r.card.id] = 1;
+        });
+        groupRects.push({ x: gx1 - GROUP_PAD, y: gy1 - GROUP_PAD, w: gx2 - gx1 + GROUP_PAD * 2, h: gy2 - gy1 + GROUP_PAD * 2 });
+      });
+    })();
+    // v10.28.62.21: 边距 M 归零——旧式左右各垫一格（22px）在右侧多出编辑器没有的空位
+    // （用户「右边多出一个空位」）；M=0 后画布=卡片精确范围，卡片贴格子、无多余垫位。
+    var M = 0;
     var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     rects.forEach(function (r) {
+      minX = Math.min(minX, r.x); minY = Math.min(minY, r.y);
+      maxX = Math.max(maxX, r.x + r.w); maxY = Math.max(maxY, r.y + r.h);
+    });
+    // v0.2.59.29：组背景外扩计入画布盒（否则 PAD 边被裁）
+    groupRects.forEach(function (r) {
       minX = Math.min(minX, r.x); minY = Math.min(minY, r.y);
       maxX = Math.max(maxX, r.x + r.w); maxY = Math.max(maxY, r.y + r.h);
     });
@@ -2688,12 +3300,23 @@ body.art-present .app-main { margin-left: 0 !important; }
     holder.className = 'art-canvas';
     var inner = document.createElement('div');
     inner.className = 'art-canvas-inner';
+    // v0.2.59.29：组背景先铺（z 0 恒在卡下）
+    groupRects.forEach(function (r) {
+      var b = document.createElement('div');
+      b.className = 'art-group-bg';
+      b.style.left = Math.round((r.x - minX + M) * 100) / 100 + 'px';
+      b.style.top = Math.round((r.y - minY + M) * 100) / 100 + 'px';
+      b.style.width = r.w + 'px';
+      b.style.height = r.h + 'px';
+      inner.appendChild(b);
+    });
     rects.forEach(function (r) {
       var card = r.card;
       var el = document.createElement('div');
       el.className = 'art-card';
       el.dataset.cardId = String(card.id || '');
       el.dataset.cardType = String(card.type || ''); // v0.2.57.0 目录/回流分型用
+      if (groupedIds[card.id]) el.classList.add('art-card-grouped'); // v0.2.59.29 组内一体（藏独立卡面）
       var st = 'left:' + Math.round((r.x - minX + M) * 100) / 100 + 'px;top:' + Math.round((r.y - minY + M) * 100) / 100 + 'px;' +
         'width:' + r.w0 + 'px;' + (r.hAuto ? 'min-height:' + r.h0 + 'px;' : 'height:' + r.h0 + 'px;') +
         'z-index:' + (parseInt(card.z, 10) || 1) + ';';
@@ -2704,6 +3327,32 @@ body.art-present .app-main { margin-left: 0 !important; }
       st += 'background:' + (card.background || 'var(--color-surface-container)') + ';';
       if (card.captionPos) el.setAttribute('data-caption-pos', card.captionPos);
       el.style.cssText = st;
+      // v10.28.50.0: 自定义边缘消费（草稿 customEdges map）——edge 种=卡盒
+      // clip-path 剪影直写；border 种=evenodd 框环子层（inset 0 色带，z -1
+      // 画在卡背景之上、空心露卡身，内容层前 append）；缺 map 条目=平卡
+      // 零改动（绝不因缺库变形）。写前必过白名单复核。
+      if (card.cardEdge && card.cardEdge.indexOf('custom:') === 0) {
+        var ceMap = (cj && cj.customEdges && Array.isArray(cj.customEdges)) ? cj.customEdges : null;
+        var ce = null;
+        if (ceMap) {
+          for (var ci = 0; ci < ceMap.length; ci++) {
+            if (ceMap[ci] && ceMap[ci].id === card.cardEdge.slice(7)) { ce = ceMap[ci]; break; }
+          }
+        }
+        if (ce) {
+          var cl = sanitizeClipEd(ce.clip);
+          if (cl) {
+            if (ce.kind === 'border') {
+              var fr = document.createElement('div');
+              fr.className = 'art-card-custom-frame';
+              fr.style.clipPath = cl;
+              el.appendChild(fr);
+            } else {
+              el.style.clipPath = cl;
+            }
+          }
+        }
+      }
       var src = String(card.imgSrc || '');
       if (src) {
         el.classList.add('art-card-hasimg');
@@ -2734,6 +3383,20 @@ body.art-present .app-main { margin-left: 0 !important; }
           emb.appendChild(lb2);
         }
         el.appendChild(emb);
+      } else if (card.type === 'stats') {
+        // v0.2.59.30 数据卡：列表/简易图表（column/bar/pie/donut，其余回退列表）
+        el.classList.add('art-card-stats');
+        addLabel(el, card, false);
+        var sdWrap = document.createElement('div');
+        sdWrap.innerHTML = statsInner(card);
+        el.appendChild(sdWrap.firstChild);
+      } else if (card.type === 'sheet') {
+        // v0.2.59.30 表格卡：真表格
+        el.classList.add('art-card-sheet');
+        addLabel(el, card, false);
+        var shWrap = document.createElement('div');
+        shWrap.innerHTML = sheetInner(card);
+        el.appendChild(shWrap.firstChild);
       } else if (card.type === 'flag') {
         el.classList.add('art-card-hasimg');
         var fs = document.createElement('div');
@@ -2779,16 +3442,19 @@ body.art-present .app-main { margin-left: 0 !important; }
     // 格子线代码层面完整定义、透明度放满读者不可见；宽窗 contain fit 投影整个舞台、
     // 窄窗阈值仍按内容 bbox 宽（舞台恒 125 格宽 > 窗口宽，不能拿舞台宽判回流）
     // （v0.2.58.0 参数同步 FC 44.3: 125→115 用户「把125格宽减少一个10格」——与编辑态/查看模式同源）
-    var STAGE_COLS = 115, STAGE_BASE_ROWS = 70, STAGE_GROW = 25;
+    // v10.28.49.0: 舞台按读者布局取格（169/mobile 恒 115×70=原口径；tablet 110×77 / tablet-p 77×110 / half 58×70）
+    var STAGE_GROW = 25;
+    var STAGE_COLS = LAYOUT_COLS[layout] || 115;
+    var STAGE_BASE_ROWS = LAYOUT_ROWS[layout] || 70;
     var stageW = STAGE_COLS * (cs + GAP);
     var contentRows = Math.max(1, Math.ceil((bboxH - M) / (cs + GAP))); // 平移后内容底 = bboxH − M
     var stageRows = Math.max(STAGE_BASE_ROWS, contentRows) + STAGE_GROW;
     var stageH = stageRows * (cs + GAP);
     inner.style.setProperty('--art-cell-px', (cs + GAP) + 'px');
-    lastCanvasState = { cj: cj, bboxW: bboxW, bboxH: bboxH, stageW: stageW, stageH: stageH };
-    if (avail < bboxW) { applyReflow(holder, inner, rects); renderToc(); return; }
-    var availH = Math.max(200, window.innerHeight - holder.getBoundingClientRect().top - 24);
-    var s = Math.max(0.25, Math.min(avail / stageW, availH / stageH));
+    lastCanvasState = { cj: cj, layout: layout, bboxW: bboxW, bboxH: bboxH, stageW: stageW, stageH: stageH };
+    // v10.28.62.24: 去掉 bbox「遮罩」（用户「把他框在一个范围内像给了个 mask」）——
+    // 画布恢复为完整格子舞台（stage），卡片在舞台内按原位置摆放，不再裁剪到卡片范围。
+    var s = Math.min(1, avail / stageW);
     inner.style.width = stageW + 'px';
     inner.style.height = stageH + 'px';
     inner.style.transform = 'scale(' + s + ')';
@@ -2804,16 +3470,26 @@ body.art-present .app-main { margin-left: 0 !important; }
     var els = Array.prototype.slice.call(inner.children); // 与 rects 同序（同一次 forEach 构建）
     var sorted = rects.map(function (r, i) { return { r: r, el: els[i] }; })
       .sort(function (a, b) { return (a.r.y - b.r.y) || (a.r.x - b.r.x); });
-    var bands = [], cur = null, curBottom = 0;
+    var bands = [], cur = null, curBottom = 0, prevBottom = 0;
     sorted.forEach(function (p) {
-      if (!cur || p.r.y >= curBottom) { cur = []; bands.push(cur); curBottom = 0; }
-      cur.push(p);
+      if (!cur || p.r.y >= curBottom) {
+        // v10.28.62.14: 保留两带之间的纵向空隙——旧式全塌成 flex 默认间距
+        // （用户「两个卡片之间没有内容时擅自吃掉中间的隔开」）。gapTop = 下一带顶 − 上一带底。
+        var gapTop = bands.length ? Math.max(0, p.r.y - prevBottom) : 0;
+        cur = { cards: [], gapTop: gapTop };
+        bands.push(cur);
+        curBottom = 0;
+        prevBottom = 0;
+      }
+      cur.cards.push(p);
       curBottom = Math.max(curBottom, p.r.y + p.r.h);
+      prevBottom = Math.max(prevBottom, p.r.y + p.r.h);
     });
     bands.forEach(function (band) {
       var row = document.createElement('div');
       row.className = 'art-reflow-band';
-      band.forEach(function (p) {
+      if (band.gapTop > 0) row.style.marginTop = Math.round(band.gapTop) + 'px';
+      band.cards.forEach(function (p) {
         var el = p.el, t = p.r.card.type;
         el.style.left = 'auto';
         el.style.top = 'auto';
@@ -3073,27 +3749,29 @@ body.art-present .app-main { margin-left: 0 !important; }
     var inner = holder.querySelector('.art-canvas-inner');
     if (!inner) return;
     var availW = document.getElementById('artBody').clientWidth || 656;
-    var availH = Math.max(200, window.innerHeight - holder.getBoundingClientRect().top - 24);
-    var s = Math.max(0.25, Math.min(availW / st.stageW, availH / st.stageH));
+    var s = Math.min(1, availW / st.bboxW);
     inner.style.transform = 'scale(' + s + ')';
-    holder.style.width = Math.round(st.stageW * s) + 'px';
-    holder.style.height = Math.round(st.stageH * s) + 'px';
+    holder.style.width = Math.round(st.bboxW * s) + 'px';
+    holder.style.height = Math.round(st.bboxH * s) + 'px';
   }
   var artResizeTimer = null;
   window.addEventListener('resize', function () {
     clearTimeout(artResizeTimer);
     artResizeTimer = setTimeout(function () {
       if (!lastCanvasState) return;
+      if (lastCanvasState.layout !== pickReaderLayout(lastCanvasState.cj)) { renderBody(lastCanvasState.cj); return; }
       var bodyEl = document.getElementById('artBody');
       var holder = bodyEl && bodyEl.querySelector('.art-canvas');
-      if (!holder) return; // 流式兜底路径无需处理
-      var avail = bodyEl.clientWidth || 656;
-      var wasReflow = holder.classList.contains('art-canvas-reflow');
-      var isReflow = avail < lastCanvasState.bboxW;
-      if (isReflow !== wasReflow) renderBody(lastCanvasState.cj); // 重渲染即翻模式（含 TOC 重建）
-      else if (!isReflow) updateWideScale(holder, lastCanvasState); // 宽模式：fit 重算（全屏投影随窗口）
+      if (holder && !holder.classList.contains('art-canvas-reflow')) updateWideScale(holder, lastCanvasState);
     }, 200);
   });
+  // v10.28.49.0: 平板横竖屏翻转不触发 resize 的兜底（守卫：老浏览器无 addEventListener 零操作）
+  if (window.matchMedia && window.matchMedia('(orientation: portrait)').addEventListener) {
+    window.matchMedia('(orientation: portrait)').addEventListener('change', function () {
+      if (!lastCanvasState) return;
+      if (lastCanvasState.layout !== pickReaderLayout(lastCanvasState.cj)) renderBody(lastCanvasState.cj);
+    });
+  }
 })();
 </script>
 <script src="../assets/js/transitions.js"></script>

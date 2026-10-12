@@ -1,0 +1,1988 @@
+﻿[
+  {
+    "httpRequest": {
+      "latency": "0.004230780s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "250",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf7926000be7fdee6f6775",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T06:11:50.796505159Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "62a855c85630b6fd",
+    "timestamp": "2026-09-20T06:11:50.774421Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/3fb6c6d377dffb3e8acd4ae98f5f72c9"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.003913813s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "258",
+      "requestUrl": "https://mnationworld.com/api/articles?q=Test",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf79260009385de7ddbd22",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T06:11:50.796505159Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "347850c8d9b8cf5b",
+    "timestamp": "2026-09-20T06:11:50.598759Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/a4627a7708626b653765f9a0780ea6de"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004663122s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "237",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf774900095571f1303f1f",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T06:03:53.617215418Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "22b666a1ed25f433",
+    "timestamp": "2026-09-20T06:03:53.605100Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/153ea51e0a417446b6b6ca0d16ceb960",
+    "traceSampled": true
+  },
+  {
+    "httpRequest": {
+      "latency": "0.003810077s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "244",
+      "requestUrl": "https://mnationworld.com/api/articles?q=Test",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf7706000e53861562991e",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T06:02:47.115441990Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "47a43f4d55ca11a8",
+    "timestamp": "2026-09-20T06:02:46.933365Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/d1babc5c570831c9789bcf64bb23c200"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004102199s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "238",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf7706000bde8ffd028c0e",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T06:02:46.785528420Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "692643fdfd89b9a0",
+    "timestamp": "2026-09-20T06:02:46.771719Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/cb930338a3e18febd1fd49d9aa2fb39f",
+    "traceSampled": true
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004166602s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/overview.html",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "1090",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf76b30006a00c48ee5009",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T06:01:23.747012897Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "d88ec968fbcac1de",
+    "timestamp": "2026-09-20T06:01:23.428087Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/c07c4bf0f8234b177a7417264d4bcca3"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.065490274s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/fluidcanvas-editor.html",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "PUT",
+      "requestSize": "222769",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004",
+      "responseSize": "251",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf76ab0006afd1bfb3620f",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T06:01:15.754484045Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "e5aca471208922c8",
+    "timestamp": "2026-09-20T06:01:15.370617Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/32abfaa76bd5097a8673433d5d550c02"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004787834s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/overview.html",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "1088",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf769b000c8ffd789adf75",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T06:01:00.101513502Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "75e0c14c81263b5c",
+    "timestamp": "2026-09-20T06:00:59.816792Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/eb22b8d6e4f8caffcb21ce1f0cca17f6"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.003774398s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/overview.html",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "946",
+      "requestUrl": "https://mnationworld.com/api/articles?q=Testing",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf75bd0001f4db20004c90",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:57:17.228587686Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "358ab8391574a7b5",
+    "timestamp": "2026-09-20T05:57:17.123009Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/88b99993e99f7d289d52b10bebd7b0ad",
+    "traceSampled": true
+  },
+  {
+    "httpRequest": {
+      "latency": "0.003747575s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/overview.html",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "937",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf75b9000a76e805109ce4",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:57:13.899872621Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "b16bfc5d387aa928",
+    "timestamp": "2026-09-20T05:57:13.680721Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/3ebea96671bb2e0e13d0fc8cc32c8a07"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.012716406s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/article.html?id=ART-000004",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "961",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004",
+      "responseSize": "221788",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf75b7000b6fcb9b76f640",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:57:11.904196301Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "8bad1f2e3b71738a",
+    "timestamp": "2026-09-20T05:57:11.735085Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/c1dfe2f082c82b1b13d0fc8cc32c8602"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.014165885s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/article.html?id=ART-000004",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "970",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004/comments",
+      "responseSize": "156",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf75b7000b75d13503d889",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:57:11.904196301Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "ccc1fc530538f286",
+    "timestamp": "2026-09-20T05:57:11.735015Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/08b2358c96920f0a13d0fc8cc32c87d5"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004684618s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "679",
+      "requestUrl": "https://mnationworld.com/api/articles?q=Testing",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf75b70007df363c16339c",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:57:11.566797986Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "e3be980f96b9a7bb",
+    "timestamp": "2026-09-20T05:57:11.509244Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/d88a24d5083ffb6f13d0fc8cc32c896e"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004727178s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "918",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf75b30009c36db4b6d500",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:57:07.903898568Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "ac63e7e98fb1e36c",
+    "timestamp": "2026-09-20T05:57:07.633739Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/fce219cee6d28173b60d7a08854d7046"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004065946s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/overview.html",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "945",
+      "requestUrl": "https://mnationworld.com/api/articles?q=Testing",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf759f000574650a1acb06",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:56:47.447488128Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "3c0884dd58507157",
+    "timestamp": "2026-09-20T05:56:47.351851Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/545311813af6c6d006d537387d375b83"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.003832191s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/overview.html",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "936",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf759b000d94f95e9ba432",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:56:44.122111408Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "c6c5c31bfa60c16f",
+    "timestamp": "2026-09-20T05:56:43.884341Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/0cae1a5504d634892e0cde12f5aa2a71"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.003995148s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/article.html?id=ART-000004",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "969",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004/comments",
+      "responseSize": "156",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf759a000283306b081c80",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:56:42.452170329Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "36809fac7b81ad28",
+    "timestamp": "2026-09-20T05:56:42.159100Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/43c15add5d2eaaf42e0cde12f5aa2993"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.009997158s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/article.html?id=ART-000004",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "960",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004",
+      "responseSize": "221788",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf759a000279c543184e9d",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:56:42.452170329Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "a8df441becbad3a0",
+    "timestamp": "2026-09-20T05:56:42.150714Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/61ba6617644593732e0cde12f5aa2fea"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004899025s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "679",
+      "requestUrl": "https://mnationworld.com/api/articles?q=Testing",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf7599000e52c17ef3cd48",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:56:42.119084961Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "5afe4342ba9a0d91",
+    "timestamp": "2026-09-20T05:56:41.931860Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/0292a7873554236f2e0cde12f5aa2179"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.006005874s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "917",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf759600049755b6f33e3d",
+    "labels": {
+      "instanceId": "00a41e8c1d77a46203e343ac92029fed6ce6346356b537d0831a17873e84e4b3da07e3e2142511189c89262c1dc31a69a9d9283799201096d6acd52c58f78bdfa6d4e02294f26004bf74c3baca65e9d4d5"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T05:56:38.458177315Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00269-52s",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "08a5cbe3c639f67a",
+    "timestamp": "2026-09-20T05:56:38.293284Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/de650ea483ec6d825c1c04e1abd45706"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004460969s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "245",
+      "requestUrl": "https://mnationworld.com/api/articles?q=test",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf5c880007612163cf7f1c",
+    "labels": {
+      "instanceId": "00a41e8c1de09c21904645a770c3329440dee0c9a785f70f56b0f2a196100c7e3f609a2ccaa95f586aee01173632ce8b006489e1c2e1247d130b491f58b276ff7ccd90a0193601dc2461fe31a172ff7bf8"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T04:09:44.666837973Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00268-tcv",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "1db50deb3140bc64",
+    "timestamp": "2026-09-20T04:09:44.477168Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/20e65179346a1f5960fb945691d56c91"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004164349s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "237",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf5c880004fc0adc48981f",
+    "labels": {
+      "instanceId": "00a41e8c1de09c21904645a770c3329440dee0c9a785f70f56b0f2a196100c7e3f609a2ccaa95f586aee01173632ce8b006489e1c2e1247d130b491f58b276ff7ccd90a0193601dc2461fe31a172ff7bf8"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T04:09:44.330149496Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00268-tcv",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "9b081fb096c0553a",
+    "timestamp": "2026-09-20T04:09:44.320023Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/109c951af6967ec26ccd720953aa7270",
+    "traceSampled": true
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004306109s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/article.html?id=ART-000004",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "969",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004/comments",
+      "responseSize": "156",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf5b00000e28cc1db679af",
+    "labels": {
+      "instanceId": "00a41e8c1de09c21904645a770c3329440dee0c9a785f70f56b0f2a196100c7e3f609a2ccaa95f586aee01173632ce8b006489e1c2e1247d130b491f58b276ff7ccd90a0193601dc2461fe31a172ff7bf8"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T04:03:13.170663584Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00268-tcv",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "d8e86c25ee232db2",
+    "timestamp": "2026-09-20T04:03:12.921302Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/389fad9d445031480f927f8589ee7bf9"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.009309998s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/article.html?id=ART-000004",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "961",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004",
+      "responseSize": "221788",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf5b00000dfb75f852861e",
+    "labels": {
+      "instanceId": "00a41e8c1de09c21904645a770c3329440dee0c9a785f70f56b0f2a196100c7e3f609a2ccaa95f586aee01173632ce8b006489e1c2e1247d130b491f58b276ff7ccd90a0193601dc2461fe31a172ff7bf8"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T04:03:13.170663584Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00268-tcv",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "02f3d5d0d92adcd4",
+    "timestamp": "2026-09-20T04:03:12.905408Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/d348d6f8a53e1c7d0f927f8589ee727a"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004100780s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "677",
+      "requestUrl": "https://mnationworld.com/api/articles?q=Testing",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf5b00000a289a4c4a86b0",
+    "labels": {
+      "instanceId": "00a41e8c1de09c21904645a770c3329440dee0c9a785f70f56b0f2a196100c7e3f609a2ccaa95f586aee01173632ce8b006489e1c2e1247d130b491f58b276ff7ccd90a0193601dc2461fe31a172ff7bf8"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T04:03:12.843149107Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00268-tcv",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "774b228841bd178f",
+    "timestamp": "2026-09-20T04:03:12.659910Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/354e8626a583ff400f927f8589ee7b66"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.005479131s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "918",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf5afd00011a8e1f5fd605",
+    "labels": {
+      "instanceId": "00a41e8c1de09c21904645a770c3329440dee0c9a785f70f56b0f2a196100c7e3f609a2ccaa95f586aee01173632ce8b006489e1c2e1247d130b491f58b276ff7ccd90a0193601dc2461fe31a172ff7bf8"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T04:03:09.177829721Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00268-tcv",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "8e0d25116239350d",
+    "timestamp": "2026-09-20T04:03:09.064461Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/1121880225065cab74a524482b313ca2"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004395740s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "PUT",
+      "requestSize": "330",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004",
+      "responseSize": "196",
+      "serverIp": "2001:4860:4802:36::15",
+      "status": 401,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf5aee0002911a8fd438fe",
+    "labels": {
+      "instanceId": "00a41e8c1de09c21904645a770c3329440dee0c9a785f70f56b0f2a196100c7e3f609a2ccaa95f586aee01173632ce8b006489e1c2e1247d130b491f58b276ff7ccd90a0193601dc2461fe31a172ff7bf8"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T04:02:54.434338135Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00268-tcv",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "spanId": "fb7f168760605411",
+    "timestamp": "2026-09-20T04:02:54.161961Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/f8ec3ac422d892143c475d74dc42fe6f"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004235871s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "DELETE",
+      "requestSize": "252",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004",
+      "responseSize": "196",
+      "serverIp": "2001:4860:4802:36::15",
+      "status": 401,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf5ae6000c41c01651e25a",
+    "labels": {
+      "instanceId": "00a41e8c1de09c21904645a770c3329440dee0c9a785f70f56b0f2a196100c7e3f609a2ccaa95f586aee01173632ce8b006489e1c2e1247d130b491f58b276ff7ccd90a0193601dc2461fe31a172ff7bf8"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T04:02:47.106445568Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00268-tcv",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "spanId": "e182fdecb2959088",
+    "timestamp": "2026-09-20T04:02:46.797659Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/8599c6e3e1ab539704b96bcbb7595004"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.009366837s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "248",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004",
+      "responseSize": "221788",
+      "serverIp": "2001:4860:4802:36::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf59380009a92e35be279b",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:55:36.722779426Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "722e5ae5cb0218fa",
+    "timestamp": "2026-09-20T03:55:36.621288Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/06a4a0cd3a6fcc94db8e4b913ef08c69"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.009499132s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "249",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004",
+      "responseSize": "221788",
+      "serverIp": "2001:4860:4802:36::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf5930000b0bf7dbec4a74",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:55:28.728403405Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "51655d357d0f9188",
+    "timestamp": "2026-09-20T03:55:28.712223Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/3209a1f79fc31bb4120faf16779e69fa",
+    "traceSampled": true
+  },
+  {
+    "httpRequest": {
+      "latency": "0.002855270s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/article.html?id=ART-000004",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "969",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004/comments",
+      "responseSize": "156",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf58ed000ebe1a1032c61d",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:54:22.234439442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "1a040968f7d1c6b1",
+    "timestamp": "2026-09-20T03:54:21.961685Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/9991b4d67802c259f12654965ac58834"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.009401378s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/article.html?id=ART-000004",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "961",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004",
+      "responseSize": "221788",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf58ed000eb7c6770b8644",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:54:22.234439442Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "027fd6c7b945aeed",
+    "timestamp": "2026-09-20T03:54:21.952815Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/78df46ca19df385ff12654965ac583e2"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004711999s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "679",
+      "requestUrl": "https://mnationworld.com/api/articles?q=Testing",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf58ed000b1e5dbd5bf688",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:54:21.905100534Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "e542777a3e19a682",
+    "timestamp": "2026-09-20T03:54:21.721932Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/4ec664c1a41d1a64f12654965ac5872e"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.005627671s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "917",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf58ea0004cce524cfb180",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:54:18.570314703Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "fae5f289fdf2ef7a",
+    "timestamp": "2026-09-20T03:54:18.306413Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/9b7219e498c61e5a09feae9a67ac98c9"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.013051820s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "249",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000004",
+      "responseSize": "221788",
+      "serverIp": "2001:4860:4802:36::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf584d000052e7b877a428",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:51:41.025269621Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "2a52fe5309909c64",
+    "timestamp": "2026-09-20T03:51:41.002581Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/952505ff12f05858bd36087a4ade113d",
+    "traceSampled": true
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004827821s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "244",
+      "requestUrl": "https://mnationworld.com/api/articles?q=test",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:36::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf5825000e5ab1dba27786",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:51:02.133761376Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "7ae4ca3049ecd983",
+    "timestamp": "2026-09-20T03:51:01.933761Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/1234a6282aa7962b9d5e4bcff964833a"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.003559320s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "237",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:36::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf5825000c25212a2b0f80",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:51:01.799075051Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "a2bf412c7d2e108b",
+    "timestamp": "2026-09-20T03:51:01.790586Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/411d55a8ba75948df8f20e608be8bd03",
+    "traceSampled": true
+  },
+  {
+    "httpRequest": {
+      "latency": "0.003934060s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/index.html",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "1081",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf57de0005a1b3778bca2e",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:49:50.643855366Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "5921e3206fcbeb74",
+    "timestamp": "2026-09-20T03:49:50.363172Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/f62508aaa69055c68249a080debce1cf"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.005660351s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/fluidcanvas.html?view=articles&filter=all&sort=newest",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "DELETE",
+      "requestSize": "1198",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000003",
+      "responseSize": "175",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf57d7000874b5a60e9c5f",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:49:43.650745528Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "7a2798b6536699cc",
+    "timestamp": "2026-09-20T03:49:43.545873Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/e276703ec7c3494fbee6c83d26f5a5e7"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004581769s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/fluidcanvas.html?view=articles&filter=all&sort=newest",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "DELETE",
+      "requestSize": "1197",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000002",
+      "responseSize": "175",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf57d200027329f0185bde",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:49:38.324018722Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "7b406d5f167d176e",
+    "timestamp": "2026-09-20T03:49:38.153268Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/46332da459174742bee6c83d26f5a34c"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.155195572s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/fluidcanvas.html?view=articles&filter=all&sort=newest",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "DELETE",
+      "requestSize": "1198",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-000001",
+      "responseSize": "175",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf57ce0008091e3dab20bd",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:49:34.661223695Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "2a276facb1b1819f",
+    "timestamp": "2026-09-20T03:49:34.369027Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/487732225b035048f2872e058227fee1",
+    "traceSampled": true
+  },
+  {
+    "httpRequest": {
+      "latency": "0.006110930s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/fluidcanvas.html?view=content&tab=articles",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "1120",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "912",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf57c9000a08fa4646dfb2",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:49:29.992008Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "e3562606fe702a08",
+    "timestamp": "2026-09-20T03:49:29.649181Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/1ad36a61e9e81a37f2872e058227fcda"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.005525010s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/index.html",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "1082",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "912",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf57c20009b17b38e31644",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:49:22.658128605Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "4cbd6a2c1d06e6ab",
+    "timestamp": "2026-09-20T03:49:22.626846Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/dd92d17273cf5348b72046ac477ddd0b"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.043515351s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/fluidcanvas-editor.html",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "POST",
+      "requestSize": "222759",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "251",
+      "serverIp": "2001:4860:4802:34::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf57bf000995e1af058f9d",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:49:19.661590881Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "dd5c0a320311d1bd",
+    "timestamp": "2026-09-20T03:49:19.581969Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/48cdfb299853f2afb72046ac477ddda3"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.003998009s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "DELETE",
+      "requestSize": "252",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-999999",
+      "responseSize": "196",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 401,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf56eb00002fb650fc6618",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:45:47.229006966Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "spanId": "9e25bb86551fd512",
+    "timestamp": "2026-09-20T03:45:47.006164Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/7f64acd8d33affc45ebc69ce2b3fe718"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004341689s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "PUT",
+      "requestSize": "333",
+      "requestUrl": "https://mnationworld.com/api/articles/ART-999999",
+      "responseSize": "196",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 401,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf56ea000d49e29f999f28",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:45:46.895718429Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "WARNING",
+    "spanId": "f79e4ff6c811fd53",
+    "timestamp": "2026-09-20T03:45:46.864043Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/d24b1fc444ea16373968771288209057"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.005757199s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "237",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaf56ea000b2dc8e65b128b",
+    "labels": {
+      "instanceId": "00a41e8c1df58de8cd35c722311ad201965e9b33063e7c7232cc55bda86530d8cf67667f4cac1225758b60029e428191bca8e09d4b924ae30f2067329e13ae7437d53bf9def458b2c4be4b5c9ca5a97e7fd4"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:45:46.895718429Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00267-9l4",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "8d2373d5e472a01b",
+    "timestamp": "2026-09-20T03:45:46.724343Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/e617aa58acd35ed7d46ed46eb08f88ed"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.007021185s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/",
+      "remoteIp": "2001:e68:5470:20a4:547b:f553:4732:5ffe",
+      "requestMethod": "GET",
+      "requestSize": "1070",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "722",
+      "serverIp": "2001:4860:4802:32::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaf5325000e4ba3e3422fb9",
+    "labels": {
+      "instanceId": "00a41e8c1df0d0e938f5f12c86c161edf2f91b78b6f923e6110ffb40242377bf178b312bce80145f125bf249eb216ea24220f195f003a03a76b1bbb97c61d535c4f4e0ca673ed4079e53baa0290a47caa4c6"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T03:29:42.106817769Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00266-rrq",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "aa7e9a54f63aeb1f",
+    "timestamp": "2026-09-20T03:29:41.927644Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/c0645892f05286edb1dd9747a197930c"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.006695001s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/",
+      "remoteIp": "2001:41d0:350:1400::",
+      "requestMethod": "GET",
+      "requestSize": "488",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "346",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0"
+    },
+    "insertId": "6aaf296e00079e48a7a78200",
+    "labels": {
+      "instanceId": "00a41e8c1df0d0e938f5f12c86c161edf2f91b78b6f923e6110ffb40242377bf178b312bce80145f125bf249eb216ea24220f195f003a03a76b1bbb97c61d535c4f4e0ca673ed4079e53baa0290a47caa4c6"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-20T00:31:42.769880104Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00266-rrq",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "2c21a13be52711bd",
+    "timestamp": "2026-09-20T00:31:42.490959Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/b7c5efea393e098baa758f0fc88e17b0"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.005619447s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/fluidcanvas.html",
+      "remoteIp": "2001:e68:5470:20a4:9ef:d3e9:2b1b:86e9",
+      "requestMethod": "GET",
+      "requestSize": "1094",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "722",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaeef90000632b2e719d0e0",
+    "labels": {
+      "instanceId": "00a41e8c1df0d0e938f5f12c86c161edf2f91b78b6f923e6110ffb40242377bf178b312bce80145f125bf249eb216ea24220f195f003a03a76b1bbb97c61d535c4f4e0ca673ed4079e53baa0290a47caa4c6"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-19T20:24:48.661290302Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00266-rrq",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "f23feac36bea4423",
+    "timestamp": "2026-09-19T20:24:48.398649Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/95aa2be2f31a232b50571351b55d3611"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.006689275s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/index.html",
+      "remoteIp": "2001:e68:5470:20a4:9ef:d3e9:2b1b:86e9",
+      "requestMethod": "GET",
+      "requestSize": "1081",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "722",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaeef7f00044b90cd0334c8",
+    "labels": {
+      "instanceId": "00a41e8c1df0d0e938f5f12c86c161edf2f91b78b6f923e6110ffb40242377bf178b312bce80145f125bf249eb216ea24220f195f003a03a76b1bbb97c61d535c4f4e0ca673ed4079e53baa0290a47caa4c6"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-19T20:24:31.341200235Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00266-rrq",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "9848b7ddac33a5be",
+    "timestamp": "2026-09-19T20:24:31.273332Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/e0c763844c05142750571351b55d33e4"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.011171054s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/fluidcanvas-editor.html",
+      "remoteIp": "2001:e68:5470:20a4:9ef:d3e9:2b1b:86e9",
+      "requestMethod": "POST",
+      "requestSize": "222759",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "251",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaeef7c00015fc429f08686",
+    "labels": {
+      "instanceId": "00a41e8c1df0d0e938f5f12c86c161edf2f91b78b6f923e6110ffb40242377bf178b312bce80145f125bf249eb216ea24220f195f003a03a76b1bbb97c61d535c4f4e0ca673ed4079e53baa0290a47caa4c6"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-19T20:24:28.344427004Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00266-rrq",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "039fb668aadfda00",
+    "timestamp": "2026-09-19T20:24:28.076475Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/892d8c6db2c1a0dd8166cd3c5e399b36"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.005573779s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/pages/fluidcanvas.html?view=analytics&tab=articles&period=28d",
+      "remoteIp": "2001:e68:5470:20a4:9ef:d3e9:2b1b:86e9",
+      "requestMethod": "GET",
+      "requestSize": "1132",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "532",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaeef740000d800bc6b4bbb",
+    "labels": {
+      "instanceId": "00a41e8c1df0d0e938f5f12c86c161edf2f91b78b6f923e6110ffb40242377bf178b312bce80145f125bf249eb216ea24220f195f003a03a76b1bbb97c61d535c4f4e0ca673ed4079e53baa0290a47caa4c6"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-19T20:24:20.352765422Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00266-rrq",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "78742715587effa4",
+    "timestamp": "2026-09-19T20:24:20.048355Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/9e37cbe47782a0a78166cd3c5e399aba",
+    "traceSampled": true
+  },
+  {
+    "httpRequest": {
+      "latency": "0.007920616s",
+      "protocol": "HTTP/1.1",
+      "referer": "https://mnationworld.com/index.html",
+      "remoteIp": "2001:e68:5470:20a4:9ef:d3e9:2b1b:86e9",
+      "requestMethod": "GET",
+      "requestSize": "1081",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "532",
+      "serverIp": "2001:4860:4802:38::15",
+      "status": 200,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+    },
+    "insertId": "6aaeef640005390a9a4873f1",
+    "labels": {
+      "instanceId": "00a41e8c1df0d0e938f5f12c86c161edf2f91b78b6f923e6110ffb40242377bf178b312bce80145f125bf249eb216ea24220f195f003a03a76b1bbb97c61d535c4f4e0ca673ed4079e53baa0290a47caa4c6"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-19T20:24:04.369040124Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00266-rrq",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "9d460197814c546d",
+    "timestamp": "2026-09-19T20:24:04.332380Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/245bd1ae0d6fcc7b8166cd3c5e399479"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004404317s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:9ef:d3e9:2b1b:86e9",
+      "requestMethod": "GET",
+      "requestSize": "244",
+      "requestUrl": "https://mnationworld.com/api/articles?q=test",
+      "responseSize": "156",
+      "serverIp": "2001:4860:4802:36::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaeee9900091555c9c24dee",
+    "labels": {
+      "instanceId": "00a41e8c1df0d0e938f5f12c86c161edf2f91b78b6f923e6110ffb40242377bf178b312bce80145f125bf249eb216ea24220f195f003a03a76b1bbb97c61d535c4f4e0ca673ed4079e53baa0290a47caa4c6"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-19T20:20:41.805664742Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00266-rrq",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "93fa0ea0eb268744",
+    "timestamp": "2026-09-19T20:20:41.588823Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/9595a1ed4806dd10384e06a773a4ac27"
+  },
+  {
+    "httpRequest": {
+      "latency": "0.004894397s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:9ef:d3e9:2b1b:86e9",
+      "requestMethod": "GET",
+      "requestSize": "237",
+      "requestUrl": "https://mnationworld.com/api/articles",
+      "responseSize": "156",
+      "serverIp": "2001:4860:4802:36::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aaeee99000735c74cc99e07",
+    "labels": {
+      "instanceId": "00a41e8c1df0d0e938f5f12c86c161edf2f91b78b6f923e6110ffb40242377bf178b312bce80145f125bf249eb216ea24220f195f003a03a76b1bbb97c61d535c4f4e0ca673ed4079e53baa0290a47caa4c6"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-19T20:20:41.805664742Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00266-rrq",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "9975466bad2e3a2d",
+    "timestamp": "2026-09-19T20:20:41.465673Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/895c74753afdaae3708b98cddd34686f",
+    "traceSampled": true
+  },
+  {
+    "httpRequest": {
+      "latency": "0.003676790s",
+      "protocol": "HTTP/1.1",
+      "remoteIp": "2001:e68:5470:20a4:68c0:e2d8:518a:fbb9",
+      "requestMethod": "GET",
+      "requestSize": "245",
+      "requestUrl": "https://mnationworld.com/api/articles?limit=5",
+      "responseSize": "156",
+      "serverIp": "2001:4860:4802:36::15",
+      "status": 200,
+      "userAgent": "curl/8.21.0"
+    },
+    "insertId": "6aad632d0007f4e9d8ddeb73",
+    "labels": {
+      "instanceId": "00a41e8c1db4bc92671aec8a34a149b705071a74ea2772bf568c313491308c193d93b032cb47ce282aa03c7b74a7199c1fee84e3ec39dc28850825f412531476cafdadbfbb4edb16a9a82be88c2ff8363a8f"
+    },
+    "logName": "projects/project-02d050ab-8105-448e-bac/logs/run.googleapis.com%2Frequests",
+    "receiveTimestamp": "2026-09-18T16:13:33.525930458Z",
+    "resource": {
+      "labels": {
+        "configuration_name": "mnationworld-web",
+        "location": "asia-southeast1",
+        "project_id": "project-02d050ab-8105-448e-bac",
+        "revision_name": "mnationworld-web-00254-w4f",
+        "service_name": "mnationworld-web"
+      },
+      "type": "cloud_run_revision"
+    },
+    "severity": "INFO",
+    "spanId": "80dc3af13839d9fc",
+    "timestamp": "2026-09-18T16:13:33.516525Z",
+    "trace": "projects/project-02d050ab-8105-448e-bac/traces/8da5f1d477f5bfbdd186530115d4f07a",
+    "traceSampled": true
+  }
+]

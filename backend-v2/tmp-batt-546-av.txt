@@ -1,0 +1,40 @@
+  ✅ F0-1 版本双线 v0.2.54.0 / v10.28.36.1 + 文章查看器注释块 + 直接发布注释块
+  ✅ F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）
+  ✅ F0-3 编辑器五守卫在场（saveDraft/putCloudDraft/syncCloudDraft/keydown/refit resize 全挡 viewmode）
+  ✅ F0-4 列表接云端在场（View 委托分支 + cloudArticles + loadCloudArticles + api.js 动态注入 + demo store）
+  ✅ F0-5 ART-001 样例 contentJson 在场（正文卡 + flag + text，标题一致）
+  ✅ F0-6 发布即公开在场（badge-success Published + 已发布 toast + 占位文案无「审核中」）
+  ✅ A1 17 行（15 种子+2 云端）
+  ✅ A2 云端行置顶（首行 ART-CLOUD-1）
+  ✅ A3 云端行无删除钮、种子行有
+  ✅ A4 pending 云端行徽章 In Review
+  ✅ A5 View 按钮导航到 editor?article=ART-CLOUD-1
+  ✅ B1 body.fc-viewmode 在场
+  ✅ B2 fixture 4 卡全渲染
+  ✅ B3 chrome 全隐（header/侧栏/状态栏/标题框）
+  ✅ B4 #fcViewScaler 在场且 overflow hidden
+  ✅ B5 画布等比缩放 scale(≤1) 贴满可用区  scale(0.35)
+  ✅ B6 卡内零交互（pointer-events none）
+  ✅ B7 contentEditable 关闭 + Tab 序移除
+  ✅ B8 哨兵本地草稿未被覆盖（saveDraft/自动保存守卫实证）  {"sentinel":true}
+  ✅ B9 标题芯片 #fcViewTitle = fixture 标题
+  ✅ C1 右越界卡被裁（card.right > scaler.right）  card.right=836.1 scaler.right=798.5
+  ✅ C2 下越界卡被裁（card.bottom > scaler.bottom）  card.bottom=823.8 scaler.bottom=786.0
+  ✅ C3 界内卡完整可见（c1 不越界）
+  ✅ C4 画布与 scaler 可视区一致（canvas.right ≤ scaler.right+1）
+  ✅ D1 pending 文章占位卡在场
+  ✅ D2 占位态零卡零 scaler
+  ✅ D3 占位卡含返回列表链接
+  ✅ D4 404 文章占位卡在场
+  ✅ F1 demo 兜底 3 卡渲染（云端 404 → 本地样例）
+  ✅ F2 标题芯片 = 样例标题
+  ✅ F3 样例 flag 卡图已挂（img 在场）
+  ✅ F4 reload 后仍 view mode + 3 卡（幂等）
+  ✅ F5 reload 后哨兵仍未被覆盖
+  ✅ G1 零 Runtime exception  干净
+  ✅ G2 零 console error  干净
+  ✅ E1 guest 未被送回锁屏（pathname 仍 editor）
+  ✅ E2 guest 文章照常渲染 4 卡
+  ✅ E3 guest 零 Runtime exception  干净
+
+🎉 全部通过 38/38

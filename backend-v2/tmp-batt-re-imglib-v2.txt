@@ -1,0 +1,33 @@
+  ✅ F1 版本 v0.2.45.2 / v10.28.34.2 + 进位注释（42→43/32→33）
+  ✅ F2 持久库静态钉：IMG_LIB_KEY/2.5e6 上限/导出 imgLibPut+imgLibRemove/choke point imgMetaSave→imgLibPut
+  ✅ F3 直开图库静态钉：点卡 handler 调 openFlagBrowser（国旗+国徽）+旧选择器全删+搜索栏上传按钮+开窗 focus
+  ✅ F4 openFlagBrowser 调用点恰好 2 处（国旗卡+国徽卡 click）  n=2
+  ✅ F5 store↔图库钩子：collectImgLibrary store 先入（带 uploader+ts）/syncLibMeta imgLibPut/removeLibUsages imgLibRemove
+  ✅ F6 info 图标+二级弹窗静态钉：imgInfoModal/导出 showLibImgInfo/lib-info 钮+CSS/uploader 字段+Wikimedia+仅公开显示
+  ✅ S1a 点国旗卡=直开图片库（旧选择器已删）+全部页签+空态  {"browser":true,"meta":false,"info":false,"chooserGone":true,"backdrop":true,"tab":"all","focusId":"flagSearchInput","tiles":[],"empty":"还没有上传过图片——你上传的国旗、背景、头像、地图都会出现在这里","selCount":"未选择","metaName":"
+  ✅ S1b 弹窗出现=焦点落搜索框（用户「直接打开搜索」）  focus=flagSearchInput
+  ✅ S2 点国徽卡=直开图片库  {"browser":true,"meta":false,"info":false,"chooserGone":true,"backdrop":true,"tab":"all","focusId":"flagSearchInput","tiles":[],"empty":"还没有上传过图片——你上传的国旗、背景、头像、
+  ✅ S3a 保存=图落到卡+图库保持打开（close:self）  {"imgName":"我的国旗","hasImg":true} {"browser":true,"meta":false,"info":false,"chooserGone":true,"backdrop":true,"tab":"all","focusId":"","tiles":[{"name":"我的国旗","sel":true,"ed
+  ✅ S3b 全部页签=新格立刻出现并选中+计数文案  [{"name":"我的国旗","sel":true,"edit":true,"del":true,"info":true}] 已选：我的国旗
+  ✅ S3c 我的图库=同样 1 格（用户「全部/我的图库都看见」）  [{"name":"我的国旗","sel":false,"edit":true,"del":true,"info":true}]
+  ✅ S3d 持久库已写入（store 1 条）  [{"name":"我的国旗","vis":"public"}]
+  ✅ S4 铅笔编辑=store upsert（名称/描述/可见性）+图库保持开+格名刷新  [{"name":"改名了","desc":"新描述","vis":"team"}]
+  ✅ S5a 删卡后 autosave=草稿已空（n=0）  {"v":9,"n":0}
+  ✅ S5b reload=画布空（无卡）  cards=0
+  ✅ S5c 新画布打开图片库=上传的图仍在（跨文章可见——用户 bug 的真身修复）  [{"name":"改名了","sel":false,"edit":true,"del":true,"info":true}]
+  ✅ S6 删除=store 0 条+图库空态文案  {"browser":true,"meta":false,"info":false,"chooserGone":true,"backdrop":true,"tab":"mylib","focusId":"flagSearchInput","tiles":[],"empty":"还没有上传过图片——你上传的国旗、背景、头像、地图都会出现在这里","selCount":"未选择","metaName"
+  ✅ S7a 3 张 1.2MB 图=超 2.5MB 上限→FIFO 淘汰最旧 A→剩 B/C  ["巨图B","巨图C"]
+  ✅ S7b 单图 3MB 仍超限=不入库（store 保持 B/C）+toast「图片过大…未存入我的图库」  ["巨图B","巨图C"]
+  ✅ S8a uploader 落库（=Battery Tester）+公开图有 info 图标、私密图无  {"store":[{"n":"公开图","up":"Battery Tester"},{"n":"私密图","up":"Battery Tester"}],"tiles":[{"n":"公开图","i":true},{"n":"私密图","i":false}]}
+  ✅ S8b 点 info=开二级弹窗（三层栈）+不触发选中（stopPropagation 护栏）  {"info":true,"browser":true,"tiles":[{"n":"公开图","sel":false},{"n":"私密图","sel":false}]}
+  ✅ S8c 弹窗内容：名称/简介/上传者/时间格式/可见性  {"n":"公开图","d":"公开描述","u":"Battery Tester","ts":"2026-09-15 02:22","v":"Public"}
+  ✅ S8d closeModalOnly=只关 info、图库+遮罩保持开  {"info":false,"browser":true,"backdrop":true}
+  ✅ S8e Escape=先关 info、图库保持开  {"info":false,"browser":true}
+  ✅ S8f Wikimedia 扫描派生=有 info 图标（uploader 前缀判定）  [{"n":"公开图","i":true},{"n":"私密图","i":false},{"n":"wm","i":true}]
+  ✅ S8g Wikimedia 弹窗=uploader Wikimedia Commons+无 ts 兜底「—」  {"u":"Wikimedia Commons","ts":"—","v":"Public"}
+  ✅ S8h 搜索过滤后=公开图保留 info 图标  [{"name":"公开图","sel":false,"edit":true,"del":true,"info":true}]
+  ✅ S8i 切换我的图库页签=图标保持（公开有/私密无）  [{"n":"公开图","i":true},{"n":"私密图","i":false},{"n":"wm","i":true}]
+  ✅ S9 版本 v0.2.45.2 + FC v10.28.34.2 + 徽章  {"mn":"v0.2.45.2","fc":"v10.28.34.2","badge":true}
+  ✅ Z 零 console error  []
+
+  ── 结果: 31/31 全绿 ✅

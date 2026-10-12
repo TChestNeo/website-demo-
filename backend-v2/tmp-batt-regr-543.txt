@@ -1,0 +1,772 @@
+===== tmp-battery-i18n =====
+═══ S. 静态巡检 ═══
+  ✅ S1 7 旧 .zh.js 全删（badge/help/ticket/ai-chat/community-rules/financial-terms/platform-responsibility）
+  ✅ S2 词典文件集恰 39 个（37 页 + common + admin，无杂散无缺失；auth 同域双页共用）
+  ✅ S3 每个词典含 en 块
+  ✅ S4 每个词典含 OpenCC 生成的 zh-Hant 块（哨兵 __ZH_HANT_AUTO__）
+  ✅ S5 38 页↔词典挂载逐一接通（HTML 加载自身 .i18n.js）
+  ✅ S6 38 接入页三件套（i18n.js + apply() + common.i18n.js，admin 免 common）
+  ✅ S7 6 排除页零 i18n（FC 两页+stub×2+demo×2 一个 i18n script 都没有）
+  ✅ S8 i18n.js LANGS 12 码序列 zh→zh-Hant→en→de→ru→ms→th→vi→id→fr→es→pt
+  ✅ S9 site-config 版本 = v0.2.54.2
+  ✅ S10 common.i18n.js 键族齐（sidebar/settings/report/aichat 从 help 移入/verify 从 badge 共享）
+═══ A. 设置弹窗切换链（badge 页）═══
+  ✅ A1 设置弹窗 12 语言 pill 标签序列（固有语言名）
+  ✅ A2 初始 active pill = zh（--lang=zh-CN 自动选）
+  ✅ A3 点 Deutsch → 页面标题变德语（=t('badge.meta.title') 且 ≠ 中文原文）
+  ✅ A4 双键持久：slati_lang=de + slati_settings.language=de
+  ✅ A5 reload 后语言仍德语（slati_lang 持久生效）
+  ✅ A6 xx 无字典回落浏览器语言 zh（标题=zh 值）
+═══ A'. FC 编辑器页零 i18n ═══
+  ✅ A7 FC 编辑器页零 i18n 引擎（MN_I18N undefined）
+  ✅ A8 FC 页无字典时 12 pill 兜底序列（settings-modal 硬编码清单）
+  ✅ A9 FC 点 de pill 仍落 localStorage slati_lang=de（无字典也记住选择）
+  ✅ A10 FC 弹窗文案英文保持（无字典 data-i18n 不渲染）
+═══ B. 浏览器语言自动选（de-DE）═══
+  ✅ B1 访客 --lang=de-DE 首访法律页自动选德语（标题=de 值+无 CJK）
+  ✅ B2 admin 壳静态节点自动选德语（登录标题=de 值+无 CJK）
+  ✅ B3 admin 切 zh 回落中文（zh 值逐字节=管理端原文，smoke-admin 安全）
+═══ C. 默认 zh 回归 ═══
+  ✅ C1 无 localStorage 默认 zh（--lang=zh-CN 回落）
+  ✅ C2 侧栏首项 = 主页（common T() 渲染）
+  ✅ C3 知识库卡 = 知识库（index 词典渲染）
+═══ D. index 动态区双语（活动流/公告/订阅卡）═══
+  ✅ D1 zh 活动流已翻译（以太共和国 + 2 小时前）
+  ✅ D2 zh 公告已翻译（公开测试启动 + 官方）
+  ✅ D3 zh 订阅卡特性已翻译（高级分析）
+  ✅ D4 zh 公告按钮/搜索框已翻译（查看全部公告/搜索世界、话题…）
+  ✅ D5 de 活动流已翻译（Republik Etheria + vor 2 Stunden）
+  ✅ D6 de 公告已翻译（Beta-Start + offiziell）
+  ✅ D7 de 订阅卡特性已翻译（Erweiterte Analysen）
+  ✅ D8 切回 zh 重渲染恢复中文（以太共和国）
+
+i18n：34 通过 / 0 失败
+EXIT: 0
+===== tmp-battery-premium-multi =====
+premium 多币年付电池：启动中… base=https://mnationworld.com
+  ✅ en-US → usd currency=usd
+  ✅ en-US → usd 月付渲染含 $11.99
+  ✅ en-US → usd 不渲染异币 RM23.50
+  ✅ en-US → usd 年付 yearPrice(premium)=$119.99
+  ✅ en-US → usd ymP yearPerMonth(premium)=$10.00
+  ✅ en-US → usd yP[usd] 字面量 premium=$119.99
+  ✅ en-US → usd ymP[usd] 字面量 premium=$10.00
+  ✅ en-US → usd 无「单次」口吻
+  ✅ en-US → usd 无「1 个月」口吻
+  ✅ en-US → usd 折合每月提示模板命中
+  ✅ ms-MY → myr（回归） currency=myr
+  ✅ ms-MY → myr（回归） 月付渲染含 RM23.50
+  ✅ ms-MY → myr（回归） 不渲染异币 $11.99
+  ✅ ms-MY → myr（回归） 年付 yearPrice(premium)=RM235
+  ✅ ms-MY → myr（回归） ymP yearPerMonth(premium)=RM19.58
+  ✅ ms-MY → myr（回归） yP[myr] 字面量 premium=RM235
+  ✅ ms-MY → myr（回归） ymP[myr] 字面量 premium=RM19.58
+  ✅ ms-MY → myr（回归） 无「单次」口吻
+  ✅ ms-MY → myr（回归） 无「1 个月」口吻
+  ✅ ms-MY → myr（回归） 折合每月提示模板命中
+  ✅ en-GB → gbp currency=gbp
+  ✅ en-GB → gbp 月付渲染含 £9.99
+  ✅ en-GB → gbp 不渲染异币 €11.00
+  ✅ en-GB → gbp 年付 yearPrice(premium)=£99.99
+  ✅ en-GB → gbp ymP yearPerMonth(premium)=£8.33
+  ✅ en-GB → gbp yP[gbp] 字面量 premium=£99.99
+  ✅ en-GB → gbp ymP[gbp] 字面量 premium=£8.33
+  ✅ en-GB → gbp 无「单次」口吻
+  ✅ en-GB → gbp 无「1 个月」口吻
+  ✅ en-GB → gbp 折合每月提示模板命中
+  ✅ en-SG → sgd（新分支） currency=sgd
+  ✅ en-SG → sgd（新分支） 月付渲染含 S$15.99
+  ✅ en-SG → sgd（新分支） 不渲染异币 A$18.99
+  ✅ en-SG → sgd（新分支） 年付 yearPrice(premium)=S$159.99
+  ✅ en-SG → sgd（新分支） ymP yearPerMonth(premium)=S$13.33
+  ✅ en-SG → sgd（新分支） yP[sgd] 字面量 premium=S$159.99
+  ✅ en-SG → sgd（新分支） ymP[sgd] 字面量 premium=S$13.33
+  ✅ en-SG → sgd（新分支） 无「单次」口吻
+  ✅ en-SG → sgd（新分支） 无「1 个月」口吻
+  ✅ en-SG → sgd（新分支） 折合每月提示模板命中
+  ✅ en-PH → php（新分支） currency=php
+  ✅ en-PH → php（新分支） 月付渲染含 ₱311.99
+  ✅ en-PH → php（新分支） 不渲染异币 ฿186.99
+  ✅ en-PH → php（新分支） 年付 yearPrice(premium)=₱3,119.99
+  ✅ en-PH → php（新分支） ymP yearPerMonth(premium)=₱260.00
+  ✅ en-PH → php（新分支） yP[php] 字面量 premium=₱3,119.99
+  ✅ en-PH → php（新分支） ymP[php] 字面量 premium=₱260.00
+  ✅ en-PH → php（新分支） 无「单次」口吻
+  ✅ en-PH → php（新分支） 无「1 个月」口吻
+  ✅ en-PH → php（新分支） 折合每月提示模板命中
+  ✅ de-DE → eur（EU 时区兜底） currency=eur
+  ✅ de-DE → eur（EU 时区兜底） 月付渲染含 €11.00
+  ✅ de-DE → eur（EU 时区兜底） 不渲染异币 £9.99
+  ✅ de-DE → eur（EU 时区兜底） 年付 yearPrice(premium)=€110.00
+  ✅ de-DE → eur（EU 时区兜底） ymP yearPerMonth(premium)=€9.17
+  ✅ de-DE → eur（EU 时区兜底） yP[eur] 字面量 premium=€110.00
+  ✅ de-DE → eur（EU 时区兜底） ymP[eur] 字面量 premium=€9.17
+  ✅ de-DE → eur（EU 时区兜底） 无「单次」口吻
+  ✅ de-DE → eur（EU 时区兜底） 无「1 个月」口吻
+  ✅ de-DE → eur（EU 时区兜底） 折合每月提示模板命中
+  ✅ ja-JP → jpy currency=jpy
+  ✅ ja-JP → jpy 月付渲染含 ¥1,800
+  ✅ ja-JP → jpy 不渲染异币 ₩16,000
+  ✅ ja-JP → jpy 年付 yearPrice(premium)=¥18,000
+  ✅ ja-JP → jpy ymP yearPerMonth(premium)=¥1,500
+  ✅ ja-JP → jpy yP[jpy] 字面量 premium=¥18,000
+  ✅ ja-JP → jpy ymP[jpy] 字面量 premium=¥1,500
+  ✅ ja-JP → jpy 无「单次」口吻
+  ✅ ja-JP → jpy 无「1 个月」口吻
+  ✅ ja-JP → jpy 折合每月提示模板命中
+  ✅ ko-KR → krw currency=krw
+  ✅ ko-KR → krw 月付渲染含 ₩16,000
+  ✅ ko-KR → krw 不渲染异币 ₹459.00
+  ✅ ko-KR → krw 年付 yearPrice(premium)=₩160,000
+  ✅ ko-KR → krw ymP yearPerMonth(premium)=₩13,333
+  ✅ ko-KR → krw yP[krw] 字面量 premium=₩160,000
+  ✅ ko-KR → krw ymP[krw] 字面量 premium=₩13,333
+  ✅ ko-KR → krw 无「单次」口吻
+  ✅ ko-KR → krw 无「1 个月」口吻
+  ✅ ko-KR → krw 折合每月提示模板命中
+  ✅ en-NZ → usd 兜底（非 16 币） currency=usd
+  ✅ en-NZ → usd 兜底（非 16 币） 月付渲染含 $11.99
+  ✅ en-NZ → usd 兜底（非 16 币） 不渲染异币 RM23.50
+  ✅ en-NZ → usd 兜底（非 16 币） 年付 yearPrice(premium)=$119.99
+  ✅ en-NZ → usd 兜底（非 16 币） ymP yearPerMonth(premium)=$10.00
+  ✅ en-NZ → usd 兜底（非 16 币） yP[usd] 字面量 premium=$119.99
+  ✅ en-NZ → usd 兜底（非 16 币） ymP[usd] 字面量 premium=$10.00
+  ✅ en-NZ → usd 兜底（非 16 币） 无「单次」口吻
+  ✅ en-NZ → usd 兜底（非 16 币） 无「1 个月」口吻
+  ✅ en-NZ → usd 兜底（非 16 币） 折合每月提示模板命中
+  ✅ th-TH → thb（弱币马币档） currency=thb
+  ✅ th-TH → thb（弱币马币档） 月付渲染含 ฿186.99
+  ✅ th-TH → thb（弱币马币档） 不渲染异币 ₱311.99
+  ✅ th-TH → thb（弱币马币档） 年付 yearPrice(premium)=฿1,869.99
+  ✅ th-TH → thb（弱币马币档） ymP yearPerMonth(premium)=฿155.83
+  ✅ th-TH → thb（弱币马币档） yP[thb] 字面量 premium=฿1,869.99
+  ✅ th-TH → thb（弱币马币档） ymP[thb] 字面量 premium=฿155.83
+  ✅ th-TH → thb（弱币马币档） 无「单次」口吻
+  ✅ th-TH → thb（弱币马币档） 无「1 个月」口吻
+  ✅ th-TH → thb（弱币马币档） 折合每月提示模板命中
+  ✅ 5 个每年支付按钮静态标签（无单次残留）
+  ✅ v0.2.13.1 plan-note 含 银行卡/GrabPay
+  ✅ v0.2.13.1 plan-note 无 FPX/支付宝 口吻（账户不可用不再声称）
+  ✅ hub en-GB 角标 = £9.99
+  ✅ hub ms-MY 角标 = RM23.50
+  ✅ 全程 0 页面脚本异常
+════ premium 多币年付电池完成：106/106 通过 ════
+EXIT: 0
+===== tmp-battery-msg-anim =====
+═══ F0 静态（修复标记）═══
+  ✅ F0-1 transition: all 清零（页专块显式列表覆盖内联块 ethereal 原版）
+  ✅ F0-2 #msgSlide will-change: transform 层提升
+  ✅ F0-3 面板 opacity 渐隐过渡已移除（瞬时调暗）
+  ✅ F0-4 announceList CSS mask 已移除（真实属性零残留）
+  ✅ F0-5 侧栏 width 过渡换锐曲线 0.25s cubic-bezier(0.22,0.61,0.36,1)
+  ✅ F0-6 .msg-row.fade-up will-change
+  ✅ F0-7 .card-hover 基础过渡（悬停抬升双向平滑）
+  ✅ F0-8 公告卡 transition 仅 box-shadow（tilt 即时跟手）
+  ✅ F0-9 .btn/.input-glass/.modal-card/.subnav-pill/.upload-zone/.segmented-option 显式列表
+  ✅ F0-10 msg-acc mono 暗色块保留（Request G 修复不受扰）
+  ✅ F0-11 fadeUp 关键帧保留
+  ✅ F0-12 测试聊天/群已移除（空默认 + DATA_VERSION=4 + 演示 id/私聊名零残留 + 公告保留）
+  ✅ F0-13 Add Friend 改用户 ID 添加（占位/文案换 ID + email 分支零残留 + 404 新文案）
+  ✅ F0-14 弹窗淡入动画（遮罩+卡片双 keyframes + actionModal 动画规则）
+  ✅ F0-15 搜索栏右侧通知铃铛（搜索框后分隔线 + notifications 图标入 searchCapsule）
+  ✅ F0-16 铃铛按钮+红点徽章+灵动岛弹窗 DOM（唯一性 + 徽章在铃铛 span 之后）
+  ✅ F0-17 灵动岛展开动画 + morph 规则（island-open 主规则+降动效规则/show-decision 双规则/高度过渡/右上原点）
+  ✅ F0-18 决定视图双药丸 + 加好友改发好友请求（/friend-requests 在、建会话调用不在）
+  ✅ F0-19 invites 存取管线（唯一声明/loadData 守卫/saveData 字段/accept/decline/refresh 三函数）
+
+═══ M 功能回归 ═══
+  ✅ M1-1 private→groups：translateX(-100%) + private 瞬时 0.3 + groups 1 + 激活态
+  ✅ M1-2 groups→announcements：translateX(-200%) + announce 1
+  ✅ M1-3 announcements→private：translateX(0) + private 1 + announce 0.3
+  ✅ M2-1 #msgSlide willChange=transform（层提升在线）
+  ✅ M2-2 privatePanel 无过渡（瞬时调暗，transitionDuration=0s）
+  ✅ M2-3 announceList maskImage=none
+  ✅ M2-4 convSidebar 过渡=width 0.25s
+  ✅ M2-5 .btn 过渡为显式属性列表（无 all）
+  ✅ M3 侧栏折叠→恢复（320→窄→320）
+  ✅ M4-1 无测试聊天（侧栏空态提示 + 主区 emptyChat 可见）
+  ✅ M4-2 新建会话入列表（1 张卡 + 名字在）
+  ✅ M4-3 打开新会话：chatHeader + 输入栏可见 + 空消息提示
+  ✅ M5-1 发送：行 +1 且末行带 fade-up（动画中）
+  ✅ M5-2 动画结束：fade-up 清理 + 输入框清空
+  ✅ M4b-1 无测试群（空态提示可见）
+  ✅ M4b-2 新建群入列表（1 张卡 + 名字在）
+  ✅ M4b-3 打开新群：groupChatHeader + 输入栏可见
+  ✅ M6 公告展开→收起：列表重渲 + 展开态描边 box-shadow 出现后消失
+  ✅ M7 announceList 滚动正常（scrollTop=400）
+  ✅ M8-1 FAB 私有面板可见
+  ✅ M8-2 actionModal 开→关（display flex→none）
+  ✅ M8-2b 弹窗淡入（开场遮罩+卡片动画在跑+animationName 正确 → 落定全不透明）
+  ✅ M8-3 FAB 公告面板隐藏
+  ✅ M9-1 切换动画窗口内有帧流动（6 窗口最小 n≥4，此环境 TS3 型窗口 ≈10-15fps）
+  ✅ M9-2 主线程零长任务（>50ms 任务=0，共 6 窗口）
+  ✅ M10-1 点铃铛开窗（display flex + 2 条目 + 徽章 2 可见）
+  ✅ M10-2 点邀请整窗 morph 决定视图（名称/ID 上方居中 + 左右双药丸 + show-decision + 高度>0 + 标题）
+  ✅ M10-3 同意（会话入列表 + invites 剩 1 + 徽章 1 + morph 回列表 1 条目）
+  ✅ M10-4 Escape 关闭即时生效（display none）
+  ✅ M11-1 拒绝后空态（0 条目 + 暂无好友请求 + 徽章隐藏 + invites 0）
+  ✅ M11-2 外点关闭即时生效（display none）
+  ✅ Z 控制台零错误（噪声已滤）
+
+═══ ALL GREEN — 51/51 ═══
+EXIT: 0
+===== tmp-battery-community-profile =====
+── S. 侧栏入口（hub 上）──
+  ✅ S1 版本 v0.2.54.0（ver=v0.2.54.3）
+  ✅ S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）（../pages/community-profile.html?id=USR-000101）
+── G. 自己主页（USR-000101，isSelf）──
+  ✅ G1 主页可见 + 头部高度 > 0（h=493）
+  ✅ G1 4 个 tab 药丸 + tabs 容器可见（n=4）
+  ✅ G1 侧栏已渲染 + 返回链回 hub（sLen=203）
+  ✅ G2 名字/公民号/性别徽章=♂svg/简介/加入时间（../assets/image/male_24dp_7CA7D8_FILL0_wght400_GRAD0_opsz24.svg 电池用户@CIT-0001012 粉丝3 关注1 获赞电池用户简介calendar_today 加入于 2026年8月1）
+  ✅ G2 统计四块 1/1/2/1 + counts 并排 2 粉丝 · 3 关注 · 1 获赞（1/1/2/1 / 2 粉丝3 关注1 获赞）
+  ✅ G2 isSelf → 编辑资料钮（非关注钮）+ 真头像（edit=true）
+  ✅ G2 v0.2.22.2 横排几何：名字列在头像右侧（nmL≥avR-1）+ 垂直同带重叠（avR=524.5 nmL=548.5 avB=337.390625 nmT=291.984375 nmB=320.78125）
+  ✅ G2 v0.2.22.3 粉丝关注贴 .profile-top 行最右缘（rightEdge≤1）+ 在头像右侧（pcL>avR）（ptR=1050.5 pcR=1050.5 pcL=882.5 avR=524.5）
+  ✅ G2 v0.2.22.5 横幅可见（h≥100）+ 分割线 1px + 头像在横幅下方（avT≥bnB）（bnH=140 bb=1px avT=265.390625 bnB=241.390625）
+  ✅ G2 v0.2.23.0 cardBg null → 默认头部（无 liquid-glass/无 data-card-bg/无 glass-* 预设类）+ v0.2.24.0 cardPlate null → 包层无 card-halo（{"glass":false,"attr":false,"cls":"card profile-header lg-static","wrapCls":""}）
+  ✅ G3 编辑资料开独立弹窗：card+backdrop 计算 opacity=1 + 不开设置弹窗（{"bd":true,"bdOp":"1","card":true,"cardOp":"1","hasSettings":false,"name":"电池用户","bio":"电池用户简介","pills":"Male:../assets/image/male_24dp_7CA7D8_FILL0_wght400_GRAD0_opsz24.svg|Female:../assets/image/female_24dp_F18AFF_FILL0_wght400_GRAD0_opsz24.svg|Other:其他","maleActive":true}）
+  ✅ G3 字段预填：名字 电池用户/简介 电池用户简介/性别男高亮（电池用户/true）
+  ✅ G3 v0.2.22.1 性别药丸=图标：♂ 蓝 svg + ♀ 粉 svg + Other 文字（Male:../assets/image/male_24dp_7CA7D8_FILL0_wght400_GRAD0_opsz24.svg|Female:../assets/image/female_24dp_F18AFF_FILL0_wght400_GRAD0_opsz24.svg|Other:其他）
+  ✅ G3 Escape 关弹窗 → 卡片移除（{"gone":true}）
+── E. 编辑资料独立弹窗（自己主页，v0.2.22.0）──
+E1 raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}"]
+  ✅ E1 保存 → PATCH /auth/me 单次且 body 精确（名字/简介/性别 Female，无 avatarUrl）（["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}"]）
+  ✅ E1 保存 → 弹窗关 + toast 资料已保存 + 头部重拉（改名/♀svg/新简介）（../assets/image/female_24dp_F18AFF_FILL0_wght400_GRAD0_opsz24.svg 电池用户改@CIT-0001012 粉丝3 关注1 获赞新简介calendar_today 加入于 2026年8月1日1帖子1转发2点赞1收）
+  ✅ E1 侧栏同页即时更新为 电池用户改（side=电池用户改）
+  ✅ E2 选头像 → 直传 + 预览换图 + 状态提示（{"src":"/uploads/UPL-DEMO01.jpg","st":"新头像已就绪，点保存生效"}）
+  ✅ E2 保存 → PATCH 带 avatarUrl + 头部头像换新 + 直传调用 1 次（{"patchedAvatar":"/uploads/UPL-DEMO01.jpg","hAvatar":"/uploads/UPL-DEMO01.jpg","uploadCalls":1}）
+  ✅ E3 空显示名 → 拦截（无 PATCH + toast 显示名不能为空 + 弹窗还在）（{"patched":null,"stillOpen":true,"toasts":"资料已保存|资料已保存|显示名不能为空"}）
+  ✅ E4 保存 401 → toast 登录已过期 + 弹窗关（{"gone":true,"toasts":"资料已保存|资料已保存|显示名不能为空|登录已过期，请重新登录"}）
+  ✅ E5 无改动保存 → 直接关不发 PATCH（{"patched":null,"gone":true}）
+── E6. 编辑资料弹窗 基础/自定义 导航 + 卡片背景液体玻璃（v0.2.23.0）──
+  ✅ E6 弹窗顶部导航：基础/自定义 2 药丸 + 基础 active + 基础可见自定义藏（{"n":2,"labels":"基础|自定义","active":"basic","basicVis":"block","customVis":"none","hasGrid":true}）
+  ✅ E6 切自定义：互斥显示 + 四组（横幅（液体玻璃）|卡片背景|边缘|页面背景——v0.2.53.1 新边缘组）+ 横幅 7 预设 + v0.2.24.1 卡片背景只 2 选项（默认|标准液态玻璃）默认选中 + v0.2.25.0 页面背景 2 选项（默认|自定义图片）默认选中（{"active":"custom","basicVis":"none","customVis":"block","labels":"横幅（液体玻璃）|卡片背景|边缘|页面背景","bgN":7,"bgLabels":"默认|磨砂|深海|薰衣草|樱花|薄荷|落日","bgFirstActive":true,"flatCls":"edit-bg-flat bg-default","flatBg":"linear-gradient(135deg, rgba(70, 72, 212, 0.9), rgba(124, 92, 224, 0.55) 45%, rgba(70, 72, 212, 0.92)), radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0) 46%), radial-gradient(circle at 80% 72%, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0) 40%), none","plN":2,"plLabels":"默认|标准液态玻璃","plFirstActive":true,"pvCls":"edit-bg-preview","pvBg":"none","pvCardBgColor":"rgba(0, 0, 0, 0)","pgN":2,"pgLabels":"默认|自定义图片","pgFirstActive":true}）
+  ✅ E6 v0.2.24.0 预览默认：横幅条=品牌渐变 + 卡片背景预览无 has-plate 无背景 + 迷你透明卡身（flat=edit-bg-flat bg-default pvCls=edit-bg-preview pvBg=none pvCard=rgba(0, 0, 0, 0)）
+  ✅ E6 横幅组点深海：active 唯一互斥 + 横幅条同步深海渐变（{"activeCount":1,"activeBg":"glass-ocean","flatCls":"edit-bg-flat glass-ocean","flatBg":"linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0.22)), linear-gradient(135deg, rgba(30, 90, 200, 0.55), rgba(40, 140, 190, 0.4) 50%, rgba(30, 90, 200, 0.55)), radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0) 46%), radial-gradient(circle at 80% 72%, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0) 40%), none"}）
+  ✅ E6 卡片背景组点标准液态玻璃：active 唯一互斥 + 包层预览 has-plate glass-clear 真液态玻璃霜体（无色极轻白霜 gradient 在 + 三色相 30,90,200/232,110,160/96,100,230 均不在）+ 透明卡身透出 + 横幅组不受影响（仍深海）+ v0.2.25.2 预览无默认底色（{"activeCount":1,"activePlate":"glass-clear","pvCls":"edit-bg-preview has-plate glass-clear","pvBg":"linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.1)), radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0) 46%), radial-gradient(circle at 80% 72%, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0) 40%)","pvBgColor":"rgba(0, 0, 0, 0)","pvShadow":"rgba(0, 0, 0, 0.4) 0px 4px 12px 0px, rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset","pvCardBgColor":"rgba(0, 0, 0, 0)","flatCls":"edit-bg-flat glass-ocean","pvOrbB":"radial-gradient(circle, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 70%)","pvOrbA":"radial-gradient(circle, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%)","pvShMix":"screen","pvShBg":"linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.12) 33%, rgba(255, 255, 255, 0.4) 66%, rgba(255, 255, 255, 0) 100%)","pvShTop":"6px","swShadow":"rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0.4) 0px 4px 12px 0px"}）
+  ✅ E6 v0.2.24.1 标准液态玻璃预览=代码白边环 2px（rgba(255,255,255,0.8) inset）+ 柔影（0 4px 12px rgba(0,0,0,0.4)）（rgba(0, 0, 0, 0.4) 0px 4px 12px 0px, rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset）
+  ✅ E6 v0.2.24.2 标准液态玻璃色块=透明填充+白边环 2px+柔影（代码同款示意）（rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0.4) 0px 4px 12px 0px）
+  ✅ E6 v0.2.24.4 预览玻璃光球：无色双白光球在透明卡身内（玻璃后面有光的示意；用户「为什么这个玻璃会有蓝色和紫色在背面能不能去掉」→光球去色纯白，蓝紫色值均不在）（radial-gradient(circle, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 70%) | radial-gradient(circle, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%)）
+  ✅ E6 v0.2.25.1 预览迷你双层环形高光（与大卡同配方缩小版：screen 混合+135° 白渐变+环贴卡缘 top=6px）（{"mix":"screen","bg":"linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255,","top":"6px"}）
+E6d raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}"]
+  ✅ E6 保存 → PATCH 含 cardBg 恰 1 次且 body 精确 ={"cardBg":"glass-ocean","cardPlate":"glass-clear"}+ 弹窗关 + toast（["{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}"]）
+  ✅ E6 头部重拉挂液体玻璃：liquid-glass + glass-ocean 类 + data-card-bg + 折射/高光双层（{"glass":true,"cls":"card profile-header glass-bg glass-ocean liquid-glass lg-static","attr":"glass-ocean","layer":true,"spec":true}）
+  ✅ E6 玻璃层 backdrop-filter 生效（blur 10px + saturate；v0.2.53.2 生成器代码口径 14→10）+ v0.2.53.2 折射滤镜=url("#glass-distortion")（噪点波动折射，覆盖引擎三通道色散——无色散不发黄）（{"layerFilter":"blur(10px) saturate(1.4)","layerFilterUrl":"url(\"#glass-distortion\")"}）
+  ✅ E6 v0.2.24.3 独立双背景：横幅=卡上深海渐变 + 卡片背景=包层 card-halo glass-clear lg-static（引擎类在）+ 真液态玻璃霜体（无色极轻白霜 gradient 在 + 三色相均不在）+ 卡身纯透明直透页面（banner=linear-gradient(135deg, rgba(255, 255, 255, 0.3),  wrapCls=card-halo glass-clear lg-static wrapBg=linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45% card=rgba(0, 0, 0, 0)）
+  ✅ E6 v0.2.25.2 默认底色移除：包层背景色透明（横幅以外彻底透到页面——用户「默认的那个背景你也没在标准液态玻璃背景的情况下除了横幅以外的移除啊」）（wrapBgColor=rgba(0, 0, 0, 0)）
+  ✅ E6 v0.2.24.3 真液态玻璃引擎挂包层：lg-static 类 + 折射层 .lg-backdrop + 镜面高光 .lg-specular 双注入 + 层磨砂 10px saturate（v0.2.53.2 生成器代码口径 24→10）+ 同款波动折射滤镜 url("#glass-distortion")（{"wrapLg":true,"wrapLayer":true,"wrapSpec":true,"haloLayerFilter":"blur(10px) saturate(1.4)","haloLayerFilterUrl":"url(\"#glass-distortion\")"}）
+  ✅ E6 v0.2.24.4 玻璃光场亮起：.lg-orb-field 在包层内 display=block + 无色双白光球（蓝紫 96,165,250/167,139,250 均不在——用户去色）+ 高光层斜向流光（{"orb":true,"orbVis":"block","orbB":"radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%)","orbA":"radial-gradient(circle, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 70%)","specBg":"linear-gradient(115deg, rgba(255, 255, 255, 0) 28%, rgba(255"}）
+  ✅ E6 v0.2.24.1 标准液态玻璃包层=代码白边环 2px（rgba(255,255,255,0.8) inset）+ 柔影（0 4px 12px rgba(0,0,0,0.4)）（rgba(0, 0, 0, 0.4) 0px 4px 12px 0px, rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset）
+  ✅ E6 v0.2.25.1 rdev 双层环形高光原值移植：::before screen 0.2 / ::after overlay（index.tsx Border layer 1/2 原值）+ 白渐变 135° 双环 + 1.5px 异或环贴卡缘（top=6px=包层 padding）+ 光球提亮 0.85/0.75（用户「还是一样没有」——任何背景下可见的玻璃招牌层）（{"bMix":"screen","aMix":"overlay","bBg":"linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255,","top":"6px","pad":"1.5px","mask":"exclude, exclude","content":"\"\"","orbB":"radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255,","orbA":"radial-gradient(circle, rgba(255, 255, 255, 0.75), rgba(255,"}）
+  ✅ E6 重开弹窗 → 双组预填当前背景（横幅 glass-ocean + 卡片背景 glass-clear 各选中各预览）（{"bgActive":"glass-ocean","plActive":"glass-clear","flatCls":"edit-bg-flat glass-ocean","pvCls":"edit-bg-preview has-plate glass-clear"}）
+E6f raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}"]
+  ✅ E6 双双选默认 → 保存 → 最后 PATCH body 精确 ={"cardBg":null,"cardPlate":null} + 头部回默认（无 liquid-glass/无 data-card-bg/无预设类）（["{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}"]）
+  ✅ E6 v0.2.24.0 回默认 → 包层类清空（无 card-halo）+ 卡身回实底（非透明）+ 横幅回品牌渐变 + v0.2.24.3 引擎层已卸载（无 lg-static/无 .lg-backdrop）+ v0.2.24.4 光场灭（orb display=none）（wrapCls= wrapLg=false wrapLayer=false orbVis=none card=rgba(255, 255, 255, 0.55) banner=linear-gradient(135deg, rgba(70, 72, 212, 0.9), rgba(124, 92）
+E6f2 raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}"]
+  ✅ E6f2 v0.2.53.2 横幅单独玻璃保存：最后 PATCH body 精确 ={"cardBg":"glass-ocean"}（cardPlate 未动不入 body）（["{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}"]）
+  ✅ E6f2 v0.2.53.2 横幅单独玻璃渲染：无 card-halo 包层 + liquid-glass + glass-ocean + 引擎折射层在 + 磨砂 blur 10px saturate（生成器代码口径）+ 折射滤镜=url("#glass-distortion")（低频噪点+高斯模糊+标准双通道位移，无色散）+ 光场灭（无包层）（{"wrapCls":"","cls":"card profile-header glass-bg glass-ocean liquid-glass lg-static","layerFilter":"blur(10px) saturate(1.4)","layerFilterUrl":"url(\"#glass-distortion\")","orbVis":"none"}）
+  ✅ E6f2 v0.2.53.2 卡身白霜 rgba(255, 255, 255, 0.34)（生成器 ::before 白 tint 同思路，卡身有实底调高到 0.34 才透出磨砂折射层见玻璃；暗色 0.58 见 Q 静态锚）（rgba(255, 255, 255, 0.34)）
+  ✅ E6f2 v0.2.53.2 恢复默认：最后 PATCH body 精确 ={"cardBg":null} + 头部回默认（无 liquid-glass/无预设类）+ 卡身回实底（白霜卸下）（{"calls":["{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}","{\"cardBg\":null}"],"cls":"card profile-header","cardBgColor":"rgba(255, 255, 255, 0.55)"}）
+  ✅ E6 v0.2.25.0 编辑资料弹窗放大 1 倍：modal-card max-width=1120px（560→1120；页级类 edit-profile-card 不污染灯箱/分享弹窗）（mw=1120px cls=modal-card edit-profile-card active）
+  ✅ E6 v0.2.25.0 页面背景组默认态：上传按钮/网址框/隐藏 file input/迷你整页预览就位 + 无图时行隐藏预览空（{"modalMw":"1120px","modalCls":"modal-card edit-profile-card active","rowVis":"none","innerBg":"","hasUploadBtn":true,"hasUrlInput":true,"hasFile":true,"pvHasCard":true}）
+  ✅ E6 v0.2.25.0 点自定义图片：行亮起 + 提示「上传图片或粘贴网址，点保存生效」+ 自定义 active 唯一（{"rowVis":"block","hint":"上传图片或粘贴网址，点保存生效","customActive":"custom"}）
+  ✅ E6 v0.2.25.0 网址非法（javascript:）→ 警告「网址需以 http:// 或 https:// 开头」+ 预览不挂图（{"warn":"网址需以 http:// 或 https:// 开头","innerBg":""}）
+  ✅ E6 v0.2.25.0 合法网址：预览挂图 url("https://example.com/bg.jpg") + 就绪文案（{"innerBg":"url(\"https://example.com/bg.jpg\")","state":"背景图片已就绪，点保存生效"}）
+E6g4 raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}","{\"cardBg\":null}","{\"pageBgImage\":\"https://example.com/bg.jpg\"}"]
+  ✅ E6 v0.2.25.0 保存 → PATCH 含 pageBgImage 恰 1 次且 body 精确 ={"pageBgImage":"https://example.com/bg.jpg"} + 弹窗关（["{\"pageBgImage\":\"https://example.com/bg.jpg\"}"]）
+  ✅ E6 v0.2.25.0 整页背景渲染：body 挂 page-bg-active + 背景=深色蒙层渐变 rgba(10, 10, 16, 0.38)+图（用户「这个就是整个页面的背景的图片」）（cls=page-bg-active bg=linear-gradient(rgba(10, 10, 16, 0.38), rgba(10, 10, 16, 0.38)), url("https://example.com/bg.jpg") var=url("https://example.com/bg.jpg")）
+  ✅ E6 v0.2.25.0 重开预填：自定义 active + 网址框预填 https 值 + 预览挂图 + 行亮起（{"activePg":"custom","urlVal":"https://example.com/bg.jpg","innerBg":"url(\"https://example.com/bg.jpg\")","rowVis":"block"}）
+  ✅ E6 v0.2.25.0 点默认：行隐藏 + 预览清空（{"rowVis":"none","innerBg":""}）
+E6g7 raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}","{\"cardBg\":null}","{\"pageBgImage\":\"https://example.com/bg.jpg\"}","{\"pageBgImage\":null}"]
+  ✅ E6 v0.2.25.0 选默认保存 → 最后 PATCH body 精确 ={"pageBgImage":null}（共 2 次 pageBgImage 调用）+ body 恢复（无 page-bg-active 类/变量空/无图）（["{\"pageBgImage\":\"https://example.com/bg.jpg\"}","{\"pageBgImage\":null}"] cls= var=）
+  ✅ E7 v0.2.53.1 免费会话：边缘组 15 swatch（默认+14 款）+ 14 非空款全锁（edge-locked+title 订阅后可用+lock 图标+订阅徽标）+ 升级链接可见 + 默认 active + 预览默认（{"n":15,"lockedN":14,"lockedTitle":"订阅后可用","badge":"破旧的纸订阅","hasLockIcon":true,"linkVis":"inline-block","shapes":"url(\"#paper-edge-clip\")|url(\"#map-wave-clip\")|url(\"#hud-frame-1\")|url(\"#hud-frame-2\")|url(\"#hud-frame-3\")|url(\"#hud-frame-4\")|url(\"#hud-frame-5\")|url(\"#hud-frame-6\")|url(\"#mn-paint-clip-1\")|url(\"#mn-paint-clip-2\")|url(\"#mn-paint-clip-3\")|url(\"#mn-paint-clip-4\")|url(\"#mn-paint-clip-5\")|url(\"#mn-paint-clip-6\")","active":"","pv":"pv-card"}）
+  ✅ E7 v0.2.53.1 swatch 真实剪影：14 款 .swatch-shape computed clip-path 各含对应 defs（纸/藏宝图/科技1-6/油漆1-6）（url("#paper-edge-clip")|url("#map-wave-clip")|url("#hud-frame-1")|url("#hud-frame-2")|url("#hud-frame-3")|url("#hud-frame-4")|url("#hud-frame-5")|url("#hud-frame-6")|url("#mn-paint-clip-1")|url("#mn-paint-clip-2")|url("#mn-paint-clip-3")|url("#mn-paint-clip-4")|url("#mn-paint-clip-5")|url("#mn-paint-clip-6")）
+  ✅ E7 v0.2.53.1 免费点 paper：toast 背景边缘为订阅用户专属功能 + 零 cardEdge PATCH + 仍默认 active + 预览未换 + 头卡无 card-edge-*（{"toasts":"资料已保存|资料已保存|显示名不能为空|登录已过期，请重新登录|资料已保存|资料已保存|资料已保存|资料已保存|资料已保存|资料已保存|背景边缘为订阅用户专属功能","edgeCalls":0,"active":"","pv":"pv-card","headCls":"card profile-header"}）
+  ✅ E7 v0.2.53.1 订阅会话：0 锁 + 升级链接隐藏 + 默认 active（预填 null）（{"lockedN":0,"linkVis":"none","active":""}）
+  ✅ E7 v0.2.53.1 点 paper：active 互斥 + 预览真实剪影（inline clip-path=paper-edge-clip + 纸底色渐变）（{"active":"paper","pv":"pv-card","clip":"url(\"#paper-edge-clip\")","bg":"linear-gradient(135deg, rgba(255, 248, 225, 0.9), rgba(233, 214, 174, 0.9))"}）
+E7d raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}","{\"cardBg\":null}","{\"pageBgImage\":\"https://example.com/bg.jpg\"}","{\"pageBgImage\":null}","{\"cardEdge\":\"paper\"}"]
+  ✅ E7 paper 保存 → PATCH 含 cardEdge 恰 1 次且 body 精确 ={"cardEdge":"paper"} + 弹窗关（["{\"cardEdge\":\"paper\"}"]）
+  ✅ E7 paper 渲染：card-edge-paper has-outer-bg + data-card-edge=paper + tint/band 子层 + --card-clip=url(#paper-edge-clip) + 无 card-halo/liquid-glass + 横幅剪影非 none（{"cls":"card profile-header card-edge-paper has-outer-bg","attr":"paper","clip":"url(#paper-edge-clip)","wrapCls":"","glass":false,"bannerClip":"url(\"#paper-edge-clip\")"}）
+  ✅ E7 tech1：PATCH 第 2 次 cardEdge body 精确 ={"cardEdge":"tech1"} + card-edge-tech has-outer-bg + data-card-edge=tech1 + --card-clip=hud-frame-1 + tint 在（{"cls":"card profile-header card-edge-tech has-outer-bg","attr":"tech1","clip":"url(#hud-frame-1)"}）
+  ✅ E7 paint5：PATCH 第 3 次 cardEdge body 精确 ={"cardEdge":"paint5"} + card-edge-paint 无 has-outer-bg 无 tint/band + 卡级 filter 零 url 只留 drop-shadow + ::before/::after 各挂 mn-paint-filter-5（v0.2.53.1 内容零位移修法）+ container-type=inline-size + --paint-pad=12cqi + 横幅/卡剪影 mn-paint-clip-5（{"cls":"card profile-header card-edge-paint","filter":"drop-shadow(rgba(0, 0, 0, 0.38) 0px 10px 22px) drop-shadow(rgba(0, 0, 0, 0.22) 0px 2px 6px)","beforeFilter":"url(\"#mn-paint-filter-5\")","afterFilter":"url(\"#mn-paint-filter-5\")","containerType":"inline-size","pad":"12cqi","bannerClip":"url(\"#mn-paint-clip-5\")","clip":"url(#mn-paint-clip-5)"}）
+  ✅ E7 选默认 → PATCH 第 4 次 cardEdge body 精确 ={"cardEdge":null} + 头卡类清零（无 card-edge-*）+ 包层类空（ME 回 null）（{"cls":"card profile-header","wrapCls":""}）
+── T. 四 tab 走查（自己主页）──
+  ✅ T1 默认 posts tab：1 卡 + 内容 + 媒体瓦片 + active=posts（cards=1）
+  ✅ T1b 灯箱点开 + Escape 关（true → false）
+  ✅ T2 转发 tab：1 卡 + 「转发了」徽章 + 内嵌原帖盒（{"cards":1,"hasBadge":"转发了","hasEmbed":true,"embedText":"电池他人14 天前原帖内容，值得一看"}）
+  ✅ T3 点赞 tab：被点赞的帖 + 作者锚 → 他人主页（community-profile.html?id=USR-000202）
+  ✅ T4 统计块点击切 favorites tab + 收藏的帖渲染（favorites）
+  ✅ T5 收藏 tab 撤销星 → DELETE 捕获 + 卡片出列 → 空态「还没有收藏的帖子」（{"empty":true,"cards":0,"delCalls":1}）
+  ✅ T5 点赞 tab 撤销赞 → 卡片出列 → 空态「还没有点赞的内容」（{"empty":true,"cards":0}）
+── C. 卡操作（posts tab）──
+  ✅ C1 点赞：POST 捕获 + 计数 4 + 已赞态（{"pressed":"true","count":"4","postCalls":1}）
+  ✅ C2 转发：POST 捕获 + toast 已转发到你的主页（资料已保存|资料已保存|显示名不能为空|登录已过期，请重新登录|资料已保存|资料已保存|资料已保存|资料已保存|资料已保）
+  ✅ C3 分享弹窗可见（opacity=1）+ 链接 = 帖页规范 URL（0.0.1:4122/pages/community-post.html?id=PST-000101）
+  ✅ C4 举报旗点击仍在主页（不跳帖页）（/pages/community-profile.html?id=USR-000101）
+  ✅ C4 整卡点击真导航到帖页（含 id 参数）（/pages/community-post.html?id=PST-000101）
+── O. 他人主页（USR-000202，关注链 + 空态）──
+  ✅ O1 他人主页：名字/♀svg/兜底简介/加入于 + 关注钮（未关注态）+ 无编辑资料钮 + 空态（关注）
+  ✅ O1 粉丝数初始 0（0）
+  ✅ O1 v0.2.22.6 点赞/收藏默认私人：他人主页只 2 tab（帖子/转发）+ 无点赞/收藏统计块（tabs=2 stats=posts,reposts）
+  ✅ O1 v0.2.24.3/4 他人双背景公开渲染：卡=横幅预设 glass-rose（liquid-glass+data-card-bg+玻璃层）+ 包层=卡片背景 card-halo glass-clear 真液态玻璃（无色极轻白霜 gradient 在+三色相均不在+引擎 lg-static/折射层/高光层全挂）+ 卡身纯透明 + v0.2.24.4 光场亮起（orb display=block + 无色白光球 蓝紫均不在）（{"glass":true,"attr":"glass-rose","layer":true,"wrapCls":"card-halo glass-clear lg-static","wrapBg":"linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255,","wrapLg":true,"wrapLayer":true,"wrapSpec":true,"cardBgColor":"rgba(0, 0, 0, 0)","orbVis":"block","orbB":"radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255,"}）
+  ✅ O1 v0.2.24.1/2 标准液态玻璃=代码白边环 2px + 柔影（rgba(0, 0, 0, 0.4) 0px 4px 12px 0px, rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset）
+  ✅ O1 v0.2.25.0 整页背景公开渲染：他人主页也渲染本人设置的图（body page-bg-active + 背景含 UPL-DEMO01.jpg + 深色蒙层；计算样式把相对路径解析为绝对 URL 属正常）（cls=page-bg-active bg=linear-gradient(rgba(10, 10, 16, 0.38), rgba(10, 10, 16, 0.38)), url("http://127.0.0.1:4122/uploads/UPL-DEMO01.jpg")）
+  ✅ O1 v0.2.25.1 玻璃体可见化：包层背景复刻页面背景图（含 UPL-DEMO01.jpg + attachment 含 fixed=与 body 同参数对齐，磨砂层直采样包层→demo 同款玻璃后有场景必现）+ rdev 双层环形高光（::before screen/::after overlay+135° 白渐变+1.5px 环贴卡缘 top=6px）+ 光球提亮 0.85/0.75（{"wrapBg":"linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.1)), radial-grad","attach":"scroll, scroll, scroll, scroll, fixed","bMix":"screen","aMix":"overlay","bBg":"linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255,","top":"6px","pad":"1.5px","mask":"exclude, exclude","orbB":"radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255,","orbA":"radial-gradient(circle, rgba(255, 255, 255, 0.75), rgba(255,"}）
+  ✅ O1 v0.2.25.2 默认底色移除：包层背景色透明 + 复刻层含与 body 同款深色蒙层 rgba(10,10,16,0.38)（玻璃看穿页面=页面本来样子，无接缝、白字可读）（wrapBgColor=rgba(0, 0, 0, 0) wrapBg=linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.1)), radial-grad）
+  ✅ O2 关注：POST 捕获 + 已关注态 + 粉丝数 0→1 + toast 已关注（{"pressed":"true","text":"已关注","follower":"1","toasts":"已关注","postCalls":1}）
+  ✅ O2 再点取关：DELETE 捕获 + 回关注态 + 粉丝数 0 + toast 已取消关注（{"pressed":"false","text":"关注","follower":"0","toasts":"已关注|已取消关注","delCalls":1}）
+  ✅ O3 访客：关注 → toast 登录后才能关注 + 零 /follow 请求（{"toasts":"登录后才能关注","followCalls":0,"guestAttr":true}）
+  ✅ O4 404 态（未知 id）：提示可见 + 主页藏（用户不存在或已注销）
+  ✅ O4 非法格式 id（非 USR-）→ 前端拦截 404（block）
+  ✅ O5 v0.2.53.1 访客可见：他人主页公开渲染 cardEdge=paper（card-edge-paper has-outer-bg + data-card-edge + tint/band 子层 + --card-clip=paper-edge-clip）+ 无编辑钮（{"cls":"card profile-header card-edge-paper has-outer-bg","attr":"paper","clip":"url(#paper-edge-clip)","hasEdit":false,"text":"边缘访客@CIT-000303其他0 粉丝0 关注0 获赞边缘主题访客calendar_today 加入于 2026年6"}）
+  ✅ O5 全程 0 console error
+── Q. 静态锚（v0.2.53.1 卡片边缘主题 + v0.2.53.2 液态玻璃换代）──
+  ✅ Q 页面静态锚：SVG defs（paper-edge-clip/hud-frame-4/mn-paint-clip-5/mn-paint-filter-5/glass-distortion）+ data-card-edge + applyCardEdge + EDGE_DEFS + SUBSCRIPTION_TEST_MODE + swatch-shape + v0.2.53.2 暗色卡身白霜 0.58（缺=）
+  ✅ Q 后端白名单双份同步：auth.js + social.js 各含 CARD_EDGE_KEYS
+  ✅ Q 迁移 027_card_edge.sql 含 card_edge
+
+99 ✅ / 0 ❌
+EXIT: 0
+===== tmp-battery-article-view =====
+  ✅ F0-1 版本双线 v0.2.54.0 / v10.28.36.1 + 文章查看器注释块 + 直接发布注释块
+  ✅ F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）
+  ✅ F0-3 编辑器五守卫在场（saveDraft/putCloudDraft/syncCloudDraft/keydown/refit resize 全挡 viewmode）
+  ✅ F0-4 列表接云端在场（View 委托分支 + cloudArticles + loadCloudArticles + api.js 动态注入 + demo store）
+  ✅ F0-5 ART-001 样例 contentJson 在场（正文卡 + flag + text，标题一致）
+  ✅ F0-6 发布即公开在场（badge-success Published + 已发布 toast + 占位文案无「审核中」）
+  ✅ A1 17 行（15 种子+2 云端）
+  ✅ A2 云端行置顶（首行 ART-CLOUD-1）
+  ✅ A3 云端行无删除钮、种子行有
+  ✅ A4 pending 云端行徽章 In Review
+  ✅ A5 View 按钮导航到 editor?article=ART-CLOUD-1
+  ✅ B1 body.fc-viewmode 在场
+  ✅ B2 fixture 4 卡全渲染
+  ✅ B3 chrome 全隐（header/侧栏/状态栏/标题框）
+  ✅ B4 #fcViewScaler 在场且 overflow hidden
+  ✅ B5 画布等比缩放 scale(≤1) 贴满可用区  scale(0.35)
+  ✅ B6 卡内零交互（pointer-events none）
+  ✅ B7 contentEditable 关闭 + Tab 序移除
+  ✅ B8 哨兵本地草稿未被覆盖（saveDraft/自动保存守卫实证）  {"sentinel":true}
+  ✅ B9 标题芯片 #fcViewTitle = fixture 标题
+  ✅ C1 右越界卡被裁（card.right > scaler.right）  card.right=836.1 scaler.right=798.5
+  ✅ C2 下越界卡被裁（card.bottom > scaler.bottom）  card.bottom=823.8 scaler.bottom=786.0
+  ✅ C3 界内卡完整可见（c1 不越界）
+  ✅ C4 画布与 scaler 可视区一致（canvas.right ≤ scaler.right+1）
+  ✅ D1 pending 文章占位卡在场
+  ✅ D2 占位态零卡零 scaler
+  ✅ D3 占位卡含返回列表链接
+  ✅ D4 404 文章占位卡在场
+  ✅ F1 demo 兜底 3 卡渲染（云端 404 → 本地样例）
+  ✅ F2 标题芯片 = 样例标题
+  ✅ F3 样例 flag 卡图已挂（img 在场）
+  ✅ F4 reload 后仍 view mode + 3 卡（幂等）
+  ✅ F5 reload 后哨兵仍未被覆盖
+  ✅ G1 零 Runtime exception  干净
+  ✅ G2 零 console error  干净
+  ✅ E1 guest 未被送回锁屏（pathname 仍 editor）
+  ✅ E2 guest 文章照常渲染 4 卡
+  ✅ E3 guest 零 Runtime exception  干净
+
+🎉 全部通过 38/38
+EXIT: 0
+===== tmp-battery-identity =====
+  ✅ A0 站点号 v0.2.54.0（v0.2.54.3）
+  ✅ A1 双栏结构齐备（card/left/right/layout）（{"card":true,"left":true,"right":true,"layout":true,"steps":3,"fields":5,"btn":true}）
+  ✅ A2 步骤指示 3 步（1 完成 / 2 活动 / 3 待办）（3）
+  ✅ A3 表单 5 组（名/性别/语言/生日/国家）+ Next Step 按钮（5/true）
+  ✅ B1 卡片横排（flex-direction: row）（row）
+  ✅ B2 卡片高度自适应（非 800px 定高；flex item 的 auto 被解析为 used 值）（787.516px）
+  ✅ B3 卡片 overflow visible（国家下拉不被裁）（visible）
+  ✅ B4 左栏宽 42%（403.2 vs 403.2）
+  ✅ B5 左栏顶/底与卡对齐（同排，未堆叠）（24.0/811.5 vs 24.0/811.5）
+  ✅ B6 右栏从左栏右缘起（并排非下方）（544.7 vs 544.7）
+  ✅ C1 蓝渐变底（135deg #4648d4→#3b3dc4）（linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196))）
+  ✅ C2 左栏白字（步骤卡可见性前提）（rgb(255, 255, 255)）
+  ✅ C3 左栏内边距 64px（space-xl）（64）
+  ✅ C4 装饰圆 ::before 300px（300/50%）
+  ✅ C5 装饰圆 ::after 200px（200/50%）
+  ✅ C6 右栏内边距 64px（space-xl）（64）
+  ✅ C7 步骤卡在蓝板内（未溢出卡外）（step 444.9-646.9）
+  ✅ D1 Next Step 按钮在卡底之上（未被裁）（747.5 <= 811.5）
+  ✅ D2 Date of Birth 在卡底之上（未被裁）（659.5 <= 811.5）
+  ✅ D3 按钮可点（无遮挡）
+  ✅ E1 点击 → 国家菜单打开（true）
+  ✅ E2 国家列表完整（≥190 项，无裁切只数类）（197）
+  ✅ E3 菜单不超出视口（高 900）（803.1）
+  ✅ F1 名字回显 Battery Tester（Battery Tester）
+  ✅ F2 生日回显 2010-01-01（v0.2.6.2 修复回归）（2010-01-01）
+  ✅ F3 语言回显 中文 (Chinese)（中文 (Chinese)）
+  ✅ G1 性别栏是第二项（第 2 个 form-group 标签=当前语言字典值）（{"secondLabel":true,"star":"*","opts":3,"optTexts":"Male|Female|Other"}）
+  ✅ G2 三选项 Male/Female/Other（3/Male|Female|Other）
+  ✅ G3 标签带 * 红标（必填口径）（*）
+  ✅ G4 回显种子 gender=Male（Male）
+  ✅ G5 点开菜单 → 选 Female → 显示+收起+箭头复位（{"text":"Female","open":false,"arrow":""} open前=true）
+  ✅ G6 未选性别 → Next 报错且不跳页（{"shown":true,"text":"请选择性别","exp":"请选择性别","path":"/pages/onboarding-identity.html"}）
+  ✅ K1 移动端卡片竖排（column）
+  ✅ K2 移动端左栏全宽（312.0 vs 312.0）
+  ✅ H1 填全五字段 → Next Step 跳完成页（/pages/onboarding-complete.html）（/pages/onboarding-complete.html）
+  ✅ H2 formError 不显示（none）
+  ✅ I1 无运行时异常
+  ✅ I2 无 console error
+
+════════ 汇总 ════════
+通过 38 / 失败 0
+EXIT: 0
+===== tmp-battery-monodark-v0422 =====
+  ✅ F1 版本双线 v0.2.54.0 / v10.28.36.1 + 注释块（49.2→49.3 白底白字第二轮·按钮）
+  ✅ F2 暗 mono 黑族令牌规则（ethereal.css）：selector + 中性黑值（#0b0b0d 家族，蓝 tint 已除）
+  ✅ F3 白底白字按钮族规则（ethereal.css）：active 族+tim-search+lib-icon:hover → #32324a 白字（钦定配方）
+  ✅ F4 进度圆点+toast 翻黑族规则（ethereal.css）（#32324a 圆点 / #1a1a1e toast 白字）
+  ✅ F5 admin 裸 .btn 泛化规则（v0.2.49.3 第二轮：面板 JS 渲染按钮族全盖；:not 排除变体不盖 btn-primary 暗色规则）
+  ✅ M1a html 暗 mono 生效  accent=mono theme=dark
+  ✅ M1b 令牌全翻黑族  bg=#0b0b0d card=rgba(21, 21, 25, 0.55)
+  ✅ M1c body 中性黑 rgb(11,11,13)  rgb(11, 11, 13)
+  ✅ M1d 卡片计算态 rgba(21,21,25,0.55)  rgba(21, 21, 25, 0.55)
+  ✅ M1e toast 翻黑族 rgb(26,26,30)  rgb(26, 26, 30)
+  ✅ M1f 整页零蓝 tint 深底  干净
+  ✅ M1g 整页零白底白字（半透明覆层豁免）  干净
+  ✅ M2a 网格画布翻黑族 rgb(10,10,12)
+  ✅ M2b col-btn.active = #32324a 白字
+  ✅ M2c tim-search-btn = #32324a 白字
+  ✅ M2d pbg-ratio-btn.active = #32324a 白字
+  ✅ M2e 编辑器 toast 翻黑族 rgb(26,26,30)  rgb(26, 26, 30)
+  ✅ M2f 蓝 tint 仅钦定按钮族 #32324a（无其他蓝底）  button.col-btn.active:rgb(50, 50, 74), button.col-btn.active:rgb(50, 50, 74), button.tim-search-btn:rgb(50, 50, 74), button.pbg-ratio-btn.active:rgb(50, 50, 74)
+  ✅ M2g 整页零白底白字（半透明覆层豁免）  干净
+  ✅ M5a messages .msg-acc 全翻 #32324a 白字（≥4 个）  n=9
+  ✅ M5b explore .world-code-chip 深灰渐变白字（≥2 个）  n=6
+  ✅ M5c help .step-num 深灰渐变白字（4 个）  n=4
+  ✅ M5d registry .stepper-btn 暗 mono 深面浅字（≥4 个）  n=12
+  ✅ M5e admin 裸 .btn 退出登录 暗色翻深面（白底白字全暗修复）  {"bg":"rgb(29, 29, 32)","color":"rgb(226, 226, 232)"}
+  ✅ M6a 暗蓝 .stepper-btn 深面 #282848 浅字（无 mono 不误伤）  n=12
+  ✅ M3a 亮 mono body 保持亮底  rgb(247, 249, 251) L=0.976
+  ✅ M3b 亮 mono 令牌不受暗黑族污染  bg=#f7f9fb
+  ✅ M4a 无 mono accent 时蓝家族原样 #161625  accent=null bg=rgb(22, 22, 37)
+  ✅ Z 全程零 console error  干净
+
+🎉 全部通过 29/29
+EXIT: 0
+===== tmp-battery-pageswitch =====
+  ✅ F0 版本双线 v0.2.54.0 / v10.28.36.1
+  ✅ F1 双模式入场串：原样渐隐+位移全串 + 轻量 transform-only 串都在
+  ✅ F2 原节奏 stagger 60 + 轻量 40/上限 8 + LIGHT 按 messages.html 判定
+  ✅ F3 隐形修复保留（写前记 prevOpacity、transitionend+cancel 双监听、恢复三值、清 transform、隐藏卡兜底定时）
+  ✅ F4 退出双模式：原样渐隐串 + 轻量 transform-only 串都在
+  ✅ F5 导航计时双模式（原样 280/240 + 轻量 240/220）
+  ✅ M1a 点击 nav 即写入口方向 top  dir=top
+  ✅ M1b 退出窗口帧流+零长任务（诚实不变量）  exit n=12 lt=0
+  ✅ M1c 入场窗口帧流+零长任务  ent n=11 lt=0
+  ✅ M1d Messages 专属轻量入场（starts ≤ 24：8 张波浪头 + 页内 fade-up 动画；全卡波浪应 ~73）+落定 < 1800ms  starts=12 settle=1003ms
+  ✅ M1e 落定后零 inline 污染  0/12
+  ✅ M1f 公告卡 computed 恢复 box-shadow（tilt 橡皮筋修复守卫）  box-shadow 0.25s
+  ✅ M1g 公告卡 inline 含 box-shadow 过渡属性（未被破坏）
+  ✅ M2a 点击 nav 即写入口方向 bottom  dir=bottom
+  ✅ M2b 入场帧流+零长任务  n=110 lt=0
+  ✅ M2c dashboard 原样全卡波浪（starts ≥ 24）+原节奏落定 ≥ 1100ms 且 < 3000ms（~1931ms 口径）  starts=86 settle=1913ms
+  ✅ M2d 零 inline 污染  0/18
+  ✅ M2e pre-stagger 类已解除（1.6s 兜底兼容）
+  ✅ M3a 水平切写入口方向 left  dir=left
+  ✅ M3b 入场帧流+零长任务  n=26 lt=0
+  ✅ M3c 零 inline 污染  0/7
+  ✅ M4a 反向水平切写 right + 到达 explore
+  ✅ Z 全程零 console error  干净
+
+🎉 全部通过 23/23
+EXIT: 0
+===== tmp-battery-notif-home =====
+═══ F0 双版本 + changelog ═══
+  ✅ F0-1 site-config 双版本 v0.2.54.0 / v10.28.36.1 + changelog 标记
+═══ F1 index.html 铃铛/灵动岛 ═══
+  ✅ F1-1 铃铛按钮+红点徽章（唯一性 + search-capsule position:relative + 徽章在铃铛后）
+  ✅ F1-2 灵动岛弹窗 DOM + api.js 引入
+  ✅ F1-3 灵动岛动画规则 + 页面专属 CSS 在外（内联块首个 </style> 之前零 dash 规则）
+  ✅ F1-4 聚合通知 JS 骨架（轮询/文案/决定药丸/登录提示/空态）
+  ✅ F1-5 跳转分发三类目标（帖子/文章/主页）
+═══ F2 messages.html 零改动在位 ═══
+  ✅ F2-1 messages 铃铛/弹窗/好友请求管线原样（特定页面筛选=零改动证）
+═══ F3 fluidcanvas-editor.html 文章操作条 ═══
+  ✅ F3-1 操作条构建+样式+点击管线（fcViewActions/renderArticleActions/fcvaToggle/端点串）
+  ✅ F3-2 demo 种子/404 路径不建条 + 查看模式守卫/标题保留
+═══ F4 后端 ═══
+  ✅ F4-1 server.js 装配 + social.js 文章四端点
+  ✅ F4-2 notifications.js 七类聚合（每类 push 恰 1 + article target_type 恰 2）
+  ✅ F4-3 articles.js 互动字段 + 浏览自增
+═══ F5 零迁移 ═══
+  ✅ F5-1 health.test.js 仍钉 59 表 / user_version 27（两处钉）
+
+═══ B 浏览器流程 ═══
+  ✅ B1 访客开窗（登录后查看通知 + 去登录链接 + 红点隐藏 + 零条目）
+  ✅ B1b Escape 关闭即时生效
+  ✅ B2 登录态后端不可达（暂无通知 + 无登录提示 + 红点隐藏）
+  ✅ B3-1 未读红点 3（lastSeen 之后 3 条新事件）
+  ✅ B3-2 开窗 5 条目（FR 在最前）+ 开窗即读（红点清隐藏）
+  ✅ B3-3 点 FR 整窗 morph 决定视图（名字/ID 居中 + 不同意|同意 + show-decision + 标题 + 高度>0）
+  ✅ B3-4 同意（FR 摘除 → 4 条 + 标题回通知）
+  ✅ B4 Escape 关闭即时生效（display none）
+  ✅ B5 外点关闭即时生效（display none）
+  ✅ Z 控制台零错误（噪声已滤）
+
+═══ ALL GREEN — 23/23 ═══
+EXIT: 0
+===== tmp-battery-mono-flash =====
+  ✅ F0 版本双线 v0.2.54.0 / v10.28.36.1 + 用户原话注释（49.1 注释块保留）
+  ✅ F1 settings-modal.js 已无 mono 规则（迁出干净）+ 弹窗 UI 规则保留
+  ✅ F2 ethereal.css 静态含 mono 三族（暗黑族/白底白字族/FC Migrate 族）
+  ✅ F3 theme-init.js 原版源含 data-accent 同步落
+  ✅ F4 29 页 head 内联块含 accent + 40 页内联含 mono 令牌  29 页 accent / 40 页 mono
+  ✅ S1a 屏蔽注入下 data-accent=mono + data-theme=dark（head 内联同步落）  accent=mono theme=dark
+  ✅ S1b 暗 mono 令牌全黑族（--color-background #0b0b0d / primary #ececf2 / card rgba(21,21,25,0.55)）  bg=#0b0b0d p=#ececf2
+  ✅ S1c body 中性黑 rgb(11,11,13)  rgb(11, 11, 13)
+  ✅ S1d 注入样式确已屏蔽（mono 生效却无 #slati-settings-menu-style = 静态路径实证）  injected=false
+  ✅ S2a FC 首页 data-accent=mono + 暗黑族令牌（首帧即黑白）  bg=#0b0b0d
+  ✅ S2b FC 首页注入样式同样不在场
+  ✅ S3a 编辑器 data-accent=mono + 网格画布黑族 rgb(10,10,12)
+  ✅ S3b col-btn.active = #32324a 白字（白底白字族从 ethereal 生效）
+  ✅ S3c tim-search-btn = #32324a 白字
+  ✅ S3d 编辑器 toast 翻黑族 rgb(26,26,30)
+  ✅ S3e 注入样式不在场
+  ✅ S4 切页 explore 到达即 mono+黑族（无蓝家族窗口）  bg=#0b0b0d
+  ✅ S4 切页 community-hub 到达即 mono+黑族（无蓝家族窗口）  bg=#0b0b0d
+  ✅ S4 切页 回首页 到达即 mono+黑族（无蓝家族窗口）  bg=#0b0b0d
+  ✅ S5a 亮 mono 保持亮底 + 主色近黑族 #1c1c22  L=0.976 p=#1c1c22
+  ✅ S6a 无 accent 时蓝家族原样（#161625 / body rgb(22,22,37) / primary #4648d4）  accent=null bg=#161625 p=#4648d4
+  ✅ Z 全程零 console error（settings-modal 屏蔽亦零报错）  干净
+
+🎉 全部通过 22/22
+EXIT: 0
+===== tmp-battery-cit2usr =====
+  ✅ 前端零 CIT-：signup-and-login.html
+  ✅ 前端零 CIT-：assets/js/sidebar.js
+  ✅ 前端零 CIT-：assets/js/settings-modal.js
+  ✅ 前端零 CIT-：pages/fluidcanvas.html
+  ✅ 前端零 CIT-：pages/onboarding-identity.html
+  ✅ site-config 版本 = v0.2.54.0
+  ✅ site-config changelog 含 v0.2.51.1 条目 + 用户原话
+  ✅ auth.js 无 'CIT-' + pad6 生成表达式
+  ✅ auth.js 含 const citizenId = id;
+  ✅ 026 迁移 UPDATE citizen_id = id（NULL 补齐 + 异值改写）
+  ✅ health.test user_version 27 + 标题 001-027
+  ✅ migrations.test user_version 27（主+幂等+017/022 补跑同步）
+  ✅ migrations.test 新 026 测试在位（三态断言）
+  ✅ auth.test USR- 前缀断言
+  ✅ social-profile.test USR 正则
+  ✅ mask.test USR-1 fixture
+  ✅ 电池锚 v0.2.54.0：tmp-battery-msglink.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-mono-flash.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-monodark-v0422.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-fadefix.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-pageswitch.js
+
+cit2usr 巡检：21 通过 / 0 失败
+EXIT: 0
+===== tmp-battery-msglink =====
+  ✅ F0 版本双线 v0.2.54.0 / v10.28.36.1 + 用户原话注释
+  ✅ F1 直达读取 showTab + 旧 tab 兼容
+  ✅ F2 点 tab 地址栏联动（replaceState + showTab 串 + private 干净路径）
+  ✅ F3 未知 tab 值归一清参数
+  ✅ F4 index 「View all announcements」用 ?showTab=announcements、旧 ?tab= 零残留
+（暖机完成）
+
+  ✅ M1 ?showTab=announcements 直达  search=?showTab=announcements active=announcements slide=translateX(-200%)
+  ✅ M2 ?showTab=groups 直达  search=?showTab=groups active=groups slide=translateX(-100%)
+  ✅ M3 无参数默认 private + URL 干净（slide 空串=CSS 默认 0 位，与 translateX(0%) 同态）  search= active=private slide=
+  ✅ M4 旧 ?tab=announcements 兼容直达 + URL 归一成 ?showTab=announcements  search=?showTab=announcements active=announcements
+  ✅ M5 点 groups → URL ?showTab=groups + 无刷新（同文档哨兵存活）+ 面板切换  noReload=true search=?showTab=groups active=groups
+  ✅ M6 点 announcements → URL ?showTab=announcements + 面板切换  search=?showTab=announcements active=announcements
+  ✅ M7 点回 private → URL 回干净路径 + 面板切回  search= active=private
+  ✅ M8 未知 ?showTab=bogus → 默认 private + URL 清参数  search= active=private
+  ✅ M9 全程零长任务  longtask=0
+  ✅ Z 全程零 console error  干净
+
+🎉 全部通过 15/15
+EXIT: 0
+===== tmp-battery-sidebar-bottom =====
+═══ S. 静态（sidebar.js + site-config）═══
+  ✅ S1 sidebar.js 菜单卡 inline style 无 flex:1（v0.2.53.3 收内容高）
+  ✅ S2 sidebar.js v0.2.53.3 注释含用户原话 + 问询钦定
+  ✅ S3 site-config 版本 = v0.2.54.0
+  ✅ S4 site-config changelog 含 v0.2.54.0 条目 + FC 零改动
+═══ B. 亮色浏览器（1920×1080）═══
+  ✅ B1 侧栏恰三卡且顺序 = brand/user/nav
+  ✅ B2 菜单卡收内容高（高度-内容高 <= 6px；旧版拉伸会多出整块空白）
+  ✅ B3 菜单卡下方零 painted 元素（下方只留纯色侧栏底）
+  ✅ B4 侧栏底保持上轮钦定纯色不透明（rgba(255,255,255,0.95)）
+═══ D. 暗色浏览器 ═══
+  ✅ D1 暗色菜单卡同样收内容高（高度-内容高 <= 6px）
+  ✅ D2 暗色菜单卡下方零 painted 元素
+  ✅ D3 暗色侧栏底保持纯色不透明（rgb(26, 26, 46)）
+
+sidebar-bottom：11 通过 / 0 失败
+EXIT: 0
+===== tmp-battery-sidebar-light =====
+  ✅ ethereal 亮色侧栏铺底规则在位
+  ✅ ethereal 亮色侧栏灭滤镜灭磨砂规则在位
+  ✅ ethereal 暗色修复零触碰（09-10 原规则原样在位）
+  ✅ ethereal 修复注释含用户原话
+  ✅ 内联页总数 = 40（实测 40）
+  ✅ 40 页内联块全部含亮色侧栏规则
+  ✅ site-config 版本 = v0.2.54.0
+  ✅ site-config changelog 含 v0.2.51.2 条目 + 用户原话 + 修法口径
+  ✅ site-config 51.1 changelog 历史条目保留
+  ✅ FC v10.28.36.1 保持
+
+sidebar-light 巡检：10 通过 / 0 失败
+EXIT: 0
+===== tmp-battery-home-bg =====
+═══ S. 静态巡检 ═══
+  ✅ S1 ethereal 首页铺底规则在位（body.mn-index .app-main 三面）
+  ✅ S2 ethereal 首页灭层规则在位（card + guest-hero 直系 lg-backdrop 灭滤镜灭磨砂）
+  ✅ S3 ethereal 修复注释含用户原话 + 问询口径
+  ✅ S4 index body 挂 mn-index 页面类
+  ✅ S5 问候卡内联 background:var(--sidebar-bg)（旧 tint 渐变已去）
+  ✅ S6 订阅卡深色渐变底零触碰（白字设计卡不动）
+  ✅ S7 内联页总数 = 40（实测 40）
+  ✅ S8 40 页内联块全部含首页铺底规则
+  ✅ S9 site-config 版本 = v0.2.54.3
+  ✅ S10 site-config changelog 含 v0.2.54.3 条目 + 用户原话 + 侧栏同款口径
+  ✅ S11 后端零改动（user_version 27/health 59 表不变口径）
+  ✅ S12 FC v10.28.36.1 保持
+═══ B1. 登录工作台（亮色 → data-theme=dark）═══
+  ✅ B1 卡数 = 18（问候 1+活动流 4+公告 10+工作台/指标/我的世界 3）
+  ✅ B2 亮色 18 卡 backgroundColor 全 rgba(255,255,255,0.95) 不透明侧栏同底
+  ✅ B3 卡自带 backdrop-filter blur(24px) 保留（底不透明零可见效果，侧栏模块同口径）
+  ✅ B4 13 张非 tilt 卡 .lg-backdrop 全灭（filter=none + backdropFilter=none）
+  ✅ B5 5 张 tilt 卡免层（问候+活动流 4；liquid-glass elasticOk 设计排除，本轮零触碰）
+  ✅ B6 搜索胶囊同底 0.95 + 自带 blur(16px) 保留
+  ✅ B7 暗色 18 卡 backgroundColor 全 rgb(26,26,46)（侧栏暗色同底）
+  ✅ B8 暗色 13 张挂层卡 .lg-backdrop 仍全灭
+  ✅ B9 暗色搜索胶囊同底 rgb(26,26,46)
+═══ B2. 访客态 guest-hero 大卡 ═══
+  ✅ B10 访客大卡亮色底 rgba(255,255,255,0.95)
+  ✅ B11 访客大卡 .lg-backdrop 灭（filter=none + backdropFilter=none）
+  ✅ B12 访客态工作台卡互斥隐藏（offsetParent 全 null=祖先 display:none，hero 独显）
+  ✅ B13 访客大卡暗色底 rgb(26,26,46)
+  ✅ B14 暗色访客大卡 .lg-backdrop 仍全灭
+
+home-bg 电池：26 通过 / 0 失败
+EXIT: 0
+===== fadefix (mode=after) =====
+═══ tmp-battery-fadefix.js ═══ mode=after 期望版本 v0.2.54.3
+  ✅ F0 版本双线 v0.2.54.3 / v10.28.36.1 + changelog 标记
+  ✅ F1 双模式入场串：原样渐隐+位移全串 + 轻量 transform-only 串都在
+  ✅ F2 原节奏 stagger 60 + 轻量 40/上限 8 + LIGHT 按 messages.html 判定
+  ✅ F3 隐形修复保留（prevOpacity 记/transitionend+cancel 双监听/恢复三值/清 transform/兜底公式）+ will-change 写前记/还原
+  ✅ F4 退出双模式：原样渐隐串 + 轻量 transform-only 串都在
+  ✅ F5 导航计时双模式（原样 280/240 + 轻量 240/220）
+  ✅ F6 rAF 批量波浪（requestAnimationFrame 在 + 旧逐卡 setTimeout 模式不在 + 兜底公式在）
+  ✅ F7 双动画守卫 getAnimations 在
+  ✅ F8 will-change 写点 ≥4 处（入场/还原/水平退出/垂直退出）  count=4
+  ✅ F9 守卫收窄只认 CSS 关键帧动画（CSSTransition 构造器 + transitionProperty 双重过滤；v0.2.50.4）
+  ✅ M1a 点击 nav 即写入口方向 top  dir=top
+  ✅ N3v 垂直退出 .app-main 同步写 will-change（层提升）  will=opacity, transform
+  ✅ M1b 退出窗口帧流+零长任务（诚实不变量）  exit n=13 mean=16.7 p50=16.7 p95=16.8 max=16.8 >20ms=0 >34ms=0 lt=0
+  ✅ M1c 入场窗口帧流+零长任务  ent n=12 mean=61.1 p50=66.7 p95=133.3 max=133.3 >20ms=8 >34ms=8 lt=0
+  📊 M1 Messages LIGHT 入场帧健康：n=12 mean=61.1 p50=66.7 p95=133.3 max=133.3 >20ms=8 >34ms=8 lt=0 | settle=749ms
+  ✅ M1d Messages 专属轻量入场（starts ≤ 24：8 张波浪头 + 页内 fade-up 动画；全卡波浪应 ~73）+落定 < 2200ms（8 卡波浪物理 680ms 落定，尾长含页内原生动画、运行方差 ±150ms）  starts=12 settle=749ms
+  ✅ M1e 落定后零 inline 污染  0/12
+  ✅ M1f 公告卡 computed 恢复 box-shadow（tilt 橡皮筋修复守卫）  box-shadow 0.25s
+  ✅ M1g 公告卡 inline 含 box-shadow 过渡属性（未被破坏）
+  ✅ M1h LIGHT 入场 will-change 机制（波浪卡起播均带 will-change ≥3 + 值全含 transform + 落定全清）  n=11 withWC=8 cleared=11/11 vals=transform
+  ✅ M1i Messages LIGHT 波浪覆盖（≥5 张波浪头卡收到内联过渡；50.4 守卫收窄回归网——messages 守卫输入为空已由探针证明，≤3 张差额 = 页内原生入场动画抢先改 transform，startCard 写入即终值无新过渡可起（tmp-probe-msg-preempt.js 快照实证 8 张全被写入），观感无损）  itTargets=8 vis=8
+  ✅ M2a 点击 nav 即写入口方向 bottom  dir=bottom
+  ✅ N2b 中场快照：欢迎卡零内联过渡（守卫跳过）而波浪其他卡 ≥3 张进行中  welcome.t="" mid=3
+  ✅ M2b 入场帧流+零长任务  n=112 lt=0
+  📊 M2 dashboard 原样全卡波浪入场帧健康：n=112 mean=17 p50=16.7 p95=16.7 max=50 >20ms=1 >34ms=1 lt=0 | settle=1913ms
+  ✅ M2c dashboard 原样全卡波浪（starts ≥ 24）+原节奏落定 ≥ 1100ms 且 < 3000ms（~1931ms 口径）  starts=86 settle=1913ms
+  ✅ M2d 零 inline 污染  0/18
+  ✅ M2e pre-stagger 类已解除（1.6s 兜底兼容）
+  ✅ M2h 原样入场 will-change 机制（波浪卡起播均带 will-change ≥20 + 值全含 opacity + 落定全清）  n=84 withWC=46 cleared=23/23 vals=opacity, transform
+  ✅ M2i dashboard 波浪覆盖（每张可见非欢迎卡收到内联过渡；50.4 守卫收窄回归网）  itTargets=23 vis=23
+  ✅ N2 欢迎卡双动画守卫（零内联三值 + 关键帧 fadeInUp 照常淡入 + fill forwards 仍挂动画）  t="" o="" wc="" anim=fadeInUp ga=1
+  ✅ M3a 水平切写入口方向 left  dir=left
+  ✅ N3h 水平退出逐卡同步写 will-change（层提升）  hit=6
+  📊 M3 explore→overview 水平退出帧健康：n=6 mean=38.9 p50=33.4 p95=66.6 max=66.6 >20ms=5 >34ms=2 lt=0
+  ✅ M3b 入场帧流+零长任务  n=28 lt=0
+  ✅ M3c 零 inline 污染  0/7
+  ✅ M4a 反向水平切写 right + 到达 explore
+  📊 A4 auth 入场帧健康：n=2 mean=16.6 p50=16.7 p95=16.7 max=16.7 >20ms=0 >34ms=0 lt=0 | settle=157ms
+  ✅ A4 auth 入场（starts ≥1 + 帧流 ≥1 + 零长任务 + will-change 落定清净 + 污染 0/N）  starts=4 n=2 lt=0 will="" poll=0/0
+  ✅ Z 全程零 console error  干净
+
+🎉 mode=after 全部通过 36/36
+EXIT: 0
+===== smoke-admin =====
+smoke-admin：启动中…
+  ✅ 登录页可见（gate/root 隐藏）
+  ✅ 密码空 → 发码拦截（提示 8-72 + 码行不出）
+  ✅ 发码后验证码行出现
+  ✅ 发码提示防枚举文案
+  ✅ 重发倒计时锁定按钮
+  ✅ director 登录 → 面板
+  ✅ 身份栏 = Neo · 项目总监
+  ✅ 角色栏 = 项目总监
+  ✅ 导航 1 张卡 + 8 分类标题 + 23 条目（无 W 徽章）
+  ✅ 默认深链 → Dashboard 激活态
+  ✅ Dashboard 六组卡
+  ✅ 24 张统计卡
+  ✅ 财务组金额 RM 格式
+  ✅ Analytics 默认 users 域
+  ✅ 环形图 canvas 已绘制
+  ✅ users 域 3 张环形图
+  ✅ 域切换 → 财务（实时重取）
+  ✅ finance 概览 RM 金额
+  ✅ Users 列表 ≥3 行
+  ✅ 详情：基本信息 / 支付记录 / 安全档案 三区块
+  ✅ director 详情安全档案全量（实际 15 行 = 13 登录 + 2 事件）
+  ✅ director 详情完整 IP 可见
+  ✅ director 详情支付 2 笔（实际 2 行）
+  ✅ Security 全局登录史（含 staff 登录）
+  ✅ director 完整 IP 可见
+  ✅ 事件列表渲染（可疑登录）
+  ✅ 事件列表 + 标记按钮（director）
+  ✅ 建设中占位（Tickets · W3）
+  ✅ 退出 → 回登录页
+  ✅ 旧账号仅码登录 → 设密引导（面板未进）
+  ✅ cs（Alex）设密 → 面板 → 角色栏 客服
+  ✅ cs 全局安全 → 无权限卡（§28 阶梯）
+  ✅ 403 提示指路 Users 页
+  ✅ cs 用户列表（登录后无残留详情）
+  ✅ cs 详情：支付区块无权限文案
+  ✅ cs 详情：安全档案掩码近 10 条（实际 12 行 = 10 登录 + 2 事件）
+  ✅ cs 详情：掩码提示文案
+  ✅ cs 详情：IP 前两段掩码
+  ✅ cs 详情：无内部字段（风险理由/警告）
+  ✅ cs 详情：无标记按钮（无 security.manage）
+  ✅ 错密码 → 提示 + 留在登录页
+  ✅ 同码改对密码 → 登录成功（码未消费）
+  ✅ 忘记密码 → 重置页（邮箱预填）
+  ✅ 重置发码 → 倒计时锁定
+  ✅ 重置成功 → 回登录页 + 提示
+  ✅ 新密码 + 码 → 登录成功（旧密码已失效）
+  ✅ 预算 banner 静默隐藏（W3 端点 404）
+  ✅ 控制台零错误（实际 0 条）
+
+冒烟结果：48/48 全绿
+EXIT: 0
+===== npm test =====
+[webhook] 未知会话 cs_test_999
+[webhook] 未知 tier_key bogus，忽略
+✔ webhook 容错：未知事件/未知会话/未知 tier_key → 200 忽略，绝不开通 (77.097ms)
+✔ 工单：匿名提交契约形状（MN-年-6位seq/queued/position 递增） (130.2826ms)
+✔ 工单：account/payment 自动 urgent；校验 400（category/contact/空描述） (90.4991ms)
+✔ 工单：登录用户挂 user_id；未登录为 NULL (71.4166ms)
+✔ 工单限流：tickets 覆盖为 2 → 第 3 次 429 (72.6254ms)
+✔ 徽章验证：有效码 200 全字段；错码/过期/吊销 404 invalid (88.8634ms)
+✔ 徽章限流：badgeVerify 覆盖为 1 → 第 2 次 429 (67.7086ms)
+✔ uploads：happy path → UPL- id + 文件逐字节落盘 + 行落库 (108.7778ms)
+✔ uploads：ext 白名单/缺失 → 400；魔数不符 → 400；空体 → 400 (94.3608ms)
+✔ uploads：超限 → 400 请求体过大；匿名 → 401；限流 → 429 (155.4486ms)
+✔ posts：媒体 URL 校验（外部 URL / 穿越串 → 400） (61.7667ms)
+✔ posts：媒体帖 IMS 未配置 → visible 先发后审 + queued + GET 返回 media (76.208ms)
+✔ posts：IMS 已配置 + 首图为图片 → pending → 即时审核 Pass → visible + ai_approved（本地文件分支端到端） (65.9534ms)
+✔ posts：IMS 已配置 + 首图为视频 → visible + queued（不调 IMS，视频 base64 会超限不能走图片审核） (53.5964ms)
+✔ uploads：webm 魔数 + 视频大小上限 30MB 生效 (184.6086ms)
+ℹ tests 311
+ℹ suites 0
+ℹ pass 311
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8264.7909
+NPMTEST_EXIT: 0

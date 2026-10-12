@@ -1,0 +1,17 @@
+═══ S1 静态（live）═══
+  ✅ S1a site-config：52.4 赋值 ×1 + 52.3 赋值零残留 + 站点 58.28 ×1 + changelog 头 52.4/52.3/52.2 各 ×1
+  ✅ S1b rev live 口径：rev 00375-nlm ×1 + 00375-XXX 零残留 + 00376-??? 占位 ×1 + 00376-8qx 零残留（live 滞后一部署）
+  ✅ S1c 编辑器 live 11 锚全中（52.4 八件+49.1 :has/52.2 纯白/暗色还原回归）
+═══ S2 API（匿名口径）═══
+  ✅ S2 /api/health 200 + tables:66（本轮零迁移）
+═══ S3 匿名回归 ═══
+  ✅ S3 fc/edges 匿名公开 200（回归）
+═══ P1 CDP（假会话）═══
+  ✅ P1a 展开态 live：按钮 left 214px+top 12px+正圆 40×40（=搜索胶囊同高）+纯白 rgb(255,255,255) 不透明+blur 摘除（52.2 回归）
+  ✅ P1a2 胶囊让位 live：margin-left 0+左缘 12px+宽 180~200px+按钮左缘 214 留 ≥10px 缝
+  ✅ P1b 折叠 live 位移轨迹：animationName fcToggleOutSpring, fcToggleQSquash 双名命中+动画数 2 ≥2+样本 81 ≥60+起步右缘 earlyMax 213.234 >100+min -35.6492 ≤ -30 出画+回弹过冲 10.4978 ≥ 8+顺序 minIdx(15)<maxAfterMinIdx(37)+终态落定 6px
+  ✅ P1b2 折叠 live Q弹缩放：scaleX 峰值 1.39883 ≥1.25 弹出拉长+scaleY 谷值 0.63047 ≤0.75 纵向压扁+终态 scale 回规 1（|a-1|≤0.03+|d-1|≤0.03）
+  ✅ P1c 展开 live：按钮滑回右缘 214px + animationName none（展开=0.25s 过渡）
+  ✅ P1d 再折叠 live：重触发轨迹（an fcToggleOutSpring, fcToggleQSquash 双名+min -35.6359 ≤ -30+回弹 10.4978 ≥ 8+动画数 2 ≥2）+终态按钮 6px+面板宽 0+▸
+  ✅ E1 零异常（实际 0 条）
+🎉 12 ✅ / 0 ❌

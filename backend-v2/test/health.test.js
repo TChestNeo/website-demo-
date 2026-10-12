@@ -12,7 +12,7 @@ test('GET /api/health 返回 db ok，且迁移 001-034 全部 69 张表就位', 
     assert.strictEqual(data.status, 'ok');
     assert.strictEqual(data.db, 'ok');
     assert.strictEqual(data.tables, 69);
-    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 34); // 001_users_auth … 034_plugins
+    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 37); // 001_users_auth … 037_article_search_blob
   } finally {
     await t.close();
   }
@@ -37,7 +37,7 @@ test('重复打开同一数据库不重复执行迁移（user_version 幂等）'
   try {
     const { openDb } = require('../src/db');
     db2 = openDb(t.dir + '/test.sqlite'); // 同文件再开一次，不抛错即幂等
-    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 34);
+    assert.strictEqual(t.db.pragma('user_version', { simple: true }), 37);
   } finally {
     if (db2) { try { db2.close(); } catch (e) {} }
     await t.close();

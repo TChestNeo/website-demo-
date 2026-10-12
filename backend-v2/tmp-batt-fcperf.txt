@@ -1,0 +1,27 @@
+  ✅ F0a 站点号 v0.2.45.2
+  ✅ F0b FC v10.28.34.2
+  ✅ F0c 隐藏态 visibility:hidden + 延迟过渡
+  ✅ F0d 隐藏弹窗动画全停（含伪元素）
+  ✅ F0e 全页玻璃挂起 + 组背景阴影栈挂起
+  ✅ F0f 挂起 5 站点（拖拽/缩放/旋转/表格手柄/Escape 重挂）+ 还原 5 站点（add=5 rm=5）
+  ✅ A0 版本 v10.28.34.2（v10.28.34.2）
+  ✅ A1 静息 1.5s ≥80 帧（≈60fps）（{"n":91,"max":17,"over32":0}）
+  ✅ A2 静息 0 帧超 32ms（{"n":91,"max":17,"over32":0}）
+  ✅ B1 静息 getAnimations 空（转圈已停）（[]）
+  ✅ C0 静息玻璃在场（editor-header lg-backdrop blur(16px)）且未挂 fc-moving（{"hb":"blur(16px)","moving":false}）
+  ✅ C1 拖拽中 fc-moving 挂起 + 玻璃 computed none（{"hb":"none","moving":true}）
+  ✅ C2 松手后 fc-moving 摘除 + 玻璃还原 blur(16px)（{"hb":"blur(16px)","moving":false}）
+  ✅ D1 缩放手势后还原（玻璃在场、未挂 fc-moving）（{"hb":"blur(16px)","moving":false}）
+  ✅ E1 旋转手势后还原（玻璃在场、未挂 fc-moving）（{"hb":"blur(16px)","moving":false}）
+  ✅ F1 表格手柄手势后还原（玻璃在场、未挂 fc-moving）（{"hb":"blur(16px)","moving":false}）
+  ✅ G1 弹窗开：visibility visible + 卡内无限动画起播（转圈复活）（{"vis":"visible","spin":true}）
+  ✅ G2 弹窗关：visibility hidden + 动画全停（getAnimations 空）（{"n":0,"d":[]}）
+  ✅ H1 编辑后 800ms MutationObserver 记录 ≤6 批（{"n":1}）
+  ✅ I1 onContentChange 单次 ≤2ms（{"occMax":0.4,"sdMax":0.3}）
+  ✅ I2 saveDraft 单次 ≤10ms（{"occMax":0.4,"sdMax":0.3}）
+  ✅ J1 Escape 中途提交后玻璃还原、未挂 fc-moving（{"hb":"blur(16px)","moving":false}）
+  ✅ K1 dashboard 同环境静息 60fps（口径对照）（{"n":91,"max":17,"over32":0}）
+  ✅ Z1 零 console error
+  ✅ Z2 零 Runtime exception
+
+── 结果: 25/25 全绿 ✅

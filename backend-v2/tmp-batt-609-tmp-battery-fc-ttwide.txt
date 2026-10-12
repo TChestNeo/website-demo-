@@ -1,0 +1,15 @@
+  ✅ S1 site-config：FC v10.28.47.4 + rev 00310- 占位 + 站点恒 v0.2.58.6 + 「做大些」在 changelog + 47.1 条目保留 + 旧赋值零残留
+  ✅ S2 弹层新几何锚：440px 宽+库格/维基格 3 列+网格 380px 超高滚动+缩略图 60×60+图名 11px 两行截断
+  ✅ S3 旧弹层几何整条规则零残留（280px 宽/2 列库格/2 列维基格/44px 缩略图/10px 单行名全灭——文件其余同名样式不属弹层）
+  ✅ S4 47.0 遗锚：弹层图库同步机器在场（4 id+TT_FILTER_TAG_IDS+renderTTLib+钩子 5 处）
+  ✅ T1 开弹层：计算宽 440±2+钮上方右缘对齐+不越视口（钳制数学原样）  {"w":440,"above":true,"rightAlign":true,"inView":true}
+  ✅ T2 库视图：3 列轨+3 库格+上传格尾位+零条纹+缩略图 60×60+图名 11px  {"gridCols":3,"libN":3,"uploads":1,"stripes":0,"thumbW":"60px","thumbH":"60px","nameFont":"11px","clientH":126,"scrollH":126}
+  ✅ T3a 维基搜索=3 列轨+搜索态+2 缩略格（搜索框仍搜维基）  {"cols":3,"searchMode":true,"thumbs":2}
+  ✅ T3b 清除搜索=回库视图 3 列+全量条目  {"cols":3,"libMode":true,"libN":3}
+  ✅ T4 12 条目：网格 clientHeight ≤380 且超高滚动（scrollHeight>clientHeight，弹层不再无限拉长）  {"gridCols":3,"libN":14,"uploads":1,"stripes":0,"thumbW":"60px","thumbH":"60px","nameFont":"11px","clientH":380,"scrollH":394}
+  ✅ T5 点库格：弹层关+卡内输入框 richify+toast 图片已插入（插入链回归）  {"rich":true,"has":true,"toast":"图片已插入：img0","popClosed":true}
+  ✅ E1 全程零 Runtime.exceptionThrown  []
+  ✅ E2 全程零 console error  []
+
+🎉 全部通过 12/12  (fc-ttwide)
+

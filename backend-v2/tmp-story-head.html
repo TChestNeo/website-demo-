@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a12">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Noto+Serif+SC:wght@500;700&amp;family=ZCOOL+XiaoWei&amp;family=ZCOOL+KuaiLe&amp;family=Ma+Shan+Zheng&amp;family=Zhi+Mang+Xing&amp;display=swap">
+  <title>{{STORY_TITLE}}</title>
+  <meta name="story-version" content="v0.2.26.0">
+  <style>
+/* ===== M.NationWorld Story v0.2.26.0 共享样式（影院式深色 · CSS 3D 深度视差 · 丝滑切换）=====
+   设计令牌 + 滚轮叙事基类。页面专属样式在各 tail 的 <style> 里。
+   引擎约定：JS 只写每场景 --p（0..1 进度）与 documentElement --progress；一切位移/揭示由 CSS 消费。 */
+
+/* ----- 设计令牌 ----- */
+:root {
+  --story-bg: #000; /* 全站默认背景纯黑（用户口径）；--story-bg-2 保留令牌 */
+  --story-bg-2: #000;
+  --story-ink: #e8e6f0;
+  --story-dim: rgba(232,230,240,.64);
+  --story-faint: rgba(232,230,240,.38);
+  --story-gold: #c9a86a;
+  --story-gold-deep: #a5843f;
+  --story-gold-soft: rgba(201,168,106,.14);
+  --story-line: rgba(232,230,240,.1);
+  --story-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+  --story-sans: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --ease-silk: cubic-bezier(.16,1,.3,1);
+}
+
+/* ----- 基底 ----- */
+html { background: var(--story-bg); }
+body {
+  margin: 0; background: var(--story-bg); color: var(--story-ink);
+  font-family: var(--story-sans); overflow-x: hidden;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+/* 环境渐变已移除（用户口径：全站默认背景纯黑） */
+::selection { background: rgba(201,168,106,.32); }
+
+/* ----- 顶部阅读进度条（story.js 写 --progress） ----- */
+.story-progress {
+  position: fixed; top: 0; left: 0; height: 2px; z-index: 100;
+  width: calc(var(--progress, 0) * 100%);
+  background: linear-gradient(90deg, #8a6a2f, var(--story-gold));
+}
+
+/* ----- 场景骨架（CSS 3D） ----- */
+.story-flow { position: relative; }
+.scene {
+  /* 一次只显示一个场景（用户口径）+ 中间停留：场景 200vh 两屏滚动——内容 sticky 吸在第一屏内，
+     场景到位后先停在屏中（停留一整屏），再滑走出场 */
+  min-height: 200vh; min-height: 200svh;
+  position: relative; box-sizing: border-box;
+  perspective: 1200px; overflow: visible;
+}
+.scene-stage {
+  position: sticky; top: 0; z-index: 2;
+  min-height: 100vh; min-height: 100svh;
+  display: grid; place-items: center;
+  max-width: 640px; width: 100%;
+  text-align: center; margin: 0 auto;
+  padding: 14vh 24px 76px; box-sizing: border-box;
+  opacity: 0; filter: blur(5px);
+  transition: opacity .9s var(--ease-silk), filter .9s var(--ease-silk);
+}
+.scene.in .scene-stage { opacity: 1; filter: blur(0); }
+/* 入场位移 + --p 驱动的轻微 3D 倾斜（scene-stage 管透明度/模糊，scene-tilt 管 transform，互不打架） */
+.scene-tilt {
+  transform: translateY(var(--enter-y, 26px)) rotateX(calc((0.5 - var(--p, 0.5)) * 1.4deg));
+  transition: transform 1.1s var(--ease-silk);
+  transform-origin: center 30%;
+}
+.scene.in { --enter-y: 0px; }
+
+/* ----- 标题与正文 ----- */
+.scene-kicker {
+  font-size: 12px; letter-spacing: .32em; text-transform: uppercase;
+  color: var(--story-gold); margin: 0 0 16px;
+}
+.scene-title {
+  font-family: var(--story-serif); font-weight: 700;
+  font-size: clamp(30px, 4.6vw, 44px); line-height: 1.35;
+  margin: 0 0 20px; letter-spacing: .04em;
+}
+.scene-title::after {
+  content: ''; display: block; width: 56px; height: 2px; margin: 16px auto 0;
+  background: linear-gradient(90deg, transparent, var(--story-gold), transparent);
+}
+/* BlurText 逐字标题动画（reactbits 同款，story.js 拆分 .tc + --ci 错峰）：
+   三段关键帧 blur(10px)/op0/y-50 → blur(5px)/op0.5/y5 → blur(0px)/op1/y0，每字 0.7s、200ms 错峰；
+   fill both 让延迟期保持 from 态——场景未 .in 时字不可见，.in 后各字按序落下 */
+.scene-title .tc, .se-title .tc, .se-title-o .tc {
+  display: inline-block; white-space: pre;
+  opacity: 0; filter: blur(10px); transform: translateY(-50px);
+}
+.scene.in .scene-title .tc, .scene.in .se-title .tc, .se-overlay.tc-in .se-title-o .tc {
+  animation: tc-rise .7s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: calc(var(--ci, 0) * 200ms);
+}
+/* ScrollReveal 滚动入场（reactbits 同款，story.js 逐帧 scrub——可逆：滚回去会回到 0.1/旋转态）：
+   容器 rotate 3°→0（origin 左中，'top bottom'→'bottom bottom'）+ 逐字 opacity 0.1→1 + blur 4px→0
+   （'top bottom-=20%'→'bottom bottom'，每字 0.05 错峰）；从「同一座大房子」起的场景标题 */
+.scene-title.sr-title { transform-origin: 0% 50%; will-change: transform; }
+.sr-title .word { display: inline-block; will-change: opacity, filter; opacity: 0.1; filter: blur(4px); }
+@keyframes tc-rise {
+  0%   { opacity: 0;   filter: blur(10px); transform: translateY(-50px); }
+  50%  { opacity: .5;  filter: blur(5px);  transform: translateY(5px); }
+  100% { opacity: 1;   filter: blur(0);    transform: translateY(0); }
+}
+.narration { margin: 0 auto; }
+.narration .line {
+  opacity: 1; transform: translateY(12px);
+  transition: transform .7s var(--ease-silk);
+  transition-delay: calc(var(--li, 0) * 140ms);
+  font-size: clamp(17px, 2.2vw, 20px); line-height: 1.95; margin: 14px 0;
+}
+.narration .line.on { transform: none; }
+/* MagicText 滚动逐字揭示（HextaUI 同款：ghost 20% 幽灵垫底 + fill 随滚动进度逐字点亮）
+   进度口径：行首从 90% 视口滚到 25% 视口 = 0→1；每字占 1/n 区间映射 opacity。story.js 逐字写 fill 透明度 */
+.mw { position: relative; display: inline-block; }
+.mw-ghost { position: absolute; left: 0; top: 0; opacity: .2; }
+.mw-fill { position: relative; opacity: 0; will-change: opacity; }
+
+/* ----- ScrollExpand 序章展开（HextaUI 同款：小卡 42%×58% 圆角 24px 随滚动展开到全屏；story.js 写进度） ----- */
+/* 关键：sticky 不能被 overflow 夹断——.se-scene 必须 overflow:visible（clip 由 clip-path 自己管） */
+.se-scene { padding: 0; overflow: visible; }
+.se-track { width: 100%; height: 255vh; }
+.se-stage {
+  position: sticky; top: 0; width: 100%; height: 100vh; overflow: hidden;
+  --se-title-size: 4rem;
+}
+.se-frame {
+  position: absolute; inset: 0;
+  clip-path: inset(21% 29% 21% 29% round 24px);
+  will-change: clip-path;
+  /* 卡片可见性（用户「看不到展开」根因：卡片底色与页面同色系 → 加金边+光晕让卡片轮廓清晰，
+     展开时 story.js 按进度把边框/光晕溶掉） */
+  border: 1px solid rgba(201,168,106,.35);
+  box-shadow: 0 0 70px rgba(96,104,220,.2), inset 0 0 40px rgba(201,168,106,.08);
+}
+.se-media {
+  position: absolute; inset: 0; transform: scale(1.35); will-change: transform; transform-origin: center;
+  /* 图片加载失败时的兜底星云（与页面底色 #0a0a12 明确区分） */
+  background:
+    radial-gradient(560px 380px at 62% 28%, rgba(96,104,220,.55), transparent 65%),
+    radial-gradient(420px 300px at 22% 76%, rgba(201,168,106,.32), transparent 60%),
+    radial-gradient(300px 220px at 82% 74%, rgba(129,39,207,.32), transparent 65%),
+    linear-gradient(150deg, #1d1834 0%, #151033 55%, #1c1434 100%);
+}
+.se-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; pointer-events: none; }
+/* 整块序章可点击（用户口径：点下去直接开始 → /wip） */
+.se-hero-link { position: absolute; inset: 0; z-index: 6; display: block; cursor: pointer; text-decoration: none; }
+.se-sub-line {
+  position: absolute; left: 0; right: 0; top: 62%; z-index: 6;
+  text-align: center; font-size: 15px; letter-spacing: .08em;
+  color: rgba(255,255,255,.78); pointer-events: none; will-change: opacity;
+}
+.se-scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to top, rgba(0,0,0,.75), rgba(0,0,0,.1) 45%, rgba(0,0,0,.35));
+  opacity: 0;
+}
+.se-overlay {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  padding: 6%; opacity: 0; will-change: opacity, transform;
+}
+.se-title {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  padding: 0 6%; text-align: center;
+  font-family: var(--story-serif); font-size: var(--se-title-size, 4rem); font-weight: 700;
+  letter-spacing: .04em; line-height: 1; color: #fff;
+  text-shadow: 0 2px 24px rgba(0,0,0,.45); pointer-events: none; will-change: opacity, transform;
+}
+.se-hint {
+  position: absolute; left: 0; right: 0; bottom: 1.25rem; text-align: center;
+  font-size: 13px; letter-spacing: .22em; color: rgba(255,255,255,.55);
+  pointer-events: none; will-change: opacity, transform;
+}
+.se-title-o {
+  font-family: var(--story-serif); font-weight: 700;
+  font-size: clamp(30px, 5vw, 46px); color: #fff; margin: 0; letter-spacing: .04em;
+}
+.se-sub { margin: 12px 0 0; font-size: 16px; color: rgba(255,255,255,.72); }
+
+/* ----- 章节间黑色呼吸段（纯黑屏过渡，内容空——滑过黑再滑几下下一场景才浮出） ----- */
+.scene-black { min-height: 160vh; padding: 0; background: #000; }
+
+/* 黑幕浮现：场景入场盖纯黑幕，story.js 按 --p 溶解（p 0→0.5 幕从 1→0）——内容从黑里透出 */
+.bk-veil { position: absolute; inset: 0; z-index: 3; background: #000; pointer-events: none; }
+
+/* 纯黑底场景（用户口径：去掉原本装饰背景，只要纯黑） */
+.scene-dark { background: #000; }
+
+/* ----- MorphSlider 融变图集（MorphSlider 原生移植：5 图 WebGL 融变，滚轮驱动、不点击；
+   只在「什么是政治」首标题范围内——sticky 同款约束：.ms-scene 必须 overflow:visible） ----- */
+.ms-scene { padding: 0; overflow: visible; }
+.ms-track { width: 100%; height: 490vh; } /* 1 视口吸顶 + 4 过渡 × 0.6 + 5 停留 × 0.3 = 3.9 屏滚动 */
+.ms-stage {
+  position: sticky; top: 0; width: 100%; height: 100vh; overflow: hidden;
+}
+.ms-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: 1; }
+.ms-fallback { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+.ms-stage.ms-on .ms-fallback { display: none; }
+.ms-scrim {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,.12) 42%, rgba(0,0,0,.3));
+}
+.ms-kicker { position: absolute; top: 5%; left: 5%; z-index: 3; margin: 0; }
+.ms-caption {
+  position: absolute; right: 5%; bottom: 9%; z-index: 3; text-align: right;
+  margin: 0; font-size: clamp(30px, 5.5vw, 52px); color: #fff;
+  text-shadow: 0 2px 28px rgba(0,0,0,.55);
+}
+.ms-caption::after { margin: 14px 0 0 auto; }
+.ms-intro { position: absolute; left: 5%; bottom: 9%; z-index: 3; max-width: 300px; text-align: left; }
+.ms-intro p { margin: 6px 0; font-size: 14px; line-height: 1.85; color: rgba(255,255,255,.82); }
+.ms-hint {
+  position: absolute; left: 0; right: 0; bottom: 1.25rem; z-index: 3; text-align: center;
+  font-size: 13px; letter-spacing: .22em; color: rgba(255,255,255,.55); pointer-events: none;
+}
+@media (max-width: 768px) {
+  .ms-intro { display: none; }
+  .ms-caption { font-size: clamp(26px, 8vw, 36px); right: 6%; bottom: 12%; }
+}
+
+/* ----- 景深层（data-depth 决定视差速度；--p 由引擎写） ----- */
+.layer {
+  position: absolute; inset: -6% 0; z-index: 0; pointer-events: none;
+  transform: translateY(calc((var(--p, 0.5) - 0.5) * var(--depth, .12) * -420px));
+  will-change: transform;
+}
+.layer[data-depth="far"] { --depth: .34; }
+.layer[data-depth="mid"] { --depth: .18; }
+.layer[data-depth="near"] { --depth: .07; }
+
+/* ----- 光球与光效 ----- */
+.orb { display: none; position: absolute; border-radius: 50%; pointer-events: none;
+  filter: blur(60px); opacity: .5; animation: orb-float 16s ease-in-out infinite alternate; } /* 全站光球装饰隐藏（纯黑口径） */
+.orb-gold { background: radial-gradient(circle, rgba(201,168,106,.26), transparent 70%); }
+.orb-blue { background: radial-gradient(circle, rgba(96,104,220,.2), transparent 70%); }
+@keyframes orb-float { from { transform: translate(-4%, -3%) scale(1); } to { transform: translate(4%, 3%) scale(1.12); } }
+
+/* ----- 滚动提示（首屏） ----- */
+.scroll-hint {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  color: var(--story-faint); font-size: 12px; letter-spacing: .22em; z-index: 2;
+}
+.scroll-hint::after {
+  content: ''; display: block; width: 1px; height: 34px; margin: 10px auto 0;
+  background: linear-gradient(180deg, var(--story-gold), transparent);
+  animation: hint-bob 2.2s var(--ease-silk) infinite;
+}
+@keyframes hint-bob { 0%,100% { transform: translateY(0); opacity: .9; } 50% { transform: translateY(8px); opacity: .4; } }
+
+/* ----- 口径标签（Fact / Interpretation / Debate） ----- */
+.tag {
+  display: inline-block; font-size: 11px; letter-spacing: .1em;
+  padding: 2px 8px; border-radius: 999px; border: 1px solid;
+  margin-right: 6px; vertical-align: middle; line-height: 1.6;
+}
+.tag-fact  { color: #7fb6a4; border-color: rgba(127,182,164,.4);  background: rgba(127,182,164,.08); }
+.tag-interp{ color: #8ea7d8; border-color: rgba(142,167,216,.4);  background: rgba(142,167,216,.08); }
+.tag-debate{ color: #d8a97f; border-color: rgba(216,169,127,.4);  background: rgba(216,169,127,.08); }
+
+/* ----- 反思块 ----- */
+.reflect {
+  margin: 30px auto 0; max-width: 560px; text-align: left;
+  border: 1px solid rgba(201,168,106,.35); border-radius: 14px;
+  background: var(--story-gold-soft); padding: 16px 20px;
+}
+.reflect .r-head { font-size: 12px; letter-spacing: .24em; color: var(--story-gold); margin-bottom: 8px; }
+.reflect p { margin: 0; font-size: 15px; line-height: 1.85; color: var(--story-ink); }
+
+/* ----- 按钮 ----- */
+.story-cta {
+  display: inline-block; margin-top: 30px; padding: 14px 36px; border-radius: 999px;
+  background: linear-gradient(135deg, #d4b57c, #a5843f); color: #14111c;
+  font-weight: 600; font-size: 15px; letter-spacing: .05em; text-decoration: none;
+  box-shadow: 0 8px 30px rgba(201,168,106,.22);
+  transition: transform .35s var(--ease-silk), box-shadow .35s var(--ease-silk);
+}
+.story-cta:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(201,168,106,.3); }
+.story-cta-ghost {
+  display: inline-block; margin: 30px 0 0 14px; padding: 14px 30px; border-radius: 999px;
+  border: 1px solid var(--story-gold); color: var(--story-gold);
+  font-size: 14px; letter-spacing: .05em; text-decoration: none; background: transparent;
+  transition: background .35s var(--ease-silk);
+}
+.story-cta-ghost:hover { background: var(--story-gold-soft); }
+
+/* ----- 内容地图（序章） ----- */
+.story-map {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+  max-width: 720px; margin: 30px auto 0; text-align: left;
+}
+.story-map-card {
+  display: block; border: 1px solid var(--story-line); border-radius: 14px;
+  padding: 16px 18px; color: inherit; text-decoration: none;
+  background: rgba(255,255,255,.02);
+  transition: transform .35s var(--ease-silk), border-color .35s, background .35s;
+}
+.story-map-card:hover {
+  border-color: rgba(201,168,106,.5); background: var(--story-gold-soft);
+  transform: translateY(-3px);
+}
+.story-map-card .k { font-size: 11px; letter-spacing: .26em; color: var(--story-gold); }
+.story-map-card .t { font-family: var(--story-serif); font-size: 17px; margin-top: 7px; }
+.story-map-card .d { font-size: 12.5px; color: var(--story-faint); margin-top: 7px; line-height: 1.7; }
+
+/* ----- 知识地图（尾声） ----- */
+.kmap { text-align: left; max-width: 560px; margin: 26px auto 0; font-size: 14.5px; line-height: 2.1; }
+.kmap ul { list-style: none; padding-left: 20px; border-left: 1px solid var(--story-line); margin: 4px 0 12px; }
+.kmap-node { color: var(--story-faint); }
+.kmap-node.lit { color: var(--story-ink); }
+.kmap-node.lit::before { content: '◆ '; color: var(--story-gold); font-size: 11px; }
+.kmap-root { color: var(--story-gold); font-family: var(--story-serif); font-size: 16px; }
+.kmap-legend { margin-top: 16px; font-size: 12.5px; color: var(--story-faint); }
+
+/* ----- 历史事件结构化块（第四章） ----- */
+.evt { margin: 26px 0 0; text-align: left; }
+.evt h3 {
+  font-family: var(--story-serif); font-size: 15px; color: var(--story-gold);
+  letter-spacing: .08em; margin: 0 0 8px; font-weight: 500;
+}
+.evt p { font-size: 14.5px; line-height: 1.9; color: var(--story-dim); margin: 6px 0; }
+.evt { padding-left: 14px; border-left: 1px solid rgba(201,168,106,.25); }
+.evt-related { font-size: 12.5px; color: var(--story-faint); }
+
+/* ----- 页尾导航与来源 ----- */
+.story-nav {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  max-width: 640px; margin: 0 auto; padding: 40px 24px 28px;
+}
+.story-nav a {
+  color: var(--story-gold); text-decoration: none; font-size: 14px;
+  border: 1px solid var(--story-line); border-radius: 999px; padding: 10px 20px;
+  transition: border-color .3s, background .3s;
+}
+.story-nav a:hover { border-color: rgba(201,168,106,.5); background: var(--story-gold-soft); }
+.story-nav .next { margin-left: auto; }
+.story-sources {
+  max-width: 640px; margin: 0 auto; padding: 26px 24px 56px;
+  border-top: 1px solid var(--story-line);
+  font-size: 12.5px; color: var(--story-faint); line-height: 2;
+}
+.story-sources .s-head { color: var(--story-gold); letter-spacing: .2em; font-size: 11.5px; margin-bottom: 10px; }
+.story-sources p { margin: 0 0 8px; }
+
+/* ----- WebGL 画布与 CSS 兜底 ----- */
+canvas.scene-gl {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  display: block; z-index: 1; pointer-events: none; opacity: 0;
+  transition: opacity 1.2s ease;
+}
+body.gl-on canvas.scene-gl { opacity: 1; }
+.gl-fallback { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+body.gl-on .gl-fallback { display: none; }
+
+/* ----- 响应式 ----- */
+@media (max-width: 768px) {
+  .scene-stage { padding: 14vh 20px 56px; }
+  .scene-stage { filter: blur(3px); }
+  .story-map { grid-template-columns: 1fr; }
+  .scene-title { font-size: clamp(26px, 7vw, 34px); }
+  .story-cta-ghost { display: block; margin: 14px auto 0; max-width: 240px; }
+  .story-nav { flex-wrap: wrap; }
+}
+
+/* ----- 减弱动态（内容优先，动画归零） ----- */
+@media (prefers-reduced-motion: reduce) {
+  .scene-stage, .scene-tilt, .narration .line { opacity: 1; transform: none; filter: none; transition: none; }
+  .scene-title .tc, .se-title .tc, .se-title-o .tc { opacity: 1; filter: none; transform: none; animation: none !important; }
+  .scene-title.sr-title { transform: none !important; }
+  .sr-title .word { opacity: 1 !important; filter: none !important; }
+  .mw-ghost { display: none; }
+  .mw-fill { opacity: 1 !important; }
+  .orb, .scroll-hint::after { animation: none; }
+}
+</style>

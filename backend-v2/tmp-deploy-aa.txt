@@ -1,0 +1,17 @@
+﻿python.exe : Deploying container to Cloud Run service [mnationworld-web] in project [project-02d050ab-8105-448e-bac] re
+gion [asia-southeast1]
+At C:\Users\USER\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.ps1:120 char:3
++   & "$exe_path" $run_args_array
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Deploying conta...sia-southeast1]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Deploying...
+Setting IAM Policy...............done
+Creating Revision..................................................................................................done
+Routing traffic.....done
+Done.
+Service [mnationworld-web] revision [mnationworld-web-00217-p4s] has been deployed and is serving 100 percent of traffi
+c.
+Service URL: https://mnationworld-web-641398703651.asia-southeast1.run.app
+

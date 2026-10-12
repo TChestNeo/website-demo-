@@ -42,6 +42,7 @@
     .specimen .note b { color: #c9c4da; font-weight: 600; }
     .pill-row { display: flex; gap: 32px; align-items: center; flex-wrap: wrap; padding: 24px 8px; }
     table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin-top: 12px; }
+    @media (max-width: 768px) { .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; } .table-scroll table { min-width: 560px; } }
     th, td { border: 1px solid rgba(255,255,255,0.12); padding: 10px 14px; text-align: left; vertical-align: top; }
     th { background: rgba(255,255,255,0.05); color: #e8c37a; font-weight: 600; }
     td:first-child { white-space: nowrap; color: #9fd8e8; }
@@ -639,6 +640,7 @@
 
   <h2 data-i18n="edge.map.title">④ 与编辑器（fluidcanvas-editor.html）的映射</h2>
   <p class="sub" style="margin-bottom:8px" data-i18n-html="edge.map.intro">配方复制自编辑器的 <code>EDGE_STYLES</code>（v10.8），改配色时两处手动同步；褶皱纸/波浪/科技1~6 六款轮廓 = 两页共享同款 <code>#paper-edge-clip</code> / <code>#map-wave-clip</code> / <code>#hud-frame-1..6</code> SVG 定义（编辑器由 <code>hudOverlay()</code> 按 <code>HUD_CORNERS</code> 生成包角层，演示页用 <code>--tl-a</code>… 切深变量 + calc 表达同一几何；自动外板 v10.8 = 编辑器 ::before 改画板 + .card-tint 子层复刻剪影，演示页 <code>--plated</code> 用矩形近似）。</p>
+  <div class="table-scroll">
   <table>
     <tr><th data-i18n="edge.map.thEditor">编辑器 EDGE_STYLES 字段</th><th data-i18n="edge.map.thDemo">演示页对应规则</th></tr>
     <tr><td><code data-i18n="edge.map.r1.editor">clip</code></td><td data-i18n-html="edge.map.r1.demo"><code>--pch-clip</code> / <code>--tech-clip</code>（<code>::before</code> 与 <code>::after</code> 的 <code>clip-path</code>；宿主不剪）</td></tr>
@@ -650,6 +652,7 @@
     <tr><td data-i18n="edge.map.r7.editor">选中环（编辑器 filter 选中态）</td><td data-i18n-html="edge.map.r7.demo"><code>.is-selected</code> 修饰符（四方向零模糊 drop-shadow trace 剪影描边）</td></tr>
     <tr><td data-i18n-html="edge.map.r8.editor">编辑器 CSS 变量（<code>--card-clip/--card-layers/--card-overlay/--card-tint-base</code>）</td><td data-i18n="edge.map.r8.demo">演示页直接把配方写进规则；组件化时保留变量注入方式更灵活（主题可运行时切换）</td></tr>
   </table>
+  </div>
 
   <p class="foot" data-i18n="edge.foot">
     FluidCanvas v10.8 配套组件演示 · 所有效果由纯 CSS 与内联 SVG 实现，无外部图片、无字体依赖。

@@ -1,0 +1,34 @@
+✔ 迁移：user_version=33、66 表、角色/权限/平台种子齐整 (47.4869ms)
+✔ 迁移：重复打开同库幂等（版本不再推进、无重复执行） (42.0492ms)
+✔ 迁移 005-009：社交/工单/知识库/审核/财务关键表与扩展列就位（D5/D6 口径） (40.7915ms)
+✔ 迁移 010：activity_daily/page_views 就位 + security_events 标记列（§2/§5） (42.149ms)
+✔ 迁移 011：users/staff password_hash 加列（W6 密码双因素；旧账号默认 NULL） (39.531ms)
+✔ 迁移 013：users.gender 加列（v0.2.11.0 用户性别记录；旧用户默认 NULL） (40.0085ms)
+✔ 迁移 014：uploads 表就位（v0.2.16.0 帖子媒体附件元数据） (38.1526ms)
+✔ 迁移 015：posts.repost_of 加列 + 转发索引（v0.2.18.0 真转发——转发即发帖，无新表） (42.2649ms)
+✔ 迁移 016：posts.view_count 加列（v0.2.20.0 浏览量；默认 0，无新表 → health 58 不变） (39.7543ms)
+✔ 迁移 017：following.users 显示名→id 引用 + 粉丝索引（v0.2.21.0 用户主页+关注） (937.8763ms)
+✔ 迁移 018：users.card_bg 加列（v0.2.23.0 卡片背景自定义；默认 NULL，无新表 → health 58 不变） (41.1045ms)
+✔ 迁移 019：users.card_plate 加列（v0.2.24.0 独立卡片背景；默认 NULL，无新表 → health 58 不变） (42.4542ms)
+✔ 迁移 020：users.page_bg_image 加列（v0.2.25.0 主页整页背景图片；默认 NULL，无新表 → health 58 不变） (47.103ms)
+✔ 迁移 021：users 学生认证四列 + email_codes 重建扩 purpose（v0.2.44.0 学生价；无新表 → health 58 不变） (37.8654ms)
+✔ 迁移 022：遗留 pending 文章一律转 published（v0.2.46.1 直接发布；无新表 → health 58 不变） (890.788ms)
+✔ 迁移 023：users.xp_gained 加列（v0.2.49.0 社交获得类经验；默认 0，无新表 → health 58 不变） (46.1213ms)
+✔ 迁移 025：friend_requests 表就位（v0.2.51.0 好友请求；+1 表 → health 59） (48.0737ms)
+✔ 迁移 026：citizen_id 统一 USR- 口径（v0.2.51.1 CIT→USR；无新表 → health 59 不变） (1006.1103ms)
+✔ 迁移 027：users.card_edge 加列（v0.2.53.0 卡片边缘主题；默认 NULL，无新表 → health 59 不变） (44.2092ms)
+✔ 迁移 029：users.banner_url 加列（v0.2.58.18 个人资料横幅；默认 NULL，无新表 → health 60 不变） (42.8419ms)
+✔ 迁移 030：users.avatar_crop/banner_crop 加列（v0.2.58.25 显示范围裁切元数据；默认 NULL，无新表 → health 60 不变） (43.1569ms)
+✔ 迁移 031：fc_edges 表就位（FC v10.28.50.0 自定义边缘仓库；+1 表 → health 61） (47.0873ms)
+✔ 迁移 032：团队频道加列+扩容 SKU（FC v10.28.51.0 三步向导；列级迁移无新表 → health 61 不变） (44.0329ms)
+✔ 迁移 033：等级奖励五表+XP 列（FC v10.28.52.0；+5 表 → health 66） (59.7133ms)
+✔ 迁移：重复版本号启动即报错（防静默跳过） (1.4077ms)
+✔ 审计表 append-only：UPDATE/DELETE 一律触发器拒绝（D12） (54.0933ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3971.8111

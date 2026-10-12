@@ -383,7 +383,31 @@ body.gl-on .gl-fallback { display: none; }
 <meta name="story-topic" content="story-home">
 </head>
 <body class="story-page" data-page="index">
-<p style="padding:48px 24px;color:var(--story-dim);text-align:center;font-family:var(--story-serif);font-size:18px">正在进入政治启蒙故事……</p>
-<script>location.replace("wip");</script>
+<p id="storyLoading" style="padding:48px 24px;color:var(--story-dim);text-align:center;font-family:var(--story-serif);font-size:18px">正在进入政治启蒙故事……</p>
+<script>
+/* v0.2.59.36 加载页多语言（重定向瞬时页，按浏览器语言内联映射即可） */
+(function () {
+  var MAP = {
+    zh: '正在进入政治启蒙故事……', zht: '正在進入政治啟蒙故事……',
+    en: 'Entering the story of political enlightenment…',
+    de: 'Die Geschichte der politischen Aufklärung wird geladen…',
+    ru: 'Входим в историю политического просвещения…',
+    ms: 'Memasuki kisah pencerahan politik…',
+    th: 'กำลังเข้าสู่เรื่องราวแห่งการรู้แจ้งทางการเมือง…',
+    vi: 'Đang vào câu chuyện khai sáng chính trị…',
+    id: 'Memasuki kisah pencerahan politik…',
+    fr: 'Entrée dans l\u2019histoire des Lumières politiques…',
+    es: 'Entrando en la historia de la ilustración política…',
+    pt: 'Entrando na história da educação política…'
+  };
+  var n = (navigator.language || 'zh').toLowerCase().replace('_', '-');
+  var lang = n.indexOf('zh-hant') === 0 || n.indexOf('zh-tw') === 0 || n.indexOf('zh-hk') === 0 ? 'zht'
+    : (MAP[n.slice(0, 2)] ? n.slice(0, 2) : 'zh');
+  var el = document.getElementById('storyLoading');
+  if (el && MAP[lang]) el.textContent = MAP[lang];
+  document.documentElement.setAttribute('lang', lang);
+})();
+</script>
+<script>location.replace("wip" + (location.search || ""));</script>
 </body>
 </html>

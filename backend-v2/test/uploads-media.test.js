@@ -1,7 +1,7 @@
 'use strict';
 // v0.2.16.0 媒体附件测试：/api/social/uploads（二进制上传：白名单/魔数/大小/限流/401）+ 媒体帖三态
 // （IMS 未配置 → visible 先发后审；IMS 已配置且首图为图片 → pending 即时审核；首图为视频 → visible）。
-const { test } = require('node:test');
+const { test, after } = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -13,9 +13,13 @@ const JPEG = Buffer.concat([Buffer.from([0xFF, 0xD8, 0xFF, 0xE0]), Buffer.alloc(
 const PNG = Buffer.concat([Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]), Buffer.alloc(64, 2)]);
 const WEBM = Buffer.concat([Buffer.from([0x1A, 0x45, 0xDF, 0xA3]), Buffer.alloc(64, 3)]);
 
+const createdUploadDirs = [];
 function tempUploadDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'mn2-up-'));
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'mn2-up-'));
+  createdUploadDirs.push(d);
+  return d;
 }
+after(() => { for (const d of createdUploadDirs) { try { fs.rmSync(d, { recursive: true, force: true }); } catch (e) {} } });
 
 // IMS 桩：解析调用、统一返 Pass
 const imsPassStub = (calls) => async () => {
@@ -62,7 +66,9 @@ test('uploads：超限 → 400 请求体过大；匿名 → 401；限流 → 429
   try {
     const alice = t.loginAs('alice@x.com');
     const bob = t.loginAs('bob@x.com'); // 超限用独立用户——限流按检查时记账，失败请求也占槽
-    const big = Buffer.alloc(10 * 1024 * 1024 + 1, 0);
+    // 图片扩展名（jpg/png/gif/webp）同属地图上传白名单（MAP_EXTS，30MB 上限）——
+    // 图片超限以地图口径 30MB 为准，30MB+1 才触发 400 请求体过大
+    const big = Buffer.alloc(30 * 1024 * 1024 + 1, 0);
     big.set(JPEG.subarray(0, 4), 0);
     const over = await t.upload('/api/social/uploads?ext=.jpg', big, { cookie: bob.cookie });
     assert.strictEqual(over.status, 400);

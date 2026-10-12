@@ -1,0 +1,232 @@
+[sc 58.25 赋值 ×1] → 1
+[sc 58.24 赋值零残留 ×0] → 0
+[sc FC 48.1 赋值 ×1] → 1
+[sc FC 48.0 赋值零残留 ×0] → 0
+[sc changelog 58.25 头 ×1] → 1
+[sc changelog 58.24 历史 ×1] → 1
+[sc changelog FC 48.1 头 ×1] → 1
+[sc changelog FC 48.0 历史 ×1] → 1
+[sc rev 00346-XXX ×2] → 2
+[sc rev 00347-??? ×2] → 2
+[sc rev 00344-ntt ×1] → 1
+[sc rev 00345-vhw ×1] → 1
+[sc rev 00344-XXX 零残留 ×0] → 0
+[sc rev 00345-??? 零残留 ×0] → 0
+[sc 词 裁切 ×17] → 17
+[sc 词 1.5 倍 ×1] → 1
+[sc 词 MN_CropDialog ×2] → 2
+[sc 词 MN_CompressVideo ×1] → 1
+[sc 词 视频横幅 ×1] → 1
+[sc 58.24 词 社区页演示样本全移除 ×1] → 1
+[sc 58.24 词 三 tab 全接真数据 ×2] → 2
+[sc 58.24 词 假频道 ×1] → 1
+[sc 58.23 词 预先加载 ×1] → 1
+[sc 58.23 词 悬停预加载 ×2] → 2
+[sc 58.23 词 rel="prefetch" ×1] → 1
+[sc 58.23 词 多页应用 ×1] → 1
+[sc 58.23 词 单页应用长串 ×1] → 1
+[page 210px ×9] → 9
+[page 140px 残留 ×2] → 2
+[page MN_CropDialog ×22] → 22
+[page profile-banner-img ×3] → 3
+[page profile-avatar-img ×4] → 4
+[page profile-banner-video ×3] → 3
+[page editAvatarReCropBtn ×2] → 2
+[page editBannerReCropBtn ×3] → 3
+[page function uploadBannerBlob ×1] → 1
+[page function uploadAvatarBlob ×1] → 1
+[page MN_CompressVideo ×2] → 2
+[page MN_VideoCap ×0] → 0
+[page VIDEO_EXTS ×4] → 4
+[page blockVideo ×0] → 0
+[page editAvatarCrop ×9] → 9
+[page editBannerCrop ×10] → 10
+[page body.avatarCrop = editAvatarCrop ×2] → 2
+[page body.bannerCrop ×2] → 2
+[page edit-banner-preview-img ×1] → 1
+[page data-crop ×0] → 0
+[page avatarCrop: rect ×0] → 0
+[page bannerCrop: rect ×0] → 0
+[page gold-lock-group ×4] → 4
+[page gold-locked ×3] → 3
+[page goldShimmer ×3] → 3
+[page canGif ×9] → 9
+[page canGif = sub ×1] → 1
+[page prof.toast.bannerLocked ×2] → 2
+[page prof.edit.imgUpgrade ×1] → 1
+[page prof.edit.premGifUpgrade ×2] → 2
+[page maxWidth = 680px ×1] → 1
+[page height: 80px ×1] → 1
+[page mono-charcoal ×3] → 3
+[page .solid-black ×1] → 1
+[page var CARD_BG_KEYS ×1] → 1
+[page var CARD_BG_DEFS ×1] → 1
+[page data-bg= ×1] → 1
+[page editCardBg !== ×1] → 1
+[page editAvatarSyncToggle ×4] → 4
+[page slati_avatar_sync ×2] → 2
+[page sub-locked ×4] → 4
+[page function blockGif ×1] → 1
+[page avatarGifUpgradeLink ×1] → 1
+[page bannerGifUpgradeLink ×3] → 3
+[page id=editBannerUploadBtn ×1] → 1
+[page id=editBannerLibBtn ×1] → 1
+[page id=editBannerRemoveBtn ×1] → 1
+[page editBannerFile 动态 id ×1] → 1
+[page editAvatarFile 动态 id ×1] → 1
+[page id=editAvatarLibBtn ×1] → 1
+[page .profile-banner.has-img ×1] → 1
+[page function openFcLibraryPicker ×1] → 1
+[page function fcDataUrlToBlob ×1] → 1
+[page body.bannerUrl = editBannerUrl ×1] → 1
+[sm window.MN_CropDialog ×2] → 2
+[sm ensureCropStyle ×2] → 2
+[sm mn-crop-stage ×4] → 4
+[sm mn-crop-confirm ×1] → 1
+[sm height: 144px ×1] → 1
+[sm settingsAvatarReCropBtn ×2] → 2
+[sm settingsBannerReCropBtn ×2] → 2
+[sm MN_CompressVideo ×1] → 1
+[sm MN_VideoCap ×2] → 2
+[sm stCanVideo ×0] → 0
+[sm avatarCrop: ×4] → 4
+[sm bannerCrop: ×5] → 5
+[sm settings-banner-video ×7] → 7
+[sm crop.titleAvatar 引用 ×1] → 1
+[sm settings.profile.reCropAvatar 引用 ×2] → 2
+[sm settings.profile.videoLocked 引用 ×1] → 1
+[sm settings.profile.avatarNoVideo 引用 ×1] → 1
+[sm settingsBgGrid ×2] → 2
+[sm settings-bg-grid ×2] → 2
+[sm settings-bg-swatch ×6] → 6
+[sm var ST_BG_DEFS ×1] → 1
+[sm var ST_BG_KEYS ×1] → 1
+[sm function stCanGif ×1] → 1
+[sm function stCanImg ×1] → 1
+[sm gold-lock-group ×5] → 5
+[sm gold-locked ×2] → 2
+[sm goldShimmer ×3] → 3
+[sm mono-bw ×3] → 3
+[sm bg-default ×2] → 2
+[sm settings.profile.bannerColor ×1] → 1
+[sm settings.profile.imgUpgrade ×1] → 1
+[sm settings.profile.premGifUpgrade ×1] → 1
+[sm settings.profile.toast.bannerLocked ×1] → 1
+[sm settings.profile.toast.bgUpdated ×1] → 1
+[sm width: 400px ×1] → 1
+[sm repeat(4, 1fr) ×1] → 1
+[sm max-width calc 防溢出 ×1] → 1
+[sm .settings-lib-pop ×1] → 1
+[sm settingsAvatarBtn ×2] → 2
+[sm settingsAvatarPreview ×4] → 4
+[sm settingsAvatarLibBtn ×2] → 2
+[sm settingsBannerPreview ×6] → 6
+[sm settingsBannerUploadBtn ×2] → 2
+[sm settingsBannerLibBtn ×2] → 2
+[sm settingsBannerRemoveBtn ×4] → 4
+[sm settingsBannerGifUpgradeLink ×4] → 4
+[sm sub-locked ×4] → 4
+[sm function stUpload ×1] → 1
+[sm function stRawMergeUser ×1] → 1
+[sm bannerUrl: null ×2] → 2
+[sm slati_avatar_sync ×4] → 4
+[sm settingsProfileToast ×2] → 2
+[sm function makeToggle ×1] → 1
+[sm function stApiBase ×1] → 1
+[sm MN_API.patch ×2] → 2
+[sm window.SlatiSettings = ×1] → 1
+[fc fc-ch-avatar-crop ×4] → 4
+[fc v10.28.48.1 ×4] → 4
+[fc v10.28.48.0 历史节头 ×2（赋值零残留） ×2] → 2
+[fc bannerUrl 零 ×0] → 0
+[fc banner_url 零 ×0] → 0
+[fc avatarCrop: ×0] → 0
+[fc MN_CropDialog ×3] → 3
+[fc fc-avatar-editable ×5] → 5
+[fc fcAvatarFile ×17] → 17
+[fc fcEnsureApi ×3] → 3
+[fc slati_avatar_sync ×1] → 1
+[fc avatarUrl: data.url ×1] → 1
+[fc bio ×3] → 3
+[ci crop.titleAvatar 单引号 ×11] → 11
+[ci crop.titleAvatar 双引号 ×1] → 1
+[ci crop.titleBanner 单引号 ×11] → 11
+[ci crop.titleBanner 双引号 ×1] → 1
+[ci crop.hint 单引号 ×11] → 11
+[ci crop.hint 双引号 ×1] → 1
+[ci crop.confirm 单引号 ×11] → 11
+[ci crop.confirm 双引号 ×1] → 1
+[ci crop.cancel 单引号 ×11] → 11
+[ci crop.cancel 双引号 ×1] → 1
+[ci crop.loadFail 单引号 ×11] → 11
+[ci crop.loadFail 双引号 ×1] → 1
+[ci settings.profile.reCropAvatar 单引号 ×11] → 11
+[ci settings.profile.reCropAvatar 双引号 ×1] → 1
+[ci settings.profile.reCropBanner 单引号 ×11] → 11
+[ci settings.profile.reCropBanner 双引号 ×1] → 1
+[ci settings.profile.videoLocked 单引号 ×11] → 11
+[ci settings.profile.videoLocked 双引号 ×1] → 1
+[ci settings.profile.videoCompressing 单引号 ×11] → 11
+[ci settings.profile.videoCompressing 双引号 ×1] → 1
+[ci settings.profile.avatarNoVideo 单引号 ×11] → 11
+[ci settings.profile.avatarNoVideo 双引号 ×1] → 1
+[ci settings.profile.videoFail 单引号 ×11] → 11
+[ci settings.profile.videoFail 双引号 ×1] → 1
+[ci __ZH_HANT_AUTO__ ×1] → 1
+[ci settings.profile.bannerColor 单引号(回归) ×11] → 11
+[ci settings.profile.imgUpgrade 单引号(回归) ×11] → 11
+[ci settings.profile.premGifUpgrade 单引号(回归) ×11] → 11
+[ci settings.profile.toast.bannerLocked 单引号(回归) ×11] → 11
+[ci settings.profile.toast.bgUpdated 单引号(回归) ×11] → 11
+[ci sidebar.pop.editProfile 单引号(回归) ×11] → 11
+[ci settings.profile.banner 单引号(回归) ×11] → 11
+[ci settings.profile.gifUpgrade 单引号(回归) ×11] → 11
+[ci settings.profile.toast.gifLocked 单引号(回归) ×11] → 11
+[pi prof.edit.reCropAvatar 单引号 ×11] → 11
+[pi prof.edit.reCropAvatar 双引号 ×1] → 1
+[pi prof.edit.reCropBanner 单引号 ×11] → 11
+[pi prof.edit.reCropBanner 双引号 ×1] → 1
+[pi prof.toast.videoLocked 单引号 ×11] → 11
+[pi prof.toast.videoLocked 双引号 ×1] → 1
+[pi prof.edit.videoCompressing 单引号 ×11] → 11
+[pi prof.edit.videoCompressing 双引号 ×1] → 1
+[pi prof.edit.avatarNoVideo 单引号 ×11] → 11
+[pi prof.edit.avatarNoVideo 双引号 ×1] → 1
+[pi prof.edit.videoFail 单引号 ×11] → 11
+[pi prof.edit.videoFail 双引号 ×1] → 1
+[pi __ZH_HANT_AUTO__ ×1] → 1
+[pi prof.toast.bannerLocked 单引号(回归) ×11] → 11
+[pi prof.edit.imgUpgrade 单引号(回归) ×11] → 11
+[pi prof.edit.premGifUpgrade 单引号(回归) ×11] → 11
+[pi prof.edit.avatarSync 单引号(回归) ×11] → 11
+[pi prof.toast.gifLocked 单引号(回归) ×11] → 11
+[pi prof.toast.libLocked 单引号(回归) ×11] → 11
+[pi prof.edit.gifUpgrade 单引号(回归) ×11] → 11
+[auth avatar_crop = ? ×2] → 2
+[auth banner_crop = ? ×2] → 2
+[auth function parseCrop ×2] → 2
+[auth function parseCropSafe ×1] → 1
+[auth publicUser avatarCrop: ×2] → 2
+[auth publicUser bannerCrop: ×2] → 2
+[auth CARD_BG_KEYS solid-black(回归) ×1] → 1
+[auth PATCH banner_url = ?(回归) ×1] → 1
+[social function parseCrop ×2] → 2
+[social function parseCropSafe ×1] → 1
+[social bannerCrop: ×1] → 1
+[social avatarCrop: ×1] → 1
+[social bannerUrl 守卫行(回归) ×1] → 1
+[social CARD_BG_KEYS solid-black(回归) ×1] → 1
+[social /api/social/posts(回归) ×2] → 2
+[social /api/social/feed(回归) ×1] → 1
+[social /api/social/topics(回归) ×2] → 2
+[mig030 ADD COLUMN avatar_crop ×1] → 1
+[mig030 ADD COLUMN banner_crop ×1] → 1
+[mig029 ADD COLUMN banner_url(回归) ×1] → 1
+[page .profile-banner { height: 210px ×2] → 2
+[page post-media height: 140px 遗留 ×1] → 1
+[page calc(210px 主题边缘 ×2] → 2
+[page background-size: 100% 210px ×1] → 1
+[page 140→210px 注释 ×1] → 1
+[page profile-banner-crop ×7] → 7
+[page applyCrop ×16] → 16
+✅ 镜像内容全部在位

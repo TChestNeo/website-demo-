@@ -1,0 +1,21 @@
+  ✅ A1 双 SVG 滤镜注入（大面 -70 / 小卡 -35）
+  ✅ A2 hero .liquid-glass.lg-static + 双层 + 静环（guest-hero liquid-glass lg-static/2 box:rgba(0, 0, 0, 0.06) 0px 4px 24px 0px, rgba(255, 255, 255, 0.5) 0px 1px 0px 0px i）
+  ✅ A3 侧栏模块静态玻璃 + 双层（sidebar-module brand-module lg-static）
+  ✅ A4 侧栏模块自身 backdrop-filter 还原（不再 none）（blur(20px)）
+  ✅ A5 全页零 .lg-active + 弹性队列 _els()=0（0/0）
+  ✅ A6 导航菜单在卡片内可见（层 absolute 出流，零空位零滚动）（{"bdPos":"absolute","navT":313,"itemT":326,"scrollH":542,"clientH":463}）
+  ✅ A7 侧栏滚动条隐藏（scrollbar-width none + ::-webkit-scrollbar none）（{"sw":"none","ws":"none"}）
+  ✅ B1 auth-card 原 z:2 / 原 backdrop-filter / 原 position（2/blur(32px)/relative）
+  ✅ C1 右键菜单原样：fixed + z200 + 自身 blur(24px) + 静态玻璃（fixed/200/blur(24px)）
+  ✅ C2 text-toolbar / font-panel 原样 fixed 301/302（fixed/301 / fixed/302）
+  ✅ C3 mre-side 原 backdrop-filter 还原 + 面板包含块机制复原（offsetParent=mre-side）（blur(32px)/mre-side lg-static）
+  ✅ C4 编辑器卡全静态玻璃 + 双层 + 自身模糊还原（{"n":2,"glass":2,"layersOk":2,"ownBfOk":2,"anyActive":0,"els":0}）
+  ✅ C5 编辑器零 .lg-active + _els()=0（0/0）
+  ✅ C6 鼠标扫过零 transform/CSS 变量写（Q弹已死）（[]）
+  ✅ C7 右键菜单在光标处打开（fixed 落点 x/y 吻合）（{"x":371,"y":306,"active":true,"pos":"fixed","l":371,"t":306}）
+  ✅ C8 旋转卡片 rotate(15deg) 原样（无弹性覆盖）（rotate(15deg)）
+  ✅ C9 门控：非族卡层藏 / 主题卡（card-edge）层藏 / 族卡层显（{"textBd":"none","edgeBd":"none","famBd":"block"}）
+  ✅ D1 设置弹窗懒建后挂静态玻璃 + 自身模糊还原（{"cls":"modal-card lg-static active","layers":2,"bf":"blur(32px)"}）
+  ✅ E1 全程零 console error（不含 data:/favicon/api）
+
+===== 结果: 19 过 / 0 挂 =====

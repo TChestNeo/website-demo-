@@ -1,0 +1,53 @@
+===== tmp-battery-fc-publish-log.js =====
+===== tmp-battery-fc-sne-canvas.js =====
+  ✅ F1 site-config：FC v10.28.41.0 +  ✅ F1 site-config：FC v10.28.41.0   ✅ F1 site-config：FC v10.28.41.0   ✅ E1 1280 编辑态：169 预设 cellSiz  ✅ B1 概览页近期贡献=真文章（Charter 在列）  Neo 发布了 Founding Charter2026-09-20Vela 发布了 Trade Treaty Note
+  ✅ B1b 假数据 Alex Rivera 已移除
+  ✅ B1c 贡献行含作者+动作词（发布了）
+  ✅ B1d 贡献行锚到 article.html?id=ART-MICRO-1  href=article.html?id=ART-MICRO-1
+  ✅ B1e 概览页已接 api.js（MN_API 存在�  ✅ E3 回 1280：cols 恒 125（固定横向往返零漂移）+ 零自动建卡（无冻结副作用）  {"actual":125,"cs":20,"canvasW":2748,"scrollW":2796,"clientW":1014} cards=0
+  ✅ E4 3840 超宽窗：cols 仍恒 125 不再增长（「这是最大值」实证）+ cellSize 仍 20  {"actual":125,"cs":20,"canvasW":2748,"scrollW":3574,"clientW":3574}
+  ✅ V1 查看态 640 窄窗：fit1to1 完整舞台自洽（s=min(availW/2750,availH/stageH)、scaler=stage×s、canvas 0,0 零平移）  scaler.w=688 left=0px tf=scale(0.25)
+  ✅ V2 回 1280：再 fit 自洽 + 哨兵草稿未被 resize 触碰（byte 相等）  scaler.w=835 tf=scale(0.303497)
+  ✅ V3 查看镜像目录 4 条目（v0.2.58.0 列全部卡：content c1 label + flag c2 label + c3/c4 文字卡）
+  ✅ E4 全程零 Runtime exception  干净
+  ✅ E5 全程零 console error  干净
+
+🎉 全部通过 9/9
+rade Treaty Notes","isCloud":false},{"id":"ART-015","title":"Inter-Micronation Trade Agreement","isCloud"
+  ✅ F2 云端文章 View → 平台阅读页 article.html?id=  http://127.0.0.1:4874/pages/article.html?id=ART-MICRO-1
+  ✅ F3 本地草稿 View → 编辑器 ?article=（预览保留）  clicked / http://127.0.0.1:4874/pages/fluidcanvas-editor.html?article=ART-015
+  ✅ S1 全程零 Runtime exception  干净
+  ✅ S1b 零 console error  干净
+
+🎉 全部通过 21/21
+�zoom 移除 + chip 100%
+  ✅ P1 普通滚轮（无修饰）→ 纵向视角移动：scrollTop 增、scrollLeft 不动（浏览器原生）  before {"st":1096,"sl":1460} ← after {"st":1336,"sl":1460}
+  ✅ P2 Shift+滚轮（浏览器原生换算 deltaX）→ 横向视角移动：scrollLeft 增、scrollTop 不动  before {"st":1336,"sl":1460} ← after {"st":1336,"sl":1580}
+  ✅ P5 平移期间玻璃挂起：body.fc-moving 在场（45.2 纪律——pan 中 backdrop-filter 暂离）  fc-moving=true
+  ✅ P3 中键长按拖动 → 平移视口：右移 100 下移 60 → scrollLeft 800→700、scrollTop 400→340（反向拖动）  {"st":340,"sl":700}
+  ✅ P6 松手后玻璃还原：fc-moving 已移除（滚动/平移收尾不残留挂起态）  fc-moving=false
+  ✅ P4 中键点按卡片不误触取消选中（点按前已选中、中键点按后仍选中）  before=true after=true
+  ✅ D1 1.5× 下拖卡：+33 屏幕px = +22 画布px，吸附整格 left 22→44（top 22 不变）  before=22px after {"left":44,"top":22,"w":130}
+  ✅ D2 1.5× 下 se 手柄 +33 屏幕px = +22 画布px：colSpan 6→7、宽 130→152（offsetWidth 画布本地不受 zoom 污染）  {"w":152,"span":"7"}
+  ✅ D3 1.5× 下 rotate grip 拖动：角度改变（≠0、transform 旋转在场、范围合理）  {"rot":-20,"tf":"rotate(-20deg)"}
+  ✅ R1 撤销链三步：旋转归 0 → resize 还原 span6/宽130 → 拖拽还原 left 22（缩放系统未破坏历史快照链）  a={"rot":0,"left":44,"w":152} b={"rot":0,"left":44,"w":130,"span":"6"} c={"left":22,"w":130}
+  ✅ R2 恢复链三步：left 44 + span7/宽152 + 旋转回来（≠0）  {"rot":-20,"left":44,"w":152}
+  ✅ V1 查看模式 fit1to1 完整舞台自洽（s=min(availW/2750,availH/stageH)、scaler=stage×s、canvas 0,0 零平移）
+  ✅ V2 查看模式零缩放守卫：Ctrl+滚轮 + setViewZoom(2) 均不生效（zoom 恒未施加、fit 变换不动）  scale(0.303497)
+  ✅ E5 全程零 Runtime exception  干净
+  ✅ E6 全程零 console error  干净
+
+🎉 全部通过 29/29
+� id 时点 Publish = 发布日志弹窗 → 确认 = POST 创建 + id 记忆（后续再发布即更新）
+  ✅ B19a cloud 行删除按钮渲染（ART-X 有 danger 按钮）
+  ✅ B19b 点击删除 → DELETE /api/articles/ART-X + 行从列表消失
+  ✅ G1 零 Runtime exception  干净
+  ✅ G2 零 console error  干净
+  ✅ B15 guest 可读文章（detail 显示）+ 评论框隐藏 + 访客提示显示 + ?next= 登录锚
+  ✅ B15b guest 点收藏 → 登录 toast（登录后才能收藏）
+  ✅ B15c guest 零 Runtime exception  干净
+
+🎉 全部通过 48/48
+===== exit 0 =====
+===== exit 0 =====
+===== exit 0 =====

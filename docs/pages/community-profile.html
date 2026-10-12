@@ -686,8 +686,14 @@ textarea.input-glass {
 .progress-connector.done { background: var(--color-primary); }
 
 /* ----- Sidebar Module ----- */
+/* 2026-10-05 用户「那个在个人主页那边的左侧菜单背景卡片是半透明的能不能变成不透明的？」——
+   真身=v0.2.58.1（09-26 删侧栏容器铺底）后三张卡（logo/用户/菜单 .sidebar-module）仍用 --card-bg
+   （亮色 rgba(255,255,255,0.55)/暗色 rgba(30,30,50,0.55) 半透明玻璃）+ blur(20px) 磨砂——页面内容
+   透卡可见=半透明观感；修法=卡面改铺 --sidebar-bg（09-18 用户钦定不透明底：亮色近纯白 0.95/暗色实心
+   #1a1a2e/mono 随 var() 自适应）；模块自带 backdrop-filter 保留（底已不透明零可见效果，与 09-20
+   全站卡片同口径）；三张卡同规则一并生效；窄屏 floating 覆盖态同步（口径统一）。 */
 .sidebar-module {
-  background: var(--card-bg);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1301,7 +1307,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .app-sidebar.collapsed .user-module {
   padding: 10px 4px !important;
   display: flex; align-items: center; justify-content: flex-start;
-  background: var(--card-bg);
+  /* 58.28 补：折叠态覆盖曾回退 --card-bg 半透明玻璃（58.27 卡面不透明修法漏了这条折叠态覆盖）——
+     用户「折叠起来的时候还是一样是半透明的」；口径与 58.27 同：铺 --sidebar-bg 不透明底+blur 保留 */
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1385,7 +1393,20 @@ body.pre-stagger .auth-card { opacity: 0; }
    v0.2.58.11 用户「能不能把那个浅蓝色波浪和深蓝色倒反？」「就只是互换一下颜色而已」——58.10 深水+浅浪
    两色互换（类名保持不动）：主色水 .mn-lv-wdeep 背景 var(--color-primary)→var(--mn-lv-light) 变浅水、
    浅浪 .mn-lv-wlightwave 背景 var(--mn-lv-light)→var(--color-primary) 变深浪；两层结构/80×16 mask/
-   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。 */
+   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.12 用户「能不能把波浪的位置抬高4px?」（一问钦定「位置抬高 4px」）——58.11 浅浪 top -8px 抬高
+   4px→-12px（单值改动）：浅浪 .mn-lv-wlightwave top -8px→-12px；两层结构/80×16 mask/16px 带高/400% strip/
+   平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84/两色互换（浅水+深浪）全零改动。
+   v0.2.58.13 用户「然后把两个颜色改成一样的深蓝色，然后在那个波浪Z轴的-1那边再添加一个慢0.3s的波浪」
+   ——①水和浪两色统一深蓝：主色水 .mn-lv-wdeep 背景 var(--mn-lv-light)→var(--color-primary)（58.11 两色
+   互换撤销为两色相同）、--mn-lv-light 赋值整体删除（零引用，58.10 --mn-lv-wave-c 先例）；②新慢浪
+   .mn-lv-wlightwave2 与快浪全同款几何（80×16 mask/16px 带高/400% strip/平移 80px/top -12px 全同）
+   置于快浪 z 轴 -1 层（z-index:-1）+动画 2.5s（慢 0.3s）；z 层级：.mn-lv-fill z-index:0 建 stacking
+   context→水 z-index:-2 最底→慢浪 -1→快浪 0（显式盖慢浪）；两浪同色相位漂移，慢浪浪峰周期性从快浪
+   浪谷透明区透出=两道浪峰不同速叠加；水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.14 用户「那个刚才提出添加的第二个波浪我希望是浅色的」——慢浪 .mn-lv-wlightwave2 背景
+   var(--color-primary)→var(--mn-lv-light)（58.11 浅水同款浅色公式 color-mix 55%+白；赋值挂 .mn-lv-ring
+   恢复——58.13 整体删除后本轮复活）；快浪/水/几何/z 层级/动画全零改动。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1418,8 +1439,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .mn-lv-fill {
   position: absolute; left: 0; right: 0; bottom: 0; height: 0;
   transition: height 0.5s ease;
+  z-index: 0; /* 建 stacking context：水/慢浪负 z 层不逃出杯 */
 }
-.mn-lv-wdeep { position: absolute; inset: 0; background: var(--mn-lv-light); }
+.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); z-index: -2; }
 .mn-lv-wlightwave {
   position: absolute; left: -100%; width: 400%; height: 16px;
   background-color: var(--color-primary);
@@ -1428,8 +1450,23 @@ body.pre-stagger .auth-card { opacity: 0; }
   -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
   -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
   pointer-events: none;
-  top: -8px;
+  top: -12px;
+  z-index: 0;
   animation: mn-lv-wave 2.2s linear infinite;
+}
+/* 慢浪：与快浪全同款几何，z 轴 -1 层（快浪之下），2.5s（慢 0.3s）、浅色（var(--mn-lv-light)）——
+   两浪异色相位漂移，慢浪浪峰周期性从快浪浪谷透明区透出=浅色幽灵浪峰在深浪下流动 */
+.mn-lv-wlightwave2 {
+  position: absolute; left: -100%; width: 400%; height: 16px;
+  background-color: var(--mn-lv-light);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
+  pointer-events: none;
+  top: -12px;
+  z-index: -1;
+  animation: mn-lv-wave 2.5s linear infinite;
 }
 @keyframes mn-lv-wave {
   from { transform: translateX(0); }
@@ -1445,6 +1482,48 @@ body.pre-stagger .auth-card { opacity: 0; }
   z-index: 5;
   font-size: 28px; font-weight: 700; color: var(--color-primary);
   text-shadow: 0 0 2px rgba(255,255,255,0.9), 0 0 3px rgba(255,255,255,0.9);
+}
+/* v0.2.58.15 用户「那么能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出
+   一个卡片完整的显示等级信息和经验条」：折叠态药丸悬停放大+右侧滑出等级信息卡。
+   ①药丸 scale(1.12)（hover 类挂 .mn-lv-badge——悬停区=药丸+边距整块，贴近即触发；transform-origin
+   center，72px 折叠列/64px floating 列内瞬态放大可接受）；transition 0.18s ease（药丸本体折叠入场
+   动画 0.3s 期间 transform 被动画持有——折叠后立刻悬停时缩放瞬态失效可接受）。
+   ②卡片 .mn-lv-hovercard position:fixed 挂 body（侧栏 overflow-x:hidden + 用户卡 overflow:hidden
+   双裁剪，卡片必须逃出 DOM 裁剪；JS 按药丸 getBoundingClientRect 定位+视口钳制）；内容=JS 每次
+   show 从活的 .mn-lv-normal clone——展开徽章同款信息（Lv.x·称号+XP 文本+经验条）；z-index 150=
+   侧栏 50/55 之上、tooltip 200 之下；backdrop-filter blur 与折叠用户卡同款玻璃质感（卡片自身 fixed
+   于 body，其 blur 只影响自身后代=无 containing block 问题）。
+   ③@media (hover:hover) and (pointer:fine) 门控——触屏/平板零规则零行为（JS matchMedia 同款双保险）。 */
+@media (hover: hover) and (pointer: fine) {
+  .mn-lv-pill {
+    transition: transform 0.18s ease;
+  }
+  .app-sidebar.collapsed .mn-lv-badge.mn-lv-hover .mn-lv-pill {
+    transform: scale(1.12);
+  }
+  .mn-lv-hovercard {
+    position: fixed;
+    z-index: 150;
+    width: 200px;
+    box-sizing: border-box;
+    background: var(--card-bg, #ffffff);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: var(--card-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 10px 12px;
+    opacity: 0;
+    transform: translateX(-10px) scale(0.98);
+    transform-origin: left center;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .mn-lv-hovercard.active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
 }
 /* 同轮折叠态头像间距归整（根治「挤压到了用户头像」的两处真身）：
    ①头像 img 是行内元素——行基线给父 div 加 8px 下坠空隙（折叠后视觉死隙）→ display:block 消除；
@@ -2030,6 +2109,157 @@ html[data-accent="mono"] .migrate-pill::before { box-shadow: inset 0 0.5px hsl(0
 html[data-accent="mono"] .migrate-pill::after { background-color: hsla(0 0% 45% / 0.75); background-image: radial-gradient(at 51% 89%, hsla(0 0% 82% / 1) 0px, transparent 50%), radial-gradient(at 100% 100%, hsla(0 0% 62% / 1) 0px, transparent 50%), radial-gradient(at 22% 91%, hsla(0 0% 62% / 1) 0px, transparent 50%); }
 html[data-accent="mono"][data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(0 0% 40%); }
 html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117, 134, 0.10); }
+
+/* ===== v0.2.59.x 手机底部导航（5 tab：首页/百科/社区/消息/我的；无操作按钮） ===== */
+.mobile-bottom-nav { display: none; }
+.mbn-backdrop { display: none; }
+.mbn-sheet { display: none; }
+@media (max-width: 768px) {
+  /* iOS 26 风格浮动药丸 dock：居中悬浮、大圆角、磨砂玻璃、选中项浅色胶囊 */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    height: 56px; z-index: 9999;
+    width: auto; min-width: 264px; max-width: calc(100% - 28px);
+    border-radius: 999px;
+    padding: 0 6px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 10px 36px rgba(20, 20, 40, 0.18), inset 0 0.5px 0 rgba(255, 255, 255, 0.65);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav {
+    background: rgba(24, 24, 38, 0.72);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.42), inset 0 0.5px 0 rgba(255, 255, 255, 0.14);
+  }
+  .mobile-bottom-nav .mbn-item {
+    flex: 1; min-width: 48px; max-width: 78px;
+    padding: 0 10px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1px;
+    text-decoration: none; color: var(--color-outline);
+    font-size: 10px; font-weight: 500; letter-spacing: 0.01em;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .mobile-bottom-nav .mbn-item .material-symbols-outlined { font-size: 22px; }
+  .mobile-bottom-nav .mbn-item.active {
+    color: var(--color-primary);
+    background: rgba(70, 72, 212, 0.10);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav .mbn-item.active { background: rgba(122, 126, 255, 0.18); }
+  .mbn-backdrop {
+    display: block;
+    position: fixed; inset: 0; z-index: 68;
+    background: rgba(0, 0, 0, 0.32);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .mbn-backdrop.open { opacity: 1; pointer-events: auto; }
+  .mbn-sheet {
+    display: block;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 69;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(105%); transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.14);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-sheet.open { transform: translateY(0); }
+  .mbn-user-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 4px 0 14px; text-decoration: none; color: var(--color-on-surface);
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10));
+  }
+  .mbn-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--color-primary); object-fit: cover; flex-shrink: 0; }
+  .mbn-user-meta { min-width: 0; flex: 1; }
+  .mbn-user-name { font-weight: 700; font-size: 16px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbn-user-cid { font-size: 12px; color: var(--color-outline); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: capitalize; }
+  .mbn-row {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 13px 0; background: none; border: none; cursor: pointer;
+    text-align: left; text-decoration: none; color: var(--color-on-surface);
+    font-size: var(--fs-label-md); font-family: inherit;
+  }
+  .mbn-row + .mbn-row { border-top: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-ico { color: var(--color-outline); font-size: 22px; flex-shrink: 0; }
+  .mbn-row-label { flex: 1; min-width: 0; }
+  .mbn-chev { color: var(--color-outline); opacity: 0.5; font-size: 20px; }
+  .mbn-row.mbn-danger { color: #d23b3b; }
+  .mbn-row.mbn-danger .mbn-ico { color: #d23b3b; }
+  .mbn-group-title { font-weight: 700; font-size: 13px; color: var(--color-outline); letter-spacing: 0.03em; margin: 14px 0 6px; text-transform: uppercase; }
+  .mbn-group { margin-bottom: 4px; }
+  .mbn-group-name { font-size: 12px; color: var(--color-outline); padding: 10px 0 2px; }
+  .mbn-switch {
+    width: 44px; height: 26px; border-radius: 999px; flex-shrink: 0;
+    background: var(--color-outline-variant, #c8c7d4); position: relative;
+    transition: background 0.18s ease;
+  }
+  .mbn-switch .mbn-knob {
+    position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.25); transition: transform 0.18s ease;
+  }
+  .mbn-switch[data-on="1"] { background: var(--color-primary); }
+  .mbn-switch[data-on="1"] .mbn-knob { transform: translateX(18px); }
+  .mbn-toast {
+    position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%) translateY(12px);
+    background: rgba(24,24,32,0.9); color: #fff; padding: 10px 18px; border-radius: 999px;
+    font-size: 13px; z-index: 90; opacity: 0; pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease; max-width: 86vw; text-align: center;
+  }
+  .mbn-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* 二级子 sheet */
+  .mbn-subsheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 71;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.16);
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-subsheet.open { transform: translateY(0); }
+  .mbn-sub-head { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10)); }
+  .mbn-sub-back { width: 36px; height: 36px; border-radius: 50%; border: none; background: none; color: var(--color-on-surface); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .mbn-sub-title { font-weight: 700; font-size: 16px; }
+  .mbn-sub-body { padding-top: 6px; }
+  .mbn-sub-row {
+    display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 0;
+    background: none; border: none; cursor: pointer; text-align: left;
+    font-size: var(--fs-label-md); color: var(--color-on-surface); font-family: inherit;
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08));
+  }
+  .mbn-sub-row > span:first-child { flex: 1; min-width: 0; }
+  .mbn-sub-row.on { color: var(--color-primary); font-weight: 600; }
+  .mbn-sub-check { color: var(--color-outline); opacity: 0.6; font-size: 20px; flex-shrink: 0; }
+  .mbn-sub-row.on .mbn-sub-check { color: var(--color-primary); opacity: 1; }
+  .mbn-sub-sec { font-size: 12px; color: var(--color-outline); text-transform: uppercase; letter-spacing: 0.03em; padding: 14px 0 4px; }
+  .mbn-sub-note { font-size: 13px; color: var(--color-outline); padding: 14px 0; line-height: 1.5; }
+  .mbn-list-item { padding: 12px 0; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mbn-list-author { font-weight: 600; font-size: 14px; color: var(--color-on-surface); }
+  .mbn-list-time { font-size: 11px; color: var(--color-outline); flex-shrink: 0; }
+  .mbn-list-body { font-size: 13px; color: var(--color-outline); margin-top: 4px; line-height: 1.5; word-break: break-word; }
+  .mbn-unblock { border: 1px solid var(--divider-line, rgba(118,117,134,0.3)); background: none; color: var(--color-on-surface); border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+  .app-main { padding-bottom: 74px; } /* 给底部导航留空间 */
+}
+
+/* v0.2.59.50 手机适配：主内容 + 340px 侧栏预览的左右网格（dashboard/micronationary/overview 共用），手机收单列 */
+.fc-split-grid { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-md); }
+@media (max-width: 768px) {
+  .fc-split-grid { grid-template-columns: 1fr; }
+}
+/* v0.2.59.50 手机适配：两列网格 + 左右弹性布局收单列 */
+.fc-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+.fc-split-flex { display: flex; }
+@media (max-width: 768px) {
+  .fc-two-col { grid-template-columns: 1fr; }
+  .fc-split-flex { flex-direction: column; min-height: 0 !important; }
+  .fc-split-flex > div { width: 100% !important; border-right: none !important; }
+}
 
 </style>
   <style>
@@ -2621,10 +2851,63 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--color-primary); text-decoration: none; font-size: var(--fs-label-md); width: fit-content; }
 .back-link:hover { text-decoration: underline; }
 .profile-header { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; } /* v0.2.22.5 padding 移入 profile-body，横幅顶满卡 */
-.profile-banner { height: 140px; flex: none; background: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), #e6e8ea; } /* v0.2.22.5 顶部横幅（用户「添加一个横幅」）；v0.2.54.6 垫底改固定 #e6e8ea——横幅不再随亮/暗主题变暗（用户「那个用户横幅和头像能不能不要被网页主题影响到？」；边缘主题态横幅半透明渐变与卡底复合，垫底必须固定不透明色才真正主题无关） */
+.profile-banner { height: 210px; flex: none; position: relative; overflow: hidden; background: linear-gradient(135deg, rgba(70,72,212,0.9), rgba(124,92,224,0.55) 45%, rgba(70,72,212,0.92)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.2), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), #e6e8ea; } /* v0.2.22.5 顶部横幅（用户「添加一个横幅」）；v0.2.54.6 垫底改固定 #e6e8ea——横幅不再随亮/暗主题变暗（用户「那个用户横幅和头像能不能不要被网页主题影响到？」；边缘主题态横幅半透明渐变与卡底复合，垫底必须固定不透明色才真正主题无关）；v0.2.58.25 横幅加高 1.5 倍 140→210px+裁切盒定位上下文（position:relative+overflow:hidden——内嵌 .profile-banner-crop 窗口） */
 .profile-body { display: flex; flex-direction: column; gap: var(--space-sm); padding: var(--space-md) var(--space-lg) var(--space-lg); }
 .profile-top { display: flex; align-items: center; gap: var(--space-md); border-bottom: 1px solid var(--color-outline-variant); padding-bottom: var(--space-md); } /* v0.2.22.2 横排；v0.2.22.5 底部分割线（简介与头像之间）+ 头像随横幅下调 */
-.profile-avatar { width: 72px; height: 72px; border-radius: 9999px; object-fit: cover; border: 3px solid #f7f9fb; flex: none; } /* v0.2.54.6 头像环改固定 #f7f9fb（亮色原值）——不随主题变色 */
+.profile-avatar { width: 72px; height: 72px; border-radius: 9999px; overflow: hidden; border: 3px solid #f7f9fb; flex: none; } /* v0.2.54.6 头像环改固定 #f7f9fb（亮色原值）——不随主题变色；v0.2.58.25 改裁切外包盒（内嵌 .profile-avatar-img 绝对定位裁切渲染，object-fit 移除） */
+
+/* ===== v10.28.52.0 等级奖励：相框环 / 称号药丸 / 奖励区 / 编辑弹窗装饰选择 ===== */
+.profile-avatar.has-frame { position: relative; overflow: visible; }
+.profile-avatar.has-frame > .profile-avatar-img { border-radius: 9999px; }
+.profile-avatar.has-frame::after { content: ''; position: absolute; inset: -6px; border-radius: 9999px; pointer-events: none; z-index: 1; }
+.profile-avatar.rookie-frame::after { border: 3px solid var(--color-primary); }
+.profile-avatar.champion-frame::after {
+  background: conic-gradient(from 210deg, #d4a017, #fff3b0, #f5c542, #b8860b, #fff3b0, #d4a017);
+  padding: 3px;
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+  mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0);
+}
+.pr-title-pill {
+  display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 999px;
+  background: linear-gradient(135deg, #f5c542, #d4a017); color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+}
+.profile-rewards { border-top: 1px solid var(--color-outline-variant); padding-top: var(--space-sm); display: flex; flex-direction: column; gap: 8px; }
+.profile-rewards .pr-head { display: flex; align-items: center; gap: 6px; font-size: var(--fs-label-md); font-weight: 700; color: var(--color-on-surface); }
+.profile-rewards .pr-empty { font-size: var(--fs-label-sm); color: var(--color-outline); }
+.pr-ach-row, .pr-badge-row, .pr-cosm-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pr-ach-chip, .pr-badge-chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--color-outline-variant); font-size: var(--fs-label-sm); font-weight: 600;
+  color: var(--color-on-surface-variant); background: var(--color-surface-container-low);
+}
+.pr-ach-chip .material-symbols-outlined { color: var(--color-primary); }
+.pr-ach-chip .pr-lv { color: var(--color-outline); font-weight: 400; }
+.pr-badge-chip .material-symbols-outlined { color: #d4a017; }
+.pr-cosm-row { gap: 8px; }
+.pr-cosm-label { font-size: var(--fs-label-sm); color: var(--color-outline); min-width: 64px; }
+.pr-cosm-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px 3px 12px; border-radius: 999px;
+  border: 1px solid var(--color-outline-variant); font-size: var(--fs-label-sm); font-weight: 600;
+  color: var(--color-on-surface-variant); background: var(--color-surface-container-low);
+}
+.pr-cosm-chip.active { border-color: var(--color-primary); color: var(--color-primary); }
+.pr-cosm-chip.locked { color: var(--color-outline); }
+.pr-cosm-chip .pr-cosm-state { color: var(--color-outline); font-weight: 400; }
+.pr-cosm-use {
+  border: none; background: var(--color-primary); color: #fff; cursor: pointer;
+  padding: 2px 10px; border-radius: 999px; font-family: inherit; font-size: var(--fs-label-sm); font-weight: 600;
+}
+.pr-cosm-use:hover { opacity: 0.9; }
+.pr-edit-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.pr-edit-swatch {
+  display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--color-outline);
+  background: transparent; color: var(--color-on-surface); cursor: pointer;
+  padding: 5px 14px; border-radius: var(--radius-full); font-family: inherit; font-size: var(--fs-label-md);
+}
+.pr-edit-swatch:hover { background: var(--color-surface-container-low); }
+.pr-edit-swatch.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+
 .profile-bio { margin: 0; color: var(--color-on-surface-variant); font-size: var(--fs-label-md); white-space: pre-wrap; word-break: break-word; }
 .profile-joined { display: inline-flex; align-items: center; gap: 6px; color: var(--color-outline); font-size: var(--fs-label-sm); }
 .profile-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: var(--space-sm); } /* v0.2.22.6 flex 平分——他人主页仅 2 块（帖子/转发）时不空列 */
@@ -2656,6 +2939,34 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
    液体玻璃引擎（liquid-glass.js = rdev/liquid-glass-react 移植；弹性跟手已按 v0.2.9.1 撤销口径下线——
    一律静态玻璃：折射+磨砂+镜面高光） */
 .profile-header.glass-bg .profile-banner { background: var(--lg-bg, #e6e8ea); } /* 横幅=预设渐变（v0.2.24.0 预设类挂回卡上，横幅读卡上 --lg-bg） */
+/* v0.2.58.18 个人资料横幅图片+头像叠横幅（用户「能不能把个人资料的自定义横幅/头像做一下」）：
+   横幅图居中裁切（约 3:1 宽条自动适配，零裁剪 UI）；头像绝对定位上移叠在横幅下缘
+   （经典社交布局；有图/预设渐变/默认渐变三态一致叠放）。内联 background-image 压过
+   2695/2729 的 background 短横（预设渐变底色保留作加载兜底） */
+.profile-top { position: relative; padding-left: calc(72px + var(--space-md)); } /* 名称/性别块右移让位（头像脱离 flex 流） */
+.profile-avatar { position: absolute; left: 0; top: calc(-1 * var(--space-md) - 36px); } /* --space-md=24 → 上移 60px=叠横幅 36px（半身） */
+.profile-banner.has-img { background-size: cover; background-position: center; } /* 同特异性 (0,2,0)，排 2729 后位胜 */
+/* v0.2.58.25 横幅/头像裁切渲染（030 列 crop 元数据；img+几何数学=GIF 保动画）：
+   盒=裁切窗口 overflow:hidden，内嵌图绝对定位由 MN_CropDialog.applyCrop 摆位
+   （null=默认 {0,0,1,1} 整图 cover 居中=58.18 内联 background 逐像素等价零回归） */
+.profile-banner-crop { position: absolute; inset: 0; overflow: hidden; }
+.profile-banner-img { position: absolute; display: block; }
+/* v0.2.58.25 视频横幅：<video> 同 img 几何（applyCrop 数学复用；autoplay 属性在 HTML 侧） */
+.profile-banner-video { position: absolute; display: block; }
+.profile-avatar-img { position: absolute; display: block; }
+/* v0.2.58.25 边缘主题态 .profile-banner 变绝对定位全卡铺底（2936 块）——裁切盒必须收回顶部 210px 条
+   （否则 inset:0 按整卡算比例，裁切数学错位） */
+.profile-header.card-edge-paper .profile-banner-crop, .profile-header.card-edge-treasure .profile-banner-crop,
+.profile-header.card-edge-tech .profile-banner-crop, .profile-header.card-edge-paint .profile-banner-crop {
+  inset: 0 0 auto 0; height: 210px;
+}
+/* v0.2.58.18 FC 图库选择器（编辑弹窗内弹层：3 列缩略图+空态） */
+.fc-lib-pick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-height: 50vh; overflow-y: auto; padding: 2px; }
+.fc-lib-pick-item { display: flex; flex-direction: column; gap: 4px; align-items: center; border: 1px solid var(--color-outline-variant); border-radius: var(--radius-md); background: var(--color-surface-container-low); padding: 6px; cursor: pointer; font-family: inherit; color: inherit; min-width: 0; }
+.fc-lib-pick-item:hover { border-color: var(--color-primary); }
+.fc-lib-pick-item img { width: 100%; height: 80px; object-fit: cover; border-radius: var(--radius-sm); display: block; }
+.fc-lib-pick-item .label-sm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.fc-lib-pick-empty { margin: var(--space-md) 0; color: var(--color-outline); font-size: var(--fs-label-md); text-align: center; }
 .card-halo { margin: -6px; padding: 6px; position: relative; z-index: 0; border-radius: calc(var(--radius-lg) + 6px); background: var(--lg-bg, linear-gradient(135deg, #60a5fa, #a78bfa)); } /* v0.2.24.0 独立卡片背景层：包层挂背景预设类（自己的 --lg-bg），铺满整卡 + 四周阔出 6px（margin 负值抵消 padding，卡片视觉尺寸不变；兜底=参考代码蓝紫渐变）。v0.2.24.3 position:relative+z-index:0=包层建层叠上下文（引擎约定：玻璃面自带定位即层叠上下文，负 z 双层垫在包层底之上、卡内容之下不上逃） */
 .card-halo .profile-header { background: transparent; } /* v0.2.24.0 卡身纯透明——透出背景层（选中卡片背景时） */
 .card-halo.glass-clear { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 0 2px rgba(255, 255, 255, 0.8); } /* v0.2.24.1/2 标准液态玻璃白边环 2px + 柔影——与用户参考代码一模一样（v0.2.24.2 填充层改透明） */
@@ -2676,7 +2987,14 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 .glass-rose { --lg-tint: rgba(232,110,160,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(232,110,160,0.55), rgba(240,150,190,0.40) 50%, rgba(232,110,160,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), #e6e8ea; }
 .glass-mint { --lg-tint: rgba(40,180,150,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(40,180,150,0.55), rgba(90,200,170,0.40) 50%, rgba(40,180,150,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), #e6e8ea; }
 .glass-sunset { --lg-tint: rgba(240,130,60,0.12); --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.30), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.22)), linear-gradient(135deg, rgba(240,130,60,0.55), rgba(240,80,120,0.40) 50%, rgba(240,130,60,0.55)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.20), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.12), transparent 40%), #e6e8ea; }
-.glass-clear { --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.10)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.10), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.06), transparent 40%); } /* v0.2.24.3 标准液态玻璃=真液态玻璃（用户「不是你液态玻璃是真的吗」+「参考 rdev/liquid-glass-react」）：包层挂全站液态玻璃引擎（折射 70+三通道色散+磨砂 24px+饱和 140%+镜面高光=rdev 同款配方，见 renderHeader）+ 无色极轻白霜（0.14/0.04/0.10 三层=v0.2.24.1 白磨砂 ~1/4 强度；配方形状与横幅组同源、零色相）+ 代码白边环 2px+柔影（见 .card-halo.glass-clear）。v0.2.24.2 纯透明并入本配方：卡身仍直透、白底不再有。v0.2.25.2 用户「默认的那个背景你也没在标准液态玻璃背景的情况下除了横幅以外的移除啊」——去掉垫底 var(--color-surface-container-high)：横幅以外区域彻底透到页面（无默认底色），仅留三层无色白霜+引擎光场/高光/双环各层 */
+.glass-clear { --lg-bg: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04) 45%, rgba(255,255,255,0.10)), radial-gradient(circle at 22% 28%, rgba(255,255,255,0.10), transparent 46%), radial-gradient(circle at 80% 72%, rgba(255,255,255,0.06), transparent 40%); }
+/* v0.2.58.22 免费层横幅颜色：3 单色 + 3 黑白系渐变（用户「没有订阅的就只能调整横幅的单色和渐变颜色，就是例如黑白中间有渐变的那种效果」；cardBg 白名单后端同款追加） */
+.solid-black { --lg-bg: #1b1b20; }
+.solid-white { --lg-bg: #f4f4f6; }
+.solid-gray { --lg-bg: #75787f; }
+.mono-bw { --lg-bg: linear-gradient(135deg, #18181b, #f5f5f7); }
+.mono-silver { --lg-bg: linear-gradient(135deg, #9ca3af, #e5e7eb); }
+.mono-charcoal { --lg-bg: linear-gradient(135deg, #27272a, #71717a); } /* v0.2.24.3 标准液态玻璃=真液态玻璃（用户「不是你液态玻璃是真的吗」+「参考 rdev/liquid-glass-react」）：包层挂全站液态玻璃引擎（折射 70+三通道色散+磨砂 24px+饱和 140%+镜面高光=rdev 同款配方，见 renderHeader）+ 无色极轻白霜（0.14/0.04/0.10 三层=v0.2.24.1 白磨砂 ~1/4 强度；配方形状与横幅组同源、零色相）+ 代码白边环 2px+柔影（见 .card-halo.glass-clear）。v0.2.24.2 纯透明并入本配方：卡身仍直透、白底不再有。v0.2.25.2 用户「默认的那个背景你也没在标准液态玻璃背景的情况下除了横幅以外的移除啊」——去掉垫底 var(--color-surface-container-high)：横幅以外区域彻底透到页面（无默认底色），仅留三层无色白霜+引擎光场/高光/双环各层 */
 .card-halo > .lg-orb-field { display: block; position: absolute; inset: 0; z-index: -2; border-radius: inherit; overflow: hidden; pointer-events: none; } /* v0.2.24.4 玻璃光场（用户「还是一样没有」根因=rdev demo 玻璃后有彩色场景可折，本站页面背景纯平→折射/磨砂全无对象）：包层内置无色白光球垫在引擎磨砂层之下——光先被 blur(24px) 磨开再被折射滤镜三通道色散（折射后光斑边缘仍会泛出轻微彩边=液体玻璃天然色散，不是上色；首版光球用参考代码蓝紫 #60a5fa/#a78bfa 被用户「为什么有蓝色和紫色在背面能不能去掉」驳回→改纯白） */
 .lg-orb-field { display: none; } /* 默认无板/无包层：光场不亮（卡身实底也会盖住）——只有标准液态玻璃亮光 */
 .card-halo > .lg-orb-field::before { content: ''; position: absolute; left: -70px; top: 30px; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%); }
@@ -2842,24 +3160,24 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
   filter: url(#mn-paint-filter-5);
 }
 /* 横幅满幅子层（FC L3985-3990 同款机制，profile 特化）：
-   横幅只有顶部 140px 带——直接对 140px 盒子 clip 会让 objectBoundingBox y 轴按 140px
+   横幅只有顶部 210px 带——直接对 210px 盒子 clip 会让 objectBoundingBox y 轴按 210px
    缩放（tech 底角斜切横穿横幅底边、paint 内缩后横幅整体缩小浮空）。改法：主题态横幅变
-   绝对定位全卡层（clip 1:1 映射正确），渐变用 background-size 100% 140px + no-repeat
-   锁在顶部带；.profile-body 补 140px padding-top 顶开布局 */
+   绝对定位全卡层（clip 1:1 映射正确），渐变用 background-size 100% 210px + no-repeat
+   锁在顶部带；.profile-body 补 210px padding-top 顶开布局（v0.2.58.25 横幅 140→210） */
 .profile-header.card-edge-paper .profile-banner, .profile-header.card-edge-treasure .profile-banner,
 .profile-header.card-edge-tech .profile-banner, .profile-header.card-edge-paint .profile-banner {
   position: absolute; inset: 0 0 auto 0; height: 100%; z-index: -1;
   clip-path: var(--card-clip, none); pointer-events: none;
-  background-size: 100% 140px; background-repeat: no-repeat; background-position: 0 0;
+  background-size: 100% 210px; background-repeat: no-repeat; background-position: 0 0;
 }
 .profile-header.card-edge-paper .profile-body, .profile-header.card-edge-treasure .profile-body,
 .profile-header.card-edge-tech .profile-body, .profile-header.card-edge-paint .profile-body {
-  padding-top: calc(140px + var(--space-md));
+  padding-top: calc(210px + var(--space-md));
 }
 /* 油漆内容内缩（FC L3296-3306 同款）：container-type+cqi 随卡宽等比；不设上限——
    cqi 恒 ≥ 剪影内缩百分比，保内容永在剪影内 */
 .profile-header.card-edge-paint { container-type: inline-size; }
-.profile-header.card-edge-paint .profile-body { padding: max(16px, var(--paint-pad, 10cqi)); padding-top: calc(140px + max(16px, var(--paint-pad, 10cqi))); }
+.profile-header.card-edge-paint .profile-body { padding: max(16px, var(--paint-pad, 10cqi)); padding-top: calc(210px + max(16px, var(--paint-pad, 10cqi))); }
 .profile-header[data-card-edge="paint1"] { --paint-pad: 6cqi; }
 .profile-header[data-card-edge="paint2"] { --paint-pad: 10cqi; }
 .profile-header[data-card-edge="paint3"] { --paint-pad: 12cqi; }
@@ -2922,6 +3240,17 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
 .edit-bg-swatch .swatch-fill.edge-fill-paint5 .swatch-shape { clip-path: url(#mn-paint-clip-5); background: linear-gradient(135deg, #dc2626, #a81b1b); }
 .edit-bg-swatch .swatch-fill.edge-fill-paint6 .swatch-shape { clip-path: url(#mn-paint-clip-6); background: linear-gradient(135deg, #65a30d, #4c7a09); }
 .edit-bg-swatch.edge-locked { opacity: 0.55; cursor: not-allowed; }
+/* v0.2.58.19 订阅分层：图库按钮锁态（不复用 .edge-locked——其选择器只命中 swatch，按钮是 .btn） */
+.sub-locked { opacity: 0.55; cursor: not-allowed; }
+/* v0.2.58.22 金色罩子：免费层被锁按钮主动盖罩（用户「按钮是在没有订阅的用户目前是被特别的金色罩子盖住的而不是点击后才出现提示反馈」）
+   相邻按钮共用一个罩（用户「如果两个按钮很接近就直接只使用一个罩 不要使用两个」）：span 包 upload+lib；
+   伪元素全 pointer-events:none——点击穿透到按钮，toast 提示反馈保留。 */
+.gold-lock-group { position: relative; display: inline-flex; align-items: center; gap: 6px; border-radius: var(--radius-md, 8px); }
+.gold-lock-group::after { content: ''; position: absolute; inset: -1px; border-radius: inherit; border: 1px solid rgba(212,175,55,0.85); background: linear-gradient(135deg, rgba(255,215,0,0.32), rgba(212,175,55,0.22) 45%, rgba(255,225,120,0.36)); box-shadow: 0 0 8px rgba(255,200,60,0.35), inset 0 0 4px rgba(255,255,255,0.3); pointer-events: none; animation: goldShimmer 2.4s ease-in-out infinite; }
+.gold-lock-group::before { content: 'lock'; font-family: 'Material Symbols Outlined'; font-size: 14px; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #8a6d1a; z-index: 1; pointer-events: none; }
+.gold-locked { position: relative; }
+.gold-locked::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; border: 1px solid rgba(212,175,55,0.85); background: linear-gradient(135deg, rgba(255,215,0,0.3), rgba(212,175,55,0.2)); box-shadow: 0 0 6px rgba(255,200,60,0.35); pointer-events: none; animation: goldShimmer 2.4s ease-in-out infinite; }
+@keyframes goldShimmer { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.5; } }
 /* 迷你剪影预览：JS 按当前键写 inline clip-path（真实剪影 + 族底色），不再用代表款 pv-edge-* 类 */
 </style>
 </head>
@@ -3230,8 +3559,9 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
   // v0.2.24.0 白名单双用途：cardBg=横幅预设、cardPlate=独立卡片背景（各选各的）
   // v0.2.24.1 卡片背景只留 2 选项（用户「我要的是两个选项一个是默认，一个是标准的液态玻璃不要有颜色」）：
   //   PLATE_DEFS 独立于横幅 7 预设；glass-clear=标准液态玻璃（v0.2.24.2 纯透明填充+代码白边环 2px+柔影）
-  var CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear'];
-  var CARD_BG_DEFS = [['', '默认'], ['glass-frost', '磨砂'], ['glass-ocean', '深海'], ['glass-violet', '薰衣草'], ['glass-rose', '樱花'], ['glass-mint', '薄荷'], ['glass-sunset', '落日']];
+  // v0.2.58.22 追加 6 单色/黑白系预设（免费层横幅颜色：solid-* 单色 + mono-* 黑白渐变；后端白名单同款追加）
+  var CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear', 'solid-black', 'solid-white', 'solid-gray', 'mono-bw', 'mono-silver', 'mono-charcoal'];
+  var CARD_BG_DEFS = [['', '默认'], ['glass-frost', '磨砂'], ['glass-ocean', '深海'], ['glass-violet', '薰衣草'], ['glass-rose', '樱花'], ['glass-mint', '薄荷'], ['glass-sunset', '落日'], ['solid-black', '墨黑'], ['solid-white', '纯白'], ['solid-gray', '石板灰'], ['mono-bw', '黑白渐变'], ['mono-silver', '银灰渐变'], ['mono-charcoal', '炭黑渐变']];
   var CARD_PLATE_DEFS = [['', '默认'], ['glass-clear', '标准液态玻璃']];
   // v0.2.53.0 卡片边缘主题白名单（与后端 social.js/auth.js CARD_EDGE_KEYS 同步；'' = 默认圆角卡）+ 中文名
   var EDGE_KEYS = ['paper', 'treasure', 'tech1', 'tech2', 'tech3', 'tech4', 'tech5', 'tech6', 'paint1', 'paint2', 'paint3', 'paint4', 'paint5', 'paint6'];
@@ -3414,6 +3744,32 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
       var u = SlatiDB.getUser();
       return !!(u && u.tier && u.tier !== 'free');
     } catch (e) { return false; }
+  }
+
+  // ── v10.28.52.0 等级奖励（FC 等级奖励）：本人奖励清单 GET /api/rewards/me ──
+  // REWARDS_ME = { achievements:[{id,name,description,level}], badges:[{id}], cosmetics:[{kind,value}], edgeUnlocked }；
+  // null = 未加载/访客/他人主页不拉。mn:rewards-changed（侧栏自动领奖）→ 重拉+重渲染。
+  var REWARDS_ME = null;
+  function loadRewardsMe(cb) {
+    if (!profileUser || !profileUser.isSelf) { if (cb) cb(null); return; }
+    MN_API.get('/rewards/me').then(function (r) {
+      if (r.ok && r.data) REWARDS_ME = r.data;
+      if (cb) cb(REWARDS_ME);
+    }).catch(function () { if (cb) cb(null); });
+  }
+  // 装饰品 display 名（用户原文逐字；DB 存稳定编码，前端 i18n 逐字表）
+  function frameName(v) { return v === 'champion-frame' ? (T('rewards.frame.champion') || '冠军的相框') : (T('rewards.frame.rookie') || '新手免费头像相框'); }
+  function titleName(v) { return v === 'veteran-title' ? (T('rewards.title.veteran') || '我是老资历') : v; }
+  function badgeName(id) {
+    var k = 'rewards.badge.' + String(id || '').replace('BADGE-', '').replace('-', '').toLowerCase();
+    return T(k) || id;
+  }
+  function hasCosmetic(kind, value) {
+    return !!(REWARDS_ME && REWARDS_ME.cosmetics && REWARDS_ME.cosmetics.some(function (c) { return c.kind === kind && c.value === value; }));
+  }
+  function isRewardsEmpty() {
+    if (!REWARDS_ME) return true;
+    return !(REWARDS_ME.achievements || []).length && !(REWARDS_ME.badges || []).length && !(REWARDS_ME.cosmetics || []).length;
   }
 
   function render404(key) {
@@ -3688,6 +4044,11 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
     }
   }
 
+  // v0.2.58.25 视频横幅：URL 尾缀判视频（后端 uploads 恒带扩展名）
+  function isProfileVideoUrl(u) {
+    return /\.(mp4|webm|mov)([?#]|$)/i.test(String(u || ''));
+  }
+
   function renderHeader(u) {
     var genderTxt = T('prof.gender.' + u.gender) || GENDER_ZH[u.gender] || null;
     applyPageBg(u);
@@ -3709,12 +4070,17 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
       '<div class="card profile-header' + (cardBg ? ' glass-bg ' + cardBg : '') + (cardEdge ? ' card-edge-' + edgeCls + (edgeIsPaint ? '' : ' has-outer-bg') : (cardBg ? ' liquid-glass' : '')) + '"' + (cardBg ? ' data-card-bg="' + cardBg + '"' : '') + (cardEdge ? ' data-card-edge="' + cardEdge + '"' : '') + '>' +
         // 外板环带 + 卡身剪影子层（innerHTML 重建即重生，免 FC 的 JS 增删；油漆无外板不渲染）
         (cardEdge && !edgeIsPaint ? '<div class="card-outer-band"></div><div class="card-tint"></div>' : '') +
-        '<div class="profile-banner"></div>' +
+        // v0.2.58.18 横幅图（029 列）：有图挂 has-img+内嵌裁切图（escapeHtml 防引号注入）；v0.2.58.25 改
+        //   .profile-banner-crop 窗口+内嵌媒体（applyCrop 摆位；预设渐变底色保留作加载兜底）；
+        //   视频横幅（58.25 补报）走 <video autoplay muted loop playsinline> 同几何
+        '<div class="profile-banner' + (u.bannerUrl ? ' has-img' : '') + '">' + (u.bannerUrl ? '<div class="profile-banner-crop">' + (isProfileVideoUrl(u.bannerUrl) ? '<video class="profile-banner-video" autoplay muted loop playsinline src="' + escapeHtml(u.bannerUrl) + '"></video>' : '<img class="profile-banner-img" src="' + escapeHtml(u.bannerUrl) + '" alt="">') + '</div>' : '') + '</div>' +
         '<div class="profile-body">' +
         '<div class="profile-top">' +
-          '<img src="' + escapeHtml(u.avatarUrl || window._slatiFallbackAvatar) + '" alt="" class="profile-avatar">' +
+          // v10.28.52.0 等级奖励相框（033 列）：has-frame+frame-* 挂环（rookie 主色环/champion 金环）
+          '<div class="profile-avatar' + (u.avatarFrame ? ' has-frame ' + u.avatarFrame : '') + '"><img src="' + escapeHtml(u.avatarUrl || window._slatiFallbackAvatar) + '" alt="" class="profile-avatar-img"></div>' +
           '<div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px">' +
-            '<h2 style="font-weight:700;font-size:var(--fs-body-lg);margin:0">' + escapeHtml(u.displayName || (T('prof.citizen') || 'Citizen')) + '</h2>' +
+            // v10.28.52.0 称号（033 列）：昵称旁金药丸
+            '<div class="flex-center" style="justify-content:flex-start;gap:8px;flex-wrap:wrap"><h2 style="font-weight:700;font-size:var(--fs-body-lg);margin:0">' + escapeHtml(u.displayName || (T('prof.citizen') || 'Citizen')) + '</h2>' + (u.title ? '<span class="pr-title-pill">' + escapeHtml(titleName(u.title)) + '</span>' : '') + '</div>' +
             '<div class="flex-center" style="justify-content:flex-start;gap:8px;flex-wrap:wrap">' +
               '<span class="label-sm" style="color:var(--color-outline)">@' + escapeHtml(u.citizenId || '') + '</span>' +
               (genderTxt ? '<span class="label-sm" style="padding:2px 6px;border:1px solid var(--color-outline);border-radius:9999px;color:var(--color-outline);display:inline-flex;align-items:center">' + (genderIconImg(u.gender, 16) || genderTxt) + '</span>' : '') +
@@ -3731,6 +4097,7 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
           (u.isSelf ? statBlock('likes', (T('prof.tab.likes') || '点赞'), u.stats.likeCount) + statBlock('favorites', (T('prof.tab.favorites') || '收藏'), u.stats.favoriteCount) : '') +
         '</div>' +
         '<div class="profile-follow-row">' + followBtnHtml(u) + '</div>' +
+        (u.isSelf ? renderRewardsSectionHtml(u) : '') +
         '</div>' +
       '</div>';
     document.querySelectorAll('#profileHeader [data-goto-tab]').forEach(function (b) {
@@ -3752,7 +4119,78 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
     //   innerHTML 换卡已抹掉注入层但 _lgStatic 还在，直接 apply 会空转；默认无板时 remove 兜底清干净）
     if (window.LG) window.LG.remove(headerWrap);
     if (cardPlate && !cardEdge && window.LG) window.LG.apply(headerWrap);
+    // v0.2.58.25 裁切渲染：innerHTML 落地后 applyCrop 摆位（null crop=默认 {0,0,1,1} 整图 cover 居中，
+    //   与 58.18 内联 background-size:cover+center 逐像素等价=爷爷辈零回归；本人/他人同一链路——
+    //   他人 crop 来自 GET /social/users/:id 新字段）。MN_CropDialog 由 settings-modal.js 提供
+    //   （本页已载入），守卫防脚本缺失时零行为
+    if (window.MN_CropDialog) {
+      var bannerMedia = document.querySelector('#profileHeader .profile-banner-img, #profileHeader .profile-banner-video');
+      if (bannerMedia) window.MN_CropDialog.applyCrop(bannerMedia, u.bannerCrop, bannerMedia.parentElement);
+      var avatarImg = document.querySelector('#profileHeader .profile-avatar-img');
+      if (avatarImg) window.MN_CropDialog.applyCrop(avatarImg, u.avatarCrop, avatarImg.parentElement);
+    }
   }
+
+  // ── v10.28.52.0 等级奖励区渲染（本人主页；REWARDS_ME 未加载返回空串，loadRewardsMe 回来再渲）──
+  function prCosmBtn(kind, value, name, active) {
+    if (!hasCosmetic(kind, value)) {
+      return '<span class="pr-cosm-chip locked" title="' + (T('rewards.lockHint') || '升级解锁') + '">' + escapeHtml(name) + '<span class="material-symbols-outlined" style="font-size:13px">lock</span></span>';
+    }
+    if (active) {
+      return '<span class="pr-cosm-chip active">' + escapeHtml(name) + '<button type="button" class="pr-cosm-use" onclick="prCosmRemove(\'' + kind + '\')">' + (T('rewards.remove') || '卸下') + '</button></span>';
+    }
+    return '<span class="pr-cosm-chip">' + escapeHtml(name) + '<button type="button" class="pr-cosm-use" onclick="prCosmUse(\'' + kind + '\',\'' + value + '\')">' + (T('rewards.use') || '使用') + '</button></span>';
+  }
+  function renderRewardsSectionHtml(u) {
+    if (!REWARDS_ME) return '';
+    var parts = ['<div class="profile-rewards">'];
+    parts.push('<div class="pr-head"><span class="material-symbols-outlined" style="font-size:16px">military_tech</span>' + (T('rewards.achievements') || '成就') + ' &amp; ' + (T('rewards.badges') || '徽章') + '</div>');
+    if (isRewardsEmpty()) {
+      parts.push('<div class="pr-empty">' + (T('rewards.empty') || '还没有解锁任何奖励——升级到 Lv.2 / Lv.6 / Lv.9 / Lv.12 自动领取') + '</div>');
+    } else {
+      var ach = REWARDS_ME.achievements || [];
+      var badges = REWARDS_ME.badges || [];
+      if (ach.length) {
+        parts.push('<div class="pr-ach-row">' + ach.map(function (a) {
+          return '<span class="pr-ach-chip" title="' + escapeHtml(a.description || '') + '"><span class="material-symbols-outlined" style="font-size:15px">workspace_premium</span>' + escapeHtml(a.name) + '<span class="pr-lv">Lv.' + a.level + '</span></span>';
+        }).join('') + '</div>');
+      }
+      if (badges.length) {
+        parts.push('<div class="pr-badge-row">' + badges.map(function (b) {
+          return '<span class="pr-badge-chip"><span class="material-symbols-outlined" style="font-size:15px">verified</span>' + escapeHtml(badgeName(b.id)) + '</span>';
+        }).join('') + '</div>');
+      }
+      // 装饰品行：相框/称号（使用/使用中/卸下 PATCH 激活态）；免费边缘只展示解锁态（激活走边缘编辑）
+      var frameChips = ['rookie-frame', 'champion-frame'].map(function (v) { return prCosmBtn('frame', v, frameName(v), u.avatarFrame === v); }).join('');
+      var titleChips = ['veteran-title'].map(function (v) { return prCosmBtn('title', v, titleName(v), u.title === v); }).join('');
+      var edgeChips = hasCosmetic('edge', 'free-edge') ? '<span class="pr-cosm-chip"><span class="material-symbols-outlined" style="font-size:14px">check</span>' + (T('rewards.edge.free') || '免费名片边缘') + '<span class="pr-cosm-state">' + (T('rewards.inUse') || '使用中') + '</span></span>' : '';
+      parts.push('<div class="pr-cosm-row"><span class="pr-cosm-label">' + (T('rewards.frame') || '头像相框') + '</span>' + frameChips + '</div>');
+      parts.push('<div class="pr-cosm-row"><span class="pr-cosm-label">' + (T('rewards.title') || '称号') + '</span>' + titleChips + '</div>');
+      if (edgeChips) parts.push('<div class="pr-cosm-row"><span class="pr-cosm-label">' + (T('rewards.edge') || '名片边缘') + '</span>' + edgeChips + '</div>');
+    }
+    parts.push('</div>');
+    return parts.join('');
+  }
+  function prCosmPatch(body) {
+    MN_API.patch('/auth/me', body).then(function (r) {
+      if (r.ok && r.data && r.data.user) {
+        if (lastUser) {
+          if (body.avatarFrame !== undefined) lastUser.avatarFrame = r.data.user.avatarFrame;
+          if (body.title !== undefined) lastUser.title = r.data.user.title;
+          renderHeader(lastUser);
+        }
+        toastMsg(T('rewards.toast.saved') || '装饰已更新');
+      } else {
+        toastMsg((r.data && r.data.error && r.data.error.message) || (T('prof.edit.saveFail') || '保存失败，请稍后再试'), true);
+      }
+    });
+  }
+  window.prCosmUse = function (kind, value) {
+    prCosmPatch(kind === 'frame' ? { avatarFrame: value } : { title: value });
+  };
+  window.prCosmRemove = function (kind) {
+    prCosmPatch(kind === 'frame' ? { avatarFrame: null } : { title: null });
+  };
 
   function toggleFollow() {
     var btn = document.getElementById('profileFollowBtn');
@@ -3793,10 +4231,87 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
   function plateLabel(b) { return T('prof.plate.' + (b[0] ? (b[0] === 'glass-clear' ? 'glassClear' : b[0]) : 'default')) || b[1]; }
   function edgeLabel(b) { return T('prof.edge.' + (b[0] || 'default')) || b[1]; }
 
+  // v0.2.58.18 FC 图库选择器：读 fluidcanvas 持久库 slati_img_library（{src,name,desc,visibility,ts,uploader,tags}[]）；
+  // 只收 data: 条目（http(s)=URL 输入后门钦定②禁止→过滤；blob: 跨页不可用→过滤）；选图 → onPick 回传条目
+  function openFcLibraryPicker(onPick) {
+    var items = [];
+    try {
+      var arr = JSON.parse(localStorage.getItem('slati_img_library') || '[]');
+      items = (Array.isArray(arr) ? arr : []).filter(function (it) {
+        return it && typeof it.src === 'string' && it.src.indexOf('data:') === 0;
+      });
+    } catch (e) { items = []; }
+    var backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+    var cont = document.createElement('div');
+    cont.className = 'modal-container';
+    var card = document.createElement('div');
+    card.className = 'modal-card';
+    card.style.maxWidth = '680px';
+    card.style.maxHeight = '80vh';
+    card.style.overflow = 'auto';
+    card.innerHTML =
+      '<h3 style="font-weight:600;font-size:var(--fs-body-lg);margin:0 0 var(--space-md)">' + (T('prof.edit.libTitle') || 'FC 图库') + '</h3>' +
+      (items.length
+        ? '<div class="fc-lib-pick-grid">' + items.map(function (it, i) {
+            return '<button type="button" class="fc-lib-pick-item" data-lib="' + i + '"><img src="' + escapeHtml(it.src) + '" alt=""><span class="label-sm">' + escapeHtml(it.name || '') + '</span></button>';
+          }).join('') + '</div>'
+        : '<p class="fc-lib-pick-empty">' + (T('prof.edit.libEmpty') || '图库是空的——先去流体画布上传图片吧') + '</p>') +
+      '<div style="display:flex;justify-content:flex-end;margin-top:var(--space-sm)"><button type="button" class="btn btn-sm" id="fcLibCloseBtn">' + (T('prof.edit.cancel') || '取消') + '</button></div>';
+    cont.appendChild(card);
+    backdrop.appendChild(cont);
+    document.body.appendChild(backdrop);
+    function close() {
+      document.removeEventListener('keydown', onEsc);
+      backdrop.remove();
+    }
+    function onEsc(e) { if (e.key === 'Escape') close(); }
+    document.addEventListener('keydown', onEsc);
+    backdrop.addEventListener('click', function (e) { if (e.target === backdrop) close(); });
+    void card.offsetWidth;
+    card.classList.add('active'); // v0.2.19.2 教训：modal-card 默认 opacity:0，必须挂 .active 才可见
+    backdrop.classList.add('active');
+    card.querySelector('#fcLibCloseBtn').addEventListener('click', close);
+    card.querySelectorAll('.fc-lib-pick-item').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var it = items[Number(b.getAttribute('data-lib'))];
+        close();
+        if (it) onPick(it);
+      });
+    });
+  }
+  // v0.2.58.18 dataURL → {blob, ext}（只收 base64 图片四格式；非 base64/白名单外 → null）
+  function fcDataUrlToBlob(dataUrl) {
+    var m = /^data:([^;]+);base64,(.*)$/.exec(dataUrl);
+    if (!m) return null;
+    var map = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/gif': 'gif', 'image/webp': 'webp' };
+    var ext = map[m[1]] || null;
+    if (!ext) return null;
+    var bin;
+    try { bin = atob(m[2]); } catch (e) { return null; }
+    var arr = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    return { blob: new Blob([arr], { type: m[1] }), ext: ext };
+  }
+
   function openProfileEditor() {
     var u = profileUser;
     if (!u) { toastMsg(T('prof.toast.loading') || '资料加载中，请稍后再试', true); return; }
     editPendingAvatar = null;
+    // v0.2.58.18 横幅图片（029 列；null = 无横幅图，预设渐变）；null 移除语义显式入 body
+    var editBannerUrl = u.bannerUrl || null;
+    // v0.2.58.25 裁切元数据（030 列；null = 默认 {0,0,1,1} 整图 cover）：上传/图库/重裁 confirm 时写入，保存时入 body
+    var editAvatarCrop = u.avatarCrop || null;
+    var editBannerCrop = u.bannerCrop || null;
+    // v0.2.58.25 默认整图裁切（语义比较基准——键序无关四值比对，服务端 parseCrop 与弹窗 rect 键序可能不同）
+    var CROP_DEF = { x: 0, y: 0, w: 1, h: 1 };
+    function cropSame(a, b) {
+      var ka = a || CROP_DEF, kb = b || CROP_DEF;
+      return Math.round(ka.x * 10000) === Math.round(kb.x * 10000) &&
+             Math.round(ka.y * 10000) === Math.round(kb.y * 10000) &&
+             Math.round(ka.w * 10000) === Math.round(kb.w * 10000) &&
+             Math.round(ka.h * 10000) === Math.round(kb.h * 10000);
+    }
     // v0.2.23.0 卡片背景（用户「自定义是可以自定义卡片背景」）；v0.2.23.2 null = 无背景（横幅保持品牌渐变不动）
     var editCardBg = u.cardBg || null;
     // v0.2.24.0 独立卡片背景（019 列；null = 无背景层，与横幅分开各选各的）
@@ -3806,6 +4321,19 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
     // v0.2.53.0 卡片边缘主题（027 列；null = 默认圆角卡；订阅门禁 UI-only——非订阅锁定不生效）
     var editCardEdge = EDGE_KEYS.indexOf(u.cardEdge) !== -1 ? u.cardEdge : null;
     var sub = isSubscriberUser();
+    // v10.28.52.0 等级奖励：免费 Lv.2 已领奖（edgeUnlocked）→ 边缘门禁放行（订阅或已解锁）
+    var edgeFree = !!(REWARDS_ME && REWARDS_ME.edgeUnlocked);
+    // v10.28.52.0 装饰品激活态（033 列；相框/称号——已拥有可戴，未拥有金罩锁）
+    var editAvatarFrame = u.avatarFrame || null;
+    var editTitle = u.title || null;
+    // v0.2.58.22 三层门禁：canGif=高级（premium/ultra）专属；free 只能预设色卡（上传/图库金罩锁）；basic 静态图+gif 锁
+    var canGif = sub && (u.tier === 'premium' || u.tier === 'ultra');
+    var upgradeVis = canGif ? 'none' : 'inline-block';
+    // 升级链接文案 tier 矩阵：free=旧键（头像 gifUpgrade/横幅 imgUpgrade）；basic=premGifUpgrade 双行
+    var avatarUpText = canGif ? '' : (sub ? (T('prof.edit.premGifUpgrade') || '升级到高级订阅可上传 GIF 动图 →') : (T('prof.edit.gifUpgrade') || '订阅后解锁 GIF 与图库 →'));
+    var bannerUpText = canGif ? '' : (sub ? (T('prof.edit.premGifUpgrade') || '升级到高级订阅可上传 GIF 动图 →') : (T('prof.edit.imgUpgrade') || '订阅后解锁横幅图片与 GIF →'));
+    // v0.2.58.20 头像同步（钦定：默认勾选=双向；键缺失/脏值=ON；资料页权威；bio 互不相通）
+    var syncOn = (function () { try { return localStorage.getItem('slati_avatar_sync') !== '0'; } catch (e) { return true; } })();
     var backdrop = document.createElement('div');
     backdrop.className = 'modal-backdrop';
     var cont = document.createElement('div');
@@ -3822,12 +4350,46 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
       '<div id="editTabBasic">' +
       '<div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md)">' +
         '<div style="position:relative;flex-shrink:0">' +
-          '<img id="editAvatarPreview" src="' + escapeHtml(u.avatarUrl || window._slatiFallbackAvatar) + '" alt="" style="width:64px;height:64px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.08)">' +
+          // v0.2.58.25 头像预览改裁切外包盒（img 绝对定位由 applyCrop 摆位；边框/投影移盒上）
+          '<div style="width:64px;height:64px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.08);overflow:hidden;position:relative">' +
+          '<img id="editAvatarPreview" src="' + escapeHtml(u.avatarUrl || window._slatiFallbackAvatar) + '" alt="" style="position:absolute;display:block">' +
+          '</div>' +
           '<button type="button" class="btn btn-ghost btn-icon btn-sm" id="editAvatarBtn" title="' + (T('prof.edit.changeAvatar') || '更换头像') + '" style="position:absolute;bottom:-4px;right:-4px;width:28px;height:28px;border-radius:50%;background:var(--color-primary);color:white"><span class="material-symbols-outlined" style="font-size:14px">photo_camera</span></button>' +
+          // v0.2.58.25 重新裁切（钦定⑥：已有头像才渲染；无订阅门禁=显示调整零上传）
+          (u.avatarUrl ? '<button type="button" class="btn btn-ghost btn-icon btn-sm" id="editAvatarReCropBtn" title="' + (T('prof.edit.reCropAvatar') || '重新裁切') + '" style="position:absolute;top:-4px;right:-4px;width:28px;height:28px;border-radius:50%;background:var(--color-primary);color:white"><span class="material-symbols-outlined" style="font-size:14px">crop</span></button>' : '') +
+          // v0.2.58.18 头像图库入口（钦定⑤：头像也加图库入口；左位对称）
+          // v0.2.58.19 订阅分层（钦定①②）：非订阅 → 锁图标+title「订阅后可用」（纯 UI 门禁，后端零改动）
+          '<button type="button" class="btn btn-ghost btn-icon btn-sm' + (sub ? '' : ' sub-locked gold-locked') + '" id="editAvatarLibBtn" title="' + (sub ? (T('prof.edit.avatarLib') || '从图库选择头像') : (T('prof.edit.subLocked') || '订阅后可用')) + '" style="position:absolute;bottom:-4px;left:-4px;width:28px;height:28px;border-radius:50%;background:var(--color-primary);color:white"><span class="material-symbols-outlined" style="font-size:14px">' + (sub ? 'photo_library' : 'lock') + '</span></button>' +
         '</div>' +
         '<div style="flex:1;min-width:0">' +
           '<label class="form-label" for="editNameInput">' + (T('prof.edit.displayName') || '显示名') + '</label>' +
           '<input id="editNameInput" class="input-glass" type="text" maxlength="40" value="' + escapeHtml(u.displayName || '') + '">' +
+        '</div>' +
+      '</div>' +
+      // v0.2.58.19 升级链接（非订阅可见；订阅隐藏——与 4053 cardEdgeUpgradeLink 同款）
+      '<div style="margin:-4px 0 var(--space-md)"><a href="premium.html" id="avatarGifUpgradeLink" style="display:' + upgradeVis + ';font-size:var(--fs-label-sm);color:var(--color-primary);text-decoration:none">' + avatarUpText + '</a></div>' +
+      // v0.2.58.20 头像同步勾选（钦定：默认勾选；键缺失=ON；资料页权威——FC 每渲染读旗标；bio 互不相通）
+      '<div class="form-group" style="display:flex;align-items:center;gap:var(--space-sm)">' +
+        '<label class="form-label" for="editAvatarSyncToggle" style="margin:0;flex:1">' + (T('prof.edit.avatarSync') || '同步到频道主页') + '</label>' +
+        '<span class="toggle-switch' + (syncOn ? ' active' : '') + '" id="editAvatarSyncToggle" role="switch" aria-checked="' + (syncOn ? 'true' : 'false') + '" aria-label="' + (T('prof.edit.avatarSync') || '同步到频道主页') + '"></span>' +
+      '</div>' +
+      // v10.28.52.0 等级奖励装饰（033 列）：相框/称号选择——已拥有可戴，未拥有金罩锁（订阅锁先例）
+      '<div class="form-group">' +
+        '<label class="form-label">' + (T('rewards.frame') || '头像相框') + '</label>' +
+        '<div class="pr-edit-grid" id="editFrameGrid">' +
+          [['', T('rewards.none') || '无'], ['rookie-frame', frameName('rookie-frame')], ['champion-frame', frameName('champion-frame')]].map(function (d) {
+            var owned = d[0] === '' || hasCosmetic('frame', d[0]);
+            return '<button type="button" class="pr-edit-swatch' + ((editAvatarFrame || '') === d[0] ? ' active' : '') + (owned ? '' : ' sub-locked gold-locked') + '" data-cosm-kind="frame" data-cosm-value="' + d[0] + '" title="' + (owned ? d[1] : ((T('rewards.lockHint') || '升级解锁') + '：' + d[1])) + '">' + (owned ? '' : '<span class="material-symbols-outlined" style="font-size:13px;vertical-align:-2px">lock</span> ') + escapeHtml(d[1]) + '</button>';
+          }).join('') +
+        '</div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label">' + (T('rewards.title') || '称号') + '</label>' +
+        '<div class="pr-edit-grid" id="editTitleGrid">' +
+          [['', T('rewards.none') || '无'], ['veteran-title', titleName('veteran-title')]].map(function (d) {
+            var owned = d[0] === '' || hasCosmetic('title', d[0]);
+            return '<button type="button" class="pr-edit-swatch' + ((editTitle || '') === d[0] ? ' active' : '') + (owned ? '' : ' sub-locked gold-locked') + '" data-cosm-kind="title" data-cosm-value="' + d[0] + '" title="' + (owned ? d[1] : ((T('rewards.lockHint') || '升级解锁') + '：' + d[1])) + '">' + (owned ? '' : '<span class="material-symbols-outlined" style="font-size:13px;vertical-align:-2px">lock</span> ') + escapeHtml(d[1]) + '</button>';
+          }).join('') +
         '</div>' +
       '</div>' +
       '<div class="form-group">' +
@@ -3857,6 +4419,27 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
             }).join('') +
           '</div>' +
         '</div>' +
+        // v0.2.58.18 横幅图片（029 列；钦定②上传+FC 图库双来源无 URL 输入）：预览复用 .edit-bg-flat 横幅条
+        //   （有图内嵌裁切 img 盖预设渐变）；v0.2.58.25 改 .profile-banner-crop 同款 img+applyCrop 渲染
+        '<div class="form-group">' +
+          '<label class="form-label">' + (T('prof.edit.bannerImg') || '横幅图片') + '</label>' +
+          '<div class="edit-bg-preview"><div id="editBannerPreview" class="edit-bg-flat' + (editCardBg ? ' ' + editCardBg : ' bg-default') + '" style="position:relative;overflow:hidden">' + (editBannerUrl ? '<img class="edit-banner-preview-img" src="' + escapeHtml(editBannerUrl) + '" alt="" style="position:absolute;display:block">' : '') + '</div></div>' +
+          '<div id="editBannerRow" style="margin-top:8px">' +
+            '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+              // v0.2.58.22 免费层：upload+lib 包进同一金色罩子（相邻共罩，钦定「如果两个按钮很接近就直接只使用一个罩」）；移除钮永远在罩外
+              (sub ? '' : '<span class="gold-lock-group">') +
+              '<button type="button" class="btn btn-sm' + (sub ? '' : ' sub-locked') + '" id="editBannerUploadBtn">' + (T('prof.edit.bannerUpload') || '上传横幅') + '</button>' +
+              // v0.2.58.19 订阅分层：非订阅 → 锁图标+title「订阅后可用」+「订阅」徽标（边缘组同款口径）
+              '<button type="button" class="btn btn-sm' + (sub ? '' : ' sub-locked') + '" id="editBannerLibBtn" title="' + (sub ? (T('prof.edit.bannerLib') || '从图库选择') : (T('prof.edit.subLocked') || '订阅后可用')) + '">' + (sub ? '' : '<span class="material-symbols-outlined" style="font-size:14px;vertical-align:-2px">lock</span> ') + (T('prof.edit.bannerLib') || '从图库选择') + (sub ? '' : ' <span class="label-sm" style="color:var(--color-outline)">' + (T('prof.edit.subBadge') || '订阅') + '</span>') + '</button>' +
+              (sub ? '' : '</span>') +
+              '<button type="button" class="btn btn-sm" id="editBannerRemoveBtn">' + (T('prof.edit.bannerRemove') || '移除横幅') + '</button>' +
+              // v0.2.58.25 重新裁切（钦定⑥：罩外移除钮旁；无订阅门禁=显示调整零上传；显隐随 updateBannerPreview）
+              '<button type="button" class="btn btn-sm" id="editBannerReCropBtn" title="' + (T('prof.edit.reCropBanner') || '重新裁切') + '">' + (T('prof.edit.reCropBanner') || '重新裁切') + '</button>' +
+            '</div>' +
+            '<a href="premium.html" id="bannerGifUpgradeLink" style="display:' + upgradeVis + ';font-size:var(--fs-label-sm);color:var(--color-primary);text-decoration:none;margin-top:6px">' + bannerUpText + '</a>' +
+            '<span class="label-sm" id="editBannerState" style="display:block;margin-top:6px;color:var(--color-outline)"></span>' +
+          '</div>' +
+        '</div>' +
         '<div class="form-group">' +
           '<label class="form-label">' + (T('prof.edit.cardPlate') || '卡片背景') + '</label>' +
           '<div class="edit-bg-preview' + (editCardPlate ? ' has-plate ' + editCardPlate : '') + '" id="editPlatePreview"><div class="pv-card"><span class="pv-banner"></span><span class="pv-body"></span></div></div>' +
@@ -3877,13 +4460,14 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
           '<div class="edit-bg-preview"><div class="pv-card" id="editEdgePreview"' + (editCardEdge && EDGE_STYLES[editCardEdge] ? ' style="clip-path:' + EDGE_STYLES[editCardEdge].clip + ';background:' + EDGE_STYLES[editCardEdge].cardLayers[0] + '"' : '') + '></div></div>' +
           '<div class="edit-bg-grid" id="editEdgeGrid">' +
             EDGE_DEFS.map(function (b) {
-              var locked = b[0] !== '' && !sub;
+              // v10.28.52.0 订阅或已解锁（Lv.2 免费边缘）才可用
+              var locked = b[0] !== '' && !sub && !edgeFree;
               return '<button type="button" class="edit-bg-swatch' + ((editCardEdge || '') === b[0] ? ' active' : '') + (locked ? ' edge-locked' : '') + '" data-edge="' + b[0] + '" title="' + (locked ? (T('prof.edit.subLocked') || '订阅后可用') : edgeLabel(b)) + '">' +
                 '<span class="swatch-fill' + (b[0] ? ' edge-fill-' + b[0] : ' bg-default') + '">' + (b[0] ? '<span class="swatch-shape"></span>' : '') + (locked ? '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline);display:block;line-height:36px;text-align:center">lock</span>' : '') + '</span>' +
                 '<span class="swatch-label">' + edgeLabel(b) + (locked ? '<span class="label-sm" style="margin-left:4px;color:var(--color-outline)">' + (T('prof.edit.subBadge') || '订阅') + '</span>' : '') + '</span></button>';
             }).join('') +
           '</div>' +
-          '<a href="premium.html" id="cardEdgeUpgradeLink" style="display:' + (sub ? 'none' : 'inline-block') + ';font-size:var(--fs-label-sm);color:var(--color-primary);text-decoration:none;margin-top:8px">' + (T('prof.edit.edgeUpgrade') || '订阅后解锁背景边缘 →') + '</a>' +
+          '<a href="premium.html" id="cardEdgeUpgradeLink" style="display:' + ((sub || edgeFree) ? 'none' : 'inline-block') + ';font-size:var(--fs-label-sm);color:var(--color-primary);text-decoration:none;margin-top:8px">' + (T('prof.edit.edgeUpgrade') || '订阅后解锁背景边缘 →') + '</a>' +
         '</div>' +
         // v0.2.25.0 页面背景（用户「在自定义那边再加上一个背景图片 这个就是整个页面的背景的图片」）：
         //   默认 = 无整页背景；自定义图片 = 上传（复用头像同款直传）或 http(s) 网址；预览 = 迷你整页（迷你卡浮在背景图上）
@@ -3929,6 +4513,23 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
         b.classList.add('active');
       });
     });
+    // v10.28.52.0 等级奖励装饰选择：未拥有（gold-locked）→ toast 不生效；已拥有 → 互斥选中
+    card.querySelectorAll('#editFrameGrid [data-cosm-value]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = b.getAttribute('data-cosm-value') || null;
+        if (v && !hasCosmetic('frame', v)) { toastMsg(T('rewards.toast.locked') || '该奖励尚未解锁（升级后自动领取）', true); return; }
+        editAvatarFrame = v;
+        card.querySelectorAll('#editFrameGrid [data-cosm-value]').forEach(function (x) { x.classList.toggle('active', x === b); });
+      });
+    });
+    card.querySelectorAll('#editTitleGrid [data-cosm-value]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = b.getAttribute('data-cosm-value') || null;
+        if (v && !hasCosmetic('title', v)) { toastMsg(T('rewards.toast.locked') || '该奖励尚未解锁（升级后自动领取）', true); return; }
+        editTitle = v;
+        card.querySelectorAll('#editTitleGrid [data-cosm-value]').forEach(function (x) { x.classList.toggle('active', x === b); });
+      });
+    });
 
     // v0.2.23.0 顶部导航：基础 / 自定义 两 tab 切换（display 互斥）
     var navBtns = card.querySelectorAll('#editNavBtns [data-edit-tab]');
@@ -3938,6 +4539,11 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
         navBtns.forEach(function (x) { x.classList.toggle('active', x === b); });
         card.querySelector('#editTabBasic').style.display = tab === 'basic' ? '' : 'none';
         card.querySelector('#editTabCustom').style.display = tab === 'custom' ? '' : 'none';
+        // v0.2.58.25 横幅预览在隐藏 tab 内 applyCrop 空转（尺寸 0）——切到自定义 tab 时补算（视频横幅同链）
+        if (tab === 'custom' && window.MN_CropDialog) {
+          var bim2 = card.querySelector('#editBannerPreview img, #editBannerPreview video');
+          if (bim2) window.MN_CropDialog.applyCrop(bim2, editBannerCrop, card.querySelector('#editBannerPreview'));
+        }
       });
     });
 
@@ -3962,10 +4568,11 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
     });
 
     // v0.2.53.0 边缘主题选择（data-edge 空串 = 默认圆角卡）；订阅门禁 UI-only：非订阅点击 toast 不生效
+    // v10.28.52.0 订阅或已解锁（Lv.2 免费边缘）——edgeFree 读 live REWARDS_ME（弹窗开着时到货也放行）
     card.querySelectorAll('#editEdgeGrid [data-edge]').forEach(function (b) {
       b.addEventListener('click', function () {
         var val = b.getAttribute('data-edge') || null;
-        if (val && !sub) { toastMsg(T('prof.toast.edgeLocked') || '背景边缘为订阅用户专属功能', true); return; }
+        if (val && !sub && !(REWARDS_ME && REWARDS_ME.edgeUnlocked)) { toastMsg(T('prof.toast.edgeLocked') || '背景边缘为订阅用户专属功能', true); return; }
         editCardEdge = val;
         card.querySelectorAll('#editEdgeGrid [data-edge]').forEach(function (x) { x.classList.toggle('active', x === b); });
         var pv = card.querySelector('#editEdgePreview');
@@ -4048,6 +4655,157 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
       }
     });
 
+    // v0.2.58.18 横幅预览：有图挂内联背景图盖预设渐变，无图清三属性回渐变；state 四态（就绪/上传中/失败/提示）
+    // v0.2.58.25 改内嵌裁切媒体（applyCrop 摆位；视频横幅走 <video>）；重裁钮显隐随 editBannerUrl
+    function updateBannerPreview() {
+      var pv = card.querySelector('#editBannerPreview');
+      var isVid = isProfileVideoUrl(editBannerUrl);
+      var bim = pv.querySelector('img, video');
+      if (editBannerUrl) {
+        if (!bim || (bim.tagName === 'VIDEO') !== isVid) {
+          if (bim) bim.remove();
+          bim = isVid ? document.createElement('video') : document.createElement('img');
+          bim.style.position = 'absolute';
+          bim.style.display = 'block';
+          if (isVid) { bim.autoplay = true; bim.muted = true; bim.loop = true; bim.playsInline = true; }
+          pv.appendChild(bim);
+        }
+        bim.src = editBannerUrl;
+        if (window.MN_CropDialog) window.MN_CropDialog.applyCrop(bim, editBannerCrop, pv);
+      } else if (bim) {
+        bim.remove();
+      }
+      var rcBtn = card.querySelector('#editBannerReCropBtn');
+      if (rcBtn) rcBtn.style.display = editBannerUrl ? '' : 'none';
+      card.querySelector('#editBannerState').textContent = editBannerUrl
+        ? (T('prof.edit.bannerReady') || '横幅已就绪，点保存生效')
+        : (T('prof.edit.bannerHint') || '上传图片或从图库选择，点保存生效');
+    }
+    updateBannerPreview();
+    // v0.2.58.25 头像预览落地按当前 crop 摆位（null=默认整图 cover 居中；弹窗已挂 body 尺寸真实；
+    //   横幅预览在隐藏的自定义 tab 内尺寸为 0——applyCrop 空转无害，切 tab 时补算）
+    if (window.MN_CropDialog) {
+      var editAvPv = card.querySelector('#editAvatarPreview');
+      if (editAvPv) window.MN_CropDialog.applyCrop(editAvPv, editAvatarCrop, editAvPv.parentElement);
+    }
+    // 横幅上传：隐藏 file input 挂卡片内（与页面背景/头像同款直传 /social/uploads，绝不 FormData；电池 DOM.setFileInputFiles 可定位）
+    var bannerFileInput = document.createElement('input');
+    bannerFileInput.type = 'file';
+    bannerFileInput.id = 'editBannerFile';
+    // v0.2.58.25 视频横幅：横幅文件框收 mp4/webm/mov（头像框不收——头像链视频走 toast 拒绝）
+    bannerFileInput.accept = '.jpg,.jpeg,.png,.gif,.webp,.mp4,.webm,.mov';
+    bannerFileInput.style.display = 'none';
+    card.appendChild(bannerFileInput);
+    // v0.2.58.25 视频横幅（钦定补报：只横幅）：VIDEO_EXTS 判定；头像链视频拒绝走 toast
+    var VIDEO_EXTS = ['mp4', 'webm', 'mov'];
+    // 上传链公共：预检 → fetch 直传 → editBannerUrl+预览 / 失败 toast（File 与图库 Blob 双来源同链）
+    // v0.2.58.19 订阅分层（钦定①）：gif=付费专属——拦在上传链最前（toast+零 fetch，文件/图库双入口同漏斗）
+    // v0.2.58.22 收紧：gif=高级订阅（premium/ultra）专属——basic 也被拦（canGif 谓词）
+    function blockGif(ext) {
+      if (ext === 'gif' && !canGif) { toastMsg(T('prof.toast.gifLocked') || 'GIF 动图为订阅用户专属功能', true); return true; }
+      return false;
+    }
+    function doBannerUpload(blob, ext, rect) {
+      card.querySelector('#editBannerState').textContent = T('prof.edit.bannerUploading') || '横幅上传中…';
+      fetch(MN_API.BASE + '/social/uploads?ext=.' + ext, { method: 'POST', body: blob, credentials: 'include' })
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (data) {
+          if (data && data.url) {
+            editBannerUrl = data.url;
+            editBannerCrop = rect;
+            updateBannerPreview();
+          } else throw new Error('no url');
+        })
+        .catch(function () {
+          card.querySelector('#editBannerState').textContent = '';
+          toastMsg(T('prof.edit.bannerUploadFail') || '横幅上传失败，请稍后再试', true);
+        });
+    }
+    function uploadBannerBlob(blob, ext) {
+      if (blockGif(ext)) return;
+      // v0.2.58.25 视频横幅分支（钦定：只横幅；GIF 同门=canGif premium/ultra；跳过 10MB 预检=输入任意大平台自己压缩；
+      //   压缩成片走同裁切弹窗→doBannerUpload ext='webm'）
+      if (VIDEO_EXTS.indexOf(ext) !== -1) {
+        if (!canGif) {
+          toastMsg(T('prof.toast.videoLocked') || '视频横幅为高级订阅专属功能', true);
+          var vLk = card.querySelector('#bannerGifUpgradeLink');
+          if (vLk) vLk.style.display = 'inline-block';
+          return;
+        }
+        if (!window.MN_CompressVideo) { toastMsg(T('prof.edit.videoFail') || '视频处理失败，请换一个视频试试', true); return; }
+        card.querySelector('#editBannerState').textContent = T('prof.edit.videoCompressing') || '横幅视频压缩中…（最长 1 分钟）';
+        window.MN_CompressVideo(blob).then(function (out) {
+          if (!window.MN_CropDialog) { doBannerUpload(out.blob, 'webm', null); return; }
+          window.MN_CropDialog.open({
+            kind: 'banner',
+            src: out.blob,
+            initial: null,
+            onConfirm: function (rect) { doBannerUpload(out.blob, 'webm', rect); },
+            onCancel: function () { bannerFileInput.value = ''; } // 清值可重选同一文件
+          });
+        }, function () {
+          card.querySelector('#editBannerState').textContent = '';
+          toastMsg(T('prof.edit.videoFail') || '视频处理失败，请换一个视频试试', true);
+        });
+        return;
+      }
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(ext) === -1) { toastMsg(T('prof.edit.imgOnly') || '只支持 jpg / png / gif / webp 图片', true); return; }
+      if (blob.size > 10 * 1024 * 1024) { toastMsg(T('prof.edit.imgTooBig') || '图片不能超过 10MB', true); return; }
+      // v0.2.58.25 裁切弹窗（钦定①④）：门禁/白名单/大小预检全过后弹窗，confirm 才上传——取消=零上传零 PATCH；
+      //   文件/图库双路径同漏斗（图库 conv.blob 走 objectURL）；组件缺失时降级直传（rect null=后端连带清回默认）
+      if (!window.MN_CropDialog) { doBannerUpload(blob, ext, null); return; }
+      window.MN_CropDialog.open({
+        kind: 'banner',
+        src: blob,
+        initial: null,
+        onConfirm: function (rect) { doBannerUpload(blob, ext, rect); },
+        onCancel: function () { bannerFileInput.value = ''; } // 清值可重选同一文件
+      });
+    }
+    // v0.2.58.22 三层门禁：free 上传锁——toast+升级链接显，文件选择器绝不打开（金罩点击穿透到此给反馈）
+    card.querySelector('#editBannerUploadBtn').addEventListener('click', function () {
+      if (!sub) { toastMsg(T('prof.toast.bannerLocked') || '横幅图片为订阅用户专属功能', true); var upL = card.querySelector('#bannerGifUpgradeLink'); if (upL) upL.style.display = 'inline-block'; return; }
+      bannerFileInput.click();
+    });
+    bannerFileInput.addEventListener('change', function () {
+      var f = bannerFileInput.files && bannerFileInput.files[0];
+      if (!f) return;
+      // v0.2.58.22 三层门禁：free 双保险（点击锁+change 锁）——直喂文件也零上传（free 只预设色卡）
+      if (!sub) { toastMsg(T('prof.toast.bannerLocked') || '横幅图片为订阅用户专属功能', true); return; }
+      uploadBannerBlob(f, (f.name.split('.').pop() || '').toLowerCase());
+    });
+    // 图库路径（钦定②双来源）：dataURL → Blob（转不出=非 base64 → toast 兜底）→ 同上传链
+    // v0.2.58.19 订阅分层：图库=付费专属——点击直接 toast 不生效，选择器绝不打开（DOM 零构建）
+    card.querySelector('#editBannerLibBtn').addEventListener('click', function () {
+      if (!sub) { toastMsg(T('prof.toast.libLocked') || '图库为订阅用户专属功能', true); return; }
+      openFcLibraryPicker(function (it) {
+        var conv = fcDataUrlToBlob(it.src);
+        if (!conv) { toastMsg(T('prof.edit.imgOnly') || '只支持 jpg / png / gif / webp 图片', true); return; }
+        uploadBannerBlob(conv.blob, conv.ext);
+      });
+    });
+    // 移除横幅：editBannerUrl=null（预览回预设渐变+提示文案；保存时 null 显式入 body=移除语义）
+    // v0.2.58.25 连带清 crop（后端 url:null 权威连带，前端同态置 null 保预览）
+    card.querySelector('#editBannerRemoveBtn').addEventListener('click', function () {
+      editBannerUrl = null;
+      editBannerCrop = null;
+      updateBannerPreview();
+    });
+    // v0.2.58.25 重新裁切（钦定⑥：已有横幅才可点；src=当前 URL、initial=当前 crop；无订阅门禁=显示调整零上传；
+    //   confirm 只改 editBannerCrop 不入链不上传——保存时 diff 入 body）
+    card.querySelector('#editBannerReCropBtn').addEventListener('click', function () {
+      if (!editBannerUrl || !window.MN_CropDialog) return;
+      window.MN_CropDialog.open({
+        kind: 'banner',
+        src: editBannerUrl,
+        initial: editBannerCrop,
+        onConfirm: function (rect) {
+          editBannerCrop = rect;
+          updateBannerPreview();
+        }
+      });
+    });
+
     // 头像：隐藏 file input 挂卡片内（电池 DOM.setFileInputFiles 可定位）→ 预检 → 直传
     var fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -4056,27 +4814,84 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
     fileInput.style.display = 'none';
     card.appendChild(fileInput);
     card.querySelector('#editAvatarBtn').addEventListener('click', function () { fileInput.click(); });
+    // v0.2.58.25 头像上传链重构共享（文件/图库双来源同漏斗）：预检全过后弹裁切弹窗，confirm 才上传
+    //   （取消=零上传零 PATCH+清 fileInput 值可重选同一文件）；confirm 确定性 rect（不拖不滚恒 {0,0,1,1}）写入 editAvatarCrop
+    function uploadAvatarBlob(blob, ext) {
+      if (blockGif(ext)) return; // v0.2.58.19 gif=付费专属
+      // v0.2.58.25 视频只限横幅（钦定）：头像链视频文件 toast 拒绝零上传
+      if (VIDEO_EXTS.indexOf(ext) !== -1) { toastMsg(T('prof.edit.avatarNoVideo') || '头像仅支持图片', true); return; }
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(ext) === -1) { toastMsg(T('prof.edit.imgOnly') || '只支持 jpg / png / gif / webp 图片', true); return; }
+      if (blob.size > 10 * 1024 * 1024) { toastMsg(T('prof.edit.imgTooBig') || '图片不能超过 10MB', true); return; }
+      function doUpload(rect) {
+        var stateEl = card.querySelector('#editSaveState');
+        stateEl.textContent = T('prof.edit.avatarUploading') || '头像上传中…';
+        fetch(MN_API.BASE + '/social/uploads?ext=.' + ext, { method: 'POST', body: blob, credentials: 'include' })
+          .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(function (data) {
+            if (data && data.url) {
+              editPendingAvatar = data.url;
+              editAvatarCrop = rect;
+              var pv = card.querySelector('#editAvatarPreview');
+              pv.src = data.url;
+              if (window.MN_CropDialog) window.MN_CropDialog.applyCrop(pv, rect, pv.parentElement);
+              stateEl.textContent = T('prof.edit.avatarReady') || '新头像已就绪，点保存生效';
+            } else throw new Error('no url');
+          })
+          .catch(function () {
+            stateEl.textContent = '';
+            toastMsg(T('prof.edit.avatarFail') || '头像上传失败，请稍后再试', true);
+          });
+      }
+      if (!window.MN_CropDialog) { doUpload(null); return; } // 组件缺失降级直传（rect null=后端连带清回默认）
+      window.MN_CropDialog.open({
+        kind: 'avatar',
+        src: blob,
+        initial: null,
+        onConfirm: doUpload,
+        onCancel: function () { fileInput.value = ''; }
+      });
+    }
     fileInput.addEventListener('change', function () {
       var f = fileInput.files && fileInput.files[0];
       if (!f) return;
-      var ext = (f.name.split('.').pop() || '').toLowerCase();
-      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(ext) === -1) { toastMsg(T('prof.edit.imgOnly') || '只支持 jpg / png / gif / webp 图片', true); return; }
-      if (f.size > 10 * 1024 * 1024) { toastMsg(T('prof.edit.imgTooBig') || '图片不能超过 10MB', true); return; }
-      var stateEl = card.querySelector('#editSaveState');
-      stateEl.textContent = T('prof.edit.avatarUploading') || '头像上传中…';
-      fetch(MN_API.BASE + '/social/uploads?ext=.' + ext, { method: 'POST', body: f, credentials: 'include' })
-        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-        .then(function (data) {
-          if (data && data.url) {
-            editPendingAvatar = data.url;
-            card.querySelector('#editAvatarPreview').src = data.url;
-            stateEl.textContent = T('prof.edit.avatarReady') || '新头像已就绪，点保存生效';
-          } else throw new Error('no url');
-        })
-        .catch(function () {
-          stateEl.textContent = '';
-          toastMsg(T('prof.edit.avatarFail') || '头像上传失败，请稍后再试', true);
-        });
+      uploadAvatarBlob(f, (f.name.split('.').pop() || '').toLowerCase());
+    });
+    // v0.2.58.25 重新裁切（钦定⑥：已有头像才渲染按钮；src=当前图（上传未保存取 editPendingAvatar）、initial=当前 crop；
+    //   confirm 只改 editAvatarCrop 不入链不上传）
+    var avatarReCropBtn = card.querySelector('#editAvatarReCropBtn');
+    if (avatarReCropBtn) avatarReCropBtn.addEventListener('click', function () {
+      var srcNow = editPendingAvatar || u.avatarUrl;
+      if (!srcNow || !window.MN_CropDialog) return;
+      window.MN_CropDialog.open({
+        kind: 'avatar',
+        src: srcNow,
+        initial: editAvatarCrop,
+        onConfirm: function (rect) {
+          editAvatarCrop = rect;
+          var pv = card.querySelector('#editAvatarPreview');
+          if (window.MN_CropDialog) window.MN_CropDialog.applyCrop(pv, rect, pv.parentElement);
+          card.querySelector('#editSaveState').textContent = T('prof.edit.avatarReady') || '新头像已就绪，点保存生效';
+        }
+      });
+    });
+
+    // v0.2.58.20 头像同步勾选：即时落 localStorage（权威设置，不经保存事务——FC 每渲染即读旗标）
+    card.querySelector('#editAvatarSyncToggle').addEventListener('click', function () {
+      var on = this.classList.toggle('active');
+      try { localStorage.setItem('slati_avatar_sync', on ? '1' : '0'); } catch (e) {}
+      this.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+
+    // v0.2.58.18 头像图库入口（钦定⑤）：dataURL → Blob → 共享上传链落 editPendingAvatar（复用 avatarUploading/Ready/Fail 三键）
+    // v0.2.58.19 订阅分层：图库=付费专属（toast 拦截，选择器绝不打开）；gif 条目第二处拦截（共享链 blockGif 首拦）
+    // v0.2.58.25 图库同样走裁切弹窗（钦定④——uploadAvatarBlob 共享链自动生效）
+    card.querySelector('#editAvatarLibBtn').addEventListener('click', function () {
+      if (!sub) { toastMsg(T('prof.toast.libLocked') || '图库为订阅用户专属功能', true); return; }
+      openFcLibraryPicker(function (it) {
+        var conv = fcDataUrlToBlob(it.src);
+        if (!conv) { toastMsg(T('prof.edit.imgOnly') || '只支持 jpg / png / gif / webp 图片', true); return; }
+        uploadAvatarBlob(conv.blob, conv.ext);
+      });
     });
 
     card.querySelector('#editCancelBtn').addEventListener('click', close);
@@ -4092,14 +4907,29 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
       var gender = genderBtn ? genderBtn.getAttribute('data-gender') : null;
       if (gender && gender !== u.gender) body.gender = gender;
       if (editPendingAvatar) body.avatarUrl = editPendingAvatar;
+      // v0.2.58.25 裁切元数据（030 列）：新上传恒带 crop（confirm 确定性 {0,0,1,1} 也写——url 与 crop 同批落库）；
+      //   重裁旧图=无新 url 仅 crop diff 才入 body（cropSame 键序无关四值比对）
+      if (editPendingAvatar && editAvatarCrop) body.avatarCrop = editAvatarCrop;
+      if (!editPendingAvatar && editAvatarCrop && !cropSame(editAvatarCrop, u.avatarCrop)) body.avatarCrop = editAvatarCrop;
       // v0.2.23.0 卡片背景（null = 恢复默认，显式入 body）
       if (editCardBg !== (u.cardBg || null)) body.cardBg = editCardBg;
       // v0.2.24.0 独立卡片背景（null = 无背景层，显式入 body；与 cardBg 分开各发各的）
       if (editCardPlate !== (u.cardPlate || null)) body.cardPlate = editCardPlate;
       // v0.2.25.0 页面背景图片（null = 恢复默认无背景，显式入 body）
       if (editPageBgImage !== (u.pageBgImage || null)) body.pageBgImage = editPageBgImage;
+      // v0.2.58.18 横幅图片（029 列；null = 移除横幅恢复预设渐变，显式入 body）
+      if (editBannerUrl !== (u.bannerUrl || null)) body.bannerUrl = editBannerUrl;
+      // v0.2.58.25 横幅裁切：新图恒带 crop（同批落库）；重裁旧图仅 crop diff 才入；移除（url null）跳过——
+      //   保持 {"bannerUrl":null} 精确移除体（后端 url 权威连带清 crop）
+      if (editBannerUrl !== null) {
+        if (editBannerUrl !== (u.bannerUrl || null) && editBannerCrop) body.bannerCrop = editBannerCrop;
+        if (editBannerUrl === (u.bannerUrl || null) && editBannerCrop && !cropSame(editBannerCrop, u.bannerCrop)) body.bannerCrop = editBannerCrop;
+      }
       // v0.2.53.0 卡片边缘主题（null = 恢复默认圆角卡，显式入 body；diff-only——无改动不触碰 E6 精确 body 断言）
       if (editCardEdge !== (EDGE_KEYS.indexOf(u.cardEdge) !== -1 ? u.cardEdge : null)) body.cardEdge = editCardEdge;
+      // v10.28.52.0 等级奖励装饰激活态（null = 卸下，显式入 body；diff-only）
+      if (editAvatarFrame !== (u.avatarFrame || null)) body.avatarFrame = editAvatarFrame;
+      if (editTitle !== (u.title || null)) body.title = editTitle;
       if (!Object.keys(body).length) { close(); return; } // 没改动直接关
       var stateEl = card.querySelector('#editSaveState');
       var saveBtn = card.querySelector('#editSaveBtn');
@@ -4119,6 +4949,22 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
           if (nu.avatarUrl) {
             var sideAvatar = document.querySelector('#slati-sidebar .user-module .user-info-bar img');
             if (sideAvatar) sideAvatar.src = nu.avatarUrl;
+          }
+          // v0.2.58.20 头像同步（双向·资料页权威）：本轮 PATCH 含 avatarUrl 且勾选 ON → raw 合并写 slati_user。
+          //   绝不走 SlatiDB.saveUser（storage.js mirrorProfile 会二次 PATCH /auth/me 双写）。
+          //   OFF 零写入——FC 读旗标即显字母卡，无需清字段。
+          if (body.avatarUrl || body.avatarCrop) {
+            var syncToggleEl = card.querySelector('#editAvatarSyncToggle');
+            var syncOnNow = syncToggleEl ? syncToggleEl.classList.contains('active') : true; // 缺键默认 ON
+            if (syncOnNow) {
+              try {
+                var storedUser = JSON.parse(localStorage.getItem('slati_user') || 'null') || {};
+                if (nu.avatarUrl !== undefined) storedUser.avatarUrl = nu.avatarUrl || body.avatarUrl;
+                // v0.2.58.25 裁切连带（响应 publicUser 已含 avatarCrop；重裁-only PATCH 也落本地）
+                if (nu.avatarCrop !== undefined) storedUser.avatarCrop = nu.avatarCrop;
+                localStorage.setItem('slati_user', JSON.stringify(storedUser));
+              } catch (e) {}
+            }
           }
           close();
           loadProfile(); // 头部卡/性别徽章/bio 真后端重拉
@@ -4255,6 +5101,8 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
       renderHeader(profileUser);
       renderTabs();
       loadTab();
+      // v10.28.52.0 等级奖励：本人主页拉奖励清单（成就/徽章/装饰品）→ 头部奖励区重渲
+      loadRewardsMe(function () { if (profileUser) renderHeader(profileUser); });
     });
   }
 
@@ -4271,6 +5119,10 @@ body.page-bg-active { background-image: linear-gradient(rgba(10, 10, 16, 0.38), 
       renderList(lastPosts);
     }
   };
+  // v10.28.52.0 等级奖励：侧栏自动领奖 → 奖励区即时刷新
+  window.addEventListener('mn:rewards-changed', function () {
+    loadRewardsMe(function () { if (lastUser) renderHeader(lastUser); });
+  });
 })();
 </script>
 <script src="../assets/js/transitions.js"></script>

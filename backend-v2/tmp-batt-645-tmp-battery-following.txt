@@ -1,0 +1,34 @@
+═══ F1-1 following.html 静态 ═══
+  ✅ F1-1a api.js 引入 + 搜索 id + 三端点调用 + 链式 rerender + unauthorized + 引导/离线卡
+  ✅ F1-1b 页面专属样式块 + 页面 CSS 类（folg-cta/offline/empty/media）
+═══ F1-2 假数据种子零残留 ═══
+  ✅ F1-2 5 组种子数组 + nameLookup + 种子专名全 0（10 项）
+═══ F1-3 i18n 键族 ═══
+  ✅ F1-3a 新键 ×12 语（代表性 5 键）+ searchPh ×12 + zh-Hant 标记 ×1
+  ✅ F1-3b 计数后缀保留 ×12 + 死键零残留（规则行锚 6 项）
+═══ F1-4 site-config.js 版本 ═══
+  ✅ F1-4 版本 58.17 在位/58.16 赋值零残留/FC 恒 47.4/changelog（标题+原话+rev 对）
+═══ F1-5 后端源码（social.js 三新端点）═══
+  ✅ F1-5 端点串 + SQL 片断 + 限流键 + LIMIT（各 ×1）
+
+═══ R 浏览器流程 ═══
+  ✅ R7 匿名无桩（feed 登录引导卡 + 发现三区离线卡 + 右栏离线 + 零种子 + 零 feed 调用）
+  ✅ R6 匿名有桩（引导卡 + 发现 4/4/4 真行 + 推荐关注 4 行 + 零种子 + 零 feed/detail 调用）
+  ✅ R1 登录 feed（3 帖/三作者/内容/2 天前+1 天前+今天/1 媒体图/计数 9·58/1 次拉取）
+  ✅ R1b 灯塔每页一次（1 条/路径 following.html/clientId 非空）
+  ✅ R2a following 4 行（2 国+1 话题+1 公民）+ 统计卡 2/1/1
+  ✅ R2b 四滤镜 2/1/1/4（无假空态）
+  ✅ R3 发现三区（真名 4 国/4 话题/4 公民 + 按钮态=followingIds：已关注 2/1/1）
+  ✅ R4a 搜索 nova（feed 1 帖 Nova Lin + 国 1/话题 0/公民 1 + 零重拉）
+  ✅ R4b following 过滤（Nova Terra+Nova Lin 2 行 + 零重拉）
+  ✅ R4c 清空复原（4 行 + 零重拉）
+  ✅ R5a nation 关注（PUT 镜像 1 条+体含 NAT-000003+按钮翻已关注）
+  ✅ R5a 服务端真相（following 5 行 + 统计卡国 3）
+  ✅ R5b user 关注（POST USR-000005 + 推荐行 3→2）
+  ✅ R5c user 取关（DELETE USR-000005 + 行 2→1 + followingList 无 Marcus Vane）
+  ✅ R8a setLang(en)（2 days ago + 内容值保留 + 零重拉）
+  ✅ R8b setLang(zh) 复原（2 天前 + 零重拉）
+  ✅ R9 空夹具（三区空态 + 推荐空态 + 零种子文本）
+  ✅ E1 控制台零错误（噪声已滤）
+
+═══ ALL GREEN — 25/25 ═══

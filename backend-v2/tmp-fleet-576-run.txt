@@ -1,0 +1,18 @@
+[tmp-battery-all-opaque.js] ✅34 ❌0 exit=0 tail: ✅ B17 FC 页 body 挂 fc-page 类（排除标记在位） | ✅ B18 FC 页 .card 背景仍 var(--card-bg) 0.55 玻璃原值（全站规则死规则） | ✅ B19 FC 页真实卡（若有）同样非 0.95 不透明底 | all-opaque 电池：34 通过 / 0 失败  (2s)
+[tmp-battery-bannerfixed.js] ✅29 ❌0 exit=0 tail: ✅ M3 mono 亮色：同亮色  rgb(70, 72, 212),rgb(129, 39, 207),rgb(70, 72, 212),rgb(70, 72, 212) | ✅ M4 mono 暗色：同亮色（msg-avatar 豁免 09-17 翻深规则）  rgb(70, 72, 212),rgb(129, 39, 207),rgb(70, 72, 212),rgb(70, 72, 212) | ✅ Z 零 JS 错误 | === bannerfixed: 29/29 ===  (7s)
+[tmp-battery-cit2usr.js] ✅21 ❌0 exit=0 tail: ✅ 电池锚 v0.2.54.0：tmp-battery-monodark-v0422.js | ✅ 电池锚 v0.2.54.0：tmp-battery-fadefix.js | ✅ 电池锚 v0.2.54.0：tmp-battery-pageswitch.js | cit2usr 巡检：21 通过 / 0 失败  (0s)
+[tmp-battery-community-profile.js] ✅100 ❌1 exit=0 tail: ✅ Q 页面静态锚：SVG defs（paper-edge-clip/hud-frame-4/mn-paint-clip-5/mn-paint-filter-5/glass-distortion）+ data-card-edge + applyCardEdge + EDGE_DEFS + SUBSCRIPTION_TEST_MODE + swatch-shape + v0.2.53.2 暗色卡身白霜 0.58（缺=） | ✅ Q 后端白名单双份同步：auth.js + social.js 各含 CARD_EDGE_KEYS | ✅ Q 迁移 027_card_edge.sql 含 card_edge | 99 ✅ / 0 ❌  (47s)
+[tmp-battery-fadefix.js] ✅37 ❌0 exit=0 tail: 📊 A4 auth 入场帧健康：n=3 mean=16.7 p50=16.7 p95=16.7 max=16.7 >20ms=0 >34ms=0 lt=0 | settle=165ms | ✅ A4 auth 入场（starts ≥1 + 帧流 ≥1 + 零长任务 + will-change 落定清净 + 污染 0/N）  starts=4 n=3 lt=0 will="" poll=0/0 | ✅ Z 全程零 console error  干净 | 🎉 mode=after 全部通过 36/36  (29s)
+[tmp-battery-home-bg.js] ✅26 ❌0 exit=0 tail: ✅ B12 访客态工作台卡互斥隐藏（offsetParent 全 null=祖先 display:none，hero 独显） | ✅ B13 访客大卡暗色底 rgb(26,26,46) | ✅ B14 暗色访客大卡 .lg-backdrop 仍全灭 | home-bg 电池：26 通过 / 0 失败  (1s)
+[tmp-battery-i18n.js] ✅34 ❌0 exit=0 tail: ✅ D6 de 公告已翻译（Beta-Start + offiziell） | ✅ D7 de 订阅卡特性已翻译（Erweiterte Analysen） | ✅ D8 切回 zh 重渲染恢复中文（以太共和国） | i18n：34 通过 / 0 失败  (2s)
+[tmp-battery-identity.js] ✅38 ❌0 exit=0 tail: ✅ I1 无运行时异常 | ✅ I2 无 console error | ════════ 汇总 ════════ | 通过 38 / 失败 0  (6s)
+[tmp-battery-mono-flash.js] ✅23 ❌0 exit=0 tail: ✅ S5a 亮 mono 保持亮底 + 主色近黑族 #1c1c22  L=0.976 p=#1c1c22 | ✅ S6a 无 accent 时蓝家族原样（#161625 / body rgb(22,22,37) / primary #4648d4）  accent=null bg=#161625 p=#4648d4 | ✅ Z 全程零 console error（settings-modal 屏蔽亦零报错）  干净 | 🎉 全部通过 22/22  (5s)
+[tmp-battery-monodark-v0422.js] ✅30 ❌0 exit=0 tail: ✅ M3b 亮 mono 令牌不受暗黑族污染  bg=#f7f9fb | ✅ M4a 无 mono accent 时蓝家族原样 #161625  accent=null bg=rgb(22, 22, 37) | ✅ Z 全程零 console error  干净 | 🎉 全部通过 29/29  (8s)
+[tmp-battery-msglink.js] ✅17 ❌0 exit=0 tail: ✅ M8 未知 ?showTab=bogus → 默认 private + URL 清参数  search= active=private | ✅ M9 全程零长任务  longtask=0 | ✅ Z 全程零 console error  干净 | 🎉 全部通过 16/16  (16s)
+[tmp-battery-notif-home.js] ✅23 ❌0 exit=0 tail: ✅ B4 Escape 关闭即时生效（display none） | ✅ B5 外点关闭即时生效（display none） | ✅ Z 控制台零错误（噪声已滤） | ═══ ALL GREEN — 23/23 ═══  (2s)
+[tmp-battery-pageswitch.js] ✅24 ❌0 exit=0 tail: ✅ M3c 零 inline 污染  0/7 | ✅ M4a 反向水平切写 right + 到达 explore | ✅ Z 全程零 console error  干净 | 🎉 全部通过 23/23  (27s)
+[tmp-battery-sidebar-bottom.js] ✅11 ❌0 exit=0 tail: ✅ D1 暗色菜单卡同样收内容高（高度-内容高 <= 6px） | ✅ D2 暗色菜单卡下方零 painted 元素 | ✅ D3 暗色侧栏底保持纯色不透明（rgb(26, 26, 46)） | sidebar-bottom：11 通过 / 0 失败  (4s)
+[tmp-battery-sidebar-light.js] ✅10 ❌0 exit=0 tail: ✅ site-config changelog 含 v0.2.51.2 条目 + 用户原话 + 修法口径 | ✅ site-config 51.1 changelog 历史条目保留 | ✅ FC v10.28.36.1 保持 | sidebar-light 巡检：10 通过 / 0 失败  (0s)
+[scripts/smoke-admin.js] ✅48 ❌0 exit=0 tail: ✅ 新密码 + 码 → 登录成功（旧密码已失效） | ✅ 预算 banner 静默隐藏（W3 端点 404） | ✅ 控制台零错误（实际 0 条） | 冒烟结果：48/48 全绿  (4s)
+
+FLEET RED: 1 ❌ total

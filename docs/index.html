@@ -698,8 +698,14 @@ textarea.input-glass {
 .progress-connector.done { background: var(--color-primary); }
 
 /* ----- Sidebar Module ----- */
+/* 2026-10-05 用户「那个在个人主页那边的左侧菜单背景卡片是半透明的能不能变成不透明的？」——
+   真身=v0.2.58.1（09-26 删侧栏容器铺底）后三张卡（logo/用户/菜单 .sidebar-module）仍用 --card-bg
+   （亮色 rgba(255,255,255,0.55)/暗色 rgba(30,30,50,0.55) 半透明玻璃）+ blur(20px) 磨砂——页面内容
+   透卡可见=半透明观感；修法=卡面改铺 --sidebar-bg（09-18 用户钦定不透明底：亮色近纯白 0.95/暗色实心
+   #1a1a2e/mono 随 var() 自适应）；模块自带 backdrop-filter 保留（底已不透明零可见效果，与 09-20
+   全站卡片同口径）；三张卡同规则一并生效；窄屏 floating 覆盖态同步（口径统一）。 */
 .sidebar-module {
-  background: var(--card-bg);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1313,7 +1319,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .app-sidebar.collapsed .user-module {
   padding: 10px 4px !important;
   display: flex; align-items: center; justify-content: flex-start;
-  background: var(--card-bg);
+  /* 58.28 补：折叠态覆盖曾回退 --card-bg 半透明玻璃（58.27 卡面不透明修法漏了这条折叠态覆盖）——
+     用户「折叠起来的时候还是一样是半透明的」；口径与 58.27 同：铺 --sidebar-bg 不透明底+blur 保留 */
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1397,7 +1405,20 @@ body.pre-stagger .auth-card { opacity: 0; }
    v0.2.58.11 用户「能不能把那个浅蓝色波浪和深蓝色倒反？」「就只是互换一下颜色而已」——58.10 深水+浅浪
    两色互换（类名保持不动）：主色水 .mn-lv-wdeep 背景 var(--color-primary)→var(--mn-lv-light) 变浅水、
    浅浪 .mn-lv-wlightwave 背景 var(--mn-lv-light)→var(--color-primary) 变深浪；两层结构/80×16 mask/
-   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。 */
+   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.12 用户「能不能把波浪的位置抬高4px?」（一问钦定「位置抬高 4px」）——58.11 浅浪 top -8px 抬高
+   4px→-12px（单值改动）：浅浪 .mn-lv-wlightwave top -8px→-12px；两层结构/80×16 mask/16px 带高/400% strip/
+   平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84/两色互换（浅水+深浪）全零改动。
+   v0.2.58.13 用户「然后把两个颜色改成一样的深蓝色，然后在那个波浪Z轴的-1那边再添加一个慢0.3s的波浪」
+   ——①水和浪两色统一深蓝：主色水 .mn-lv-wdeep 背景 var(--mn-lv-light)→var(--color-primary)（58.11 两色
+   互换撤销为两色相同）、--mn-lv-light 赋值整体删除（零引用，58.10 --mn-lv-wave-c 先例）；②新慢浪
+   .mn-lv-wlightwave2 与快浪全同款几何（80×16 mask/16px 带高/400% strip/平移 80px/top -12px 全同）
+   置于快浪 z 轴 -1 层（z-index:-1）+动画 2.5s（慢 0.3s）；z 层级：.mn-lv-fill z-index:0 建 stacking
+   context→水 z-index:-2 最底→慢浪 -1→快浪 0（显式盖慢浪）；两浪同色相位漂移，慢浪浪峰周期性从快浪
+   浪谷透明区透出=两道浪峰不同速叠加；水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.14 用户「那个刚才提出添加的第二个波浪我希望是浅色的」——慢浪 .mn-lv-wlightwave2 背景
+   var(--color-primary)→var(--mn-lv-light)（58.11 浅水同款浅色公式 color-mix 55%+白；赋值挂 .mn-lv-ring
+   恢复——58.13 整体删除后本轮复活）；快浪/水/几何/z 层级/动画全零改动。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1430,8 +1451,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .mn-lv-fill {
   position: absolute; left: 0; right: 0; bottom: 0; height: 0;
   transition: height 0.5s ease;
+  z-index: 0; /* 建 stacking context：水/慢浪负 z 层不逃出杯 */
 }
-.mn-lv-wdeep { position: absolute; inset: 0; background: var(--mn-lv-light); }
+.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); z-index: -2; }
 .mn-lv-wlightwave {
   position: absolute; left: -100%; width: 400%; height: 16px;
   background-color: var(--color-primary);
@@ -1440,8 +1462,23 @@ body.pre-stagger .auth-card { opacity: 0; }
   -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
   -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
   pointer-events: none;
-  top: -8px;
+  top: -12px;
+  z-index: 0;
   animation: mn-lv-wave 2.2s linear infinite;
+}
+/* 慢浪：与快浪全同款几何，z 轴 -1 层（快浪之下），2.5s（慢 0.3s）、浅色（var(--mn-lv-light)）——
+   两浪异色相位漂移，慢浪浪峰周期性从快浪浪谷透明区透出=浅色幽灵浪峰在深浪下流动 */
+.mn-lv-wlightwave2 {
+  position: absolute; left: -100%; width: 400%; height: 16px;
+  background-color: var(--mn-lv-light);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
+  pointer-events: none;
+  top: -12px;
+  z-index: -1;
+  animation: mn-lv-wave 2.5s linear infinite;
 }
 @keyframes mn-lv-wave {
   from { transform: translateX(0); }
@@ -1457,6 +1494,48 @@ body.pre-stagger .auth-card { opacity: 0; }
   z-index: 5;
   font-size: 28px; font-weight: 700; color: var(--color-primary);
   text-shadow: 0 0 2px rgba(255,255,255,0.9), 0 0 3px rgba(255,255,255,0.9);
+}
+/* v0.2.58.15 用户「那么能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出
+   一个卡片完整的显示等级信息和经验条」：折叠态药丸悬停放大+右侧滑出等级信息卡。
+   ①药丸 scale(1.12)（hover 类挂 .mn-lv-badge——悬停区=药丸+边距整块，贴近即触发；transform-origin
+   center，72px 折叠列/64px floating 列内瞬态放大可接受）；transition 0.18s ease（药丸本体折叠入场
+   动画 0.3s 期间 transform 被动画持有——折叠后立刻悬停时缩放瞬态失效可接受）。
+   ②卡片 .mn-lv-hovercard position:fixed 挂 body（侧栏 overflow-x:hidden + 用户卡 overflow:hidden
+   双裁剪，卡片必须逃出 DOM 裁剪；JS 按药丸 getBoundingClientRect 定位+视口钳制）；内容=JS 每次
+   show 从活的 .mn-lv-normal clone——展开徽章同款信息（Lv.x·称号+XP 文本+经验条）；z-index 150=
+   侧栏 50/55 之上、tooltip 200 之下；backdrop-filter blur 与折叠用户卡同款玻璃质感（卡片自身 fixed
+   于 body，其 blur 只影响自身后代=无 containing block 问题）。
+   ③@media (hover:hover) and (pointer:fine) 门控——触屏/平板零规则零行为（JS matchMedia 同款双保险）。 */
+@media (hover: hover) and (pointer: fine) {
+  .mn-lv-pill {
+    transition: transform 0.18s ease;
+  }
+  .app-sidebar.collapsed .mn-lv-badge.mn-lv-hover .mn-lv-pill {
+    transform: scale(1.12);
+  }
+  .mn-lv-hovercard {
+    position: fixed;
+    z-index: 150;
+    width: 200px;
+    box-sizing: border-box;
+    background: var(--card-bg, #ffffff);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: var(--card-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 10px 12px;
+    opacity: 0;
+    transform: translateX(-10px) scale(0.98);
+    transform-origin: left center;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .mn-lv-hovercard.active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
 }
 /* 同轮折叠态头像间距归整（根治「挤压到了用户头像」的两处真身）：
    ①头像 img 是行内元素——行基线给父 div 加 8px 下坠空隙（折叠后视觉死隙）→ display:block 消除；
@@ -2043,6 +2122,157 @@ html[data-accent="mono"] .migrate-pill::after { background-color: hsla(0 0% 45% 
 html[data-accent="mono"][data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(0 0% 40%); }
 html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117, 134, 0.10); }
 
+/* ===== v0.2.59.x 手机底部导航（5 tab：首页/百科/社区/消息/我的；无操作按钮） ===== */
+.mobile-bottom-nav { display: none; }
+.mbn-backdrop { display: none; }
+.mbn-sheet { display: none; }
+@media (max-width: 768px) {
+  /* iOS 26 风格浮动药丸 dock：居中悬浮、大圆角、磨砂玻璃、选中项浅色胶囊 */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    height: 56px; z-index: 9999;
+    width: auto; min-width: 264px; max-width: calc(100% - 28px);
+    border-radius: 999px;
+    padding: 0 6px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 10px 36px rgba(20, 20, 40, 0.18), inset 0 0.5px 0 rgba(255, 255, 255, 0.65);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav {
+    background: rgba(24, 24, 38, 0.72);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.42), inset 0 0.5px 0 rgba(255, 255, 255, 0.14);
+  }
+  .mobile-bottom-nav .mbn-item {
+    flex: 1; min-width: 48px; max-width: 78px;
+    padding: 0 10px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1px;
+    text-decoration: none; color: var(--color-outline);
+    font-size: 10px; font-weight: 500; letter-spacing: 0.01em;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .mobile-bottom-nav .mbn-item .material-symbols-outlined { font-size: 22px; }
+  .mobile-bottom-nav .mbn-item.active {
+    color: var(--color-primary);
+    background: rgba(70, 72, 212, 0.10);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav .mbn-item.active { background: rgba(122, 126, 255, 0.18); }
+  .mbn-backdrop {
+    display: block;
+    position: fixed; inset: 0; z-index: 68;
+    background: rgba(0, 0, 0, 0.32);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .mbn-backdrop.open { opacity: 1; pointer-events: auto; }
+  .mbn-sheet {
+    display: block;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 69;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(105%); transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.14);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-sheet.open { transform: translateY(0); }
+  .mbn-user-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 4px 0 14px; text-decoration: none; color: var(--color-on-surface);
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10));
+  }
+  .mbn-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--color-primary); object-fit: cover; flex-shrink: 0; }
+  .mbn-user-meta { min-width: 0; flex: 1; }
+  .mbn-user-name { font-weight: 700; font-size: 16px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbn-user-cid { font-size: 12px; color: var(--color-outline); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: capitalize; }
+  .mbn-row {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 13px 0; background: none; border: none; cursor: pointer;
+    text-align: left; text-decoration: none; color: var(--color-on-surface);
+    font-size: var(--fs-label-md); font-family: inherit;
+  }
+  .mbn-row + .mbn-row { border-top: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-ico { color: var(--color-outline); font-size: 22px; flex-shrink: 0; }
+  .mbn-row-label { flex: 1; min-width: 0; }
+  .mbn-chev { color: var(--color-outline); opacity: 0.5; font-size: 20px; }
+  .mbn-row.mbn-danger { color: #d23b3b; }
+  .mbn-row.mbn-danger .mbn-ico { color: #d23b3b; }
+  .mbn-group-title { font-weight: 700; font-size: 13px; color: var(--color-outline); letter-spacing: 0.03em; margin: 14px 0 6px; text-transform: uppercase; }
+  .mbn-group { margin-bottom: 4px; }
+  .mbn-group-name { font-size: 12px; color: var(--color-outline); padding: 10px 0 2px; }
+  .mbn-switch {
+    width: 44px; height: 26px; border-radius: 999px; flex-shrink: 0;
+    background: var(--color-outline-variant, #c8c7d4); position: relative;
+    transition: background 0.18s ease;
+  }
+  .mbn-switch .mbn-knob {
+    position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.25); transition: transform 0.18s ease;
+  }
+  .mbn-switch[data-on="1"] { background: var(--color-primary); }
+  .mbn-switch[data-on="1"] .mbn-knob { transform: translateX(18px); }
+  .mbn-toast {
+    position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%) translateY(12px);
+    background: rgba(24,24,32,0.9); color: #fff; padding: 10px 18px; border-radius: 999px;
+    font-size: 13px; z-index: 90; opacity: 0; pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease; max-width: 86vw; text-align: center;
+  }
+  .mbn-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* 二级子 sheet */
+  .mbn-subsheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 71;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.16);
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-subsheet.open { transform: translateY(0); }
+  .mbn-sub-head { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10)); }
+  .mbn-sub-back { width: 36px; height: 36px; border-radius: 50%; border: none; background: none; color: var(--color-on-surface); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .mbn-sub-title { font-weight: 700; font-size: 16px; }
+  .mbn-sub-body { padding-top: 6px; }
+  .mbn-sub-row {
+    display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 0;
+    background: none; border: none; cursor: pointer; text-align: left;
+    font-size: var(--fs-label-md); color: var(--color-on-surface); font-family: inherit;
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08));
+  }
+  .mbn-sub-row > span:first-child { flex: 1; min-width: 0; }
+  .mbn-sub-row.on { color: var(--color-primary); font-weight: 600; }
+  .mbn-sub-check { color: var(--color-outline); opacity: 0.6; font-size: 20px; flex-shrink: 0; }
+  .mbn-sub-row.on .mbn-sub-check { color: var(--color-primary); opacity: 1; }
+  .mbn-sub-sec { font-size: 12px; color: var(--color-outline); text-transform: uppercase; letter-spacing: 0.03em; padding: 14px 0 4px; }
+  .mbn-sub-note { font-size: 13px; color: var(--color-outline); padding: 14px 0; line-height: 1.5; }
+  .mbn-list-item { padding: 12px 0; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mbn-list-author { font-weight: 600; font-size: 14px; color: var(--color-on-surface); }
+  .mbn-list-time { font-size: 11px; color: var(--color-outline); flex-shrink: 0; }
+  .mbn-list-body { font-size: 13px; color: var(--color-outline); margin-top: 4px; line-height: 1.5; word-break: break-word; }
+  .mbn-unblock { border: 1px solid var(--divider-line, rgba(118,117,134,0.3)); background: none; color: var(--color-on-surface); border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+  .app-main { padding-bottom: 74px; } /* 给底部导航留空间 */
+}
+
+/* v0.2.59.50 手机适配：主内容 + 340px 侧栏预览的左右网格（dashboard/micronationary/overview 共用），手机收单列 */
+.fc-split-grid { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-md); }
+@media (max-width: 768px) {
+  .fc-split-grid { grid-template-columns: 1fr; }
+}
+/* v0.2.59.50 手机适配：两列网格 + 左右弹性布局收单列 */
+.fc-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+.fc-split-flex { display: flex; }
+@media (max-width: 768px) {
+  .fc-two-col { grid-template-columns: 1fr; }
+  .fc-split-flex { flex-direction: column; min-height: 0 !important; }
+  .fc-split-flex > div { width: 100% !important; border-right: none !important; }
+}
+
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -2556,12 +2786,6 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           <div id="latestArticles" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
         </div>
 
-        <h2 class="headline-md" style="margin:var(--space-lg) 0 var(--space-sm)" data-i18n="index.announcements">Announcements</h2>
-        <div id="dashAnnouncements" style="display:flex;flex-direction:column;gap:2px"></div>
-        <a href="pages/messages.html?showTab=announcements" style="display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-label-sm);color:var(--color-primary);margin-top:var(--space-sm);text-decoration:none">
-          <span data-i18n="index.viewAllAnnouncements">View all announcements</span>
-          <span class="material-symbols-outlined" style="font-size:14px">arrow_forward</span>
-        </a>
       </div>
       <div style="display:flex;flex-direction:column;gap:var(--space-md)">
         <!-- Premium Subscription Card -->
@@ -2641,52 +2865,52 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var nations = SlatiDB.getNations();
   var worlds = SlatiDB.getWorlds();
 
-  // v0.2.54.2 i18n 补：活动流 demo 文案 T() 化（badge/title/desc/time；en 兜底保留）
-  var activityItems = [
-    { icon: 'language', badgeKey: 'nation', badgeEn: 'Nation', badgeClass: 'badge-primary', titleKey: 'etheria', titleEn: 'Republic of Etheria', descKey: 'etheriaDesc', descEn: 'Updated territorial claims and governance charter.', timeKey: 't2h', timeEn: '2 hours ago' },
-    { icon: 'groups', badgeKey: 'topic', badgeEn: 'Topic', badgeClass: 'badge-secondary', titleKey: 'govLab', titleEn: 'Governance Design Lab', descKey: 'govLabDesc', descEn: 'New discussion: Direct democracy in micronations.', timeKey: 't4h', timeEn: '4 hours ago' },
-    { icon: 'edit_note', badgeKey: 'wiki', badgeEn: 'Wiki', badgeClass: 'badge-success', titleKey: 'neoVenice', titleEn: 'Neo-Venice Archive', descKey: 'neoVeniceDesc', descEn: 'Lore revision: Founding of Aqua Centro.', timeKey: 't6h', timeEn: '6 hours ago' },
-    { icon: 'person', badgeKey: 'citizen', badgeEn: 'Citizen', badgeClass: 'badge-warning', titleKey: 'marcus', titleEn: 'Marcus Vane', descKey: 'marcusDesc', descEn: 'Published a sovereign log on floating district plans.', timeKey: 't8h', timeEn: '8 hours ago' },
-  ];
+  // v0.2.59.19 活动流接真实数据：GET /api/social/nations + /api/social/topics，按创建时间新→旧合并；
+  // 真实文章卡由 loadLatestArticles 混入顶部（下方「最新文章」独立区块仍保留）。
+  var activityItems = [];
+
+  function dashActivityRow(item) {
+    return '<div class="card card-hover tilt-container">' +
+      '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
+        '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:24px">' + item.icon + '</span>' +
+        '<span class="badge ' + item.badgeClass + '">' + item.badge + '</span>' +
+        '<span style="flex:1;font-weight:600;color:var(--color-on-surface)">' + dashEscapeHtml(item.title) + '</span>' +
+        '<span class="label-sm" style="color:var(--color-outline)">' + dashEscapeHtml(dashDateStr(item.time)) + '</span>' +
+      '</div>' +
+      '<p style="margin-top:8px;color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + dashEscapeHtml(item.desc || '') + '</p>' +
+    '</div>';
+  }
 
   function renderActivity() {
     var feed = document.getElementById('activityFeed');
-    // 混入守护（v0.2.58.0 轮 FC 发布日志伴行修）：i18n 重渲染整段重建 demo 项会把
-    // v0.2.56.0 混入的真实文章卡抹掉（fetch 先于 apply 落地的时序竞态，语言切换必现）——
-    // 重建前摘出文章卡、重建后放回顶部
     var articleCards = [];
     if (feed) {
       var as = feed.querySelectorAll('a.activity-article');
       for (var i = 0; i < as.length; i++) articleCards.push(as[i].outerHTML);
     }
-    feed.innerHTML = activityItems.map(function(item) {
-      return '<div class="card card-hover tilt-container">' +
-        '<div class="flex-center gap-sm" style="justify-content:flex-start">' +
-          '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:24px">' + item.icon + '</span>' +
-          '<span class="badge ' + item.badgeClass + '">' + (T('index.act.badge.' + item.badgeKey) || item.badgeEn) + '</span>' +
-          '<span style="flex:1;font-weight:600;color:var(--color-on-surface)">' + (T('index.act.title.' + item.titleKey) || item.titleEn) + '</span>' +
-          '<span class="label-sm" style="color:var(--color-outline)">' + (T('index.act.time.' + item.timeKey) || item.timeEn) + '</span>' +
-        '</div>' +
-        '<p style="margin-top:8px;color:var(--color-on-surface-variant);font-size:var(--fs-label-md)">' + (T('index.act.desc.' + item.descKey) || item.descEn) + '</p>' +
-      '</div>';
-    }).join('');
+    feed.innerHTML = activityItems.map(dashActivityRow).join('');
     if (articleCards.length) feed.insertAdjacentHTML('afterbegin', articleCards.join(''));
   }
+
+  function fetchActivity() {
+    if (!window.MN_API || !window.MN_API.get) { renderActivity(); return; }
+    window.MN_API.get('/social/nations').then(function (nr) {
+      var nations = (nr && nr.ok && nr.data && Array.isArray(nr.data.nations)) ? nr.data.nations : [];
+      window.MN_API.get('/social/topics').then(function (tr) {
+        var topics = (tr && tr.ok && tr.data && Array.isArray(tr.data.topics)) ? tr.data.topics : [];
+        activityItems = [].concat(
+          nations.map(function (n) { return { icon: 'language', badge: (T('index.act.badge.nation') || 'Nation'), badgeClass: 'badge-primary', title: n.name || 'Nation', desc: n.lore || n.classification || '', time: n.createdAt || '' }; }),
+          topics.map(function (t) { return { icon: 'groups', badge: (T('index.act.badge.topic') || 'Topic'), badgeClass: 'badge-secondary', title: t.name || 'Topic', desc: t.description || '', time: t.createdAt || '' }; })
+        ).sort(function (a, b) { return String(b.time || '').localeCompare(String(a.time || '')); }).slice(0, 6);
+        renderActivity();
+      });
+    });
+  }
   renderActivity();
+  fetchActivity();
 
   // ── Dashboard Announcements（v0.2.54.2 i18n 补：cat/title 惰性 T()；summary 未渲染不用译）──
-  var dashAnnouncements = [
-    { id:'a1', cat:'official', icon:'campaign', titleKey:'a1', titleEn:'M.NationWorld Beta Launch — Welcome All Worldbuilders', date:'2026-08-05', summary:'The platform officially enters public beta. All registered creators now have full access.' },
-    { id:'a2', cat:'official', icon:'event', titleKey:'a2', titleEn:'Governance Summit 2026 — Registration Open', date:'2026-08-03', summary:'Theme: "Digital Sovereignty in the Modern Age." Early registration now open.' },
-    { id:'a3', cat:'community', icon:'map', titleKey:'a3', titleEn:'Cartography Guild — Monthly Map Contest', date:'2026-08-02', summary:'Theme: "Uncharted Territories." Prizes include Premium subscriptions.' },
-    { id:'a4', cat:'system', icon:'draw', titleKey:'a4', titleEn:'FluidCanvas Studio Now Live', date:'2026-08-01', summary:'Collaborative content studio available to all users.' },
-    { id:'a5', cat:'community', icon:'emoji_flags', titleKey:'a5', titleEn:'Nation Spotlight: Republic of Etheria', date:'2026-07-30', summary:'Floating city-state with direct democracy & AI-assisted administration.' },
-    { id:'a6', cat:'system', icon:'update', titleKey:'a6', titleEn:'Platform Update v1.2 — Sidebar & Navigation', date:'2026-07-28', summary:'Collapsible sidebar, smoother transitions, responsive improvements.' },
-    { id:'a7', cat:'community', icon:'volunteer_activism', titleKey:'a7', titleEn:'Call for Moderators — Join the Community Team', date:'2026-07-25', summary:'Help maintain a welcoming environment. Apply today.' },
-    { id:'a8', cat:'official', icon:'rocket_launch', titleKey:'a8', titleEn:'Premium Ultra Early Adopter Pricing Extended', date:'2026-07-20', summary:'Lock in reduced pricing through August.' },
-    { id:'a9', cat:'system', icon:'security', titleKey:'a9', titleEn:'Security Audit Complete — Platform Certification', date:'2026-07-15', summary:'Independent audit confirms platform meets all security standards.' },
-    { id:'a10', cat:'official', icon:'gavel', titleKey:'a10', titleEn:'Sovereign Council Charter Ratified', date:'2026-07-10', summary:'Founding document establishing the council\'s governance framework.' },
-  ];
+  var dashAnnouncements = [];
 
   var dashCatStyle = {
     official: { bg: 'rgba(70,72,212,0.1)', color: '#4648d4' },
@@ -2695,7 +2919,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   };
 
   function renderAnn() {
-    document.getElementById('dashAnnouncements').innerHTML = dashAnnouncements.map(function(a) {
+    var annWrap = document.getElementById('dashAnnouncements');
+    if (!annWrap) return;
+    annWrap.innerHTML = dashAnnouncements.map(function(a) {
       var cs = dashCatStyle[a.cat] || dashCatStyle.system;
       return '<a href="pages/messages.html?showTab=announcements" class="card card-hover" style="display:flex;align-items:center;gap:10px;padding:8px 12px;text-decoration:none;cursor:pointer">' +
         '<span class="material-symbols-outlined" style="font-size:18px;color:' + cs.color + ';flex-shrink:0">' + a.icon + '</span>' +
@@ -2866,127 +3092,137 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     loadLatestArticles();
   })();
 
-  // ── Network Metrics ──
-  var onlineNow = 12847;
-  var dailyPeak = 15420;
-  var featuredArticles = 347;
-  var totalArticles = 12840;
-  var activeNations = Math.max(nations.length, 892);
-  var totalUsers = 128400;
-
-  // Generate exponential-growth bar chart (20-day daily online peak)
-  var barDays = 20;
+  // ── Network Metrics（真实数据接入 /api/public/activity；无数据时显示 0）──
+  var metrics = {
+    onlineNow: 0, dailyPeak: 0, featuredArticles: 0,
+    totalArticles: 0, activeNations: nations.length, totalUsers: 0
+  };
   var barPoints = [];
-  for (var d = 0; d < barDays; d++) {
-    var t = d / (barDays - 1);
-    var base = 8000 + 7000 * Math.pow(t, 1.6);
-    var noise = (Math.sin(d * 1.7) * 300 + Math.sin(d * 3.1) * 180 + Math.sin(d * 7.3) * 80) * (1 - t * 0.3);
-    barPoints.push(Math.round(base + noise));
-  }
-  var barMax = Math.max.apply(null, barPoints);
-  var barMin = Math.min.apply(null, barPoints);
-  var barRange = barMax - barMin || 1;
-  var barW = 260, barH = 56, barPad = 2;
-  var barCount = barPoints.length;
-  var barGap = 2;
-  var barWidth = (barW - barPad * 2 - barGap * (barCount - 1)) / barCount;
-  var todayIdx = barCount - 1;
 
-  // Day labels: "Jul 18" through "Aug 6" going backward from today
-  // v0.2.54.2 i18n：日期 locale 跟随当前语言（zh→zh-CN、zh-Hant→zh-TW、其余语言原样）
-  var todayDate = new Date();
-  var dayLabels = [];
-  var i18nLoc = (window.MN_I18N && MN_I18N.getLang()) || 'en';
-  if (i18nLoc === 'zh') i18nLoc = 'zh-CN';
-  else if (i18nLoc === 'zh-Hant') i18nLoc = 'zh-TW';
-  for (var dl = 0; dl < barCount; dl++) {
-    var dd = new Date(todayDate);
-    dd.setDate(dd.getDate() - (barCount - 1 - dl));
-    dayLabels.push(dd.toLocaleDateString(i18nLoc, { month: 'short', day: 'numeric' }));
+  function buildRects(points) {
+    var barW = 260, barH = 56, barPad = 2, gap = 2;
+    var count = points.length;
+    var max = Math.max.apply(null, points), min = Math.min.apply(null, points), range = max - min || 1;
+    var bw = (barW - barPad * 2 - gap * (count - 1)) / count;
+    var todayDate = new Date();
+    var i18nLoc = (window.MN_I18N && MN_I18N.getLang()) || 'en';
+    if (i18nLoc === 'zh') i18nLoc = 'zh-CN'; else if (i18nLoc === 'zh-Hant') i18nLoc = 'zh-TW';
+    return points.map(function (v, i) {
+      var h = Math.max(2, ((v - min) / range) * (barH - barPad * 2 - 2));
+      var x = barPad + i * (bw + gap);
+      var y = barPad + (barH - barPad * 2 - h);
+      var isToday = i === count - 1;
+      var fill = isToday ? '#4648d4' : 'rgba(70,72,212,0.45)';
+      var dd = new Date(todayDate);
+      dd.setDate(dd.getDate() - (count - 1 - i));
+      var day = dd.toLocaleDateString(i18nLoc, { month: 'short', day: 'numeric' });
+      return '<rect class="metric-bar" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="' + Math.min(bw / 2, 2) + '" fill="' + fill + '" data-day="' + day + '" data-val="' + v.toLocaleString() + '" data-idx="' + i + '"/>';
+    }).join('');
   }
-
-  var barRects = barPoints.map(function(v, i) {
-    var h = Math.max(2, ((v - barMin) / barRange) * (barH - barPad * 2 - 2));
-    var x = barPad + i * (barWidth + barGap);
-    var y = barPad + (barH - barPad * 2 - h);
-    var isToday = i === todayIdx;
-    var fill = isToday ? '#4648d4' : 'rgba(70,72,212,0.45)';
-    var rx = Math.min(barWidth / 2, 2);
-    return '<rect class="metric-bar" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + barWidth.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="' + rx + '" fill="' + fill + '" data-day="' + dayLabels[i] + '" data-val="' + v.toLocaleString() + '" data-idx="' + i + '"/>';
-  }).join('');
+  var barRects = buildRects(barPoints);
 
   function renderMetrics() {
     document.getElementById('metricsCards').innerHTML =
-    // ── Online Now hero section ──
     '<div style="text-align:center;padding:var(--space-sm) 0 var(--space-md);border-bottom:1px solid rgba(118,117,134,0.08);margin-bottom:var(--space-md)">' +
       '<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:2px">' +
         '<span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;box-shadow:0 0 6px rgba(34,197,94,0.5)"></span>' +
-        '<span style="font-size:11px;color:var(--color-outline);font-weight:500;text-transform:uppercase;letter-spacing:0.05em">' + (T('index.metrics.onlineNow') || 'Online Now') + '</span>' +
+        '<span style="font-size:11px;color:var(--color-outline);font-weight:500;text-transform:uppercase;letter-spacing:0.05em">' + (T('index.metrics.totalUsers') || 'Total Users') + '</span>' +
       '</div>' +
-      '<div style="font-size:36px;font-weight:800;color:var(--color-on-surface);line-height:1.1;letter-spacing:-0.02em;margin-bottom:2px">' + onlineNow.toLocaleString() + '</div>' +
-      '<p class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + (T('index.metrics.dailyPeak') || 'Daily peak ') + '<strong style="color:var(--color-on-surface)">' + dailyPeak.toLocaleString() + '</strong>' + (T('index.metrics.trend') || ' 20-day trend') + '</p>' +
-      // Bar chart
-      '<svg viewBox="0 0 ' + barW + ' ' + barH + '" style="width:100%;height:56px;display:block;overflow:visible">' +
-        barRects +
-      '</svg>' +
+      '<div style="font-size:36px;font-weight:800;color:var(--color-on-surface);line-height:1.1;letter-spacing:-0.02em;margin-bottom:2px">' + metrics.totalUsers.toLocaleString() + '</div>' +
+      '<p class="label-sm" style="color:var(--color-outline);margin-bottom:8px">' + (T('index.metrics.activeNations') || 'Active Nations') + ' <strong style="color:var(--color-on-surface)">' + metrics.activeNations.toLocaleString() + '</strong> · ' + (T('index.metrics.trend') || '30-day trend') + '</p>' +
+      '<svg viewBox="0 0 260 56" style="width:100%;height:56px;display:block;overflow:visible">' + barRects + '</svg>' +
     '</div>' +
-    // ── 2×2 stat grid ──
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-sm)">' +
       '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
-        '<span class="material-symbols-outlined" style="font-size:20px;color:#eab308">star</span>' +
-        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + featuredArticles.toLocaleString() + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline)">' + (T('index.metrics.featured') || 'Featured Articles') + '</div>' +
+        '<span class="material-symbols-outlined" style="font-size:20px;color:#eab308">bolt</span>' +
+        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + metrics.featuredArticles.toLocaleString() + '</div>' +
+        '<div class="label-sm" style="color:var(--color-outline)">' + (T('index.metrics.activity') || '30-Day Activity') + '</div>' +
       '</div>' +
       '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
         '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">article</span>' +
-        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + totalArticles.toLocaleString() + '</div>' +
+        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + metrics.totalArticles.toLocaleString() + '</div>' +
         '<div class="label-sm" style="color:var(--color-outline)">' + (T('index.metrics.totalArticles') || 'Total Articles') + '</div>' +
       '</div>' +
       '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
         '<span class="material-symbols-outlined" style="font-size:20px;color:#22c55e">public</span>' +
-        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + activeNations.toLocaleString() + '</div>' +
+        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + metrics.activeNations.toLocaleString() + '</div>' +
         '<div class="label-sm" style="color:var(--color-outline)">' + (T('index.metrics.activeNations') || 'Active Nations') + '</div>' +
       '</div>' +
       '<div class="metric-cell" style="background:rgba(70,72,212,0.04);border-radius:var(--radius-md);padding:12px;text-align:center">' +
         '<span class="material-symbols-outlined" style="font-size:20px;color:#ea580c">group</span>' +
-        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + totalUsers.toLocaleString() + '</div>' +
-        '<div class="label-sm" style="color:var(--color-outline)">' + (T('index.metrics.totalUsers') || 'Total Users') + '</div>' +
+        '<div style="font-size:22px;font-weight:800;color:var(--color-on-surface);margin:4px 0 0">' + metrics.onlineNow.toLocaleString() + '</div>' +
+        '<div class="label-sm" style="color:var(--color-outline)">' + (T('index.metrics.newCitizens') || 'New Citizens') + '</div>' +
       '</div>' +
     '</div>';
+  }
 
-  // ── Bar chart tooltip ──
+  function applyActivity(data) {
+    if (data && data.kpi) {
+      var k = data.kpi;
+      if (k.citizens && k.citizens.value) metrics.totalUsers = k.citizens.value;
+      if (k.nations && k.nations.value) metrics.activeNations = k.nations.value;
+      if (k.articles && k.articles.value) metrics.totalArticles = k.articles.value;
+      if (k.activity && k.activity.value) metrics.featuredArticles = k.activity.value;
+      if (k.newCitizens && k.newCitizens.value) metrics.onlineNow = k.newCitizens.value;
+    }
+    if (data && data.trends && data.trends.users && data.trends.users.length) {
+      barPoints = data.trends.users.map(function (p) { return p.value; });
+      barRects = buildRects(barPoints);
+    }
+    renderMetrics();
+  }
+
+  function fetchMetrics() {
+    if (!window.MN_API || !window.MN_API.get) return;
+    window.MN_API.get('/public/activity?range=30d').then(function (r) {
+      if (r.ok && r.data) applyActivity(r.data);
+    });
+  }
+
+  // ── Bar chart tooltip（事件委托：重渲染后仍生效）──
   var tooltip = document.createElement('div');
   tooltip.id = 'metricTooltip';
   tooltip.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;background:var(--card-bg);color:var(--color-on-surface);padding:8px 14px;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.1),0 1px 3px rgba(0,0,0,0.06);font-size:13px;font-weight:600;white-space:nowrap;opacity:0;transform:translate(-50%,-120%);transition:opacity 0.12s ease;line-height:1.4';
   tooltip.innerHTML = '<span id="metricTooltipDay"></span><br><span style="font-weight:400;color:#767586;font-size:11px" id="metricTooltipVal"></span>';
   document.body.appendChild(tooltip);
-
-  var metricBars = document.querySelectorAll('.metric-bar');
   var tooltipDay = document.getElementById('metricTooltipDay');
   var tooltipVal = document.getElementById('metricTooltipVal');
-
-  metricBars.forEach(function(bar) {
-    bar.addEventListener('mouseenter', function() {
-      tooltipDay.textContent = bar.dataset.day;
-      tooltipVal.textContent = bar.dataset.val + (T('index.metrics.online') || ' online');
-      var rect = bar.getBoundingClientRect();
-      tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-      tooltip.style.top = (rect.top - 8) + 'px';
-      tooltip.style.opacity = '1';
-      bar.style.opacity = '0.7';
-    });
-    bar.addEventListener('mouseleave', function() {
-      tooltip.style.opacity = '0';
-      bar.style.opacity = '1';
-    });
+  document.addEventListener('mouseover', function (e) {
+    var bar = e.target && e.target.closest ? e.target.closest('.metric-bar') : null;
+    if (!bar) return;
+    tooltipDay.textContent = bar.dataset.day;
+    tooltipVal.textContent = bar.dataset.val + (T('index.metrics.online') || ' online');
+    var rect = bar.getBoundingClientRect();
+    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+    tooltip.style.top = (rect.top - 8) + 'px';
+    tooltip.style.opacity = '1';
+    bar.style.opacity = '0.7';
   });
-  }
-  renderMetrics();
+  document.addEventListener('mouseout', function (e) {
+    var bar = e.target && e.target.closest ? e.target.closest('.metric-bar') : null;
+    if (!bar) return;
+    tooltip.style.opacity = '0';
+    bar.style.opacity = '1';
+  });
 
-  // My Worlds = 国家（既有流程）+ 世界（22 类型向导）合并，按创建时间新→旧
+  renderMetrics();
+  fetchMetrics();
+
+  // My Worlds = 国家（后端真实）+ 世界（22 类型向导）合并，按创建时间新→旧（v0.2.59.12 真实数据接入）
+  var remoteNations = null;
+  function fetchMyWorlds() {
+    if (!window.MN_API || !window.MN_API.get) return;
+    window.MN_API.get('/social/nations/mine').then(function (r) {
+      if (r.ok && r.data && r.data.nations) {
+        remoteNations = r.data.nations;
+        renderMyWorlds();
+      }
+    });
+  }
+
   function renderMyWorlds() {
-    var myWorldsList = nations.map(function (n) {
-      return { name: n.name, subtitle: n.classification, createdAt: n.createdAt || '' };
+    var myWorldsList = (remoteNations || nations).map(function (n) {
+      return { name: n.name, subtitle: n.classification || n.lore || '国家', createdAt: n.createdAt || '' };
     }).concat(worlds.map(function (w) {
       return { name: w.name, subtitle: (w.emoji ? w.emoji + ' ' : '') + w.typeLabel, createdAt: w.createdAt || '' };
     })).sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
@@ -3005,6 +3241,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     document.getElementById('myWorlds').innerHTML = myWorldsHtml;
   }
   renderMyWorlds();
+  fetchMyWorlds();
 
   // v0.2.54.2 i18n：语言切换/字典就绪后重渲染动态区（apply() 触发 onChange → 本钩子）
   window.__mnI18nRerender = function () {

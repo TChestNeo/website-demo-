@@ -87,7 +87,7 @@ function testApp(overrides = {}) {
           const body = await res.json();
           assert.strictEqual(body.error.code, 'FORBIDDEN');
         },
-        close: () => new Promise((r) => app.close(r))
+        close: () => new Promise((r) => app.close(() => { try { db.close(); } catch (e) {} try { fs.rmSync(dir, { recursive: true, force: true }); } catch (e) {} r(); }))
       });
     });
   });

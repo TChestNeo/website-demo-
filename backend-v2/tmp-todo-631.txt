@@ -1,0 +1,27 @@
+1. backend: 030 migration + auth.js parseCrop/PATCH/publicUser/audit + social.js GET + npm test ✅（视频横幅零后端改动——v0.2.16.0 帖子媒体链已含 webm/mp4/mov 白名单+魔数+30MB）
+2. settings-modal.js: MN_CropDialog + 144px + stUpload 弹窗 + 重裁钮 ✅
+3. community-profile.html: 210px + render + 编辑弹窗 + 上传链 + 保存体 + 重裁钮 ✅
+4. fluidcanvas.html: 频道卡裁切显示 + 换头像链弹窗 + 48.1 ✅
+5. i18n 10 键 x12 + OpenCC ✅
+6. site-config 58.25 + FC 48.1 changelog ✅
+6.5 ✅ 视频横幅代码（钦定补报：只横幅/浏览器压缩/超60s截取/GIF同门）：
+    settings-modal.js（MN_VideoCap+MN_CompressVideo+applyCrop/rescaleAll/弹窗视频化+stDoUpload 重构+stUpload 视频分支+横幅预览 video+accept 加 mp4/webm/mov）✅
+    community-profile.html（VIDEO_EXTS+accept+uploadBannerBlob 视频分支+头像链拒绝+renderHeader/updateBannerPreview video+isProfileVideoUrl+CSS）✅
+    i18n 8 新键 x2 文件 x11 语（tmp-i18n-video-insert.js）+OpenCC（common 181/profile 149）✅
+    site-config 58.25 条目视频段 ✅
+7. sed 631 ✅ + 电池重写（crop+视频一次改完：profile-banner/bannerfixed/profile-subtier/profile-avatarsync/settings-profilecust/community-profile 金丝雀 + 新 tmp-battery-crop C1-C15+V1-V8）
+8. 金丝雀 + 舰队 631
+9. build x2 + verify 631 先验后推 + tag/push/deploy 两烘
+10. probe 631 + 记忆仪式 + 密钥扫描 + commit
+8. ✅ 金丝雀 7 套全绿 + 舰队 631 首跑（26 套 38 ❌ 全=sed 陈旧锚：FC 版本 48.0→48.1 引号族 + 虚构 rev 00346-ntt + tier-gating 订阅 9→11 + nodemo 58.25 计数 2→4 + prefetch rev 各 1→2）→ tmp-sed-631b.js 补钉 42 swaps/29 文件 + nodemo 调试参手修 → 26 套独立复跑 25 绿（lvpill rev 锚 sconfSrc 形式补钉漏网→手修 === 2 → 22/22 绿）→ 全舰队复跑中
+   npm test 361/361 ✅（359→361 新案）
+9. ✅ build ×2 + verify 631 先验后推 + tag/push/deploy 两烘：build#1 先验 0-mismatch→deploy#1 瞬态 00346-rn2→rev 填真→build#2→verify 终态口径 0-mismatch→deploy#2 终态 00347-skv；digest sha256:c47be7b325efd058cd22b5db77529c800578472616ebeac2356d83c9c1217edb（=当前线上）
+10. ✅ probe crop 631 9/9 + 记忆仪式 10/10（memory 2026-10-01-v025825-crop-dialog.md + 三指针）+ 密钥扫描零命中 + commit f0e71a7（68 文件，排除族零混入，绝不 push）
+── 新轮（Round 46，用户原话：「能不能顺便把FC的所有并非用户手动创建的测试信息都去除掉，还有把所有FC的首页卡片从玻璃变成不透明的卡片？」）──
+11. 三项钦定（已答）：①只清页面硬编码假数据（演示文章/图库样例/假统计 48.2K/假上传记录/假趋势）——演示账号与后端库不动 ②假数字区块=后端加真实聚合端点+空态 ③玻璃→不透明=只首页卡片（按钮/搜索胶囊保持玻璃）
+    → FC 48.2 + 后端新端点（统计/趋势聚合）→ 站点版本可能同轮 bump
+11a. ✅ backend 新端点 GET /api/fc/overview（routes/public/fc-overview.js+server.js 注册）：stats 15 键全真聚合+windows 7d/28d/month 三窗口（前窗对比 deltaPct+fillDays 日序列恰 7/28 点）+articles 清单（互动实时计数+wordCount HTML 剥标签）+media 最新在前+posts 截 80；npm test 361→366/366 ✅（新文件 test/fc-overview.test.js 5/5：401/零数据形状/全量种子数值/截 80/限流 429）
+11b. ✅ fluidcanvas.html Part B CSS（首页卡片玻璃→不透明 09-20 先例镜像+channelOverview/Summary !important）+ Part A 假数据八源全撤接 FC_OVERVIEW（cloudMode 同步门/'—' 空态/上传真 POST/文章真 DELETE/分析三窗口）+ 6 内联块 node --check 全过+零残留 grep 复核
+11c. ✅ i18n 25 新键×11 手工语（tmp-i18n-632-insert.js 排序插入）+demoSub 死键删×11+OpenCC 重生成 zh-Hant（569 键）+全键 ×12 复核+en 值=页面兜底串逐字节一致复核
+11d. ✅ site-config 58.26 站点条目+FC 48.2 条目（rev 00348-XXX/00349-??? 占位）+双版本赋值 bump（图库持久库本就纯用户上传零样例——钦定①图库样例项天然满足零改动）
+11e. → 下一步：sed 632 + 电池（新 tmp-battery-fc-632 + fc-* 受影响重写）+ 金丝雀 + 舰队 632

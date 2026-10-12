@@ -1,0 +1,17 @@
+  ✅ S1 发放区块在位（grantTitle 键 + 兜底文案「订阅发放」）
+  ✅ S2 权限门 subscriptions.manage（无权限角色只见提示文案，§28 同支付区块口径）
+  ✅ S3 发放请求 POST /staff/subscriptions/grant（email/tierKey/months 三字段）
+  ✅ S4 等级三档 basic/premium/ultra（值为后端 TIER_OF 键，不译）
+  ✅ S5 月数四档 1/3/6/12（后端钳制 1..12）
+  ✅ S6 成功 → toast + renderDetail 刷新（chip 层级随刷新更新，同 flagEvent 口径）
+  ✅ S7 卡片顺序：支付记录 → 订阅发放 → 订阅发放记录 → 安全档案
+  ✅ S8 请求期间按钮禁用防连点（btn.disabled 双写：点击前置 true / 回执置 false）
+  ✅ S9 8 新键 ×12 语言块全在位（zh-Hant 由 OpenCC 重生成）
+  ✅ S10 i18n 文件可执行（链式 add ×12 语言，键数统一 307）
+  ✅ S11 zh 8 值与页面兜底串逐字节一致
+  ✅ S12 zh-Hant 段含 OpenCC 哨兵 + 发放键（重生成后不丢）
+
+╭──────────────────────────────────────────╮
+│  🎉 12 ✅ / 0 ❌  (admin-grant)        │
+╰──────────────────────────────────────────╯
+

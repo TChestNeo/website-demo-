@@ -1,0 +1,22 @@
+  ✅ F1 site-config：FC v10.28.47.4 + rev 00321- 占位 + 站点版本恒 v0.2.58.13
+  ✅ F2 编辑器页静态锚：发布日志弹窗 DOM + 计数 0 / 320 + 确认发布/取消按钮
+  ✅ F3 编辑器页静态锚：发布按钮仍锚 publishArticle + buildDraft log 字段 + applyDraft 恢复 + 输入框固定初始高 CSS（双类选择器压过 textarea.input-glass）
+  ✅ P1 点真发布按钮 → 弹窗开 + 空日志 + 0 / 320 + 初始固定高 ~110px  {"backdrop":true,"card":true,"val":"","cnt":"0 / 320","over":false,"h":110,"sh":"108px","scrollH":108,"hs":"草稿","toast":"草稿已保存"}
+  ✅ P2 "hello world" → 计数 2 / 320（按空格分词）  2 / 320
+  ✅ P3 "code" → 计数 1 / 320（用户钦定口径："code"=1 词不是 4 个）  1 / 320
+  ✅ P4 8 行日志 → 输入框随日志自动长高（固定初始高之上增长、未触顶）  h0=110 h=216 sh=216px
+  ✅ P5 超长日志 → 高度恰达上限 220px + 内部滚动（scrollHeight>220）  sh=220px scrollH=744
+  ✅ P6 321 词 → 计数 321 / 320 + 红字 .over  321 / 320 over=true
+  ✅ P7 超限确认被硬拦：toast「日志超过 320 词上限」+ 弹窗仍开 + 状态徽章未变 已发布  {"toast":"日志超过 320 词上限，请删减","hs":"草稿","backdrop":true}
+  ✅ P8 取消 → 弹窗关 + 发布未发生（徽章仍 草稿）  {"backdrop":false,"hs":"草稿"}
+  ✅ P9 演示路径确认 → 弹窗关 + 徽章 已发布 + toast 文章发布成功！  {"hs":"已发布","toast":"文章发布成功！","backdrop":false}
+  ✅ P10 演示路径最终日志落本地草稿 log 字段  "初版发布 国旗上线"
+  ✅ P11 再开弹窗预填上一条日志（草稿 log 往返，可继续编辑）  "初版发布 国旗上线"
+  ✅ C1 云端段空标题确认 → 标题预校验 toast「请先填写标题再发布」+ 弹窗留（关窗前拦截）  {"toast":"请先填写标题再发布","backdrop":true}
+  ✅ C2 云端创建：POST /articles + contentJson.log 骑草稿「云端首版」+ 发布 id 记忆 + 徽章 已发布  {"n":1,"m":"POST","p":"/articles","log":"云端首版","pubId":"ART-NEW-1","hs":"已发布"}
+  ✅ C3 再发布：预填上条日志 + PUT /articles/ART-NEW-1 + 新日志「云端更新」  {"prefill":true,"c2":{"n":2,"m":"PUT","p":"/articles/ART-NEW-1","log":"云端更新"}}
+  ✅ E1 全程零 Runtime exception  干净
+  ✅ E2 全程零 console error  干净
+
+🎉 全部通过 19/19
+

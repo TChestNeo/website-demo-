@@ -1,0 +1,10 @@
+  ✅ S1 site-config 44.3 + rev 00293- 占位 + 站点恒 v0.2.58.3 + 编辑器覆盖层挂载/CSS 锚在位 + fc-touch.js 零改动（inEditableZone input 豁免复用）
+  ✅ B0 门控自证：coarse 媒体查询翻转 + maxTouchPoints=5 + 触控桥在场  {"coarse":true,"mtp":5,"bridge":true}
+  ✅ B1 头像 tap → 文件选择器弹出（第 1 次拦截）+ 桥全豁免 stats.tap=0  choosers=1
+  ✅ B2 空图态地图画布 tap → 文件选择器弹出（第 2 次拦截）  choosers=2
+  ✅ B3 有图态收层：覆盖层 display:none + tap 不再弹选择器 + 地图卡拖拽 +40/+25 ±2（stats.drag+1）  disp=none choosers=2 before={"l":154,"t":22} after={"l":194,"t":47,"drag":1}
+  ✅ B4 头像覆盖层只罩头像：char 卡身拖拽 +30/+20 ±2（覆盖层不挡整卡）  before={"l":22,"t":22} after={"l":52,"t":42,"drag":2}
+  ✅ E1 全程零 Runtime exception + 零 console error  干净
+
+🎉 全部通过 7/7
+

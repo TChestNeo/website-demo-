@@ -13,6 +13,7 @@ const { insertWithId, pad6 } = require('../../ids');
 const { createModerationItem, l0Screen, applyDecision } = require('../../moderation/pipeline');
 const { hashOf } = require('../../moderation/rules');
 const { gainTeamXp, loseTeamXp } = require('./team-xp'); // v10.28.52.0 团队 XP（发布/删除作品）
+const { reviewArticle, smartSearch, extractArticleText } = require('../../ai/article-review'); // v0.2.59.23 审核+简介；v0.2.59.28 智能搜索
 
 const MAX_TITLE = 120;
 const MAX_BYTES = 4 * 1024 * 1024;
@@ -31,7 +32,21 @@ function meta(db, row) {
     id: row.id, title: row.title, status: row.status, authorId: row.author_id,
     authorName: author ? author.display_name : 'Anonymous',
     createdAt: row.created_at, updatedAt: row.updated_at,
+    summary: row.summary || null, // v0.2.59.23 简介（DeepSeek Flash 发布时生成）
+    viewCount: row.view_count || 0, // v0.2.59.28 排序「最热」用（与 /:id 同口径）
   };
+}
+
+// v0.2.59.23 发布时 DeepSeek Flash 审核 + 简介 + 检索摘要（违规拒绝；AI 故障/超时静默放行）
+async function reviewAndSummarize(ctx, title, contentJson) {
+  try {
+    const text = extractArticleText(contentJson);
+    if (!text) return { violated: false, summary: null, searchBlob: null };
+    const r = await reviewArticle(ctx, title, text);
+    return { violated: r.violated, summary: r.summary, searchBlob: r.searchBlob || null };
+  } catch (e) {
+    return { violated: false, summary: null, searchBlob: null };
+  }
 }
 
 function commentRow(db, row) {
@@ -65,14 +80,17 @@ function register(router, ctx) {
     const contentJson = typeof body.contentJson === 'string'
       ? body.contentJson : JSON.stringify(body.contentJson || {});
     if (Buffer.byteLength(contentJson, 'utf8') > MAX_BYTES) throw new HttpError('VALIDATION', '内容超过 4MB');
+    // v0.2.59.23 DeepSeek Flash 审核 + 简介（违规拒绝；AI 故障静默放行）
+    const review = await reviewAndSummarize(ctx, title, contentJson);
+    if (review.violated) throw new HttpError('MODERATION', '内容疑似违规，请修改后重试');
     // v10.28.52.0 团队频道发布（团队模式发布云端文章）：teamId 需为本人所在团队（团队成员校验）；计入团队 XP upload（+24）
     const teamId = body.teamId ? String(body.teamId).slice(0, 64) : null;
     if (teamId && !db.prepare('SELECT 1 FROM team_members WHERE team_id = ? AND user_id = ?').get(teamId, c.user.id)) {
       throw new HttpError('FORBIDDEN', '你不是该团队成员，无法发布到团队频道');
     }
     const iso = new Date().toISOString();
-    const { id } = insertWithId(db, 'articles', ['author_id', 'team_id', 'title', 'content_json', 'status', 'created_at', 'updated_at'],
-      [c.user.id, teamId, title, contentJson, 'published', iso, iso], (s) => 'ART-' + pad6(s));
+    const { id } = insertWithId(db, 'articles', ['author_id', 'team_id', 'title', 'content_json', 'summary', 'search_blob', 'status', 'created_at', 'updated_at'],
+      [c.user.id, teamId, title, contentJson, review.summary, review.searchBlob, 'published', iso, iso], (s) => 'ART-' + pad6(s));
     if (teamId) gainTeamXp(c, teamId, 'upload'); // 团队作品上传 +24（删除作品同额扣回）
     sendJson(res, 200, { article: { id, title, status: 'published', createdAt: iso } });
   }));
@@ -80,19 +98,51 @@ function register(router, ctx) {
   router.add('GET', '/api/articles', (req, res) => {
     const user = softUser(db, req, res, ctx);
     const q = String(req.query.q || '').trim().slice(0, 120);
+    // v0.2.59.28 排序：sort=hot → 浏览量降序（「最新/最热」切换）；默认最新（seq DESC）
+    const orderBy = String(req.query.sort || '') === 'hot' ? 'view_count DESC, seq DESC' : 'seq DESC';
     if (q) {
       // v0.2.55.0：标题模糊搜索（LIKE 大小写不敏感；% 与 _ 通配转义防注入语义）。公开只搜 published。
+      // v0.2.59.28：简介与检索摘要一并入匹配（关键词搜索更全）
       const like = '%' + q.replace(/[%_\\]/g, (ch) => '\\' + ch) + '%';
-      const rows = user
-        ? db.prepare("SELECT * FROM articles WHERE status = 'published' AND title LIKE ? ESCAPE '\\' ORDER BY seq DESC LIMIT 50").all(like)
-        : db.prepare("SELECT * FROM articles WHERE status = 'published' AND title LIKE ? ESCAPE '\\' ORDER BY seq DESC LIMIT 50").all(like);
+      const rows = db.prepare("SELECT * FROM articles WHERE status = 'published' AND (title LIKE ? ESCAPE '\\' OR summary LIKE ? ESCAPE '\\' OR search_blob LIKE ? ESCAPE '\\') ORDER BY " + orderBy + " LIMIT 50").all(like, like, like);
       sendJson(res, 200, { articles: rows.map((r) => meta(db, r)) });
       return;
     }
     const rows = user
-      ? db.prepare("SELECT * FROM articles WHERE status = 'published' OR author_id = ? ORDER BY seq DESC LIMIT 100").all(user.id)
-      : db.prepare("SELECT * FROM articles WHERE status = 'published' ORDER BY seq DESC LIMIT 100").all();
+      ? db.prepare("SELECT * FROM articles WHERE status = 'published' OR author_id = ? ORDER BY " + orderBy + " LIMIT 100").all(user.id)
+      : db.prepare("SELECT * FROM articles WHERE status = 'published' ORDER BY " + orderBy + " LIMIT 100").all();
     sendJson(res, 200, { articles: rows.map((r) => meta(db, r)) });
+  });
+
+  // v0.2.59.28 智能搜索（用户「开启智能搜索的情况下描述文章来获取搜索目标」）：
+  // 自然语言查询 + 已发布文章的标题/简介/检索摘要 → DeepSeek Flash 语义排序。
+  // 降级：无 key / AI 故障 / 超时 → 关键词回退（标题/简介/摘要 LIKE），永不 500。
+  router.add('POST', '/api/articles/search/smart', async (req, res) => {
+    const w = (ctx.config.rateLimits || {}).smartSearch || { max: 10, windowMs: 60000 };
+    const ip = String((req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || 'ip');
+    if (!ctx.limiter('artsmart:' + ip, w.max, w.windowMs)) throw new HttpError('RATE_LIMITED', '智能搜索太频繁，请稍候再试');
+    const body = await readJson(req, 8 * 1024);
+    const q = String(body.q || '').trim().slice(0, 300);
+    if (!q) throw new HttpError('VALIDATION', '请输入搜索描述');
+    const rows = db.prepare("SELECT * FROM articles WHERE status = 'published' ORDER BY seq DESC LIMIT 60").all();
+    if (!rows.length) { sendJson(res, 200, { articles: [], smart: true, degraded: false }); return; }
+    let ranked = null;
+    let degraded = false;
+    try {
+      ranked = await smartSearch(ctx, q, rows);
+      if (!ranked.length) degraded = true; // AI 判「无相关」= 语义空结果
+    } catch (e) {
+      degraded = true;
+      ranked = null;
+    }
+    // v0.2.59.28.1：空数组也是「未命中」——AI 空结果同样走关键词回退（!ranked 对 [] 恒 false 的坑）
+    if ((!ranked || !ranked.length) && degraded) {
+      // 降级关键词回退（AI 不可用或未命中）
+      const like = '%' + q.replace(/[%_\\]/g, (ch) => '\\' + ch) + '%';
+      ranked = db.prepare("SELECT * FROM articles WHERE status = 'published' AND (title LIKE ? ESCAPE '\\' OR summary LIKE ? ESCAPE '\\' OR search_blob LIKE ? ESCAPE '\\') ORDER BY seq DESC LIMIT 20").all(like, like, like);
+      degraded = true;
+    }
+    sendJson(res, 200, { articles: ranked.map((r) => meta(db, r)), smart: true, degraded });
   });
 
   router.add('GET', '/api/articles/:id', (req, res) => {
@@ -134,9 +184,12 @@ function register(router, ctx) {
     const contentJson = typeof body.contentJson === 'string'
       ? body.contentJson : JSON.stringify(body.contentJson || {});
     if (Buffer.byteLength(contentJson, 'utf8') > MAX_BYTES) throw new HttpError('VALIDATION', '内容超过 4MB');
+    // v0.2.59.23 DeepSeek Flash 审核 + 简介（违规拒绝；AI 故障静默放行）
+    const review = await reviewAndSummarize(ctx, title, contentJson);
+    if (review.violated) throw new HttpError('MODERATION', '内容疑似违规，请修改后重试');
     const iso = new Date().toISOString();
-    db.prepare('UPDATE articles SET title = ?, content_json = ?, updated_at = ? WHERE id = ?')
-      .run(title, contentJson, iso, row.id);
+    db.prepare('UPDATE articles SET title = ?, content_json = ?, summary = ?, search_blob = ?, updated_at = ? WHERE id = ?')
+      .run(title, contentJson, review.summary, review.searchBlob, iso, row.id);
     sendJson(res, 200, { article: { id: row.id, title, status: row.status, updatedAt: iso } });
   }));
 

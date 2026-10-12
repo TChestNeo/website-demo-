@@ -1,0 +1,32 @@
+  ✅ F1 静态：changelog 历史条目保留（v0.2.49.0/v10.28.35.3 轮标题；赋值锚随版本前进失效——00305 维修口径）+ 站点 changelog（等级双轨/Xendit 铺垫/订阅限制清单）
+  ✅ F2a 静态：订阅门禁激活（TEST_MODE=false）+ 字体上限 5（var + window 暴露）+ fp-lock CSS
+  ✅ F2b 静态：卡片背景锁（cardBgLockRow/升级链接/守卫 toast×3）+ 页面背景锁（入口锁/拦截 toast×2）
+  ✅ F2c 静态：XP 钩子（发文章 publishXPReward ×3 接线=演示发布/新建/更新三路径/建卡 drop ×1）+ 边缘守卫保留 + 设置弹窗无订阅锁（Appearance 平台主题免费）
+  ✅ F3a 静态：storage.js 等级模块（LEVELS 旅行者→君主/addXP/getLevelState/每日登录/事件/话题 30 天结算队列）
+  ✅ F3b 静态：sidebar.js 徽章/事件/toast + premium.html gatewayNote（到账自动生效口径）
+  ✅ S1a free 用户 isSubscriberUser() === false  false
+  ✅ S1b 资产面板页面背景入口锁标可见（flex）+ 升级链接在  flex
+  ✅ S1c caption 边缘 3 锁 + 升级链接可见  {"locked":3,"up":""}
+  ✅ S1d cardBg 锁行显示 + 色盘/上传隐藏 + 边缘 14 锁 + 升级链接可见  {"lock":"flex","color":"none","upload":"none","locked":14,"up":""}
+  ✅ S1e setCardBgColor 被拦截（无 dataset）+ toast「卡片背景为订阅用户专属功能」  {"bg":null,"t":"卡片背景为订阅用户专属功能"}
+  ✅ S1f setCardEdge 被拦截 + toast「背景边缘为订阅用户专属功能」  {"edge":null,"t":"背景边缘为订阅用户专属功能"}
+  ✅ S1g openPageBgModal 被拦截（弹窗未开）+ toast「页面背景为订阅用户专属功能——订阅后解锁」  {"active":false,"t":"页面背景为订阅用户专属功能——订阅后解锁"}
+  ✅ S1h 字体面板免费=47 行（8 组×5+vi4+he3）+ 8 锁行 + 组头 5/283 + 锁行「剩余 278」+ vi/he 全免  {"rows":47,"locks":8,"head1":"Latin / English · 5/283","lock1":"lock 剩余 278 个字体 · 订阅解锁 →","lockHref":"http://127.0.0.1:4727/pages/premium.html","viHead":"Vietnamese Tiếng Việt · 4/4","heHead":"Hebrew עברית · 3/3"}
+  ✅ S1i 设置弹窗含外观（45.0 i18n 后 zh 渲染）且无订阅锁条目  {"menu":["edit_note编辑器","person个人资料","palette外观","notifications通知","lock隐私","translate语言","manage_accounts账号"]}
+  ✅ S1j 合成 drop 建卡 + XP +10（5 → 15）  {"before":5,"after":15,"card":true}
+  ✅ S1k 无 slati_user（会话在）→ isSubscriberUser false + 入口锁仍显  {"sub":false,"lock":"flex"}
+  ✅ S2a premium 用户 isSubscriberUser() === true  true
+  ✅ S2b cardBg 锁行隐藏 + 色盘显示 + 边缘零锁 + 升级链接隐藏 + 入口锁标隐藏  {"lock":"none","color":"flex","locked":0,"up":"none","entry":"none"}
+  ✅ S2c setCardBgColor 生效（dataset 写入）+ 无拦截 toast  {"bg":"#ff0000","t":""}
+  ✅ S2d setCardEdge 生效（paper 写入）  {"edge":"paper"}
+  ✅ S2e openPageBgModal 正常打开  true
+  ✅ S2f 字体面板订阅=451 行全部 + 零锁行 + 组头 283  {"rows":451,"locks":0,"head1":"Latin / English · 283"}
+  ✅ S3a 徽章 Lv.1·旅行者 + 每日登录 +5（0→5）+ 进度 0%  {"txt":"Lv.1 · 旅行者5 / 1200 XPLV1","bar":"0%","xp":5}
+  ✅ S3b addXP +10 → 徽章实时刷新 15 / 1200  Lv.1 · 旅行者15 / 1200 XPLV1
+  ✅ S3c 1195+10 跨级 → Lv.2·拓荒者 + mn:level-up 事件 + 升级 toast  {"badge":"Lv.2 · 拓荒者1205 / 2400 XPLV2","lvl":"[2]","xp":1205,"toast":true}
+  ✅ S3d 重载两次 XP 仍 1205（每日 +5 只发一次）+ 徽章口径不变  {"xp":1205,"badge":"Lv.2 · 拓荒者1205 / 2400 XPLV2"}
+  ✅ S3e 访客无徽章 + 注册/登录 CTA 正常  {"badge":false,"guest":true}
+  ✅ Z 零 console error  []
+
+  ── 结果: 29/29 全绿 ✅
+

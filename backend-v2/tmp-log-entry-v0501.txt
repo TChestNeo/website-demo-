@@ -1,0 +1,35 @@
+════ Request K 切页动画观感恢复轮 — v0.2.50.1（2026-09-17）════
+用户（纠正）：「为什么你要简化页面之间的切换？？那个你不能动你知道吗？」
+问询钦定：恢复原样观感（全卡片渐隐+位移波浪入场、退出渐隐、原节奏全回来）+ 保留两个隐形修复。
+修订：mnationworld-web-00243-hls（前身 00242-p77）｜commit 见 git log（未 push）
+
+改法（2 文件，纯前端）：
+1. docs/assets/js/transitions.js：git restore 9928f72 原版（49.9 前状态）后只回挂两个隐形修复——
+   ①动画结束 transitionend/cancel 回收 inline transition（写前先记 prevOpacities 数组 + prevTransition/
+     prevDelay，回收还原三值 + 清 transform——0.4s 橡皮筋不再污染 hover/tilt，如 Messages 公告卡
+     box-shadow-only 过渡被盖）②隐藏卡（display:none 不渲染、transitionend 永不触发）600ms 兜底定时
+     强制清理（done 守卫幂等）；退出路径 100% 原样（页面 240/280ms 后即销毁，无残留顾虑）
+   恢复的原样观感：STAGGER_DELAY=60 全卡波浪无上限、入场 opacity 0.4s+transform 0.4s 同一条过渡、
+     退出水平 0.22s/垂直 0.25s 渐隐、导航计时 280/240ms 全数回来
+2. docs/assets/js/site-config.js：v0.2.50.0 → v0.2.50.1（补丁位 0→1 口径修正轮）+ 注释块；
+   49.9 块尾部加注「观感修法已于 50.1 按用户纠正整体回滚」
+
+零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css、FC 零改动（v10.28.35.4 保持）、
+entrypoint 零改动。
+
+电池：pageswitch 23/23 按新口径重写（F0 双版本 50.1/F1 入场渐隐+位移全串回来/F2 stagger60 无
+  STAGGER_CAP/F3 隐形修复四标记/F4 退出渐隐回来/F5 计时 280/240；M1d 全卡波浪 starts≥24 实测 63、
+  M2c 原节奏落定 1100-3000ms 实测 1894ms（原样 1931 口径，非 49.9 的 799）、污染 0/21·0/18·0/7
+  隐形修复实证、公告卡 tilt 守卫、方向语义、帧健康、零错误；等待改 5000ms——全卡波浪末张
+  transitionend ≈ (n-1)*60+400ms，2600 不够会误报污染）
+  回归 msglink 15/15 + msg-anim 31/31 + mono-flash 22/22 + monodark 29/29 + smoke-admin 48/48 全绿
+  （pageswitch/msglink/mono-flash/monodark 版本锚 50.0→50.1 已同步）
+
+部署：docker build exit 0 → tag → token 直登（-p）→ push exit 0 → tmp-deploy-restore.ps1
+  （tmp-deploy-msglink.ps1 模板复制；gcloud.ps1、env 30 条从 describe 全量重建、零新键）一次 exit 0
+  → rev 00243-hls serving 100%。
+curl 链全绿：/api/health 58 表 ✅｜site-config v0.2.50.1+v10.28.35.4 ✅｜transitions.js 原样观感在线
+  （入场全串/退出渐隐串/stagger60/280/240 各 1、STAGGER_CAP 零残留）+ 隐形修复在线（cleanup/prevOpacity/
+  fallback 各 1）✅
+
+git：只 commit docs/（transitions.js + site-config.js）；tmp-* 不跟踪；entrypoint.js 保持未提交；不 push。

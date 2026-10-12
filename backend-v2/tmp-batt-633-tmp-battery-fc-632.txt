@@ -1,0 +1,33 @@
+  ❌ S1 site-config 版本双线 58.26/48.2 + rev 双占位 ×2 + 58.25/48.1 赋值零残留  58.26=1 48.2=1 00348-XXX=0 00349-???=0 58.25=0 48.1=1
+  ✅ S2 后端 fc-overview 路由（GET /api/fc/overview+requireSession+wordCount）+ server.js 挂载（require 解构+调用）  route=1 session=3 wordCount=3 reg=2
+  ✅ S3 FC_OVERVIEW 数据层（cloudMode/空态/fcNum/fcCompact/fcOverviewStats/fcOverviewWindow/loadFcOverview/refreshDataViews/boot 调用）  cloudMode=1 FC_OVERVIEW=null=1 boot=1
+  ✅ S4 演示假数据零残留（模拟文件选择器/假统计/假名假数/样例文章种子全撤）  13 标识全零
+  ✅ S5 不透明 CSS 四规则（.card var(--sidebar-bg)+.lg-backdrop 滤网全摘+channel !important 渐变+mono 同构）+搜索胶囊 blur(16px) 保留  card=1 lg=1 blur16=6
+  ✅ S6 访客门禁（head 挂 fc-guest+CSS 互斥+locked-hero 登录引导卡）  gate=1 hero=1
+  ✅ S7 i18n 30 新键 ×12 语（comm -13 实测清单）  30×12 全齐
+  ✅ S8 上传链真数据化（POST /social/uploads+loadFcOverview(true)×2+真 file input+needLogin 门）  post=1 refresh=2 input=1
+  ✅ B2a 频道卡真聚合（Article 2 · Media 1 / 1.8K / interactions 13；en 字典单数口径）  BBatt Tester@BattTester · Article 2 · Media 15 Followers1.8K Total Views13 Interactionsadd New Article
+  ✅ B2b 快统四卡精确值 [1.8K, 4, 3, 5]（浏览和/收藏和/分享和/粉丝真聚合）  ["1.8K","4","3","5"]
+  ✅ B2c 恰 1 次 fc/overview + 零 articles 调用  fc=1 articles=0
+  ✅ B2d 分析四卡精确值 [5, 2, 1, 8]（28d 窗口）+ 4 对比条 + 3 迷你趋势 + 区间 2026-09-05 → 2026-10-02  ["5","2","1","8"]
+  ✅ B2e 分析视图 fc 计数 =2  fc=2
+  ✅ B2f 文章列表 2 行全云端（published/In Review 徽章+三钮+零演示 ID）  ["ART-FC-1","ART-FC-2"]
+  ✅ B2g 最近上传=FC_OVERVIEW.media（UPL-FC-1.png 恰 1 行）
+  ✅ B2h 上传视图 fc 计数 =4  fc=4
+  ✅ B3a 失败态仪表盘（快统全 — + 频道卡 — + 内容表空态）  ["—","—","—","—"]
+  ✅ B3b 失败态分析（noData 卡 + channelSummary 全空）
+  ✅ B3c 失败态文章（art-empty 空态）
+  ✅ B4a 光主题频道卡不透明 rgb 0.95  rgba(255, 255, 255, 0.95)
+  ✅ B4b 光主题快统卡同不透明  rgba(255, 255, 255, 0.95)
+  ✅ B4c 玻璃浮面探针（.card>.lg-backdrop 滤网全摘）  ["none","none"]
+  ✅ B4d 搜索胶囊玻璃保留（blur(16px) 仍生效；计算样式对隐藏元素同样可用）  blur(16px)
+  ✅ B4e 暗主题频道卡不透明 rgb(26, 26, 46)  rgb(26, 26, 46)
+  ✅ B5a drop 真文件→信息条就绪
+  ✅ B5b POST /social/uploads?ext=.png 恰 1 + 发布后复位 + fc/overview 刷新（9→10）  fc=10
+  ✅ B6 DELETE /articles/ART-FC-1 + 行移除 + ART-FC-2 幸存 + 零重拉（fc 仍 11）  fc=11
+  ✅ B7 渲染面零残留（Founding Charter/Alex Rivera/48.2K/ART-001 全无）
+  ✅ G 零 Runtime exception + 零 console error（资源 404 豁免）
+  ✅ B1 访客锁屏（locked-hero flex + studio-main/accountBar 隐 + 零 /api 调用）  apiCalls=0
+  ✅ G1 访客零 Runtime exception + 零 console error
+  PASS 30 / 💔 FAIL 1
+

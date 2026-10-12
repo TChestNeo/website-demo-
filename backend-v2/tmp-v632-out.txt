@@ -1,0 +1,97 @@
+[sc 58.26 赋值 ×1] → 1
+[sc 58.25 赋值零残留 ×0] → 0
+[sc FC 48.2 赋值 ×1] → 1
+[sc FC 48.1 赋值零残留 ×0] → 0
+[sc changelog 58.26 头 ×1] → 1
+[sc changelog FC 48.2 头 ×1] → 1
+[sc changelog 58.25 历史 ×1] → 1
+[sc changelog FC 48.1 历史 ×1] → 1
+[sc rev 00348-XXX ×2] → 2
+[sc rev 00349-??? ×2] → 2
+[sc rev 00347-skv(历史) ×2] → 2
+[sc rev 00346-rn2(历史) ×2] → 2
+[sc rev 00344-ntt(历史) ×1] → 1
+[sc rev 00345-vhw(历史) ×1] → 1
+[sc rev 00346-XXX 零残留 ×0] → 0
+[sc rev 00347-??? 零残留 ×0] → 0
+[sc 词 FC_OVERVIEW ×3] → 3
+[sc 词 fc/overview ×2] → 2
+[sc 词 48.2K ×2] → 2
+[sc 词 不透明 ×50] → 43
+[sc 词 假数据 ×18] → 18
+[fc var FC_OVERVIEW = null ×1] → 1
+[fc function loadFcOverview ×1] → 1
+[fc boot loadFcOverview() ×1] → 1
+[fc loadFcOverview(true) ×2] → 2
+[fc function fcNum ×1] → 1
+[fc function fcCompact ×1] → 1
+[fc function fcOverviewStats ×1] → 1
+[fc function fcOverviewWindow ×1] → 1
+[fc 48.2 注释 ×3] → 3
+[fc 48.1 注释历史 ×4] → 4
+[fc 48.0 注释历史 ×2] → 2
+[fc 假数据可执行体零残留：var SIMULATED_FILES] → 0
+[fc 假数据可执行体零残留：function simulateFilePick] → 0
+[fc 假数据可执行体零残留：'48.2K'] → 0
+[fc 假数据零残留：slati_demo_article_content] → 0
+[fc 不透明 .card 规则 ×1] → 1
+[fc 不透明 .lg-backdrop 规则 ×1] → 1
+[fc 访客 head 挂类 ×1] → 0
+[fc fc-locked-hero ×3] → 3
+[fc html.fc-guest ×6] → 6
+[fc 词 登录引导卡 ×3] → 3
+[fc 上传链 /social/uploads?ext=. ×2] → 2
+[fc 上传链 fileInput.type ×1] → 1
+[fc FT fc.analytics.noData ×1] → 1
+[fc FT fc.upload.needLogin ×1] → 1
+[fc fc-ch-avatar-crop(回归) ×4] → 4
+[fc MN_CropDialog(回归) ×4] → 3
+[fc avatarCrop(回归) ×12] → 8
+[fc applyCrop(回归) ×2] → 2
+[fc bannerUrl 零(回归) ×0] → 0
+[fcOv '/api/fc/overview' ×1] → 1
+[fcOv requireSession ×3] → 3
+[fcOv wordCount ×3] → 3
+[fcOv rateLimit ×1] → 1
+[server require fc-overview ×1] → 1
+[server registerFcOverview ×2] → 2
+[i18n fc.analytics.date ×12] → 12
+[i18n fc.analytics.interactions ×12] → 12
+[i18n fc.analytics.newArticles ×12] → 12
+[i18n fc.analytics.newFollowers ×12] → 12
+[i18n fc.analytics.newPosts ×12] → 12
+[i18n fc.analytics.noData ×12] → 12
+[i18n fc.analytics.noDataHint ×12] → 12
+[i18n fc.analytics.windowText ×12] → 12
+[i18n fc.articles.thisWeek ×12] → 12
+[i18n fc.articles.toastPublishInEditor ×12] → 12
+[i18n fc.landing.changeAvatar ×12] → 12
+[i18n fc.landing.emptyArticles ×12] → 12
+[i18n fc.landing.emptyArticlesHint ×12] → 12
+[i18n fc.landing.emptyMedia ×12] → 12
+[i18n fc.landing.emptyMediaHint ×12] → 12
+[i18n fc.landing.myStudio ×12] → 12
+[i18n fc.landing.recentMedia ×12] → 12
+[i18n fc.landing.untitled ×12] → 12
+[i18n fc.metrics.size ×12] → 12
+[i18n fc.toast.avatarFailed ×12] → 12
+[i18n fc.toast.avatarUpdated ×12] → 12
+[i18n fc.toast.gifLocked ×12] → 12
+[i18n fc.toast.imgOnly ×12] → 12
+[i18n fc.upload.emptyHint ×12] → 12
+[i18n fc.upload.emptyTitle ×12] → 12
+[i18n fc.upload.needLogin ×12] → 12
+[i18n fc.upload.statusUploaded ×12] → 12
+[i18n fc.upload.toastNoFile ×12] → 12
+[i18n fc.upload.toastUploadFail ×12] → 12
+[i18n fc.upload.toastUploaded ×12] → 12
+[i18n fc __ZH_HANT_AUTO__ ×2] → 2
+[test fc-overview 案标题] → 5
+[test fc-overview GET 路由] → 1
+[test health 030 注释(回归)] → 1
+[test health 029 注释(回归)] → 0
+[test migrations 030 案标题(回归)] → 14
+[test migrations 029 案标题(回归)] → 9
+[test notifications 030 注释(回归)] → 1
+[test notifications 030_user_crop 零] → 0
+❌ 镜像内容验证失败 4

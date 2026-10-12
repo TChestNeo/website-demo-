@@ -1,0 +1,32 @@
+  ✅ F1 site-config：FC v10.28.47.4 + rev 00334- 占位 + 站点版本恒 v0.2.58.19
+  ✅ F2 编辑器页静态锚：.grid-canvas width:max-content（画布盒全覆盖 115 列）+ computeCols 恒 return 115
+  ✅ F3 编辑器页静态锚：zoomChip 按钮 + window.setViewZoom/resetViewZoom 导出
+  ✅ E1 1280 编辑态：cols 恒 115 + cellSize 20 + 画布盒 2528 全覆盖 + 横向拉条（scrollW>clientW）+ zoom 未施加 + chip 100%  {"cols":115,"cs":20,"canvasW":2528,"scrollW":2576,"clientW":992,"zoom":""}
+  ✅ E2 480 窄窗：cols 仍恒 115 不缩小（旧自适应 12 格行为已死）+ 画布仍 2528 + 横向拉条 + 可横滚 200  {"cols":115,"cs":20,"canvasW":2528,"scrollW":2552,"clientW":214,"zoom":""} scrollLeft=200
+  ✅ E3 3840 超宽窗：cols 仍恒 115（不再无限增长）+ 画布 2528  {"cols":115,"cs":20,"canvasW":2528,"scrollW":3574,"clientW":3574,"zoom":""}
+  ✅ E4 resize 不 refit：卡片位置/数量零变动（窗口 1280→480 卡片 left/top 不变、零自动建卡）  before {"left":"22px","top":"22px","cards":1} ← after {"left":"22px","top":"22px","cards":1}
+  ✅ Z1 Ctrl+滚轮上（deltaY<0）→ 1.1 倍：style.zoom=1.1 + chip 110% + 画布盒随 zoom 放大（scrollW≈2528×1.1）  {"cols":115,"cs":20,"canvasW":2527,"scrollW":2827,"clientW":1014,"zoom":"1.1"}
+  ✅ Z2 锚点平移自洽：光标下画布本地坐标缩放前后不变（setViewZoom(2.2, cx, cy) 锚定、padding 扣除）  {"z0":1.1,"z1":2.2,"p0":230.90909090909088,"p1":230.90909090909088}
+  ✅ Z3 Ctrl+= → 2.2×1.1=2.42（chip 242%）  zoom=2.42
+  ✅ Z4 Ctrl+− → 2.42÷1.1≈2.2（chip 220%）  zoom=2.2
+  ✅ Z5 钳制下限：setViewZoom(0.01) → 0.25（chip 25%）
+  ✅ Z6 钳制上限：setViewZoom(99) → 4（chip 400%）
+  ✅ Z7 zoomChip 点击复位 100%：zoom 移除 + chip 100%
+  ✅ P1 普通滚轮（无修饰）→ 纵向视角移动：scrollTop 增、scrollLeft 不动（浏览器原生）  before {"st":1132,"sl":1460} ← after {"st":1372,"sl":1460}
+  ✅ P2 Shift+滚轮（浏览器原生换算 deltaX）→ 横向视角移动：scrollLeft 增、scrollTop 不动  before {"st":1372,"sl":1460} ← after {"st":1372,"sl":1562}
+  ✅ P5 平移期间玻璃挂起：body.fc-moving 在场（45.2 纪律——pan 中 backdrop-filter 暂离）  fc-moving=true
+  ✅ P3 中键长按拖动 → 平移视口：右移 100 下移 60 → scrollLeft 800→700、scrollTop 400→340（反向拖动）  {"st":340,"sl":700}
+  ✅ P6 松手后玻璃还原：fc-moving 已移除（滚动/平移收尾不残留挂起态）  fc-moving=false
+  ✅ P4 中键点按卡片不误触取消选中（点按前已选中、中键点按后仍选中）  before=true after=true
+  ✅ D1 1.5× 下拖卡：+33 屏幕px = +22 画布px，吸附整格 left 22→44（top 22 不变）  before=22px after {"left":44,"top":22,"w":130}
+  ✅ D2 1.5× 下 se 手柄 +33 屏幕px = +22 画布px：colSpan 6→7、宽 130→152（offsetWidth 画布本地不受 zoom 污染）  {"w":152,"span":"7"}
+  ✅ D3 1.5× 下 rotate grip 拖动：角度改变（≠0、transform 旋转在场、范围合理）  {"rot":-20,"tf":"rotate(-20deg)"}
+  ✅ R1 撤销链三步：旋转归 0 → resize 还原 span6/宽130 → 拖拽还原 left 22（缩放系统未破坏历史快照链）  a={"rot":0,"left":44,"w":152} b={"rot":0,"left":44,"w":130,"span":"6"} c={"left":22,"w":130}
+  ✅ R2 恢复链三步：left 44 + span7/宽152 + 旋转回来（≠0）  {"rot":-20,"left":44,"w":152}
+  ✅ V1 查看模式 fit1to1 完整舞台自洽（s=min(availW/2530,availH/stageH)、scaler=stage×s、canvas 0,0 零平移）
+  ✅ V2 查看模式零缩放守卫：Ctrl+滚轮 + setViewZoom(2) 均不生效（zoom 恒未施加、fit 变换不动）  scale(0.303497)
+  ✅ E5 全程零 Runtime exception  干净
+  ✅ E6 全程零 console error  干净
+
+🎉 全部通过 29/29
+

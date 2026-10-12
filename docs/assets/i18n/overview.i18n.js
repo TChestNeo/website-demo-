@@ -593,3 +593,18 @@ window.MN_I18N.add('zh-Hant', {
   "ov.contrib.published": "發佈了",
   "ov.contrib.empty": "暫無貢獻內容"
 });
+
+/* v0.2.59.18 统计卡真实数据：新增 ov.stat.citizens / ov.stat.articles 两键（追加合并块，add 会 merge）。 */
+window.MN_I18N
+  .add('zh', { 'ov.stat.citizens': '公民', 'ov.stat.articles': '文章' })
+  .add('en', { 'ov.stat.citizens': 'Citizens', 'ov.stat.articles': 'Articles' })
+  .add('de', { 'ov.stat.citizens': 'Bürger', 'ov.stat.articles': 'Artikel' })
+  .add('ru', { 'ov.stat.citizens': 'Граждане', 'ov.stat.articles': 'Статьи' })
+  .add('ms', { 'ov.stat.citizens': 'Warganegara', 'ov.stat.articles': 'Artikel' })
+  .add('th', { 'ov.stat.citizens': 'พลเมือง', 'ov.stat.articles': 'บทความ' })
+  .add('vi', { 'ov.stat.citizens': 'Công dân', 'ov.stat.articles': 'Bài viết' })
+  .add('id', { 'ov.stat.citizens': 'Warga', 'ov.stat.articles': 'Artikel' })
+  .add('fr', { 'ov.stat.citizens': 'Citoyens', 'ov.stat.articles': 'Articles' })
+  .add('es', { 'ov.stat.citizens': 'Ciudadanos', 'ov.stat.articles': 'Artículos' })
+  .add('pt', { 'ov.stat.citizens': 'Cidadãos', 'ov.stat.articles': 'Artigos' })
+  .add('zh-Hant', { 'ov.stat.citizens': '公民', 'ov.stat.articles': '文章' });

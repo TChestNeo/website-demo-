@@ -1,0 +1,25 @@
+  ✅ S1 site-config：FC v10.28.47.4 + changelog 42.0 全卡条目与 42.1 镶边全不透明条目 + rev 00282-/00288- 占位 + 站点版本恒 v0.2.58.1
+  ✅ S2 普通卡面：55% 混色撤下直用 --card-bg-color + 卡身 blur 摘除（规则内无 backdrop-filter）
+  ✅ S3 组背景卡面：不透明 --card-bg-color + blur 摘除 + 兄弟节点双定义注释保留
+  ✅ S4 主题卡卡身 blur 规则整体摘除（6.2 玻璃感轮结束注释在位）
+  ✅ S5 填充层半透明化撤下：全文件 opacity: 0.55 只剩 caption-edge-btn.locked 一处
+  ✅ S6 .card-tint 注释含 42.0 不透明口径（层 opacity 回 1=6.2 前口径）
+  ✅ S7 注入层门控收编全卡族 + 42.1 收编编辑器八浮面（blanket 规则在位 + 旧选择式门控零残留）
+  ✅ S8 12px 玻璃配方已成死码（42.1 编辑面板同轮铺不透明底、门控先行收编）
+  ✅ S9 fc-moving 挂起保留（对卡/镶边已全 no-op、只剩组背景 filter 描边一个作用面）
+  ✅ S10 不动锚：SNE 格底 62% 混色保留 + 外板/图底/主题排除仍在普通卡规则（外板不透明口径 v10.21 不动）
+  ✅ B1 SNE 卡：卡面不透明 surface-container + backdrop blur 摘除（含 -webkit）  {"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","op":"1"}
+  ✅ B2 内容卡：卡面不透明 surface-container + blur 摘除  {"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","op":"1"}
+  ✅ B3 选色 #d43c3c：卡面=纯色 rgb(212,60,60) 不透明 + blur 仍无  {"bg":"rgb(212, 60, 60)","blur":"none","webkitBlur":"none","op":"1"}
+  ✅ B4 纸主题：卡身 blur 摘除 + tint 层 opacity 1 + 底色 base 不透明 surface + 渐变层在位  {"face":"rgba(0, 0, 0, 0)","blur":"none","tintOp":"1","tintBg":"rgb(236, 238, 240)","tintImg":"linear-gradient(135deg, rgba(255, 248, 2","edge":true}
+  ✅ B5 油漆主题：::before 填充 opacity 1 + 渐变在位（6.2 前口径复活）  {"op":"1","bg":"rgb(236, 238, 240)","img":"linear-gradient(135deg, rgb(230, 57, 32)","edge":true}
+  ✅ B7 fc-moving 挂起：独立卡卡面/模糊 before=during=after 逐字节一致（不透明面无玻璃可挂）  {"before":{"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","op":"1"},"during":{"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","op":"1"},"after":{"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","op":"1"}}
+  ✅ B6 组背景：卡面不透明 surface-container + blur 摘除 + 成员面透明一体回归（不透明由组背景承担）  {"gb":"rgb(236, 238, 240)","gblur":"none","members":[{"id":"c2","bg":"rgba(0, 0, 0, 0)","blur":"none"},{"id":"c3","bg":"rgba(0, 0, 0, 0)","blur":"none"}]}
+  ✅ B7b fc-moving 挂起：组背景底色 before=during=after 不变（面不消失）、filter 描边挂起为 none=45.2 纪律  {"before":{"bg":"rgb(236, 238, 240)","filter":"drop-shadow(rgba(118, 117, 134, 0.08) 1px 0px 0px) drop-shadow(rgba(118, 117, 134, 0.08) -1px 0px 0px) drop-shadow(rgba(118, 117, 134, 0.08) 0px 1px 0px) drop-shadow(rgba(118, 117, 134, 0.08) 0px -1px 0px) drop-shadow(rgba(0, 0, 0, 0.1) 0px 4px 18px)"},"during":{"bg":"rgb(236, 238, 240)","filter":"none"},"after":{"bg":"rgb(236, 238, 240)","filter":"drop-shadow(rgba(118, 117, 134, 0.08) 1px 0px 0px) drop-shadow(rgba(118, 117, 134, 0.08) -1px 0px 0px) drop-shadow(rgba(118, 117, 134, 0.08) 0px 1px 0px) drop-shadow(rgba(118, 117, 134, 0.08) 0px -1px 0px) drop-shadow(rgba(0, 0, 0, 0.1) 0px 4px 18px)"}}
+  ✅ B8 玻璃注入层：卡/组背景上不在场或 display:none（零可见注入层）  ["lg-backdrop:none","lg-specular:none","lg-backdrop:none","lg-specular:none","lg-backdrop:none","lg-specular:none","lg-backdrop:none","lg-specular:none"]
+  ✅ B9 查看模式：默认卡 c1/c2 不透明 + 全卡 blur 摘除 + 作者自选半透背景 c3/c4 原样保留（0.15 不受玻璃轮影响）  [{"id":"c1","bg":"rgb(236, 238, 240)","blur":"none"},{"id":"c2","bg":"rgb(236, 238, 240)","blur":"none"},{"id":"c3","bg":"rgba(220, 38, 38, 0.15)","blur":"none"},{"id":"c4","bg":"rgba(46, 91, 255, 0.15)","blur":"none"}]
+  ✅ E1 全程零 Runtime.exceptionThrown + 零 console.error  {"errs":[],"cons":[]}
+
+╭──────────────────────────────╮
+│  🎉 21 ✅ / 0 ❌  (fc-opaque)  │
+╰──────────────────────────────╯

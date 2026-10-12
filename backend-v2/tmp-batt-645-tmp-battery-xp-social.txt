@@ -1,0 +1,16 @@
+  ✅ F1 静态：hub 发帖 +25 在 removed 拦截之后（removed 帖不记；i18n 轮起 T() 文案+同行注释）
+  ✅ F2 静态：帖页评论 +2 在 removed 拦截之后（removed 评论不记）+ 评论区 DOM 追加链保留
+  ✅ F3 静态：编辑器 publishXPReward 120/5 判定（仅 addXP 成功置旗 + 清空草稿重置）三发布路径接线（v10.28.41 演示路径改在确认发布弹窗后：confirmPublish 演示/doCreatePublish/PUT 成功）
+  ✅ S1 hub 发帖成功：+25 立得（0+5 每日+25=30）+ 输入框清空 + 打桩收到内容  {"xp":30,"flag":null} [{"content":"Batt 发帖测试"}]
+  ✅ S2 hub removed 帖不记 XP：30 保持 + 输入框保留内容（拦截分支）+ 打桩收到第二次  {"xp":30,"flag":null} {"kept":"Batt 违规测试"}
+  ✅ S3 帖页评论成功：+2（30→32）+ 评论入列表 + 输入框清空 + 打桩收到内容  {"xp":32,"flag":null} [{"postId":"PST-batt1","content":"Batt 评论测试"}]
+  ✅ S4 帖页 removed 评论不记 XP：32 保持 + 未入列表 + 打桩收到第二次  {"xp":32,"flag":null} {"inList":false}
+  ✅ S5a 编辑器本地首发布：+120（0+5 每日+120=125）+ 旗子置真  {"xp":125,"flag":"true"}
+  ✅ S5b 同草稿再发布：+5（125→130）+ 旗子保持真（改内容也算更新=用户钦定）  {"xp":130,"flag":"true"}
+  ✅ S5c 草稿清空重写：旗子重置 → 发布回 +120（130→250）  {"xp":250,"flag":"true"}
+  ✅ S6 编辑器 guest 发布：XP 不动（250 保持）+ 旗子不置真（guest 没记上不置旗）  {"xp":250,"flag":"false"}
+  ✅ S7a 编辑器云端首发布：+120（0+5 每日+120=125）+ 旗子置真 + 打桩收到标题  {"xp":125,"flag":"true"} [{"title":"Cloud Art"}]
+  ✅ S7b 云端同草稿再发布：+5（125→130）+ 打桩收到第二次（更新文章=用户钦定）  {"xp":130,"flag":"true"}
+  ✅ Z 零 console error/exception  []
+
+  ── 结果: 14/14 全绿 ✅

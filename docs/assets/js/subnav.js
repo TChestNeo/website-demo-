@@ -98,18 +98,21 @@
       var curLeft = parseFloat(bg.style.left) || target.left;
       var curWidth = parseFloat(bg.style.width) || target.width;
 
+      // v0.2.59.40 撤销轮：37-39 的 Q弹/duai/急刹压缩全部撤下，恢复原始平滑滑动 + 原版 slime 拉伸
+      var EASE = 'cubic-bezier(0.25,0.1,0.25,1)';
+
       // Background card
-      bg.style.transition = skipAnim ? 'none' : 'left 0.55s cubic-bezier(0.25,0.1,0.25,1), width 0.55s cubic-bezier(0.25,0.1,0.25,1), transform 0.55s cubic-bezier(0.25,0.1,0.25,1)';
+      bg.style.transition = skipAnim ? 'none' : 'left 0.55s ' + EASE + ', width 0.55s ' + EASE + ', transform 0.55s ' + EASE;
       bg.style.left = target.left + 'px';
       bg.style.width = target.width + 'px';
 
       // Text clip — same position as bg
-      textClip.style.transition = skipAnim ? 'none' : 'left 0.55s cubic-bezier(0.25,0.1,0.25,1), width 0.55s cubic-bezier(0.25,0.1,0.25,1)';
+      textClip.style.transition = skipAnim ? 'none' : 'left 0.55s ' + EASE + ', width 0.55s ' + EASE;
       textClip.style.left = target.left + 'px';
       textClip.style.width = target.width + 'px';
 
       // Inner — shift inversely so active clone aligns at 0 inside clip
-      inner.style.transition = skipAnim ? 'none' : 'left 0.55s cubic-bezier(0.25,0.1,0.25,1)';
+      inner.style.transition = skipAnim ? 'none' : 'left 0.55s ' + EASE;
       inner.style.left = '-' + target.left + 'px';
 
       if (sliderReady && !skipAnim) {
@@ -120,7 +123,7 @@
         blob.style.opacity = '0.3';
         blob.style.transform = 'scaleX(1) scaleY(1)';
         requestAnimationFrame(function() {
-          blob.style.transition = 'opacity 0.5s ease, transform 0.55s cubic-bezier(0.25,0.1,0.25,1)';
+          blob.style.transition = 'opacity 0.5s ease, transform 0.55s ' + EASE;
           blob.style.opacity = '0';
           blob.style.transform = 'scaleX(0.5) scaleY(0.8)';
         });
@@ -162,6 +165,30 @@
       });
     });
 
+    // v0.2.59.32 单页多视图（/micronationary）：视图切换时高亮从旧 pill 位置滑到新 pill。
+    // 隐藏→显示会触发下方 IntersectionObserver 的 skipAnim 跳位，切页动画期间抑制它。
+    var suppressIO = false;
+    subnav._animateTo = function(fromLeft, fromWidth) {
+      suppressIO = true;
+      var target = getTarget();
+      if (!target) { suppressIO = false; return; }
+      if (fromLeft != null && fromLeft !== target.left) {
+        // 先瞬移到旧 pill 位置（无过渡），再交给 updateSlider 动画滑到新 pill
+        bg.style.transition = 'none'; textClip.style.transition = 'none'; inner.style.transition = 'none';
+        bg.style.left = fromLeft + 'px';
+        textClip.style.left = fromLeft + 'px';
+        inner.style.left = '-' + fromLeft + 'px';
+        bg.style.width = target.width + 'px';
+        textClip.style.width = target.width + 'px';
+        void bg.offsetWidth; // 强制回流让瞬移生效
+        sliderReady = true;
+        updateSlider(false);
+      } else {
+        updateSlider(false); // 同 pill 重放（slime 拉伸）
+      }
+      setTimeout(function() { suppressIO = false; }, 800);
+    };
+
     // Resize
     var resizeTimer;
     window.addEventListener('resize', function() {
@@ -184,6 +211,7 @@
       var io = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
           if (entry.isIntersecting) {
+            if (suppressIO) return; // v0.2.59.32 切页滑动动画期间跳过跳位
             syncCloneWidths();
             updateSlider(true);
           }

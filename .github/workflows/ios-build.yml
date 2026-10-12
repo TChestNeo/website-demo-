@@ -1,0 +1,30 @@
+name: iOS Build
+
+on:
+  push:
+    paths:
+      - 'ios/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+
+      - name: Build (simulator, no signing)
+        working-directory: ios
+        run: |
+          xcodebuild build \
+            -project MNationWorld.xcodeproj \
+            -scheme MNationWorld \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO | tail -40

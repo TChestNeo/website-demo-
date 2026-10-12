@@ -1,0 +1,36 @@
+﻿═══ F0 静态（修复标记）═══
+  ✅ F0-1 transition: all 清零（本页全部显式属性列表）
+  ✅ F0-2 #msgSlide will-change: transform 层提升
+  ✅ F0-3 面板 opacity 渐隐过渡已移除（瞬时调暗）
+  ✅ F0-4 announceList CSS mask 已移除（真实属性零残留）
+  ✅ F0-5 侧栏 width 过渡换锐曲线 0.25s cubic-bezier(0.22,0.61,0.36,1)
+  ✅ F0-6 .msg-row.fade-up will-change
+  ✅ F0-7 .card-hover 基础过渡（悬停抬升双向平滑）
+  ✅ F0-8 公告卡 transition 仅 box-shadow（tilt 即时跟手）
+  ✅ F0-9 .btn/.input-glass/.modal-card/.subnav-pill/.upload-zone/.segmented-option 显式列表
+  ✅ F0-10 msg-acc mono 暗色块保留（Request G 修复不受扰）
+  ✅ F0-11 fadeUp 关键帧保留
+
+═══ M 功能回归 ═══
+  ✅ M1-1 private→groups：translateX(-100%) + private 瞬时 0.3 + groups 1 + 激活态
+  ✅ M1-2 groups→announcements：translateX(-200%) + announce 1
+  ✅ M1-3 announcements→private：translateX(0) + private 1 + announce 0.3
+  ✅ M2-1 #msgSlide willChange=transform（层提升在线）
+  ✅ M2-2 privatePanel 无过渡（瞬时调暗，transitionDuration=0s）
+  ✅ M2-3 announceList maskImage=none
+  ✅ M2-4 convSidebar 过渡=width 0.25s
+  ✅ M2-5 .btn 过渡为显式属性列表（无 all）
+  ✅ M3 侧栏折叠→恢复（320→窄→320）
+  ✅ M4 打开会话：chatHeader 可见 + 消息行渲染
+  ❌ M5-1 发送：行 +1 且末行带 fade-up（动画中） — {"n":4,"cls":"msg-row"}
+  ❌ M5-2 动画结束：fade-up 清理 + 输入框清空 — {"n":4,"cls":"msg-row fade-up","input":""}
+  ✅ M6 公告展开→收起：列表重渲 + 展开态描边 box-shadow 出现后消失
+  ✅ M7 announceList 滚动正常（scrollTop=400）
+  ✅ M8-1 FAB 私有面板可见
+  ✅ M8-2 actionModal 开→关（display flex→none）
+  ✅ M8-3 FAB 公告面板隐藏
+  ❌ M9-1 切换动画窗口内有帧流动（6 窗口最小 n≥4，此环境 TS3 型窗口 ≈10-15fps） — minN=2 29/4/9/3/18/2
+  ✅ M9-2 主线程零长任务（>50ms 任务=0，共 6 窗口）
+  ✅ Z 控制台零错误（噪声已滤）
+
+═══ FAILED — 28/31 ═══

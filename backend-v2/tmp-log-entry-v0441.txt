@@ -1,0 +1,8 @@
+v0.2.44.1 / FC v10.28.33.1 — mono 暗色背景翻黑族 + FC 白底白字按钮修复（补丁位 0→1·观感修复轮）
+- 用户：「把黑白主题的深色模式背景颜色改成黑色系的而不是原本的蓝色 + FuildCanva 里有一些按钮在深色的黑白主题下是白底白字的」
+- 真身：暗 mono 全表面仍蓝紫家族（--color-background #161625 等从未按 mono 翻）；白底白字=暗 mono 主色近白 #ececf2 当按钮底+硬编码白字
+- 修法（全在 settings-modal.js，4 条新规则）：①mono 暗令牌族全翻中性黑族（#0b0b0d~#2a2a2f；按钮黑族保留 v0.2.28.15 钦定配方）②active 按钮族+tim-search+lib-icon:hover → #32324a 白字 ③progress-step 圆点 ④toast #1e1c32→#1a1a1e
+- 零后端、ethereal 零改动无需 inline-css
+- 电池 monodark 22/22 新（F 静态 4 + M1 暗 mono 首页 / M2 暗 mono 编辑器 / M3 亮 mono 回归 / M4 暗蓝回归 + Z 零 console error）
+- 部署一次 exit 0；curl 链全过（health 58 表 / site-config 双版本 / mono+按钮规则 / FC 两页 + 主站 200）
+- rev 00220-57l

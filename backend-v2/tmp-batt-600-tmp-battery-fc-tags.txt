@@ -1,0 +1,34 @@
+  ✅ S1 site-config：FC v10.28.47.1 + rev 00300- 占位 + 站点恒 v0.2.58.0 + 旧 47.0 版本锚零残留
+  ✅ S2 标签 store 锚在源：IMG_TAG_KEY/SYS_TAG_IDS/惰性播种/窗口导出（tagLoad/tagCreate/tagDelete/localTagDedup/tagDisplayName）
+  ✅ S3 meta 弹窗钉：immTagChips/immNewTagBtn/immTagCreate/imgMetaSave meta 含 tags/imgLibPut 含 tags/IMG_META_PENDING 锚仍在
+  ✅ S4 图库钉：flagFilterBtn/flagTagManageBtn/tagManageModal/flagSlotHint/FILTER_TAG_IDS/renderTagFilterMenu
+  ✅ S5 桥钉：avatar/map 菜单项+openLibForSlot 带参+apply 导出+无参 openFlagBrowser(); 恒 2（F4 红线）  noArg=2
+  ✅ S6 i18n 钉：fc.tag.name.flag/fc.tag.desc.flag 各 12 块 + zh 值逐字 + zh-Hant OpenCC 值在位  name.flag×12 desc.flag×12
+  ✅ T1 惰性播种：3 枚系统标签落盘（sys-flag/sys-emblem/sys-map 全 sys）  {"n":3,"sys":3,"ids":"sys-flag,sys-emblem,sys-map","stored":3}
+  ✅ T2 meta 弹窗选标签（chip 勾选 selected）→ 保存 → 图库条目 tags==["sys-flag"]  {"a":{"sel":true,"chips":3,"noI18n":0},"b":{"has":true,"tags":"[\"sys-flag\"]","name":"T2图"}}
+  ✅ T3 跨语言搜索：Flag/国旗/Bandeira 三语命中同一 flag 标签 tile、map 标签 tile 不中  {"Flag":{"hitA":true,"hitM":true,"hitB":false},"国旗":{"hitA":true,"hitM":true,"hitB":false},"Bandeira":{"hitA":true,"hitM":true,"hitB":false}}
+  ✅ T4a 本地查重：建 "Flag" → 建议行「已有相似标签：国旗」+ 合并到它/仍要新建 两钮  {"shown":true,"txt":"已有相似标签：国旗合并到它仍要新建","rows":1,"btns":["合并到它","仍要新建"]}
+  ✅ T4b 合并到它：勾选既有 sys-flag（selected chip「国旗」）不新建标签、建议行收起  {"selN":1,"selTxt":"国旗","suggHidden":true,"tagN":3}
+  ✅ T5 自建标签「皇室 · Royal」双语并排+直建即勾选+toast+保存后条目带新标签  {"r":{"chip":true,"chipSel":true,"toast":"已创建标签：皇室 · Royal","orig":"皇室","en":"Royal"},"b":{"tags":"[\"tmuhc87ed1rp\"]","id":"tmuhc87ed1rp"}}
+  ✅ T6 远端查重 404（本地静态 /api 无此端点）静默降级零 error（不拦创建）  {"e":[],"c":[]}
+  ✅ T7a 筛选 OR 并集：flag 3 格→+map 4 格越选越多、自建标签格不混入、徽章计数同步  {"n1":3,"n2":4,"f1":true,"union":true,"badge":"2"}
+  ✅ T7b 搜索 AND 筛选：q=Bandeira（标签名跨语言）且筛 flag+map → map-only B 图被收窄出局、剩 flag 系 3 格  {"n":3,"hasMAC":true,"noBnoM2":true}
+  ✅ T8a 管理面板用量：国旗 3 张/地图 2 张/皇室 1 张 + 4 行  {"国旗":"3 张图片","国徽":"0 张图片","地图":"2 张图片","皇室 · Royal":"1 张图片"}
+  ✅ T8b 编辑钮回填：原文=皇室/英文名=Royal、面板展开  {"orig":"皇室","en":"Royal","shown":true}
+  ✅ T8c 改名提交：store original=皇家 + toast 标签已保存  {"orig":"皇家","toast":"标签已保存：皇家"}
+  ✅ T8d 删除：confirm 文案「删除标签「皇家 · Royal」…」+ store 移除 + 全库条目剥离 tags + toast  {"d":{"gone":true,"stripped":true,"toast":"已删除标签：皇家 · Royal"},"dialog":"删除标签「皇家 · Royal」？将从所有图片上移除。"}
+  ✅ T9 系统标签行：3 行全 lock、零编辑/删除钮  {"sysN":3,"bad":0,"allN":3}
+  ✅ T10a 右键门控：character 卡 → 头像库项 flex、地图库项 none  {"av":"flex","mp":"none"}
+  ✅ T10b 桥打开图库：slot 提示「正在为头像卡选图…」+ 图库弹窗开  {"shown":true,"txt":"正在为头像卡选图——所选图片将补到该头像上","browserOpen":true}
+  ✅ T10c 双击 tile → 头像卡 charAvatar+bg+fi 覆盖层保留+草稿立即含（零心跳）+toast 图片已添加  {"avatar":true,"name":true,"bg":true,"fi":true,"draft":true,"toast":"图片已添加：A图"}
+  ✅ T11a 右键门控：map 卡 → 地图库项 flex、头像库项 none  {"mp":"flex","av":"none"}
+  ✅ T11b 桥打开图库：slot 提示「正在为地图卡选图…」  "正在为地图卡选图——所选图片将补到该地图上"
+  ✅ T11c 双击 tile → 地图卡 mapImg+map-empty 移除+画布清空+草稿立即含+toast 图片已添加  {"mapImg":true,"name":true,"emptyGone":true,"txt":"","draft":true,"toast":"图片已添加：B图"}
+  ✅ T12 图库内上传随 slot：avatar 桥打开时上传→头像卡应用+「头像已上传」toast+入持久库  {"applied":true,"draft":true,"libHas":true,"toast":"头像已上传"}
+  ✅ T13a 切 en：sys 标签显示 Flag（随界面语言）、自建仍双语「皇室 · Royal」  {"sysName":"Flag","custom":"皇室 · Royal"}
+  ✅ T13b en 界面 chips：首 chip 文本 Flag + 全部 textContent 渲染零 data-i18n  {"first":"Flag","n":4,"i18nAttrs":0}
+  ✅ E1 全程零 Runtime.exceptionThrown  []
+  ✅ E2 全程零 console error  []
+
+🎉 全部通过 31/31  (fc-tags)
+

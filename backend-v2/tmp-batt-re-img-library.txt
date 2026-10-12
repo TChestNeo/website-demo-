@@ -1,0 +1,46 @@
+  ✅ F1 页签左「全部」右「我的图库」+data-tab+标题图片库+搜索 placeholder+确认添加+搜索栏上传按钮（v10.28.32 直开图库，旧副标题已随图源选择器移除）
+  ✅ F2 导出（editLibImg/delLibImg/collectImgLibrary/countLibUsages/syncLibMeta）+CSS（lib-vis/lib-icon/flag-grid-empty）+铅笔/垃圾桶 title
+  ✅ F3 版本 v0.2.45.2 / v10.28.34.2 + 进位注释（新轮 42→43/32→33 + 旧轮 41→42/31→32 仍在）
+  ✅ F3b 持久库静态钉：IMG_LIB_KEY=slati_img_library+2.5e6 上限+imgLibPut/imgLibRemove 导出+imgMetaSave choke point+store 先入合并
+  ✅ F4 renderFlagGrid onclick 不含 dataURL（f.src 只进 src 属性 esc）
+  ✅ F5 FC_FLAG_LIBRARY=[]（样本旗全撤：SEED/MY 数组不在+空接口保留）+草稿 v 保持 9
+  ✅ S1a 全部页签=0 格零样本旗（SEED/MY 已撤）+空态文案+未选择  {"browser":true,"meta":false,"backdrop":true,"tab":"all","tiles":[],"empty":"还没有上传过图片——你上传的国旗、背景、头像、地图都会出现在这里","selCount":"未选择","metaName":"","metaDesc":"","metaVis":"private","lib
+  ✅ S1b 我的图库空态=0 格+文案「还没有上传过图片…」+未选择  {"browser":true,"meta":false,"backdrop":true,"tab":"mylib","tiles":[],"empty":"还没有上传过图片——你上传的国旗、背景、头像、地图都会出现在这里","selCount":"未选择","metaName":"","metaDesc":"","metaVis":"private","l
+  ✅ S2a 保存=卡图+label=名称+三 dataset（public）  {"imgName":"我的国旗","imgDesc":"描述 词","imgVis":"public","hasImg":true,"hasBgImgClass":true,"label":"我的国旗","labelVal":"我的国旗","iconHidden":true,"cardBgImg":false,"cardBgName":null,"hasCardBgEl":false,"hasCardBgClass":false}
+  ✅ S2b v10.28.32 保存后图库保持打开（close:self）+新格立刻出现并选中+计数文案  {"browser":true,"meta":false,"backdrop":true,"tab":"all","tiles":[{"name":"我的国旗","lib":true,"vis":"Public","edit":true,"del":true,"sel":true,"id":"lib0"}],"empty":"","selCount":"已选：我的国旗","metaName":"我的国旗","metaDesc":"描述 词","metaVis":"public","libLen":1,"canvasBg":false,"entryText":"未设置"}
+  ✅ S2c 我的图库=1 格（名称/Public 徽章/铅笔+垃圾桶）  [{"name":"我的国旗","lib":true,"vis":"Public","edit":true,"del":true,"sel":false,"id":"lib0"}]
+  ✅ S3a pageBg=画布背景+入口 1 张  {"bg":true,"e":"1 张"}
+  ✅ S3b 卡背景=cardBgImg+三 dataset  {"imgName":"我的国旗","imgDesc":"描述 词","imgVis":"public","hasImg":true,"hasBgImgClass":true,"label":"我的国旗","labelVal":"我的国旗","iconHidden":true,"cardBgImg":true,"cardBgName":"卡背景","hasCardBgEl":true,"hasCardBgClass":true}
+  ✅ S3c 内联图=插入 1 张+名称+alt  {"count":1,"firstSrc":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4AWJiYPj/HwAAAP//SnIwEgAAAAZJREFUAwADDAIB6Pxv8AAAAABJRU5ErkJggg==","names":["内联图"]}
+  ✅ S3d 我的图库=4 格去重（同 dataURL 双卡=1 格）+countLibUsages=2  内联图|卡背景|我的国旗|红色背景 usages=2
+  ✅ S4a 按名称搜「红色」=1 格红色背景  [{"name":"红色背景","lib":true,"vis":"Team","edit":true,"del":true,"sel":false,"id":"lib1"}]
+  ✅ S4b 按描述搜「描述」=1 格我的国旗  [{"name":"我的国旗","lib":true,"vis":"Public","edit":true,"del":true,"sel":false,"id":"lib0"}]
+  ✅ S4c 按描述搜「desc1」=1 格内联图  [{"name":"内联图","lib":true,"vis":"Public","edit":true,"del":true,"sel":false,"id":"lib3"}]
+  ✅ S4d 清空搜索=4 格恢复  ["我的国旗","红色背景","卡背景","内联图"]
+  ✅ S5a 单击选中=已选：我的国旗+格高亮（store-first 序，按名称不按索引）  {"browser":true,"meta":false,"backdrop":true,"tab":"mylib","tiles":[{"name":"我的国旗","lib":true,"vis":"Public","edit":true,"del":true,"sel":true,"id":"lib0"},{"name":"红色背景","lib":true,"vis":"Team","edit":true,"del":true,"sel":false,"id":"lib1"},{"name":"卡背景","lib":true,"vis":"Private","edit":true,"del":true,"sel":false,"id":"lib2"},{"name":"内联图","lib":true,"vis":"Public","edit":true,"del":true,"sel":false,"id":"lib3"}],"empty":"","selCount":"已选：我的国旗","metaName":"内联图","metaDesc":"desc1","metaVis":"public","libLen":4,"canvasBg":true,"entryText":"1 张"}
+  ✅ S5b Confirm=卡 B 图+label=名称+三 dataset+双窗全关+遮罩摘  {"imgName":"我的国旗","imgDesc":"描述 词","imgVis":"public","hasImg":true,"hasBgImgClass":true,"label":"我的国旗","labelVal":"我的国旗","iconHidden":true,"cardBgImg":false,"cardBgName":null,"hasCardBgEl":false,"hasCardBgClass":false} {"browser":false,"meta":false,"backdrop":false,"tab":"mylib","tiles":[{"name":"我的国旗","lib":true,"vis":"Public","edit":true,"del":true,"sel":true,"id":"lib0"},{"name":"红色背景","lib":true,"vis":"Team","edit":true,"del":true,"sel":false,"id":"lib1"},{"name":"卡背景","lib":true,"vis":"Private","edit":true,"del":true,"sel":false,"id":"lib2"},{"name":"内联图","lib":true,"vis":"Public","edit":true,"del":true,"sel":false,"id":"lib3"}],"empty":"","selCount":"已选：我的国旗","metaName":"内联图","metaDesc":"desc1","metaVis":"public","libLen":4,"canvasBg":true,"entryText":"1 张"}
+  ✅ S5c toast=图片已添加
+  ✅ S6a 铅笔=meta 叠在 browser 上（双 active）+initial 回填（名称/描述/可见性）  {"browser":true,"meta":true,"backdrop":true,"tab":"mylib","tiles":[{"name":"我的国旗","lib":true,"vis":"Public","edit":true,"del":true,"sel":false,"id":"lib0"},{"name":"红色背景","lib":true,"vis":"Team","edit":true,"del":true,"sel":false,"id":"lib1"},{"name":"卡背景","lib":true,"vis":"Private","edit":true,"del":true,"sel":false,"id":"lib2"},{"name":"内联图","lib":true,"vis":"Public","edit":true,"del":true,"sel":false,"id":"lib3"}],"empty":"","selCount":"未选择","metaName":"我的国旗","metaDesc":"描述 词","metaVis":"public","libLen":4,"canvasBg":true,"entryText":"1 张"}
+  ✅ S6b 保存=meta 关+browser 保持+格刷新（名/Team 徽章）+两卡三 dataset 同步  {"imgName":"改名的旗","imgDesc":"新描述 词","imgVis":"team","hasImg":true,"hasBgImgClass":true,"label":"我的国旗","labelVal":"我的国旗","iconHidden":true,"cardBgImg":true,"cardBgName":"卡背景","hasCardBgEl":true,"hasCardBgClass":true} {"imgName":"改名的旗","imgDesc":"新描述 词","imgVis":"team","hasImg":true,"hasBgImgClass":true,"label":"我的国旗","labelVal":"我的国旗","iconHidden":true,"cardBgImg":false,"cardBgName":null,"hasCardBgEl":false,"hasCardBgClass":false}
+  ✅ S6c 卡 label 不动（卡名是卡自己的）+pageBg meta 未串味
+  ✅ S6d 3.6s 自动落草稿=两卡 imgMeta 新值+v 保持 9  {"v":9,"metas":[{"name":"改名的旗","desc":"新描述 词","visibility":"team"},{"name":"改名的旗","desc":"新描述 词","visibility":"team"}]}
+  ✅ S7a confirm 报使用数（2 处）+两卡图全移除+icon 恢复+dataset 删+格减一（4→3）  usages=2 ["删除「改名的旗」？它正用在 2 处（卡片/背景/文字），删除后所有地方都会移除。"] {"imgName":null,"imgDesc":null,"imgVis":null,"hasImg":false,"hasBgImgClass":false,"label":"我的国旗","labelVal":"我的国旗","iconHidden":false,"cardBgImg":true,"cardBgName":"卡背景","hasCardBgEl":true,"hasCardBgClass":true} {"imgName":null,"imgDesc":null,"imgVis":null,"hasImg":false,"hasBgImgClass":false,"label":"我的国旗","labelVal":"我的国旗","iconHidden":false,"cardBgImg":false,"cardBgName":null,"hasCardBgEl":false,"hasCardBgClass":false}
+  ✅ S7b toast=已删除：改名的旗
+  ✅ S7c reload=图不回来+图库 3 项+草稿两 flag 条目无 imgSrc/imgMeta+v=9+卡背景 meta 保住  {"v":9,"noImg":true,"cardBgMeta":{"name":"卡背景","desc":"","visibility":"private"}} libLen=3
+  ✅ S8a 第二张背景提交=2 张+画布背景在  {"bg":true,"e":"2 张"}
+  ✅ S8a-bis 预览克隆副本在场也不虚增使用数（gridCanvas 口径回归钉）  {"cloneImgs":2,"usages":2}
+  ✅ S8b 图库=4 格（2 背景+卡背景+内联）  ["红色背景","卡背景","内联图","蓝色背景"]
+  ✅ S8c 删红色背景=背景重合成保留（has-page-bg+1 张）+格 4→3+browser 保持  {"bg":true,"e":"1 张","n":3}
+  ✅ S8d 删最后一张=背景全清（无 has-page-bg+未设置）+格 3→2  {"bg":false,"e":"未设置","n":2}
+  ✅ S9a 铅笔=meta 叠 browser（双 active）+空描述/private 回填  {"browser":true,"meta":true,"backdrop":true,"tab":"mylib","tiles":[{"name":"卡背景","lib":true,"vis":"Private","edit":true,"del":true,"sel":false,"id":"lib0"},{"name":"内联图","lib":true,"vis":"Public","edit":true,"del":true,"sel":false,"id":"lib1"}],"empty":"","selCount":"未选择","metaName":"卡背景","metaDesc":"","metaVis":"private","libLen":2,"canvasBg":false,"entryText":"未设置"}
+  ✅ S9b Escape=只关顶层 meta，browser+遮罩保持  {"browser":true,"meta":false,"backdrop":true,"tab":"mylib","tiles":[{"name":"卡背景","lib":true,"vis":"Private","edit":true,"del":true,"sel":false,"id":"lib0"},{"name":"内联图","lib":true,"vis":"Public","edit":true,"del":true,"sel":false,"id":"lib1"}],"empty":"","selCount":"未选择","metaName":"卡背景","metaDesc":"","metaVis":"private","libLen":2,"canvasBg":false,"entryText":"未设置"}
+  ✅ S9c Escape 链不含 browser（只关 meta/pageBg——既有口径）  {"browser":true,"meta":false,"backdrop":true,"tab":"mylib","tiles":[{"name":"卡背景","lib":true,"vis":"Private","edit":true,"del":true,"sel":false,"id":"lib0"},{"name":"内联图","lib":true,"vis":"Public","edit":true,"del":true,"sel":false,"id":"lib1"}],"empty":"","selCount":"未选择","metaName":"卡背景","metaDesc":"","metaVis":"private","libLen":2,"canvasBg":false,"entryText":"未设置"}
+  ✅ S9d 遮罩点击=browser 关+遮罩摘  {"browser":false,"meta":false,"backdrop":false,"tab":"mylib","tiles":[{"name":"卡背景","lib":true,"vis":"Private","edit":true,"del":true,"sel":false,"id":"lib0"},{"name":"内联图","lib":true,"vis":"Public","edit":true,"del":true,"sel":false,"id":"lib1"}],"empty":"","selCount":"未选择","metaName":"卡背景","metaDesc":"","metaVis":"private","libLen":2,"canvasBg":false,"entryText":"未设置"}
+  ✅ S10a 删卡背景=cardBgImg 全摘（el/class/dataset）+格 2→1  {"imgName":null,"imgDesc":null,"imgVis":null,"hasImg":false,"hasBgImgClass":false,"label":"我的国旗","labelVal":"我的国旗","iconHidden":false,"cardBgImg":false,"cardBgName":null,"hasCardBgEl":false,"hasCardBgClass":false} ["内联图"]
+  ✅ S10b 删内联图=画布两张全移除（剩余=克隆副本）+confirm 报 2 处+格 2→0  {"count":0,"total":2,"clone":2} ["删除「卡背景」？它正用在 1 处（卡片/背景/文字），删除后所有地方都会移除。","删除「内联图」？它正用在 2 处（卡片/背景/文字），删除后所有地方都会移除。"]
+  ✅ S10c 我的图库空态文案回归+未选择  {"browser":true,"meta":false,"backdrop":true,"tab":"mylib","tiles":[],"empty":"还没有上传过图片——你上传的国旗、背景、头像、地图都会出现在这里","selCount":"未选择","metaName":"卡背景","metaDesc":""
+  ✅ S12 tt-img-pop=0 样本旗（仅上传格）+头=图片+FC_FLAG_LIBRARY 空  {"head":"图片","tiles":[{"upload":true,"title":"上传图片（国徽等任意图）"}],"libLen":0}
+  ✅ S11 版本 v0.2.45.2 + FC v10.28.34.2 + 徽章  {"mn":"v0.2.45.2","fc":"v10.28.34.2","badge":true}
+  ✅ Z 零 console error  []
+
+  ── 结果: 44/44 全绿 ✅

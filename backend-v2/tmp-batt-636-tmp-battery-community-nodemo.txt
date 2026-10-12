@@ -1,0 +1,36 @@
+── F. 静态文件零残留（零浏览器）──
+  ❌ F1 site-config v0.2.58.26 恰 9 处（版本行+站点头+49.0 条目头/正文+49.1 条目头/正文+49.2 条目头/正文——635 轮再 +2）（n=11）
+  ✅ F1 site-config 58.23 历史条目保留 ×1（n=1）
+  ✅ F1 rev 占位双锚（00348-XXX + 00349-??? 各 2，部署后终态同数）（2 / 2）
+  ✅ F2 hub 演示零残留全表（16 锚全 0）（全零）
+  ✅ F3 hub 新件锚（18 项恰 1 + 4 项恰 2 + loginCta 恰 3）（全对）
+  ✅ F4 i18n 删键全 0（32 键族）（全零）
+  ✅ F4 i18n hub.emptyFeed 保留 ×12（12 语言块）（n=12）
+  ✅ F5 i18n 11 新键各 ×11 单引号块 + ×1 zh-Hant 双引号块（全对）
+  ✅ F5 i18n __ZH_HANT_AUTO__ 标记 ×1（n=1）
+── B. 访客=登录引导卡（演示样本全移除）──
+  ✅ B1 访客=登录引导卡（锁图标+去登录钮）且零云卡零演示签名零 composer（{"loginCard":true,"lockIcon":"lock","btnText":"去登录","cards":1,"cloud":0,"guest":0,"likeBtn":0,"static":0,"composer":false}）
+  ✅ B2 following tab 恒登录引导卡（切 tab 零云卡）（{"loginCard":true,"cloud":0,"active":"subnav-pill active"}）
+  ✅ B3 topic tab 恒登录引导卡（切 tab 零云卡）（{"loginCard":true,"cloud":0}）
+  ✅ B4 发现中心+热门双引导行（{"guest":true,"trendGuest":true}）
+  ✅ B4b 访客切频道 tab 仍引导行
+  ✅ B5 访客零 API 调用（含零 probe）（calls=0）
+  ✅ B6 正文零演示签名（四假名全不在 DOM）（{"m":true,"s":true,"c":true,"n":true}）
+  ✅ B7 全程 0 console 错误（访客段）
+── C. 云模式罐头（三 tab 全接真数据）──
+  ✅ C1 recommend=composer + 2 云卡 + 零演示签名零死爱心（{"composer":true,"cloud":2,"guest":0,"staticHeart":0,"ids":"PST-000101|PST-000102"}）
+  ✅ C2 following=2 真关注帖 + 零 composer + 药丸激活（{"composer":false,"cloud":2,"ids":"PST-000201|PST-000202","active":"subnav-pill active"}）
+  ✅ C3 topic=2 真话题卡 + 成员计数 + 响应序 + 零 composer 零云帖卡（{"composer":false,"cloud":0,"members":true,"orderOk":true}）
+  ✅ C3d 发现中心 topics=2 真行（响应序首=国徽设计讨论）（{"rows":2,"first":true}）
+  ✅ C3t 热门 memberCount 降序（12 的宪法草案在前）（{"rows":2,"first":true,"second":true}）
+  ✅ C3c channels tab 空态（真数据零频道）
+  ✅ C4 recommend 空表=composer + 空态卡（零演示卡补位）（{"composer":true,"cloud":0,"cards":2}）
+  ✅ C4b following 空表=专属空态（关注一些用户后）零 composer（关注一些用户后，他们的帖子会出现在这里）
+  ✅ C5 topic 空表=空态 + 建话题 CTA 链（{"text":"还没有话题 来创建第一个话题 ✨","cta":"create-topic-step-1.html","cloud":0}）
+  ✅ C5d 发现中心+热门空表=双空态（d=true t=true）
+  ✅ C6 401 整流（feed 401→mn:unauthorized）→ 登录引导卡零云卡（{"loginCard":true,"cloud":0,"guest":0}）
+  ✅ C7 probe 网络错误=离线卡（非登录卡）零云卡（{"offline":true,"loginCard":false,"cloud":0,"text":"cloud_off无法连接服务器，请检查网络后重试"}）
+  ✅ C8 全程 0 console 错误（云模式段）
+
+29 ✅ / 1 ❌
+

@@ -1,0 +1,33 @@
+═══ S 静态锚 ═══
+  ✅ S1 site-config：51.1 在位+50.0 赋值零残留+changelog 头各 ×1+rev 真值各 ×1（637 轮已填真值，占位锚陈旧）+站点恒 58.26
+  ✅ S2 fluidcanvas 向导 16 锚全中
+  ✅ S3 messages 群真接口 12 锚全中
+  ✅ S4 premium slots 13 锚全中（8/16/26/∞+once 结算）
+  ✅ S5 后端 19 锚全中（teams/建群/SKU/032/health 61/uv32）
+  ✅ S6 i18n：7 样键 ×12 + slots12 零残留
+═══ B fluidcanvas CDP ═══
+  ✅ B1 访客门禁：toast 登录后即可创建团队频道 + 弹窗不开
+  ✅ B2 就绪：弹窗存在未开（未打开前无向导渲染）
+  ✅ B3a 打开弹窗：.open + 下一步禁用（未选身份）
+  ✅ B3b 选是：下一步可用
+  ✅ B3c 进 step2：全部+四类全勾（5 行含 all-item）+ 返回钮显示
+  ✅ B4a 取消贴文：全部未勾 + 贴文未勾其余仍勾
+  ✅ B4b 进 step3：好友 2 行全未勾 + 返回钮显示
+  ✅ B5a 勾 Neo：friendChecked[0]=true
+  ✅ B5b POST 体奇偶：name 空+copyIdentity true+copyItems [media,activity,decorations]+chat {name,memberIds:[USR-000042]}
+  ✅ B6 成功流：toast 团队频道已创建+弹窗关+团队区 3 卡（王者团/电池团/新星团）+频道卡无图字母卡
+  ✅ B7 失败流：toast 创建失败，请稍后重试 + 弹窗保持开
+  ✅ B8 团队频道卡：王者团头像图卡（fc-ch-avatar-crop img）+ 名称/成员数文案
+═══ C messages CDP ═══
+  ✅ C1 云群入侧栏：群卡含 电池群/2 名成员（dm 不进群侧栏）
+  ✅ C2 云群消息：群头 电池群 + 消息 欢迎入群
+  ✅ C3 发群消息：POST {content:hello team} + 气泡出现
+  ✅ C4 建群真接口：POST {kind:group,name:新电池群,memberIds:[USR-000042]} + 成功文案「新电池群」创建成功
+  ✅ C5 群名超长本地拒：60 字文案 + 零新增 POST
+  ✅ C6 400 分支：groupBad400 文案（1-60 字符且只能邀请好友）
+═══ D premium CDP ═══
+  ✅ D1a slots-basic 点击奇偶：checkout {tierKey:slots-basic, mode:once}
+  ✅ D1b slots-ultra 点击奇偶：checkout {tierKey:slots-ultra, mode:once}
+═══ E 零异常 ═══
+  ✅ E1 全程零 JS 异常/控制台错误
+🎉 27/27 全绿

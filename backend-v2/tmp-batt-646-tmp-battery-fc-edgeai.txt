@@ -1,0 +1,42 @@
+═══ S 静态锚 ═══
+  ✅ S1 编辑器 34 锚全中（抽屉/圆球/样本/AI/仓库/本地库/草稿链）
+  ✅ S2 后端 17 锚全中（Gemini 配置/预算/注册/端点/031/health 66）
+  ✅ S3 site-config：50.0 在位 + 49.2 赋值零残留 + changelog 头各 ×1 + rev 终态各 ×1 + 站点恒 58.26
+  ✅ S4 i18n：6 样键 ×12（drawerTitle/genBtn/repoEmpty/tabAll/genUnavailable/visFriends）
+  ✅ S5 阅读页 3 锚全中（框环子层/sanitizeClipEd/customEdges 消费）
+═══ B 编辑器 CDP ═══
+  ✅ B0 就绪：抽屉存在且隐藏（无 .open + aria-hidden true）+ 全部 tab 激活
+  ✅ B1a 无卡右键入口：toast 请先选中一张卡片 + 抽屉不开
+  ✅ B1b 有卡右键入口：抽屉 .open + aria-hidden false + 边框节 7 项 + 宽度 2/2px + 取色 #c8c8d0
+  ✅ B2 弹层幽灵钮：popover 开→点「自定义添加」→抽屉开 + popover 关 + 全部 tab 激活
+  ✅ B3 样本：15 内置 + tech4 mini=url(#hud-frame-4) + 首样本=无（setCardEdge('')）
+  ✅ B4 边框节点 Dashed：卡 inline borderStyle=dashed
+  ✅ B5a 生成弹窗开+空输入拒：toast 请输入描述或附上图片 + 零请求 + 结果隐
+  ✅ B5b 罐头 edge 流：预览名 AI撕边 + clip 等值 + mini 同剪影 + 请求形状 {kind:edge,desc,无 image}
+  ✅ B5c 保存：弹窗关 + toast 已保存到我的自定义 + My 1 条 + 库 1 条（source ai/repoId null）
+  ✅ B6 border 罐头流：预览 RING + kind border + My 2 条 + 首条 sub 含边框
+  ✅ B7 应用 border 自定义：cardEdge custom:id + 类 + --card-clip RING + 背景保留 rgb + 边框透明 + 无外板
+  ✅ B8 应用 edge 自定义：--card-clip EDGE_CLIP + 背景清空 + 无外板 + 类在
+  ✅ B9 样本「无」：dataset 清 + 类撤 + --card-clip 撤 + 背景回 rgb
+  ✅ B10a 草稿：customEdges 只收被引用（1 条=AI框环）+ 卡 cardEdge custom:id
+  ✅ B10b reload 往返：卡仍 custom 类+clip RING + 库并回该条
+  ✅ B11 在用拒删：toast 该边缘正在使用中 + 库仍 2 条
+  ✅ B12 组模式：组背景 dataset custom:id + clip RING + 成员卡零改动
+  ✅ B13 仓库应用：全部 tab 2 行 + 首行名称/作者/剪影 + 点击→库 source repo + author Neo + 卡 clip EDGE_CLIP + toast
+  ✅ B14 上传仓库：弹窗（mini+名称+公开默认）+ 选好友 → POST 体含 visibility friends + 关窗 + toast 已上传仓库 + 本地 repoId/徽章
+  ✅ B15 修改已上传：按钮文本 保存修改 + PUT 体 {name,visibility} 无 kind/clip + 徽章→私密
+  ✅ B16a 双真：圆球滑出 + 默认好友侧 + label 好友 + scope friends + 仓库首行 友缘边
+  ✅ B16b 点圆球：切团队侧 + 图标 workspaces + label 团队 + scope team + 首行 团队框
+  ✅ B16c 只有好友：圆球隐 + label 好友 + scope friends
+  ✅ B16d 双假：圆球隐 + label 空 + scope all
+  ✅ B17a unavailable：toast AI 生成暂不可用 + 结果隐 + 弹窗仍开
+  ✅ B17b budget_exhausted：toast 本月 AI 生成额度已用完
+  ✅ B17c ai_failed：toast 生成失败，请稍后再试
+  ✅ B18 附图生成：预览已附图 + 空描述靠图过门 + body.image dataURL png + 库 4 条（AI撕边/AI框环/锯齿星/+本条）
+  ✅ B19 Esc 链：抽屉收起 + 生成弹窗关闭
+═══ C 阅读页 CDP ═══
+  ✅ C1 罐头文章 customEdges：edge 直写 clipPath 等值 / border 框环子层 clip+z -1 / 缺 map 平卡零改动
+  ✅ C2 无 customEdges map：平卡零改动（无 clip 无框环子层）
+═══ E 零异常 ═══
+  ✅ E 零异常（0 原始 / 0 噪声后）
+🎉 37 ✅ / 0 ❌

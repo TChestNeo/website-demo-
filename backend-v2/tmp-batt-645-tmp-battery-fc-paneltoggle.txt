@@ -1,0 +1,13 @@
+═══ S 静态锚 ═══
+  ✅ S1 site-config：FC 版本 49.2 在位 + 49.1 赋值零残留 + changelog 头 49.2/49.1/49.0 各 ×1 + rev 前缀锚各 ×1
+  ❌ S2 编辑器：:has 折叠态规则收窄在位 + 旧圆角方块规则零残留 + 32×32 正圆锚 + 展开态口径锚在位（:has ×2/{ left: 6px; } ×2=52.4 动画挂接+关键帧 100% 行计入） — {"has":2,"circle":2,"oldc":0,"oldbase":0,"oldadj":0,"size":5,"base":1,"knob":1,"col":1,"trans":1,"togg":1,"v500":25,"v492":1,"v491":1}
+═══ B 编辑器 CDP ═══
+  ✅ B1 展开态：按钮 left 214px / 正圆 40×40（radius 50%+四边 1px；=搜索胶囊同高）/ ◂ / 面板宽 260px（52.4 桌面驻右缘）
+  ✅ B2a 折叠中途采样：fcToggleOutSpring 动画命中（双动画 comma-list indexOf）+ left < 214px（已从右缘起步跑出，证明动画而非瞬移）
+  ✅ B2b 折叠终态：按钮 left 6px / 仍是正圆 40×40（radius 50%+四边 1px 恒同）/ ▸ / 面板宽 0
+  ✅ B3 展开回来：按钮 left 214px / 仍正圆 50% / ◂ / 面板宽 260px（52.4 展开=0.25s 过渡滑回右缘）
+  ✅ B4 往返后功能完好：建卡成功 + 面板搜索框在位 + gridCanvas 在位
+  ✅ B4b 再折叠：画布卡片不受影响 + 按钮出画回弹后仍落定 6px
+  ✅ E 零异常（Runtime exception + 控制台 error 全滤噪声后）
+
+═══ FAILED — 8/9 ═══

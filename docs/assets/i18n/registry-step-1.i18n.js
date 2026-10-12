@@ -239,3 +239,92 @@ window.MN_I18N.add('zh-Hant', {
   "reg1.err.moniker": "請輸入常用簡稱",
   "reg1.err.classification": "請選擇主權分類"
 });
+
+/* v0.2.59.15 主权实体分类翻译：五种分类名的「显示值」随语言翻译；草稿/后端仍存英文原值
+   （Sovereign Nation / Colonial Territory / Puppet State / Free Association / Protectorate），
+   registry-step-2 按原值匹配不变。追加合并块（add 会 merge 进各语言词典）。 */
+window.MN_I18N
+  .add('zh', {
+    'reg1.class.sovereign': '主权国家',
+    'reg1.class.colonial': '殖民领土',
+    'reg1.class.puppet': '傀儡国家',
+    'reg1.class.free': '自由联合',
+    'reg1.class.protectorate': '保护国'
+  })
+  .add('en', {
+    'reg1.class.sovereign': 'Sovereign Nation',
+    'reg1.class.colonial': 'Colonial Territory',
+    'reg1.class.puppet': 'Puppet State',
+    'reg1.class.free': 'Free Association',
+    'reg1.class.protectorate': 'Protectorate'
+  })
+  .add('de', {
+    'reg1.class.sovereign': 'Souveräner Staat',
+    'reg1.class.colonial': 'Kolonialgebiet',
+    'reg1.class.puppet': 'Marionettenstaat',
+    'reg1.class.free': 'Freie Assoziation',
+    'reg1.class.protectorate': 'Protektorat'
+  })
+  .add('ru', {
+    'reg1.class.sovereign': 'Суверенное государство',
+    'reg1.class.colonial': 'Колониальная территория',
+    'reg1.class.puppet': 'Марионеточное государство',
+    'reg1.class.free': 'Свободная ассоциация',
+    'reg1.class.protectorate': 'Протекторат'
+  })
+  .add('ms', {
+    'reg1.class.sovereign': 'Negara Berdaulat',
+    'reg1.class.colonial': 'Wilayah Kolonial',
+    'reg1.class.puppet': 'Negara Boneka',
+    'reg1.class.free': 'Persatuan Bebas',
+    'reg1.class.protectorate': 'Negeri Naungan'
+  })
+  .add('th', {
+    'reg1.class.sovereign': 'รัฐเอกราช',
+    'reg1.class.colonial': 'ดินแดนอาณานิคม',
+    'reg1.class.puppet': 'รัฐหุ่นเชิด',
+    'reg1.class.free': 'สมาคมอิสระ',
+    'reg1.class.protectorate': 'รัฐในอารักขา'
+  })
+  .add('vi', {
+    'reg1.class.sovereign': 'Quốc gia có chủ quyền',
+    'reg1.class.colonial': 'Lãnh thổ thuộc địa',
+    'reg1.class.puppet': 'Quốc gia bù nhìn',
+    'reg1.class.free': 'Liên kết tự do',
+    'reg1.class.protectorate': 'Xứ bảo hộ'
+  })
+  .add('id', {
+    'reg1.class.sovereign': 'Negara Berdaulat',
+    'reg1.class.colonial': 'Wilayah Kolonial',
+    'reg1.class.puppet': 'Negara Boneka',
+    'reg1.class.free': 'Asosiasi Bebas',
+    'reg1.class.protectorate': 'Protektorat'
+  })
+  .add('fr', {
+    'reg1.class.sovereign': 'Nation souveraine',
+    'reg1.class.colonial': 'Territoire colonial',
+    'reg1.class.puppet': 'État fantoche',
+    'reg1.class.free': 'Libre association',
+    'reg1.class.protectorate': 'Protectorat'
+  })
+  .add('es', {
+    'reg1.class.sovereign': 'Nación soberana',
+    'reg1.class.colonial': 'Territorio colonial',
+    'reg1.class.puppet': 'Estado títere',
+    'reg1.class.free': 'Libre asociación',
+    'reg1.class.protectorate': 'Protectorado'
+  })
+  .add('pt', {
+    'reg1.class.sovereign': 'Nação soberana',
+    'reg1.class.colonial': 'Território colonial',
+    'reg1.class.puppet': 'Estado fantoche',
+    'reg1.class.free': 'Livre associação',
+    'reg1.class.protectorate': 'Protetorado'
+  })
+  .add('zh-Hant', {
+    'reg1.class.sovereign': '主權國家',
+    'reg1.class.colonial': '殖民領土',
+    'reg1.class.puppet': '傀儡國家',
+    'reg1.class.free': '自由聯合',
+    'reg1.class.protectorate': '保護國'
+  });

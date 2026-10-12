@@ -1,0 +1,86 @@
+// tmp-update-memory-autosave.js — v0.2.40.0 编辑器自动保存周期制收尾锚点：
+// build-state head（00211-wcr → 00212-clv）+ scheme 链尾 v0.2.40.0 + MEMORY.md 双指针
+// （模板=tmp-update-memory-imglib2.js：build-state 用结构断言不做 ** 奇偶，其余两文件做）
+'use strict';
+const fs = require('fs');
+const M = 'C:/Users/USER/.claude/projects/c--Users-USER-Downloads-stitch-slatiworld-micronation-interface/memory';
+
+const BS_ENTRY = '**当前线上 rev 00212-clv（2026-09-13 v0.2.40.0 编辑器自动保存周期制——用户「平台自动保存能不能是每10分钟一次？用户可以在设置里调整保存时间频率，然后最快是5分钟一次」：3s 防抖改固定节拍心跳（onContentChange 不再重排、到点 autoSave 脏守卫照旧再约下一拍）；slati_settings 增 fcAutoSave 键五档药丸 5/10/15/30/60 默认 10 clamp 下限 5（草稿 v 保持 9、零 fingerprint 改动）；编辑器顶栏齿轮→设置弹窗新「编辑器」区（仅编辑器页显示、该页默认落此区；MENU 母数组不动局部 slice 拼装）；saveSettings 广播 slati-settings-changed（编辑器 clearTimeout 重排不双发）；pagehide 关页脏内容兜底保存（localStorage 同步写必达、云端 409 留待下次 syncCloudDraft 调和）；FC v10.28.30.0（小更新位 29→30·新功能轮·补丁归零）；电池 autosave-interval 12/12（时间加速注入：≥60s→150ms 真跑不真等）+ img-library 42/42 + page-bg 27/27 + pbg-meta 38/38 复跑全绿（三电池适配周期制：shrink 包/toast 历史断言/meta 弹窗保存流/版本口径）+ 线上电池 PASS；零后端、ethereal 零改动无需 inline-css；部署一次 exit 0；commit 35a371e 未 push）**；前身 rev 00211-wcr（';
+
+const SCHEME_ENTRY_TAIL = '；2026-09-13 v0.2.40.0 = 编辑器自动保存周期制（用户「平台自动保存能不能是每10分钟一次？用户可以在设置里调整保存时间频率，然后最快是5分钟一次」——小改动位 39→40·新功能轮·补丁归零）：3s 防抖改固定节拍心跳（改动不重排、到点脏守卫存、再约下一拍）；slati_settings 增 fcAutoSave 五档药丸 5/10/15/30/60 默认 10 最快 5（草稿 v 保持 9）；编辑器顶栏齿轮→设置弹窗「编辑器」区（仅编辑器页、MENU 母数组不动局部 slice）；saveSettings 广播 slati-settings-changed；pagehide 兜底保存；FC v10.28.30.0（小更新位 29→30）；电池 autosave-interval 12/12（时间加速注入）+ img-library 42/42 + page-bg 27/27 + pbg-meta 38/38 + 线上电池 PASS；零后端、ethereal 零改动无需 inline-css；部署一次 exit 0（00212-clv）；commit 35a371e 未 push）';
+
+// MEMORY.md 双指针行：稳定简介保留 + 当前 rev 紧凑摘要 + 指针（per-round 链只在 topic 文件）
+const L9_NEW = '- [后端 v2 重写（SlatiControl）W0-W2+W6 ✅ Cloud Run 加固版已上线（均不 push）：测试 200/200 + smoke-admin 49/49 常驻冒烟（`node backend-v2/scripts/smoke-admin.js`，自建临时库+静态代理同源拓扑+Chrome CDP）；W6（08-28）= 密码+邮箱码双因素（scrypt、迁移 011、verify 三段码→密码→消费、新注册强制密码 ≥8、旧账号首登设密引导）；production 姿态：microcountry2677@gmail.com 密码+邮件码、发信=站务 Gmail slati.official@gmail.com（应用密码）、691032 已作废（救急=NODE_ENV 改 development 重部署）、只留 director Neo；gen2+GCS FUSE 桶 gs://mn-backend-data-641398703651 快照持久化（每实例 snap.<bootId> 防互踩+恢复 mtime 最新+60s 间隔；正式发布换 Cloud SQL）；deploy 链（deploy/cloudrun.md）：docker build（静默失败看 exit code）→ tag → token 直登（docker login 三坑：空 auths 条目盖过 credsStore/PS5.1 Set-Content BOM/管道换行→-p 直传）→ push → gcloud.ps1 run deploy mnationworld-web（完整 env+卷，逗号参数必加引号——09-05 又犯 --add-volume 漏引号（同晚再犯 --add-volume-mount 漏引号）；执行前重读 cloudrun.md）；**当前线上 rev 00212-clv（2026-09-13 v0.2.40.0 编辑器自动保存周期制——用户「平台自动保存能不能是每10分钟一次？…」：3s 防抖改固定节拍心跳；slati_settings 增 fcAutoSave 五档药丸 5/10/15/30/60 默认 10 最快 5（草稿 v 保持 9）；齿轮→设置弹窗「编辑器」区；saveSettings 广播 slati-settings-changed；pagehide 兜底；FC v10.28.30.0；电池 autosave-interval 12/12 + img-library 42/42 + page-bg 27/27 + pbg-meta 38/38 + 线上电池 PASS；部署一次 exit 0；commit 35a371e 未 push）**；W3-W5 待做；每轮 rev 全量链见 [[backend-build-state]]](backend-build-state.md)';
+
+const L11_NEW = '- [侧栏版本号口径：大版本.小版本.小改动.补丁（用户钦定），版本单一来源 site-config.js，改版本只动一处；两条独立线——站点号仅侧栏品牌模块、FC 四段线在 FC 头部+编辑器 badge；进位规则+每轮版本/commit/轮型全量链见 [[site-versioning-scheme]]；站点号当前 **v0.2.40.0**（2026-09-13 编辑器自动保存周期制——小改动位 39→40 新功能轮；FC v10.28.30.0（小更新位 29→30）；电池 autosave-interval 12/12 + img-library 42/42 + page-bg 27/27 + pbg-meta 38/38 + 线上电池 PASS；零后端、ethereal 零改动无需 inline-css；部署一次 exit 0（00212-clv）；commit 35a371e 未 push）](site-versioning-scheme.md)';
+
+// —— 1. backend-build-state.md head：00211-wcr → 00212-clv ——
+{
+  const p = M + '/backend-build-state.md';
+  let s = fs.readFileSync(p, 'utf8');
+  if (s.indexOf('rev 00212-clv（') !== -1) { console.log('ℹ build-state 已含 00212-clv，跳过'); }
+  else {
+    const anchor = '**当前线上 rev 00211-wcr（';
+    const n = s.split(anchor).length - 1;
+    if (n !== 1) { console.log('❌ build-state anchor count wrong: ' + n); process.exit(1); }
+    s = s.replace(anchor, BS_ENTRY);
+    fs.writeFileSync(p, s);
+    const s2 = fs.readFileSync(p, 'utf8');
+    const head = s2.split('**当前线上 rev 00212-clv（').length - 1;
+    const prev = s2.split('）**；前身 rev 00211-wcr（').length - 1;
+    const total = s2.split('rev 00212-clv').length - 1;
+    if (head !== 1 || prev !== 1 || total !== 1) { console.log('❌ build-state 结构断言失败: ' + JSON.stringify({ head, prev, total })); process.exit(1); }
+    console.log('✅ backend-build-state.md updated（00212-clv 结构断言 head=' + head + ' prev=' + prev + ' total=' + total + '）');
+  }
+}
+
+// —— 2. site-versioning-scheme.md 链尾：v0.2.39.1 条目后插 v0.2.40.0 ——
+{
+  const p = M + '/site-versioning-scheme.md';
+  let s = fs.readFileSync(p, 'utf8');
+  if (s.split('v0.2.40.0 = ').length > 1) { console.log('ℹ scheme 已含 v0.2.40.0 条目，跳过'); }
+  else {
+    const anchor = 'commit 499f6d2 未 push）';
+    const n = s.split(anchor).length - 1;
+    if (n !== 1) { console.log('❌ scheme anchor count wrong: ' + n); process.exit(1); }
+    s = s.replace(anchor, anchor + SCHEME_ENTRY_TAIL);
+    fs.writeFileSync(p, s);
+    console.log('✅ site-versioning-scheme.md updated（v0.2.40.0 计数 ' + (s.split('v0.2.40.0').length - 1) + '）');
+  }
+}
+
+// —— 3. MEMORY.md 双指针 ——
+{
+  const p = M + '/MEMORY.md';
+  let s = fs.readFileSync(p, 'utf8');
+  if (s.indexOf('rev 00212-clv（') !== -1) { console.log('ℹ MEMORY.md 已含 00212-clv，跳过'); }
+  else {
+    const before = Buffer.byteLength(s, 'utf8');
+    const r9 = /- \[后端 v2 重写（SlatiControl）[^\n]*?\]\(backend-build-state\.md\)/;
+    if (!r9.test(s)) { console.log('❌ MEMORY.md L9 pattern not found'); process.exit(1); }
+    s = s.replace(r9, L9_NEW);
+    const r11 = /- \[侧栏版本号口径[^\n]*?\]\(site-versioning-scheme\.md\)/;
+    if (!r11.test(s)) { console.log('❌ MEMORY.md L11 pattern not found'); process.exit(1); }
+    s = s.replace(r11, L11_NEW);
+    fs.writeFileSync(p, s);
+    const after = Buffer.byteLength(s, 'utf8');
+    // 真实文本口径：L9 行 1 处（rev 00212-clv）+ L11 行 1 处（（00212-clv））= 共 2 处 00212-clv
+    const cnt = s.split('00212-clv').length - 1;
+    if (cnt !== 2) { console.log('❌ MEMORY.md 00212-clv 计数 wrong: ' + cnt); process.exit(1); }
+    console.log('✅ MEMORY.md updated（' + (before / 1024).toFixed(1) + 'KB → ' + (after / 1024).toFixed(1) + 'KB，00212-clv 计数 ' + cnt + '）');
+  }
+}
+
+// —— 4. ** 平衡校验（MEMORY.md + scheme；build-state 按文件内校验说明不适用奇偶，结构断言在 §1）——
+{
+  const files = ['MEMORY.md', 'site-versioning-scheme.md'];
+  let ok = true;
+  for (const f of files) {
+    const s = fs.readFileSync(M + '/' + f, 'utf8');
+    const open = (s.match(/\*\*/g) || []).length;
+    const good = open % 2 === 0;
+    console.log((good ? '✅ ' : '❌ ') + f + ' ** ' + (good ? '平衡（' : '不平衡: ') + open + ' 个）');
+    if (!good) ok = false;
+  }
+  if (!ok) process.exit(1);
+}

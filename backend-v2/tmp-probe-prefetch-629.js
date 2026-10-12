@@ -1,8 +1,8 @@
-// tmp-probe-prefetch-629.js — v0.2.58.23 悬停预加载线上探针（mnationworld.com）
+// tmp-probe-prefetch-629.js — v0.2.58.25 悬停预加载线上探针（mnationworld.com）
 //   S1 静态锚（live transitions.js 预取块件 rel/as/function prefetchPage/prefetchDone ×2/clearTimeout(prefetchTimer) ×2/
 //   prefetchTimer ×4/(hover: hover)/saveData/, 65)/{ once: true }/mouseover ×1/click 劫持 ×1+动画常量零触碰
 //   STAGGER_DELAY = 60/LIGHT_STAGGER_DELAY = 40/STAGGER_CAP = 8 各 ×1；site-config 58.23/48.0+changelog 标题 58.23+
-//   rev 终态口径（00342- 前缀 ×1+00342-XXX 零残留+00343-??? ×1+00340-wgj/00341-hbw 保留））
+//   rev 终态口径（00346- 前缀 ×1+00346-XXX 零残留+00347-??? ×1+00340-wgj/00341-hbw 保留））
 //   → P1 CDP guest 真实悬停 a[href="pages/explore.html"] ≥400ms → 恰 1 link[rel=prefetch] href/as 精确+不跳页
 //   → E1 零异常。
 // 口径：live 文本滞后一部署=惯例——探针跑在 deploy#2 之后（二次烘焙镜像=当前线上）。
@@ -80,16 +80,16 @@ class CDP {
   const scSrc = norm(await sc.text());
   const scCount = mk(scSrc);
   ok('S1c site-config：58.23/48.0 赋值在位 + 58.22 赋值零残留 + 58.23 changelog 标题 + FC 48.0 标题',
-    scCount("window.MN_SITE_VERSION = 'v0.2.58.23';") === 1 && scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 &&
-    scCount("window.MN_SITE_VERSION = 'v0.2.58.22';") === 0 && scCount('// v0.2.58.23 = ') === 1 &&
+    scCount("window.MN_SITE_VERSION = 'v0.2.58.25';") === 1 && scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") === 1 &&
+    scCount("window.MN_SITE_VERSION = 'v0.2.58.22';") === 0 && scCount('// v0.2.58.25 = ') === 1 &&
     scCount('// v10.28.48.0 = ') === 1,
-    'v58.23=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.23';") + ' fc48=' +
+    'v58.23=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.25';") + ' fc48=' +
     scCount("window.FLUIDCANVAS_VERSION = 'v10.28.48.0';") + ' v58.22=' + scCount("window.MN_SITE_VERSION = 'v0.2.58.22';") +
-    ' cl=' + scCount('// v0.2.58.23 = '));
-  ok('S1d site-config rev 终态口径：00342- 前缀 ×1（真值已填）+ 00342-XXX 零残留 + 00343-??? 占位 ×1 + 58.22 条目 00340-wgj/00341-hbw 保留',
-    scCount('00342-') === 1 && scCount('00342-XXX') === 0 && scCount('00343-???') === 1 &&
+    ' cl=' + scCount('// v0.2.58.25 = '));
+  ok('S1d site-config rev 终态口径：00346- 前缀 ×1（真值已填）+ 00346-XXX 零残留 + 00347-??? 占位 ×1 + 58.22 条目 00340-wgj/00341-hbw 保留',
+    scCount('00346-') === 1 && scCount('00346-XXX') === 0 && scCount('00347-???') === 1 &&
     scCount('00340-wgj') === 1 && scCount('00341-hbw') === 1,
-    'r42=' + scCount('00342-') + ' x42=' + scCount('00342-XXX') + ' q43=' + scCount('00343-???') +
+    'r42=' + scCount('00346-') + ' x42=' + scCount('00346-XXX') + ' q43=' + scCount('00347-???') +
     ' r40=' + scCount('00340-wgj') + ' r41=' + scCount('00341-hbw'));
 
   console.log('═══ P1 CDP guest 真实悬停内链 → 预取 link 注入（不跳页）═══');

@@ -1,0 +1,26 @@
+  ✅ F0 版本双线 v0.2.54.0 / v10.28.36.1
+  ✅ F1 双模式入场串：原样渐隐+位移全串 + 轻量 transform-only 串都在
+  ✅ F2 原节奏 stagger 60 + 轻量 40/上限 8 + LIGHT 按 messages.html 判定
+  ✅ F3 隐形修复保留（写前记 prevOpacity、transitionend+cancel 双监听、恢复三值、清 transform、隐藏卡兜底定时）
+  ✅ F4 退出双模式：原样渐隐串 + 轻量 transform-only 串都在
+  ✅ F5 导航计时双模式（原样 280/240 + 轻量 240/220）
+  ✅ M1a 点击 nav 即写入口方向 top  dir=top
+  ✅ M1b 退出窗口帧流+零长任务（诚实不变量）  exit n=11 lt=0
+  ✅ M1c 入场窗口帧流+零长任务  ent n=37 lt=0
+  ✅ M1d Messages 专属轻量入场（starts ≤ 24：8 张波浪头 + 页内 fade-up 动画；全卡波浪应 ~73）+落定 < 1800ms  starts=11 settle=692ms
+  ✅ M1e 落定后零 inline 污染  0/12
+  ✅ M1f 公告卡 computed 恢复 box-shadow（tilt 橡皮筋修复守卫）  box-shadow 0.25s
+  ✅ M1g 公告卡 inline 含 box-shadow 过渡属性（未被破坏）
+  ✅ M2a 点击 nav 即写入口方向 bottom  dir=bottom
+  ✅ M2b 入场帧流+零长任务  n=117 lt=0
+  ✅ M2c dashboard 原样全卡波浪（starts ≥ 24）+原节奏落定 ≥ 1100ms 且 < 3000ms（~1931ms 口径）  starts=86 settle=1981ms
+  ✅ M2d 零 inline 污染  0/18
+  ✅ M2e pre-stagger 类已解除（1.6s 兜底兼容）
+  ✅ M3a 水平切写入口方向 left  dir=left
+  ✅ M3b 入场帧流+零长任务  n=56 lt=0
+  ✅ M3c 零 inline 污染  0/7
+  ✅ M4a 反向水平切写 right + 到达 explore
+  ✅ Z 全程零 console error  干净
+
+🎉 全部通过 23/23
+

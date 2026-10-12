@@ -1,0 +1,32 @@
+  ❌ F1 静态：hub 发帖 +25 在 removed 拦截之后（removed 帖不记）+ 成功分支清空/刷新链保留
+  ❌ F2 静态：帖页评论 +2 在 removed 拦截之后（removed 评论不记）+ 评论区 DOM 追加链保留
+  ❌ F3 静态：编辑器 publishXPReward 120/5 判定（仅 addXP 成功置旗 + 清空草稿重置）双发布路径接线
+  ✅ S1 hub 发帖成功：+25 立得（0+5 每日+25=30）+ 输入框清空 + 打桩收到内容  {"xp":30,"flag":null} [{"content":"Batt 发帖测试"}]
+  ✅ S2 hub removed 帖不记 XP：30 保持 + 输入框保留内容（拦截分支）+ 打桩收到第二次  {"xp":30,"flag":null} {"kept":"Batt 违规测试"}
+  ✅ S3 帖页评论成功：+2（30→32）+ 评论入列表 + 输入框清空 + 打桩收到内容  {"xp":32,"flag":null} [{"postId":"PST-batt1","content":"Batt 评论测试"}]
+  ✅ S4 帖页 removed 评论不记 XP：32 保持 + 未入列表 + 打桩收到第二次  {"xp":32,"flag":null} {"inList":false}
+Exception in PromiseRejectCallback:
+C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:242
+    };
+    ^
+
+RangeError: Maximum call stack size exceeded
+
+Exception in PromiseRejectCallback:
+C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:239
+      await publishViaModal();
+            ^
+
+RangeError: Maximum call stack size exceeded
+
+FATAL RangeError: Maximum call stack size exceeded
+    at publishViaModal (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:238:29)
+    at publishViaModal (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:239:13)
+    at publishViaModal (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:239:13)
+    at publishViaModal (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:239:13)
+    at publishViaModal (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:239:13)
+    at publishViaModal (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:239:13)
+    at publishViaModal (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:239:13)
+    at publishViaModal (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:239:13)
+    at publishViaModal (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:239:13)
+    at publishViaModal (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-xp-social.js:239:13)

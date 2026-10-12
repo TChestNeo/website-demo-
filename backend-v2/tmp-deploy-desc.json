@@ -1,4 +1,4 @@
-{
+﻿{
   "apiVersion": "serving.knative.dev/v1",
   "kind": "Service",
   "metadata": {
@@ -10,20 +10,20 @@
       "run.googleapis.com/invoker-iam-disabled": "true",
       "run.googleapis.com/maxScale": "20",
       "run.googleapis.com/minScale": "10",
-      "run.googleapis.com/operation-id": "72bb9691-c5f9-4d08-a740-79dd4e77555a",
+      "run.googleapis.com/operation-id": "28fbcd9f-69ab-46f3-b588-4232f91f4d10",
       "run.googleapis.com/urls": "[\"https://mnationworld-web-641398703651.asia-southeast1.run.app\",\"https://mnationworld-web-5cnoj72s7q-as.a.run.app\"]",
       "serving.knative.dev/creator": "microcountry2677@gmail.com",
       "serving.knative.dev/lastModifier": "microcountry2677@gmail.com"
     },
     "creationTimestamp": "2026-08-27T16:36:35.874293Z",
-    "generation": 82,
+    "generation": 239,
     "labels": {
       "cloud.googleapis.com/location": "asia-southeast1",
       "run.googleapis.com/satisfiesPzs": "true"
     },
     "name": "mnationworld-web",
     "namespace": "641398703651",
-    "resourceVersion": "AAZatxJsJbM",
+    "resourceVersion": "AAZbndl6Dog",
     "selfLink": "/apis/serving.knative.dev/v1/namespaces/641398703651/services/mnationworld-web",
     "uid": "2e189b5f-cd8d-4040-bd5a-7e526db02988"
   },
@@ -38,7 +38,7 @@
           "run.googleapis.com/startup-cpu-boost": "true"
         },
         "labels": {
-          "client.knative.dev/nonce": "zylhpqfcyz",
+          "client.knative.dev/nonce": "jexcworela",
           "run.googleapis.com/startupProbeType": "Default"
         }
       },
@@ -93,7 +93,7 @@
               },
               {
                 "name": "SNAPSHOT_INTERVAL_MS",
-                "value": "60000"
+                "value": "15000"
               },
               {
                 "name": "SNAPSHOT_PATH",
@@ -158,6 +158,14 @@
               {
                 "name": "STRIPE_WEBHOOK_SECRET",
                 "value": "whsec_GkGfQhuXRQgVfoaNDhzMojaGrVkuiCjn"
+              },
+              {
+                "name": "STRIPE_PRICE_BASIC_STUDENT",
+                "value": "price_1UGJRmDmkFYyemrtn6jm8vtK"
+              },
+              {
+                "name": "STRIPE_PRICE_BASIC_STUDENT_ONCE",
+                "value": "price_1UGJRmDmkFYyemrtrUwmxYfV"
               }
             ],
             "image": "asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend/mn-backend-v2:latest",
@@ -218,29 +226,29 @@
     },
     "conditions": [
       {
-        "lastTransitionTime": "2026-09-05T07:09:54.856371Z",
+        "lastTransitionTime": "2026-09-16T18:29:36.912008Z",
         "status": "True",
         "type": "Ready"
       },
       {
-        "lastTransitionTime": "2026-09-05T07:09:53.465976Z",
+        "lastTransitionTime": "2026-09-16T18:29:29.444878Z",
         "status": "True",
         "type": "ConfigurationsReady"
       },
       {
-        "lastTransitionTime": "2026-09-05T07:09:54.807960Z",
+        "lastTransitionTime": "2026-09-16T18:29:36.869658Z",
         "status": "True",
         "type": "RoutesReady"
       }
     ],
-    "latestCreatedRevisionName": "mnationworld-web-00082-bpx",
-    "latestReadyRevisionName": "mnationworld-web-00082-bpx",
-    "observedGeneration": 82,
+    "latestCreatedRevisionName": "mnationworld-web-00239-phh",
+    "latestReadyRevisionName": "mnationworld-web-00239-phh",
+    "observedGeneration": 239,
     "traffic": [
       {
         "latestRevision": true,
         "percent": 100,
-        "revisionName": "mnationworld-web-00082-bpx"
+        "revisionName": "mnationworld-web-00239-phh"
       }
     ],
     "url": "https://mnationworld-web-5cnoj72s7q-as.a.run.app"

@@ -8,7 +8,7 @@ const assert = require('node:assert');
 const path = require('node:path');
 const { testApp } = require('./helpers');
 const { openDb } = require('../src/db');
-const { catchupMerge, findNewerSnap } = require('../scripts/snapshot-catchup');
+const { catchupMerge, catchupMergeAdditive, findNewerSnap } = require('../scripts/snapshot-catchup');
 
 test('catch-up 追恢复：临终快照并回活库（部署丢点赞回归）', async () => {
   const t = await testApp();
@@ -101,6 +101,44 @@ test('catch-up 追恢复：坏文件抛错不污染活库（FK 复原）', async
     assert.throws(() => catchupMerge(t.db, bad), /file is not a database|malformed/i, '坏快照抛错');
     assert.strictEqual(t.db.prepare('PRAGMA foreign_keys').get().foreign_keys, 1, '抛错后 FK 仍开启');
     assert.strictEqual(t.db.prepare('SELECT COUNT(*) AS n FROM posts').get().n, 1, '活库数据未动');
+  } finally {
+    await t.close();
+  }
+});
+
+test('catch-up 补行合并（v0.2.59.43）：活库已有新写入时，旧实例新账户仍追回、不覆盖新实例数据', async () => {
+  const t = await testApp();
+  try {
+    // 旧实例：alice 注册 + 发帖 → 定时快照
+    const { cookie } = t.loginAs('alice@example.com');
+    await t.request('POST', '/api/social/posts', { content: 'hello' }, { cookie });
+    const bootSnap = path.join(t.dir, 'boot.sqlite');
+    await t.db.backup(bootSnap);
+
+    // 旧实例最后 ≤interval 的写入：carol 注册（部署窗口新账户）
+    const { createUser } = require('../src/routes/public/auth');
+    createUser(t.db, { email: 'carol@example.com' });
+    const sigSnap = path.join(t.dir, 'sigterm.sqlite');
+    await t.db.backup(sigSnap);
+
+    // 新实例 = 从 boot 快照恢复（无 carol）→ 用户立刻有新操作：alice 又发一帖（dbWrites > 0 场景）
+    const liveDb = openDb(bootSnap);
+    const aliceId = liveDb.prepare("SELECT id FROM users WHERE email = 'alice@example.com'").get().id;
+    liveDb.prepare("INSERT INTO posts (id, author_id, content, status, created_at, updated_at) VALUES ('PST-new1', ?, 'second', 'visible', '2026-10-09', '2026-10-09')").run(aliceId);
+    const n0 = liveDb.prepare('SELECT COUNT(*) AS n FROM users').get().n;
+    assert.strictEqual(n0, 1, '新实例活库此时只有 alice');
+
+    const { merged, inserted, fkBad } = catchupMergeAdditive(liveDb, sigSnap);
+
+    // 补行：carol 追回；新实例的新帖不受影响
+    const users = liveDb.prepare('SELECT email FROM users ORDER BY email').all().map((r) => r.email);
+    assert.deepStrictEqual(users, ['alice@example.com', 'carol@example.com'], '旧实例新账户追回');
+    assert.ok(merged.includes('users'), 'users 在补行清单');
+    assert.ok(inserted >= 1, '至少补入 1 行');
+    assert.strictEqual(liveDb.prepare('SELECT COUNT(*) AS n FROM posts').get().n, 2, '新实例的新帖未被覆盖');
+    assert.strictEqual(fkBad.length, 0, 'FK 校验零违例');
+    assert.strictEqual(liveDb.prepare('PRAGMA foreign_keys').get().foreign_keys, 1, 'FK 已复原开启');
+    liveDb.close();
   } finally {
     await t.close();
   }

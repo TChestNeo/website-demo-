@@ -1,0 +1,88 @@
+﻿docker : #0 building with "desktop-linux" instance using docker driver
+At line:1 char:302
++ ... tch {} } }; docker build -t mn-backend-v2:cloudrun . *> tmp-build-out ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (#0 building wit...g docker driver:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.57kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#2 DONE 3.4s
+
+#3 docker-image://docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
+#3 resolve docker.io/docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e 0.0s d
+one
+#3 CACHED
+
+#4 [internal] load metadata for docker.io/library/node:24-slim
+#4 DONE 0.6s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 503B done
+#5 DONE 0.0s
+
+#6 [deps 1/5] FROM docker.io/library/node:24-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9
+b6
+#6 resolve docker.io/library/node:24-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 0.0s 
+done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 1.96MB 0.1s done
+#7 DONE 0.1s
+
+#8 [deps 2/5] WORKDIR /app
+#8 CACHED
+
+#9 [deps 3/5] RUN apt-get update   && apt-get install -y --no-install-recommends python3 make g++   && rm -rf /var/lib/
+apt/lists/*
+#9 CACHED
+
+#10 [deps 4/5] COPY backend-v2/package.json backend-v2/package-lock.json ./
+#10 CACHED
+
+#11 [stage-1  3/10] COPY --from=deps /app/node_modules ./node_modules
+#11 CACHED
+
+#12 [deps 5/5] RUN npm ci --omit=dev
+#12 CACHED
+
+#13 [stage-1  4/10] COPY backend-v2/package.json ./
+#13 CACHED
+
+#14 [stage-1  5/10] COPY backend-v2/src ./src
+#14 DONE 0.1s
+
+#15 [stage-1  6/10] COPY backend-v2/migrations ./migrations
+#15 DONE 0.1s
+
+#16 [stage-1  7/10] COPY backend-v2/data ./data
+#16 DONE 0.1s
+
+#17 [stage-1  8/10] RUN mkdir -p /app/data && chown -R node:node /app/data
+#17 DONE 0.3s
+
+#18 [stage-1  9/10] COPY backend-v2/scripts ./scripts
+#18 DONE 0.1s
+
+#19 [stage-1 10/10] COPY docs ./docs
+#19 DONE 0.1s
+
+#20 exporting to image
+#20 exporting layers
+#20 exporting layers 0.7s done
+#20 exporting manifest sha256:74ad6cbbd5a7dfdc04a85fe887632a25d408b08aa55d82e14cdbce651eef4ef6 0.0s done
+#20 exporting config sha256:9996e50e4e304365f52ebcc6d5fd466682201844bc6c14900fd578bf11fd620b 0.0s done
+#20 exporting attestation manifest sha256:f72bb42c976763972b35ff17cb57729de4313c7e66bd02de5a55cf269325872d 0.0s done
+#20 exporting manifest list sha256:a0d4a779ddb6781d96a30dbbb2b1ca8b5fed6fd9dbc9ac5fce86258b1bd85c37
+#20 exporting manifest list sha256:a0d4a779ddb6781d96a30dbbb2b1ca8b5fed6fd9dbc9ac5fce86258b1bd85c37 0.0s done
+#20 naming to docker.io/library/mn-backend-v2:cloudrun done
+#20 unpacking to docker.io/library/mn-backend-v2:cloudrun
+#20 unpacking to docker.io/library/mn-backend-v2:cloudrun 0.3s done
+#20 DONE 1.1s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/xfbmfht9e48rccjaganoabekx

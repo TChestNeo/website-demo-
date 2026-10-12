@@ -1,0 +1,7 @@
+修复：v0.2.54.4 全站卡片不透明底——用户「能不能把全部变成不透明的卡片？」（问询钦定：①全站所有页面（FC 两页除外）②首页深色订阅卡保持深色不变③Community 个人页钦定液态玻璃保留；rev 00263-hkp）
+
+ethereal.css 54.3 首页规则整体升级为全站规则：body:not(.fc-page) .card:not(.profile-header) + .search-capsule + .app-main .guest-hero 三面铺满 --sidebar-bg 不透明底（亮 0.95/暗 #1a1a2e）+ 灭玻璃注入层 .lg-backdrop 滤镜/磨砂；FC 两页 body 挂 fc-page 排除类（FC 玻璃/倾斜设计不动）；profile-header :not() 排除保钦定玻璃（glass-distortion 折射层不动）；订阅卡 tilt-container 内联深色渐变天然豁免零触碰；plan-card/auth-card/modal-card/pv-card 无 .card 类天然豁免
+
+电池：新 all-opaque 34/34（S 静态 15 + B 浏览器 19：index 18 卡亮暗/订阅卡渐变白字仍在/访客 hero 亮暗/explore 6 卡/messages 12 卡/cp profile-header 玻璃保留 0.55+折射层+普通卡 0.95/FC 页动态插卡 0.55 豁免实证）+ home-bg 静态锚同步全站规则 26/26 + 十四电池版本锚 54.3→54.4 同步 + 全回归绿（community-profile 99+i18n 34+identity 38+article-view 38+cit2usr 21+fadefix 36+mono-flash 22+monodark 29+msglink 15+notif-home 23+pageswitch 23+sidebar-bottom 11+sidebar-light 10+smoke-admin 48+npm test 311）；inline-css 40 页刷新；后端零改动（user_version 27/health 59 表不变）；FC v10.28.36.1 零改动（fc-page 仅排除标记）；零草稿字段（v 保持 9）
+
+部署 exit 0（digest 753e1d58fd7a/gcloud.ps1 env 30 条零新键）；curl 链全绿（health 59 表+db ok/无 cookie auth/me 401/site-config v0.2.54.4+v10.28.36.1 在线/ethereal 新规则在线+旧 mn-index 零/FC body fc-page 在线/index 内联+订阅卡渐变在线）；不 push

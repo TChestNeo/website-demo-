@@ -1,0 +1,18 @@
+  ✅ S1 记录卡在位（recTitle 键 + 兜底文案「订阅发放记录」+ 卡序 payments → grant → rec → security）
+  ✅ S2 记录取数：GET /staff/subscriptions/grants/ + subscriptions.manage 门控（无权限不请求防 403 审计噪音）
+  ✅ S3 生效 · 高级 状态条：SUB_STATUS 四态（无订阅/生效中/已过期/永久）+ tier chip 跟随
+  ✅ S4 发放记录表五列：发放时间/等级/开始时间/结束时间/是否生效 + 总数「总共发放了 {n} 次」
+  ✅ S5 生效/无变化双 chip + 结束单元格永久复用 recStForever + 旧形状行 — 兜底 + 空态文案
+  ✅ S6 无权限角色整卡不渲染（recCard = null）+ 加载失败兜底文案
+  ✅ S7 15 新键 ×12 语言块全在位（zh-Hant 由 OpenCC 重生成）
+  ✅ S8 i18n 文件可执行（链式 add ×12 语言，键数统一 307）
+  ✅ S9 zh 15 值与页面兜底串逐字节一致
+  ✅ S10 zh-Hant 段含 OpenCC 哨兵 + 记录键（重生成后不丢）
+  ✅ S11 后端 GET /api/staff/subscriptions/grants/:userId（subscriptions.manage 门控 + 404 + 排序 生效 · 高级）
+  ✅ S12 发放审计 prev/next 携带到期窗口+月数（记录卡开始/结束的数据源）
+  ✅ S13 测试：记录 GET 两新用例（生效 · 高级排列 + 旧形状容忍 + RBAC/404/401）
+  ✅ S14 smoke-admin 新断言（director 记录卡 4 项 + cs 无卡）
+
+╭──────────────────────────────────────────╮
+│  🎉 14 ✅ / 0 ❌  (admin-grantrec)     │
+╰──────────────────────────────────────────╯

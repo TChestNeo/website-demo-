@@ -1,0 +1,15 @@
+passes=22 leaves=14
+[0] <span> (none)  =>  M.NationWorld
+[1] <h2> .headline-md  =>  Forgot your password?
+[2] <p> #rpDemoHint .rp-sub  =>  Demo mode — any 6-digit code works
+[3] <label> .form-label  =>  Email
+[4] <button> #rpSendBtn .btn.btn-primary  =>  Send Code
+[5] <a> #rpResend  =>  Resend code
+[6] <h2> .headline-md  =>  Set a new password
+[7] <p> .rp-sub  =>  Make it at least 8 characters
+[8] <label> .form-label  =>  New Password
+[9] <label> .form-label  =>  Confirm New Password
+[10] <span> (none)  =>  Reset Password
+[11] <span> .material-symbols-outlined  =>  arrow_forward
+[12] <span> .material-symbols-outlined  =>  arrow_back
+[13] <a> (none)  =>  Back to login

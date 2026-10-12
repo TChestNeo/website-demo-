@@ -1,0 +1,18 @@
+  ✅ F1 静态：工具栏 撤回/恢复 两钮纯图标（onclick+disabled+undoBtn 在 History 钮之前+title 悬停提示保留+无文字标签）
+  ✅ F2 静态：撤销引擎（historySnapshot 剥 lastSaved/防抖 600/上限 60/applyDraft 恢复+saveDraft+重基线/初始化后即拍基线）
+  ✅ F3 静态：onContentChange 尾钩 + Ctrl+Z/Y 键盘守卫（INPUT/TEXTAREA/contenteditable 让位原生撤销）
+  ✅ F4 静态：buildDraft 版本链 v10.28.20 条目仍在 + 站点号 v0.2.43.0 + FC 号 v10.28.33.0（贴齐缝修复轮复跑口径）
+  ℹ CDP 就绪
+  ✅ S1 初始：撤回/恢复两钮在场纯图标（无文字标签）+ 双灰态（无历史可撤可恢）
+  ✅ S2a 工厂创建可撤：createSheetCard 种子 3 行也走 onContentChange → 防抖提交后撤回钮亮
+  ✅ S2b 编辑单元格 苹果 → 防抖提交 → 撤一步值回空（卡片在）→ 再撤一步卡片整张消失（回初始画布）+ 撤回钮灰 + 恢复钮亮
+  ✅ S2c 恢复两步：卡片回来 + 值回来（苹果）+ 恢复钮灰 + 撤回钮亮
+  ✅ S3 三步深栈：再编辑 香蕉 → 三连撤（苹果→空→卡消失）→ 三连恢（空→苹果→香蕉）+ 恢复钮再灰
+  ✅ S4 键盘：Ctrl+Z 撤回一步回 苹果、Ctrl+Y 恢复回 香蕉
+  ✅ S5 守卫：焦点在单元格输入框时 Ctrl+Z 不触发画布撤销（值仍 香蕉、撤回栈不动）
+  ✅ S6 撤销态即时落草稿：再撤一步 → localStorage 草稿同步为 苹果 态（historyRestore 内 saveDraft）
+  ✅ S7 重载持久：撤销态不丢（苹果）+ 新会话栈为空（双钮灰、不重复叠卡）
+  ✅ S8 版本徽章：右下角 badge 渲染 FC v10.28.33.0（最新构建标识）
+  ✅ Z 零 console error
+
+  ── 结果: 15/15 全绿 ✅

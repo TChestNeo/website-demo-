@@ -1,0 +1,14 @@
+  ✅ F1 静态：drawHighlightRange 一体式（ONE 块矩形代码 + 一格一 div 的旧循环已不在）
+  ❌ F2 静态：版本升位 v0.2.30.2 + v10.28.20.2（补丁位 1→2·观感微调轮）+ buildDraft 链新条目
+  ℹ CDP 就绪
+  ℹ 铺卡完成: {"a":"c1","e":"c2","c":"c3"}
+  ✅ B1 拖卡高亮一体：恰好 1 个 .cell-hl（旧实现 70 个）+ 矩形与覆盖范围逐像素吻合（±1px）
+  ✅ B2 松手即移除：mouseup 后 0 个 .cell-hl
+  ✅ B3 旋转 45° 卡拖拽：仍恰好 1 个 .cell-hl 且矩形=旋转 bbox 覆盖范围（±1px）
+  ✅ B4 资产落点预览一体：canvas dragover 后恰好 1 个 .cell-hl，dragleave 后 0 个
+  ✅ B5a 回归·远处同高不吸：拖卡上边距 C 底边 8px、x 相距 700+px → null（v10.28.20.1 守卫仍在）
+  ✅ B5b 回归·近邻照常：拖卡底边距 C 顶边 2px 且 x 重叠 → 命中 C
+  ❌ B6 版本徽章：右下角 badge 渲染 FC v10.28.20.2
+  ✅ Z 零 console error
+
+  ── 结果: 8/10 全绿 ❌

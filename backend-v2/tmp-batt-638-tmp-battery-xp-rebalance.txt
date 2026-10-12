@@ -1,0 +1,23 @@
+  ✅ F1 静态：changelog 历史条目保留（v0.2.49.0/v10.28.35.3 轮标题；赋值锚随版本前进失效——00305 维修口径）+ changelog 社交 XP 条目（用户原话两段 + 钦定口径）
+  ✅ F2 静态：LEVELS 12 级 need 阈值按序（0→1228800 等比×2）+ 12 称号（旅行者→君主+皇帝+传奇）  [0,1200,2400,4800,9600,19200,38400,76800,153600,307200,614400,1228800]
+  ✅ F3 静态：来源数值（登录 +5/引导 +10/国家世界 +150 不动）+ 话题改 30 天结算（旧 +5 移除 → topic_sustained 25）+ 发帖 25/评论 2
+  ✅ F4 静态：编辑器 publishXPReward（120/5 旗子判定）替换旧 15 钩子 ×3（演示发布/新建/更新三路径）+ 草稿清空重置旗子
+  ✅ F5 静态：storage 双轨机制（3 新键 + 合计判定 + syncXPGained 双挂点 + settlePendingTopics + 登出/unauthorized 清理 + saveTopic 入队）
+  ✅ S1 每日登录 +5（0→5）+ 徽章 Lv.1·旅行者 5 / 1200 XP  {"txt":"Lv.1 · 旅行者5 / 1200 XPLV1","bar":"0%","kids":2,"xp":5}
+  ✅ S2a 0 经验就是 Lv1：徽章 Lv.1·旅行者 + 0 / 1200 XP + 进度 0%（当天不重复发）  {"txt":"Lv.1 · 旅行者0 / 1200 XPLV1","bar":"0%","kids":2,"xp":0}
+  ✅ S2b 重载 XP 仍 0（每日 +5 只发一次）  {"txt":"Lv.1 · 旅行者0 / 1200 XPLV1","bar":"0%","kids":2,"xp":0}
+  ✅ S3 13 点阈值走查全对（1199 仍是 Lv1 / 1200 升 Lv2 / ……/ 1228800 Lv12·传奇 isMax）  "13/13"
+  ✅ S4 满级徽章 Lv.12·传奇 + 1228801 XP（无「/」）+ 进度条不渲染  {"txt":"Lv.12 · 传奇1228801 XPLV12","bar":"","kids":1,"xp":1228801}
+  ✅ S5 1195+10 跨级 → Lv.2·拓荒者 + mn:level-up [2] + 升级 toast + 徽章 1205 / 2400  {"badge":"Lv.2 · 拓荒者1205 / 2400 XPLV2","lvl":"[2]","xp":1205,"toast":true}
+  ✅ S6a 来源集成：+10/话题 0（改 30 天结算）/+150/+150 → 1515 XP 仍 Lv2 + 草稿清空 + 无新升级事件（S6 换页后监听器全新）  {"xp":1515,"lv":2,"nation":true,"lvlEvents":"[]","draftGone":true,"topicId":"TOP-1791056835831","pending":[{"id":"TOP-1791056835831","created":"2026-10-03"}]}
+  ✅ S6b 话题入待结算队列（无立即经验）：队列 1 项 = 刚创建话题 + created 为 10 位日期串  {"xp":1515,"lv":2,"nation":true,"lvlEvents":"[]","draftGone":true,"topicId":"TOP-1791056835831","pending":[{"id":"TOP-1791056835831","created":"2026-10-03"}]}
+  ✅ S7 访客 addXP 返回 null + XP 不变（1515 保持）+ 无徽章 + 注册/登录 CTA 正常  {"before":1515,"after":1515,"ret":null,"badge":false,"guest":true}
+  ✅ S8 云端合并：/auth/me 带回 xpGained 1100 → 本地 100 + 获得 1100 = 1200 → 徽章 Lv.2·拓荒者 1200 / 2400 XP  {"badge":"Lv.2 · 拓荒者1200 / 2400 XPLV2","xp":100,"gained":1100,"lvl":"[2]","evts":"[{\"src\":\"gained\",\"amt\":1100}]","toast":true}
+  ✅ S8b 同步事件：mn:xp-changed source=gained +1100 + mn:level-up [2] + 升级 toast（跨级同 addXP 口径）  {"badge":"Lv.2 · 拓荒者1200 / 2400 XPLV2","xp":100,"gained":1100,"lvl":"[2]","evts":"[{\"src\":\"gained\",\"amt\":1100}]","toast":true}
+  ✅ S9a 话题结算：连续 30 活跃日 + 满 30 天 → +25（100+5 每日+25=130）+ 队列清空 + 事件 topic_sustained 25  {"xp":130,"pending":"[]","evts":"[{\"src\":\"topic_sustained\",\"amt\":25}]"}
+  ✅ S9b 断档不结算：29 连击 < 30 → XP 保持 100 + 队列保留 TOP-batt-9b + 无 topic_sustained 事件  {"xp":100,"pending":"[{\"id\":\"TOP-batt-9b\",\"created\":\"2026-09-02\"}]","evts":"[]"}
+  ✅ S10a mn:unauthorized 清理：session + 获得类经验 + 待结算队列全清（换号防陈旧经验混入）  {"session":null,"gained":null,"pending":null}
+  ✅ S10b logout 同样清获得类经验 + 待结算队列（session 清、user 残留=既有口径）  {"session":null,"gained":null,"pending":null,"userKept":true}
+  ✅ Z 零 console error/exception  []
+
+  ── 结果: 21/21 全绿 ✅

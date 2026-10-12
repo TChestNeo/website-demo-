@@ -59,6 +59,10 @@ function startCron(ctx) {
     for (const it of stale) fire('image_retry', () => queue.processImageItem(ctx, it));
     // 3) 预算日结告警（kv 防重入：先写后跑）
     if (maybeRunDailyAlert(db, parts)) fire('budget_alert', () => runDailyBudgetAlert(ctx));
+    // 4) 删号后悔期到期：delete_pending 超过 30 天 → deleted（真正删除；每 tick 清一次，幂等）
+    const deleteCutoff = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+    db.prepare("UPDATE users SET status = 'deleted', updated_at = ? WHERE status = 'delete_pending' AND delete_requested_at IS NOT NULL AND delete_requested_at < ?")
+      .run(new Date().toISOString(), deleteCutoff);
   }, 60000);
 }
 

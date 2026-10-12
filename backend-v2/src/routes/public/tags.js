@@ -82,7 +82,8 @@ function register(router, ctx) {
     }
 
     try {
-      const out = await callDedupAI(ctx, original, enName, existing);
+      // v0.2.59.35：AI 排队层——高峰排队等位（超时抛 AiBusyError → 走下方降级 200 空 matches）
+      const out = await ctx.aiLimiter.withSlot(() => callDedupAI(ctx, original, enName, existing));
       const matches = Array.isArray(out && out.matches)
         ? out.matches.filter(m => m && m.id && existing.some(e => e.id === m.id)).map(m => ({ id: m.id }))
         : [];

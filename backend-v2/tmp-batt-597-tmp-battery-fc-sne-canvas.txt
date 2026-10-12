@@ -1,0 +1,15 @@
+  ✅ F1 site-config：FC v10.28.45.2 + rev 00280- 占位 + 站点版本恒 v0.2.58.0
+  ✅ F2 编辑器页静态锚：格底 color-mix(--sne-cell-tint 62%, surface) + applyCardBg 写 tint + 画布 box-shadow 细线勾边
+  ✅ F3 编辑器页静态锚：查看模式显式关闭编辑态整盒阴影
+  ✅ S1 建卡：SNE 卡落位 (2,2)→left 22/top 22、6 格在场  {"cells":6,"l":"22px","t":"22px"}
+  ✅ S2 默认无选色：格底=卡面=surface-container（混色恒等、默认观感零变化）  {"cell":"color(srgb 0.92549 0.933333 0.941176)","face":"rgb(236, 238, 240)","tint":""}
+  ✅ S3 选色 #d43c3c：tint=rgba(212, 60, 60, 1) + 格底=62/38 纸上混色 rgb(221,128,128) + 卡面=纯色  {"cell":"color(srgb 0.867137 0.500549 0.503529)","face":"rgb(212, 60, 60)","tint":"rgba(212, 60, 60, 1)"}
+  ✅ S4 清色：tint 移除 + 格底回落 surface-container  {"cell":"color(srgb 0.92549 0.933333 0.941176)","face":"rgb(236, 238, 240)","tint":""}
+  ✅ S5 油漆主题边缘 paint1 + 选色 #2e5bff：格底同款跟随 rgb(118,147,249)（主题 tint 与 plain 同一 tint 源）  {"cell":"color(srgb 0.463529 0.575922 0.977647)","face":"rgb(46, 91, 255)","tint":"rgba(46, 91, 255, 1)"}
+  ✅ C1 编辑态画布 box-shadow=细线勾边+主题投影（纸上期望串逐字节）  computed="rgba(118, 117, 134, 0.14) 0px 0px 0px 1px, rgba(0, 0, 0, 0.06) 0px 4px 24px 0px"
+  ✅ C2 查看模式：canvas box-shadow=none + scaler 投影在场  {"canvas":"none","scaler":"rgba(0, 0, 0, 0.45) 0px 24px 60px -16px"}
+  ✅ E5 全程零 Runtime exception  干净
+  ✅ E6 全程零 console error  干净
+
+🎉 全部通过 12/12
+

@@ -1,0 +1,1 @@
+修正：FC v10.28.62.3 版本徽章放进状态栏 saveStatus 左侧（rev 00393-24r；站点恒 v0.2.58.28）——用户「把版本号放在右下角的状态文字的左侧」；修法=版本徽章由 position:fixed 改为 span 插入 .editor-statusbar 的 #saveStatus 前（左邻保存状态文字，随状态栏 flex 排布不再覆盖）；后端零改动 npm test 413/413；digest sha256:5aba9ddd1bda11ed8a6c18a0798291f8b53688d1719c0876cb5b742ee9d19995（当前线上）

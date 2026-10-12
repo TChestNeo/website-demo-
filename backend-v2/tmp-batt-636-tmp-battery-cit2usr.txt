@@ -1,0 +1,24 @@
+  ✅ 前端零 CIT-：signup-and-login.html
+  ✅ 前端零 CIT-：assets/js/sidebar.js
+  ✅ 前端零 CIT-：assets/js/settings-modal.js
+  ✅ 前端零 CIT-：pages/fluidcanvas.html
+  ✅ 前端零 CIT-：pages/onboarding-identity.html
+  ✅ site-config 版本 = v0.2.54.0
+  ✅ site-config changelog 含 v0.2.51.1 条目 + 用户原话
+  ✅ auth.js 无 'CIT-' + pad6 生成表达式
+  ✅ auth.js 含 const citizenId = id;
+  ✅ 026 迁移 UPDATE citizen_id = id（NULL 补齐 + 异值改写）
+  ❌ health.test user_version 30 + 标题 001-030
+  ❌ migrations.test user_version 30（主+幂等+017/022 补跑同步）
+  ✅ migrations.test 新 026 测试在位（三态断言）
+  ✅ auth.test USR- 前缀断言
+  ✅ social-profile.test USR 正则
+  ✅ mask.test USR-1 fixture
+  ✅ 电池锚 v0.2.54.0：tmp-battery-msglink.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-mono-flash.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-monodark-v0422.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-fadefix.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-pageswitch.js
+
+cit2usr 巡检：19 通过 / 2 失败
+

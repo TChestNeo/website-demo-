@@ -20,6 +20,8 @@ function shape(row) {
     installCount: row.install_count,
     usageCount: row.usage_count,
     version: row.version || null,
+    github: row.github || null,
+    authorAvatar: row.author_avatar || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

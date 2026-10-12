@@ -1,0 +1,44 @@
+═══ S 静态锚 ═══
+  ✅ S1 site-config：52.0 赋值 ×1 + 51.1 赋值零残留 + changelog 头 52.0/51.1/51.0 各 ×1 + rev 终态 00363-ksq/00364-wdg 各 ×1（640 轮锚改真值=639 终态口径）+ 站点 58.28
+  ✅ S2 storage.js：TEAM_LEVELS 1.5× 阈值表（×8）+ getTeamLevelState（×3）+ 阈值字面量逐字
+  ✅ S3 sidebar.js：mn:level-up → POST /rewards/claim 链（claim 端点/奖励级门/claimOk toast/广播）
+  ✅ S4 编辑器：团队发布分键（getFcTeamPublishId ×2 + body.teamId ×1 + 分键后缀 ×1）
+  ✅ S5 fluidcanvas.html：团队徽章/成就条/关注/奖励缓存 13 锚全中
+  ✅ S6 资料页：奖励区/装饰操作/编辑弹窗/边缘门 20 锚全中
+  ✅ S7a config.js：团队 XP 五事件钦定表（上传24/赞16/粉丝32/收藏36/分享20）
+  ✅ S7b team-xp.js：双向对称（gain/lose 同额 + MAX(0,…) 不穿负）
+  ✅ S7c auth.js：装饰白名单（FRAME_KEYS/TITLE_KEYS）+ PATCH 拥有权门
+  ✅ S7d social.js：五事件 13 钩子（gain ×7 / lose ×6）
+  ✅ S7e server.js 注册 + rewards.js 端点（幂等 INSERT OR IGNORE ×6 + 团队阈值 ×6 + edgeUnlocked ×1）
+  ✅ S8a common.i18n.js：rewards 样键 ×12（claimOk/badge.user2/title.veteran/frame.rookie/toast.locked）
+  ✅ S8b fluidcanvas.i18n.js：fc.rewards 样键 ×12（teamXp/follow/teamAchEmpty）
+═══ B 资料页 CDP（?id=USR-000101&l2）═══
+  ✅ B1a claim POST 恰一次：体 {scope:"user",lv:2}
+  ✅ B1b 领奖 toast：正文逐字 + fixed + bottom 80px（升级 toast 之上第二层）
+  ✅ B2a 成就行 1 条：服务端名「官方对你的认可」+ Lv.2 角标
+  ✅ B2b 徽章行 1 枚：i18n rewards.badge.user2 =「勋章」
+  ✅ B2c 装饰 4 芯片：rookie 使用/champion 锁/称号锁/免费边缘——locked=2 active=0
+  ✅ B2d 文案逐字：rookie「新手免费头像相框+使用」+ 边缘「免费名片边缘+使用中」
+  ✅ B2e 初始零相框：avatar 无 has-frame
+  ✅ B3 使用 rookie-frame：PATCH {avatarFrame} + active 芯片 + has-frame rookie-frame + ::after 3px 主色环 + toast 装饰已更新
+  ✅ B4 卸下：PATCH {avatarFrame:null} + has-frame 撤除
+  ✅ B5a 相框选择 3 项：无/rookie 解锁/champion 金罩锁
+  ✅ B5b 点 champion 锁：toast 尚未解锁 + 零 PATCH
+  ✅ B5c 选 rookie 保存：PATCH 体含 avatarFrame:"rookie-frame"
+  ✅ B6 l2 已解锁（edgeUnlocked=true）：边缘网格零锁 + 升级链接 display:none
+═══ B 资料页 CDP（?empty 变体：未领奖免费用户）═══
+  ✅ B7a 空态文案逐字（rewards.empty）
+  ✅ B7b 未领奖免费：边缘全锁（≥5）+ 升级链接可见 + rookie 相框也锁
+═══ B 资料页 CDP（?l6 变体：老玩家全档）═══
+  ✅ B8a 成就 2 条（官方对你的认可 + 恭喜你成为老玩家）+ 徽章 2 枚（勋章 + 超绝老资历的骄傲）+ 装饰 4 芯片零锁
+  ✅ B8b 使用 veteran-title：PATCH {title} + 昵称旁金药丸「我是老资历」
+  ✅ B8c 使用 champion-frame：PATCH {avatarFrame} + has-frame champion-frame + ::after 金环 conic-gradient
+═══ B fluidcanvas 团队视图（?teamview：XP 7200=Lv.4）═══
+  ✅ B9a 团队徽章 Lv.4（7200 XP ≥ 1.5× 阈值 7200）
+  ✅ B9b 团队 XP 统计：7.2K 团队经验（fcCompact+fc.rewards.teamXp）
+  ✅ B9c 团队成就条：新国崛起！（ACH-team-2 服务端名）
+  ✅ B9d 点关注：POST /teams/:id/follow → 按钮「已关注」+ 粉丝 6
+  ✅ B9e 再点取关：DELETE → 按钮回「关注」+ 粉丝 5（双向对称前端实证）
+═══ E 零异常 ═══
+  ✅ E 零异常（0 原始 / 0 噪声后）
+🎉 37 ✅ / 0 ❌

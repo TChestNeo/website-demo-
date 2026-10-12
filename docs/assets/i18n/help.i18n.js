@@ -170,6 +170,8 @@ window.MN_I18N
     'faq.a.18': 'All subscribers can use basic features such as AI search, AI article polishing and AI summaries; advanced features such as automated AI suggestions are exclusive to the flagship tier (Premium Ultra).',
     'faq.q.19': 'Who owns the copyright of AI-generated content?',
     'faq.a.19': 'The AI features are powered by third-party models (Google Gemini, etc.), and AI output is for reference only; for works you complete based on AI output, the intellectual property of the original parts belongs to you (consistent with "Who owns my creative content?"). We recommend reviewing AI output yourself before publishing it.',
+    'faq.q.24': 'What should I do when I see 429 or other error codes?',
+    'faq.a.24': '429 means "too many requests" or "AI busy" — wait 1–5 minutes and try again. For other codes (400/401/403/404/409/413/500/502/503 …), see the <a href="error-codes.html" style="color:var(--color-primary)">Platform Error Codes</a> page. If an error keeps recurring, note what you were doing and when, then submit a ticket.',
     'faq.cat.creator': 'Creators & Settlement',
     'faq.q.20': 'How do creators earn income? How long does settlement take?',
     'faq.a.20': 'The platform provides creators with revenue sharing (from subscriptions, one-time payments and donations) and publishes a simplified financial report within 30 days after each quarter ends; the settlement cycle, withdrawal methods and share ratios are governed by the Financial & Payments Terms. Settlement questions can be raised through a "Creator settlement" ticket and are reviewed by staff.',

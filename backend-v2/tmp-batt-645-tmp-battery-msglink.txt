@@ -1,0 +1,20 @@
+  ✅ F0 版本双线 v0.2.54.0 / v10.28.36.1 + 用户原话注释
+  ✅ F1 直达读取 showTab + 旧 tab 兼容
+  ✅ F2 点 tab 地址栏联动（replaceState + showTab 串 + private 干净路径）
+  ✅ F3 未知 tab 值归一清参数
+  ✅ F4 index 「View all announcements」用 ?showTab=announcements、旧 ?tab= 零残留
+  ✅ F5 首页公告卡 href 直达 announcements（v0.2.55.0 用户「点击后跳转是这个页面」）
+（暖机完成）
+
+  ✅ M1 ?showTab=announcements 直达  search=?showTab=announcements active=announcements slide=translateX(-200%)
+  ✅ M2 ?showTab=groups 直达  search=?showTab=groups active=groups slide=translateX(-100%)
+  ✅ M3 无参数默认 private + URL 干净（slide 空串=CSS 默认 0 位，与 translateX(0%) 同态）  search= active=private slide=
+  ✅ M4 旧 ?tab=announcements 兼容直达 + URL 归一成 ?showTab=announcements  search=?showTab=announcements active=announcements
+  ✅ M5 点 groups → URL ?showTab=groups + 无刷新（同文档哨兵存活）+ 面板切换  noReload=true search=?showTab=groups active=groups
+  ✅ M6 点 announcements → URL ?showTab=announcements + 面板切换  search=?showTab=announcements active=announcements
+  ✅ M7 点回 private → URL 回干净路径 + 面板切回  search= active=private
+  ✅ M8 未知 ?showTab=bogus → 默认 private + URL 清参数  search= active=private
+  ✅ M9 全程零长任务  longtask=0
+  ✅ Z 全程零 console error  干净
+
+🎉 全部通过 16/16

@@ -1,0 +1,28 @@
+  ✅ F1 静态：createSheetCard 工厂 + window 钩子 + sheetSerialize/sheetAddRow/sheetAddCol/restoreSheet 在
+  ✅ F2 静态：调色板 Sheet Card 入口（data-asset="sheet" + table 图标）
+  ✅ F3 静态：拖放分支 + assetSpan 8×5 + 图层图标 sheet:table
+  ✅ F4 静态：草稿序列化/恢复分支（buildDraft sheetData + applyDraft createSheetCard+restoreSheet）
+  ✅ F5 静态：版本链 v10.28.19 条目 + 种子表头 项目/内容
+  ✅ F6 静态：站点号 v0.2.45.2 + FC 号 v10.28.34.2（v0.2.45.2 编辑器掉帧根治轮复跑口径；手柄轮旧标记已随注释链修剪）
+  ✅ F7 静态：sheetGrow 助手 + 两按钮传 grow=true + 种子/删光自补/草稿恢复路径不增长
+  ✅ F8 静态：sheetGripDrag 拖拽 + colgroup/手柄行/手柄格 + colW/rowH 序列化与恢复 + 拖卡白名单两处排除
+  ℹ CDP 就绪
+  ✅ S1 调色板：Sheet Card 入口在 DOM（table 图标）
+  ✅ S2 工厂：window.createSheetCard 可用
+  ✅ S3 创建：sheet-card 进画布 + cardType=sheet + 默认尺寸 宽10格×长7格（colSpan/rowSpan 落 dataset；种子 3 行不增长仍 10×7）
+  ✅ S4 种子：表头 2 格（项目/内容）+ 表头 ✕ 占位列 + 3 数据行（各 2 输入 + ✕）+ 底部双按钮
+  ✅ S5 编辑框：全部单元格输入框挂 .card-edit-field（拖拽不 arm）
+  ✅ S14 手柄结构：手柄行（角落占位 + 2 ↔ + ✕ 占位）+ 表头/每数据行左侧 ↕ 手柄 + colgroup 四截（18px 手柄列+数据×2+22px ✕ 列）
+  ✅ S6 行内编辑：改单元格 → dataset.sheetData 同步（{cols:2,cells 4 行含新值）
+  ✅ S7 加行：点 + 添加行 → 4 数据行 + sheetData 5 行 + 卡片自动变长（rowSpan 7→8、高度 px 变大）
+  ✅ S8 加列：点 + 添加列 → 3 列（新表头/单元格空 + 插在 ✕ 前）+ sheetData cols=3 + 卡片自动变宽（colSpan 10→11、宽度 px 变大）+ 新手柄/新 col 同步长出
+  ✅ S9 删行：点一行 ✕ → 回到 3 数据行 + sheetData 4 行（删行不缩回，rowSpan 仍 8）
+  ✅ S10 删光自补：连删到 0 → 自动补 1 空白行（与数据卡口径一致；自补路径不误增长，rowSpan 仍 8）
+  ✅ S11 CSS：table-layout:fixed + 表头加粗 + ✕ 列 22px + 横向滚动容器
+  ✅ S15 拖列宽：按住第 1 列 ↔ 手柄右拖 60px → 该列变宽 60（col 落 px + sheetData.colW 同步）
+  ✅ S16 拖行高：按住第 1 数据行 ↕ 手柄下拉 40px → 该行变高 40（tr 落 px + sheetData.rowH 同步）
+  ✅ S12 草稿往返：重载后表头/单元格值 + 3 列恢复 + 增长跨度 11×8 随草稿恢复（恢复路径不额外增长）+ 拖过的列宽/行高尺寸复原
+  ✅ S13 版本徽章：右下角 badge 渲染 FC v10.28.34.2（最新构建标识）
+  ✅ Z 零 console error
+
+  ── 结果: 25/25 全绿 ✅

@@ -1,0 +1,659 @@
+﻿===== tmp-battery-fc-sne-canvas.js =====
+  ✅ F1 site-config：FC v10.28.41.0 + rev 00280- 占位 + 站点版本恒 v0.2.58.0
+  ✅ F2 编辑器页静态锚：格底 color-mix(--sne-cell-tint 62%, surface) + applyCardBg 写 tint + 画布 box-shadow 细线勾边
+  ✅ F3 编辑器页静态锚：查看模式显式关闭编辑态整盒阴影
+  ✅ S1 建卡：SNE 卡落位 (2,2)→left 22/top 22、6 格在场  {"cells":6,"l":"22px","t":"22px"}
+  ✅ S2 默认无选色：格底=卡面=surface-container（混色恒等、默认观感零变化）  {"cell":"color(srgb 0.92549 0.933333 0.941176)","face":"rgb(236, 238, 240)","tint":""}
+  ✅ S3 选色 #d43c3c：tint=rgba(212, 60, 60, 1) + 格底=62/38 纸上混色 rgb(221,128,128) + 卡面=纯色  {"cell":"color(srgb 0.867137 0.500549 0.503529)","face":"rgb(212, 60, 60)","tint":"rgba(212, 60, 60, 1)"}
+  ✅ S4 清色：tint 移除 + 格底回落 surface-container  {"cell":"color(srgb 0.92549 0.933333 0.941176)","face":"rgb(236, 238, 240)","tint":""}
+  ✅ S5 油漆主题边缘 paint1 + 选色 #2e5bff：格底同款跟随 rgb(118,147,249)（主题 tint 与 plain 同一 tint 源）  {"cell":"color(srgb 0.463529 0.575922 0.977647)","face":"rgb(46, 91, 255)","tint":"rgba(46, 91, 255, 1)"}
+  ✅ C1 编辑态画布 box-shadow=细线勾边+主题投影（纸上期望串逐字节）  computed="rgba(118, 117, 134, 0.14) 0px 0px 0px 1px, rgba(0, 0, 0, 0.06) 0px 4px 24px 0px"
+  ✅ C2 查看模式：canvas box-shadow=none + scaler 投影在场  {"canvas":"none","scaler":"rgba(0, 0, 0, 0.45) 0px 24px 60px -16px"}
+  ✅ E5 全程零 Runtime exception  干净
+  ✅ E6 全程零 console error  干净
+
+🎉 全部通过 12/12
+===== exit 0 =====
+===== tmp-battery-fc-viewport.js =====
+  ✅ F1 site-config：FC v10.28.41.0 + rev 00277- 占位 + 站点版本恒 v0.2.58.0
+  ✅ F2 编辑器页静态锚：.grid-canvas width:max-content（画布盒全覆盖 125 列）+ computeCols 恒 return 125
+  ✅ F3 编辑器页静态锚：zoomChip 按钮 + window.setViewZoom/resetViewZoom 导出
+  ✅ E1 1280 编辑态：cols 恒 125 + cellSize 20 + 画布盒 2748 全覆盖 + 横向拉条（scrollW>clientW）+ zoom 未施加 + chip 100%  {"cols":125,"cs":20,"canvasW":2748,"scrollW":2796,"clientW":992,"zoom":""}
+  ✅ E2 480 窄窗：cols 仍恒 125 不缩小（旧自适应 12 格行为已死）+ 画布仍 2748 + 横向拉条 + 可横滚 200  {"cols":125,"cs":20,"canvasW":2748,"scrollW":2772,"clientW":214,"zoom":""} scrollLeft=200
+  ✅ E3 3840 超宽窗：cols 仍恒 125（不再无限增长）+ 画布 2748  {"cols":125,"cs":20,"canvasW":2748,"scrollW":3574,"clientW":3574,"zoom":""}
+  ✅ E4 resize 不 refit：卡片位置/数量零变动（窗口 1280→480 卡片 left/top 不变、零自动建卡）  before {"left":"22px","top":"22px","cards":1} ← after {"left":"22px","top":"22px","cards":1}
+  ✅ Z1 Ctrl+滚轮上（deltaY<0）→ 1.1 倍：style.zoom=1.1 + chip 110% + 画布盒随 zoom 放大（scrollW≈2748×1.1）  {"cols":125,"cs":20,"canvasW":2747,"scrollW":3069,"clientW":1014,"zoom":"1.1"}
+  ✅ Z2 锚点平移自洽：光标下画布本地坐标缩放前后不变（setViewZoom(2.2, cx, cy) 锚定、padding 扣除）  {"z0":1.1,"z1":2.2,"p0":230.90909090909088,"p1":230.90909090909088}
+  ✅ Z3 Ctrl+= → 2.2×1.1=2.42（chip 242%）  zoom=2.42
+  ✅ Z4 Ctrl+− → 2.42÷1.1≈2.2（chip 220%）  zoom=2.2
+  ✅ Z5 钳制下限：setViewZoom(0.01) → 0.25（chip 25%）
+  ✅ Z6 钳制上限：setViewZoom(99) → 4（chip 400%）
+  ✅ Z7 zoomChip 点击复位 100%：zoom 移除 + chip 100%
+  ✅ P1 普通滚轮（无修饰）→ 纵向视角移动：scrollTop 增、scrollLeft 不动（浏览器原生）  before {"st":1096,"sl":1460} ← after {"st":1336,"sl":1460}
+  ✅ P2 Shift+滚轮（浏览器原生换算 deltaX）→ 横向视角移动：scrollLeft 增、scrollTop 不动  before {"st":1336,"sl":1460} ← after {"st":1336,"sl":1580}
+  ✅ P5 平移期间玻璃挂起：body.fc-moving 在场（45.2 纪律——pan 中 backdrop-filter 暂离）  fc-moving=true
+  ✅ P3 中键长按拖动 → 平移视口：右移 100 下移 60 → scrollLeft 800→700、scrollTop 400→340（反向拖动）  {"st":340,"sl":700}
+  ✅ P6 松手后玻璃还原：fc-moving 已移除（滚动/平移收尾不残留挂起态）  fc-moving=false
+  ✅ P4 中键点按卡片不误触取消选中（点按前已选中、中键点按后仍选中）  before=true after=true
+  ✅ D1 1.5× 下拖卡：+33 屏幕px = +22 画布px，吸附整格 left 22→44（top 22 不变）  before=22px after {"left":44,"top":22,"w":130}
+  ✅ D2 1.5× 下 se 手柄 +33 屏幕px = +22 画布px：colSpan 6→7、宽 130→152（offsetWidth 画布本地不受 zoom 污染）  {"w":152,"span":"7"}
+  ✅ D3 1.5× 下 rotate grip 拖动：角度改变（≠0、transform 旋转在场、范围合理）  {"rot":-20,"tf":"rotate(-20deg)"}
+  ✅ R1 撤销链三步：旋转归 0 → resize 还原 span6/宽130 → 拖拽还原 left 22（缩放系统未破坏历史快照链）  a={"rot":0,"left":44,"w":152} b={"rot":0,"left":44,"w":130,"span":"6"} c={"left":22,"w":130}
+  ✅ R2 恢复链三步：left 44 + span7/宽152 + 旋转回来（≠0）  {"rot":-20,"left":44,"w":152}
+  ✅ V1 查看模式 fit1to1 完整舞台自洽（s=min(availW/2750,availH/stageH)、scaler=stage×s、canvas 0,0 零平移）
+  ✅ V2 查看模式零缩放守卫：Ctrl+滚轮 + setViewZoom(2) 均不生效（zoom 恒未施加、fit 变换不动）  scale(0.303497)
+  ✅ E5 全程零 Runtime exception  干净
+  ✅ E6 全程零 console error  干净
+
+🎉 全部通过 29/29
+===== exit 0 =====
+===== tmp-battery-fc-present.js =====
+  ✅ E1 1280 编辑态：169 预设 cellSize=20 + cols 恒 125 + 画布盒 2748 全覆盖 + 横向拉条（scrollW>clientW）  {"actual":125,"cs":20,"canvasW":2748,"scrollW":2796,"clientW":992}
+  ✅ E2 480 窄窗：cols 仍恒 125 不缩小（v10.28.39.0 固定横向，旧自适应 12 格已死）+ 画布仍 2748 + 可横滚  {"actual":125,"cs":20,"canvasW":2748,"scrollW":2772,"clientW":214} scrollLeft=200
+  ✅ E3 回 1280：cols 恒 125（固定横向往返零漂移）+ 零自动建卡（无冻结副作用）  {"actual":125,"cs":20,"canvasW":2748,"scrollW":2796,"clientW":1014} cards=0
+  ✅ E4 3840 超宽窗：cols 仍恒 125 不再增长（「这是最大值」实证）+ cellSize 仍 20  {"actual":125,"cs":20,"canvasW":2748,"scrollW":3574,"clientW":3574}
+  ✅ V1 查看态 640 窄窗：fit1to1 完整舞台自洽（s=min(availW/2750,availH/stageH)、scaler=stage×s、canvas 0,0 零平移）  scaler.w=688 left=0px tf=scale(0.25)
+  ✅ V2 回 1280：再 fit 自洽 + 哨兵草稿未被 resize 触碰（byte 相等）  scaler.w=835 tf=scale(0.303497)
+  ✅ V3 查看镜像目录 4 条目（v0.2.58.0 列全部卡：content c1 label + flag c2 label + c3/c4 文字卡）
+  ✅ E4 全程零 Runtime exception  干净
+  ✅ E5 全程零 console error  干净
+
+🎉 全部通过 9/9
+===== exit 0 =====
+===== tmp-battery-micro-v056.js =====
+  ✅ B1 概览页近期贡献=真文章（Charter 在列）  Neo 发布了 Founding Charter2026-09-20Vela 发布了 Trade Treaty Note
+  ✅ B1b 假数据 Alex Rivera 已移除
+  ✅ B1c 贡献行含作者+动作词（发布了）
+  ✅ B1d 贡献行锚到 article.html?id=ART-MICRO-1  href=article.html?id=ART-MICRO-1
+  ✅ B1e 概览页已接 api.js（MN_API 存在）
+  ✅ B2 概览搜索 Charter → 下拉出结果  articleFounding CharterNeo · 2026-09-20
+  ✅ B2b 结果锚到 article.html?id=ART-MICRO-1  href=article.html?id=ART-MICRO-1
+  ✅ B3 概览搜索无结果 → 没有找到相关文章
+  ✅ B4 零文章 → 空态（暂无贡献内容）不回退假数据  暂无贡献内容
+  ❌ B5 活动流首卡=真文章卡（混入）  href=null
+  ❌ B5b 文章卡含标题+作者+badge
+  ❌ B5c 文章卡插在 demo 活动项之前
+  ✅ B5d 最新文章区块仍显示（并存）
+  ✅ B5e 活动流 demo 项仍在（4 条）
+  ✅ B6 站点号 v0.2.57.1  got=v0.2.58.0
+  ✅ B6b FC v10.28.39.0  got=v10.28.41.0
+  ✅ F1 FC 列表行渲染（含云端行）  [{"id":"ART-MICRO-1","title":"Founding Charter","isCloud":false},{"id":"ART-MICRO-2","title":"Trade Treaty Notes","isCloud":false},{"id":"ART-015","title":"Inter-Micronation Trade Agreement","isCloud"
+  ✅ F2 云端文章 View → 平台阅读页 article.html?id=  http://127.0.0.1:4859/pages/article.html?id=ART-MICRO-1
+  ✅ F3 本地草稿 View → 编辑器 ?article=（预览保留）  clicked / http://127.0.0.1:4859/pages/fluidcanvas-editor.html?article=ART-015
+  ✅ S1 全程零 Runtime exception  干净
+  ✅ S1b 零 console error  干净
+
+💔 失败 3 / 共 21
+===== exit 1 =====
+===== tmp-battery-article-frontend.js =====
+  ✅ S1 028 迁移：article_comments 表 + id TEXT UNIQUE 可空（insertWithId 契约）+ ACM- 前缀 + FK 级联 + status CHECK
+  ✅ S2 articles.js：q 搜索 LIKE ESCAPE 转义 + 只搜 published + 评论 GET/POST + commentRow avatarUrl + 限流键 acw
+  ✅ S3 notifications.js：article_comment 事件从 article_comments 联查
+  ✅ S4 测试锚：health 60 表 + user_version 28 + migrations 头注释 028
+  ✅ S5 index.html：搜索输入+面板+防抖三态+最新文章区块+article 跳转锚（搜索行/最新文章/通知三处）
+  ✅ S6 index.html：通知第八类 article_comment 文案+跳转分支 + 三态 i18n 键调用
+  ✅ S7 article.html：阅读页骨架（wrap/title/meta/正文流/评论区）+ 三件套 + __articleI18nRefresh + pre-stagger art-present
+  ✅ S8 article.html：draft v9 卡渲染（四型+盾徽+兜底）+ (row,col) 排序 + 消毒 + 互动端点 + 访客引导
+  ✅ S9 article.i18n.js：zh 23 键 + en 链 + zh-Hant 自动段（OpenCC 已重跑）
+  ✅ S10 index.i18n.js：新键 11 语言（latestArticles/searching/notif.articleComment）+ searchPh 文章口径 + zh-Hant 自动段
+  ✅ S11 site-config：v0.2.57.1 + changelog 文章前端条目 + FC v10.28.39.0
+  ✅ S12 articles.js PUT/DELETE 端点（本人校验/互动行清理/级联）+ article-write 4 测
+  ✅ S13 编辑器：publish id 记忆 + PUT 更新分支 + 404/403 回退 + 草稿清空作废 + ?edit= 加载 + boot 分支
+  ✅ S14 FC 列表：cloud 删除按钮无条件渲染 + DELETE API + bulk 逐个删 + Edit 带 ?edit=
+  ✅ B1 标题 + 作者行（首字母圆头像 A + 名字 Alice + 主页锚 + 日期 + 浏览数 42）
+  ✅ B2 正文流 2 张 content 卡 + baseFontSize 内联 + 富文本 h2/p/b/i 保留
+  ✅ B3 消毒实证：script 不执行（__pwned 未定义）+ script 节点 0 + onerror 属性被剥
+  ✅ B4a flag 卡：figure.art-figure + img 挂 data URI + figcaption label
+  ✅ B4b text 卡：art-note + 内联 rgba 底 + 富文本 b/br 保留
+  ✅ B4c shield 无图国徽卡：art-emblem + shield 图标 + Emblem 标签（v0.2.56.0 不再静默丢弃）
+  ✅ B4d map 无图兜底卡：art-asset + map 图标 + Territorial Map 标签
+  ✅ B4e character 有图兜底卡：第二个 figure + figcaption King
+  ✅ B5 卡序按 (row,col)：row2 的 content 卡先于 row30 的 Late card
+  ✅ B6 点赞初始态（aria-pressed true + liked 类 + 计数 5）
+  ✅ B6b 取消点赞（likedByMe 初始 true → 第一次点击=DELETE）→ 计数 6 + pressed false + liked 类摘除
+  ✅ B6c 再点赞（POST）→ 服务端 7 同步 + pressed true + liked 类回来
+  ✅ B7 收藏：点击 → star + favorited 类（无计数显示）
+  ✅ B8 评论列表 2 条（名字/内容/相对时间渲染）+ 空态不在
+  ✅ B8b 提交评论 → 追加 1 条（共 3）+ 输入框清空
+  ✅ B9 removed 评论不追加（仍 3 条）+ 拦截 toast 在场
+  ✅ B10 空评论 → 拦截 toast（内容需 1-2000 字符）
+  ✅ B11 切 en：评论标题变 Comments + 返回链接 Back to Home + 占位英文 + 评论列表重渲染不丢（仍 3 条）
+  ✅ B12 404 占位在场 + notFound 文案 + detail 隐藏
+  ✅ B13 最新文章区块显示 + 只渲染 published（ART-X/ART-Y 2 行，hidden 不出现）
+  ✅ B14 最新文章行锚到 pages/article.html?id=
+  ✅ B14b 搜索下拉 1 行（Constitution Notes 命中、大小写不敏感）+ 行锚到 article.html
+  ✅ B14c 无结果三态：zzz → 没有找到相关文章
+  ✅ B14d Escape 关闭面板
+  ✅ B16 ?edit= 加载：标题回填 + publish id 记忆 + 画布卡片恢复
+===== exit 1 =====
+===== tmp-battery-article-present.js =====
+  ✅ F0-1 article.html 呈现件全在场（art-present + applyReflow + renderToc + resize 监听 + 560px 纵排媒体查询）
+  ✅ F0-2 版本 v0.2.58.0 + changelog（58.0 rev 00276-nnx + 57.1 rev 00274-xfl 保留）+ FC v10.28.41.0
+  ✅ F0-3 i18n 新键在场（article.tags.label/article.toc.title zh + zh-Hant 目錄）
+  ✅ F0-4 完整格舞台 + 窄窗分支 + 宽窗 contain fit + updateWideScale 在场（58.0 舞台公式锚）
+  ✅ F0-5 FC 镜像在场（fit1to1 + renderViewPresentation + fcViewTocBtn）+ 编辑模式恒 125 锚（39.0 computeCols 恒 return 125）
+  ✅ W1 标签条显示 2 chip 宪法/地理（顺序保留）  flex chips=2
+  ✅ W2 站点侧栏灭（display none）+ 主区无左边距  none/0px
+  ✅ W3 目录钮在场 + 抽屉 5 条目（Flag/Constitution/Hello present…/Stats/Notes；v0.2.57.1 列全部卡——label→正文派生→卡型名兜底）  Flag | Constitution | Hello present… | Stats | Notes
+  ✅ W4 目录钮开抽屉 + 点击条目 → 抽屉关 + 目标卡闪烁
+  ✅ W5 宽窗完整舞台自洽：inner 逻辑 2750×2090（125×22 / 95×22）、s=min(availW/2750,availH/2090) 下限 0.25 + holder=stage×s  avail=1163x463.34375 inner=2750x2090 holder=688x523 scale(0.25)
+  ✅ W8 格子代码层面在场 + 透明度放满（两笔 linear-gradient + alpha 0 + 22px 间隔）  linear-gradient(to right, rgba(120, 120, 120, 0) 1px, rgba(0, 0, 0, 0) 1px), linear-gradient(rgba(120, 120, 120, 0) 1px, | size=22px 22px, 22px 22px
+  ✅ W6 投影不改画布逻辑尺寸：c8 逻辑宽仍 264.4（fitW）——缩放只走 transform，卡位 1:1 不动  c8=264x174
+  ✅ W7 高窗投影自洽：s 随窗重算（宽受限≈availW/2750、铺满窗宽）且 holder=stage×s  avail=1185x1061.34375 s=scale(0.430909) holder=1185
+  ✅ R1 640 窄窗 → 回流模式翻转（reflow 类 + inner transform none）  reflow=true avail=545
+  ✅ N1 3 条回流带（c8/c1 同带、c2/s1 y 重叠同带、c3 独带）  c8+c1 | c2+s1 | c3
+  ✅ N2 c2 content 弹性撑满带宽 + s1 stats 保自然宽 394 换行下置（列表卡不被挤压）  c2=545@190 s1=394@288
+  ✅ N3 c8/c1 同带同行（top 相等）  c8.top=0 c1.top=0
+  ✅ N4 图卡等比收缩：c8 aspect-ratio ≈ 264.399/174.347  264.399 / 174.347 264x174
+  ✅ R2 回 1280 → 全屏投影还原（reflow 灭 + transform scale 恢复 + TOC 钮重建）  reflow=false tf=scale(0.268586)
+  ✅ R3 再 640 → 回流复现（监听未死、往返稳定）
+  ✅ N5 320 最窄全部上下单列（5 卡 offsetTop 严格递增）  c8@0 c1@160 c2@396 s1@628 c3@818
+  ✅ N6 320 页面无横向溢出（列表卡被钳住不撑破页）  scrollW=305 innerW=320
+  ✅ N7 窄窗 TOC 可点（开抽屉→点第 5 条 Notes→c3 闪烁 + 抽屉关）
+  ✅ L1 legacy 草稿走流式兜底（.art-flow 在场、零 .art-canvas）
+  ✅ L2 legacy 正文渲染
+  ✅ L3 无标签 → 标签条隐藏
+  ✅ L4 流式兜底零画布 → 零目录钮（renderToc 不跑）
+  ✅ E1 零 Runtime exception  干净
+  ✅ E2 零 console error  干净
+
+🎉 全部通过 29/29
+===== exit 0 =====
+===== tmp-battery-article-view.js =====
+  ✅ F0-1 版本双线 v0.2.58.0 / v10.28.41.0（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块
+  ✅ F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）
+  ✅ F0-3 编辑器五守卫在场（saveDraft/putCloudDraft/syncCloudDraft/keydown/refit resize 全挡 viewmode）
+  ✅ F0-4 列表接云端在场（View 委托分支 + cloudArticles + loadCloudArticles + api.js 动态注入 + demo store）
+  ✅ F0-5 ART-001 样例 contentJson 在场（正文卡 + flag + text，标题一致）
+  ✅ F0-6 发布即公开在场（badge-success Published + 已发布 toast + 占位文案无「审核中」）
+  ✅ A1 17 行（15 种子+2 云端）
+  ✅ A2 云端行置顶（首行 ART-CLOUD-1）
+  ✅ A3 云端行与种子行均有删除钮（v0.2.55.1 起云端行可删）
+  ✅ A4 pending 云端行徽章 In Review
+  ✅ A5 云端 View → 平台阅读页 article.html?id=ART-CLOUD-1
+  ✅ A5b 本地草稿 View → 编辑器 ?article=ART-001（预览保留）
+  ✅ B1 body.fc-viewmode 在场
+  ✅ B2 fixture 4 卡全渲染
+  ✅ B3 chrome 全隐（header/侧栏/状态栏/标题框）
+  ✅ B4 #fcViewScaler 在场且 overflow hidden
+  ✅ B5 完整舞台 contain fit 投影（v10.28.39.0：s=min(availW/2750,availH/stageH) 随查看窗铺满、下限 0.25）  scale(0.269231) avail=1226x770 canvas=2750x2860 scaler=740x770
+  ✅ B6 卡内零交互（pointer-events none）
+  ✅ B7 contentEditable 关闭 + Tab 序移除
+  ✅ B8 哨兵本地草稿未被覆盖（saveDraft/自动保存守卫实证）  {"sentinel":true}
+  ✅ B9 标题芯片 #fcViewTitle = fixture 标题
+  ✅ C1 旧右越界卡（880 格宽外）在新 125 格舞台内完整可见且不超舞台右缘  card.right=548.7 scaler.right=999.0
+  ✅ C2 旧下越界卡（2200 格高外）在新 max(70,内容行)+25 舞台内完整可见且不超舞台下缘  card.bottom=637.4 scaler.bottom=786.0
+  ✅ C3 界内卡完整可见（c1 不越界）
+  ✅ C4 scaler 收成缩放后完整舞台（≈2750×s；canvas 0,0 零平移——不再 bbox 裁剪）  scaler.w=740 canvas.left=0px scale(0.269231)
+  ✅ V1 格子线代码层面在场 + 透明度放满（background-image 两笔 linear-gradient + alpha 0、非 none）  linear-gradient(to right, rgba(120, 120, 120, 0) 1px, rgba(0, 0, 0, 0) 1px), linear-gradient(rgba(120, 120, 120, 0) 1px, rgba(0, 0, 0, 0) 1px)
+  ✅ V2 标签条 #fcViewTags 2 chip 宪法/官方
+  ✅ V3 目录抽屉 4 条目（v0.2.57.1 列全部卡：c1 正文 + flag c2 + c3/c4 文字卡）
+  ✅ V4 目录钮开抽屉（.open）
+  ✅ V5 点击条目 → 目标卡闪烁 + 抽屉关闭
+  ✅ V6 投影铺满不滚动：scaler=stage×s 收进 editor-body 内容区（scrollHeight 不超 clientHeight+40）  scroll=1258x802 client=1258x802
+  ✅ D1 pending 文章占位卡在场
+  ✅ D2 占位态零卡零 scaler
+  ✅ D3 占位卡含返回列表链接
+  ✅ D4 404 文章占位卡在场
+  ✅ F1 demo 兜底 3 卡渲染（云端 404 → 本地样例）
+  ✅ F2 标题芯片 = 样例标题
+  ✅ F3 样例 flag 卡图已挂（img 在场）
+  ✅ F4 reload 后仍 view mode + 3 卡（幂等）
+  ✅ F5 reload 后哨兵仍未被覆盖
+  ✅ G1 零 Runtime exception  干净
+  ✅ G2 零 console error  干净
+  ✅ E1 guest 未被送回锁屏（pathname 仍 editor）
+  ✅ E2 guest 文章照常渲染 4 卡
+  ✅ E3 guest 零 Runtime exception  干净
+
+🎉 全部通过 45/45
+===== exit 0 =====
+===== tmp-battery-article-1to1.js =====
+  ✅ F0-1 article.html 1:1 渲染在场（renderBodyCanvas + 12 caption-pos + bbox 两遍量盒 + hasXY 分支）
+  ✅ F0-2 版本 v0.2.58.0 + changelog 条目（58.0 rev 00276-nnx + 56.2 保留）
+  ✅ F0-3 渲染顺序修正（先 display:flex 再 renderBody——隐藏容器 clientWidth=0 缩放必错）
+  ✅ A1 画布模式在场（.art-canvas + 零 .art-flow 竖堆）
+  ✅ A2 4 卡渲染、hidden c9 跳过
+  ✅ B1 c8 flag aspectLock 尺寸 = fitW/fitH（264.399×174.347）  {"left":36,"top":24,"w":264,"h":174,"z":"2","tf":""}
+  ✅ B2 c1 shield span 公式 240×174（11×20+10×2 / 8×20+7×2）  {"left":300,"top":24,"w":240,"h":174,"z":"1","tf":""}
+  ✅ B3 并排不竖堆：c1 紧贴 c8 右缘（-0.4px 叠合同 FC）、顶对齐同 top=24  gap=0.00 tops=24.0/24.0
+  ✅ B4 位置纸算锚：c8(36.39,24) c1(300.39,24)  [36,300]
+  ✅ B5 z 层级还原：c8 z-index 2 > c1 z-index 1  ["2","1"]
+  ✅ B6 c8 图卡：.art-card-img 挂 SVG 图 + 无 label 元素（label 空）
+  ✅ B7 c1 国徽无图：盾徽块 + label Emblem
+  ✅ B8 c2 content 高度自适应：minHeight 86 起、正文渲染  {"left":36,"top":236,"w":262,"h":86,"z":"1","tf":""}
+  ✅ B9 c5 rotate 15：transform 在场 + 膨胀 bbox 定位 (30.33,420.27)  {"left":30,"top":420,"w":130,"h":66,"z":"1","tf":"rotate(15deg)"}
+  ✅ C1 inner 画布尺寸 = 完整格舞台（2750×2090；125×22 / 95×22）  2750x2090
+  ✅ C2 宽窗完整舞台投影自洽：s=min(availW/stageW,availH/stageH)（下限 0.25）+ holder=stage×s  avail=1163x528.53125 scale(0.252886) holder=695x529
+  ✅ D1 legacy 草稿走流式兜底（.art-flow 在场、零 .art-canvas）
+  ✅ D2 legacy 正文渲染
+  ✅ E1 零 Runtime exception  干净
+  ✅ E2 零 console error  干净
+
+🎉 全部通过 20/20
+===== exit 0 =====
+===== tmp-battery-notif-home.js =====
+═══ F0 双版本 + changelog ═══
+  ✅ F0-1 site-config 双版本 v0.2.54.0 / v10.28.36.1 + changelog 标记
+═══ F1 index.html 铃铛/灵动岛 ═══
+  ✅ F1-1 铃铛按钮+红点徽章（唯一性 + search-capsule position:relative + 徽章在铃铛后）
+  ✅ F1-2 灵动岛弹窗 DOM + api.js 引入
+  ✅ F1-3 灵动岛动画规则 + 页面专属 CSS 在外（内联块首个 </style> 之前零 dash 规则）
+  ✅ F1-4 聚合通知 JS 骨架（轮询/文案/决定药丸/登录提示/空态）
+  ✅ F1-5 跳转分发三类目标（帖子/文章/主页）——v0.2.55.0 文章跳转改阅读页 article.html（4 处：搜索行/最新文章/通知/活动流混入卡 v0.2.56.2）
+═══ F2 messages.html 零改动在位 ═══
+  ✅ F2-1 messages 铃铛/弹窗/好友请求管线原样（特定页面筛选=零改动证）
+═══ F3 fluidcanvas-editor.html 文章操作条 ═══
+  ✅ F3-1 操作条构建+样式+点击管线（fcViewActions/renderArticleActions/fcvaToggle/端点串）
+  ✅ F3-2 demo 种子/404 路径不建条 + 查看模式守卫/标题保留
+═══ F4 后端 ═══
+  ✅ F4-1 server.js 装配 + social.js 文章四端点
+  ✅ F4-2 notifications.js 八类聚合（每类 push 恰 1 + article target_type 恰 2；v0.2.55.0 加 article_comment）
+  ✅ F4-3 articles.js 互动字段 + 浏览自增
+═══ F5 零迁移 ═══
+  ✅ F5-1 health.test.js 钉 60 表 / user_version 28（v0.2.55.0 028 迁移升级；两处钉）
+
+═══ B 浏览器流程 ═══
+  ✅ B1 访客开窗（登录后查看通知 + 去登录链接 + 红点隐藏 + 零条目）
+  ✅ B1b Escape 关闭即时生效
+  ✅ B2 登录态后端不可达（暂无通知 + 无登录提示 + 红点隐藏）
+  ✅ B3-1 未读红点 3（lastSeen 之后 3 条新事件）
+  ✅ B3-2 开窗 5 条目（FR 在最前）+ 开窗即读（红点清隐藏）
+  ✅ B3-3 点 FR 整窗 morph 决定视图（名字/ID 居中 + 不同意|同意 + show-decision + 标题 + 高度>0）
+  ✅ B3-4 同意（FR 摘除 → 4 条 + 标题回通知）
+  ✅ B4 Escape 关闭即时生效（display none）
+  ✅ B5 外点关闭即时生效（display none）
+  ✅ Z 控制台零错误（噪声已滤）
+
+═══ ALL GREEN — 23/23 ═══
+===== exit 0 =====
+===== tmp-battery-home-bg.js =====
+═══ S. 静态巡检 ═══
+  ✅ S1 ethereal 全站铺底规则在位（body:not(.fc-page) 三面，首页命中同口径）
+  ✅ S2 ethereal 全站灭层规则在位（card + guest-hero 直系 lg-backdrop 灭滤镜灭磨砂）
+  ✅ S3 ethereal 修复注释含 54.4 用户原话 + 三钦定口径（54.3 旧注释已整体替换零残留）
+  ✅ S4 index body 挂 mn-index 页面类
+  ✅ S5 问候卡内联 background:var(--sidebar-bg)（旧 tint 渐变已去）
+  ✅ S6 订阅卡深色渐变底零触碰（白字设计卡不动）
+  ✅ S7 内联页总数 = 41（55.0 article.html 入族，实测 41）
+  ✅ S8 41 页内联块全部含全站铺底规则
+  ✅ S9 site-config 版本 = v0.2.55.0
+  ✅ S10 site-config changelog 含 v0.2.54.3 条目 + 用户原话 + 侧栏同款口径
+  ✅ S11 本轮后端零改动（v0.2.56.2 条目口径「GET /api/articles 已具备」）
+  ✅ S12 FC v10.28.36.1 保持
+═══ B1. 登录工作台（亮色 → data-theme=dark）═══
+  ✅ B1 卡数 = 18（问候 1+活动流 4+公告 10+工作台/指标/我的世界 3）
+  ✅ B2 亮色 18 卡 backgroundColor 全 rgba(255,255,255,0.95) 不透明侧栏同底
+  ✅ B3 卡自带 backdrop-filter blur(24px) 保留（底不透明零可见效果，侧栏模块同口径）
+  ✅ B4 13 张非 tilt 卡 .lg-backdrop 全灭（filter=none + backdropFilter=none）
+  ✅ B5 5 张 tilt 卡免层（问候+活动流 4；liquid-glass elasticOk 设计排除，本轮零触碰）
+  ✅ B6 搜索胶囊同底 0.95 + 自带 blur(16px) 保留
+  ✅ B7 暗色 18 卡 backgroundColor 全 rgb(26,26,46)（侧栏暗色同底）
+  ✅ B8 暗色 13 张挂层卡 .lg-backdrop 仍全灭
+  ✅ B9 暗色搜索胶囊同底 rgb(26,26,46)
+═══ B2. 访客态 guest-hero 大卡 ═══
+  ✅ B10 访客大卡亮色底 rgba(255,255,255,0.95)
+  ✅ B11 访客大卡 .lg-backdrop 灭（filter=none + backdropFilter=none）
+  ✅ B12 访客态工作台卡互斥隐藏（offsetParent 全 null=祖先 display:none，hero 独显）
+  ✅ B13 访客大卡暗色底 rgb(26,26,46)
+  ✅ B14 暗色访客大卡 .lg-backdrop 仍全灭
+
+home-bg 电池：26 通过 / 0 失败
+===== exit 0 =====
+===== tmp-battery-sidebar-light.js =====
+  ✅ ethereal 亮色侧栏铺底规则在位
+  ✅ ethereal 亮色侧栏灭滤镜灭磨砂规则在位
+  ✅ ethereal 暗色修复零触碰（09-10 原规则原样在位）
+  ✅ ethereal 修复注释含用户原话
+  ✅ 内联页总数 = 41（55.0 article.html 入族，实测 41）
+  ✅ 41 页内联块全部含亮色侧栏规则
+  ✅ site-config 版本 = v0.2.54.0
+  ✅ site-config changelog 含 v0.2.51.2 条目 + 用户原话 + 修法口径
+  ✅ site-config 51.1 changelog 历史条目保留
+  ✅ FC v10.28.36.1 保持
+
+sidebar-light 巡检：10 通过 / 0 失败
+===== exit 0 =====
+===== tmp-battery-pageswitch.js =====
+  ✅ F0 版本双线 v0.2.54.0 / v10.28.36.1
+  ✅ F1 双模式入场串：原样渐隐+位移全串 + 轻量 transform-only 串都在
+  ✅ F2 原节奏 stagger 60 + 轻量 40/上限 8 + LIGHT 按 messages.html 判定
+  ✅ F3 隐形修复保留（写前记 prevOpacity、transitionend+cancel 双监听、恢复三值、清 transform、隐藏卡兜底定时）
+  ✅ F4 退出双模式：原样渐隐串 + 轻量 transform-only 串都在
+  ✅ F5 导航计时双模式（原样 280/240 + 轻量 240/220）
+  ✅ M1a 点击 nav 即写入口方向 top  dir=top
+  ✅ M1b 退出窗口帧流+零长任务（诚实不变量）  exit n=11 lt=0
+  ✅ M1c 入场窗口帧流+零长任务  ent n=38 lt=0
+  ✅ M1d Messages 专属轻量入场（starts ≤ 24：8 张波浪头 + 页内 fade-up 动画；全卡波浪应 ~73）+落定 < 1800ms  starts=11 settle=732ms
+  ✅ M1e 落定后零 inline 污染  0/12
+  ✅ M1f 公告卡 computed 恢复 box-shadow（tilt 橡皮筋修复守卫）  box-shadow 0.25s
+  ✅ M1g 公告卡 inline 含 box-shadow 过渡属性（未被破坏）
+  ✅ M2a 点击 nav 即写入口方向 bottom  dir=bottom
+  ✅ M2b 入场帧流+零长任务  n=116 lt=0
+  ✅ M2c dashboard 原样全卡波浪（starts ≥ 24）+原节奏落定 ≥ 1100ms 且 < 3000ms（~1931ms 口径）  starts=86 settle=1959ms
+  ✅ M2d 零 inline 污染  0/18
+  ✅ M2e pre-stagger 类已解除（1.6s 兜底兼容）
+  ✅ M3a 水平切写入口方向 left  dir=left
+  ✅ M3b 入场帧流+零长任务  n=56 lt=0
+  ✅ M3c 零 inline 污染  0/7
+  ✅ M4a 反向水平切写 right + 到达 explore
+  ✅ Z 全程零 console error  干净
+
+🎉 全部通过 23/23
+===== exit 0 =====
+===== tmp-battery-msglink.js =====
+  ✅ F0 版本双线 v0.2.54.0 / v10.28.36.1 + 用户原话注释
+  ✅ F1 直达读取 showTab + 旧 tab 兼容
+  ✅ F2 点 tab 地址栏联动（replaceState + showTab 串 + private 干净路径）
+  ✅ F3 未知 tab 值归一清参数
+  ✅ F4 index 「View all announcements」用 ?showTab=announcements、旧 ?tab= 零残留
+  ✅ F5 首页公告卡 href 直达 announcements（v0.2.55.0 用户「点击后跳转是这个页面」）
+（暖机完成）
+
+  ✅ M1 ?showTab=announcements 直达  search=?showTab=announcements active=announcements slide=translateX(-200%)
+  ✅ M2 ?showTab=groups 直达  search=?showTab=groups active=groups slide=translateX(-100%)
+  ✅ M3 无参数默认 private + URL 干净（slide 空串=CSS 默认 0 位，与 translateX(0%) 同态）  search= active=private slide=
+  ✅ M4 旧 ?tab=announcements 兼容直达 + URL 归一成 ?showTab=announcements  search=?showTab=announcements active=announcements
+  ✅ M5 点 groups → URL ?showTab=groups + 无刷新（同文档哨兵存活）+ 面板切换  noReload=true search=?showTab=groups active=groups
+  ✅ M6 点 announcements → URL ?showTab=announcements + 面板切换  search=?showTab=announcements active=announcements
+  ✅ M7 点回 private → URL 回干净路径 + 面板切回  search= active=private
+  ✅ M8 未知 ?showTab=bogus → 默认 private + URL 清参数  search= active=private
+  ✅ M9 全程零长任务  longtask=0
+  ✅ Z 全程零 console error  干净
+
+🎉 全部通过 16/16
+===== exit 0 =====
+===== tmp-battery-monodark-v0422.js =====
+  ✅ F1 版本双线 v0.2.54.0 / v10.28.36.1 + 注释块（49.2→49.3 白底白字第二轮·按钮）
+  ✅ F2 暗 mono 黑族令牌规则（ethereal.css）：selector + 中性黑值（#0b0b0d 家族，蓝 tint 已除）
+  ✅ F3 白底白字按钮族规则（ethereal.css）：active 族+tim-search+lib-icon:hover → #32324a 白字（钦定配方）
+  ✅ F4 进度圆点+toast 翻黑族规则（ethereal.css）（#32324a 圆点 / #1a1a1e toast 白字）
+  ✅ F5 admin 裸 .btn 泛化规则（v0.2.49.3 第二轮：面板 JS 渲染按钮族全盖；:not 排除变体不盖 btn-primary 暗色规则）
+  ✅ M1a html 暗 mono 生效  accent=mono theme=dark
+  ✅ M1b 令牌全翻黑族  bg=#0b0b0d card=rgba(21, 21, 25, 0.55)
+  ✅ M1c body 中性黑 rgb(11,11,13)  rgb(11, 11, 13)
+  ✅ M1d 卡片计算态 rgba(21,21,25,0.55)  rgba(21, 21, 25, 0.55)
+  ✅ M1e toast 翻黑族 rgb(26,26,30)  rgb(26, 26, 30)
+  ✅ M1f 整页零蓝 tint 深底  干净
+  ✅ M1g 整页零白底白字（半透明覆层豁免）  干净
+  ✅ M2a 网格画布翻黑族 rgb(10,10,12)
+  ✅ M2b col-btn.active = #32324a 白字
+  ✅ M2c tim-search-btn = #32324a 白字
+  ✅ M2d pbg-ratio-btn.active = #32324a 白字
+  ✅ M2e 编辑器 toast 翻黑族 rgb(26,26,30)  rgb(26, 26, 30)
+  ✅ M2f 蓝 tint 仅钦定按钮族 #32324a（无其他蓝底）  button.col-btn.active:rgb(50, 50, 74), button.col-btn.active:rgb(50, 50, 74), button.tim-search-btn:rgb(50, 50, 74), button.pbg-ratio-btn.active:rgb(50, 50, 74)
+  ✅ M2g 整页零白底白字（半透明覆层豁免）  干净
+  ✅ M5a messages 按钮/气泡族翻 #32324a 白字（≥4 个）+ msg-avatar 头像族恒亮固定色（4 个）  n=5 an=4
+  ✅ M5b explore .world-code-chip 深灰渐变白字（≥2 个）  n=6
+  ✅ M5c help .step-num 深灰渐变白字（4 个）  n=4
+  ✅ M5d registry .stepper-btn 暗 mono 深面浅字（≥4 个）  n=12
+  ✅ M5e admin 裸 .btn 退出登录 暗色翻深面（白底白字全暗修复）  {"bg":"rgb(29, 29, 32)","color":"rgb(226, 226, 232)"}
+  ✅ M6a 暗蓝 .stepper-btn 深面 #282848 浅字（无 mono 不误伤）  n=12
+  ✅ M3a 亮 mono body 保持亮底  rgb(247, 249, 251) L=0.976
+  ✅ M3b 亮 mono 令牌不受暗黑族污染  bg=#f7f9fb
+  ✅ M4a 无 mono accent 时蓝家族原样 #161625  accent=null bg=rgb(22, 22, 37)
+  ✅ Z 全程零 console error  干净
+
+🎉 全部通过 29/29
+===== exit 0 =====
+===== tmp-battery-mono-flash.js =====
+  ✅ F0 版本双线 v0.2.54.0 / v10.28.36.1 + 用户原话注释（49.1 注释块保留）
+  ✅ F1 settings-modal.js 已无 mono 规则（迁出干净）+ 弹窗 UI 规则保留
+  ✅ F2 ethereal.css 静态含 mono 三族（暗黑族/白底白字族/FC Migrate 族）
+  ✅ F3 theme-init.js 原版源含 data-accent 同步落
+  ✅ F4 30 页 head 内联块含 accent + 41 页内联含 mono 令牌（55.0 article.html 入族）  30 页 accent / 41 页 mono
+  ✅ S1a 屏蔽注入下 data-accent=mono + data-theme=dark（head 内联同步落）  accent=mono theme=dark
+  ✅ S1b 暗 mono 令牌全黑族（--color-background #0b0b0d / primary #ececf2 / card rgba(21,21,25,0.55)）  bg=#0b0b0d p=#ececf2
+  ✅ S1c body 中性黑 rgb(11,11,13)  rgb(11, 11, 13)
+  ✅ S1d 注入样式确已屏蔽（mono 生效却无 #slati-settings-menu-style = 静态路径实证）  injected=false
+  ✅ S2a FC 首页 data-accent=mono + 暗黑族令牌（首帧即黑白）  bg=#0b0b0d
+  ✅ S2b FC 首页注入样式同样不在场
+  ✅ S3a 编辑器 data-accent=mono + 网格画布黑族 rgb(10,10,12)
+  ✅ S3b col-btn.active = #32324a 白字（白底白字族从 ethereal 生效）
+  ✅ S3c tim-search-btn = #32324a 白字
+  ✅ S3d 编辑器 toast 翻黑族 rgb(26,26,30)
+  ✅ S3e 注入样式不在场
+  ✅ S4 切页 explore 到达即 mono+黑族（无蓝家族窗口）  bg=#0b0b0d
+  ✅ S4 切页 community-hub 到达即 mono+黑族（无蓝家族窗口）  bg=#0b0b0d
+  ✅ S4 切页 回首页 到达即 mono+黑族（无蓝家族窗口）  bg=#0b0b0d
+  ✅ S5a 亮 mono 保持亮底 + 主色近黑族 #1c1c22  L=0.976 p=#1c1c22
+  ✅ S6a 无 accent 时蓝家族原样（#161625 / body rgb(22,22,37) / primary #4648d4）  accent=null bg=#161625 p=#4648d4
+  ✅ Z 全程零 console error（settings-modal 屏蔽亦零报错）  干净
+
+🎉 全部通过 22/22
+===== exit 0 =====
+===== tmp-battery-fadefix.js =====
+═══ tmp-battery-fadefix.js ═══ mode=after 期望版本 v0.2.58.0
+  ✅ F0 版本双线 v0.2.58.0 / v10.28.36.1 + changelog 标记
+  ✅ F1 双模式入场串：原样渐隐+位移全串 + 轻量 transform-only 串都在
+  ✅ F2 原节奏 stagger 60 + 轻量 40/上限 8 + LIGHT 按 messages.html 判定
+  ✅ F3 隐形修复保留（prevOpacity 记/transitionend+cancel 双监听/恢复三值/清 transform/兜底公式）+ will-change 写前记/还原
+  ✅ F4 退出双模式：原样渐隐串 + 轻量 transform-only 串都在
+  ✅ F5 导航计时双模式（原样 280/240 + 轻量 240/220）
+  ✅ F6 rAF 批量波浪（requestAnimationFrame 在 + 旧逐卡 setTimeout 模式不在 + 兜底公式在）
+  ✅ F7 双动画守卫 getAnimations 在
+  ✅ F8 will-change 写点 ≥4 处（入场/还原/水平退出/垂直退出）  count=4
+  ✅ F9 守卫收窄只认 CSS 关键帧动画（CSSTransition 构造器 + transitionProperty 双重过滤；v0.2.50.4）
+  ✅ M1a 点击 nav 即写入口方向 top  dir=top
+  ✅ N3v 垂直退出 .app-main 同步写 will-change（层提升）  will=opacity, transform
+  ✅ M1b 退出窗口帧流+零长任务（诚实不变量）  exit n=10 mean=20 p50=16.7 p95=33.3 max=33.3 >20ms=2 >34ms=0 lt=0
+  ✅ M1c 入场窗口帧流+零长任务  ent n=39 mean=17.5 p50=16.7 p95=33.3 max=33.4 >20ms=2 >34ms=0 lt=0
+  📊 M1 Messages LIGHT 入场帧健康：n=39 mean=17.5 p50=16.7 p95=33.3 max=33.4 >20ms=2 >34ms=0 lt=0 | settle=698ms
+  ✅ M1d Messages 专属轻量入场（starts ≤ 24：8 张波浪头 + 页内 fade-up 动画；全卡波浪应 ~73）+落定 < 2200ms（8 卡波浪物理 680ms 落定，尾长含页内原生动画、运行方差 ±150ms）  starts=12 settle=698ms
+  ✅ M1e 落定后零 inline 污染  0/12
+  ✅ M1f 公告卡 computed 恢复 box-shadow（tilt 橡皮筋修复守卫）  box-shadow 0.25s
+  ✅ M1g 公告卡 inline 含 box-shadow 过渡属性（未被破坏）
+  ✅ M1h LIGHT 入场 will-change 机制（波浪卡起播均带 will-change ≥3 + 值全含 transform + 落定全清）  n=11 withWC=8 cleared=11/11 vals=transform
+  ✅ M1i Messages LIGHT 波浪覆盖（≥5 张波浪头卡收到内联过渡；50.4 守卫收窄回归网——messages 守卫输入为空已由探针证明，≤3 张差额 = 页内原生入场动画抢先改 transform，startCard 写入即终值无新过渡可起（tmp-probe-msg-preempt.js 快照实证 8 张全被写入），观感无损）  itTargets=8 vis=8
+  ✅ M2a 点击 nav 即写入口方向 bottom  dir=bottom
+  ✅ N2b 中场快照：欢迎卡零内联过渡（守卫跳过）而波浪其他卡 ≥3 张进行中  welcome.t="" mid=3
+  ✅ M2b 入场帧流+零长任务  n=118 lt=0
+  📊 M2 dashboard 原样全卡波浪入场帧健康：n=118 mean=16.7 p50=16.7 p95=16.8 max=16.8 >20ms=0 >34ms=0 lt=0 | settle=1981ms
+  ✅ M2c dashboard 原样全卡波浪（starts ≥ 24）+原节奏落定 ≥ 1100ms 且 < 3000ms（~1931ms 口径）  starts=86 settle=1981ms
+  ✅ M2d 零 inline 污染  0/18
+  ✅ M2e pre-stagger 类已解除（1.6s 兜底兼容）
+  ✅ M2h 原样入场 will-change 机制（波浪卡起播均带 will-change ≥20 + 值全含 opacity + 落定全清）  n=84 withWC=46 cleared=23/23 vals=opacity, transform
+  ✅ M2i dashboard 波浪覆盖（每张可见非欢迎卡收到内联过渡；50.4 守卫收窄回归网）  itTargets=23 vis=23
+  ✅ N2 欢迎卡双动画守卫（零内联三值 + 关键帧 fadeInUp 照常淡入 + fill forwards 仍挂动画）  t="" o="" wc="" anim=fadeInUp ga=1
+  ✅ M3a 水平切写入口方向 left  dir=left
+  ✅ N3h 水平退出逐卡同步写 will-change（层提升）  hit=6
+  📊 M3 explore→overview 水平退出帧健康：n=15 mean=17.8 p50=16.7 p95=33.3 max=33.3 >20ms=1 >34ms=0 lt=0
+  ✅ M3b 入场帧流+零长任务  n=57 lt=0
+  ✅ M3c 零 inline 污染  0/7
+  ✅ M4a 反向水平切写 right + 到达 explore
+  📊 A4 auth 入场帧健康：n=3 mean=16.7 p50=16.7 p95=16.7 max=16.7 >20ms=0 >34ms=0 lt=0 | settle=228ms
+  ✅ A4 auth 入场（starts ≥1 + 帧流 ≥1 + 零长任务 + will-change 落定清净 + 污染 0/N）  starts=4 n=3 lt=0 will="" poll=0/0
+  ✅ Z 全程零 console error  干净
+
+🎉 mode=after 全部通过 36/36
+===== exit 0 =====
+===== tmp-battery-bannerfixed.js =====
+  ✅ F1 ethereal 暗色隐藏规则整体移除（09-10 反转）+ 54.6 注释在位
+  ✅ F2 ethereal mono 暗色横幅翻黑族+头像灰环规则移除、AI 悬浮球保留
+  ✅ F3 sidebar.js 两处内联渐变固定 #4648d4（var(--color-primary) 零残留）+ 头像白环在位
+  ✅ F4 个人页横幅 9 处垫底固定 #e6e8ea（默认/bg-default/6 玻璃预设/glass-bg 兜底）  9 处：8 横幅垫底+1 边缘默认填充色块
+  ✅ F5 6 玻璃预设逐个固定垫底
+  ✅ F6 编辑弹窗 3 处预览兜底固定（var(--lg-bg, #e6e8ea) ×4 含 glass-bg 兜底）
+  ✅ F7 个人页头像环固定 #f7f9fb（var(--color-surface) 零残留）
+  ✅ F8 pagebg-custom 色块零触碰（全文件仅剩 1 处 var 垫底=页面背景示意块，非横幅）
+  ✅ F9 41 页内联块刷新（index/个人页/admin 暗色隐藏规则+mono 黑族均无、54.6 注释在位）
+  ✅ F10 site-config v0.2.55.0 + changelog 用户原话 + FC v10.28.36.1 不动
+  ✅ F11 messages 头像族 11 个 msg-avatar 类 + 头像行零 var(--color-) 残留  msg-avatar=11 头像行=11
+  ✅ F12 messages mono 暗色规则改 :not(.msg-avatar) 豁免（09-17 注释保留）
+  ✅ F13 messages 头像固定色 11 处（#4648d4×7 + #8127cf×4）
+  ✅ S1 亮色：横幅恒靛蓝渐变+头像恒白环  linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196)) / rgb(255, 255, 255)
+  ✅ S2 暗色：同亮色（09-10 隐藏规则已解除）  linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196)) / rgb(255, 255, 255)
+  ✅ S3 mono 亮色：同亮色（内联 var(--color-primary) 已固定）  linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196)) / rgb(255, 255, 255)
+  ✅ S4 mono 暗色：同亮色（黑族/灰环规则已移除）  linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196)) / rgb(255, 255, 255)
+  ✅ S5 访客模块横幅 mono 暗色也恒靛蓝渐变  linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196))
+  ✅ P1 亮色：横幅垫底+头像环同亮色  rgb(230, 232, 234) / rgb(247, 249, 251)
+  ✅ P2 暗色：同亮色（垫底固定不透明 #e6e8ea）  rgb(230, 232, 234) / rgb(247, 249, 251)
+  ✅ P3 mono 亮色：同亮色  rgb(230, 232, 234) / rgb(247, 249, 251)
+  ✅ P4 mono 暗色：同亮色  rgb(230, 232, 234) / rgb(247, 249, 251)
+  ✅ P5 glass-rose 预设暗色：横幅垫底同亮色  rgb(230, 232, 234) / rgb(247, 249, 251)
+  ✅ P6 edge paper 边缘态暗色：横幅垫底同亮色+剪影在位  rgb(230, 232, 234) / clip=url("#paper-edge-clip")
+  ✅ M1 亮色：Messages 头像恒靛蓝/紫固定色  rgb(70, 72, 212),rgb(129, 39, 207),rgb(70, 72, 212),rgb(70, 72, 212)
+  ✅ M2 暗色：同亮色  rgb(70, 72, 212),rgb(129, 39, 207),rgb(70, 72, 212),rgb(70, 72, 212)
+  ✅ M3 mono 亮色：同亮色  rgb(70, 72, 212),rgb(129, 39, 207),rgb(70, 72, 212),rgb(70, 72, 212)
+  ✅ M4 mono 暗色：同亮色（msg-avatar 豁免 09-17 翻深规则）  rgb(70, 72, 212),rgb(129, 39, 207),rgb(70, 72, 212),rgb(70, 72, 212)
+  ✅ Z 零 JS 错误  
+
+=== bannerfixed: 29/29 ===
+===== exit 0 =====
+===== tmp-battery-all-opaque.js =====
+═══ S. 静态巡检 ═══
+  ✅ S1 ethereal 全站铺底规则在位（body:not(.fc-page) 三面）
+  ✅ S2 ethereal 全站灭层规则在位（card + guest-hero 直系 lg-backdrop 灭滤镜灭磨砂）
+  ✅ S3 旧 mn-index 首页规则零残留（54.3 块整体替换为全站规则）
+  ✅ S4 ethereal 修复注释含用户原话 + 三钦定口径
+  ✅ S5 FC 两页 body 挂 fc-page 排除类
+  ✅ S6 index body 挂 mn-index 页面类（首页作用域保留，无碍全站规则）
+  ✅ S7 订阅卡深色渐变底零触碰（白字设计卡钦定不动）
+  ✅ S8 cp 页钦定玻璃规则锚在位（profile-header 层 glass-distortion + blur(10px)）
+  ✅ S9 内联页总数 = 41（55.0 article.html 入族，实测 41）
+  ✅ S10 41 页内联块全部含全站铺底规则
+  ✅ S11 site-config 版本 = v0.2.55.0
+  ✅ S12 site-config changelog 含 v0.2.55.0 条目 + 用户原话
+  ✅ S13 FC v10.28.36.1 保持
+  ✅ S14 豁免卡零触碰锚（plan-card 深色 !important 仍在 + auth-card 仍在）
+  ✅ S15 admin 页 body 裸标签无 class（命中全站规则属全站口径）
+═══ B1. 登录 index 亮色 ═══
+  ✅ B1 卡数 = 18（问候 1+活动流 4+公告 10+工作台/指标/我的世界 3）
+  ✅ B2 亮色 18 卡 backgroundColor 全 rgba(255,255,255,0.95) 不透明侧栏同底
+  ✅ B3 13 张非 tilt 卡 .lg-backdrop 全灭（filter=none + backdropFilter=none）
+  ✅ B4 订阅卡深色渐变白字仍在（钦定保持深色不变）
+  ✅ B5 搜索胶囊同底 0.95（54.3 口径保留）
+  ✅ B6 暗色 18 卡 backgroundColor 全 rgb(26,26,46)（侧栏暗色同底）
+═══ B2. 访客 index guest-hero ═══
+  ✅ B7 访客大卡亮色底 rgba(255,255,255,0.95) + 层全灭
+  ✅ B8 访客大卡暗色底 rgb(26,26,46) + 层仍全灭
+═══ B3. explore 页全站化 ═══
+  ✅ B9 explore 页 6 张卡 backgroundColor 全 0.95 不透明
+  ✅ B10 explore 页挂层卡 .lg-backdrop 全灭
+═══ B4. messages 页全站化 ═══
+  ✅ B11 messages 页 12 张卡 backgroundColor 全 0.95 不透明
+  ✅ B12 messages 页挂层卡 .lg-backdrop 全灭
+═══ B5. community-profile 钦定玻璃保留 ═══
+  ✅ B13 profile-header 玻璃保留（bg=var(--card-bg) 0.55 原玻璃值，非 0.95）
+  ✅ B14 profile-header 钦定玻璃层保留（filter 含 glass-distortion + blur(10px) 磨砂）
+  ✅ B15 cp 页其余 2 张普通卡全 0.95 不透明（profile-tabs/空态等全站口径）
+  ✅ B16 cp 页普通卡挂层者 .lg-backdrop 全灭（玻璃层不误伤）
+═══ B6. FC 页 fc-page 豁免 ═══
+  ✅ B17 FC 页 body 挂 fc-page 类（排除标记在位）
+  ✅ B18 FC 页 .card 背景仍 var(--card-bg) 0.55 玻璃原值（全站规则死规则）
+  ✅ B19 FC 页真实卡（若有）同样非 0.95 不透明底
+
+all-opaque 电池：34 通过 / 0 失败
+===== exit 0 =====
+===== tmp-battery-identity.js =====
+  ✅ A0 站点号 v0.2.54.0（v0.2.58.0）
+  ✅ A1 双栏结构齐备（card/left/right/layout）（{"card":true,"left":true,"right":true,"layout":true,"steps":3,"fields":5,"btn":true}）
+  ✅ A2 步骤指示 3 步（1 完成 / 2 活动 / 3 待办）（3）
+  ✅ A3 表单 5 组（名/性别/语言/生日/国家）+ Next Step 按钮（5/true）
+  ✅ B1 卡片横排（flex-direction: row）（row）
+  ✅ B2 卡片高度自适应（非 800px 定高；flex item 的 auto 被解析为 used 值）（787.516px）
+  ✅ B3 卡片 overflow visible（国家下拉不被裁）（visible）
+  ✅ B4 左栏宽 42%（403.2 vs 403.2）
+  ✅ B5 左栏顶/底与卡对齐（同排，未堆叠）（24.0/811.5 vs 24.0/811.5）
+  ✅ B6 右栏从左栏右缘起（并排非下方）（544.7 vs 544.7）
+  ✅ C1 蓝渐变底（135deg #4648d4→#3b3dc4）（linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196))）
+  ✅ C2 左栏白字（步骤卡可见性前提）（rgb(255, 255, 255)）
+  ✅ C3 左栏内边距 64px（space-xl）（64）
+  ✅ C4 装饰圆 ::before 300px（300/50%）
+  ✅ C5 装饰圆 ::after 200px（200/50%）
+  ✅ C6 右栏内边距 64px（space-xl）（64）
+  ✅ C7 步骤卡在蓝板内（未溢出卡外）（step 444.9-646.9）
+  ✅ D1 Next Step 按钮在卡底之上（未被裁）（747.5 <= 811.5）
+  ✅ D2 Date of Birth 在卡底之上（未被裁）（659.5 <= 811.5）
+  ✅ D3 按钮可点（无遮挡）
+  ✅ E1 点击 → 国家菜单打开（true）
+  ✅ E2 国家列表完整（≥190 项，无裁切只数类）（197）
+  ✅ E3 菜单不超出视口（高 900）（803.1）
+  ✅ F1 名字回显 Battery Tester（Battery Tester）
+  ✅ F2 生日回显 2010-01-01（v0.2.6.2 修复回归）（2010-01-01）
+  ✅ F3 语言回显 中文 (Chinese)（中文 (Chinese)）
+  ✅ G1 性别栏是第二项（第 2 个 form-group 标签=当前语言字典值）（{"secondLabel":true,"star":"*","opts":3,"optTexts":"Male|Female|Other"}）
+  ✅ G2 三选项 Male/Female/Other（3/Male|Female|Other）
+  ✅ G3 标签带 * 红标（必填口径）（*）
+  ✅ G4 回显种子 gender=Male（Male）
+  ✅ G5 点开菜单 → 选 Female → 显示+收起+箭头复位（{"text":"Female","open":false,"arrow":""} open前=true）
+  ✅ G6 未选性别 → Next 报错且不跳页（{"shown":true,"text":"请选择性别","exp":"请选择性别","path":"/pages/onboarding-identity.html"}）
+  ✅ K1 移动端卡片竖排（column）
+  ✅ K2 移动端左栏全宽（312.0 vs 312.0）
+  ✅ H1 填全五字段 → Next Step 跳完成页（/pages/onboarding-complete.html）（/pages/onboarding-complete.html）
+  ✅ H2 formError 不显示（none）
+  ✅ I1 无运行时异常
+  ✅ I2 无 console error
+
+════════ 汇总 ════════
+通过 38 / 失败 0
+===== exit 0 =====
+===== tmp-battery-cit2usr.js =====
+  ✅ 前端零 CIT-：signup-and-login.html
+  ✅ 前端零 CIT-：assets/js/sidebar.js
+  ✅ 前端零 CIT-：assets/js/settings-modal.js
+  ✅ 前端零 CIT-：pages/fluidcanvas.html
+  ✅ 前端零 CIT-：pages/onboarding-identity.html
+  ✅ site-config 版本 = v0.2.54.0
+  ✅ site-config changelog 含 v0.2.51.1 条目 + 用户原话
+  ✅ auth.js 无 'CIT-' + pad6 生成表达式
+  ✅ auth.js 含 const citizenId = id;
+  ✅ 026 迁移 UPDATE citizen_id = id（NULL 补齐 + 异值改写）
+  ✅ health.test user_version 28 + 标题 001-028
+  ✅ migrations.test user_version 28（主+幂等+017/022 补跑同步）
+  ✅ migrations.test 新 026 测试在位（三态断言）
+  ✅ auth.test USR- 前缀断言
+  ✅ social-profile.test USR 正则
+  ✅ mask.test USR-1 fixture
+  ✅ 电池锚 v0.2.54.0：tmp-battery-msglink.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-mono-flash.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-monodark-v0422.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-fadefix.js
+  ✅ 电池锚 v0.2.54.0：tmp-battery-pageswitch.js
+
+cit2usr 巡检：21 通过 / 0 失败
+===== exit 0 =====
+===== tmp-battery-i18n.js =====
+═══ S. 静态巡检 ═══
+  ✅ S1 7 旧 .zh.js 全删（badge/help/ticket/ai-chat/community-rules/financial-terms/platform-responsibility）
+  ✅ S2 词典文件集恰 40 个（37 页 + common + admin + article，无杂散无缺失；auth 同域双页共用）
+  ✅ S3 每个词典含 en 块
+  ✅ S4 每个词典含 OpenCC 生成的 zh-Hant 块（哨兵 __ZH_HANT_AUTO__）
+  ✅ S5 38 页↔词典挂载逐一接通（HTML 加载自身 .i18n.js）
+  ✅ S6 38 接入页三件套（i18n.js + apply() + common.i18n.js，admin 免 common）
+  ✅ S7 6 排除页零 i18n（FC 两页+stub×2+demo×2 一个 i18n script 都没有）
+  ✅ S8 i18n.js LANGS 12 码序列 zh→zh-Hant→en→de→ru→ms→th→vi→id→fr→es→pt
+  ✅ S9 site-config 版本 = v0.2.54.2
+  ✅ S10 common.i18n.js 键族齐（sidebar/settings/report/aichat 从 help 移入/verify 从 badge 共享）
+═══ A. 设置弹窗切换链（badge 页）═══
+  ✅ A1 设置弹窗 12 语言 pill 标签序列（固有语言名）
+  ✅ A2 初始 active pill = zh（--lang=zh-CN 自动选）
+  ✅ A3 点 Deutsch → 页面标题变德语（=t('badge.meta.title') 且 ≠ 中文原文）
+  ✅ A4 双键持久：slati_lang=de + slati_settings.language=de
+  ✅ A5 reload 后语言仍德语（slati_lang 持久生效）
+  ✅ A6 xx 无字典回落浏览器语言 zh（标题=zh 值）
+═══ A'. FC 编辑器页零 i18n ═══
+  ✅ A7 FC 编辑器页零 i18n 引擎（MN_I18N undefined）
+  ✅ A8 FC 页无字典时 12 pill 兜底序列（settings-modal 硬编码清单）
+  ✅ A9 FC 点 de pill 仍落 localStorage slati_lang=de（无字典也记住选择）
+  ✅ A10 FC 弹窗文案英文保持（无字典 data-i18n 不渲染）
+═══ B. 浏览器语言自动选（de-DE）═══
+  ✅ B1 访客 --lang=de-DE 首访法律页自动选德语（标题=de 值+无 CJK）
+  ✅ B2 admin 壳静态节点自动选德语（登录标题=de 值+无 CJK）
+  ✅ B3 admin 切 zh 回落中文（zh 值逐字节=管理端原文，smoke-admin 安全）
+═══ C. 默认 zh 回归 ═══
+  ✅ C1 无 localStorage 默认 zh（--lang=zh-CN 回落）
+  ✅ C2 侧栏首项 = 主页（common T() 渲染）
+  ✅ C3 知识库卡 = 知识库（index 词典渲染）
+═══ D. index 动态区双语（活动流/公告/订阅卡）═══
+  ✅ D1 zh 活动流已翻译（以太共和国 + 2 小时前）
+  ✅ D2 zh 公告已翻译（公开测试启动 + 官方）
+  ✅ D3 zh 订阅卡特性已翻译（高级分析）
+  ✅ D4 zh 公告按钮/搜索框已翻译（查看全部公告/搜索文章…——v0.2.55.0 搜索改文章口径）
+  ✅ D5 de 活动流已翻译（Republik Etheria + vor 2 Stunden）
+  ✅ D6 de 公告已翻译（Beta-Start + offiziell）
+  ✅ D7 de 订阅卡特性已翻译（Erweiterte Analysen）
+  ✅ D8 切回 zh 重渲染恢复中文（以太共和国）
+
+i18n：34 通过 / 0 失败
+===== exit 0 =====

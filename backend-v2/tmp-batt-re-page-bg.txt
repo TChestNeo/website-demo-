@@ -1,0 +1,29 @@
+  ✅ F1 资产面板「自定义」入口（非 .card/无 draggable/onclick+状态位）
+  ✅ F2 CSS：.grid-canvas.has-page-bg + .modal-card-preview
+  ✅ F3 合成引擎：destination-in+createLinearGradient+主题底色预填+JPEG
+  ✅ F4 草稿：buildDraft pageBg 字段 + 注释链 + applyDraft 清场/恢复
+  ✅ F5 版本 v0.2.45.2 / v10.28.34.2 + 进位注释（新轮 40→41/30→31 + 旧轮 39→40/29→30 仍在）
+  ✅ F6 data-onclose 关闭钩子 + 电池驱动导出
+  ✅ S1 开窗=遮罩+弹窗 active+默认帧 16:9（1.778）+空列表  {"items":[],"modalActive":true,"backdrop":true,"frameRatio":"1.778/1","cloneBg":false,"canvasBg":false,"canvasClass":false,"hintShow":true,"entryText":"未设置","minH":0,"offsetH":2200}
+  ✅ S2 两图上传=列表 2 项+预览克隆背景在场  {"items":["bg1","bg2"],"modalActive":true,"backdrop":true,"frameRatio":"1.778/1","cloneBg":true,"canvasBg":false,"canvasClass":false,"hintShow":false,"entryText":"未设置","minH":0,"offsetH":2200}
+  ✅ S3 纵向拼接：顶=红 底=蓝（composite 1600×1640）  top=254,0,0 bottom=0,0,254
+  ✅ S4 拖拽换序=DOM 序 [bg2,bg1]+顶蓝底红  {"items":["bg2","bg1"],"modalActive":true,"backdrop":true,"frameRatio":"1.778/1","cloneBg":true,"canvasBg":false,"canvasClass":false,"hintShow":false,"entryText":"未设置","minH":0,"offsetH":2200} top=126,127,254 bottom=254,0,0
+  ✅ S5 缝区 240px 交叉淡化（10 点 R 单调升/B 单调降/无硬跳）  [[25,11,244],[73,33,217],[112,47,191],[149,57,166],[179,62,140],[205,63,113],[225,57,90],[240,48,63],[251,32,38],[255,13,12]] maxJump=48
+  ✅ S6 16:9 拦截：保存被拦（弹窗未关+画布无背景+红提示+toast）  {"items":["bg3"],"modalActive":true,"backdrop":true,"frameRatio":"1.778/1","cloneBg":true,"canvasBg":false,"canvasClass":false,"hintShow":true,"entryText":"未设置","minH":0,"offsetH":2200}
+  ✅ S7b 自动保存：保存后 3.6s 草稿自动含 pageBg（无需显式 saveDraft）  autoDraft=true
+  ✅ S7 保存应用：画布背景+类+网格线灭+minHeight≈宽×h/1600+offsetHeight≥minH+入口「2 张」+草稿 pageBg 形状齐全  {"items":["bg4","bg5"],"modalActive":false,"backdrop":false,"frameRatio":"1.778/1","cloneBg":true,"canvasBg":true,"canvasClass":true,"hintShow":false,"entryText":"2 张","minH":968,"offsetH":2200} comp=url("data:image/jpeg;base64,/9j/4AAQSkZJ exp=968 draft={"has":true,"imgs":2,"order":2,"feath":2}
+  ✅ S13a 撤销=背景移除（canvasBg false+入口未设置）  {"items":["bg4","bg5"],"modalActive":false,"backdrop":false,"frameRatio":"1.778/1","cloneBg":true,"canvasBg":false,"canvasClass":false,"hintShow":false,"entryText":"未设置","minH":0,"offsetH":2200}
+  ✅ S13b 重做=背景恢复（canvasBg true+入口 2 张）  {"items":["bg4","bg5"],"modalActive":false,"backdrop":false,"frameRatio":"1.778/1","cloneBg":true,"canvasBg":true,"canvasClass":true,"hintShow":false,"entryText":"2 张","minH":968,"offsetH":2200}
+  ✅ S8 点画布空白取消选中（背景不吞事件）  sel1=1 sel2=0
+  ✅ S9 重载恢复：背景+入口 2 张+顶≈红  {"items":[],"modalActive":false,"backdrop":false,"frameRatio":"1.778/1","cloneBg":false,"canvasBg":true,"canvasClass":true,"hintShow":false,"entryText":"2 张","minH":968,"offsetH":2200} top=254,0,0
+  ✅ S10a 取消=画布背景不动+弹窗关  {"items":["bg4","bg5","bg6"],"modalActive":false,"backdrop":false,"frameRatio":"1.778/1","cloneBg":true,"canvasBg":true,"canvasClass":true,"hintShow":false,"entryText":"2 张","minH":968,"offsetH":2200}
+  ✅ S10b 重开=工作副本回 STATE（第 3 张丢弃，列表 2 项）  {"items":["bg4","bg5"],"modalActive":true,"backdrop":true,"frameRatio":"1.778/1","cloneBg":true,"canvasBg":true,"canvasClass":true,"hintShow":false,"entryText":"2 张","minH":968,"offsetH":2200}
+  ✅ S11a 遮罩取消=关窗+画布不动  {"items":["bg4","bg5"],"modalActive":false,"backdrop":false,"frameRatio":"1.778/1","cloneBg":true,"canvasBg":true,"canvasClass":true,"hintShow":false,"entryText":"2 张","minH":968,"offsetH":2200}
+  ✅ S11b Escape=取消关窗  {"items":["bg4","bg5"],"modalActive":false,"backdrop":false,"frameRatio":"1.778/1","cloneBg":true,"canvasBg":true,"canvasClass":true,"hintShow":false,"entryText":"2 张","minH":968,"offsetH":2200}
+  ✅ S12 克隆保真（无手柄/对齐线/编辑态+背景在场）+20:9 与 1:1 切换  {"has":true,"noId":true,"handles":0,"editable":0,"cloneBg":true,"cloneClass":true} r20=2.333/1 r11=1/1
+  ✅ S14 移除背景=画布清空+入口未设置+草稿 null+网格线回归  {"items":["bg4","bg5"],"modalActive":false,"backdrop":false,"frameRatio":"1/1","cloneBg":true,"canvasBg":false,"canvasClass":false,"hintShow":false,"entryText":"未设置","minH":0,"offsetH":2200} draft2=true
+  ✅ S15 虚化 clamp：999→400（滑块值 span 同步）  fv=400
+  ✅ S16 版本 v0.2.45.2 + FC v10.28.34.2 + 徽章  {"mn":"v0.2.45.2","fc":"v10.28.34.2","badge":true}
+  ✅ Z 零 console error  []
+
+  ── 结果: 27/27 全绿 ✅

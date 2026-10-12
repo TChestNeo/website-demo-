@@ -1,0 +1,16 @@
+  ✅ S1 site-config：FC v10.28.47.2 + 顶部停靠 changelog（左侧菜单最顶部）+ rev 00301- + 站点恒 v0.2.58.0 + 旧 47.1 版本赋值锚零残留
+  ✅ S2 编辑器页：顶部停靠锚（insertBefore 首子/margin-bottom 8px/flex-shrink 0 禁压/ctxPillIn/translateY(-110%)）在场 + 旧底停靠锚（appendChild/ctxPillUp/旧 margin-top 规则）零残留 + 药丸头/折叠锚在场
+  ✅ S3 fc-touch.js：长按派发前置 __fcTouchMenu 旗在位
+  ✅ B0 门控自证：coarse 媒体查询翻转 + maxTouchPoints=5 + 触控桥在场  {"coarse":true,"mtp":5,"bridge":true}
+  ✅ B1 长按现身：菜单开 + ctx-pill 有 + 非折叠 + 在 .asset-panel 内（首子=顶部停靠+紧邻搜索框）+ static 定位 + 宽 228-242（面板内宽·滚条在时收窄）+ 完整内容零压缩（sh=ch、高 ≥350——7 项全展开=截图蓝区）+ 横药丸头 40px 真药丸（radius-full 大圆角 + 实底）+ ≥3 项可见  {"open":true,"pill":true,"collapsed":false,"pos":"static","left":"auto","bottom":"auto","w":229,"h":390,"sh":388,"ch":388,"vis":7,"dotsDisplay":"flex","dh":44,"inlineL":"","inlineT":"","inPanel":true,"first":true,"aboveSearch":true,"dRadius":9999,"dBg":"rgba(255, 255, 255, 0.85)"}
+  ✅ B2 药丸头首位：钮在菜单内 + display flex + 恒为首子元素 + more_horiz 横向三点 + 全部可见项在药丸下方（itemTop ≥ 药丸底）  {"inMenu":true,"dots":"flex","firstChild":true,"icon":"more_horiz","dotsTop":19,"dotsH":44,"itemTop":69}
+  ✅ B3 点 ⋯ 折叠：ctx-collapsed + 全项 display none + 横药丸 236×≤48（宽不缩、横卧）+ 容器透明化（bg 透明+边 0）只留药丸 + 三点 flex + 药丸仍在面板顶部（红带位置）  {"collapsed":true,"allNone":true,"w":235,"h":44,"dots":"flex","mBg":"rgba(0, 0, 0, 0)","mBw":"0px","inPanel":true,"first":true}
+  ✅ B4 再点展开：ctx-collapsed 清 + ≥6 项可见 + 宽 ≥228 + 功能栏条目回到药丸下方（itemTop ≥ 药丸底）  {"collapsed":false,"vis":7,"w":229,"itemTop":69,"dotsTop":19,"dotsH":44}
+  ✅ B5 桌面右键零变化：菜单开 + 无 ctx-pill/ctx-collapsed + 弹层回 body（不在面板内）+ 内联 left/top 非空（贴指针）+ 三点钮 display none + ≥3 项可见  {"open":true,"pill":false,"collapsed":false,"pos":"fixed","left":"345px","bottom":"559px","w":220,"h":336,"sh":334,"ch":334,"vis":7,"dotsDisplay":"none","dh":0,"inlineL":"345px","inlineT":"299px","inPanel":false,"first":false,"aboveSearch":false,"dRadius":9999,"dBg":"rgba(255, 255, 255, 0.85)"}
+  ✅ B6 面板折叠时长按：面板自动展开（无 collapsed + 宽>0）+ 菜单开且在面板内顶部停靠（首子+ctx-pill）  {"collapsed":false,"pw":260,"menuInPanel":true,"first":true,"open":true,"pill":true}
+  ✅ E1 全程零 Runtime.exceptionThrown + 零 console.error  {"errs":[],"cons":[]}
+
+╭────────────────────────────────────╮
+│  🎉 11 ✅ / 0 ❌  (fc-pilltop)      │
+╰────────────────────────────────────╯
+

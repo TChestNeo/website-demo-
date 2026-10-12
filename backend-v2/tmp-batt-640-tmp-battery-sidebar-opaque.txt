@@ -1,0 +1,18 @@
+═══ S 静态（零浏览器）═══
+  ✅ S1a site-config：58.27 赋值 ×1 + 58.26 赋值零残留
+  ✅ S1b site-config：changelog 头 58.27 在 58.26 前 + 用户原话 ×1 + rev 00365-XXX/00366-??? 各 ×1 + FC 52.0 ×1
+  ✅ S2a ethereal.css：--sidebar-bg 用法 2→3 处（dropdown+全站卡片+侧栏模块卡面）
+  ✅ S2b ethereal.css：新轮注释原话 ×1 + 旧 58.1 注释保留 + 铺底规则仍零残留 + 灭滤镜规则在位
+  ✅ S3a 内联刷新：CSS_MARK 页=41 且新轮注释页=40（编辑器豁免页除外）+ lg-glass-filter 页=41
+  ✅ S4 FC 编辑器页豁免血证：mark ×1 + 新轮注释零残留（页面专属 CSS 永不入内联块）
+  ✅ S3b community-profile 内联：--sidebar-bg ×3 + 原话 ×1 + 模块规则邻接（bg 下一行 blur(20px)）
+═══ B 社区资料页 CDP（亮色/暗色）═══
+  ✅ B1 亮色 nav-module 卡面不透明（rgba(255,255,255,0.95)）+ blur(20px) 保留
+  ✅ B6 三张卡同规则：user-module/brand-module 同 0.95 不透明
+  ✅ B3 58.1 不回归：.app-sidebar 容器仍全透明（卡下方无面板）
+  ✅ B4 玻璃注入层灭滤镜：.lg-backdrop filter/backdrop-filter 双 none
+  ✅ B2 暗色 nav-module 卡面实心 #1a1a2e（rgb(26,26,46)）+ blur 保留
+  ✅ B5 index.html（个人主页）nav-module 卡面同款 0.95 不透明
+  ✅ E 零异常
+
+🎉 14 ✅ / 0 ❌

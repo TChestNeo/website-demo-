@@ -1,0 +1,24 @@
+  ✅ F0 版本双线 v0.2.54.0 / v10.28.36.1 + 用户原话注释（49.1 注释块保留）
+  ✅ F1 settings-modal.js 已无 mono 规则（迁出干净）+ 弹窗 UI 规则保留
+  ✅ F2 ethereal.css 静态含 mono 三族（暗黑族/白底白字族/FC Migrate 族）
+  ✅ F3 theme-init.js 原版源含 data-accent 同步落
+  ✅ F4 29 页 head 内联块含 accent + 40 页内联含 mono 令牌  29 页 accent / 40 页 mono
+  ✅ S1a 屏蔽注入下 data-accent=mono + data-theme=dark（head 内联同步落）  accent=mono theme=dark
+  ✅ S1b 暗 mono 令牌全黑族（--color-background #0b0b0d / primary #ececf2 / card rgba(21,21,25,0.55)）  bg=#0b0b0d p=#ececf2
+  ✅ S1c body 中性黑 rgb(11,11,13)  rgb(11, 11, 13)
+  ✅ S1d 注入样式确已屏蔽（mono 生效却无 #slati-settings-menu-style = 静态路径实证）  injected=false
+  ✅ S2a FC 首页 data-accent=mono + 暗黑族令牌（首帧即黑白）  bg=#0b0b0d
+  ✅ S2b FC 首页注入样式同样不在场
+  ✅ S3a 编辑器 data-accent=mono + 网格画布黑族 rgb(10,10,12)
+  ✅ S3b col-btn.active = #32324a 白字（白底白字族从 ethereal 生效）
+  ✅ S3c tim-search-btn = #32324a 白字
+  ✅ S3d 编辑器 toast 翻黑族 rgb(26,26,30)
+  ✅ S3e 注入样式不在场
+  ✅ S4 切页 explore 到达即 mono+黑族（无蓝家族窗口）  bg=#0b0b0d
+  ✅ S4 切页 community-hub 到达即 mono+黑族（无蓝家族窗口）  bg=#0b0b0d
+  ✅ S4 切页 回首页 到达即 mono+黑族（无蓝家族窗口）  bg=#0b0b0d
+  ✅ S5a 亮 mono 保持亮底 + 主色近黑族 #1c1c22  L=0.976 p=#1c1c22
+  ✅ S6a 无 accent 时蓝家族原样（#161625 / body rgb(22,22,37) / primary #4648d4）  accent=null bg=#161625 p=#4648d4
+  ✅ Z 全程零 console error（settings-modal 屏蔽亦零报错）  干净
+
+🎉 全部通过 22/22

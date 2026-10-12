@@ -1,0 +1,16 @@
+  ✅ S1 独立国旗卡单击弹图源（旧行为保留）  {"flagSel":true,"shieldSel":false,"flagSingle":false,"flagGroup":false,"shieldGroup":false,"modal":true}
+  ✅ S2 独立国徽卡单击弹图源（旧行为保留）  {"flagSel":false,"shieldSel":true,"flagSingle":false,"flagGroup":false,"shieldGroup":false,"modal":true}
+  ✅ S3 组内国旗卡单击=整组选中+不弹图源  {"flagSel":true,"shieldSel":true,"flagSingle":false,"flagGroup":true,"shieldGroup":true,"modal":false}
+  ✅ S4 组内国徽卡单击=整组选中+不弹图源  {"flagSel":true,"shieldSel":true,"flagSingle":false,"flagGroup":true,"shieldGroup":true,"modal":false}
+  ✅ S5 整组态双击=单独选中+不弹图源  {"flagSel":true,"shieldSel":false,"flagSingle":true,"flagGroup":true,"shieldGroup":true,"modal":false}
+  ✅ S6 单独选中后单击同卡=保持单独+不弹  {"flagSel":true,"shieldSel":false,"flagSingle":true,"flagGroup":true,"shieldGroup":true,"modal":false}
+  ✅ S7 单独选中后再双击=弹图源  {"flagSel":true,"shieldSel":false,"flagSingle":true,"flagGroup":true,"shieldGroup":true,"modal":true}
+  ✅ S8 关弹窗后再双击=再弹（可重复）  {"flagSel":true,"shieldSel":false,"flagSingle":true,"flagGroup":true,"shieldGroup":true,"modal":true}
+  ✅ S9 单独选中后单击另一成员=回整组  {"flagSel":true,"shieldSel":true,"flagSingle":false,"flagGroup":true,"shieldGroup":true,"modal":false}
+  ✅ S10 单独选中后拖出=拆分（国旗出组+剩 1 张组自动解散）  {"flagSel":true,"shieldSel":false,"flagSingle":false,"flagGroup":false,"shieldGroup":false,"modal":false}
+  ✅ S11a 已设图组内卡单击不弹（stripes 守卫）  {"flagSel":true,"shieldSel":false,"flagSingle":false,"flagGroup":false,"shieldGroup":false,"modal":false}
+  ✅ S11b 已设图组内卡单独双击也不弹  {"flagSel":true,"shieldSel":false,"flagSingle":false,"flagGroup":false,"shieldGroup":false,"modal":false}
+  ✅ S12 版本 v0.2.45.2 + FC v10.28.34.2 + buildDraft 链 + 页面徽章（v0.2.45.2 复跑口径）  {"mn":"v0.2.45.2","fc":"v10.28.34.2","badge":true}
+  ✅ Z 零 console error  []
+
+  ── 结果: 14/14 全绿 ✅

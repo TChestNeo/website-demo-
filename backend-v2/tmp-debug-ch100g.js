@@ -1,0 +1,10 @@
+const fs = require('fs');
+const cur = fs.readFileSync('C:/Users/USER/Documents/stitch_slatiworld_micronation_interface/docs/story/wip.html', 'utf8');
+const i = cur.indexOf('data-scene="ch1-00"');
+const j = cur.indexOf('<section', i + 5);
+const block = cur.slice(i, j > i ? j : i + 1500);
+const k = block.indexOf('scene-kicker');
+console.log('kicker 前 20 字节:', JSON.stringify(block.slice(k - 20, k + 2)));
+console.log('hex:', Buffer.from(block.slice(k - 20, k + 2), 'utf8').toString('hex'));
+console.log('包含 "<p class" 子串:', block.indexOf('<p class') !== -1, '| 位置:', block.indexOf('<p class'));
+console.log('包含 "<p class=\"scene-kicker\"" :', block.indexOf('<p class="scene-kicker"') !== -1);

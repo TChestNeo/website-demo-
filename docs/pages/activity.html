@@ -686,8 +686,14 @@ textarea.input-glass {
 .progress-connector.done { background: var(--color-primary); }
 
 /* ----- Sidebar Module ----- */
+/* 2026-10-05 用户「那个在个人主页那边的左侧菜单背景卡片是半透明的能不能变成不透明的？」——
+   真身=v0.2.58.1（09-26 删侧栏容器铺底）后三张卡（logo/用户/菜单 .sidebar-module）仍用 --card-bg
+   （亮色 rgba(255,255,255,0.55)/暗色 rgba(30,30,50,0.55) 半透明玻璃）+ blur(20px) 磨砂——页面内容
+   透卡可见=半透明观感；修法=卡面改铺 --sidebar-bg（09-18 用户钦定不透明底：亮色近纯白 0.95/暗色实心
+   #1a1a2e/mono 随 var() 自适应）；模块自带 backdrop-filter 保留（底已不透明零可见效果，与 09-20
+   全站卡片同口径）；三张卡同规则一并生效；窄屏 floating 覆盖态同步（口径统一）。 */
 .sidebar-module {
-  background: var(--card-bg);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1301,7 +1307,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .app-sidebar.collapsed .user-module {
   padding: 10px 4px !important;
   display: flex; align-items: center; justify-content: flex-start;
-  background: var(--card-bg);
+  /* 58.28 补：折叠态覆盖曾回退 --card-bg 半透明玻璃（58.27 卡面不透明修法漏了这条折叠态覆盖）——
+     用户「折叠起来的时候还是一样是半透明的」；口径与 58.27 同：铺 --sidebar-bg 不透明底+blur 保留 */
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1385,7 +1393,20 @@ body.pre-stagger .auth-card { opacity: 0; }
    v0.2.58.11 用户「能不能把那个浅蓝色波浪和深蓝色倒反？」「就只是互换一下颜色而已」——58.10 深水+浅浪
    两色互换（类名保持不动）：主色水 .mn-lv-wdeep 背景 var(--color-primary)→var(--mn-lv-light) 变浅水、
    浅浪 .mn-lv-wlightwave 背景 var(--mn-lv-light)→var(--color-primary) 变深浪；两层结构/80×16 mask/
-   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。 */
+   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.12 用户「能不能把波浪的位置抬高4px?」（一问钦定「位置抬高 4px」）——58.11 浅浪 top -8px 抬高
+   4px→-12px（单值改动）：浅浪 .mn-lv-wlightwave top -8px→-12px；两层结构/80×16 mask/16px 带高/400% strip/
+   平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84/两色互换（浅水+深浪）全零改动。
+   v0.2.58.13 用户「然后把两个颜色改成一样的深蓝色，然后在那个波浪Z轴的-1那边再添加一个慢0.3s的波浪」
+   ——①水和浪两色统一深蓝：主色水 .mn-lv-wdeep 背景 var(--mn-lv-light)→var(--color-primary)（58.11 两色
+   互换撤销为两色相同）、--mn-lv-light 赋值整体删除（零引用，58.10 --mn-lv-wave-c 先例）；②新慢浪
+   .mn-lv-wlightwave2 与快浪全同款几何（80×16 mask/16px 带高/400% strip/平移 80px/top -12px 全同）
+   置于快浪 z 轴 -1 层（z-index:-1）+动画 2.5s（慢 0.3s）；z 层级：.mn-lv-fill z-index:0 建 stacking
+   context→水 z-index:-2 最底→慢浪 -1→快浪 0（显式盖慢浪）；两浪同色相位漂移，慢浪浪峰周期性从快浪
+   浪谷透明区透出=两道浪峰不同速叠加；水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.14 用户「那个刚才提出添加的第二个波浪我希望是浅色的」——慢浪 .mn-lv-wlightwave2 背景
+   var(--color-primary)→var(--mn-lv-light)（58.11 浅水同款浅色公式 color-mix 55%+白；赋值挂 .mn-lv-ring
+   恢复——58.13 整体删除后本轮复活）；快浪/水/几何/z 层级/动画全零改动。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1418,8 +1439,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .mn-lv-fill {
   position: absolute; left: 0; right: 0; bottom: 0; height: 0;
   transition: height 0.5s ease;
+  z-index: 0; /* 建 stacking context：水/慢浪负 z 层不逃出杯 */
 }
-.mn-lv-wdeep { position: absolute; inset: 0; background: var(--mn-lv-light); }
+.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); z-index: -2; }
 .mn-lv-wlightwave {
   position: absolute; left: -100%; width: 400%; height: 16px;
   background-color: var(--color-primary);
@@ -1428,8 +1450,23 @@ body.pre-stagger .auth-card { opacity: 0; }
   -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
   -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
   pointer-events: none;
-  top: -8px;
+  top: -12px;
+  z-index: 0;
   animation: mn-lv-wave 2.2s linear infinite;
+}
+/* 慢浪：与快浪全同款几何，z 轴 -1 层（快浪之下），2.5s（慢 0.3s）、浅色（var(--mn-lv-light)）——
+   两浪异色相位漂移，慢浪浪峰周期性从快浪浪谷透明区透出=浅色幽灵浪峰在深浪下流动 */
+.mn-lv-wlightwave2 {
+  position: absolute; left: -100%; width: 400%; height: 16px;
+  background-color: var(--mn-lv-light);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
+  pointer-events: none;
+  top: -12px;
+  z-index: -1;
+  animation: mn-lv-wave 2.5s linear infinite;
 }
 @keyframes mn-lv-wave {
   from { transform: translateX(0); }
@@ -1445,6 +1482,48 @@ body.pre-stagger .auth-card { opacity: 0; }
   z-index: 5;
   font-size: 28px; font-weight: 700; color: var(--color-primary);
   text-shadow: 0 0 2px rgba(255,255,255,0.9), 0 0 3px rgba(255,255,255,0.9);
+}
+/* v0.2.58.15 用户「那么能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出
+   一个卡片完整的显示等级信息和经验条」：折叠态药丸悬停放大+右侧滑出等级信息卡。
+   ①药丸 scale(1.12)（hover 类挂 .mn-lv-badge——悬停区=药丸+边距整块，贴近即触发；transform-origin
+   center，72px 折叠列/64px floating 列内瞬态放大可接受）；transition 0.18s ease（药丸本体折叠入场
+   动画 0.3s 期间 transform 被动画持有——折叠后立刻悬停时缩放瞬态失效可接受）。
+   ②卡片 .mn-lv-hovercard position:fixed 挂 body（侧栏 overflow-x:hidden + 用户卡 overflow:hidden
+   双裁剪，卡片必须逃出 DOM 裁剪；JS 按药丸 getBoundingClientRect 定位+视口钳制）；内容=JS 每次
+   show 从活的 .mn-lv-normal clone——展开徽章同款信息（Lv.x·称号+XP 文本+经验条）；z-index 150=
+   侧栏 50/55 之上、tooltip 200 之下；backdrop-filter blur 与折叠用户卡同款玻璃质感（卡片自身 fixed
+   于 body，其 blur 只影响自身后代=无 containing block 问题）。
+   ③@media (hover:hover) and (pointer:fine) 门控——触屏/平板零规则零行为（JS matchMedia 同款双保险）。 */
+@media (hover: hover) and (pointer: fine) {
+  .mn-lv-pill {
+    transition: transform 0.18s ease;
+  }
+  .app-sidebar.collapsed .mn-lv-badge.mn-lv-hover .mn-lv-pill {
+    transform: scale(1.12);
+  }
+  .mn-lv-hovercard {
+    position: fixed;
+    z-index: 150;
+    width: 200px;
+    box-sizing: border-box;
+    background: var(--card-bg, #ffffff);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: var(--card-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 10px 12px;
+    opacity: 0;
+    transform: translateX(-10px) scale(0.98);
+    transform-origin: left center;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .mn-lv-hovercard.active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
 }
 /* 同轮折叠态头像间距归整（根治「挤压到了用户头像」的两处真身）：
    ①头像 img 是行内元素——行基线给父 div 加 8px 下坠空隙（折叠后视觉死隙）→ display:block 消除；
@@ -2031,6 +2110,157 @@ html[data-accent="mono"] .migrate-pill::after { background-color: hsla(0 0% 45% 
 html[data-accent="mono"][data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(0 0% 40%); }
 html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117, 134, 0.10); }
 
+/* ===== v0.2.59.x 手机底部导航（5 tab：首页/百科/社区/消息/我的；无操作按钮） ===== */
+.mobile-bottom-nav { display: none; }
+.mbn-backdrop { display: none; }
+.mbn-sheet { display: none; }
+@media (max-width: 768px) {
+  /* iOS 26 风格浮动药丸 dock：居中悬浮、大圆角、磨砂玻璃、选中项浅色胶囊 */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    height: 56px; z-index: 9999;
+    width: auto; min-width: 264px; max-width: calc(100% - 28px);
+    border-radius: 999px;
+    padding: 0 6px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 10px 36px rgba(20, 20, 40, 0.18), inset 0 0.5px 0 rgba(255, 255, 255, 0.65);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav {
+    background: rgba(24, 24, 38, 0.72);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.42), inset 0 0.5px 0 rgba(255, 255, 255, 0.14);
+  }
+  .mobile-bottom-nav .mbn-item {
+    flex: 1; min-width: 48px; max-width: 78px;
+    padding: 0 10px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1px;
+    text-decoration: none; color: var(--color-outline);
+    font-size: 10px; font-weight: 500; letter-spacing: 0.01em;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .mobile-bottom-nav .mbn-item .material-symbols-outlined { font-size: 22px; }
+  .mobile-bottom-nav .mbn-item.active {
+    color: var(--color-primary);
+    background: rgba(70, 72, 212, 0.10);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav .mbn-item.active { background: rgba(122, 126, 255, 0.18); }
+  .mbn-backdrop {
+    display: block;
+    position: fixed; inset: 0; z-index: 68;
+    background: rgba(0, 0, 0, 0.32);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .mbn-backdrop.open { opacity: 1; pointer-events: auto; }
+  .mbn-sheet {
+    display: block;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 69;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(105%); transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.14);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-sheet.open { transform: translateY(0); }
+  .mbn-user-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 4px 0 14px; text-decoration: none; color: var(--color-on-surface);
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10));
+  }
+  .mbn-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--color-primary); object-fit: cover; flex-shrink: 0; }
+  .mbn-user-meta { min-width: 0; flex: 1; }
+  .mbn-user-name { font-weight: 700; font-size: 16px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbn-user-cid { font-size: 12px; color: var(--color-outline); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: capitalize; }
+  .mbn-row {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 13px 0; background: none; border: none; cursor: pointer;
+    text-align: left; text-decoration: none; color: var(--color-on-surface);
+    font-size: var(--fs-label-md); font-family: inherit;
+  }
+  .mbn-row + .mbn-row { border-top: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-ico { color: var(--color-outline); font-size: 22px; flex-shrink: 0; }
+  .mbn-row-label { flex: 1; min-width: 0; }
+  .mbn-chev { color: var(--color-outline); opacity: 0.5; font-size: 20px; }
+  .mbn-row.mbn-danger { color: #d23b3b; }
+  .mbn-row.mbn-danger .mbn-ico { color: #d23b3b; }
+  .mbn-group-title { font-weight: 700; font-size: 13px; color: var(--color-outline); letter-spacing: 0.03em; margin: 14px 0 6px; text-transform: uppercase; }
+  .mbn-group { margin-bottom: 4px; }
+  .mbn-group-name { font-size: 12px; color: var(--color-outline); padding: 10px 0 2px; }
+  .mbn-switch {
+    width: 44px; height: 26px; border-radius: 999px; flex-shrink: 0;
+    background: var(--color-outline-variant, #c8c7d4); position: relative;
+    transition: background 0.18s ease;
+  }
+  .mbn-switch .mbn-knob {
+    position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.25); transition: transform 0.18s ease;
+  }
+  .mbn-switch[data-on="1"] { background: var(--color-primary); }
+  .mbn-switch[data-on="1"] .mbn-knob { transform: translateX(18px); }
+  .mbn-toast {
+    position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%) translateY(12px);
+    background: rgba(24,24,32,0.9); color: #fff; padding: 10px 18px; border-radius: 999px;
+    font-size: 13px; z-index: 90; opacity: 0; pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease; max-width: 86vw; text-align: center;
+  }
+  .mbn-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* 二级子 sheet */
+  .mbn-subsheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 71;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.16);
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-subsheet.open { transform: translateY(0); }
+  .mbn-sub-head { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10)); }
+  .mbn-sub-back { width: 36px; height: 36px; border-radius: 50%; border: none; background: none; color: var(--color-on-surface); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .mbn-sub-title { font-weight: 700; font-size: 16px; }
+  .mbn-sub-body { padding-top: 6px; }
+  .mbn-sub-row {
+    display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 0;
+    background: none; border: none; cursor: pointer; text-align: left;
+    font-size: var(--fs-label-md); color: var(--color-on-surface); font-family: inherit;
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08));
+  }
+  .mbn-sub-row > span:first-child { flex: 1; min-width: 0; }
+  .mbn-sub-row.on { color: var(--color-primary); font-weight: 600; }
+  .mbn-sub-check { color: var(--color-outline); opacity: 0.6; font-size: 20px; flex-shrink: 0; }
+  .mbn-sub-row.on .mbn-sub-check { color: var(--color-primary); opacity: 1; }
+  .mbn-sub-sec { font-size: 12px; color: var(--color-outline); text-transform: uppercase; letter-spacing: 0.03em; padding: 14px 0 4px; }
+  .mbn-sub-note { font-size: 13px; color: var(--color-outline); padding: 14px 0; line-height: 1.5; }
+  .mbn-list-item { padding: 12px 0; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mbn-list-author { font-weight: 600; font-size: 14px; color: var(--color-on-surface); }
+  .mbn-list-time { font-size: 11px; color: var(--color-outline); flex-shrink: 0; }
+  .mbn-list-body { font-size: 13px; color: var(--color-outline); margin-top: 4px; line-height: 1.5; word-break: break-word; }
+  .mbn-unblock { border: 1px solid var(--divider-line, rgba(118,117,134,0.3)); background: none; color: var(--color-on-surface); border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+  .app-main { padding-bottom: 74px; } /* 给底部导航留空间 */
+}
+
+/* v0.2.59.50 手机适配：主内容 + 340px 侧栏预览的左右网格（dashboard/micronationary/overview 共用），手机收单列 */
+.fc-split-grid { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-md); }
+@media (max-width: 768px) {
+  .fc-split-grid { grid-template-columns: 1fr; }
+}
+/* v0.2.59.50 手机适配：两列网格 + 左右弹性布局收单列 */
+.fc-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+.fc-split-flex { display: flex; }
+@media (max-width: 768px) {
+  .fc-two-col { grid-template-columns: 1fr; }
+  .fc-split-flex { flex-direction: column; min-height: 0 !important; }
+  .fc-split-flex > div { width: 100% !important; border-right: none !important; }
+}
+
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -2379,6 +2609,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 }
 
 </style>
+<style>
+/* v0.2.58.16 活动页真实数据接入：空态/离线态/平趋势（inliner 管区外页面专属） */
+.act-empty { padding: var(--space-md); text-align: center; font-size: 13px; color: var(--color-outline); border: 1px dashed rgba(118,117,134,0.25); border-radius: 10px; }
+.kpi-trend.flat { color: var(--color-outline); }
+.act-offline { padding: var(--space-md); border: 1px dashed rgba(118,117,134,0.3); border-radius: 10px; text-align: center; }
+.act-offline b { display: block; margin-bottom: 4px; }
+</style>
 </head>
 <body class="pre-stagger">
 
@@ -2401,7 +2638,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         </div>
         <div class="search-capsule">
           <span class="material-symbols-outlined">search</span>
-          <input type="text" placeholder="Search metrics..." data-i18n-placeholder="activity.search.placeholder">
+          <input type="text" id="activitySearch" placeholder="Search metrics..." data-i18n-placeholder="activity.search.placeholder">
         </div>
       </div>
     </header>
@@ -2410,7 +2647,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div class="kpi-grid" id="kpiRow" style="margin-bottom:var(--space-md)"></div>
 
     <!-- Two-column content -->
-    <div style="display:grid;grid-template-columns:1fr 320px;gap:var(--space-md)">
+    <div class="fc-split-grid" style="gap:var(--space-md)">
       <!-- LEFT COLUMN -->
       <div style="display:flex;flex-direction:column;gap:var(--space-md)">
         <!-- Growth Trend Chart -->
@@ -2429,7 +2666,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
         <!-- Category Distribution -->
         <div class="card chart-card">
-          <h2 class="chart-title" style="margin-bottom:var(--space-md)" data-i18n="activity.chart.category">Content by Category</h2>
+          <h2 class="chart-title" style="margin-bottom:var(--space-md)" data-i18n="activity.chart.contentTypes">Content by Type</h2>
           <div id="categoryChart"></div>
         </div>
 
@@ -2499,6 +2736,16 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           </h3>
           <div id="milestonesList"></div>
         </div>
+
+        <!-- 插件增长（v0.2.59.1） -->
+        <div class="card">
+          <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#7b7ff0">extension</span>
+            <span>插件动态</span>
+            <a href="plugins.html" style="margin-left:auto;font-size:12px;color:var(--color-primary);text-decoration:none">全部 ›</a>
+          </h3>
+          <div id="pluginGrowthList"></div>
+        </div>
       </div>
     </div>
 
@@ -2507,6 +2754,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/site-config.js"></script>
+<script src="../assets/js/api.js"></script>
 <script src="../assets/js/storage.js"></script>
 <script src="../assets/js/sidebar.js"></script>
 <script src="../assets/js/settings-modal.js"></script>
@@ -2517,122 +2765,65 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 (function() {
   'use strict';
 
-  // v0.2.54.0 i18n：惰性翻译（i18n.js 于 body 尾部加载，晚于本脚本——初始渲染走 || 原文兜底，语言切换经 onChange 重渲）
+  // v0.2.58.16 真实数据接入：GET /api/public/activity 聚合（KPI/趋势/内容类型/热力图/榜/里程碑）。
+  // 惰性翻译 T() 保留；失败/空态绝不回退假数据；subnav .active 类名归 subnav.js 管（本页零触碰）
   function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
 
-  // ═══════════════════════════════════════════
-  // Seed Data
-  // ═══════════════════════════════════════════
+  var state = { range: '30d', metric: 'users', cache: {}, search: '', failed: false };
 
-  // -- KPI data per time range --
-  var kpiData = {
-    '7d':  { nations:892, nationsTrend:3.2,  citizens:128400, citizensTrend:1.8,  articles:12840, articlesTrend:4.1,  activity:3421, activityTrend:2.3,  treaties:1247, treatiesTrend:5.5  },
-    '30d': { nations:892, nationsTrend:12.0, citizens:128400, citizensTrend:8.3,  articles:12840, articlesTrend:15.0, activity:3421, activityTrend:5.7,  treaties:1247, treatiesTrend:22.0 },
-    '90d': { nations:892, nationsTrend:28.5, citizens:128400, citizensTrend:22.1, articles:12840, articlesTrend:35.2, activity:3421, activityTrend:14.8, treaties:1247, treatiesTrend:48.0 },
-    'all':  { nations:892, nationsTrend:156.0,citizens:128400, citizensTrend:210.0,articles:12840, articlesTrend:185.0,activity:3421, activityTrend:92.0, treaties:1247, treatiesTrend:310.0 }
-  };
-
-  // -- 30-day growth data generation --
-  function generateGrowthSeries(startVal, endVal, days, noiseScale) {
-    noiseScale = noiseScale || 1;
-    var series = [];
-    for (var i = 0; i < days; i++) {
-      var t = i / (days - 1);
-      var sigmoid = 1 / (1 + Math.exp(-8 * (t - 0.4)));
-      var blended = sigmoid * 0.7 + t * 0.3;
-      var base = startVal + (endVal - startVal) * blended;
-      var noise = (Math.sin(i * 2.3) * 80 + Math.sin(i * 5.7) * 40 + Math.sin(i * 11.1) * 15) * (1 - t * 0.4) * noiseScale;
-      series.push(Math.round(base + noise));
-    }
-    return series;
+  function fmt(n) {
+    n = n || 0;
+    return n >= 1000 ? (n / 1000).toFixed(1) + 'K' : n.toLocaleString();
   }
 
-  var trendData = {
-    users:    generateGrowthSeries(98420, 128400, 30, 1),
-    nations:  generateGrowthSeries(712, 892, 30, 0.15),
-    articles: generateGrowthSeries(9920, 12840, 30, 0.8),
-    teams:    generateGrowthSeries(89, 156, 30, 0.3)
-  };
+  // 相对时间：<1 天 → today；否则 daysAgo 插 {n}（后端 at 为 UTC ISO）
+  function relTime(at) {
+    var t = Date.parse(at || '');
+    if (isNaN(t)) return '';
+    var days = Math.floor((Date.now() - t) / 86400e3);
+    if (days < 1) return T('activity.ms.time.today') || 'Today';
+    return (T('activity.ms.time.daysAgo') || '{n} days ago').replace('{n}', String(days));
+  }
 
-  // -- Category distribution（v0.2.54.2 i18n 补：name → nameKey/nameEn，渲染处惰性 T()） --
-  var categories = [
-    { nameKey: 'governance', nameEn: 'Governance', count: 4120, color: '#4648d4' },
-    { nameKey: 'economy',    nameEn: 'Economy',    count: 3080, color: '#16a34a' },
-    { nameKey: 'culture',    nameEn: 'Culture',    count: 2850, color: '#8127cf' },
-    { nameKey: 'territory',  nameEn: 'Territory',  count: 1840, color: '#ea580c' },
-    { nameKey: 'diplomacy',  nameEn: 'Diplomacy',  count: 1520, color: '#3b82f6' },
-    { nameKey: 'technology', nameEn: 'Technology', count:  830, color: '#eab308' }
-  ];
+  // deltaPct null（前窗无基准）→ 平趋势 '—'
+  function trendHtml(deltaPct) {
+    if (deltaPct === null || deltaPct === undefined) return '<div class="kpi-trend flat">—</div>';
+    var isUp = deltaPct >= 0;
+    return '<div class="kpi-trend ' + (isUp ? 'up' : 'down') + '">' +
+      '<span class="material-symbols-outlined" style="font-size:14px">' + (isUp ? 'trending_up' : 'trending_down') + '</span> ' +
+      (isUp ? '+' : '') + Math.abs(deltaPct).toFixed(1) + '% ' + (T('activity.kpi.period') || 'this period') +
+    '</div>';
+  }
 
-  // -- Weekly heatmap: 6 time blocks x 7 days --
-  var heatmap = {
-    timeBlocks: ['00-04', '04-08', '08-12', '12-16', '16-20', '20-24'],
-    days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    values: [
-      [ 32,  28,  35,  30,  41,  55,  48],
-      [ 45,  42,  50,  47,  55,  62,  58],
-      [320, 340, 355, 330, 360, 280, 245],
-      [410, 425, 440, 420, 445, 310, 270],
-      [380, 395, 410, 390, 430, 350, 260],
-      [180, 195, 210, 185, 250, 180, 120]
-    ]
-  };
-
-  // -- Top nations leaderboard --
-  var topNations = [
-    { rank:1, name:'Republic of Etheria',       score:9842, icon:'public',      flag:'🌊' },
-    { rank:2, name:'Neo-Venice Collective',     score:8721, icon:'water',       flag:'🏛️' },
-    { rank:3, name:'Kingdom of Aethelgard',     score:7654, icon:'shield',      flag:'👑' },
-    { rank:4, name:'Digital Sovereignty Union', score:6432, icon:'computer',    flag:'💻' },
-    { rank:5, name:'Cartography Guild',         score:5210, icon:'map',         flag:'🗺️' }
-  ];
-
-  // -- Milestones（v0.2.54.2 i18n 补：desc/time → key/En 对；title 为国家名豁免不译） --
-  var milestones = [
-    { icon:'cake',        title:'Republic of Etheria',        descKey:'anniv2',      descEn:'2-year founding anniversary',    timeKey:'t2d', timeEn:'2 days ago',  color:'#eab308' },
-    { icon:'article',     title:'Neo-Venice Collective',      descKey:'articles500', descEn:'Reached 500 published articles',  timeKey:'t3d', timeEn:'3 days ago',  color:'#4648d4' },
-    { icon:'group',       title:'Kingdom of Aethelgard',      descKey:'pop10k',      descEn:'Population surpassed 10,000',     timeKey:'t5d', timeEn:'5 days ago',  color:'#16a34a' },
-    { icon:'handshake',   title:'Digital Sovereignty Union',  descKey:'treaty50',    descEn:'50th bilateral treaty signed',    timeKey:'t1w', timeEn:'1 week ago',  color:'#3b82f6' },
-    { icon:'trending_up', title:'Cartography Guild',          descKey:'score5k',     descEn:'Activity score surpassed 5,000',  timeKey:'t1w', timeEn:'1 week ago',  color:'#ea580c' }
-  ];
+  function emptyHtml(key, enFallback) {
+    return '<div class="act-empty">' + (T(key) || enFallback || 'Nothing here yet') + '</div>';
+  }
 
   // ═══════════════════════════════════════════
-  // State
+  // 1. KPI Row（5 卡：国家/公民/文章/动态/新公民——第 5 卡=新公民，原条约签署无表已撤）
   // ═══════════════════════════════════════════
-  var currentRange = '30d';
-  var currentMetric = 'users';
-
-  // ═══════════════════════════════════════════
-  // 1. KPI Row
-  // ═══════════════════════════════════════════
-  function renderKPI() {
-    var kpi = kpiData[currentRange];
+  function renderKPI(data) {
+    var kpi = (data && data.kpi) || {};
     var items = [
-      { icon:'public',    label:(T('activity.kpi.activeNations') || 'Active Nations'),    value:kpi.nations,  trend:kpi.nationsTrend,  period:(T('activity.kpi.period') || 'this period'), accent:'#16a34a' },
-      { icon:'group',     label:(T('activity.kpi.totalCitizens') || 'Total Citizens'),    value:kpi.citizens, trend:kpi.citizensTrend, period:(T('activity.kpi.period') || 'this period'), accent:'#ea580c' },
-      { icon:'article',   label:(T('activity.kpi.articlesPublished') || 'Articles Published'), value:kpi.articles, trend:kpi.articlesTrend, period:(T('activity.kpi.period') || 'this period'), accent:'#4648d4' },
-      { icon:'bolt',      label:(T('activity.kpi.dailyActivity') || 'Daily Activity'),    value:kpi.activity, trend:kpi.activityTrend, period:(T('activity.kpi.period') || 'this period'), accent:'#8127cf' },
-      { icon:'handshake', label:(T('activity.kpi.treatiesSigned') || 'Treaties Signed'),   value:kpi.treaties, trend:kpi.treatiesTrend, period:(T('activity.kpi.period') || 'this period'), accent:'#eab308' }
+      { icon: 'public',     labelKey: 'activity.kpi.activeNations',     labelEn: 'Active Nations',     value: kpi.nations,     accent: '#16a34a' },
+      { icon: 'group',      labelKey: 'activity.kpi.totalCitizens',     labelEn: 'Total Citizens',     value: kpi.citizens,    accent: '#ea580c' },
+      { icon: 'article',    labelKey: 'activity.kpi.articlesPublished', labelEn: 'Articles Published', value: kpi.articles,    accent: '#4648d4' },
+      { icon: 'bolt',       labelKey: 'activity.kpi.dailyActivity',     labelEn: 'Daily Activity',     value: kpi.activity,    accent: '#8127cf' },
+      { icon: 'person_add', labelKey: 'activity.kpi.newCitizens',       labelEn: 'New Citizens',       value: kpi.newCitizens, accent: '#eab308' }
     ];
-
     document.getElementById('kpiRow').innerHTML = items.map(function(item) {
-      var isUp = item.trend >= 0;
+      var v = item.value || { value: 0, deltaPct: null };
       return '<div class="card kpi-card tilt-container" style="--kpi-accent:' + item.accent + '">' +
         '<span class="material-symbols-outlined kpi-icon" style="color:' + item.accent + '">' + item.icon + '</span>' +
-        '<div class="kpi-value">' + (item.value >= 1000 ? (item.value / 1000).toFixed(1) + 'K' : item.value.toLocaleString()) + '</div>' +
-        '<div class="kpi-label">' + item.label + '</div>' +
-        '<div class="kpi-trend ' + (isUp ? 'up' : 'down') + '">' +
-          '<span class="material-symbols-outlined" style="font-size:14px">' + (isUp ? 'trending_up' : 'trending_down') + '</span> ' +
-          (isUp ? '+' : '') + Math.abs(item.trend).toFixed(1) + '% ' + item.period +
-        '</div>' +
+        '<div class="kpi-value">' + fmt(v.value) + '</div>' +
+        '<div class="kpi-label">' + (T(item.labelKey) || item.labelEn) + '</div>' +
+        trendHtml(v.deltaPct) +
       '</div>';
     }).join('');
-
-    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
   }
 
   // ═══════════════════════════════════════════
-  // 2. 30-Day Growth Trend Chart (SVG)
+  // 2. 30-Day Growth Trend Chart (SVG)——恒最近 30 天日序列（后端 trends 固定口径）
   // ═══════════════════════════════════════════
   var activityTooltip = null;
 
@@ -2652,12 +2843,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var ttVal = document.getElementById('ttVal');
     bars.forEach(function(bar) {
       bar.addEventListener('mouseenter', function() {
-        var idx = parseInt(bar.dataset.idx);
-        var val = parseInt(bar.dataset.val);
-        var date = new Date();
-        date.setDate(date.getDate() - (29 - idx));
+        var val = parseInt(bar.dataset.val, 10);
+        var date = bar.dataset.date ? new Date(bar.dataset.date + 'T00:00:00') : new Date();
         ttDay.textContent = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-        ttVal.textContent = val.toLocaleString() + ' ' + (T('activity.metric.' + currentMetric) || currentMetric);
+        ttVal.textContent = val.toLocaleString() + ' ' + (T('activity.metric.' + state.metric) || state.metric);
         var rect = bar.getBoundingClientRect();
         activityTooltip.style.left = (rect.left + rect.width / 2) + 'px';
         activityTooltip.style.top = (rect.top - 8) + 'px';
@@ -2671,9 +2860,11 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     });
   }
 
-  function renderTrendChart() {
-    var data = trendData[currentMetric];
-    var barCount = data.length;
+  function renderTrendChart(data) {
+    var all = (data && data.trends) || {};
+    var series = all[state.metric] || [];
+    var barCount = series.length;
+    if (!barCount) { document.getElementById('trendChart').innerHTML = ''; return; }
     var todayIdx = barCount - 1;
 
     var svgW = 620, svgH = 210;
@@ -2681,18 +2872,18 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var chartW = svgW - pad.left - pad.right;
     var chartH = svgH - pad.top - pad.bottom;
 
-    var maxVal = Math.max.apply(null, data);
-    var minVal = Math.min.apply(null, data);
+    var values = series.map(function(r) { return r.value; });
+    var maxVal = Math.max.apply(null, values);
+    var minVal = Math.min.apply(null, values);
     var range = maxVal - minVal || 1;
     var barGap = 3;
     var barW = (chartW - barGap * (barCount - 1)) / barCount;
 
-    // Y-axis ticks
     var yTicks = [minVal, Math.round((minVal + maxVal) / 2), maxVal];
 
-    // Bars
-    var barsSvg = data.map(function(v, i) {
-      var h = Math.max(2, ((v - minVal) / range) * chartH);
+    // Bars（日期直接来自后端 data.date，不从 idx 反推）
+    var barsSvg = series.map(function(r, i) {
+      var h = Math.max(2, ((r.value - minVal) / range) * chartH);
       var x = pad.left + i * (barW + barGap);
       var y = pad.top + chartH - h;
       var isToday = i === todayIdx;
@@ -2700,16 +2891,14 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       var rx = Math.min(barW / 2, 2.5);
       return '<rect class="trend-bar" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) +
         '" width="' + barW.toFixed(1) + '" height="' + h.toFixed(1) +
-        '" rx="' + rx + '" fill="' + fill + '" data-idx="' + i + '" data-val="' + v + '"/>';
+        '" rx="' + rx + '" fill="' + fill + '" data-idx="' + i + '" data-val="' + r.value + '" data-date="' + r.date + '"/>';
     }).join('');
 
     // X-axis day labels
     var xLabels = '';
     for (var d = 0; d < barCount; d++) {
       if (d % 5 === 0 || d === todayIdx) {
-        var date = new Date();
-        date.setDate(date.getDate() - (barCount - 1 - d));
-        var label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        var label = new Date(series[d].date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         var lx = pad.left + d * (barW + barGap) + barW / 2;
         xLabels += '<text x="' + lx.toFixed(1) + '" y="' + (svgH - 5) +
           '" font-size="9" fill="#767586" text-anchor="middle">' + label + '</text>';
@@ -2717,7 +2906,6 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     }
 
     var svg = '<svg viewBox="0 0 ' + svgW + ' ' + svgH + '" style="width:100%;height:210px;display:block;overflow:visible">' +
-      // Grid lines + Y labels
       yTicks.map(function(yt) {
         var yy = pad.top + chartH - ((yt - minVal) / range) * chartH;
         return '<line x1="' + pad.left + '" y1="' + yy.toFixed(1) + '" x2="' + (pad.left + chartW) + '" y2="' + yy.toFixed(1) +
@@ -2727,7 +2915,6 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       }).join('') +
       barsSvg +
       xLabels +
-      // Today indicator
       '<line x1="' + (pad.left + todayIdx * (barW + barGap) + barW/2).toFixed(1) +
       '" y1="' + pad.top + '" x2="' + (pad.left + todayIdx * (barW + barGap) + barW/2).toFixed(1) +
       '" y2="' + (pad.top + chartH) + '" stroke="#4648d4" stroke-width="1" stroke-dasharray="4,3" opacity="0.35"/>' +
@@ -2738,53 +2925,62 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   }
 
   // ═══════════════════════════════════════════
-  // 3. Category Distribution (Horizontal Bars)
+  // 3. Content Types (Horizontal Bars)——真实四类型，取代旧分类假数据
   // ═══════════════════════════════════════════
-  function renderCategories() {
-    var total = categories.reduce(function(s, c) { return s + c.count; }, 0);
-    document.getElementById('categoryChart').innerHTML = categories.map(function(cat) {
-      var pct = ((cat.count / total) * 100).toFixed(1);
+  var CT_META = [
+    { key: 'articles', color: '#4648d4', labelEn: 'Articles' },
+    { key: 'posts',    color: '#16a34a', labelEn: 'Posts' },
+    { key: 'comments', color: '#8127cf', labelEn: 'Comments' },
+    { key: 'likes',    color: '#eab308', labelEn: 'Likes' }
+  ];
+
+  function renderContentTypes(data) {
+    var ct = (data && data.contentTypes) || {};
+    var total = CT_META.reduce(function(s, m) { return s + (ct[m.key] || 0); }, 0);
+    if (!total) { document.getElementById('categoryChart').innerHTML = emptyHtml('activity.empty.section'); return; }
+    document.getElementById('categoryChart').innerHTML = CT_META.map(function(m) {
+      var count = ct[m.key] || 0;
+      var pct = ((count / total) * 100).toFixed(1);
       return '<div class="hbar-row">' +
-        '<span class="hbar-label">' + (T('activity.cat.' + cat.nameKey) || cat.nameEn) + '</span>' +
+        '<span class="hbar-label">' + (T('activity.ct.' + m.key) || m.labelEn) + '</span>' +
         '<div style="flex:1;height:8px;background:rgba(118,117,134,0.08);border-radius:4px;overflow:hidden">' +
-          '<div class="hbar-bar" style="width:' + pct + '%;background:' + cat.color + '"></div>' +
+          '<div class="hbar-bar" style="width:' + pct + '%;background:' + m.color + '"></div>' +
         '</div>' +
-        '<span class="hbar-count">' + cat.count.toLocaleString() + '</span>' +
-        '<span class="hbar-pct" style="color:' + cat.color + ';font-weight:600">' + pct + '%</span>' +
+        '<span class="hbar-count">' + count.toLocaleString() + '</span>' +
+        '<span class="hbar-pct" style="color:' + m.color + ';font-weight:600">' + pct + '%</span>' +
       '</div>';
     }).join('');
   }
 
   // ═══════════════════════════════════════════
-  // 4. Weekly Activity Heatmap
+  // 4. Weekly Activity Heatmap（6 时段 × 7 天；空表期友好空态，形状保持）
   // ═══════════════════════════════════════════
-  function renderHeatmap() {
-    var hm = heatmap;
-    var maxCell = 0;
-    hm.values.forEach(function(row) { row.forEach(function(v) { if (v > maxCell) maxCell = v; }); });
-
-    var dayTotals = [0, 0, 0, 0, 0, 0, 0];
+  function renderHeatmap(data) {
+    var hm = (data && data.heatmap) || null;
+    if (!hm || !hm.maxCell) {
+      document.getElementById('heatmapContainer').innerHTML = emptyHtml('activity.empty.heatmap', 'Visit data is still accumulating — check back soon');
+      return;
+    }
+    var maxCell = hm.maxCell;
     var cells = '';
 
-    for (var row = 0; row < 6; row++) {
+    for (var row = 0; row < hm.timeBlocks.length; row++) {
       cells += '<div class="heatmap-label">' + hm.timeBlocks[row] + '</div>';
-      for (var col = 0; col < 7; col++) {
-        var val = hm.values[row][col];
-        dayTotals[col] += val;
+      for (var col = 0; col < hm.days.length; col++) {
+        var val = hm.days[col].cells[row];
         var intensity = val / maxCell;
         var alpha = 0.06 + intensity * 0.9;
-        cells += '<div class="heatmap-cell" style="background:rgba(70,72,212,' + alpha.toFixed(2) + ')" title="' + (T('activity.heatmap.day.' + hm.days[col].toLowerCase()) || hm.days[col]) + ' ' + hm.timeBlocks[row] + ': ' + val.toLocaleString() + ' ' + (T('activity.heatmap.events') || 'events') + '"></div>';
+        var dayKey = hm.days[col].key;
+        cells += '<div class="heatmap-cell" style="background:rgba(70,72,212,' + alpha.toFixed(2) + ')" title="' + (T('activity.heatmap.day.' + dayKey) || dayKey) + ' ' + hm.timeBlocks[row] + ': ' + val.toLocaleString() + ' ' + (T('activity.heatmap.events') || 'events') + '"></div>';
       }
     }
 
-    // Day headers
     var headers = '<div></div>' + hm.days.map(function(d) {
-      return '<div class="heatmap-header">' + (T('activity.heatmap.day.' + d.toLowerCase()) || d) + '</div>';
+      return '<div class="heatmap-header">' + (T('activity.heatmap.day.' + d.key) || d.key) + '</div>';
     }).join('');
 
-    // Day totals
-    var totals = '<div></div>' + dayTotals.map(function(t) {
-      return '<div class="heatmap-total">' + t.toLocaleString() + '</div>';
+    var totals = '<div></div>' + hm.days.map(function(d) {
+      return '<div class="heatmap-total">' + d.total.toLocaleString() + '</div>';
     }).join('');
 
     document.getElementById('heatmapContainer').innerHTML =
@@ -2792,16 +2988,21 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   }
 
   // ═══════════════════════════════════════════
-  // 5. Leaderboard
+  // 5. Leaderboard（搜索过滤；零分已由后端排除）
   // ═══════════════════════════════════════════
-  function renderLeaderboard() {
+  function renderLeaderboard(data) {
+    var list = (data && data.leaderboard) || [];
+    var q = state.search;
+    var rows = list.filter(function(n) { return !q || (n.name || '').toLowerCase().indexOf(q) !== -1; });
+    var el = document.getElementById('leaderboardList');
+    if (!rows.length) { el.innerHTML = emptyHtml('activity.empty.section'); return; }
     var rankClass = { 1: 'gold', 2: 'silver', 3: 'bronze' };
-    var maxScore = topNations[0].score;
-    document.getElementById('leaderboardList').innerHTML = topNations.map(function(n) {
+    var maxScore = rows[0].score || 1;
+    el.innerHTML = rows.map(function(n) {
       var barW = (n.score / maxScore * 100).toFixed(0);
       return '<div class="lb-row">' +
         '<div class="lb-rank' + (rankClass[n.rank] ? ' ' + rankClass[n.rank] : '') + '"' + (!rankClass[n.rank] ? ' style="background:rgba(118,117,134,0.12);color:var(--color-outline)"' : '') + '>' + n.rank + '</div>' +
-        '<span class="lb-flag">' + n.flag + '</span>' +
+        '<span class="lb-flag">' + (n.flag || '🏳️') + '</span>' +
         '<span class="lb-name">' + n.name + '</span>' +
         '<div class="lb-score-bar"><div class="lb-score-fill" style="width:' + barW + '%"></div></div>' +
         '<span class="lb-score-num">' + n.score.toLocaleString() + '</span>' +
@@ -2810,65 +3011,141 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   }
 
   // ═══════════════════════════════════════════
-  // 6. Milestones
+  // 6. Milestones（三类型映射；公民 title 匿名——后端 PII 禁令恒 null）
   // ═══════════════════════════════════════════
-  function renderMilestones() {
-    document.getElementById('milestonesList').innerHTML = milestones.map(function(m) {
+  var MS_META = {
+    nation:  { icon: 'flag',       color: '#16a34a', descKey: 'nationFounded',    descEn: 'Nation founded' },
+    article: { icon: 'article',    color: '#4648d4', descKey: 'articlePublished', descEn: 'Article published' },
+    citizen: { icon: 'person_add', color: '#eab308', descKey: 'citizenJoined',    descEn: 'New citizen joined' }
+  };
+
+  function renderMilestones(data) {
+    var list = (data && data.milestones) || [];
+    var q = state.search;
+    var rows = list.map(function(m) {
+      var meta = MS_META[m.type] || MS_META.citizen;
+      var title = m.type === 'citizen' ? (T('activity.ms.title.citizen') || 'A new citizen') : (m.title || '');
+      var desc = T('activity.ms.desc.' + meta.descKey) || meta.descEn;
+      return { m: m, meta: meta, title: title, desc: desc };
+    }).filter(function(r) {
+      return !q || r.title.toLowerCase().indexOf(q) !== -1 || r.desc.toLowerCase().indexOf(q) !== -1;
+    });
+    var el = document.getElementById('milestonesList');
+    if (!rows.length) { el.innerHTML = emptyHtml('activity.empty.section'); return; }
+    el.innerHTML = rows.map(function(r) {
       return '<div class="milestone">' +
-        '<div class="milestone-dot" style="background:' + m.color + '"></div>' +
+        '<div class="milestone-dot" style="background:' + r.meta.color + '"></div>' +
         '<div class="milestone-content">' +
-          '<div class="milestone-title">' + m.title + '</div>' +
-          '<div style="font-size:11px;color:var(--color-on-surface-variant)">' + (T('activity.ms.desc.' + m.descKey) || m.descEn) + '</div>' +
-          '<div class="milestone-date">' + (T('activity.ms.time.' + m.timeKey) || m.timeEn) + '</div>' +
+          '<div class="milestone-title">' + r.title + '</div>' +
+          '<div style="font-size:11px;color:var(--color-on-surface-variant)">' + r.desc + '</div>' +
+          '<div class="milestone-date">' + relTime(r.m.at) + '</div>' +
         '</div>' +
       '</div>';
     }).join('');
   }
 
   // ═══════════════════════════════════════════
+  // 离线态：一张提示卡 + 五容器清空——绝不渲染假数据
+  // ═══════════════════════════════════════════
+  function renderOffline() {
+    var title = T('activity.offline.title') || 'Data temporarily unavailable';
+    var desc = T('activity.offline.desc') || 'Please check your connection and try again.';
+    document.getElementById('kpiRow').innerHTML = '<div class="card act-offline"><b>' + title + '</b><div style="font-size:12px;color:var(--color-outline)">' + desc + '</div></div>';
+    ['trendChart', 'categoryChart', 'heatmapContainer', 'leaderboardList', 'milestonesList'].forEach(function(id) {
+      document.getElementById(id).innerHTML = '';
+    });
+  }
+
+  function renderAll(data) {
+    renderKPI(data);
+    renderTrendChart(data);
+    renderContentTypes(data);
+    renderHeatmap(data);
+    renderLeaderboard(data);
+    renderMilestones(data);
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+  }
+
+  function loadData(range) {
+    if (state.cache[range]) { renderAll(state.cache[range]); return; }
+    if (!window.MN_API || !window.MN_API.get) { renderOffline(); return; }
+    window.MN_API.get('/public/activity?range=' + encodeURIComponent(range)).then(function(res) {
+      if (state.range !== range) return; // 陈旧守卫：切走后再回的不渲染
+      if (!res || !res.ok || !res.data) { state.failed = true; renderOffline(); return; }
+      state.failed = false;
+      state.cache[range] = res.data;
+      renderAll(res.data);
+    }).catch(function() {
+      if (state.range === range) { state.failed = true; renderOffline(); }
+    });
+  }
+
+  // 插件增长卡片（v0.2.59.1）：GET /api/plugins 取热门（安装量降序）前 4，点击跳插件商店
+  function renderPluginGrowth() {
+    var el = document.getElementById('pluginGrowthList');
+    if (!el) return;
+    if (!window.MN_API || !window.MN_API.get) { el.innerHTML = ''; return; }
+    window.MN_API.get('/plugins').then(function(res) {
+      if (!res.ok || !res.data || !res.data.plugins) { el.innerHTML = ''; return; }
+      var tierMap = { premium: '高级', basic: '基础', free: '免费', ultra: '顶级' };
+      var list = res.data.plugins.slice().sort(function(a, b) { return (b.installCount || 0) - (a.installCount || 0); }).slice(0, 4);
+      if (!list.length) { el.innerHTML = '<div style="font-size:12px;color:var(--color-outline)">暂无插件</div>'; return; }
+      el.innerHTML = list.map(function(p) {
+        return '<a href="plugins.html" style="display:flex;align-items:center;gap:10px;padding:9px 0;text-decoration:none;color:inherit;border-bottom:1px solid var(--color-outline-variant)">' +
+          '<span style="font-size:20px">' + (p.icon || '🧩') + '</span>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-size:13px;font-weight:600;color:var(--color-on-surface);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + p.name + '</div>' +
+            '<div style="font-size:11px;color:var(--color-outline)">' + (p.installCount || 0) + ' 安装 · ' + (tierMap[p.minTier] || p.minTier) + '</div>' +
+          '</div>' +
+          '<span class="material-symbols-outlined" style="font-size:16px;color:var(--color-outline)">chevron_right</span>' +
+        '</a>';
+      }).join('');
+    }).catch(function () { el.innerHTML = ''; });
+  }
+
+  // ═══════════════════════════════════════════
   // Event Handlers
   // ═══════════════════════════════════════════
 
-  // Time range pills
+  // Time range pills（.active/滑块归 subnav.js——本页只负责拉数据）
   document.getElementById('timeRangePills').addEventListener('click', function(e) {
     var btn = e.target.closest('.subnav-pill');
-    if (!btn || btn.dataset.range === currentRange) return;
-    currentRange = btn.dataset.range;
-    renderKPI();
+    if (!btn || btn.dataset.range === state.range) return;
+    state.range = btn.dataset.range;
+    loadData(state.range);
   });
 
-  // Trend metric toggle
+  // Trend metric toggle（只重渲染不重拉）
   document.getElementById('trendTabs').addEventListener('click', function(e) {
     var btn = e.target.closest('.subnav-pill');
-    if (!btn || btn.dataset.metric === currentMetric) return;
-    currentMetric = btn.dataset.metric;
-    renderTrendChart();
+    if (!btn || btn.dataset.metric === state.metric) return;
+    state.metric = btn.dataset.metric;
+    renderTrendChart(state.cache[state.range] || null);
+  });
+
+  // 搜索：排行榜名字 + 里程碑标题/描述实时过滤
+  document.getElementById('activitySearch').addEventListener('input', function(e) {
+    state.search = (e.target.value || '').toLowerCase();
+    renderLeaderboard(state.cache[state.range] || null);
+    renderMilestones(state.cache[state.range] || null);
   });
 
   // ═══════════════════════════════════════════
-  // Initial Render
+  // Initial Load（默认 30d=页面默认激活药丸）
   // ═══════════════════════════════════════════
-  renderKPI();
-  renderTrendChart();
-  renderCategories();
-  renderHeatmap();
-  renderLeaderboard();
-  renderMilestones();
+  loadData('30d');
+  renderPluginGrowth(); // v0.2.59.1：插件增长卡片独立拉取（不随 activity 缓存/离线态走）
 
-  // v0.2.54.0 i18n：语言切换重渲钩子（链式，照 premium.html 模式；
-  // renderTrendChart 每次重建 .trend-bar 元素，attachTooltips 无监听器累积问题）
+  // v0.2.58.16：语言切换重渲钩子（链式，照旧模式；缓存命中才重渲——保真实数据不回落假数据）
   var __mnPrevRerender = window.__mnI18nRerender || function () {};
   window.__mnI18nRerender = function () {
     __mnPrevRerender();
-    renderKPI();
-    renderTrendChart();
-    renderCategories();
-    renderHeatmap();
-    renderLeaderboard();
-    renderMilestones();
+    if (state.cache[state.range]) renderAll(state.cache[state.range]);
+    else if (state.failed) renderOffline(); // 离线态也随语言切换重渲（boot 时 T() 尚 null 只出英文兜底）
   };
 
 })();
+
 </script>
 <script src="../assets/js/transitions.js"></script>
 <script>/* pre-stagger 兜底（切页闪修复 08-28）：若 transitions.js 未执行，1.6s 后解除隐藏防页面永久空白 */

@@ -1,0 +1,47 @@
+  ✅ F1 静态：click 无「再次点击=单独选中」切换分支（恒 selectCard）+ dblclick 单卡路径保留
+  ✅ F2 静态：refreshResizeHandles 整组分支（组框并集）+ onGroupResizeMove + commitGroupResize + beginResize isGroup
+  ✅ F3 静态：当前版本 v0.2.42.1 + FC v10.28.32.1（2026-09-14 贴齐缝修复轮复跑口径）+ buildDraft 链 v10.28.21 条目仍在
+  ✅ F4 静态：v10.28.25.1 慢双击容错（clickPairState）保留 + 行卡机制整体退役（snapshotGroupRows/pushGroupRows/resizeState.rows 全删）+ commitSingleResize 仍在
+  ✅ F5 静态：v10.28.26 墙模型泛化（snapshotGroupPartners/pushGroupPartners/origVisH 保留 + 右/左集合垂直重叠守卫）+ reassertRowWidths/alignGroupTops 退役
+  ✅ F6 静态：v10.28.32.1 贴齐缝保持——beginResize 组分支缝快照（xSeams/ySeams 双字段+隐藏成员跳缝）+ onGroupResizeMove 闭缝遍锚升序 + 组框隐藏成员过滤
+  ℹ CDP 就绪
+  ✅ S1 整组选中：8 手柄全可见 + nw 手柄锚定组框左上角（左缘-5px、上缘-5px）
+  ✅ S2 整组选中：旋转钮隐藏（整组无旋转）+ 手柄 rotation 0
+  ✅ S3 单击恒整组：点成员 flag → 整组选中（两成员 selected、无 group-single）；再点同一张仍是整组（旧切换已移除）
+  ✅ S4 单击切成员：点成员 shield → 整组（selectedCard 换卡但仍是整组）
+  ✅ S5 双击=单独选中：dblclick shield → .group-single + 只有 shield selected（单独选中唯一路径）
+  ✅ S6 e 边柄拖 +60px：两成员都变宽（span 各自量化）、西边（对边）左缘不动、北边不动、成员横缝贴齐 |≤1|（v10.28.32.1 贴齐缝；修前 +4 红——探针 cs=22 实测，旗右盾左方向）
+  ✅ S7 se 角柄拖 +40,+30：组框两轴变大（宽+高）、两成员尺寸两轴都变大（cs=22 量化 174→196/108→130 实证）、成员横缝贴齐 |≤1|（该拖法修前缝被去重叠链救回 0——红→绿实证由 W 组承担）
+  ✅ S8 组缩放提交：成员 dataset 跨度已落（span=尺寸不变量：(w+gap)/colSpan 全成员一致）+ 组背景仍存在 + 成员横缝贴齐 |≤1|
+  ❌ S9 等比锁成员：se 角柄拖后 flag 宽高比例保持 1.6（两轴取小倍率）
+  ✅ S10 双击单卡选中后手柄出现（角手柄 4 个起）+ e 边柄拖：只有 shield 变宽、flag 不动（单卡路径回归）
+  ✅ S11 草稿往返：组缩放（e+60 去重叠后）saveDraft → 重载 → 成员跨度/位置/并排布局随草稿（不再被 reflow 叠成列）+ 组背景仍在
+  ✅ S12 未分组卡单击照常选中（普通选中回归）
+  ✅ S13 版本徽章：右下角 badge 渲染 FC v10.28.32.1（最新构建标识）
+  ❌ S14 慢双击（600ms 两击 detail 各 1）→ 单独选中（gs:1/sel:1）
+  ❌ S15 慢+8px 漂移双击（500ms 间隔）→ 单独选中（{"gs":0,"sel":1,"modal":true}）
+  ✅ S16 两击隔 900ms（窗口外不误配对）→ 仍整组（gs:0/sel:2）
+  ❌ S17 快双击国旗成员 → 单独选中 + 不弹图源（{"gs":0,"sel":1,"modal":true}）
+  ✅ S18 列成员 s 柄下拖 +45 → 下方卡墙让位 flush（gap≈0 无重叠）
+  ✅ S19 列成员 s 柄上收 -30 → 下方卡拉回仍 flush（gap≈0）
+  ✅ S20 A 东扩 +60 → B 整列让位（右移 >40 且与 A 右缘 flush 无重叠）
+  ✅ S21 A 东收 -30 → B 回贴（左移 >10 且仍 flush 无重叠）
+  ✅ S22 3列组中列东扩 +60 → 右列让位（右移 >40）、左列不动、BC flush
+  ✅ S23 B 西扩 -40 → A 让位左移（>30）且仍与 B 左缘 flush
+  ✅ S24 台阶组 A 东扩 +60 → B 让位 flush A（右移 >40）、台阶下 C 完全不动且宽保持（斜对不误推）
+  ✅ S25 台阶下 C 自定义窄宽不抢回（C 东收 -60 后 A 东扩 → C 宽保持自定义）
+  ✅ S26 同列叠堆上卡南扩 +45 → 下卡让位 flush（gap≈0）
+  ✅ S27 Escape 中途提交同样让位（B 右移 >40 且 flush）
+  ✅ S28 L 形草稿往返：3 卡重载逐卡几何+gid 零差异（保形不塌）+ 背景在 + C 仍贴 B 底、宽=B 宽
+  ✅ W1 整组 e 拖 +120 → A/B 横缝 |≤1|（修前 +3.1）
+  ✅ W2 整组 se 拖 +45/+35 → A/B 横缝 |≤1| 且两卡变高（修前 +6.4）
+  ✅ W3 三列链整组 e 拖 +60 → 两处横缝都 |≤1|（级联收敛）
+  ✅ W4 底并整组 s 拖 +45 → 纵缝 |≤1|（修前 +4.1）
+  ✅ W5 L 形整组 e 拖 +60 → 横缝+纵缝 |≤1| 且两两不重叠（修前纵缝 +1.1；不断言 C.x==B.x——阶梯列对齐已知限制）
+  ✅ W6 等比锁旗整组 se 拖 +120/+20 → 横缝 |≤1|（修前 +40.1；不断言比例）
+  ✅ W7 整组 e 拖 -20 收缩 → 缝 |≤1| 且整组变窄（修前 +9.7）
+  ✅ W8 整组 nw 拖 -40/-30 → 缝 |≤1| 且组框左/上外移（修前 +6.4）
+  ✅ W9 整组 se 拖 → saveDraft → 清草稿重载 → 成员几何 ±1 且横缝 |≤1|（缝隙不进草稿）
+  ✅ Z 零 console error
+
+  ── 结果: 40/44 全绿 ❌

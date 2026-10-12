@@ -1,0 +1,11 @@
+v0.2.49.3 后端黑白主题暗色白底白字第二轮（rev 00235-ltg）— 2026-09-17
+用户：「我在黑白主题的深色模式下看后端还是一样是有白底白字的问题尤其是按钮」
+真身：第一轮（00234-vs4）admin 修复只盖了静态可见的登录门 #gateLogoutBtn；登录后面板 JS 渲染的裸 .btn（顶栏退出登录、← 返回列表、标记、标记跟进、应用、分页上一页/下一页）全部漏网。
+根因：admin 基础 .btn 无背景规则 → Chrome UA buttonface 白底 rgb(240,240,240) + 继承浅字 = 白底白字（UA buttonface 通病，all accents 通用非 mono 独有）。
+修法：docs/admin/index.html 页内局部规则泛化：
+  :root[data-theme="dark"] .btn:not(.btn-primary):not(.btn-secondary):not(.btn-outline):not(.btn-ghost) { background: var(--color-surface-container-high); color: var(--color-on-surface); }
+电池：新 admin-dark 22/22（smoke-admin 拓扑 + 25 用户分页 + 真实登录 + wow2 扫描器逐区块；mono 暗 17 + 蓝暗回归 4 + 控制台零错误）+ monodark 29/29 + mono-flash 22/22 + smoke-admin 49/49 全绿。
+部署：docker build/push exit 0（digest sha256:99ffefd848301f15d3efb1b1b2dddfe5c1ebc6a5cddaa87d49be053ac647b4e8）；gcloud.ps1 run deploy exit 0 → rev 00235-ltg；env 30 条从 describe 全量重建（envArg 10600 字符、含逗号值 0）。
+curl 链 3/3：health 58 表 ok / site-config 双版本 v0.2.49.3+v10.28.35.4 / admin/index.html 泛化裸 .btn 暗色规则在线。
+零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css.js；FC v10.28.35.4 不变。
+commit：docs/ 两文件（admin/index.html + site-config.js），不 push。

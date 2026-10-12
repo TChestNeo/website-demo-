@@ -1,0 +1,18 @@
+═══ S 静态锚 ═══
+  ✅ S1 site-config：FC 52.5 赋值 ×1 + 52.4 赋值零残留 + 站点 58.28 ×1 + changelog 头 52.5/52.4/52.3 各 ×1 + rev 前缀锚各 ×1
+  ✅ S2 编辑器：52.4/52.5 注释原话 + fine 块锚（右缘 calc 带展开 Q弹/胶囊让位 46px/双动画挂接/位移四站/画外停拍/Q弹五站/展开 Q弹关键帧/40×40 同高）+ 旧锚零残留（52.4 浅出画 -40px/58% 拉长站/左缘 6px 规则/margin-left 让位/单动画行/38px 让位/32×32）+ 内联宽度搬出零残留
+  ✅ S3 编辑器：旧轮锚全保留（49.1 :has 折叠态/49.2 正圆 50%/52.2 纯白+暗色还原/粗指针基态 266px 口径）
+═══ B 编辑器 CDP ═══
+  ✅ B1 展开态：按钮 left 214px/top 12px 正圆 40×40（=搜索胶囊同高）纯白 rgb(255,255,255)+blur 摘除/◂/面板 260px
+  ✅ B1b 搜索胶囊让位：margin-left 0/左缘 12px（=面板内边距）/宽 180~200px（244-46-滚动条 6）/按钮左缘 214 留 ≥10px 缝
+  ✅ B2a 折叠双动画命中：animationName 含 fcToggleOutSpring+fcToggleQSquash + getAnimations≥2 + 轨迹 ≥60 采样 + 起步右缘（前 12 采样最大 >100）
+  ✅ B2b 位移出画加深+画外停拍：min ≤ -70 深出画 + 画外停拍 ≥8 采样（left≤-75）+ 回弹过冲 maxAfterMin ≥ 8 + 先出画后回弹（minIdx<maxIdx）+ 落定 6px
+  ✅ B2c Q弹缩放：scaleX 峰值 ≥1.25 弹出拉长 + scaleX 谷值 ≤0.9 蓄力压缩 + scaleY 谷值 ≤0.75 纵向压扁 + 拉长峰值晚于出画谷（回弹时拉长）
+  ✅ B2d Q弹回规：终态 scale 回规 1（|a-1|≤0.03+|d-1|≤0.03）+ 面板宽 0 + 按钮仍纯白 + ▸
+  ✅ B3 展开回来：滑回中途采样 6<left<214 + 展开 Q弹命中（animationName 含 fcToggleInQSquash+scaleX 峰值 ≥1.15）→ 落定 214px/◂/面板 260px/scale 回规 1
+  ✅ B4 再折叠：双动画重触发（双名命中+getAnimations≥2）→ 落定 6px
+  ✅ B5 搜索过滤：输入 flag 过滤生效（可见卡 ≤3 张且含 National Flag 或零卡）
+  ✅ B6 暗色主题：按钮还原 rgb(32,32,56) 实心 → 回亮色纯白恢复（52.2 规则在新位置零回归）
+  ✅ E 零异常（Runtime exception + 控制台 error 全滤噪声后）
+
+═══ ALL GREEN — 14/14 ═══

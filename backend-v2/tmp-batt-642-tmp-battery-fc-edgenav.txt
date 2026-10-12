@@ -1,0 +1,26 @@
+═══ S 静态锚 ═══
+  ✅ S1 site-config：52.1 赋值 ×1 + 52.0 赋值零残留 + changelog 头 52.1/52.0 各 ×1 + rev 占位 00369-XXX/00370-??? 各 ×1 + 站点恒 58.28
+  ✅ S2 编辑器锚 [class="subnav" data-slider id="fcEdgeTabNav"] = 1
+  ✅ S2 编辑器锚 [subnav-pill active" id="fcEdgeTabAll"] = 1
+  ✅ S2 编辑器锚 [data-i18n="fc.edge.tabMy">我</button>] = 1
+  ✅ S2 编辑器锚 [<script src="../assets/js/subnav.js"></scrip] = 1
+  ✅ S2 编辑器锚 [.fc-edge-nav .subnav { flex: 1; }] = 1
+  ✅ S2 编辑器锚 [.fc-edge-nav .subnav-pill { flex: 1; }] = 1
+  ✅ S2 编辑器锚 [.fc-edge-nav .segmented-control] = 0
+  ✅ S2 编辑器锚 [function edgeNavResync()] = 1
+  ✅ S2 编辑器锚 [setTimeout(edgeNavResync, 320)] = 1
+  ✅ S2 编辑器锚 [>My</button>] = 0
+  ✅ S3 i18n：tabMy 键 ×12 语 + zh/zh-Hant=我 各 ×1 + en=My ×1（12 语零英文混杂）
+═══ B 编辑器 CDP ═══
+  ✅ B1 抽屉 nav = 平台 subnav 同款：data-slider + subnav-pill 双钮 + subnav.js 注入白胶囊/双 clone/blob
+  ✅ B2 初始高亮对齐全部（style left/width=offset；全部 active/我非 active）
+  ✅ B3a 200ms 中程：computed left 介于两 pill 间（白胶囊真实滑动实证）
+  ✅ B3b 750ms 归位我：高亮=我 offset + active 互换 + paneMy 显示/paneAll 隐藏
+  ✅ B4 点回全部：高亮归位全部 + active 复原 + paneAll 显示/paneMy 隐藏
+  ✅ B5 zh 标签：全部/我（My 已全语言化）+ bold clone 同文案
+  ✅ B6 en 重载：标签 All/My + clone 同文案
+  ✅ B7 程序化 setTab(my)：观察器动画归位我 + pane 切换
+  ✅ B8 关开抽屉：IO 重对齐（高亮=全部 offset 且 open 复原）
+═══ E 零异常 ═══
+  ✅ E 零异常（0 原始 / 0 噪声后）
+🎉 22 ✅ / 0 ❌

@@ -1,0 +1,32 @@
+  ✅ F1 ethereal 暗色隐藏规则整体移除（09-10 反转）+ 54.6 注释在位
+  ✅ F2 ethereal mono 暗色横幅翻黑族+头像灰环规则移除、AI 悬浮球保留
+  ❌ F3 sidebar.js 两处内联渐变固定 #4648d4（var(--color-primary) 零残留）+ 头像白环在位
+  ✅ F4 个人页横幅 9 处垫底固定 #e6e8ea（默认/bg-default/6 玻璃预设/glass-bg 兜底）  9 处：8 横幅垫底+1 边缘默认填充色块
+  ✅ F5 6 玻璃预设逐个固定垫底
+  ✅ F6 编辑弹窗 3 处预览兜底固定（var(--lg-bg, #e6e8ea) ×4 含 glass-bg 兜底）
+  ✅ F7 个人页头像环固定 #f7f9fb（var(--color-surface) 零残留）
+  ✅ F8 pagebg-custom 色块零触碰（全文件仅剩 1 处 var 垫底=页面背景示意块，非横幅）
+  ✅ F9 41 页内联块刷新（index/个人页/admin 暗色隐藏规则+mono 黑族均无、54.6 注释在位）
+  ✅ F10 site-config v0.2.55.0 + changelog 用户原话 + FC v10.28.36.1 不动
+  ✅ F11 messages 头像族 11 个 msg-avatar 类 + 头像行零 var(--color-) 残留  msg-avatar=11 头像行=11
+  ✅ F12 messages mono 暗色规则改 :not(.msg-avatar) 豁免（09-17 注释保留）
+  ✅ F13 messages 头像固定色 11 处（#4648d4×7 + #8127cf×4）
+  ✅ S1 亮色：横幅恒靛蓝渐变+头像恒白环  linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196)) / rgb(255, 255, 255)
+  ✅ S2 暗色：同亮色（09-10 隐藏规则已解除）  linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196)) / rgb(255, 255, 255)
+  ✅ S3 mono 亮色：同亮色（内联 var(--color-primary) 已固定）  linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196)) / rgb(255, 255, 255)
+  ✅ S4 mono 暗色：同亮色（黑族/灰环规则已移除）  linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196)) / rgb(255, 255, 255)
+  ✅ S5 访客模块横幅 mono 暗色也恒靛蓝渐变  linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196))
+  ✅ P1 亮色：横幅垫底+头像环同亮色  rgb(230, 232, 234) / rgb(247, 249, 251)
+  ✅ P2 暗色：同亮色（垫底固定不透明 #e6e8ea）  rgb(230, 232, 234) / rgb(247, 249, 251)
+  ✅ P3 mono 亮色：同亮色  rgb(230, 232, 234) / rgb(247, 249, 251)
+  ✅ P4 mono 暗色：同亮色  rgb(230, 232, 234) / rgb(247, 249, 251)
+  ✅ P5 glass-rose 预设暗色：横幅垫底同亮色  rgb(230, 232, 234) / rgb(247, 249, 251)
+  ✅ P6 edge paper 边缘态暗色：横幅垫底同亮色+剪影在位  rgb(230, 232, 234) / clip=url("#paper-edge-clip")
+  ✅ M1 亮色：Messages 头像恒靛蓝/紫固定色  rgb(70, 72, 212),rgb(129, 39, 207),rgb(70, 72, 212),rgb(70, 72, 212)
+  ✅ M2 暗色：同亮色  rgb(70, 72, 212),rgb(129, 39, 207),rgb(70, 72, 212),rgb(70, 72, 212)
+  ✅ M3 mono 亮色：同亮色  rgb(70, 72, 212),rgb(129, 39, 207),rgb(70, 72, 212),rgb(70, 72, 212)
+  ✅ M4 mono 暗色：同亮色（msg-avatar 豁免 09-17 翻深规则）  rgb(70, 72, 212),rgb(129, 39, 207),rgb(70, 72, 212),rgb(70, 72, 212)
+  ✅ Z 零 JS 错误  
+
+=== bannerfixed: 28/29 ===
+

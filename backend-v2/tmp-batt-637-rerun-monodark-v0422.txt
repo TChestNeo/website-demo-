@@ -1,0 +1,31 @@
+  ✅ F1 版本双线 v0.2.54.0 / v10.28.36.1 + 注释块（49.2→49.3 白底白字第二轮·按钮）
+  ✅ F2 暗 mono 黑族令牌规则（ethereal.css）：selector + 中性黑值（#0b0b0d 家族，蓝 tint 已除）
+  ✅ F3 白底白字按钮族规则（ethereal.css）：active 族+tim-search+lib-icon:hover → #32324a 白字（钦定配方）
+  ✅ F4 进度圆点+toast 翻黑族规则（ethereal.css）（#32324a 圆点 / #1a1a1e toast 白字）
+  ✅ F5 admin 裸 .btn 泛化规则（v0.2.49.3 第二轮：面板 JS 渲染按钮族全盖；:not 排除变体不盖 btn-primary 暗色规则）
+  ✅ M1a html 暗 mono 生效  accent=mono theme=dark
+  ✅ M1b 令牌全翻黑族  bg=#0b0b0d card=rgba(21, 21, 25, 0.55)
+  ✅ M1c body 中性黑 rgb(11,11,13)  rgb(11, 11, 13)
+  ✅ M1d 卡片计算态 rgb(16,16,19)（58.26 首页卡片不透明化——旧玻璃 rgba(21,21,25,0.55) 撤）  rgb(16, 16, 19)
+  ✅ M1e toast 翻黑族 rgb(26,26,30)  rgb(26, 26, 30)
+  ✅ M1f 整页零蓝 tint 深底  干净
+  ✅ M1g 整页零白底白字（半透明覆层豁免）  干净
+  ✅ M2a 网格画布翻黑族 rgb(10,10,12)
+  ✅ M2b col-btn.active = #32324a 白字
+  ✅ M2c tim-search-btn = #32324a 白字
+  ✅ M2d pbg-ratio-btn.active = #32324a 白字
+  ✅ M2e 编辑器 toast 翻黑族 rgb(26,26,30)  rgb(26, 26, 30)
+  ✅ M2f 蓝 tint 仅钦定按钮族 #32324a（无其他蓝底）  button.col-btn.active:rgb(50, 50, 74), button.col-btn.active:rgb(50, 50, 74), button.tim-search-btn:rgb(50, 50, 74), button.pbg-ratio-btn.active:rgb(50, 50, 74), button.fc-edge-tab.active:rgb(50, 50, 74)
+  ✅ M2g 整页零白底白字（半透明覆层豁免）  干净
+  ✅ M5a messages 按钮/气泡族翻 #32324a 白字（≥4 个）+ msg-avatar 头像族恒亮固定色（4 个）  n=5 an=4
+  ✅ M5b explore .world-code-chip 深灰渐变白字（≥2 个）  n=6
+  ✅ M5c help .step-num 深灰渐变白字（4 个）  n=4
+  ✅ M5d registry .stepper-btn 暗 mono 深面浅字（≥4 个）  n=12
+  ✅ M5e admin 裸 .btn 退出登录 暗色翻深面（白底白字全暗修复）  {"bg":"rgb(29, 29, 32)","color":"rgb(226, 226, 232)"}
+  ✅ M6a 暗蓝 .stepper-btn 深面 #282848 浅字（无 mono 不误伤）  n=12
+  ✅ M3a 亮 mono body 保持亮底  rgb(247, 249, 251) L=0.976
+  ✅ M3b 亮 mono 令牌不受暗黑族污染  bg=#f7f9fb
+  ✅ M4a 无 mono accent 时蓝家族原样 #161625  accent=null bg=rgb(22, 22, 37)
+  ✅ Z 全程零 console error  干净
+
+🎉 全部通过 29/29

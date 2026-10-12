@@ -1,0 +1,9 @@
+v0.2.45.0 / FC v10.28.34.0 — FC 三页合一 Douyin 式 URL 视图切换（小改动位 44→45 / 小更新位 33→34·新功能轮）
+- 用户：「把 FuildCanva 首页除了编辑页面以外的页面切换方式改成这个链接的结构」（参考抖音用户页：一条路径+查询参数决定显示哪个 tab；只参考结构不访问链接）；范围钦定「全部并进一个页面，但除了 editor 的页面是独立的那个」
+- 方案：analytics/articles 并入 fluidcanvas.html 成为 ?view=analytics（&tab=&period=）/ ?view=articles（&filter=&sort=）视图；首页既有三视图（dashboard/content/upload）同步 URL 化——pushState 前进后退、刷新保留、旧 #hash 首次 replaceState 规范化；两旧页改 ~12 行重定向 stub（location.replace + meta refresh 兜底，零后端）
+- 合并方式：一次性 Node 拼接脚本 tmp-build-fcmerge.js（A1-A10 锚点操作，每锚点断言恰一次防漂移）；switchView 五路化 + 锁守卫改 `if (_switchLock && !instant)`（修 popstate 撞 200ms 交叉淡化丢切换）；analytics 每次进入 re-render（账户切换传播）、renderContent 改名避重名、删四全局声明读主页面；articles 内联 onclick bug 改 #artList 事件委托 + 批量发布补 toast
+- 门禁变化：analytics/articles 对访客随 fc-guest 锁屏（与编辑器一致，电池 K 锁定为预期）
+- 零后端、ethereal 零改动无需 inline-css
+- 电池 fcmerge 52/52 新（F0 静态 5 + A-J 12 场景 + K guest 新 spawn + L 零异常/零 console error + M 390px 五视图未裁剪溢出不宽于既有基线——M 实证修 #periodTabs 窄屏换行，一行 CSS 同步回拼接脚本）
+- 部署一次 exit 0；curl 链 8/8（health 58 表 / site-config 双版本 / fluidcanvas.html 200 / ?view=analytics 含 periodTabs / ?view=articles 含 artStats / 两 stub / editor 200 回归）
+- rev 00221-vz9

@@ -1,0 +1,7 @@
+/* ── 恢复段 1（原内联块行 292..297）── */
+/* 2026-09-15 用户「FC 首页左侧菜单上方有一个白白的东西？在深色模式下才看得见」——真身=3D 菜单卡
+   顶部 inline box-shadow 白高光线 inset 0 1px 0 rgba(255,255,255,0.8)（hover 内联更亮到 0.9；
+   扫描探针+像素分析实证：左列唯一非文字亮块 72×1px 峰值亮度≈230，亮色卡白线隐形、暗色卡上独亮）。
+   暗色灭顶线（外侧深投影保留），!important 压过内联 rest/hover 两态，亮色零触碰 */
+:root[data-theme="dark"] .tilt-container:not(.card) {
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.12), 0 4px 16px -4px rgba(0, 0, 0, 0.06) !important;

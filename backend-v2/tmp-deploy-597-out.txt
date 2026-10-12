@@ -1,0 +1,19 @@
+﻿env count: 30 (zero new keys)
+powershell : Deploying container to Cloud Run service [mnationworld-web] in project [project-02d050ab-8105-448e-bac] re
+gion [asia-southeast1]
+At line:1 char:302
++ ... tch {} } }; powershell -ExecutionPolicy Bypass -File backend-v2/tmp-d ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Deploying conta...sia-southeast1]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Deploying...
+Setting IAM Policy...............done
+Creating Revision......................................................................................................
+.................done
+Routing traffic.....done
+Done.
+Service [mnationworld-web] revision [mnationworld-web-00297-gfn] has been deployed and is serving 100 percent of traffi
+c.
+Service URL: https://mnationworld-web-641398703651.asia-southeast1.run.app
+deploy exit code: 0

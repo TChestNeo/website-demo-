@@ -1,0 +1,21 @@
+
+services:
+  # 服務 1：你的應用程式
+  web_app:
+    image: nginx:alpine # 使用當前目錄下的 Dockerfile 建立鏡像
+    ports:
+      - "3000:3000"          # 對應 Port (主機:容器)
+    environment:
+      - NODE_ENV=production
+    restart: always
+
+  # 服務 2：資料庫服務
+  database:
+    image: postgres:15-alpine # 直接使用 Docker Hub 現成鏡像
+    environment:
+      - POSTGRES_PASSWORD=mysecretpassword
+    volumes:
+      - db_data:/var/lib/postgresql/data # 資料持久化保存
+
+volumes:
+  db_data: # 宣告使用的資料卷

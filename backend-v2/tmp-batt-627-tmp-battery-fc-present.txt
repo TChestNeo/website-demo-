@@ -1,0 +1,12 @@
+  ✅ E1 1280 编辑态：169 预设 cellSize=20 + cols 恒 115 + 画布盒 2528 全覆盖 + 横向拉条（scrollW>clientW）  {"actual":115,"cs":20,"canvasW":2528,"scrollW":2576,"clientW":992}
+  ✅ E2 480 窄窗：cols 仍恒 115 不缩小（v10.28.39.0 固定横向，旧自适应 12 格已死）+ 画布仍 2528 + 可横滚  {"actual":115,"cs":20,"canvasW":2528,"scrollW":2552,"clientW":214} scrollLeft=200
+  ✅ E3 回 1280：cols 恒 115（固定横向往返零漂移）+ 零自动建卡（无冻结副作用）  {"actual":115,"cs":20,"canvasW":2528,"scrollW":2576,"clientW":1014} cards=0
+  ✅ E4 3840 超宽窗：cols 仍恒 115 不再增长（「这是最大值」实证）+ cellSize 仍 20  {"actual":115,"cs":20,"canvasW":2528,"scrollW":3574,"clientW":3574}
+  ✅ V1 查看态 640 窄窗：fit1to1 完整舞台自洽（s=min(availW/2530,availH/stageH)、scaler=stage×s、canvas 0,0 零平移）  scaler.w=633 left=0px tf=scale(0.25)
+  ✅ V2 回 1280：再 fit 自洽 + 哨兵草稿未被 resize 触碰（byte 相等）  scaler.w=768 tf=scale(0.303497)
+  ✅ V3 查看镜像目录 4 条目（v0.2.58.21 列全部卡：content c1 label + flag c2 label + c3/c4 文字卡）
+  ✅ E4 全程零 Runtime exception  干净
+  ✅ E5 全程零 console error  干净
+
+🎉 全部通过 9/9
+

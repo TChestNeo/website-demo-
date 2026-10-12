@@ -1,0 +1,23 @@
+  ✅ F0a site-config：FC v10.28.47.4 + rev 00317- 占位 + 站点版本恒 v0.2.58.11
+  ✅ F0b 编辑器页字典三件套挂载 + data-i18n 规模（≥180 文本 + ≥40 title + ≥8 placeholder）  i18n=199 title=45
+  ✅ F0c 落地页字典三件套挂载 + data-i18n 规模（≥45）  i18n=48
+  ✅ F0d 运行时：MN_I18N 在场 + 12 语言 + zh 默认解析 + lang 属性
+  ✅ F1 zh 默认 chrome 逐字：视口 ·/模板/图层/历史/保存草稿/发布 + 徽章 草稿 + 状态 就绪 + 0 词 0 字符  {"vp":"视口 ·","tpl":"模板","ly":"图层","hist":"历史","sv":"保存草稿","pub":"发布","hs":"草稿","ss":"就绪","wc":"0 词","cc":"0 字符"}
+  ✅ F2 资产面板：国旗/国徽/内容卡 zh 显示 + data-asset/data-label 英文 payload 恒在 + 筛选占位 zh  {"flag":{"label":"国旗","asset":"flag","payload":"National Flag"},"emblem":{"label":"国徽","asset":"shield","payload":"Emblem"},"content":{"label":"内容卡","asset":"content","payload":"Content Card"},"ph":"筛选资产…"}
+  ✅ F3 setLang 实时切换：en→Save Draft/lang/stored 三写 + zh→保存草稿 恢复  {"en":{"sv":"Save Draft","lang":"en","gl":"en","stored":"en"},"zh":{"sv":"保存草稿","lang":"zh","gl":"zh"}}
+  ✅ F5 输入中切换：焦点+文本保留（画布重建被守卫跳过）+ 占位符随语言换  {"focus":true,"val":"测试标题","ph":"Article Title"}
+  ✅ F6a 规范名草稿重载：显示层 国旗 + dataset.label 英文 payload 恒等  {"display":"国旗","stored":"National Flag"}
+  ✅ F4 撤销栈跨语言存活：改名后可撤销 → en 下撤销显示 Flag（显示随语言）→ 重做回 自定义名 → zh 下自取名原样  {"pre":{"undo":true,"label":"自定义名"},"en":{"label":"自定义名","stored":"自定义名"},"undo":{"label":"Flag","stored":"National Flag"},"zh":{"label":"自定义名","stored":"自定义名"}}
+  ✅ F6b 存→重载 label 恒等：草稿存英文 payload National Flag（显示文本不入数据）+ 重载后显示 国旗/payload 恒等  {"saved":{"label":"National Flag"},"reloaded":{"display":"国旗","stored":"National Flag"}}
+  ✅ F7a 查看模式 notFound：zh 占位标题/原因 + 返回文章列表 zh  {"h2":"ART-MISSING","reason":"这篇文章不存在，或已被删除。","back":"← 返回文章列表"}
+  ✅ F7b demo 种子查看：卡面 国旗 + TOC 条目 zh 国旗 + payload 恒等 + 本地草稿零触碰  {"label":"国旗","stored":"National Flag","toc":"国旗","draftTouched":true}
+  ✅ F8a 落地页 zh 默认 chrome + Edit/View title 恒英文（委托陷阱守约）  {"open":"打开编辑器","pill":"文章","editTitle":"Edit","viewTitle":"View","lang":"zh"}
+  ✅ F8b subnav 克隆同步：en 切换后克隆 textContent 随药丸更新  {"pill":"Articles","clone":"Articles"}
+  ✅ F8c Edit 委托点击仍工作：英文 title 按钮 → 打开编辑器
+  ✅ F9 zh-Hant OpenCC：視口 ·/圖層 + 卡面 國旗（重建随语言）+ payload 恒等  {"vp":"視口 ·","ly":"圖層","label":"國旗","stored":"National Flag","lang":"zh-Hant"}
+  ✅ F10 12 语言循环：lang 属性每步跟进 + 末回 zh 卡面 国旗/payload 恒等  {"steps":12,"tail":{"allOk":"PLACEHOLDER","label":"国旗","stored":"National Flag","lang":"zh"}}
+  ✅ E1 全程零 Runtime exception  干净
+  ✅ E2 全程零 console error  干净
+
+🎉 全部通过 20/20
+

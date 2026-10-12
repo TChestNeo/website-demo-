@@ -1,0 +1,12 @@
+  ✅ U1 静态锚：function openUserPop 1 + slati-user-pop-style 2 + preventDefault 2（代码+注释）+ e.stopPropagation() 1 + .user-info-bar a 1 + initUserPopWiring 2 + SlatiSettings.open 3 + e.button !== 0 1  pop=1 wire=2 stop=1
+  ✅ U1 i18n 6 键：sidebar.pop 6 键单引号 ×11（66）+ zh-Hant 双引号 ×1（6）  sq=11 dq=1
+  ✅ U2 点击卡片：不跳页（location 不变）+ 弹窗全件在位（横幅/头像/名字/公民号/bio/性别/统计/两按钮）+ free 无 tier 徽章  {"wired":true,"hrefSame":true,"name":"电池用户","cid":"CIT-000101","tier":null}
+  ✅ U3 回填：GET /social/users/USR-000101 恰 1 + 关注 3/粉丝 2/帖子 5 + 加入时间 2026-01-15 + 简介/性别被服务器真值替换 + tier 徽章 premium  {"calls":1,"f":"3","fo":"2","p":"5","joined":"加入时间 2026-01-15","joinedVis":true,"gender":"性别: Female","name":"电池用户","bio":"服务器简介","tier":"premium"}
+  ✅ U4 离线：GET 尝试恰 1（404）+ 统计恒 "—" + 加入时间保持隐藏 + 简介仍本地值 + 弹窗仍开着  {"calls":1,"f":"—","bio":"本地简介"}
+  ✅ U5 「编辑资料」：SlatiSettings.open 恰 1 + 设置弹窗在场 + 信息弹窗已关（不跳页）  {"calls":1,"settings":true,"popGone":true}
+  ✅ U6 「查看主页」href = ../pages/community-profile.html?id=USR-000101  ../pages/community-profile.html?id=USR-000101
+  ✅ U7 三路关闭：ESC + X 按钮 + 点 backdrop 均移除弹窗  {"esc":true,"x":true,"bd":true}
+  ✅ U8 演示用户：零锚（点不了）+ 零弹窗 + 名字仍渲染  {"anchor":false,"pop":false,"name":"演示用户"}
+  ✅ E 全程零异常零 console error（噪声已滤）
+
+🎉 全部通过 10/10

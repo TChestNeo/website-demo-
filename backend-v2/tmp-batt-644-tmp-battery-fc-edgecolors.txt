@@ -1,0 +1,26 @@
+═══ S 静态锚 ═══
+  ✅ S1 site-config：51.1 赋值 ×1 + 51.0 赋值零残留 + changelog 头 51.1/51.0/50.0 各 ×1 + rev 占位/历史各 ×1 + 站点恒 58.26
+  ✅ S2 编辑器 30 锚全中（样本配色/segmented/线型样本/无卡 toast/裸值放宽/正向反馈 UI）
+  ✅ S3 i18n：51.1 正向反馈 5 新键 ×12 语 + tabAll ×12 保留 + cardUnsupported ×0（T 键兜底中文）
+═══ B 编辑器 CDP ═══
+  ✅ B1 无选中卡点 My 条目：toast「请先选中一张卡片」（原静默零反馈=用户报告）
+  ✅ B2 nav subnav 结构：双钮 subnav-pill + 全部 active + data-slider + subnav.js 注入白胶囊/双 clone（滑动过渡由 edgenav B3a 专测）
+  ✅ B3a 样本 15 个 + 「无」= 虚线空盒（fc-edge-mini-none + 透明底 + 零内联 background）
+  ✅ B3b 纸样本 cardLayers 羊皮纸米黄（rgba(255,248,225,…)）+ 内联 --mini-clip
+  ✅ B3c 藏宝图样本棕金（rgba(129,92,49,…)）
+  ✅ B3d 科技1 样本暗蓝 HUD（rgba(10,22,40,…)）
+  ✅ B3e 油漆1 样本 PAINT_GRADS 红（#e63920→rgb(230, 57, 32)）
+  ✅ B3f 自定义剪影仍中性渐变（零内联 background + 紫渐变 70, 72, 212）
+  ✅ B4a 点 My：active 互换 + paneMy 显示 + paneAll 隐藏
+  ✅ B4b 点回全部：active 复原 + paneAll 显示
+  ✅ B5a 线型样本默认 #c8c8d0（rgb(200, 200, 208) 与卡片实际边框一致）
+  ✅ B5b 改红后线型样本跟随取色器当前色（rgb(255, 0, 0)）
+  ✅ B6a 打开弹窗=idle 态：左栏 fc-gen-state-idle+文本「AI 空闲」+灰灯 rgb(154,160,180)+反馈行隐藏+弹窗 active
+  ✅ B6b 生成中=thinking 态：蓝灯脉冲动画 fcGenPulse+文本「AI 思考中」+反馈行显示+三粒点显示+小字「正在生成…」
+  ✅ B6c 成功=success 态：绿灯 rgb(34,160,107)+文本「生成成功」+三粒点隐藏+小字「生成成功」+预览/保存显示
+  ✅ B6d border 裸值内环通过客户端 sanitize（预览 clip=evenodd 双环裸值原样）
+  ✅ B6e 保存进本地库（My 列表 2 条=B3f 自定义+border 新件；localStorage kind=border=1）
+  ✅ B7 失败=fail 态：红灯 rgb(229,72,77)+文本「生成失败」+小字「生成失败，请稍后再试」+toast 同文案
+═══ E 零异常 ═══
+  ✅ E 零异常（0 原始 / 0 噪声后）
+🎉 22 ✅ / 0 ❌

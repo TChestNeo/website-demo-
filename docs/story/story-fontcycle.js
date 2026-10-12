@@ -17,6 +17,10 @@
   try { reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
   if (reduced) { window.storyFontCycle.skipped = true; return; }
 
+  // v0.2.59.36：中文展示体轮转只对中文生效——其他语言跳过（拉丁字形不在这些字体内）
+  var dl = document.documentElement.getAttribute('data-lang');
+  if (dl && dl !== 'zh' && dl !== 'zh-Hant') { window.storyFontCycle.skipped = true; return; }
+
   var word = document.querySelector('[data-fc]');
   if (!word) return;
   window.storyFontCycle.ok = true;

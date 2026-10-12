@@ -1,0 +1,41 @@
+  ✅ A0 站点号 v0.2.54.0（v0.2.58.28）
+  ✅ A1 双栏结构齐备（card/left/right/layout）（{"card":true,"left":true,"right":true,"layout":true,"steps":3,"fields":5,"btn":true}）
+  ✅ A2 步骤指示 3 步（1 完成 / 2 活动 / 3 待办）（3）
+  ✅ A3 表单 5 组（名/性别/语言/生日/国家）+ Next Step 按钮（5/true）
+  ✅ B1 卡片横排（flex-direction: row）（row）
+  ✅ B2 卡片高度自适应（非 800px 定高；flex item 的 auto 被解析为 used 值）（787.516px）
+  ✅ B3 卡片 overflow visible（国家下拉不被裁）（visible）
+  ✅ B4 左栏宽 42%（403.2 vs 403.2）
+  ✅ B5 左栏顶/底与卡对齐（同排，未堆叠）（24.0/811.5 vs 24.0/811.5）
+  ✅ B6 右栏从左栏右缘起（并排非下方）（544.7 vs 544.7）
+  ✅ C1 蓝渐变底（135deg #4648d4→#3b3dc4）（linear-gradient(135deg, rgb(70, 72, 212), rgb(59, 61, 196))）
+  ✅ C2 左栏白字（步骤卡可见性前提）（rgb(255, 255, 255)）
+  ✅ C3 左栏内边距 64px（space-xl）（64）
+  ✅ C4 装饰圆 ::before 300px（300/50%）
+  ✅ C5 装饰圆 ::after 200px（200/50%）
+  ✅ C6 右栏内边距 64px（space-xl）（64）
+  ✅ C7 步骤卡在蓝板内（未溢出卡外）（step 444.9-646.9）
+  ✅ D1 Next Step 按钮在卡底之上（未被裁）（747.5 <= 811.5）
+  ✅ D2 Date of Birth 在卡底之上（未被裁）（659.5 <= 811.5）
+  ✅ D3 按钮可点（无遮挡）
+  ✅ E1 点击 → 国家菜单打开（true）
+  ✅ E2 国家列表完整（≥190 项，无裁切只数类）（197）
+  ✅ E3 菜单不超出视口（高 900）（803.1）
+  ✅ F1 名字回显 Battery Tester（Battery Tester）
+  ✅ F2 生日回显 2010-01-01（v0.2.6.2 修复回归）（2010-01-01）
+  ✅ F3 语言回显 中文 (Chinese)（中文 (Chinese)）
+  ✅ G1 性别栏是第二项（第 2 个 form-group 标签=当前语言字典值）（{"secondLabel":true,"star":"*","opts":3,"optTexts":"Male|Female|Other"}）
+  ✅ G2 三选项 Male/Female/Other（3/Male|Female|Other）
+  ✅ G3 标签带 * 红标（必填口径）（*）
+  ✅ G4 回显种子 gender=Male（Male）
+  ✅ G5 点开菜单 → 选 Female → 显示+收起+箭头复位（{"text":"Female","open":false,"arrow":""} open前=true）
+  ✅ G6 未选性别 → Next 报错且不跳页（{"shown":true,"text":"请选择性别","exp":"请选择性别","path":"/pages/onboarding-identity.html"}）
+  ✅ K1 移动端卡片竖排（column）
+  ✅ K2 移动端左栏全宽（312.0 vs 312.0）
+  ✅ H1 填全五字段 → Next Step 跳完成页（/pages/onboarding-complete.html）（/pages/onboarding-complete.html）
+  ✅ H2 formError 不显示（none）
+  ✅ I1 无运行时异常
+  ✅ I2 无 console error
+
+════════ 汇总 ════════
+通过 38 / 失败 0

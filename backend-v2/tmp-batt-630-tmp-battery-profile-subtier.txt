@@ -1,0 +1,7 @@
+── D0. 静态锚（页面/i18n/site-config/FC 不互通）──
+  ✅ D0 页面 58.22 件：sub-locked ×4（头像图库钮+横幅上传钮+横幅图库钮+CSS）+ blockGif ×4（声明+三拦截）+ 升级链接 id（头像 ×1/横幅 ×2 含 click 门查询）+ premium.html href ×3 + 金罩族（gold-lock-group ×4/gold-locked ×3/goldShimmer ×3）+ canGif ×7 + 三新键引用（bannerLocked ×2/imgUpgrade ×1/premGifUpgrade ×2）+ FC 图库弹窗加大（680px ×1/80px ×1）+ mono-charcoal ×3（sub-locked=4 goldGrp=4 goldLocked=3 canGif=7 bnLink=2 bannerLocked=2）
+  ✅ D0 i18n 6 新键 × 12 语块（gifLocked/libLocked/gifUpgrade/bannerLocked/imgUpgrade/premGifUpgrade 各 12）（gifLocked=12 libLocked=12 gifUpgrade=12 bannerLocked=12 imgUpgrade=12 prem=12）
+  ✅ D0 site-config：版本赋值 v0.2.58.24 + FC 48.0 在位 + changelog rev 00344-/00345- 各 ×1（58.22 单条目）（v58.22=1 fc48=1 r40=1 r41=1）
+  ✅ D9 FC 不互通（钦定③铁证）：fluidcanvas.html 源零 bannerUrl/banner_url（FC 频道主页不读 users.banner_url）（bannerUrl=-1 banner_url=-1）
+
+💥 TypeError: fetch failed

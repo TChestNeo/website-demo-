@@ -1,0 +1,13 @@
+  ✅ F1 静态：高光梯度全文件只剩 1 处（统计编辑面板·钦定保留）；卡面规则换 --divider-line/--card-layers
+  ✅ F2 静态：版本升位 v0.2.45.2 + v10.28.34.2（贴齐缝修复轮）+ 历史链锚仍在
+  ✅ F3 静态：buildDraft 链新条目 v10.28.20.3 adds NO new fields (卡框高光清除…
+  ℹ CDP 就绪
+  ℹ 铺卡完成: {"a":"c1","s":"c2","t":"c3","c":"c4"}
+  ✅ B1 浅色无高光+统一暗色边框：旗/内容/表格三卡 background-image none 且边框色=网格线色（--divider-line）
+  ✅ B5 回归：拖卡过程覆盖高亮仍恰好 1 个 .cell-hl（一体式高亮未受影响）
+  ✅ B3 合并后组背景卡面：无高光（background-image none）+ 四向 drop-shadow 描边栈=网格线色（--divider-line）
+  ✅ B2 深色模式：边框恰 = rgba(255, 255, 255, 0.08)（用户举例值）——未分组卡+组背景描边栈，且仍无高光
+  ✅ B4 版本徽章：右下角 badge 渲染 FC v10.28.34.2
+  ✅ Z 零 console error
+
+  ── 结果: 9/9 全绿 ✅

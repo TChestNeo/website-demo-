@@ -1,0 +1,41 @@
+v0.2.49.8 Messages 页动画掉帧优化轮（Request H；rev 00240-gs4；2026-09-17）
+
+用户原话：「现在是Messages 那边的动画有明显掉帧请优化一下」
+
+诊断链：
+- 探针 tmp-probe-msg-anim.js v2（transition/animation 事件开窗只计动画进行中帧、3 轮中位、暖机先行）
+  锁定：面板切换 0.55s 滑动 11-13 帧（60fps 应 33、均帧 51-65ms）、侧栏 width 折叠均帧 100ms、公告滚动 45% 帧 >20ms。
+- PerformanceObserver longtask：所有场景零长任务（主线程从不 >50ms）→ 成本全在合成/光栅侧，headless --disable-gpu
+  软件渲染管线无法验证 GPU 合成修复的真 FPS（noblur 注入 .card{backdrop-filter:none} 数值不变 = 帧节奏与内容无关实证）。
+- CDP Tracing 域 headless=new 零事件，弃用。
+
+修法七刀（全在 docs/pages/messages.html）：
+① #msgSlide { will-change:transform } 层提升（滑动=移动缓存位图不再逐帧重绘 3× 宽滑轨）
+② 三面板切换 opacity 渐隐 0.4s → 瞬时（渐隐让含磨砂卡的面板滑动期间逐帧重采背景；switchToPanel 的
+   style.opacity 0.3/1 保留只是不再过渡）
+③ announceList CSS mask 移除（mask 强制滚动/滑动逐帧重栅格列表区）
+④ 19 处 transition:all → 显式属性列表（.btn/.input-glass/.modal-card/.card-hover/.subnav-pill/.upload-zone/
+   .segmented-option/infoTab×5/群类型按钮×2/公告卡×2；公告卡只留 box-shadow 让 tilt 即时跟手；.nav-item 死规则删除）
+⑤ 侧栏折叠 width 0.3s ease → 0.25s cubic-bezier(0.22,0.61,0.36,1)（×2 convSidebar/groupSidebar）
+⑥ .msg-row.fade-up { will-change:transform,opacity }
+⑦ .card-hover 过渡移基类（悬停抬升双向平滑，原 :hover 单向）
+
+不修的（有意保留）：width 布局动画改 transform 方案（布局吸附权衡、真机上仅点击行为、曲线已锐化）、
+subnav.js 滑块 left/width、入场 stagger、磨砂玻璃本身（设计支柱需用户批准）。
+
+电池：
+- 新 tmp-battery-msg-anim.js 31/31（F0 静态 11 锚 + M1-M8 功能回归 + M9 6 窗口帧健康 minN≥4 + 零长任务 + Z 零错误；
+  M9 断言只留帧流+主线程干净两个诚实不变量——软件管线测不出合成收益，均值断言已按测量结论移除）
+- 回归 mono-flash 22/22 + monodark 29/29 + smoke-admin 48/48 全绿
+- 版本锚 v0.2.49.3→v0.2.49.8 已同步进两回归电池
+
+部署（rev 00240-gs4）：
+- 插曲：Docker Desktop 未运行 → 启动等引擎；首次 deploy 尝试踩 PS5.1 坑（命令拼 2>&1|Tee 把 gcloud 进度
+  stderr 包装成 NativeCommandError + EAP=Stop 中断脚本，未产生 revision）→ 去掉 2>&1 按模板原样重跑一次成功。
+  教训：deploy 脚本必须不带 2>&1 直跑。
+- docker build exit 0 → tag → token -p 直登 → push exit 0 → gcloud.ps1 run deploy（env 30 条从 describe
+  全量重建零新键）exit 0
+- curl 链 3/3：health 58 表 / site-config 双版本 v0.2.49.8+v10.28.35.4 / messages.html 修复标记在线
+  （msgSlide will-change=1、fade-up will-change=1、transition:all=0、opacity 渐隐=0、侧栏 0.25s=2、card-hover 基类=1）
+
+commit：中文、不 push；entrypoint.js 保持未提交；tmp-* 未跟踪。

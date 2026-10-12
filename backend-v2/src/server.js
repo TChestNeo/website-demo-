@@ -42,6 +42,8 @@ const { register: registerStaffSecurity } = require('./routes/staff/security');
 const { register: registerStaffSubscriptions } = require('./routes/staff/subscriptions');
 const { createBudget } = require('./moderation/budget');
 const blocklist = require('../data/blocklist.json');
+// v0.2.59.35 AI 请求排队层：共享并发槽位（高峰排队等位，超时降级/429）
+const { createAiLimiter } = require('./ai/limiter');
 
 const VERSION = '2.0.0';
 
@@ -72,9 +74,14 @@ function createServer(deps = {}) {
   // 顶层 budget = moderation.budget 同一实例——budget-alert 依赖 ctx.budget（v1 缺此键，
   // 每日 10:30 告警会 TypeError 被 cron 静默吞掉；v2 显式补齐）
   const budget = createBudget(db, cfg);
+  // v0.2.59.35：AI 并发槽（env AI_MAX_CONCURRENT / AI_WAIT_MS 可调；v0.2.59.36 默认 32）
+  const aiLimiter = createAiLimiter({
+    max: parseInt(cfg.aiMaxConcurrent || process.env.AI_MAX_CONCURRENT || '32', 10),
+    waitMs: parseInt(cfg.aiWaitMs || process.env.AI_WAIT_MS || '30000', 10)
+  });
   const ctx = {
     db, config: cfg, limiter, mailer,
-    budget,
+    budget, aiLimiter,
     moderation: {
       budget,
       fetchImpl: deps.fetchImpl || global.fetch,

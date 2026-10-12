@@ -29,6 +29,10 @@
  * 收窄为只认 CSS 关键帧动画（构造器/transitionProperty 双重过滤 CSSTransition）；欢迎卡
  * animate-fade-in-up 是 CSSAnimation 照常正确跳过——纯 bug 修复，所有动画一个不少，
  * 节奏/时长/缓动/双模式逐字不动。
+ * 2026-09-30 v0.2.58.23 悬停预加载（用户「为什么我在切换页面的时候会闪一下 然而我在抖音或者
+ * Youtube切换页面的时候并不会闪烁一下是不是没有做预先加载？」）：悬停站内链接 65ms 后
+ * <link rel="prefetch" as="document"> 预下载目标页消除切页白闪（多页应用跳页冷下载→预取后
+ * 点击命中缓存）；纯隐形性能层——切页动画/点击劫持/节奏时长缓动逐字零改动。
  */
 (function () {
   'use strict';
@@ -44,7 +48,7 @@
 
   var NAV_ORDER = {
     'index.html': 0,
-    'overview.html': 1, 'explore.html': 1, 'guidelines.html': 1,
+    'overview.html': 1, 'explore.html': 1, 'guidelines.html': 1, 'micronationary': 1,
     'community-hub.html': 2,
     'construction.html': 3, 'create-topic-step-1.html': 3, 'create-topic-step-2.html': 3, 'create-topic-step-3.html': 3,
     'create-world.html': 3, 'world-wizard.html': 3, 'world-created.html': -1,
@@ -58,7 +62,7 @@
   };
 
   var TAB_ORDER = {
-    'overview.html': 0, 'explore.html': 1, 'guidelines.html': 2,
+    'overview.html': 0, 'explore.html': 1, 'guidelines.html': 2, 'micronationary': 1,
   };
 
   function getFilename(path) {
@@ -244,6 +248,42 @@
       return targetPath === currentPath;
     } catch(e) { return false; }
   }
+
+  // --- Hover prefetch（v0.2.58.23）---
+  // 悬停站内链接 65ms 后 <link rel="prefetch" as="document"> 预下载目标页——切页白闪真身是
+  // 多页应用每页独立 HTML，跳页销毁旧文档冷下载新文档；抖音/YouTube 单页壳不重建所以不闪。
+  // 本站此前零预加载（仅视频 preload 属性）。预取后点击导航命中缓存（HTML/JS/CSS no-cache+ETag
+  // 也走 304 重校验、正文零传输）→ 白闪消。纯隐形性能层：不碰切页动画/点击劫持、失败静默。
+  // 触屏（无 hover 能力）与省流量模式自动关闭；鼠标移开取消计时器=快速扫过零预取。
+  var prefetchTimer = null;
+  function prefetchPage(href) {
+    try {
+      var l = document.createElement('link');
+      l.rel = 'prefetch';
+      l.as = 'document';
+      l.href = href;
+      document.head.appendChild(l);
+    } catch (e) { /* 预取失败静默——绝不影响导航 */ }
+  }
+  if (window.matchMedia && window.matchMedia('(hover: hover)').matches &&
+      !(navigator.connection && navigator.connection.saveData)) {
+    document.addEventListener('mouseover', function (e) {
+      var link = e.target.closest('a');
+      if (!link) return;
+      var href = link.getAttribute('href');
+      if (!href || !isInternal(href) || isSamePage(href)) return;
+      if (link.dataset.prefetchDone) return;
+      clearTimeout(prefetchTimer); // 快速扫过只预取最后悬停的那个
+      prefetchTimer = setTimeout(function () {
+        link.dataset.prefetchDone = '1';
+        prefetchPage(href);
+      }, 65);
+      link.addEventListener('mouseleave', function () {
+        clearTimeout(prefetchTimer);
+      }, { once: true });
+    });
+  }
+
   function getMainEl() {
     return document.querySelector('.app-main') || document.querySelector('.auth-layout') || document.querySelector('main') || document.body;
   }

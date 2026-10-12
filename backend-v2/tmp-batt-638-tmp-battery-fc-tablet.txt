@@ -1,0 +1,20 @@
+  ✅ S1 site-config：FC v10.28.48.0 + changelog iPad 触控适配条目 + rev 00293- 占位 + 站点恒 v0.2.58.26
+  ✅ S2 fc-touch.js：本地可加载 + 粗指针门控/测试钩/守卫旗在位 + 编辑器页 script 标签在位
+  ✅ S3 7577 组拆分计时器守卫：新写法在场 + 旧裸写法零残留
+  ✅ S4 粗指针 CSS 块：门控/命中区/44px/菜单 60vh/去 callout/tap 高亮锚在场
+  ✅ B0 门控自证：coarse 媒体查询翻转 + maxTouchPoints=5 + 触控桥在场（测试钩可断言）  {"coarse":true,"mtp":5,"bridge":true,"stats":true}
+  ✅ B1 tap 选中：.selected 类 + 8 缩放手柄现身 + stats.tap=1 + 手势已结束  {"sel":true,"handles":8,"tap":1,"active":false}
+  ✅ B2 拖卡：+60/+40 位移 ±2 + 手势中 fc-moving + 松手 justDragged 盖章 + stats.drag=1  {"mid":true,"before":{"l":22,"t":22},"after":{"l":82,"t":62,"jd":"1","drag":1}}
+  ✅ B3 se 手柄缩放：宽高各 +26±6（整格吸附）  {"before":{"w":196,"h":262},"after":{"w":218,"h":284}}
+  ✅ B4 长按菜单：菜单现身 + stats.longPress=1 + 组卡 groupId 未被 600ms 计时器拆走  {"menuOpen":true,"longPress":1,"gid":"batt-g1"}
+  ✅ B5a 双指捏合：zoom 1→1.4±0.1 + zoomChip 非 100% + stats.pinch≥1  {"before":{"z":1,"chip":"100%"},"after":{"z":1.4,"chip":"140%","pinch":4}}
+  ✅ B5b 等距双指平移：scrollLeft -75±20（余量 154 → 79；手指右移 = scrollLeft 减小）  {"before":{"l":154,"t":48},"after":{"l":79,"t":48}}
+  ✅ B6a 单指平移：scrollLeft ≥+60、scrollTop ≥+30 + stats.pan=1 + 惯性不回退（380ms 后 ≥ 松手值）  {"pan0":{"l":0,"t":0},"rel":{"l":92,"t":56,"pan":1},"mom":{"l":109,"t":64}}
+  ✅ B6b 空画布 tap：选中清除（selected 1 → 0）  {"strictEp":{"x":276,"y":184},"selAfter":0}
+  ✅ B7a tap 资产建卡：卡数 +1 + 新卡覆盖视口中心 + stats.asset=1 + 资产卡在视口内  {"assetPt":{"x":129.5,"y":186.375,"inView":true},"b7a":{"count":2,"center":true,"asset":1}}
+  ✅ B7b 冷却防重复：冷却内二 tap 不建卡 + 700ms 后仍无重复  count=2
+  ✅ E1 全程零 Runtime.exceptionThrown + 零 console.error  {"errs":[],"cons":[]}
+
+╭────────────────────────────────────╮
+│  🎉 16 ✅ / 0 ❌  (fc-tablet)       │
+╰────────────────────────────────────╯

@@ -198,6 +198,11 @@
     clearLongPress();
     if (!wasLong) {
       document.dispatchEvent(makeMouse('mouseup', x, y, { button: 0 }));
+      if (moved) {
+        // v10.28.49: 触控拖/缩/转提交=视口转自定义（编辑器 mouseup 提交链已
+        // markPresetCustom，此处兜底；钩子缺席零操作——fc-tablet 电池行为不变）
+        if (window.markPresetCustom) window.markPresetCustom();
+      }
       if (!moved && !suppressClick) {
         // click 合成：tap 选中（7799）；手柄 tap 冒泡到 document 关菜单（11888 同款）
         el.dispatchEvent(makeMouse('click', x, y));
@@ -302,6 +307,7 @@
       else window.createAssetCard(asset, label, cc, cr, spanW, spanH);
       if (window.SlatiDB && window.SlatiDB.addXP) window.SlatiDB.addXP('card_create', 10);
       if (window.onContentChange) window.onContentChange();
+      if (window.markPresetCustom) window.markPresetCustom(); // v10.28.49: tap 建卡=视口转自定义（编辑器钩子缺席零操作）
       stats.asset++;
     } catch (err) { /* 建卡失败静默——触控桥不打断编辑主流程 */ }
   }

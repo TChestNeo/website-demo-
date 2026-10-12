@@ -1,0 +1,31 @@
+════ Request J Messages 链接抖音式结构轮 — v0.2.50.0（2026-09-17）════
+用户：能不能把Message的链接的结构改成这种？
+      https://www.douyin.com/user/self?from_tab_name=main&showSubTab=compilation&showTab=favorite_collection
+问询钦定三件套：①路径不动（保留 /pages/messages.html）②参数只加 showTab= ③点 tab 地址栏跟着变（抖音式）。
+修订：mnationworld-web-00242-p77（前身 00241-9lj）｜commit 见 git log（未 push）
+镜像 digest 4995d992
+
+改法（3 文件，纯前端）：
+1. docs/pages/messages.html：
+   - init 块读 params.get('showTab') || params.get('tab')（旧 ?tab= 兼容）→ switchToPanel 直达；
+     未知 tab 值 → 默认 private 并 replaceState 清参数（URL 归一）
+   - switchToPanel 尾部地址栏联动：history.replaceState(null, '', pathname + q)
+     —— groups/announcements 写 ?showTab=x，private 回干净路径；不刷新不进历史
+2. docs/index.html L2278：「View all announcements」链接 ?tab=announcements → ?showTab=announcements
+3. docs/assets/js/site-config.js：v0.2.49.9 → v0.2.50.0（小改动位 49→50 新功能轮）+ 注释块
+
+零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css、FC 零改动（v10.28.35.4 保持）、
+entrypoint 零改动（路径没动）。
+
+电池：新 msglink 15/15（F0-F4 静态 + M1-M3 showTab 直达 + M4 旧参数归一 + M5-M7 点 tab 无刷新联动
+  （同文档哨兵实证）+ M8 未知参数归一 + M9 零长任务 + Z 零错误）；
+  回归 msg-anim 31/31 + pageswitch 23/23 + mono-flash 22/22 + monodark 29/29 + smoke-admin 48/48 全绿
+  （pageswitch/mono-flash/monodark 版本锚 49.9→50.0 已同步）
+电池插曲：M3 首载无内联 opacity（样式表默认 1 视觉正确）→ 断言改 computed opacity；slide 空串=CSS 默认 0 位。
+
+部署：docker build exit 0 → tag → token 直登（-p）→ push exit 0 → tmp-deploy-msglink.ps1
+  （模板沿用；gcloud.ps1、env 30 条从 describe 全量重建、零新键、--quiet）一次 exit 0 → rev 00242-p77 serving 100%。
+curl 链 4/4：/api/health 58 表 ✅｜site-config v0.2.50.0+v10.28.35.4+douyin 注释 ✅｜
+  messages.html showTab 读取/replaceState 联动/旧 tab 兼容 在线 ✅｜index 新链接在线+旧 ?tab= 零残留 ✅
+
+git：只 commit docs/（messages.html + index.html + site-config.js）；tmp-* 不跟踪；entrypoint.js 保持未提交；不 push。

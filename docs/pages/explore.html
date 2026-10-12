@@ -686,8 +686,14 @@ textarea.input-glass {
 .progress-connector.done { background: var(--color-primary); }
 
 /* ----- Sidebar Module ----- */
+/* 2026-10-05 用户「那个在个人主页那边的左侧菜单背景卡片是半透明的能不能变成不透明的？」——
+   真身=v0.2.58.1（09-26 删侧栏容器铺底）后三张卡（logo/用户/菜单 .sidebar-module）仍用 --card-bg
+   （亮色 rgba(255,255,255,0.55)/暗色 rgba(30,30,50,0.55) 半透明玻璃）+ blur(20px) 磨砂——页面内容
+   透卡可见=半透明观感；修法=卡面改铺 --sidebar-bg（09-18 用户钦定不透明底：亮色近纯白 0.95/暗色实心
+   #1a1a2e/mono 随 var() 自适应）；模块自带 backdrop-filter 保留（底已不透明零可见效果，与 09-20
+   全站卡片同口径）；三张卡同规则一并生效；窄屏 floating 覆盖态同步（口径统一）。 */
 .sidebar-module {
-  background: var(--card-bg);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1301,7 +1307,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .app-sidebar.collapsed .user-module {
   padding: 10px 4px !important;
   display: flex; align-items: center; justify-content: flex-start;
-  background: var(--card-bg);
+  /* 58.28 补：折叠态覆盖曾回退 --card-bg 半透明玻璃（58.27 卡面不透明修法漏了这条折叠态覆盖）——
+     用户「折叠起来的时候还是一样是半透明的」；口径与 58.27 同：铺 --sidebar-bg 不透明底+blur 保留 */
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1385,7 +1393,20 @@ body.pre-stagger .auth-card { opacity: 0; }
    v0.2.58.11 用户「能不能把那个浅蓝色波浪和深蓝色倒反？」「就只是互换一下颜色而已」——58.10 深水+浅浪
    两色互换（类名保持不动）：主色水 .mn-lv-wdeep 背景 var(--color-primary)→var(--mn-lv-light) 变浅水、
    浅浪 .mn-lv-wlightwave 背景 var(--mn-lv-light)→var(--color-primary) 变深浪；两层结构/80×16 mask/
-   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。 */
+   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.12 用户「能不能把波浪的位置抬高4px?」（一问钦定「位置抬高 4px」）——58.11 浅浪 top -8px 抬高
+   4px→-12px（单值改动）：浅浪 .mn-lv-wlightwave top -8px→-12px；两层结构/80×16 mask/16px 带高/400% strip/
+   平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84/两色互换（浅水+深浪）全零改动。
+   v0.2.58.13 用户「然后把两个颜色改成一样的深蓝色，然后在那个波浪Z轴的-1那边再添加一个慢0.3s的波浪」
+   ——①水和浪两色统一深蓝：主色水 .mn-lv-wdeep 背景 var(--mn-lv-light)→var(--color-primary)（58.11 两色
+   互换撤销为两色相同）、--mn-lv-light 赋值整体删除（零引用，58.10 --mn-lv-wave-c 先例）；②新慢浪
+   .mn-lv-wlightwave2 与快浪全同款几何（80×16 mask/16px 带高/400% strip/平移 80px/top -12px 全同）
+   置于快浪 z 轴 -1 层（z-index:-1）+动画 2.5s（慢 0.3s）；z 层级：.mn-lv-fill z-index:0 建 stacking
+   context→水 z-index:-2 最底→慢浪 -1→快浪 0（显式盖慢浪）；两浪同色相位漂移，慢浪浪峰周期性从快浪
+   浪谷透明区透出=两道浪峰不同速叠加；水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.14 用户「那个刚才提出添加的第二个波浪我希望是浅色的」——慢浪 .mn-lv-wlightwave2 背景
+   var(--color-primary)→var(--mn-lv-light)（58.11 浅水同款浅色公式 color-mix 55%+白；赋值挂 .mn-lv-ring
+   恢复——58.13 整体删除后本轮复活）；快浪/水/几何/z 层级/动画全零改动。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1418,8 +1439,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .mn-lv-fill {
   position: absolute; left: 0; right: 0; bottom: 0; height: 0;
   transition: height 0.5s ease;
+  z-index: 0; /* 建 stacking context：水/慢浪负 z 层不逃出杯 */
 }
-.mn-lv-wdeep { position: absolute; inset: 0; background: var(--mn-lv-light); }
+.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); z-index: -2; }
 .mn-lv-wlightwave {
   position: absolute; left: -100%; width: 400%; height: 16px;
   background-color: var(--color-primary);
@@ -1428,8 +1450,23 @@ body.pre-stagger .auth-card { opacity: 0; }
   -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
   -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
   pointer-events: none;
-  top: -8px;
+  top: -12px;
+  z-index: 0;
   animation: mn-lv-wave 2.2s linear infinite;
+}
+/* 慢浪：与快浪全同款几何，z 轴 -1 层（快浪之下），2.5s（慢 0.3s）、浅色（var(--mn-lv-light)）——
+   两浪异色相位漂移，慢浪浪峰周期性从快浪浪谷透明区透出=浅色幽灵浪峰在深浪下流动 */
+.mn-lv-wlightwave2 {
+  position: absolute; left: -100%; width: 400%; height: 16px;
+  background-color: var(--mn-lv-light);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
+  pointer-events: none;
+  top: -12px;
+  z-index: -1;
+  animation: mn-lv-wave 2.5s linear infinite;
 }
 @keyframes mn-lv-wave {
   from { transform: translateX(0); }
@@ -1445,6 +1482,48 @@ body.pre-stagger .auth-card { opacity: 0; }
   z-index: 5;
   font-size: 28px; font-weight: 700; color: var(--color-primary);
   text-shadow: 0 0 2px rgba(255,255,255,0.9), 0 0 3px rgba(255,255,255,0.9);
+}
+/* v0.2.58.15 用户「那么能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出
+   一个卡片完整的显示等级信息和经验条」：折叠态药丸悬停放大+右侧滑出等级信息卡。
+   ①药丸 scale(1.12)（hover 类挂 .mn-lv-badge——悬停区=药丸+边距整块，贴近即触发；transform-origin
+   center，72px 折叠列/64px floating 列内瞬态放大可接受）；transition 0.18s ease（药丸本体折叠入场
+   动画 0.3s 期间 transform 被动画持有——折叠后立刻悬停时缩放瞬态失效可接受）。
+   ②卡片 .mn-lv-hovercard position:fixed 挂 body（侧栏 overflow-x:hidden + 用户卡 overflow:hidden
+   双裁剪，卡片必须逃出 DOM 裁剪；JS 按药丸 getBoundingClientRect 定位+视口钳制）；内容=JS 每次
+   show 从活的 .mn-lv-normal clone——展开徽章同款信息（Lv.x·称号+XP 文本+经验条）；z-index 150=
+   侧栏 50/55 之上、tooltip 200 之下；backdrop-filter blur 与折叠用户卡同款玻璃质感（卡片自身 fixed
+   于 body，其 blur 只影响自身后代=无 containing block 问题）。
+   ③@media (hover:hover) and (pointer:fine) 门控——触屏/平板零规则零行为（JS matchMedia 同款双保险）。 */
+@media (hover: hover) and (pointer: fine) {
+  .mn-lv-pill {
+    transition: transform 0.18s ease;
+  }
+  .app-sidebar.collapsed .mn-lv-badge.mn-lv-hover .mn-lv-pill {
+    transform: scale(1.12);
+  }
+  .mn-lv-hovercard {
+    position: fixed;
+    z-index: 150;
+    width: 200px;
+    box-sizing: border-box;
+    background: var(--card-bg, #ffffff);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: var(--card-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 10px 12px;
+    opacity: 0;
+    transform: translateX(-10px) scale(0.98);
+    transform-origin: left center;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .mn-lv-hovercard.active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
 }
 /* 同轮折叠态头像间距归整（根治「挤压到了用户头像」的两处真身）：
    ①头像 img 是行内元素——行基线给父 div 加 8px 下坠空隙（折叠后视觉死隙）→ display:block 消除；
@@ -2031,6 +2110,157 @@ html[data-accent="mono"] .migrate-pill::after { background-color: hsla(0 0% 45% 
 html[data-accent="mono"][data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(0 0% 40%); }
 html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117, 134, 0.10); }
 
+/* ===== v0.2.59.x 手机底部导航（5 tab：首页/百科/社区/消息/我的；无操作按钮） ===== */
+.mobile-bottom-nav { display: none; }
+.mbn-backdrop { display: none; }
+.mbn-sheet { display: none; }
+@media (max-width: 768px) {
+  /* iOS 26 风格浮动药丸 dock：居中悬浮、大圆角、磨砂玻璃、选中项浅色胶囊 */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    height: 56px; z-index: 9999;
+    width: auto; min-width: 264px; max-width: calc(100% - 28px);
+    border-radius: 999px;
+    padding: 0 6px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 10px 36px rgba(20, 20, 40, 0.18), inset 0 0.5px 0 rgba(255, 255, 255, 0.65);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav {
+    background: rgba(24, 24, 38, 0.72);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.42), inset 0 0.5px 0 rgba(255, 255, 255, 0.14);
+  }
+  .mobile-bottom-nav .mbn-item {
+    flex: 1; min-width: 48px; max-width: 78px;
+    padding: 0 10px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1px;
+    text-decoration: none; color: var(--color-outline);
+    font-size: 10px; font-weight: 500; letter-spacing: 0.01em;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .mobile-bottom-nav .mbn-item .material-symbols-outlined { font-size: 22px; }
+  .mobile-bottom-nav .mbn-item.active {
+    color: var(--color-primary);
+    background: rgba(70, 72, 212, 0.10);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav .mbn-item.active { background: rgba(122, 126, 255, 0.18); }
+  .mbn-backdrop {
+    display: block;
+    position: fixed; inset: 0; z-index: 68;
+    background: rgba(0, 0, 0, 0.32);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .mbn-backdrop.open { opacity: 1; pointer-events: auto; }
+  .mbn-sheet {
+    display: block;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 69;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(105%); transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.14);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-sheet.open { transform: translateY(0); }
+  .mbn-user-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 4px 0 14px; text-decoration: none; color: var(--color-on-surface);
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10));
+  }
+  .mbn-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--color-primary); object-fit: cover; flex-shrink: 0; }
+  .mbn-user-meta { min-width: 0; flex: 1; }
+  .mbn-user-name { font-weight: 700; font-size: 16px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbn-user-cid { font-size: 12px; color: var(--color-outline); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: capitalize; }
+  .mbn-row {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 13px 0; background: none; border: none; cursor: pointer;
+    text-align: left; text-decoration: none; color: var(--color-on-surface);
+    font-size: var(--fs-label-md); font-family: inherit;
+  }
+  .mbn-row + .mbn-row { border-top: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-ico { color: var(--color-outline); font-size: 22px; flex-shrink: 0; }
+  .mbn-row-label { flex: 1; min-width: 0; }
+  .mbn-chev { color: var(--color-outline); opacity: 0.5; font-size: 20px; }
+  .mbn-row.mbn-danger { color: #d23b3b; }
+  .mbn-row.mbn-danger .mbn-ico { color: #d23b3b; }
+  .mbn-group-title { font-weight: 700; font-size: 13px; color: var(--color-outline); letter-spacing: 0.03em; margin: 14px 0 6px; text-transform: uppercase; }
+  .mbn-group { margin-bottom: 4px; }
+  .mbn-group-name { font-size: 12px; color: var(--color-outline); padding: 10px 0 2px; }
+  .mbn-switch {
+    width: 44px; height: 26px; border-radius: 999px; flex-shrink: 0;
+    background: var(--color-outline-variant, #c8c7d4); position: relative;
+    transition: background 0.18s ease;
+  }
+  .mbn-switch .mbn-knob {
+    position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.25); transition: transform 0.18s ease;
+  }
+  .mbn-switch[data-on="1"] { background: var(--color-primary); }
+  .mbn-switch[data-on="1"] .mbn-knob { transform: translateX(18px); }
+  .mbn-toast {
+    position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%) translateY(12px);
+    background: rgba(24,24,32,0.9); color: #fff; padding: 10px 18px; border-radius: 999px;
+    font-size: 13px; z-index: 90; opacity: 0; pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease; max-width: 86vw; text-align: center;
+  }
+  .mbn-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* 二级子 sheet */
+  .mbn-subsheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 71;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.16);
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-subsheet.open { transform: translateY(0); }
+  .mbn-sub-head { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10)); }
+  .mbn-sub-back { width: 36px; height: 36px; border-radius: 50%; border: none; background: none; color: var(--color-on-surface); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .mbn-sub-title { font-weight: 700; font-size: 16px; }
+  .mbn-sub-body { padding-top: 6px; }
+  .mbn-sub-row {
+    display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 0;
+    background: none; border: none; cursor: pointer; text-align: left;
+    font-size: var(--fs-label-md); color: var(--color-on-surface); font-family: inherit;
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08));
+  }
+  .mbn-sub-row > span:first-child { flex: 1; min-width: 0; }
+  .mbn-sub-row.on { color: var(--color-primary); font-weight: 600; }
+  .mbn-sub-check { color: var(--color-outline); opacity: 0.6; font-size: 20px; flex-shrink: 0; }
+  .mbn-sub-row.on .mbn-sub-check { color: var(--color-primary); opacity: 1; }
+  .mbn-sub-sec { font-size: 12px; color: var(--color-outline); text-transform: uppercase; letter-spacing: 0.03em; padding: 14px 0 4px; }
+  .mbn-sub-note { font-size: 13px; color: var(--color-outline); padding: 14px 0; line-height: 1.5; }
+  .mbn-list-item { padding: 12px 0; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mbn-list-author { font-weight: 600; font-size: 14px; color: var(--color-on-surface); }
+  .mbn-list-time { font-size: 11px; color: var(--color-outline); flex-shrink: 0; }
+  .mbn-list-body { font-size: 13px; color: var(--color-outline); margin-top: 4px; line-height: 1.5; word-break: break-word; }
+  .mbn-unblock { border: 1px solid var(--divider-line, rgba(118,117,134,0.3)); background: none; color: var(--color-on-surface); border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+  .app-main { padding-bottom: 74px; } /* 给底部导航留空间 */
+}
+
+/* v0.2.59.50 手机适配：主内容 + 340px 侧栏预览的左右网格（dashboard/micronationary/overview 共用），手机收单列 */
+.fc-split-grid { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-md); }
+@media (max-width: 768px) {
+  .fc-split-grid { grid-template-columns: 1fr; }
+}
+/* v0.2.59.50 手机适配：两列网格 + 左右弹性布局收单列 */
+.fc-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+.fc-split-flex { display: flex; }
+@media (max-width: 768px) {
+  .fc-two-col { grid-template-columns: 1fr; }
+  .fc-split-flex { flex-direction: column; min-height: 0 !important; }
+  .fc-split-flex > div { width: 100% !important; border-right: none !important; }
+}
+
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -2338,10 +2568,87 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
         <a href="explore.html" class="subnav-pill active" data-i18n="ex.nav.explore">Explore</a>
         <a href="guidelines.html" class="subnav-pill" data-i18n="ex.nav.guidelines">Guidelines</a>
       </div>
-      <div class="search-capsule" style="margin-left:auto;position:relative">
-        <span class="material-symbols-outlined">search</span>
+    </div>
+
+    <!-- v0.2.59.28 搜索页（Google 关键词默认 + DeepSeek Flash 智能搜索）：
+         AI 对话式搜索栏 + 智能搜索开关/排序行 + 建议文章 25 + 热门/历史/国家/话题 chips + App Store 式浏览。
+         .search-capsule 类保留——wireExSearch 外部点击关闭依赖 input.closest('.search-capsule') -->
+    <div class="mn-search-top">
+      <div class="search-capsule mn-search-bar" style="position:relative">
+        <span class="material-symbols-outlined" id="mnSearchIcon">search</span>
         <input type="text" id="exSearchInput" placeholder="Search worlds, articles..." oninput="filterNations(this.value)" data-i18n-placeholder="ex.ph.search" autocomplete="off">
+        <button type="button" class="mn-search-clear" id="mnSearchClear" style="display:none" onclick="clearExSearch()" title="清除搜索">✕</button>
         <div id="exSearchPanel" style="display:none"></div>
+      </div>
+      <div class="mn-search-modes">
+        <button type="button" class="mn-smart" id="mnSmartBtn" onclick="toggleSmartSearch()">
+          <span class="material-symbols-outlined">auto_awesome</span>
+          <span>智能搜索</span>
+          <span class="mn-smart-switch" id="mnSmartSwitch"></span>
+        </button>
+        <span class="mn-mode-hint" id="mnModeHint">默认：关键词搜索</span>
+        <span class="mn-sort" id="mnSortWrap" style="display:none">
+          <button type="button" class="mn-sort-btn active" data-sort="new" onclick="mnSetSort(this)">最新</button>
+          <button type="button" class="mn-sort-btn" data-sort="hot" onclick="mnSetSort(this)">最热</button>
+        </span>
+      </div>
+    </div>
+
+    <!-- 搜索结果（搜索态显示） -->
+    <div id="exArticleResults" style="display:none;margin-bottom:var(--space-md)"></div>
+    <div id="mnSearchNationWrap" style="display:none;margin-bottom:var(--space-md)">
+      <div class="mn-result-head"><span class="material-symbols-outlined">public</span><span>国家</span></div>
+      <div class="dy-grid" id="mnSearchNationGrid"></div>
+    </div>
+
+    <!-- 建议文章（未搜索态，25 篇） -->
+    <div id="mnSuggestBlock">
+      <div class="mn-result-head" id="mnSuggestHead"><span class="material-symbols-outlined">auto_awesome</span><span>建议文章</span></div>
+      <div class="mn-result-grid" id="mnSuggestGrid"></div>
+    </div>
+
+    <!-- chips（未搜索态）：热门搜索词 / 搜索历史 / 按国家 / 话题标签 -->
+    <div id="mnChipsBlock">
+      <div class="mn-chip-row" id="mnTrendRow" style="display:none">
+        <span class="mn-chip-label"><span class="material-symbols-outlined">local_fire_department</span>热门</span>
+        <div class="mn-chips" id="mnTrendChips"></div>
+      </div>
+      <div class="mn-chip-row" id="mnHistRow" style="display:none">
+        <span class="mn-chip-label"><span class="material-symbols-outlined">history</span>历史</span>
+        <div class="mn-chips" id="mnHistChips"></div>
+      </div>
+      <div class="mn-chip-row" id="mnNationRow" style="display:none">
+        <span class="mn-chip-label"><span class="material-symbols-outlined">flag</span>国家</span>
+        <div class="mn-chips" id="mnNationChips"></div>
+      </div>
+      <div class="mn-chip-row" id="mnTopicRow" style="display:none">
+        <span class="mn-chip-label"><span class="material-symbols-outlined">tag</span>话题</span>
+        <div class="mn-chips" id="mnTopicChips"></div>
+      </div>
+    </div>
+
+    <!-- 浏览（App Store 搜索页底部同款分类瓷贴） -->
+    <div class="mn-browse" id="mnBrowseBlock">
+      <div class="mn-result-head"><span class="material-symbols-outlined">grid_view</span><span>浏览</span></div>
+      <div class="mn-browse-grid">
+        <button type="button" class="mn-browse-tile mn-bt-a" onclick="mnBrowseTab('works')">
+          <span class="mn-bt-icon material-symbols-outlined">public</span><span class="mn-bt-name">全部国家</span><span class="mn-bt-sub">世界名录</span>
+        </button>
+        <button type="button" class="mn-browse-tile mn-bt-b" onclick="mnBrowseTab('articles')">
+          <span class="mn-bt-icon material-symbols-outlined">article</span><span class="mn-bt-name">文章</span><span class="mn-bt-sub">知识与故事</span>
+        </button>
+        <button type="button" class="mn-browse-tile mn-bt-c" onclick="mnBrowseTab('topics')">
+          <span class="mn-bt-icon material-symbols-outlined">tag</span><span class="mn-bt-name">话题</span><span class="mn-bt-sub">社区热议</span>
+        </button>
+        <button type="button" class="mn-browse-tile mn-bt-d" onclick="mnSearchTerm('新国家')">
+          <span class="mn-bt-icon material-symbols-outlined">new_releases</span><span class="mn-bt-name">最新</span><span class="mn-bt-sub">最近发布</span>
+        </button>
+        <button type="button" class="mn-browse-tile mn-bt-e" onclick="mnSmartDemo()">
+          <span class="mn-bt-icon material-symbols-outlined">emoji_events</span><span class="mn-bt-name">精选</span><span class="mn-bt-sub">智能搜索示例</span>
+        </button>
+        <button type="button" class="mn-browse-tile mn-bt-f" onclick="location.href='create-world.html'">
+          <span class="mn-bt-icon material-symbols-outlined">add_circle</span><span class="mn-bt-name">创建</span><span class="mn-bt-sub">你的国家</span>
+        </button>
       </div>
     </div>
 
@@ -2397,63 +2704,255 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
       }
     </style>
 
-    <!-- Main content: 2 columns -->
-    <div style="display:grid;grid-template-columns:1fr 320px;gap:var(--space-md)">
+    <!-- v0.2.59.25 抖音式个人主页结构：资料头部 + 标签页（作品/文章/话题）+ 三列卡片网格 -->
+    <style>
+      .dy-profile { max-width: 1080px; margin: 0 auto; }
+      .dy-head { display: flex; align-items: flex-start; gap: 22px; padding: 4px 4px 18px; }
+      .dy-avatar {
+        width: 92px; height: 92px; border-radius: 50%; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+        color: #fff; display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 28px; letter-spacing: .04em;
+        border: 3px solid var(--card-border);
+      }
+      .dy-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+      .dy-info { flex: 1; min-width: 0; }
+      .dy-name { font-size: 24px; font-weight: 800; margin: 2px 0; color: var(--color-on-surface); }
+      .dy-id { font-size: 12px; color: var(--color-outline); margin: 0 0 6px; }
+      .dy-bio { font-size: var(--fs-label-md); color: var(--color-on-surface-variant); line-height: 1.55; margin: 0 0 12px; max-width: 560px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      .dy-stats { display: flex; gap: 28px; }
+      .dy-stat b { display: block; font-size: 17px; font-weight: 800; color: var(--color-on-surface); }
+      .dy-stat span { font-size: 12px; color: var(--color-outline); }
+      .dy-edit {
+        flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+        padding: 8px 16px; border-radius: var(--radius-full);
+        border: 1px solid var(--card-border); background: var(--card-bg);
+        color: var(--color-on-surface); font-size: 13px; font-weight: 600;
+        text-decoration: none; transition: background .15s;
+      }
+      .dy-edit:hover { background: rgba(118,117,134,.1); }
+      .dy-premium {
+        display: flex; align-items: center; gap: 10px;
+        padding: 10px 14px; border-radius: var(--radius-md);
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        color: #fff; text-decoration: none; font-size: 12px; margin-bottom: 14px;
+      }
+      .dy-premium .dy-premium-cta {
+        padding: 5px 12px; border-radius: 999px; font-weight: 700; font-size: 11px;
+        background: linear-gradient(135deg, #eab308, #ca8a04); color: #1a1a2e; flex-shrink: 0;
+      }
+      .dy-tabs { display: flex; gap: 28px; border-bottom: 1px solid var(--card-border); margin-bottom: 18px; }
+      .dy-tab {
+        background: none; border: none; cursor: pointer;
+        padding: 12px 2px; font-size: 14px; font-weight: 600;
+        color: var(--color-outline); position: relative;
+      }
+      .dy-tab.active { color: var(--color-on-surface); }
+      .dy-tab.active::after {
+        content: ''; position: absolute; left: 0; right: 0; bottom: -1px;
+        height: 2px; border-radius: 2px; background: var(--color-primary);
+      }
+      .dy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      @media (max-width: 900px) { .dy-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 560px) { .dy-grid { grid-template-columns: 1fr; } }
+      .dy-card { text-decoration: none; display: block; }
+      .dy-cover {
+        position: relative; aspect-ratio: 3 / 4; border-radius: var(--radius-md);
+        overflow: hidden; background: linear-gradient(150deg, #23233d, #101024);
+        border: var(--card-border); transition: transform .18s ease, box-shadow .18s ease;
+      }
+      .dy-card:hover .dy-cover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,.28); }
+      .dy-cover .dy-cover-main { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+      .dy-cover .dy-cover-emoji { font-size: 62px; filter: drop-shadow(0 8px 24px rgba(0,0,0,.45)); }
+      .dy-cover .dy-cover-code {
+        font-size: 38px; font-weight: 800; color: rgba(255,255,255,.92); letter-spacing: .05em;
+        text-shadow: 0 6px 24px rgba(0,0,0,.5);
+      }
+      .dy-cover .dy-cover-label {
+        position: absolute; left: 0; right: 0; bottom: 0;
+        padding: 26px 12px 10px; font-size: 13px; font-weight: 700; color: #fff;
+        background: linear-gradient(to top, rgba(0,0,0,.72), transparent);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .dy-cover .dy-cover-badge {
+        position: absolute; top: 8px; left: 8px;
+        background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+        color: #fff; font-size: 10px; padding: 3px 8px; border-radius: 999px;
+      }
+      .dy-card-meta { padding: 8px 2px 0; }
+      .dy-card-meta .t { font-size: 13px; font-weight: 600; color: var(--color-on-surface); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .dy-card-meta .s { font-size: 11px; color: var(--color-outline); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .dy-empty { text-align: center; padding: 48px 0; color: var(--color-outline); font-size: 13px; }
+      /* v0.2.59.27 搜索态：主区换回单列卡片列表（旧搜索页样式） */
+      .dy-grid.dy-grid-search { display: flex; flex-direction: column; gap: var(--space-sm); }
 
-      <!-- Left: Nation/Event article cards -->
-      <div>
-        <!-- v0.2.56.1 搜索时文章结果段（用户「在 explore.html 搜索都搜索不到」——本页搜索此前只筛世界，零文章接入） -->
-        <div id="exArticleResults" style="display:none;margin-bottom:var(--space-sm)"></div>
-        <h2 class="headline-md" style="margin-bottom:var(--space-sm)" data-i18n="ex.heading">All Worlds & Entities</h2>
-        <div style="display:flex;flex-direction:column;gap:var(--space-sm)" id="nationCards"></div>
-      </div>
+      /* v0.2.59.28 搜索页：AI 式搜索栏 + 智能搜索开关 + 建议/chips/浏览 + 搜索态切换 */
+      .mn-search-top { margin-bottom: var(--space-md); }
+      .search-capsule.mn-search-bar {
+        width: 100%; height: 54px; padding: 0 6px 0 20px; gap: 10px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--divider-line-strong);
+        background: var(--input-bg);
+        box-shadow: var(--shadow-md);
+        transition: border-color .18s ease, box-shadow .18s ease;
+      }
+      .search-capsule.mn-search-bar:focus-within {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px var(--color-primary-fixed-dim), var(--shadow-md);
+      }
+      .search-capsule.mn-search-bar input { font-size: 15px; }
+      .search-capsule.mn-search-bar > .material-symbols-outlined { font-size: 20px; color: var(--color-primary); }
+      .mn-search-clear {
+        border: none; background: var(--btn-ghost-hover); color: var(--color-outline);
+        width: 30px; height: 30px; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center; font-size: 14px;
+        transition: color .15s, background .15s;
+      }
+      .mn-search-clear:hover { color: var(--color-on-surface); }
+      .mn-search-modes { display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+      .mn-smart {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 6px 6px 6px 14px; border-radius: var(--radius-full);
+        border: 1px solid var(--divider-line-strong); background: var(--card-bg);
+        font-size: 13px; font-weight: 600; font-family: var(--font-family);
+        color: var(--color-on-surface); cursor: pointer; transition: border-color .18s, box-shadow .18s;
+      }
+      .mn-smart .material-symbols-outlined { font-size: 16px; color: var(--color-primary); }
+      .mn-smart-switch {
+        width: 34px; height: 20px; border-radius: 999px; position: relative;
+        background: var(--divider-line-strong); transition: background .2s ease; flex-shrink: 0;
+      }
+      .mn-smart-switch::after {
+        content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px;
+        border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3);
+        transition: transform .2s ease;
+      }
+      .mn-smart.on { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-fixed-dim); }
+      .mn-smart.on .mn-smart-switch { background: var(--color-primary); }
+      .mn-smart.on .mn-smart-switch::after { transform: translateX(14px); }
+      .mn-mode-hint { font-size: 12px; color: var(--color-outline); }
+      .mn-sort {
+        display: inline-flex; gap: 4px; padding: 3px;
+        border-radius: var(--radius-full); background: var(--color-surface-container-low);
+        border: 1px solid var(--divider-line);
+      }
+      .mn-sort-btn {
+        border: none; background: transparent; padding: 4px 12px; border-radius: var(--radius-full);
+        font-size: 12px; font-weight: 600; font-family: var(--font-family);
+        color: var(--color-outline); cursor: pointer; transition: all .15s;
+      }
+      .mn-sort-btn.active { background: var(--color-primary); color: var(--color-on-primary); }
+      .mn-result-head {
+        display: flex; align-items: center; gap: 8px;
+        font-weight: 700; font-size: 15px; color: var(--color-on-surface);
+        margin: 0 0 12px;
+      }
+      .mn-result-head .material-symbols-outlined { font-size: 18px; color: var(--color-primary); }
+      .mn-result-count {
+        font-size: 11px; font-weight: 700; color: var(--color-primary);
+        background: var(--color-primary-fixed); padding: 1px 8px; border-radius: 999px;
+      }
+      .mn-result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      @media (max-width: 900px) { .mn-result-grid { grid-template-columns: repeat(2, 1fr); } }
+      @media (max-width: 560px) { .mn-result-grid { grid-template-columns: 1fr; } }
+      /* v0.2.59.28.5 玻璃长卡（用户钦定 code.html 同款：胶囊搜索 + 玻璃卡行） */
+      .search-capsule.mn-search-bar {
+        height: 44px;
+        background: var(--card-bg);
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: var(--card-border);
+        box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, .35);
+      }
+      .mn-result-grid.mn-as-list { display: flex; flex-direction: column; gap: 8px; }
+      .mn-glass-row {
+        display: flex; align-items: flex-start; gap: 16px;
+        padding: 16px 20px; border-radius: 16px;
+        background: var(--card-bg);
+        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        border: var(--card-border);
+        box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, .35);
+        text-decoration: none;
+        transition: box-shadow .2s ease;
+      }
+      .mn-glass-row:hover { box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, .35); }
+      .mn-mono {
+        width: 54px; height: 36px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+        background: rgba(70, 72, 212, .1);
+        color: var(--color-primary); font-weight: 700; font-size: 12px;
+        display: flex; align-items: center; justify-content: center;
+        border: 1px solid rgba(255, 255, 255, .2);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6);
+      }
+      .mn-glass-main { flex: 1; min-width: 0; }
+      .mn-glass-title-row { display: flex; align-items: center; gap: 8px; }
+      .mn-glass-title {
+        font-weight: 700; font-size: 14px; color: var(--color-on-surface);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .mn-verified { font-size: 14px; color: var(--color-primary); filter: drop-shadow(0 0 4px var(--color-primary)); flex-shrink: 0; }
+      .mn-type-badge {
+        display: inline-flex; align-items: center; padding: 1px 8px; flex-shrink: 0;
+        background: rgba(70, 72, 212, .1); color: var(--color-primary);
+        border-radius: 999px; font-size: 9px; font-weight: 700; text-transform: uppercase;
+      }
+      .mn-type-badge.mn-badge-alt { background: rgba(129, 39, 207, .1); color: var(--color-secondary); }
+      /* v0.2.59.28.6 简介放在标题正下方，全文展示（长卡） */
+      .mn-card-lore {
+        margin: 6px 0 0; font-size: 12.5px; font-style: normal;
+        color: var(--color-on-surface-variant); line-height: 1.65;
+      }
+      .mn-card-lore.mn-lore-dim { color: var(--color-outline); font-style: italic; }
+      .mn-card-stats {
+        flex-shrink: 0; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+        font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+        color: var(--color-outline); padding-top: 3px;
+      }
+      #mnChipsBlock { margin: 18px 0; display: flex; flex-direction: column; gap: 12px; }
+      .mn-chip-row { display: flex; align-items: center; gap: 10px; }
+      .mn-chip-label {
+        flex-shrink: 0; width: 64px; display: inline-flex; align-items: center; gap: 4px;
+        font-size: 12px; font-weight: 600; color: var(--color-outline);
+      }
+      .mn-chip-label .material-symbols-outlined { font-size: 15px; }
+      .mn-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+      .mn-chip {
+        padding: 6px 14px; border-radius: var(--radius-full);
+        border: 1px solid var(--divider-line-strong); background: var(--card-bg);
+        font-size: 12.5px; font-weight: 500; font-family: var(--font-family);
+        color: var(--color-on-surface-variant); cursor: pointer; transition: all .15s;
+      }
+      .mn-chip:hover { border-color: var(--color-primary); color: var(--color-primary); }
+      .mn-chip-hot { color: #ea580c; border-color: rgba(234, 88, 12, .4); }
+      .mn-chip-hot:hover { border-color: #ea580c; color: #ea580c; }
+      /* App Store 式浏览瓷贴（分类多色系=参考对象本身的分类编码，交互仍走主题主色） */
+      .mn-browse { margin: 22px 0 var(--space-md); }
+      .mn-browse-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      @media (max-width: 700px) { .mn-browse-grid { grid-template-columns: repeat(2, 1fr); } }
+      .mn-browse-tile {
+        display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+        padding: 16px; border-radius: var(--radius-lg); border: none; cursor: pointer;
+        text-align: left; color: #fff; font-family: var(--font-family);
+        transition: transform .18s ease, filter .18s ease;
+      }
+      .mn-browse-tile:hover { transform: translateY(-2px); filter: brightness(1.08); }
+      .mn-browse-tile:active { transform: translateY(0) scale(.98); }
+      .mn-bt-icon { font-size: 26px; }
+      .mn-bt-name { font-size: 15px; font-weight: 700; }
+      .mn-bt-sub { font-size: 11px; opacity: .82; }
+      .mn-bt-a { background: linear-gradient(135deg, #4648d4, #6a3fd0); }
+      .mn-bt-b { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+      .mn-bt-c { background: linear-gradient(135deg, #c2410c, #f97316); }
+      .mn-bt-d { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+      .mn-bt-e { background: linear-gradient(135deg, #b45309, #eab308); }
+      .mn-bt-f { background: linear-gradient(135deg, #1e293b, #475569); }
+      /* 搜索态：建议/chips/浏览/资料主页让位给结果 */
+      .mn-searching #mnSuggestBlock,
+      .mn-searching #mnChipsBlock,
+      .mn-searching #mnBrowseBlock,
+      .mn-searching .dy-profile { display: none; }
+    </style>
 
-      <!-- Right: Trending sidebar -->
-      <div style="display:flex;flex-direction:column;gap:var(--space-md)">
-        <!-- Premium Card -->
-        <div class="tilt-container" style="border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:white;padding:var(--space-md);position:relative">
-          <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,0.03);border-radius:50%;pointer-events:none"></div>
-          <div style="position:relative;z-index:1">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
-              <span class="material-symbols-outlined" style="font-size:20px;color:#eab308">verified</span>
-              <span style="font-weight:700;font-size:13px">M.NationWorld Premium</span>
-            </div>
-            <p style="font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:10px;line-height:1.4" data-i18n="ex.premium.desc">Advanced analytics, custom themes, priority support.</p>
-            <button class="btn btn-primary btn-sm" style="width:100%;background:linear-gradient(135deg,#eab308,#ca8a04);border:none;color:#1a1a2e;font-weight:700;font-size:12px" onclick="window.location.href='premium.html'">
-              <span class="material-symbols-outlined" style="font-size:14px">rocket_launch</span>
-              <span data-i18n="ex.premium.subscribe">Subscribe — </span><span data-slati-price>$11.99</span><span data-i18n="ex.premium.perMo">/mo</span>
-            </button>
-            <button class="btn btn-ghost btn-sm" style="width:100%;color:rgba(255,255,255,0.5);font-size:10px;margin-top:4px;padding:4px" onclick="window.location.href='premium.html'" data-i18n="ex.premium.viewPlans">View all plans →</button>
-          </div>
-        </div>
-        <!-- Hot Topics -->
-        <div class="card">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
-            <span class="material-symbols-outlined" style="font-size:18px;color:#ea580c">local_fire_department</span>
-            <span data-i18n="ex.trending">Trending Topics</span>
-          </h3>
-          <div id="trendingTopics" style="display:flex;flex-direction:column;gap:4px"></div>
-        </div>
-
-        <!-- Popular Nations -->
-        <div class="card">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
-            <span class="material-symbols-outlined" style="font-size:18px;color:#eab308">star</span>
-            <span data-i18n="ex.popular">Popular Worlds</span>
-          </h3>
-          <div id="popularNations" style="display:flex;flex-direction:column;gap:4px"></div>
-        </div>
-
-        <!-- Top Growing -->
-        <div class="card">
-          <h3 class="label-md" style="margin-bottom:var(--space-sm);display:flex;align-items:center;gap:6px">
-            <span class="material-symbols-outlined" style="font-size:18px;color:#22c55e">trending_up</span>
-            <span data-i18n="ex.growing">Top Growing</span>
-          </h3>
-          <div id="topGrowing" style="display:flex;flex-direction:column;gap:4px"></div>
-        </div>
-      </div>
-    </div>
+    <!-- v0.2.59.28.3 旧的抖音主页区（资料头+标签+网格）整体移除——探索页 = 纯搜索页 -->
   </main>
 </div>
 
@@ -2469,12 +2968,13 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
 <script>
   // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
   function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
-  // 国家 + 22 类型世界合并展示（世界记录归一化到国家卡片形状）
-  var nations = SlatiDB.getNations();
+  // v0.2.59.23 真实数据：国家/话题接后端（去测试信息）；本地世界（22 类型向导）保留合并
+  var nations = [];
   var worlds = SlatiDB.getWorlds().map(function (w) {
     return {
       name: w.name,
       classification: (w.emoji ? w.emoji + ' ' : '') + w.typeLabel,
+      emoji: w.emoji || '',
       lore: w.lore,
       capital: '',
       demographics: {},
@@ -2482,108 +2982,401 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
       worldType: true,
     };
   });
-  var allNations = nations.concat(worlds);
-  var topics = SlatiDB.getTopics();
+  var allNations = worlds.slice();
+  var topics = [];
   var filteredNations = allNations.slice();
 
-  function renderNationCards(nations) {
-    if (nations.length === 0) {
-      document.getElementById('nationCards').innerHTML =
-        '<div class="card" style="text-align:center;padding:var(--space-xl)">' +
-          '<p style="color:var(--color-outline)">' + (T('ex.empty') || 'No worlds match your search.') + '</p>' +
-          '<a href="create-world.html" class="btn btn-primary" style="margin-top:var(--space-sm)">' + (T('ex.createFirst') || 'Create the first world →') + '</a>' +
-        '</div>';
-      return;
+  // v0.2.59.25 抖音式渲染：资料头部 + 作品/文章/话题三标签
+  var articles = [];
+  var activeTab = 'works';
+
+  function dyEsc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function dyCode(name) {
+    return String(name || '').split(/\s+/).map(function (w) { return w.charAt(0).toUpperCase(); }).slice(0, 2).join('');
+  }
+  function dyStat(n, label) { return '<div class="dy-stat"><b>' + n + '</b><span>' + label + '</span></div>'; }
+
+  function dyStats() {
+    var el = document.getElementById('dyStats');
+    if (!el) return;
+    el.innerHTML = dyStat(allNations.length, '作品') + dyStat(articles.length, '文章') + dyStat(topics.length, '话题');
+  }
+  function dyFillProfile() {
+    if (!document.getElementById('dyName')) return; // v0.2.59.28.3 抖音主页区已移除（探索页=纯搜索页）
+    var u = {};
+    try { u = (window.SlatiDB && SlatiDB.getUser && SlatiDB.getUser()) || {}; } catch (e) {}
+    var mine = [];
+    try { mine = (window.SlatiDB && SlatiDB.getNations && SlatiDB.getNations()) || []; } catch (e) {}
+    var nat = mine.length ? mine[mine.length - 1] : null;
+    var name = u.displayName || (nat && nat.name) || 'M.NationWorld';
+    var moniker = (nat && nat.moniker) || '';
+    var bio = u.bio || (nat && nat.lore) || '在这片数字大陆上，建造你的国家。';
+    document.getElementById('dyName').textContent = name;
+    document.getElementById('dyId').textContent = moniker ? '@' + moniker + ' · M.NationWorld' : 'M.NationWorld';
+    document.getElementById('dyBio').textContent = bio;
+    var av = document.getElementById('dyAvatar');
+    if (u.avatarUrl && /^https?:/i.test(u.avatarUrl)) {
+      av.innerHTML = '<img src="' + dyEsc(u.avatarUrl) + '" alt="">';
+    } else {
+      av.textContent = String(name || 'MN').replace(/\s+/g, '').slice(0, 2).toUpperCase();
     }
+    dyStats();
+  }
 
-    var html = nations.map(function(n) {
-      var code = n.name.split(/\s+/).map(function(w) { return w.charAt(0).toUpperCase(); }).slice(0, 2).join('');
-      var maxSector = '';
-      if (n.sectors) {
-        var entry = Object.entries(n.sectors).sort(function(a, b) { return b[1] - a[1]; })[0];
-        if (entry) maxSector = '<span class="badge badge-primary">' + entry[0] + ': ' + entry[1] + '%</span>';
-      }
-      var dateStr = n.createdAt ? new Date(n.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+  function workCard(n) {
+    var code = dyCode(n.name);
+    var cover = n.emoji
+      ? '<div class="dy-cover-emoji">' + dyEsc(n.emoji) + '</div>'
+      : '<div class="dy-cover-code">' + dyEsc(code) + '</div>';
+    var card = '<div class="dy-cover">' +
+      (n.articleId ? '<span class="dy-cover-badge">已发布</span>' : '') +
+      '<div class="dy-cover-main">' + cover + '</div>' +
+      '<div class="dy-cover-label">' + dyEsc(n.name) + '</div>' +
+    '</div>' +
+    '<div class="dy-card-meta"><div class="t">' + dyEsc(n.name) + '</div>' +
+    '<div class="s">' + dyEsc(n.classification || '') + '</div></div>';
+    if (n.articleId) return '<a class="dy-card" href="article.html?id=' + encodeURIComponent(n.articleId) + '">' + card + '</a>';
+    return '<div class="dy-card">' + card + '</div>';
+  }
+  function articleCard(a) {
+    var code = dyCode(a.title);
+    return '<a class="dy-card" href="article.html?id=' + encodeURIComponent(a.id) + '">' +
+      '<div class="dy-cover">' +
+        '<div class="dy-cover-main"><div class="dy-cover-code">' + dyEsc(code) + '</div></div>' +
+        '<div class="dy-cover-label">' + dyEsc(a.title) + '</div>' +
+      '</div>' +
+      '<div class="dy-card-meta"><div class="t">' + dyEsc(a.title) + '</div>' +
+      '<div class="s">' + dyEsc(a.authorName || 'Anonymous') + ' · ' + dyEsc(String(a.createdAt || '').slice(0, 10) || '—') + '</div></div>' +
+    '</a>';
+  }
+  // v0.2.59.28.5 玻璃长卡（code.html 同款：字母徽 + 标题 + verified + 类型徽章 + 斜体简介 + 右侧统计）
+  function glassRow(cfg) {
+    var attrs = cfg.attrs || '';
+    var inner = '<div class="mn-mono">' + dyEsc(cfg.mono) + '</div>' +
+      '<div class="mn-glass-main">' +
+        '<div class="mn-glass-title-row">' +
+          '<span class="mn-glass-title">' + dyEsc(cfg.title) + '</span>' +
+          (cfg.verified ? '<span class="material-symbols-outlined mn-verified">verified</span>' : '') +
+          '<span class="mn-type-badge' + (cfg.badgeAlt ? ' mn-badge-alt' : '') + '">' + dyEsc(cfg.badge) + '</span>' +
+        '</div>' +
+        (cfg.lore ? '<p class="mn-card-lore' + (cfg.loreDim ? ' mn-lore-dim' : '') + '">' + dyEsc(cfg.lore) + '</p>' : '') +
+      '</div>' +
+      '<div class="mn-card-stats">' + (cfg.stats || []).map(function (s) { return '<span>' + dyEsc(s) + '</span>'; }).join('') + '</div>';
+    if (cfg.href) return '<a class="mn-glass-row tilt-container" ' + attrs + ' href="' + cfg.href + '">' + inner + '</a>';
+    return '<div class="mn-glass-row tilt-container" ' + attrs + '>' + inner + '</div>';
+  }
+  function articleGlass(a) {
+    // v0.2.59.28.6 简介放标题正下方全文展示（≤125 字；无简介给占位）
+    var hasSum = !!(a.summary && String(a.summary).trim());
+    return glassRow({
+      mono: dyCode(a.title),
+      title: a.title,
+      badge: '文章',
+      lore: hasSum ? String(a.summary).slice(0, 125) : '暂无简介',
+      loreDim: !hasSum,
+      href: 'article.html?id=' + encodeURIComponent(a.id),
+      stats: [dyEsc(a.authorName || 'Anonymous'), dyEsc(String(a.createdAt || '').slice(0, 10) || '—'), (a.viewCount || 0) + ' 阅读']
+    });
+  }
+  function nationGlass(n) {
+    var cls = n.classification || '';
+    return glassRow({
+      mono: dyCode(n.name),
+      title: n.name || '',
+      verified: !!n.articleId,
+      badge: (cls.split(' ').pop() || 'Nation'),
+      badgeAlt: true,
+      lore: n.lore || '',
+      href: n.articleId ? 'article.html?id=' + encodeURIComponent(n.articleId) : null,
+      stats: [dyEsc(n.capital || '—'), n.demographics && n.demographics.population ? dyEsc(n.demographics.population) : '', n.createdAt ? dyEsc(String(n.createdAt).slice(0, 10)) : '']
+    });
+  }
+  function topicGlass(t, i) {
+    return glassRow({
+      mono: '#' + (i + 1),
+      title: '#' + String(t.name || ''),
+      badge: '话题',
+      badgeAlt: true,
+      stats: [((t.memberCount != null ? t.memberCount : 0)).toLocaleString() + ' 成员'],
+      attrs: 'style="cursor:pointer" data-topic="' + dyEsc(String(t.name || '')) + '"'
+    });
+  }
+  // v0.2.59.28.4/28.5 文章/话题长条（玻璃长卡实现）
+  function articleRow(a) { return articleGlass(a); }
+  function topicRow(t, i) { return topicGlass(t, i); }
+  function topicCard(t, i) {
+    return '<div class="dy-card" data-topic="' + dyEsc(String(t.name || '')) + '" style="cursor:pointer">' +
+      '<div class="dy-cover">' +
+        '<div class="dy-cover-main"><div class="dy-cover-code" style="font-size:30px">#' + (i + 1) + '</div></div>' +
+        '<div class="dy-cover-label">#' + dyEsc(String(t.name || '').replace(/\s+/g, '_')) + '</div>' +
+      '</div>' +
+      '<div class="dy-card-meta"><div class="t">#' + dyEsc(String(t.name || '')) + '</div>' +
+      '<div class="s">' + ((t.memberCount != null ? t.memberCount : 0)).toLocaleString() + ' 位成员</div></div>' +
+    '</div>';
+  }
 
-      return '<div class="card card-hover tilt-container">' +
-        '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:12px">' +
-          '<div class="world-code-chip" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0">' + code + '</div>' +
-          '<div style="min-width:0;flex:1">' +
-            '<div style="font-weight:700;font-size:var(--fs-body-md);color:var(--color-on-surface)">' + n.name + '</div>' +
-            '<div class="label-sm" style="color:var(--color-outline)">' + n.classification + '</div>' +
-          '</div>' +
-          '<span class="material-symbols-outlined" style="font-size:18px;color:#22c55e">verified</span>' +
-        '</div>' +
-        '<p style="color:var(--color-on-surface-variant);font-size:var(--fs-label-md);margin-bottom:10px;line-height:1.5">' + (n.lore || (T('ex.loreFallback') || 'A world in the M.NationWorld registry.')) + '</p>' +
-        '<div class="flex-between" style="flex-wrap:wrap;gap:6px">' +
-          '<div style="display:flex;gap:4px;flex-wrap:wrap">' +
-            '<span class="badge badge-secondary">' + n.classification + '</span>' +
-            maxSector +
-          '</div>' +
-          '<span class="label-sm" style="color:var(--color-outline)">' + dateStr + '</span>' +
-        '</div>' +
-        '<div class="flex-center gap-sm" style="margin-top:10px;font-size:var(--fs-label-sm);color:var(--color-outline);flex-wrap:wrap">' +
-          '<span>🏛️ ' + (n.capital || 'N/A') + '</span>' +
-          '<span>👥 ' + (n.demographics && n.demographics.population ? n.demographics.population : 'N/A') + '</span>' +
-          '<span>📐 ' + (n.demographics && n.demographics.territory ? n.demographics.territory + ' km²' : 'N/A') + '</span>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-
-    document.getElementById('nationCards').innerHTML = html;
-    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
+  function dyRender() {
+    var grid = document.getElementById('dyGrid');
+    if (!grid) return;
+    grid.classList.remove('dy-grid-search');
+    if (activeTab === 'articles') {
+      grid.innerHTML = articles.length
+        ? articles.map(articleCard).join('')
+        : '<div class="dy-empty" style="grid-column:1/-1">暂无文章</div>';
+    } else if (activeTab === 'topics') {
+      grid.innerHTML = topics.length
+        ? topics.map(topicCard).join('')
+        : '<div class="dy-empty" style="grid-column:1/-1">暂无话题</div>';
+      [].slice.call(grid.querySelectorAll('.dy-card[data-topic]')).forEach(function (el) {
+        el.addEventListener('click', function () {
+          var name = el.getAttribute('data-topic');
+          if (!name) return;
+          dySwitchTab('works');
+          filterNations(name);
+        });
+      });
+    } else {
+      grid.innerHTML = filteredNations.length
+        ? filteredNations.map(workCard).join('')
+        : '<div class="dy-empty" style="grid-column:1/-1">没有匹配的世界。<a href="create-world.html" style="color:var(--color-primary)">创建第一个世界 →</a></div>';
+    }
+    dyStats();
+  }
+  function dySwitchTab(tab) {
+    activeTab = tab;
+    [].slice.call(document.querySelectorAll('#dyTabs .dy-tab')).forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-tab') === tab);
+    });
+    dyRender();
   }
 
   function filterNations(query) {
-    if (!query) { filteredNations = allNations.slice(); }
+    var has = !!(query && String(query).trim());
+    if (!has) { filteredNations = allNations.slice(); }
     else {
-      var q = query.toLowerCase();
-      filteredNations = allNations.filter(function(n) {
-        return n.name.toLowerCase().includes(q) ||
-               (n.moniker && n.moniker.toLowerCase().includes(q)) ||
-               (n.capital && n.capital.toLowerCase().includes(q)) ||
-               (n.classification && n.classification.toLowerCase().includes(q)) ||
-               (n.lore && n.lore.toLowerCase().includes(q));
+      var q = String(query).toLowerCase();
+      filteredNations = allNations.filter(function (n) {
+        return (n.name || '').toLowerCase().indexOf(q) !== -1 ||
+               (n.moniker || '').toLowerCase().indexOf(q) !== -1 ||
+               (n.capital || '').toLowerCase().indexOf(q) !== -1 ||
+               (n.classification || '').toLowerCase().indexOf(q) !== -1 ||
+               (n.lore || '').toLowerCase().indexOf(q) !== -1;
       });
     }
-    renderNationCards(filteredNations);
+    // v0.2.59.28 搜索页：有词 → 搜索态（结果区接管页面）；清空 → 浏览态
+    setSearchMode(has);
+    if (has) {
+      mnRenderNationResults(filteredNations);
+      mnPushHistory(String(query).trim());
+    } else {
+      mnRenderNationResults(null);
+    }
   }
 
-  // Trending Topics
-  document.getElementById('trendingTopics').innerHTML = topics.map(function(t, i) {
-    var badges = ['#1', '#2', '#3', '#4'];
-    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
-      '<span style="font-weight:800;font-size:var(--fs-label-sm);color:' + (i === 0 ? '#ea580c' : 'var(--color-outline)') + ';width:20px">' + badges[i] + '</span>' +
-      '<span style="flex:1;font-size:var(--fs-label-md);font-weight:500">#' + t.name.replace(/\s+/g, '_') + '</span>' +
-      '<span class="label-sm" style="color:var(--color-outline)">' + t.memberCount.toLocaleString() + '</span>' +
-    '</div>';
-  }).join('');
+  // ===== v0.2.59.28 搜索页：智能搜索开关 / 排序 / chips / 建议文章 / 搜索态切换 =====
+  window.mnSmartOn = false;
+  var mnSort = 'new';
 
-  // Popular Nations
-  document.getElementById('popularNations').innerHTML = allNations.slice(0, 4).map(function(n) {
-    var code = n.name.split(/\s+/).map(function(w) { return w.charAt(0).toUpperCase(); }).slice(0, 2).join('');
-    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
-      '<div class="world-code-chip" style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--color-primary),var(--color-secondary));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;flex-shrink:0">' + code + '</div>' +
-      '<span style="flex:1;font-size:var(--fs-label-md);font-weight:500">' + n.name + '</span>' +
-      '<span class="label-sm" style="color:var(--color-outline)">' + (n.demographics && n.demographics.population ? n.demographics.population : '') + '</span>' +
-    '</div>';
-  }).join('');
+  function setSearchMode(on) {
+    document.body.classList.toggle('mn-searching', !!on);
+    var clr = document.getElementById('mnSearchClear');
+    if (clr) clr.style.display = on ? '' : 'none';
+    var sort = document.getElementById('mnSortWrap');
+    if (sort) sort.style.display = on ? '' : 'none';
+  }
+  window.clearExSearch = function () {
+    var i = document.getElementById('exSearchInput');
+    if (i) i.value = '';
+    filterNations('');
+    exSearchClose();
+    exRenderArticleSection(null);
+    if (i) i.focus();
+  };
+  window.toggleSmartSearch = function () {
+    window.mnSmartOn = !window.mnSmartOn;
+    var btn = document.getElementById('mnSmartBtn');
+    var ic = document.getElementById('mnSearchIcon');
+    var input = document.getElementById('exSearchInput');
+    var hint = document.getElementById('mnModeHint');
+    if (btn) btn.classList.toggle('on', window.mnSmartOn);
+    if (ic) ic.textContent = window.mnSmartOn ? 'auto_awesome' : 'search';
+    if (input) input.placeholder = window.mnSmartOn ? '描述你想找的文章…（AI 智能搜索）' : 'Search worlds, articles...';
+    if (hint) hint.textContent = window.mnSmartOn ? '智能搜索：描述式找文章（DeepSeek Flash）' : '默认：关键词搜索';
+    var q = input && input.value.trim();
+    if (q) exDoSearch(q); // 已有词 → 按新模式重搜
+  };
+  window.mnSetSort = function (btn) {
+    mnSort = btn.getAttribute('data-sort') || 'new';
+    [].slice.call(document.querySelectorAll('.mn-sort-btn')).forEach(function (b) {
+      b.classList.toggle('active', b === btn);
+    });
+    var q = ((document.getElementById('exSearchInput') || {}).value || '').trim();
+    if (q) exDoSearch(q);
+  };
+  window.mnSearchTerm = function (term) {
+    var i = document.getElementById('exSearchInput');
+    if (i) i.value = term;
+    filterNations(term);
+    exDoSearch(term);
+  };
+  window.mnSmartDemo = function () {
+    if (!window.mnSmartOn) toggleSmartSearch();
+    var i = document.getElementById('exSearchInput');
+    if (i) i.value = '经典的政治哲学讨论';
+    filterNations(i ? i.value : '');
+    exDoSearch(i ? i.value : '');
+    if (i) i.focus();
+  };
+  window.mnBrowseTab = function (tab) {
+    window.mnShowBrowse(tab);
+  };
+  // v0.2.59.28.3/28.4 浏览瓷贴落点 = 建议区（抖音主页区已移除；全部国家/文章/话题 = 原本的列表样式）
+  window.mnShowBrowse = function (kind) {
+    var g = document.getElementById('mnSuggestGrid');
+    var head = document.getElementById('mnSuggestHead');
+    if (!g) return;
+    g.classList.add('mn-as-list');
+    var html = '';
+    var label = '全部国家', icon = 'public';
+    if (kind === 'articles') {
+      label = '文章'; icon = 'article';
+      html = articles.length ? articles.slice(0, 25).map(articleRow).join('') : '<div class="dy-empty" style="grid-column:1/-1">暂无文章</div>';
+    } else if (kind === 'topics') {
+      label = '话题'; icon = 'tag';
+      html = topics.length ? topics.map(topicRow).join('') : '<div class="dy-empty" style="grid-column:1/-1">暂无话题</div>';
+    } else {
+      g.classList.remove('mn-as-list');
+      g.classList.add('dy-grid-search');
+      html = allNations.length ? allNations.map(searchCard).join('') : '<div class="dy-empty" style="grid-column:1/-1">暂无国家</div>';
+    }
+    g.innerHTML = html;
+    if (head) head.innerHTML = '<span class="material-symbols-outlined">' + icon + '</span><span>' + label + '</span>';
+    [].slice.call(g.querySelectorAll('.mn-glass-row[data-topic]')).forEach(function (el) {
+      el.addEventListener('click', function () {
+        var name = el.getAttribute('data-topic');
+        if (name) window.mnSearchTerm('#' + name);
+      });
+    });
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('#mnSuggestGrid .tilt-container'));
+    var b = document.getElementById('mnSuggestBlock');
+    if (b && b.scrollIntoView) b.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  function mnPushHistory(term) {
+    try {
+      var arr = JSON.parse(localStorage.getItem('mn_search_history') || '[]');
+      arr = arr.filter(function (t) { return String(t).toLowerCase() !== String(term).toLowerCase(); });
+      arr.unshift(term);
+      localStorage.setItem('mn_search_history', JSON.stringify(arr.slice(0, 8)));
+    } catch (e) {}
+    mnRenderChips();
+  }
+  function mnChip(label, cls) {
+    return '<button type="button" class="mn-chip' + (cls || '') + '" onclick="mnSearchTerm(' + JSON.stringify(String(label)) + ')">' + dyEsc(String(label)) + '</button>';
+  }
+  function mnRenderChips() {
+    var hist = [];
+    try { hist = JSON.parse(localStorage.getItem('mn_search_history') || '[]'); } catch (e) {}
+    var hRow = document.getElementById('mnHistRow'), hChips = document.getElementById('mnHistChips');
+    if (hRow && hChips) {
+      if (hist.length) {
+        hRow.style.display = '';
+        hChips.innerHTML = hist.map(function (t) { return mnChip(t); }).join('');
+      } else hRow.style.display = 'none';
+    }
+    var trend = topics.slice(0, 6).map(function (t) { return '#' + String(t.name || ''); });
+    if (!trend.length) trend = ['宪法', '民主', '冷战', '君主立宪', '政治哲学'];
+    var tRow = document.getElementById('mnTrendRow'), tChips = document.getElementById('mnTrendChips');
+    if (tRow && tChips) {
+      tRow.style.display = '';
+      tChips.innerHTML = trend.map(function (t) { return mnChip(t, ' mn-chip-hot'); }).join('');
+    }
+    var nRow = document.getElementById('mnNationRow'), nChips = document.getElementById('mnNationChips');
+    if (nRow && nChips) {
+      if (allNations.length) {
+        nRow.style.display = '';
+        nChips.innerHTML = allNations.slice(0, 8).map(function (n) { return mnChip(n.name || ''); }).join('');
+      } else nRow.style.display = 'none';
+    }
+    var tpRow = document.getElementById('mnTopicRow'), tpChips = document.getElementById('mnTopicChips');
+    if (tpRow && tpChips) {
+      if (topics.length) {
+        tpRow.style.display = '';
+        tpChips.innerHTML = topics.slice(0, 8).map(function (t) { return mnChip('#' + String(t.name || '')); }).join('');
+      } else tpRow.style.display = 'none';
+    }
+  }
+  function mnRenderNationResults(list) {
+    var wrap = document.getElementById('mnSearchNationWrap');
+    var grid = document.getElementById('mnSearchNationGrid');
+    if (!wrap || !grid) return;
+    if (!list) { wrap.style.display = 'none'; grid.innerHTML = ''; return; }
+    wrap.style.display = 'block';
+    grid.classList.add('dy-grid-search'); // v0.2.59.28.4 原本的单列卡片列表
+    grid.innerHTML = list.length
+      ? list.map(searchCard).join('')
+      : '<div class="dy-empty" style="grid-column:1/-1">没有匹配的国家</div>';
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('#mnSearchNationGrid .tilt-container'));
+  }
+  function mnRenderSuggestions() {
+    var g = document.getElementById('mnSuggestGrid');
+    if (!g) return;
+    g.classList.add('mn-as-list'); // v0.2.59.28.4 长条行模式
+    if (articles.length) {
+      g.innerHTML = articles.slice(0, 25).map(articleRow).join('');
+    } else {
+      g.innerHTML = '<div class="dy-empty" style="grid-column:1/-1">暂无文章——发布第一篇文章后会出现在这里</div>';
+    }
+  }
 
-  // Top Growing
-  var growthItems = [
-    { name: 'Digital Sovereignty Protocols', pct: '+24%', color: '#22c55e' },
-    { name: 'Cartography Guild', pct: '+18%', color: '#22c55e' },
-    { name: 'Neural Architects', pct: '+15%', color: '#22c55e' },
-    { name: 'Governance Design Lab', pct: '+12%', color: '#22c55e' },
-  ];
-  document.getElementById('topGrowing').innerHTML = growthItems.map(function(g) {
-    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(118,117,134,0.06)">' +
-      '<span style="flex:1;font-size:var(--fs-label-md);font-weight:500">' + g.name + '</span>' +
-      '<span class="label-sm" style="color:' + g.color + ';font-weight:600">' + g.pct + '</span>' +
-    '</div>';
-  }).join('');
+  // v0.2.59.27 旧版搜索卡片（v0.2.59.23 口径：简介、分类徽章、已发布跳文章页）
+  function searchCard(n) {
+    return nationGlass(n); // v0.2.59.28.5 玻璃长卡
+  }
+  function renderSearchResults(list) {
+    var grid = document.getElementById('dyGrid');
+    if (!grid) return;
+    grid.classList.add('dy-grid-search');
+    grid.innerHTML = list.length
+      ? list.map(searchCard).join('')
+      : '<div class="dy-empty" style="grid-column:1/-1">没有匹配的世界。<a href="create-world.html" style="color:var(--color-primary)">创建第一个世界 →</a></div>';
+    if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('#dyGrid .tilt-container'));
+  }
 
-  renderNationCards(allNations);
+  function fetchExploreData() {
+    if (window.MN_API && window.MN_API.get) {
+      window.MN_API.get('/social/nations').then(function (nr) {
+        var remote = (nr && nr.ok && nr.data && Array.isArray(nr.data.nations)) ? nr.data.nations : [];
+        nations = remote;
+        allNations = nations.concat(worlds);
+        filteredNations = allNations.slice();
+        dyRender(); dyFillProfile(); mnRenderChips();
+      });
+      window.MN_API.get('/social/topics').then(function (tr) {
+        topics = (tr && tr.ok && tr.data && Array.isArray(tr.data.topics)) ? tr.data.topics : [];
+        dyRender(); dyFillProfile(); mnRenderChips();
+      });
+      window.MN_API.get('/articles').then(function (ar) {
+        var list = (ar && ar.ok && ar.data && Array.isArray(ar.data.articles)) ? ar.data.articles : [];
+        articles = list.filter(function (a) { return a.status === 'published'; });
+        dyRender(); dyFillProfile(); mnRenderSuggestions();
+      });
+    } else {
+      dyRender(); dyFillProfile(); mnRenderChips(); mnRenderSuggestions();
+    }
+  }
+
+  var dyTabsEl = document.getElementById('dyTabs');
+  if (dyTabsEl) dyTabsEl.addEventListener('click', function (e) {
+    var b = e.target.closest('.dy-tab');
+    if (b) dySwitchTab(b.getAttribute('data-tab'));
+  });
+
+  // v0.2.59.28.3：dyRender/dyFillProfile 已无目标 DOM（抖音主页区移除），仅留守卫；页面由搜索页接管
+  mnRenderChips();
+  mnRenderSuggestions();
+  fetchExploreData();
 
   // v0.2.56.1 文章搜索（用户「我在 explore.html 搜索都搜索不到」——本页搜索此前只筛世界；
   // 与 overview ovDoSearch 同口径：300ms 防抖下拉、回车立即搜、Esc/点击外部关闭；
@@ -2610,55 +3403,49 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
       '<span style="flex:1;min-width:0">' +
         '<span class="dash-search-title">' + exEsc(a.title) + '</span>' +
         '<span class="dash-search-meta">' + exEsc(a.authorName || 'Anonymous') + ' · ' + exEsc(String(a.createdAt || '').slice(0, 10) || '—') + '</span>' +
+        (a.summary ? '<span style="display:block;font-size:11px;color:var(--color-outline);line-height:1.4;margin-top:2px">' + exEsc(String(a.summary).slice(0, 125)) + '</span>' : '') +
       '</span>' +
     '</a>';
   }
   function exRenderArticleSection(list) {
     var sec = document.getElementById('exArticleResults');
     if (!sec) return;
-    if (!list || !list.length) { sec.style.display = 'none'; sec.innerHTML = ''; return; }
+    // v0.2.59.28.2/28.4：null=隐藏；[]=空态提示；有列表=原本的长条行结果
+    if (!list) { sec.style.display = 'none'; sec.innerHTML = ''; return; }
     sec.style.display = 'block';
-    sec.innerHTML =
-      '<div class="card" style="padding:var(--space-sm) var(--space-md)">' +
-        '<h3 class="label-md" style="margin-bottom:var(--space-xs);display:flex;align-items:center;gap:6px">' +
-          '<span class="material-symbols-outlined" style="font-size:16px;color:var(--color-primary)">article</span>' +
-          (T('ex.search.articles') || 'Articles') +
-        '</h3>' +
-        list.map(function (a) {
-          return '<a class="dash-search-item" href="article.html?id=' + encodeURIComponent(a.id) + '" style="margin:0 -6px">' +
-            '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary);flex-shrink:0">article</span>' +
-            '<span style="flex:1;min-width:0">' +
-              '<span class="dash-search-title">' + exEsc(a.title) + '</span>' +
-              '<span class="dash-search-meta">' + exEsc(a.authorName || 'Anonymous') + ' · ' + exEsc(String(a.createdAt || '').slice(0, 10) || '—') + '</span>' +
-            '</span>' +
-            '<span class="material-symbols-outlined" style="font-size:16px;color:var(--color-outline)">arrow_forward</span>' +
-          '</a>';
-        }).join('') +
-      '</div>';
+    var inner = list.length
+      ? list.map(articleGlass).join('')
+      : '<div class="dy-empty" style="grid-column:1/-1">' + (T('ex.search.noArticles') || '没有找到相关文章，试试换个描述') + '</div>';
+    sec.innerHTML = '<div class="mn-result-head">' +
+      '<span class="material-symbols-outlined">article</span><span>' + (T('ex.search.articles') || '文章') + '</span>' +
+      '<span class="mn-result-count">' + list.length + '</span>' +
+      '</div><div class="mn-result-grid mn-as-list">' + inner + '</div>';
   }
   function exDoSearch(q) {
     q = (q || '').trim();
     if (!q) { exSearchClose(); exRenderArticleSection(null); return; }
     exLastQuery = q;
-    if (!window.MN_API) {
-      exSearchOpen('<div class="dash-search-state">' + (T('ex.search.unavailable') || '文章搜索暂不可用，请稍后再试') + '</div>');
-      exRenderArticleSection(null);
+    // v0.2.59.28.2：旧下拉建议面板整体退役——搜索反馈只走页面内结果区（exArticleResults）
+    exSearchClose();
+    if (window.mnSmartOn) {
+      window.MN_API.post('/articles/search/smart', { q: q }).then(function (res) {
+        if (exLastQuery !== q) return;
+        if (res && res.ok && res.data && Array.isArray(res.data.articles)) {
+          exRenderArticleSection(res.data.articles);
+        } else {
+          exRenderArticleSection([]);
+        }
+      });
       return;
     }
-    exSearchOpen('<div class="dash-search-state">' + (T('ex.search.searching') || '搜索中…') + '</div>');
-    MN_API.get('/articles?q=' + encodeURIComponent(q)).then(function (res) {
+    if (!window.MN_API) { exRenderArticleSection([]); return; }
+    var sortSuffix = mnSort === 'hot' ? '&sort=hot' : '';
+    MN_API.get('/articles?q=' + encodeURIComponent(q) + sortSuffix).then(function (res) {
       if (exLastQuery !== q) return; // 防抖期间又改了词：丢弃过期响应
       if (res && res.ok && res.data && Array.isArray(res.data.articles)) {
-        var list = res.data.articles;
-        if (!list.length) {
-          exSearchOpen('<div class="dash-search-state">' + (T('ex.search.noArticles') || '没有找到相关文章') + '</div>');
-        } else {
-          exSearchOpen(list.map(exSearchRow).join(''));
-        }
-        exRenderArticleSection(list);
+        exRenderArticleSection(res.data.articles);
       } else {
-        exSearchOpen('<div class="dash-search-state">' + (T('ex.search.unavailable') || '文章搜索暂不可用，请稍后再试') + '</div>');
-        exRenderArticleSection(null);
+        exRenderArticleSection([]);
       }
     });
   }

@@ -1,0 +1,117 @@
+── S. 侧栏入口（hub 上）──
+  ✅ S1 版本 v0.2.54.0（ver=v0.2.58.22）
+  ✅ S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）（../pages/community-profile.html?id=USR-000101）
+  ✅ S2 点侧栏锚 → 信息弹窗（不跳页：仍 hub + 查看主页按钮在位）（{"viewHref":"../pages/community-profile.html?id=USR-000101","path":"/pages/community-hub.html"}）
+── G. 自己主页（USR-000101，isSelf）──
+  ✅ G1 主页可见 + 头部高度 > 0（h=475）
+  ✅ G1 4 个 tab 药丸 + tabs 容器可见（n=4）
+  ✅ G1 侧栏已渲染 + 返回链回 hub（sLen=207）
+  ✅ G2 名字/公民号/性别徽章=♂svg/简介/加入时间（../assets/image/male_24dp_7CA7D8_FILL0_wght400_GRAD0_opsz24.svg 电池用户@CIT-0001012 粉丝3 关注1 获赞电池用户简介calendar_today 加入于 2026年8月1）
+  ✅ G2 统计四块 1/1/2/1 + counts 并排 2 粉丝 · 3 关注 · 1 获赞（1/1/2/1 / 2 粉丝3 关注1 获赞）
+  ✅ G2 isSelf → 编辑资料钮（非关注钮）+ 真头像（edit=true）
+  ✅ G2 v0.2.22.2 横排几何（58.18 口径）：名字列在头像右侧（nmL≥avR-1）+ 名字在头像底缘下（nmT≥avB-2，头像绝对定位叠横幅后半身）（avR=524.5 nmL=548.5 avB=277.390625 nmT=283.390625 nmB=312.1875）
+  ✅ G2 v0.2.22.3 粉丝关注贴 .profile-top 行最右缘（rightEdge≤1）+ 在头像右侧（pcL>avR）（ptR=1050.5 pcR=1050.5 pcL=882.5 avR=524.5）
+  ✅ G2 v0.2.22.5 横幅可见（h≥100）+ 分割线 1px + 头像叠横幅半身（bnB-avT≈36，58.18 钦定 36px）（bnH=140 bb=1px avT=205.390625 bnB=241.390625）
+  ✅ G2 v0.2.23.0 cardBg null → 默认头部（无 liquid-glass/无 data-card-bg/无 glass-* 预设类）+ v0.2.24.0 cardPlate null → 包层无 card-halo（{"glass":false,"attr":false,"cls":"card profile-header lg-static","wrapCls":""}）
+  ✅ G3 编辑资料开独立弹窗：card+backdrop 计算 opacity=1 + 不开设置弹窗（{"bd":true,"bdOp":"1","card":true,"cardOp":"1","hasSettings":false,"name":"电池用户","bio":"电池用户简介","pills":"Male:../assets/image/male_24dp_7CA7D8_FILL0_wght400_GRAD0_opsz24.svg|Female:../assets/image/female_24dp_F18AFF_FILL0_wght400_GRAD0_opsz24.svg|Other:其他","maleActive":true}）
+  ✅ G3 字段预填：名字 电池用户/简介 电池用户简介/性别男高亮（电池用户/true）
+  ✅ G3 v0.2.22.1 性别药丸=图标：♂ 蓝 svg + ♀ 粉 svg + Other 文字（Male:../assets/image/male_24dp_7CA7D8_FILL0_wght400_GRAD0_opsz24.svg|Female:../assets/image/female_24dp_F18AFF_FILL0_wght400_GRAD0_opsz24.svg|Other:其他）
+  ✅ G3 Escape 关弹窗 → 卡片移除（{"gone":true}）
+── E. 编辑资料独立弹窗（自己主页，v0.2.22.0）──
+E1 raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}"]
+  ✅ E1 保存 → PATCH /auth/me 单次且 body 精确（名字/简介/性别 Female，无 avatarUrl）（["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}"]）
+  ✅ E1 保存 → 弹窗关 + toast 资料已保存 + 头部重拉（改名/♀svg/新简介）（../assets/image/female_24dp_F18AFF_FILL0_wght400_GRAD0_opsz24.svg 电池用户改@CIT-0001012 粉丝3 关注1 获赞新简介calendar_today 加入于 2026年8月1日1帖子1转发2点赞1收）
+  ✅ E1 侧栏同页即时更新为 电池用户改（side=电池用户改）
+  ✅ E2 选头像 → 直传 + 预览换图 + 状态提示（{"src":"/uploads/UPL-DEMO01.jpg","st":"新头像已就绪，点保存生效"}）
+  ✅ E2 保存 → PATCH 带 avatarUrl + 头部头像换新 + 直传调用 1 次（{"patchedAvatar":"/uploads/UPL-DEMO01.jpg","hAvatar":"/uploads/UPL-DEMO01.jpg","uploadCalls":1}）
+  ✅ E3 空显示名 → 拦截（无 PATCH + toast 显示名不能为空 + 弹窗还在）（{"patched":null,"stillOpen":true,"toasts":"资料已保存|资料已保存|显示名不能为空"}）
+  ✅ E4 保存 401 → toast 登录已过期 + 弹窗关（{"gone":true,"toasts":"资料已保存|资料已保存|显示名不能为空|登录已过期，请重新登录"}）
+  ✅ E5 无改动保存 → 直接关不发 PATCH（{"patched":null,"gone":true}）
+── E6. 编辑资料弹窗 基础/自定义 导航 + 卡片背景液体玻璃（v0.2.23.0）──
+  ✅ E6 弹窗顶部导航：基础/自定义 2 药丸 + 基础 active + 基础可见自定义藏（{"n":2,"labels":"基础|自定义","active":"basic","basicVis":"block","customVis":"none","hasGrid":true}）
+  ✅ E6 切自定义：互斥显示 + 五组（横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景——v0.2.53.1 新边缘组+v0.2.58.18 新横幅图片组）+ 横幅 13 预设（v0.2.58.22 免费层扩展 6 单色/黑白系）+ v0.2.24.1 卡片背景只 2 选项（默认|标准液态玻璃）默认选中 + v0.2.25.0 页面背景 2 选项（默认|自定义图片）默认选中（{"active":"custom","basicVis":"none","customVis":"block","labels":"横幅（液体玻璃）|横幅图片|卡片背景|边缘|页面背景","bgN":13,"bgLabels":"默认|磨砂|深海|薰衣草|樱花|薄荷|落日|墨黑|纯白|石板灰|黑白渐变|银灰渐变|炭黑渐变","bgFirstActive":true,"flatCls":"edit-bg-flat bg-default","flatBg":"linear-gradient(135deg, rgba(70, 72, 212, 0.9), rgba(124, 92, 224, 0.55) 45%, rgba(70, 72, 212, 0.92)), radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0) 46%), radial-gradient(circle at 80% 72%, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0) 40%), none","plN":2,"plLabels":"默认|标准液态玻璃","plFirstActive":true,"pvCls":"edit-bg-preview","pvBg":"none","pvCardBgColor":"rgba(0, 0, 0, 0)","pgN":2,"pgLabels":"默认|自定义图片","pgFirstActive":true}）
+  ✅ E6 v0.2.24.0 预览默认：横幅条=品牌渐变 + 卡片背景预览无 has-plate 无背景 + 迷你透明卡身（flat=edit-bg-flat bg-default pvCls=edit-bg-preview pvBg=none pvCard=rgba(0, 0, 0, 0)）
+  ✅ E6 横幅组点深海：active 唯一互斥 + 横幅条同步深海渐变（{"activeCount":1,"activeBg":"glass-ocean","flatCls":"edit-bg-flat glass-ocean","flatBg":"linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.08) 45%, rgba(255, 255, 255, 0.22)), linear-gradient(135deg, rgba(30, 90, 200, 0.55), rgba(40, 140, 190, 0.4) 50%, rgba(30, 90, 200, 0.55)), radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0) 46%), radial-gradient(circle at 80% 72%, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0) 40%), none"}）
+  ✅ E6 卡片背景组点标准液态玻璃：active 唯一互斥 + 包层预览 has-plate glass-clear 真液态玻璃霜体（无色极轻白霜 gradient 在 + 三色相 30,90,200/232,110,160/96,100,230 均不在）+ 透明卡身透出 + 横幅组不受影响（仍深海）+ v0.2.25.2 预览无默认底色（{"activeCount":1,"activePlate":"glass-clear","pvCls":"edit-bg-preview has-plate glass-clear","pvBg":"linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.1)), radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0) 46%), radial-gradient(circle at 80% 72%, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0) 40%)","pvBgColor":"rgba(0, 0, 0, 0)","pvShadow":"rgba(0, 0, 0, 0.4) 0px 4px 12px 0px, rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset","pvCardBgColor":"rgba(0, 0, 0, 0)","flatCls":"edit-bg-flat glass-ocean","pvOrbB":"radial-gradient(circle, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 70%)","pvOrbA":"radial-gradient(circle, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%)","pvShMix":"screen","pvShBg":"linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.12) 33%, rgba(255, 255, 255, 0.4) 66%, rgba(255, 255, 255, 0) 100%)","pvShTop":"6px","swShadow":"rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0.4) 0px 4px 12px 0px"}）
+  ✅ E6 v0.2.24.1 标准液态玻璃预览=代码白边环 2px（rgba(255,255,255,0.8) inset）+ 柔影（0 4px 12px rgba(0,0,0,0.4)）（rgba(0, 0, 0, 0.4) 0px 4px 12px 0px, rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset）
+  ✅ E6 v0.2.24.2 标准液态玻璃色块=透明填充+白边环 2px+柔影（代码同款示意）（rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset, rgba(0, 0, 0, 0.4) 0px 4px 12px 0px）
+  ✅ E6 v0.2.24.4 预览玻璃光球：无色双白光球在透明卡身内（玻璃后面有光的示意；用户「为什么这个玻璃会有蓝色和紫色在背面能不能去掉」→光球去色纯白，蓝紫色值均不在）（radial-gradient(circle, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 70%) | radial-gradient(circle, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%)）
+  ✅ E6 v0.2.25.1 预览迷你双层环形高光（与大卡同配方缩小版：screen 混合+135° 白渐变+环贴卡缘 top=6px）（{"mix":"screen","bg":"linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255,","top":"6px"}）
+E6d raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}"]
+  ✅ E6 保存 → PATCH 含 cardBg 恰 1 次且 body 精确 ={"cardBg":"glass-ocean","cardPlate":"glass-clear"}+ 弹窗关 + toast（["{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}"]）
+  ✅ E6 头部重拉挂液体玻璃：liquid-glass + glass-ocean 类 + data-card-bg + 折射/高光双层（{"glass":true,"cls":"card profile-header glass-bg glass-ocean liquid-glass lg-static","attr":"glass-ocean","layer":true,"spec":true}）
+  ✅ E6 玻璃层 backdrop-filter 生效（blur 10px + saturate；v0.2.53.2 生成器代码口径 14→10）+ v0.2.53.2 折射滤镜=url("#glass-distortion")（噪点波动折射，覆盖引擎三通道色散——无色散不发黄）（{"layerFilter":"blur(10px) saturate(1.4)","layerFilterUrl":"url(\"#glass-distortion\")"}）
+  ✅ E6 v0.2.24.3 独立双背景：横幅=卡上深海渐变 + 卡片背景=包层 card-halo glass-clear lg-static（引擎类在）+ 真液态玻璃霜体（无色极轻白霜 gradient 在 + 三色相均不在）+ 卡身纯透明直透页面（banner=linear-gradient(135deg, rgba(255, 255, 255, 0.3),  wrapCls=card-halo glass-clear lg-static wrapBg=linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45% card=rgba(0, 0, 0, 0)）
+  ✅ E6 v0.2.25.2 默认底色移除：包层背景色透明（横幅以外彻底透到页面——用户「默认的那个背景你也没在标准液态玻璃背景的情况下除了横幅以外的移除啊」）（wrapBgColor=rgba(0, 0, 0, 0)）
+  ✅ E6 v0.2.24.3 真液态玻璃引擎挂包层：lg-static 类 + 折射层 .lg-backdrop + 镜面高光 .lg-specular 双注入 + 层磨砂 10px saturate（v0.2.53.2 生成器代码口径 24→10）+ 同款波动折射滤镜 url("#glass-distortion")（{"wrapLg":true,"wrapLayer":true,"wrapSpec":true,"haloLayerFilter":"blur(10px) saturate(1.4)","haloLayerFilterUrl":"url(\"#glass-distortion\")"}）
+  ✅ E6 v0.2.24.4 玻璃光场亮起：.lg-orb-field 在包层内 display=block + 无色双白光球（蓝紫 96,165,250/167,139,250 均不在——用户去色）+ 高光层斜向流光（{"orb":true,"orbVis":"block","orbB":"radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0) 70%)","orbA":"radial-gradient(circle, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 70%)","specBg":"linear-gradient(115deg, rgba(255, 255, 255, 0) 28%, rgba(255"}）
+  ✅ E6 v0.2.24.1 标准液态玻璃包层=代码白边环 2px（rgba(255,255,255,0.8) inset）+ 柔影（0 4px 12px rgba(0,0,0,0.4)）（rgba(0, 0, 0, 0.4) 0px 4px 12px 0px, rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset）
+  ✅ E6 v0.2.25.1 rdev 双层环形高光原值移植：::before screen 0.2 / ::after overlay（index.tsx Border layer 1/2 原值）+ 白渐变 135° 双环 + 1.5px 异或环贴卡缘（top=6px=包层 padding）+ 光球提亮 0.85/0.75（用户「还是一样没有」——任何背景下可见的玻璃招牌层）（{"bMix":"screen","aMix":"overlay","bBg":"linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255,","top":"6px","pad":"1.5px","mask":"exclude, exclude","content":"\"\"","orbB":"radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255,","orbA":"radial-gradient(circle, rgba(255, 255, 255, 0.75), rgba(255,"}）
+  ✅ E6 重开弹窗 → 双组预填当前背景（横幅 glass-ocean + 卡片背景 glass-clear 各选中各预览）（{"bgActive":"glass-ocean","plActive":"glass-clear","flatCls":"edit-bg-flat glass-ocean","pvCls":"edit-bg-preview has-plate glass-clear"}）
+E6f raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}"]
+  ✅ E6 双双选默认 → 保存 → 最后 PATCH body 精确 ={"cardBg":null,"cardPlate":null} + 头部回默认（无 liquid-glass/无 data-card-bg/无预设类）（["{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}"]）
+  ✅ E6 v0.2.24.0 回默认 → 包层类清空（无 card-halo）+ 卡身回实底（非透明）+ 横幅回品牌渐变 + v0.2.24.3 引擎层已卸载（无 lg-static/无 .lg-backdrop）+ v0.2.24.4 光场灭（orb display=none）（wrapCls= wrapLg=false wrapLayer=false orbVis=none card=rgba(255, 255, 255, 0.55) banner=linear-gradient(135deg, rgba(70, 72, 212, 0.9), rgba(124, 92）
+E6f2 raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}"]
+  ✅ E6f2 v0.2.53.2 横幅单独玻璃保存：最后 PATCH body 精确 ={"cardBg":"glass-ocean"}（cardPlate 未动不入 body）（["{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}"]）
+  ✅ E6f2 v0.2.53.2 横幅单独玻璃渲染：无 card-halo 包层 + liquid-glass + glass-ocean + 引擎折射层在 + 磨砂 blur 10px saturate（生成器代码口径）+ 折射滤镜=url("#glass-distortion")（低频噪点+高斯模糊+标准双通道位移，无色散）+ 光场灭（无包层）（{"wrapCls":"","cls":"card profile-header glass-bg glass-ocean liquid-glass lg-static","layerFilter":"blur(10px) saturate(1.4)","layerFilterUrl":"url(\"#glass-distortion\")","orbVis":"none"}）
+  ✅ E6f2 v0.2.53.2 卡身白霜 rgba(255, 255, 255, 0.34)（生成器 ::before 白 tint 同思路，卡身有实底调高到 0.34 才透出磨砂折射层见玻璃；暗色 0.58 见 Q 静态锚）（rgba(255, 255, 255, 0.34)）
+  ✅ E6f2 v0.2.53.2 恢复默认：最后 PATCH body 精确 ={"cardBg":null} + 头部回默认（无 liquid-glass/无预设类）+ 卡身回实底（白霜卸下）（{"calls":["{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}","{\"cardBg\":null}"],"cls":"card profile-header","cardBgColor":"rgba(255, 255, 255, 0.55)"}）
+  ✅ E6 v0.2.25.0 编辑资料弹窗放大 1 倍：modal-card max-width=1120px（560→1120；页级类 edit-profile-card 不污染灯箱/分享弹窗）（mw=1120px cls=modal-card edit-profile-card active）
+  ✅ E6 v0.2.25.0 页面背景组默认态：上传按钮/网址框/隐藏 file input/迷你整页预览就位 + 无图时行隐藏预览空（{"modalMw":"1120px","modalCls":"modal-card edit-profile-card active","rowVis":"none","innerBg":"","hasUploadBtn":true,"hasUrlInput":true,"hasFile":true,"pvHasCard":true}）
+  ✅ E6 v0.2.25.0 点自定义图片：行亮起 + 提示「上传图片或粘贴网址，点保存生效」+ 自定义 active 唯一（{"rowVis":"block","hint":"上传图片或粘贴网址，点保存生效","customActive":"custom"}）
+  ✅ E6 v0.2.25.0 网址非法（javascript:）→ 警告「网址需以 http:// 或 https:// 开头」+ 预览不挂图（{"warn":"网址需以 http:// 或 https:// 开头","innerBg":""}）
+  ✅ E6 v0.2.25.0 合法网址：预览挂图 url("https://example.com/bg.jpg") + 就绪文案（{"innerBg":"url(\"https://example.com/bg.jpg\")","state":"背景图片已就绪，点保存生效"}）
+E6g4 raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}","{\"cardBg\":null}","{\"pageBgImage\":\"https://example.com/bg.jpg\"}"]
+  ✅ E6 v0.2.25.0 保存 → PATCH 含 pageBgImage 恰 1 次且 body 精确 ={"pageBgImage":"https://example.com/bg.jpg"} + 弹窗关（["{\"pageBgImage\":\"https://example.com/bg.jpg\"}"]）
+  ✅ E6 v0.2.25.0 整页背景渲染：body 挂 page-bg-active + 背景=深色蒙层渐变 rgba(10, 10, 16, 0.38)+图（用户「这个就是整个页面的背景的图片」）（cls=page-bg-active bg=linear-gradient(rgba(10, 10, 16, 0.38), rgba(10, 10, 16, 0.38)), url("https://example.com/bg.jpg") var=url("https://example.com/bg.jpg")）
+  ✅ E6 v0.2.25.0 重开预填：自定义 active + 网址框预填 https 值 + 预览挂图 + 行亮起（{"activePg":"custom","urlVal":"https://example.com/bg.jpg","innerBg":"url(\"https://example.com/bg.jpg\")","rowVis":"block"}）
+  ✅ E6 v0.2.25.0 点默认：行隐藏 + 预览清空（{"rowVis":"none","innerBg":""}）
+E6g7 raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}","{\"cardBg\":null}","{\"pageBgImage\":\"https://example.com/bg.jpg\"}","{\"pageBgImage\":null}"]
+  ✅ E6 v0.2.25.0 选默认保存 → 最后 PATCH body 精确 ={"pageBgImage":null}（共 2 次 pageBgImage 调用）+ body 恢复（无 page-bg-active 类/变量空/无图）（["{\"pageBgImage\":\"https://example.com/bg.jpg\"}","{\"pageBgImage\":null}"] cls= var=）
+  ✅ E7 v0.2.53.1 免费会话：边缘组 15 swatch（默认+14 款）+ 14 非空款全锁（edge-locked+title 订阅后可用+lock 图标+订阅徽标）+ 升级链接可见 + 默认 active + 预览默认（{"n":15,"lockedN":14,"lockedTitle":"订阅后可用","badge":"破旧的纸订阅","hasLockIcon":true,"linkVis":"inline-block","shapes":"url(\"#paper-edge-clip\")|url(\"#map-wave-clip\")|url(\"#hud-frame-1\")|url(\"#hud-frame-2\")|url(\"#hud-frame-3\")|url(\"#hud-frame-4\")|url(\"#hud-frame-5\")|url(\"#hud-frame-6\")|url(\"#mn-paint-clip-1\")|url(\"#mn-paint-clip-2\")|url(\"#mn-paint-clip-3\")|url(\"#mn-paint-clip-4\")|url(\"#mn-paint-clip-5\")|url(\"#mn-paint-clip-6\")","active":"","pv":"pv-card"}）
+  ✅ E7 v0.2.53.1 swatch 真实剪影：14 款 .swatch-shape computed clip-path 各含对应 defs（纸/藏宝图/科技1-6/油漆1-6）（url("#paper-edge-clip")|url("#map-wave-clip")|url("#hud-frame-1")|url("#hud-frame-2")|url("#hud-frame-3")|url("#hud-frame-4")|url("#hud-frame-5")|url("#hud-frame-6")|url("#mn-paint-clip-1")|url("#mn-paint-clip-2")|url("#mn-paint-clip-3")|url("#mn-paint-clip-4")|url("#mn-paint-clip-5")|url("#mn-paint-clip-6")）
+  ✅ E7 v0.2.53.1 免费点 paper：toast 背景边缘为订阅用户专属功能 + 零 cardEdge PATCH + 仍默认 active + 预览未换 + 头卡无 card-edge-*（{"toasts":"资料已保存|资料已保存|显示名不能为空|登录已过期，请重新登录|资料已保存|资料已保存|资料已保存|资料已保存|资料已保存|资料已保存|背景边缘为订阅用户专属功能","edgeCalls":0,"active":"","pv":"pv-card","headCls":"card profile-header"}）
+  ✅ E7 v0.2.53.1 订阅会话：0 锁 + 升级链接隐藏 + 默认 active（预填 null）（{"lockedN":0,"linkVis":"none","active":""}）
+  ✅ E7 v0.2.53.1 点 paper：active 互斥 + 预览真实剪影（inline clip-path=paper-edge-clip + 纸底色渐变）（{"active":"paper","pv":"pv-card","clip":"url(\"#paper-edge-clip\")","bg":"linear-gradient(135deg, rgba(255, 248, 225, 0.9), rgba(233, 214, 174, 0.9))"}）
+E7d raw PATCH bodies: ["{\"displayName\":\"电池用户改\",\"bio\":\"新简介\",\"gender\":\"Female\"}","{\"avatarUrl\":\"/uploads/UPL-DEMO01.jpg\"}","{\"displayName\":\"电池用户401\"}","{\"cardBg\":\"glass-ocean\",\"cardPlate\":\"glass-clear\"}","{\"cardBg\":null,\"cardPlate\":null}","{\"cardBg\":\"glass-ocean\"}","{\"cardBg\":null}","{\"pageBgImage\":\"https://example.com/bg.jpg\"}","{\"pageBgImage\":null}","{\"cardEdge\":\"paper\"}"]
+  ✅ E7 paper 保存 → PATCH 含 cardEdge 恰 1 次且 body 精确 ={"cardEdge":"paper"} + 弹窗关（["{\"cardEdge\":\"paper\"}"]）
+  ✅ E7 paper 渲染：card-edge-paper has-outer-bg + data-card-edge=paper + tint/band 子层 + --card-clip=url(#paper-edge-clip) + 无 card-halo/liquid-glass + 横幅剪影非 none（{"cls":"card profile-header card-edge-paper has-outer-bg","attr":"paper","clip":"url(#paper-edge-clip)","wrapCls":"","glass":false,"bannerClip":"url(\"#paper-edge-clip\")"}）
+  ✅ E7 tech1：PATCH 第 2 次 cardEdge body 精确 ={"cardEdge":"tech1"} + card-edge-tech has-outer-bg + data-card-edge=tech1 + --card-clip=hud-frame-1 + tint 在（{"cls":"card profile-header card-edge-tech has-outer-bg","attr":"tech1","clip":"url(#hud-frame-1)"}）
+  ✅ E7 paint5：PATCH 第 3 次 cardEdge body 精确 ={"cardEdge":"paint5"} + card-edge-paint 无 has-outer-bg 无 tint/band + 卡级 filter 零 url 只留 drop-shadow + ::before/::after 各挂 mn-paint-filter-5（v0.2.53.1 内容零位移修法）+ container-type=inline-size + --paint-pad=12cqi + 横幅/卡剪影 mn-paint-clip-5（{"cls":"card profile-header card-edge-paint","filter":"drop-shadow(rgba(0, 0, 0, 0.38) 0px 10px 22px) drop-shadow(rgba(0, 0, 0, 0.22) 0px 2px 6px)","beforeFilter":"url(\"#mn-paint-filter-5\")","afterFilter":"url(\"#mn-paint-filter-5\")","containerType":"inline-size","pad":"12cqi","bannerClip":"url(\"#mn-paint-clip-5\")","clip":"url(#mn-paint-clip-5)"}）
+  ✅ E7 选默认 → PATCH 第 4 次 cardEdge body 精确 ={"cardEdge":null} + 头卡类清零（无 card-edge-*）+ 包层类空（ME 回 null）（{"cls":"card profile-header","wrapCls":""}）
+── T. 四 tab 走查（自己主页）──
+  ✅ T1 默认 posts tab：1 卡 + 内容 + 媒体瓦片 + active=posts（cards=1）
+  ✅ T1b 灯箱点开 + Escape 关（true → false）
+  ✅ T2 转发 tab：1 卡 + 「转发了」徽章 + 内嵌原帖盒（{"cards":1,"hasBadge":"转发了","hasEmbed":true,"embedText":"电池他人24 天前原帖内容，值得一看"}）
+  ✅ T3 点赞 tab：被点赞的帖 + 作者锚 → 他人主页（community-profile.html?id=USR-000202）
+  ✅ T4 统计块点击切 favorites tab + 收藏的帖渲染（favorites）
+  ✅ T5 收藏 tab 撤销星 → DELETE 捕获 + 卡片出列 → 空态「还没有收藏的帖子」（{"empty":true,"cards":0,"delCalls":1}）
+  ✅ T5 点赞 tab 撤销赞 → 卡片出列 → 空态「还没有点赞的内容」（{"empty":true,"cards":0}）
+── C. 卡操作（posts tab）──
+  ✅ C1 点赞：POST 捕获 + 计数 4 + 已赞态（{"pressed":"true","count":"4","postCalls":1}）
+  ✅ C2 转发：POST 捕获 + toast 已转发到你的主页（资料已保存|资料已保存|显示名不能为空|登录已过期，请重新登录|资料已保存|资料已保存|资料已保存|资料已保存|资料已保）
+  ✅ C3 分享弹窗可见（opacity=1）+ 链接 = 帖页规范 URL（0.0.1:4042/pages/community-post.html?id=PST-000101）
+  ✅ C4 举报旗点击仍在主页（不跳帖页）（/pages/community-profile.html?id=USR-000101）
+  ✅ C4 整卡点击真导航到帖页（含 id 参数）（/pages/community-post.html?id=PST-000101）
+── O. 他人主页（USR-000202，关注链 + 空态）──
+  ✅ O1 他人主页：名字/♀svg/兜底简介/加入于 + 关注钮（未关注态）+ 无编辑资料钮 + 空态（关注）
+  ✅ O1 粉丝数初始 0（0）
+  ✅ O1 v0.2.22.6 点赞/收藏默认私人：他人主页只 2 tab（帖子/转发）+ 无点赞/收藏统计块（tabs=2 stats=posts,reposts）
+  ✅ O1 v0.2.24.3/4 他人双背景公开渲染：卡=横幅预设 glass-rose（liquid-glass+data-card-bg+玻璃层）+ 包层=卡片背景 card-halo glass-clear 真液态玻璃（无色极轻白霜 gradient 在+三色相均不在+引擎 lg-static/折射层/高光层全挂）+ 卡身纯透明 + v0.2.24.4 光场亮起（orb display=block + 无色白光球 蓝紫均不在）（{"glass":true,"attr":"glass-rose","layer":true,"wrapCls":"card-halo glass-clear lg-static","wrapBg":"linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255,","wrapLg":true,"wrapLayer":true,"wrapSpec":true,"cardBgColor":"rgba(0, 0, 0, 0)","orbVis":"block","orbB":"radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255,"}）
+  ✅ O1 v0.2.24.1/2 标准液态玻璃=代码白边环 2px + 柔影（rgba(0, 0, 0, 0.4) 0px 4px 12px 0px, rgba(255, 255, 255, 0.8) 0px 0px 0px 2px inset）
+  ✅ O1 v0.2.25.0 整页背景公开渲染：他人主页也渲染本人设置的图（body page-bg-active + 背景含 UPL-DEMO01.jpg + 深色蒙层；计算样式把相对路径解析为绝对 URL 属正常）（cls=page-bg-active bg=linear-gradient(rgba(10, 10, 16, 0.38), rgba(10, 10, 16, 0.38)), url("http://127.0.0.1:4042/uploads/UPL-DEMO01.jpg")）
+  ✅ O1 v0.2.25.1 玻璃体可见化：包层背景复刻页面背景图（含 UPL-DEMO01.jpg + attachment 含 fixed=与 body 同参数对齐，磨砂层直采样包层→demo 同款玻璃后有场景必现）+ rdev 双层环形高光（::before screen/::after overlay+135° 白渐变+1.5px 环贴卡缘 top=6px）+ 光球提亮 0.85/0.75（{"wrapBg":"linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.1)), radial-grad","attach":"scroll, scroll, scroll, scroll, fixed","bMix":"screen","aMix":"overlay","bBg":"linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(255,","top":"6px","pad":"1.5px","mask":"exclude, exclude","orbB":"radial-gradient(circle, rgba(255, 255, 255, 0.85), rgba(255,","orbA":"radial-gradient(circle, rgba(255, 255, 255, 0.75), rgba(255,"}）
+  ✅ O1 v0.2.25.2 默认底色移除：包层背景色透明 + 复刻层含与 body 同款深色蒙层 rgba(10,10,16,0.38)（玻璃看穿页面=页面本来样子，无接缝、白字可读）（wrapBgColor=rgba(0, 0, 0, 0) wrapBg=linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0.1)), radial-grad）
+  ✅ O2 关注：POST 捕获 + 已关注态 + 粉丝数 0→1 + toast 已关注（{"pressed":"true","text":"已关注","follower":"1","toasts":"已关注","postCalls":1}）
+  ✅ O2 再点取关：DELETE 捕获 + 回关注态 + 粉丝数 0 + toast 已取消关注（{"pressed":"false","text":"关注","follower":"0","toasts":"已关注|已取消关注","delCalls":1}）
+  ✅ O3 访客：关注 → toast 登录后才能关注 + 零 /follow 请求（{"toasts":"登录后才能关注","followCalls":0,"guestAttr":true}）
+  ✅ O4 404 态（未知 id）：提示可见 + 主页藏（用户不存在或已注销）
+  ✅ O4 非法格式 id（非 USR-）→ 前端拦截 404（block）
+  ✅ O5 v0.2.53.1 访客可见：他人主页公开渲染 cardEdge=paper（card-edge-paper has-outer-bg + data-card-edge + tint/band 子层 + --card-clip=paper-edge-clip）+ 无编辑钮（{"cls":"card profile-header card-edge-paper has-outer-bg","attr":"paper","clip":"url(#paper-edge-clip)","hasEdit":false,"text":"边缘访客@CIT-000303其他0 粉丝0 关注0 获赞边缘主题访客calendar_today 加入于 2026年6"}）
+  ✅ O5 全程 0 console error
+── Q. 静态锚（v0.2.53.1 卡片边缘主题 + v0.2.53.2 液态玻璃换代）──
+  ✅ Q 页面静态锚：SVG defs（paper-edge-clip/hud-frame-4/mn-paint-clip-5/mn-paint-filter-5/glass-distortion）+ data-card-edge + applyCardEdge + EDGE_DEFS + SUBSCRIPTION_TEST_MODE + swatch-shape + v0.2.53.2 暗色卡身白霜 0.58（缺=）
+  ✅ Q 后端白名单双份同步：auth.js + social.js 各含 CARD_EDGE_KEYS
+  ✅ Q 迁移 027_card_edge.sql 含 card_edge
+
+100 ✅ / 0 ❌

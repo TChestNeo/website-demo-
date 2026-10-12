@@ -1,0 +1,9 @@
+修复：v0.2.51.2 亮色侧栏发黄/暗斑修复——用户「为什么在亮色模式下平台的左侧菜单背景卡片会发黄的还有颜色变深色的？」（问询钦定「彻底铺不透明白底」；rev 00253-np7）
+
+真身=亮色侧栏玻璃注入层 .lg-backdrop 的 SVG 三通道折射滤镜（feImage 品红噪点位移图把 R/G/B 各推不同距离、蓝推最远 -84 → 边缘剩红+绿=黄晕；噪点斑块=深浅暗斑）+ blur(14px) saturate(1.4) 磨砂叠在半透明白卡片上；暗色同机制 2026-09-10 已修（灭滤镜灭磨砂+铺不透明底），当时注释「亮色主题零触碰」故亮色遗留至今。
+
+修法（ethereal.css 镜像暗色同款）：亮色侧栏铺满 --sidebar-bg（近纯白 0.95）不透明底 + 灭玻璃注入层滤镜/磨砂（mono 走 var() 自动适配）；重跑 inline-css.js 40 页内联块刷新。
+
+插曲 inliner 漂移修复：50.x 轮显式过渡列表当时直接写进 messages.html 内联块、从未回写 ethereal.css，本轮重跑 inliner 被整块抹除（电池 msg-anim 45/51 当场抓住）→ 按 09-17「页面专属 CSS 永不入内联块」口径把 .btn/.input-glass/.card-hover/.modal-card/.subnav-pill/.upload-zone/.segmented-option 显式列表 + 50.7 弹窗淡入 keyframes 迁出独立页专块（同特异性靠后覆盖内联块 ethereal 原版、inliner 重跑永不触碰，实测幂等）；电池 msg-anim F0-1 口径同步（只数页专块区域）。
+
+FC 零改动（v10.28.35.4 保持）；零后端（npm test 295/295 保持全绿）、零草稿字段（v 保持 9）、entrypoint 零改动；电池九座全绿（新 sidebar-light 10/10 + cit2usr 21/21 + msg-anim 51/51 + pageswitch 23/23 + msglink 15/15 + mono-flash 22/22 + monodark 29/29 + fadefix 36/36 + smoke-admin 48/48；五电池版本锚 51.1→51.2 已同步）；部署一次 exit 0（docker build 查 exit/容器内 grep 五证（ethereal+index 亮色规则/页专块/keyframes/版本）/push digest 前缀核对 214db3dec916/gcloud.ps1、env 30 条零新键）；curl 链全绿（health 59 表/site-config v0.2.51.2+v10.28.35.4/index+ethereal 亮色规则在线/messages 页专块+modalFadeIn 在线/无 cookie GET /api/auth/me 401）；不 push

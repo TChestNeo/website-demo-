@@ -1,0 +1,20 @@
+v0.2.46.0 / FC v10.28.35.0 文章查看器轮（2026-09-15）部署记录
+镜像 digest: sha256:aef2a9faa19a6089d3d4a0a6bd523de6ed9322e5f90dadd742d35537763d9da6
+rev: mnationworld-web-00224-k5l（100% 流量）
+电池: tmp-battery-article-view.js 37/37（F0/A/B/C/D/F/G/E）
+  - 途中实证两真身：① loadCloudArticles 死代码（FC 页无 api.js 静态引入）→ 动态注入
+    ② 查看器格 56 列 vs 作者 44 列（fc-viewmode 先于 applyDraft 的 applyPreset 隐去面板）
+    → computeCols viewmode 补偿 261px（电池 C1 红 → 绿）
+curl 链 6/6: health 58 表 / site-config 双版本 / fluidcanvas.html 样例 contentJson+api.js 注入
+  / ?view=articles 200 / editor fc-viewmode / editor?article=ART-001 200
+
+rev 00225-6v6（2026-09-15 v0.2.46.1 / FC v10.28.35.1 文章发布去除审核段）
+- 用户「呃那个我点击上传时是提交审核你能不能先去除掉这一段？」：POST /api/articles 直存 published
+  （根因=原 P7 审核管线从未接文章，pending 恒卡死——不是审核中而是没人审）
+- 迁移 022 遗留 pending 一律转 published（无新表 health 58 不变，user_version 21→22）
+- 编辑器 publishCloudArticle 成功态 badge-success「Published」+ toast「已发布」；占位文案去掉「审核中」
+- GET 列表/详情遗留 pending 防御口径保留（本人可见/他人 404），路由零改动
+- 后端测试 273/273（文章 test 3 重写直接发布语义 + 迁移 022 新测试 + 三处 user_version 断言 21→22）
+- 电池 article-view 38/38（37 项原断言全绿 + F0-6 发布即公开静态）
+- 部署一次 exit 0；curl 链 8/8（health 58 表 / site-config 双版本 / editor badge-success×4 零「审核中」
+  / fluidcanvas.html demo+注入 / ?view=articles 200 / editor?article=ART-001 200 / editor 200 / api/articles 200）

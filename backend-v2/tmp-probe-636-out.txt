@@ -1,0 +1,22 @@
+═══ S1 静态锚（live）═══
+  ✅ S1a site-config：58.26 赋值 ×1 + FC 50.0 赋值 ×1 + 49.2 赋值零残留 + changelog 头 50.0/49.2 各 ×1
+  ✅ S1b site-config rev live 口径：rev 00356-djq ×1 + 00356-XXX 零残留 + 00357-??? 占位 ×1 + 00357-sh8 零残留（live 滞后一部署）
+  ✅ S1c 编辑器 8 锚全中（抽屉/自定义类/添加钮/sanitizer×5/unavailable 先于/圆球/50.0×25/49.2 注释）
+  ✅ S1d article 4 锚全中（框环子层×2/sanitizeClipEd×2/customEdges×2/50.0×3）
+  ✅ S1e i18n live：fc.edge.drawerTitle ×12 + fc.edge.genBtn ×12 + fc.imgMeta.visFriends ×12
+═══ S2 API（匿名口径）═══
+  ✅ S2a /api/health 200 + tables:61（031 新表）
+  ✅ S2b GET /api/fc/edges 匿名 200 {edges:[]}（公开可见空库，未登录不 401）
+  ✅ S2c GET /api/fc/edges/scopes 匿名 {hasFriends:false,hasTeam:false}
+  ✅ S2d POST /api/fc/edge-gen 匿名 401（requireSession 实证）
+═══ P1 CDP 编辑器交互（种子 slati_session loggedIn）═══
+  ✅ P1a 抽屉 .open + 15 内置样本 + 仓库空态（live 空库）+ 圆球隐（双假）
+  ❌ P1b AI 弹窗开 + 空输入 toast 请输入描述或附上图片（零真请求） — {"gm":false,"t":{"text":"请输入描述或附上图片","show":true}}
+═══ E1 零异常 ═══
+  ✅ E1 零异常（0 原始 / 0 噪声后）
+═══ P2 直连 Gemini 端点实测 key（一条 2 词小请求；401/403=停下问用户）═══
+  ❌ P2 Gemini 直连 200 且回体含 polygon（key 有效=Cloud Run env 同款可用） — status=404 body={
+  "error": {
+    "code": 404,
+    "message": "This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features a
+🎉 11 ✅ / 2 ❌

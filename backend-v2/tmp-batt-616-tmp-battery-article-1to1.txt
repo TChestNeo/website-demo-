@@ -1,0 +1,23 @@
+  ✅ F0-1 article.html 1:1 渲染在场（renderBodyCanvas + 12 caption-pos + bbox 两遍量盒 + hasXY 分支）
+  ✅ F0-2 版本 v0.2.58.10 + changelog 条目（58.0 rev 00276-nnx + 56.2 保留）
+  ✅ F0-3 渲染顺序修正（先 display:flex 再 renderBody——隐藏容器 clientWidth=0 缩放必错）
+  ✅ A1 画布模式在场（.art-canvas + 零 .art-flow 竖堆）
+  ✅ A2 4 卡渲染、hidden c9 跳过
+  ✅ B1 c8 flag aspectLock 尺寸 = fitW/fitH（264.399×174.347）  {"left":36,"top":24,"w":264,"h":174,"z":"2","tf":""}
+  ✅ B2 c1 shield span 公式 240×174（11×20+10×2 / 8×20+7×2）  {"left":300,"top":24,"w":240,"h":174,"z":"1","tf":""}
+  ✅ B3 并排不竖堆：c1 紧贴 c8 右缘（-0.4px 叠合同 FC）、顶对齐同 top=24  gap=0.00 tops=24.0/24.0
+  ✅ B4 位置纸算锚：c8(36.39,24) c1(300.39,24)  [36,300]
+  ✅ B5 z 层级还原：c8 z-index 2 > c1 z-index 1  ["2","1"]
+  ✅ B6 c8 图卡：.art-card-img 挂 SVG 图 + 无 label 元素（label 空）
+  ✅ B7 c1 国徽无图：盾徽块 + label Emblem
+  ✅ B8 c2 content 高度自适应：minHeight 86 起、正文渲染  {"left":36,"top":236,"w":262,"h":86,"z":"1","tf":""}
+  ✅ B9 c5 rotate 15：transform 在场 + 膨胀 bbox 定位 (30.33,420.27)  {"left":30,"top":420,"w":130,"h":66,"z":"1","tf":"rotate(15deg)"}
+  ✅ C1 inner 画布尺寸 = 完整格舞台（2530×2090；115×22 / 95×22）  2530x2090
+  ✅ C2 宽窗完整舞台投影自洽：s=min(availW/stageW,availH/stageH)（下限 0.25）+ holder=stage×s  avail=1163x528.53125 scale(0.252886) holder=640x529
+  ✅ D1 legacy 草稿走流式兜底（.art-flow 在场、零 .art-canvas）
+  ✅ D2 legacy 正文渲染
+  ✅ E1 零 Runtime exception  干净
+  ✅ E2 零 console error  干净
+
+🎉 全部通过 20/20
+

@@ -1,0 +1,16 @@
+  ✅ F1 site-config：FC v10.28.47.0 + rev 00299- 占位 + 站点版本恒 v0.2.58.0
+  ✅ F2 上传落地即存锚在源：imgMetaSave 后 saveDraft(true) + saveDraft(silent) 签名 + silent 压成功 toast
+  ✅ F3 指纹摘要锚在源：charAvatar/mapImg dataURL length+tail 摘要（同文件名换图脏守卫可见）
+  ✅ U1 头像上传→弹窗保存→草稿立即含 charAvatar（零心跳等待）  {"avatarSet":true,"draftHas":true,"libHas":true,"toast":"头像已上传"}
+  ✅ U2 silent 静默：imgMetaSave 末次 toast 是「头像已上传」而非「草稿已保存」  "头像已上传"
+  ✅ U3 图库持久库同写：slati_img_library 含同 src + 名称 person1  {"avatarSet":true,"draftHas":true,"libHas":true,"toast":"头像已上传"}
+  ✅ U2b 手动 saveDraft() 仍弹「草稿已保存」  "草稿已保存"
+  ✅ U4 同文件名换图：指纹前后不同（旧口径只有元数据=假无变化）+ 摘要 av:length:tail 精确在场  {"d":true,"dig":true}
+  ✅ U4b autoSave() 脏守卫放行：草稿落新图（旧代码守卫会跳过 → 刷新回旧图）  {"draftIsNew":true}
+  ✅ U5 地图卡上传→弹窗保存→草稿立即含 mapImg  {"mapSet":true,"draftHas":true}
+  ✅ U6 取消元数据弹窗=零写入：草稿逐字节不变 + 卡 dataset 零残留  {"same":true,"noAvatar":true}
+  ✅ E1 全程零 Runtime.exceptionThrown  []
+  ✅ E2 全程零 console error  []
+
+🎉 全部通过 13/13  (fc-uploadsave)
+

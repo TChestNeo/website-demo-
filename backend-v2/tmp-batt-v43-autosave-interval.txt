@@ -1,0 +1,14 @@
+  ✅ F1 静态：设置弹窗（fcAutoSave:10/事件/编辑器区/药丸容器）+编辑器（心跳函数/clamp/pagehide 监听/改频监听/齿轮/3s 防抖已除）+齿轮/Tags 两钮纯图标（无文字标签+title 悬停提示）+版本 v0.2.43.0/v10.28.33.0
+  ✅ S1a 心跳按默认 10 分钟武装（600000ms 已记录）
+  ✅ S1b 改动后节拍到点自动落草稿+徽章 Draft+「Saved just now」  {"saved":true,"badge":"Draft","label":"Saved just now"}
+  ✅ S2 无改动节拍空转不重写草稿（lastSaved 不变）  {"ls0":1789392156787,"ls1":1789392156787}
+  ❌ S3a 齿轮开弹窗+菜单含「编辑器」+默认落编辑器区+10 分钟 active+齿轮/Tags 两钮纯图标（title 悬停提示）  {"backdrop":false,"menu":["edit_note编辑器","personProfile","paletteAppearance","notificationsNotifications","lockPrivacy","translateLanguage","manage_accountsAccount"],"activeSec":"editor","paneSec":"editor","pill10":true,"gearIconOnly":true,"tagsIconOnly":true}
+  ✅ S3b 点 5 分钟=slati_settings.fcAutoSave=5+心跳按 300000 重排  {"v":5,"long300":true}
+  ✅ S3c 改频后改动按新节拍自动落草稿
+  ✅ S4 clamp 下限 5：fcAutoSave=1 也被 300000 武装（无 60000）  {"long300":true,"long60":false,"v":1}
+  ✅ S5 Ctrl+S 立即落草稿（不等节拍）
+  ✅ S6 pagehide 脏内容兜底立即落草稿
+  ❌ S7 非编辑器页弹窗无「编辑器」区+默认 profile+正常打开  {"menu":["personProfile","paletteAppearance","notificationsNotifications","lockPrivacy","translateLanguage","manage_accountsAccount"],"activeSec":"profile","backdrop":false}
+  ✅ Z 零 console error  []
+
+  ── 结果: 10/12 有红 ❌

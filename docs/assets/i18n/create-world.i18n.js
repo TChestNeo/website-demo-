@@ -16,71 +16,71 @@ window.MN_I18N
     'cwr.title': '创建世界',
     'cwr.sub': '选择你要创建的世界类型 —— 每一种类型都有专属的创建流程',
     // ── 状态行 ──
-    'cwr.status': '创建引擎：在线 · 22 种世界类型可用'
+    'cwr.status': '创建引擎：在线 · 8 种国家类型可用'
   })
   // ═══ en 英语（v0.2.54.0 用户钦定加英语）═══
   .add('en', {
     'cwr.title': 'Create World',
     'cwr.sub': 'Choose the type of world you want to create — each type has its own dedicated creation flow',
-    'cwr.status': 'Creation Engine: Online · 22 world types available'
+    'cwr.status': 'Creation Engine: Online · 8 nation types available'
   })
   // ═══ de 德语 ═══
   .add('de', {
     'cwr.title': 'Welt erstellen',
     'cwr.sub': 'Wähle den Typ der Welt aus, die du erschaffen möchtest — jeder Typ hat seinen eigenen Erstellungsablauf',
-    'cwr.status': 'Erstellungs-Engine: Online · 22 Welttypen verfügbar'
+    'cwr.status': 'Erstellungs-Engine: Online · 8 Nationstypen verfügbar'
   })
   // ═══ ru 俄语 ═══
   .add('ru', {
     'cwr.title': 'Создать мир',
     'cwr.sub': 'Выберите тип мира, который хотите создать, — для каждого типа предусмотрен собственный процесс создания',
-    'cwr.status': 'Движок создания: в сети · доступно 22 типа миров'
+    'cwr.status': 'Движок создания: в сети · доступно 8 типов государств'
   })
   // ═══ ms 马来语 ═══
   .add('ms', {
     'cwr.title': 'Cipta Dunia',
     'cwr.sub': 'Pilih jenis dunia yang ingin anda cipta — setiap jenis mempunyai aliran penciptaan tersendiri',
-    'cwr.status': 'Enjin Penciptaan: Dalam Talian · 22 jenis dunia tersedia'
+    'cwr.status': 'Enjin Penciptaan: Dalam Talian · 8 jenis negara tersedia'
   })
   // ═══ th 泰语 ═══
   .add('th', {
     'cwr.title': 'สร้างโลก',
     'cwr.sub': 'เลือกประเภทของโลกที่คุณต้องการสร้าง — แต่ละประเภทมีขั้นตอนการสร้างเฉพาะของตัวเอง',
-    'cwr.status': 'เอ็นจิ้นการสร้าง: ออนไลน์ · มีประเภทโลกให้เลือก 22 ประเภท'
+    'cwr.status': 'เอ็นจิ้นการสร้าง: ออนไลน์ · มีประเภทประเทศให้เลือก 8 ประเภท'
   })
   // ═══ vi 越南语 ═══
   .add('vi', {
     'cwr.title': 'Tạo Thế Giới',
     'cwr.sub': 'Chọn loại thế giới bạn muốn tạo — mỗi loại đều có quy trình tạo riêng',
-    'cwr.status': 'Công cụ tạo: Trực tuyến · có 22 loại thế giới'
+    'cwr.status': 'Công cụ tạo: Trực tuyến · có 8 loại quốc gia'
   })
   // ═══ id 印尼语 ═══
   .add('id', {
     'cwr.title': 'Buat Dunia',
     'cwr.sub': 'Pilih jenis dunia yang ingin kamu buat — setiap jenis memiliki alur pembuatan khususnya sendiri',
-    'cwr.status': 'Mesin Kreasi: Online · 22 jenis dunia tersedia'
+    'cwr.status': 'Mesin Kreasi: Online · 8 jenis negara tersedia'
   })
   // ═══ fr 法语 ═══
   .add('fr', {
     'cwr.title': 'Créer un monde',
     'cwr.sub': 'Choisissez le type de monde que vous souhaitez créer — chaque type possède son propre processus de création',
-    'cwr.status': 'Moteur de création : en ligne · 22 types de monde disponibles'
+    'cwr.status': 'Moteur de création : en ligne · 8 types de nation disponibles'
   })
   // ═══ es 西班牙语 ═══
   .add('es', {
     'cwr.title': 'Crear Mundo',
     'cwr.sub': 'Elige el tipo de mundo que quieres crear — cada tipo tiene su propio flujo de creación',
-    'cwr.status': 'Motor de creación: En línea · 22 tipos de mundo disponibles'
+    'cwr.status': 'Motor de creación: En línea · 8 tipos de nación disponibles'
   })
   // ═══ pt 葡萄牙语 ═══
   .add('pt', {
     'cwr.title': 'Criar Mundo',
     'cwr.sub': 'Escolha o tipo de mundo que deseja criar — cada tipo tem seu próprio fluxo de criação',
-    'cwr.status': 'Motor de criação: Online · 22 tipos de mundo disponíveis'
+    'cwr.status': 'Motor de criação: Online · 8 tipos de nação disponíveis'
   });
 /* __ZH_HANT_AUTO__ — v0.2.54.0 zh-Hant 由 OpenCC cn→tw 自动生成（勿手改，重跑本脚本再生成） */
 window.MN_I18N.add('zh-Hant', {
   "cwr.title": "創建世界",
   "cwr.sub": "選擇你要創建的世界類型 —— 每一種類型都有專屬的創建流程",
-  "cwr.status": "創建引擎：在線 · 22 種世界類型可用"
+  "cwr.status": "創建引擎：在線 · 8 種國家類型可用"
 });

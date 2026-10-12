@@ -698,8 +698,14 @@ textarea.input-glass {
 .progress-connector.done { background: var(--color-primary); }
 
 /* ----- Sidebar Module ----- */
+/* 2026-10-05 用户「那个在个人主页那边的左侧菜单背景卡片是半透明的能不能变成不透明的？」——
+   真身=v0.2.58.1（09-26 删侧栏容器铺底）后三张卡（logo/用户/菜单 .sidebar-module）仍用 --card-bg
+   （亮色 rgba(255,255,255,0.55)/暗色 rgba(30,30,50,0.55) 半透明玻璃）+ blur(20px) 磨砂——页面内容
+   透卡可见=半透明观感；修法=卡面改铺 --sidebar-bg（09-18 用户钦定不透明底：亮色近纯白 0.95/暗色实心
+   #1a1a2e/mono 随 var() 自适应）；模块自带 backdrop-filter 保留（底已不透明零可见效果，与 09-20
+   全站卡片同口径）；三张卡同规则一并生效；窄屏 floating 覆盖态同步（口径统一）。 */
 .sidebar-module {
-  background: var(--card-bg);
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1313,7 +1319,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .app-sidebar.collapsed .user-module {
   padding: 10px 4px !important;
   display: flex; align-items: center; justify-content: flex-start;
-  background: var(--card-bg);
+  /* 58.28 补：折叠态覆盖曾回退 --card-bg 半透明玻璃（58.27 卡面不透明修法漏了这条折叠态覆盖）——
+     用户「折叠起来的时候还是一样是半透明的」；口径与 58.27 同：铺 --sidebar-bg 不透明底+blur 保留 */
+  background: var(--sidebar-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: var(--card-border);
@@ -1397,7 +1405,20 @@ body.pre-stagger .auth-card { opacity: 0; }
    v0.2.58.11 用户「能不能把那个浅蓝色波浪和深蓝色倒反？」「就只是互换一下颜色而已」——58.10 深水+浅浪
    两色互换（类名保持不动）：主色水 .mn-lv-wdeep 背景 var(--color-primary)→var(--mn-lv-light) 变浅水、
    浅浪 .mn-lv-wlightwave 背景 var(--mn-lv-light)→var(--color-primary) 变深浪；两层结构/80×16 mask/
-   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。 */
+   16px 带高/400% strip/平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.12 用户「能不能把波浪的位置抬高4px?」（一问钦定「位置抬高 4px」）——58.11 浅浪 top -8px 抬高
+   4px→-12px（单值改动）：浅浪 .mn-lv-wlightwave top -8px→-12px；两层结构/80×16 mask/16px 带高/400% strip/
+   平移 80px/2.2s 单速/水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84/两色互换（浅水+深浪）全零改动。
+   v0.2.58.13 用户「然后把两个颜色改成一样的深蓝色，然后在那个波浪Z轴的-1那边再添加一个慢0.3s的波浪」
+   ——①水和浪两色统一深蓝：主色水 .mn-lv-wdeep 背景 var(--mn-lv-light)→var(--color-primary)（58.11 两色
+   互换撤销为两色相同）、--mn-lv-light 赋值整体删除（零引用，58.10 --mn-lv-wave-c 先例）；②新慢浪
+   .mn-lv-wlightwave2 与快浪全同款几何（80×16 mask/16px 带高/400% strip/平移 80px/top -12px 全同）
+   置于快浪 z 轴 -1 层（z-index:-1）+动画 2.5s（慢 0.3s）；z 层级：.mn-lv-fill z-index:0 建 stacking
+   context→水 z-index:-2 最底→慢浪 -1→快浪 0（显式盖慢浪）；两浪同色相位漂移，慢浪浪峰周期性从快浪
+   浪谷透明区透出=两道浪峰不同速叠加；水位从底往上灌/0.5s 过渡/药丸 48×116/水杯 44×84 全零改动。
+   v0.2.58.14 用户「那个刚才提出添加的第二个波浪我希望是浅色的」——慢浪 .mn-lv-wlightwave2 背景
+   var(--color-primary)→var(--mn-lv-light)（58.11 浅水同款浅色公式 color-mix 55%+白；赋值挂 .mn-lv-ring
+   恢复——58.13 整体删除后本轮复活）；快浪/水/几何/z 层级/动画全零改动。 */
 .mn-lv-badge .mn-lv-pill { display: none; }
 .app-sidebar.collapsed .mn-lv-badge { margin-top: 0 !important; }
 .app-sidebar.collapsed .mn-lv-badge .mn-lv-normal { display: none; }
@@ -1430,8 +1451,9 @@ body.pre-stagger .auth-card { opacity: 0; }
 .mn-lv-fill {
   position: absolute; left: 0; right: 0; bottom: 0; height: 0;
   transition: height 0.5s ease;
+  z-index: 0; /* 建 stacking context：水/慢浪负 z 层不逃出杯 */
 }
-.mn-lv-wdeep { position: absolute; inset: 0; background: var(--mn-lv-light); }
+.mn-lv-wdeep { position: absolute; inset: 0; background: var(--color-primary); z-index: -2; }
 .mn-lv-wlightwave {
   position: absolute; left: -100%; width: 400%; height: 16px;
   background-color: var(--color-primary);
@@ -1440,8 +1462,23 @@ body.pre-stagger .auth-card { opacity: 0; }
   -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
   -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
   pointer-events: none;
-  top: -8px;
+  top: -12px;
+  z-index: 0;
   animation: mn-lv-wave 2.2s linear infinite;
+}
+/* 慢浪：与快浪全同款几何，z 轴 -1 层（快浪之下），2.5s（慢 0.3s）、浅色（var(--mn-lv-light)）——
+   两浪异色相位漂移，慢浪浪峰周期性从快浪浪谷透明区透出=浅色幽灵浪峰在深浪下流动 */
+.mn-lv-wlightwave2 {
+  position: absolute; left: -100%; width: 400%; height: 16px;
+  background-color: var(--mn-lv-light);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q20 0 40 8 Q60 16 80 8 V16 H0 Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  -webkit-mask-size: 80px 16px; mask-size: 80px 16px;
+  pointer-events: none;
+  top: -12px;
+  z-index: -1;
+  animation: mn-lv-wave 2.5s linear infinite;
 }
 @keyframes mn-lv-wave {
   from { transform: translateX(0); }
@@ -1457,6 +1494,48 @@ body.pre-stagger .auth-card { opacity: 0; }
   z-index: 5;
   font-size: 28px; font-weight: 700; color: var(--color-primary);
   text-shadow: 0 0 2px rgba(255,255,255,0.9), 0 0 3px rgba(255,255,255,0.9);
+}
+/* v0.2.58.15 用户「那么能不能添加一个功能就是当滑鼠靠近那个折叠的药丸时药丸会变大然后 向右滑出
+   一个卡片完整的显示等级信息和经验条」：折叠态药丸悬停放大+右侧滑出等级信息卡。
+   ①药丸 scale(1.12)（hover 类挂 .mn-lv-badge——悬停区=药丸+边距整块，贴近即触发；transform-origin
+   center，72px 折叠列/64px floating 列内瞬态放大可接受）；transition 0.18s ease（药丸本体折叠入场
+   动画 0.3s 期间 transform 被动画持有——折叠后立刻悬停时缩放瞬态失效可接受）。
+   ②卡片 .mn-lv-hovercard position:fixed 挂 body（侧栏 overflow-x:hidden + 用户卡 overflow:hidden
+   双裁剪，卡片必须逃出 DOM 裁剪；JS 按药丸 getBoundingClientRect 定位+视口钳制）；内容=JS 每次
+   show 从活的 .mn-lv-normal clone——展开徽章同款信息（Lv.x·称号+XP 文本+经验条）；z-index 150=
+   侧栏 50/55 之上、tooltip 200 之下；backdrop-filter blur 与折叠用户卡同款玻璃质感（卡片自身 fixed
+   于 body，其 blur 只影响自身后代=无 containing block 问题）。
+   ③@media (hover:hover) and (pointer:fine) 门控——触屏/平板零规则零行为（JS matchMedia 同款双保险）。 */
+@media (hover: hover) and (pointer: fine) {
+  .mn-lv-pill {
+    transition: transform 0.18s ease;
+  }
+  .app-sidebar.collapsed .mn-lv-badge.mn-lv-hover .mn-lv-pill {
+    transform: scale(1.12);
+  }
+  .mn-lv-hovercard {
+    position: fixed;
+    z-index: 150;
+    width: 200px;
+    box-sizing: border-box;
+    background: var(--card-bg, #ffffff);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: var(--card-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 10px 12px;
+    opacity: 0;
+    transform: translateX(-10px) scale(0.98);
+    transform-origin: left center;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .mn-lv-hovercard.active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
 }
 /* 同轮折叠态头像间距归整（根治「挤压到了用户头像」的两处真身）：
    ①头像 img 是行内元素——行基线给父 div 加 8px 下坠空隙（折叠后视觉死隙）→ display:block 消除；
@@ -2043,6 +2122,157 @@ html[data-accent="mono"] .migrate-pill::after { background-color: hsla(0 0% 45% 
 html[data-accent="mono"][data-theme="dark"] .migrate-pill .sparkle .path { color: hsl(0 0% 40%); }
 html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117, 134, 0.10); }
 
+/* ===== v0.2.59.x 手机底部导航（5 tab：首页/百科/社区/消息/我的；无操作按钮） ===== */
+.mobile-bottom-nav { display: none; }
+.mbn-backdrop { display: none; }
+.mbn-sheet { display: none; }
+@media (max-width: 768px) {
+  /* iOS 26 风格浮动药丸 dock：居中悬浮、大圆角、磨砂玻璃、选中项浅色胶囊 */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 50%; transform: translateX(-50%);
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    height: 56px; z-index: 9999;
+    width: auto; min-width: 264px; max-width: calc(100% - 28px);
+    border-radius: 999px;
+    padding: 0 6px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 10px 36px rgba(20, 20, 40, 0.18), inset 0 0.5px 0 rgba(255, 255, 255, 0.65);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav {
+    background: rgba(24, 24, 38, 0.72);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.42), inset 0 0.5px 0 rgba(255, 255, 255, 0.14);
+  }
+  .mobile-bottom-nav .mbn-item {
+    flex: 1; min-width: 48px; max-width: 78px;
+    padding: 0 10px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1px;
+    text-decoration: none; color: var(--color-outline);
+    font-size: 10px; font-weight: 500; letter-spacing: 0.01em;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .mobile-bottom-nav .mbn-item .material-symbols-outlined { font-size: 22px; }
+  .mobile-bottom-nav .mbn-item.active {
+    color: var(--color-primary);
+    background: rgba(70, 72, 212, 0.10);
+  }
+  :root[data-theme="dark"] .mobile-bottom-nav .mbn-item.active { background: rgba(122, 126, 255, 0.18); }
+  .mbn-backdrop {
+    display: block;
+    position: fixed; inset: 0; z-index: 68;
+    background: rgba(0, 0, 0, 0.32);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .mbn-backdrop.open { opacity: 1; pointer-events: auto; }
+  .mbn-sheet {
+    display: block;
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 69;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    transform: translateY(105%); transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.14);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-sheet.open { transform: translateY(0); }
+  .mbn-user-card {
+    display: flex; align-items: center; gap: 12px;
+    padding: 4px 0 14px; text-decoration: none; color: var(--color-on-surface);
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10));
+  }
+  .mbn-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--color-primary); object-fit: cover; flex-shrink: 0; }
+  .mbn-user-meta { min-width: 0; flex: 1; }
+  .mbn-user-name { font-weight: 700; font-size: 16px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbn-user-cid { font-size: 12px; color: var(--color-outline); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-transform: capitalize; }
+  .mbn-row {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    padding: 13px 0; background: none; border: none; cursor: pointer;
+    text-align: left; text-decoration: none; color: var(--color-on-surface);
+    font-size: var(--fs-label-md); font-family: inherit;
+  }
+  .mbn-row + .mbn-row { border-top: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-ico { color: var(--color-outline); font-size: 22px; flex-shrink: 0; }
+  .mbn-row-label { flex: 1; min-width: 0; }
+  .mbn-chev { color: var(--color-outline); opacity: 0.5; font-size: 20px; }
+  .mbn-row.mbn-danger { color: #d23b3b; }
+  .mbn-row.mbn-danger .mbn-ico { color: #d23b3b; }
+  .mbn-group-title { font-weight: 700; font-size: 13px; color: var(--color-outline); letter-spacing: 0.03em; margin: 14px 0 6px; text-transform: uppercase; }
+  .mbn-group { margin-bottom: 4px; }
+  .mbn-group-name { font-size: 12px; color: var(--color-outline); padding: 10px 0 2px; }
+  .mbn-switch {
+    width: 44px; height: 26px; border-radius: 999px; flex-shrink: 0;
+    background: var(--color-outline-variant, #c8c7d4); position: relative;
+    transition: background 0.18s ease;
+  }
+  .mbn-switch .mbn-knob {
+    position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.25); transition: transform 0.18s ease;
+  }
+  .mbn-switch[data-on="1"] { background: var(--color-primary); }
+  .mbn-switch[data-on="1"] .mbn-knob { transform: translateX(18px); }
+  .mbn-toast {
+    position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%) translateY(12px);
+    background: rgba(24,24,32,0.9); color: #fff; padding: 10px 18px; border-radius: 999px;
+    font-size: 13px; z-index: 90; opacity: 0; pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease; max-width: 86vw; text-align: center;
+  }
+  .mbn-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* 二级子 sheet */
+  .mbn-subsheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 71;
+    background: var(--color-surface-container-lowest, #ffffff);
+    border-radius: 20px 20px 0 0;
+    padding: var(--space-md) var(--space-lg) calc(var(--space-md) + 70px);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.16);
+    transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    max-height: 85vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .mbn-subsheet.open { transform: translateY(0); }
+  .mbn-sub-head { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.10)); }
+  .mbn-sub-back { width: 36px; height: 36px; border-radius: 50%; border: none; background: none; color: var(--color-on-surface); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+  .mbn-sub-title { font-weight: 700; font-size: 16px; }
+  .mbn-sub-body { padding-top: 6px; }
+  .mbn-sub-row {
+    display: flex; align-items: center; gap: 12px; width: 100%; padding: 13px 0;
+    background: none; border: none; cursor: pointer; text-align: left;
+    font-size: var(--fs-label-md); color: var(--color-on-surface); font-family: inherit;
+    border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08));
+  }
+  .mbn-sub-row > span:first-child { flex: 1; min-width: 0; }
+  .mbn-sub-row.on { color: var(--color-primary); font-weight: 600; }
+  .mbn-sub-check { color: var(--color-outline); opacity: 0.6; font-size: 20px; flex-shrink: 0; }
+  .mbn-sub-row.on .mbn-sub-check { color: var(--color-primary); opacity: 1; }
+  .mbn-sub-sec { font-size: 12px; color: var(--color-outline); text-transform: uppercase; letter-spacing: 0.03em; padding: 14px 0 4px; }
+  .mbn-sub-note { font-size: 13px; color: var(--color-outline); padding: 14px 0; line-height: 1.5; }
+  .mbn-list-item { padding: 12px 0; border-bottom: 1px solid var(--divider-line, rgba(118,117,134,0.08)); }
+  .mbn-list-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mbn-list-author { font-weight: 600; font-size: 14px; color: var(--color-on-surface); }
+  .mbn-list-time { font-size: 11px; color: var(--color-outline); flex-shrink: 0; }
+  .mbn-list-body { font-size: 13px; color: var(--color-outline); margin-top: 4px; line-height: 1.5; word-break: break-word; }
+  .mbn-unblock { border: 1px solid var(--divider-line, rgba(118,117,134,0.3)); background: none; color: var(--color-on-surface); border-radius: 999px; padding: 4px 12px; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+  .app-main { padding-bottom: 74px; } /* 给底部导航留空间 */
+}
+
+/* v0.2.59.50 手机适配：主内容 + 340px 侧栏预览的左右网格（dashboard/micronationary/overview 共用），手机收单列 */
+.fc-split-grid { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-md); }
+@media (max-width: 768px) {
+  .fc-split-grid { grid-template-columns: 1fr; }
+}
+/* v0.2.59.50 手机适配：两列网格 + 左右弹性布局收单列 */
+.fc-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-lg); }
+.fc-split-flex { display: flex; }
+@media (max-width: 768px) {
+  .fc-two-col { grid-template-columns: 1fr; }
+  .fc-split-flex { flex-direction: column; min-height: 0 !important; }
+  .fc-split-flex > div { width: 100% !important; border-right: none !important; }
+}
+
 </style><style>
 /* ── 页面专属 CSS（2026-09-16 迁出内联块）——曾写进「ethereal.css 内联」块内，inliner 刷新
    被整体抹除，按 HEAD 原位恢复并独立成块 ── */
@@ -2412,10 +2642,39 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     .studio-header {
       display: flex; align-items: center; gap: var(--space-sm);
       padding: var(--space-sm) var(--space-lg);
-      border-bottom: 1px solid var(--divider-line);
-      background: var(--card-bg);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      background: transparent; /* v0.2.59.46 用户「把原本的白底背景去掉」 */
+      backdrop-filter: none; -webkit-backdrop-filter: none;
+      border-bottom: none;
       position: sticky; top: 0; z-index: 10;
+    }
+    /* v0.2.59.46 顶部重设计：返回键改圆形 + FC 标题独立成胶囊 */
+    .fc-back-circle {
+      width: 38px; height: 38px; padding: 0;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid var(--divider-line, rgba(118,117,134,0.18));
+      background: transparent; color: var(--color-on-surface);
+      box-shadow: var(--shadow-sm, 0 2px 6px rgba(0,0,0,0.08)); /* v0.2.59.47 阴影 */
+      transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    .fc-back-circle:hover { background: rgba(70,72,212,0.06); border-color: var(--color-primary); }
+    .fc-title-capsule {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 14px; border-radius: 999px;
+      border: 1px solid var(--divider-line, rgba(118,117,134,0.18));
+      background: transparent;
+      box-shadow: var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.06)); /* v0.2.59.47 阴影 */
+    }
+    /* v0.2.59.48 右上角「打开编辑器」按钮与胶囊/返回键统一大小（同高 38px 胶囊形） */
+    .fc-open-editor {
+      height: 38px; padding: 0 18px; border-radius: 999px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: var(--fs-label-md); font-weight: 700;
+      box-shadow: var(--shadow-sm, 0 2px 6px rgba(0,0,0,0.08));
+    }
+    @media (max-width: 640px) {
+      .studio-header { flex-wrap: wrap; row-gap: 8px; padding: var(--space-sm); }
+      .fc-title-capsule { flex-wrap: wrap; }
     }
     .metric-card { text-align: center; padding: var(--space-md); }
     .metric-value { font-size: 28px; font-weight: 700; line-height: 1.2; }
@@ -2509,6 +2768,52 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     }
     .snap-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--color-outline-variant); transition: all 0.3s; }
     .snap-dot.active-dot { background: var(--color-primary); height: 14px; border-radius: 3px; }
+
+    /* ── Team wizard (FC v10.28.51.0 团队频道三步创建向导) ── */
+    .fc-tw-overlay { position: fixed; inset: 0; z-index: 120; background: rgba(0, 0, 0, 0.55); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+    .fc-tw-overlay.open { opacity: 1; pointer-events: auto; }
+    .fc-tw-card { width: min(520px, calc(100vw - 32px)); max-height: min(660px, calc(100vh - 48px)); display: flex; flex-direction: column; background: var(--card-bg, #fff); border-radius: 16px; overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.28); }
+    .fc-tw-head { display: flex; align-items: center; gap: 12px; padding: 14px 18px; }
+    .fc-tw-title { flex: 1; font-weight: 700; font-size: var(--fs-body-lg, 16px); color: var(--color-on-surface, #1c1c28); }
+    .fc-tw-close { border: none; background: transparent; cursor: pointer; color: var(--color-outline, #767586); display: flex; padding: 6px; border-radius: 50%; }
+    .fc-tw-close:hover { background: rgba(118,117,134,0.1); }
+    .fc-tw-stepper-wrap { display: flex; padding: 0 18px 12px; }
+    .fc-tw-stepper { display: flex; align-items: center; gap: 6px; }
+    .fc-tw-step { display: flex; align-items: center; gap: 6px; color: var(--color-outline, #767586); font-size: var(--fs-label-sm, 12px); }
+    .fc-tw-step i { width: 20px; height: 20px; border-radius: 50%; background: rgba(118,117,134,0.15); color: var(--color-outline, #767586); font-style: normal; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .fc-tw-step.active { color: var(--color-on-surface, #1c1c28); }
+    .fc-tw-step.active i { background: var(--color-primary, #4648d4); color: #fff; }
+    /* 暗 mono 主色近白 #ececf2——白底白字真 bug（monodark 电池 M1g 实证）：反色方案亮圆黑字，中性零 tint（M1f 首页零蓝不变量） */
+    html[data-accent="mono"][data-theme="dark"] .fc-tw-step.active i { background: #e4e4ea; color: #0b0b0d; }
+    .fc-tw-step.done i { background: rgba(22,163,74,0.15); color: #16a34a; }
+    .fc-tw-line { width: 18px; height: 2px; background: rgba(118,117,134,0.2); border-radius: 1px; }
+    .fc-tw-body { flex: 1; overflow-y: auto; padding: 16px 18px; border-top: 1px solid rgba(118,117,134,0.12); }
+    .fc-tw-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 18px; border-top: 1px solid rgba(118,117,134,0.12); }
+    .fc-tw-q { margin: 2px 0 14px; font-size: var(--fs-body-md, 14px); font-weight: 600; color: var(--color-on-surface, #1c1c28); line-height: 1.5; }
+    .fc-tw-choice { display: flex; flex-direction: column; gap: 12px; }
+    .fc-tw-choice-card { display: flex; gap: 12px; align-items: center; padding: 16px; border: 2px solid rgba(118,117,134,0.22); border-radius: 12px; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease; }
+    .fc-tw-choice-card:hover { border-color: var(--color-primary, #4648d4); }
+    .fc-tw-choice-card.selected { border-color: var(--color-primary, #4648d4); background: rgba(70,72,212,0.04); }
+    .fc-tw-choice-card .material-symbols-outlined { font-size: 28px; color: var(--color-primary, #4648d4); flex-shrink: 0; }
+    .fc-tw-choice-card b { font-size: var(--fs-label-lg, 14px); color: var(--color-on-surface, #1c1c28); }
+    .fc-tw-choice-card p { margin: 2px 0 0; font-size: var(--fs-label-sm, 12px); color: var(--color-outline, #767586); }
+    .fc-tw-hint { margin: 14px 0 0; font-size: var(--fs-label-sm, 12px); color: var(--color-outline, #767586); line-height: 1.5; }
+    .fc-tw-field { margin-top: 14px; }
+    .fc-tw-field label { display: block; font-size: var(--fs-label-sm, 12px); font-weight: 600; color: var(--color-on-surface-variant, #4a4a5a); margin-bottom: 6px; }
+    .fc-tw-field input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(118,117,134,0.25); background: var(--sidebar-bg, #fff); color: var(--color-on-surface, #1c1c28); font-size: var(--fs-body-md, 14px); box-sizing: border-box; }
+    .fc-tw-field input:focus { outline: none; border-color: var(--color-primary, #4648d4); }
+    .fc-tw-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; transition: background 0.15s ease; }
+    .fc-tw-item:hover { background: rgba(70,72,212,0.04); }
+    .fc-tw-item .art-checkbox { width: 20px; height: 20px; }
+    .fc-tw-item b { font-weight: 600; font-size: var(--fs-label-lg, 14px); color: var(--color-on-surface, #1c1c28); flex: 1; }
+    .fc-tw-item.all-item { border-bottom: 1px solid rgba(118,117,134,0.15); margin-bottom: 8px; }
+    .fc-tw-friend { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
+    .fc-tw-friend:hover { background: rgba(70,72,212,0.04); }
+    .fc-tw-friend .art-checkbox { width: 20px; height: 20px; }
+    .fc-tw-friend img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+    .fc-tw-friend b { font-weight: 500; font-size: var(--fs-body-md, 14px); color: var(--color-on-surface, #1c1c28); flex: 1; }
+    .fc-tw-friend .label-sm { color: var(--color-outline, #767586); }
+    .fc-tw-cap { margin-top: 14px; padding: 8px 12px; border-radius: 8px; background: rgba(70,72,212,0.06); font-size: var(--fs-label-sm, 12px); color: var(--color-on-surface-variant, #4a4a5a); }
 
     /* ── View containers ── */
     .upload-view, .content-lib-view, .analytics-view, .articles-view { display: none; }
@@ -2650,24 +2955,84 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     .cl-action-btn.danger:hover { background: rgba(220,38,38,0.08); color: #dc2626; }
     .cl-empty { text-align: center; padding: 48px var(--space-md); color: var(--color-outline); }
     .cl-empty-icon { font-size: 48px; margin-bottom: 12px; display: block; opacity: 0.5; }
+
+    /* ── v10.28.48.0 头像同步（钦定：资料页权威·默认勾选；hover 相机徽章=可换头像）
+       v10.28.48.1 频道卡头像应用个人裁切（钦定⑤：与资料页保持一致）：
+       img 改内嵌 .fc-ch-avatar-crop 裁切盒（applyCrop 摆位；GIF 保动画），盒恒满 72px 卡位
+       v10.28.48.2 首页卡片玻璃→不透明（钦定③：只首页卡片；按钮/搜索胶囊保持玻璃） ── */
+    .channel-avatar.fc-avatar-editable { position: relative; cursor: pointer; overflow: visible; }
+    .fc-ch-avatar-crop { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; position: relative; }
+    .fc-ch-avatar-crop img.fc-ch-avatar-img { position: absolute; display: block; }
+    .channel-avatar.fc-avatar-editable::after {
+      content: 'photo_camera';
+      font-family: 'Material Symbols Outlined';
+      font-size: 14px;
+      position: absolute; bottom: -2px; right: -2px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--color-primary); color: white;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--card-bg);
+      opacity: 0; transition: opacity 0.15s ease;
+    }
+    .channel-avatar.fc-avatar-editable:hover::after { opacity: 1; }
+
+    /* ── v10.28.52.0 团队等级奖励：频道卡等级徽章 + 团队成就条 ── */
+    .fc-team-lv-badge {
+      display: inline-flex; align-items: center; padding: 2px 12px; border-radius: 999px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+    }
+    .fc-team-ach-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .fc-team-ach-chip {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px;
+      border: 1px solid var(--divider-line, rgba(0,0,0,0.08)); font-size: 12px; font-weight: 600;
+      color: var(--color-on-surface-variant); background: var(--card-bg);
+    }
+    .fc-team-ach-chip .ach-icon { font-size: 16px; color: var(--color-primary); }
+    .fc-team-ach-empty { font-size: 12px; color: var(--color-outline); margin-top: 12px; }
+
+    /* ── v10.28.48.2 首页卡片玻璃→不透明（钦定③：只首页卡片；按钮/搜索胶囊保持玻璃）
+       09-20 sitewide-opaque 先例镜像：.card 换不透明 token + 浮面滤网全摘；#channelOverview/#channelSummary
+       内联渐变背景需 !important 覆盖（内联样式特异性）；mono 主题同特异性后置规则（页面块在内联块之后=天然胜出）── */
+    body.fc-page .card:not(.profile-header) { background: var(--sidebar-bg); }
+    body.fc-page .card:not(.profile-header) > .lg-backdrop { filter: none; backdrop-filter: none; }
+    #channelOverview, #channelSummary { background: linear-gradient(135deg, rgba(70,72,212,0.04), rgba(129,39,207,0.02)), var(--sidebar-bg) !important; }
+    html[data-accent="mono"] #channelOverview, html[data-accent="mono"] #channelSummary { background: linear-gradient(135deg, rgba(28,28,34,0.04), rgba(28,28,34,0.02)), var(--sidebar-bg) !important; }
+
+    /* v0.2.59.45 用户「把FC首页半透明/灰色卡片背景改成白色不透明」：亮色主题整页纯白实心。
+       token 级覆盖 --card-bg/--card-bg-hover → 所有玻璃面（header/账号条/创建团队卡/菜单卡/卡片）一并转白 */
+    :root:not([data-theme="dark"]) body.fc-page { --card-bg: #ffffff; --card-bg-hover: #ffffff; }
+    :root:not([data-theme="dark"]) body.fc-page { background: #ffffff; }
+    :root:not([data-theme="dark"]) body.fc-page .card:not(.profile-header) { background: #ffffff !important; }
+    :root:not([data-theme="dark"]) #channelOverview,
+    :root:not([data-theme="dark"]) #channelSummary { background: #ffffff !important; }
+    :root:not([data-theme="dark"]) .upload-zone { background: #ffffff; }
+    :root:not([data-theme="dark"]) .file-info-bar { background: #ffffff; }
+    :root:not([data-theme="dark"]) .account-personal,
+    :root:not([data-theme="dark"]) .account-team-wrap { background: #ffffff; backdrop-filter: none; -webkit-backdrop-filter: none; }
+    :root:not([data-theme="dark"]) .tilt-container { background: #ffffff !important; }
+    /* v0.2.59.50 手机适配：FC 首页工作台左侧 3D 菜单卡收满宽、主区上下堆叠 */
+    @media (max-width: 640px) {
+      .studio-main > div { flex-direction: column; }
+      .studio-main > div > .tilt-container { width: 100% !important; position: static !important; }
+    }
   </style>
 </head>
 <body class="pre-stagger fc-page">
 
 <div class="studio-header">
-  <a href="../index.html" class="btn btn-ghost btn-icon btn-sm"><span class="material-symbols-outlined">arrow_back</span></a>
-  <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:24px">draw</span>
-  <!-- 名称下挂 FluidCanvas 自身版本号（FC 独立版本线 大版本.小版本.小更新.补丁，来源 site-config FLUIDCANVAS_VERSION）；名称右侧 by M.NationWorld -->
-  <div style="display:flex;flex-direction:column;gap:1px;justify-content:center">
-    <div style="display:flex;align-items:center;gap:6px">
-      <span style="font-weight:700;font-size:var(--fs-body-md)">FluidCanvas</span>
-      <span class="badge badge-success">Studio</span>
-      <span style="font-size:11px;color:var(--color-outline);opacity:0.75;font-weight:500;letter-spacing:0.02em">by M.NationWorld</span>
-    </div>
-    <span id="fcVersion" style="font-size:10px;color:var(--color-outline);opacity:0.45;letter-spacing:0.03em;line-height:1.2">v10.28.18.1</span>
+  <a href="fluidcanvas.html" class="fc-back-circle" title="Back to FluidCanvas" data-i18n-title="fc.head.backDashboard">
+    <span class="material-symbols-outlined" style="font-size:20px">arrow_back</span>
+  </a>
+  <div class="fc-title-capsule">
+    <span class="material-symbols-outlined" style="color:var(--color-primary);font-size:20px">draw</span>
+    <span style="font-weight:700;font-size:var(--fs-body-md)">FluidCanvas</span>
+    <span class="badge badge-success">Studio</span>
+    <span id="fcVersion" style="font-size:10px;color:var(--color-outline);opacity:0.6;letter-spacing:0.03em;line-height:1.2">v10.28.18.1</span>
+    <span style="font-size:11px;color:var(--color-outline);opacity:0.7;font-weight:500;letter-spacing:0.02em">by M.NationWorld</span>
   </div>
   <span style="flex:1"></span>
-  <a href="fluidcanvas-editor.html" id="openEditorCta" class="btn btn-primary"><span class="material-symbols-outlined">edit</span> <span data-i18n="fc.landing.openEditor">Open Editor</span></a>
+  <a href="fluidcanvas-editor.html" id="openEditorCta" class="btn btn-primary fc-open-editor"><span class="material-symbols-outlined" style="font-size:18px">edit</span> <span data-i18n="fc.landing.openEditor">Open Editor</span></a>
 </div>
 
 <!-- 登录引导卡（未登录时 CSS 互斥显示；编辑器 head 门禁也送回本页 ?locked=1） -->
@@ -2759,7 +3124,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <h2 class="headline-md" style="margin-bottom:2px" data-i18n="fc.cl.title">Content Library</h2>
         <p class="label-sm" style="color:var(--color-outline)" data-i18n="fc.cl.subtitle">Manage all your published content</p>
       </div>
-      <a href="fluidcanvas-editor.html" class="btn btn-primary">
+      <a href="fluidcanvas-editor.html?new=1" class="btn btn-primary">
         <span class="material-symbols-outlined">add</span> <span data-i18n="fc.landing.newArticle">New Article</span>
       </a>
     </div>
@@ -2874,7 +3239,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <h1 class="headline-lg" style="margin-bottom:2px" data-i18n="fc.articles.title">Articles Manager</h1>
         <p class="label-md" style="color:var(--color-outline)" data-i18n="fc.articles.subtitle">Manage, edit, and publish all your articles</p>
       </div>
-      <a href="fluidcanvas-editor.html" class="btn btn-primary btn-lg">
+      <a href="fluidcanvas-editor.html?new=1" class="btn btn-primary btn-lg">
         <span class="material-symbols-outlined">add</span> <span data-i18n="fc.landing.newArticle">New Article</span>
       </a>
     </div>
@@ -2925,6 +3290,30 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   </div><!-- end two-column -->
 </div>
 
+<!-- ═══ FC v10.28.51.0 团队频道：三步创建向导（cloudMode 真接口；演示/访客点入口走登录提示）═══ -->
+<div class="fc-tw-overlay" id="fcTeamWizard" role="dialog" aria-modal="true">
+  <div class="fc-tw-card">
+    <div class="fc-tw-head">
+      <div class="fc-tw-title" id="fcTwTitle">Create Team Channel</div>
+      <button class="fc-tw-close" onclick="closeTeamWizard()" aria-label="Close"><span class="material-symbols-outlined" style="font-size:20px">close</span></button>
+    </div>
+    <div class="fc-tw-stepper-wrap">
+      <div class="fc-tw-stepper" id="fcTwStepper">
+        <span class="fc-tw-step active" data-step="1"><i>1</i><b id="fcTwS1">Identity</b></span>
+        <span class="fc-tw-line"></span>
+        <span class="fc-tw-step" data-step="2"><i>2</i><b id="fcTwS2">Copy</b></span>
+        <span class="fc-tw-line"></span>
+        <span class="fc-tw-step" data-step="3"><i>3</i><b id="fcTwS3">Group Chat</b></span>
+      </div>
+    </div>
+    <div class="fc-tw-body" id="fcTwBody"></div>
+    <div class="fc-tw-foot">
+      <button id="fcTwBack" class="btn btn-outline" onclick="teamWizardBack()">Back</button>
+      <button id="fcTwNext" class="btn btn-primary" onclick="teamWizardNext()">Next</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -2941,7 +3330,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 </script>
 <script>
   // --- Data ---
-  var user = SlatiDB.getUser() || { displayName: 'Alex Rivera', citizenId: 'USR-8842', avatarUrl: 'https://ui-avatars.com/api/?name=Alex+Rivera&background=4648d4&color=fff&size=80' };
+  var user = SlatiDB.getUser() || {};
   var teams = SlatiDB.getTeams();
   var activeAccount = SlatiDB.getActiveAccount();
   var hasTeams = teams.length > 0;
@@ -2950,10 +3339,60 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // --- i18n lazy-T（字典挂载后生效；挂载前回落英文字面量） ---
   var FT = function (k) { return (window.__fcT ? window.__fcT(k) : null); };
 
+  // --- FC 工作台概览（v0.2.58.26 Round 46：演示数据全撤接真数据）---
+  // cloudMode=登录注册用户（USR- id 前缀）才拉 /api/fc/overview；演示/访客零 API。
+  // FC_OVERVIEW=各区块唯一数据源；null=未加载/失败/访客 → 一律 '—'/空态，绝不回退假数据。
+  var NEUTRAL_AVATAR = 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2080%2080%22%3E%3Crect%20width%3D%2280%22%20height%3D%2280%22%20fill%3D%22%232b2b3d%22%2F%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%2231%22%20r%3D%2213%22%20fill%3D%22%238a8aa3%22%2F%3E%3Cpath%20d%3D%22M16%2074c0-14%2010.7-24%2024-24s24%2010%2024%2024%22%20fill%3D%22%238a8aa3%22%2F%3E%3C%2Fsvg%3E';
+  var cloudMode = SlatiDB.isLoggedIn() && !!user && String(user.id || '').indexOf('USR-') === 0;
+  var FC_OVERVIEW = null;
+  function fcNum(n) {
+    if (n === null || n === undefined) return '—';
+    if (typeof n === 'string') return n;
+    var v = Number(n);
+    return isFinite(v) ? v.toLocaleString() : '—';
+  }
+  function fcCompact(n) {
+    if (n === null || n === undefined) return '—';
+    var v = Number(n);
+    if (!isFinite(v)) return '—';
+    return v >= 1000 ? (v / 1000).toFixed(1).replace(/\.0$/, '') + 'K' : String(v);
+  }
+  function fcOverviewStats() { return (FC_OVERVIEW && FC_OVERVIEW.stats) || null; }
+  function fcOverviewWindow(key) { return (FC_OVERVIEW && FC_OVERVIEW.windows && FC_OVERVIEW.windows[key]) || null; }
+  function ensureApiSilent(cb) {
+    if (window.MN_API) { cb(); return; }
+    var s = document.createElement('script');
+    s.src = '../assets/js/api.js';
+    s.onload = function () { cb(); };
+    s.onerror = function () {};
+    document.head.appendChild(s);
+  }
+  function refreshDataViews() {
+    try { renderContent(); } catch (e) {}
+    try { renderContentTables(); } catch (e) {}
+    try { renderRecentUploads(); } catch (e) {}
+    try { renderCLStats(); renderCLList(); } catch (e) {}
+    try { if (window.FC_ANALYTICS) window.FC_ANALYTICS.render(); } catch (e) {}
+    try { if (window.FC_ARTICLES) window.FC_ARTICLES.render(); } catch (e) {}
+  }
+  function loadFcOverview(force, cb) {
+    if (!cloudMode) return;
+    if (!force && FC_OVERVIEW) { if (cb) cb(); return; }
+    ensureApiSilent(function () {
+      if (!window.MN_API || !window.MN_API.get) return;
+      MN_API.get('/fc/overview').then(function (res) {
+        if (!res || !res.ok || !res.data) { FC_OVERVIEW = null; refreshDataViews(); if (cb) cb(); return; }
+        FC_OVERVIEW = res.data;
+        refreshDataViews();
+        if (cb) cb();
+      }).catch(function () { FC_OVERVIEW = null; refreshDataViews(); if (cb) cb(); });
+    });
+  }
+
   // --- Account selector ---
-  document.getElementById('personalAvatar').src = user.avatarUrl || 'https://ui-avatars.com/api/?name=S&background=4648d4&color=fff&size=80';
-  document.getElementById('personalName').textContent = user.displayName || 'Sovereign';
-  document.getElementById('personalId').textContent = user.citizenId || 'USR-0000';
+  document.getElementById('personalAvatar').src = user.avatarUrl || NEUTRAL_AVATAR;
+  document.getElementById('personalName').textContent = user.displayName || (FT('fc.landing.myStudio') || 'My Studio');
+  document.getElementById('personalId').textContent = user.citizenId || '—';
 
   function renderTeamSection() {
     var teamWrap = document.getElementById('teamAccount');
@@ -2963,7 +3402,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       teamWrap.classList.remove('has-teams');
       document.getElementById('snapDots').style.display = 'none';
       teamContent.innerHTML =
-        '<div class="no-teams-cta">' +
+        '<div class="no-teams-cta" style="cursor:pointer" onclick="event.stopPropagation();openTeamWizard()">' +
           '<span class="material-symbols-outlined" style="font-size:28px">group_add</span>' +
           '<span class="label-sm">' + (FT('fc.landing.createTeam') || 'Create Team') + '</span>' +
         '</div>';
@@ -3066,6 +3505,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
     if (id !== 'personal') {
       activeTeam = teams.find(function(t) { return t.id === id; });
+      loadTeamRewards(id); // v10.28.52.0：切团队拉奖励清单（等级徽章/成就条）
     } else { activeTeam = null; }
     activeAccount = id;
     SlatiDB.setActiveAccount(id);
@@ -3161,29 +3601,60 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     // Channel overview
     var label, avatar, subtitle, stats, btnHtml;
     if (isPersonal) {
-      label = user.displayName || 'Sovereign';
-      avatar = (user.displayName || 'S').charAt(0);
-      subtitle = '@' + (user.displayName || 'Sovereign').replace(/\s+/g, '') + ' · ' + (FT('fc.landing.demoSub') || 'Personal Studio · 6 articles · 12 media');
-      stats = '<span><strong style="color:var(--color-on-surface)">2.4K</strong> ' + (FT('fc.landing.followers') || 'Followers') + '</span><span><strong style="color:var(--color-on-surface)">48.2K</strong> ' + (FT('fc.landing.totalViews') || 'Total Views') + '</span><span><strong style="color:var(--color-on-surface)">1.8K</strong> ' + (FT('fc.landing.interactions') || 'Interactions') + '</span>';
-      btnHtml = '<a href="fluidcanvas-editor.html" class="btn btn-outline btn-lg"><span class="material-symbols-outlined">add</span> ' + (FT('fc.landing.newArticle') || 'New Article') + '</a>';
+      var st = fcOverviewStats();
+      var name = user.displayName || (FT('fc.landing.myStudio') || 'My Studio');
+      label = name;
+      // v0.2.58.20 头像同步（钦定：默认勾选=双向·资料页权威）：旗标 ON 且有头像 → 图片卡（点击可换）；否则字母卡
+      var useAvatarImg = fcAvatarSyncOn() && !!user.avatarUrl;
+      avatar = useAvatarImg
+        ? '<div class="fc-ch-avatar-crop"><img class="fc-ch-avatar-img" src="' + fcEsc(user.avatarUrl) + '" alt=""></div>'
+        : (name.charAt(0) || '—');
+      // v0.2.58.26 真实聚合（钦定②：假数字全撤接 FC_OVERVIEW；未加载/失败=—，绝不回退假数据）
+      subtitle = '@' + name.replace(/\s+/g, '') + ' · ' + (FT('fc.landing.articles') || 'Articles') + ' ' + fcNum(st ? st.articles : null) + ' · ' + (FT('fc.landing.media') || 'Media') + ' ' + fcNum(st ? st.media : null);
+      stats = '<span><strong style="color:var(--color-on-surface)">' + fcNum(st ? st.followers : null) + '</strong> ' + (FT('fc.landing.followers') || 'Followers') + '</span><span><strong style="color:var(--color-on-surface)">' + fcCompact(st ? (st.articleViews + st.postViews) : null) + '</strong> ' + (FT('fc.landing.totalViews') || 'Total Views') + '</span><span><strong style="color:var(--color-on-surface)">' + fcCompact(st ? (st.articleLikes + st.articleFavorites + st.articleShares + st.postLikes + st.postFavorites + st.postShares) : null) + '</strong> ' + (FT('fc.landing.interactions') || 'Interactions') + '</span>';
+      btnHtml = '<a href="fluidcanvas-editor.html?new=1" class="btn btn-outline btn-lg"><span class="material-symbols-outlined">add</span> ' + (FT('fc.landing.newArticle') || 'New Article') + '</a>';
     } else if (activeTeam) {
       label = activeTeam.name;
-      avatar = activeTeam.avatar;
+      // v10.28.51.0 团队真数据：有头像 URL → 图片卡；否则字母卡（与个人分支同款 fc-ch-avatar-crop）
+      avatar = activeTeam.avatarUrl
+        ? '<div class="fc-ch-avatar-crop"><img class="fc-ch-avatar-img" src="' + fcEsc(activeTeam.avatarUrl) + '" alt=""></div>'
+        : activeTeam.avatar;
       subtitle = '@' + activeTeam.name.replace(/\s+/g, '') + ' · ' + activeTeam.role + ' · ' + activeTeam.members + ' ' + (FT('fc.landing.members') || 'members');
-      stats = '<span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 320) + '</strong> ' + (FT('fc.landing.followers') || 'Followers') + '</span><span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 6200) + '</strong> ' + (FT('fc.landing.totalViews') || 'Total Views') + '</span><span><strong style="color:var(--color-on-surface)">' + (activeTeam.members * 240) + '</strong> ' + (FT('fc.landing.interactions') || 'Interactions') + '</span>';
-      btnHtml = '<a href="fluidcanvas-editor.html" class="btn btn-outline btn-lg"><span class="material-symbols-outlined">add</span> ' + (FT('fc.landing.teamArticle') || 'Team Article') + '</a>';
+      // v10.28.52.0 团队等级奖励：等级徽章（阈值=个人 ×1.5）+ 真粉丝数 + 团队 XP（五事件双向对称）
+      var tls = (window.SlatiDB && SlatiDB.getTeamLevelState) ? SlatiDB.getTeamLevelState(activeTeam.xpGained || 0) : null;
+      var teamLvBadge = tls
+        ? '<span class="fc-team-lv-badge" title="' + fcEsc(String(tls.xp)) + ' XP">Lv.' + tls.lv + '</span>'
+        : '<span class="fc-team-lv-badge">Lv.1</span>';
+      stats = '<span><strong style="color:var(--color-on-surface)">' + fcNum(activeTeam.followers) + '</strong> ' + (FT('fc.landing.followers') || 'Followers') + '</span><span><strong style="color:var(--color-on-surface)">' + fcCompact(activeTeam.xpGained || 0) + '</strong> ' + (FT('fc.rewards.teamXp') || 'Team XP') + '</span><span><strong style="color:var(--color-on-surface)">—</strong> ' + (FT('fc.landing.interactions') || 'Interactions') + '</span>';
+      btnHtml = '<a href="fluidcanvas-editor.html?team=' + encodeURIComponent(activeTeam.id) + '" class="btn btn-outline btn-lg"><span class="material-symbols-outlined">add</span> ' + (FT('fc.landing.teamArticle') || 'Team Article') + '</a>' +
+        '<button id="fcTeamFollowBtn" class="btn btn-primary btn-lg" onclick="event.stopPropagation();fcToggleTeamFollow()"><span class="material-symbols-outlined">' + (activeTeam.followingByMe ? 'check' : 'add') + '</span> ' + (activeTeam.followingByMe ? (FT('fc.rewards.unfollow') || 'Following') : (FT('fc.rewards.follow') || 'Follow')) + '</button>';
+      label = '<span class="flex-center" style="gap:10px">' + label + teamLvBadge + '</span>';
     } else {
       label = 'FluidCanvas Studio'; avatar = 'FC'; subtitle = (FT('fc.landing.noTeam') || 'No team selected');
       stats = ''; btnHtml = '';
     }
-    document.getElementById('channelOverview').innerHTML = makeChannelCard(label, avatar, subtitle, stats, btnHtml);
+    document.getElementById('channelOverview').innerHTML = makeChannelCard(label, avatar, subtitle, stats, btnHtml) + teamAchStripHtml();
+    // v0.2.58.20 头像同步：editable 类+title 每渲染重打（innerHTML 整换吞监听——点击走一次性委托；切账号/切语言 4451 不丢）
+    if (isPersonal && useAvatarImg) {
+      var chAvatarEl = document.getElementById('channelOverview').querySelector('.channel-avatar');
+      if (chAvatarEl) { chAvatarEl.classList.add('fc-avatar-editable'); chAvatarEl.title = FT('fc.landing.changeAvatar') || 'Change Avatar'; }
+      // v0.2.58.25 频道卡头像应用个人裁切（钦定⑤：与资料页一致；null=默认整图 cover 零回归；
+      //   cloudMerge 已把 publicUser.avatarCrop 落 slati_user）
+      var chImg = chAvatarEl ? chAvatarEl.querySelector('img.fc-ch-avatar-img') : null;
+      if (chImg && window.MN_CropDialog) window.MN_CropDialog.applyCrop(chImg, user.avatarCrop, chImg.parentElement);
+    }
 
-    // Stats row
+    // Stats row（v0.2.58.26：假数字 48.2K/3,842/1,256/892+假涨跌全撤——接 FC_OVERVIEW 累计聚合；
+    //   metric-change 行整体移除（窗口对比已迁 FC_ANALYTICS 真实窗口）；未加载=—）
+    var qst = fcOverviewStats();
+    var qViews = (qst ? (qst.articleViews + qst.postViews) : null);
+    var qBms = (qst ? (qst.articleFavorites + qst.postFavorites) : null);
+    var qShares = (qst ? (qst.articleShares + qst.postShares) : null);
     document.getElementById('quickStats').innerHTML =
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + (isPersonal ? '48.2K' : (activeTeam ? (activeTeam.members * 6.2).toFixed(1) + 'K' : '0')) + '</div><div class="metric-label">' + (FT('fc.metrics.totalViews') || 'Total Views') + '</div><div class="metric-change" style="color:#22c55e">↑ ' + (isPersonal ? '12.4' : (activeTeam ? '8.7' : '0')) + '%</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + (isPersonal ? '3,842' : (activeTeam ? activeTeam.members * 510 : '0')) + '</div><div class="metric-label">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</div><div class="metric-change" style="color:#22c55e">↑ ' + (isPersonal ? '8.1' : '5.2') + '%</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + (isPersonal ? '1,256' : (activeTeam ? activeTeam.members * 170 : '0')) + '</div><div class="metric-label">' + (FT('fc.metrics.shares') || 'Shares') + '</div><div class="metric-change" style="color:#22c55e">↑ 21.7%</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + (isPersonal ? '892' : (activeTeam ? activeTeam.members * 120 : '0')) + '</div><div class="metric-label">' + (FT('fc.metrics.newFollowers') || 'New Followers') + '</div><div class="metric-change" style="color:#dc2626">↓ 3.2%</div></div>';
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + fcCompact(qViews) + '</div><div class="metric-label">' + (FT('fc.metrics.totalViews') || 'Total Views') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + fcNum(qBms) + '</div><div class="metric-label">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + fcNum(qShares) + '</div><div class="metric-label">' + (FT('fc.metrics.shares') || 'Shares') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + fcNum(qst ? qst.followers : null) + '</div><div class="metric-label">' + (FT('fc.metrics.newFollowers') || 'New Followers') + '</div></div>';
     // v0.2.9.0：动态 metric-card 挂液态玻璃；v0.2.45.2：切场期间延后扫描——
     // SVG 滤镜/backdrop 层注入在入场动画窗口内会逐帧重绘（切场掉帧主因之一）
     if (window.LG) {
@@ -3203,35 +3674,34 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var aLabel = isPersonal ? (FT('fc.landing.your') || 'Your') : (activeTeam ? activeTeam.name : (FT('fc.landing.team') || 'Team'));
     var track = document.getElementById('slideTrack');
 
-    var articleRows = [
-      { name: 'The Founding Charter of Etheria', views: '12,420', bookmarks: '1,204', shares: '486', trend: '🥇 Top', trendClass: 'badge-warning' },
-      { name: 'Aether Prime: A Smart Sovereign City', views: '15,630', bookmarks: '2,108', shares: '742', trend: 'Rising', trendClass: 'badge-success' },
-      { name: 'Digital Rights & Citizenship Act', views: '8,920', bookmarks: '853', shares: '312', trend: 'Stable', trendClass: 'badge-primary' },
-      { name: 'Economic Policy Whitepaper', views: '4,280', bookmarks: '645', shares: '198', trend: 'Stable', trendClass: 'badge-primary' },
-    ];
-    var mediaRows = [
-      { name: 'Aether Prime — Drone Tour 4K', type: '🎬', views: '45.1K', likes: '8,920', bookmarks: '4,105', shares: '2,830' },
-      { name: 'Etheria — Official Flag Reveal', type: '🖼️', views: '22.8K', likes: '3,421', bookmarks: '1,892', shares: '1,204' },
-      { name: 'Governance Summit — Highlights', type: '🎬', views: '18.4K', likes: '4,210', bookmarks: '2,340', shares: '982' },
-      { name: 'National Anthem — Recording', type: '🎵', views: '9,620', likes: '5,340', bookmarks: '3,210', shares: '1,540' },
-    ];
+    // v0.2.58.26 真实数据（钦定②）：文章=FC_OVERVIEW.articles 按浏览降序前 5；媒体=FC_OVERVIEW.media 最新前 5；
+    //   无数据=空态（绝不回退假数据）；假涨跌百分比（Math.random）全撤
+    var ov = FC_OVERVIEW;
+    var articleRows = (ov && ov.articles) ? ov.articles.slice().sort(function (a, b) { return (b.viewCount || 0) - (a.viewCount || 0); }).slice(0, 5).map(function (a) {
+      return { name: a.title || (FT('fc.landing.untitled') || 'Untitled'), views: a.viewCount || 0, bookmarks: a.favoriteCount || 0, shares: a.shareCount || 0, words: a.wordCount || 0 };
+    }) : [];
+    var mediaRows = (ov && ov.media) ? ov.media.slice(0, 5).map(function (m) {
+      return { name: m.id + '.' + m.ext, type: (m.mime || '').indexOf('video/') === 0 ? 'video' : 'image', size: m.bytes || 0, date: String(m.createdAt || '').slice(0, 10) };
+    }) : [];
 
     function makeArticlePanel(rows) {
-      var hdr = '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.03em"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:140px">' + (FT('fc.landing.articles') || 'Article') + '</span><span class="mini-stat">' + (FT('fc.metrics.views') || 'Views') + '</span><span class="mini-stat">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><span class="mini-stat">' + (FT('fc.metrics.shares') || 'Shares') + '</span><span class="mini-stat" style="width:80px">' + (FT('fc.metrics.trend') || 'Trend') + '</span></div>';
+      var hdr = '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.03em"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:140px">' + (FT('fc.landing.articles') || 'Article') + '</span><span class="mini-stat">' + (FT('fc.metrics.views') || 'Views') + '</span><span class="mini-stat">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><span class="mini-stat">' + (FT('fc.metrics.shares') || 'Shares') + '</span><span class="mini-stat" style="width:80px">' + (FT('fc.status.words') || 'Words') + '</span></div>';
       var body = rows.map(function(r, i) {
         var rankColors = ['var(--color-primary)', 'var(--color-outline)', '#ea580c', 'var(--color-outline)'];
-        return '<div class="content-row"><span style="width:36px;text-align:center;font-weight:800;font-size:var(--fs-body-md);color:' + rankColors[i] + '">' + (i + 1) + '</span><span style="flex:1;min-width:140px;font-weight:600">' + r.name + '</span><span class="mini-stat"><span style="font-weight:600">' + r.views + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 40 + 5)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.bookmarks + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 30 + 3)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.shares + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 50 + 5)) + '%</span></span><span class="mini-stat" style="width:80px"><span class="badge ' + r.trendClass + '">' + r.trend + '</span></span></div>';
+        return '<div class="content-row"><span style="width:36px;text-align:center;font-weight:800;font-size:var(--fs-body-md);color:' + rankColors[i] + '">' + (i + 1) + '</span><span style="flex:1;min-width:140px;font-weight:600">' + fcEsc(r.name) + '</span><span class="mini-stat"><span style="font-weight:600">' + fcNum(r.views) + '</span></span><span class="mini-stat"><span style="font-weight:600">' + fcNum(r.bookmarks) + '</span></span><span class="mini-stat"><span style="font-weight:600">' + fcNum(r.shares) + '</span></span><span class="mini-stat" style="width:80px">' + fcNum(r.words) + '</span></div>';
       }).join('');
-      return '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.landing.topArticles') || 'Top Articles') + ' — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">' + (FT('fc.analytics.period28d') || 'Last 28 days') + '</span></div>' + hdr + body + '</div>';
+      var emptyHtml = '<div class="cl-empty" style="grid-column:1/-1"><span class="material-symbols-outlined cl-empty-icon">article</span><p style="font-weight:600;margin-bottom:4px">' + (FT('fc.landing.emptyArticles') || 'No articles yet') + '</p><p style="font-size:12px">' + (FT('fc.landing.emptyArticlesHint') || 'Create your first article in the editor') + '</p></div>';
+      return '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.landing.topArticles') || 'Top Articles') + ' — ' + aLabel + '</h3></div>' + (rows.length ? hdr + body : emptyHtml) + '</div>';
     }
 
     function makeMediaPanel(rows) {
-      var hdr = '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.03em"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:160px">' + (FT('fc.landing.media') || 'Media') + '</span><span style="width:44px;text-align:center">' + (FT('fc.metrics.type') || 'Type') + '</span><span class="mini-stat">' + (FT('fc.metrics.views') || 'Views') + '</span><span class="mini-stat">' + (FT('fc.metrics.likes') || 'Likes') + '</span><span class="mini-stat">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><span class="mini-stat">' + (FT('fc.metrics.shares') || 'Shares') + '</span></div>';
+      var hdr = '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase;letter-spacing:0.03em"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:160px">' + (FT('fc.landing.media') || 'Media') + '</span><span class="mini-stat">' + (FT('fc.metrics.type') || 'Type') + '</span><span class="mini-stat">' + (FT('fc.metrics.size') || 'Size') + '</span><span class="mini-stat">' + (FT('fc.analytics.date') || 'Date') + '</span></div>';
       var body = rows.map(function(r, i) {
         var rankColors = ['var(--color-primary)', 'var(--color-outline)', '#ea580c', 'var(--color-outline)'];
-        return '<div class="content-row"><span style="width:36px;text-align:center;font-weight:800;font-size:var(--fs-body-md);color:' + rankColors[i] + '">' + (i + 1) + '</span><span style="flex:1;min-width:160px;font-weight:600">' + r.name + '</span><span style="width:44px;text-align:center">' + r.type + '</span><span class="mini-stat"><span style="font-weight:600">' + r.views + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 60 + 5)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.likes + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 50 + 5)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.bookmarks + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 35 + 3)) + '%</span></span><span class="mini-stat"><span style="font-weight:600">' + r.shares + '</span><br><span style="font-size:11px;color:#22c55e">↑ ' + (Math.floor(Math.random() * 70 + 5)) + '%</span></span></div>';
+        return '<div class="content-row"><span style="width:36px;text-align:center;font-weight:800;font-size:var(--fs-body-md);color:' + rankColors[i] + '">' + (i + 1) + '</span><span style="flex:1;min-width:160px;font-weight:600">' + fcEsc(r.name) + '</span><span class="mini-stat">' + (r.type === 'video' ? (FT('fc.cl.subVideo') || 'Video') : (FT('fc.cl.subImages') || 'Images')) + '</span><span class="mini-stat">' + formatSize(r.size) + '</span><span class="mini-stat">' + r.date + '</span></div>';
       }).join('');
-      return '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.landing.topMedia') || 'Top Media') + ' — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">' + (FT('fc.analytics.period28d') || 'Last 28 days') + '</span></div>' + hdr + body + '</div>';
+      var emptyHtml = '<div class="cl-empty" style="grid-column:1/-1"><span class="material-symbols-outlined cl-empty-icon">cloud_upload</span><p style="font-weight:600;margin-bottom:4px">' + (FT('fc.landing.emptyMedia') || 'No media yet') + '</p><p style="font-size:12px">' + (FT('fc.landing.emptyMediaHint') || 'Uploaded media will appear here') + '</p></div>';
+      return '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.landing.recentMedia') || 'Recent Media') + ' — ' + aLabel + '</h3></div>' + (rows.length ? hdr + body : emptyHtml) + '</div>';
     }
 
     track.innerHTML = makeArticlePanel(articleRows) + makeMediaPanel(mediaRows);
@@ -3399,20 +3869,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     '.zip':'folder_zip','.rar':'folder_zip','.7z':'folder_zip','.mp4':'movie','.mp3':'headphones','.mov':'movie'
   };
 
-  var SIMULATED_FILES = [
-    'micronation_constitution_v3.pdf','national_flag_design_final.png','trade_agreement_draft.docx',
-    'sovereign_decree_0042.txt','community_announcement_template.md','territory_map_2026.jpg',
-    'diplomatic_correspondence.zip','wiki_knowledge_base_export.json'
-  ];
-
-  var recentUploads = [
-    { file:'Etheria_Annual_Report_2025.pdf',        target:'article',   targetLabel:'Article',        time:'2 hours ago', status:'Published' },
-    { file:'Aethelgard_Treaty_Protocol_v2.docx',    target:'article',   targetLabel:'Article',        time:'5 hours ago', status:'Published' },
-    { file:'National_Crest_Final.svg',              target:'community', targetLabel:'Community Post',  time:'1 day ago',   status:'Published' },
-    { file:'Neo_Venice_Infrastructure_Plan.pdf',     target:'wiki',      targetLabel:'Wiki Entry',     time:'2 days ago',  status:'Published' },
-    { file:'Governance_Policy_Update_2026.txt',      target:'sovereign', targetLabel:'Sovereign Log',  time:'3 days ago',  status:'Published' },
-  ];
-
+  // v0.2.58.26：SIMULATED_FILES/假上传记录全撤——上传列表=FC_OVERVIEW.media 真数据（renderRecentUploads）
   var currentFile = null;
   var currentTarget = null;
 
@@ -3425,11 +3882,6 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / 1048576).toFixed(1) + ' MB';
-  }
-
-  function simulateFilePick() {
-    var name = SIMULATED_FILES[Math.floor(Math.random() * SIMULATED_FILES.length)];
-    setFile({ name: name, size: Math.floor(Math.random() * 8000000) + 24000 });
   }
 
   function setFile(file) {
@@ -3482,55 +3934,323 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     toastTimer = setTimeout(function() { el.classList.remove('show'); }, 2800);
   }
 
+  // ═══ FC v10.28.51.0 团队频道：三步创建向导（cloudMode 真接口；访客/演示点入口走登录提示）═══
+  // 提交=一次 POST /api/teams {name, copyIdentity, copyItems, chat?}（后端承载身份转换+内容搬运+建群聊）；
+  // 好友清单 GET /api/friends（accepted 口径）；团队列表 GET /api/teams 落本地 teams 视图。
+  var TEAM_WIZ = { step: 1, copyIdentity: null, name: '', copy: { posts: true, media: true, activity: true, decorations: true }, chatName: '', chatMemberIds: [], friends: [], submitting: false };
+  var TEAM_ITEM_KEYS = ['posts', 'media', 'activity', 'decorations'];
+  function teamWizardItems() { // 全部=四类全选（默认全勾）；单项联动
+    var all = TEAM_ITEM_KEYS.every(function (k) { return TEAM_WIZ.copy[k]; });
+    var out = { all: all };
+    TEAM_ITEM_KEYS.forEach(function (k) { out[k] = TEAM_WIZ.copy[k]; });
+    return out;
+  }
+  function teamWizardToggle(key) {
+    if (key === 'all') {
+      var target = !teamWizardItems().all;
+      TEAM_ITEM_KEYS.forEach(function (k) { TEAM_WIZ.copy[k] = target; });
+    } else { TEAM_WIZ.copy[key] = !TEAM_WIZ.copy[key]; }
+    renderTeamWizard();
+  }
+  function teamWizardCanNext() {
+    if (TEAM_WIZ.step === 1) {
+      if (TEAM_WIZ.copyIdentity === null) return false;
+      if (TEAM_WIZ.copyIdentity === false) {
+        var n = (TEAM_WIZ.name || '').trim();
+        return n.length >= 1 && n.length <= 60;
+      }
+    }
+    return true;
+  }
+  function teamWizardStep1() {
+    var h = '<p class="fc-tw-q">' + (FT('fc.team.s1Title') || '是否直接使用现有横幅&头像&名称&ID 直接转换到团队频道？') + '</p>' +
+      '<div class="fc-tw-choice">' +
+      '<div class="fc-tw-choice-card' + (TEAM_WIZ.copyIdentity === true ? ' selected' : '') + '" onclick="teamWizardPickIdentity(true)">' +
+      '<span class="material-symbols-outlined">verified_user</span><div><b>' + (FT('fc.team.s1Yes') || '是，直接转换') + '</b><p>' + (FT('fc.team.s1YesHint') || '横幅/头像/名称/ID 转为团队频道；个人频道保留不动') + '</p></div></div>' +
+      '<div class="fc-tw-choice-card' + (TEAM_WIZ.copyIdentity === false ? ' selected' : '') + '" onclick="teamWizardPickIdentity(false)">' +
+      '<span class="material-symbols-outlined">edit_note</span><div><b>' + (FT('fc.team.s1No') || '否，重新设置') + '</b><p>' + (FT('fc.team.s1NoHint') || '为团队频道单独起名') + '</p></div></div>' +
+      '</div>';
+    if (TEAM_WIZ.copyIdentity === false) {
+      h += '<div class="fc-tw-field"><label>' + (FT('fc.team.s1NamePh') || '团队名称（1-60 字符）') + '</label>' +
+        '<input id="fcTwName" maxlength="60" value="' + fcEsc(TEAM_WIZ.name) + '" oninput="teamWizardName(this.value)" placeholder="' + (FT('fc.team.s1NamePh') || 'Team name') + '"></div>';
+    }
+    h += '<p class="fc-tw-cap">' + (FT('fc.team.capHint') || '标配 3 名组员；可在订阅页扩容至 8/16/26/∞') + '</p>';
+    return h;
+  }
+  function teamWizardStep2() {
+    var cur = teamWizardItems();
+    var labels = { posts: 'fc.team.s2Posts', media: 'fc.team.s2Media', activity: 'fc.team.s2Activity', decorations: 'fc.team.s2Decorations' };
+    var fallbacks = { posts: '贴文', media: '视频&贴图', activity: '动态', decorations: '主页装饰' };
+    var h = '<p class="fc-tw-q">' + (FT('fc.team.s2Title') || '选择要搬运到团队频道的内容（只搬数据不搬频道；私人点赞收藏留个人）') + '</p>' +
+      '<div class="fc-tw-item all-item" onclick="teamWizardToggle(\'all\')"><span class="art-checkbox' + (cur.all ? ' checked' : '') + '"></span><b>' + (FT('fc.team.s2All') || '全部') + '</b></div>';
+    TEAM_ITEM_KEYS.forEach(function (k) {
+      h += '<div class="fc-tw-item" onclick="teamWizardToggle(\'' + k + '\')"><span class="art-checkbox' + (cur[k] ? ' checked' : '') + '"></span><b>' + (FT(labels[k]) || fallbacks[k]) + '</b></div>';
+    });
+    return h;
+  }
+  function teamWizardStep3() {
+    var h = '<p class="fc-tw-q">' + (FT('fc.team.s3Title') || '建群聊（可选）：拉好友一起进群') + '</p>' +
+      '<div class="fc-tw-field"><label>' + (FT('fc.team.s3NamePh') || '群聊名称（1-60 字符，留空不建群）') + '</label>' +
+      '<input id="fcTwChatName" maxlength="60" value="' + fcEsc(TEAM_WIZ.chatName) + '" oninput="teamWizardChatName(this.value)" placeholder="' + (FT('fc.team.s3NamePh') || 'Group chat name') + '"></div>';
+    if (!TEAM_WIZ.friends.length) {
+      h += '<p class="fc-tw-hint">' + (FT('fc.team.s3NoFriends') || '暂无好友，可先跳过建群') + '</p>';
+    } else {
+      h += '<p class="fc-tw-hint">' + (FT('fc.team.s3Pick') || '拉好友进群（只能邀请好友）') + '</p>';
+      TEAM_WIZ.friends.forEach(function (f) {
+        var on = TEAM_WIZ.chatMemberIds.indexOf(f.id) >= 0;
+        h += '<div class="fc-tw-friend" onclick="teamWizardToggleFriend(\'' + f.id + '\')">' +
+          '<span class="art-checkbox' + (on ? ' checked' : '') + '"></span>' +
+          '<img src="' + fcEsc(f.avatarUrl || '') + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
+          '<b>' + fcEsc(f.displayName || f.id) + '</b><span class="label-sm">' + fcEsc(f.citizenId || '') + '</span></div>';
+      });
+    }
+    return h;
+  }
+  function renderTeamWizard() {
+    var el = document.getElementById('fcTwBody');
+    if (!el) return;
+    if (TEAM_WIZ.step === 1) el.innerHTML = teamWizardStep1();
+    else if (TEAM_WIZ.step === 2) el.innerHTML = teamWizardStep2();
+    else el.innerHTML = teamWizardStep3();
+    document.getElementById('fcTwS1').textContent = FT('fc.team.step1') || '身份';
+    document.getElementById('fcTwS2').textContent = FT('fc.team.step2') || '搬运';
+    document.getElementById('fcTwS3').textContent = FT('fc.team.step3') || '群聊';
+    document.getElementById('fcTwBack').textContent = FT('fc.team.back') || '上一步';
+    document.querySelectorAll('#fcTwStepper .fc-tw-step').forEach(function (s) {
+      var n = Number(s.dataset.step);
+      s.classList.toggle('active', n === TEAM_WIZ.step);
+      s.classList.toggle('done', n < TEAM_WIZ.step);
+    });
+    document.getElementById('fcTwBack').style.display = TEAM_WIZ.step === 1 ? 'none' : '';
+    var next = document.getElementById('fcTwNext');
+    next.innerHTML = TEAM_WIZ.step === 3 ? (FT('fc.team.create') || '创建团队') : (FT('fc.team.next') || '下一步');
+    next.disabled = TEAM_WIZ.submitting || !teamWizardCanNext();
+  }
+  function teamWizardNext() {
+    if (TEAM_WIZ.submitting || !teamWizardCanNext()) return;
+    if (TEAM_WIZ.step < 3) { TEAM_WIZ.step++; renderTeamWizard(); }
+    else teamWizardSubmit();
+  }
+  function teamWizardBack() { if (TEAM_WIZ.step > 1) { TEAM_WIZ.step--; renderTeamWizard(); } }
+  function teamWizardPickIdentity(v) { TEAM_WIZ.copyIdentity = v; renderTeamWizard(); }
+  function teamWizardName(v) { TEAM_WIZ.name = v; document.getElementById('fcTwNext').disabled = !teamWizardCanNext(); }
+  function teamWizardChatName(v) { TEAM_WIZ.chatName = v; }
+  function teamWizardToggleFriend(id) {
+    var i = TEAM_WIZ.chatMemberIds.indexOf(id);
+    if (i >= 0) TEAM_WIZ.chatMemberIds.splice(i, 1); else TEAM_WIZ.chatMemberIds.push(id);
+    document.getElementById('fcTwBody').innerHTML = teamWizardStep3(); // 聊天名输入态在 TEAM_WIZ 不丢
+  }
+  function openTeamWizard() {
+    if (!cloudMode) { showToast((FT('fc.team.loginHint') || '登录后即可创建团队频道'), 'info'); return; }
+    TEAM_WIZ = { step: 1, copyIdentity: null, name: '', copy: { posts: true, media: true, activity: true, decorations: true }, chatName: '', chatMemberIds: [], friends: TEAM_WIZ.friends || [], submitting: false };
+    document.getElementById('fcTeamWizard').classList.add('open');
+    document.getElementById('fcTwTitle').textContent = FT('fc.team.wizardTitle') || '创建团队频道';
+    renderTeamWizard();
+    fcEnsureApi(function () {
+      if (!window.MN_API || !window.MN_API.get) return;
+      MN_API.get('/friends').then(function (res) {
+        if (res && res.ok && res.data && Array.isArray(res.data.friends)) {
+          TEAM_WIZ.friends = res.data.friends;
+          if (TEAM_WIZ.step === 3) renderTeamWizard();
+        }
+      }).catch(function () {});
+    });
+  }
+  function closeTeamWizard() { document.getElementById('fcTeamWizard').classList.remove('open'); }
+  document.getElementById('fcTeamWizard').addEventListener('click', function (e) { if (e.target === this) closeTeamWizard(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.getElementById('fcTeamWizard').classList.contains('open')) closeTeamWizard(); });
+  function teamWizardSubmit() {
+    var cur = teamWizardItems();
+    var body = {
+      name: TEAM_WIZ.name || '',
+      copyIdentity: TEAM_WIZ.copyIdentity === true,
+      copyItems: cur.all ? ['all'] : TEAM_ITEM_KEYS.filter(function (k) { return cur[k]; })
+    };
+    var chatName = (TEAM_WIZ.chatName || '').trim();
+    if (chatName) body.chat = { name: chatName, memberIds: TEAM_WIZ.chatMemberIds.slice() };
+    var btn = document.getElementById('fcTwNext');
+    TEAM_WIZ.submitting = true;
+    btn.disabled = true;
+    btn.innerHTML = FT('fc.team.creating') || '创建中…';
+    fcEnsureApi(function () {
+      if (!window.MN_API || !window.MN_API.post) {
+        showToast((FT('fc.team.createFailed') || '创建失败，请稍后重试'), 'error');
+        TEAM_WIZ.submitting = false; renderTeamWizard();
+        return;
+      }
+      MN_API.post('/teams', body).then(function (res) {
+        if (!res || !res.ok || !res.data || !res.data.team) {
+          showToast((FT('fc.team.createFailed') || '创建失败，请稍后重试'), 'error');
+          TEAM_WIZ.submitting = false; renderTeamWizard();
+          return;
+        }
+        closeTeamWizard();
+        showToast((FT('fc.team.created') || '团队频道已创建'), 'check_circle');
+        loadTeamsFromApi(function () { if (res.data.team && res.data.team.id) selectAccount(res.data.team.id); });
+      }).catch(function () {
+        showToast((FT('fc.team.createFailed') || '创建失败，请稍后重试'), 'error');
+        TEAM_WIZ.submitting = false; renderTeamWizard();
+      });
+    });
+  }
+  // v10.28.51.0 团队真数据：cloudMode 拉 GET /api/teams（真实团队频道）；演示/访客沿用本地种子（SlatiDB.getTeams）
+  function loadTeamsFromApi(cb) {
+    if (!cloudMode) { if (cb) cb(); return; }
+    fcEnsureApi(function () {
+      if (!window.MN_API || !window.MN_API.get) { if (cb) cb(); return; }
+      MN_API.get('/teams').then(function (res) {
+        if (res && res.ok && res.data && Array.isArray(res.data.teams)) {
+          teams = res.data.teams.map(function (t) {
+            return {
+              id: t.id, name: t.name,
+              avatar: String(t.name || 'T').replace(/\s+/g, '').substring(0, 2).toUpperCase(),
+              color: t.color || '#4648d4', role: t.role || 'member', members: t.members || 1,
+              avatarUrl: t.avatarUrl || null,
+              // v10.28.52.0 团队等级奖励：XP/粉丝/关注态随列表带回（teamShape 真值）
+              xpGained: t.xpGained || 0, followers: t.followers || 0, followingByMe: !!t.followingByMe
+            };
+          });
+          hasTeams = teams.length > 0;
+          if (activeAccount !== 'personal') {
+            activeTeam = teams.find(function (t) { return t.id === activeAccount; }) || null;
+            if (!activeTeam) { activeAccount = 'personal'; activeTeam = null; SlatiDB.setActiveAccount('personal'); }
+          }
+          renderTeamSection();
+          renderContent();
+          if (activeTeam) loadTeamRewards(activeTeam.id); // v10.28.52.0：初始团队奖励清单
+        }
+        if (cb) cb();
+      }).catch(function () { if (cb) cb(); });
+    });
+  }
+
+  // v10.28.52.0 团队等级奖励：团队成就缓存（GET /api/teams/:id/rewards）+ 关注切换（+32/-32 双向对称）
+  var teamRewardsCache = {};
+  function loadTeamRewards(teamId) {
+    if (!cloudMode) return;
+    ensureApiSilent(function () {
+      if (!window.MN_API || !window.MN_API.get) return;
+      MN_API.get('/teams/' + encodeURIComponent(teamId) + '/rewards').then(function (res) {
+        if (res && res.ok && res.data) {
+          teamRewardsCache[teamId] = res.data;
+          var t = teams.find(function (x) { return x.id === teamId; });
+          if (t) {
+            t.xpGained = res.data.xpGained || 0;
+            // 粉丝数/关注态随详情接口同步（列表 shape 与详情同源 teamShape）
+          }
+          if (activeAccount === teamId) renderContent();
+        }
+      }).catch(function () {});
+    });
+  }
+  function teamAchStripHtml() {
+    if (activeAccount === 'personal' || !activeTeam) return '';
+    var rw = teamRewardsCache[activeTeam.id];
+    if (!rw) return '';
+    var list = rw.achievements || [];
+    if (!list.length) return '<div class="fc-team-ach-empty">' + (FT('fc.rewards.teamAchEmpty') || 'No team achievements yet — unlocked automatically as the team levels up') + '</div>';
+    var chips = list.map(function (a) {
+      return '<span class="fc-team-ach-chip"><span class="material-symbols-outlined ach-icon">military_tech</span>' + fcEsc(a.name) + ' · Lv.' + a.level + '</span>';
+    }).join('');
+    return '<div class="fc-team-ach-strip">' + chips + '</div>';
+  }
+  function fcToggleTeamFollow() {
+    if (!cloudMode || !activeTeam) return;
+    ensureApiSilent(function () {
+      if (!window.MN_API || !window.MN_API.request) return;
+      var isFollowing = !!activeTeam.followingByMe;
+      var method = isFollowing ? 'DELETE' : 'POST';
+      MN_API.request('/teams/' + encodeURIComponent(activeTeam.id) + '/follow', { method: method }).then(function (res) {
+        if (res && res.ok && res.data) {
+          activeTeam.followingByMe = !!res.data.following;
+          activeTeam.followers = res.data.followerCount || 0;
+          // 关注/取关影响团队 XP（+32/-32）→ 团队详情刷新（等级徽章/成就跟着动）
+          loadTeamRewards(activeTeam.id);
+          renderContent();
+        } else {
+          showToast((FT('fc.rewards.followFail') || 'Follow failed, please try again'), 'error');
+        }
+      }).catch(function () {
+        showToast((FT('fc.rewards.followFail') || 'Follow failed, please try again'), 'error');
+      });
+    });
+  }
+  window.fcToggleTeamFollow = fcToggleTeamFollow;
+
   function renderRecentUploads() {
     var list = document.getElementById('recentList');
     if (!list) return;
-    list.innerHTML = recentUploads.map(function(item) {
-      var icon = getFileIcon(item.file);
+    // v0.2.58.26 真实数据（钦定②）：列表=FC_OVERVIEW.media 最新 8 条；空态绝不回退假数据
+    var items = (FC_OVERVIEW && FC_OVERVIEW.media) ? FC_OVERVIEW.media.slice(0, 8) : [];
+    if (!items.length) {
+      list.innerHTML = '<div class="cl-empty" style="padding:32px var(--space-md)"><span class="material-symbols-outlined cl-empty-icon">cloud_upload</span><p style="font-weight:600;margin-bottom:4px">' + (FT('fc.upload.emptyTitle') || 'No uploads yet') + '</p><p style="font-size:12px">' + (FT('fc.upload.emptyHint') || 'Uploaded media will appear here') + '</p></div>';
+      return;
+    }
+    list.innerHTML = items.map(function(m) {
+      var icon = getFileIcon('.' + m.ext);
       return '<div class="recent-item">' +
         '<span class="material-symbols-outlined recent-file-icon">' + icon + '</span>' +
-        '<span class="recent-file-name" title="' + item.file + '">' + item.file + '</span>' +
-        '<span class="recent-target-badge">' + item.targetLabel + '</span>' +
-        '<span class="recent-time">' + (FT('fc.upload.justNow') || item.time) + '</span>' +
-        '<span class="recent-status">' + (FT('fc.upload.statusPublished') || item.status) + '</span></div>';
+        '<span class="recent-file-name" title="' + fcEsc(m.id + '.' + m.ext) + '">' + fcEsc(m.id + '.' + m.ext) + '</span>' +
+        '<span class="recent-target-badge">' + formatSize(m.bytes || 0) + '</span>' +
+        '<span class="recent-time">' + String(m.createdAt || '').slice(0, 10) + '</span>' +
+        '<span class="recent-status">' + (FT('fc.upload.statusUploaded') || 'Uploaded') + '</span></div>';
     }).join('');
   }
 
-  function addToRecent(file, targetId) {
-    var info = PUBLISH_TARGETS.find(function(t) { return t.id === targetId; });
-    recentUploads.unshift({
-      file: file.name, target: targetId, targetLabel: info ? info.title : targetId,
-      time: 'Just now', status: 'Published'
-    });
-    if (recentUploads.length > 15) recentUploads.pop();
-    renderRecentUploads();
-  }
-
   function publish() {
-    if (!currentFile || !currentTarget) return;
-    var info = PUBLISH_TARGETS.find(function(t) { return t.id === currentTarget; });
-    addToRecent(currentFile, currentTarget);
-    showToast((FT('fc.upload.toastPublished') || 'Published to ') + (info ? info.title : currentTarget) + '!', 'check_circle');
-    removeFile();
-    currentTarget = null;
-    document.querySelectorAll('#uploadView .target-card').forEach(function(c) { c.classList.remove('selected'); });
-    updatePublishButton();
+    if (!currentFile || !currentTarget) { showToast((FT('fc.upload.toastNoFile') || 'Please select a file first'), 'error'); return; }
+    // v0.2.58.26 真实上传（钦定②）：POST /api/social/uploads（既有端点；登录专属）→ 刷新 FC_OVERVIEW 列表
+    if (!cloudMode) { showToast((FT('fc.upload.needLogin') || 'Log in with a registered account to upload'), 'error'); return; }
+    var ext = getExtension(currentFile.name).replace('.', '');
+    ensureApiSilent(function () {
+      if (!window.MN_API) return;
+      MN_API.request('/social/uploads?ext=.' + encodeURIComponent(ext), {
+        method: 'POST',
+        headers: { 'Content-Type': currentFile.file ? currentFile.file.type || 'application/octet-stream' : 'application/octet-stream' },
+        body: currentFile.file
+      }).then(function (res) {
+        if (res && res.ok) {
+          showToast((FT('fc.upload.toastUploaded') || 'Uploaded successfully'), 'check_circle');
+          removeFile();
+          currentTarget = null;
+          document.querySelectorAll('#uploadView .target-card').forEach(function(c) { c.classList.remove('selected'); });
+          updatePublishButton();
+          loadFcOverview(true);
+        } else {
+          showToast((FT('fc.upload.toastUploadFail') || 'Upload failed, please try again'), 'error');
+        }
+      }).catch(function () {
+        showToast((FT('fc.upload.toastUploadFail') || 'Upload failed, please try again'), 'error');
+      });
+    });
   }
 
   function initUpload() {
     renderTargets();
     renderRecentUploads();
 
-    document.getElementById('uploadZone').addEventListener('click', simulateFilePick);
+    // v0.2.58.26：上传区点击=真实文件选择器（假 simulateFilePick 全撤）
+    var fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
     var zone = document.getElementById('uploadZone');
+    zone.addEventListener('click', function() { fileInput.click(); });
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files && fileInput.files.length > 0) {
+        var f = fileInput.files[0];
+        setFile({ name: f.name, size: f.size, file: f });
+      }
+      fileInput.value = '';
+    });
     zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
     zone.addEventListener('dragleave', function(e) { e.preventDefault(); zone.classList.remove('drag-over'); });
     zone.addEventListener('drop', function(e) {
       e.preventDefault(); zone.classList.remove('drag-over');
       if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         var f = e.dataTransfer.files[0];
-        setFile({ name: f.name, size: f.size });
-      } else { simulateFilePick(); }
+        setFile({ name: f.name, size: f.size, file: f });
+      }
     });
 
     document.getElementById('fileRemoveBtn').addEventListener('click', removeFile);
@@ -3551,26 +4271,30 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // ═══════════════════════════════════════════
   // Content Library Module
   // ═══════════════════════════════════════════
-  var contentLibrary = [
-    { id:'CL-001', title:'The Founding Charter of Etheria',         type:'article',   author:'Alex Rivera',             date:'2026-08-05', views:12420, bookmarks:1204, status:'Published' },
-    { id:'CL-002', title:'Aether Prime: A Smart Sovereign City',    type:'article',   author:'Alex Rivera',             date:'2026-08-02', views:15630, bookmarks:2108, status:'Published' },
-    { id:'CL-003', title:'Digital Rights & Citizenship Act',        type:'article',   author:'Alex Rivera',             date:'2026-07-28', views:8920,  bookmarks:853,  status:'Published' },
-    { id:'CL-004', title:'Economic Policy Whitepaper v2',           type:'article',   author:'Alex Rivera',             date:'2026-07-20', views:4280,  bookmarks:645,  status:'Draft' },
-    { id:'CL-005', title:'Etheria Annual Report 2025',              type:'article',   author:'Alex Rivera',             date:'2026-08-07', views:3200,  bookmarks:410,  status:'Published' },
-    { id:'CL-006', title:'Aethelgard Treaty Protocol v2',           type:'article',   author:'Etheria Editorial Board',  date:'2026-08-07', views:1800,  bookmarks:230,  status:'Published' },
-    { id:'CL-007', title:'Sovereign Decree No. 0042 — Trade Routes',type:'sovereign', author:'Alex Rivera',             date:'2026-08-06', views:890,   bookmarks:120,  status:'Published' },
-    { id:'CL-008', title:'Governance Policy Update 2026',           type:'sovereign', author:'Alex Rivera',             date:'2026-08-04', views:1560,  bookmarks:340,  status:'Published' },
-    { id:'CL-009', title:'Cabinet Meeting Minutes — August',        type:'sovereign', author:'Alex Rivera',             date:'2026-08-03', views:430,   bookmarks:56,   status:'Draft' },
-    { id:'CL-010', title:'National Crest Vector Assets',            type:'community', subtype:'images', author:'Alex Rivera',             date:'2026-08-06', views:2100,  bookmarks:560,  status:'Published' },
-    { id:'CL-011', title:'Citizenship Application Guide',           type:'community', subtype:'post',   author:'Cartography Guild',       date:'2026-08-01', views:3400,  bookmarks:890,  status:'Published' },
-    { id:'CL-012', title:'Community Event: Founding Day Festival',  type:'community', subtype:'post',   author:'Alex Rivera',             date:'2026-07-30', views:5600,  bookmarks:1200, status:'Published' },
-    { id:'CL-013', title:'Aether Prime — Drone Tour 4K',            type:'community', subtype:'video',  author:'Alex Rivera',             date:'2026-08-04', views:45100, bookmarks:4105, status:'Published' },
-    { id:'CL-014', title:'Etheria — Official Flag Reveal',          type:'community', subtype:'images', author:'Alex Rivera',             date:'2026-08-03', views:22800, bookmarks:1892, status:'Published' },
-    { id:'CL-015', title:'Governance Summit — Highlights Reel',     type:'community', subtype:'video',  author:'Cartography Guild',       date:'2026-07-28', views:18400, bookmarks:2340, status:'Published' },
-    { id:'CL-016', title:'National Anthem — Studio Recording',      type:'community', subtype:'video',  author:'Alex Rivera',             date:'2026-07-25', views:9620,  bookmarks:3210, status:'Published' },
-    { id:'CL-017', title:'Territory Map — High Resolution',         type:'community', subtype:'images', author:'Cartography Guild',       date:'2026-07-20', views:8700,  bookmarks:1540, status:'Published' },
-    { id:'CL-018', title:'Weekly Community Digest #42',             type:'community', subtype:'post',   author:'Alex Rivera',             date:'2026-08-07', views:1200,  bookmarks:180,  status:'Published' },
-  ];
+  // v0.2.58.26 真实数据（钦定②）：18 条假内容库全撤——条目=FC_OVERVIEW.articles（文章）+FC_OVERVIEW.posts（社区帖）
+  function buildContentLibrary() {
+    var items = [];
+    if (FC_OVERVIEW && FC_OVERVIEW.articles) {
+      FC_OVERVIEW.articles.forEach(function (a) {
+        items.push({
+          id: a.id, title: a.title || (FT('fc.landing.untitled') || 'Untitled'), type: 'article',
+          author: user.displayName || '—', date: String(a.createdAt || '').slice(0, 10) || '—',
+          views: a.viewCount || 0, bookmarks: a.favoriteCount || 0,
+          status: a.status === 'published' ? 'Published' : (a.status === 'pending' ? 'Review' : 'Draft')
+        });
+      });
+    }
+    if (FC_OVERVIEW && FC_OVERVIEW.posts) {
+      FC_OVERVIEW.posts.forEach(function (p) {
+        items.push({
+          id: p.id, title: (p.content || (FT('fc.cl.subPost') || 'Post')).slice(0, 60), type: 'community', subtype: 'post',
+          author: user.displayName || '—', date: String(p.createdAt || '').slice(0, 10) || '—',
+          views: p.viewCount || 0, bookmarks: 0, status: 'Published'
+        });
+      });
+    }
+    return items;
+  }
 
   var TYPE_META = {
     article:   { icon:'article',   color:'var(--color-primary)', bg:'color-mix(in srgb, var(--color-primary) 8%, transparent)',   label:'Article' },
@@ -3589,25 +4313,23 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   var clSearchTerm = '';
 
   function renderCLStats() {
-    var total = contentLibrary.length;
-    var articles = contentLibrary.filter(function(c){ return c.type==='article'; }).length;
-    var sovereigns = contentLibrary.filter(function(c){ return c.type==='sovereign'; }).length;
-    var communities = contentLibrary.filter(function(c){ return c.type==='community'; }).length;
-    var posts = contentLibrary.filter(function(c){ return c.subtype==='post'; }).length;
-    var images = contentLibrary.filter(function(c){ return c.subtype==='images'; }).length;
-    var videos = contentLibrary.filter(function(c){ return c.subtype==='video'; }).length;
+    // v0.2.58.26：统计接真实聚合——total/articles 来自 FC_OVERVIEW.stats；sovereign/community 分类暂不适用（FC_OVERVIEW 无 sovereign）→ '—'
+    var hasData = !!FC_OVERVIEW;
+    var total = hasData ? ((FC_OVERVIEW.stats.articles || 0) + (FC_OVERVIEW.stats.posts || 0)) : null;
+    var articles = hasData ? FC_OVERVIEW.stats.articles : null;
+    var posts = hasData ? FC_OVERVIEW.stats.posts : null;
     document.getElementById('clStats').innerHTML =
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + total + '</div><div class="metric-label">' + (FT('fc.cl.statTotal') || 'Total Items') + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + articles + '</div><div class="metric-label">' + (FT('fc.cl.statArticles') || 'Articles') + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + sovereigns + '</div><div class="metric-label">' + (FT('fc.cl.statSovereign') || 'Sovereign Logs') + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + communities + '</div><div class="metric-label">' + (FT('fc.cl.statCommunity') || 'Community Posts') + '</div></div>';
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + fcNum(total) + '</div><div class="metric-label">' + (FT('fc.cl.statTotal') || 'Total Items') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + fcNum(articles) + '</div><div class="metric-label">' + (FT('fc.cl.statArticles') || 'Articles') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">—</div><div class="metric-label">' + (FT('fc.cl.statSovereign') || 'Sovereign Logs') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + fcNum(posts) + '</div><div class="metric-label">' + (FT('fc.cl.statCommunity') || 'Community Posts') + '</div></div>';
     if (window.LG) LG.scan(document); // v0.2.9.0：动态 metric-card 挂液态玻璃
   }
 
   function renderCLList() {
     var list = document.getElementById('clList');
     // Filter
-    var items = contentLibrary;
+    var items = buildContentLibrary();
     if (clFilter !== 'all') {
       items = items.filter(function(c){ return c.type === clFilter; });
     }
@@ -3617,7 +4339,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     }
     if (clSearchTerm) {
       var term = clSearchTerm.toLowerCase();
-      items = items.filter(function(c){ return c.title.toLowerCase().indexOf(term) !== -1 || c.author.toLowerCase().indexOf(term) !== -1; });
+      items = items.filter(function(c){ return (c.title || '').toLowerCase().indexOf(term) !== -1 || (c.author || '').toLowerCase().indexOf(term) !== -1; });
     }
 
     if (items.length === 0) {
@@ -3629,7 +4351,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
       var meta = TYPE_META[c.type] || TYPE_META.article;
       var typeKeys = { article: 'fc.cl.typeArticle', sovereign: 'fc.cl.typeSovereign', community: 'fc.cl.typeCommunity' };
       var subKeys = { post: 'fc.cl.subPost', images: 'fc.cl.subImages', video: 'fc.cl.subVideo' };
-      var statusClass = c.status === 'Draft' ? 'style="background:rgba(234,179,8,0.1);color:#b45309"' : 'style="background:rgba(22,163,74,0.08);color:#16a34a"';
+      var statusClass = c.status === 'Draft' ? 'style="background:rgba(234,179,8,0.1);color:#b45309"' : (c.status === 'Review' ? 'style="background:rgba(70,72,212,0.1);color:#4648d4"' : 'style="background:rgba(22,163,74,0.08);color:#16a34a"');
       var subtypeHTML = '';
       if (c.type === 'community' && c.subtype) {
         var sub = SUBTYPE_META[c.subtype];
@@ -3640,9 +4362,9 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
           '<span class="material-symbols-outlined" style="font-size:20px">' + meta.icon + '</span>' +
         '</div>' +
         '<div class="cl-info">' +
-          '<div class="cl-title">' + c.title + '</div>' +
+          '<div class="cl-title">' + fcEsc(c.title) + '</div>' +
           '<div class="cl-meta">' +
-            '<span>' + c.author + '</span>' +
+            '<span>' + fcEsc(c.author) + '</span>' +
             '<span>' + c.date + '</span>' +
             '<span>' + c.views.toLocaleString() + ' ' + (FT('fc.cl.views') || 'views') + '</span>' +
             '<span>' + c.bookmarks.toLocaleString() + ' ' + (FT('fc.cl.bookmarks') || 'bookmarks') + '</span>' +
@@ -3650,7 +4372,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
         '</div>' +
         subtypeHTML +
         '<span class="cl-badge ' + c.type + '">' + (FT(typeKeys[c.type]) || meta.label) + '</span>' +
-        '<span class="cl-badge" ' + statusClass + '>' + (FT(c.status === 'Draft' ? 'fc.cl.statusDraft' : 'fc.cl.statusPublished') || c.status) + '</span>' +
+        '<span class="cl-badge" ' + statusClass + '>' + (FT(c.status === 'Draft' ? 'fc.cl.statusDraft' : (c.status === 'Review' ? 'fc.articles.fReview' : 'fc.cl.statusPublished')) || c.status) + '</span>' +
         '<div class="cl-actions">' +
           '<button class="cl-action-btn" title="Edit"><span class="material-symbols-outlined" style="font-size:16px">edit</span></button>' +
           '<button class="cl-action-btn" title="View"><span class="material-symbols-outlined" style="font-size:16px">visibility</span></button>' +
@@ -3706,28 +4428,103 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     });
   }
 
-  // --- Hook publish to also add to content library ---
-  var _origPublish = publish;
-  publish = function() {
-    if (!currentFile || !currentTarget) return;
-    var info = PUBLISH_TARGETS.find(function(t) { return t.id === currentTarget; });
-    // Also add to content library
-    contentLibrary.unshift({
-      id: 'CL-' + Date.now(),
-      title: currentFile.name.replace(/\.[^.]+$/, '').replace(/_/g, ' ').replace(/\b\w/g, function(l){ return l.toUpperCase(); }),
-      type: currentTarget,
-      author: (activeAccount === 'personal' ? (user.displayName || 'Alex Rivera') : (activeTeam ? activeTeam.name : 'Unknown')),
-      date: new Date().toISOString().split('T')[0],
-      views: 0, bookmarks: 0,
-      status: 'Published'
-    });
-    if (currentView === 'content') { renderCLStats(); renderCLList(); }
-    _origPublish();
-  };
+  // v0.2.58.26：publish 假挂钩全撤（不伪造 CL 条目——真实上传落库后经 loadFcOverview(true) 刷新 FC_OVERVIEW 全视图）
 
   // --- Init ---
   renderTeamSection();
   renderContent();
+
+  // ═══ v10.28.48.0 头像同步（双向·资料页权威；bio 绝不互通——PATCH 只发 avatarUrl）═══
+  // v10.28.48.1 PATCH 追加 avatarCrop（钦定⑤：FC 换头像同走裁切弹窗；bio 仍绝不入包）
+  // v10.28.48.2 首页概览接 FC_OVERVIEW 真实聚合（钦定①②）+首页卡片不透明（钦定③）
+  function fcAvatarSyncOn() { try { return localStorage.getItem('slati_avatar_sync') !== '0'; } catch (e) { return true; } }
+  function fcIsSubscriber() { // 与资料页 isSubscriberUser 同口径（community-profile 3498-3504；tier 经 publicUser→cloudMerge 落 localStorage）
+    try { var u2 = SlatiDB.getUser(); return !!(u2 && u2.tier && u2.tier !== 'free'); } catch (e) { return false; }
+  }
+  function fcEsc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); } // 与资料页 escapeHtml 同款
+  var fcAvatarBusy = false;
+  var fcAvatarFile = document.createElement('input');
+  fcAvatarFile.type = 'file';
+  fcAvatarFile.id = 'fcAvatarFile';
+  fcAvatarFile.accept = '.jpg,.jpeg,.png,.gif,.webp';
+  fcAvatarFile.style.display = 'none';
+  document.body.appendChild(fcAvatarFile); // 恒挂 body——channelOverview.innerHTML 每渲染整换，input 绝不能住在卡内
+  function fcEnsureApi(cb) {
+    if (window.MN_API) { cb(); return; }
+    // FC 页无 api.js 静态引入（同 loadCloudArticles 4171-4177 口径；storage.js ensureApi 私有不可用）
+    var s = document.createElement('script');
+    s.src = '../assets/js/api.js';
+    s.onload = function () { cb(); };
+    s.onerror = function () { showToast(FT('fc.toast.avatarFailed') || 'Avatar update failed, please try again later', 'error'); };
+    document.head.appendChild(s);
+  }
+  document.getElementById('channelOverview').addEventListener('click', function (e) {
+    var av = e.target && e.target.closest ? e.target.closest('.channel-avatar') : null;
+    if (!av || !av.classList.contains('fc-avatar-editable') || fcAvatarBusy) return;
+    // 双保险：登录态 + USR- 云用户 + 同步 ON（演示用户无 id 无后端 PATCH 对象 → 拒绝）
+    var u1 = SlatiDB.getUser();
+    if (!SlatiDB.isLoggedIn() || !u1 || String(u1.id || '').indexOf('USR-') !== 0 || !fcAvatarSyncOn()) return;
+    fcAvatarFile.click();
+  });
+  fcAvatarFile.addEventListener('change', function () {
+    var f = fcAvatarFile.files && fcAvatarFile.files[0];
+    if (!f) return;
+    var ext = (f.name.split('.').pop() || '').toLowerCase();
+    if (ext === 'gif' && !fcIsSubscriber()) { showToast(FT('fc.toast.gifLocked') || 'GIF animations are a subscriber-only feature', 'lock'); fcAvatarFile.value = ''; return; }
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].indexOf(ext) === -1) { showToast(FT('fc.toast.imgOnly') || 'Only jpg / png / gif / webp images supported', 'error'); fcAvatarFile.value = ''; return; }
+    if (f.size > 10 * 1024 * 1024) { showToast(FT('fc.toast.imgTooBig10') || 'Image must be under 10MB', 'error'); fcAvatarFile.value = ''; return; }
+    if (fcAvatarBusy) { fcAvatarFile.value = ''; return; }
+    // v0.2.58.25 裁切弹窗（钦定①②⑤）：五守卫+gif/白名单/10MB 门全过后弹窗，confirm 才上传+PATCH——
+    //   取消=零上传零 PATCH（清值可重选同一文件）；组件缺失降级直传（rect null=不带 crop=后端连带清回默认）
+    var runUpload = function (rect) {
+      fetch(MN_API.BASE + '/social/uploads?ext=.' + ext, { method: 'POST', body: f, credentials: 'include' })
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (data) {
+          if (!data || !data.url) throw new Error('no url');
+          // PATCH body 只含 avatarUrl(+v10.28.48.1 avatarCrop)——bio 绝不入包（边界钦定：资料页自我介绍与频道主页 bio 互不相通）
+          var patchBody = { avatarUrl: data.url };
+          if (rect) patchBody.avatarCrop = rect;
+          MN_API.patch('/auth/me', patchBody).then(function (r) {
+            fcAvatarBusy = false;
+            fcAvatarFile.value = '';
+            if (r.ok && r.data && r.data.user) {
+              user.avatarUrl = r.data.user.avatarUrl || data.url;
+              // v10.28.48.1 裁切连带（响应 publicUser 已含 avatarCrop；null 也落=清陈旧值）
+              if (r.data.user.avatarCrop !== undefined) user.avatarCrop = r.data.user.avatarCrop;
+              try { // raw 合并写——绝不 SlatiDB.saveUser（mirrorProfile 二次 PATCH 双写）
+                var stored = JSON.parse(localStorage.getItem('slati_user') || 'null') || {};
+                stored.avatarUrl = user.avatarUrl;
+                if (r.data.user.avatarCrop !== undefined) stored.avatarCrop = r.data.user.avatarCrop;
+                localStorage.setItem('slati_user', JSON.stringify(stored));
+              } catch (e) {}
+              document.getElementById('personalAvatar').src = user.avatarUrl;
+              renderContent();
+              showToast(FT('fc.toast.avatarUpdated') || 'Avatar updated', 'check_circle');
+            } else {
+              showToast(FT('fc.toast.avatarFailed') || 'Avatar update failed, please try again later', 'error');
+            }
+          }).catch(function () {
+            fcAvatarBusy = false;
+            fcAvatarFile.value = '';
+            showToast(FT('fc.toast.avatarFailed') || 'Avatar update failed, please try again later', 'error');
+          });
+        })
+        .catch(function () {
+          fcAvatarBusy = false;
+          fcAvatarFile.value = '';
+          showToast(FT('fc.toast.avatarFailed') || 'Avatar update failed, please try again later', 'error');
+        });
+    };
+    if (!window.MN_CropDialog) { fcAvatarBusy = true; fcEnsureApi(runUpload); return; } // 组件缺失降级（rect undefined）
+    window.MN_CropDialog.open({
+      kind: 'avatar',
+      src: f,
+      initial: null,
+      onConfirm: function (rect) { fcAvatarBusy = true; fcEnsureApi(function () { runUpload(rect); }); },
+      onCancel: function () { fcAvatarFile.value = ''; }
+    });
+  });
+
   // ═══════════════════════════════════════════════════════════
   // Douyin-style URL view switching — one page, state in query params
   // ?view=dashboard|upload|content|analytics|articles (+ &tab=&period=&filter=&sort=)
@@ -3802,7 +4599,7 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   // --- Sparkline helper ---
   function makeSparkline(values, color) {
-    var max = Math.max.apply(null, values);
+    var max = Math.max.apply(null, values) || 1; // v0.2.58.26：全零序列（真实空窗）防 NaN 高度
     return '<div class="sparkline">' + values.map(function(v) { return '<div class="sparkline-bar" style="height:' + Math.max(3, (v/max)*100) + '%;background:' + (color||'var(--color-primary)') + '"></div>'; }).join('') + '</div>';
   }
 
@@ -3810,51 +4607,65 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   function renderAnalyticsContent() {
     var isPersonal = activeAccount === 'personal';
     var aLabel = isPersonal ? (user.displayName || 'Personal') : (activeTeam ? activeTeam.name : 'Team');
-    var mult = isPersonal ? 1 : (activeTeam ? activeTeam.members : 1);
 
     document.getElementById('analyticsTitle').textContent = aLabel + ' — ' + (FT('fc.analytics.title') || 'Content Analytics');
 
-    // Overview cards — data differs per period
-    var pData = {
-      '7d':  { views: 12.4, bm: 1240, shares: 420, readMin: 3.8, viewsPct: 5.2, bmPct: 3.1, sharesPct: 8.4, readPct: -1.2 },
-      '28d': { views: 48.2, bm: 3842, shares: 1256, readMin: 4.2, viewsPct: 12.4, bmPct: 8.1, sharesPct: 21.7, readPct: -3.2 },
-      'month':{ views: 195.0, bm: 15200, shares: 5100, readMin: 4.5, viewsPct: 14.3, bmPct: 9.8, sharesPct: 18.2, readPct: -1.8 },
-    };
-    var pd = pData[currentPeriod] || pData['28d'];
     var periodLabel = currentPeriod === '7d' ? (FT('fc.analytics.period7d') || 'Last 7 days') : currentPeriod === '28d' ? (FT('fc.analytics.period28d') || 'Last 28 days') : (FT('fc.analytics.periodMonth') || 'vs Last Month');
-    var vc = pd.viewsPct >= 0 ? '↑ ' : '↓ ';
-    var rc = pd.readPct >= 0 ? '↑ ' : '↓ ';
-    document.getElementById('overviewCards').innerHTML =
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + (pd.views * mult).toFixed(1) + 'K</div><div class="metric-label">' + (FT('fc.metrics.totalViews') || 'Total Views') + '</div><div class="metric-change" style="color:' + (pd.viewsPct>=0?'#22c55e':'#dc2626') + '">' + vc + Math.abs(pd.viewsPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + Math.round(pd.bm * mult).toLocaleString() + '</div><div class="metric-label">' + (FT('fc.metrics.totalBookmarks') || 'Total Bookmarks') + '</div><div class="metric-change" style="color:' + (pd.bmPct>=0?'#22c55e':'#dc2626') + '">' + (pd.bmPct>=0?'↑ ':'↓ ') + Math.abs(pd.bmPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + Math.round(pd.shares * mult).toLocaleString() + '</div><div class="metric-label">' + (FT('fc.metrics.totalShares') || 'Total Shares') + '</div><div class="metric-change" style="color:' + (pd.sharesPct>=0?'#22c55e':'#dc2626') + '">' + (pd.sharesPct>=0?'↑ ':'↓ ') + Math.abs(pd.sharesPct).toFixed(1) + '% ' + periodLabel + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + (pd.readMin * mult).toFixed(1) + ' ' + (FT('fc.metrics.minUnit') || 'min') + '</div><div class="metric-label">' + (FT('fc.metrics.avgRead') || 'Avg. Read Time') + '</div><div class="metric-change" style="color:' + (pd.readPct>=0?'#22c55e':'#dc2626') + '">' + rc + Math.abs(pd.readPct).toFixed(1) + '% ' + periodLabel + '</div></div>';
 
-    // Channel summary — data per period
-    var sData = {
-      '7d':  { reach: 12.4, pct:'+5.2%', viewsMax:18, bm:1.2, bmMax:2, shares:0.42, sharesMax:0.8, trend:[3,5,4,7,6,9,8,12], prev:[2,4,3,6,5,8,7,10] },
-      '28d': { reach: 52, pct:'+14.3%', viewsMax:70, bm:3.8, bmMax:5, shares:1.3, sharesMax:2, trend:[12,18,15,22,19,28,35,30,38,42,36,48,45,52], prev:[8,14,12,20,16,24,32,26,34,40,32,44,42,48] },
-      'month':{ reach: 195, pct:'+11.8%', viewsMax:260, bm:15.2, bmMax:20, shares:5.1, sharesMax:7, trend:[45,52,48,58,55,62,68,72,65,78,82,88,92,95], prev:[40,46,42,52,50,56,60,64,58,70,74,78,80,85] },
-    };
-    var sd = sData[currentPeriod] || sData['28d'];
+    // v0.2.58.26 真实窗口聚合（钦定②）：7d/28d/month=后端 windows（计数+前窗 deltaPct+日序列）；假 pData/sData 全撤；
+    //   无数据=空态卡（绝不回退假数据）；窗口区间=后端 from/to
+    var wnd = fcOverviewWindow(currentPeriod);
+    if (!wnd) {
+      document.getElementById('overviewCards').innerHTML =
+        '<div class="card metric-card" style="grid-column:1/-1"><div class="metric-value" style="color:var(--color-outline);font-size:var(--fs-body-md)">' + (FT('fc.analytics.noData') || 'No analytics data yet') + '</div><div class="metric-label">' + (FT('fc.analytics.noDataHint') || 'Data appears here once your channel gets activity') + '</div></div>';
+      document.getElementById('channelSummary').innerHTML = '';
+      if (window.LG) LG.scan(document);
+      renderDetailPanels();
+      return;
+    }
+
+    function pctLine(pct, label) {
+      if (pct === null || pct === undefined) return '<div class="metric-change" style="color:var(--color-outline)">' + label + '</div>';
+      var up = pct >= 0;
+      return '<div class="metric-change" style="color:' + (up ? '#22c55e' : '#dc2626') + '">' + (up ? '↑ ' : '↓ ') + Math.abs(pct).toFixed(1) + '% ' + label + '</div>';
+    }
+
+    document.getElementById('overviewCards').innerHTML =
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + fcNum(wnd.newFollowers) + '</div><div class="metric-label">' + (FT('fc.analytics.newFollowers') || 'New Followers') + '</div>' + pctLine(wnd.newFollowersPct, periodLabel) + '</div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-secondary)">' + fcNum(wnd.articlesCreated) + '</div><div class="metric-label">' + (FT('fc.analytics.newArticles') || 'New Articles') + '</div>' + pctLine(wnd.articlesCreatedPct, periodLabel) + '</div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + fcNum(wnd.postsCreated) + '</div><div class="metric-label">' + (FT('fc.analytics.newPosts') || 'New Posts') + '</div>' + pctLine(wnd.postsCreatedPct, periodLabel) + '</div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + fcNum(wnd.interactionsReceived) + '</div><div class="metric-label">' + (FT('fc.analytics.interactions') || 'Interactions') + '</div>' + pctLine(wnd.interactionsReceivedPct, periodLabel) + '</div>';
+
+    // Channel summary — 真实窗口对比：4 指标条（当前/前窗）+ 3 迷你趋势（日序列）
+    var maxVal = Math.max(1, wnd.newFollowers || 0, wnd.articlesCreated || 0, wnd.postsCreated || 0, wnd.interactionsReceived || 0);
+    function bar(cur, prev, label, color) {
+      return '<div class="compare-bar" style="margin-bottom:4px"><span class="label-sm" style="width:60px">' + label + '</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + Math.max(1, Math.round((cur / maxVal) * 100)) + '%;background:' + color + '"></div></div><span class="label-sm" style="width:70px;text-align:right">' + fcNum(cur) + ' / ' + fcNum(prev) + '</span></div>';
+    }
+    var days = wnd.days || [];
     document.getElementById('channelSummary').innerHTML =
       '<div style="display:flex;align-items:center;gap:var(--space-lg);flex-wrap:wrap">' +
         '<div style="flex:1;min-width:240px">' +
           '<span class="badge badge-primary" style="margin-bottom:8px">' + periodLabel + '</span>' +
           '<h2 class="headline-md" style="margin-bottom:4px">' + (FT('fc.analytics.perfOverview') || 'Performance Overview') + '</h2>' +
           '<p class="body-md" style="color:var(--color-on-surface-variant);margin-bottom:12px">' +
-            (FT('fc.analytics.reach') || 'Total content reach: ') + '<strong style="color:var(--color-on-surface)">' + (sd.reach * mult).toFixed(1) + 'K</strong> ' + (FT('fc.metrics.views') || 'views') + ' · ' +
-            '<strong style="color:#22c55e">' + sd.pct + '</strong> ' + (FT('fc.analytics.vsPrev') || 'vs previous period') +
+            (FT('fc.analytics.windowText') || 'Window: ') + String(wnd.from || '').slice(0, 10) + ' → ' + String(wnd.to || '').slice(0, 10) +
           '</p>' +
-          '<div class="compare-bar" style="margin-bottom:4px"><span class="label-sm" style="width:60px">' + (FT('fc.metrics.views') || 'Views') + '</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.reach/sd.viewsMax*100) + '%;background:var(--color-primary)"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.reach*mult).toFixed(1) + 'K</span></div>' +
-          '<div class="compare-bar" style="margin-bottom:4px"><span class="label-sm" style="width:60px">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.bm/sd.bmMax*100) + '%;background:var(--color-secondary)"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.bm*mult).toFixed(1) + 'K</span></div>' +
-          '<div class="compare-bar"><span class="label-sm" style="width:60px">' + (FT('fc.metrics.shares') || 'Shares') + '</span><div style="flex:1;background:rgba(118,117,134,0.1);border-radius:3px;height:6px"><div class="compare-bar-fill" style="width:' + (sd.shares/sd.sharesMax*100) + '%;background:#16a34a"></div></div><span class="label-sm" style="width:40px;text-align:right">' + (sd.shares*mult).toFixed(1) + 'K</span></div>' +
+          bar(wnd.newFollowers, wnd.newFollowersPrev, (FT('fc.landing.followers') || 'Followers'), 'var(--color-primary)') +
+          bar(wnd.articlesCreated, wnd.articlesCreatedPrev, (FT('fc.landing.articles') || 'Articles'), 'var(--color-secondary)') +
+          bar(wnd.postsCreated, wnd.postsCreatedPrev, (FT('fc.cl.subPost') || 'Posts'), '#16a34a') +
+          bar(wnd.interactionsReceived, wnd.interactionsReceivedPrev, (FT('fc.analytics.interactions') || 'Interactions'), '#ea580c') +
         '</div>' +
         '<div style="text-align:center;min-width:160px">' +
-          '<div style="margin-bottom:4px" class="label-sm">' + (FT('fc.analytics.viewTrend') || 'View Trend') + ' (' + (currentPeriod==='7d'?'7':'14') + ' ' + (FT('fc.analytics.days') || 'days') + ')</div>' +
-          makeSparkline(sd.trend.map(function(v){return v*mult;}), 'var(--color-primary)') +
-          '<div style="margin-top:8px" class="label-sm">' + (FT('fc.analytics.prevPeriod') || 'Previous period') + '</div>' +
-          '<div style="margin-top:4px">' + makeSparkline(sd.prev.map(function(v){return v*mult;}), 'var(--color-outline-variant)') + '</div>' +
+          '<div style="margin-bottom:4px" class="label-sm">' + (FT('fc.landing.followers') || 'Followers') + '</div>' +
+          makeSparkline(days.map(function(d){ return d.followers; }), 'var(--color-primary)') +
+        '</div>' +
+        '<div style="text-align:center;min-width:160px">' +
+          '<div style="margin-bottom:4px" class="label-sm">' + (FT('fc.landing.articles') || 'Articles') + '</div>' +
+          makeSparkline(days.map(function(d){ return d.articles; }), 'var(--color-secondary)') +
+        '</div>' +
+        '<div style="text-align:center;min-width:160px">' +
+          '<div style="margin-bottom:4px" class="label-sm">' + (FT('fc.cl.subPost') || 'Posts') + '</div>' +
+          makeSparkline(days.map(function(d){ return d.posts; }), '#16a34a') +
         '</div>' +
       '</div>';
 
@@ -3868,47 +4679,33 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var aLabel = isPersonal ? (user.displayName || 'Personal') : (activeTeam ? activeTeam.name : 'Team');
     var track = document.getElementById('detailSlide');
 
-    // Article analytics with week-over-week and month-over-month comparison
-    var articles = [
-      { name:'The Founding Charter of Etheria', viewsNow:12420, viewsPrev:10520, bmNow:1204, bmPrev:1080, sharesNow:486, sharesPrev:392, readMin:8.2, readPrev:7.8, trend:[8,10,9,14,12,18,15,20] },
-      { name:'Aether Prime: Smart Sovereign City', viewsNow:15630, viewsPrev:11840, bmNow:2108, bmPrev:1650, sharesNow:742, sharesPrev:530, readMin:12.5, readPrev:11.2, trend:[12,15,13,18,16,22,20,28] },
-      { name:'Digital Rights & Citizenship Act', viewsNow:8920, viewsPrev:8340, bmNow:853, bmPrev:810, sharesNow:312, sharesPrev:322, readMin:5.8, readPrev:6.1, trend:[7,8,7,9,10,9,8,10] },
-      { name:'Economic Policy Whitepaper', viewsNow:4280, viewsPrev:3920, bmNow:645, bmPrev:550, sharesNow:198, sharesPrev:210, readMin:3.4, readPrev:3.8, trend:[5,4,5,6,5,7,6,5] },
-    ];
+    // v0.2.58.26 真实数据（钦定②）：文章=FC_OVERVIEW.articles 按浏览降序前 10；媒体=FC_OVERVIEW.media 最新前 10；
+    //   假对比（viewsNow/viewsPrev/readMin/trend 数组）全撤；无数据=空态
+    var ov = FC_OVERVIEW;
+    var articles = (ov && ov.articles) ? ov.articles.slice().sort(function (a, b) { return (b.viewCount || 0) - (a.viewCount || 0); }).slice(0, 10).map(function (a) {
+      return { name: a.title || (FT('fc.landing.untitled') || 'Untitled'), views: a.viewCount || 0, bookmarks: a.favoriteCount || 0, shares: a.shareCount || 0, words: a.wordCount || 0 };
+    }) : [];
+    var media = (ov && ov.media) ? ov.media.slice(0, 10).map(function (m) {
+      return { name: m.id + '.' + m.ext, type: (m.mime || '').indexOf('video/') === 0 ? 'video' : 'image', size: m.bytes || 0, date: String(m.createdAt || '').slice(0, 10) };
+    }) : [];
 
-    function pct(a,b) { var p=((a-b)/b*100); return (p>=0?'↑ ':'↓ ')+Math.abs(p).toFixed(1)+'%'; }
-    function color(a,b) { return a>=b?'#22c55e':'#dc2626'; }
+    var articleEmpty = '<div class="cl-empty" style="grid-column:1/-1"><span class="material-symbols-outlined cl-empty-icon">article</span><p style="font-weight:600;margin-bottom:4px">' + (FT('fc.landing.emptyArticles') || 'No articles yet') + '</p><p style="font-size:12px">' + (FT('fc.landing.emptyArticlesHint') || 'Create your first article in the editor') + '</p></div>';
+    var articleHTML = '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.analytics.articlePerf') || 'Article Performance') + ' — ' + aLabel + '</h3></div>' +
+      (articles.length ? ('<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:160px">' + (FT('fc.landing.articles') || 'Article') + '</span><span class="mini-stat">' + (FT('fc.metrics.views') || 'Views') + '</span><span class="mini-stat">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><span class="mini-stat">' + (FT('fc.metrics.shares') || 'Shares') + '</span><span class="mini-stat" style="width:80px">' + (FT('fc.status.words') || 'Words') + '</span></div>' +
+      articles.map(function(a,i) { return '<div class="content-row"><span style="width:36px;text-align:center;font-weight:800;font-size:var(--fs-body-md);color:' + ['var(--color-primary)','var(--color-outline)','#ea580c','var(--color-outline)'][i] + '">' + (i+1) + '</span><span style="flex:1;min-width:160px;font-weight:600">'+fcEsc(a.name)+'</span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+fcNum(a.views)+'</span></span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+fcNum(a.bookmarks)+'</span></span>' +
+        '<span class="mini-stat"><span style="font-weight:600">'+fcNum(a.shares)+'</span></span>' +
+        '<span class="mini-stat" style="width:80px">'+fcNum(a.words)+'</span>' +
+      '</div>'; }).join('')) : articleEmpty) + '</div>';
 
-    var articleHTML = '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.analytics.articlePerf') || 'Article Performance') + ' — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">' + (FT('fc.analytics.vsLastMonth') || 'Current vs Last Month') + '</span></div>' +
-      '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase"><span style="flex:1;min-width:160px">' + (FT('fc.landing.articles') || 'Article') + '</span><span class="mini-stat">' + (FT('fc.metrics.views') || 'Views') + '</span><span class="mini-stat">' + (FT('fc.analytics.vsPrevShort') || 'vs Prev') + '</span><span class="mini-stat">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><span class="mini-stat">' + (FT('fc.analytics.vsPrevShort') || 'vs Prev') + '</span><span class="mini-stat">' + (FT('fc.metrics.shares') || 'Shares') + '</span><span class="mini-stat">' + (FT('fc.metrics.readTime') || 'Read Time') + '</span><span style="width:80px">' + (FT('fc.metrics.trend') || 'Trend') + '</span></div>' +
-      articles.map(function(a,i) { return '<div class="content-row"><span style="flex:1;min-width:160px;font-weight:600">'+a.name+'</span>' +
-        '<span class="mini-stat"><span style="font-weight:600">'+a.viewsNow.toLocaleString()+'</span></span>' +
-        '<span class="mini-stat"><span style="font-size:11px;color:'+color(a.viewsNow,a.viewsPrev)+'">'+pct(a.viewsNow,a.viewsPrev)+'</span></span>' +
-        '<span class="mini-stat"><span style="font-weight:600">'+a.bmNow.toLocaleString()+'</span></span>' +
-        '<span class="mini-stat"><span style="font-size:11px;color:'+color(a.bmNow,a.bmPrev)+'">'+pct(a.bmNow,a.bmPrev)+'</span></span>' +
-        '<span class="mini-stat"><span style="font-weight:600">'+a.sharesNow.toLocaleString()+'</span></span>' +
-        '<span class="mini-stat"><span style="font-weight:600">'+a.readMin+' ' + (FT('fc.metrics.minUnit') || 'min') + '</span></span>' +
-        '<span style="width:80px">'+makeSparkline(a.trend, i===1?'#ea580c':'var(--color-primary)')+'</span>' +
-      '</div>'; }).join('') + '</div>';
-
-    // Media analytics
-    var media = [
-      { name:'Aether Prime — Drone Tour 4K', type:'🎬', viewsNow:45100, viewsPrev:28900, likesNow:8920, likesPrev:6020, bmNow:4105, bmPrev:3110, sharesNow:2830, sharesPrev:1690 },
-      { name:'Etheria — Official Flag Reveal', type:'🖼️', viewsNow:22800, viewsPrev:17000, likesNow:3421, likesPrev:2800, bmNow:1892, bmPrev:1600, sharesNow:1204, sharesPrev:850 },
-      { name:'Governance Summit — Highlights', type:'🎬', viewsNow:18400, viewsPrev:16000, likesNow:4210, likesPrev:3900, bmNow:2340, bmPrev:2440, sharesNow:982, sharesPrev:890 },
-      { name:'National Anthem — Recording', type:'🎵', viewsNow:9620, viewsPrev:9080, likesNow:5340, likesPrev:4760, bmNow:3210, bmPrev:2700, sharesNow:1540, sharesPrev:1570 },
-    ];
-
-    var mediaHTML = '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.analytics.mediaPerf') || 'Media Performance') + ' — ' + aLabel + '</h3><span class="label-sm" style="color:var(--color-outline)">' + (FT('fc.analytics.vsLastMonth') || 'Current vs Last Month') + '</span></div>' +
-      '<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase"><span style="flex:1;min-width:160px">' + (FT('fc.landing.media') || 'Media') + '</span><span style="width:44px;text-align:center">' + (FT('fc.metrics.type') || 'Type') + '</span><span class="mini-stat">' + (FT('fc.metrics.views') || 'Views') + '</span><span class="mini-stat">' + (FT('fc.analytics.vsPrevShort') || 'vs Prev') + '</span><span class="mini-stat">' + (FT('fc.metrics.likes') || 'Likes') + '</span><span class="mini-stat">' + (FT('fc.analytics.vsPrevShort') || 'vs Prev') + '</span><span class="mini-stat">' + (FT('fc.metrics.bookmarks') || 'Bookmarks') + '</span><span class="mini-stat">' + (FT('fc.metrics.shares') || 'Shares') + '</span></div>' +
-      media.map(function(m,i) { return '<div class="content-row"><span style="flex:1;min-width:160px;font-weight:600">'+m.name+'</span><span style="width:44px;text-align:center">'+m.type+'</span>' +
-        '<span class="mini-stat"><span style="font-weight:600">'+(m.viewsNow/1000).toFixed(1)+'K</span></span>' +
-        '<span class="mini-stat"><span style="font-size:11px;color:'+color(m.viewsNow,m.viewsPrev)+'">'+pct(m.viewsNow,m.viewsPrev)+'</span></span>' +
-        '<span class="mini-stat"><span style="font-weight:600">'+m.likesNow.toLocaleString()+'</span></span>' +
-        '<span class="mini-stat"><span style="font-size:11px;color:'+color(m.likesNow,m.likesPrev)+'">'+pct(m.likesNow,m.likesPrev)+'</span></span>' +
-        '<span class="mini-stat"><span style="font-weight:600">'+m.bmNow.toLocaleString()+'</span></span>' +
-        '<span class="mini-stat"><span style="font-weight:600">'+m.sharesNow.toLocaleString()+'</span></span>' +
-      '</div>'; }).join('') + '</div>';
+    var mediaEmpty = '<div class="cl-empty" style="grid-column:1/-1"><span class="material-symbols-outlined cl-empty-icon">cloud_upload</span><p style="font-weight:600;margin-bottom:4px">' + (FT('fc.landing.emptyMedia') || 'No media yet') + '</p><p style="font-size:12px">' + (FT('fc.landing.emptyMediaHint') || 'Uploaded media will appear here') + '</p></div>';
+    var mediaHTML = '<div class="card" style="padding:var(--space-md);width:100%;flex-shrink:0"><div class="flex-between" style="margin-bottom:var(--space-sm)"><h3 class="headline-md">' + (FT('fc.analytics.mediaPerf') || 'Media Performance') + ' — ' + aLabel + '</h3></div>' +
+      (media.length ? ('<div class="content-row" style="color:var(--color-outline);font-size:var(--fs-label-sm);font-weight:600;text-transform:uppercase"><span style="width:36px;text-align:center">#</span><span style="flex:1;min-width:160px">' + (FT('fc.landing.media') || 'Media') + '</span><span class="mini-stat">' + (FT('fc.metrics.type') || 'Type') + '</span><span class="mini-stat">' + (FT('fc.metrics.size') || 'Size') + '</span><span class="mini-stat">' + (FT('fc.analytics.date') || 'Date') + '</span></div>' +
+      media.map(function(m,i) { return '<div class="content-row"><span style="width:36px;text-align:center;font-weight:800;font-size:var(--fs-body-md);color:' + ['var(--color-primary)','var(--color-outline)','#ea580c','var(--color-outline)'][i] + '">' + (i+1) + '</span><span style="flex:1;min-width:160px;font-weight:600">'+fcEsc(m.name)+'</span><span class="mini-stat">' + (m.type === 'video' ? (FT('fc.cl.subVideo') || 'Video') : (FT('fc.cl.subImages') || 'Images')) + '</span>' +
+        '<span class="mini-stat">'+formatSize(m.size)+'</span>' +
+        '<span class="mini-stat">'+m.date+'</span>' +
+      '</div>'; }).join('')) : mediaEmpty) + '</div>';
 
     track.innerHTML = articleHTML + mediaHTML;
     var panels = track.querySelectorAll('.card');
@@ -4005,104 +4802,22 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     'use strict';
 
   // ═══════════════════════════════════════════
-  // Seed Data
+  // 数据源（v0.2.58.26 Round 46：15 篇种子文章+演示 contentJson 全撤——清单=FC_OVERVIEW.articles 本人文章全状态）
   // ═══════════════════════════════════════════
-  var articles = [
-    { id:'ART-001', title:'The Founding Charter of Etheria',       author:'Alex Rivera',            date:'2026-08-05', views:12420, bookmarks:1204, words:3240, status:'published' },
-    { id:'ART-002', title:'Aether Prime: A Smart Sovereign City',  author:'Alex Rivera',            date:'2026-08-02', views:15630, bookmarks:2108, words:4820, status:'published' },
-    { id:'ART-003', title:'Digital Rights & Citizenship Act',      author:'Alex Rivera',            date:'2026-07-28', views:8920,  bookmarks:853,  words:2150, status:'published' },
-    { id:'ART-004', title:'Economic Policy Whitepaper v2',         author:'Alex Rivera',            date:'2026-07-20', views:4280,  bookmarks:645,  words:5600, status:'draft' },
-    { id:'ART-005', title:'Etheria Annual Report 2025',            author:'Alex Rivera',            date:'2026-08-07', views:3200,  bookmarks:410,  words:7800, status:'published' },
-    { id:'ART-006', title:'Aethelgard Treaty Protocol v2',         author:'Etheria Editorial Board', date:'2026-08-07', views:1800,  bookmarks:230,  words:3100, status:'published' },
-    { id:'ART-007', title:'Constitutional Amendment No. 14',       author:'Alex Rivera',            date:'2026-08-06', views:650,   bookmarks:89,   words:4200, status:'review' },
-    { id:'ART-008', title:'Diplomatic Relations Framework',        author:'Alex Rivera',            date:'2026-07-15', views:12050, bookmarks:980,  words:6400, status:'published' },
-    { id:'ART-009', title:'Territorial Expansion Proposal',        author:'Cartography Guild',      date:'2026-08-01', views:3400,  bookmarks:520,  words:2900, status:'review' },
-    { id:'ART-010', title:'Cultural Heritage Preservation Act',    author:'Alex Rivera',            date:'2026-07-10', views:7800,  bookmarks:670,  words:3700, status:'published' },
-    { id:'ART-011', title:'Renewable Energy Initiative 2026',      author:'Alex Rivera',            date:'2026-06-28', views:5600,  bookmarks:430,  words:5100, status:'published' },
-    { id:'ART-012', title:'National Defense Strategy Overview',    author:'Etheria Editorial Board', date:'2026-07-05', views:9100,  bookmarks:780,  words:8200, status:'draft' },
-    { id:'ART-013', title:'Citizenship by Investment Program',     author:'Alex Rivera',            date:'2026-06-15', views:14300, bookmarks:1120, words:4500, status:'published' },
-    { id:'ART-014', title:'Digital Infrastructure Roadmap',        author:'Alex Rivera',            date:'2026-08-04', views:2100,  bookmarks:310,  words:3800, status:'draft' },
-    { id:'ART-015', title:'Inter-Micronation Trade Agreement',     author:'Cartography Guild',      date:'2026-08-08', views:890,   bookmarks:145,  words:2600, status:'published' },
-  ];
-
-  // v10.28.35.0: 文章查看器演示样例——ART-001 附真实正文（按编辑器 draft v9 契约：
-  // content 正文卡 + flag 国旗卡 + text 签名卡；字段与 buildDraft/applyDraft 同口径）。
-  // 查看器打开时经 localStorage demo store 兜底渲染（云端 ART-001 不存在 → 404 → 本地样例）。
-  articles[0].contentJson = {
-    v: 9,
-    title: 'The Founding Charter of Etheria',
-    tags: [],
-    cards: [
-      {
-        id: 'c1', type: 'content',
-        col: 3, row: 2, colSpan: 26, rowSpan: 10,
-        content: '<h2 style="margin:0 0 8px">The Founding Charter</h2>' +
-          '<p><b>Article I — Sovereignty.</b> The Nation of Etheria is hereby established as an independent, self-governing micronation founded on the principles of open knowledge and shared imagination.</p>' +
-          '<p><b>Article II — Citizenship.</b> Citizenship is open to all who uphold this Charter, regardless of origin. Every citizen holds one vote in the Assembly.</p>' +
-          '<p><b>Article III — Knowledge.</b> The Archive of Etheria shall preserve every founding document, treaty and map for future generations.</p>',
-        bgAlpha: 0, baseFontSize: 14
-      },
-      {
-        id: 'c2', type: 'flag', label: 'Etheria',
-        col: 3, row: 13, colSpan: 12, rowSpan: 7,
-        imgSrc: 'data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20600%20360%22%3E%3Crect%20width%3D%22600%22%20height%3D%22120%22%20fill%3D%22%236C5CE7%22%2F%3E%3Crect%20y%3D%22120%22%20width%3D%22600%22%20height%3D%22120%22%20fill%3D%22%23FFFFFF%22%2F%3E%3Crect%20y%3D%22240%22%20width%3D%22600%22%20height%3D%22120%22%20fill%3D%22%232E5BFF%22%2F%3E%3C%2Fsvg%3E'
-      },
-      {
-        id: 'c3', type: 'text', label: 'Charter Notes',
-        col: 17, row: 13, colSpan: 12, rowSpan: 7,
-        background: 'rgba(108,92,231,0.08)',
-        content: '<b>Signatories</b><br>— The Cartography Guild<br>— Council of Etheria<br>— Citizens Assembly<br><i>Ratified 2026-08-05</i>'
-      }
-    ],
-    settings: { snapOn: true, alignOn: true },
-    activePreset: '169',
-    presets: {},
-    groupStyles: {},
-    pageBg: null,
-    lastSaved: 1750000000000
-  };
-
-  // v10.28.35.0: 云端文章（GET /api/articles：published 全部 + 本人各状态）
-  // 置顶并入种子列表；删除/批量操作仍只作用于本地种子（云端删除走后端，另行接线）
   var cloudArticles = [];
-  var cloudLoaded = false;
-  function seedDemoArticleContent() {
-    try {
-      var store = {};
-      articles.forEach(function (a) { if (a.contentJson) store[a.id] = a.contentJson; });
-      if (Object.keys(store).length) {
-        localStorage.setItem('slati_demo_article_content', JSON.stringify(store));
-      }
-    } catch (e) {}
-  }
-  function loadCloudArticles() {
-    if (cloudLoaded) return;
-    cloudLoaded = true;
-    var run = function () {
-      if (!window.MN_API || !window.MN_API.get) return;
-      MN_API.get('/articles').then(function (res) {
-        if (!res || !res.ok || !res.data || !Array.isArray(res.data.articles)) return;
-        cloudArticles = res.data.articles.map(function (a) {
-          return {
-            id: a.id,
-            title: a.title || 'Untitled',
-            author: 'Member',
-            date: String(a.createdAt || '').slice(0, 10) || '—',
-            views: 0, bookmarks: 0, words: 0,
-            status: a.status === 'published' ? 'published' : 'review',
-            cloud: true
-          };
-        });
-        renderArtStats();
-        renderArtList();
-      });
-    };
-    if (window.MN_API) { run(); return; }
-    // v10.28.35.0: FC 页无 api.js 静态引入 → 动态注入（与 storage.js ensureApi 同口径）
-    var s = document.createElement('script');
-    s.src = '../assets/js/api.js';
-    s.onload = run;
-    document.head.appendChild(s);
+  function syncCloudArticles() {
+    if (!FC_OVERVIEW || !FC_OVERVIEW.articles) { cloudArticles = []; return; }
+    cloudArticles = FC_OVERVIEW.articles.map(function (a) {
+      return {
+        id: a.id,
+        title: a.title || (FT('fc.landing.untitled') || 'Untitled'),
+        author: user.displayName || '—',
+        date: String(a.createdAt || '').slice(0, 10) || '—',
+        views: a.viewCount || 0, bookmarks: a.favoriteCount || 0, words: a.wordCount || 0,
+        status: a.status === 'published' ? 'published' : (a.status === 'pending' ? 'review' : 'draft'),
+        cloud: true
+      };
+    });
   }
 
   // ═══════════════════════════════════════════
@@ -4117,22 +4832,27 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   // Stats
   // ═══════════════════════════════════════════
   function renderArtStats() {
-    var total = articles.length;
-    var published = articles.filter(function(a){ return a.status==='published'; }).length;
-    var drafts = articles.filter(function(a){ return a.status==='draft'; }).length;
-    var totalViews = articles.reduce(function(s, a){ return s + a.views; }, 0);
+    // v0.2.58.26 真实统计（钦定②）：总数/已发布/草稿/总浏览全接 FC_OVERVIEW；未加载=—（绝不回退假数据）；
+    //   「↑ 3 this week」假行 → 7d 窗口真实新增数（无窗口=不渲染）
+    var hasData = !!FC_OVERVIEW;
+    var total = hasData ? (FC_OVERVIEW.stats.articles || 0) : null;
+    var published = hasData ? (FC_OVERVIEW.stats.articlesPublished || 0) : null;
+    var drafts = hasData ? cloudArticles.filter(function(a){ return a.status==='draft'; }).length : null;
+    var totalViews = hasData ? cloudArticles.reduce(function(s, a){ return s + a.views; }, 0) : null;
+    var w7 = fcOverviewWindow('7d');
+    var weekLine = (w7 && hasData) ? fcNum(w7.articlesCreated) + ' ' + (FT('fc.articles.thisWeek') || 'this week') : '';
     document.getElementById('artStats').innerHTML =
-      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + total + '</div><div class="metric-label">' + (FT('fc.articles.statTotal') || 'Total Articles') + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + published + '</div><div class="metric-label">' + (FT('fc.articles.fPublished') || 'Published') + '</div><div class="metric-change" style="color:#22c55e">' + (FT('fc.articles.statThisWeek') || '↑ 3 this week') + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + drafts + '</div><div class="metric-label">' + (FT('fc.articles.fDrafts') || 'Drafts') + '</div></div>' +
-      '<div class="card metric-card"><div class="metric-value" style="color:#8127cf">' + (totalViews/1000).toFixed(1) + 'K</div><div class="metric-label">' + (FT('fc.metrics.totalViews') || 'Total Views') + '</div><div class="metric-change" style="color:#22c55e">↑ 18.4%</div></div>';
+      '<div class="card metric-card"><div class="metric-value" style="color:var(--color-primary)">' + fcNum(total) + '</div><div class="metric-label">' + (FT('fc.articles.statTotal') || 'Total Articles') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#16a34a">' + fcNum(published) + '</div><div class="metric-label">' + (FT('fc.articles.fPublished') || 'Published') + '</div>' + (weekLine ? '<div class="metric-change" style="color:var(--color-outline)">' + weekLine + '</div>' : '') + '</div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#ea580c">' + fcNum(drafts) + '</div><div class="metric-label">' + (FT('fc.articles.fDrafts') || 'Drafts') + '</div></div>' +
+      '<div class="card metric-card"><div class="metric-value" style="color:#8127cf">' + (totalViews === null ? '—' : (totalViews / 1000).toFixed(1) + 'K') + '</div><div class="metric-label">' + (FT('fc.metrics.totalViews') || 'Total Views') + '</div></div>';
   }
 
   // ═══════════════════════════════════════════
   // List
   // ═══════════════════════════════════════════
   function getFilteredArticles() {
-    var result = cloudArticles.concat(articles); // v10.28.35.0: 云端已发布文章置顶并入种子列表
+    var result = cloudArticles.slice(); // v0.2.58.26：种子全撤——清单=本人云端文章
     if (artFilter !== 'all') {
       result = result.filter(function(a){ return a.status === artFilter; });
     }
@@ -4215,27 +4935,20 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   function deleteArticle(id) {
     if (!confirm(FT('fc.articles.confirmDelete') || 'Delete this article? This action cannot be undone.')) return;
-    var cloudHit = cloudArticles.some(function (a) { return a.id === id; });
-    if (cloudHit) {
-      // v0.2.55.1: 云端文章删除走 DELETE /api/articles/:id（本人可删；后端校验）
-      if (!window.MN_API || !window.MN_API.request) return;
-      MN_API.request('/articles/' + encodeURIComponent(id), { method: 'DELETE' }).then(function (res) {
-        if (res && res.ok) {
-          cloudArticles = cloudArticles.filter(function (a) { return a.id !== id; });
-          delete selectedIds[id];
-          renderArtStats();
-          renderArtList();
-          showToast(FT('fc.articles.toastDeleted') || 'Article deleted', 'delete');
-        } else {
-          showToast(FT('fc.articles.toastDeleteFail') || 'Delete failed. You can only delete your own articles.', 'error');
-        }
-      });
-      return;
-    }
-    articles = articles.filter(function(a){ return a.id !== id; });
-    delete selectedIds[id];
-    renderArtStats();
-    renderArtList();
+    // v0.2.58.26：全清单皆云端——DELETE /api/articles/:id（本人可删；后端校验）→ 同步 FC_OVERVIEW 后重渲染
+    if (!window.MN_API || !window.MN_API.request) return;
+    MN_API.request('/articles/' + encodeURIComponent(id), { method: 'DELETE' }).then(function (res) {
+      if (res && res.ok) {
+        if (FC_OVERVIEW && FC_OVERVIEW.articles) FC_OVERVIEW.articles = FC_OVERVIEW.articles.filter(function (a) { return a.id !== id; });
+        syncCloudArticles();
+        delete selectedIds[id];
+        renderArtStats();
+        renderArtList();
+        showToast(FT('fc.articles.toastDeleted') || 'Article deleted', 'delete');
+      } else {
+        showToast(FT('fc.articles.toastDeleteFail') || 'Delete failed. You can only delete your own articles.', 'error');
+      }
+    });
   }
 
   // ═══════════════════════════════════════════
@@ -4285,14 +4998,8 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
 
   // Bulk publish
   document.getElementById('bulkPublish').addEventListener('click', function() {
-    var ids = Object.keys(selectedIds);
-    articles.forEach(function(a) {
-      if (selectedIds[a.id] && a.status !== 'published') a.status = 'published';
-    });
-    selectedIds = {};
-    renderArtStats();
-    renderArtList();
-    showToast((FT('fc.articles.toastBulkPublished') || 'Published %d article(s)').replace('%d', ids.length), 'publish');
+    // v0.2.58.26：全清单皆云端——发布走编辑器 PUT（articles.js 契约需完整 title+contentJson）→ 引导提示
+    showToast((FT('fc.articles.toastPublishInEditor') || 'Open an article in the editor to publish it'), 'publish');
   });
 
   // Bulk delete
@@ -4300,26 +5007,17 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     var ids = Object.keys(selectedIds);
     if (ids.length === 0) return;
     if (!confirm((FT('fc.articles.confirmBulkDelete') || 'Delete %d article(s)? This cannot be undone.').replace('%d', ids.length))) return;
-    // v0.2.55.1: 云端文章逐个 DELETE（本人文章可删，失败保留）；本地直接过滤
-    var cloudIds = ids.filter(function (id) { return cloudArticles.some(function (a) { return a.id === id; }); });
-    var localIds = ids.filter(function (id) { return articles.some(function (a) { return a.id === id; }); });
-    articles = articles.filter(function(a){ return localIds.indexOf(a.id) === -1; });
     selectedIds = {};
-    renderArtStats();
-    renderArtList();
-    var pending = cloudIds.length;
-    if (!pending) return;
-    if (!window.MN_API || !window.MN_API.request) {
-      cloudArticles = cloudArticles.filter(function (a) { return cloudIds.indexOf(a.id) === -1; });
-      renderArtStats();
-      renderArtList();
-      return;
-    }
-    cloudIds.forEach(function (cid) {
+    // v0.2.58.26：全清单皆云端——逐个 DELETE（本人文章可删，失败保留）
+    if (!window.MN_API || !window.MN_API.request) { syncCloudArticles(); renderArtStats(); renderArtList(); return; }
+    var pending = ids.length;
+    ids.forEach(function (cid) {
       MN_API.request('/articles/' + encodeURIComponent(cid), { method: 'DELETE' }).then(function (res) {
-        if (res && res.ok) cloudArticles = cloudArticles.filter(function (a) { return a.id !== cid; });
+        if (res && res.ok && FC_OVERVIEW && FC_OVERVIEW.articles) {
+          FC_OVERVIEW.articles = FC_OVERVIEW.articles.filter(function (a) { return a.id !== cid; });
+        }
         pending--;
-        if (!pending) { renderArtStats(); renderArtList(); }
+        if (!pending) { syncCloudArticles(); renderArtStats(); renderArtList(); }
       });
     });
   });
@@ -4332,16 +5030,16 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
     if (e.target.closest('.art-checkbox')) { toggleSelect(id); return; }
     if (e.target.closest('.art-action-btn.danger')) { deleteArticle(id); return; }
     if (e.target.closest('.art-title') || e.target.closest('.art-action-btn[title="Edit"]')) {
-      // v0.2.55.1: 云端文章 Edit 带 id 打开（编辑器 ?edit= 加载原文 + 再发布 = 更新）
-      var isCloud = cloudArticles.some(function (a) { return a.id === id; });
-      window.location.href = 'fluidcanvas-editor.html' + (isCloud ? '?edit=' + encodeURIComponent(id) : '');
+      // v0.2.58.26：全清单皆云端——Edit 恒带 id 打开（编辑器 ?edit= 加载原文 + 再发布 = 更新）
+      window.location.href = 'fluidcanvas-editor.html?edit=' + encodeURIComponent(id);
       return;
     }
     if (e.target.closest('.art-action-btn[title="View"]')) {
-      // v0.2.56.0：云端（已发布）文章 View → 平台阅读页（用户钦定「FC只是一个编辑器…不是在编辑器上查看」）；
-      // 本地草稿保留编辑器 ?article= 查看器（v10.28.35.0 网格裁剪预览，编辑器本职）
-      var isCloud = cloudArticles.some(function (a) { return a.id === id; });
-      window.location.href = isCloud ? 'article.html?id=' + encodeURIComponent(id) : 'fluidcanvas-editor.html?article=' + encodeURIComponent(id);
+      // v0.2.56.0 口径保持：已发布 → 平台阅读页（用户钦定「FC只是一个编辑器…不是在编辑器上查看」）；
+      // 草稿/审核 → 编辑器 ?article= 查看器（v10.28.35.0 网格裁剪预览，编辑器本职）
+      var row2 = null;
+      for (var i2 = 0; i2 < cloudArticles.length; i2++) { if (cloudArticles[i2].id === id) { row2 = cloudArticles[i2]; break; } }
+      window.location.href = (row2 && row2.status === 'published') ? 'article.html?id=' + encodeURIComponent(id) : 'fluidcanvas-editor.html?article=' + encodeURIComponent(id);
       return;
     }
   });
@@ -4358,9 +5056,11 @@ setTimeout(function () { var b = document.body; if (b) b.classList.remove('pre-s
   }
 
   // v10.28.45.0 i18n：纯重渲染入口（不触发网络/种子——语言切换 onChange 用）
-  return { init: function() { seedDemoArticleContent(); loadCloudArticles(); renderArtStats(); renderArtList(); }, applyState: applyState, render: function() { renderArtStats(); renderArtList(); } };
+  return { init: function() { syncCloudArticles(); renderArtStats(); renderArtList(); }, applyState: applyState, render: function() { syncCloudArticles(); renderArtStats(); renderArtList(); } };
   })();
 
+  loadFcOverview();
+  loadTeamsFromApi();
   initURLSync();
 </script>
 <!-- v10.28.45.0 i18n：字典三件套 + 页面应用（务必在全部内联脚本之后） -->

@@ -1,0 +1,108 @@
+<style>
+/* ===== 尾声页专属 ===== */
+.kmap-box { margin-top: 26px; }
+</style>
+<meta name="story-topic" content="story-finale">
+</head>
+<body class="story-page" data-page="finale">
+<div class="story-progress"></div>
+<main class="story-flow">
+
+  <section class="scene scene-hero" id="scene-hero" data-scene="fin-00">
+    <div class="layer" data-depth="far"><div class="orb orb-gold" style="width:340px;height:340px;top:8%;left:8%"></div><div class="orb orb-blue" style="width:280px;height:280px;bottom:6%;right:8%"></div></div>
+    <div class="scene-stage">
+      <div class="scene-tilt">
+        <p class="scene-kicker">尾声</p>
+        <h1 class="scene-title">你的国家在等你</h1>
+        <div class="narration" data-voice="fin-00">
+          <p class="line">六章的路，你走到了这里。</p>
+          <p class="line">看看你点亮的地图——然后，去创造你自己的国家。</p>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-hint">向下滚动</div>
+  </section>
+
+  <section class="scene" id="scene-1" data-scene="fin-01">
+    <div class="layer" data-depth="far"><div class="orb orb-gold" style="width:320px;height:320px;top:8%;left:10%"></div></div>
+    <div class="scene-stage">
+      <div class="scene-tilt">
+        <p class="scene-kicker">回顾</p>
+        <h2 class="scene-title">你走过的路</h2>
+        <div class="narration" data-voice="fin-01">
+          <p class="line">你走过了大房子、篝火与广场，见过王冠落地，也见过制度的长河。</p>
+          <p class="line">现在你知道：政治不是大人物的事，而是所有一起生活的人的日常。</p>
+          <p class="line">你已经拿到了政治入门的钥匙。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" id="scene-2" data-scene="fin-02">
+    <div class="layer" data-depth="mid"><div class="orb orb-blue" style="width:280px;height:280px;bottom:8%;right:10%"></div></div>
+    <div class="scene-stage">
+      <div class="scene-tilt">
+        <p class="scene-kicker">知识地图</p>
+        <h2 class="scene-title">你的政治地图</h2>
+        <div class="narration" data-voice="fin-02">
+          <p class="line">政治的地图，你已经点亮了起点。</p>
+          <p class="line">金色 ◆ 的是你走过的章节；灰色的，是下一段旅程。</p>
+        </div>
+        <div class="kmap-box">
+          <div class="kmap">
+            <div class="kmap-root">Politics · 政治</div>
+            <ul>
+              <li class="kmap-node" data-read="ch1">Power 权力 —— 规则 · 服从 · 合法性</li>
+              <li class="kmap-node" data-read="ch2">State 国家 —— 主权 · 政府 · 法律</li>
+              <li class="kmap-node" data-read="ch5">Systems 制度 —— 民主 · 共和 · 君主 · 联邦</li>
+              <li class="kmap-node" data-read="ch3">History 历史 —— 篝火 → 城邦 → 帝国 → 现代</li>
+              <li class="kmap-node" data-read="ch4">Events 事件 —— 法国大革命 · 美国独立 · 一战与二战 · 苏联的成立 · 冷战</li>
+              <li class="kmap-node" data-read="ch6">Philosophy 哲学 —— 自由 · 平等 · 正义 · 权力</li>
+            </ul>
+            <div class="kmap-legend">◆ 已读完的章节（保存在你自己的浏览器里）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" id="scene-3" data-scene="fin-03">
+    <div class="layer" data-depth="far"><div class="orb orb-gold" style="width:340px;height:340px;top:10%;right:10%"></div><div class="orb orb-blue" style="width:260px;height:260px;bottom:8%;left:8%"></div></div>
+    <div class="scene-stage">
+      <div class="scene-tilt">
+        <p class="scene-kicker">启程</p>
+        <h2 class="scene-title">你的国家在等你</h2>
+        <div class="narration" data-voice="fin-03">
+          <p class="line">你已理解政治的入口。现在，去创造你自己的国家。</p>
+          <p class="line">在那张白纸上，写下你的第一部宪法。</p>
+        </div>
+        <a class="story-cta" href="https://mnationworld.com/pages/onboarding-identity.html">进入 M.NationWorld</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+<nav class="story-nav">
+  <a href="chapter-6.html">← 政治哲学之问</a>
+  <a class="next" href="https://mnationworld.com/pages/onboarding-identity.html">进入 M.NationWorld →</a>
+</nav>
+<footer class="story-sources">
+  <div class="s-head">阅读口径</div>
+  <p>以上六章均为入门级简化呈现；深入阅读，请以学术著作为准。<span class="tag tag-interp">Interpretation</span></p>
+  <p>「先了解政治，再创造国家」——这里是 M.NationWorld 的知识入口。</p>
+</footer>
+<script src="story.js"></script>
+<script>
+/* 知识地图点亮：story.js 已把本页 data-page 写入 localStorage story-read；
+   按记录给对应节点加 .lit（容错静默——无记录时全灰，不报错）。 */
+(function () {
+  var map = {};
+  try { map = JSON.parse(localStorage.getItem('story-read') || '{}'); } catch (e) {}
+  var nodes = document.querySelectorAll('.kmap-node');
+  for (var i = 0; i < nodes.length; i++) {
+    if (map[nodes[i].getAttribute('data-read')]) nodes[i].classList.add('lit');
+  }
+})();
+</script>
+</body>
+</html>

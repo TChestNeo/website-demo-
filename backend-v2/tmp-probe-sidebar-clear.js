@@ -1,9 +1,9 @@
-// tmp-probe-sidebar-clear.js — v0.2.58.21 左侧菜单底部不透明背景完全删除 线上实机探针
+// tmp-probe-sidebar-clear.js — v0.2.58.25 左侧菜单底部不透明背景完全删除 线上实机探针
 // 用户「平台所有的左侧菜单底部不是有一个不透明背景吗能不能去掉他，我要完全的删除它」（注意我是指
 //   Z轴最底部的那一个不是我的卡片）——09-10/09-18 两轮铺的侧栏整列不透明底 --sidebar-bg 整体移除：
 //   侧栏列全透明（页面底色直接可见、卡下方不再有面板）、三张卡（logo/用户(访客)/菜单
 //   .sidebar-module）零触碰、玻璃注入层灭滤镜灭磨砂规则保留、dropdown/全站卡片的 var 用法不动。
-// S 静态（线上 site-config 58.1+changelog 新条目+rev 00338-+旧 58.0 赋值零残留+FC 47.4 恒；
+// S 静态（线上 site-config 58.1+changelog 新条目+rev 00346-+旧 58.0 赋值零残留+FC 47.4 恒；
 //   index.html/ethereal.css 铺底规则零残留+新轮注释在位+--sidebar-bg 用法恒 2 处）、
 // P 实机（游客路径：亮/暗两主题 .app-sidebar 计算背景 transparent、三张卡非透明背景在位）、E 零异常。
 // 全 Node 内置模块：https + ws CDP（游客零播种——index 页 mn-guest 不重定向、访客模块渲染）。
@@ -76,13 +76,13 @@ async function waitFor(cdp, expr, timeout, label) {
 
   // ── S 线上静态 ──
   const sc = await get(BASE + '/assets/js/site-config.js');
-  ok('S1 线上 site-config：58.1 赋值+changelog 新条目+rev 00338-+旧 58.0 赋值零残留+FC 47.4 恒',
+  ok('S1 线上 site-config：58.1 赋值+changelog 新条目+rev 00346-+旧 58.0 赋值零残留+FC 47.4 恒',
     sc.status === 200 &&
-    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.21';") !== -1 &&
+    sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.25';") !== -1 &&
     sc.body.indexOf('v0.2.58.3 = 折叠侧栏等级水位环+双层水波') !== -1 &&
     sc.body.indexOf('我要完全的删除它') !== -1 &&
     sc.body.indexOf('不是我的卡片') !== -1 &&
-    sc.body.indexOf('rev 00338-') !== -1 &&
+    sc.body.indexOf('rev 00346-') !== -1 &&
     sc.body.indexOf("window.MN_SITE_VERSION = 'v0.2.58.0';") === -1 &&
     sc.body.indexOf("'v10.28.48.0'") !== -1,
     'status=' + sc.status + ' err=' + sc.error);

@@ -1,0 +1,8 @@
+── S. 侧栏入口（hub 上）──
+  ✅ S1 版本 v0.2.58.21（ver=v0.2.58.21）
+  ✅ S1 侧栏用户模块锚 → 自己主页（USR id + 头像+名字在内）（../pages/community-profile.html?id=USR-000101）
+
+FATAL Error: waitFor 超时: 侧栏锚跳转
+    at waitFor (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-profile-banner.js:209:9)
+    at async runLocal (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-profile-banner.js:313:5)
+    at async main (C:\Users\USER\Downloads\stitch_slatiworld_micronation_interface\backend-v2\tmp-battery-profile-banner.js:291:8)

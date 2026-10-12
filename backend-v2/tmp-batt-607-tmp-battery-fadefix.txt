@@ -1,0 +1,44 @@
+═══ tmp-battery-fadefix.js ═══ mode=after 期望版本 v0.2.58.4
+  ✅ F0 版本双线 v0.2.58.4 / v10.28.36.1 + changelog 标记
+  ✅ F1 双模式入场串：原样渐隐+位移全串 + 轻量 transform-only 串都在
+  ✅ F2 原节奏 stagger 60 + 轻量 40/上限 8 + LIGHT 按 messages.html 判定
+  ✅ F3 隐形修复保留（prevOpacity 记/transitionend+cancel 双监听/恢复三值/清 transform/兜底公式）+ will-change 写前记/还原
+  ✅ F4 退出双模式：原样渐隐串 + 轻量 transform-only 串都在
+  ✅ F5 导航计时双模式（原样 280/240 + 轻量 240/220）
+  ✅ F6 rAF 批量波浪（requestAnimationFrame 在 + 旧逐卡 setTimeout 模式不在 + 兜底公式在）
+  ✅ F7 双动画守卫 getAnimations 在
+  ✅ F8 will-change 写点 ≥4 处（入场/还原/水平退出/垂直退出）  count=4
+  ✅ F9 守卫收窄只认 CSS 关键帧动画（CSSTransition 构造器 + transitionProperty 双重过滤；v0.2.50.4）
+  ✅ M1a 点击 nav 即写入口方向 top  dir=top
+  ✅ N3v 垂直退出 .app-main 同步写 will-change（层提升）  will=opacity, transform
+  ✅ M1b 退出窗口帧流+零长任务（诚实不变量）  exit n=11 mean=19.7 p50=16.7 p95=33.4 max=33.4 >20ms=2 >34ms=0 lt=0
+  ✅ M1c 入场窗口帧流+零长任务  ent n=40 mean=17.5 p50=16.7 p95=33.3 max=33.4 >20ms=2 >34ms=0 lt=0
+  📊 M1 Messages LIGHT 入场帧健康：n=40 mean=17.5 p50=16.7 p95=33.3 max=33.4 >20ms=2 >34ms=0 lt=0 | settle=706ms
+  ✅ M1d Messages 专属轻量入场（starts ≤ 24：8 张波浪头 + 页内 fade-up 动画；全卡波浪应 ~73）+落定 < 2200ms（8 卡波浪物理 680ms 落定，尾长含页内原生动画、运行方差 ±150ms）  starts=11 settle=706ms
+  ✅ M1e 落定后零 inline 污染  0/12
+  ✅ M1f 公告卡 computed 恢复 box-shadow（tilt 橡皮筋修复守卫）  box-shadow 0.25s
+  ✅ M1g 公告卡 inline 含 box-shadow 过渡属性（未被破坏）
+  ✅ M1h LIGHT 入场 will-change 机制（波浪卡起播均带 will-change ≥3 + 值全含 transform + 落定全清）  n=10 withWC=8 cleared=10/10 vals=transform
+  ✅ M1i Messages LIGHT 波浪覆盖（≥5 张波浪头卡收到内联过渡；50.4 守卫收窄回归网——messages 守卫输入为空已由探针证明，≤3 张差额 = 页内原生入场动画抢先改 transform，startCard 写入即终值无新过渡可起（tmp-probe-msg-preempt.js 快照实证 8 张全被写入），观感无损）  itTargets=8 vis=8
+  ✅ M2a 点击 nav 即写入口方向 bottom  dir=bottom
+  ✅ N2b 中场快照：欢迎卡零内联过渡（守卫跳过）而波浪其他卡 ≥3 张进行中  welcome.t="" mid=3
+  ✅ M2b 入场帧流+零长任务  n=116 lt=0
+  📊 M2 dashboard 原样全卡波浪入场帧健康：n=116 mean=17.2 p50=16.7 p95=16.8 max=50 >20ms=3 >34ms=1 lt=0 | settle=2008ms
+  ✅ M2c dashboard 原样全卡波浪（starts ≥ 24）+原节奏落定 ≥ 1100ms 且 < 3000ms（~1931ms 口径）  starts=86 settle=2008ms
+  ✅ M2d 零 inline 污染  0/18
+  ✅ M2e pre-stagger 类已解除（1.6s 兜底兼容）
+  ✅ M2h 原样入场 will-change 机制（波浪卡起播均带 will-change ≥20 + 值全含 opacity + 落定全清）  n=84 withWC=46 cleared=23/23 vals=opacity, transform
+  ✅ M2i dashboard 波浪覆盖（每张可见非欢迎卡收到内联过渡；50.4 守卫收窄回归网）  itTargets=23 vis=23
+  ✅ N2 欢迎卡双动画守卫（零内联三值 + 关键帧 fadeInUp 照常淡入 + fill forwards 仍挂动画）  t="" o="" wc="" anim=fadeInUp ga=1
+  ✅ M3a 水平切写入口方向 left  dir=left
+  ✅ N3h 水平退出逐卡同步写 will-change（层提升）  hit=6
+  📊 M3 explore→overview 水平退出帧健康：n=13 mean=19.2 p50=16.7 p95=33.3 max=33.3 >20ms=2 >34ms=0 lt=0
+  ✅ M3b 入场帧流+零长任务  n=55 lt=0
+  ✅ M3c 零 inline 污染  0/7
+  ✅ M4a 反向水平切写 right + 到达 explore
+  📊 A4 auth 入场帧健康：n=3 mean=27.8 p50=16.7 p95=50.1 max=50.1 >20ms=1 >34ms=1 lt=0 | settle=252ms
+  ✅ A4 auth 入场（starts ≥1 + 帧流 ≥1 + 零长任务 + will-change 落定清净 + 污染 0/N）  starts=4 n=3 lt=0 will="" poll=0/0
+  ✅ Z 全程零 console error  干净
+
+🎉 mode=after 全部通过 36/36
+

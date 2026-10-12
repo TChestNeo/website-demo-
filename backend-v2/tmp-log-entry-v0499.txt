@@ -1,0 +1,39 @@
+════ Request I 页面切换掉帧优化轮 — v0.2.49.9（2026-09-17）════
+用户：在页面切换的的时候会掉帧卡顿，你再优化一下
+修订：mnationworld-web-00241-9lj（前身 00240-gs4）｜commit 见 git log（未 push）
+镜像：asia-southeast1-docker.pkg.dev/.../mn-backend-v2:latest digest cbe5a0c8
+
+诊断（tmp-probe-pageswitch.js，跨文档测量）：
+  修前 dashboard→messages 入场均帧 75-129ms、64-100% 帧超 20ms、落定 ~1.9-2s；
+  事件量 112/124/46 起落；污染 7/7（.card inline transition 带 cubic-bezier(0.22) 残留）；
+  Messages 公告卡 computed transition 被入场污染盖掉（box-shadow-only → opacity+transform 0.4s）。
+  三病全在 transitions.js：①入场 fade opacity（磨砂卡逐帧重采样背景）②stagger 长尾+inline 永不回收
+  （0.4s 橡皮筋污染全站 hover/tilt）③退出 fade opacity。
+
+修法（只动 docs/assets/js/transitions.js 五刀）：
+  1. 进出场全部 transform-only（不 fade opacity）
+  2. 入场波浪头只做前 STAGGER_CAP=8 个元素（其余零动画零内联残留）
+  3. 动画结束 transitionend/cancel 回收 inline transition（恢复 prevTransition/prevDelay、清 transform）
+  4. 隐藏卡兜底定时清理 setTimeout(cleanup, 400+i*40+200)——display:none 容器里的卡（设置弹窗内 .card）
+     transitionend 永不触发；电池 M2d 首跑抓到 dashboard 1/18 残留后补的这一刀，补后 0/18 干净
+  5. STAGGER_DELAY 60→40ms；退出计时 240→220ms（垂直）/280→240ms（水平）
+
+修后（探针+电池实测）：事件量 38/34/30（降 ~3 倍）、dashboard 落定 1931→799ms、
+  污染 7/7→0/7（含隐藏卡兜底 0/18 全干净）、Messages 公告卡 computed 恢复 box-shadow 0.25s、
+  全程零长任务零 console error。
+
+电池：新 pageswitch 23/23（F0 静态 6 + M1-M4 切页功能/方向语义/污染/tilt 守卫 + 帧健康 M + Z 零错误）
+  回归 msg-anim 31/31、mono-flash 22/22、monodark 29/29、smoke-admin 48/48 全绿
+  （mono-flash/monodark 版本锚 49.8→49.9 已同步）
+
+部署：docker build exit 0 → tag → token 直登（-p）→ push exit 0 → tmp-deploy-pageswitch.ps1
+  （模板=msganim 轮；gcloud.ps1、env 30 条从 describe 全量重建、零新键、--quiet）
+  一次 exit 0 → rev 00241-9lj serving 100%。
+  插曲：无部署插曲（沿用上轮教训——deploy 脚本绝不带 2>&1）。
+curl 链 3/3：/api/health 58 表 ✅｜site-config v0.2.49.9+v10.28.35.4 ✅｜
+  transitions.js 修复标记在线（transform-only 入场/STAGGER_CAP=8/DELAY=40/transitionend+cancel 回收/
+  600ms 兜底定时/无 opacity 入场）✅
+  小插曲：curl 链首轮 cleanup 计数 0 是 grep '\x27' 转义误报，换双引号引号写法复查 1/1——非文件缺失。
+
+零后端、零草稿字段（v 保持 9）、ethereal 零改动（无需 inline-css.js）、FC 零改动（v10.28.35.4 保持）。
+git：只 commit docs/（transitions.js + site-config.js）；tmp-* 不跟踪；entrypoint.js 保持未提交；不 push。

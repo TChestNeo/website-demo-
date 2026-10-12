@@ -1,0 +1,28 @@
+  ✅ S1 site-config：FC v10.28.47.4 + changelog 编辑器镶边玻璃全灭条目 + rev 00288- 占位 + 站点版本恒 v0.2.58.1
+  ✅ S2 编辑器头栏：铺 surface-container 不透明底 + 旧 16px 模糊写法零残留（门控死码配方除外）
+  ✅ S3 编辑面板：铺不透明底 + 12px 模糊/饱和与白色高光条撤下 + 6.2 磨砂玻璃轮作废注释在位
+  ✅ S4 弹窗 .modal-card：铺不透明底 + 旧 32px 模糊写法零残留
+  ✅ S5 右键菜单/文字工具条/字体面板/字号分组头：铺不透明底 + 旧 24px 模糊写法零残留
+  ✅ S6 地图区编辑器三面：铺不透明底 + 旧 32px 模糊写法零残留（stage/side/panel 三处同款）
+  ✅ S7 弹层族与查看模式六件：radius-popover/fcv-chip/fcv-toc-btn/fcv-toc-drawer/fcvp-card/#fcViewTitle/#fcViewActions 铺不透明底 + 14px 模糊旧写法零残留
+  ✅ S8 输入框 .input-glass：铺 surface-container-low 不透明底 + 旧 12px 模糊写法零残留
+  ✅ S9 玻璃注入层门控收编编辑器八浮面（头栏/编辑面板/右键菜单/文字工具条/字体面板/地图区三面/弹窗）
+  ✅ S10 keep 锚：弹窗/地图区暗化遮罩 blur 在位（按设计压暗底层不是表面）+ SNE 62% 混色不动 + 外板排除不动
+  ✅ B1 编辑器头栏（真元素）：不透明 surface-container + blur 摘除（含 -webkit）  {"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","bgImg":"none"}
+  ✅ B2a 标签弹窗卡面（真开）：不透明 surface-container + blur 摘除  {"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","bgImg":"none"}
+  ✅ B2b 弹窗内输入框：不透明 surface-container-low + blur 摘除  {"bg":"rgb(242, 244, 246)","blur":"none","webkitBlur":"none","bgImg":"none"}
+  ✅ B2c 弹窗玻璃注入层：不在场或 display:none（不透明面无注入层可见）  ["lg-backdrop:none","lg-specular:none"]
+  ✅ B2d 弹窗暗化背底 keep：blur(8px) 在位（按设计压暗不是表面）  {"bg":"rgba(0, 0, 0, 0.2)","blur":"blur(8px)","webkitBlur":"none","bgImg":"none"}
+  ✅ B3 圆角弹层（真开）：不透明 surface-container + blur 摘除  {"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","bgImg":"none"}
+  ✅ B4a 编辑面板（真开）：不透明 surface-container + blur 摘除 + 白色高光条已撤（background-image 无渐变）  {"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","bgImg":"none"}
+  ✅ B4b 编辑面板玻璃注入层：不在场或 display:none  ["lg-backdrop:none","lg-specular:none"]
+  ✅ B5 右键菜单（真开）：不透明 surface-container + blur 摘除  {"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","bgImg":"none"}
+  ✅ B6 地图区三面：不透明 surface-container + blur 摘除（stage/side/panel）  [{"bg":"rgb(236, 238, 240)","blur":"none"},{"bg":"rgb(236, 238, 240)","blur":"none"},{"bg":"rgb(236, 238, 240)","blur":"none"}]
+  ✅ B7 字体面板：不透明 surface-container + blur 摘除（分组头 .fp-group 规则锚由 S5 覆盖）  {"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","bgImg":"none"}
+  ✅ B8 查看模式：标题条/操作条/目录钮/目录抽屉/标签 chip 全不透明 + 14px 模糊摘除  {"vTitle":{"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","bgImg":"none"},"vActions":{"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","bgImg":"none"},"vTocBtn":{"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","bgImg":"none"},"vTocDrawer":{"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","bgImg":"none"},"vChip":{"bg":"rgb(236, 238, 240)","blur":"none","webkitBlur":"none","bgImg":"none"}}
+  ✅ B9 暗色主题：头栏+弹窗卡面黑族 #202038 不透明（var() 自适应）  {"header":{"bg":"rgb(32, 32, 56)","blur":"none","webkitBlur":"none","bgImg":"none"},"modal":{"bg":"rgb(32, 32, 56)","blur":"none","webkitBlur":"none","bgImg":"none"}}
+  ✅ E1 全程零 Runtime.exceptionThrown + 零 console.error  {"errs":[],"cons":[]}
+
+╭────────────────────────────────────╮
+│  🎉 24 ✅ / 0 ❌  (fc-all-opaque)  │
+╰────────────────────────────────────╯

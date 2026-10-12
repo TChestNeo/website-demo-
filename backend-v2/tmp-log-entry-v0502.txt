@@ -1,0 +1,40 @@
+════ Request K 后续修正轮 — Messages 页专属轻量切页模式 v0.2.50.2（2026-09-17）════
+用户（纠正）：「不是你之间撤销到我要求你优化message页面之前」
+诊断：Messages 页内部 49.8 七刀从未被 50.1 回滚（本地+线上精确标记逐条实证）——用户感知的「重」来自
+  50.1 恢复的原样入场（63 张卡渐隐波浪 ~4s 落定，这本就是 49.9 之前一直有的观感）。
+问询钦定：Messages 入场单独用轻量版——进入/离开 messages.html 用 49.9 轻量口径；其余页面切页保持
+  50.1 恢复的原样观感（用户钦定不可动）。
+修订：mnationworld-web-00244-6db（前身 00243-hls）｜commit 见 git log（未 push）
+
+改法（1 文件，纯前端）：
+1. docs/assets/js/transitions.js 双模式：
+   LIGHT 分支（仅 messages.html，脚本加载时按 pathname 判定）——49.9 轻量口径：入场 transform-only
+   不渐隐（transition 只写 'transform 0.4s cubic-bezier(0.22,0.61,0.36,1)'）、波浪头只做前
+   STAGGER_CAP=8 张、LIGHT_STAGGER_DELAY=40ms；退出水平 'transform 0.22s ease' 240ms / 垂直
+   'transform 0.25s ease' 220ms（transform-only 不渐隐）。
+   原样模式（其余全部页面）——50.1 原样观感一字不动：STAGGER_DELAY=60 全卡波浪、opacity+transform
+   双属性 0.4s 橡皮筋渐隐入场、退出渐隐 0.22s/0.25s、导航计时 280/240ms。
+   两个隐形修复双模式都保留：transitionend/cancel 回收（prevOpacities 数组 + prevTransition/prevDelay
+   还原）+ 隐藏卡兜底 setTimeout(cleanup, 400 + i*delay + 200)（done 守卫幂等）。
+2. docs/assets/js/site-config.js：v0.2.50.1 → v0.2.50.2（补丁位 1→2·口径修正轮）+ 注释块。
+
+零后端、零草稿字段（v 保持 9）、ethereal 零改动无需 inline-css、FC 零改动（v10.28.35.4 保持）、
+entrypoint 零改动、messages.html 零改动（49.8 七刀本就完好，本轮不碰）。
+
+电池：pageswitch 23/23 双模式重写（F0 版本 50.2 + 用户原话 / F1 双入场串 / F2 stagger60+light40+cap8+
+  messages gate / F3 cleanup 四标记含新公式 400+i*delay+200 / F4 双退出族 / F5 双计时器；M1d Messages
+  轻量入场：starts≤24 实测 20（8 张轻量 + 页面自带 ~12 动画）、落定 <1800ms 实测 1653ms；M2c dashboard
+  原样波浪：starts≥24 实测 76、落定 1100-3000ms 实测 1937ms——两模式各归各位实证；污染 0/21·0/18·0/7、
+  tilt 守卫、方向语义、帧健康、零错误）
+  回归 msg-anim 31/31 + msglink 15/15 + mono-flash 22/22 + monodark 29/29 + smoke-admin 48/48 全绿
+  （msglink/mono-flash/monodark 版本锚 50.1→50.2 已同步）
+
+部署：docker build exit 0 → tag → token 直登（-p）→ push exit 0 → tmp-deploy-light.ps1
+  （tmp-deploy-msglink.ps1 模板复制；gcloud.ps1、env 30 条从 describe 全量重建、零新键）一次 exit 0
+  → rev 00244-6db serving 100%。
+curl 链全绿：/api/health 58 表 ✅｜site-config v0.2.50.2+v10.28.35.4 ✅｜transitions.js 双模式 13 标记
+  在线（LIGHT gate / 双入场串 / stagger60+light40+cap8 / LIGHT?240:280 / LIGHT?220:240 / prevOpacities×3
+  + transitionend×5 + transitioncancel×2 / fallback / done 守卫）✅｜messages.html showTab×6 + 七刀标记
+  在线（will-change:transform / sidebar width .25s / box-shadow 0.25s ease）✅
+
+git：只 commit docs/（transitions.js + site-config.js）；tmp-* 不跟踪；entrypoint.js 保持未提交；不 push。

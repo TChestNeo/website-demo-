@@ -1,0 +1,75 @@
+── A. /wip 单页（序章 hero + 全部内容，渲染/版本/媒体图/BlurText/零 API）──
+  ✅ A wip title/meta 版本/story-all/46 场景/44 narration/7 大标题（ch1 首标题为融变区不计）（政治启蒙 · 完整故事｜M.NationWorld nar=44 heroes=7）
+  ✅ A 序章媒体图（.se-img + 相对 hero-media.jpg）（src=hero-media.jpg）
+  ✅ A 首场景 load 即 .in + --p 已写（--p=0.250）
+  ✅ A 全站纯黑底：body 纯黑 + 环境渐变移除 + 光球隐藏（bg=rgb(0, 0, 0) before=none orb=none）
+  ✅ A BlurText 标题拆分（政治 = 2 字 + --ci 0,1）（n=2 ci=0,1）
+  ✅ A BlurText 动画落定（opacity 1 + blur 归零）（政治 2 字全部落定）
+  ✅ A 访客零 /api 请求（n=0）
+── A2. ScrollExpand 序章展开（小卡→全屏 + 标题淡出）──
+  ✅ A2 初始：小卡 clip-path（inset 21%/29% 圆角）（inset(21% 29% round 24px)）
+  ✅ A2 sticky 生效（滚动 600px 后 stage 贴顶 0）（top=0）
+  ✅ A2 展开后：近全屏 clip + 大标题/副句淡出（clip=inset(0.161541% 0.22308% round 0.184618p tOp=0.00）
+── A3. / 跳转 → /wip（一个链接多用）──
+  ✅ A3 wip 44 narration 全唯一（data-voice）（nar=44 uniq=44）
+── B. 滚轮推进（wip ch1-02：严格序列入场 + 一行亮完才亮下一行/回滚不撤销）──
+  ✅ B 一行亮完才亮下一行（行1全亮/行2进行中/行3未开始）（L1=16/16 L2=15/31 L3=0/23）
+  ✅ B 滚到位后：分句全量 .on（序列进度 q 驱动）（on=3/3）
+  ✅ B MagicText 逐字点亮：全场景 fill 落定 opacity ≥ 0.99（fillOk=70/70）
+  ✅ B MagicText 结构：行内 .mw 拆分数 = 原文字数（mw=31 textContent=62）
+  ✅ B 回滚顶部：.in/.on 只加不减（不撤销）（in=true on=3）
+── F. 尾声知识地图点亮（ch1 场景入场自动标读 + ch3 预种回放点亮）──
+  ✅ F 已读章节点亮（ch1 自动 + ch3 预种回放点亮）（ch1,ch2,ch3）
+  ✅ F 尾声 CTA → onboarding-identity 绝对 URL（https://mnationworld.com/pages/onboarding-identity.html）
+── C. wip 单页口径（守卫/零 api）──
+  ✅ C wip 不挂平台样式（ethereal/transitions/sidebar/storage/api 全 0）（{"ethereal":0,"transitions":0,"sidebar":0,"storage":0,"api":0}）
+  ✅ C 全程访客零 /api 请求（故事站段落）（n=0）
+── DG. DotGrid 点阵底 + globe 回归（ch2-00 地球背景；用户钦定组件原生移植）──
+  ✅ DG globe 回归：scene-gl 只在 ch2-00 + storyWebgl.ok 布尔 + fallback 层（total=1 okBool=true fb=true）
+  ✅ DG 点阵只在 ch2-00（全页 1 个）+ canvas + 滚轮穿透 + z:0 垫在 globe(z:1) 之后（total=1 pe=none z=0/1）
+  ✅ DG props 口径（用户钦定暗底 base #120826 / active #5227FF，其余原样 16/32/150/100/250/5/5000/750/1.5）+ 点阵已构建（count=884）
+  ✅ DG 初始全暗：指针在画布外 (-9999) → 无点被点亮（滑鼠靠近才亮）（pointer=(-9999,-9999)）
+  ✅ DG 指针快速划过 → 点阵被踢出（maxOffset > 0）（kicked）
+  ✅ DG 回位：maxOffset 归零（elastic.out 落定）（settled）
+  ✅ DG 点击冲击波 → 点阵被推出（maxOffset > 0）（shock）
+  ✅ DG 冲击波回位：maxOffset 归零（settled2）
+── M. MorphSlider 融变图集（什么是政治首标题内，滚轮驱动）──
+  ✅ M 融变区只在 ch1-00（全页仅 1 个 canvas）+ storyMorph.ok 布尔 + 5 图 + 兜底图（total=1 count=5）
+  ✅ M 字幕「什么是政治」右对齐（textAlign=right）
+  ✅ M 区段顶 = 图 0 静止（idx=0 local=0）（idx=0 local=0）
+  ✅ M 解释文字 MagicText 拆分（.mw = 原文字数）（mw=29 textContent=58）
+  ✅ M 一行亮完才亮下一行（行1进行中/行2行3未开始）（L1=16/29 L2=0/23 L3=0/18）
+  ✅ M 接力：行1+行2 全亮，行3 基本未开始（≤4 字）（L1=29/29 L2=23/23 L3 亮=4）
+  ✅ M 亮起速度：到第四张图（idx=3）时三行全亮完（idx=3 L=29/23/18）
+  ✅ M 停留值生效：过渡完成后图 4 静止（local=0 不扭曲）（idx=3 local=0.000）
+  ✅ M 过渡段节奏一致（每段 0.6 屏，local 中间值）（idx=3 local=0.262）
+── SR. ScrollReveal 标题入场（大房子起：严格序列入场 + scrub 可逆）──
+  ✅ SR 前置黑屏段：融变区后是纯黑段（≥1.5 屏）再接大房子（h=1283 bg=rgb(0, 0, 0)）
+  ✅ SR 大房子纯黑底：无光球装饰 + bg 纯黑（orbs=0 bg=rgb(0, 0, 0)）
+  ✅ SR 拆分：大房子标题 .sr-title + 逐字数 = 原文字数（n=6 len=6）
+  ✅ SR 屏下初始态：内容全暗（stage opacity 0）+ 字 0.1 + 3° 旋转（stageOp=0 op=0.1 tf=rotate(3deg)）
+  ✅ SR 序列门控：场景到位时仍全暗（等前场景出场）（stageOp=0 op=0.1）
+  ✅ SR 揭示进行中：入场触发 + 字部分点亮 + 旋转收窄（op=0.61 tf=rotate(1.64deg)）
+  ✅ SR 揭示完成：旋转归零 + 字全亮 blur 归零（tf=rotate(0deg) blur=blur(0px)）
+  ✅ SR 中间停留：内容 sticky 停在屏顶静止 + 全亮（stageTop=0）
+  ✅ SR 可逆：滚回顶部字回到 0.1 态（op=0.100）
+── G. ch4 事件页统一结构（5 事件 × 9 段）──
+  ✅ G 每事件 evt-* 九段齐全（5 事件各 1）（45 块）
+  ✅ G 不同视角栏 Debate 标签（5 事件全有）（debates=5）
+── FC. 「冷战」两字字体轮转（两字 fill 亮起才开转；硬切 0.2s 停最后一个；零滚动；用户口径）──
+  ✅ FC 标记：行内 [data-fc] 包住「冷战」+ MagicText 拆字后 .mw×2 存活 + 探测口 + 行已 .on（chars=冷战 mw=2）
+  ✅ FC 自动轮转中：font-family 换为轮转字体 + 硬切无淡出（字恒可见 opacity 1）（"ZCOOL XiaoWei", Inter, "PingFang SC", "Microsoft YaHei", sa op=1）
+  ✅ FC 轮完停在最后一个字体（Zhi Mang Xing + done 后 500ms 不再回默认）（"Zhi Mang Xing", Inter, "PingFang SC", "Microsoft YaHei", sa）
+  ✅ FC reduced-motion：轮转跳过（字体保持默认）（style=）
+── D. 移动端一测（390×844，wip 序章）──
+  ✅ D 390 宽无横向溢出（scrollW=390 innerW=390）
+  ✅ D 序章卡片可见（frame rect）
+── R. reduced-motion 路径（自主动画关 + 滚动展开保留 + wip 正文全显）──
+  ✅ R reduced-motion：序章初始仍是小卡（展开为滚动驱动）（inset(21% 29% round 24px)）
+  ✅ R reduced-motion：滚动后仍展开到全屏（first=0）
+  ✅ R reduced-motion：wip 正文直接可见（.on + fill 1）（fill=1）
+  ✅ I 故事站段落 0 console error
+── H. 注册成功跳转 story 子域（demo 模式 + frameRequestedNavigation 捕获）──
+  ✅ H 注册成功 → https://story.mnationworld.com/wip（导航捕获）（https://story.mnationworld.com/wip）
+
+59 ✅ / 0 ❌

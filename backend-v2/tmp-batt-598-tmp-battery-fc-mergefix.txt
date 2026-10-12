@@ -1,0 +1,9 @@
+  ✅ S1 site-config 44.3 + rev 00293- 占位 + 站点恒 v0.2.58.0 + 编辑器 bbox 落位锚在场（tbb/cb0/面并集）＋旧 offsetWidth 落位锚零残留
+  ✅ M1 浮点 zoom 1.2347 左并：bbox 右边贴目标左边 ≤0.5 + 同组 groupId + top 恒等（tT 顶对齐）+ dataset.x 同步  {"flR":0,"flL":392,"flB":262,"flT":262,"gidA":"gmuh8wmyh387","gidB":"gmuh8wmyh387","topEq":true,"dxSync":true,"aL":90,"aT":22,"aW":196,"aH":262,"bL":286,"bRot":0,"bbBL":286,"bbBT":22} tgt={"dx":83.9596,"wantLeft":90,"bL":286,"aW":196,"z":1.2347}
+  ✅ M2 旋转目标 30° 左并：A bbox 右边贴 B bbox 左边 ≤0.5（bbox 口径；旧整数边落位错开 52.4px）+ 同组 groupId  {"flR":0.000010429125012478835,"flL":496.74098957087494,"flB":293.4493278957615,"flT":293.4493278957615,"gidA":"gmuh8woqo1me","gidB":"gmuh8woqo1me","topEq":true,"dxSync":true,"aL":37.6295,"aT":22,"aW":196,"aH":262,"bL":286,"bRot":30,"bbBL":233.62951042912502,"bbBT":-9.449327895761456} tgt={"dx":19.29775652684066,"wantLeft":37.62951042912502,"bL":233.62951042912502,"aW":196,"z":1.2347}
+  ✅ M3 zoom 1 未旋转退化恒等：A.left = B.left − A.width（±0.5，旧算式同值）+ 同组  {"flR":0,"flL":392,"flB":262,"flT":262,"gidA":"gmuh8wq8w30r","gidB":"gmuh8wq8w30r","topEq":true,"dxSync":true,"aL":90,"aT":22,"aW":196,"aH":262,"bL":286,"bRot":0,"bbBL":286,"bbBT":22} tgt={"dx":68,"wantLeft":90,"bL":286,"aW":196,"z":1}
+  ✅ M4 旋转目标 30° 上并：A bbox 底边贴 B bbox 顶边 ≤0.5（bbox 面并集；旧整数边落位错开 145.6px）+ 同组  {"flR":300.99998957087496,"flL":300.74098957087494,"flB":0.000027895761490981386,"flT":586.8986278957615,"gidA":"gmuh8wrven6","gidB":"gmuh8wrven6","topEq":false,"dxSync":true,"aL":-30.3705,"aT":36.5507,"aW":301,"aH":262,"bL":22,"bRot":30,"bbBL":-30.37048957087498,"bbBT":298.5506721042385} tgt={"dy":14.550672104238515,"wantTop":36.550672104238515,"bT":298.5506721042385,"aH":262,"z":1}
+  ✅ E1 全程零 Runtime exception + 零 console error  干净
+
+🎉 全部通过 6/6
+

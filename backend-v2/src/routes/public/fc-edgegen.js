@@ -82,7 +82,9 @@ async function callEdgeGenAI(ctx, kind, name, desc, parsedImage) {
   let lastErr;
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const res = await ctx.moderation.fetchImpl(
+      // v0.2.59.35：AI 排队层——高峰排队等位（Gemini 与 DeepSeek 共享槽位）
+      const limiter = (ctx && ctx.aiLimiter) ? ctx.aiLimiter : { withSlot: async (fn) => fn() };
+      const res = await limiter.withSlot(() => ctx.moderation.fetchImpl(
         `${cfg.baseUrl || 'https://generativelanguage.googleapis.com'}/v1beta/models/${cfg.model || MODEL_DEFAULT}:generateContent`,
         {
           method: 'POST',
@@ -93,7 +95,7 @@ async function callEdgeGenAI(ctx, kind, name, desc, parsedImage) {
           body: JSON.stringify(req),
           signal: AbortSignal.timeout(60000)
         }
-      );
+      ));
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const body = JSON.parse(await res.text());
       const partsOut = (body.candidates && body.candidates[0] && body.candidates[0].content

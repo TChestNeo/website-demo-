@@ -1,0 +1,7 @@
+修复：v0.2.54.6 用户横幅与头像不再受网页主题影响——用户「那个用户横幅和头像能不能不要被网页主题影响到？」（问询钦定「两处都要」+中途追加「还有message那边的头像」；rev 00265-hkt）
+
+①侧栏用户卡：解除 09-10 暗色隐藏规则 + mono 暗色翻黑族/灰环规则（ethereal 两处移除；sidebar.js 内联渐变固定 #4648d4）——横幅任何主题恒亮靛蓝渐变、头像恒白环（含访客模块）
+②Community 个人页：横幅 9 处垫底固定 #e6e8ea + 3 处编辑弹窗预览兜底 + 边缘默认填充色块 + 头像环 #f7f9fb；ethereal 已重跑 inline-css（40 页+admin）
+③Messages 头像：15 处头像内联色固定（#4648d4/#8127cf）+ 11 个 msg-acc 头像元素加 msg-avatar 类；09-17 mono 暗色翻深规则改 :not(.msg-avatar) 豁免（按钮/气泡族保持原行为）
+后端零改动（user_version 27/health 59 表、测试 311/311）；FC v10.28.36.1 零改动；零草稿字段
+电池：bannerfixed 29/29（新 F11-13+M1-4 四主题头像恒同）+ monodark M5a 新口径 29/29 + 全回归绿（msg-anim 51/msglink 16/mono-flash 22/community-profile 99/i18n 34/identity 38/article-view 38/cit2usr 21/fadefix 36/notif-home 23/pageswitch 23/sidebar-bottom 11/sidebar-light 10/all-opaque 34/home-bg 26/smoke-admin 48/npm test 311）

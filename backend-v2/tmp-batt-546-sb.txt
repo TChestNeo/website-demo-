@@ -1,0 +1,16 @@
+═══ S. 静态（sidebar.js + site-config）═══
+  ✅ S1 sidebar.js 菜单卡 inline style 无 flex:1（v0.2.53.3 收内容高）
+  ✅ S2 sidebar.js v0.2.53.3 注释含用户原话 + 问询钦定
+  ✅ S3 site-config 版本 = v0.2.54.0
+  ✅ S4 site-config changelog 含 v0.2.54.0 条目 + FC 零改动
+═══ B. 亮色浏览器（1920×1080）═══
+  ✅ B1 侧栏恰三卡且顺序 = brand/user/nav
+  ✅ B2 菜单卡收内容高（高度-内容高 <= 6px；旧版拉伸会多出整块空白）
+  ✅ B3 菜单卡下方零 painted 元素（下方只留纯色侧栏底）
+  ✅ B4 侧栏底保持上轮钦定纯色不透明（rgba(255,255,255,0.95)）
+═══ D. 暗色浏览器 ═══
+  ✅ D1 暗色菜单卡同样收内容高（高度-内容高 <= 6px）
+  ✅ D2 暗色菜单卡下方零 painted 元素
+  ✅ D3 暗色侧栏底保持纯色不透明（rgb(26, 26, 46)）
+
+sidebar-bottom：11 通过 / 0 失败

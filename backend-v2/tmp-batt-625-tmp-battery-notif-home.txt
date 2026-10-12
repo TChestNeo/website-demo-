@@ -1,0 +1,34 @@
+═══ F0 双版本 + changelog ═══
+  ✅ F0-1 site-config 双版本 v0.2.54.0 / v10.28.36.1 + changelog 标记
+═══ F1 index.html 铃铛/灵动岛 ═══
+  ✅ F1-1 铃铛按钮+红点徽章（唯一性 + search-capsule position:relative + 徽章在铃铛后）
+  ✅ F1-2 灵动岛弹窗 DOM + api.js 引入
+  ✅ F1-3 灵动岛动画规则 + 页面专属 CSS 在外（内联块首个 </style> 之前零 dash 规则）
+  ✅ F1-4 聚合通知 JS 骨架（轮询/文案/决定药丸/登录提示/空态）
+  ✅ F1-5 跳转分发三类目标（帖子/文章/主页）——v0.2.55.0 文章跳转改阅读页 article.html（4 处：搜索行/最新文章/通知/活动流混入卡 v0.2.56.2）
+═══ F2 messages.html 零改动在位 ═══
+  ✅ F2-1 messages 铃铛/弹窗/好友请求管线原样（特定页面筛选=零改动证）
+═══ F3 fluidcanvas-editor.html 文章操作条 ═══
+  ✅ F3-1 操作条构建+样式+点击管线（fcViewActions/renderArticleActions/fcvaToggle/端点串）
+  ✅ F3-2 demo 种子/404 路径不建条 + 查看模式守卫/标题保留
+═══ F4 后端 ═══
+  ✅ F4-1 server.js 装配 + social.js 文章四端点
+  ✅ F4-2 notifications.js 八类聚合（每类 push 恰 1 + article target_type 恰 2；v0.2.55.0 加 article_comment）
+  ✅ F4-3 articles.js 互动字段 + 浏览自增
+═══ F5 零迁移 ═══
+  ✅ F5-1 health.test.js 钉 60 表 / user_version 29（v0.2.58.19 029 迁移升级；两处钉）
+
+═══ B 浏览器流程 ═══
+  ✅ B1 访客开窗（登录后查看通知 + 去登录链接 + 红点隐藏 + 零条目）
+  ✅ B1b Escape 关闭即时生效
+  ✅ B2 登录态后端不可达（暂无通知 + 无登录提示 + 红点隐藏）
+  ✅ B3-1 未读红点 3（lastSeen 之后 3 条新事件）
+  ✅ B3-2 开窗 5 条目（FR 在最前）+ 开窗即读（红点清隐藏）
+  ✅ B3-3 点 FR 整窗 morph 决定视图（名字/ID 居中 + 不同意|同意 + show-decision + 标题 + 高度>0）
+  ✅ B3-4 同意（FR 摘除 → 4 条 + 标题回通知）
+  ✅ B4 Escape 关闭即时生效（display none）
+  ✅ B5 外点关闭即时生效（display none）
+  ✅ Z 控制台零错误（噪声已滤）
+
+═══ ALL GREEN — 23/23 ═══
+

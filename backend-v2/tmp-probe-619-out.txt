@@ -1,0 +1,12 @@
+﻿  ✅ S1 线上 site-config（58.13 轮口径）：58.13 赋值+58.13 标题/用户原话（然后把两个颜色改成一样的深蓝色/波浪Z轴的-1/慢0.3s）+rev 00321- 占位 XXX（repo 终态填真值=二次烘焙、live 滞后一部署；探针按 live 实况断言前缀）+58.12 rev 行 00319-mw5+00320-wl8 终态注记+58.11 rev 行 00317-ht9+00318-2vk 终态注记+58.10 rev 行 00315-bm6+00316-s6b 终态注记+58.9 rev 行 00314-sw5+瞬态 00313-xjs 烘焙文本+00312-2n7+00311-wkw+00310-pbk×2+00309-jbl 历史注记在位+旧 58.12/58.11/58.10 赋值零残留+58.12-58.1 历史标题保留+FC 47.4 恒
+  ✅ S2 线上 ethereal.css：双浪同色件套在位（深蓝水 wdeep 单规则 background var(--color-primary)+z-index:-2、快浪 wlightwave 单选择器 background-color var(--color-primary)+top -12px+z-index:0+2.2s、慢浪 wlightwave2 单选择器全同款几何+z-index:-1+2.5s、fill z-index:0 stacking context、mask-image ×4+viewBox 80×16+新路径 M0 8 Q20 0 40 8 Q60 16 80 8+mask-size 80px 16px ×2+400% strip 16px ×2+平移 80px+LV 标签 14px/号码 28px+新轮注释：然后把两个颜色改成一样的深蓝色/波浪Z轴的-1+58.12 注释：波浪的位置抬高4px/位置抬高 4px+58.11 注释：波浪和深蓝色倒反/就只是互换一下颜色而已）+ 药丸 48×116/水杯 44×84 恒 + 旧色值组合（wdeep light/wlightwave light/--mn-lv-light 赋值）/旧浅水层 .mn-lv-wlight/旧深浪 .mn-lv-wdeepwave/旧合写选择器/旧 --mn-lv-wave-c 赋值/旧 1.6s/旧顶线 calc(40% - 8px)/旧 opacity 0.65/旧 height 40%/旧 top -8px/旧 40×32 路径/旧 300% strip 32px/旧平移 40px/旧顶线 calc(40% - 16px)/-16px/-6px/-4px/旧 64×116/旧 56×84/旧 32×58/旧 28×42/旧 28×48/旧 24×32/旧正圆/旧 20×16/旧 16×12/旧 12×8/旧平移 20px/旧花边/7px 7px/conic/pill-core 零残留
+  ✅ S3 线上 index.html：内联块双浪同色件套同步在位（慢浪 wlightwave2 选择器+深蓝水 wdeep 色值 background var(--color-primary)+z-index:-2+双浪 background-color var(--color-primary)×2+mask-image ×4+mask-size 80px 16px+400% strip+平移 80px+2.2s+2.5s 双速+top -12px ×2）+药丸 48×116/水杯 44×84 恒、旧色值组合/旧深浪/旧浅水层/旧 40px 32px/旧 300% strip/旧 64×116/旧 56×84/旧 top -8px/--mn-lv-light 零残留
+  ✅ P0 Chrome CDP 就绪
+  ✅ P1 折叠药丸上阵：展开药丸隐藏 → 折叠 normal 隐藏+药丸 flex+水位 8%+三层水件套（深蓝水 z:-2+慢浪 wlightwave2 z:-1 mask 80px 16px repeat-x+波形 16px 高+strip 400%=160px+2.5s 慢速+快浪 wlightwave z:0+2.2s+fill z:0 stacking context+两浪同顶 -12px（58.12 抬高保持）+水浪两色统一深蓝 lwBg === deepBg+浅水层/深浪已删零残留）+中间 LV/1+collapsed 在位
+  ✅ P2 药丸几何：药丸 48×116 + 水杯 44×84 胶囊（border-radius 999px）+ 头像 32×32 不挤压 + 间距 8px + 药丸 48=用户卡内容宽与内容列齐平（inMod true·左右各 4px）+ 收在 72px 列内 + 零重叠
+  ✅ P3 满级 Lv12：水位 100% + 中间 12 + 折叠偏好重载保持
+  ✅ P4 窄列 floating（64px）：药丸 48×116 右溢 1px 可忽略（inMod false=右边线致模块 47）但仍收在 64px 列内零越界
+  ✅ E1 全程零 Runtime exception
+  ✅ E2 零 console error
+
+lvpill 探针：10 ✅ / 0 ❌

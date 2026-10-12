@@ -1,0 +1,21 @@
+﻿═══ S1 静态锚（live community-hub.html + site-config + hub i18n）═══
+  ✅ S1a live hub 新件锚（function isHubAuthed+cloudMode = isHubAuthed()+hubLoginCard/hubOfflineCard id+hubOfflineCardHtml+mn:unauthorized 监听+三端点 GET 各 ×1+create-topic-step-1.html+hub.emptyFeed/topic.members/channelsEmpty/feedEmptyFollowing/feedEmptyTopic/offline+topicCardHtml/feedEmptyHtml 各 ×1；discovery.guest/emptyTopics+hubLoginCardHtml/hubOfflineCardHtml 各 ×2；loginCta ×3）
+  ✅ S1b live hub 演示零残留全表（16 锚全 0）
+  ✅ S1c site-config：58.24 赋值在位 + 58.23 赋值零残留 + FC 48.0 在位 + changelog 58.24 标题 ×1 + 58.23 历史条目保留
+  ✅ S1d site-config rev live 口径：00344-ntt 真值 ×1 + 00344-XXX 零残留 + 00345-??? 占位 ×1（live 文本滞后一部署=惯例）
+  ✅ S1e live hub i18n：11 新键各 SQ×11+DQ×1 + 删键族 5 全 0 + hub.emptyFeed 保留 ×12 + __ZH_HANT_AUTO__ ×1
+═══ S2 端点形状（匿名）═══
+  ✅ S2a GET /api/social/posts 匿名 200 + posts 数组（空数组合法）
+  ✅ S2b GET /api/social/feed 匿名 401（requireSession——访客前端整流）
+  ✅ S2c GET /api/social/topics 匿名 200 + topics 数组（空表合法）
+═══ S3 PII 扫描（posts 公开响应串）═══
+  ✅ S3 PII：posts 响应串零 email
+═══ P1 CDP 匿名渲染（访客=登录引导卡零假卡）═══
+  ✅ P1 访客=登录引导卡（锁图标+去登录钮）+feed 恰 1 卡+零云卡零演示签名零 composer
+  ✅ P1 following tab 恒登录引导卡（切 tab 零云卡+active 类）
+  ✅ P1 topic tab 恒登录引导卡（切 tab 零云卡）
+  ✅ P1 发现中心+热门双引导行
+  ✅ P1 正文四假名全不在 DOM（演示样本零残留）
+  ✅ E1 控制台零错误（噪声已滤）
+
+═══ ALL GREEN — 15/15 ═══

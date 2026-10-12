@@ -1,0 +1,18 @@
+  ✅ S0a site-config：58.26 赋值 1 + 58.21 赋值零残留 + changelog 标题 58.26 1 + rev 00348-/00349- 各 2 + FC 49.0 1/48.2 赋值零残留  58.26=1 r48=2 r49=2 fc49=1 fc482=0
+  ✅ S0b settings-modal 控件件：六 id 族（avatarBtn/libBtn 各 2、avatarPreview 4（58.25 wrapper+applyCrop+2）、bannerPreview 6（58.25 内嵌 img+applyCrop+2）、upload/lib/remove 2/2/4、file ×2 各、avatarUpgradeLink ×3、bannerUpgradeLink ×4）+ sub-locked ×4 + stUpload ×5 + stPickFromLibrary ×3 + stRawMergeUser ×7（58.25 连带 crop 合并+2）+ bannerUrl: null ×2 + slati_avatar_sync ×4 + toast 件 ×2 + 58.25 重裁钮 ×2 各 + mn-crop-stage ×5  btn=2 lib=2 banner=6
+  ✅ S0b2 settings-modal 58.22 新件：settingsBgGrid ×2 + settings-bg-grid ×2 + settings-bg-swatch ×6 + ST_BG_DEFS ×2 + stCanGif ×4（58.25 视频门复用+1）+ stCanImg ×4 + gold-lock-group ×5 + mono-bw ×3 + toast.bannerLocked/toast.bgUpdated/imgUpgrade/premGifUpgrade 各 ×1 + width: 400px ×1 + repeat(4, 1fr) ×1  grid=2 gold=5 canGif=4
+  ✅ S0c sidebar 弹窗件：function openUserPop ×1 + slati-user-pop-style ×2 + preventDefault ×2（代码+注释）+ e.stopPropagation() ×1 + .user-info-bar a ×1 + initUserPopWiring ×2 + SlatiSettings.open ×3  pop=1 wire=2
+  ✅ S0d common.i18n 21+5 键：sidebar.pop 6 键单引号 ×11 + settings.profile 15 键单引号 ×11 + 58.22 新 5 键（bannerColor/imgUpgrade/premGifUpgrade/toast.bannerLocked/toast.bgUpdated）单引号 ×11 各 + zh-Hant 双引号 ×1 各 + 生成标记 ×1  sp=11 bc=11 bl=11
+  ✅ S0d2 common.i18n 58.25 新 12 键：crop.titleAvatar/titleBanner/hint/confirm/cancel/loadFail + settings.profile.reCropAvatar/reCropBanner + videoLocked/videoCompressing/avatarNoVideo/videoFail 单引号 ×11 各 + zh-Hant 双引号 ×1 各  ct=11 rc=11 vl=11
+  ✅ S1 真用户开弹窗：六件在位 + 移除按钮隐藏（无横幅）+ 同步 toggle 在位 + 免费升级链接在位  {"av":true,"pv":true,"lib":true,"bp":true,"bu":true,"bl":true,"rm":true,"rmHidden":true,"toggle":true,"upgrade":true}
+  ✅ S2 头像上传（同步 ON）：上传恰 1 + PATCH 恰 1 + 体恰 {avatarUrl,avatarCrop} rect {0,0,1,1} + 预览 src 变 DEMO02 + slati_user.avatarUrl+avatarCrop 合并写 + 其余字段保留  {"up":1,"patch":1,"keys":"avatarUrl,avatarCrop","crop":"{\"x\":0,\"y\":0,\"w\":1,\"h\":1}","prev":"/uploads/UPL-DEMO02.jpg","lsAvatar":"/uploads/UPL-DEMO02.jpg","lsCrop":"{\"x\":0,\"y\":0,\"w\":1,\"h\":1}"}
+  ✅ S3 同步 OFF：旗标 "0" + PATCH 照发恰 1 体 {avatarUrl,avatarCrop} + slati_user.avatarUrl 零写（仍 null）+ avatarCrop 零写 + 预览仍更新（PATCH ok 改 UI 不受旗标约束）  {"flag":"0","patch":1,"lsAvatar":null}
+  ✅ S4 gif+free：锁 toast 文案 + 升级链接可见 + 零上传零 PATCH + 弹窗未开（门禁先于弹窗）  {"t":{"text":"GIF 动图为订阅用户专属功能","active":true},"up":0,"patch":0,"dlg":false}
+  ✅ S5 gif+premium：升级链接不渲染 + 上传恰 1 + PATCH 恰 1 体 {avatarUrl,avatarCrop} + 零金罩（prem 无锁钮）  {"upgrade":false,"up":1,"patch":1,"gold":false}
+  ✅ S6a 图库 free：锁 toast + 零网格浮层 + 零上传零 PATCH  {"grid":false,"t":"图库为订阅用户专属功能"}
+  ✅ S6b 图库 prem：点 data: 格 → 转 Blob 走同链（弹窗 confirm）→ 上传恰 1 + PATCH 恰 1 体 {avatarUrl,avatarCrop} + slati_user.avatarUrl 写 DEMO02  {"up":1,"patch":1,"ls":"/uploads/UPL-DEMO02.jpg"}
+  ✅ S7a 横幅预设：预览 has-img + 内嵌 img src 含 DEMO01（58.25 背景改 img）+ 移除按钮可见  {"hasImg":true,"bg":"/uploads/UPL-DEMO01.jpg","rmShown":true}
+  ✅ S7b 横幅上传：PATCH 恰 1 体恰 {bannerUrl,bannerCrop} rect {0,0,1,1} + slati_user.bannerUrl 写 DEMO02 + bannerCrop 合并写（无旗标恒写）+ 预览换图  {"patch":1,"keys":"bannerUrl,bannerCrop","crop":"{\"x\":0,\"y\":0,\"w\":1,\"h\":1}","ls":"/uploads/UPL-DEMO02.jpg","prev":"/uploads/UPL-DEMO02.jpg"}
+  ✅ S7c 横幅移除：PATCH 体 {bannerUrl:null} + slati_user.bannerUrl null + has-img 撤 + 按钮隐 + toast  {"keys":"bannerUrl","val":null,"s7":{"hasImg":false,"rmHidden":true,"toast":"横幅已移除"}}
+  ✅ S8 同步 toggle：点击写 "0" → 再点写 "1"  {"a":"0","b":"1"}
+  ✅ S9 演示用户：上传/图库/移除/toggle 全隐藏 + 预览仍只读展示 + settingsBgGrid 缺席（stReal 门内）  {"av":false,"lib":false,"bu":false,"rm":false,"toggle":false,"pv":true,"grid":false}

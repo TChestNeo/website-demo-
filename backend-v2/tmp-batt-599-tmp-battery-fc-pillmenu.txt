@@ -1,0 +1,21 @@
+  ✅ S1 site-config：FC v10.28.47.0 + 药丸菜单进左侧菜单 changelog + rev 00293- 占位 + 站点恒 v0.2.58.0
+  ✅ S2 编辑器：ctxPillDots 三点钮 + 横向三点 more_horiz（more_vert 零在场）+ 面板内嵌 CSS（static/占满宽/真药丸规格）+ placeCtxPillDots + ctx-collapsed + ctxPillUp 动画锚在场 + 旧左下停靠 CSS 零在场
+  ✅ S3 fc-touch.js：长按派发前置 __fcTouchMenu 旗在位
+  ✅ S4 showContextMenu 药丸分支：读旗 + toggle ctx-pill + 面板挂载/body 还原 + scrollIntoView + toggleCtxPill 导出锚在场
+  ✅ B0 门控自证：coarse 媒体查询翻转 + maxTouchPoints=5 + 触控桥在场  {"coarse":true,"mtp":5,"bridge":true}
+  ✅ B1 长按现身：菜单开 + ctx-pill 有 + 非折叠 + 在 .asset-panel 内（末子=底部停靠）+ static 定位 + 宽 230-242（面板内宽）+ 横药丸头 236×40 真药丸（radius-full 大圆角 + 实底）+ ≥3 项可见  {"open":true,"pill":true,"collapsed":false,"pos":"static","left":"auto","bottom":"auto","radius":"12px","w":235,"h":117,"vis":7,"dotsDisplay":"flex","dh":44,"inlineL":"","inlineT":"","inPanel":true,"last":true,"dRadius":9999,"dBg":"rgba(255, 255, 255, 0.85)"}
+  ✅ B2 药丸头首位：钮在菜单内 + display flex + 恒为首子元素 + more_horiz 横向三点 + 全部可见项在药丸下方（itemTop ≥ 药丸底）  {"inMenu":true,"dots":"flex","firstChild":true,"icon":"more_horiz","dotsTop":981,"dotsH":44,"itemTop":1031}
+  ✅ B3 点 ⋯ 折叠：ctx-collapsed + 全项 display none + 横药丸 236×≤48（宽不缩、横卧）+ 容器透明化（bg 透明+边 0）只留药丸 + 三点 flex + 仍在面板底部  {"collapsed":true,"allNone":true,"w":235,"h":44,"dots":"flex","mBg":"rgba(0, 0, 0, 0)","mBw":"0px","inPanel":true,"last":true}
+  ✅ B4 再点展开：ctx-collapsed 清 + ≥6 项可见 + 宽 ≥230 + 功能栏条目回到药丸下方（itemTop ≥ 药丸底）  {"collapsed":false,"vis":7,"w":235,"itemTop":1031,"dotsTop":981,"dotsH":44}
+  ✅ B5a 空画布 tap 双消：菜单关 + 选中清（{"x":580,"y":240}）  {"open":false,"sel":0}
+  ✅ B5b 重长按：恒展开呼出（ctx-pill 有 + ctx-collapsed 已清——hideContextMenu 清理证明）  {"open":true,"pill":true,"collapsed":false,"pos":"static","left":"auto","bottom":"auto","radius":"12px","w":235,"h":117,"vis":7,"dotsDisplay":"flex","dh":44,"inlineL":"","inlineT":"","inPanel":true,"last":true,"dRadius":9999,"dBg":"rgba(255, 255, 255, 0.85)"}
+  ✅ B5c 手柄纯 tap：菜单关（click 冒泡）+ 选中保持 + 卡尺寸零变化（无移动不缩放）  {"open":false,"sel":1,"rect":{"l":306,"t":246.1875,"w":196,"h":262}}
+  ✅ B6 真 tap 删除项：卡数 1→0 + 菜单关  {"before":1,"after":0,"open":false}
+  ✅ B7 桌面右键零变化：菜单开 + 无 ctx-pill/ctx-collapsed + 弹层回 body（不在面板内）+ 内联 left/top 非空（贴指针）+ 三点钮 display none + ≥3 项可见  {"open":true,"pill":false,"collapsed":false,"pos":"fixed","left":"411px","bottom":"493px","radius":"12px","w":220,"h":336,"vis":7,"dotsDisplay":"none","dh":0,"inlineL":"411px","inlineT":"365px","inPanel":false,"last":false,"dRadius":9999,"dBg":"rgba(255, 255, 255, 0.85)"}
+  ✅ B8 面板折叠时长按：面板自动展开（无 collapsed + 宽>0）+ 菜单开且在面板内（ctx-pill）  {"collapsed":false,"pw":260,"menuInPanel":true,"open":true,"pill":true}
+  ✅ E1 全程零 Runtime.exceptionThrown + 零 console.error  {"errs":[],"cons":[]}
+
+╭────────────────────────────────────╮
+│  🎉 16 ✅ / 0 ❌  (fc-pillmenu)      │
+╰────────────────────────────────────╯
+

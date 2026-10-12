@@ -54,26 +54,34 @@ function parseCropSafe(raw) {
 
 // ── v0.2.16.0 帖子媒体上传（社区多图/视频）──
 // 大小上限：图片 10MB（腾讯 IMS base64 上限）；视频 30MB（Cloud Run 请求 32MiB 硬顶留边距）。
+// v0.2.59.20 制图数据（国家三步创建）：不设小上限，走 Cloud Run 请求硬顶 30MB；其余格式上限不变。
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 30 * 1024 * 1024;
+const MAX_MAP_BYTES = 30 * 1024 * 1024;
 // posts.media 只收本站上传路径（历史任意字符串 URL 是洞，且无客户端在用，收紧无回归）
 const MEDIA_URL_RE = /^\/uploads\/UPL-[A-Za-z0-9]+\.(jpg|jpeg|png|gif|webp|mp4|webm|mov)$/;
 const EXT_MIME = {
   jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
-  webp: 'image/webp', mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime'
+  webp: 'image/webp', mp4: 'video/mp4', webm: 'video/webm', mov: 'video/quicktime',
+  svg: 'image/svg+xml', geojson: 'application/geo+json', json: 'application/json',
+  shp: 'application/octet-stream', zip: 'application/zip'
 };
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+const MAP_EXTS = ['svg', 'geojson', 'json', 'shp', 'zip', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
 
 // 魔数嗅探防伪装（扩展名白名单之外再验真实内容头）
 function checkMagic(ext, buf) {
-  if (buf.length < 12) return false;
   switch (ext) {
-    case 'jpg': case 'jpeg': return buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF;
-    case 'png': return buf.readUInt32BE(0) === 0x89504E47;
-    case 'gif': return buf.toString('ascii', 0, 4) === 'GIF8';
-    case 'webp': return buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP';
-    case 'mp4': case 'mov': return buf.toString('ascii', 4, 8) === 'ftyp' || buf.toString('ascii', 4, 8) === 'moov';
-    case 'webm': return buf[0] === 0x1A && buf[1] === 0x45 && buf[2] === 0xDF && buf[3] === 0xA3;
+    case 'jpg': case 'jpeg': return buf.length >= 3 && buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF;
+    case 'png': return buf.length >= 4 && buf.readUInt32BE(0) === 0x89504E47;
+    case 'gif': return buf.length >= 4 && buf.toString('ascii', 0, 4) === 'GIF8';
+    case 'webp': return buf.length >= 12 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP';
+    case 'mp4': case 'mov': return buf.length >= 8 && (buf.toString('ascii', 4, 8) === 'ftyp' || buf.toString('ascii', 4, 8) === 'moov');
+    case 'webm': return buf.length >= 4 && buf[0] === 0x1A && buf[1] === 0x45 && buf[2] === 0xDF && buf[3] === 0xA3;
+    case 'zip': return buf.length >= 4 && buf[0] === 0x50 && buf[1] === 0x4B;
+    case 'svg': { const s = buf.toString('utf8', 0, 512).trim(); return /^(<svg|<\?xml)/i.test(s); }
+    case 'geojson': case 'json': { const s = buf.toString('utf8', 0, 512).trim(); return s.startsWith('{') || s.startsWith('['); }
+    case 'shp': return true; // 二进制 shapefile（无跨版本可靠魔数，非空即收）
     default: return false;
   }
 }
@@ -122,6 +130,12 @@ function register(router, ctx) {
     const rows = c.db.prepare("SELECT data FROM nations WHERE status = 'visible' ORDER BY seq").all();
     sendJson(res, 200, { nations: rows.map(r => parseJson(r.data)) });
   });
+
+  // 我的国家（v0.2.59.12 首页「我的世界」真实数据接入；无会话 401）
+  router.add('GET', '/api/social/nations/mine', requireSession((req, res, c) => {
+    const rows = c.db.prepare("SELECT data FROM nations WHERE owner_id = ? AND status = 'visible' ORDER BY created_at DESC").all(c.user.id);
+    sendJson(res, 200, { nations: rows.map(r => parseJson(r.data)) });
+  }));
 
   router.add('POST', '/api/social/nations', requireSession(async (req, res, c) => {
     if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
@@ -556,6 +570,33 @@ function register(router, ctx) {
     sendJson(res, 200, { following: false, followerCount });
   }));
 
+  // ── 屏蔽（v0.2.59.x 手机「屏蔽账号」：单向屏蔽，屏蔽即双向解除关注）──
+  router.add('POST', '/api/social/users/:id/block', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    const target = c.db.prepare('SELECT id, status FROM users WHERE id = ?').get(req.params.id);
+    if (!target || target.status !== 'active') throw new HttpError('NOT_FOUND', '用户不存在或已注销');
+    if (target.id === c.user.id) throw new HttpError('VALIDATION', '不能屏蔽自己');
+    c.db.prepare('INSERT OR IGNORE INTO user_blocks (blocker_id, blocked_id, created_at) VALUES (?, ?, ?)')
+      .run(c.user.id, target.id, new Date().toISOString());
+    c.db.prepare("DELETE FROM following WHERE (user_id = ? AND target_id = ?) OR (user_id = ? AND target_id = ?)")
+      .run(c.user.id, target.id, target.id, c.user.id);
+    sendJson(res, 200, { blocked: true });
+  }));
+
+  router.add('DELETE', '/api/social/users/:id/block', requireSession((req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    c.db.prepare('DELETE FROM user_blocks WHERE blocker_id = ? AND blocked_id = ?')
+      .run(c.user.id, req.params.id);
+    sendJson(res, 200, { blocked: false });
+  }));
+
+  router.add('GET', '/api/social/blocked', requireSession((req, res, c) => {
+    const rows = c.db.prepare(
+      'SELECT b.blocked_id AS id, u.display_name, u.avatar_url, u.citizen_id FROM user_blocks b JOIN users u ON u.id = b.blocked_id WHERE b.blocker_id = ? ORDER BY b.seq DESC'
+    ).all(c.user.id);
+    sendJson(res, 200, { users: rows.map((r) => ({ id: r.id, displayName: r.display_name, avatarUrl: r.avatar_url, citizenId: r.citizen_id })) });
+  }));
+
   // ── 转发（v0.2.18.0：真转发——转发即发帖，同帖一次，转发语可选 0-2000；先发后审同帖口径）──
   router.add('POST', '/api/social/posts/:id/repost', requireSession(async (req, res, c) => {
     // 转发即发帖：共享发帖配额（pw:user: 同预算同 key）——转发也是内容发布，堵刷屏
@@ -733,7 +774,8 @@ function register(router, ctx) {
     const ext = String(req.query.ext || '').toLowerCase().replace(/^\./, '');
     const mime = EXT_MIME[ext];
     if (!mime) throw new HttpError('VALIDATION', '不支持的媒体格式');
-    const cap = IMAGE_EXTS.includes(ext) ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
+    const isMap = MAP_EXTS.includes(ext);
+    const cap = isMap ? MAX_MAP_BYTES : (IMAGE_EXTS.includes(ext) ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES);
     const buf = await readRawBuffer(req, cap);
     if (!buf.length) throw new HttpError('VALIDATION', '文件为空');
     if (!checkMagic(ext, buf)) throw new HttpError('VALIDATION', '文件内容与扩展名不符');

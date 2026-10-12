@@ -46,7 +46,7 @@ test('faq 检索：zh/en/ms 各自命中；无关文本不命中；normalize 去
 
 test('prompt 前缀：sha256 断言（防上线后手滑改动 = 缓存失效）', () => {
   const h = crypto.createHash('sha256').update(SYSTEM_PROMPT, 'utf8').digest('hex');
-  assert.strictEqual(h, '4dfc3ffe3143172210a0bef471661d514003bd6e933dd4900c923b704c765fa4');
+  assert.strictEqual(h, '257319c1dc37830775ad479eafd199942a87df1117755a8c607343e7ad2ea1a2');
   assert.strictEqual(MAX_TOKENS, 80); // 计划红线：客服单条回复 ≤80 tokens
 });
 

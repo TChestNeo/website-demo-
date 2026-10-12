@@ -1,0 +1,7 @@
+修复：v0.2.54.3 首页卡片背景换侧栏同款不透明底——用户「能不能把首页的卡片背景都变成和之前那个左侧菜单一样啊？」（问询钦定「侧栏同款不透明底」；rev 00262-k59）
+
+首页 18 张 .card（问候/活动流 4/公告 10/工作台/指标/我的世界）＋搜索胶囊＋访客大卡铺满 --sidebar-bg 不透明底（亮色近纯白 0.95 / 暗色 #1a1a2e / 深色 mono #101013 随 var() 自适应）＋灭玻璃注入层 .lg-backdrop 滤镜/磨砂（与 09-18 亮色侧栏修法同机制——三通道折射发黄/暗斑、半透明漏背景色一并消失；卡片自带 backdrop-filter blur(24px) 保留，底已不透明零可见效果，与侧栏模块保留 blur 同口径）；问候卡内联 tint 渐变去除同变不透明底；订阅卡本就是深色不透明渐变底＋白字不动；body 挂 mn-index 页面类作用域（其他页面卡片零触碰）。
+
+前端只动 ethereal.css（新增 body.mn-index 2 规则）+ index.html（body 类+问候卡内联背景）+ inline-css 40 页刷新；后端零改动（user_version 27/health 59 表不变）；FC v10.28.36.1 零改动；零草稿字段（v 保持 9）。
+
+电池：新 home-bg 26/26（S 静态 12 + B1 登录工作台 18 卡亮/暗 9——实证 13 张非 tilt 卡灭层、5 张 tilt 卡 elasticOk 设计免层零触碰 + B2 访客大卡亮/暗 5）+ 13 电池版本锚 54.2→54.3 同步 + 全回归绿（15 电池：i18n 34+premium-multi 106+msg-anim 51+community-profile 99+article-view 38+identity 38+monodark 29+pageswitch 23+notif-home 23+mono-flash 22+cit2usr 21+msglink 15+sidebar-bottom 11+sidebar-light 10+home-bg 26 + fadefix after 36 + smoke-admin 48；npm test 311/311 后端零改动证）；部署 exit 0（容器内 grep 前端锚 5 处/digest 前缀核对 525fcd3d9134/env 30 条零新键）；curl 链全绿（health 59 表+db ok/无 cookie auth/me 401/site-config v0.2.54.3×2+v10.28.36.1×8 在线/index mn-index 类+问候卡背景锚×2/ethereal 2 规则锚）；不 push

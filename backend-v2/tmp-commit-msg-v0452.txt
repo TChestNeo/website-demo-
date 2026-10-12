@@ -1,0 +1,13 @@
+性能修复：v0.2.45.2 FC 首页频道卡边缘光+切换卡顿 + 编辑器掉帧根治——用户「为什么FC首页顶部的那个个人频道和团队频道的那个边缘的亮光那么割裂，然后顶部的频道切换动画很卡」+「还有能不能顺便优化一下整个FC的代码因为连文章编辑那边的操作都有明显的掉帧」
+
+①FC 首页（fluidcanvas.html + tilt.js）：暗色 active 账户卡（个人频道/团队频道）边缘统一语言——白细线边框 + 底部内嵌主色指示条（割裂真身=旧高亮描边+反光条杂拼的两种边缘语言打架）；频道切换动画卡顿=切换窗口内 3D tilt 每帧重算倾斜 + LG.scan 全页扫描与 200ms 交换叠跑——修法：切换期 tilt 倾斜冻结（data-tilt-off token；tilt.js _slatiTiltBound 绑定去重 + mousemove/mouseleave 守卫）、统一 0.15s/0.2s 退出 + 200ms 交换 + 0.02s 交错进入 + 420ms 解冻、LG.scan 延迟 420ms 避让切换窗口、过渡 0.5s→0.35s
+
+②编辑器掉帧根治（fluidcanvas-editor.html）：探针 tmp-probe-editor-jank 实证三真身——(a) 隐藏弹窗旧隐藏态只 opacity:0 仍每帧渲染（玻璃卡 blur(32px)+卡内无限转圈动画 → 编辑器静息 15fps）→ modal-card 隐藏态 visibility:hidden + 隐藏态卡内动画全停（animation:none !important 连伪元素；打开 .active 规则失配动画照常起播）静息回 60fps（91 帧/1.5s max 17ms）；(b) 拖拽/缩放/旋转/表格手柄期间玻璃面 backdrop-filter 每帧重采样重光栅（A/B 实证禁玻璃后同拖拽 15 慢帧→0）→ body.fc-moving 全页玻璃暂离 + 组背景 drop-shadow 栈挂起（5 手势站点加挂，提交后下一帧还原）；(c) 125Hz 拖拽事件 rAF 合并（每帧一次吸合/吸附/落位）+ 拖拽期尺寸缓存（强排读 1421→93/60 事件）+ 缩放/旋转/手柄同步合并；序列化链（buildDraft/stringify 含 546KB pageBg 仅 0.9ms）与处理器（onContentChange 0.1ms）实测无辜；剩余探针慢帧=无头 SwiftShader 软件重绘伪影（真实 GPU 合成不存在）
+
+③版本：site-config v0.2.45.2（补丁位 1→2）+ FC v10.28.34.2（补丁位 1→2）；零草稿字段（v 保持 9）、零后端、ethereal 零改动无需 inline-css
+
+测试：电池 fcperf 25/25 新（静息 60fps n=90 max 17.1ms / 零静止动画 / fc-moving 拖拽·缩放·旋转·表格手柄全生命周期 blur(16px)→none→还原 / 弹窗动画杀·重启 / MutationObserver≤6 / onContentChange 0.3ms·saveDraft 0.3ms / Escape 中途 / 仪表盘 60fps / 零错误）+ 复跑 17 组全绿（fcmerge 57/57——URL 视图切换零回归；cellhl 10/10、caredge 9/9、merge-dir 19/19、merge-far 12/12、group-shapes 17/17、fc-undo 15/15、autosave 12/12、img-library 44/44、imglib-v2 31/31、page-bg 27/27、pbg-meta 38/38、tier-gating 29/29、migrate-btn 41/41、sheet-card 25/25、dblmodal 14/14）；caredge B3 等 --disable-gpu 慢 rAF 环境假红改收敛轮询根治（真机 60Hz 无此相位）；group-resize 41/44 三红与 0dd2153 证据同值仅注释不设门禁、group-click/group-fill 陈旧几何仅注释
+
+部署一次 exit 0（rev 00223-znx）；curl 链 5/5（health 58 表 / site-config 双版本 v0.2.45.2+v10.28.34.2 / tilt.js 冻结守卫 / fluidcanvas.html tilt-off / editor fc-moving+动画杀）
+
+可复现注记：编辑器改动为直接编辑（tmp-build-fcmerge.js 不能重跑——源页已成 stub，仅保 v0.2.45.1 锚点可复现口径）

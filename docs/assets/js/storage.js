@@ -305,6 +305,28 @@ var SlatiDB = (function () {
     };
   }
 
+  // v10.28.52.0 团队等级（等级奖励）：阈值=个人 ×1.5（用户钦定「团队 12 级×1.5」）。
+  // 团队 XP 全记后端 teams.xp_gained（上传24/赞16/粉丝32/收藏36/分享20，少一个同额收走），
+  // 前端只做纯函数换算显示——getTeamLevelState(xp) 供 fluidcanvas 团队频道页/奖励清单用。
+  var TEAM_LEVELS = [0, 1800, 3600, 7200, 14400, 28800, 57600, 115200, 230400, 460800, 921600, 1843200];
+  function getTeamLevelState(xp) {
+    xp = Math.max(0, parseInt(xp, 10) || 0);
+    var lv = 1;
+    for (var i = 0; i < TEAM_LEVELS.length; i++) {
+      if (xp >= TEAM_LEVELS[i]) lv = i + 1;
+    }
+    var isMax = lv === TEAM_LEVELS.length;
+    var nextNeed = isMax ? TEAM_LEVELS[lv - 1] : TEAM_LEVELS[lv];
+    return {
+      xp: xp,
+      lv: lv,
+      need: TEAM_LEVELS[lv - 1],
+      nextNeed: nextNeed,
+      progress: isMax ? 1 : Math.min(1, (xp - TEAM_LEVELS[lv - 1]) / (nextNeed - TEAM_LEVELS[lv - 1])),
+      isMax: isMax,
+    };
+  }
+
   // 活跃事件加 XP：登录守卫（访客不计）、写失败静默返回 null（与 set 同口径）；
   // 广播 mn:xp-changed；跨级时补发 mn:level-up（携带升级前后等级）。
   function addXP(source, amount) {
@@ -622,6 +644,8 @@ var SlatiDB = (function () {
     saveFollowing: saveFollowing,
     LEVELS: LEVELS,
     getLevelState: getLevelState,
+    TEAM_LEVELS: TEAM_LEVELS,
+    getTeamLevelState: getTeamLevelState,
     addXP: addXP,
     grantDailyLoginBonus: grantDailyLoginBonus,
   };

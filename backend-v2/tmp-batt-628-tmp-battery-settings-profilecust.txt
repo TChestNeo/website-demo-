@@ -1,0 +1,30 @@
+  ✅ S0a site-config：58.22 赋值 1 + 58.21 赋值零残留 + changelog 标题 58.22 1 + rev 00340-/00341- 各 1（单条目口径）+ FC 48.0 不动  58.22=1 r40=1 r41=1
+  ✅ S0b settings-modal 控件件：六 id 族（avatarBtn/preview/libBtn 各 2、bannerPreview 4、upload/lib/remove 2/2/4、file ×2 各、avatarUpgradeLink ×3、bannerUpgradeLink ×4）+ sub-locked ×4 + stUpload ×5 + stPickFromLibrary ×3 + stRawMergeUser ×5 + bannerUrl: null ×2 + slati_avatar_sync ×4 + toast 件 ×2  btn=2 lib=2 banner=4
+  ✅ S0b2 settings-modal 58.22 新件：settingsBgGrid ×2 + settings-bg-grid ×2 + settings-bg-swatch ×6 + ST_BG_DEFS ×2 + stCanGif ×3 + stCanImg ×4 + gold-lock-group ×5 + mono-bw ×3 + toast.bannerLocked/toast.bgUpdated/imgUpgrade/premGifUpgrade 各 ×1 + width: 400px ×1 + repeat(4, 1fr) ×1  grid=2 gold=5 canGif=3
+  ✅ S0c sidebar 弹窗件：function openUserPop ×1 + slati-user-pop-style ×2 + preventDefault ×2（代码+注释）+ e.stopPropagation() ×1 + .user-info-bar a ×1 + initUserPopWiring ×2 + SlatiSettings.open ×3  pop=1 wire=2
+  ✅ S0d common.i18n 21+5 键：sidebar.pop 6 键单引号 ×11 + settings.profile 15 键单引号 ×11 + 58.22 新 5 键（bannerColor/imgUpgrade/premGifUpgrade/toast.bannerLocked/toast.bgUpdated）单引号 ×11 各 + zh-Hant 双引号 ×1 各 + 生成标记 ×1  sp=11 bc=11 bl=11
+  ✅ S1 真用户开弹窗：六件在位 + 移除按钮隐藏（无横幅）+ 同步 toggle 在位 + 免费升级链接在位  {"av":true,"pv":true,"lib":true,"bp":true,"bu":true,"bl":true,"rm":true,"rmHidden":true,"toggle":true,"upgrade":true}
+  ✅ S2 头像上传（同步 ON）：上传恰 1 + PATCH 恰 1 + 体恰 {avatarUrl} + 预览 src 变 DEMO02 + slati_user.avatarUrl 合并写 + 其余字段保留  {"up":1,"patch":1,"keys":"avatarUrl","prev":"/uploads/UPL-DEMO02.jpg","lsAvatar":"/uploads/UPL-DEMO02.jpg"}
+  ✅ S3 同步 OFF：旗标 "0" + PATCH 照发恰 1 + slati_user.avatarUrl 零写（仍 null）+ 预览仍更新（PATCH ok 改 UI 不受旗标约束）  {"flag":"0","patch":1,"lsAvatar":null}
+  ✅ S4 gif+free：锁 toast 文案 + 升级链接可见 + 零上传零 PATCH  {"t":{"text":"GIF 动图为订阅用户专属功能","active":true},"up":0,"patch":0}
+  ✅ S5 gif+premium：升级链接不渲染 + 上传恰 1 + PATCH 恰 1 + 零金罩（prem 无锁钮）  {"upgrade":false,"up":1,"patch":1,"gold":false}
+  ✅ S6a 图库 free：锁 toast + 零网格浮层 + 零上传零 PATCH  {"grid":false,"t":"图库为订阅用户专属功能"}
+  ✅ S6b 图库 prem：点 data: 格 → 转 Blob 走同链 → 上传恰 1 + PATCH 恰 1 + slati_user.avatarUrl 写 DEMO02  {"up":1,"patch":1,"ls":"/uploads/UPL-DEMO02.jpg"}
+  ✅ S7a 横幅预设：预览 has-img + 背景图 + 移除按钮可见  {"hasImg":true,"bg":"url(\"/uploads/UPL-DEMO01.jpg\")","rmShown":true}
+  ✅ S7b 横幅上传：PATCH 恰 1 体恰 {bannerUrl} + slati_user.bannerUrl 写 DEMO02（无旗标恒写）+ 预览换图  {"patch":1,"keys":"bannerUrl","ls":"/uploads/UPL-DEMO02.jpg"}
+  ✅ S7c 横幅移除：PATCH 体 {bannerUrl:null} + slati_user.bannerUrl null + has-img 撤 + 按钮隐 + toast  {"keys":"bannerUrl","val":null,"s7":{"hasImg":false,"rmHidden":true,"toast":"横幅已移除"}}
+  ✅ S8 同步 toggle：点击写 "0" → 再点写 "1"  {"a":"0","b":"1"}
+  ✅ S9 演示用户：上传/图库/移除/toggle 全隐藏 + 预览仍只读展示 + settingsBgGrid 缺席（stReal 门内）  {"av":false,"lib":false,"bu":false,"rm":false,"toggle":false,"pv":true,"grid":false}
+  ✅ S10a free 金罩结构：横幅 upload+lib 同罩（goldCount 2=头像图库罩+横幅罩）+ 移除钮罩外 + 头像上传钮自由（钦定④）+ ::after 真渲染 + upload 带 sub-locked  {"upIn":true,"libIn":true,"rmOut":true,"goldCount":2,"shroud":"\"\"","upLocked":true,"avFree":true}
+  ✅ S10b free 点横幅上传：toast 精确串 + 零上传零 PATCH + imgUpgrade 链接可见文案精确（含图标 ligature 字形名）  {"t":{"text":"横幅图片为订阅用户专属功能","active":true},"up":0,"patch":0,"link":{"text":"workspace_premium订阅后解锁横幅图片与 GIF 动图","shown":true}}
+  ✅ S10c free 点横幅图库：libLocked toast + 零浮层零上传零 PATCH（金罩点击穿透反馈仍在）  {"t":{"text":"图库为订阅用户专属功能","active":true},"grid":false,"up":0,"patch":0}
+  ✅ S11a free 预设网格：13 格 + 默认格 active（无 cardBg）+ mono-bw 格在位  {"count":13,"defActive":true,"bw":true}
+  ✅ S11b free 点 mono-bw：PATCH 恰 1 体恰 {cardBg:"mono-bw"} + slati_user 合并写（bannerUrl 仍 null 字段保留）+ 预览类含 mono-bw 无 has-img + active 换位 + toast 精确串  {"patch":1,"keys":"cardBg","ls":{"id":"USR-000101","displayName":"电池用户","citizenId":"CIT-000101","bio":"本地简介","gender":"Male","tier":"free","avatarUrl":null,"bannerUrl":null,"cardBg":"mono-bw"},"s11":{"bwActive":true,"defActive":false,"prevCls":"settings-banner-preview mono-bw","toast":"横幅颜色已更新"}}
+  ✅ S12a basic：零金罩 + 横幅上传不带 sub-locked + premGifUpgrade 链接文案精确（含图标 ligature 字形名）  {"gold":false,"upLocked":false,"upL":"workspace_premium升级到高级订阅可上传 GIF 动图"}
+  ✅ S12b basic 静态横幅上传：上传恰 1 + PATCH 恰 1 体 {bannerUrl} + slati_user 写 DEMO02  {"up":1,"patch":1,"keys":"bannerUrl","ls":"/uploads/UPL-DEMO02.jpg"}
+  ✅ S12c basic gif 横幅：锁 toast 精确串 + 零新增上传零新增 PATCH（仍 1/1）  {"t":{"text":"GIF 动图为订阅用户专属功能","active":true},"up":1,"patch":1}
+  ✅ S12d basic 图库浮层：400px 宽 + 4 列 + 种子 data: 格 1（加大弹窗钦定）  {"w":"400px","cols":4,"cells":1}
+  ✅ E 全程零异常零 console error（噪声已滤）
+
+🎉 全部通过 27/27
+

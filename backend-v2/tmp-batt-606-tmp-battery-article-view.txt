@@ -1,0 +1,48 @@
+  ✅ F0-1 版本双线 v0.2.58.3 / v10.28.47.4（changelog rev 00276-nnx）+ 文章查看器注释块 + 直接发布注释块
+  ✅ F0-2 编辑器查看模式在场（CSS + isArticleView + initArticleView + fcViewScaler + 门禁跳过）
+  ✅ F0-3 编辑器五守卫在场（saveDraft/putCloudDraft/syncCloudDraft/keydown/refit resize 全挡 viewmode）
+  ✅ F0-4 列表接云端在场（View 委托分支 + cloudArticles + loadCloudArticles + api.js 动态注入 + demo store）
+  ✅ F0-5 ART-001 样例 contentJson 在场（正文卡 + flag + text，标题一致）
+  ✅ F0-6 发布即公开在场（badge-success Published + 已发布 toast + 占位文案无「审核中」）
+  ✅ A1 17 行（15 种子+2 云端）
+  ✅ A2 云端行置顶（首行 ART-CLOUD-1）
+  ✅ A3 云端行与种子行均有删除钮（v0.2.55.1 起云端行可删）
+  ✅ A4 pending 云端行徽章 In Review
+  ✅ A5 云端 View → 平台阅读页 article.html?id=ART-CLOUD-1
+  ✅ A5b 本地草稿 View → 编辑器 ?article=ART-001（预览保留）
+  ✅ B1 body.fc-viewmode 在场
+  ✅ B2 fixture 4 卡全渲染
+  ✅ B3 chrome 全隐（header/侧栏/状态栏/标题框）
+  ✅ B4 #fcViewScaler 在场且 overflow hidden
+  ✅ B5 完整舞台 contain fit 投影（v10.28.39.0：s=min(availW/2530,availH/stageH) 随查看窗铺满、下限 0.25）  scale(0.269231) avail=1226x770 canvas=2530x2860 scaler=681x770
+  ✅ B6 卡内零交互（pointer-events none）
+  ✅ B7 contentEditable 关闭 + Tab 序移除
+  ✅ B8 哨兵本地草稿未被覆盖（saveDraft/自动保存守卫实证）  {"sentinel":true}
+  ✅ B9 标题芯片 #fcViewTitle = fixture 标题
+  ✅ C1 旧右越界卡（880 格宽外）在新 115 格舞台内完整可见且不超舞台右缘  card.right=578.2 scaler.right=969.5
+  ✅ C2 旧下越界卡（2200 格高外）在新 max(70,内容行)+25 舞台内完整可见且不超舞台下缘  card.bottom=637.4 scaler.bottom=786.0
+  ✅ C3 界内卡完整可见（c1 不越界）
+  ✅ C4 scaler 收成缩放后完整舞台（≈2530×s；canvas 0,0 零平移——不再 bbox 裁剪）  scaler.w=681 canvas.left=0px scale(0.269231)
+  ✅ V1 格子线代码层面在场 + 透明度放满（background-image 两笔 linear-gradient + alpha 0、非 none）  linear-gradient(to right, rgba(120, 120, 120, 0) 1px, rgba(0, 0, 0, 0) 1px), linear-gradient(rgba(120, 120, 120, 0) 1px, rgba(0, 0, 0, 0) 1px)
+  ✅ V2 标签条 #fcViewTags 2 chip 宪法/官方
+  ✅ V3 目录抽屉 4 条目（v0.2.57.1 列全部卡：c1 正文 + flag c2 + c3/c4 文字卡）
+  ✅ V4 目录钮开抽屉（.open）
+  ✅ V5 点击条目 → 目标卡闪烁 + 抽屉关闭
+  ✅ V6 投影铺满不滚动：scaler=stage×s 收进 editor-body 内容区（scrollHeight 不超 clientHeight+40）  scroll=1258x802 client=1258x802
+  ✅ D1 pending 文章占位卡在场
+  ✅ D2 占位态零卡零 scaler
+  ✅ D3 占位卡含返回列表链接
+  ✅ D4 404 文章占位卡在场
+  ✅ F1 demo 兜底 3 卡渲染（云端 404 → 本地样例）
+  ✅ F2 标题芯片 = 样例标题
+  ✅ F3 样例 flag 卡图已挂（img 在场）
+  ✅ F4 reload 后仍 view mode + 3 卡（幂等）
+  ✅ F5 reload 后哨兵仍未被覆盖
+  ✅ G1 零 Runtime exception  干净
+  ✅ G2 零 console error  干净
+  ✅ E1 guest 未被送回锁屏（pathname 仍 editor）
+  ✅ E2 guest 文章照常渲染 4 卡
+  ✅ E3 guest 零 Runtime exception  干净
+
+🎉 全部通过 45/45
+

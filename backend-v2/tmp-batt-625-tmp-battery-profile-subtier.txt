@@ -1,0 +1,33 @@
+── D0. 静态锚（页面/i18n/site-config/FC 不互通）──
+  ✅ D0 页面 58.19 件：sub-locked ×3（F1 头像钮+F3 横幅钮+CSS）+ blockGif ×4（声明+三拦截）+ 两升级链接 id ×1 + premium.html href ≥3（sub-locked=3 blockGif=4 avLink=1 bnLink=1 premium=3）
+  ✅ D0 i18n 3 新键 × 12 语块（gifLocked/libLocked/gifUpgrade 各 12）（gifLocked=12 libLocked=12 gifUpgrade=12）
+  ✅ D0 site-config：版本赋值 v0.2.58.19 + FC 47.4 恒 + changelog rev 00334- 前缀 ×1（v58.19=1 r334=1）
+  ✅ D9 FC 不互通（钦定③铁证）：fluidcanvas.html 源零 bannerUrl/banner_url（FC 频道主页不读 users.banner_url）（bannerUrl=-1 banner_url=-1）
+── D1. 免费锁 UI ──
+  ✅ D1 basic tab：头像图库钮锁态（sub-locked+title 订阅后可用+lock 图标）+ 升级链接可见（href premium.html）+ 上传钮零锁（{"locked":true,"title":"订阅后可用","icon":"lock","linkVis":"inline-block","linkHref":"premium.html","upLocked":false}）
+  ✅ D1 custom tab：横幅图库钮锁态（sub-locked+title 订阅后可用+lock 图标+订阅徽标）+ 升级链接可见 + 上传/移除钮零锁（{"locked":true,"title":"订阅后可用","icon":"lock","badge":true,"linkVis":"inline-block","upLocked":false,"rmLocked":false}）
+── D2/D3. 免费点图库拦截 ──
+  ✅ D2 免费点横幅图库：toast「图库为订阅用户专属功能」+ 选择器零构建 + 零上传 + 零 PATCH（{"toasts":"图库为订阅用户专属功能","picker":false,"ups":0,"pts":0}）
+  ✅ D3 免费点头像图库：toast「图库为订阅用户专属功能」+ 选择器零构建 + 零上传 + 零 PATCH（{"toasts":"图库为订阅用户专属功能|图库为订阅用户专属功能","picker":false,"ups":0,"pts":0}）
+── D4/D5. 免费传 gif 拦截 ──
+  ✅ D4 免费传 gif 横幅：toast「GIF 动图为订阅用户专属功能」+ 零上传 + 零 PATCH + state 无「上传中/已就绪」+ 预览不变（{"toasts":"图库为订阅用户专属功能|图库为订阅用户专属功能|GIF 动图为订阅用户专属功能","state":"上传图片或从图库选择，点保存生效","pvBg":"","ups":0,"pts":0}）
+  ✅ D5 免费传 gif 头像：toast「GIF 动图为订阅用户专属功能」+ 零上传 + 零 PATCH + state 无「上传中/已就绪」+ 头像预览不变（{"toasts":"图库为订阅用户专属功能|图库为订阅用户专属功能|GIF 动图为订阅用户专属功能|GIF 动图为订阅用户专属功能","state":"","src":"data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2228%22%20height%3D%2228%22%3E%3Ccircle%20cx%3D%2214%22%20cy%3D%2214%22%20r%3D%2214%22%20fill%3D%22%23464dd4%22%2F%3E%3C%2Fsvg%3E","ups":0,"pts":0}）
+── D6. 免费传静态放行（核心功能回归）──
+  ✅ D6 免费传静态 jpg 横幅：上传恰 1 次 + 预览挂图 + 就绪文案「横幅已就绪，点保存生效」（{"state":"横幅已就绪，点保存生效","pvBg":"url(\"/uploads/UPL-DEMO01.jpg\")","ups":1}）
+D6 raw PATCH bodies: ["{\"bannerUrl\":\"/uploads/UPL-DEMO01.jpg\"}"]
+  ✅ D6 保存 → PATCH 含 bannerUrl 恰 1 次且 body 精确 ={"bannerUrl":"/uploads/UPL-DEMO01.jpg"} + 弹窗关 + 头部 has-img（含 UPL-DEMO01）（["{\"bannerUrl\":\"/uploads/UPL-DEMO01.jpg\"}"]）
+── D7. 订阅全解锁 ──
+  ✅ D7 订阅会话：横幅/头像图库钮零锁 + 横幅钮无锁图标无徽标（sub 分支整体不渲染）+ 头像钮 icon photo_library + 两升级链接 display:none（{"bLocked":false,"bIconEl":null,"bBadge":null,"lVis":"none","avLocked":false,"avIcon":"photo_library","alVis":"none"}）
+  ✅ D7 订阅开横幅图库：选择器开 + 预种 1 gif 条目（缩略图+名称）（{"itemN":1,"img":"data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==","label":"电池动图"}）
+  ✅ D7 图库 gif 条目点选 → 上传恰 1 次（gif 对订阅放行）+ 预览挂图 + 就绪文案（{"state":"横幅已就绪，点保存生效","pvBg":"url(\"/uploads/UPL-DEMO01.jpg\")","ups":2}）
+  ✅ D7 订阅传 gif 文件（横幅+头像）→ 共 +2 上传 + 头像预览换图 + 就绪文案（{"ups":4,"avSrc":"/uploads/UPL-DEMO01.jpg","avState":"新头像已就绪，点保存生效"}）
+── D8. 祖父（免费用户已有 gif 横幅）──
+  ✅ D8 祖父显示：免费用户已有 gif 横幅 → 头部仍 has-img + computed 背景含 GRANDPA（渲染无 tier 检查）（{"hasImg":true,"bnBg":"url(\"http://127.0.0.1:4055/uploads/GRANDPA.gif\")"}）
+  ✅ D8 祖父编辑：预览预填原图（GRANDPA）+ 免费锁 UI 在位（sub-locked+升级链接可见）（{"pvBg":"url(\"/uploads/GRANDPA.gif\")","locked":true,"linkVis":"inline-block"}）
+  ✅ D8 点移除 → 预览清图 + 提示文案「上传图片或从图库选择，点保存生效」（移除按钮永可用）（{"pvBg":"","state":"上传图片或从图库选择，点保存生效"}）
+D8 raw PATCH bodies: ["{\"bannerUrl\":null}"]
+  ✅ D8 保存 → PATCH 含 bannerUrl 恰 1 次且 body 精确 ={"bannerUrl":null}（显式移除语义）+ 头部回渐变（无 has-img/无 GRANDPA/linear-gradient 在）（["{\"bannerUrl\":null}"]）
+  ✅ D10 全链 0 console error
+
+21 ✅ / 0 ❌
+

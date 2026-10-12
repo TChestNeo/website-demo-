@@ -1,0 +1,9 @@
+修复：v0.2.54.2 i18n 验收修复——用户「为什么在首页和MicroNationary 订阅卡片，和公告的部分还有其他部分都没有被翻译？」（rev 00261-5nw）
+
+两重根因：①zh 字典英文残留（index 57%→100%、premium 55%→97%、world-created 58%→100%、about 52 键、admin nav 15 键——B1 轮「zh 值逐字节=原文」口径下 HTML 兜底本就是英文，中文浏览器自动选 zh 页面仍英文）；②JS demo 数据数组硬编码英文 0% T() 化（任何语言都不翻译）。
+
+修复：index 活动流 4 条+公告 10 条 key/En 函数化 + __mnI18nRerender 钩子（apply() 触发 listeners）；同模式 overview/community-hub/messages/activity/following/workspace 六页 demo 数据 T() 化（messages 补尾部 onChange——此前漏接）；新键 × 11 语言手写 + zh-Hant OpenCC 幂等重跑（哨兵段剥离→stub 捕获→cn→tw→追加，新键块插在哨兵段之前）；术语保留清单执行（品牌词/人名/语言名/GDP/USD/代码标识符不译）。
+
+后端零改动（user_version 27/health 59 表不变）；FC v10.28.36.1 零改动；ethereal/inline-css/entrypoint 零改动；零草稿字段（v 保持 9）。
+
+电池：i18n 34/34（新 D 段 index 动态区双语 8 断言）+ 16 座全回归绿（premium-multi 106+smoke-admin 48+msg-anim 51+fadefix 36+community-profile 99+article-view 38+identity 38+monodark 29+pageswitch 23+notif-home 23+mono-flash 22+cit2usr 21+msglink 15+sidebar-bottom 11+sidebar-light 10）+ 探针 index 16/16+premium 7/7；部署 exit 0（digest 63db3668d083/env 30 条零新键）；curl 链全绿（health 59 表+db ok/无 cookie auth/me 401/site-config v0.2.54.2+v10.28.36.1/14 字典新键在线/overview+messages 钩子在线）；不 push

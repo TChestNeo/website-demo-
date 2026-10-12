@@ -1,0 +1,32 @@
+  ✅ F0-1 article.html 呈现件全在场（art-present + applyReflow + renderToc + resize 监听 + 560px 纵排媒体查询）
+  ✅ F0-2 版本 v0.2.58.4 + changelog（58.0 rev 00276-nnx + 57.1 rev 00274-xfl 保留）+ FC v10.28.47.4
+  ✅ F0-3 i18n 新键在场（article.tags.label/article.toc.title zh + zh-Hant 目錄）
+  ✅ F0-4 完整格舞台 + 窄窗分支 + 宽窗 contain fit + updateWideScale 在场（58.0 舞台公式锚）
+  ✅ F0-5 FC 镜像在场（fit1to1 + renderViewPresentation + fcViewTocBtn）+ 编辑模式恒 115 锚（39.0 computeCols 恒 return 115）
+  ✅ W1 标签条显示 2 chip 宪法/地理（顺序保留）  flex chips=2
+  ✅ W2 站点侧栏灭（display none）+ 主区无左边距  none/0px
+  ✅ W3 目录钮在场 + 抽屉 5 条目（Flag/Constitution/Hello present…/Stats/Notes；v0.2.57.1 列全部卡——label→正文派生→卡型名兜底）  Flag | Constitution | Hello present… | Stats | Notes
+  ✅ W4 目录钮开抽屉 + 点击条目 → 抽屉关 + 目标卡闪烁
+  ✅ W5 宽窗完整舞台自洽：inner 逻辑 2530×2090（115×22 / 95×22）、s=min(availW/2530,availH/2090) 下限 0.25 + holder=stage×s  avail=1163x463.34375 inner=2530x2090 holder=633x523 scale(0.25)
+  ✅ W8 格子代码层面在场 + 透明度放满（两笔 linear-gradient + alpha 0 + 22px 间隔）  linear-gradient(to right, rgba(120, 120, 120, 0) 1px, rgba(0, 0, 0, 0) 1px), linear-gradient(rgba(120, 120, 120, 0) 1px, | size=22px 22px, 22px 22px
+  ✅ W6 投影不改画布逻辑尺寸：c8 逻辑宽仍 264.4（fitW）——缩放只走 transform，卡位 1:1 不动  c8=264x174
+  ✅ W7 高窗投影自洽：s 随窗重算（宽受限≈availW/2530、铺满窗宽）且 holder=stage×s  avail=1185x1061.34375 s=scale(0.468379) holder=1185
+  ✅ R1 640 窄窗 → 回流模式翻转（reflow 类 + inner transform none）  reflow=true avail=545
+  ✅ N1 3 条回流带（c8/c1 同带、c2/s1 y 重叠同带、c3 独带）  c8+c1 | c2+s1 | c3
+  ✅ N2 c2 content 弹性撑满带宽 + s1 stats 保自然宽 394 换行下置（列表卡不被挤压）  c2=545@190 s1=394@288
+  ✅ N3 c8/c1 同带同行（top 相等）  c8.top=0 c1.top=0
+  ✅ N4 图卡等比收缩：c8 aspect-ratio ≈ 264.399/174.347  264.399 / 174.347 264x174
+  ✅ R2 回 1280 → 全屏投影还原（reflow 灭 + transform scale 恢复 + TOC 钮重建）  reflow=false tf=scale(0.268586)
+  ✅ R3 再 640 → 回流复现（监听未死、往返稳定）
+  ✅ N5 320 最窄全部上下单列（5 卡 offsetTop 严格递增）  c8@0 c1@160 c2@396 s1@628 c3@818
+  ✅ N6 320 页面无横向溢出（列表卡被钳住不撑破页）  scrollW=305 innerW=320
+  ✅ N7 窄窗 TOC 可点（开抽屉→点第 5 条 Notes→c3 闪烁 + 抽屉关）
+  ✅ L1 legacy 草稿走流式兜底（.art-flow 在场、零 .art-canvas）
+  ✅ L2 legacy 正文渲染
+  ✅ L3 无标签 → 标签条隐藏
+  ✅ L4 流式兜底零画布 → 零目录钮（renderToc 不跑）
+  ✅ E1 零 Runtime exception  干净
+  ✅ E2 零 console error  干净
+
+🎉 全部通过 29/29
+
