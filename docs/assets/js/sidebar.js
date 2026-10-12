@@ -773,6 +773,8 @@
         '.mbn-unblock{border:1px solid rgba(118,117,134,0.3);background:none;color:var(--color-on-surface,#1a1a2e);border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer;flex-shrink:0}',
         '.mbn-toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:rgba(24,24,32,.9);color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;z-index:10001;opacity:0;pointer-events:none;transition:opacity .22s ease;max-width:86vw;text-align:center}',
         '.mbn-toast.show{opacity:1}',
+        '.mn-dl-btn{display:inline-flex !important;position:fixed;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:9990;align-items:center;gap:4px;height:34px;padding:0 14px;border-radius:999px;background:var(--color-primary,#4648d4);color:#fff;text-decoration:none;font-size:12px;font-weight:600;letter-spacing:.01em;box-shadow:0 4px 14px rgba(70,72,212,0.35)}',
+        '.mn-dl-btn .material-symbols-outlined{font-size:16px}',
         '.app-main{padding-bottom:74px}',
         '}'
       ].join('\n');
