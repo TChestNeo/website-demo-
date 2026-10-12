@@ -1,5 +1,6 @@
 package com.mnationworld.app
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -17,28 +18,55 @@ import okhttp3.RequestBody.Companion.toRequestBody
 // 后端地址（与网页端同一后端）
 const val BASE_URL = "https://mnationworld.com"
 
-// 全局会话（登录用户；Cookie 由 OkHttp CookieJar 自动托管，与网页端语义一致）
+// 全局会话（登录用户；用户快照 + Cookie 均持久化——更新/重启后自动恢复登录态）
 object Session {
     var user by mutableStateOf<User?>(null)
     val isLoggedIn get() = user != null
 
+    private const val PREFS = "mn_session"
+    private lateinit var appContext: Context
+
+    fun init(context: Context) {
+        appContext = context.applicationContext
+        val p = appContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val raw = p.getString("user", null)
+        if (raw != null) {
+            user = runCatching { ApiClient.json.decodeFromString(User.serializer(), raw) }.getOrNull()
+        }
+    }
+
     fun applyLogin(u: User) {
         user = u
+        appContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putString("user", ApiClient.json.encodeToString(User.serializer(), u))
+            .apply()
     }
 
     fun logout() {
         user = null
+        appContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove("user").apply()
         ApiClient.cookieStore.clear()
+        appContext.getSharedPreferences("mn_cookies", Context.MODE_PRIVATE).edit().clear().apply()
     }
 }
 
-// API 客户端：OkHttp + CookieJar + kotlinx.serialization
+// API 客户端：OkHttp + CookieJar（会话 Cookie 持久化到 SharedPreferences）+ kotlinx.serialization
 object ApiClient {
     val json = Json { ignoreUnknownKeys = true; isLenient = true }
     private val mediaType = "application/json; charset=utf-8".toMediaType()
 
-    // 内存 Cookie 存储（会话级；app 重启需重新登录，后续可换持久化）
+    private lateinit var appContext: Context
+    private const val COOKIE_PREFS = "mn_cookies"
+
+    fun init(context: Context) {
+        appContext = context.applicationContext
+    }
+
+    // 内存 Cookie 存储 + SharedPreferences 持久化（更新/重启后自动恢复会话）
     val cookieStore = mutableMapOf<String, MutableList<Cookie>>()
+
+    private fun cookiePrefs() = appContext.getSharedPreferences(COOKIE_PREFS, Context.MODE_PRIVATE)
 
     private val client = OkHttpClient.Builder()
         .cookieJar(object : CookieJar {
@@ -47,11 +75,41 @@ object ApiClient {
                 for (c in cookies) {
                     list.removeAll { it.name == c.name }
                     list.add(c)
+                    // 会话类 cookie 持久化（mn_session 等）
+                    if (c.name.contains("session", ignoreCase = true)) {
+                        cookiePrefs().edit()
+                            .putString("cookie_${c.name}", c.value)
+                            .putLong("cookie_${c.name}_expires", c.expiresAt)
+                            .apply()
+                    }
                 }
             }
 
-            override fun loadForRequest(url: HttpUrl): List<Cookie> =
-                cookieStore[url.host] ?: emptyList()
+            override fun loadForRequest(url: HttpUrl): List<Cookie> {
+                cookieStore[url.host]?.takeIf { it.isNotEmpty() }?.let { return it }
+                // 冷启动：从 SharedPreferences 恢复
+                val p = cookiePrefs()
+                val restored = mutableListOf<Cookie>()
+                p.all.forEach { (k, v) ->
+                    if (k.startsWith("cookie_") && !k.endsWith("_expires") && v is String) {
+                        val name = k.removePrefix("cookie_")
+                        val expires = p.getLong("cookie_${name}_expires", 0L)
+                        if (expires == 0L || expires > System.currentTimeMillis()) {
+                            restored.add(
+                                Cookie.Builder()
+                                    .name(name)
+                                    .value(v)
+                                    .domain(url.host)
+                                    .path("/")
+                                    .expiresAt(expires)
+                                    .build()
+                            )
+                        }
+                    }
+                }
+                if (restored.isNotEmpty()) cookieStore[url.host] = restored
+                return restored
+            }
         })
         .build()
 

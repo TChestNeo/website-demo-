@@ -61,6 +61,9 @@ import okhttp3.Request
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 会话持久化初始化：登录态/会话 Cookie 跨重启恢复（更新后免重登）
+        ApiClient.init(applicationContext)
+        Session.init(applicationContext)
         setContent {
             // 主题（偏好设置里可切：跟随系统/浅色/深色）
             val prefs = applicationContext.getSharedPreferences("mn_prefs", Context.MODE_PRIVATE)
@@ -93,6 +96,13 @@ fun AppRoot() {
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
+        // 冷启动会话验证：恢复的用户快照需后端仍有效（Cookie 过期则退回登录）
+        if (Session.isLoggedIn) {
+            runCatching { ApiClient.me() }
+                .onSuccess { Session.applyLogin(it) }
+                .onFailure { Session.logout() }
+        }
+        // 更新检查
         val latest = runCatching { ApiClient.latestApp() }.getOrNull()
         val android = latest?.android
         if (android != null && android.versionCode > BuildConfig.VERSION_CODE) {
