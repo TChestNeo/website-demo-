@@ -142,6 +142,16 @@ data class PasswordBody(val newPassword: String)
 @Serializable
 data class DeleteBody(val code: String)
 
+@Serializable
+data class ProfilePatchBody(
+    val displayName: String? = null,
+    val bio: String? = null,
+    val gender: String? = null,
+)
+
+@Serializable
+data class ProfilePatchResponse(val user: User)
+
 // 系统更新（GET /api/app/latest）
 @Serializable
 data class LatestApp(

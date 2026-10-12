@@ -274,47 +274,4 @@ fun MessagesTab() {
     }
 }
 
-// ── 我的 ──
-
-@Composable
-fun MeTab() {
-    Column(Modifier.fillMaxSize().padding(16.dp)) {
-        Text("我的", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(12.dp))
-        Card(Modifier.fillMaxWidth()) {
-            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (!Session.user?.avatarUrl.isNullOrEmpty()) {
-                    AsyncImage(model = Session.user?.avatarUrl, contentDescription = null, modifier = Modifier.size(48.dp))
-                } else {
-                    Text("👤", style = MaterialTheme.typography.headlineMedium)
-                }
-                Spacer(Modifier.width(12.dp))
-                Column {
-                    Text(Session.user?.displayName ?: "未登录", style = MaterialTheme.typography.titleLarge)
-                    Text(Session.user?.citizenId ?: "", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        }
-        Spacer(Modifier.height(12.dp))
-        Card(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(8.dp)) {
-                listOf("活动", "账户", "可见性", "互动", "偏好设置").forEach { s ->
-                    Text(
-                        s,
-                        modifier = Modifier.fillMaxWidth().clickable {}.padding(12.dp),
-                        style = MaterialTheme.typography.bodyLarge,
-                    )
-                    HorizontalDivider()
-                }
-            }
-        }
-        Spacer(Modifier.height(12.dp))
-        Button(
-            onClick = { Session.logout() },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-        ) {
-            Text("登出")
-        }
-    }
-}
+// ── 我的（完整版见 MeSettings.kt：设置与隐私 5 分类 + 账户操作） ──

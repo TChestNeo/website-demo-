@@ -85,8 +85,8 @@ object ApiClient {
     suspend fun get(path: String) = raw("GET", path, null)
 
     // ── 认证 ──
-    suspend fun sendEmailCode(email: String) {
-        post("/api/auth/email-code", json.encodeToString(EmailCodeBody.serializer(), EmailCodeBody(email)))
+    suspend fun sendEmailCode(email: String, purpose: String? = null) {
+        post("/api/auth/email-code", json.encodeToString(EmailCodeBody.serializer(), EmailCodeBody(email, purpose)))
     }
 
     suspend fun verify(email: String, code: String, password: String? = null): VerifyResponse {
@@ -141,6 +141,15 @@ object ApiClient {
 
     suspend fun deleteAccount(code: String) {
         post("/api/auth/delete", json.encodeToString(DeleteBody.serializer(), DeleteBody(code)))
+    }
+
+    // ── 个人资料（PATCH /api/auth/me → {user}） ──
+    suspend fun updateProfile(displayName: String? = null, bio: String? = null, gender: String? = null): User {
+        val text = patch(
+            "/api/auth/me",
+            json.encodeToString(ProfilePatchBody.serializer(), ProfilePatchBody(displayName, bio, gender))
+        )
+        return json.decodeFromString(ProfilePatchResponse.serializer(), text).user
     }
 
     // ── 系统更新 ──

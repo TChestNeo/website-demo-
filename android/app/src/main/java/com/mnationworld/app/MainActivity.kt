@@ -16,6 +16,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -61,9 +62,21 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme(colorScheme = lightColorScheme(
-                primary = androidx.compose.ui.graphics.Color(0xFF4648D4),
-            )) {
+            // 主题（偏好设置里可切：跟随系统/浅色/深色）
+            val prefs = applicationContext.getSharedPreferences("mn_prefs", Context.MODE_PRIVATE)
+            val theme = prefs.getString("pref.theme", "system") ?: "system"
+            val dark = when (theme) {
+                "dark" -> true
+                "light" -> false
+                else -> isSystemInDarkTheme()
+            }
+            MaterialTheme(
+                colorScheme = if (dark) {
+                    darkColorScheme(primary = Color(0xFF4648D4))
+                } else {
+                    lightColorScheme(primary = Color(0xFF4648D4))
+                }
+            ) {
                 AppRoot()
             }
         }

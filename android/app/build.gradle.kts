@@ -1,4 +1,4 @@
-plugins {
+﻿plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -13,8 +13,8 @@ android {
         applicationId = "com.mnationworld.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.0.3"
+        versionCode = 5
+        versionName = "1.1.0"
     }
 
     buildTypes {
@@ -34,7 +34,7 @@ android {
 
     buildFeatures {
         compose = true
-        buildConfig = true // 系统更新：BuildConfig.VERSION_CODE 供版本对比
+        buildConfig = true // ç³»ç»Ÿæ›´æ–°ï¼šBuildConfig.VERSION_CODE ä¾›ç‰ˆæœ¬å¯¹æ¯”
     }
 }
 
@@ -50,12 +50,13 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
     implementation("androidx.navigation:navigation-compose:2.8.5")
 
-    // 网络 + JSON + 图片
+    // ç½‘ç»œ + JSON + å›¾ç‰‡
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("io.coil-kt:coil-compose:2.7.0")
 
-    // 测试（云端 CI 编译用不到，保留完整工程）
+    // æµ‹è¯•ï¼ˆäº‘ç«¯ CI ç¼–è¯‘ç”¨ä¸åˆ°ï¼Œä¿ç•™å®Œæ•´å·¥ç¨‹ï¼‰
     testImplementation("junit:junit:4.13.2")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }
+
