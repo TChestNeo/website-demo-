@@ -45,10 +45,16 @@ jobs:
       - name: Make unsigned IPA
         working-directory: ios
         run: |
+          echo "== archive 产物结构 =="
+          find build/MNationWorld.xcarchive/Products -maxdepth 3 2>/dev/null || echo "(无 Products 目录)"
+          APP=$(find build/MNationWorld.xcarchive -name "*.app" -type d | head -1)
+          if [ -z "$APP" ]; then echo "APP NOT FOUND"; exit 1; fi
+          echo "APP=$APP"
           mkdir -p build/Payload
-          cp -R build/MNationWorld.xcarchive/Products/Applications/MNationWorld.app build/Payload/
+          cp -R "$APP" build/Payload/
           cd build
           zip -qr MNationWorld-unsigned.ipa Payload
+          ls -la MNationWorld-unsigned.ipa
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
