@@ -2626,10 +2626,147 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     }
     @media (prefers-reduced-motion: reduce) { .otp-pop, .otp-shake { animation: none; } }
   </style>
+  <style>
+  /* ===== v0.2.59.x 手机登录重设计（参考 SlatiWorld 渐变品牌卡；桌面隐藏，≤768 生效）===== */
+  .auth-mobile-hero { display: none; }
+  @media (max-width: 768px) {
+    .auth-layout { flex-direction: column; align-items: stretch; padding: 14px; gap: 14px; }
+    .auth-mobile-hero {
+      display: block;
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 55%, var(--color-secondary) 130%);
+      color: #ffffff;
+      padding: 24px 20px;
+      box-shadow: 0 10px 32px rgba(70, 72, 212, 0.30);
+    }
+    .amh-glow { position: absolute; border-radius: 50%; filter: blur(40px); pointer-events: none; }
+    .amh-glow1 { width: 190px; height: 190px; background: rgba(255,255,255,0.10); top: -48px; right: -48px; }
+    .amh-glow2 { width: 150px; height: 150px; background: rgba(156,72,234,0.38); bottom: -24px; left: -44px; }
+    .amh-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }
+    .amh-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 999px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      font-size: 10px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+      color: rgba(255,255,255,0.92); margin-bottom: 10px;
+    }
+    .amh-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; animation: amhPulse 1.6s ease infinite; }
+    @keyframes amhPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+    .amh-title { font-size: 27px; font-weight: 700; letter-spacing: -0.01em; text-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .amh-sub { font-size: 13px; color: rgba(255,255,255,0.85); line-height: 1.65; max-width: 270px; margin-top: 6px; }
+    .amh-tabs {
+      display: flex; width: 100%; max-width: 260px;
+      margin-top: 18px; padding: 4px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.22);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .amh-tab {
+      flex: 1; padding: 7px 0; border: none; border-radius: 999px;
+      background: transparent; color: rgba(255,255,255,0.82);
+      font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .amh-tab.active {
+      background: var(--color-surface-container-lowest);
+      color: var(--color-primary); font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+    }
+    .amh-steps {
+      width: 100%; margin-top: 16px;
+      padding: 13px 16px; border-radius: 16px;
+      background: rgba(255,255,255,0.10);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      display: flex; flex-direction: column; gap: 9px;
+      text-align: left;
+    }
+    .amh-step { display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 500; }
+    .amh-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #ffffff; color: var(--color-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.16);
+    }
+    .amh-step.dim { opacity: 0.55; }
+    .amh-step.dim .amh-num { background: rgba(255,255,255,0.22); color: rgba(255,255,255,0.9); box-shadow: none; }
+    .amh-conn { width: 2px; height: 8px; margin-left: 10px; background: rgba(255,255,255,0.30); border-radius: 2px; }
+    .amh-trust {
+      display: flex; justify-content: space-around; width: 100%;
+      margin-top: 15px; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.88);
+    }
+    .amh-trust > span { display: inline-flex; align-items: center; gap: 5px; }
+    .amh-trust .material-symbols-outlined { font-size: 15px; }
+
+    /* 旧蓝板/旧 tabs 手机端退役（由新品牌卡接管） */
+    .auth-panel,
+    .auth-card.auth-tab-signup .auth-panel,
+    .auth-card.auth-tab-login .auth-panel { display: none !important; }
+    .auth-tabs,
+    .auth-card.auth-tab-signup .auth-tabs,
+    .auth-card.auth-tab-login .auth-tabs { display: none !important; }
+
+    /* 表单卡：参考风格 28px 圆角白卡 */
+    .auth-card {
+      border-radius: 28px;
+      background: var(--color-surface-container-lowest);
+      min-height: 0;
+      box-shadow: 0 6px 28px rgba(31, 38, 135, 0.10);
+    }
+    .auth-card .auth-pane { padding: 20px 20px 26px; }
+
+    /* 图标输入框（SVG data-URI 左图标；!important 压过 .input-glass 及 :focus 的 background 简写重置） */
+    #loginEmail, #signupEmail {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234648d4' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M16 12v1.5a2.5 2.5 0 0 0 5 0V12a9 9 0 1 0-3.4 7.05'/%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: 12px center !important;
+      background-size: 20px !important;
+      padding-left: 44px;
+    }
+    #loginPassword, #signupPassword, #setupPassword {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234648d4' stroke-width='1.8' stroke-linecap='round'%3E%3Crect x='4' y='11' width='16' height='10' rx='2.5'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 8 0v4'/%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: 12px center !important;
+      background-size: 20px !important;
+      padding-left: 44px;
+    }
+  }
+  </style>
 </head>
 <body class="auth-bg pre-stagger">
 
 <div class="auth-layout">
+
+  <!-- v0.2.59.x 手机登录重设计（参考 SlatiWorld 渐变品牌卡）：≤768 显示、桌面隐藏；
+       含 Welcome to 徽章 / 标题 / 副文案 / Log in·Sign up 药丸切换 / 注册三步进度 / 信任指标 -->
+  <div class="auth-mobile-hero" id="authMobileHero">
+    <div class="amh-glow amh-glow1"></div>
+    <div class="amh-glow amh-glow2"></div>
+    <div class="amh-inner">
+      <span class="amh-badge"><span class="amh-dot"></span>Welcome to</span>
+      <h1 class="amh-title">M.NationWorld</h1>
+      <p class="amh-sub">创建属于你的架空世界——从一面国旗、一部宪法开始，建立你梦想中的国度。</p>
+      <div class="amh-tabs" role="tablist">
+        <button type="button" class="amh-tab active" id="amhTabLogin" onclick="switchTab('login')">Log in</button>
+        <button type="button" class="amh-tab" id="amhTabSignup" onclick="switchTab('signup')">Sign up</button>
+      </div>
+      <div class="amh-steps">
+        <div class="amh-step" id="amhStep1"><span class="amh-num">1</span><span>Create account</span></div>
+        <div class="amh-conn"></div>
+        <div class="amh-step dim" id="amhStep2"><span class="amh-num">2</span><span>Identity Setup</span></div>
+        <div class="amh-conn"></div>
+        <div class="amh-step dim" id="amhStep3"><span class="amh-num">3</span><span>Complete</span></div>
+      </div>
+      <div class="amh-trust">
+        <span><span class="material-symbols-outlined">verified_user</span>虚构创作自由</span>
+        <span><span class="material-symbols-outlined">public</span>数字主权平台</span>
+      </div>
+    </div>
+  </div>
+
   <div class="auth-card tilt-container auth-tab-login" id="authCard">
 
     <!-- Tab toggle（v2.3.9 反向滑浮层：与蓝板跷跷板，活跃标签悬可见半上方；v2.3.10 角补丁退役（内凹移除）、tabs/页脚 z 2 垫蓝板下） -->
@@ -2848,6 +2985,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     card.classList.toggle('auth-tab-login', tab === 'login');
     document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
     document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+    // v0.2.59.x 手机品牌卡药丸切换同步
+    var amhS = document.getElementById('amhTabSignup');
+    var amhL = document.getElementById('amhTabLogin');
+    if (amhS && amhL) {
+      amhS.classList.toggle('active', tab === 'signup');
+      amhL.classList.toggle('active', tab === 'login');
+    }
     document.getElementById('signupError').style.display = 'none';
     document.getElementById('loginError').style.display = 'none';
   }
