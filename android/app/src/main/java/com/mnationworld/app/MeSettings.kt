@@ -15,10 +15,24 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Extension
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.SwapHoriz
+import androidx.compose.material.icons.outlined.ThumbUp
+import androidx.compose.material.icons.outlined.TouchApp
+import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -117,9 +131,9 @@ private fun MeRootScreen(onOpen: (String) -> Unit) {
         item {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(vertical = 4.dp)) {
-                    MenuRow("关注", "heart") {}
+                    MenuRow("关注", Icons.Outlined.FavoriteBorder) {}
                     HorizontalDivider()
-                    MenuRow("插件", "puzzle") {}
+                    MenuRow("插件", Icons.Outlined.Extension) {}
                 }
             }
             Spacer(Modifier.height(12.dp))
@@ -128,11 +142,11 @@ private fun MeRootScreen(onOpen: (String) -> Unit) {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(vertical = 4.dp)) {
                     SectionCaption("设置与隐私")
-                    MenuRow("活动", "chart") { onOpen("activity") }
-                    MenuRow("账户", "person") { onOpen("account") }
-                    MenuRow("可见性", "eye") { onOpen("visibility") }
-                    MenuRow("互动", "tap") { onOpen("interaction") }
-                    MenuRow("偏好设置", "slider") { onOpen("preference") }
+                    MenuRow("活动", Icons.Outlined.Insights) { onOpen("activity") }
+                    MenuRow("账户", Icons.Outlined.Person) { onOpen("account") }
+                    MenuRow("可见性", Icons.Outlined.Visibility) { onOpen("visibility") }
+                    MenuRow("互动", Icons.Outlined.TouchApp) { onOpen("interaction") }
+                    MenuRow("偏好设置", Icons.Outlined.Tune) { onOpen("preference") }
                 }
             }
             Spacer(Modifier.height(12.dp))
@@ -140,10 +154,10 @@ private fun MeRootScreen(onOpen: (String) -> Unit) {
         item {
             Card(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(vertical = 4.dp)) {
-                    MenuRow("帮助与支持", "help") {}
-                    MenuRow("切换账户", "swap", danger = true) { Session.logout() }
-                    MenuRow("登出", "logout", danger = true) { Session.logout() }
-                    MenuRow("删除账户", "delete", danger = true) { onOpen("delete") }
+                    MenuRow("帮助与支持", Icons.Outlined.HelpOutline) {}
+                    MenuRow("切换账户", Icons.Outlined.SwapHoriz, danger = true) { Session.logout() }
+                    MenuRow("登出", Icons.Outlined.Logout, danger = true) { Session.logout() }
+                    MenuRow("删除账户", Icons.Outlined.Delete, danger = true) { onOpen("delete") }
                 }
             }
         }
@@ -156,13 +170,18 @@ private fun SectionCaption(text: String) {
 }
 
 @Composable
-private fun MenuRow(label: String, emoji: String, danger: Boolean = false, onClick: () -> Unit) {
+private fun MenuRow(label: String, icon: ImageVector, danger: Boolean = false, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(emoji, fontSize = 18.sp)
-        Spacer(Modifier.width(12.dp))
+        Icon(
+            icon,
+            null,
+            tint = if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(20.dp),
+        )
+        Spacer(Modifier.width(14.dp))
         Text(label, Modifier.weight(1f), color = if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
     }
 }
@@ -206,9 +225,9 @@ private fun ActivitySettingsScreen() {
 private fun AccountSettingsScreen(onOpen: (String) -> Unit) {
     Card {
         Column(Modifier.padding(vertical = 4.dp)) {
-            MenuRow("个人账户", "👤") { onOpen("profile") }
+            MenuRow("个人账户", Icons.Outlined.Person) { onOpen("profile") }
             HorizontalDivider()
-            MenuRow("隐私与安全", "🛡️") { onOpen("password") }
+            MenuRow("隐私与安全", Icons.Outlined.Shield) { onOpen("password") }
         }
     }
 }
@@ -346,9 +365,9 @@ private fun InteractionSettingsScreen(onOpen: (String) -> Unit) {
         Spacer(Modifier.height(12.dp))
         Card {
             Column(Modifier.padding(vertical = 4.dp)) {
-                MenuRow("关注列表", "❤️") {}
+                MenuRow("关注列表", Icons.Outlined.FavoriteBorder) {}
                 HorizontalDivider()
-                MenuRow("赞过的视频", "👍") { onOpen("liked") }
+                MenuRow("赞过的视频", Icons.Outlined.ThumbUp) { onOpen("liked") }
             }
         }
     }

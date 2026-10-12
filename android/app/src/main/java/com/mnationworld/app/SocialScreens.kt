@@ -14,7 +14,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.ChatBubbleOutline
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -159,32 +166,43 @@ private fun PostDetailCard(p: Post, onOpenUser: (String) -> Unit) {
                     runCatching { ApiClient.favorite(p.id, p.favoritedByMe != true) }
                 }
             }) {
-                Text(if (p.favoritedByMe == true) "⭐" else "☆", fontSize = 18.sp)
+                Icon(
+                    if (p.favoritedByMe == true) Icons.Filled.Star else Icons.Filled.StarBorder,
+                    null,
+                    tint = if (p.favoritedByMe == true) Color(0xFFF5A623) else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
         Spacer(Modifier.height(10.dp))
         Text(p.content, style = MaterialTheme.typography.bodyLarge)
         Spacer(Modifier.height(12.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(28.dp)) {
-            ActionChip("❤ ${p.likeCount ?: 0}") {
-                scope.launch {
-                    runCatching { ApiClient.like(p.id, p.likedByMe != true) }
-                }
+        Row(horizontalArrangement = Arrangement.spacedBy(26.dp)) {
+            ActionItem(
+                if (p.likedByMe == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                "${p.likeCount ?: 0}",
+                if (p.likedByMe == true) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+            ) {
+                scope.launch { runCatching { ApiClient.like(p.id, p.likedByMe != true) } }
             }
-            Text("💬 ${p.commentCount ?: 0}", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            ActionChip("🔁 ${p.repostCount ?: 0}") {
-                scope.launch {
-                    runCatching { ApiClient.repost(p.id, p.repostedByMe != true) }
-                }
+            ActionItem(Icons.Filled.ChatBubbleOutline, "${p.commentCount ?: 0}", MaterialTheme.colorScheme.onSurfaceVariant) {}
+            ActionItem(Icons.Filled.Repeat, "${p.repostCount ?: 0}", MaterialTheme.colorScheme.onSurfaceVariant) {
+                scope.launch { runCatching { ApiClient.repost(p.id, p.repostedByMe != true) } }
             }
-            Text("👁 ${p.viewCount ?: 0}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            ActionItem(Icons.Filled.Visibility, "${p.viewCount ?: 0}", MaterialTheme.colorScheme.onSurfaceVariant) {}
         }
     }
 }
 
 @Composable
-private fun ActionChip(label: String, onClick: () -> Unit) {
-    Text(label, modifier = Modifier.clickable(onClick = onClick), color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun ActionItem(icon: androidx.compose.ui.graphics.vector.ImageVector, count: String, tint: Color, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.clickable(onClick = onClick),
+    ) {
+        Icon(icon, null, tint = tint, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(4.dp))
+        Text(count, color = tint, fontSize = 13.sp)
+    }
 }
 
 @Composable
@@ -347,8 +365,8 @@ fun ProfileScreen(userId: String, onBack: () -> Unit, onOpenPost: (String) -> Un
                             Text(p.content, fontSize = 14.sp, maxLines = 4, overflow = TextOverflow.Ellipsis)
                             Spacer(Modifier.height(6.dp))
                             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                Text("❤ ${p.likeCount ?: 0}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text("💬 ${p.commentCount ?: 0}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                ActionItem(Icons.Filled.FavoriteBorder, "${p.likeCount ?: 0}", MaterialTheme.colorScheme.onSurfaceVariant) {}
+                                ActionItem(Icons.Filled.ChatBubbleOutline, "${p.commentCount ?: 0}", MaterialTheme.colorScheme.onSurfaceVariant) {}
                                 Text(relativeTime(p.createdAt), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }

@@ -7,10 +7,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Person2
+import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -127,7 +132,8 @@ fun HomeTab() {
         } else {
             items(myNations.orEmpty()) { n ->
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
-                    Text("🚩", modifier = Modifier.padding(end = 8.dp))
+                    Icon(Icons.Outlined.Flag, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text(n.displayName, style = MaterialTheme.typography.bodyLarge)
                 }
             }
@@ -193,9 +199,18 @@ fun PostRow(post: Post, onOpen: () -> Unit = {}, onOpenAuthor: (() -> Unit)? = n
                         runCatching { ApiClient.like(post.id, post.likedByMe != true) }
                     }
                 }) {
-                    Text("${if (post.likedByMe == true) "❤" else "🤍"} ${post.likeCount ?: 0}")
+                    Icon(
+                        if (post.likedByMe == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        null,
+                        tint = if (post.likedByMe == true) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("${post.likeCount ?: 0}")
                 }
-                Text("💬 ${post.commentCount ?: 0}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(Icons.Filled.ChatBubbleOutline, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(4.dp))
+                Text("${post.commentCount ?: 0}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(relativeTime(post.createdAt), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, modifier = Modifier.padding(start = 10.dp))
             }
         }
@@ -304,7 +319,13 @@ fun MessagesTab() {
                 Modifier.fillMaxWidth().padding(vertical = 10.dp).clickable { openChat = conv },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(if (conv.kind == "group") "👥" else "👤", modifier = Modifier.padding(end = 10.dp))
+                Icon(
+                    if (conv.kind == "group") Icons.Filled.Face else Icons.Filled.Person2,
+                    null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp).padding(end = 2.dp),
+                )
+                Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(conv.title, style = MaterialTheme.typography.titleMedium)
                     conv.lastMessage?.content?.let {

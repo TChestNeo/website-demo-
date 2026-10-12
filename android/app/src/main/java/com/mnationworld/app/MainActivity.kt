@@ -74,17 +74,63 @@ class MainActivity : ComponentActivity() {
                 else -> isSystemInDarkTheme()
             }
             MaterialTheme(
-                colorScheme = if (dark) {
-                    darkColorScheme(primary = Color(0xFF4648D4))
-                } else {
-                    lightColorScheme(primary = Color(0xFF4648D4))
-                }
+                colorScheme = if (dark) BrandDarkColors else BrandColors,
+                shapes = BrandShapes,
             ) {
                 AppRoot()
             }
         }
     }
 }
+
+// ── 品牌设计系统（与网页版 Ethereal Statecraft 对齐：蓝紫主色 / 浅灰底 / 大圆角 / 暗色族） ──
+
+private val BrandColors = lightColorScheme(
+    primary = Color(0xFF4648D4),
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFF6063EE),
+    onPrimaryContainer = Color.White,
+    secondary = Color(0xFF8127CF),
+    onSecondary = Color.White,
+    tertiary = Color(0xFF904900),
+    background = Color(0xFFF7F9FB),
+    onBackground = Color(0xFF191C1E),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF191C1E),
+    surfaceVariant = Color(0xFFF2F4F6),
+    onSurfaceVariant = Color(0xFF464554),
+    outline = Color(0xFF767586),
+    outlineVariant = Color(0xFFC7C4D7),
+    error = Color(0xFFBA1A1A),
+    surfaceContainer = Color(0xFFECEEF0),
+    surfaceContainerHigh = Color(0xFFE6E8EA),
+    surfaceContainerHighest = Color(0xFFE0E3E5),
+)
+
+private val BrandDarkColors = darkColorScheme(
+    primary = Color(0xFF8B8DF0),
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFF3A3DC4),
+    onPrimaryContainer = Color.White,
+    secondary = Color(0xFFB370F0),
+    tertiary = Color(0xFFB55D00),
+    background = Color(0xFF161625),
+    onBackground = Color(0xFFE2E2E8),
+    surface = Color(0xFF1A1A2E),
+    onSurface = Color(0xFFE2E2E8),
+    surfaceVariant = Color(0xFF202038),
+    onSurfaceVariant = Color(0xFFB8B8C8),
+    outline = Color(0xFF8E8E9E),
+    error = Color(0xFFFFB4AB),
+)
+
+private val BrandShapes = androidx.compose.material3.Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(28.dp),
+    extraLarge = RoundedCornerShape(32.dp),
+)
 
 @Composable
 fun AppRoot() {
