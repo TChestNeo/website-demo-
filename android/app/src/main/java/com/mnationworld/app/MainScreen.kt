@@ -1,5 +1,6 @@
 package com.mnationworld.app
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
@@ -167,15 +169,19 @@ fun EncyclopediaTab() {
 // ── 帖子卡片（社区流 + 点赞） ──
 
 @Composable
-fun PostRow(post: Post) {
-    Card(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+fun PostRow(post: Post, onOpen: () -> Unit = {}, onOpenAuthor: (() -> Unit)? = null) {
+    Card(Modifier.fillMaxWidth().padding(vertical = 6.dp).clickable(onClick = onOpen)) {
         Column(Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (!post.avatarUrl.isNullOrEmpty()) {
                     AsyncImage(model = post.avatarUrl, contentDescription = null, modifier = Modifier.size(28.dp))
                 }
                 Spacer(Modifier.width(8.dp))
-                Text(post.authorName ?: "匿名", style = MaterialTheme.typography.labelLarge)
+                Text(
+                    post.authorName ?: "匿名",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = if (onOpenAuthor != null) Modifier.clickable(onClick = onOpenAuthor) else Modifier,
+                )
             }
             Spacer(Modifier.height(6.dp))
             Text(post.content, style = MaterialTheme.typography.bodyMedium)
@@ -190,6 +196,7 @@ fun PostRow(post: Post) {
                     Text("${if (post.likedByMe == true) "❤" else "🤍"} ${post.likeCount ?: 0}")
                 }
                 Text("💬 ${post.commentCount ?: 0}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(relativeTime(post.createdAt), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, modifier = Modifier.padding(start = 10.dp))
             }
         }
     }
@@ -199,6 +206,30 @@ fun PostRow(post: Post) {
 
 @Composable
 fun CommunityTab() {
+    var openPost by remember { mutableStateOf<String?>(null) }
+    var openUser by remember { mutableStateOf<String?>(null) }
+    BackHandler(enabled = openPost != null || openUser != null) {
+        openPost = null
+        openUser = null
+    }
+
+    when {
+        openPost != null -> PostDetailScreen(
+            postId = openPost!!,
+            onBack = { openPost = null },
+            onOpenUser = { uid -> openUser = uid; openPost = null },
+        )
+        openUser != null -> ProfileScreen(
+            userId = openUser!!,
+            onBack = { openUser = null },
+            onOpenPost = { pid -> openPost = pid; openUser = null },
+        )
+        else -> CommunityFeed(onOpenPost = { openPost = it }, onOpenUser = { openUser = it })
+    }
+}
+
+@Composable
+private fun CommunityFeed(onOpenPost: (String) -> Unit, onOpenUser: (String) -> Unit) {
     var draft by remember { mutableStateOf("") }
     var posts by remember { mutableStateOf<List<Post>?>(null) }
     val scope = rememberCoroutineScope()
@@ -238,7 +269,13 @@ fun CommunityTab() {
         Spacer(Modifier.height(8.dp))
         LazyColumn(Modifier.weight(1f)) {
             posts?.forEach { p ->
-                item { PostRow(p) }
+                item {
+                    PostRow(
+                        post = p,
+                        onOpen = { onOpenPost(p.id) },
+                        onOpenAuthor = { onOpenUser(p.authorId) },
+                    )
+                }
             }
         }
     }
@@ -248,6 +285,14 @@ fun CommunityTab() {
 
 @Composable
 fun MessagesTab() {
+    var openChat by remember { mutableStateOf<Conversation?>(null) }
+    BackHandler(enabled = openChat != null) { openChat = null }
+
+    openChat?.let { conv ->
+        ChatScreen(convId = conv.id, title = conv.title, onBack = { openChat = null })
+        return
+    }
+
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text("消息", style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(8.dp))
@@ -256,7 +301,7 @@ fun MessagesTab() {
             emptyText = "暂无会话",
         ) { conv ->
             Row(
-                Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                Modifier.fillMaxWidth().padding(vertical = 10.dp).clickable { openChat = conv },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(if (conv.kind == "group") "👥" else "👤", modifier = Modifier.padding(end = 10.dp))

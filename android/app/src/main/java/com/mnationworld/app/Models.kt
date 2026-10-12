@@ -152,6 +152,81 @@ data class ProfilePatchBody(
 @Serializable
 data class ProfilePatchResponse(val user: User)
 
+// 评论（GET /api/social/posts/:id/comments）
+@Serializable
+data class Comment(
+    val id: String,
+    val postId: String,
+    val parentId: String? = null,
+    val authorId: String,
+    val authorName: String? = null,
+    val avatarUrl: String? = null,
+    val content: String,
+    val status: String? = null,
+    val createdAt: String? = null,
+)
+
+// 用户主页（GET /api/social/users/:id）
+@Serializable
+data class UserProfile(
+    val id: String,
+    val displayName: String,
+    val avatarUrl: String? = null,
+    val bio: String? = null,
+    val gender: String? = null,
+    val citizenId: String? = null,
+    val createdAt: String? = null,
+    val bannerUrl: String? = null,
+    val title: String? = null,
+    val isSelf: Boolean = false,
+    val followedByMe: Boolean = false,
+    val followerCount: Int = 0,
+    val followingCount: Int = 0,
+    val stats: ProfileStats? = null,
+)
+
+@Serializable
+data class ProfileStats(
+    val postCount: Int = 0,
+    val repostCount: Int = 0,
+    val likeReceivedCount: Int = 0,
+    val likeCount: Int? = null,
+    val favoriteCount: Int? = null,
+)
+
+// 聊天消息（GET /api/conversations/:id/messages）
+@Serializable
+data class ChatMessage(
+    val id: String,
+    val senderId: String,
+    val senderName: String? = null,
+    val content: String,
+    val createdAt: String? = null,
+)
+
+// 响应包
+@Serializable
+data class PostDetailResponse(val post: Post)
+
+@Serializable
+data class CommentsResponse(val comments: List<Comment> = emptyList())
+
+@Serializable
+data class UserProfileResponse(val user: UserProfile)
+
+@Serializable
+data class MessagesResponse(val messages: List<ChatMessage> = emptyList(), val hasMore: Boolean = false)
+
+@Serializable
+data class MessageResponse(val message: ChatMessage)
+
+// 请求体
+@Serializable
+data class CommentBody(val content: String, val parentId: String? = null)
+
+@Serializable
+data class MessageBody(val content: String)
+
 // 系统更新（GET /api/app/latest）
 @Serializable
 data class LatestApp(

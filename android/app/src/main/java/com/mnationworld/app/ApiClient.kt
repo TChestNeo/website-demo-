@@ -155,4 +155,47 @@ object ApiClient {
     // ── 系统更新 ──
     suspend fun latestApp(): LatestApp =
         json.decodeFromString(LatestApp.serializer(), get("/api/app/latest"))
+
+    // ── 帖子详情 / 评论 ──
+    suspend fun postDetail(id: String): Post =
+        json.decodeFromString(PostDetailResponse.serializer(), get("/api/social/posts/$id")).post
+
+    suspend fun comments(postId: String): List<Comment> =
+        json.decodeFromString(CommentsResponse.serializer(), get("/api/social/posts/$postId/comments")).comments
+
+    suspend fun postComment(postId: String, content: String, parentId: String? = null) {
+        post(
+            "/api/social/posts/$postId/comments",
+            json.encodeToString(CommentBody.serializer(), CommentBody(content, parentId))
+        )
+    }
+
+    suspend fun favorite(postId: String, fav: Boolean) {
+        if (fav) post("/api/social/posts/$postId/favorite") else delete("/api/social/posts/$postId/favorite")
+    }
+
+    suspend fun repost(postId: String, doRepost: Boolean) {
+        if (doRepost) post("/api/social/posts/$postId/repost") else delete("/api/social/posts/$postId/repost")
+    }
+
+    // ── 用户主页 ──
+    suspend fun userProfile(id: String): UserProfile =
+        json.decodeFromString(UserProfileResponse.serializer(), get("/api/social/users/$id")).user
+
+    suspend fun userPosts(id: String, tab: String = "posts"): List<Post> =
+        json.decodeFromString(PostsResponse.serializer(), get("/api/social/users/$id/posts?tab=$tab")).posts
+
+    suspend fun followUser(id: String, follow: Boolean) {
+        if (follow) post("/api/social/users/$id/follow") else delete("/api/social/users/$id/follow")
+    }
+
+    // ── 聊天 ──
+    suspend fun chatMessages(convId: String): List<ChatMessage> =
+        json.decodeFromString(MessagesResponse.serializer(), get("/api/conversations/$convId/messages")).messages
+
+    suspend fun sendMessage(convId: String, content: String): ChatMessage =
+        json.decodeFromString(
+            MessageResponse.serializer(),
+            post("/api/conversations/$convId/messages", json.encodeToString(MessageBody.serializer(), MessageBody(content)))
+        ).message
 }
