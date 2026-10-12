@@ -1587,6 +1587,12 @@ body.pre-stagger .auth-card { opacity: 0; }
   }
   .editor-toolbar { flex-wrap: wrap !important; }
   .editor-toolbar button { min-width: 36px; }
+  /* 内联双栏（1fr + 固定右栏 300/320/340px）手机收单列——首页工作台/社区流/关注页 */
+  [style*="grid-template-columns:1fr 340px"], [style*="grid-template-columns: 1fr 340px"],
+  [style*="grid-template-columns:1fr 320px"], [style*="grid-template-columns: 1fr 320px"],
+  [style*="grid-template-columns:1fr 300px"], [style*="grid-template-columns: 1fr 300px"] {
+    grid-template-columns: 1fr !important;
+  }
   .auth-card { height: auto; min-height: 560px; }
   .auth-panel,
   .auth-card.auth-tab-signup .auth-panel,
