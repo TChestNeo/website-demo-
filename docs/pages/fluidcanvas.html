@@ -1574,6 +1574,19 @@ body.pre-stagger .auth-card { opacity: 0; }
   .app-sidebar {
     display: none !important;
   }
+  /* v0.2.59.x 手机比例适配（52 页体检：内联多列栅格收窄 + 关键容器 2 列 + 工具栏换行） */
+  #statsRow, .kpi-grid, #kpiRow, #categoryGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* 内联 4-7 列纯 grid（无固定宽度前缀——排除 48px repeat(7,1fr) 图表类）统一收 2 列 */
+  [style*="grid-template-columns:repeat(4,"], [style*="grid-template-columns: repeat(4,"],
+  [style*="grid-template-columns:repeat(5,"], [style*="grid-template-columns: repeat(5,"],
+  [style*="grid-template-columns:repeat(6,"], [style*="grid-template-columns: repeat(6,"],
+  [style*="grid-template-columns:repeat(7,"], [style*="grid-template-columns: repeat(7,"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .editor-toolbar { flex-wrap: wrap !important; }
+  .editor-toolbar button { min-width: 36px; }
   .auth-card { height: auto; min-height: 560px; }
   .auth-panel,
   .auth-card.auth-tab-signup .auth-panel,
