@@ -37,10 +37,32 @@ test('edge-gen：未登录 401', async () => {
   } finally { await t.close(); }
 });
 
+test('edge-gen：Free/Basic 403，过期 Premium 惰性降级后也拒绝', async () => {
+  const calls = { n: 0 };
+  const t = await testApp({
+    config: { gemini: { apiKey: 'test-key' } },
+    fetchImpl: geminiStub(OK_REPLY, calls)
+  });
+  try {
+    const free = t.loginAs('free-gen@example.com');
+    const basic = t.loginAs('basic-gen@example.com', { tier: 'basic' });
+    const expired = t.loginAs('expired-gen@example.com', { tier: 'premium' });
+    t.db.prepare('UPDATE users SET tier_expires_at = ? WHERE id = ?')
+      .run(new Date(Date.now() - 1000).toISOString(), expired.user.id);
+    for (const account of [free, basic, expired]) {
+      const r = await t.request('POST', '/api/fc/edge-gen', BODY(), { cookie: account.cookie });
+      assert.strictEqual(r.status, 403);
+      assert.strictEqual((await r.json()).error.code, 'FORBIDDEN');
+    }
+    assert.strictEqual(t.db.prepare('SELECT tier FROM users WHERE id = ?').get(expired.user.id).tier, 'free');
+    assert.strictEqual(calls.n, 0, '权限失败不得调用 Gemini');
+  } finally { await t.close(); }
+});
+
 test('edge-gen：校验 400（描述与附图至少一项；附图格式白名单）', async () => {
   const t = await testApp();
   try {
-    const { cookie } = t.loginAs('gen@example.com');
+    const { cookie } = t.loginAs('gen@example.com', { tier: 'premium' });
     assert.strictEqual((await t.request('POST', '/api/fc/edge-gen', {}, { cookie })).status, 400);
     assert.strictEqual((await t.request('POST', '/api/fc/edge-gen', { kind: 'edge', desc: '' }, { cookie })).status, 400);
     assert.strictEqual((await t.request('POST', '/api/fc/edge-gen', BODY({ image: 'data:image/svg+xml;base64,PHN2Zz4=' }), { cookie })).status, 400);
@@ -50,7 +72,7 @@ test('edge-gen：校验 400（描述与附图至少一项；附图格式白名�
 test('edge-gen：无 API key → 503 {unavailable:true}（前端 toast 引导，零打扰）', async () => {
   const t = await testApp();
   try {
-    const { cookie } = t.loginAs('gen@example.com');
+    const { cookie } = t.loginAs('gen@example.com', { tier: 'premium' });
     const r = await t.request('POST', '/api/fc/edge-gen', BODY(), { cookie });
     assert.strictEqual(r.status, 503);
     assert.deepStrictEqual(await r.json(), { unavailable: true });
@@ -64,7 +86,7 @@ test('edge-gen：Gemini 往返——URL/x-goog-api-key/model 缺省 gemini-3.8-f
     fetchImpl: geminiStub(OK_REPLY, calls)
   });
   try {
-    const { cookie } = t.loginAs('gen@example.com');
+    const { cookie } = t.loginAs('gen@example.com', { tier: 'premium' });
     const r = await t.request('POST', '/api/fc/edge-gen', BODY({ name: '我的撕边' }), { cookie });
     assert.strictEqual(r.status, 200);
     const b = await r.json();
@@ -94,7 +116,7 @@ test('edge-gen：带图——inline_data 进 parts（png dataURL）', async () =
     fetchImpl: geminiStub(OK_REPLY, calls)
   });
   try {
-    const { cookie } = t.loginAs('gen@example.com');
+    const { cookie } = t.loginAs('gen@example.com', { tier: 'premium' });
     const r = await t.request('POST', '/api/fc/edge-gen',
       BODY({ desc: '', image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' }), { cookie });
     assert.strictEqual(r.status, 200);
@@ -115,7 +137,7 @@ test('edge-gen：AI 回垃圾/坏 clip → 200 {ok:false}（降级不拦生成�
   for (const stub of cases) {
     const t = await testApp({ config: { gemini: { apiKey: 'test-key' } }, fetchImpl: stub });
     try {
-      const { cookie } = t.loginAs('gen@example.com');
+      const { cookie } = t.loginAs('gen@example.com', { tier: 'premium' });
       const r = await t.request('POST', '/api/fc/edge-gen', BODY(), { cookie });
       assert.strictEqual(r.status, 200);
       assert.deepStrictEqual(await r.json(), { ok: false });
@@ -129,7 +151,7 @@ test('edge-gen：限流——config.rateLimits.edgeGen 2/min 后 429', async () 
     fetchImpl: geminiStub(OK_REPLY)
   });
   try {
-    const { cookie } = t.loginAs('gen@example.com');
+    const { cookie } = t.loginAs('gen@example.com', { tier: 'premium' });
     assert.strictEqual((await t.request('POST', '/api/fc/edge-gen', BODY(), { cookie })).status, 200);
     assert.strictEqual((await t.request('POST', '/api/fc/edge-gen', BODY(), { cookie })).status, 200);
     assert.strictEqual((await t.request('POST', '/api/fc/edge-gen', BODY(), { cookie })).status, 429);
@@ -144,7 +166,7 @@ test('edge-gen：预算耗尽 → 200 {budget_exhausted:true}（零 AI 调用）
   });
   try {
     t.db.prepare("INSERT INTO platform_settings (key, value, type, updated_at) VALUES ('budget.edgeGen', '0', 'number', ?)").run(new Date().toISOString());
-    const { cookie } = t.loginAs('gen@example.com');
+    const { cookie } = t.loginAs('gen@example.com', { tier: 'premium' });
     const r = await t.request('POST', '/api/fc/edge-gen', BODY(), { cookie });
     assert.strictEqual(r.status, 200);
     assert.deepStrictEqual(await r.json(), { budget_exhausted: true });
@@ -159,7 +181,7 @@ test('edge-gen：config.gemini.model 覆写生效（env GEMINI_MODEL 路径）',
     fetchImpl: geminiStub(OK_REPLY, calls)
   });
   try {
-    const { cookie } = t.loginAs('gen@example.com');
+    const { cookie } = t.loginAs('gen@example.com', { tier: 'premium' });
     await t.request('POST', '/api/fc/edge-gen', BODY(), { cookie });
     assert.ok(calls.lastUrl.includes('/models/gemini-2.5-pro:generateContent'));
   } finally { await t.close(); }

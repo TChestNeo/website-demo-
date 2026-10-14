@@ -9,6 +9,7 @@
 
 const { HttpError, sendJson, readJson } = require('../../http');
 const { requireSession, authenticate } = require('../../middleware/auth');
+const { requireTier } = require('../../tiers');
 const { insertWithId, pad6 } = require('../../ids');
 const { createModerationItem, l0Screen, applyDecision } = require('../../moderation/pipeline');
 const { hashOf } = require('../../moderation/rules');
@@ -117,10 +118,10 @@ function register(router, ctx) {
   // v0.2.59.28 智能搜索（用户「开启智能搜索的情况下描述文章来获取搜索目标」）：
   // 自然语言查询 + 已发布文章的标题/简介/检索摘要 → DeepSeek Flash 语义排序。
   // 降级：无 key / AI 故障 / 超时 → 关键词回退（标题/简介/摘要 LIKE），永不 500。
-  router.add('POST', '/api/articles/search/smart', async (req, res) => {
+  router.add('POST', '/api/articles/search/smart', requireSession(async (req, res, c) => {
+    const user = requireTier(db, ctx.config, c.user, 'premium', '智能搜索需要 Premium 或 Premium Ultra 订阅');
     const w = (ctx.config.rateLimits || {}).smartSearch || { max: 10, windowMs: 60000 };
-    const ip = String((req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || 'ip');
-    if (!ctx.limiter('artsmart:' + ip, w.max, w.windowMs)) throw new HttpError('RATE_LIMITED', '智能搜索太频繁，请稍候再试');
+    if (!ctx.limiter('artsmart:user:' + user.id, w.max, w.windowMs)) throw new HttpError('RATE_LIMITED', '智能搜索太频繁，请稍候再试');
     const body = await readJson(req, 8 * 1024);
     const q = String(body.q || '').trim().slice(0, 300);
     if (!q) throw new HttpError('VALIDATION', '请输入搜索描述');
@@ -143,7 +144,7 @@ function register(router, ctx) {
       degraded = true;
     }
     sendJson(res, 200, { articles: ranked.map((r) => meta(db, r)), smart: true, degraded });
-  });
+  }));
 
   router.add('GET', '/api/articles/:id', (req, res) => {
     const row = db.prepare('SELECT * FROM articles WHERE id = ?').get(req.params.id);
@@ -225,6 +226,15 @@ function register(router, ctx) {
     if (!content || content.length > MAX_COMMENT_LEN) throw new HttpError('VALIDATION', `内容需 1-${MAX_COMMENT_LEN} 字符`);
     const art = db.prepare('SELECT * FROM articles WHERE id = ?').get(req.params.id);
     if (!art || art.status !== 'published') throw new HttpError('NOT_FOUND', '文章不存在或未公开');
+    // 账号偏好跨设备生效：作者关闭评论后，其他用户不可评论；作者仍可在自己的文章下补充说明。
+    if (art.author_id !== c.user.id) {
+      const author = db.prepare('SELECT preferences FROM users WHERE id = ?').get(art.author_id);
+      let preferences = {};
+      if (author && author.preferences) {
+        try { preferences = JSON.parse(author.preferences) || {}; } catch (e) { /* 坏 JSON 按无偏好处理 */ }
+      }
+      if (preferences.allow_comments === false) throw new HttpError('FORBIDDEN', '作者已关闭评论');
+    }
     const iso = new Date().toISOString();
     // 处罚生效：禁言 / 发布受限（与帖子评论同口径）
     if (c.user.muted_until && c.user.muted_until > iso) throw new HttpError('RESTRICTED', '你已被禁言，暂时无法评论');

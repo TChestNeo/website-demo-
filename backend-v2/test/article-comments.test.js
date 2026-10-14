@@ -236,3 +236,29 @@ test('q 搜索：大小写不敏感 + %/_ 转义 + 只搜 published + authorName
     for (const a of list) assert.ok(a.authorName !== undefined);
   } finally { await t.close(); }
 });
+
+test('P0-2 allow_comments：缺省允许 / 关闭后他人 403 / 作者自评放行 / 显式 true 恢复', async () => {
+  const t = await testApp();
+  try {
+    const { alice, bob } = await setupPair(t);
+
+    // 1. 缺省（无偏好）→ 允许
+    const artOpen = await makeArticle(t, alice, 'Open Comments');
+    assert.strictEqual((await t.request('POST', '/api/articles/' + artOpen + '/comments', { content: '缺省可评' }, { cookie: bob.cookie })).status, 200);
+
+    // 2. 关闭 → 他人 403 FORBIDDEN
+    t.db.prepare('UPDATE users SET preferences = ? WHERE id = ?').run(JSON.stringify({ allow_comments: false }), alice.user.id);
+    const artClosed = await makeArticle(t, alice, 'Closed Comments');
+    const denied = await t.request('POST', '/api/articles/' + artClosed + '/comments', { content: CLEAN }, { cookie: bob.cookie });
+    assert.strictEqual(denied.status, 403);
+    assert.strictEqual((await denied.json()).error.code, 'FORBIDDEN');
+
+    // 3. 作者自评放行
+    assert.strictEqual((await t.request('POST', '/api/articles/' + artClosed + '/comments', { content: '作者补充说明' }, { cookie: alice.cookie })).status, 200);
+
+    // 4. 显式 true → 恢复允许
+    t.db.prepare('UPDATE users SET preferences = ? WHERE id = ?').run(JSON.stringify({ allow_comments: true }), alice.user.id);
+    const artReopen = await makeArticle(t, alice, 'Reopen Comments');
+    assert.strictEqual((await t.request('POST', '/api/articles/' + artReopen + '/comments', { content: '重新开放可评' }, { cookie: bob.cookie })).status, 200);
+  } finally { await t.close(); }
+});

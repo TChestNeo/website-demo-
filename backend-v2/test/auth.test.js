@@ -93,7 +93,9 @@ test('verify：新邮箱建号 status=new + user 形状（camel）+ Set-Cookie m
   const body = await res.json();
   assert.strictEqual(body.status, 'new');
   assert.deepStrictEqual(Object.keys(body.user).sort(), [
-    'avatarCrop', 'avatarFrame', 'avatarUrl', 'bannerCrop', 'citizenId', 'createdAt', 'displayName', 'email', 'gender', 'hasPassword', 'id', 'role', 'status', 'student', 'tier', 'tierExpiresAt', 'title', 'xpGained'
+    'avatarCrop', 'avatarFrame', 'avatarUrl', 'bannerCrop', 'bio', 'citizenId', 'country', 'createdAt',
+    'displayName', 'dob', 'email', 'gender', 'hasPassword', 'id', 'language', 'role', 'status', 'student',
+    'preferences', 'tier', 'tierExpiresAt', 'title', 'xpGained'
   ].sort());
   assert.strictEqual(body.user.gender, null); // 013：未填写 NULL
   assert.strictEqual(body.user.displayName, 'Neo');
@@ -382,10 +384,16 @@ test('PATCH me：更新资料 + profile_update 审计（prev/next 差异）', as
   const a = await testApp();
   t.after(() => a.close());
   const { cookie } = a.loginAs('patch@example.com');
-  const res = await a.request('PATCH', '/api/auth/me', { displayName: '新名字', bio: 'hi' }, { cookie });
+  const res = await a.request('PATCH', '/api/auth/me', {
+    displayName: '新名字', bio: 'hi', language: 'zh', country: 'Malaysia', dob: '1990-01-01'
+  }, { cookie });
   assert.strictEqual(res.status, 200);
   const body = await res.json();
   assert.strictEqual(body.user.displayName, '新名字');
+  assert.strictEqual(body.user.bio, 'hi');
+  assert.strictEqual(body.user.language, 'zh');
+  assert.strictEqual(body.user.country, 'Malaysia');
+  assert.strictEqual(body.user.dob, '1990-01-01');
   const row = a.db.prepare("SELECT * FROM audit_log WHERE action = 'profile_update'").get();
   assert.ok(row, 'PATCH me 应审计');
   const prev = JSON.parse(row.prev_value);
@@ -403,6 +411,40 @@ test('PATCH me：更新资料 + profile_update 审计（prev/next 差异）', as
   assert.strictEqual(JSON.parse(gAudit.new_value).gender, 'Female');
   const badG = await a.request('PATCH', '/api/auth/me', { gender: 'Helicopter' }, { cookie });
   assert.strictEqual(badG.status, 400);
+});
+
+test('PATCH me：账号偏好跨设备持久化、增量合并并拒绝未知键', async (t) => {
+  const a = await testApp();
+  t.after(() => a.close());
+  const { cookie } = a.loginAs('preferences@example.com');
+
+  let res = await a.request('PATCH', '/api/auth/me', {
+    preferences: { allow_dm: false, reduce_motion: true, audience: 'followers', 'topic_科技': true }
+  }, { cookie });
+  assert.strictEqual(res.status, 200);
+  let user = (await res.json()).user;
+  assert.deepStrictEqual(user.preferences, {
+    allow_dm: false, reduce_motion: true, audience: 'followers', 'topic_科技': true
+  });
+
+  res = await a.request('PATCH', '/api/auth/me', {
+    preferences: { allow_dm: true }
+  }, { cookie });
+  assert.strictEqual(res.status, 200);
+  user = (await res.json()).user;
+  assert.strictEqual(user.preferences.allow_dm, true);
+  assert.strictEqual(user.preferences.reduce_motion, true, '增量更新不能覆盖其他设备偏好');
+  assert.strictEqual((await (await a.request('GET', '/api/auth/me', undefined, { cookie })).json()).user.preferences.audience, 'followers');
+
+  assert.strictEqual((await a.request('PATCH', '/api/auth/me', {
+    preferences: { allow_dm: 'yes' }
+  }, { cookie })).status, 400);
+  assert.strictEqual((await a.request('PATCH', '/api/auth/me', {
+    preferences: { admin_mode: true }
+  }, { cookie })).status, 400);
+  assert.strictEqual((await a.request('PATCH', '/api/auth/me', {
+    preferences: { audience: 'everyone' }
+  }, { cookie })).status, 400);
 });
 
 test('logout：清 cookie + 幂等（无会话也 200）', async (t) => {

@@ -46,7 +46,13 @@
     .specimen .note b { color: #c9c4da; font-weight: 600; }
     .pill-row { display: flex; gap: 32px; align-items: center; flex-wrap: wrap; padding: 24px 8px; }
     table { border-collapse: collapse; width: 100%; font-size: 13.5px; margin-top: 12px; }
-    @media (max-width: 768px) { .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; } .table-scroll table { min-width: 560px; } }
+    @media (max-width: 768px) {
+      .wrap { padding: 28px 20px 72px; }
+      .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .table-scroll table { min-width: 560px; }
+      .specimen, .card-parchment, .card-tech { max-width: 100%; box-sizing: border-box; }
+      .specimen code { overflow-wrap: anywhere; word-break: break-word; }
+    }
     th, td { border: 1px solid rgba(255,255,255,0.12); padding: 10px 14px; text-align: left; vertical-align: top; }
     th { background: rgba(255,255,255,0.05); color: #e8c37a; font-weight: 600; }
     td:first-child { white-space: nowrap; color: #9fd8e8; }

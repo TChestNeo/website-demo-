@@ -6,7 +6,7 @@ const assert = require('node:assert');
 const { testApp } = require('./helpers');
 const money = require('../src/money');
 
-test('health：200 {status,db,tables,version,time}，69 表，版本 2.0.0', async (t) => {
+test('health：200 {status,db,tables,version,time}，72 表，版本 2.0.0', async (t) => {
   const a = await testApp();
   t.after(() => a.close());
   const res = await a.request('GET', '/api/health');
@@ -14,7 +14,7 @@ test('health：200 {status,db,tables,version,time}，69 表，版本 2.0.0', asy
   const body = await res.json();
   assert.strictEqual(body.status, 'ok');
   assert.strictEqual(body.db, 'ok');
-  assert.strictEqual(body.tables, 69);
+  assert.strictEqual(body.tables, 72);
   assert.strictEqual(body.version, '2.0.0');
 });
 

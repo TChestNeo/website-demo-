@@ -306,6 +306,30 @@
 
     e.preventDefault();
 
+    // 手机底部 Tab：由 sidebar.js 在同一次点击中记录方向。页面与选中胶囊沿同一
+    // 水平方向交接，避免常规垂直导航在底部标签栏场景里显得跳跃。
+    var mobileTabDirection = '';
+    try {
+      mobileTabDirection = sessionStorage.getItem('slati_mbn_direction') || '';
+      sessionStorage.removeItem('slati_mbn_direction');
+    } catch (e) {}
+    if (mobileTabDirection === 'forward' || mobileTabDirection === 'back') {
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion) {
+        window.location.href = href;
+        return;
+      }
+      var mobileMain = getMainEl();
+      var forward = mobileTabDirection === 'forward';
+      mobileMain.style.transition = 'opacity 200ms cubic-bezier(0.23, 1, 0.32, 1), transform 200ms cubic-bezier(0.23, 1, 0.32, 1)';
+      mobileMain.style.opacity = '0';
+      mobileMain.style.transform = forward ? 'translateX(-18px)' : 'translateX(18px)';
+      mobileMain.style.willChange = 'opacity, transform';
+      try { sessionStorage.setItem('slati_entrance_dir', forward ? 'right' : 'left'); } catch (e) {}
+      setTimeout(function () { window.location.href = href; }, 200);
+      return;
+    }
+
     var currentIdx = getNavIndex(window.location.pathname);
     var targetIdx = getNavIndex(href);
 

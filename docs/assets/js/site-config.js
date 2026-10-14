@@ -1579,7 +1579,13 @@ window.MN_SITE = window.MN_SITE || {};
 //   四向描边投影）+ 组内卡一体外观（藏独立边框/卡面/阴影）——FC 合并的组发布后不再散开。
 // v0.2.59.30 = 文章页数据卡/表格卡阅读渲染：stats 卡（statsRows 列表 + column/bar/pie/donut 简易图表，
 //   其余图表回退列表）+ sheet 卡（sheetData 真 HTML 表格）；流式兜底模式同步支持。
-window.MN_SITE_VERSION = 'v0.2.59.50';
+// v0.2.59.51 = 移动端订阅页适配与订阅权益矩阵校准（补丁位 50→51；2026-10-14）——
+//   手机底部导航、横屏侧栏隐藏、登录验证码与社区卡片窄屏适配；订阅页重制移动卡片背景与标签安全区，
+//   并按当前 Basic / Premium / Premium Ultra 实际权益重写功能矩阵，移除「3D 卡片装饰」矩阵条目。
+// v0.2.59.52 = 计划功能契约与云端可靠性修复（补丁位 51→52；2026-10-14）——
+//   修复生产登录降级、账号删除、入驻/世界归档、消息删除/转发/置顶、设置偏好跨设备与社区搜索；
+//   套餐团队容量独立计期并补齐 AI 服务端门禁，统一订阅页、帮助、条款与项目说明的实际/规划中口径。
+window.MN_SITE_VERSION = 'v0.2.59.52';
 
 // FluidCanvas 自身版本号（FC 独立版本线，口径：大版本.小版本.小更新.补丁；与站点号无关）——FC 首页头部 + 编辑器 badge/ready log 显示
 // v10.28.9.1 = 区域编辑器口径修正：去掉框完自动弹名称面板（点区域/列表才滑出）+ 编辑器名称标签上缘居中（补丁位 0→1·口径修正轮；2026-08-30）
@@ -2590,6 +2596,29 @@ window.MN_SITE_VERSION = 'v0.2.59.50';
 // v10.28.63.27 = 甩出更远+阻尼回弹（用户「甩出的距离更远一点希望更加自然」）：三段阻尼振荡——35% +38px 拉长、62% -9px 压扁、82% +4px 小过冲、100% 回原位。
 // v10.28.63.28 = 回弹放慢（用户「回弹速度可以不要那么快」）：0.5s→0.7s、回弹段拉长（70%）、二次小过冲后置（88%），衰减更舒缓。
 window.FLUIDCANVAS_VERSION = 'v10.28.64.20';
+
+/* ─────────────────────────────────────────────
+   手机布局保护层：页面本体大多将设计系统 CSS 内联，不能只依赖外链
+   ethereal.css。这里在加载 site-config 的页面补一层小屏规则，防止网格
+   最小内容、成对操作按钮、表格和代码样例把 390px 视口撑出横向滚动。
+   ───────────────────────────────────────────── */
+(function () {
+  if (document.getElementById('mn-mobile-layout-guard')) return;
+  var style = document.createElement('style');
+  style.id = 'mn-mobile-layout-guard';
+  style.textContent = [
+    '@media (max-width:768px), (orientation:landscape) and (max-height:500px){',
+    'html,body{overflow-x:clip}',
+    '.app-main{padding-left:20px!important;padding-right:20px!important;padding-bottom:96px!important}',
+    '.app-main>*,.fc-split-grid>*,.fc-two-col>*,.fc-split-flex>*{min-width:0}',
+    '.fc-split-grid,.fc-two-col{min-width:0}',
+    '.flex-between{flex-wrap:wrap;gap:12px}',
+    '.app-main table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}',
+    '.app-main pre,.app-main code{overflow-wrap:anywhere;word-break:break-word}',
+    '}',
+  ].join('');
+  document.head.appendChild(style);
+})();
 
 /* ─────────────────────────────────────────────
    v0.2.58.16 全站灯塔：每页一次 POST /api/analytics/pageview（动态页热力图数据源）。

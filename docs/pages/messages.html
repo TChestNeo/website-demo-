@@ -2983,7 +2983,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
     <span class="material-symbols-outlined" style="font-size:18px;color:var(--color-on-surface-variant)">forward</span>
     <span data-i18n="messages.ctx.forward">Forward</span>
   </button>
-  <button onclick="ctxDelete()" style="display:flex;align-items:center;gap:var(--space-sm);width:100%;padding:10px 16px;border:none;background:var(--card-bg);cursor:pointer;text-align:left;font-size:var(--fs-label-md);transition:background 0.12s;color:#dc2626" onmouseenter="this.style.background='rgba(220,38,38,0.05)'" onmouseleave="this.style.background='var(--card-bg)'">
+  <button id="ctxDeleteBtn" onclick="ctxDelete()" style="display:flex;align-items:center;gap:var(--space-sm);width:100%;padding:10px 16px;border:none;background:var(--card-bg);cursor:pointer;text-align:left;font-size:var(--fs-label-md);transition:background 0.12s;color:#dc2626" onmouseenter="this.style.background='rgba(220,38,38,0.05)'" onmouseleave="this.style.background='var(--card-bg)'">
     <span class="material-symbols-outlined" style="font-size:18px;color:#dc2626">delete</span>
     <span data-i18n="messages.ctx.delete">Delete</span>
   </button>
@@ -3231,6 +3231,41 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
   // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
   function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
 
+  // SECURITY INVARIANT: cloud/localStorage values stay raw in memory and are encoded only
+  // at their final HTML context. Never concatenate user-controlled text, names, IDs or
+  // filenames into innerHTML/attributes without one of these helpers.
+  function msgString(value) {
+    return value === null || value === undefined ? '' : String(value);
+  }
+  function msgEscapeHtml(value) {
+    return msgString(value).replace(/[&<>"']/g, function(ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+  function msgEscapeAttr(value) {
+    return msgEscapeHtml(value).replace(/`/g, '&#96;');
+  }
+  function msgEscapeInlineJs(value) {
+    var js = msgString(value)
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/\0/g, '\\x00')
+      .replace(/\r/g, '\\r')
+      .replace(/\n/g, '\\n')
+      .replace(/\u2028/g, '\\u2028')
+      .replace(/\u2029/g, '\\u2029')
+      .replace(/</g, '\\x3c')
+      .replace(/>/g, '\\x3e');
+    return msgEscapeAttr(js);
+  }
+  function msgSafeMediaUrl(value) {
+    var url = msgString(value).trim();
+    if (/^blob:[^\s"'()<>]+$/i.test(url)) return url;
+    if (/^data:image\/(?:png|jpe?g|gif|webp|avif);base64,[a-z0-9+/=]+$/i.test(url)) return url;
+    if (/^data:video\/(?:mp4|webm|ogg);base64,[a-z0-9+/=]+$/i.test(url)) return url;
+    return '';
+  }
+
   // ──────────────────────────────────────────────
   //  CONTEXT MENU + FORWARD + PERSISTENCE
   // ──────────────────────────────────────────────
@@ -3243,7 +3278,16 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
   // Safe media registry — avoids embedding long base64 data URLs in inline onclick
   var _mediaReg = {};
   var _mediaRegId = 0;
-  function _regMedia(data) { var id = 'mr' + (++_mediaRegId); _mediaReg[id] = data; return id; }
+  function _regMedia(data) {
+    var id = 'mr' + (++_mediaRegId);
+    data = data || {};
+    _mediaReg[id] = {
+      dataUrl: msgSafeMediaUrl(data.dataUrl),
+      videoUrl: msgSafeMediaUrl(data.videoUrl),
+      vidType: msgString(data.vidType || 'video/mp4')
+    };
+    return id;
+  }
   window._openRegMedia = function(id) {
     var m = _mediaReg[id];
     if (!m) return;
@@ -3330,13 +3374,22 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
       Object.keys(mockMessages).forEach(function(id) {
         if (!cloudMode || !cloudConvs[id]) saveMsgs[id] = mockMessages[id];
       });
+      var saveGroups = cloudMode ? groups.filter(function(g) { return !cloudGroups[g.id]; }) : groups;
+      var saveGroupMsgs = {};
+      Object.keys(mockGroupMessages).forEach(function(id) {
+        if (!cloudMode || !cloudGroups[id]) saveGroupMsgs[id] = mockGroupMessages[id];
+      });
+      var savePins = {};
+      Object.keys(pinnedMessages).forEach(function(id) {
+        if (!cloudMode || (!cloudConvs[id] && !cloudGroups[id])) savePins[id] = pinnedMessages[id];
+      });
       var data = JSON.stringify({
         _version: DATA_VERSION,
         conversations: saveConvs,
         mockMessages: saveMsgs,
-        groups: groups,
-        mockGroupMessages: mockGroupMessages,
-        pinnedMessages: pinnedMessages,
+        groups: saveGroups,
+        mockGroupMessages: saveGroupMsgs,
+        pinnedMessages: savePins,
         invites: invites
       });
       localStorage.setItem('slati_messages', data);
@@ -3347,12 +3400,20 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
     }
   }
 
+  function isCloudConversation(panel, id) {
+    return !!(cloudMode && (panel === 'group' ? cloudGroups[id] : cloudConvs[id]));
+  }
+
+  function messageStoreFor(panel) {
+    return panel === 'group' ? mockGroupMessages : mockMessages;
+  }
+
   function msgBubble(m, idx, isPinned, panel, chatId, isJustPinned) {
     var isSent = !m.sent;
     var animClass = isJustPinned ? ' fade-up' : '';
     var pinBadge = isPinned ? '<span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;margin-right:2px;color:#eab308">push_pin</span>' : '';
     var fwdLabel = m._forwardedFrom
-      ? '<div class="label-sm" style="margin-bottom:4px;opacity:0.55;font-style:italic;font-size:10px">' + (T('messages.msg.fwdFrom') || '↪ Forwarded from ') + '<b>' + m._forwardedFrom + '</b></div>'
+      ? '<div class="label-sm" style="margin-bottom:4px;opacity:0.55;font-style:italic;font-size:10px">' + (T('messages.msg.fwdFrom') || '↪ Forwarded from ') + '<b>' + msgEscapeHtml(m._forwardedFrom) + '</b></div>'
       : '';
 
     // Video messages: thumbnail with play button overlay
@@ -3374,7 +3435,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
               '<span class="material-symbols-outlined" style="font-size:12px">smart_display</span>' + (T('messages.msg.video') || 'Video') + '</div>';
         return '<div class="msg-row' + animClass + '" style="display:flex;flex-direction:column;align-items:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:12px" oncontextmenu="showContextMenu(event,\'' + panel + '\',\'' + chatId + '\',' + idx + ',' + (isPinned ? 'true' : 'false') + ')">' +
           '<div style="position:relative;display:inline-block;cursor:pointer" onclick="' + vidClick + '">' +
-            '<img src="' + m._file.dataUrl + '" style="' + vStyle + '" alt="' + m._file.name + '">' +
+            '<img src="' + msgEscapeAttr(m._file.dataUrl) + '" style="' + vStyle + '" alt="' + msgEscapeAttr(m._file.name) + '">' +
             playOverlay +
           '</div>' + vReadMark +
         '</div>';
@@ -3390,7 +3451,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
             '<div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,0.3)">' +
               '<span class="material-symbols-outlined" style="font-size:26px;color:white;margin-left:3px">play_arrow</span>' +
             '</div>' +
-            '<div style="position:absolute;bottom:0;left:0;right:0;padding:8px 10px;background:linear-gradient(transparent,rgba(0,0,0,0.6));color:white;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + m._file.name + '</div>' +
+            '<div style="position:absolute;bottom:0;left:0;right:0;padding:8px 10px;background:linear-gradient(transparent,rgba(0,0,0,0.6));color:white;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + msgEscapeHtml(m._file.name) + '</div>' +
           '</div>' + vReadMark +
         '</div>';
       }
@@ -3402,7 +3463,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
       var readMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">' + (T('messages.msg.read') || 'Read') + '</div>' : '';
       var imgMediaId = _regMedia({ dataUrl: m._file.dataUrl, videoUrl: null });
       return '<div class="msg-row' + animClass + '" style="display:flex;flex-direction:column;align-items:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:12px" oncontextmenu="showContextMenu(event,\'' + panel + '\',\'' + chatId + '\',' + idx + ',' + (isPinned ? 'true' : 'false') + ')">' +
-        '<img src="' + m._file.dataUrl + '" style="' + imgStyle + '" alt="' + m._file.name + '" onclick="_openRegLightbox(\'' + imgMediaId + '\')">' +
+        '<img src="' + msgEscapeAttr(m._file.dataUrl) + '" style="' + imgStyle + '" alt="' + msgEscapeAttr(m._file.name) + '" onclick="_openRegLightbox(\'' + imgMediaId + '\')">' +
         readMark +
       '</div>';
     }
@@ -3414,19 +3475,19 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
         // File card (non-image, non-video)
         body += '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--divider-line);border-radius:var(--radius-DEFAULT);margin-bottom:6px">' +
           '<span class="material-symbols-outlined" style="font-size:24px;' + (isSent ? 'color:rgba(255,255,255,0.8)' : 'color:var(--color-primary)') + '">draft</span>' +
-          '<div style="min-width:0"><div style="font-weight:500;font-size:var(--fs-label-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + m._file.name + '</div>' +
+          '<div style="min-width:0"><div style="font-weight:500;font-size:var(--fs-label-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + msgEscapeHtml(m._file.name) + '</div>' +
           '<div style="font-size:10px;opacity:0.55">' + (m._file.mode === 'compress' ? (T('messages.msg.compressed') || 'Compressed') : (T('messages.msg.original') || 'Original')) + '</div></div>' +
         '</div>';
       }
     }
-    body += m.text;
+    body += msgEscapeHtml(m.text);
     var readMark = isSent && m._readByOther ? '<div style="text-align:right;font-size:10px;color:var(--color-outline);margin-top:2px;padding-right:4px">' + (T('messages.msg.read') || 'Read') + '</div>' : '';
 
     return '<div class="msg-row' + animClass + '" style="display:flex;flex-direction:column;align-items:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:12px" oncontextmenu="showContextMenu(event,\'' + panel + '\',\'' + chatId + '\',' + idx + ',' + (isPinned ? 'true' : 'false') + ')">' +
       '<div' + (isSent ? ' class="msg-acc"' : '') + ' style="max-width:70%;padding:10px 16px;border-radius:' + (isSent ? 'var(--radius-xl) var(--radius-xl) 4px var(--radius-xl)' : 'var(--radius-xl) var(--radius-xl) var(--radius-xl) 4px') + ';' +
         (isSent ? 'background:var(--color-primary);color:white;' : 'background:var(--card-bg);border:1px solid var(--divider-line);color:var(--color-on-surface);') +
         'font-size:var(--fs-label-md);cursor:default;overflow:hidden">' +
-        '<div class="label-sm" style="margin-bottom:2px;opacity:0.7">' + pinBadge + m.from + '</div>' +
+        '<div class="label-sm" style="margin-bottom:2px;opacity:0.7">' + pinBadge + msgEscapeHtml(m.from) + '</div>' +
         fwdLabel + body +
       '</div>' +
       readMark +
@@ -3470,6 +3531,12 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
   function showContextMenu(e, panel, chatId, idx, isPinned) {
     e.preventDefault();
     ctxTarget = { panel: panel, chatId: chatId, msgIndex: idx, isPinned: isPinned };
+    var targetMessage = (messageStoreFor(panel)[chatId] || [])[idx];
+    var deleteBtn = document.getElementById('ctxDeleteBtn');
+    if (deleteBtn) {
+      // 云端删除只允许发送者本人；本地演示数据继续保持原行为。
+      deleteBtn.style.display = isCloudConversation(panel, chatId) && targetMessage && targetMessage.from !== 'You' ? 'none' : 'flex';
+    }
     var menu = document.getElementById('msgContextMenu');
     menu.style.display = 'block';
     menu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
@@ -3513,37 +3580,60 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
     }
   }
 
+  function renderCachedTarget(panel, chatId) {
+    if (panel === 'group') {
+      activeGroup = chatId;
+      renderGroupMessages();
+    } else {
+      renderOpenChat(chatId);
+    }
+  }
+
+  function setPinnedState(id, msg, pinned) {
+    msg._pinned = !!pinned;
+    if (!pinnedMessages[id]) pinnedMessages[id] = [];
+    var at = pinnedMessages[id].indexOf(msg);
+    if (pinned && at === -1) pinnedMessages[id].push(msg);
+    if (!pinned && at !== -1) pinnedMessages[id].splice(at, 1);
+  }
+
   function ctxPin() {
     if (!ctxTarget) return;
     var target = ctxTarget; // save before hideContextMenu clears it
     var id = target.chatId;
     var idx = target.msgIndex;
-    if (!pinnedMessages[id]) pinnedMessages[id] = [];
-    var msgs = target.panel === 'group' ? (mockGroupMessages[id] || []) : (mockMessages[id] || []);
-
-    if (target.isPinned) {
-      var pm = pinnedMessages[id][idx];
-      if (pm) {
-        pm._pinned = false;
-        pinnedMessages[id].splice(idx, 1);
-        saveData();
-        showToast((T('messages.toast.unpinned') || '✓ Message unpinned'));
-      } else {
-        showToast((T('messages.toast.unpinFail') || '✗ Failed to unpin'), true);
-      }
-    } else {
-      var msg = msgs[idx];
-      if (msg) {
-        msg._pinned = true;
-        pinnedMessages[id].push(msg);
-        justPinnedRef = msg;
-        saveData();
-        showToast((T('messages.toast.pinned') || '✓ Message pinned'));
-      } else {
-        showToast((T('messages.toast.pinFail') || '✗ Failed to pin'), true);
-      }
-    }
+    var msgs = messageStoreFor(target.panel)[id] || [];
+    var msg = msgs[idx];
     hideContextMenu();
+    if (!msg) { showToast((T('messages.toast.pinFail') || '✗ Failed to pin'), true); return; }
+    var next = !msg._pinned;
+    var previous = !!msg._pinned;
+    setPinnedState(id, msg, next);
+    if (next) justPinnedRef = msg;
+
+    if (isCloudConversation(target.panel, id)) {
+      if (!msg._mid) {
+        setPinnedState(id, msg, previous);
+        showToast((T('messages.toast.pinFail') || '✗ Failed to pin'), true);
+        return;
+      }
+      renderCachedTarget(target.panel, id);
+      MN_API.patch('/conversations/' + encodeURIComponent(id) + '/messages/' + encodeURIComponent(msg._mid) + '/pin',
+        { pinned: next }).then(function(res) {
+        if (!res.ok) {
+          setPinnedState(id, msg, previous);
+          renderCachedTarget(target.panel, id);
+          showToast(next ? (T('messages.toast.pinFail') || '✗ Failed to pin') : (T('messages.toast.unpinFail') || '✗ Failed to unpin'), true);
+          return;
+        }
+        showToast(next ? (T('messages.toast.pinned') || '✓ Message pinned') : (T('messages.toast.unpinned') || '✓ Message unpinned'));
+        refreshCloudPins(id, target.panel);
+      });
+      return;
+    }
+
+    saveData();
+    showToast(next ? (T('messages.toast.pinned') || '✓ Message pinned') : (T('messages.toast.unpinned') || '✓ Message unpinned'));
     rerenderTarget(target.panel, id);
   }
 
@@ -3563,22 +3653,25 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
   function renderForwardContacts(filter) {
     var q = (filter || '').toLowerCase();
     var html = '';
+    var sourceIsCloud = !!(forwardSource && isCloudConversation(forwardSource.panel, forwardSource.chatId));
     conversations.forEach(function(c) {
+      if (forwardSource && isCloudConversation('private', c.id) !== sourceIsCloud) return;
       if (q && c.name.toLowerCase().indexOf(q) === -1) return;
       var sel = findForwardIndex('private', c.id) !== -1;
       html += '<div style="display:flex;align-items:center;gap:var(--space-sm);padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;transition:background 0.12s' + (sel ? ';background:rgba(70,72,212,0.08)' : '') + '" onclick="selectForwardTarget(\'private\',\'' + c.id + '\')">' +
-        '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0">' + c.avatar + '</div>' +
-        '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + c.name + '</span>' +
+        '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0">' + msgEscapeHtml(c.avatar) + '</div>' +
+        '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + msgEscapeHtml(c.name) + '</span>' +
         '<span class="label-sm" style="color:var(--color-outline)">' + (T('messages.forward.tagPrivate') || 'Private') + '</span>' +
         (sel ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline-variant)">radio_button_unchecked</span>') +
       '</div>';
     });
     groups.forEach(function(g) {
+      if (forwardSource && isCloudConversation('group', g.id) !== sourceIsCloud) return;
       if (q && g.name.toLowerCase().indexOf(q) === -1) return;
       var sel = findForwardIndex('group', g.id) !== -1;
       html += '<div style="display:flex;align-items:center;gap:var(--space-sm);padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;transition:background 0.12s' + (sel ? ';background:rgba(22,163,74,0.08)' : '') + '" onclick="selectForwardTarget(\'group\',\'' + g.id + '\')">' +
-        '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:#8127cf;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + g.avatar + '</div>' +
-        '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + g.name + '</span>' +
+        '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:#8127cf;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + msgEscapeHtml(g.avatar) + '</div>' +
+        '<span style="font-weight:500;font-size:var(--fs-label-md);flex:1">' + msgEscapeHtml(g.name) + '</span>' +
         '<span class="label-sm" style="color:var(--color-outline)">' + (T('messages.forward.tagGroup') || 'Group') + '</span>' +
         (sel ? '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-secondary)">check_circle</span>' : '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-outline-variant)">radio_button_unchecked</span>') +
       '</div>';
@@ -3617,8 +3710,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
     if (!forwardSource || forwardSelected.length === 0) return;
     var id = forwardSource.chatId;
     var idx = forwardSource.msgIndex;
-    var msgs = forwardSource.panel === 'group' ? (mockGroupMessages[id] || []) : (mockMessages[id] || []);
-    var msg = forwardSource.isPinned ? (pinnedMessages[id] || [])[idx] : msgs[idx];
+    var msgs = messageStoreFor(forwardSource.panel)[id] || [];
+    var msg = msgs[idx];
     if (!msg) { showToast((T('messages.toast.fwdFail') || '✗ Failed to forward'), true); closeForwardModal(); return; }
 
     var senderName = forwardSource.panel === 'group'
@@ -3626,10 +3719,58 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
       : (conversations.find(function(c) { return c.id === id; }) || {}).name || (T('messages.msg.unknown') || 'Unknown');
 
     var extraText = document.getElementById('forwardMsgInput').value.trim();
+    var selected = forwardSelected.slice();
+
+    // 云端转发：服务端先原子校验并创建全部真实消息；响应成功前绝不写本地或显示成功。
+    if (isCloudConversation(forwardSource.panel, id)) {
+      if (!msg._mid) { showToast((T('messages.toast.fwdFail') || '✗ Failed to forward'), true); return; }
+      MN_API.post('/conversations/' + encodeURIComponent(id) + '/messages/' + encodeURIComponent(msg._mid) + '/forward', {
+        conversationIds: selected.map(function(target) { return target.id; }),
+        content: extraText
+      }).then(function(res) {
+        var results = res.ok && res.data && Array.isArray(res.data.forwards) ? res.data.forwards : null;
+        if (!results || results.length !== selected.length) {
+          // 未做任何乐观提交，所以失败天然回滚为原状态，弹窗保留便于重试。
+          showToast((T('messages.toast.fwdFail') || '✗ Failed to forward'), true);
+          return;
+        }
+        results.forEach(function(result) {
+          var targetPanel = cloudGroups[result.conversationId] ? 'group' : 'private';
+          var store = messageStoreFor(targetPanel);
+          if (!store[result.conversationId]) store[result.conversationId] = [];
+          store[result.conversationId].push(adaptCloudMessage(result.message));
+          if (result.supplementalMessage) store[result.conversationId].push(adaptCloudMessage(result.supplementalMessage));
+          var preview = result.supplementalMessage ? result.supplementalMessage.content : result.message.content;
+          if (targetPanel === 'group') {
+            var group = groups.find(function(g) { return g.id === result.conversationId; });
+            if (group) { group.lastMsg = preview; group.time = 'Now'; }
+          } else {
+            var conversation = conversations.find(function(c) { return c.id === result.conversationId; });
+            if (conversation) { conversation.lastMsg = preview; conversation.time = 'Now'; }
+          }
+        });
+        var lastCloudTarget = selected[selected.length - 1];
+        showToast((T('messages.toast.fwd') || '✓ Forwarded to ') + results.length + ' ' +
+          (results.length > 1 ? (T('messages.toast.chats') || 'chats') : (T('messages.toast.chat') || 'chat')));
+        closeForwardModal();
+        if (lastCloudTarget.panel === 'group') {
+          renderGroupList();
+          activeGroup = lastCloudTarget.id;
+          switchToPanel(1);
+          setTimeout(function() { openGroupChat(lastCloudTarget.id); }, 100);
+        } else {
+          renderConversationList();
+          activeChat = lastCloudTarget.id;
+          switchToPanel(0);
+          setTimeout(function() { openChat(lastCloudTarget.id); }, 100);
+        }
+      });
+      return;
+    }
 
     // Send to ALL selected targets
     var count = 0;
-    forwardSelected.forEach(function(target) {
+    selected.forEach(function(target) {
       var targetPanel = target.panel;
       var targetId = target.id;
 
@@ -3660,7 +3801,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
     });
 
     // Snapshot before closeForwardModal clears the array
-    var lastTarget = forwardSelected[forwardSelected.length - 1];
+    var lastTarget = selected[selected.length - 1];
 
     saveData();
     showToast((T('messages.toast.fwd') || '✓ Forwarded to ') + count + ' ' + (count > 1 ? (T('messages.toast.chats') || 'chats') : (T('messages.toast.chat') || 'chat')));
@@ -3694,22 +3835,41 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
     var target = ctxTarget;
     var id = target.chatId;
     var idx = target.msgIndex;
-    var deleted = false;
-    if (target.isPinned) {
-      var pm = (pinnedMessages[id] || [])[idx];
-      if (pm) { pm._pinned = false; }
-      if (pinnedMessages[id]) { pinnedMessages[id].splice(idx, 1); deleted = true; }
-    } else {
-      var msgs = target.panel === 'group' ? (mockGroupMessages[id] || []) : (mockMessages[id] || []);
-      if (msgs[idx] !== undefined) { msgs.splice(idx, 1); deleted = true; }
-    }
+    var msgs = messageStoreFor(target.panel)[id] || [];
+    var msg = msgs[idx];
     hideContextMenu();
-    if (deleted) {
-      saveData();
-      showToast((T('messages.toast.deleted') || '✓ Message deleted'));
-    } else {
-      showToast((T('messages.toast.deleteFail') || '✗ Failed to delete'), true);
+    if (!msg) { showToast((T('messages.toast.deleteFail') || '✗ Failed to delete'), true); return; }
+
+    if (isCloudConversation(target.panel, id)) {
+      if (!msg._mid || msg.from !== 'You') {
+        showToast((T('messages.toast.deleteFail') || '✗ Failed to delete'), true);
+        return;
+      }
+      var wasPinned = !!msg._pinned;
+      msgs.splice(idx, 1);
+      setPinnedState(id, msg, false);
+      renderCachedTarget(target.panel, id);
+      MN_API.del('/conversations/' + encodeURIComponent(id) + '/messages/' + encodeURIComponent(msg._mid)).then(function(res) {
+        if (!res.ok) {
+          msgs.splice(Math.min(idx, msgs.length), 0, msg);
+          setPinnedState(id, msg, wasPinned);
+          renderCachedTarget(target.panel, id);
+          showToast((T('messages.toast.deleteFail') || '✗ Failed to delete'), true);
+          return;
+        }
+        if (cloudPinnedMessages[id]) {
+          cloudPinnedMessages[id] = cloudPinnedMessages[id].filter(function(m) { return m._mid !== msg._mid; });
+        }
+        showToast((T('messages.toast.deleted') || '✓ Message deleted'));
+        refreshCloudChat();
+      });
+      return;
     }
+
+    msgs.splice(idx, 1);
+    setPinnedState(id, msg, false);
+    saveData();
+    showToast((T('messages.toast.deleted') || '✓ Message deleted'));
     rerenderTarget(target.panel, id);
   }
 
@@ -3897,6 +4057,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
     infoTab = 'pinned';
     switchInfoTab('pinned');
     document.getElementById('chatInfoModal').style.display = 'flex';
+    if (isCloudConversation(panel, id)) refreshCloudPins(id, panel);
   }
 
   function closeChatInfo() {
@@ -3945,9 +4106,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
       members.forEach(function(m) {
         var isAdmin = m.role === 'Admin';
         html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 0">' +
-          '<div style="width:36px;height:36px;border-radius:50%;background:' + (isAdmin ? '#4648d4' : '#8127cf') + ';color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0">' + m.avatar + '</div>' +
+          '<div style="width:36px;height:36px;border-radius:50%;background:' + (isAdmin ? '#4648d4' : '#8127cf') + ';color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;flex-shrink:0">' + msgEscapeHtml(m.avatar) + '</div>' +
           '<div style="flex:1;min-width:0">' +
-            '<div style="font-weight:600;font-size:var(--fs-label-md)">' + m.name + (m.name === 'You' ? ' <span style="font-weight:400;font-size:10px;color:var(--color-outline)">' + (T('messages.members.you') || '(you)') + '</span>' : '') + '</div>' +
+            '<div style="font-weight:600;font-size:var(--fs-label-md)">' + msgEscapeHtml(m.name) + (m.name === 'You' ? ' <span style="font-weight:400;font-size:10px;color:var(--color-outline)">' + (T('messages.members.you') || '(you)') + '</span>' : '') + '</div>' +
             '<div style="font-size:11px;color:' + (isAdmin ? 'var(--color-primary)' : 'var(--color-outline)') + ';font-weight:' + (isAdmin ? '600' : '400') + '">' + m.role + '</div>' +
           '</div>' +
         '</div>';
@@ -4109,7 +4270,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
     var chatMsgs = msgStore[id] || [];
 
     if (tab === 'pinned') {
-      var pinned = chatMsgs.filter(function(m) { return m._pinned; });
+      var pinned = isCloudConversation(panel, id) && cloudPinnedMessages[id]
+        ? cloudPinnedMessages[id]
+        : chatMsgs.filter(function(m) { return m._pinned; });
       if (pinned.length === 0) {
         html = '<div style="text-align:center;padding:var(--space-xl);color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;opacity:0.4">push_pin</span><p style="font-size:var(--fs-label-md)">' + (T('messages.info.noPinned') || 'No pinned messages') + '</p></div>';
       } else {
@@ -4118,9 +4281,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
           html += '<div style="display:flex;justify-content:' + (isSent ? 'flex-end' : 'flex-start') + ';margin-bottom:8px">' +
             '<div' + (isSent ? ' class="msg-acc"' : '') + ' style="max-width:80%;padding:8px 14px;border-radius:var(--radius-lg);font-size:var(--fs-label-md);' +
               (isSent ? 'background:var(--color-primary);color:white;' : 'background:var(--card-bg);border:1px solid var(--divider-line);') + '">' +
-              '<div style="font-size:10px;opacity:0.65;margin-bottom:2px"><span class="material-symbols-outlined" style="font-size:10px;vertical-align:middle">push_pin</span> ' + pm.from + '</div>' +
-              (pm._forwardedFrom ? '<div style="font-size:9px;opacity:0.45;margin-bottom:2px">' + (T('messages.msg.fwdFrom') || '↪ Forwarded from ') + pm._forwardedFrom + '</div>' : '') +
-              pm.text +
+              '<div style="font-size:10px;opacity:0.65;margin-bottom:2px"><span class="material-symbols-outlined" style="font-size:10px;vertical-align:middle">push_pin</span> ' + msgEscapeHtml(pm.from) + '</div>' +
+              (pm._forwardedFrom ? '<div style="font-size:9px;opacity:0.45;margin-bottom:2px">' + (T('messages.msg.fwdFrom') || '↪ Forwarded from ') + msgEscapeHtml(pm._forwardedFrom) + '</div>' : '') +
+              msgEscapeHtml(pm.text) +
             '</div></div>';
         });
       }
@@ -4199,8 +4362,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
           html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;margin-bottom:4px;transition:background 0.12s" onmouseenter="this.style.background=\'rgba(70,72,212,0.04)\'" onmouseleave="this.style.background=\'transparent\'">' +
             '<span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary);flex-shrink:0">link</span>' +
             '<div style="min-width:0;flex:1">' +
-              '<div style="font-weight:500;font-size:var(--fs-label-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + link.title + '</div>' +
-              '<div style="font-size:11px;color:var(--color-outline)">' + link.url + '</div>' +
+              '<div style="font-weight:500;font-size:var(--fs-label-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + msgEscapeHtml(link.title) + '</div>' +
+              '<div style="font-size:11px;color:var(--color-outline)">' + msgEscapeHtml(link.url) + '</div>' +
             '</div>' +
           '</div>';
         });
@@ -4225,8 +4388,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
           html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-DEFAULT);cursor:pointer;margin-bottom:4px;transition:background 0.12s" onmouseenter="this.style.background=\'rgba(70,72,212,0.04)\'" onmouseleave="this.style.background=\'transparent\'">' +
             '<span class="material-symbols-outlined" style="font-size:22px;color:var(--color-primary);flex-shrink:0">' + (fileIcons[file.type] || 'draft') + '</span>' +
             '<div style="min-width:0;flex:1">' +
-              '<div style="font-weight:500;font-size:var(--fs-label-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + file.name + '</div>' +
-              '<div style="font-size:11px;color:var(--color-outline)">' + file.size + '</div>' +
+              '<div style="font-weight:500;font-size:var(--fs-label-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + msgEscapeHtml(file.name) + '</div>' +
+              '<div style="font-size:11px;color:var(--color-outline)">' + msgEscapeHtml(file.size) + '</div>' +
             '</div>' +
           '</div>';
         });
@@ -4279,9 +4442,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
       html = conversations.map(function(c) {
         var isActive = c.id === activeChat;
         var ring = isActive ? '2px solid #4648d4' : '2px solid transparent';
-        return '<div title="' + c.name + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openChat(\'' + c.id + '\')">' +
+        return '<div title="' + msgEscapeAttr(c.name) + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openChat(\'' + c.id + '\')">' +
           '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
-            c.avatar +
+            msgEscapeHtml(c.avatar) +
             (c.online ? '<span class="status-dot status-dot-green" style="position:absolute;bottom:0;right:0;border:2px solid white"></span>' : '') +
           '</div>' +
         '</div>';
@@ -4291,15 +4454,15 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
         return '<div class="card card-hover" style="cursor:pointer;padding:var(--space-sm)" onclick="openChat(\'' + c.id + '\')">' +
           '<div class="flex-center gap-sm">' +
             '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;position:relative">' +
-              c.avatar +
+              msgEscapeHtml(c.avatar) +
               (c.online ? '<span class="status-dot status-dot-green" style="position:absolute;bottom:0;right:0;border:2px solid white"></span>' : '') +
             '</div>' +
             '<div style="min-width:0;flex:1">' +
               '<div class="flex-between">' +
-                '<span style="font-weight:600;font-size:var(--fs-label-md)">' + c.name + '</span>' +
+                '<span style="font-weight:600;font-size:var(--fs-label-md)">' + msgEscapeHtml(c.name) + '</span>' +
                 '<span class="label-sm" style="color:var(--color-outline)">' + (c.time || (T(c.timeKey) || c.timeEn || '')) + '</span>' +
               '</div>' +
-              '<div class="label-sm" style="color:var(--color-outline);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (c.lastMsg || (T(c.lastMsgKey) || c.lastMsgEn || '')) + '</div>' +
+              '<div class="label-sm" style="color:var(--color-outline);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + msgEscapeHtml(c.lastMsg || (T(c.lastMsgKey) || c.lastMsgEn || '')) + '</div>' +
             '</div>' +
           '</div>' +
         '</div>';
@@ -4620,9 +4783,9 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
       html = groups.map(function(g) {
         var isActive = g.id === activeGroup;
         var ring = isActive ? '2px solid #8127cf' : '2px solid transparent';
-        return '<div title="' + g.name + (g.unread > 0 ? ' (' + g.unread + (T('messages.group.unread') || ' unread') + ')' : '') + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openGroupChat(\'' + g.id + '\')">' +
+        return '<div title="' + msgEscapeAttr(g.name + (g.unread > 0 ? ' (' + g.unread + (T('messages.group.unread') || ' unread') + ')' : '')) + '" style="cursor:pointer;padding:4px 0;display:flex;justify-content:center" onclick="openGroupChat(\'' + g.id + '\')">' +
           '<div class="msg-acc msg-avatar" style="width:36px;height:36px;border-radius:var(--radius-DEFAULT);background:#8127cf;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0;position:relative;outline:' + ring + ';outline-offset:3px">' +
-            g.avatar +
+            msgEscapeHtml(g.avatar) +
             (g.unread > 0 ? '<span style="position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:#4648d4;border-radius:50%;border:1px solid white"></span>' : '') +
           '</div>' +
         '</div>';
@@ -4635,11 +4798,11 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
         return '<div class="card card-hover" style="cursor:pointer;padding:var(--space-sm)" onclick="openGroupChat(\'' + g.id + '\')">' +
           '<div class="flex-center gap-sm">' +
             '<div class="msg-acc msg-avatar" style="width:40px;height:40px;border-radius:var(--radius-DEFAULT);background:#8127cf;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">' +
-              g.avatar +
+              msgEscapeHtml(g.avatar) +
             '</div>' +
             '<div style="min-width:0;flex:1">' +
               '<div class="flex-between">' +
-                '<span style="font-weight:600;font-size:var(--fs-label-md)">' + g.name + (g.isAnnouncement ? ' <span class="material-symbols-outlined" style="font-size:14px;color:var(--color-outline);vertical-align:middle">campaign</span>' : '') + '</span>' +
+                '<span style="font-weight:600;font-size:var(--fs-label-md)">' + msgEscapeHtml(g.name) + (g.isAnnouncement ? ' <span class="material-symbols-outlined" style="font-size:14px;color:var(--color-outline);vertical-align:middle">campaign</span>' : '') + '</span>' +
                 '<span class="label-sm" style="color:var(--color-outline)">' + (g.time || (T(g.timeKey) || g.timeEn || '')) + '</span>' +
               '</div>' +
               '<div class="flex-between">' +
@@ -4911,8 +5074,8 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
       if (!friends.length) { noFriends(); return; }
       pick.innerHTML = friends.map(function(f) {
         return '<div class="group-friend-item" data-uid="' + f.id + '" style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;cursor:pointer" onclick="groupFriendToggle(this)">' +
-          '<div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#4648d4,#8127cf);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:10px;flex-shrink:0">' + (f.displayName || '?').charAt(0).toUpperCase() + '</div>' +
-          '<span style="flex:1;font-weight:500;font-size:var(--fs-label-md)">' + (f.displayName || f.id) + '</span>' +
+          '<div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#4648d4,#8127cf);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:10px;flex-shrink:0">' + msgEscapeHtml((f.displayName || '?').charAt(0).toUpperCase()) + '</div>' +
+          '<span style="flex:1;font-weight:500;font-size:var(--fs-label-md)">' + msgEscapeHtml(f.displayName || f.id) + '</span>' +
           '<span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary);opacity:0">check_circle</span>' +
         '</div>';
       }).join('');
@@ -5401,6 +5564,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
   var cloudMode = false;
   var myCloudId = null;
   var cloudConvs = {}; // convId -> demo 形状条目（在 conversations 数组内同一引用）
+  var cloudPinnedMessages = {}; // convId -> 服务端回读的当前用户置顶消息
 
   function convTime(iso) {
     var d = new Date(iso);
@@ -5421,7 +5585,26 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
       ? { from: 'You', text: m.content, sent: false }
       : { from: m.senderName, text: m.content, sent: true };
     msg._mid = m.id; // 轮询比对用（msgBubble 忽略未知字段）
+    msg._pinned = !!m.pinned;
+    if (m.forwardedFrom) {
+      msg._forwardedFrom = m.forwardedFrom.senderName || m.forwardedFrom.senderId || '?';
+      msg._forwardedMessageId = m.forwardedFrom.messageId || null;
+    }
     return msg;
+  }
+
+  function refreshCloudPins(id, panel) {
+    if (!isCloudConversation(panel, id)) return Promise.resolve();
+    return MN_API.get('/conversations/' + encodeURIComponent(id) + '/pinned-messages').then(function(res) {
+      if (!res.ok || !res.data) return;
+      var pins = (res.data.messages || []).map(adaptCloudMessage);
+      cloudPinnedMessages[id] = pins;
+      var pinnedIds = {};
+      pins.forEach(function(m) { pinnedIds[m._mid] = true; });
+      var store = messageStoreFor(panel);
+      (store[id] || []).forEach(function(m) { m._pinned = !!pinnedIds[m._mid]; });
+      if (infoChatId === id && infoTab === 'pinned') renderInfoTab('pinned');
+    });
   }
 
   function mergeCloudConversations(list) {
@@ -5570,7 +5753,7 @@ html[data-accent="mono"][data-theme="dark"] .msg-acc:not(.msg-avatar) {
         var frPre = T('messages.notif.frNamePre');
         var frPost = T('messages.notif.frNamePost');
         return '<div class="notif-entry" style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;cursor:pointer" onclick="openNotifDecision(\'' + inv.id + '\')">' +
-          '<div class="msg-acc msg-avatar" style="width:40px;height:40px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">' + inv.avatar + '</div>' +
+          '<div class="msg-acc msg-avatar" style="width:40px;height:40px;border-radius:50%;background:#4648d4;color:white;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">' + msgEscapeHtml(inv.avatar) + '</div>' +
           '<div style="flex:1;min-width:0">' +
             '<div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + (frPre !== null ? frPre : '「') + inv.name + (frPost !== null ? frPost : '」想加你为好友') + '</div>' +
             '<div style="color:var(--color-outline);font-size:11px;margin-top:2px">' + inv.userId + '</div>' +

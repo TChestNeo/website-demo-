@@ -1,5 +1,5 @@
 'use strict';
-// 迁移 001-033：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
+// 迁移 001-041：版本推进、幂等、重复版本号拒绝、append-only 触发器、种子完整性。
 
 const { test, after } = require('node:test');
 const assert = require('node:assert');
@@ -19,12 +19,12 @@ function tmpDir() {
 }
 after(() => { for (const db of openDbs) { try { db.close(); } catch (e) {} } for (const d of createdMigDirs) { try { fs.rmSync(d, { recursive: true, force: true }); } catch (e) {} } });
 
-test('迁移：user_version=37、69 表、角色/权限/平台种子齐整', () => {
+test('迁移：user_version=42、72 表、角色/权限/平台种子齐整', () => {
   const db = openDb(path.join(tmpDir(), 'a.sqlite'));
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 37);
-  // 表数：001 七 + 002 六 + 003 一 + 004 两 + 005 十四 + 006 四 + 007 四 + 008 六 + 009 十一 + 010 两 + 014 一 + 025 一 + 028 一 + 031 一 + 033 五 + 034 三 = 69（触发器不算表）
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 42);
+  // 表数：040 worlds 后 71，041 message_pins +1 = 72（消息来源字段/索引不计表）
   const n = db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").get().n;
-  assert.strictEqual(n, 69);
+  assert.strictEqual(n, 72);
   // 角色 7、权限 42、矩阵基线（每角色授权数逐一断言 = 设计契约锁定）
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM roles').get().n, 7);
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM permissions').get().n, 42);
@@ -52,7 +52,7 @@ test('迁移：重复打开同库幂等（版本不再推进、无重复执行�
   const p = path.join(tmpDir(), 'b.sqlite');
   openDb(p);
   const db = openDb(p);
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 37);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 42);
 });
 
 test('迁移 005-009：社交/工单/知识库/审核/财务关键表与扩展列就位（D5/D6 口径）', () => {
@@ -157,7 +157,7 @@ test('迁移 017：following.users 显示名→id 引用 + 粉丝索引（v0.2.2
 
   migrate(db, srcDir); // 补跑 017-033
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 37);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 42);
   const rows = db.prepare('SELECT target_id FROM following WHERE user_id = ? ORDER BY target_type, target_id').all('F1');
   assert.deepStrictEqual(rows.map((r) => r.target_id), ['NAT-000001', 'U1'], '显示名→最早注册的 id；映射不到的行已删；nation 不动');
   assert.ok(db.prepare("SELECT count(*) AS n FROM sqlite_master WHERE type='index' AND name = 'idx_following_target'").get().n === 1, '粉丝反查索引就位');
@@ -242,7 +242,7 @@ test('迁移 022：遗留 pending 文章一律转 published（v0.2.46.1 直接�
 
   migrate(db, srcDir); // 补跑 022-033
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 37);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 42);
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000001'").get().status, 'published', '遗留 pending → published');
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000002'").get().status, 'published', '已发布不动');
   assert.strictEqual(db.prepare("SELECT status FROM articles WHERE id = 'ART-000003'").get().status, 'hidden', 'hidden/removed 不动（非发布态不该复活）');
@@ -302,7 +302,7 @@ test('迁移 026：citizen_id 统一 USR- 口径（v0.2.51.1 CIT→USR；无新�
 
   migrate(db, srcDir); // 补跑 026-033
 
-  assert.strictEqual(db.pragma('user_version', { simple: true }), 37);
+  assert.strictEqual(db.pragma('user_version', { simple: true }), 42);
   assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000001'").get().citizen_id, 'USR-000001', '旧 CIT- 存量改写为 id');
   assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000002'").get().citizen_id, 'USR-000002', 'NULL 补齐为 id');
   assert.strictEqual(db.prepare("SELECT citizen_id FROM users WHERE id = 'USR-000003'").get().citizen_id, 'USR-000003', '已一致不动');
@@ -457,6 +457,39 @@ test('迁移 033：等级奖励五表+XP 列（FC v10.28.52.0；+5 表 → healt
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM user_achievements').get().n, 0);
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM user_badges').get().n, 0);
   assert.strictEqual(db.prepare('SELECT count(*) AS n FROM user_cosmetics').get().n, 0);
+  db.close();
+});
+
+test('迁移 039：套餐团队容量与独立 Slots 分列计期', () => {
+  const db = openDb(path.join(tmpDir(), 'pkg-cap.sqlite'));
+  const cols = db.prepare('PRAGMA table_info(users)').all();
+  const packageCap = cols.find((x) => x.name === 'team_package_cap');
+  const packageExpiry = cols.find((x) => x.name === 'team_package_expires_at');
+  assert.ok(packageCap, '缺 users.team_package_cap');
+  assert.ok(packageExpiry, '缺 users.team_package_expires_at');
+  assert.strictEqual(packageCap.dflt_value, "''");
+  assert.strictEqual(packageExpiry.dflt_value, null);
+  const iso = new Date().toISOString();
+  db.prepare("INSERT INTO users (id, email, role, created_at, updated_at) VALUES ('u039', 'u039@x.com', 'user', ?, ?)")
+    .run(iso, iso);
+  const row = db.prepare('SELECT team_cap_addon, team_package_cap FROM users WHERE id = ?').get('u039');
+  assert.strictEqual(row.team_cap_addon, '', 'slots 字段保持独立');
+  assert.strictEqual(row.team_package_cap, '', '套餐字段默认无权益');
+  db.close();
+});
+
+test('迁移 041：消息转发来源字段与每用户置顶表就位', () => {
+  const db = openDb(path.join(tmpDir(), 'message-consistency.sqlite'));
+  const messageCols = new Set(db.prepare('PRAGMA table_info(messages)').all().map((x) => x.name));
+  assert.ok(messageCols.has('forwarded_from_message_id'));
+  assert.ok(messageCols.has('forwarded_from_sender_id'));
+  assert.ok(messageCols.has('forwarded_from_sender_name'));
+  assert.strictEqual(db.prepare(
+    "SELECT count(*) n FROM sqlite_master WHERE type = 'table' AND name = 'message_pins'"
+  ).get().n, 1);
+  const pk = db.prepare("PRAGMA table_info(message_pins)").all()
+    .filter((x) => x.pk > 0).sort((a, b) => a.pk - b.pk).map((x) => x.name);
+  assert.deepStrictEqual(pk, ['user_id', 'message_id']);
   db.close();
 });
 

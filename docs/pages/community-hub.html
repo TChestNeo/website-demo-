@@ -2587,6 +2587,37 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   color: inherit; text-decoration: none;
 }
 .post-author-link:hover { text-decoration: underline; }
+
+/* ----- Mobile Community layout -----
+   Community cards are assembled dynamically, so the page needs a local containment
+   rule in addition to the shared responsive grid rule.  This prevents long names,
+   action rows, and the 320px search capsule from setting a wider min-content size. */
+.community-hub-page,
+.community-hub-layout,
+.community-hub-layout > *,
+#feedContent,
+#feedContent > .card { min-width: 0; }
+.community-hub-page { overflow-x: clip; }
+.community-hub-page *,
+.community-hub-page *::before,
+.community-hub-page *::after { box-sizing: border-box; }
+.premium-promo-card { overflow:hidden; isolation:isolate; }
+.premium-promo-card::before { content:""; position:absolute; inset:-25%; z-index:-1; background:linear-gradient(112deg,transparent 20%,rgba(179,0,0,.52) 40%,rgba(99,32,255,.42) 54%,rgba(255,16,16,.38) 66%,transparent 84%); filter:blur(12px); opacity:.78; transform:rotate(-8deg); }
+@media (max-width: 768px) {
+  .community-hub-toolbar { align-items: stretch !important; gap: var(--space-sm) !important; }
+  .community-hub-toolbar .subnav { max-width: 100%; overflow-x: auto; }
+  .community-hub-toolbar .search-capsule {
+    width: 100%; max-width: 100%; margin-left: 0 !important;
+  }
+  .community-hub-layout { grid-template-columns: minmax(0, 1fr) !important; }
+  .community-hub-layout .card,
+  .community-hub-layout .tilt-container { max-width: 100%; }
+  .community-post-meta { flex-wrap: wrap; row-gap: 4px; }
+  .community-post-meta .post-author-link { min-width: 0; max-width: calc(100% - 48px); }
+  .community-post-actions { flex-wrap: wrap; gap: 2px 4px !important; }
+  .community-post-actions .post-action-btn { min-height: 34px; padding: 6px 8px; }
+  .community-post-actions .post-action-favorite { margin-left: 0 !important; margin-right: 0 !important; }
+}
 </style>
   <style>
 /* Google Fonts @font-face 内联（同修复；woff2 文件仍走 fonts.gstatic.com，非渲染阻塞、带缓存）*/
@@ -2877,10 +2908,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
 <div class="app-layout">
   <aside class="app-sidebar" id="slati-sidebar"></aside>
-  <main class="app-main">
+  <main class="app-main community-hub-page">
 
     <!-- Sub nav -->
-    <div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md);flex-wrap:wrap">
+    <div class="community-hub-toolbar" style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md);flex-wrap:wrap">
       <div class="subnav" data-slider id="communitySubnav">
         <a class="subnav-pill active" data-tab="recommend" data-i18n="hub.tab.recommend">Recommend</a>
         <a class="subnav-pill" data-tab="following" data-i18n="hub.tab.following">Following</a>
@@ -2888,18 +2919,18 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       </div>
       <div class="search-capsule" style="margin-left:auto">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" placeholder="Search topics..." data-i18n-placeholder="hub.search.placeholder">
+        <input id="communitySearch" type="search" placeholder="Search topics..." data-i18n-placeholder="hub.search.placeholder" autocomplete="off" aria-label="Search community posts and topics">
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 300px;gap:var(--space-md)">
+    <div class="community-hub-layout" style="display:grid;grid-template-columns:1fr 300px;gap:var(--space-md)">
       <!-- Feed -->
       <div id="feedContent" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
 
       <!-- Right sidebar -->
       <div style="display:flex;flex-direction:column;gap:var(--space-md)">
         <!-- Premium Card -->
-        <div class="tilt-container" style="border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:white;padding:var(--space-md);position:relative">
+        <div class="tilt-container premium-promo-card" style="border-radius:var(--radius-lg);overflow:hidden;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:white;padding:var(--space-md);position:relative">
           <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,0.03);border-radius:50%;pointer-events:none"></div>
           <div style="position:relative;z-index:1">
             <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px">
@@ -2956,6 +2987,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   //   三 tab 全接真数据（recommend=/api/social/posts、following=/api/social/feed、topic=/api/social/topics）
   var cloudMode = false;
   var cloudPosts = [];
+  var communitySearchQuery = '';
   var cloudFeed = [];    // 关注流真帖（following tab）
   var cloudTopics = [];  // 真话题（topic tab + 发现中心 + 热门共用）
   var backendDown = false; // 已登录但后端不可达 → 离线卡（绝不回退假数据，也不给登录用户看「去登录」）
@@ -3340,12 +3372,27 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     var items = [];
     if (currentTab === 'recommend') items = cloudPosts.map(cloudPostItem);
     else if (currentTab === 'following') items = cloudFeed.map(cloudPostItem);
+    var query = communitySearchQuery.trim().toLocaleLowerCase();
+    if (query && currentTab !== 'topic') {
+      items = items.filter(function (item) {
+        return [item.title, item.desc, item.author, item.badge].some(function (value) {
+          return String(value || '').toLocaleLowerCase().indexOf(query) !== -1;
+        });
+      });
+    }
     var html = (currentTab === 'recommend') ? composerHtml() : '';
-    if (currentTab === 'topic') html += cloudTopics.map(topicCardHtml).join(''); // 真话题流（无帖子卡绑定）
+    if (currentTab === 'topic') {
+      var visibleTopics = query ? cloudTopics.filter(function (topic) {
+        return [topic.name, topic.description, topic.slug].some(function (value) {
+          return String(value || '').toLocaleLowerCase().indexOf(query) !== -1;
+        });
+      }) : cloudTopics;
+      html += visibleTopics.map(topicCardHtml).join(''); // 真话题流（无帖子卡绑定）
+    }
     items.forEach(function(item) {
       html +=
         '<div class="card card-hover tilt-container post-card-click" data-cloud-id="' + escapeHtml(item.cloudId) + '">' +
-          '<div class="flex-center gap-sm" style="justify-content:flex-start;margin-bottom:8px">' +
+          '<div class="flex-center gap-sm community-post-meta" style="justify-content:flex-start;margin-bottom:8px">' +
             // v0.2.21.0 作者头像+徽章+名字包锚 → 个人主页（时间/report 留在锚外）
             (item.authorId ? '<a class="post-author-link" href="community-profile.html?id=' + encodeURIComponent(item.authorId) + '" title="' + (T('hub.viewProfile') || '查看主页') + '">' : '') +
             (item.avatarUrl ? '<img src="' + escapeHtml(item.avatarUrl) + '" alt="" class="avatar avatar-sm" style="margin-right:6px">' : '<span class="material-symbols-outlined" style="color:var(--color-outline);font-size:22px">' + escapeHtml(item.icon) + '</span>') +
@@ -3360,21 +3407,21 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           (item.repostOfId ? repostEmbeddedHtml(item.repostOf) : '') +
           (item.media && item.media.length ? mediaGridHtml(item.media) : '') +
           // v0.2.20.0 操作行：[赞][评][转][浏览][☆收藏][⇧分享]——浏览替代旧分享位、星收藏+分享置最右、两个都不显示号码（用户「两个都不需要显示号码」）
-          '<div class="flex-center gap-sm" style="justify-content:flex-start;gap:16px">' +
+          '<div class="flex-center gap-sm community-post-actions" style="justify-content:flex-start;gap:16px">' +
             '<button type="button" class="post-action-btn' + (item.liked ? ' liked' : '') + '" data-like-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.liked ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">' + (item.liked ? 'favorite' : 'favorite_border') + '</span><span class="like-burst" aria-hidden="true"><span class="like-fx"></span></span> <span data-like-count>' + item.likes + '</span></button>' +
             '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">chat_bubble</span> ' + item.comments + '</span>' +
             // v0.2.19.0 转发（与帖页操作行对齐）
             '<button type="button" class="post-action-btn' + (item.repostedByMe ? ' reposted' : '') + '" data-repost-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.repostedByMe ? 'true' : 'false') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">repeat</span> <span data-repost-count>' + (item.repostCount || 0) + '</span></button>' +
             // v0.2.20.0 浏览量（静态展示，随帖页打开 +1）+ 星收藏（真功能开关，无号码）+ 分享（纯图标最右）
             '<span class="post-action-btn post-action-btn-static label-sm" style="color:var(--color-outline)"><span class="material-symbols-outlined" style="font-size:18px;vertical-align:-3px">visibility</span> ' + (item.views || 0) + '</span>' +
-            '<button type="button" class="post-action-btn' + (item.favoritedByMe ? ' favorited' : '') + '" data-favorite-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.favoritedByMe ? 'true' : 'false') + '" title="' + (T('hub.favorite') || '收藏') + '" style="margin-left:auto;margin-right:-22px"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">' + (item.favoritedByMe ? 'star' : 'star_border') + '</span></button>' +
+            '<button type="button" class="post-action-btn post-action-favorite' + (item.favoritedByMe ? ' favorited' : '') + '" data-favorite-post="' + escapeHtml(item.cloudId) + '" aria-pressed="' + (item.favoritedByMe ? 'true' : 'false') + '" title="' + (T('hub.favorite') || '收藏') + '" style="margin-left:auto;margin-right:-22px"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">' + (item.favoritedByMe ? 'star' : 'star_border') + '</span></button>' +
             // v0.2.19.2 分享钮：icon 改 upload + 去掉「分享」文字（与点赞/转发同口径纯图标钮）
             '<button type="button" class="post-action-btn" data-share-post="' + escapeHtml(item.cloudId) + '" title="' + (T('hub.share') || '分享') + '"><span class="material-symbols-outlined" style="font-size:20px;vertical-align:-3px">upload</span></button>' +
           '</div>' +
         '</div>';
     });
     // v0.2.58.24 三 tab 统一空态（recommend 空态=原提示串保留；following/topic 各自引导）
-    if (currentTab === 'topic') { if (!cloudTopics.length) html += feedEmptyHtml(); }
+    if (currentTab === 'topic') { if (!(query ? visibleTopics.length : cloudTopics.length)) html += feedEmptyHtml(); }
     else if (!items.length) html += feedEmptyHtml();
     document.getElementById('feedContent').innerHTML = html;
     if (window.SlatiTilt) SlatiTilt.init(document.querySelectorAll('.tilt-container'));
@@ -3674,6 +3721,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       e.target.classList.add('active');
       renderFeed();
     }
+  });
+
+  // 顶部搜索：对当前已加载的真帖子/话题即时过滤，不再保留无响应的装饰输入框。
+  document.getElementById('communitySearch').addEventListener('input', function (event) {
+    communitySearchQuery = event.target.value || '';
+    renderFeed();
   });
 
   document.getElementById('discoveryTabs').addEventListener('click', function(e) {

@@ -4,6 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Article Editor | M.NationWorld</title>
+  <link rel="canonical" href="fluidcanvas-editor.html">
+  <script>
+    // Legacy compatibility route: the former editor could report a local-only
+    // publish as successful. Keep old bookmarks working, but send every visit
+    // to the cloud-backed FluidCanvas editor and preserve compatible parameters.
+    window.location.replace('fluidcanvas-editor.html' + window.location.search + window.location.hash);
+  </script>
+  <noscript><meta http-equiv="refresh" content="0;url=fluidcanvas-editor.html"></noscript>
 
   <script src="../assets/js/theme-init.js"></script>
   <style>

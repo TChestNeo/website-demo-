@@ -2651,6 +2651,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       50% { transform: translateX(4px); }
       75% { transform: translateX(-3px); }
     }
+    .auth-code-row { display: flex; gap: 8px; align-items: center; }
+    @media (max-width: 768px) {
+      .auth-code-row { flex-direction: column; align-items: stretch; }
+      .auth-code-row .otp-box { width: 100%; gap: clamp(4px, 2vw, 8px); }
+      .auth-code-row .otp-cell { flex: 1; width: 0; min-width: 0; }
+      .auth-code-row .btn { width: 100%; justify-content: center; }
+    }
     @media (prefers-reduced-motion: reduce) { .otp-pop, .otp-shake { animation: none; } }
   </style>
   <style>
@@ -2873,7 +2880,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
              v0.2.47.0 单输入框升级六格 OTP——用户「能不能把输入验证码的收入框换成这个」（React OtpInput 组件源码→原生复刻：自动跳格/粘贴分发/退格跳格/弹入动画/错误抖动；见 initOtpBox） -->
         <div class="form-group" id="loginCodeGroup" style="display:none">
           <label class="form-label" data-i18n="auth.label.vcode">Verification Code</label>
-          <div style="display:flex;gap:8px;align-items:center">
+          <div class="auth-code-row">
             <div class="otp-box" id="loginOtp" role="group" aria-label="Verification code">
               <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="Verification code, character 1 of 6">
               <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 2 of 6">
@@ -2940,7 +2947,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
              v0.2.47.0 单输入框升级六格 OTP——用户「能不能把输入验证码的收入框换成这个」（React OtpInput 组件源码→原生复刻：自动跳格/粘贴分发/退格跳格/弹入动画/错误抖动；见 initOtpBox） -->
         <div class="form-group" id="signupCodeGroup" style="display:none">
           <label class="form-label" data-i18n="auth.label.vcode">Verification Code</label>
-          <div style="display:flex;gap:8px;align-items:center">
+          <div class="auth-code-row">
             <div class="otp-box" id="signupOtp" role="group" aria-label="Verification code">
               <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="Verification code, character 1 of 6">
               <input class="otp-cell" type="text" inputmode="numeric" maxlength="6" autocomplete="off" aria-label="Verification code, character 2 of 6">
@@ -2990,7 +2997,14 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   // v0.2.54.0 i18n：惰性 T（页面脚本先于 i18n.js 执行；字典三件套在 body 尾部）
   function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
   var currentTab = 'login';
-  var AUTH_API = false;              // 后端可达 → 密码+邮箱验证码双因素；否则 demo 模式
+  var AUTH_API = false;              // 后端可达 → 密码+邮箱验证码双因素
+  // 生产环境必须 fail closed：只有本地开发或显式配置才允许 demo 登录。
+  // 过去网络故障会自动接受任意凭证并创建本地“已登录”用户，导致 UI 与云端会话分裂。
+  var AUTH_DEMO_ALLOWED = (function () {
+    var host = String(location.hostname || '').toLowerCase();
+    return location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1' ||
+      !!(window.MN_SITE && window.MN_SITE.authDemo === true);
+  })();
   var codeSent = { signup: false, login: false };
   var countdown = { signup: 0, login: 0 };
   var otps = {}; // 六格 OTP 实例（initOtpBox 初始化，见下）
@@ -3040,6 +3054,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       return;
     }
     if (AUTH_API) return apiSignup();
+    if (!AUTH_DEMO_ALLOWED) {
+      showError('signupError', (T('auth.err.serviceUnavailable') || 'Registration service is temporarily unavailable. Please try again.'));
+      return;
+    }
 
     var name = document.getElementById('signupName').value.trim();
     var email = document.getElementById('signupEmail').value.trim();
@@ -3063,6 +3081,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   function handleLogin() {
     // v2.4.2 登录不再拦条款（用户「不需要在登录的时候同意因为都同意过了」——同意是注册时的一次性动作，v2.3.13 拦截撤除）
     if (AUTH_API) return apiLogin();
+    if (!AUTH_DEMO_ALLOWED) {
+      showError('loginError', (T('auth.err.serviceUnavailable') || 'Login service is temporarily unavailable. Please try again.'));
+      return;
+    }
 
     var email = document.getElementById('loginEmail').value.trim();
     var password = document.getElementById('loginPassword').value;
@@ -3220,7 +3242,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
   // ── 邮箱验证码两段式（api 模式）──
   // 第一步点击发码（60s 倒计时），码到达后第二步同按钮提交验证。
-  // 任何网络失败 → 回退原 demo 分支（已填内容不丢失）。
+  // 网络失败保留已填内容并明确报错；仅本地开发环境允许回退 demo。
   function setCodeHint(tab, text) {
     var el = document.getElementById(tab + 'CodeHint');
     el.textContent = text;
@@ -3250,12 +3272,20 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   }
 
   function demoSignup() {
+    if (!AUTH_DEMO_ALLOWED) {
+      showError('signupError', (T('auth.err.serviceUnavailable') || 'Registration service is temporarily unavailable. Please try again.'));
+      return;
+    }
     if (!document.getElementById('signupPassword').value)
       document.getElementById('signupPassword').value = 'demo';
     handleSignup();
   }
 
   function demoLogin() {
+    if (!AUTH_DEMO_ALLOWED) {
+      showError('loginError', (T('auth.err.serviceUnavailable') || 'Login service is temporarily unavailable. Please try again.'));
+      return;
+    }
     if (!document.getElementById('loginPassword').value)
       document.getElementById('loginPassword').value = 'demo';
     handleLogin();
@@ -3379,7 +3409,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   }
 
   // 后端探测：可达 → api 模式（密码+验证码双因素：显示验证码框）；
-  // cookie 会话仍有效 → 免登录直达控制台；不可达 → 保持 demo 模式原样。
+  // cookie 会话仍有效 → 免登录直达控制台；生产后端不可达时禁用 demo 假登录。
   // v2.5.0 忘记密码成功回跳（/signup-and-login?reset=1）：预填邮箱 + 提示用新密码登录（demo/api 双模式生效）
   MN_API.probe().then(function (up) {
     var qp = new URLSearchParams(location.search);
@@ -3389,7 +3419,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       document.getElementById('loginPassword').value = '';
     }
     if (!up) {
-      if (qp.get('reset') === '1') document.getElementById('demoHint').textContent = (T('auth.demoReset') || 'Password reset — log in with your new password');
+      document.getElementById('demoHint').textContent = AUTH_DEMO_ALLOWED
+        ? (qp.get('reset') === '1' ? (T('auth.demoReset') || 'Password reset — log in with your new password') : (T('auth.demoHint') || 'Demo mode — any credentials work'))
+        : (T('auth.err.serviceUnavailable') || 'Login service is temporarily unavailable. Please try again.');
       return;
     }
     AUTH_API = true;

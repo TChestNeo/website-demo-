@@ -143,6 +143,27 @@ test('评论 pass → visible + CMT- id + 先发后审 queued', async () => {
   } finally { await t.close(); }
 });
 
+test('评论偏好：allow_comments=false 拒绝他人，但作者仍可评论自己的帖子', async () => {
+  const t = await testApp();
+  try {
+    const alice = t.loginAs('comment-owner-pref@x.com', { displayName: 'Alice' });
+    const bob = t.loginAs('comment-visitor-pref@x.com', { displayName: 'Bob' });
+    const post = await makePost(t, alice);
+    t.db.prepare('UPDATE users SET preferences = ? WHERE id = ?')
+      .run(JSON.stringify({ allow_comments: false }), alice.user.id);
+
+    const blocked = await t.request('POST', '/api/social/posts/' + post.id + '/comments',
+      { content: '这条评论应被偏好设置拦截' }, { cookie: bob.cookie });
+    assert.strictEqual(blocked.status, 403);
+    assert.strictEqual((await blocked.json()).error.code, 'FORBIDDEN');
+    assert.strictEqual(t.db.prepare('SELECT count(*) AS n FROM comments WHERE post_id = ?').get(post.id).n, 0);
+
+    const own = await t.request('POST', '/api/social/posts/' + post.id + '/comments',
+      { content: '作者自己的补充说明' }, { cookie: alice.cookie });
+    assert.strictEqual(own.status, 200);
+  } finally { await t.close(); }
+});
+
 test('评论零容忍 → removed + 封号 + 决策/通知 + 列表不出现', async () => {
   const t = await testApp();
   try {

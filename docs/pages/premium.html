@@ -2609,12 +2609,23 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
 </style>
   <style>
-    body { background:#0a0a1a !important; overflow-x:hidden; color:#fff; }
+    body { background:#080914 !important; overflow-x:hidden; color:#fff; }
+    /* 原生重制：彩色玻璃砖 + 干涉丝带背景。用于订阅页的低频展示场景，
+       不依赖 React 或第三方授权代码，并在系统要求减少动态效果时停在静帧。 */
+    #bgCanvas { pointer-events:none; }
+    .bg-overlay, #bgSvg { display:none; }
+    .premium-page { isolation:isolate; }
     .pricing-hero { text-align:center; padding:var(--space-xl) var(--space-md) var(--space-md); position:relative; z-index:1; }
-    .plan-card { background:rgba(30,28,50,0.7) !important; backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); color:rgba(255,255,255,0.9); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center; position:relative; border:1px solid rgba(255,255,255,0.08); transition:all 0.3s; box-shadow:0 8px 32px rgba(0,0,0,0.3); }
-    .plan-card:hover { transform:translateY(-4px); box-shadow:0 16px 48px rgba(100,80,200,0.2); border-color:rgba(255,255,255,0.15); }
-    .plan-card.premium { border:2px solid rgba(234,179,8,0.5); box-shadow:0 8px 40px rgba(234,179,8,0.12); }
-    .plan-card.ultra { border:2px solid rgba(129,39,207,0.5); box-shadow:0 8px 40px rgba(129,39,207,0.12); }
+    .plan-card { background:linear-gradient(145deg,rgba(31,35,67,.96),rgba(13,15,35,.94)) !important; color:rgba(255,255,255,0.9); border-radius:var(--radius-lg); padding:var(--space-lg); text-align:center; position:relative; overflow:hidden; isolation:isolate; border:1px solid rgba(202,214,255,.18); transition:transform 200ms cubic-bezier(.23,1,.32,1),box-shadow 200ms ease,border-color 200ms ease; box-shadow:0 14px 44px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.16); }
+    .plan-card::before,.package-card::before { content:""; position:absolute; inset:-28%; z-index:-1; opacity:.42; background:linear-gradient(112deg,transparent 24%,rgba(179,0,0,.42) 42%,rgba(99,32,255,.34) 53%,rgba(255,16,16,.3) 64%,transparent 82%); transform:rotate(-8deg); }
+    .plan-card:hover { transform:translateY(-4px); box-shadow:0 22px 56px rgba(9,13,42,.52),0 0 34px rgba(124,108,255,.16),inset 0 1px 0 rgba(255,255,255,.22); border-color:rgba(220,229,255,.34); }
+    .plan-card.premium { background:radial-gradient(circle at 78% 12%,rgba(88,59,255,.35),transparent 42%),linear-gradient(145deg,rgba(42,26,89,.9),rgba(13,12,39,.88)) !important; border:2px solid rgba(125,103,255,.66); padding-top:calc(var(--space-lg) + 28px); box-shadow:0 14px 46px rgba(0,0,0,.36),0 0 36px rgba(88,59,255,.22),inset 0 1px 0 rgba(222,217,255,.23); }
+    .plan-card.ultra { background:radial-gradient(circle at 84% 8%,rgba(211,132,255,.28),transparent 36%),linear-gradient(145deg,rgba(53,30,80,.88),rgba(17,15,39,.8)) !important; border:2px solid rgba(166,104,230,.62); padding-top:calc(var(--space-lg) + 28px); box-shadow:0 14px 46px rgba(0,0,0,.36),0 0 36px rgba(129,39,207,.18),inset 0 1px 0 rgba(235,204,255,.2); }
+    .plan-card[data-plan-card="basic"] { background:linear-gradient(145deg,rgba(25,31,75,.88),rgba(10,13,34,.86)) !important; border-color:rgba(112,143,255,.42); padding-top:calc(var(--space-lg) + 28px); }
+    .basic-sliced-waves { position:absolute; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none; opacity:.86; }
+    .plan-card[data-plan-card="basic"]::before { opacity:.22; background:radial-gradient(circle at 50% 0,rgba(105,145,255,.48),transparent 54%); transform:none; }
+    .premium-pattern-waves { position:absolute; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none; opacity:.82; }
+    .plan-card[data-plan-card="premium"]::before { opacity:.26; background:radial-gradient(circle at 74% 14%,rgba(139,121,255,.52),transparent 48%); transform:none; }
     .plan-card p { color:rgba(255,255,255,0.55) !important; }
     /* v0.2.59.50 手机适配：订阅档位/附加项三列 grid 手机收单列 */
     .plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-md); }
@@ -2623,19 +2634,19 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     .pkg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
     @media (max-width: 768px) { .pkg-grid { grid-template-columns: 1fr; } }
     .plan-badge { position:absolute; top:-12px; left:50%; transform:translateX(-50%); padding:4px 16px; border-radius:999px; font-size:12px; font-weight:700; }
-    .plan-badge.popular { background:linear-gradient(135deg,#eab308,#ca8a04); color:#1a1a2e; }
-    .plan-badge.best { background:linear-gradient(135deg,#8127cf,#6a1db0); color:white; }
-    .plan-badge.student { background:linear-gradient(135deg,#4648d4,#312e81); color:white; }
+    .plan-badge.popular { top:10px; z-index:2; white-space:nowrap; background:linear-gradient(135deg,#eab308,#ca8a04); color:#1a1a2e; }
+    .plan-badge.best { top:10px; z-index:2; white-space:nowrap; background:linear-gradient(135deg,#8127cf,#6a1db0); color:white; }
+    .plan-badge.student { top:10px; z-index:2; white-space:nowrap; background:linear-gradient(135deg,#4648d4,#312e81); color:white; }
     .feature-row { display:flex; align-items:center; gap:8px; padding:8px 0; font-size:14px; color:rgba(255,255,255,0.8); text-align:left; }
-    .package-card { background:rgba(30,28,50,0.7) !important; backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.08); border-radius:var(--radius-lg); padding:var(--space-lg); color:rgba(255,255,255,0.9); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+    .package-card { background:linear-gradient(145deg,rgba(26,31,59,.96),rgba(12,15,33,.94)) !important; border:1px solid rgba(202,214,255,.18); border-radius:var(--radius-lg); padding:var(--space-lg); color:rgba(255,255,255,0.9); position:relative; overflow:hidden; isolation:isolate; box-shadow:0 14px 44px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.15); }
     .pkg-premium { border-color:rgba(234,179,8,0.3); }
     .pkg-ultra { border-color:rgba(129,39,207,0.3); }
     .package-card p { color:rgba(255,255,255,0.55) !important; }
-    .card { background:rgba(30,28,50,0.7) !important; backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); color:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.08); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
+    .card { background:rgba(30,28,50,.94) !important; color:rgba(255,255,255,0.9); border:1px solid rgba(255,255,255,0.08); box-shadow:0 8px 32px rgba(0,0,0,0.3); }
     .card table { color:rgba(255,255,255,0.85); }
     .card th { color:rgba(255,255,255,0.55); }
     .card td { color:rgba(255,255,255,0.8); border-color:rgba(255,255,255,0.06); }
-    .addon-card { padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; background:rgba(30,28,50,0.7); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); color:rgba(255,255,255,0.85); }
+    .addon-card { padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; background:rgba(30,28,50,.94); color:rgba(255,255,255,0.85); }
     .addon-card h4 { color:rgba(255,255,255,0.9); }
     .addon-card p { color:rgba(255,255,255,0.5) !important; }
     .section-title { color:#fff; text-align:center; margin-bottom:var(--space-lg); }
@@ -2655,19 +2666,21 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     .cd-text { font-size:15px; color:rgba(255,255,255,0.5); margin-bottom:6px; }
     .cd-sub { font-size:12px; color:rgba(255,255,255,0.25); }
     /* Page entrance animation */
-    .reveal { opacity:0; transform:translateY(30px); animation:revealUp 0.7s cubic-bezier(0.22,0.61,0.36,1) forwards; }
+    .reveal { opacity:0; transform:translateY(30px); animation:revealUp 0.7s cubic-bezier(0.23,1,0.32,1) forwards; }
     @keyframes revealUp { to { opacity:1; transform:translateY(0); } }
     .reveal-d1 { animation-delay:0.1s; } .reveal-d2 { animation-delay:0.2s; } .reveal-d3 { animation-delay:0.3s; } .reveal-d4 { animation-delay:0.4s; } .reveal-d5 { animation-delay:0.5s; }
+    @media (max-width:768px) { .premium-page { padding-left:20px !important; padding-right:20px !important; } .plan-card,.package-card { padding:var(--space-md); } }
+    @media (prefers-reduced-motion: reduce) { .plan-card,.package-card { transition:box-shadow 160ms ease,border-color 160ms ease; } .plan-card:hover { transform:none; } .reveal { animation:revealFade .2s ease forwards; transform:none; } @keyframes revealFade { to { opacity:1; } } }
   </style>
 </head>
-<body class="pre-stagger">
+<body class="pre-stagger premium-glass-tiles">
 
 <!-- Cyberfall Background -->
 <canvas id="bgCanvas" style="position:fixed;inset:0;z-index:0"></canvas>
 <div class="bg-overlay" id="bgOverlay" style="position:fixed;inset:0;z-index:0;pointer-events:none"></div>
 <svg id="bgSvg" viewBox="0 0 800 1000" style="position:fixed;inset:0;z-index:0;pointer-events:none;width:100%;height:100%"></svg>
 
-<div style="position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:var(--space-md) var(--space-lg)">
+<div class="premium-page" style="position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:var(--space-md) var(--space-lg)">
 
   <div class="pricing-hero reveal">
     <span class="badge badge-warning" style="margin-bottom:8px;font-size:13px" data-i18n="premium.hero.badge">⭐ M.NationWorld Premium</span>
@@ -2685,6 +2698,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   <div class="plan-grid" style="max-width:1050px;margin:0 auto var(--space-xl)">
 
     <div class="plan-card reveal reveal-d1" data-plan-card="basic" data-apply-label="Basic">
+      <canvas class="basic-sliced-waves" aria-hidden="true"></canvas>
       <div class="plan-badge student" id="basicBadge">学生价 Student</div>
       <span class="material-symbols-outlined" style="font-size:32px;color:#4648d4;margin-bottom:8px;margin-top:8px">person</span>
       <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Basic<span class="cur-chip" data-i18n="premium.plan.current">✓ 当前方案</span></h3>
@@ -2698,7 +2712,6 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       <p id="basicStudentNote" style="display:none;font-size:11px;color:#767586;text-align:center;margin:8px 0 0;line-height:1.5"></p>
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.basicWiki">Basic wiki cards</span></div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.basic3d">Basic 3D decorations</span></div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.analytics">Analytics and statistics</span></div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#767586;font-size:18px">remove</span> <span data-i18n="premium.feat.noIdentity">No identity verification</span></div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#767586;font-size:18px">remove</span> <span data-i18n="premium.feat.noAi">No AI features</span></div>
@@ -2706,6 +2719,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     </div>
 
     <div class="plan-card premium reveal reveal-d2" data-plan-card="premium" data-apply-label="Premium">
+      <canvas class="premium-pattern-waves" aria-hidden="true"></canvas>
       <div class="plan-badge popular" data-i18n="premium.plan.popularBadge">Most Popular</div>
       <span class="material-symbols-outlined" style="font-size:32px;color:#eab308;margin-bottom:8px;margin-top:8px">diamond</span>
       <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium<span class="cur-chip" data-i18n="premium.plan.current">✓ 当前方案</span></h3>
@@ -2719,8 +2733,8 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.identity">Identity verification</span></div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.advancedWiki">Advanced wiki text</span></div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.businessCards">Personal business cards</span></div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.aiSearch">AI search and optimization</span></div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.aiBasicSummary">AI basic summary</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.aiSearch">AI Smart Search</span></div>
+        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.aiEdgeGeneration">FluidCanvas AI Edge Generation</span></div>
       </div>
     </div>
 
@@ -2728,7 +2742,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       <div class="plan-badge best" data-i18n="premium.plan.bestBadge">Best Value</div>
       <span class="material-symbols-outlined" style="font-size:32px;color:#8127cf;margin-bottom:8px;margin-top:8px">star</span>
       <h3 style="font-size:20px;font-weight:700;margin-bottom:4px">Premium Ultra<span class="cur-chip" data-i18n="premium.plan.current">✓ 当前方案</span></h3>
-      <p style="color:#767586;font-size:13px;margin-bottom:16px" data-i18n="premium.plan.ultraTagline">Full AI-powered suite</p>
+      <p style="color:#767586;font-size:13px;margin-bottom:16px" data-i18n="premium.plan.ultraTagline">Complete creator toolkit</p>
       <div style="font-size:40px;font-weight:800;margin-bottom:4px" id="ultraPrice" data-plan-price>$15.99</div>
       <p style="color:#767586;font-size:12px;margin-bottom:16px" data-i18n="premium.plan.perMonth">per month</p>
       <button class="btn btn-primary btn-sm plan-cta" data-plan-cta="ultra" style="width:100%;background:linear-gradient(135deg,#8127cf,#6a1db0);border:none;color:white;font-weight:700;text-decoration:none">订阅</button>
@@ -2736,10 +2750,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       <div style="margin-top:20px;text-align:left">
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong data-i18n="premium.feat.everythingPremium">Everything in Premium</strong></div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.fullIdentity">Full identity suite</span></div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.premium3d">Premium 3D decorations</span></div>
         <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.fullDecor">Full decor suite</span></div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <span data-i18n="premium.feat.multiSummary">Multi-article AI summary</span></div>
-        <div class="feature-row"><span class="material-symbols-outlined" style="color:#22c55e;font-size:18px">check</span> <strong data-i18n="premium.feat.autoAi">Auto AI and suggestions</strong></div>
       </div>
     </div>
   </div>
@@ -2796,16 +2807,13 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         </tr>
       </thead>
       <tbody>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.identity">Identity Verification</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.basicAdvanced">Basic + Advanced</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.fullSuiteSpecial">Full Suite + Special</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.customWiki">Custom Wiki Cards</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center">Basic</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.basicAdvanced">Basic + Advanced</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.basicAdvanced">Basic + Advanced</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.advancedWiki">Advanced Wiki Text</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.decor3d">3D Card Decorations</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center">Basic</td><td style="text-align:center;color:#dc2626">—</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.basicAdvanced">Basic + Advanced</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.businessCards">Personal Business Cards</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.cardBasicDecor">Card + Basic Decor</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.cardFullDecor">Card + Full Decor</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.analytics">Analytics and Statistics</strong></td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.aiSearch">AI Search</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.aiOptimize">AI Article Optimization</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
-        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.aiSummary">AI Summary</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.basicSummary">Basic Summary</td><td style="text-align:center;color:#22c55e" data-i18n="premium.matrix.cell.multiAdvanced">Multi-article Advanced</td></tr>
-        <tr><td style="padding:12px"><strong data-i18n="premium.matrix.autoAi">Auto AI + AI Suggestions</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e;font-weight:600" data-i18n="premium.matrix.cell.exclusive">✓ Exclusive</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.customWiki">Custom Wiki Cards</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.basicWiki">Basic wiki cards</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.basicWiki">Basic wiki cards</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.basicWiki">Basic wiki cards</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.advancedWiki">Advanced Wiki Text</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.advancedWiki">Advanced wiki text</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.advancedWiki">Advanced wiki text</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.identity">Identity Verification</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.identity">Identity verification</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.fullIdentity">Full identity suite</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.businessCards">Personal Business Cards</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.businessCards">Personal business cards</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.businessCards">Personal business cards</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.analytics">Analytics and Statistics</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.analytics">Analytics and statistics</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.analytics">Analytics and statistics</td><td style="text-align:center;color:#22c55e" data-i18n="premium.feat.analytics">Analytics and statistics</td></tr>
+        <tr style="border-bottom:1px solid rgba(0,0,0,0.04)"><td style="padding:12px"><strong data-i18n="premium.matrix.aiSearch">AI Smart Search</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
+        <tr><td style="padding:12px"><strong data-i18n="premium.matrix.aiEdgeGeneration">FluidCanvas AI Edge Generation</strong></td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#dc2626">✕</td><td style="text-align:center;color:#22c55e">✓</td><td style="text-align:center;color:#22c55e">✓</td></tr>
       </tbody>
     </table>
     </div>
@@ -2818,12 +2826,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Official Team Verification</h4>
         <p style="font-size:12px;color:#767586;margin-bottom:4px" data-i18n="premium.addon.verifyReq">Lv.15 + 650 followers required</p>
-        <p style="font-weight:700" id="addonVerify">$5.99</p><p style="font-size:11px;color:#767586" data-i18n="premium.addon.lifetime">One-time purchase · Lifetime access</p>
+        <p style="font-weight:700;color:#eab308" data-i18n="premium.addon.plannedUnavailable">Planned · Not available for purchase</p>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Channel Boost</h4>
         <p style="font-size:12px;color:#767586;margin-bottom:4px" data-i18n="premium.addon.boostDesc">Increase channel visibility</p>
-        <p style="font-weight:700" id="addonBoost">$5.10</p><p style="font-size:11px;color:#767586" data-i18n="premium.addon.once">One-time purchase</p>
+        <p style="font-weight:700;color:#eab308" data-i18n="premium.addon.plannedUnavailable">Planned · Not available for purchase</p>
       </div>
       <div class="addon-card">
         <h4 style="font-weight:600;margin-bottom:4px">Team Slots — Basic</h4>
@@ -2947,8 +2955,6 @@ document.getElementById('premiumPrice').textContent = p.premium;
 document.getElementById('ultraPrice').textContent = p.ultra;
 document.getElementById('pkgPremiumPrice').textContent = p.pkgPremium;
 document.getElementById('pkgUltraPrice').textContent = p.pkgUltra;
-document.getElementById('addonVerify').textContent = p.verify;
-document.getElementById('addonBoost').textContent = p.boost;
 var ab=document.getElementById('addonBasic'),ap=document.getElementById('addonPlus'),ap2=document.getElementById('addonPremium'),au=document.getElementById('addonUltra');
 if(ab)ab.textContent=p.addonBasic;if(ap)ap.textContent=p.addonPlus;if(ap2)ap2.textContent=p.addonPremium;if(au)au.textContent=p.addonUltra;
 
@@ -2967,6 +2973,9 @@ window.__mnI18nRerender = renderMatrixNote;
 
 // ── Cyberfall Background ──
 (function(){
+  /* The former background remains below for rollback history.  The new native
+     Glass Tiles renderer is installed first and opts this legacy WebGL scene out. */
+  if (document.body.classList.contains('premium-glass-tiles')) return;
   var canvas = document.getElementById('bgCanvas');
   if(!canvas) return;
   var gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
@@ -3033,6 +3042,187 @@ void main(){
   for(var i=0;i<4;i++){var r=document.createElementNS(ns,'rect');var s2=6+Math.random()*16;r.setAttribute('x',80+Math.random()*600);r.setAttribute('y',150+Math.random()*650);r.setAttribute('width',s2);r.setAttribute('height',s2);r.setAttribute('fill','rgba(160,140,255,0.05)');r.setAttribute('stroke','rgba(180,160,255,0.25)');r.setAttribute('stroke-width','0.5');r.setAttribute('transform','rotate('+Math.random()*45+' '+(parseFloat(r.getAttribute('x'))+s2/2)+' '+(parseFloat(r.getAttribute('y'))+s2/2)+')');svg.appendChild(r);}
 })();
 
+// ── Glass Tiles + Interference Ribbons (original native implementation) ──
+// Decorative only: no pointer tracking, 30fps cap, static fallback for reduced motion.
+(function () {
+  /* Superseded by the requested Flux Lines background below. */
+  return;
+  var canvas = document.getElementById('bgCanvas');
+  if (!canvas) return;
+  window.__mnPremiumGlassTiles = true;
+  var ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  var w = 0, h = 0, last = 0, raf = 0;
+
+  function roundedRect(x, y, width, height, radius) {
+    var r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + width, y, x + width, y + height, r);
+    ctx.arcTo(x + width, y + height, x, y + height, r); ctx.arcTo(x, y + height, x, y, r);
+    ctx.arcTo(x, y, x + width, y, r); ctx.closePath();
+  }
+  function drawTiles(t) {
+    var cell = w < 560 ? 62 : 82;
+    var cols = Math.ceil(w / cell) + 2, rows = Math.ceil(h / cell) + 2;
+    for (var row = -1; row < rows; row++) for (var col = -1; col < cols; col++) {
+      var wave = Math.sin(col * 1.73 + row * 1.19 + t * .00022);
+      var shimmer = (wave + 1) * .5;
+      if (shimmer < .29) continue;
+      var x = col * cell + Math.sin(row * .67 + t * .00012) * 9;
+      var y = row * cell + Math.cos(col * .51 + t * .00011) * 8;
+      var pad = 7 + (1 - shimmer) * 9;
+      var grad = ctx.createLinearGradient(x, y, x + cell, y + cell);
+      var hue = 208 + ((col * 19 + row * 11) % 74);
+      grad.addColorStop(0, 'hsla(' + hue + ',95%,76%,' + (.035 + shimmer * .09) + ')');
+      grad.addColorStop(.48, 'hsla(' + (hue + 42) + ',90%,68%,' + (.025 + shimmer * .06) + ')');
+      grad.addColorStop(1, 'hsla(' + (hue + 92) + ',85%,70%,.012)');
+      roundedRect(x + pad, y + pad, cell - pad * 2, cell - pad * 2, 15);
+      ctx.fillStyle = grad; ctx.fill();
+      ctx.strokeStyle = 'rgba(231,243,255,' + (.035 + shimmer * .12) + ')'; ctx.lineWidth = 1; ctx.stroke();
+    }
+  }
+  function drawRibbons(t) {
+    for (var i = 0; i < 5; i++) {
+      var y = h * (.16 + i * .18);
+      var drift = Math.sin(t * .00013 + i * 1.7) * h * .06;
+      var gradient = ctx.createLinearGradient(0, y, w, y + drift);
+      gradient.addColorStop(0, 'rgba(98,204,255,0)');
+      gradient.addColorStop(.3, i % 2 ? 'rgba(255,192,115,.13)' : 'rgba(139,135,255,.16)');
+      gradient.addColorStop(.58, i % 2 ? 'rgba(255,130,214,.12)' : 'rgba(92,236,226,.12)');
+      gradient.addColorStop(1, 'rgba(98,204,255,0)');
+      ctx.beginPath(); ctx.moveTo(-w * .08, y);
+      ctx.bezierCurveTo(w * .22, y - drift, w * .48, y + drift * 1.6, w * 1.08, y - drift * .4);
+      ctx.strokeStyle = gradient; ctx.lineWidth = 1.1; ctx.shadowBlur = 16; ctx.shadowColor = i % 2 ? 'rgba(255,161,215,.42)' : 'rgba(111,164,255,.42)'; ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+  }
+  function paint(time) {
+    ctx.clearRect(0, 0, w, h);
+    var backdrop = ctx.createRadialGradient(w * .78, h * .04, 0, w * .56, h * .33, Math.max(w, h));
+    backdrop.addColorStop(0, '#252047'); backdrop.addColorStop(.34, '#11152c'); backdrop.addColorStop(1, '#070812');
+    ctx.fillStyle = backdrop; ctx.fillRect(0, 0, w, h);
+    drawTiles(time); drawRibbons(time);
+  }
+  function resize() {
+    w = window.innerWidth; h = window.innerHeight;
+    canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+    canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); paint(performance.now());
+  }
+  function frame(time) {
+    if (document.hidden) { raf = requestAnimationFrame(frame); return; }
+    if (time - last >= 33) { paint(time); last = time; }
+    raf = requestAnimationFrame(frame);
+  }
+  window.addEventListener('resize', resize, { passive: true }); resize();
+  if (!reduce) raf = requestAnimationFrame(frame);
+})();
+
+// ── Flux Lines (React Bits free component, adapted for this non-React page) ──
+// The page keeps the component's WebGL2 field renderer while avoiding a React runtime
+// and keeping payment controls free of cursor-driven decoration.
+(function () {
+  var canvas = document.getElementById('bgCanvas');
+  if (!canvas) return;
+  var gl = canvas.getContext('webgl2', { alpha: false, antialias: false, depth: false, stencil: false });
+  if (!gl) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var VERTEX = '#version 300 es\nin vec2 aPosition;\nvoid main(){gl_Position=vec4(aPosition,0.0,1.0);}';
+  var FIELD = 'float hash(vec3 p3){p3=fract(p3*.1031);p3+=dot(p3,p3.zyx+33.33);return fract((p3.x+p3.y)*p3.z);}\nfloat smin(float a,float b,float k){float r=exp2(-a/k)+exp2(-b/k);return-k*log2(r);}\nfloat sinlerp(float a,float b,float w){return mix(a,b,(sin(w*3.14159265-1.57079633)+1.)/2.);}\nfloat vn(vec2 p,float s,float seed){vec2 cellp=floor(p/s),relp=mod(p,s);float g1=hash(vec3(cellp,seed)),g2=hash(vec3(cellp.x+1.,cellp.y,seed)),g3=hash(vec3(cellp.x+1.,cellp.y+1.,seed)),g4=hash(vec3(cellp.x,cellp.y+1.,seed));return sinlerp(sinlerp(g1,g2,relp.x/s),sinlerp(g4,g3,relp.x/s),relp.y/s);}\nfloat dbn(vec2 p,float s,float seed){float o=s/2.;return(2.*vn(p,s,seed)+1.5*vn(p+vec2(o,o),s,seed+.1)+1.25*vn(p+vec2(-o,o),s,seed+.2)+1.125*vn(p+vec2(o,-o),s,seed+.3)+vn(p+vec2(-o,-o),s,seed+.4))/7.;}';
+  var FRAGMENT = '#version 300 es\nprecision highp float;precision highp int;uniform vec2 uResolution,uFlow;uniform float uTime,uSpeed,uScale,uTurbulence,uFluidity,uRimWidth,uSharpness,uShimmer,uGlow,uLine,uMaxHalf,uReveal,uOpacity;uniform vec3 uColors[3],uBackground;out vec4 outColor;\n' + FIELD + '\nvec3 palette(float h){float x=clamp(h,0.,1.)*2.;int i=int(floor(x)),j=min(i+1,2);return mix(uColors[i],uColors[j],smoothstep(0.,1.,x-float(i)));}\nvoid main(){float ref=700./max(uScale,.05);vec2 frag=gl_FragCoord.xy,p=frag/uResolution.y*ref;float spd=200.*uSpeed,t=uTime;vec2 dir=uFlow,perp=vec2(-dir.y,dir.x);float d1=vn(p+perp*(t*spd),60.,10.)*50.*uTurbulence,d2=vn(p-perp*(t*spd),120.,15.)*100.*uTurbulence;float peaks=dbn(p+d1+dir*(t*spd*.5),40.,1.),peaks2=dbn(p+d2-dir*(t*spd*.5),40.,0.),field=smin(peaks,peaks2,max(uFluidity,.001));float slope=length(vec2(dFdx(field),dFdy(field))),gap=abs(field-.4),pixels=gap/max(slope,1e-6),across=max(gap/max(uRimWidth,.001)*2.,pixels/uMaxHalf),band=5.*uRimWidth*(1.-across),shimmer=vn(p+dir*(t*spd*.5),60.,12.)*uShimmer,lit=clamp(band-shimmer,0.,1.),glow=pow(lit,uSharpness)*uGlow,core=uLine>0.?smoothstep(uLine+.75,uLine-.75,pixels)*smoothstep(.08,.6,glow):0.,energy=max(glow*glow,core*.85)*uReveal;vec3 light=palette(clamp(.5+(peaks-peaks2)*.8,0.,1.))*energy*uOpacity;outColor=vec4(uBackground+light,1.);}';
+  function shader(type, source) { var s = gl.createShader(type); gl.shaderSource(s, source); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) { gl.deleteShader(s); return null; } return s; }
+  var vs = shader(gl.VERTEX_SHADER, VERTEX), fs = shader(gl.FRAGMENT_SHADER, FRAGMENT), program = gl.createProgram();
+  if (!vs || !fs || !program) return;
+  gl.attachShader(program, vs); gl.attachShader(program, fs); gl.bindAttribLocation(program, 0, 'aPosition'); gl.linkProgram(program); gl.deleteShader(vs); gl.deleteShader(fs);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
+  var names = ['uResolution','uTime','uFlow','uSpeed','uScale','uTurbulence','uFluidity','uRimWidth','uSharpness','uShimmer','uGlow','uLine','uMaxHalf','uReveal','uOpacity','uColors','uBackground'];
+  var u = {}; names.forEach(function (name) { u[name] = gl.getUniformLocation(program, name === 'uColors' ? 'uColors[0]' : name); });
+  var buffer = gl.createBuffer(), vao = gl.createVertexArray(); gl.bindVertexArray(vao); gl.bindBuffer(gl.ARRAY_BUFFER, buffer); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,3,-1,-1,3]), gl.STATIC_DRAW); gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+  var ratio = 1, width = 1, height = 1, start = performance.now(), last = 0, colors = new Float32Array([.702,0,0,.388,.125,1,1,.063,.063]), background = new Float32Array([.022,.008,.052]);
+  function render(now) { var time = reduce ? 0 : (now - start) / 1000; gl.viewport(0,0,canvas.width,canvas.height); gl.useProgram(program); gl.bindVertexArray(vao); gl.uniform2f(u.uResolution,canvas.width,canvas.height); gl.uniform1f(u.uTime,time); gl.uniform2f(u.uFlow,0,-1); gl.uniform1f(u.uSpeed,.27); gl.uniform1f(u.uScale,1.25); gl.uniform1f(u.uTurbulence,.88); gl.uniform1f(u.uFluidity,.14); gl.uniform1f(u.uRimWidth,.22); gl.uniform1f(u.uSharpness,2.4); gl.uniform1f(u.uShimmer,.8); gl.uniform1f(u.uGlow,1.55); gl.uniform1f(u.uLine,.75*ratio*.5); gl.uniform1f(u.uMaxHalf,28*ratio); gl.uniform1f(u.uReveal,reduce?1:Math.min(1,(now-start)/1800)); gl.uniform1f(u.uOpacity,.9); gl.uniform3fv(u.uColors,colors); gl.uniform3fv(u.uBackground,background); gl.drawArrays(gl.TRIANGLES,0,3); }
+  function resize() { width=innerWidth; height=innerHeight; ratio=Math.min(devicePixelRatio||1,1.5); canvas.width=Math.max(1,Math.round(width*ratio)); canvas.height=Math.max(1,Math.round(height*ratio)); canvas.style.width=width+'px'; canvas.style.height=height+'px'; render(performance.now()); }
+  function frame(now) { if (!document.hidden && (now-last>32 || !last)) { render(now); last=now; } if (!reduce) requestAnimationFrame(frame); }
+  window.addEventListener('resize',resize,{passive:true}); resize(); if (!reduce) requestAnimationFrame(frame);
+})();
+
+// ── Sliced Waves for the Basic plan card ──
+(function () {
+  var card = document.querySelector('[data-plan-card="basic"]');
+  var canvas = card && card.querySelector('.basic-sliced-waves');
+  if (!card || !canvas) return;
+  var ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var pointer = { x: .5, y: .38, active: 0 }, width = 1, height = 1, ratio = 1, last = 0;
+  var colors = ['#6687ff','#8b5cf6','#a7d8ff','#5c6ee8'];
+  function resize() { var box = card.getBoundingClientRect(); ratio = Math.min(devicePixelRatio || 1, 1.5); width = Math.max(1, box.width); height = Math.max(1, box.height); canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio); ctx.setTransform(ratio,0,0,ratio,0,0); draw(performance.now()); }
+  function draw(now) {
+    var t = reduce ? 0 : now * .00042; ctx.clearRect(0,0,width,height);
+    for (var wave = 0; wave < 6; wave++) {
+      var base = height * (.16 + wave * .145), amp = 10 + wave * 2, depth = (6 - wave) / 6;
+      for (var x = -22; x < width + 24; x += 13) {
+        var phase = x * .028 + t * (1.4 + wave * .1) + wave * 1.24;
+        var y = base + Math.sin(phase) * amp + Math.cos(phase * .62) * amp * .34;
+        var slope = Math.cos(phase) * amp * .028;
+        var dx = x / width - pointer.x, dy = y / height - pointer.y;
+        var focus = pointer.active * Math.exp(-(dx * dx + dy * dy) * 13);
+        var alpha = .09 + depth * .15 + focus * .26;
+        ctx.save(); ctx.translate(x,y); ctx.rotate(Math.atan(slope));
+        ctx.shadowBlur = 8 + focus * 16; ctx.shadowColor = colors[(wave + Math.floor(x / 13)) % colors.length];
+        ctx.fillStyle = colors[(wave + Math.floor(x / 13)) % colors.length].replace('#','');
+        var hex = ctx.fillStyle, r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
+        ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+        ctx.fillRect(-4.8, -1.2 - focus, 9.6, 2.4 + focus * 2); ctx.restore();
+      }
+    }
+  }
+  function frame(now) { if (!document.hidden && (!last || now - last > 32)) { draw(now); last = now; } if (!reduce) requestAnimationFrame(frame); }
+  card.addEventListener('pointermove', function (event) { var box = card.getBoundingClientRect(); pointer.x = (event.clientX - box.left) / box.width; pointer.y = (event.clientY - box.top) / box.height; pointer.active = 1; });
+  card.addEventListener('pointerleave', function () { pointer.active = 0; });
+  new ResizeObserver(resize).observe(card); resize(); if (!reduce) requestAnimationFrame(frame);
+})();
+
+// ── Pattern Waves for the Premium plan card ──
+// Native canvas adaptation of the supplied PatternWaves "silk" preset: #583bff,
+// fine dot fabric, edge fade, low-frequency motion, and a static reduced-motion mode.
+(function () {
+  var card = document.querySelector('[data-plan-card="premium"]');
+  var canvas = card && card.querySelector('.premium-pattern-waves');
+  if (!card || !canvas) return;
+  var ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var pointer = { x: .5, y: .5, active: 0 }, width = 1, height = 1, ratio = 1, last = 0;
+  var ink = [88,59,255], spacing = 9;
+  function resize() { var box = card.getBoundingClientRect(); ratio = Math.min(devicePixelRatio || 1, 1.5); width = Math.max(1, box.width); height = Math.max(1, box.height); canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio); ctx.setTransform(ratio,0,0,ratio,0,0); draw(performance.now()); }
+  function fadeAt(x,y) { var cx = x / width * 2 - 1, cy = y / height * 2 - 1; return Math.max(0, Math.min(1, 1 - Math.max(Math.abs(cx),Math.abs(cy)) * .72)); }
+  function draw(now) {
+    var t = reduce ? 0 : now * .00035; ctx.clearRect(0,0,width,height);
+    for (var y = -spacing; y < height + spacing; y += spacing) {
+      for (var x = -spacing; x < width + spacing; x += spacing) {
+        var u = x / Math.max(width,1), v = y / Math.max(height,1);
+        var folds = Math.sin((u * 5.5 + v * .42) * Math.PI * 2 - t) + .32 * Math.sin((u * 13.75 + v * 1.05) * Math.PI * 2 - t * 2 + 1.3);
+        var bend = Math.sin((v * 4.2 - u * .7) * Math.PI * 2 + t * .35) * 1.8;
+        var px = x + Math.cos(v * Math.PI * 4 + t * .45) * 1.6;
+        var py = y + folds * 5.6 + bend;
+        var dx = px / width - pointer.x, dy = py / height - pointer.y;
+        var focus = pointer.active * Math.exp(-(dx * dx + dy * dy) * 20);
+        var light = Math.max(0, Math.min(1, .45 + folds * .23 + focus * .34));
+        var alpha = fadeAt(px,py) * (.035 + light * .2 + focus * .12);
+        var size = .75 + light * 2.05 + focus * 1.2;
+        ctx.fillStyle = 'rgba(' + ink[0] + ',' + ink[1] + ',' + ink[2] + ',' + alpha + ')';
+        ctx.fillRect(px - size * .5, py - size * .5, size, size);
+      }
+    }
+  }
+  function frame(now) { if (!document.hidden && (!last || now - last > 32)) { draw(now); last = now; } if (!reduce) requestAnimationFrame(frame); }
+  card.addEventListener('pointermove', function (event) { var box = card.getBoundingClientRect(); pointer.x = (event.clientX - box.left) / box.width; pointer.y = (event.clientY - box.top) / box.height; pointer.active = 1; });
+  card.addEventListener('pointerleave', function () { pointer.active = 0; });
+  new ResizeObserver(resize).observe(card); resize(); if (!reduce) requestAnimationFrame(frame);
+})();
+
 // Animation keyframes for background
 var bgStyle=document.createElement('style');
 bgStyle.textContent='@keyframes floatCubeBG{0%{transform:translateY(0) rotate(0deg) scale(1);opacity:1}50%{opacity:0.5}100%{transform:translateY(-100vh) rotate(360deg) scale(0.3);opacity:0}}@keyframes floatPaperBG{0%{transform:translateY(0) rotate(0deg) translateX(0);opacity:0.7}25%{transform:translateX(30px) rotate(90deg)}50%{transform:translateX(-20px) rotate(180deg);opacity:0.4}75%{transform:translateX(15px) rotate(270deg)}100%{transform:translateY(-100vh) rotate(360deg) translateX(-10px);opacity:0}}@keyframes floatLineBG{0%{transform:translateY(0);opacity:0.6}100%{transform:translateY(-100vh);opacity:0}}';
@@ -3041,9 +3231,8 @@ document.head.appendChild(bgStyle);
 
 <div class="plan-note" id="planNote">注册默认「普通用户」（免费）；Basic 为学生价方案（常规价 RM12/月，学校邮箱认证后 RM5.50/月）。会员方案支持在线支付：订阅（Stripe 自动续费，银行卡 / Apple Pay / Google Pay，可随时在「管理订阅」取消）或每年支付（一次付清 1 年 · 送 2 个月，银行卡 / GrabPay，不自动续费）。</div>
 
-<!-- v0.2.41.0: 支付网关升级预告（Xendit）——开通口径不变：判定钱到账即自动开通，
-     无需人工审核（沿用后端 webhook 状态机，接入 Xendit 后自动生效） -->
-<div class="plan-note" id="gatewayNote" style="margin-top:10px;border-left-color:var(--color-primary,#4648d4)" data-i18n="premium.gatewayNote">支付网关即将升级（Xendit）——订阅开通仍为到账自动生效，无需人工审核。</div>
+<!-- 支付安全说明：实际结账由 Stripe 托管，平台不接触完整支付凭证。 -->
+<div class="plan-note" id="gatewayNote" style="margin-top:10px;border-left-color:var(--color-primary,#4648d4)" data-i18n="premium.gatewayNote">订阅结账由 Stripe 安全处理；平台不存储完整的银行卡或钱包支付凭证。</div>
 
 <!-- 全屏倒数跳转遮罩（点击订阅/每年支付 → checkout 成功后 3-2-1 → 跳 Stripe 结账页） -->
 <div id="cdOverlay" class="cd-overlay">

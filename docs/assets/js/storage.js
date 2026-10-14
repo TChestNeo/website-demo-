@@ -135,15 +135,24 @@ var SlatiDB = (function () {
 
   function submitWorld(record) {
     var worlds = get(KEYS.WORLDS) || [];
-    record.id = 'WLD-' + Date.now();
-    record.createdAt = new Date().toISOString();
-    record.status = 'active';
-    worlds.push(record);
+    var now = new Date().toISOString();
+    var local = {};
+    Object.keys(record || {}).forEach(function (key) { local[key] = record[key]; });
+    local.id = 'WLD-LOCAL-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+    local.clientKey = local.clientKey || ('world-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10));
+    local.createdAt = now;
+    local.updatedAt = now;
+    local.status = 'active';
+    local.cloudSync = hasCloudUser() ? 'pending' : 'local';
+    delete local.cloudSyncError;
+    worlds.push(local);
     set(KEYS.WORLDS, worlds);
     remove(KEYS.WORLD);
-    // 无云端镜像：后端 /social/worlds 端点未建（与 mirrorNation 同理，待后端批次）
+    // 本地先落盘、界面立即完成；云端账号随后以 clientKey 幂等镜像。
+    // 网络/API 失败会回写 failed，由完成页明确提示并允许重试。
+    if (hasCloudUser()) mirrorWorld(local);
     addXP('submit_world', 150);
-    return record;
+    return local;
   }
 
   function getWorlds() {
@@ -457,7 +466,7 @@ var SlatiDB = (function () {
 
   // ── 云端镜像（P3 混合模式）──────────────────────────────────────────
   // 原则：localStorage 仍是运行时唯一事实来源，HTTP 仅旁路镜像——
-  // 写 = 先同步写本地再 fire-and-forget 云端（失败静默，离线自然降级）；
+  // 写 = 先同步写本地再 fire-and-forget 云端（worlds 会显式记录 pending/failed/synced）；
   // 读 = 模块加载时后台 GET 按 id 合并（云端优先，本地未同步保留）。
   // 仅当本地用户是云端账号（id 以 USR- 开头）且后端可达时才发请求：
   // demo 用户零 API 调用，杜绝服务端 401 误清本地演示会话。
@@ -472,15 +481,52 @@ var SlatiDB = (function () {
 
   // 确保 MN_API 可用后回调：已加载直接用；页面有 api.js 标签但未执行完 → 挂 load；
   // 都没有 → 动态注入（storage.js 被 38 页引用，api.js 仅首页静态引入）。
-  function ensureApi(cb) {
+  function ensureApi(cb, onError) {
     if (window.MN_API) { cb(window.MN_API); return; }
-    if (!window.document) return;
+    if (!window.document) { if (onError) onError(); return; }
     var tag = window.document.querySelector('script[src$="api.js"]');
-    if (tag) { tag.addEventListener('load', function () { cb(window.MN_API); }); return; }
+    if (tag) {
+      tag.addEventListener('load', function () {
+        if (window.MN_API) cb(window.MN_API);
+        else if (onError) onError();
+      });
+      if (onError) tag.addEventListener('error', onError);
+      return;
+    }
     var s = window.document.createElement('script');
     s.src = apiScriptSrc();
-    s.onload = function () { cb(window.MN_API); };
+    s.onload = function () {
+      if (window.MN_API) cb(window.MN_API);
+      else if (onError) onError();
+    };
+    if (onError) s.onerror = onError;
     window.document.head.appendChild(s);
+  }
+
+  // 世界提交不能像普通旁路镜像那样静默失败：完成页需要一个确定的同步结果。
+  function worldApi() {
+    return new Promise(function (resolve, reject) {
+      var settled = false;
+      var timer = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        reject(new Error('API_LOAD_TIMEOUT'));
+      }, 4000);
+      function done(api) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (api && api.post) resolve(api);
+        else reject(new Error('API_UNAVAILABLE'));
+      }
+      function fail() {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(new Error('API_UNAVAILABLE'));
+      }
+      ensureApi(done, fail);
+    });
   }
 
   function whenUp(cb) {
@@ -496,6 +542,160 @@ var SlatiDB = (function () {
     var out = [];
     for (var k in map) out.push(map[k]);
     return out;
+  }
+
+  function mergeWorldLists(remote, local) {
+    var localByClient = {};
+    var localById = {};
+    var used = {};
+    var out = [];
+    (local || []).forEach(function (item, index) {
+      if (!item) return;
+      if (item.clientKey) localByClient[item.clientKey] = { item: item, index: index };
+      if (item.id) localById[item.id] = { item: item, index: index };
+    });
+    (remote || []).forEach(function (serverWorld) {
+      if (!serverWorld) return;
+      var match = (serverWorld.clientKey && localByClient[serverWorld.clientKey]) ||
+        (serverWorld.id && localById[serverWorld.id]);
+      var merged = {};
+      if (match) {
+        Object.keys(match.item).forEach(function (key) { merged[key] = match.item[key]; });
+      }
+      // 旧版本/中断重试可能留下同 clientKey 的多个本地副本；云端一条应吞并全部副本。
+      (local || []).forEach(function (item, index) {
+        if (!item) return;
+        if ((serverWorld.clientKey && item.clientKey === serverWorld.clientKey) ||
+            (serverWorld.id && item.id === serverWorld.id)) used[index] = true;
+      });
+      Object.keys(serverWorld).forEach(function (key) { merged[key] = serverWorld[key]; });
+      merged.cloudSync = 'synced';
+      delete merged.cloudSyncError;
+      out.push(merged);
+    });
+    (local || []).forEach(function (item, index) {
+      if (item && !used[index]) out.push(item);
+    });
+    out.sort(function (a, b) {
+      return String(a && a.createdAt || '').localeCompare(String(b && b.createdAt || ''));
+    });
+    return out;
+  }
+
+  function worldMetadata(record) {
+    var reserved = {
+      id: true, ownerId: true, type: true, name: true, description: true, lore: true,
+      metadata: true, clientKey: true, status: true, createdAt: true, updatedAt: true,
+      cloudSync: true, cloudSyncError: true
+    };
+    var meta = {};
+    if (record && record.metadata && typeof record.metadata === 'object' && !Array.isArray(record.metadata)) {
+      Object.keys(record.metadata).forEach(function (key) { meta[key] = record.metadata[key]; });
+    }
+    Object.keys(record || {}).forEach(function (key) {
+      if (!reserved[key]) meta[key] = record[key];
+    });
+    return meta;
+  }
+
+  function worldPayload(record) {
+    return {
+      type: record.type,
+      name: record.name,
+      description: record.description != null ? record.description : (record.lore || ''),
+      clientKey: record.clientKey,
+      metadata: worldMetadata(record)
+    };
+  }
+
+  function findWorld(idOrClientKey) {
+    var list = get(KEYS.WORLDS) || [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && (list[i].id === idOrClientKey || list[i].clientKey === idOrClientKey)) return list[i];
+    }
+    return null;
+  }
+
+  function updateWorldSync(target, patch) {
+    var list = get(KEYS.WORLDS) || [];
+    var updated = null;
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i];
+      if (!item) continue;
+      var matches = (target.clientKey && item.clientKey === target.clientKey) || item.id === target.id;
+      if (!matches) continue;
+      updated = {};
+      Object.keys(item).forEach(function (key) { updated[key] = item[key]; });
+      Object.keys(patch || {}).forEach(function (key) {
+        if (patch[key] === undefined) delete updated[key];
+        else updated[key] = patch[key];
+      });
+      list[i] = updated;
+      break;
+    }
+    if (!updated) return null;
+    set(KEYS.WORLDS, list);
+    if (window.dispatchEvent && typeof CustomEvent === 'function') {
+      window.dispatchEvent(new CustomEvent('mn:world-sync', { detail: { world: updated } }));
+    }
+    return updated;
+  }
+
+  function worldSyncError(response) {
+    if (response && response.data && response.data.error && response.data.error.message) {
+      return String(response.data.error.message);
+    }
+    if (response && response.status === 401) return '登录已过期，请重新登录后重试';
+    if (response && response.status === 429) return '操作过于频繁，请稍后重试';
+    return '暂时无法连接云端，世界已安全保存在此设备';
+  }
+
+  function markWorldSyncFailed(target, message) {
+    // GET 合并可能已确认同一 clientKey 在云端存在；较晚返回的旧 POST 网络错误不得把 synced 降级。
+    var current = findWorld(target.clientKey || target.id);
+    if (current && current.cloudSync === 'synced') return current;
+    return updateWorldSync(target, {
+      cloudSync: 'failed',
+      cloudSyncError: message,
+      updatedAt: new Date().toISOString()
+    }) || target;
+  }
+
+  function mirrorWorld(record, apiOverride) {
+    if (!record) return Promise.resolve(null);
+    if (!hasCloudUser()) {
+      return Promise.resolve(updateWorldSync(record, { cloudSync: 'local', cloudSyncError: undefined }) || record);
+    }
+    var pending = updateWorldSync(record, { cloudSync: 'pending', cloudSyncError: undefined }) || record;
+    var apiPromise = apiOverride ? Promise.resolve(apiOverride) : worldApi();
+    return apiPromise.then(function (api) {
+      return api.post('/social/worlds', worldPayload(pending));
+    }).then(function (response) {
+      if (!response || !response.ok || !response.data || !response.data.world) {
+        return markWorldSyncFailed(pending, worldSyncError(response));
+      }
+      var serverWorld = response.data.world;
+      var patch = {};
+      Object.keys(serverWorld).forEach(function (key) { patch[key] = serverWorld[key]; });
+      patch.cloudSync = 'synced';
+      patch.cloudSyncError = undefined;
+      return updateWorldSync(pending, patch) || serverWorld;
+    }).catch(function () {
+      return markWorldSyncFailed(pending, '暂时无法连接云端，世界已安全保存在此设备');
+    });
+  }
+
+  function retryWorldSync(idOrClientKey) {
+    var world = findWorld(idOrClientKey);
+    if (!world) return Promise.resolve(null);
+    return mirrorWorld(world);
+  }
+
+  function syncPendingWorlds(api) {
+    if (!hasCloudUser()) return;
+    (get(KEYS.WORLDS) || []).forEach(function (world) {
+      if (world && world.cloudSync === 'pending') mirrorWorld(world, api);
+    });
   }
 
   function unionStrings(a, b) {
@@ -523,6 +723,15 @@ var SlatiDB = (function () {
     });
   }
 
+  function mergeWorlds(api) {
+    api.get('/social/worlds').then(function (r) {
+      if (r.ok && r.data && Array.isArray(r.data.worlds)) {
+        set(KEYS.WORLDS, mergeWorldLists(r.data.worlds, get(KEYS.WORLDS) || []));
+      }
+      syncPendingWorlds(api);
+    }).catch(function () { syncPendingWorlds(api); });
+  }
+
   // 模块加载：后台 GET 合并 nations/topics/teams/following；/me 权威覆盖本地用户
   //（服务端 401 由 api.js 派发 mn:unauthorized → bindAuthEvents 清本地会话）。
   function cloudMerge() {
@@ -531,6 +740,7 @@ var SlatiDB = (function () {
       mergeInto(api, KEYS.NATIONS, '/social/nations', 'nations');
       mergeInto(api, KEYS.TOPICS, '/social/topics', 'topics');
       mergeInto(api, KEYS.TEAMS, '/social/teams', 'teams');
+      mergeWorlds(api);
       mergeFollowing(api);
       api.get('/auth/me').then(function (r) {
         if (!r.ok || !r.data || !r.data.user) return;
@@ -612,6 +822,8 @@ var SlatiDB = (function () {
   seedFollowing();
   bindAuthEvents();
   cloudMerge();
+  // 页面跳转可能中断上一页的 POST；新页启动时主动续传 pending 世界。
+  if (hasCloudUser()) syncPendingWorlds();
   grantDailyLoginBonus();
 
   return {
@@ -631,6 +843,7 @@ var SlatiDB = (function () {
     getWorldDraft: getWorldDraft,
     submitWorld: submitWorld,
     getWorlds: getWorlds,
+    retryWorldSync: retryWorldSync,
     saveTopic: saveTopic,
     getTopics: getTopics,
     getTeams: getTeams,

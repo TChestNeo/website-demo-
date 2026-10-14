@@ -29,25 +29,46 @@ function register(router, ctx) {
       months = Math.min(12, Math.max(1, Math.trunc(n))); // 钳制 1..12
     }
     const iso = new Date().toISOString();
-    // 与 applyPaid（subscriptions.js）同口径：不降级（max）、同 tier 且永久授予保持 NULL
-    const newTier = TIER_RANK[user.tier] > TIER_RANK[target] ? user.tier : target;
-    const expiry = (newTier === user.tier && !user.tier_expires_at)
-      ? null : extendExpiry(user.tier_expires_at, months, iso);
-    if (newTier !== user.tier || expiry !== user.tier_expires_at) {
-      db.prepare('UPDATE users SET tier = ?, tier_expires_at = ?, updated_at = ? WHERE id = ?')
-        .run(newTier, expiry, iso, user.id);
+    // P0-3：授权写入管理员基线（admin_tier/admin_tier_expires_at），tier 由权益重算器统一推导——
+    // Stripe 取消事件只抹 Stripe 来源，绝不动管理员授权；低档 grant 不覆盖高档基线（低档不得延长高档）。
+    const { recomputeAndApply } = require('../../entitlements');
+    const targetRank = TIER_RANK[target] || 0;
+    const existingAdminRank = TIER_RANK[user.admin_tier] || 0;
+    const currentRank = TIER_RANK[user.tier] || 0;
+    // 历史 tier 未入基线且高于本次授权 → 先兜底抬进基线（与 042 回填同语义），保证低档 grant 不拽降用户
+    let effAdminRank = existingAdminRank;
+    if (currentRank > 0 && existingAdminRank === 0 && currentRank > targetRank) {
+      db.prepare('UPDATE users SET admin_tier = ?, admin_tier_expires_at = ? WHERE id = ?')
+        .run(user.tier, user.tier_expires_at || null, user.id);
+      effAdminRank = currentRank; // 抬后按高级基线处理
     }
-    // 审计无条件记（显式 staff 写动作，即使结果无变化也要留痕）；形状映射 auditTier（public/subscriptions.js）；
-    // prev/next 携带到期窗口+月数——发放记录卡（admin 用户详情）需要每笔的开始/结束时间
+    let newAdminTier;
+    let adminExpiry;
+    if (effAdminRank > targetRank) {
+      // 已有更高档基线：低档 grant 不覆盖，基线与其到期原样保留
+      newAdminTier = user.admin_tier || user.tier;
+      adminExpiry = (existingAdminRank > 0 ? user.admin_tier_expires_at : user.tier_expires_at) || null;
+    } else {
+      newAdminTier = target;
+      const sameAdminPermanent = user.admin_tier === target && !user.admin_tier_expires_at;
+      const sameCurrentPermanent = existingAdminRank === 0 && user.tier === target && !user.tier_expires_at;
+      adminExpiry = (sameAdminPermanent || sameCurrentPermanent)
+        ? null
+        : extendExpiry((user.admin_tier === target ? user.admin_tier_expires_at : null), months, iso);
+    }
+    db.prepare('UPDATE users SET admin_tier = ?, admin_tier_expires_at = ?, updated_at = ? WHERE id = ?')
+      .run(newAdminTier, adminExpiry, iso, user.id);
+    const e = recomputeAndApply(db, user.id, { via: 'staff_test_grant', audit: false });
+    // 审计无条件记（显式 staff 写动作，即使结果无变化也要留痕）；形状兼容发放记录卡
     audit(db, req, ctx, {
       action: 'set_tier',
       targetType: 'user',
       targetId: user.id,
       prev: { from: user.tier, prevExpiry: user.tier_expires_at, via: 'staff_test_grant' },
-      next: { to: newTier, nextExpiry: expiry, months },
+      next: { to: e.tier, nextExpiry: e.tierExpiresAt || null, months },
       reason: 'staff_test_grant'
     });
-    sendJson(res, 200, { userId: user.id, tier: newTier, tierExpiresAt: expiry });
+    sendJson(res, 200, { userId: user.id, tier: e.tier, tierExpiresAt: e.tierExpiresAt || null });
   }));
 
   // 发放记录（用户详情「订阅发放记录」卡）：从审计链读 staff_test_grant 行——每笔发放时间/开始/结束/是否生效；

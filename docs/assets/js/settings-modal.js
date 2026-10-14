@@ -672,6 +672,25 @@
       });
     }).catch(function () { return { ok: false, status: 0, data: null, networkError: true }; });
   }
+  function stPost(path, body) {
+    // 账号危险操作与资料更新共用同一 API 契约：永不 reject，调用方必须显式检查 ok。
+    if (window.MN_API && window.MN_API.post) return window.MN_API.post(path, body);
+    return fetch(stApiBase() + path, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {}), credentials: 'include'
+    }).then(function (r) {
+      return r.json().catch(function () { return null; }).then(function (d) {
+        return { ok: r.ok, status: r.status, data: d };
+      });
+    }).catch(function () { return { ok: false, status: 0, data: null, networkError: true }; });
+  }
+  function stApiError(res, fallback) {
+    if (res && res.networkError) return '网络连接失败，请检查网络后重试。';
+    var err = res && res.data && res.data.error;
+    if (err && typeof err === 'object' && err.message) return err.message;
+    if (typeof err === 'string') return err;
+    return fallback;
+  }
   // v0.2.58.22 三层门禁谓词 + 预设色卡表（13 条=默认+6 玻璃+3 单色+3 黑白渐变；玻璃含 glass-clear 供预览类渲染但
   // 不出现在网格——12 键；与资料页 CARD_BG_DEFS 同源，中文名硬编码同玻璃预设先例）
   var ST_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'solid-black', 'solid-white', 'solid-gray', 'mono-bw', 'mono-silver', 'mono-charcoal'];
@@ -1193,11 +1212,37 @@
     function secGroup(title) {
       return el('h4', '', { style: { margin: '18px 0 2px', fontSize: '12px', fontWeight: '700', letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-outline)' } }, title);
     }
+    // v0.2.59.52 P0-2：互动许可四键无值时默认开启（与后端缺省允许口径一致）；其余键默认不动。
+    function mesetDefaultOn(key) {
+      return key === 'allow_comments' || key === 'allow_mentions' || key === 'allow_dm' || key === 'allow_derivative' ? '1' : '0';
+    }
     function mkLocalToggle(key, label, desc) {
       var on = '0';
-      try { on = localStorage.getItem('slati_meset_' + key) || '0'; } catch (e) {}
+      var cloudPrefs = (stUser().preferences && typeof stUser().preferences === 'object') ? stUser().preferences : {};
+      if (typeof cloudPrefs[key] === 'boolean') {
+        on = cloudPrefs[key] ? '1' : '0';
+        try { localStorage.setItem('slati_meset_' + key, on); } catch (e) {}
+      }
+      else try { on = localStorage.getItem('slati_meset_' + key) || mesetDefaultOn(key); } catch (e) {}
+      if (key === 'reduce_motion') document.documentElement.classList.toggle('reduce-motion', on === '1');
       var sw = makeToggle(on === '1', function (v) {
+        var old = v ? '0' : '1';
         try { localStorage.setItem('slati_meset_' + key, v ? '1' : '0'); } catch (e) {}
+        if (key === 'reduce_motion') {
+          document.documentElement.classList.toggle('reduce-motion', !!v);
+        }
+        if (!stReal) return;
+        var patch = {}; patch[key] = !!v;
+        stPatchMe({ preferences: patch }).then(function (r) {
+          if (r && r.ok && r.data && r.data.user) {
+            stRawMergeUser(r.data.user);
+            return;
+          }
+          sw.classList.toggle('active', old === '1');
+          try { localStorage.setItem('slati_meset_' + key, old); } catch (e) {}
+          if (key === 'reduce_motion') document.documentElement.classList.toggle('reduce-motion', old === '1');
+          stToast(stApiError(r, '设置同步失败，已恢复原状态。'), true);
+        });
       });
       return el('div', '', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(118,117,134,0.08)' } }, [
         el('div', '', null, [
@@ -1240,7 +1285,12 @@
       secGroup('观众控制'),
       (function () {
         var cur = 'public';
-        try { cur = localStorage.getItem('slati_meset_audience') || 'public'; } catch (e) {}
+        var cp = (user.preferences && typeof user.preferences === 'object') ? user.preferences : {};
+        if (cp.audience === 'public' || cp.audience === 'followers' || cp.audience === 'private') {
+          cur = cp.audience;
+          try { localStorage.setItem('slati_meset_audience', cur); } catch (e) {}
+        }
+        else try { cur = localStorage.getItem('slati_meset_audience') || 'public'; } catch (e) {}
         var opts = [{ v: 'public', l: '公开' }, { v: 'followers', l: '仅关注者' }, { v: 'private', l: '仅自己' }];
         var pills = opts.map(function (o) {
           return '<button type="button" class="subnav-pill' + (o.v === cur ? ' active' : '') + '" data-audience="' + o.v + '">' + o.l + '</button>';
@@ -1411,9 +1461,22 @@
       audienceSubnav.addEventListener('click', function (e) {
         var btn = e.target.closest('.subnav-pill');
         if (!btn) return;
+        var oldBtn = audienceSubnav.querySelector('.subnav-pill.active');
+        var old = oldBtn ? oldBtn.dataset.audience : 'public';
         audienceSubnav.querySelectorAll('.subnav-pill').forEach(function (b) { b.classList.remove('active'); });
         btn.classList.add('active');
         try { localStorage.setItem('slati_meset_audience', btn.dataset.audience); } catch (err) {}
+        if (!stReal) return;
+        stPatchMe({ preferences: { audience: btn.dataset.audience } }).then(function (r) {
+          if (r && r.ok && r.data && r.data.user) {
+            stRawMergeUser(r.data.user);
+            return;
+          }
+          audienceSubnav.querySelectorAll('.subnav-pill').forEach(function (b) { b.classList.remove('active'); });
+          if (oldBtn) oldBtn.classList.add('active');
+          try { localStorage.setItem('slati_meset_audience', old); } catch (err) {}
+          stToast(stApiError(r, '设置同步失败，已恢复原状态。'), true);
+        });
       });
     }
 
@@ -1637,13 +1700,50 @@
     var deleteBtn = document.getElementById('setDeleteBtn');
     if (deleteBtn) {
       deleteBtn.addEventListener('click', function () {
-        if (confirm(T('settings.account.deleteConfirm') || 'Are you sure you want to delete your account? This action cannot be undone.')) {
+        var current = stUser();
+        var isCloudAccount = !!(current && current.id && String(current.id).indexOf('USR-') === 0);
+        if (!isCloudAccount) {
+          stToast('当前是本地演示账号，没有可从服务器删除的云端账号。', true);
+          return;
+        }
+        if (!confirm(T('settings.account.deleteConfirm') || '删除账号后 30 天内重新登录可恢复；30 天后数据将被彻底删除。确定继续？')) return;
+
+        deleteBtn.disabled = true;
+        deleteBtn.setAttribute('aria-busy', 'true');
+        stPost('/auth/email-code', { purpose: 'delete_confirm' }).then(function (sent) {
+          if (!sent.ok) {
+            stToast(stApiError(sent, '验证码发送失败，请稍后重试。'), true);
+            return null;
+          }
+          var code = window.prompt(T('settings.account.deleteCode') || '验证码已发送到你的邮箱，请输入 6 位验证码确认删除：');
+          if (code === null) return null;
+          code = String(code).trim();
+          if (!/^\d{6}$/.test(code)) {
+            stToast('请输入 6 位数字验证码。', true);
+            return null;
+          }
+          return stPost('/auth/delete', { code: code });
+        }).then(function (deleted) {
+          if (!deleted) return;
+          if (!deleted.ok || !deleted.data || !deleted.data.ok) {
+            // 失败时绝不清理本地用户或会话，保留原状便于重试。
+            stToast(stApiError(deleted, '删除失败，请重试。'), true);
+            return;
+          }
+          var restoreBy = deleted.data.restoreBy ? new Date(deleted.data.restoreBy).toLocaleString() : '';
+          window.alert('已申请删除账号。' + (restoreBy ? '最终删除时间：' + restoreBy + '。' : '') + '30 天内重新登录即可恢复。');
           if (window.SlatiDB) {
             SlatiDB.remove('slati_user');
             SlatiDB.remove('slati_session');
+          } else {
+            try { localStorage.removeItem('slati_user'); localStorage.removeItem('slati_session'); } catch (e) {}
           }
           window.location.href = '../signup-and-login';
-        }
+        }).finally(function () {
+          // 成功会立即跳转；其余路径恢复按钮，可直接重试。
+          deleteBtn.disabled = false;
+          deleteBtn.removeAttribute('aria-busy');
+        });
       });
     }
   }

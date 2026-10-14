@@ -2675,7 +2675,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           <a href="registry-step-2.html" class="btn btn-ghost">
             <span class="material-symbols-outlined">arrow_back</span> <span data-i18n="reg3.prev">Previous</span>
           </a>
-          <button class="btn btn-primary btn-lg" onclick="handleSubmit()">
+          <button type="button" class="btn btn-primary btn-lg" id="ratifyBtn" onclick="handleSubmit()">
             <span data-i18n="reg3.submit">Ratify Incorporation</span>
             <span class="material-symbols-outlined">check</span>
           </button>
@@ -2771,7 +2771,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     updateChart();
   }
 
+  var nationPublishing = false;
+
   function handleSubmit() {
+    if (nationPublishing) return;
     var pop = document.getElementById('population').value.trim();
     var mil = document.getElementById('military').value.trim();
     if (!pop) { showError(T('reg3.err.population') || 'Please enter a population figure'); return; }
@@ -2789,7 +2792,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     publishNation();
   }
 
-  // v0.2.59.14：完成后落库国家 + 自动生成介绍文章（正文由草稿三步骤自动拼装；未登录走旧兜底跳转）
+  // 完成后先验证文章与国家两条云端写入；任一步失败都保留草稿与重试入口，不再假跳成功页。
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -2797,7 +2800,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   }
 
   function publishNation() {
-    if (!window.MN_API || !window.MN_API.post) { window.location.href = 'sovereignty-ratified.html'; return; }
+    if (!window.MN_API || !window.MN_API.post || !window.MN_API.get) {
+      showError('国家注册服务未就绪，本次尚未提交。请刷新后重试。');
+      return;
+    }
     var draft = SlatiDB.getNationDraft();
     var s1 = (draft && draft.steps[1]) || {};
     var s2 = (draft && draft.steps[2]) || {};
@@ -2846,23 +2852,143 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     }
 
     var contentJson = JSON.stringify({ activePreset: '169', cards: cards });
+    var signature = nationDraftSignature(name + '|' + contentJson);
+    var pending = readPendingPublish(signature);
 
-    window.MN_API.post('/articles', { title: name, contentJson: contentJson }).then(function (r) {
-      var articleId = (r.ok && r.data && r.data.article && r.data.article.id) || null;
-      // 国家落库（尽力而为，失败不阻塞文章跳转）；articleId 随国家存（搜索页卡片跳文章用 v0.2.59.23）
-      window.MN_API.post('/social/nations', { name: name, moniker: s1.moniker || '', classification: s1.classification || '', lore: s2.lore || '', capital: s2.capital || '', established: s2.established || '', demographics: demo, articleId: articleId || '' });
-      if (articleId) {
-        window.location.href = 'article.html?id=' + encodeURIComponent(articleId);
-      } else {
-        window.location.href = 'sovereignty-ratified.html';
-      }
+    nationPublishing = true;
+    setRatifyBusy(true);
+
+    ensureIntroArticle(pending, signature, name, contentJson).then(function (articleId) {
+      return ensureNationRecord(pending, signature, {
+        name: name,
+        moniker: s1.moniker || '',
+        classification: s1.classification || '',
+        lore: s2.lore || '',
+        capital: s2.capital || '',
+        established: s2.established || '',
+        demographics: demo,
+        sectors: s3.sectors || [],
+        mapUrl: s2.mapUrl || '',
+        articleId: articleId
+      });
+    }).then(function (result) {
+      if (!result || !result.nation || !result.nation.id) throw new Error('服务器未返回有效的国家记录。');
+      commitPublishedNation(result.nation);
+      clearPendingPublish();
+      window.location.href = 'article.html?id=' + encodeURIComponent(pending.articleId);
+    }).catch(function (err) {
+      showError((err && err.message) || '国家注册失败，草稿已保留，请重试。');
+    }).finally(function () {
+      nationPublishing = false;
+      setRatifyBusy(false);
     });
+  }
+
+  function nationDraftSignature(text) {
+    var hash = 2166136261;
+    for (var i = 0; i < text.length; i++) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(36);
+  }
+
+  function readPendingPublish(signature) {
+    var pending = null;
+    try { pending = JSON.parse(sessionStorage.getItem('slati_nation_publish_pending') || 'null'); } catch (e) {}
+    if (!pending || pending.signature !== signature) {
+      pending = { signature: signature, articleId: null, needsNationCheck: false };
+      writePendingPublish(pending);
+    }
+    return pending;
+  }
+
+  function writePendingPublish(pending) {
+    try { sessionStorage.setItem('slati_nation_publish_pending', JSON.stringify(pending)); } catch (e) {}
+  }
+
+  function clearPendingPublish() {
+    try { sessionStorage.removeItem('slati_nation_publish_pending'); } catch (e) {}
+  }
+
+  function publishApiError(res, fallback) {
+    if (res && res.networkError) return '网络连接中断，草稿已保留，请检查网络后重试。';
+    var err = res && res.data && res.data.error;
+    if (err && typeof err === 'object' && err.message) return err.message;
+    if (typeof err === 'string') return err;
+    if (res && res.status === 401) return '登录已过期，请重新登录后再提交。';
+    return fallback;
+  }
+
+  function ensureIntroArticle(pending, signature, name, contentJson) {
+    if (pending.articleId) return Promise.resolve(pending.articleId);
+    return window.MN_API.post('/articles', { title: name, contentJson: contentJson }).then(function (res) {
+      var articleId = res && res.ok && res.data && res.data.article && res.data.article.id;
+      if (!articleId) throw new Error(publishApiError(res, '国家介绍文章创建失败，本次未注册国家。'));
+      pending.signature = signature;
+      pending.articleId = articleId;
+      writePendingPublish(pending);
+      return articleId;
+    });
+  }
+
+  function findPublishedNation(articleId) {
+    return window.MN_API.get('/social/nations/mine').then(function (res) {
+      if (!res.ok || !res.data || !Array.isArray(res.data.nations)) {
+        throw new Error(publishApiError(res, '无法确认上次提交结果。为避免重复创建，请稍后再重试。'));
+      }
+      for (var i = 0; i < res.data.nations.length; i++) {
+        if (res.data.nations[i] && res.data.nations[i].articleId === articleId) return res.data.nations[i];
+      }
+      return null;
+    });
+  }
+
+  function ensureNationRecord(pending, signature, nationBody) {
+    var confirmPrevious = pending.needsNationCheck
+      ? findPublishedNation(pending.articleId)
+      : Promise.resolve(null);
+    return confirmPrevious.then(function (existing) {
+      if (existing) return { nation: existing };
+      pending.needsNationCheck = false;
+      writePendingPublish(pending);
+      return window.MN_API.post('/social/nations', nationBody).then(function (res) {
+        var nation = res && res.ok && res.data && res.data.nation;
+        if (nation && nation.id) return { nation: nation };
+        // 网络断开/5xx 时服务器可能已写入；下次重试先按介绍文章 id 查重，避免重复国家。
+        pending.needsNationCheck = !!(res && (res.networkError || res.status >= 500));
+        pending.signature = signature;
+        writePendingPublish(pending);
+        throw new Error(publishApiError(res, '国家记录创建失败，草稿已保留，请重试。'));
+      });
+    });
+  }
+
+  function commitPublishedNation(nation) {
+    var list = SlatiDB.getNations();
+    var found = false;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id === nation.id) { list[i] = nation; found = true; break; }
+    }
+    if (!found) list.push(nation);
+    SlatiDB.set(SlatiDB.KEYS.NATIONS, list);
+    SlatiDB.remove(SlatiDB.KEYS.NATION);
+    SlatiDB.remove(SlatiDB.KEYS.REGISTRY_STEP);
+    SlatiDB.addXP('submit_nation', 150);
+  }
+
+  function setRatifyBusy(busy) {
+    var btn = document.getElementById('ratifyBtn');
+    if (!btn) return;
+    btn.disabled = !!busy;
+    if (busy) btn.setAttribute('aria-busy', 'true');
+    else btn.removeAttribute('aria-busy');
   }
 
   function showError(msg) {
     var el = document.getElementById('formError');
     el.textContent = msg; el.style.display = '';
-    setTimeout(function () { el.style.display = 'none'; }, 3000);
+    setTimeout(function () { el.style.display = 'none'; }, 6000);
   }
 </script>
 <script src="../assets/js/api.js"></script>

@@ -2548,6 +2548,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   <style>
     body { background: radial-gradient(ellipse at 50% 30%, rgba(70,72,212,0.04) 0%, transparent 60%), var(--color-background); min-height:100vh;display:flex;flex-direction:column; }
     .topic-wizard { max-width: 640px; margin: 80px auto; width: 90%; }
+    @media (max-width: 768px) {
+      .topic-wizard { margin: 36px auto; }
+      .flex-between { flex-wrap: wrap; gap: 12px; }
+    }
   </style>
 </head>
 <body class="pre-stagger">

@@ -2792,7 +2792,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
         <input type="date" class="input-glass" id="dob">
       </div>
 
-      <button class="btn btn-primary btn-lg" style="width:100%;margin-top:var(--space-sm)" onclick="handleNext()">
+      <button type="button" class="btn btn-primary btn-lg" id="identityNextBtn" style="width:100%;margin-top:var(--space-sm)" onclick="handleNext()">
         <span data-i18n="oi.btn.next">Next Step</span>
         <span class="material-symbols-outlined">arrow_forward</span>
       </button>
@@ -2804,6 +2804,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <script src="../assets/js/tilt.js"></script>
 <script src="../assets/js/site-config.js"></script>
 <script src="../assets/js/liquid-glass.js"></script>
+<script src="../assets/js/api.js"></script>
 <script src="../assets/js/storage.js"></script>
 <script>
   // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
@@ -2970,6 +2971,42 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   }
   renderCountryList();
 
+  function onboardingApiError(res, fallback) {
+    if (res && res.networkError) return '暂时无法连接服务器，请检查网络后重试。';
+    var err = res && res.data && res.data.error;
+    if (err && typeof err === 'object' && err.message) return err.message;
+    if (typeof err === 'string') return err;
+    if (res && res.status === 401) return '登录已过期，请重新登录后再继续。';
+    return fallback;
+  }
+
+  function setIdentityBusy(busy) {
+    var btn = document.getElementById('identityNextBtn');
+    if (!btn) return;
+    btn.disabled = !!busy;
+    if (busy) btn.setAttribute('aria-busy', 'true');
+    else btn.removeAttribute('aria-busy');
+  }
+
+  function finishIdentity(currentUser, profile, remoteUser, isCloud) {
+    var merged = Object.assign({}, currentUser || {}, remoteUser || {}, profile);
+    if (!merged.avatarUrl) {
+      merged.avatarUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.displayName) + '&background=4648d4&color=fff&size=80';
+    }
+    if (!merged.citizenId) merged.citizenId = 'USR-' + Math.floor(Math.random() * 10000);
+    if (!merged.createdAt) merged.createdAt = new Date().toISOString();
+
+    if (isCloud) {
+      // 云端成功后再落本地；不调 saveUser，避免它再次镜像 PATCH 造成重复请求。
+      SlatiDB.set(SlatiDB.KEYS.USER, merged);
+    } else {
+      // 本地演示/访客账号继续保留原有离线流程。
+      SlatiDB.saveUser(merged);
+    }
+    SlatiDB.setOnboardingStep(2);
+    window.location.href = 'onboarding-complete.html';
+  }
+
   function handleNext() {
     var name = document.getElementById('displayName').value.trim();
     if (!name) { showError((T('oi.err.name') || 'Please enter your display name')); return; }
@@ -2980,19 +3017,38 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     // 2026-09-01 用户「第二页要求一定要选择生日，国家位置，和语言」：生日此前不校验可空过 → 补必填（语言/国家已有校验）
     if (!document.getElementById('dob').value) { showError((T('oi.err.dob') || 'Please select your date of birth')); return; }
 
-    SlatiDB.saveUser({
+    var currentUser = SlatiDB.getUser() || user || {};
+    var profile = {
       displayName: name,
-      email: user.email || '',
       gender: selectedGender,
       language: selectedLang,
       country: selectedCountry,
-      dob: document.getElementById('dob').value,
-      citizenId: user.citizenId || ('USR-' + Math.floor(Math.random() * 10000)),
-      avatarUrl: 'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=4648d4&color=fff&size=80',
-      createdAt: user.createdAt || new Date().toISOString()
+      dob: document.getElementById('dob').value
+    };
+    var isCloud = !!(currentUser.id && String(currentUser.id).indexOf('USR-') === 0);
+
+    if (!isCloud) {
+      finishIdentity(currentUser, profile, null, false);
+      return;
+    }
+    if (!window.MN_API || !window.MN_API.patch) {
+      showError('资料同步服务未就绪，本次内容尚未保存，请刷新后重试。');
+      return;
+    }
+
+    setIdentityBusy(true);
+    window.MN_API.patch('/auth/me', profile).then(function (res) {
+      if (!res.ok || !res.data || !res.data.user) {
+        showError(onboardingApiError(res, '资料保存失败，请重试。'));
+        return;
+      }
+      finishIdentity(currentUser, profile, res.data.user, true);
+    }).catch(function () {
+      // 兼容被第三方脚本替换的 Promise；官方 MN_API 本身永不 reject。
+      showError('暂时无法连接服务器，请检查网络后重试。');
+    }).finally(function () {
+      setIdentityBusy(false);
     });
-    SlatiDB.setOnboardingStep(2);
-    window.location.href = 'onboarding-complete.html';
   }
 
   function showError(msg) {

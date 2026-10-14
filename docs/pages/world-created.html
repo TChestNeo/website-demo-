@@ -2771,9 +2771,9 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 <div id="canvasContainer" style="position:fixed;inset:0;z-index:0;pointer-events:none"></div>
 
 <div class="glass-container tilt-container" style="position:relative;z-index:1">
-  <div class="mono-badge animate-fade-in" style="margin-bottom:var(--space-md)">
-    <span class="material-symbols-outlined" style="font-size:14px">check_circle</span>
-    <span data-i18n="wcr.badge">WORLD ENTRY ARCHIVED</span>
+  <div class="mono-badge animate-fade-in" id="worldStatusBadge" style="margin-bottom:var(--space-md)">
+    <span class="material-symbols-outlined" id="worldStatusIcon" style="font-size:14px">cloud_sync</span>
+    <span id="worldStatusText">SAVED LOCALLY · SYNCING</span>
   </div>
 
   <h1 class="display-lg" style="font-size:36px;margin-bottom:12px;text-shadow:0 0 40px rgba(70,72,212,0.4)" id="worldTitle">
@@ -2786,7 +2786,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
 
   <div id="processingIndicator" style="margin-bottom:var(--space-md)">
     <div class="spinner" style="margin:0 auto var(--space-sm)"></div>
-    <p class="label-sm" style="color:rgba(255,255,255,0.35)" data-i18n="wcr.processing.init">Finalizing archive entry...</p>
+    <p class="label-sm" style="color:rgba(255,255,255,0.35)">正在同步到云端…</p>
   </div>
 
   <div style="display:flex;gap:var(--space-sm);justify-content:center;flex-wrap:wrap">
@@ -2797,6 +2797,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <a href="create-world.html" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8)" data-i18n="wcr.cta.createAnother">
       再创建一个
     </a>
+    <button type="button" id="worldSyncRetry" class="btn btn-outline btn-lg" style="display:none;border-color:rgba(245,158,11,0.45);color:#fbbf24">
+      <span class="material-symbols-outlined">sync</span>
+      <span id="worldSyncRetryText">重试云端归档</span>
+    </button>
   </div>
 
   <p style="margin-top:var(--space-lg);font-size:var(--fs-label-sm);color:rgba(255,255,255,0.25)">
@@ -2814,49 +2818,117 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
   // v0.2.54.0 i18n：惰性 T(key)——本脚本先于 i18n.js（body 尾部）执行，必须运行时取值
   function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
 
-  // 读取最近创建的世界
-  var worlds = SlatiDB.getWorlds();
-  var world = worlds[worlds.length - 1];
+  // 按向导保存的 clientKey 精确读取；回退最近项仅兼容旧版创建记录。
+  var lastWorldClientKey = null;
+  try { lastWorldClientKey = sessionStorage.getItem('slati_last_world_client_key'); } catch (e) {}
+  var world = null;
+
+  function readCurrentWorld() {
+    var worlds = SlatiDB.getWorlds();
+    world = null;
+    if (lastWorldClientKey) {
+      for (var i = 0; i < worlds.length; i++) {
+        if (worlds[i] && worlds[i].clientKey === lastWorldClientKey) { world = worlds[i]; break; }
+      }
+    }
+    if (!world) world = worlds[worlds.length - 1] || null;
+    return world;
+  }
+
+  function stateText(zh, en) {
+    return /^zh(?:-|$)/i.test(document.documentElement.lang || 'zh') ? zh : en;
+  }
+
+  function setStatusBadge(icon, text, color) {
+    var badge = document.getElementById('worldStatusBadge');
+    document.getElementById('worldStatusIcon').textContent = icon;
+    document.getElementById('worldStatusText').textContent = text;
+    badge.style.color = color;
+    badge.style.background = color === '#22c55e' ? 'rgba(34,197,94,0.1)' :
+      (color === '#fbbf24' ? 'rgba(245,158,11,0.1)' : 'rgba(148,163,184,0.1)');
+    badge.style.borderColor = color === '#22c55e' ? 'rgba(34,197,94,0.2)' :
+      (color === '#fbbf24' ? 'rgba(245,158,11,0.28)' : 'rgba(148,163,184,0.22)');
+  }
+
+  function renderIndicator(icon, message, color, spinning) {
+    var indicator = document.getElementById('processingIndicator');
+    indicator.innerHTML = spinning
+      ? '<div class="spinner" style="margin:0 auto var(--space-sm)"></div><p class="label-sm" id="worldSyncMessage"></p>'
+      : '<div style="margin-bottom:var(--space-sm)"><span class="material-symbols-outlined animate-scale-in" id="worldSyncResultIcon" style="font-size:32px"></span></div><p class="label-sm" id="worldSyncMessage"></p>';
+    var iconEl = document.getElementById('worldSyncResultIcon');
+    if (iconEl) { iconEl.textContent = icon; iconEl.style.color = color; }
+    var messageEl = document.getElementById('worldSyncMessage');
+    messageEl.textContent = message;
+    messageEl.style.color = color;
+  }
 
   // worldTitle/worldDesc 是 JS 改写元素，不挂 data-i18n（尾部 apply 会用静态译文覆盖 JS 写入值）；
   // 全部走惰性 T()——世界名/类型名/emoji/lore 等记录数据不译，无草稿分支也按当前语言渲染
   function renderWorld() {
+    readCurrentWorld();
     var titleEl = document.getElementById('worldTitle');
     var descEl = document.getElementById('worldDesc');
+    var retry = document.getElementById('worldSyncRetry');
     if (world && world.name) {
       var loreBrief = world.lore ? String(world.lore).slice(0, 60) : '';
       titleEl.textContent = (world.emoji ? world.emoji + ' ' : '') + world.name + (T('wcr.js.established') || ' — 已建立');
-      descEl.textContent =
-        (T('wcr.js.type') || '类型：') + world.typeLabel +
-        (loreBrief ? ' · ' + loreBrief + (String(world.lore).length > 60 ? '…' : '') : '') +
-        (T('wcr.js.archived') || ' · 已收录进 M.NationWorld 世界档案。');
+      var detail = (T('wcr.js.type') || '类型：') + (world.typeLabel || world.type || '') +
+        (loreBrief ? ' · ' + loreBrief + (String(world.lore).length > 60 ? '…' : '') : '');
+      if (world.cloudSync === 'synced') {
+        descEl.textContent = detail + (T('wcr.js.archived') || ' · 已收录进 M.NationWorld 世界档案。');
+        setStatusBadge('cloud_done', T('wcr.badge') || 'WORLD ENTRY ARCHIVED', '#22c55e');
+        renderIndicator('verified', T('wcr.js.complete') || '档案条目完成', '#22c55e', false);
+        retry.style.display = 'none';
+      } else if (world.cloudSync === 'pending') {
+        descEl.textContent = detail + stateText(' · 已保存在此设备，正在同步云端。', ' · saved on this device; syncing to the cloud.');
+        setStatusBadge('cloud_sync', stateText('已保存本地 · 正在同步', 'SAVED LOCALLY · SYNCING'), '#fbbf24');
+        renderIndicator('cloud_sync', stateText('正在同步到云端…', 'Syncing to the cloud…'), 'rgba(255,255,255,0.45)', true);
+        retry.style.display = 'none';
+      } else if (world.cloudSync === 'failed') {
+        descEl.textContent = detail + stateText(' · 已安全保存在此设备，但尚未归档到云端。', ' · safely saved on this device, but not yet archived in the cloud.');
+        setStatusBadge('cloud_off', stateText('已保存在此设备', 'SAVED ON THIS DEVICE'), '#fbbf24');
+        renderIndicator('cloud_off', world.cloudSyncError || stateText('云端归档失败，可重试。', 'Cloud archiving failed. You can retry.'), '#fbbf24', false);
+        retry.style.display = '';
+      } else {
+        descEl.textContent = detail + stateText(' · 已保存在此设备（本地模式）。', ' · saved on this device (local mode).');
+        setStatusBadge('save', stateText('已保存在此设备', 'SAVED ON THIS DEVICE'), '#94a3b8');
+        renderIndicator('save', stateText('本地保存完成；登录后创建可同步至云端。', 'Saved locally. Sign in before creating to enable cloud sync.'), '#94a3b8', false);
+        retry.style.display = 'none';
+      }
     } else {
-      titleEl.textContent = T('wcr.hero.title') || '世界创建成功';
-      descEl.textContent = T('wcr.hero.desc') || '你的世界已收录进 M.NationWorld 世界档案。';
+      titleEl.textContent = stateText('未找到刚创建的世界', 'World record not found');
+      descEl.textContent = stateText('请返回创建页重试。', 'Please return to the creator and try again.');
+      setStatusBadge('error', stateText('没有可用记录', 'NO RECORD AVAILABLE'), '#fbbf24');
+      renderIndicator('error', stateText('无法读取本地世界记录。', 'The local world record could not be read.'), '#fbbf24', false);
+      retry.style.display = 'none';
     }
   }
   renderWorld();
 
-  // Simulate processing then resolve
-  setTimeout(function () {
-    var indicator = document.getElementById('processingIndicator');
-    if (indicator) {
-      indicator.innerHTML =
-        '<div style="margin-bottom:var(--space-sm)">' +
-          '<span class="material-symbols-outlined animate-scale-in" style="font-size:32px;color:#22c55e">verified</span>' +
-        '</div>' +
-        '<p class="label-sm" id="wcDoneMsg" style="color:#22c55e">' +
-          (T('wcr.js.complete') || 'Archive entry complete') + '</p>';
-    }
-  }, 1600);
+  document.getElementById('worldSyncRetry').addEventListener('click', function () {
+    if (!world || !world.clientKey || !SlatiDB.retryWorldSync) return;
+    var button = this;
+    button.disabled = true;
+    button.style.display = 'none';
+    var retryPromise = SlatiDB.retryWorldSync(world.clientKey);
+    renderWorld();
+    retryPromise.then(function () {
+      button.disabled = false;
+      renderWorld();
+    });
+  });
+
+  window.addEventListener('mn:world-sync', function (event) {
+    var changed = event.detail && event.detail.world;
+    if (!lastWorldClientKey || !changed || changed.clientKey === lastWorldClientKey) renderWorld();
+  });
 
   // v0.2.54.0 i18n：重渲钩子——body 尾部三件套 apply（及语言切换）后调用，重刷 JS 动态文案
   var __mnPrevRerender = window.__mnI18nRerender || function () {};
   window.__mnI18nRerender = function () {
     __mnPrevRerender();
     renderWorld();
-    var done = document.getElementById('wcDoneMsg');
-    if (done) done.textContent = T('wcr.js.complete') || 'Archive entry complete';
+    document.getElementById('worldSyncRetryText').textContent = stateText('重试云端归档', 'Retry cloud archive');
   };
 
   // Simple canvas particle animation

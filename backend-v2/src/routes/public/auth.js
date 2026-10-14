@@ -44,6 +44,15 @@ const FRAME_KEYS = ['rookie-frame', 'champion-frame'];
 const TITLE_KEYS = ['veteran-title'];
 // v0.2.25.0 页面背景图片（020 列）：仅本站直传路径（/uploads/UPL-*）或 http(s) 外链——防 CSS 注入等杂值
 const PAGE_BG_IMAGE_RE = /^(\/uploads\/UPL-[A-Za-z0-9]+\.(jpg|jpeg|png|gif|webp)|https?:\/\/.)/i;
+// 账号级设置使用 users.preferences（001 已预留）跨设备同步。只接受当前 UI 已展示的键，
+// 避免把任意客户端对象塞进用户行；互动许可后续由各功能读同一份偏好执行。
+const BOOLEAN_PREFERENCE_KEYS = new Set([
+  'notify', 'private_acct', 'allow_comments', 'allow_mentions', 'allow_dm',
+  'allow_derivative', 'reduce_motion',
+  'topic_政治', 'topic_经济', 'topic_文化', 'topic_科技',
+  'topic_军事', 'topic_体育', 'topic_娱乐', 'topic_生活'
+]);
+const AUDIENCE_VALUES = new Set(['public', 'followers', 'private']);
 
 function hashCode(code) {
   return crypto.createHash('sha256').update(String(code).trim()).digest('hex');
@@ -74,6 +83,37 @@ function parseCropSafe(raw) {
   try { return parseCrop(v); } catch (e) { return null; }
 }
 
+function parsePreferences(raw) {
+  if (!raw) return {};
+  try {
+    const value = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  } catch (e) { return {}; }
+}
+
+function mergePreferences(raw, patch) {
+  if (!patch || typeof patch !== 'object' || Array.isArray(patch)) {
+    throw new HttpError('VALIDATION', '偏好设置需为对象');
+  }
+  const next = parsePreferences(raw);
+  for (const [key, value] of Object.entries(patch)) {
+    if (BOOLEAN_PREFERENCE_KEYS.has(key)) {
+      if (typeof value !== 'boolean') throw new HttpError('VALIDATION', `${key} 需为布尔值`);
+      next[key] = value;
+      continue;
+    }
+    if (key === 'audience') {
+      if (!AUDIENCE_VALUES.has(value)) throw new HttpError('VALIDATION', '观众范围无效');
+      next.audience = value;
+      continue;
+    }
+    throw new HttpError('VALIDATION', `不支持的偏好设置：${key}`);
+  }
+  const json = JSON.stringify(next);
+  if (Buffer.byteLength(json, 'utf8') > 4096) throw new HttpError('VALIDATION', '偏好设置过大');
+  return { value: next, json };
+}
+
 // users 行 → 前端 slati_user 形状（snake→camel）
 function publicUser(row) {
   return {
@@ -82,6 +122,10 @@ function publicUser(row) {
     email: row.email,
     citizenId: row.citizen_id,
     avatarUrl: row.avatar_url,
+    language: row.language,
+    country: row.country || null,
+    dob: row.dob || null,
+    bio: row.bio || '',
     tier: row.tier,
     tierExpiresAt: row.tier_expires_at || null, // 订阅到期（NULL = 永久/未开通）
     role: row.role,
@@ -96,6 +140,7 @@ function publicUser(row) {
     // v0.2.58.25 裁切元数据（030 列；坏值宽容回 null——settings 弹窗全站读 slati_user 需要；mirrorProfile 白名单不含此二键）
     avatarCrop: parseCropSafe(row.avatar_crop),
     bannerCrop: parseCropSafe(row.banner_crop),
+    preferences: parsePreferences(row.preferences),
     createdAt: row.created_at
   };
 }
@@ -311,6 +356,11 @@ function register(router, deps) {
       push('dob = ?', dob);
       prev.dob = ctx.user.dob;
     }
+    if (body.preferences !== undefined) {
+      const merged = mergePreferences(ctx.user.preferences, body.preferences);
+      push('preferences = ?', merged.json);
+      prev.preferences = parsePreferences(ctx.user.preferences);
+    }
     if (body.gender !== undefined) {
       const gender = String(body.gender).trim();
       if (!['Male', 'Female', 'Other'].includes(gender)) throw new HttpError('VALIDATION', '性别需为 Male / Female / Other');
@@ -410,7 +460,8 @@ function register(router, deps) {
           displayName: next.display_name, avatarUrl: next.avatar_url, language: next.language,
           country: next.country, bio: next.bio, dob: next.dob, gender: next.gender, cardBg: next.card_bg,
           cardPlate: next.card_plate, pageBgImage: next.page_bg_image, bannerUrl: next.banner_url, cardEdge: next.card_edge,
-          avatarCrop: next.avatar_crop, bannerCrop: next.banner_crop, avatarFrame: next.avatar_frame, title: next.title
+          avatarCrop: next.avatar_crop, bannerCrop: next.banner_crop, avatarFrame: next.avatar_frame, title: next.title,
+          preferences: parsePreferences(next.preferences)
         }
       });
       sendJson(res, 200, { user: publicUser(next) });

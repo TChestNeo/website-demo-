@@ -2651,6 +2651,12 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     .legal-toc { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--space-lg); }
     .legal-toc a { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--divider-line); color: var(--color-on-surface-variant); text-decoration: none; }
     .legal-toc a:hover { border-color: var(--color-primary); color: var(--color-primary); }
+    @media (max-width: 768px) {
+      html, body { overflow-x: clip; }
+      .legal-wrap { padding: 32px 20px 64px; }
+      .legal-table-scroll { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .legal-table { min-width: 421px; }
+    }
   </style>
 </head>
 <body>
@@ -2757,7 +2763,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div class="legal-sec" id="sec6">
       <h2 data-i18n="terms.s6.title">6. AI 功能条款</h2>
       <ul>
-        <li><strong data-i18n="terms.s6.descLabel">功能说明：</strong><span data-i18n="terms.s6.desc">平台向订阅用户提供 AI 搜索、AI 文章快速优化、AI 资料总结及自动化 AI 建议等功能（部分功能仅限旗舰版）。AI 服务由第三方大模型（Google Gemini）驱动。</span></li>
+        <li><strong data-i18n="terms.s6.descLabel">功能说明：</strong><span data-i18n="terms.s6.desc">现行 AI 订阅权益仅向 Premium 与 Ultra 提供 AI 智能搜索（DeepSeek）和 FluidCanvas AI 边缘生成（Gemini）。AI 文章优化、AI 摘要、多文章摘要及自动建议尚未上线，不属于现行订阅权益。</span></li>
         <li><strong data-i18n="terms.s6.dataLabel">数据使用：</strong><span data-i18n="terms.s6.data">当您使用 AI 功能时，相关的文本内容将被发送至第三方 AI 服务提供商进行处理。AI 服务商的数据留存遵循其自身的隐私政策。</span></li>
         <li><strong data-i18n="terms.s6.outputLabel">输出免责：</strong><span data-i18n="terms.s6.output">AI 生成内容仅供参考，可能存在不准确、不完整或过时之处。您对发布到平台上的所有内容（含 AI 辅助生成的内容）负有全部责任。</span></li>
         <li><strong data-i18n="terms.s6.availLabel">可用性：</strong><span data-i18n="terms.s6.avail">平台不保证 AI 功能的持续可用或输出质量，AI 服务的中断不构成平台的核心服务违约。</span></li>
@@ -2769,19 +2775,19 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div class="legal-sec" id="sec7">
       <h2 data-i18n="terms.s7.title">7. 订阅、计费与退款政策</h2>
       <p><strong data-i18n="terms.s7.tier">订阅等级</strong><span data-i18n="terms.s7.tiersNote">（按月计费，基础定价以马来西亚令吉 RM 计）：</span></p>
-      <table class="legal-table">
+      <div class="legal-table-scroll"><table class="legal-table">
         <tr><th data-i18n="terms.s7.tier">订阅等级</th><th data-i18n="terms.s7.regionMy">马来西亚</th><th data-i18n="terms.s7.regionAm">美洲</th><th data-i18n="terms.s7.regionEu">欧洲</th><th data-i18n="terms.s7.regionOther">其他地区</th></tr>
         <tr><td data-i18n="terms.s7.rowBasic">用户基础版 (Basic)</td><td>RM12<span data-i18n="terms.s7.perMonth">/月</span></td><td>$5.99<span data-i18n="terms.s7.perMonth">/月</span></td><td>€5.99<span data-i18n="terms.s7.perMonth">/月</span></td><td data-i18n="terms.s7.otherBasic">台 NT$92.99 / 澳 MOP$22.99 / 港 HK$22.99 / 印尼 Rp 52,600</td></tr>
         <tr><td data-i18n="terms.s7.rowPremium">用户高级版 (Premium)</td><td>RM23.50<span data-i18n="terms.s7.perMonth">/月</span></td><td>$11.99<span data-i18n="terms.s7.perMonth">/月</span></td><td>€11.99<span data-i18n="terms.s7.perMonth">/月</span></td><td data-i18n="terms.s7.otherPremium">台 NT$182.99 / 澳 MOP$45.99 / 港 HK$44.99 / 印尼 Rp 103,000</td></tr>
         <tr><td data-i18n="terms.s7.rowUltra">用户旗舰版 (Premium Ultra)</td><td>RM45.50<span data-i18n="terms.s7.perMonth">/月</span></td><td>$15.99<span data-i18n="terms.s7.perMonth">/月</span></td><td>€15.99<span data-i18n="terms.s7.perMonth">/月</span></td><td data-i18n="terms.s7.otherUltra">台 NT$356.20 / 澳 MOP$89.99 / 港 HK$86.99 / 印尼 Rp 199,500</td></tr>
-      </table>
+      </table></div>
       <p><strong data-i18n="terms.s7.studentLabel">学生优惠</strong><span data-i18n="terms.s7.student">：学生用户凭学校邮箱认证后可享用户基础版（Basic）学生价 RM5.50/月（仅马来西亚令吉 MYR 结算；年付 RM55，折合约 RM4.58/月），认证有效期 365 天。</span></p>
       <p><strong data-i18n="terms.s7.pkgLabel">订阅套餐</strong><span data-i18n="terms.s7.pkgNote">（在订阅等级之上打包增值权益）：</span></p>
-      <table class="legal-table">
+      <div class="legal-table-scroll"><table class="legal-table">
         <tr><th data-i18n="terms.s7.pkgName">套餐名称</th><th data-i18n="terms.s7.regionMy">马来西亚</th><th data-i18n="terms.s7.regionAm">美洲</th><th data-i18n="terms.s7.pkgIncludes">包含内容</th></tr>
         <tr><td>Premium Package</td><td>RM29.90<span data-i18n="terms.s7.perMonth">/月</span></td><td>$12.99<span data-i18n="terms.s7.perMonth">/月</span></td><td data-i18n="terms.s7.pkgPremiumIncludes">用户高级版订阅、团队频道成员扩充（至 36 位）、完整版百科自定义、高级装饰自定义、身份认证</td></tr>
         <tr><td>Premium Ultra Package</td><td>RM60.90<span data-i18n="terms.s7.perMonth">/月</span></td><td>$19.99<span data-i18n="terms.s7.perMonth">/月</span></td><td data-i18n="terms.s7.pkgUltraIncludes">用户旗舰版订阅、团队频道成员扩充（无限）、完整版所有自定义、特殊身份认证</td></tr>
-      </table>
+      </table></div>
       <ul>
         <li><strong data-i18n="terms.s7.baseLabel">价格基准：</strong><span data-i18n="terms.s7.base">以上价格为平台定价基准，实际结算价格以结账页面所示为准。</span></li>
         <li><strong data-i18n="terms.s7.renewLabel">自动续费：</strong><span data-i18n="terms.s7.renew">除非您在当前订阅周期结束前至少 24 小时取消订阅，否则系统将在到期时自动扣费续订。</span></li>
@@ -2796,10 +2802,10 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div class="legal-sec" id="sec8">
       <h2 data-i18n="terms.s8.title">8. 捐赠与单次付费服务</h2>
       <ul>
-        <li><strong data-i18n="terms.s8.onetimeLabel">单次付费项目：</strong><span data-i18n="terms.s8.onetime">平台提供单次付费的解锁服务，包括但不限于：大国团队官方认证标（RM32.00，买断式）、个人/团队频道众筹助力 Boost（RM8.60）等，具体以购买页面为准。</span></li>
-        <li><strong data-i18n="terms.s8.expandLabel">团队成员扩容：</strong><span data-i18n="terms.s8.expand">团队频道成员扩容按订阅周期计费（基础版至 12 位 RM10/月、Plus 至 24 位 RM14/月、Premium 至 36 位 RM20/月、Premium Ultra 无限 RM24/月），随订阅一起续期。</span></li>
+        <li><strong data-i18n="terms.s8.onetimeLabel">单次付费项目：</strong><span data-i18n="terms.s8.onetime">官方团队认证标与 Channel Boost 目前均为规划中，暂不可购买，也不构成现行单次付费权益；实际可购买的单次付费项目以结账页面明确列示为准。</span></li>
+        <li><strong data-i18n="terms.s8.expandLabel">团队成员扩容：</strong><span data-i18n="terms.s8.expand">团队频道成员扩容为单次购买的一个月容量，不自动续费（Basic 至 8 位 RM10、Plus 至 16 位 RM14、Premium 至 26 位 RM20、Premium Ultra 无限 RM24）；一个月有效期结束后如需继续使用，须重新购买。</span></li>
         <li><strong data-i18n="terms.s8.donationLabel">捐赠性质：</strong><span data-i18n="terms.s8.donation">频道捐款属用户自愿赠与行为，平台按每笔 30% 收取平台服务抽成（功能解锁条件以平台公告为准；资金用途见《财务与支付条款》第 6 条）。</span></li>
-        <li><strong data-i18n="terms.s8.norefundLabel">不退换：</strong><span data-i18n="terms.s8.norefund">单次付费解锁、Boost 与捐赠一经完成不予退款；虚拟权益不可转让、不可继承。</span></li>
+        <li><strong data-i18n="terms.s8.norefundLabel">不退换：</strong><span data-i18n="terms.s8.norefund">不退款条款仅适用于用户实际完成结账并已交付的单次付费权益及捐赠；规划中或未开放购买的项目不产生付款或退款义务。已交付的虚拟权益不可转让、不可继承。</span></li>
       </ul>
     </div>
     <hr class="legal-divider">
@@ -2828,7 +2834,7 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
     <div class="legal-sec" id="sec11">
       <h2 data-i18n="terms.s11.title">11. 第三方服务</h2>
       <ul>
-        <li><strong data-i18n="terms.s11.depsLabel">依赖服务：</strong><span data-i18n="terms.s11.deps">本平台集成以下第三方服务：Discord（第三方登录与社区）、Stripe 等支付网关（支付处理）、Google Cloud（托管基础设施）、Google Gemini（AI 功能）。</span></li>
+        <li><strong data-i18n="terms.s11.depsLabel">依赖服务：</strong><span data-i18n="terms.s11.deps">本平台集成以下第三方服务：Discord（第三方登录与社区）、Stripe 等支付网关（支付处理）、Google Cloud（托管基础设施）、DeepSeek（AI 智能搜索、客服与内容处理）及 Google Gemini（FluidCanvas AI 边缘生成）。</span></li>
         <li><strong data-i18n="terms.s11.termsLabel">独立条款：</strong><span data-i18n="terms.s11.terms">您使用上述第三方服务时，须同时遵守该第三方的服务条款与隐私政策。第三方服务的中断、故障或数据事件，平台仅在自身责任范围内负责。</span></li>
         <li><strong data-i18n="terms.s11.securityLabel">支付安全：</strong><span data-i18n="terms.s11.security">信用卡号及银行敏感信息由支付网关直接处理，平台不存储您的支付凭证。</span></li>
       </ul>

@@ -11,6 +11,57 @@
   // 注意：renderSidebar 内禁用 MN_I18N.apply()——apply 会触发 onChange 监听器再调 renderSidebar，形成递归。
   function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
 
+  // “减少动画”必须在每次载入时恢复，而不是只在设置按钮被点击的那一刻生效。
+  try {
+    document.documentElement.classList.toggle('reduce-motion', localStorage.getItem('slati_meset_reduce_motion') === '1');
+  } catch (e) {}
+
+  var CLOUD_BOOL_PREFS = [
+    'notify', 'private_acct', 'allow_comments', 'allow_mentions', 'allow_dm',
+    'allow_derivative', 'reduce_motion',
+    'topic_政治', 'topic_经济', 'topic_文化', 'topic_科技',
+    'topic_军事', 'topic_体育', 'topic_娱乐', 'topic_生活'
+  ];
+
+  // v0.2.59.52 P0-2：互动许可四键无值时默认开启（与后端缺省允许口径一致）；
+  // 显式 false / localStorage '0' 仍保持关闭；其余键默认不动。
+  var DEFAULT_ON_PREFS = ['allow_comments', 'allow_mentions', 'allow_dm', 'allow_derivative'];
+  function mesetDefaultOn(key) {
+    return DEFAULT_ON_PREFS.indexOf(key) !== -1 ? '1' : '0';
+  }
+
+  function applyCloudPreferences(prefs) {
+    if (!prefs || typeof prefs !== 'object') return;
+    CLOUD_BOOL_PREFS.forEach(function (key) {
+      if (typeof prefs[key] !== 'boolean') return;
+      try { localStorage.setItem('slati_meset_' + key, prefs[key] ? '1' : '0'); } catch (e) {}
+    });
+    if (prefs.audience === 'public' || prefs.audience === 'followers' || prefs.audience === 'private') {
+      try { localStorage.setItem('slati_meset_audience', prefs.audience); } catch (e) {}
+    }
+    if (typeof prefs.reduce_motion === 'boolean') {
+      document.documentElement.classList.toggle('reduce-motion', prefs.reduce_motion);
+    }
+  }
+
+  function saveCloudPreference(key, value, onFailure) {
+    var u = null;
+    try { u = window.SlatiDB && SlatiDB.getUser ? SlatiDB.getUser() : null; } catch (e) {}
+    if (!u || String(u.id || '').indexOf('USR-') !== 0 || !window.MN_API || !window.MN_API.patch) return;
+    var patch = {}; patch[key] = value;
+    window.MN_API.patch('/auth/me', { preferences: patch }).then(function (r) {
+      if (r && r.ok && r.data && r.data.user) {
+        try { localStorage.setItem('slati_user', JSON.stringify(r.data.user)); } catch (e) {}
+        return;
+      }
+      if (onFailure) onFailure();
+      if (window._slatiMeToast) window._slatiMeToast('设置同步失败，已恢复原状态');
+    }).catch(function () {
+      if (onFailure) onFailure();
+      if (window._slatiMeToast) window._slatiMeToast('设置同步失败，已恢复原状态');
+    });
+  }
+
   // Theme-aware icon helper — shared with settings-modal
   window._slatiSidebarIcon = function(name) {
     var resolved = document.documentElement.getAttribute('data-theme') || 'light';
@@ -63,6 +114,7 @@
     if (path.includes('workspace') || path.includes('fluidcanvas')) return 'studio';
     if (path.includes('plugins')) return 'plugins';
     if (path.includes('help')) return 'help';
+    if (path.includes('/me.html')) return 'me';
     return 'home';
   }
 
@@ -94,10 +146,12 @@
         renderSidebar._meFetching = false;
         var remote = r && r.ok && r.data && r.data.user;
         if (remote) {
+          applyCloudPreferences(remote.preferences);
           var local = (window.SlatiDB && SlatiDB.getUser()) || null;
           if (!local
             || (remote.displayName || '') !== (local.displayName || '')
-            || (remote.avatarUrl || '') !== (local.avatarUrl || '')) {
+            || (remote.avatarUrl || '') !== (local.avatarUrl || '')
+            || JSON.stringify(remote.preferences || {}) !== JSON.stringify((local && local.preferences) || {})) {
             try { SlatiDB.saveUser(remote); } catch (e) {}
             try { renderSidebar(); } catch (e) {}
           }
@@ -701,13 +755,13 @@
       { id: 'micronationary', icon: 'language', label: T('sidebar.nav.micronationary') || '百科', href: '/micronationary' },
       { id: 'community', icon: 'groups', label: T('sidebar.nav.community') || '社区', href: '../pages/community-hub.html' },
       { id: 'messages', icon: 'chat', label: T('sidebar.nav.messages') || '消息', href: '../pages/messages.html' },
-      { id: 'me', icon: 'person', label: T('sidebar.nav.me') || '我的', href: 'javascript:void(0)' }
+      { id: 'me', icon: 'person', label: T('sidebar.nav.me') || '我的', href: '../pages/me.html' }
     ];
-    var navHtml = items.map(function (it) {
+    var navHtml = items.map(function (it, i) {
       var isMe = it.id === 'me';
       var isActive = (it.id === act) || (isMe && meActive);
-      var onclick = isMe ? ' onclick="window._slatiOpenMeSheet();return false;"' : '';
-      return '<a href="' + it.href + '" class="mbn-item' + (isActive ? ' active' : '') + '"' + onclick + '>'
+      var onclick = '';
+      return '<a href="' + it.href + '" class="mbn-item' + (isActive ? ' active' : '') + '" data-mbn-index="' + i + '"' + onclick + '>'
         + '<span class="material-symbols-outlined">' + it.icon + '</span>'
         + '<span>' + it.label + '</span></a>';
     }).join('');
@@ -715,31 +769,78 @@
     nav.className = 'mobile-bottom-nav';
     nav.innerHTML = navHtml;
 
+    function placeMobileNavIndicator(animate) {
+      var activeItem = nav.querySelector('.mbn-item.active');
+      if (!activeItem) return;
+      var navBox = nav.getBoundingClientRect();
+      var itemBox = activeItem.getBoundingClientRect();
+      nav.style.setProperty('--mbn-active-x', (itemBox.left - navBox.left) + 'px');
+      nav.style.setProperty('--mbn-active-w', itemBox.width + 'px');
+      if (animate) nav.classList.add('mbn-ready');
+    }
+
+    nav.addEventListener('click', function (event) {
+      var next = event.target.closest('.mbn-item');
+      if (!next || !nav.contains(next) || next.classList.contains('active')) return;
+      // 「我的」只打开面板，不作为跨页标签切换处理。
+      if ((next.getAttribute('href') || '').indexOf('javascript:') === 0) return;
+      var current = nav.querySelector('.mbn-item.active');
+      var currentIndex = current ? Number(current.getAttribute('data-mbn-index')) : 0;
+      var nextIndex = Number(next.getAttribute('data-mbn-index'));
+      if (current) current.classList.remove('active');
+      next.classList.add('active');
+      placeMobileNavIndicator(true);
+      try { sessionStorage.setItem('slati_mbn_direction', nextIndex > currentIndex ? 'forward' : 'back'); } catch (e) {}
+    });
+
     // v0.2.59.x JS 兜底：底部菜单核心样式随 JS 注入（不依赖本页内联 ethereal.css——
     // 手机缓存旧 HTML 导致内联 CSS 缺失时，底部菜单依然可见可用；!important 压过一切旧规则）
     if (!document.getElementById('slati-mbn-style')) {
       var st = document.createElement('style');
       st.id = 'slati-mbn-style';
       st.textContent = [
+        'html.reduce-motion{scroll-behavior:auto!important}',
+        'html.reduce-motion *,html.reduce-motion *::before,html.reduce-motion *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}',
         '.mobile-bottom-nav{display:none}',
         '.mbn-backdrop{display:none}',
         '.mbn-sheet{display:none}',
         '.mbn-subsheet{display:none}',
-        '@media (max-width:768px){',
+        /* 横屏手机会超过 768px 宽，但可视高度仍很低；继续使用手机导航而非折叠桌面侧栏。 */
+        '@media (max-width:768px), (orientation:landscape) and (max-height:500px){',
+        'html,body{overflow-x:clip}',
         '.app-sidebar{display:none !important}',
+        /* 侧栏页未必加载 site-config.js；这里保留同一套关键小屏保护，避免
+           单列网格的默认 min-content 宽度和双按钮操作栏撑出手机视口。 */
+        '.app-main{padding-left:20px!important;padding-right:20px!important;padding-bottom:96px!important}',
+        '.app-main>*,.fc-split-grid>*,.fc-two-col>*,.fc-split-flex>*{min-width:0}',
+        '.fc-split-grid,.fc-two-col{min-width:0}',
+        '.flex-between{flex-wrap:wrap;gap:12px}',
+        '.app-main table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}',
+        '.app-main pre,.app-main code{overflow-wrap:anywhere;word-break:break-word}',
         '#statsRow,.kpi-grid,#kpiRow,#categoryGrid{grid-template-columns:repeat(2,1fr) !important}',
         '[style*="grid-template-columns:repeat(4,"],[style*="grid-template-columns: repeat(4,"],[style*="grid-template-columns:repeat(5,"],[style*="grid-template-columns: repeat(5,"],[style*="grid-template-columns:repeat(6,"],[style*="grid-template-columns: repeat(6,"],[style*="grid-template-columns:repeat(7,"],[style*="grid-template-columns: repeat(7,"]{grid-template-columns:repeat(2,1fr) !important}',
         '[style*="grid-template-columns:1fr 340px"],[style*="grid-template-columns: 1fr 340px"],[style*="grid-template-columns:1fr 320px"],[style*="grid-template-columns: 1fr 320px"],[style*="grid-template-columns:1fr 300px"],[style*="grid-template-columns: 1fr 300px"]{grid-template-columns:1fr !important}',
-        '.mobile-bottom-nav{display:flex !important;position:fixed;left:50% !important;right:auto !important;transform:translateX(-50%) !important;bottom:calc(12px + env(safe-area-inset-bottom)) !important;height:56px !important;z-index:9999;width:auto;min-width:264px;max-width:calc(100% - 28px);border-radius:999px;padding:0 6px;background:rgba(255,255,255,0.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);box-shadow:0 10px 36px rgba(20,20,40,0.18),inset 0 0.5px 0 rgba(255,255,255,0.65)}',
+        /* 放大后的触控区保留底部安全区，iPhone 的 Home Indicator 不会压住菜单。 */
+        /* 浮动式 iOS 标签栏：16px 外边距、6px 等距内边距；选中态四侧留白一致。 */
+        '.mobile-bottom-nav{display:flex !important;position:fixed;left:50% !important;right:auto !important;transform:translateX(-50%) !important;bottom:calc(12px + env(safe-area-inset-bottom)) !important;height:64px !important;box-sizing:border-box;z-index:9999;width:calc(100% - 32px);min-width:264px;max-width:none;border-radius:24px;padding:6px;gap:6px;background:rgba(255,255,255,0.72);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);box-shadow:0 10px 36px rgba(20,20,40,0.18),inset 0 0.5px 0 rgba(255,255,255,0.65);isolation:isolate}',
+        '.mobile-bottom-nav::before{content:"";position:absolute;top:6px;bottom:6px;left:0;width:var(--mbn-active-w,0px);transform:translateX(var(--mbn-active-x,0px));border-radius:18px;background:rgba(70,72,212,0.12);box-shadow:inset 0 .5px 0 rgba(255,255,255,.72);pointer-events:none;z-index:0;will-change:transform}',
+        '.mobile-bottom-nav.mbn-ready::before{transition:transform 250ms cubic-bezier(.77,0,.175,1),width 250ms cubic-bezier(.77,0,.175,1)}',
         ':root[data-theme="dark"] .mobile-bottom-nav{background:rgba(24,24,38,0.72) !important;box-shadow:0 10px 36px rgba(0,0,0,0.42),inset 0 0.5px 0 rgba(255,255,255,0.14)}',
-        '.mobile-bottom-nav .mbn-item{flex:1;min-width:48px;max-width:78px;padding:0 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;text-decoration:none;color:var(--color-outline,#6f6e7b);font-size:10px;font-weight:500;border-radius:999px;transition:background .2s ease,color .2s ease}',
-        '.mobile-bottom-nav .mbn-item .material-symbols-outlined{font-size:22px}',
-        '.mobile-bottom-nav .mbn-item.active{color:var(--color-primary,#4648d4) !important;background:rgba(70,72,212,0.10)}',
-        ':root[data-theme="dark"] .mobile-bottom-nav .mbn-item.active{background:rgba(122,126,255,0.18)}',
+        '.mobile-bottom-nav .mbn-item{flex:1;min-width:0;max-width:none;padding:0 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:var(--color-outline,#6f6e7b);font-size:11px;font-weight:500;border-radius:18px;position:relative;z-index:1;transition:color 160ms ease,transform 160ms cubic-bezier(.23,1,.32,1)}',
+        '.mobile-bottom-nav .mbn-item .material-symbols-outlined{font-size:24px}',
+        '.mobile-bottom-nav .mbn-item.active{color:var(--color-primary,#4648d4) !important;background:transparent;box-shadow:none}',
+        '.mobile-bottom-nav .mbn-item:active{transform:scale(.97)}',
+        '@media (prefers-reduced-motion:reduce){.mobile-bottom-nav::before,.mobile-bottom-nav .mbn-item{transition:none !important}.mobile-bottom-nav .mbn-item:active{transform:none}}',
+        ':root[data-theme="dark"] .mobile-bottom-nav::before{background:rgba(122,126,255,0.18);box-shadow:inset 0 .5px 0 rgba(255,255,255,.16)}',
         '.mbn-backdrop{display:block;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,0.32);opacity:0;pointer-events:none;transition:opacity .25s ease}',
         '.mbn-backdrop.open{opacity:1;pointer-events:auto}',
         '.mbn-sheet{display:block;position:fixed;left:0;right:0;bottom:0;z-index:9999;background:var(--color-surface-container-lowest,#fff);border-radius:20px 20px 0 0;transform:translateY(105%);transition:transform .32s cubic-bezier(.22,1,.36,1);padding:16px 20px 86px;box-shadow:0 -12px 40px rgba(0,0,0,.14);max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch}',
         '.mbn-sheet.open{transform:translateY(0)}',
+        '.mn-me-content{width:min(680px,100%);margin:0 auto;padding:0 0 108px}',
+        '.mn-me-content .mbn-user-card{padding:16px 0}',
+        '.mn-me-content .mbn-group{padding:0 16px;background:var(--color-surface-container-lowest,#fff);border-radius:18px;margin:10px 0;box-shadow:0 4px 18px rgba(20,20,40,.05)}',
+        '.mn-me-content .mbn-group-title{margin:26px 0 8px}',
+        '.mn-me-content .mbn-group-name{padding-top:14px}',
         '.mbn-user-card{display:flex;align-items:center;gap:12px;padding:4px 0 14px;text-decoration:none;color:var(--color-on-surface,#1a1a2e);border-bottom:1px solid rgba(118,117,134,0.12)}',
         '.mbn-avatar{width:48px;height:48px;border-radius:50%;background:var(--color-primary,#4648d4);object-fit:cover;flex-shrink:0}',
         '.mbn-user-meta{min-width:0;flex:1}',
@@ -859,8 +960,9 @@
 
     var sheetHtml = cardHtml + quick + groupsHtml + help + account;
 
+    var mePage = document.getElementById('mn-me-page');
     var sheet = document.createElement('div');
-    sheet.className = 'mbn-sheet';
+    sheet.className = mePage ? 'mn-me-content' : 'mbn-sheet';
     sheet.id = 'mbnMeSheet';
     sheet.innerHTML = sheetHtml;
 
@@ -870,20 +972,40 @@
     backdrop.onclick = function () { window._slatiCloseMeSheet(); };
 
     document.body.appendChild(nav);
-    document.body.appendChild(sheet);
-    document.body.appendChild(backdrop);
+    if (mePage) mePage.appendChild(sheet);
+    else {
+      document.body.appendChild(sheet);
+      document.body.appendChild(backdrop);
+    }
+
+    requestAnimationFrame(function () {
+      placeMobileNavIndicator(false);
+      requestAnimationFrame(function () { nav.classList.add('mbn-ready'); });
+    });
+    window.addEventListener('resize', function () {
+      nav.classList.remove('mbn-ready');
+      requestAnimationFrame(function () {
+        placeMobileNavIndicator(false);
+        requestAnimationFrame(function () { nav.classList.add('mbn-ready'); });
+      });
+    });
 
     // 开关状态：localStorage 持久化 + 点击切换
     sheet.querySelectorAll('[data-mbn-toggle]').forEach(function (row) {
       var id = row.getAttribute('data-mbn-toggle');
       var sw = row.querySelector('.mbn-switch');
       var on = '0';
-      try { on = localStorage.getItem('slati_meset_' + id) || '0'; } catch (e) {}
+      try { on = localStorage.getItem('slati_meset_' + id) || mesetDefaultOn(id); } catch (e) {}
       if (on === '1') sw.setAttribute('data-on', '1');
       row.addEventListener('click', function () {
+        var old = sw.getAttribute('data-on') === '1' ? '1' : '0';
         var cur = sw.getAttribute('data-on') === '1' ? '0' : '1';
         sw.setAttribute('data-on', cur);
         try { localStorage.setItem('slati_meset_' + id, cur); } catch (e) {}
+        saveCloudPreference(id, cur === '1', function () {
+          sw.setAttribute('data-on', old);
+          try { localStorage.setItem('slati_meset_' + id, old); } catch (e) {}
+        });
       });
     });
   }
@@ -960,7 +1082,7 @@
   }
   function mbnSubToggle(id, label, defOn) {
     var on = '0';
-    try { on = localStorage.getItem('slati_meset_' + id) || (defOn ? '1' : '0'); } catch (e) {}
+    try { on = localStorage.getItem('slati_meset_' + id) || (defOn ? '1' : mesetDefaultOn(id)); } catch (e) {}
     return '<button type="button" class="mbn-sub-row" data-mbn-subtoggle="' + id + '">'
       + '<span>' + escHtml(label) + '</span>'
       + '<span class="mbn-switch" data-on="' + on + '"><span class="mbn-knob"></span></span></button>';
@@ -998,7 +1120,12 @@
     window._slatiCloseSub();
   };
   window._slatiSetAudience = function (v) {
+    var old = 'public';
+    try { old = localStorage.getItem('slati_meset_audience') || 'public'; } catch (e) {}
     try { localStorage.setItem('slati_meset_audience', v); } catch (e) {}
+    saveCloudPreference('audience', v, function () {
+      try { localStorage.setItem('slati_meset_audience', old); } catch (e) {}
+    });
     window._slatiCloseSub();
   };
   window._slatiChangePassword = function () {
@@ -1102,10 +1229,16 @@
       var id = row.getAttribute('data-mbn-subtoggle');
       var sw = row.querySelector('.mbn-switch');
       row.addEventListener('click', function () {
+        var old = sw.getAttribute('data-on') === '1' ? '1' : '0';
         var cur = sw.getAttribute('data-on') === '1' ? '0' : '1';
         sw.setAttribute('data-on', cur);
         try { localStorage.setItem('slati_meset_' + id, cur); } catch (e) {}
         if (id === 'reduce_motion') document.documentElement.classList.toggle('reduce-motion', cur === '1');
+        saveCloudPreference(id, cur === '1', function () {
+          sw.setAttribute('data-on', old);
+          try { localStorage.setItem('slati_meset_' + id, old); } catch (e) {}
+          if (id === 'reduce_motion') document.documentElement.classList.toggle('reduce-motion', old === '1');
+        });
       });
     });
     if (key === 'liked' || key === 'blocked') loadList(key);

@@ -24,15 +24,12 @@ const { HttpError, sendJson, readJson, readRaw } = require('../../http');
 const { requireSession, authenticate } = require('../../middleware/auth');
 const { insertWithId, pad6 } = require('../../ids');
 const { createCheckoutSession, createPortalSession, verifyWebhook } = require('../../stripe');
-const { enforceTierExpiry } = require('../../tiers');
+const { enforceTierExpiry, TIER_RANK } = require('../../tiers');
+const { recomputeAndApply, TIER_OF, TIER_KEYS, TEAM_PACKAGE_OF, TEAM_PACKAGE_RANK } = require('../../entitlements');
 const { audit } = require('../../audit');
 const { studentShape, studentRefresh } = require('../../students');
 
-const TIER_OF = { basic: 'basic', premium: 'premium', ultra: 'ultra', 'pkg-premium': 'premium', 'pkg-ultra': 'ultra' };
-const TIER_KEYS = Object.keys(TIER_OF);
-const TIER_RANK = { free: 0, basic: 1, premium: 2, ultra: 3 };
-// FC v10.28.51.0 团队扩容订阅（slots-*）：一次付清 1 个月（mode 恒 once），webhook 成功后写
-// users.team_cap_addon（basic/plus/premium/ultra）+ team_cap_expires_at——成员上限 3→8/16/26/∞（teams.js 消费）。
+// 扩容订阅（slots-*）：独立 team_cap_addon 链，不参与 tier 重算（teams.js 读侧取 max）
 const SLOT_OF = { 'slots-basic': 'basic', 'slots-plus': 'plus', 'slots-premium': 'premium', 'slots-ultra': 'ultra' };
 const SLOT_KEYS = Object.keys(SLOT_OF);
 const MONTHS = 1; // 订阅：月付（自动续费）
@@ -65,21 +62,10 @@ function extendExpiry(existing, months, nowIso) {
   return d.toISOString();
 }
 
-// set_tier 审计（via 标明来源：stripe / stripe_once / stripe_cancel / stripe_expired；形状兼容现有重放口径）
-function auditTier(db, user, to, via) {
-  audit(db, null, {}, {
-    actorType: 'stripe',
-    actorId: user.id, // 被开通用户自身（v1 财报重放口径）
-    action: 'set_tier',
-    targetType: 'user',
-    targetId: user.id,
-    prev: { from: user.tier, via },
-    next: { to },
-    reason: 'via:' + via
-  });
-}
-
-// 支付落账 + tier 生效（row 必须是本库 pending 行：tier_key/months 可信）。幂等：event 已处理 / 行已 paid → false。
+// 支付落账 + 权益生效（P0-3：tier/team_package 由 entitlements.recomputeAndApply 唯一权威重算）。
+// row 必须是本库 pending 行：tier_key/months 可信。幂等：event 已处理 / 行已 paid → false。
+// 订阅行（有 stripe_subscription_id）→ active=1、entitlement NULL（权益随订阅存续）；
+// once 行（无订阅）→ entitlement_expires_at = now + months（到期由重算器天然回落）。
 function applyPaid(db, cfg, row, opts) {
   if (row.status === 'paid') return false;
   if (db.prepare("SELECT 1 FROM payments WHERE stripe_event_id = ? AND status = 'paid'").get(opts.eventId)) return false;
@@ -88,26 +74,20 @@ function applyPaid(db, cfg, row, opts) {
   const target = TIER_OF[row.tier_key];
   if (!target) { console.log('[webhook] 未知 tier_key ' + row.tier_key + '，忽略'); return false; } // 绝不信任行外输入
   const iso = new Date().toISOString();
+  // 订阅行与 once 行统一按「周期到期」建模：entitlement = now + months（订阅续费自然顺延；
+  // 取消时由 handleSubDeleted 清 NULL 立即失效）。active 仅作订阅存续标记（审计/追踪用）。
+  const entitlement = extendExpiry(null, row.months || 12, iso);
   db.prepare("UPDATE payments SET status = 'paid', paid_at = ?, stripe_event_id = ?, "
     + 'stripe_invoice_id = COALESCE(stripe_invoice_id, ?), stripe_subscription_id = COALESCE(stripe_subscription_id, ?), '
-    + 'amount_micro = ?, currency = ? WHERE id = ? AND status = \'pending\'')
+    + 'amount_micro = ?, currency = ?, active = ?, entitlement_expires_at = ? WHERE id = ? AND status = \'pending\'')
     .run(iso, opts.eventId, opts.invoiceId || null, opts.subscriptionId || null,
-      opts.amountMicro, opts.currency || 'myr', row.id);
+      opts.amountMicro, opts.currency || 'myr', 1, entitlement, row.id);
   if (opts.customerId) {
     db.prepare('UPDATE users SET stripe_customer_id = COALESCE(stripe_customer_id, ?) WHERE id = ?')
       .run(opts.customerId, row.user_id);
   }
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(row.user_id);
-  if (!user) return false;
-  const newTier = TIER_RANK[user.tier] > TIER_RANK[target] ? user.tier : target;
-  // 同 tier 且当前为管理员永久授予（无到期）→ 保持永久，不把永久转成限时
-  const expiry = (newTier === user.tier && !user.tier_expires_at)
-    ? null : extendExpiry(user.tier_expires_at, row.months || 1, iso);
-  if (newTier !== user.tier || expiry !== user.tier_expires_at) {
-    db.prepare('UPDATE users SET tier = ?, tier_expires_at = ?, updated_at = ? WHERE id = ?')
-      .run(newTier, expiry, iso, user.id);
-    if (newTier !== user.tier) auditTier(db, user, newTier, opts.via || 'stripe');
-  }
+  // 统一权益重算（订阅/年付/管理员授权并存时取最高；低档不延长高档；取消回落仍有档）
+  recomputeAndApply(db, row.user_id, { via: opts.via || 'stripe' });
   return true;
 }
 
@@ -206,16 +186,14 @@ function handleInvoiceFailed(db, cfg, event) {
     (s) => 'PAY-' + pad6(s));
 }
 
-// 订阅终止（取消/催款耗尽）：立即降 free + 清到期（订阅多并存属一期可接受范围）
+// 订阅终止（取消/催款耗尽，P0-3）：该订阅的所有已付行清 active 与 entitlement（立即失效），
+// 由权益重算器按剩余有效来源回落（仍有其他订阅/年付/管理员授权则保留，无则 free）。
 function handleSubDeleted(db, cfg, event) {
   const sub = event.data.object || {};
+  db.prepare("UPDATE payments SET active = 0, entitlement_expires_at = NULL WHERE stripe_subscription_id = ? AND status = 'paid'").run(sub.id);
   const row = db.prepare('SELECT * FROM payments WHERE stripe_subscription_id = ? ORDER BY seq DESC LIMIT 1').get(sub.id);
   if (!row) { console.log('[webhook] 未知订阅 ' + sub.id); return; }
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(row.user_id);
-  if (!user || user.tier === 'free') return;
-  db.prepare("UPDATE users SET tier = 'free', tier_expires_at = NULL, updated_at = ? WHERE id = ?")
-    .run(new Date().toISOString(), user.id);
-  auditTier(db, user, 'free', 'stripe_cancel');
+  recomputeAndApply(db, row.user_id, { via: 'stripe_cancel' });
 }
 
 function register(router, ctx) {
@@ -332,4 +310,7 @@ function register(router, ctx) {
   });
 }
 
-module.exports = { register, enforceTierExpiry, TIER_OF, TIER_KEYS, TIER_RANK, SLOT_OF, SLOT_KEYS, extendExpiry };
+module.exports = {
+  register, enforceTierExpiry, TIER_OF, TIER_KEYS, TIER_RANK,
+  TEAM_PACKAGE_OF, SLOT_OF, SLOT_KEYS, extendExpiry
+};

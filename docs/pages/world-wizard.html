@@ -3225,8 +3225,14 @@ html[data-accent="mono"] .settings-menu-item.active { background: rgba(118, 117,
           name: all.name,
           lore: all.lore || '',
         };
-        Object.keys(all).forEach(function (k) { record[k] = all[k]; });
-        SlatiDB.submitWorld(record);
+        // 部分模板也有名为 type 的表单项（城市类型/政体类型等）；保存为 subtype，
+        // 避免覆盖用于 API 路由校验的世界类型 config.key。
+        Object.keys(all).forEach(function (k) { record[k === 'type' ? 'subtype' : k] = all[k]; });
+        var savedWorld = SlatiDB.submitWorld(record);
+        // 完成页按 clientKey 精确读取本次创建项；即使云端回写更换了 id 也不会串到旧世界。
+        try {
+          if (savedWorld && savedWorld.clientKey) sessionStorage.setItem('slati_last_world_client_key', savedWorld.clientKey);
+        } catch (e) {}
         window.location.href = 'world-created.html';
         return;
       }

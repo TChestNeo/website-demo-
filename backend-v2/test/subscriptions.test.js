@@ -6,6 +6,7 @@ const { test } = require('node:test');
 const assert = require('node:assert');
 const crypto = require('node:crypto');
 const { testApp } = require('./helpers');
+const { capOf } = require('../src/routes/public/teams');
 
 // ── 桩：Stripe API 假响应（checkout → cs_test_N，portal → bps URL），并记录请求供形状断言 ──
 function stripeStub() {
@@ -531,7 +532,11 @@ test('Basic 学生价 SKU：free 购买 basic → 开通 + 审计；过期降 fr
     assert.deepStrictEqual(JSON.parse(aud[0].prev_value), { from: 'free', via: 'stripe' });
     assert.deepStrictEqual(JSON.parse(aud[0].new_value), { to: 'basic' });
     // Basic 到期 → 惰性降级落 free（等级阶梯地板 = free，不再停 basic）；v2 审计 action = tier_expire
-    t.db.prepare('UPDATE users SET tier_expires_at = ? WHERE id = ?').run(new Date(Date.now() - 1000).toISOString(), alice.user.id);
+    // P0-3：真实到期 = payments 行 entitlement_expires_at；缓存 tier_expires_at 一并改过去触发惰性重算
+    t.db.prepare('UPDATE payments SET entitlement_expires_at = ? WHERE user_id = ?')
+      .run(new Date(Date.now() - 1000).toISOString(), alice.user.id);
+    t.db.prepare('UPDATE users SET tier_expires_at = ? WHERE id = ?')
+      .run(new Date(Date.now() - 1000).toISOString(), alice.user.id);
     const me = await (await t.request('GET', '/api/auth/me', undefined, { cookie: alice.cookie })).json();
     assert.strictEqual(me.user.tier, 'free');
     const expAud = t.db.prepare("SELECT * FROM audit_log WHERE action = 'tier_expire' ORDER BY seq DESC").get();
@@ -640,5 +645,65 @@ test('slots 扩容 webhook：paid → team_cap_addon+到期生效；tier 不动�
     await postWebhook(t, evt);
     const u2 = t.db.prepare('SELECT * FROM users WHERE id = ?').get(alice.user.id);
     assert.strictEqual(u2.team_cap_expires_at, u.team_cap_expires_at);
+  } finally { await t.close(); }
+});
+
+test('套餐 webhook：pkg-premium=36/pkg-ultra=无限，与独立 slots 各自计期并取较高值', async () => {
+  const stub = stripeStub();
+  const t = await testApp({
+    config: stripeConfig({ pricesOnce: { ...PRICES_ONCE, 'slots-basic': 'price_slots_basic' } }),
+    fetchImpl: stub.fetchImpl
+  });
+  try {
+    const alice = t.loginAs('package-cap@example.com');
+    const before = Date.now();
+
+    await checkoutFor(t, alice.cookie, 'pkg-premium');
+    await postWebhook(t, paidSession({
+      evt: 'evt_pkg_premium', id: 'cs_test_1', subscription: 'sub_pkg_premium',
+      customer: 'cus_pkg', amount_total: 1299
+    }));
+    let u = t.db.prepare('SELECT * FROM users WHERE id = ?').get(alice.user.id);
+    assert.strictEqual(u.tier, 'premium');
+    assert.strictEqual(u.team_package_cap, 'premium');
+    assert.ok(new Date(u.team_package_expires_at).getTime() > before + 27 * 86400000);
+    assert.strictEqual(capOf(t.db, alice.user.id), 36);
+    const created = await (await t.request('POST', '/api/teams',
+      { name: 'Package Team', copyItems: [] }, { cookie: alice.cookie })).json();
+    assert.strictEqual(created.team.cap, 36, '建团响应展示套餐容量');
+    const listed = await (await t.request('GET', '/api/teams', undefined, { cookie: alice.cookie })).json();
+    assert.strictEqual(listed.teams[0].cap, 36, '团队列表也必须展示真实容量');
+
+    // 后买更小的 slots-basic 不得把套餐 36 人覆盖成 8 人。
+    await t.request('POST', '/api/subscription/checkout',
+      { tierKey: 'slots-basic', mode: 'once' }, { cookie: alice.cookie });
+    await postWebhook(t, paidSession({
+      evt: 'evt_pkg_slot', id: 'cs_test_2', customer: 'cus_pkg', amount_total: 550, mode: 'payment'
+    }));
+    u = t.db.prepare('SELECT * FROM users WHERE id = ?').get(alice.user.id);
+    assert.strictEqual(u.team_cap_addon, 'basic');
+    assert.strictEqual(u.team_package_cap, 'premium');
+    assert.strictEqual(capOf(t.db, alice.user.id), 36);
+
+    await checkoutFor(t, alice.cookie, 'pkg-ultra');
+    await postWebhook(t, paidSession({
+      evt: 'evt_pkg_ultra', id: 'cs_test_3', subscription: 'sub_pkg_ultra',
+      customer: 'cus_pkg', amount_total: 1999
+    }));
+    u = t.db.prepare('SELECT * FROM users WHERE id = ?').get(alice.user.id);
+    assert.strictEqual(u.tier, 'ultra');
+    assert.strictEqual(u.team_package_cap, 'ultra');
+    assert.strictEqual(capOf(t.db, alice.user.id), Infinity);
+
+    // 取消 Ultra 套餐 → 回落仍有效的 pkg-premium 套餐（P0-3：取消任一保留另一），独立 slots-basic 不动。
+    await postWebhook(t, sessionEvent('customer.subscription.deleted', {
+      evt: 'evt_pkg_ultra_del', id: 'sub_pkg_ultra'
+    }));
+    u = t.db.prepare('SELECT * FROM users WHERE id = ?').get(alice.user.id);
+    assert.strictEqual(u.tier, 'premium', 'tier 同步回落仍有效的 pkg-premium');
+    assert.strictEqual(u.team_package_cap, 'premium');
+    assert.ok(u.team_package_expires_at > new Date().toISOString());
+    assert.strictEqual(u.team_cap_addon, 'basic');
+    assert.strictEqual(capOf(t.db, alice.user.id), 36, '回落 premium 套餐 36 人容量');
   } finally { await t.close(); }
 });

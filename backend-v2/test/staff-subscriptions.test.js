@@ -87,7 +87,7 @@ test('grant 升级保高：premium grant basic 仍 premium + 到期顺延；gran
     t.db.prepare('UPDATE users SET tier_expires_at = ? WHERE id = ?').run(base, bob.user.id); // createUser 不认 tier_expires_at，直接落库
     const d1 = await (await t.request('POST', '/api/staff/subscriptions/grant', { email: 'bob@x.com', tierKey: 'basic' }, { cookie: neo.cookie })).json();
     assert.strictEqual(d1.tier, 'premium'); // 不降级
-    inWindow(d1.tierExpiresAt, 10 * DAY + 27 * DAY, 10 * DAY + 33 * DAY); // 原到期 +1 月
+    inWindow(d1.tierExpiresAt, 10 * DAY - 30 * 60 * 1000, 10 * DAY + 30 * 60 * 1000); // P0-3：低档 grant 不延长高档到期（保持原到期）
     const d2 = await (await t.request('POST', '/api/staff/subscriptions/grant', { email: 'bob@x.com', tierKey: 'ultra' }, { cookie: neo.cookie })).json();
     assert.strictEqual(d2.tier, 'ultra');
   } finally { await t.close(); }

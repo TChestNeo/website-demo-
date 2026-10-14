@@ -2995,23 +2995,90 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
 <script>
   // v0.2.54.0 i18n：惰性 T(key)——本 script 先于 i18n.js（body 尾部）执行，必须运行时取值
   function T(k) { return (window.MN_I18N && window.MN_I18N.t(k)) || null; }
-  // v0.2.59.23 真实数据：国家/话题接后端（去测试信息）；本地世界（22 类型向导）保留合并
+  // 国家/话题接后端；非 Nation 世界按 clientKey 合并云端和本地，避免同一创建项出现两张卡。
   var nations = [];
-  var worlds = SlatiDB.getWorlds().map(function (w) {
+  function mergeWorldRecords(remote, local) {
+    var localByClient = {};
+    var localById = {};
+    var consumed = {};
+    var out = [];
+    (local || []).forEach(function (item, index) {
+      if (!item) return;
+      if (item.clientKey) localByClient[item.clientKey] = { item: item, index: index };
+      if (item.id) localById[item.id] = { item: item, index: index };
+    });
+    (remote || []).forEach(function (serverWorld) {
+      if (!serverWorld) return;
+      var match = (serverWorld.clientKey && localByClient[serverWorld.clientKey]) ||
+        (serverWorld.id && localById[serverWorld.id]);
+      var merged = {};
+      if (match) {
+        Object.keys(match.item).forEach(function (key) { merged[key] = match.item[key]; });
+      }
+      (local || []).forEach(function (item, index) {
+        if (!item) return;
+        if ((serverWorld.clientKey && item.clientKey === serverWorld.clientKey) ||
+            (serverWorld.id && item.id === serverWorld.id)) consumed[index] = true;
+      });
+      Object.keys(serverWorld).forEach(function (key) { merged[key] = serverWorld[key]; });
+      merged.cloudSync = 'synced';
+      delete merged.cloudSyncError;
+      out.push(merged);
+    });
+    (local || []).forEach(function (item, index) {
+      if (item && !consumed[index]) out.push(item);
+    });
+    out.sort(function (a, b) {
+      return String(a && a.createdAt || '').localeCompare(String(b && b.createdAt || ''));
+    });
+    return out;
+  }
+
+  function worldToExploreCard(w) {
     return {
+      id: w.id,
+      clientKey: w.clientKey,
       name: w.name,
-      classification: (w.emoji ? w.emoji + ' ' : '') + w.typeLabel,
+      classification: (w.emoji ? w.emoji + ' ' : '') + (w.typeLabel || w.type || ''),
       emoji: w.emoji || '',
-      lore: w.lore,
+      lore: w.lore || w.description || '',
       capital: '',
       demographics: {},
       createdAt: w.createdAt,
       worldType: true,
     };
-  });
+  }
+
+  var worldRecords = mergeWorldRecords([], SlatiDB.getWorlds());
+  var worlds = worldRecords.map(worldToExploreCard);
   var allNations = worlds.slice();
   var topics = [];
   var filteredNations = allNations.slice();
+
+  function cloudAccountActive() {
+    var user = SlatiDB.getUser && SlatiDB.getUser();
+    return !!(user && user.id && String(user.id).indexOf('USR-') === 0);
+  }
+
+  function refreshWorldRecords(remote, persist) {
+    worldRecords = mergeWorldRecords(remote || [], SlatiDB.getWorlds());
+    if (persist) SlatiDB.set(SlatiDB.KEYS.WORLDS, worldRecords);
+    worlds = worldRecords.map(worldToExploreCard);
+    allNations = nations.concat(worlds);
+    var input = document.getElementById('exSearchInput');
+    var query = input && input.value ? String(input.value).trim().toLowerCase() : '';
+    filteredNations = query ? allNations.filter(function (n) {
+      return (n.name || '').toLowerCase().indexOf(query) !== -1 ||
+             (n.moniker || '').toLowerCase().indexOf(query) !== -1 ||
+             (n.capital || '').toLowerCase().indexOf(query) !== -1 ||
+             (n.classification || '').toLowerCase().indexOf(query) !== -1 ||
+             (n.lore || '').toLowerCase().indexOf(query) !== -1;
+    }) : allNations.slice();
+    dyRender();
+    dyFillProfile();
+    mnRenderChips();
+    if (query) mnRenderNationResults(filteredNations);
+  }
 
   // v0.2.59.25 抖音式渲染：资料头部 + 作品/文章/话题三标签
   var articles = [];
@@ -3376,10 +3443,14 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
       window.MN_API.get('/social/nations').then(function (nr) {
         var remote = (nr && nr.ok && nr.data && Array.isArray(nr.data.nations)) ? nr.data.nations : [];
         nations = remote;
-        allNations = nations.concat(worlds);
-        filteredNations = allNations.slice();
-        dyRender(); dyFillProfile(); mnRenderChips();
+        refreshWorldRecords([], false);
       });
+      if (cloudAccountActive()) {
+        window.MN_API.get('/social/worlds').then(function (wr) {
+          if (!wr || !wr.ok || !wr.data || !Array.isArray(wr.data.worlds)) return;
+          refreshWorldRecords(wr.data.worlds, true);
+        });
+      }
       window.MN_API.get('/social/topics').then(function (tr) {
         topics = (tr && tr.ok && tr.data && Array.isArray(tr.data.topics)) ? tr.data.topics : [];
         dyRender(); dyFillProfile(); mnRenderChips();
@@ -3404,6 +3475,7 @@ html[data-accent="mono"][data-theme="dark"] .world-code-chip {
   mnRenderChips();
   mnRenderSuggestions();
   fetchExploreData();
+  window.addEventListener('mn:world-sync', function () { refreshWorldRecords([], false); });
 
   // v0.2.56.1 文章搜索（用户「我在 explore.html 搜索都搜索不到」——本页搜索此前只筛世界；
   // 与 overview ovDoSearch 同口径：300ms 防抖下拉、回车立即搜、Esc/点击外部关闭；

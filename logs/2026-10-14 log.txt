@@ -1,0 +1,205 @@
+M.NationWorld 2026-10-14 暂停交接日志
+状态：PAUSED / 尚未部署 / 禁止按当前状态直接上线
+接手对象：DeepSeek 或下一位开发代理
+
+一、用户要求与版本规则
+
+1. 用户要求检查全部页面、计划功能和历史日志，并处理高风险缺口；每次更新必须改变版本号并写日志。
+2. 本轮站点版本已从 v0.2.59.51 提升为 v0.2.59.52：
+   docs/assets/js/site-config.js → window.MN_SITE_VERSION = 'v0.2.59.52'
+3. FluidCanvas 独立版本线本轮没有核心编辑器改动，不应升级。
+4. 用户在 2026-10-14 明确要求暂停并交给 DeepSeek；因此当前没有构建、推送或部署线上版本。
+5. 工作区原本就有用户未提交改动与 tmp 探针文件。不要 git reset、checkout、clean，也不要删除未跟踪文件；先阅读 git status 后在现有工作区继续。
+
+二、已完成的改动（均已留在当前工作区）
+
+A. 移动端与导航（v0.2.59.51）
+- 手机底部菜单尺寸、药丸边距/圆角、选中效果、页面切换动画与横屏侧栏隐藏已调整。
+- “我的”改为独立页面入口；登录验证码按钮、社区帖子/订阅卡片窄屏溢出已修。
+- 订阅卡片使用 Flux Lines / Sliced Waves / Pattern Waves 背景；顶部价格/热门标签越界、卡片模糊与“3D 卡片装饰”已处理。
+
+B. 登录、账号与入驻可靠性
+- docs/signup-and-login.html：生产环境 API 故障时不再接受任意验证码/假登录；演示登录只允许 file、localhost、127.0.0.1 或明确 authDemo。
+- docs/assets/js/settings-modal.js：桌面删除账号改为真实邮件验证码 + /auth/delete；服务端成功前不清本地账号。
+- docs/pages/onboarding-identity.html：身份资料先 PATCH 云端成功再进入下一步，本地演示模式保留。
+- docs/pages/registry-step-3.html：Nation 创建等待文章和国家两项成功，失败保留 pending/retry，不再假报完成。
+- backend-v2/src/routes/public/auth.js：公开用户形状补 language/country/dob/bio/preferences；PATCH /auth/me 支持偏好增量持久化并拒绝未知键。
+
+C. 设置偏好
+- sidebar.js 与 settings-modal.js 已接 /auth/me preferences，云端成功后保存、失败回滚；reduce-motion 可立即应用。
+- social.js 已实现帖子作者 allow_comments=false 时拒绝他人评论（作者自评仍允许）。
+- messages.js 已实现 allow_dm=false 时阻止陌生人新建私信；好友和既有私信仍可使用。
+
+D. 非 Nation 世界云端同步
+- 新增 backend-v2/migrations/040_worlds.sql。
+- 新增登录保护的 GET/POST /api/social/worlds：用户隔离、字段校验、metadata 32KB、owner+clientKey 幂等。
+- storage.js：本地立即保存，再异步云同步；pending/failed/synced、服务端 ID 回写、失败重试、换页续传、云/本地去重均已实现。
+- world-wizard.html 修复表单 type 覆盖世界类型；world-created.html 不再假称云端已归档；explore.html 合并云端和本地世界。
+- worlds.test.js、storage-world-sync.test.js 已加入并通过。
+
+E. 云消息一致性
+- 新增 backend-v2/migrations/041_message_consistency.sql。
+- 服务端支持：仅发送者幂等软删；双方分页/未读/最后消息/置顶均排除已删消息；每用户每会话置顶；原子多目标转发并保留来源；任一目标无权限则零部分写入。
+- messages.html：云端删除/置顶失败回滚；转发只在 API 成功后显示成功；云群不再写 localStorage；演示模式保留。
+- 当前仍未支持云端消息附件，界面已有“不支持附件”的真实提示。
+
+F. 订阅、团队容量与 AI 权限
+- 新增 backend-v2/migrations/039_team_package_caps.sql。
+- 套餐自带容量与单独 Team Slots 分账：Premium 36 人、Ultra 无限；扩容为 8/16/26/无限且一次购买只生效 1 个月。
+- articles 智能搜索与 FluidCanvas AI Edge Gen 已加 Premium/Ultra 服务端门禁及过期检查。
+- premium/help/terms、12 语言 i18n、FAQ 与项目说明已经统一真实功能口径；Verification/Boost 明确标为规划中且不展示虚构售价；AI 分工为 DeepSeek/Gemini；去掉不存在的摘要/多模型/自动优化等销售文案。
+
+G. 页面完整性
+- community-hub.html 已加入真实社区搜索与移动端卡片约束。
+- index.html、error-codes.html 的 404 链接已修；editor.html 改为跳转 fluidcanvas-editor 并保留 query/hash；FluidCanvas 设置按钮打开真实设置。
+- 生产站点版本已写为 v0.2.59.52；deploy/cloudrun.md 当前健康检查写为 tables=72、user_version=41（若新增 042，必须改为 42）。
+
+三、暂停前已经通过的验证
+
+1. 完整后端：433/433 通过（node --test，2026-10-14）。
+2. 定向：世界同步 29/29；消息/相关联合 82/82；迁移验证 user_version=41、业务表 72。
+3. 语法：28 个变更 JS 的 node --check 通过；19 个变更 HTML 共内联脚本解析通过；FAQ JSON 解析通过。
+4. 条款：12 个语言每语 157 键，missing/extra=0；页面 184 处引用无 missing/unused。
+5. git diff --check 当时无 whitespace error，仅 Windows LF→CRLF 提示。
+
+注意：以上 433/433 是下面三个上线阻断问题被发现前的基线；修复阻断问题后必须重新跑完整测试，不能直接引用该数字上线。
+
+四、必须先完成的上线阻断问题（当前都没有完成）
+
+P0-1：messages.html 持久化 XSS
+
+问题：云端用户可控的消息正文、发送者名、群名、成员名等被直接拼进 innerHTML；聊天对方可构造标签或属性注入。
+
+已定位的危险区域（行号会随修改漂移，以函数/元素名查找）：
+- msgBubble：m.text、m.from、m._forwardedFrom；附件文件名与 alt 属性。
+- 私聊列表：c.name、c.avatar、c.lastMsg，尤其 title="..." 属性。
+- 群列表：g.name、g.avatar、title 属性。
+- 转发联系人列表、群成员列表、置顶消息列表。
+- 好友选择列表、好友请求通知中的 displayName（无需先成为好友即可触发）。
+
+处理要求：
+- 增加统一 text HTML 转义和 attribute 转义（至少 & < > " '）；所有用户/服务端数据进入 innerHTML 前转义。
+- URL 不能只做转义；未来云附件须做 scheme allowlist（https、本站 /uploads/、blob），拒绝 javascript: 与 data:text/html。本轮云消息没有附件 URL。
+- 内联 onclick 中的服务端 ID 当前为固定前缀生成，风险较低，但最好用 data-* + 事件绑定；若继续拼属性也必须转义。
+- 加可执行回归：正文 `<img src=x onerror=...>`、名称 `"><svg onload=...>` 渲染后只能显示文本，不得产生 img/svg/script/onerror 节点或执行标记。
+- 修完运行 messages.html 全部内联脚本解析与相关 UI/消息测试。
+
+P0-2：偏好默认显示与实际权限不一致，并漏掉文章评论
+
+问题 1：后端 allow_comments/allow_mentions/allow_dm/allow_derivative 缺省均按“允许”处理；但 sidebar.js 和 settings-modal.js 在云端、本地都没有值时显示为关闭。用户会误以为已关闭，实际仍可收到评论/私信。
+
+处理要求：
+- 只对 allow_comments、allow_mentions、allow_dm、allow_derivative 使用默认开启；显式 false 或 localStorage 的 '0' 必须保持关闭。
+- notify、private_acct、reduce_motion 等其他开关不要擅自改变默认。
+- 同时验证手机“我的”设置和桌面设置弹窗。
+
+问题 2：allow_comments=false 目前只拦截 social.js 的帖子评论；articles.js 的 POST /api/articles/:id/comments 完全没检查。
+
+处理要求：
+- 在文章评论创建前读取文章作者 preferences；allow_comments===false 时，非作者评论返回 403，作者自评允许。
+- 在 article-comments.test.js 增加关闭后他人被拒/作者可自评/缺省仍允许三组回归。
+
+P0-3：并存订阅、取消与低档续费会算错付费权益
+
+当前问题：
+- customer.subscription.deleted 直接把 user.tier 改 free，并可能清 team_package，即使用户还有另一笔有效订阅/一次性购买。
+- 用户仍有高档时购买低档，现有 applyPaid 可能延长高档 tier_expires_at，相当于用低档价格续高档。
+- Ultra 到期时 tiers.js 只会降 free，无法回落到仍有效的 Premium。
+
+暂停前仅完成了设计，没有写入代码。建议设计如下（也可用等价但可证明正确的方案）：
+- 把已有 subscriptions 表真正作为逐订阅权益账本；新增 042 迁移，为一次性 payment 建立可追踪的 entitlement/关联字段，并为用户保存独立的管理员授权基线。
+- checkout 开通、invoice.paid 续费、subscription.deleted 取消统一调用一个权益重算器；只从仍有效来源选最高 tier；最高 tier 的到期只由同 tier 来源计算，低档不得延长高档。
+- tiers.js 到期检查也调用同一重算器，使 Ultra 到期可回落 Premium，再无有效来源才 free。
+- staff_test_grant 同步写管理员授权来源；有限授权、永久授权都不能被 Stripe 取消事件抹掉。
+- pkg-premium/pkg-ultra 的 team_package_* 同样按有效来源重算；独立 team_cap_addon/Team Slots 不动。
+- 若新增 042：把 health/migrations/server/notifications 等 user_version 断言从 41 改 42；ALTER 不新增表时 tables 仍为 72；deploy/cloudrun.md 也改 user_version=42。
+
+必须新增测试：
+- Premium + Ultra 并存，取消其中任意一个仍保留另一项。
+- Ultra 到期后回落有效 Premium。
+- 购买/续费低档不延长高档到期。
+- 最后一项取消/到期后才 free。
+- 一次性年付与自动订阅并存。
+- Premium/Ultra 套餐团队容量按剩余有效来源重算。
+- 有限 staff grant 与永久 staff grant 不被 Stripe 取消覆盖。
+- webhook 重放仍幂等；Team Slots 独立容量不受影响。
+
+五、完成 P0 后再处理或明确标“规划中”的缺口
+
+1. private_acct、audience、allow_mentions、allow_derivative 当前主要是跨设备保存，尚未在所有公开读取/互动路由完整执法。不能对用户宣称已经全面生效；应实现服务端门禁，或暂时标注“规划中/尚未生效”。
+2. 智能搜索/Edge Gen 的 403 前端提示仍较笼统，可改为明确“需要 Premium 或 Ultra”。
+3. 本轮未实现：完整插件运行/提交/GitHub 流程、后台 W3-W5、频道捐款与打款、社区投票/活动/频道/Emoji Reaction、云消息附件、FC 图片云存储/SNE/MRE。最终说明必须诚实列为后续计划，不能写“所有计划功能已完成”。
+
+六、接手后的验证顺序
+
+1. 先阅读 git status 与本日志；保留所有现有改动，不清理用户 tmp 文件。
+2. 完成三个 P0 并做定向测试。
+3. 在 backend-v2 运行完整 `node --test`；Windows 沙箱若报监听 EACCES，需要在允许本机临时端口的环境运行。
+4. 对所有变更 JS 运行 node --check；使用 backend-v2/tmp-check-html-js.js 检查全部变更 HTML 内联脚本；解析 FAQ JSON。
+5. 运行 git diff --check；只有 LF→CRLF 提示可接受，任何 whitespace error 必须修。
+6. 用恶意消息载荷手动/自动验证 XSS；检查手机与桌面偏好默认；验证 042 从旧数据库升级与重复启动幂等。
+7. 更新本日志：最终测试数字、数据库 user_version、表数、部署 revision、线上验证结果。
+
+七、部署说明（只有全部 P0 和完整测试通过后才做）
+
+1. 从仓库根目录构建 Docker 镜像；Dockerfile 会同时复制 backend-v2 与 docs。
+2. 镜像目标：asia-southeast1-docker.pkg.dev/project-02d050ab-8105-448e-bac/mn-backend/mn-backend-v2:latest。
+3. 推送镜像后再部署 Cloud Run 服务 mnationworld-web（asia-southeast1）。必须保留现有全部环境变量、GCS FUSE 卷与 /mnt/data 挂载。
+4. backend-v2/tmp-deploy-647.ps1 会从现有服务读取并重建环境变量，但脚本含 Write-Host，运行时不要把环境参数输出到聊天/日志；禁止泄露 SMTP、Stripe、DeepSeek、Gemini 等密钥。
+5. 线上核对：
+   - https://mnationworld.com/api/health → status=ok、tables=72、version=2.0.0；若做 042，再确认数据库 user_version=42。
+   - docs/assets/js/site-config.js 能看到 v0.2.59.52。
+   - 登录、删除账号、世界同步、消息删除/转发/置顶、评论权限、订阅回落各做最小线上探针。
+   - 记录 Cloud Run revision 与 100% 流量状态。
+
+八、当前最后状态
+
+- 站点代码：v0.2.59.52（本地工作区）。
+- 数据库迁移：当前做到 041；若按上述方案修订阅，需要新增 042。
+- 当前已知表数：72。
+- 最近完整测试基线：433/433（P0 修复前）。
+- 线上：仍是上一版，本轮没有部署。
+- 交接结论：先完成 P0-1、P0-2、P0-3，再测试、补日志、构建和部署。
+
+九、DeepSeek 接手完成（2026-10-14 续）
+
+三个 P0 全部完成并已部署上线（revision 00608-zx4，100% 流量）：
+
+P0-1 消息 XSS：
+- messages.html 全部用户/服务端数据进入 innerHTML/属性前经 msgEscapeHtml/msgEscapeAttr 转义
+  （msgBubble 正文/发送者/转发来源/文件名 alt、置顶消息、会话列表 c.name/c.lastMsg/title、群列表
+  g.name/title、转发联系人、群成员、好友选择、头像首字母）。
+- 可执行回归 tmp-probe-xss.js：恶意载荷 <img onerror>/"><svg onload>/文件名 alt 逃逸渲染后
+  零 img(除正常图片)/svg/script/onerror 节点、文本完整保留 —— PASS；messages.html 内联脚本解析通过。
+
+P0-2 偏好与文章评论：
+- sidebar.js/settings-modal.js：allow_comments/allow_mentions/allow_dm/allow_derivative 四键
+  云端无值/本地无值时默认开启（mesetDefaultOn），显式 false 或 '0' 保持关闭；其他键默认不动。
+- articles.js POST /api/articles/:id/comments 增加作者 allow_comments===false 时非作者 403、作者自评放行。
+- article-comments.test.js 新增回归：缺省允许/关闭他人 403/作者自评/显式 true 恢复。
+
+P0-3 订阅权益重算：
+- 新增 042_subscription_entitlements.sql：payments.active + payments.entitlement_expires_at +
+  users.admin_tier/admin_tier_expires_at；回填（已付行推到期、无支付行的历史 tier 抬入管理员基线）。
+- 新增 src/entitlements.js：computeEntitlement/recomputeAndApply 唯一权威推导（三类来源：活跃订阅
+  周期/一次性年付/管理员授权；最高档 + 同档最晚到期；低档不延长高档；取消/到期按剩余来源回落）。
+- subscriptions.js：applyPaid（周期到期建模+重算）、handleSubDeleted（清该订阅行权益→回落重算）、
+  handleInvoicePaid 经同链路；auditTier/applyPackageTeamCap 退役。
+- tiers.js enforceTierExpiry：到期改走重算器回落（Ultra 到期回落仍有效 Premium）。
+- staff/subscriptions.js grant：写管理员基线 + 重算；低档不覆盖高档基线；同档永久续永久；
+  历史 tier 兜底抬入基线。
+- 测试：新增 entitlements.test.js 8 测（并存取消/到期回落/低档不延高档/年付+订阅/套餐容量/管理员
+  授权不抹/webhook 重放+slots 独立/基线参与）；subscriptions/staff-subscriptions 旧断言按新口径更新。
+
+验证（2026-10-14 续）：
+- 完整测试：442/442 通过（433 基线 + 9 新增）。
+- node --check 全部变更 JS 通过；faq.json 解析通过；git diff --check 无 whitespace error。
+- 数据库：user_version 41→42（health/migrations/notifications 断言同步）；表数仍 72。
+- deploy/cloudrun.md 健康检查说明更新为 user_version=42。
+- 线上：/api/health → {status:ok, db:ok, tables:72, version:2.0.0}；site-config.js 线上 v0.2.59.52。
+- 部署：revision mnationworld-web-00608-zx4（100% traffic，镜像 digest 5de20619…）。
+
+遗留（明确为后续计划，不宣称完成）：
+- private_acct/audience/allow_mentions/allow_derivative 仅在部分路由执法，未全量生效。
+- 智能搜索/Edge Gen 403 前端提示仍笼统。
+- 插件运行/提交、频道捐款打款、社区投票/活动/Emoji Reaction、云消息附件、FC 图片云存储等仍未实现。

@@ -5,8 +5,8 @@
 //   贴文 posts / 动态=已发布文章 articles → 新行 team_id=新团（原件不动，复制语义）；
 //   视频&贴图 uploads → 新行 copy_of=原件（同文件对象 fs 复制到新 id，源文件缺失跳过文件但保留登记行）；
 //   主页装饰 → 拷入 teams.data JSON（decorations 字段），零新列。
-// 成员上限：标配 3（owner+2）；slots-* 扩容订阅（Stripe webhook 写 users.team_cap_addon+team_cap_expires_at）
-//   有效期内 8/16/26/∞，过期回落 3。
+// 成员上限：标配 3（owner+2）；slots-* 扩容与 pkg-* 套餐权益各自计期，取两者较高值。
+//   slots-* = 8/16/26/∞；pkg-premium = 36，pkg-ultra = ∞；权益过期后回落到其他有效权益/标配 3。
 // 好友口径：friend_requests status='accepted'（任一方向）——与 fc-edges.js 好友集同款（dm-shared.acceptedFriends）。
 // 红线沿用 messages.js：零审核 import（团队名/群聊名写入路径不跑审核管线——群聊先例；帖文搬运=本人已可见原件复制）。
 // 群聊复用 conversations kind='group'（005 已含）+ conversation_members 多成员；成员限好友。
@@ -24,6 +24,7 @@ const MAX_CHAT_NAME = 60;
 const MAX_COPY = 200; // 每类搬运上限（防超长建团请求）
 const BASE_CAP = 3; // 标配：owner + 2
 const SLOT_CAP = { basic: 8, plus: 16, premium: 26, ultra: Infinity }; // 扩容订阅口径 8/16/26/∞（用户钦定）
+const PACKAGE_CAP = { premium: 36, ultra: Infinity }; // 套餐卡明示承诺：Premium Package 36 / Ultra Package 无限
 
 function parseJson(v) {
   try { return JSON.parse(v); } catch { return null; }
@@ -34,12 +35,20 @@ function writeLimit(ctx) {
   return ctx.limiter('team:user:' + ctx.user.id, w.max, w.windowMs);
 }
 
-// 成员上限：owner 的扩容订阅有效期内生效；过期/未购回落标配 3
+function activeCap(key, expiresAt, caps, now) {
+  if (!key || (expiresAt && expiresAt <= now)) return BASE_CAP;
+  return caps[key] || BASE_CAP;
+}
+
+// 成员上限：owner 的套餐与独立 Slots 同时生效，取较高值；各自过期不会清掉另一项。
 function capOf(db, ownerId) {
-  const u = db.prepare('SELECT team_cap_addon, team_cap_expires_at FROM users WHERE id = ?').get(ownerId);
-  if (!u || !u.team_cap_addon) return BASE_CAP;
-  if (u.team_cap_expires_at && u.team_cap_expires_at <= new Date().toISOString()) return BASE_CAP;
-  return SLOT_CAP[u.team_cap_addon] || BASE_CAP;
+  const u = db.prepare(`SELECT team_cap_addon, team_cap_expires_at,
+    team_package_cap, team_package_expires_at FROM users WHERE id = ?`).get(ownerId);
+  if (!u) return BASE_CAP;
+  const now = new Date().toISOString();
+  const slotCap = activeCap(u.team_cap_addon, u.team_cap_expires_at, SLOT_CAP, now);
+  const packageCap = activeCap(u.team_package_cap, u.team_package_expires_at, PACKAGE_CAP, now);
+  return Math.max(BASE_CAP, slotCap, packageCap);
 }
 
 function memberCountOf(db, teamId) {
@@ -61,6 +70,7 @@ function requireOwner(db, teamId, userId) {
 // 团队形状（读侧统一：data JSON + 实时成员数 + 我的角色 + 上限 + 团队经验/粉丝/我的关注态）
 function teamShape(db, row, myRole, ownerId, viewerId) {
   const d = parseJson(row.data) || {};
+  const resolvedOwnerId = ownerId || d.ownerId || null;
   return {
     id: row.id,
     name: d.name || row.id,
@@ -69,8 +79,8 @@ function teamShape(db, row, myRole, ownerId, viewerId) {
     role: myRole || 'member',
     members: memberCountOf(db, row.id),
     nations: d.nations || [],
-    ownerId: ownerId || d.ownerId || null,
-    cap: ownerId ? capOf(db, ownerId) : BASE_CAP,
+    ownerId: resolvedOwnerId,
+    cap: resolvedOwnerId ? capOf(db, resolvedOwnerId) : BASE_CAP,
     createdAt: row.created_at,
     avatarUrl: d.avatarUrl || null,
     bannerUrl: d.bannerUrl || null,
@@ -321,4 +331,4 @@ function register(router, ctx) {
   }));
 }
 
-module.exports = { register };
+module.exports = { register, capOf, BASE_CAP, SLOT_CAP, PACKAGE_CAP };

@@ -13,6 +13,7 @@
 
 const { HttpError, sendJson, readJson } = require('../../http');
 const { authenticate } = require('../../middleware/auth');
+const { requireTier } = require('../../tiers');
 
 const MODEL_DEFAULT = 'gemini-3.8-flash'; // 线上探测 404：gemini-2.5-flash 退役新用户（Google 指引 3.8-flash；仍 Flash 族）
 
@@ -125,6 +126,7 @@ async function callEdgeGenAI(ctx, kind, name, desc, parsedImage) {
 function register(router, ctx) {
   router.add('POST', '/api/fc/edge-gen', async (req, res) => {
     const user = authenticate(ctx.db, req, res, ctx); // 未登录 401 UNAUTHORIZED
+    requireTier(ctx.db, ctx.config, user, 'premium', 'AI 边缘生成需要 Premium 或 Premium Ultra 订阅');
 
     const body = await readJson(req, 8 * 1024 * 1024); // 附图 dataURL 可到 ~6MB
     const kind = body && body.kind === 'border' ? 'border' : 'edge';

@@ -23,6 +23,13 @@ const { gainTeamXp, loseTeamXp } = require('./team-xp');
 const MAX_POST_LEN = 2000;
 const MAX_COMMENT_LEN = 2000; // comments.content ≤2000（写入层校验，同 005 注释）
 const MAX_MEDIA = 3;
+const WORLD_TYPE_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
+const WORLD_CLIENT_KEY_RE = /^[A-Za-z0-9._:-]{8,128}$/;
+const WORLD_METADATA_MAX = 32 * 1024;
+const WORLD_RESERVED_KEYS = new Set([
+  'id', 'ownerId', 'type', 'name', 'description', 'lore', 'metadata', 'clientKey',
+  'status', 'createdAt', 'updatedAt', 'cloudSync', 'cloudSyncError'
+]);
 // v0.2.23.0 卡片背景预设白名单（迁移 018 users.card_bg；auth.js PATCH /auth/me 同名单校验，两处须同步）
 // v0.2.58.22 追加 6 单色/黑白系预设（免费层横幅颜色：solid-* 单色 + mono-* 黑白渐变）
 const CARD_BG_KEYS = ['glass-frost', 'glass-ocean', 'glass-violet', 'glass-rose', 'glass-mint', 'glass-sunset', 'glass-clear', 'solid-black', 'solid-white', 'solid-gray', 'mono-bw', 'mono-silver', 'mono-charcoal'];
@@ -124,7 +131,86 @@ function requireName(body, max, label) {
   return name;
 }
 
+function worldMetadata(body) {
+  let source;
+  if (Object.prototype.hasOwnProperty.call(body, 'metadata')) {
+    if (!body.metadata || typeof body.metadata !== 'object' || Array.isArray(body.metadata)) {
+      throw new HttpError('VALIDATION', '世界 metadata 需为对象');
+    }
+    source = body.metadata;
+  } else {
+    source = {};
+    for (const key of Object.keys(body)) {
+      if (!WORLD_RESERVED_KEYS.has(key)) source[key] = body[key];
+    }
+  }
+
+  const clean = {};
+  for (const key of Object.keys(source)) {
+    if (WORLD_RESERVED_KEYS.has(key) || key === '__proto__' || key === 'prototype' || key === 'constructor') continue;
+    if (!/^[A-Za-z0-9_-]{1,60}$/.test(key)) throw new HttpError('VALIDATION', '世界 metadata 字段名无效');
+    clean[key] = source[key];
+  }
+  let json;
+  try { json = JSON.stringify(clean); } catch { throw new HttpError('VALIDATION', '世界 metadata 无法序列化'); }
+  if (Buffer.byteLength(json, 'utf8') > WORLD_METADATA_MAX) throw new HttpError('VALIDATION', '世界 metadata 不能超过 32KB');
+  return { clean, json };
+}
+
+function publicWorld(row) {
+  const metadata = parseJson(row.metadata_json) || {};
+  return {
+    ...metadata,
+    id: row.id,
+    type: row.type_key,
+    name: row.name,
+    description: row.description,
+    lore: row.description,
+    metadata,
+    clientKey: row.client_key,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
 function register(router, ctx) {
+  // ── 非 Nation worlds（登录用户私有归档；clientKey 保证断网重试幂等）──
+  router.add('GET', '/api/social/worlds', requireSession((req, res, c) => {
+    const rows = c.db.prepare(
+      "SELECT * FROM worlds WHERE owner_id = ? AND status != 'deleted' ORDER BY created_at DESC, seq DESC"
+    ).all(c.user.id);
+    sendJson(res, 200, { worlds: rows.map(publicWorld) });
+  }));
+
+  router.add('POST', '/api/social/worlds', requireSession(async (req, res, c) => {
+    if (!writeLimit(c)) throw new HttpError('RATE_LIMITED', '操作过于频繁');
+    const body = await readJson(req, 64 * 1024);
+    const type = String(body.type || '').trim().toLowerCase();
+    if (!WORLD_TYPE_RE.test(type) || type === 'nation') throw new HttpError('VALIDATION', '世界类型无效');
+    const name = requireName(body, 120, '世界名称');
+    const description = String(body.description !== undefined ? body.description : (body.lore || '')).trim();
+    if (description.length > 5000) throw new HttpError('VALIDATION', '世界简介最长 5000 字符');
+    const clientKey = String(body.clientKey || '').trim();
+    if (!WORLD_CLIENT_KEY_RE.test(clientKey)) throw new HttpError('VALIDATION', '世界 clientKey 无效');
+    const meta = worldMetadata(body);
+
+    const previous = c.db.prepare('SELECT * FROM worlds WHERE owner_id = ? AND client_key = ?')
+      .get(c.user.id, clientKey);
+    if (previous) {
+      sendJson(res, 200, { world: publicWorld(previous), idempotent: true });
+      return;
+    }
+
+    const iso = new Date().toISOString();
+    const { id } = insertWithId(c.db, 'worlds',
+      ['owner_id', 'type_key', 'name', 'description', 'metadata_json', 'client_key', 'status', 'created_at', 'updated_at'],
+      [c.user.id, type, name, description, meta.json, clientKey, 'active', iso, iso],
+      (s) => 'WLD-' + pad6(s));
+    const row = c.db.prepare('SELECT * FROM worlds WHERE id = ?').get(id);
+    sendJson(res, 200, { world: publicWorld(row), idempotent: false });
+  }));
+
   // ── nations ──
   router.add('GET', '/api/social/nations', (req, res, c) => {
     const rows = c.db.prepare("SELECT data FROM nations WHERE status = 'visible' ORDER BY seq").all();
@@ -694,6 +780,12 @@ function register(router, ctx) {
     if (!content || content.length > MAX_COMMENT_LEN) throw new HttpError('VALIDATION', `内容需 1-${MAX_COMMENT_LEN} 字符`);
     const post = c.db.prepare('SELECT * FROM posts WHERE id = ?').get(req.params.id);
     if (!post || post.status !== 'visible') throw new HttpError('NOT_FOUND', '帖子不存在或已下架');
+    // 账号偏好跨设备生效：作者关闭评论后，其他用户不可评论；作者仍可在自己的帖子下补充说明。
+    if (post.author_id !== c.user.id) {
+      const author = c.db.prepare('SELECT preferences FROM users WHERE id = ?').get(post.author_id);
+      const preferences = author ? (parseJson(author.preferences) || {}) : {};
+      if (preferences.allow_comments === false) throw new HttpError('FORBIDDEN', '作者已关闭评论');
+    }
     // 一层回复：parentId 必须属于本帖且自身无 parent（杜绝深链）
     let parentId = null;
     if (body.parentId) {
